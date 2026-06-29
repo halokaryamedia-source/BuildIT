@@ -22,6 +22,14 @@ export function settingsSetup() {
       category,
       icon: "numbers",
     }),
+    new Setting("mcp_auto_port", {
+      name: tl("mcp.settings.auto_port_name"),
+      description: tl("mcp.settings.auto_port_desc"),
+      type: "toggle",
+      value: true,
+      category,
+      icon: "alt_route",
+    }),
     new Setting("mcp_endpoint", {
       name: tl("mcp.settings.endpoint_name"),
       description: tl("mcp.settings.endpoint_desc"),

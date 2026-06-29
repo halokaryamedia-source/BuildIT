@@ -73,6 +73,27 @@ export const autoUvEnum = z.enum(["0", "1", "2"]);
 /** Cube faces */
 export const faceEnum = z.enum(["north", "south", "east", "west", "up", "down"]);
 
+/** UV mode labels for project configuration */
+export const uvModeEnum = z.enum(["box", "per_face"]);
+
+/** Per-face UV rectangle for cubes */
+export const faceUvRectSchema = z.object({
+  face: faceEnum,
+  uv: z
+    .array(z.number())
+    .length(4)
+    .describe("UV rectangle [u1, v1, u2, v2] in texture pixel coordinates."),
+  texture: z
+    .number()
+    .int()
+    .optional()
+    .describe("Texture index in the project texture list."),
+  rotation: z
+    .enum(["0", "90", "180", "270"])
+    .optional()
+    .describe("Face UV rotation in degrees."),
+});
+
 /** Camera projection types */
 export const projectionEnum = z.enum(["unset", "orthographic", "perspective"]);
 

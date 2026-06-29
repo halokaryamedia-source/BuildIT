@@ -16,6 +16,11 @@ import { sessionManager } from "@/lib/sessions";
 import { initPromptLoader } from "@/lib/promptLoader";
 import type { NetServer, SessionTransports } from "@/server/net";
 import createNetServer from "@/server/net";
+import {
+  serverState,
+  normalizeEndpoint,
+  toValidPort,
+} from "@/lib/serverState";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
@@ -72,14 +77,49 @@ BBPlugin.register("mcp", {
       Settings.get("mcp_sse_heartbeat"),
       15
     );
+    const requestedPort = toValidPort(Settings.get("mcp_port"), 3000);
+    const endpoint = normalizeEndpoint(Settings.get("mcp_endpoint"));
+    const autoPort = Settings.get("mcp_auto_port") !== false;
+
+    serverState.set({
+      status: "starting",
+      requestedPort,
+      endpoint,
+      autoPort,
+      fallbackUsed: false,
+      projectName: Project?.name ?? null,
+      projectUuid: Project?.uuid ?? null,
+    });
+
     [httpServer, sessionTransports] = createNetServer(net, {
-      port: Number(Settings.get("mcp_port") || 3000),
-      endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
+      port: requestedPort,
+      endpoint,
+      autoPort,
+      portScanLimit: 20,
       keepAlive: {
         sseHeartbeatIntervalMs: Math.max(0, sseHeartbeatSec) * 1000,
       },
       sessionConfig: {
         inactivityTimeoutMs: Math.max(1, sessionTimeoutMin) * 60 * 1000,
+      },
+      onListening(info) {
+        serverState.set({
+          status: "listening",
+          requestedPort: info.requestedPort,
+          port: info.port,
+          endpoint: info.endpoint,
+          url: info.url,
+          autoPort: info.autoPort,
+          fallbackUsed: info.fallbackUsed,
+          projectName: info.projectName ?? null,
+          projectUuid: info.projectUuid ?? null,
+        });
+      },
+      onListenError(error) {
+        serverState.set({
+          status: "error",
+          errorMessage: error.message,
+        });
       },
     });
 
@@ -109,6 +149,8 @@ BBPlugin.register("mcp", {
 
     // Clear all sessions
     sessionManager.clear();
+    serverState.set({ status: "stopped" });
+    serverState.clear();
 
     uiTeardown();
     settingsTeardown();

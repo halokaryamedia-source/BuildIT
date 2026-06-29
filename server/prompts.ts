@@ -61,4 +61,16 @@ createPrompt("model_creation_strategy", {
   },
 });
 
+createPrompt("texture_uv_workflow", {
+  description:
+    "Guide for per-face UV texture workflows: creating projects with per-face UV, placing cubes with explicit face rects, exporting UV layouts, and painting custom atlases.",
+  argsSchema: z.object({}),
+  async generate() {
+    const text = getPromptContent("texture_uv_workflow");
+    return {
+      messages: [{ role: "user", content: { type: "text", text } }],
+    };
+  },
+});
+
 export default prompts;

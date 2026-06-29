@@ -1,11 +1,11 @@
 {
   "version": "1.6.0",
-  "generatedAt": "2026-05-22T14:18:59.107Z",
+  "generatedAt": "2026-06-29T09:51:18.918Z",
   "tools": [
     {
       "name": "place_cube",
       "title": "Place Cube",
-      "description": "Places a cube of the given size at the specified position. Texture and group are optional.",
+      "description": "Places a cube of the given size at the specified position. Texture and group are optional. For custom texture atlases, create the project with box_uv: false and pass explicit face UV rects.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -297,6 +297,58 @@
                 "type": "boolean",
                 "description": "Whether the cube is visible or not.",
                 "markdownDescription": "Whether the cube is visible or not."
+              },
+              "faces": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "face": {
+                      "type": "string",
+                      "enum": [
+                        "north",
+                        "south",
+                        "east",
+                        "west",
+                        "up",
+                        "down"
+                      ]
+                    },
+                    "uv": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "UV rectangle [u1, v1, u2, v2] in texture pixel coordinates.",
+                      "markdownDescription": "UV rectangle [u1, v1, u2, v2] in texture pixel coordinates."
+                    },
+                    "texture": {
+                      "type": "integer",
+                      "description": "Texture index in the project texture list.",
+                      "markdownDescription": "Texture index in the project texture list."
+                    },
+                    "rotation": {
+                      "type": "string",
+                      "enum": [
+                        "0",
+                        "90",
+                        "180",
+                        "270"
+                      ],
+                      "description": "Face UV rotation in degrees.",
+                      "markdownDescription": "Face UV rotation in degrees."
+                    }
+                  },
+                  "required": [
+                    "face",
+                    "uv"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Per-face UV rectangles to apply. Disables auto UV on the cube.",
+                "markdownDescription": "Per-face UV rectangles to apply. Disables auto UV on the cube."
               }
             },
             "additionalProperties": false
@@ -4674,7 +4726,7 @@
     {
       "name": "create_project",
       "title": "Create Project",
-      "description": "Creates a new project with the given name and project type.",
+      "description": "Creates a new project with the given name and project type. For custom texture atlases, set box_uv to false (per-face UV) and specify texture_width/height.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4695,6 +4747,25 @@
                 "default": "bedrock_block",
                 "description": "Project format ID from Blockbench's Formats registry.",
                 "markdownDescription": "Project format ID from Blockbench's Formats registry."
+              },
+              "box_uv": {
+                "type": "boolean",
+                "description": "Default UV mode. false = per-face UV (recommended for custom texture atlases). When omitted, uses the format default.",
+                "markdownDescription": "Default UV mode. false = per-face UV (recommended for custom texture atlases). When omitted, uses the format default."
+              },
+              "texture_width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4096,
+                "description": "Texture atlas width in pixels.",
+                "markdownDescription": "Texture atlas width in pixels."
+              },
+              "texture_height": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4096,
+                "description": "Texture atlas height in pixels.",
+                "markdownDescription": "Texture atlas height in pixels."
               }
             },
             "required": [
@@ -4707,9 +4778,55 @@
       }
     },
     {
+      "name": "configure_project",
+      "title": "Configure Project",
+      "description": "Updates project settings: name, UV mode (box vs per-face), and texture resolution.",
+      "status": "stable",
+      "category": "Project",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/configure_project",
+        "definitions": {
+          "configure_project": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Rename the project.",
+                "markdownDescription": "Rename the project."
+              },
+              "box_uv": {
+                "type": "boolean",
+                "description": "Switch UV mode. false = per-face UV, true = box UV. Requires format support.",
+                "markdownDescription": "Switch UV mode. false = per-face UV, true = box UV. Requires format support."
+              },
+              "texture_width": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4096,
+                "description": "Texture atlas width in pixels.",
+                "markdownDescription": "Texture atlas width in pixels."
+              },
+              "texture_height": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4096,
+                "description": "Texture atlas height in pixels.",
+                "markdownDescription": "Texture atlas height in pixels."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
+      "description": "Returns read-only project orientation: format id and display name, project name/UUID, UV mode, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4721,6 +4838,119 @@
           "get_project_info": {
             "type": "object",
             "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "set_cube_face_uv",
+      "title": "Set Cube Face UV",
+      "description": "Sets per-face UV rectangles on one or more cubes. Disables auto UV on affected cubes.",
+      "status": "stable",
+      "category": "Cube UV",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/set_cube_face_uv",
+        "definitions": {
+          "set_cube_face_uv": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Cube ID or name. Defaults to all selected cubes if omitted.",
+                "markdownDescription": "Cube ID or name. Defaults to all selected cubes if omitted."
+              },
+              "faces": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "face": {
+                      "type": "string",
+                      "enum": [
+                        "north",
+                        "south",
+                        "east",
+                        "west",
+                        "up",
+                        "down"
+                      ]
+                    },
+                    "uv": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "UV rectangle [u1, v1, u2, v2] in texture pixel coordinates.",
+                      "markdownDescription": "UV rectangle [u1, v1, u2, v2] in texture pixel coordinates."
+                    },
+                    "texture": {
+                      "type": "integer",
+                      "description": "Texture index in the project texture list.",
+                      "markdownDescription": "Texture index in the project texture list."
+                    },
+                    "rotation": {
+                      "type": "string",
+                      "enum": [
+                        "0",
+                        "90",
+                        "180",
+                        "270"
+                      ],
+                      "description": "Face UV rotation in degrees.",
+                      "markdownDescription": "Face UV rotation in degrees."
+                    }
+                  },
+                  "required": [
+                    "face",
+                    "uv"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Face UV rectangles to apply.",
+                "markdownDescription": "Face UV rectangles to apply."
+              }
+            },
+            "required": [
+              "faces"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_uv_layout",
+      "title": "Get UV Layout",
+      "description": "Returns all cube face UV rectangles and texture references for the active project. Use before painting textures.",
+      "status": "stable",
+      "category": "Cube UV",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/get_uv_layout",
+        "definitions": {
+          "get_uv_layout": {
+            "type": "object",
+            "properties": {
+              "cube_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of cube IDs or names. When omitted, exports all cubes.",
+                "markdownDescription": "Optional list of cube IDs or names. When omitted, exports all cubes."
+              }
+            },
             "additionalProperties": false
           }
         },
@@ -6226,6 +6456,13 @@
       "title": "Hytale Attachments System",
       "description": "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
       "status": "experimental",
+      "arguments": null
+    },
+    {
+      "name": "texture_uv_workflow",
+      "title": "Per-Face UV Texture Workflow",
+      "description": "Guide for per-face UV workflows: project setup, placing cubes with face rects, exporting UV layouts with get_uv_layout, and painting custom texture atlases.",
+      "status": "stable",
       "arguments": null
     }
   ],

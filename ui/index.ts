@@ -3,6 +3,11 @@ import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
 import { sessionManager, type Session } from "@/lib/sessions";
+import {
+  serverState,
+  getMcpServerKey,
+  type McpServerState,
+} from "@/lib/serverState";
 import { openToolTestDialog } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
 import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
@@ -13,6 +18,7 @@ import template from "@/ui/panel.html";
 
 let panel: Panel | undefined;
 let unsubscribe: (() => void) | undefined;
+let unsubscribeServer: (() => void) | undefined;
 let overrideListener: (() => void) | undefined;
 
 export function uiSetup({
@@ -53,6 +59,19 @@ export function uiSetup({
           vm.server.connected = sessions.length > 0;
         });
 
+        unsubscribeServer = serverState.subscribe((runtime: McpServerState) => {
+          vm.server.status = runtime.status;
+          vm.server.requestedPort = runtime.requestedPort;
+          vm.server.port = runtime.port;
+          vm.server.endpoint = runtime.endpoint;
+          vm.server.url = runtime.url ?? "";
+          vm.server.autoPort = runtime.autoPort;
+          vm.server.fallbackUsed = runtime.fallbackUsed;
+          vm.server.errorMessage = runtime.errorMessage ?? "";
+          vm.server.projectName = runtime.projectName ?? "";
+          vm.server.projectUuid = runtime.projectUuid ?? "";
+        });
+
         // Listen for override changes to refresh badge state
         const handler = () => vm.$forceUpdate();
         document.addEventListener(PROMPT_OVERRIDE_CHANGED, handler);
@@ -62,6 +81,10 @@ export function uiSetup({
         if (unsubscribe) {
           unsubscribe();
           unsubscribe = undefined;
+        }
+        if (unsubscribeServer) {
+          unsubscribeServer();
+          unsubscribeServer = undefined;
         }
         if (overrideListener) {
           overrideListener();
@@ -74,6 +97,16 @@ export function uiSetup({
           connected: false,
           name: "Blockbench MCP",
           version: VERSION,
+          status: "starting" as McpServerState["status"],
+          requestedPort: 3000,
+          port: undefined as number | undefined,
+          endpoint: "/bb-mcp",
+          url: "",
+          autoPort: true,
+          fallbackUsed: false,
+          errorMessage: "",
+          projectName: "",
+          projectUuid: "",
         },
         tools: Object.values(tools).map((tool) => ({
           name: tool.name,
@@ -193,6 +226,84 @@ export function uiSetup({
             // @ts-ignore - Vue component context
             this.promptsFilter.search = "";
           }
+        },
+        serverStatusLabel(): string {
+          // @ts-ignore - Vue component context
+          const status = this.server.status;
+          const keyMap: Record<string, string> = {
+            starting: "mcp.server.status_starting",
+            listening: "mcp.server.status_listening",
+            error: "mcp.server.status_error",
+            stopped: "mcp.server.status_stopped",
+          };
+          return tl(keyMap[status] ?? "mcp.server.status_starting");
+        },
+        serverKey(): string {
+          // @ts-ignore - Vue component context
+          const { server } = this;
+          return getMcpServerKey(
+            server.projectName || null,
+            server.port ?? server.requestedPort
+          );
+        },
+        async copyText(text: string): Promise<void> {
+          try {
+            await navigator.clipboard.writeText(text);
+            Blockbench.showQuickMessage(tl("mcp.server.copied"), 1500);
+          } catch {
+            Blockbench.showQuickMessage(tl("mcp.dialog.copy_failed"), 2000);
+          }
+        },
+        copyUrl(): Promise<void> {
+          // @ts-ignore - Vue component context
+          return this.copyText(this.server.url);
+        },
+        getCodexSnippet(): string {
+          // @ts-ignore - Vue component context
+          const { server } = this;
+          const key = this.serverKey();
+          return `[mcp_servers.${key}]\nurl = "${server.url}"`;
+        },
+        getCursorSnippet(): string {
+          // @ts-ignore - Vue component context
+          const { server } = this;
+          const key = this.serverKey();
+          return JSON.stringify(
+            { mcpServers: { [key]: { url: server.url } } },
+            null,
+            2
+          );
+        },
+        getVSCodeSnippet(): string {
+          return this.getCursorSnippet();
+        },
+        getClaudeDesktopSnippet(): string {
+          // @ts-ignore - Vue component context
+          const { server } = this;
+          const key = this.serverKey();
+          return JSON.stringify(
+            {
+              mcpServers: {
+                [key]: {
+                  command: "npx",
+                  args: ["-y", "mcp-remote", server.url],
+                },
+              },
+            },
+            null,
+            2
+          );
+        },
+        copySnippet(
+          kind: "codex" | "cursor" | "vscode" | "claude"
+        ): Promise<void> {
+          const getters: Record<string, () => string> = {
+            codex: () => this.getCodexSnippet(),
+            cursor: () => this.getCursorSnippet(),
+            vscode: () => this.getVSCodeSnippet(),
+            claude: () => this.getClaudeDesktopSnippet(),
+          };
+          return this.copyText(getters[kind]());
         },
       },
       name: "mcp_panel",

@@ -14,6 +14,27 @@
     <details name="mcp_panel">
         <summary>{{tl('mcp.panel.server')}}</summary>
         <dl>
+            <dt>{{tl('mcp.server.status')}}</dt>
+            <dd :class="{ 'server-error': server.status === 'error' }">{{serverStatusLabel()}}</dd>
+            <dt>{{tl('mcp.server.active_url')}}</dt>
+            <dd class="server-url-row">
+                <code>{{server.url || '—'}}</code>
+                <button v-if="server.url" class="copy-button" @click="copyUrl()" :title="tl('mcp.server.copy_url')">
+                    <i class="material-icons">content_copy</i>
+                </button>
+            </dd>
+            <dt>{{tl('mcp.server.requested_port')}}</dt>
+            <dd>{{server.requestedPort}}</dd>
+            <dt>{{tl('mcp.server.active_port')}}</dt>
+            <dd>{{server.port ?? '—'}}</dd>
+            <dt>{{tl('mcp.server.endpoint')}}</dt>
+            <dd>{{server.endpoint}}</dd>
+            <dt>{{tl('mcp.server.auto_port')}}</dt>
+            <dd>{{server.autoPort ? tl('mcp.server.yes') : tl('mcp.server.no')}}</dd>
+            <dt v-if="server.fallbackUsed">{{tl('mcp.server.fallback')}}</dt>
+            <dd v-if="server.fallbackUsed" class="server-warning">{{tl('mcp.status.fallback_tooltip', [server.requestedPort, server.port])}}</dd>
+            <dt>{{tl('mcp.server.project')}}</dt>
+            <dd>{{server.projectName || '—'}}</dd>
             <dt>{{tl('mcp.server.name')}}</dt>
             <dd>{{server.name}}</dd>
             <dt>{{tl('mcp.server.version')}}</dt>
@@ -23,6 +44,14 @@
             <dt>{{tl('mcp.server.connected_clients')}}</dt>
             <dd>{{sessions.length}}</dd>
         </dl>
+        <p v-if="server.errorMessage" class="server-error">{{server.errorMessage}}</p>
+        <div v-if="server.url" class="snippet-actions">
+            <p class="snippet-hint">{{tl('mcp.server.snippet_hint')}}</p>
+            <button class="copy-button" @click="copySnippet('codex')">{{tl('mcp.server.copy_codex')}}</button>
+            <button class="copy-button" @click="copySnippet('cursor')">{{tl('mcp.server.copy_cursor')}}</button>
+            <button class="copy-button" @click="copySnippet('vscode')">{{tl('mcp.server.copy_vscode')}}</button>
+            <button class="copy-button" @click="copySnippet('claude')">{{tl('mcp.server.copy_claude')}}</button>
+        </div>
     </details>
     <details name="mcp_panel" @toggle="onToolsToggle">
         <summary>{{tl('mcp.panel.tools')}} ({{filteredTools.length}}/{{tools.length}})</summary>

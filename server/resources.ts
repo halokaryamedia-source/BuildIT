@@ -47,6 +47,7 @@ createResource("projects", {
       format: project.format?.id ?? null,
       formatName: project.format?.name ?? null,
       boxUv: project.box_uv,
+      uvMode: project.box_uv ? "box" : "per_face",
       textureWidth: project.texture_width,
       textureHeight: project.texture_height,
       savePath: project.save_path || null,

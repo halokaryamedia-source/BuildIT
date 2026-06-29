@@ -463,6 +463,16 @@ export function registerElementTools() {
           color: cube.color,
           visibility: cube.visibility,
         }).init();
+        Object.entries(cube.faces).forEach(([key, face]) => {
+          dupe.faces[key].extend({
+            uv: [...face.uv],
+            texture: face.texture,
+            rotation: face.rotation,
+          });
+        });
+        if (cube.box_uv) {
+          dupe.uv_offset = [...cube.uv_offset];
+        }
         dupe.addTo(parent);
         return dupe;
       }

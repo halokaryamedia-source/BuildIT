@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { cubeSchema } from "@/lib/zodObjects";
+import { cubeSchema, faceUvRectSchema } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
 import { getProjectTexture } from "@/lib/util";
 
@@ -95,13 +95,17 @@ export const modifyCubeParameters = z.object({
     .boolean()
     .optional()
     .describe("Whether the cube is visible or not."),
+  faces: z
+    .array(faceUvRectSchema)
+    .optional()
+    .describe("Per-face UV rectangles to apply. Disables auto UV on the cube."),
 });
 
 export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places a cube of the given size at the specified position. Texture and group are optional.",
+      "Places a cube of the given size at the specified position. Texture and group are optional. For custom texture atlases, create the project with box_uv: false and pass explicit face UV rects.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -152,6 +156,12 @@ createTool(cubeToolDocs[0].name, {
       (Array.isArray(faces) &&
         faces.every((face) => typeof face === "string"));
 
+    const hasExplicitFaceUv =
+      Array.isArray(faces) &&
+      faces.length > 0 &&
+      typeof faces[0] === "object" &&
+      "uv" in faces[0];
+
     const cubes = elements.map((element: Cube) => {
       const cube = new Cube({
         autouv: autouv ? 1 : 0,
@@ -164,18 +174,22 @@ createTool(cubeToolDocs[0].name, {
 
       cube.addTo(outlinerGroup);
 
-      if (!autouv && Array.isArray(faces)) {
-        faces.forEach(({ face, uv }) => {
-          cube.faces[face].extend({
-            uv: uv as [number, number, number, number],
-          });
-        });
+      if (hasExplicitFaceUv) {
+        (faces as Array<{ face: keyof Cube["faces"]; uv: number[] }>).forEach(
+          ({ face, uv }) => {
+            cube.faces[face].extend({
+              uv: uv as [number, number, number, number],
+            });
+          }
+        );
       } else {
         cube.applyTexture(
           projectTexture,
           faces !== false ? faces : undefined
         );
-        cube.mapAutoUV();
+        if (autouv) {
+          cube.mapAutoUV();
+        }
       }
 
       return cube;
@@ -208,6 +222,7 @@ createTool(cubeToolDocs[1].name, {
     inflate,
     color,
     visibility,
+    faces: faceRects,
   }) {
     let cubes: Cube[];
     if (id) {
@@ -249,6 +264,17 @@ createTool(cubeToolDocs[1].name, {
         visibility: visibility ?? cube.visibility,
         shade: shade ?? cube.shade,
       });
+
+      if (faceRects && faceRects.length > 0) {
+        faceRects.forEach(({ face, uv, texture, rotation }) => {
+          cube.faces[face].extend({
+            uv: uv as [number, number, number, number],
+            ...(texture !== undefined ? { texture } : {}),
+            ...(rotation !== undefined ? { rotation: Number(rotation) } : {}),
+          });
+        });
+        cube.autouv = 0;
+      }
     });
 
     Undo.finishEdit("Agent modified cubes");

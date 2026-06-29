@@ -8,8 +8,22 @@ import {
 } from '@/lib/factories'
 import { createServer as createMcpServer } from '@/server/server'
 import { sessionManager, type SessionConfig } from '@/lib/sessions'
+import {
+  serverState,
+  type McpServerListenInfo
+} from '@/lib/serverState'
 
 export type { NetServer }
+export type { McpServerListenInfo }
+
+const DEFAULT_PORT_SCAN_LIMIT = 20
+
+function getProjectSnapshot (): { name: string | null; uuid: string | null } {
+  if (typeof Project !== 'undefined' && Project) {
+    return { name: Project.name ?? null, uuid: Project.uuid ?? null }
+  }
+  return { name: null, uuid: null }
+}
 
 /**
  * Keep-alive configuration. Layered approach — TCP, HTTP, SSE, and MCP-level
@@ -67,6 +81,15 @@ function getStatusText (status: number): string {
   return texts[status] || 'Unknown'
 }
 
+/** CORS headers for MCP clients (Cursor, Codex, browser-based inspectors). */
+function applyCors (headers: Record<string, string>): void {
+  headers['access-control-allow-origin'] = '*'
+  headers['access-control-allow-methods'] = 'GET, POST, DELETE, OPTIONS'
+  headers['access-control-allow-headers'] =
+    'content-type, mcp-session-id, mcp-protocol-version, authorization, accept'
+  headers['access-control-expose-headers'] = 'Mcp-Session-Id'
+}
+
 export default function createNetServer (
   {
     createServer
@@ -75,17 +98,29 @@ export default function createNetServer (
     port,
     endpoint,
     keepAlive = DEFAULT_KEEP_ALIVE,
-    sessionConfig
+    sessionConfig,
+    autoPort = true,
+    portScanLimit = DEFAULT_PORT_SCAN_LIMIT,
+    onListening,
+    onListenError
   }: {
     endpoint: string
     port: number
     host?: string
     keepAlive?: Partial<KeepAliveConfig>
     sessionConfig?: Partial<SessionConfig>
+    autoPort?: boolean
+    portScanLimit?: number
+    onListening?: (info: McpServerListenInfo) => void
+    onListenError?: (error: Error) => void
   }
 ): [NetServer, SessionTransports] {
   const sessionTransports: SessionTransports = new Map()
   const keepAliveConfig = { ...DEFAULT_KEEP_ALIVE, ...keepAlive }
+
+  const requestedPort = port
+  let activePort = requestedPort
+  let listenAttempt = 0
 
   // Apply session configuration if provided
   if (sessionConfig) {
@@ -221,7 +256,7 @@ export default function createNetServer (
         buffer = buffer.subarray(requestEnd)
 
         // Build Web Standard Request
-        const url = `http://localhost:${port}${path}`
+        const url = `http://localhost:${activePort}${path}`
         const webHeaders = new Headers()
         for (const [key, value] of Object.entries(headers)) {
           webHeaders.set(key, value)
@@ -239,12 +274,39 @@ export default function createNetServer (
 
         const webRequest = new Request(url, requestInit)
 
-        // Health check endpoint for monitoring
         const pathWithoutQuery = path.split('?')[0]
+
+        // CORS preflight — required by browser-based MCP clients
+        if (method === 'OPTIONS') {
+          sendResponse(
+            socket,
+            204,
+            {},
+            '',
+            headers['connection']
+          )
+          continue
+        }
+
+        // Health check endpoint for monitoring
         if (pathWithoutQuery === '/health' || pathWithoutQuery === endpoint + '/health') {
+          const project = getProjectSnapshot()
+          const runtime = serverState.get()
           const healthStatus = {
             status: 'ok',
             timestamp: new Date().toISOString(),
+            server: {
+              requestedPort,
+              port: activePort,
+              endpoint,
+              url: `http://localhost:${activePort}${endpoint}`,
+              autoPort,
+              fallbackUsed: activePort !== requestedPort
+            },
+            project: {
+              name: project.name ?? runtime.projectName ?? null,
+              uuid: project.uuid ?? runtime.projectUuid ?? null
+            },
             sessions: {
               active: sessionManager.getCount(),
               config: sessionManager.getConfig()
@@ -267,6 +329,19 @@ export default function createNetServer (
             200,
             { 'content-type': 'application/json' },
             JSON.stringify({ ready: true }),
+            headers['connection']
+          )
+          continue
+        }
+
+        // OAuth discovery probes (Codex CLI) — return typed JSON so clients
+        // don't abort on missing Content-Type before initialize.
+        if (pathWithoutQuery.startsWith('/.well-known/')) {
+          sendResponse(
+            socket,
+            404,
+            { 'content-type': 'application/json' },
+            JSON.stringify({ error: 'no_auth_required' }),
             headers['connection']
           )
           continue
@@ -491,6 +566,7 @@ export default function createNetServer (
       // Ensure proper SSE headers
       headers['cache-control'] = 'no-cache'
       headers['connection'] = 'keep-alive'
+      applyCors(headers)
 
       for (const [key, value] of Object.entries(headers)) {
         response += `${key}: ${value}\r\n`
@@ -536,6 +612,8 @@ export default function createNetServer (
         headers['date'] = new Date().toUTCString()
       }
 
+      applyCors(headers)
+
       for (const [key, value] of Object.entries(headers)) {
         response += `${key}: ${value}\r\n`
       }
@@ -557,14 +635,71 @@ export default function createNetServer (
     }
   })
 
-  httpServer.listen(port, () => {
-    console.log(`[MCP] Server listening on http://localhost:${port}${endpoint}`)
-  })
+  function buildListenInfo (listenPort: number): McpServerListenInfo {
+    const project = getProjectSnapshot()
+    return {
+      requestedPort,
+      port: listenPort,
+      endpoint,
+      url: `http://localhost:${listenPort}${endpoint}`,
+      autoPort,
+      fallbackUsed: listenPort !== requestedPort,
+      projectName: project.name,
+      projectUuid: project.uuid
+    }
+  }
 
-  httpServer.on('error', (err: Error) => {
-    console.error('[MCP] Server error:', err)
-    Blockbench.showQuickMessage(`MCP Server error: ${err.message}`, 3000)
-  })
+  function tryListen (nextPort: number): void {
+    activePort = nextPort
+
+    const onListeningOnce = (): void => {
+      httpServer.removeListener('error', onListenErrorOnce)
+      const info = buildListenInfo(activePort)
+      if (info.fallbackUsed) {
+        console.log(
+          `[MCP] Port ${requestedPort} unavailable; listening on ${info.url}`
+        )
+      } else {
+        console.log(`[MCP] Server listening on ${info.url}`)
+      }
+      onListening?.(info)
+    }
+
+    const onListenErrorOnce = (err: NodeJS.ErrnoException): void => {
+      httpServer.removeListener('listening', onListeningOnce)
+
+      if (
+        err.code === 'EADDRINUSE' &&
+        autoPort &&
+        listenAttempt < portScanLimit - 1
+      ) {
+        listenAttempt++
+        const retryPort = requestedPort + listenAttempt
+        if (retryPort > 65535) {
+          onListenError?.(new Error('No available ports in scan range.'))
+          Blockbench.showQuickMessage(
+            'MCP Server: all scanned ports are in use',
+            4000
+          )
+          return
+        }
+        httpServer.close(() => {
+          tryListen(retryPort)
+        })
+        return
+      }
+
+      console.error('[MCP] Server error:', err)
+      onListenError?.(err)
+      Blockbench.showQuickMessage(`MCP Server error: ${err.message}`, 4000)
+    }
+
+    httpServer.once('listening', onListeningOnce)
+    httpServer.once('error', onListenErrorOnce)
+    httpServer.listen(nextPort)
+  }
+
+  tryListen(requestedPort)
 
   return [httpServer, sessionTransports]
 }

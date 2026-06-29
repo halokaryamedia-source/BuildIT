@@ -18,8 +18,8 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(106)</span></a>
-        <a href="#prompts" class="nav-link">Prompts <span class="count">(6)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(109)</span></a>
+        <a href="#prompts" class="nav-link">Prompts <span class="count">(7)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(12)</span></a>
       </div>
 
@@ -36,7 +36,8 @@
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
         <a href="#cat-mesh-editing" class="nav-link">Mesh Editing <span class="count">(11)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
-        <a href="#cat-project" class="nav-link">Project <span class="count">(2)</span></a>
+        <a href="#cat-project" class="nav-link">Project <span class="count">(3)</span></a>
+        <a href="#cat-cube-uv" class="nav-link">Cube UV <span class="count">(2)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(13)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
         <a href="#cat-uv-mapping" class="nav-link">UV Mapping <span class="count">(3)</span></a>
@@ -49,8 +50,8 @@
         <h1>Blockbench MCP Plugin</h1>
         <p class="subtitle">API Reference — v1.6.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>106</strong> tools (39 stable, 67 experimental)</a>
-          <a href="#prompts"><strong>6</strong> prompts</a>
+          <a href="#tools"><strong>109</strong> tools (42 stable, 67 experimental)</a>
+          <a href="#prompts"><strong>7</strong> prompts</a>
           <a href="#resources"><strong>12</strong> resources</a>
         </nav>
       </header>
@@ -77,7 +78,7 @@
         </div>
       </div>
       <p class="card-title">Place Cube</p>
-      <p class="card-desc">Places a cube of the given size at the specified position. Texture and group are optional.</p>
+      <p class="card-desc">Places a cube of the given size at the specified position. Texture and group are optional. For custom texture atlases, create the project with box_uv: false and pass explicit face UV rects.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -197,6 +198,11 @@
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Whether the cube is visible or not.</td>
+    </tr><tr>
+      <td class="col-name">faces</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Per-face UV rectangles to apply. Disables auto UV on the cube.</td>
     </tr></tbody>
     </table>
       </div>
@@ -3123,7 +3129,7 @@
         </div>
       </div>
       <p class="card-title">Create Project</p>
-      <p class="card-desc">Creates a new project with the given name and project type.</p>
+      <p class="card-desc">Creates a new project with the given name and project type. For custom texture atlases, set box_uv to false (per-face UV) and specify texture_width/height.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3144,6 +3150,65 @@
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Project format ID from Blockbench's Formats registry. <span class="param-meta">(default: <code>&quot;bedrock_block&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">box_uv</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Default UV mode. false = per-face UV (recommended for custom texture atlases). When omitted, uses the format default.</td>
+    </tr><tr>
+      <td class="col-name">texture_width</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture atlas width in pixels. <span class="param-meta">[min: 1, max: 4096]</span></td>
+    </tr><tr>
+      <td class="col-name">texture_height</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture atlas height in pixels. <span class="param-meta">[min: 1, max: 4096]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-configure_project" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">configure_project</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Configure Project</p>
+      <p class="card-desc">Updates project settings: name, UV mode (box vs per-face), and texture resolution.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">name</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Rename the project.</td>
+    </tr><tr>
+      <td class="col-name">box_uv</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Switch UV mode. false = per-face UV, true = box UV. Requires format support.</td>
+    </tr><tr>
+      <td class="col-name">texture_width</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture atlas width in pixels. <span class="param-meta">[min: 1, max: 4096]</span></td>
+    </tr><tr>
+      <td class="col-name">texture_height</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture atlas height in pixels. <span class="param-meta">[min: 1, max: 4096]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3157,9 +3222,75 @@
         </div>
       </div>
       <p class="card-title">Get Project Info</p>
-      <p class="card-desc">Returns read-only project orientation: format id and display name, project name/UUID, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.</p>
+      <p class="card-desc">Returns read-only project orientation: format id and display name, project name/UUID, UV mode, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+        </section>
+<section id="cat-cube-uv" class="category-section">
+          <h3 class="category-title">Cube UV</h3>
+          <div id="tool-set_cube_face_uv" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">set_cube_face_uv</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Set Cube Face UV</p>
+      <p class="card-desc">Sets per-face UV rectangles on one or more cubes. Disables auto UV on affected cubes.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Cube ID or name. Defaults to all selected cubes if omitted.</td>
+    </tr><tr>
+      <td class="col-name">faces</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Face UV rectangles to apply. <span class="param-meta">[minItems: 1]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-get_uv_layout" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">get_uv_layout</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+      <p class="card-title">Get UV Layout</p>
+      <p class="card-desc">Returns all cube face UV rectangles and texture references for the active project. Use before painting textures.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">cube_ids</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional list of cube IDs or names. When omitted, exports all cubes.</td>
+    </tr></tbody>
+    </table>
       </div>
     </div>
         </section>
@@ -4381,6 +4512,15 @@
       <p class="card-desc">Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.</p>
       <div class="overflow-x"><p class="empty-params">No arguments</p></div>
     </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">texture_uv_workflow</h3>
+        <div class="card-badges"><span class="badge badge-stable">stable</span></div>
+      </div>
+      <p class="card-title">Per-Face UV Texture Workflow</p>
+      <p class="card-desc">Guide for per-face UV workflows: project setup, placing cubes with face rects, exporting UV layouts with get_uv_layout, and painting custom texture atlases.</p>
+      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
+    </div>
       </section>
 
       <section id="resources" class="doc-section">
@@ -4484,7 +4624,7 @@
       </section>
 
       <footer class="page-footer">
-        Generated 2026-05-22T14:18:59.107Z from Zod schemas
+        Generated 2026-06-29T09:51:18.918Z from Zod schemas
       </footer>
     </main>
   </div>

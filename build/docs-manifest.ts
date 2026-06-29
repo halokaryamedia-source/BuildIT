@@ -9,6 +9,7 @@ import { importToolDocs } from "../server/tools/import";
 import { meshToolDocs } from "../server/tools/mesh";
 import { paintToolDocs } from "../server/tools/paint";
 import { projectToolDocs } from "../server/tools/project";
+import { cubeUvToolDocs } from "../server/tools/cubeUv";
 import { textureToolDocs } from "../server/tools/texture";
 import { armatureToolDocs } from "../server/tools/armature";
 import { animationToolDocs } from "../server/tools/animation";
@@ -37,6 +38,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Mesh Editing", tools: meshToolDocs },
   { category: "Paint Tools", tools: paintToolDocs },
   { category: "Project", tools: projectToolDocs },
+  { category: "Cube UV", tools: cubeUvToolDocs },
   { category: "Textures", tools: textureToolDocs },
   { category: "UI Interaction", tools: uiToolDocs },
   { category: "UV Mapping", tools: uvToolDocs },
@@ -107,6 +109,13 @@ export const promptDocs: PromptSpec[] = [
     description:
       "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
     status: "experimental",
+  },
+  {
+    name: "texture_uv_workflow",
+    title: "Per-Face UV Texture Workflow",
+    description:
+      "Guide for per-face UV workflows: project setup, placing cubes with face rects, exporting UV layouts with get_uv_layout, and painting custom texture atlases.",
+    status: "stable",
   },
 ];
 

@@ -15,6 +15,7 @@ import { registerProjectTools } from "./tools/project";
 import { registerTextureTools } from "./tools/texture";
 import { registerUITools } from "./tools/ui";
 import { registerUVTools } from "./tools/uv";
+import { registerCubeUvTools } from "./tools/cubeUv";
 import { registerMaterialInstanceTools } from "./tools/material-instances";
 import { registerArmatureTools } from "./tools/armature";
 import { registerHistoryTools } from "./tools/history";
@@ -45,6 +46,7 @@ const registrationFunctions = [
   registerTextureTools,
   registerUITools,
   registerUVTools,
+  registerCubeUvTools,
   registerValidatorResources,
 ];
 

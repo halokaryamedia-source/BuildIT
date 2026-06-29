@@ -12,8 +12,27 @@ Before configuring the MCP connection, please confirm:
 
 2. **What are your server settings?**
    - Default: `http://localhost:3000/bb-mcp`
-   - If the port number and endpoint are something other than the default values (`:3000/bb-mcp`), please specify
-   - Settings can be changed in Blockbench: Settings > General > MCP Server Port / MCP Server Endpoint
+   - If the port number and endpoint are something other than the default values (`:3000/bb-mcp`), check the MCP panel in Blockbench for the active URL
+   - Settings can be changed in Blockbench: Settings > General > MCP Server Port / MCP Server Endpoint / Auto-select Available Port
+
+## Multiple Blockbench Windows
+
+When multiple Blockbench windows are open, each gets its own MCP port (3000, 3001, 3002, …) if **Auto-select Available Port** is enabled (default).
+
+Copy the exact URL from the MCP panel in each window. Each window needs a **unique** `mcpServers` key:
+
+```json
+{
+  "mcpServers": {
+    "blockbench_sofa": { "url": "http://localhost:3000/bb-mcp" },
+    "blockbench_chair": { "url": "http://localhost:3001/bb-mcp" }
+  }
+}
+```
+
+## Per-Face UV
+
+For custom texture atlases, create projects with per-face UV (`box_uv: false`). Use the `texture_uv_workflow` MCP prompt and tools `get_uv_layout`, `set_cube_face_uv`, and `configure_project`.
 
 ## Configuration
 
@@ -67,6 +86,39 @@ Add to `claude_desktop_config.json`:
 
 ```bash
 claude mcp add blockbench --transport http http://localhost:{PORT}/{ENDPOINT}
+```
+
+### Cursor
+
+Add to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "blockbench": {
+      "url": "http://localhost:{PORT}/{ENDPOINT}"
+    }
+  }
+}
+```
+
+### Codex
+
+Add to `~/.codex/config.toml` (or project `.codex/config.toml` in trusted projects).
+
+Direct Streamable HTTP:
+
+```toml
+[mcp_servers.blockbench]
+url = "http://localhost:{PORT}/{ENDPOINT}"
+```
+
+If direct HTTP fails to list tools, use the stdio bridge (recommended fallback):
+
+```toml
+[mcp_servers.blockbench]
+command = "npx"
+args = ["mcp-remote", "http://localhost:{PORT}/{ENDPOINT}"]
 ```
 
 ### Antigravity
