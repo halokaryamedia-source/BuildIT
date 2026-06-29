@@ -7,7 +7,11 @@
     "MCP"
   ],
   "license": "GPL-3.0-only",
-  "author": "Jason J. Gardner",
+  "author": "achmadawdi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/achmadawdi/mcp-blockbench.git"
+  },
   "type": "module",
   "main": "dist/mcp.js",
   "scripts": {

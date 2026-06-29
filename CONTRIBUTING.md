@@ -2,7 +2,7 @@
 
 Thank you for improving the Blockbench MCP plugin. This project uses TypeScript and Bun. Please keep changes focused, documented, and easy to verify inside Blockbench.
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/jasonjgardner/blockbench-mcp-plugin)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/achmadawdi/mcp-blockbench)
 
 ## Prerequisites
 - Bun installed: https://bun.sh/

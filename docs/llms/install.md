@@ -1,4 +1,4 @@
 ## Installation
 
-- [Stable](https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js)
-- [Latest](https://jasonjgardner.github.io/blockbench-mcp-plugin/nightly/mcp.js)
+- [Stable](https://achmadawdi.github.io/mcp-blockbench/mcp.js)
+- [Latest](https://achmadawdi.github.io/mcp-blockbench/nightly/mcp.js)

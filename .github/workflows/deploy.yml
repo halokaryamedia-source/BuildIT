@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
     tags: [v*]
   pull_request:
     types: [opened, synchronize, reopened, closed]
@@ -202,7 +202,7 @@ jobs:
         with:
           script: |
             const deployPath = '${{ needs.build.outputs.deploy_path }}';
-            const baseUrl = 'https://jasonjgardner.github.io/blockbench-mcp-plugin';
+            const baseUrl = 'https://achmadawdi.github.io/mcp-blockbench';
 
             const body = [
               '## Preview Deployment',

@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/ab1b7e63-b6f0-4d5b-85ab-79d328de31db
 
 Open the desktop version of Blockbench, go to File > Plugins and click the "Load Plugin from URL" and paste in this URL:
 
-**[https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js](https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js)**
+**[https://achmadawdi.github.io/mcp-blockbench/mcp.js](https://achmadawdi.github.io/mcp-blockbench/mcp.js)**
 
 ## Model Context Protocol Server
 
@@ -192,11 +192,13 @@ opencode mcp add
 
 ## Usage
 
-[See sample project](https://github.com/jasonjgardner/blockbench-mcp-project) for prompt examples.
+See the [docs](https://achmadawdi.github.io/mcp-blockbench/docs/) for tool and prompt reference.
 
-### [Skills](https://skills.sh/jasonjgardner/blockbench-mcp-project)
+Use Agent Skills in `.agents/skills/` to orchestrate tool usage.
 
-Use Agent Skills to orchestrate tool usage.
+## Attribution
+
+Forked from [blockbench-mcp-plugin](https://github.com/jasonjgardner/blockbench-mcp-plugin) by Jason J. Gardner (GPL-3.0). Maintained independently at [achmadawdi/mcp-blockbench](https://github.com/achmadawdi/mcp-blockbench).
 
 ## Plugin Development
 

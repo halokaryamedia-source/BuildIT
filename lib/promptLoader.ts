@@ -16,7 +16,7 @@ export interface PromptManifest {
 // ============================================================================
 
 const CDN_BASE_URL =
-  "https://cdn.jsdelivr.net/gh/jasonjgardner/blockbench-mcp-plugin";
+  "https://cdn.jsdelivr.net/gh/achmadawdi/mcp-blockbench";
 const MANIFEST_PATH = "prompts/manifest.json";
 const FETCH_TIMEOUT_MS = 10_000;
 

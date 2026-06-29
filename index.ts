@@ -1,7 +1,6 @@
 /**
- * @author jasonjgardner
- * @discord jason.gardner
- * @github https://github.com/jasonjgardner
+ * @author achmadawdi
+ * @github https://github.com/achmadawdi/mcp-blockbench
  */
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
@@ -29,7 +28,7 @@ let sessionTransports: SessionTransports | null = null;
 BBPlugin.register("mcp", {
   version: VERSION,
   title: "MCP Server",
-  author: "Jason J. Gardner",
+  author: "achmadawdi",
   description: "Create an MCP server inside Blockbench.",
   tags: ["MCP", "AI"],
   icon: getIcon(),
