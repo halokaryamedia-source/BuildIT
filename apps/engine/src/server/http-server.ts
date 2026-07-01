@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { saveArtifactIndex } from "../artifacts/artifact-index-store.js";
-import { saveJobBundle } from "../artifacts/job-bundle-store.js";
+import { saveStoredDataManifest } from "../artifacts/stored-data-manifest-store.js";
 import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
 import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
@@ -86,9 +86,9 @@ function sendNotFound(response: ServerResponse): void {
 
 async function refreshArtifactManifests(outputDir: string, jobId: string) {
   await saveArtifactIndex(outputDir, jobId);
-  const jobBundle = await saveJobBundle(outputDir, jobId);
+  const storedDataManifest = await saveStoredDataManifest(outputDir, jobId);
   const artifactIndex = await saveArtifactIndex(outputDir, jobId);
-  return { artifactIndex, jobBundle };
+  return { artifactIndex, storedDataManifest };
 }
 
 export function startHttpServer(runtime: AppRuntime, port: number): void {
@@ -165,9 +165,9 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
-        const { artifactIndex, jobBundle } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
+        const { artifactIndex, storedDataManifest } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
         const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, jobId);
-        sendJson(response, 200, { artifacts, artifactIndex, jobBundle });
+        sendJson(response, 200, { artifacts, artifactIndex, storedDataManifest });
         return;
       }
 
@@ -179,7 +179,7 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
-        if (artifactMatch[2] === "artifact_index" || artifactMatch[2] === "job_bundle") {
+        if (artifactMatch[2] === "artifact_index" || artifactMatch[2] === "stored_data_manifest") {
           await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
         }
 
