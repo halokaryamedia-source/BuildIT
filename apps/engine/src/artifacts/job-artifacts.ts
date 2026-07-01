@@ -9,6 +9,7 @@ export const jobArtifactNames = [
   "mcp_actions",
   "mcp_capabilities",
   "blockbench_preview",
+  "blockbench_export",
   "mcp_execution_report"
 ] as const;
 
