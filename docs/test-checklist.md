@@ -32,6 +32,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `stored_data_manifest.json` appears in the artifact list.
 - Confirm `mcp_tool_schema.json` appears in the artifact list after MCP capability discovery.
 - Confirm `mcp_tool_name_mapping.json` appears in the artifact list after MCP capability discovery.
+- Confirm `mcp_argument_shape_adaptation.json` appears in the artifact list before MCP schema matching.
 - Confirm `mcp_action_schema_match.json` appears in the artifact list before MCP execution.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
@@ -64,6 +65,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the artifact JSON viewer displays formatted JSON.
 - Confirm `mcp_tool_schema.json` displays the captured Blockbench MCP tool definitions.
 - Confirm `mcp_tool_name_mapping.json` displays canonical and resolved tool names.
+- Confirm `mcp_argument_shape_adaptation.json` displays original and adapted MCP arguments.
 - Confirm `mcp_action_schema_match.json` displays original and normalized MCP actions.
 - Confirm `blockbench_preview.json` displays an image when `imageDataUrl` is present.
 - Confirm the logs mention reference image analysis when an image is selected.
@@ -72,6 +74,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the logs mention MCP action list creation.
 - Confirm the logs mention MCP tool schema reporting.
 - Confirm the logs mention MCP tool name mapping.
+- Confirm the logs mention MCP argument shape adaptation.
 - Confirm the logs mention MCP action schema matching.
 - Confirm the logs mention MCP capability reporting.
 - Confirm the logs mention MCP execution reporting after execution.
@@ -90,6 +93,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `outputs/jobs/<jobId>/mcp_tool_schema.json` is created after `tools/list` succeeds.
 - Confirm `outputs/jobs/<jobId>/mcp_tool_name_mapping.json` is created after tool name mapping.
 - Confirm `mcp_tool_name_mapping.json` includes available tools, canonical tools, resolved names, missing required tools, and missing optional tools.
+- Confirm `outputs/jobs/<jobId>/mcp_argument_shape_adaptation.json` is created after argument adaptation.
+- Confirm `mcp_argument_shape_adaptation.json` includes original actions, adapted actions, renamed arguments, warnings, and errors.
 - Confirm `outputs/jobs/<jobId>/mcp_action_schema_match.json` is created after MCP schema matching.
 - Confirm `mcp_action_schema_match.json` includes original actions, normalized actions, removed arguments, warnings, and errors.
 - Confirm `outputs/jobs/<jobId>/mcp_capabilities.json` is created before execution.
