@@ -37,6 +37,16 @@ interface JobArtifactSummary {
   name: string;
   fileName: string;
   available: boolean;
+  sizeBytes?: number;
+  updatedAt?: string;
+}
+
+interface ArtifactIndex {
+  jobId: string;
+  generatedAt: string;
+  artifactCount: number;
+  availableCount: number;
+  artifacts: JobArtifactSummary[];
 }
 
 interface JobArtifactContent extends JobArtifactSummary {
@@ -70,8 +80,8 @@ async function fetchHealth(): Promise<HealthState> {
 
 async function fetchJobArtifacts(jobId: string): Promise<JobArtifactSummary[]> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
-  const data = (await response.json()) as { artifacts: JobArtifactSummary[] };
-  return data.artifacts ?? [];
+  const data = (await response.json()) as { artifacts?: JobArtifactSummary[]; artifactIndex?: ArtifactIndex };
+  return data.artifactIndex?.artifacts ?? data.artifacts ?? [];
 }
 
 async function fetchJobArtifact(jobId: string, artifactName: string): Promise<JobArtifactContent> {
@@ -138,6 +148,13 @@ function formatJobTime(value: string | undefined): string {
   if (!value) return "Unknown time";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function formatBytes(value: number | undefined): string {
+  if (typeof value !== "number") return "pending";
+  if (value < 1024) return value + " B";
+  if (value < 1024 * 1024) return Math.round(value / 1024) + " KB";
+  return (value / 1024 / 1024).toFixed(1) + " MB";
 }
 
 function validateSelectedImage(file: File): void {
@@ -415,7 +432,14 @@ function App() {
               <ul>
                 {artifacts.map((artifact) => (
                   <li key={artifact.name} className={artifact.available ? "available" : "missing"}>
-                    <span>{artifact.fileName}</span>
+                    <span>
+                      <span>{artifact.fileName}</span>
+                      <small>
+                        {artifact.available
+                          ? formatBytes(artifact.sizeBytes) + " · " + formatJobTime(artifact.updatedAt)
+                          : "pending"}
+                      </small>
+                    </span>
                     <button disabled={!artifact.available} onClick={() => void openArtifact(artifact)}>
                       {artifact.available ? "View" : "Pending"}
                     </button>
