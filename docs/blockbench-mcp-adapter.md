@@ -19,17 +19,23 @@ The adapter is responsible for:
 
 ## Supported tool contract
 
-The current adapter contract uses these tool names:
+Required MCP tools:
 
 ```txt
 create_project
 add_group
 place_cube
 capture_screenshot
+```
+
+Optional MCP tools:
+
+```txt
 export_project
 ```
 
 The required tool list is exported as `requiredBlockbenchToolNames` and reused by MCP capability discovery.
+The optional tool list is exported as `optionalBlockbenchToolNames` and can be skipped at runtime when unavailable.
 
 If the Blockbench MCP plugin changes its tool names or argument schema, update `apps/engine/src/mcp/blockbench-tool-adapter.ts` instead of changing workflow or planning code.
 
@@ -44,6 +50,7 @@ outputs/jobs/<jobId>/mcp_capabilities.json
 ```
 
 When required tools are missing, the workflow stops before Blockbench MCP execution.
+When optional tools are missing, the workflow logs a skip and continues.
 
 ## Output
 
