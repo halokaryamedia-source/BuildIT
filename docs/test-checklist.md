@@ -2,6 +2,20 @@
 
 Use this checklist before merging a development slice into `V1`.
 
+## External Blockbench MCP plugin
+
+- Load the external Blockbench MCP plugin from `achmadawdi/mcp-blockbench`.
+- Confirm Blockbench desktop is running.
+- Confirm the MCP server is enabled in Blockbench settings.
+- Confirm the active endpoint is available, normally:
+
+```txt
+http://localhost:3000/bb-mcp
+```
+
+- If multiple Blockbench windows are open, copy the exact endpoint from the plugin panel.
+- Use `docs/blockbench-mcp-integration-checklist.md` for the full plugin compatibility check.
+
 ## Engine
 
 - Run `npm run dev:engine`.
