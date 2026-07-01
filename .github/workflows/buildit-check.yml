@@ -29,7 +29,19 @@ jobs:
         run: npm run check:engine
 
       - name: Typecheck desktop
-        run: npm run check:desktop
+        run: |
+          set +e
+          npm run check:desktop > desktop-check.log 2>&1
+          status=$?
+          cat desktop-check.log
+          exit $status
+
+      - name: Upload desktop typecheck log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-check-log
+          path: desktop-check.log
 
       - name: Build engine
         run: npm run build:engine
