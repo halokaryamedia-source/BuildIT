@@ -28,6 +28,7 @@ create_project
 add_group
 place_cube
 capture_screenshot
+export_project
 ```
 
 ## Job output
