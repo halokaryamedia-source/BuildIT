@@ -28,7 +28,7 @@ Response:
   "artifactIndex": {
     "jobId": "job_123",
     "generatedAt": "2026-01-01T00:00:00.000Z",
-    "artifactCount": 11,
+    "artifactCount": 13,
     "availableCount": 5,
     "artifacts": []
   },
@@ -60,6 +60,9 @@ image_analysis
 model_plan
 model_plan_validation
 mcp_actions
+mcp_tool_schema
+mcp_tool_name_mapping
+mcp_action_schema_match
 mcp_capabilities
 blockbench_preview
 blockbench_export
