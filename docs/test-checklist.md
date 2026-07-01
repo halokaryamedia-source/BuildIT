@@ -14,6 +14,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `mcpCapabilities.missingTools` is empty when the MCP server is compatible.
 - Confirm `mcpCapabilities.optionalTools` includes optional progressive enhancement tools.
 - Confirm `mcpCapabilities.missingOptionalTools` can include optional tools without making `valid` false.
+- Open `http://localhost:3987/api/jobs` after creating a job.
+- Confirm the job list includes memory jobs and persisted job snapshots.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
 - Confirm `job_snapshot.json` appears in the artifact list.
@@ -27,6 +29,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the project type selector only shows Bedrock Entity and Bedrock Block.
 - Confirm the helper text explains that Bedrock Block is a placeable Minecraft Bedrock custom block.
 - Confirm the sidebar shows main model, vision model, and MCP tool health.
+- Confirm the sidebar shows recent jobs.
+- Confirm clicking a recent job opens that job and its artifacts.
 - Confirm selecting a non-image file shows a validation message.
 - Confirm selecting an image larger than 10 MB shows a validation message.
 - Select Bedrock Entity and create a job.
