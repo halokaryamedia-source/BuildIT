@@ -19,13 +19,14 @@ Use this checklist before merging a development slice into `V1`.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
 - Confirm the artifact API returns `artifactIndex`.
-- Confirm the artifact API returns `jobBundle`.
+- Confirm the artifact API returns `storedDataManifest`.
 - Confirm `artifactIndex.artifacts` includes size and update metadata for available artifacts.
-- Confirm `jobBundle.files` groups files by role.
-- Confirm `jobBundle.ready` reflects missing required files.
+- Confirm `storedDataManifest.files` groups files by role.
+- Confirm `storedDataManifest.ready` reflects missing required files.
+- Confirm `storedDataManifest.openTargetPath` points to the job stored data folder.
 - Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm `artifact_index.json` appears in the artifact list.
-- Confirm `job_bundle.json` appears in the artifact list.
+- Confirm `stored_data_manifest.json` appears in the artifact list.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
 - Confirm reference images larger than 10 MB are rejected by the engine.
@@ -37,6 +38,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the helper text explains that Bedrock Block is a placeable Minecraft Bedrock custom block.
 - Confirm the sidebar shows main model, vision model, and MCP tool health.
 - Confirm the sidebar shows recent jobs.
+- Confirm the sidebar shows Stored Data Root when a job has artifacts.
 - Confirm clicking a recent job opens that job and its artifacts.
 - Confirm selecting a non-image file shows a validation message.
 - Confirm selecting an image larger than 10 MB shows a validation message.
@@ -66,7 +68,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm uploaded references are saved under `outputs/jobs/<jobId>/references/`.
 - Confirm `outputs/jobs/<jobId>/job_snapshot.json` is created and updated during progress.
 - Confirm `outputs/jobs/<jobId>/artifact_index.json` is created when artifact summaries are requested.
-- Confirm `outputs/jobs/<jobId>/job_bundle.json` is created when artifact summaries are requested.
+- Confirm `outputs/jobs/<jobId>/stored_data_manifest.json` is created when artifact summaries are requested.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
