@@ -19,9 +19,13 @@ Use this checklist before merging a development slice into `V1`.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
 - Confirm the artifact API returns `artifactIndex`.
+- Confirm the artifact API returns `jobBundle`.
 - Confirm `artifactIndex.artifacts` includes size and update metadata for available artifacts.
+- Confirm `jobBundle.files` groups files by role.
+- Confirm `jobBundle.ready` reflects missing required files.
 - Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm `artifact_index.json` appears in the artifact list.
+- Confirm `job_bundle.json` appears in the artifact list.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
 - Confirm reference images larger than 10 MB are rejected by the engine.
@@ -62,6 +66,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm uploaded references are saved under `outputs/jobs/<jobId>/references/`.
 - Confirm `outputs/jobs/<jobId>/job_snapshot.json` is created and updated during progress.
 - Confirm `outputs/jobs/<jobId>/artifact_index.json` is created when artifact summaries are requested.
+- Confirm `outputs/jobs/<jobId>/job_bundle.json` is created when artifact summaries are requested.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
