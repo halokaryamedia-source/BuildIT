@@ -5,6 +5,7 @@ import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js"
 import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
+import { openStoredDataRoot } from "../storage/stored-data-opener.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
 
 const maxJsonBodyBytes = 16 * 1024 * 1024;
@@ -154,6 +155,20 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
         );
 
         sendJson(response, 201, { job });
+        return;
+      }
+
+      const openStoredDataMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/open-stored-data$/);
+      if (request.method === "POST" && openStoredDataMatch) {
+        const jobId = openStoredDataMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
+          return;
+        }
+
+        const { storedDataManifest } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
+        const opened = await openStoredDataRoot(runtime.getOptions().outputDir, jobId);
+        sendJson(response, 200, { opened, storedDataManifest });
         return;
       }
 
