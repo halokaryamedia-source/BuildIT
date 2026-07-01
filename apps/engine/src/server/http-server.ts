@@ -6,6 +6,15 @@ import type { ReferenceImageUpload } from "../storage/reference-images.js";
 
 const maxJsonBodyBytes = 16 * 1024 * 1024;
 
+class HttpRequestError extends Error {
+  constructor(
+    readonly statusCode: number,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
 interface CreateJobBody {
   prompt?: string;
   imagePaths?: string[];
@@ -18,6 +27,18 @@ function normalizeFormat(format: string | undefined): "bedrock" | "bedrock_block
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
 }
 
+function resolveErrorStatus(error: unknown): number {
+  if (error instanceof HttpRequestError) return error.statusCode;
+
+  if (error instanceof Error) {
+    if (error.message.includes("Reference image") || error.message.includes("Reference upload")) return 400;
+    if (error.message.includes("Invalid image data URL")) return 400;
+    if (error.message.includes("MIME type")) return 400;
+  }
+
+  return 500;
+}
+
 async function readJsonBody<T>(request: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
   let bodyBytes = 0;
@@ -27,14 +48,19 @@ async function readJsonBody<T>(request: IncomingMessage): Promise<T> {
     bodyBytes += buffer.byteLength;
 
     if (bodyBytes > maxJsonBodyBytes) {
-      throw new Error("Request body is too large. Maximum size is 16 MB.");
+      throw new HttpRequestError(413, "Request body is too large. Maximum size is 16 MB.");
     }
 
     chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString("utf8");
-  return rawBody ? (JSON.parse(rawBody) as T) : ({} as T);
+
+  try {
+    return rawBody ? (JSON.parse(rawBody) as T) : ({} as T);
+  } catch {
+    throw new HttpRequestError(400, "Request body must be valid JSON.");
+  }
 }
 
 function sendJson(response: ServerResponse, statusCode: number, data: unknown): void {
@@ -160,7 +186,7 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
 
       sendNotFound(response);
     } catch (error) {
-      sendJson(response, 500, {
+      sendJson(response, resolveErrorStatus(error), {
         error: error instanceof Error ? error.message : "Internal server error."
       });
     }
