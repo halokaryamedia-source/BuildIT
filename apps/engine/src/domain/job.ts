@@ -8,6 +8,7 @@ export type JobStage =
   | "building_mcp_actions"
   | "checking_mcp_capabilities"
   | "executing_mcp"
+  | "capturing_preview"
   | "completed"
   | "failed";
 
