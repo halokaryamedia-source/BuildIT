@@ -27,6 +27,8 @@ interface ModelJob {
   id: string;
   status: string;
   stage?: string;
+  createdAt?: string;
+  updatedAt?: string;
   logs: JobLog[];
   error?: string;
 }
@@ -53,6 +55,12 @@ async function fetchJob(jobId: string): Promise<ModelJob> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId);
   const data = (await response.json()) as { job: ModelJob };
   return data.job;
+}
+
+async function fetchJobs(): Promise<ModelJob[]> {
+  const response = await fetch(engineUrl + "/api/jobs");
+  const data = (await response.json()) as { jobs: ModelJob[] };
+  return data.jobs ?? [];
 }
 
 async function fetchHealth(): Promise<HealthState> {
@@ -126,6 +134,12 @@ function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefi
     : undefined;
 }
 
+function formatJobTime(value: string | undefined): string {
+  if (!value) return "Unknown time";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
 function validateSelectedImage(file: File): void {
   if (!file.type.startsWith("image/")) {
     throw new Error("Please select an image file.");
@@ -141,17 +155,28 @@ function App() {
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
+  const [recentJobs, setRecentJobs] = useState<ModelJob[]>([]);
   const [artifacts, setArtifacts] = useState<JobArtifactSummary[]>([]);
   const [selectedArtifact, setSelectedArtifact] = useState<JobArtifactContent | null>(null);
   const [health, setHealth] = useState<HealthState | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Choose Bedrock Entity or Bedrock Block, then upload a reference image or write a prompt. Bedrock Block means a placeable Minecraft Bedrock custom block."
+      content:
+        "Choose Bedrock Entity or Bedrock Block, then upload a reference image or write a prompt. Bedrock Block means a placeable Minecraft Bedrock custom block."
     }
   ]);
 
   const previewDataUrl = getPreviewDataUrl(selectedArtifact);
+
+  async function refreshRecentJobs() {
+    try {
+      const jobs = await fetchJobs();
+      setRecentJobs(jobs.slice(0, 8));
+    } catch {
+      setRecentJobs([]);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -166,7 +191,11 @@ function App() {
     }
 
     void refreshHealth();
-    const timer = window.setInterval(refreshHealth, 5000);
+    void refreshRecentJobs();
+    const timer = window.setInterval(() => {
+      void refreshHealth();
+      void refreshRecentJobs();
+    }, 5000);
 
     return () => {
       cancelled = true;
@@ -203,6 +232,7 @@ function App() {
       const nextArtifacts = await fetchJobArtifacts(activeJob.id);
       setActiveJob(nextJob);
       setArtifacts(nextArtifacts);
+      void refreshRecentJobs();
 
       if (nextJob.status === "completed") {
         setMessages((current) => [
@@ -241,6 +271,21 @@ function App() {
     if (!activeJob || !artifact.available) return;
     const nextArtifact = await fetchJobArtifact(activeJob.id, artifact.name);
     setSelectedArtifact(nextArtifact);
+  }
+
+  async function openJob(jobId: string) {
+    try {
+      const job = await fetchJob(jobId);
+      const nextArtifacts = await fetchJobArtifacts(jobId);
+      setActiveJob(job);
+      setArtifacts(nextArtifacts);
+      setSelectedArtifact(null);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open job." }
+      ]);
+    }
   }
 
   function onSelectFile(file: File | null) {
@@ -288,6 +333,7 @@ function App() {
 
       setActiveJob(data.job);
       setSelectedFile(null);
+      await refreshRecentJobs();
       setMessages((current) => [
         ...current,
         {
@@ -329,6 +375,19 @@ function App() {
         <div className="status-card">
           <strong>Artifacts</strong>
           <span>{artifacts.filter((artifact) => artifact.available).length} available</span>
+        </div>
+        <div className="recent-jobs">
+          <strong>Recent jobs</strong>
+          {recentJobs.length === 0 ? <span>No saved jobs</span> : null}
+          {recentJobs.map((job) => (
+            <button className="recent-job-button" key={job.id} onClick={() => void openJob(job.id)}>
+              <span>{job.id}</span>
+              <small>
+                {job.status} · {getStageLabel(job.stage)}
+              </small>
+              <small>{formatJobTime(job.updatedAt ?? job.createdAt)}</small>
+            </button>
+          ))}
         </div>
       </aside>
       <section className="chat-panel">
