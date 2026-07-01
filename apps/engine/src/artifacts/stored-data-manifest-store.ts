@@ -39,6 +39,7 @@ function getArtifactRole(name: string): StoredDataFile["role"] {
     name === "mcp_tool_name_mapping" ||
     name === "mcp_argument_shape_adaptation" ||
     name === "mcp_action_schema_match" ||
+    name === "mcp_execution_plan" ||
     name === "mcp_capabilities" ||
     name === "mcp_execution_report"
   ) {
