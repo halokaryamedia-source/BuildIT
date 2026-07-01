@@ -17,6 +17,7 @@ export interface McpExecutionStep {
   startedAt: string;
   finishedAt: string;
   success: boolean;
+  skipped?: boolean;
   error?: string;
 }
 
