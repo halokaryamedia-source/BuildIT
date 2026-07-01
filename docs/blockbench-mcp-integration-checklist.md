@@ -1,10 +1,10 @@
-# Blockbench MCP Integration Checklist
+# Blockbench MCP Core App Integration Checklist
 
 Use this checklist when integrating or testing `achmadawdi/mcp-blockbench` with BuildIT.
 
-## Plugin setup
+## Core app setup
 
-- Install or load the Blockbench plugin from the external repository.
+- Run or load the Blockbench MCP core app from `achmadawdi/mcp-blockbench`.
 - Confirm Blockbench desktop is running.
 - Enable the MCP server in Blockbench settings.
 - Confirm the MCP endpoint uses:
@@ -13,7 +13,7 @@ Use this checklist when integrating or testing `achmadawdi/mcp-blockbench` with 
 http://localhost:3000/bb-mcp
 ```
 
-- If multiple Blockbench windows are open, confirm the active endpoint from the plugin panel.
+- If multiple Blockbench windows are open, confirm the active endpoint from the core app/plugin panel.
 
 ## BuildIT engine setup
 
@@ -66,7 +66,7 @@ If missing, the job should continue and record a skipped optional step.
 
 ## Argument compatibility
 
-Confirm the final `mcp_execution_plan.json` arguments match the actual plugin schema.
+Confirm the final `mcp_execution_plan.json` arguments match the actual core app schema.
 
 Especially check:
 
@@ -100,8 +100,8 @@ Confirm:
 
 A first successful integration is accepted when:
 
-- BuildIT creates one Bedrock Entity project in Blockbench.
-- BuildIT creates one Bedrock Block project in Blockbench.
+- BuildIT creates one Bedrock Entity project in Blockbench through the MCP core app.
+- BuildIT creates one Bedrock Block project in Blockbench through the MCP core app.
 - Preview capture succeeds.
 - Stored Data Root contains all expected MCP diagnostic files.
 - Required MCP execution steps are successful.
