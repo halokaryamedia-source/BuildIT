@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const engineUrl = "http://localhost:3987";
+const maxReferenceImageBytes = 10 * 1024 * 1024;
 
 type TargetFormat = "bedrock" | "bedrock_block";
 
@@ -35,16 +36,39 @@ interface JobArtifactSummary {
   available: boolean;
 }
 
+interface JobArtifactContent extends JobArtifactSummary {
+  content?: unknown;
+  error?: string;
+}
+
+interface HealthState {
+  ollamaConnected: boolean;
+  visionConnected: boolean;
+  blockbench?: { connected?: boolean };
+  mcpCapabilities?: { valid?: boolean; missingTools?: string[] };
+}
+
 async function fetchJob(jobId: string): Promise<ModelJob> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId);
   const data = (await response.json()) as { job: ModelJob };
   return data.job;
 }
 
+async function fetchHealth(): Promise<HealthState> {
+  const response = await fetch(engineUrl + "/api/health");
+  return (await response.json()) as HealthState;
+}
+
 async function fetchJobArtifacts(jobId: string): Promise<JobArtifactSummary[]> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
   const data = (await response.json()) as { artifacts: JobArtifactSummary[] };
   return data.artifacts ?? [];
+}
+
+async function fetchJobArtifact(jobId: string, artifactName: string): Promise<JobArtifactContent> {
+  const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts/" + artifactName);
+  const data = (await response.json()) as { artifact: JobArtifactContent };
+  return data.artifact;
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -60,12 +84,24 @@ function getTargetLabel(format: TargetFormat): string {
   return format === "bedrock" ? "Bedrock Entity" : "Bedrock Block";
 }
 
+function validateSelectedImage(file: File): void {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please select an image file.");
+  }
+
+  if (file.size > maxReferenceImageBytes) {
+    throw new Error("Reference image must be 10 MB or smaller.");
+  }
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
   const [artifacts, setArtifacts] = useState<JobArtifactSummary[]>([]);
+  const [selectedArtifact, setSelectedArtifact] = useState<JobArtifactContent | null>(null);
+  const [health, setHealth] = useState<HealthState | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -74,8 +110,30 @@ function App() {
   ]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function refreshHealth() {
+      try {
+        const nextHealth = await fetchHealth();
+        if (!cancelled) setHealth(nextHealth);
+      } catch {
+        if (!cancelled) setHealth(null);
+      }
+    }
+
+    void refreshHealth();
+    const timer = window.setInterval(refreshHealth, 5000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!activeJob) {
       setArtifacts([]);
+      setSelectedArtifact(null);
       return;
     }
 
@@ -123,15 +181,35 @@ function App() {
   async function createReferenceImageUpload(): Promise<ReferenceImageUpload[]> {
     if (!selectedFile) return [];
 
+    validateSelectedImage(selectedFile);
     const dataUrl = await readFileAsDataUrl(selectedFile);
 
     return [
       {
         fileName: selectedFile.name,
-        mimeType: selectedFile.type || "application/octet-stream",
+        mimeType: selectedFile.type,
         dataUrl
       }
     ];
+  }
+
+  async function openArtifact(artifact: JobArtifactSummary) {
+    if (!activeJob || !artifact.available) return;
+    const nextArtifact = await fetchJobArtifact(activeJob.id, artifact.name);
+    setSelectedArtifact(nextArtifact);
+  }
+
+  function onSelectFile(file: File | null) {
+    try {
+      if (file) validateSelectedImage(file);
+      setSelectedFile(file);
+    } catch (error) {
+      setSelectedFile(null);
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: error instanceof Error ? error.message : "Invalid reference image." }
+      ]);
+    }
   }
 
   async function submitJob() {
@@ -141,6 +219,7 @@ function App() {
     setMessages((current) => [...current, { role: "user", content: getTargetLabel(targetFormat) + ": " + trimmedPrompt }]);
     setPrompt("");
     setArtifacts([]);
+    setSelectedArtifact(null);
 
     try {
       const referenceImages = await createReferenceImageUpload();
@@ -193,6 +272,12 @@ function App() {
           <span>{getTargetLabel(targetFormat)}</span>
         </div>
         <div className="status-card">
+          <strong>Engine health</strong>
+          <span>Main model: {health?.ollamaConnected ? "connected" : "offline"}</span>
+          <span>Vision model: {health?.visionConnected ? "connected" : "offline"}</span>
+          <span>MCP tools: {health?.mcpCapabilities?.valid ? "valid" : "not ready"}</span>
+        </div>
+        <div className="status-card">
           <strong>Active job</strong>
           <span>{activeJob ? activeJob.status : "No active job"}</span>
         </div>
@@ -226,10 +311,18 @@ function App() {
                 {artifacts.map((artifact) => (
                   <li key={artifact.name} className={artifact.available ? "available" : "missing"}>
                     <span>{artifact.fileName}</span>
-                    <span>{artifact.available ? "available" : "pending"}</span>
+                    <button disabled={!artifact.available} onClick={() => void openArtifact(artifact)}>
+                      {artifact.available ? "View" : "Pending"}
+                    </button>
                   </li>
                 ))}
               </ul>
+            </article>
+          ) : null}
+          {selectedArtifact ? (
+            <article className="artifact-viewer">
+              <strong>{selectedArtifact.fileName}</strong>
+              <pre>{JSON.stringify(selectedArtifact.content ?? selectedArtifact.error, null, 2)}</pre>
             </article>
           ) : null}
         </div>
@@ -247,12 +340,8 @@ function App() {
             </p>
           </div>
           <label className="file-picker">
-            <span>{selectedFile ? selectedFile.name : "Select reference image"}</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-            />
+            <span>{selectedFile ? selectedFile.name : "Select reference image up to 10 MB"}</span>
+            <input type="file" accept="image/*" onChange={(event) => onSelectFile(event.target.files?.[0] ?? null)} />
           </label>
           <textarea
             value={prompt}
