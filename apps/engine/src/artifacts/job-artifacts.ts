@@ -8,6 +8,7 @@ export const jobArtifactNames = [
   "image_analysis",
   "model_plan",
   "model_plan_validation",
+  "mcp_geometry_plan",
   "mcp_actions",
   "mcp_tool_schema",
   "mcp_tool_name_mapping",
