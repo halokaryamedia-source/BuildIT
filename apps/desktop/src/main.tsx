@@ -105,6 +105,8 @@ function getStageLabel(stage: string | undefined): string {
       return "Executing in Blockbench";
     case "capturing_preview":
       return "Capturing preview";
+    case "exporting_model":
+      return "Exporting model";
     case "completed":
       return "Completed";
     case "failed":
