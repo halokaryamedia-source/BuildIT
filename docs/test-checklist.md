@@ -23,9 +23,11 @@ http://localhost:3000/bb-mcp
 - Open `http://localhost:3987/api/health`.
 - Confirm the API returns JSON.
 - Confirm `ollamaConnected`, `visionConnected`, and `blockbench.connected` reflect local service state.
-- Confirm `mcpCapabilities.valid` reflects whether the required MCP tools are available.
+- Confirm `mcpCapabilities.valid` reflects whether required MCP tools are available.
+- Confirm required tools are only the hard core path: `create_project`, `place_cube`, and `capture_screenshot`.
+- Confirm `add_group` and `export_project` can be missing without making `valid` false.
 - Confirm `mcpCapabilities.toolNameResolutions` includes canonical and resolved tool names.
-- Confirm optional MCP tools can be missing without making `valid` false.
+- Confirm semantic matches are manually reviewed before trusting execution.
 - Open `http://localhost:3987/api/jobs` after creating a job.
 - Confirm the job list includes memory jobs and persisted job snapshots.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
@@ -67,6 +69,7 @@ http://localhost:3000/bb-mcp
 - Confirm Bedrock Entity geometry is clamped to entity-style bounds and has entity-style groups.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
 - Confirm `mcp_tool_schema.json`, `mcp_tool_name_mapping.json`, `mcp_argument_shape_adaptation.json`, `mcp_action_schema_match.json`, and `mcp_execution_plan.json` are created before execution.
+- Confirm `mcp_argument_shape_adaptation.json` records `PLACE_CUBE_BATCH_EXPANDED` when the core app only accepts single-cube placement.
 - Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `optionalTools`, `missingTools`, `missingOptionalTools`, `toolNameResolutions`, and `valid`.
 - Confirm `blockbench_preview.json` is created when preview capture runs and includes `validation`.
 - Confirm `blockbench_export.json` is created only when optional export runs and includes `validation`.
