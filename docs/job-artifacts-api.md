@@ -2,6 +2,8 @@
 
 BuildIT exposes job artifacts through the engine API so the desktop app can show diagnostics without reading local files directly.
 
+Artifacts are read from the job output folder, so artifact reads can still work even when the job is no longer present in the in-memory job store.
+
 ## List artifacts
 
 ```txt
@@ -31,6 +33,7 @@ GET /api/jobs/:id/artifacts/:artifactName
 Supported artifact names:
 
 ```txt
+job_snapshot
 image_analysis
 model_plan
 model_plan_validation
@@ -51,6 +54,10 @@ Response:
   }
 }
 ```
+
+## Job snapshot fallback
+
+`GET /api/jobs/:id` first checks the in-memory job store. If the job is not available in memory, the engine attempts to return `job_snapshot.json` from the job output folder.
 
 ## Desktop diagnostics
 
