@@ -4,6 +4,15 @@ Blockbench Auto Model Studio.
 
 BuildIT is a local-first desktop application for generating Minecraft-style voxel models in Blockbench using Ollama, a local agent engine, and Blockbench MCP.
 
+## Supported project types
+
+BuildIT currently focuses on two Blockbench project targets only:
+
+- `Bedrock Entity` - Minecraft Bedrock entity models such as mobs, companions, NPCs, vehicles, and animated-capable entity objects.
+- `Bedrock Block` - placeable Minecraft Bedrock custom blocks such as decorative blocks, furniture blocks, lamps, machines, crates, ores, and static world blocks.
+
+`Bedrock Block` must be treated as a Minecraft block that exists in the world, not as a free prop, entity, mob, wearable, or item model.
+
 ## Goals
 
 - Chat-like interface for image and prompt input.
@@ -19,14 +28,16 @@ BuildIT is a local-first desktop application for generating Minecraft-style voxe
 
 ## Core workflow
 
-1. User uploads an image or writes a prompt.
-2. The app creates a model generation job.
-3. The engine saves reference images under the job output folder.
-4. The engine analyzes reference images using the configured vision model.
-5. The engine saves `image_analysis.json` under the job output folder.
-6. The engine controls Blockbench through MCP.
-7. The app shows progress and preview status.
-8. The user is notified when the model is ready in Blockbench.
+1. User selects Bedrock Entity or Bedrock Block.
+2. User uploads an image or writes a prompt.
+3. The app creates a model generation job.
+4. The engine saves reference images under the job output folder.
+5. The engine analyzes reference images using the configured vision model.
+6. The engine saves `image_analysis.json` under the job output folder.
+7. The engine generates a typed model plan and saves `model_plan.json`.
+8. The engine controls Blockbench through MCP.
+9. The app shows progress and preview status.
+10. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -64,5 +75,11 @@ Default local services:
 - `GET /api/jobs` lists jobs stored in memory.
 - `GET /api/jobs/:id` returns a single job and its logs.
 
+Supported `POST /api/jobs` formats:
+
+- `bedrock` for Bedrock Entity.
+- `bedrock_block` for Bedrock Block.
+
 Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
 Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.
+Typed model plans are stored at `outputs/jobs/<jobId>/model_plan.json`.

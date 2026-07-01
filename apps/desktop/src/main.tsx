@@ -4,6 +4,8 @@ import "./styles.css";
 
 const engineUrl = "http://localhost:3987";
 
+type TargetFormat = "bedrock" | "bedrock_block";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -42,14 +44,19 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+function getTargetLabel(format: TargetFormat): string {
+  return format === "bedrock" ? "Bedrock Entity" : "Bedrock Block";
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
+  const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Upload a reference image or write a prompt to create a Blockbench voxel model."
+      content: "Choose Bedrock Entity or Bedrock Block, then upload a reference image or write a prompt. Bedrock Block means a placeable Minecraft Bedrock custom block."
     }
   ]);
 
@@ -96,7 +103,7 @@ function App() {
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt) return;
 
-    setMessages((current) => [...current, { role: "user", content: trimmedPrompt }]);
+    setMessages((current) => [...current, { role: "user", content: getTargetLabel(targetFormat) + ": " + trimmedPrompt }]);
     setPrompt("");
 
     try {
@@ -109,7 +116,7 @@ function App() {
           prompt: trimmedPrompt,
           referenceImages,
           imagePaths: [],
-          format: "bbmodel",
+          format: targetFormat,
           autoReview: true
         })
       });
@@ -128,8 +135,8 @@ function App() {
           role: "assistant",
           content:
             referenceImages.length > 0
-              ? "Job created with a reference image. The engine is now working with Blockbench MCP."
-              : "Job created. The engine is now working with Blockbench MCP."
+              ? "Job created with a reference image for " + getTargetLabel(targetFormat) + "."
+              : "Job created for " + getTargetLabel(targetFormat) + "."
         }
       ]);
     } catch (error) {
@@ -145,6 +152,10 @@ function App() {
       <aside className="sidebar">
         <h1>BuildIT</h1>
         <p>Blockbench Auto Model Studio</p>
+        <div className="status-card">
+          <strong>Target type</strong>
+          <span>{getTargetLabel(targetFormat)}</span>
+        </div>
         <div className="status-card">
           <strong>Active job</strong>
           <span>{activeJob ? activeJob.status : "No active job"}</span>
@@ -170,6 +181,18 @@ function App() {
           ) : null}
         </div>
         <div className="composer">
+          <div className="target-selector">
+            <label>
+              <span>Project type</span>
+              <select value={targetFormat} onChange={(event) => setTargetFormat(event.target.value as TargetFormat)}>
+                <option value="bedrock">Bedrock Entity</option>
+                <option value="bedrock_block">Bedrock Block</option>
+              </select>
+            </label>
+            <p>
+              Bedrock Block is a placeable Minecraft Bedrock custom block. Bedrock Entity is an entity model.
+            </p>
+          </div>
           <label className="file-picker">
             <span>{selectedFile ? selectedFile.name : "Select reference image"}</span>
             <input
