@@ -14,8 +14,8 @@ BuildIT is a local-first desktop application for generating Minecraft-style voxe
 
 ## Applications
 
-- `apps/desktop` - Tauri and React desktop interface.
-- `apps/engine` - TypeScript local agent engine.
+- `apps/desktop` - React desktop interface shell.
+- `apps/engine` - TypeScript local agent engine and HTTP API.
 
 ## Core workflow
 
@@ -25,3 +25,36 @@ BuildIT is a local-first desktop application for generating Minecraft-style voxe
 4. The engine controls Blockbench through MCP.
 5. The app shows progress and preview status.
 6. The user is notified when the model is ready in Blockbench.
+
+## Local development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the engine API:
+
+```bash
+npm run dev:engine
+```
+
+Run the desktop UI:
+
+```bash
+npm run dev:desktop
+```
+
+Default local services:
+
+- Engine API: `http://localhost:3987`
+- Ollama: `http://localhost:11434`
+- Blockbench MCP: `http://localhost:3000/bb-mcp`
+
+## Engine API
+
+- `GET /api/health` checks Ollama and Blockbench MCP connectivity.
+- `POST /api/jobs` creates a model generation job.
+- `GET /api/jobs` lists jobs stored in memory.
+- `GET /api/jobs/:id` returns a single job and its logs.
