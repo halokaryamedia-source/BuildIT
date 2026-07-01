@@ -27,6 +27,10 @@ function normalizeFormat(format: string | undefined): "bedrock" | "bedrock_block
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
 }
 
+function isSafeJobId(jobId: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(jobId);
+}
+
 function resolveErrorStatus(error: unknown): number {
   if (error instanceof HttpRequestError) return error.statusCode;
 
@@ -143,26 +147,26 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
 
       const artifactsMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts$/);
       if (request.method === "GET" && artifactsMatch) {
-        const job = runtime.jobs.get(artifactsMatch[1]);
-        if (!job) {
-          sendJson(response, 404, { error: "Job not found." });
+        const jobId = artifactsMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
           return;
         }
 
-        const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, job.id);
+        const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, jobId);
         sendJson(response, 200, { artifacts });
         return;
       }
 
       const artifactMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts\/([^/]+)$/);
       if (request.method === "GET" && artifactMatch) {
-        const job = runtime.jobs.get(artifactMatch[1]);
-        if (!job) {
-          sendJson(response, 404, { error: "Job not found." });
+        const jobId = artifactMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
           return;
         }
 
-        const artifact = await getJobArtifact(runtime.getOptions().outputDir, job.id, artifactMatch[2]);
+        const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, artifactMatch[2]);
         if (!artifact) {
           sendJson(response, 404, { error: "Artifact not found." });
           return;
@@ -174,8 +178,20 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
 
       const jobMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)$/);
       if (request.method === "GET" && jobMatch) {
-        const job = runtime.jobs.get(jobMatch[1]);
+        const jobId = jobMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
+          return;
+        }
+
+        const job = runtime.jobs.get(jobId);
         if (!job) {
+          const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, "job_snapshot");
+          if (artifact?.available && artifact.content) {
+            sendJson(response, 200, { job: artifact.content });
+            return;
+          }
+
           sendJson(response, 404, { error: "Job not found." });
           return;
         }
