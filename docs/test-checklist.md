@@ -24,6 +24,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `storedDataManifest.files` groups files by role.
 - Confirm `storedDataManifest.ready` reflects missing required files.
 - Confirm `storedDataManifest.openTargetPath` points to the job stored data folder.
+- Send `POST http://localhost:3987/api/jobs/<jobId>/open-stored-data`.
+- Confirm the engine opens the job stored data folder through the system file explorer.
 - Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm `artifact_index.json` appears in the artifact list.
 - Confirm `stored_data_manifest.json` appears in the artifact list.
@@ -39,6 +41,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the sidebar shows main model, vision model, and MCP tool health.
 - Confirm the sidebar shows recent jobs.
 - Confirm the sidebar shows Stored Data Root when a job has artifacts.
+- Confirm clicking Open Stored Data opens the job output folder directly.
 - Confirm clicking a recent job opens that job and its artifacts.
 - Confirm selecting a non-image file shows a validation message.
 - Confirm selecting an image larger than 10 MB shows a validation message.
