@@ -10,7 +10,7 @@ Artifacts are read from the job output folder, so artifact reads can still work 
 GET /api/jobs/:id/artifacts
 ```
 
-This endpoint refreshes the job artifact index before returning.
+This endpoint refreshes the job artifact index and job bundle manifest before returning.
 
 Response:
 
@@ -28,9 +28,17 @@ Response:
   "artifactIndex": {
     "jobId": "job_123",
     "generatedAt": "2026-01-01T00:00:00.000Z",
-    "artifactCount": 10,
-    "availableCount": 4,
+    "artifactCount": 11,
+    "availableCount": 5,
     "artifacts": []
+  },
+  "jobBundle": {
+    "jobId": "job_123",
+    "bundleVersion": 1,
+    "bundleType": "buildit_job_output",
+    "ready": true,
+    "missingRequiredFiles": [],
+    "files": []
   }
 }
 ```
@@ -46,6 +54,7 @@ Supported artifact names:
 ```txt
 job_snapshot
 artifact_index
+job_bundle
 image_analysis
 model_plan
 model_plan_validation
