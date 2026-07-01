@@ -211,17 +211,18 @@
 
   async function checkDesktopRuntime(showMessage = true): Promise<void> {
     try {
-      runtimeStatus = await invoke<RuntimeStatus>("check_runtime");
+      const status = await invoke<RuntimeStatus>("check_runtime");
+      runtimeStatus = status;
       if (showMessage) {
         pushAssistantMessage(
           "Runtime checked. Engine: " +
-            (runtimeStatus.engine_connected ? "connected" : "offline") +
+            (status.engine_connected ? "connected" : "offline") +
             ", Ollama: " +
-            (runtimeStatus.ollama_connected ? "connected" : "offline") +
+            (status.ollama_connected ? "connected" : "offline") +
             ", Blockbench MCP port: " +
-            (runtimeStatus.blockbench_mcp_port_open ? "open" : "closed") +
+            (status.blockbench_mcp_port_open ? "open" : "closed") +
             ", missing models: " +
-            formatList(runtimeStatus.missing_ollama_models) +
+            formatList(status.missing_ollama_models) +
             "."
         );
       }
