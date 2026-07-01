@@ -4,6 +4,8 @@ import type { AppRuntime } from "../runtime/app-runtime.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
 
+const maxJsonBodyBytes = 16 * 1024 * 1024;
+
 interface CreateJobBody {
   prompt?: string;
   imagePaths?: string[];
@@ -18,9 +20,17 @@ function normalizeFormat(format: string | undefined): "bedrock" | "bedrock_block
 
 async function readJsonBody<T>(request: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
+  let bodyBytes = 0;
 
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bodyBytes += buffer.byteLength;
+
+    if (bodyBytes > maxJsonBodyBytes) {
+      throw new Error("Request body is too large. Maximum size is 16 MB.");
+    }
+
+    chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString("utf8");
