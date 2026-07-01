@@ -1,51 +1,46 @@
 # MCP Action Reporting
 
-BuildIT stores the exact MCP tool actions that will be sent to Blockbench before execution.
+BuildIT stores MCP actions and execution results so Blockbench MCP runs can be debugged from the job stored data folder.
 
 ## Files
 
 ```txt
-outputs/jobs/<jobId>/mcp_actions.json
-outputs/jobs/<jobId>/mcp_execution_report.json
+mcp_actions.json
+mcp_execution_report.json
 ```
 
 ## `mcp_actions.json`
 
-This file contains the generated tool call list after model plan validation and Blockbench MCP adapter validation.
+This file contains the adapter-generated MCP action list before tool-name mapping, argument adaptation, schema matching, and execution.
 
 It is useful for debugging:
 
-- project creation actions,
-- group creation actions,
-- cube placement actions,
-- screenshot actions,
-- optional export actions,
+- project creation,
+- group creation,
+- cube placement,
+- preview capture,
+- optional export,
 - action order,
-- adapter warnings,
-- adapter errors.
-
-The file includes:
-
-- `valid`
-- `format`
-- `actionCount`
-- `issues`
-- `actions`
-
-When `valid` is false, the workflow stops before Blockbench MCP execution.
+- adapter warnings and errors.
 
 ## `mcp_execution_report.json`
 
-This file records MCP execution step by step.
+This file records the actual MCP execution step by step.
 
-Each step includes:
+Each step can include:
 
-- tool name,
+- canonical BuildIT tool name,
+- resolved real MCP tool name,
 - start time,
 - finish time,
 - success state,
-- skipped state for unavailable optional tools,
-- error message when execution fails.
+- optional state,
+- skipped state,
+- non-fatal optional failure state,
+- result summary,
+- output artifact names,
+- error message.
 
-If a required tool fails, the workflow stops and writes the execution report before returning a failed job.
-If an optional tool is unavailable during capability discovery, the workflow records it as skipped and continues.
+Required tool failures fail the job.
+
+Optional tool failures are recorded as `nonFatal: true` and the job continues. For example, if export fails but project creation, groups, cubes, and preview succeeded, the job can still complete with a recorded optional export failure.
