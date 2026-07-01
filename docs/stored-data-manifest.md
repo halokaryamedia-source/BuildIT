@@ -46,6 +46,10 @@ Stored data files can be grouped as:
 
 `GET /api/jobs/:id/artifacts/stored_data_manifest` refreshes the stored data manifest before returning it.
 
-## Future use
+`POST /api/jobs/:id/open-stored-data` refreshes the stored data manifest and opens the job stored data folder in the system file explorer.
 
-A later slice can add an Open Stored Data action in the desktop app that opens `openTargetPath` directly in the system file explorer.
+## Desktop behavior
+
+The desktop app shows the Stored Data Root in the sidebar and in the active job panel.
+
+When a stored data manifest is available, the desktop app shows an Open Stored Data button. The button calls the engine API and opens the saved output folder directly.
