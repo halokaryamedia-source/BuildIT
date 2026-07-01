@@ -19,6 +19,7 @@ import {
 } from "../mcp/mcp-tool-name-mapping.js";
 import { saveMcpToolNameMappingReport } from "../mcp/mcp-tool-name-mapping-store.js";
 import { saveMcpToolSchemaReport } from "../mcp/mcp-tool-schema-store.js";
+import { summarizeMcpToolResult } from "../mcp/mcp-tool-result-summary.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
@@ -48,6 +49,14 @@ async function enterStage(
   options: CreateModelWorkflowOptions
 ): Promise<ModelJob> {
   return reportProgress(setJobStage(job, stage), options);
+}
+
+function getRequiredFailureCount(steps: McpExecutionStep[]): number {
+  return steps.filter((step) => !step.success && !step.optional).length;
+}
+
+function getOptionalFailureCount(steps: McpExecutionStep[]): number {
+  return steps.filter((step) => !step.success && step.optional).length;
 }
 
 export async function runCreateModelWorkflow(job: ModelJob, options: CreateModelWorkflowOptions): Promise<ModelJob> {
@@ -249,13 +258,16 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   for (const action of executionActions) {
     const startedAt = new Date().toISOString();
     const canonicalToolName = getCanonicalToolNameForResolvedName(action.name, toolNameMappingReport) ?? (action.name as CanonicalMcpToolName);
+    const isOptionalTool = optionalToolSet.has(canonicalToolName);
 
-    if (optionalToolSet.has(canonicalToolName) && missingOptionalToolSet.has(canonicalToolName)) {
+    if (isOptionalTool && missingOptionalToolSet.has(canonicalToolName)) {
       steps.push({
         toolName: action.name,
+        canonicalToolName,
         startedAt,
         finishedAt: new Date().toISOString(),
         success: true,
+        optional: true,
         skipped: true
       });
       currentJob = await reportProgress(
@@ -280,9 +292,11 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
     try {
       const toolResult = await options.blockbench.callTool(action);
+      const outputArtifacts: string[] = [];
 
       if (canonicalToolName === "capture_screenshot") {
         const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
+        outputArtifacts.push("blockbench_preview");
         currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench preview saved to " + previewPath + "."), options);
       }
 
@@ -294,23 +308,40 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
           toolResult,
           options.outputDir
         );
+        outputArtifacts.push("blockbench_export");
         currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench export saved to " + exportPath + "."), options);
       }
 
       steps.push({
         toolName: action.name,
+        canonicalToolName,
         startedAt,
         finishedAt: new Date().toISOString(),
-        success: true
+        success: true,
+        optional: isOptionalTool,
+        resultSummary: summarizeMcpToolResult(toolResult),
+        outputArtifacts
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown MCP tool error.";
       steps.push({
         toolName: action.name,
+        canonicalToolName,
         startedAt,
         finishedAt: new Date().toISOString(),
         success: false,
-        error: error instanceof Error ? error.message : "Unknown MCP tool error."
+        optional: isOptionalTool,
+        nonFatal: isOptionalTool,
+        error: errorMessage
       });
+
+      if (isOptionalTool) {
+        currentJob = await reportProgress(
+          appendJobLog(currentJob, "Optional MCP tool failed but job will continue: " + canonicalToolName + "."),
+          options
+        );
+        continue;
+      }
 
       const reportPath = await saveMcpExecutionReport(
         currentJob.id,
@@ -319,6 +350,8 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
           finishedAt: new Date().toISOString(),
           success: false,
           actionCount: executionActions.length,
+          requiredFailureCount: getRequiredFailureCount(steps),
+          optionalFailureCount: getOptionalFailureCount(steps),
           steps
         },
         options.outputDir
@@ -339,8 +372,10 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     {
       startedAt: executionStartedAt,
       finishedAt: new Date().toISOString(),
-      success: true,
+      success: getRequiredFailureCount(steps) === 0,
       actionCount: executionActions.length,
+      requiredFailureCount: getRequiredFailureCount(steps),
+      optionalFailureCount: getOptionalFailureCount(steps),
       steps
     },
     options.outputDir
