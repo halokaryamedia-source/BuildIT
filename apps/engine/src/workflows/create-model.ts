@@ -1,4 +1,5 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
+import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { buildBlockbenchToolActions } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
@@ -170,6 +171,10 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
       currentJob = await enterStage(currentJob, "capturing_preview", options);
     }
 
+    if (action.name === "export_project") {
+      currentJob = await enterStage(currentJob, "exporting_model", options);
+    }
+
     currentJob = await reportProgress(appendJobLog(currentJob, "Running MCP tool: " + action.name), options);
 
     try {
@@ -178,6 +183,17 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
       if (action.name === "capture_screenshot") {
         const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
         currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench preview saved to " + previewPath + "."), options);
+      }
+
+      if (action.name === "export_project") {
+        const exportPath = await saveBlockbenchExport(
+          currentJob.id,
+          action.name,
+          adapterResult.format,
+          toolResult,
+          options.outputDir
+        );
+        currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench export saved to " + exportPath + "."), options);
       }
 
       steps.push({
