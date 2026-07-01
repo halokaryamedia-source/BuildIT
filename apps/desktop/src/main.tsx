@@ -103,6 +103,8 @@ function getStageLabel(stage: string | undefined): string {
       return "Checking MCP capabilities";
     case "executing_mcp":
       return "Executing in Blockbench";
+    case "capturing_preview":
+      return "Capturing preview";
     case "completed":
       return "Completed";
     case "failed":
@@ -110,6 +112,16 @@ function getStageLabel(stage: string | undefined): string {
     default:
       return "Not started";
   }
+}
+
+function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefined {
+  if (!artifact || artifact.name !== "blockbench_preview") return undefined;
+  if (!artifact.content || typeof artifact.content !== "object") return undefined;
+
+  const content = artifact.content as { imageDataUrl?: unknown };
+  return typeof content.imageDataUrl === "string" && content.imageDataUrl.startsWith("data:image/")
+    ? content.imageDataUrl
+    : undefined;
 }
 
 function validateSelectedImage(file: File): void {
@@ -136,6 +148,8 @@ function App() {
       content: "Choose Bedrock Entity or Bedrock Block, then upload a reference image or write a prompt. Bedrock Block means a placeable Minecraft Bedrock custom block."
     }
   ]);
+
+  const previewDataUrl = getPreviewDataUrl(selectedArtifact);
 
   useEffect(() => {
     let cancelled = false;
@@ -352,6 +366,7 @@ function App() {
           {selectedArtifact ? (
             <article className="artifact-viewer">
               <strong>{selectedArtifact.fileName}</strong>
+              {previewDataUrl ? <img className="preview-image" src={previewDataUrl} alt="Blockbench preview" /> : null}
               <pre>{JSON.stringify(selectedArtifact.content ?? selectedArtifact.error, null, 2)}</pre>
             </article>
           ) : null}
