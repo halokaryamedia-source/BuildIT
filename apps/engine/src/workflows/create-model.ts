@@ -1,11 +1,11 @@
 import { appendJobLog, setJobStatus, type ModelJob } from "../domain/job.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
+import { buildBlockbenchToolActions } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
 import { validateModelPlan } from "../planning/model-plan-validation.js";
-import { modelPlanToToolActions } from "../planning/tool-actions.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveImageAnalysis } from "../vision/image-analysis-store.js";
 import type { ImageAnalysis } from "../vision/image-analysis.js";
@@ -56,9 +56,36 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     currentJob = appendJobLog(currentJob, "Model plan validation completed with no issues.");
   }
 
-  const actions = modelPlanToToolActions(plan);
-  const actionsPath = await saveMcpActions(currentJob.id, actions, options.outputDir);
+  const adapterResult = buildBlockbenchToolActions(plan);
+  const actionsPath = await saveMcpActions(
+    currentJob.id,
+    {
+      createdAt: new Date().toISOString(),
+      valid: adapterResult.valid,
+      format: adapterResult.format,
+      actionCount: adapterResult.actions.length,
+      issues: adapterResult.issues,
+      actions: adapterResult.actions
+    },
+    options.outputDir
+  );
   currentJob = appendJobLog(currentJob, "MCP action list saved to " + actionsPath + ".");
+
+  if (!adapterResult.valid) {
+    return {
+      ...setJobStatus(currentJob, "failed"),
+      error: "MCP tool adapter validation failed. Review mcp_actions.json for details."
+    };
+  }
+
+  if (adapterResult.issues.length > 0) {
+    currentJob = appendJobLog(
+      currentJob,
+      "MCP tool adapter completed with " + adapterResult.issues.length + " warning(s)."
+    );
+  } else {
+    currentJob = appendJobLog(currentJob, "MCP tool adapter completed with no issues.");
+  }
 
   const isReady = await options.blockbench.health();
   if (!isReady) {
@@ -70,7 +97,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
 
-  for (const action of actions) {
+  for (const action of adapterResult.actions) {
     const startedAt = new Date().toISOString();
     currentJob = appendJobLog(currentJob, "Running MCP tool: " + action.name);
 
@@ -97,7 +124,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
           startedAt: executionStartedAt,
           finishedAt: new Date().toISOString(),
           success: false,
-          actionCount: actions.length,
+          actionCount: adapterResult.actions.length,
           steps
         },
         options.outputDir
@@ -116,7 +143,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
       startedAt: executionStartedAt,
       finishedAt: new Date().toISOString(),
       success: true,
-      actionCount: actions.length,
+      actionCount: adapterResult.actions.length,
       steps
     },
     options.outputDir

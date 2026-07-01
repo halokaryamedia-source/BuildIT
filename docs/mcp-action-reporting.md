@@ -11,7 +11,7 @@ outputs/jobs/<jobId>/mcp_execution_report.json
 
 ## `mcp_actions.json`
 
-This file contains the generated tool call list after model plan validation.
+This file contains the generated tool call list after model plan validation and Blockbench MCP adapter validation.
 
 It is useful for debugging:
 
@@ -19,7 +19,19 @@ It is useful for debugging:
 - group creation actions,
 - cube placement actions,
 - screenshot actions,
-- action order.
+- action order,
+- adapter warnings,
+- adapter errors.
+
+The file includes:
+
+- `valid`
+- `format`
+- `actionCount`
+- `issues`
+- `actions`
+
+When `valid` is false, the workflow stops before Blockbench MCP execution.
 
 ## `mcp_execution_report.json`
 
