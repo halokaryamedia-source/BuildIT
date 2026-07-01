@@ -14,6 +14,7 @@ export const jobArtifactNames = [
   "mcp_tool_name_mapping",
   "mcp_argument_shape_adaptation",
   "mcp_action_schema_match",
+  "mcp_execution_plan",
   "mcp_capabilities",
   "blockbench_preview",
   "blockbench_export",
