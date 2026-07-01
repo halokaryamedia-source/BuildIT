@@ -17,8 +17,8 @@ export interface ToolAdapterResult {
   issues: ToolAdapterIssue[];
 }
 
-export const requiredBlockbenchToolNames = ["create_project", "add_group", "place_cube", "capture_screenshot"] as const;
-export const optionalBlockbenchToolNames = ["export_project"] as const;
+export const requiredBlockbenchToolNames = ["create_project", "place_cube", "capture_screenshot"] as const;
+export const optionalBlockbenchToolNames = ["add_group", "export_project"] as const;
 
 const supportedToolNames = new Set<string>([...requiredBlockbenchToolNames, ...optionalBlockbenchToolNames]);
 const maxCubeElementsPerAction = 24;
@@ -50,6 +50,7 @@ function createGroupAction(groupName: string, origin: [number, number, number]):
 function toCubeElement(cube: McpGeometryCube): Record<string, unknown> {
   return {
     name: cube.name,
+    group: cube.group,
     from: cube.from,
     to: cube.to,
     size: cube.size,
