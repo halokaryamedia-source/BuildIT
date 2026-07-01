@@ -1,7 +1,13 @@
 import type { ModelPlan } from "../planning/model-plan.js";
-import type { SupportedBlockbenchFormat, ToolAdapterIssue } from "./blockbench-tool-adapter.js";
 
 export type Vec3 = [number, number, number];
+export type GeometryTargetFormat = "bedrock" | "bedrock_block";
+
+export interface McpGeometryIssue {
+  severity: "error" | "warning";
+  code: string;
+  message: string;
+}
 
 export interface McpGeometryBounds {
   min: Vec3;
@@ -25,21 +31,21 @@ export interface McpGeometryCube {
 
 export interface McpGeometryReport {
   createdAt: string;
-  format: SupportedBlockbenchFormat;
+  format: GeometryTargetFormat;
   valid: boolean;
   bounds: McpGeometryBounds;
   groupCount: number;
   cubeCount: number;
   groups: McpGeometryGroup[];
   cubes: McpGeometryCube[];
-  issues: ToolAdapterIssue[];
+  issues: McpGeometryIssue[];
 }
 
-function resolveFormat(format: string): SupportedBlockbenchFormat {
+function resolveFormat(format: string): GeometryTargetFormat {
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
 }
 
-function getBounds(format: SupportedBlockbenchFormat): McpGeometryBounds {
+function getBounds(format: GeometryTargetFormat): McpGeometryBounds {
   if (format === "bedrock_block") {
     return {
       min: [-8, 0, -8],
@@ -141,7 +147,7 @@ function normalizeCube(
   part: ModelPlan["parts"][number],
   index: number,
   bounds: McpGeometryBounds,
-  issues: ToolAdapterIssue[]
+  issues: McpGeometryIssue[]
 ): McpGeometryCube {
   const originalFrom = part.from;
   const originalTo = part.to;
@@ -187,7 +193,7 @@ function normalizeCube(
   };
 }
 
-function addFormatWarnings(plan: ModelPlan, format: SupportedBlockbenchFormat, issues: ToolAdapterIssue[]): void {
+function addFormatWarnings(plan: ModelPlan, format: GeometryTargetFormat, issues: McpGeometryIssue[]): void {
   const groupNames = plan.groups.join(" ").toLowerCase();
 
   if (format === "bedrock_block" && (groupNames.includes("head") || groupNames.includes("limb") || groupNames.includes("arm") || groupNames.includes("leg"))) {
@@ -210,7 +216,7 @@ function addFormatWarnings(plan: ModelPlan, format: SupportedBlockbenchFormat, i
 export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
   const format = resolveFormat(plan.format);
   const bounds = getBounds(format);
-  const issues: ToolAdapterIssue[] = [];
+  const issues: McpGeometryIssue[] = [];
   const groups = createGroupList(plan);
   const cubes = plan.parts.map((part, index) => normalizeCube(part, index, bounds, issues));
 
