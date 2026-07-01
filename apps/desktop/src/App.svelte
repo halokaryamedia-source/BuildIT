@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import { onMount } from "svelte";
 
   const engineUrl = "http://localhost:3987";
   const maxReferenceImageBytes = 10 * 1024 * 1024;
@@ -94,6 +94,12 @@
 
   const notifiedJobIds = new Set<string>();
   let pollTimer: number | undefined;
+  let activeJobId: string | undefined;
+  let previewArtifact: JobArtifactSummary | undefined;
+  let executionReportArtifact: JobArtifactSummary | undefined;
+  let schemaMatchArtifact: JobArtifactSummary | undefined;
+  let readyCardVisible = false;
+  let previewDataUrl: string | undefined;
 
   $: activeJobId = activeJob?.id;
   $: previewArtifact = artifacts.find((artifact) => artifact.name === "blockbench_preview" && artifact.available);
@@ -102,7 +108,7 @@
   $: readyCardVisible = Boolean(activeJob && ["completed", "failed", "cancelled"].includes(activeJob.status));
   $: previewDataUrl = getPreviewDataUrl(selectedArtifact);
 
-  function pushAssistantMessage(content: string) {
+  function pushAssistantMessage(content: string): void {
     messages = [...messages, { role: "assistant", content }];
   }
 
@@ -125,6 +131,7 @@
       completed: "Ready in Blockbench",
       failed: "Needs attention"
     };
+
     return stage ? labels[stage] ?? stage : "Not started";
   }
 
@@ -152,6 +159,7 @@
   function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefined {
     if (!artifact || artifact.name !== "blockbench_preview") return undefined;
     if (!artifact.content || typeof artifact.content !== "object") return undefined;
+
     const content = artifact.content as { imageDataUrl?: unknown };
     return typeof content.imageDataUrl === "string" && content.imageDataUrl.startsWith("data:image/")
       ? content.imageDataUrl
@@ -164,7 +172,7 @@
     return data;
   }
 
-  async function fetchHealth() {
+  async function fetchHealth(): Promise<void> {
     try {
       const response = await fetch(engineUrl + "/api/health");
       health = await readJsonResponse<HealthState>(response, "Unable to fetch engine health.");
@@ -173,7 +181,7 @@
     }
   }
 
-  async function fetchJobs() {
+  async function fetchJobs(): Promise<void> {
     try {
       const response = await fetch(engineUrl + "/api/jobs");
       const data = await readJsonResponse<{ jobs?: ModelJob[] }>(response, "Unable to fetch jobs.");
@@ -189,7 +197,7 @@
     return data.job;
   }
 
-  async function fetchArtifacts(jobId: string) {
+  async function fetchArtifacts(jobId: string): Promise<void> {
     const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
     const data = await readJsonResponse<{
       artifacts?: JobArtifactSummary[];
@@ -201,7 +209,7 @@
     storedDataManifest = data.storedDataManifest ?? null;
   }
 
-  async function checkDesktopRuntime(showMessage = true) {
+  async function checkDesktopRuntime(showMessage = true): Promise<void> {
     try {
       runtimeStatus = await invoke<RuntimeStatus>("check_runtime");
       if (showMessage) {
@@ -222,7 +230,7 @@
     }
   }
 
-  async function runRuntimeCommand(commandName: string, fallbackMessage: string) {
+  async function runRuntimeCommand(commandName: string, fallbackMessage: string): Promise<void> {
     try {
       const result = await invoke<RuntimeCommandResult>(commandName);
       pushAssistantMessage(result.message + (result.path ? " Path: " + result.path : ""));
@@ -254,9 +262,10 @@
     return [{ fileName: selectedFile.name, mimeType: selectedFile.type, dataUrl }];
   }
 
-  function onFileChange(event: Event) {
+  function onFileChange(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0] ?? null;
+
     try {
       if (file) validateSelectedImage(file);
       selectedFile = file;
@@ -266,7 +275,7 @@
     }
   }
 
-  async function submitJob() {
+  async function submitJob(): Promise<void> {
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt) return;
 
@@ -285,6 +294,7 @@
       });
       const data = await readJsonResponse<{ job?: ModelJob }>(response, "Unable to create job.");
       if (!data.job) throw new Error("Unable to create job.");
+
       activeJob = data.job;
       selectedFile = null;
       pushAssistantMessage("Job created. BuildIT will notify you when the model is ready in Blockbench.");
@@ -295,7 +305,7 @@
     }
   }
 
-  async function openJob(jobId: string) {
+  async function openJob(jobId: string): Promise<void> {
     try {
       activeJob = await fetchJob(jobId);
       await fetchArtifacts(jobId);
@@ -310,8 +320,9 @@
     }
   }
 
-  async function openArtifact(artifact: JobArtifactSummary | undefined) {
+  async function openArtifact(artifact: JobArtifactSummary | undefined): Promise<void> {
     if (!activeJobId || !artifact?.available) return;
+
     try {
       const response = await fetch(engineUrl + "/api/jobs/" + activeJobId + "/artifacts/" + artifact.name);
       const data = await readJsonResponse<{ artifact: JobArtifactContent }>(response, "Unable to fetch artifact.");
@@ -321,8 +332,9 @@
     }
   }
 
-  async function openStoredData() {
+  async function openStoredData(): Promise<void> {
     if (!activeJobId) return;
+
     try {
       const response = await fetch(engineUrl + "/api/jobs/" + activeJobId + "/open-stored-data", { method: "POST" });
       const data = await readJsonResponse<{ opened?: { path: string }; storedDataManifest?: StoredDataManifest }>(
@@ -336,8 +348,9 @@
     }
   }
 
-  async function pollActiveJob() {
+  async function pollActiveJob(): Promise<void> {
     if (!activeJobId) return;
+
     try {
       activeJob = await fetchJob(activeJobId);
       await fetchArtifacts(activeJobId);
@@ -351,7 +364,7 @@
     }
   }
 
-  function startPolling() {
+  function startPolling(): void {
     if (pollTimer) window.clearInterval(pollTimer);
     pollTimer = window.setInterval(() => {
       if (activeJob && !isTerminalJob(activeJob)) void pollActiveJob();
@@ -387,12 +400,12 @@
       <span>Blockbench MCP port: {runtimeStatus?.blockbench_mcp_port_open ? "open" : "unknown/offline"}</span>
       <span>Installed models: {formatList(runtimeStatus?.installed_ollama_models ?? [])}</span>
       <span>Missing models: {formatList(runtimeStatus?.missing_ollama_models ?? [])}</span>
-      <button on:click={() => runRuntimeCommand("start_buildit_engine", "Unable to start BuildIT engine from app.")}>Start Engine</button>
-      <button on:click={() => runRuntimeCommand("start_ollama", "Unable to start Ollama from app.")}>Start Ollama</button>
-      <button on:click={() => runRuntimeCommand("pull_required_ollama_models", "Unable to pull required Ollama models from app.")}>Pull Models</button>
-      <button on:click={() => runRuntimeCommand("open_blockbench", "Unable to open Blockbench app.")}>Open Blockbench App</button>
-      <button on:click={() => runRuntimeCommand("open_mcp_plugin_page", "Unable to open MCP plugin page.")}>Open MCP Plugin</button>
-      <button on:click={() => checkDesktopRuntime()}>Check Runtime</button>
+      <button onclick={() => runRuntimeCommand("start_buildit_engine", "Unable to start BuildIT engine from app.")}>Start Engine</button>
+      <button onclick={() => runRuntimeCommand("start_ollama", "Unable to start Ollama from app.")}>Start Ollama</button>
+      <button onclick={() => runRuntimeCommand("pull_required_ollama_models", "Unable to pull required Ollama models from app.")}>Pull Models</button>
+      <button onclick={() => runRuntimeCommand("open_blockbench", "Unable to open Blockbench app.")}>Open Blockbench App</button>
+      <button onclick={() => runRuntimeCommand("open_mcp_plugin_page", "Unable to open MCP plugin page.")}>Open MCP Plugin</button>
+      <button onclick={() => checkDesktopRuntime()}>Check Runtime</button>
     </div>
 
     <div class="status-card">
@@ -413,14 +426,14 @@
       <strong>Stored Data Root</strong>
       <span>{storedDataManifest?.openTargetPath ?? "No stored data yet"}</span>
       <span>{storedDataManifest?.ready ? "Ready to open" : "Waiting for required outputs"}</span>
-      <button disabled={!activeJobId || !storedDataManifest} on:click={openStoredData}>Open Stored Data</button>
+      <button disabled={!activeJobId || !storedDataManifest} onclick={openStoredData}>Open Stored Data</button>
     </div>
 
     <div class="recent-jobs">
       <strong>Recent jobs</strong>
       {#if recentJobs.length === 0}<span>No saved jobs</span>{/if}
       {#each recentJobs as job}
-        <button class="recent-job-button" on:click={() => openJob(job.id)}>
+        <button class="recent-job-button" onclick={() => openJob(job.id)}>
           <span>{job.id}</span>
           <small>{job.status} · {getStageLabel(job.stage)}</small>
           <small>{formatJobTime(job.updatedAt ?? job.createdAt)}</small>
@@ -440,10 +453,10 @@
           <strong>{activeJob.status === "completed" ? "Model ready in Blockbench" : "Generation needs attention"}</strong>
           <span>{activeJob.status === "completed" ? "The generated model should now be available inside Blockbench." : activeJob.error ?? "Check MCP diagnostics."}</span>
           <div class="ready-actions">
-            <button disabled={!previewArtifact} on:click={() => openArtifact(previewArtifact)}>View Preview</button>
-            <button disabled={!activeJobId || !storedDataManifest} on:click={openStoredData}>Open Stored Data</button>
-            <button disabled={!executionReportArtifact} on:click={() => openArtifact(executionReportArtifact)}>Check MCP Report</button>
-            <button disabled={!schemaMatchArtifact} on:click={() => openArtifact(schemaMatchArtifact)}>Check Schema Match</button>
+            <button disabled={!previewArtifact} onclick={() => openArtifact(previewArtifact)}>View Preview</button>
+            <button disabled={!activeJobId || !storedDataManifest} onclick={openStoredData}>Open Stored Data</button>
+            <button disabled={!executionReportArtifact} onclick={() => openArtifact(executionReportArtifact)}>Check MCP Report</button>
+            <button disabled={!schemaMatchArtifact} onclick={() => openArtifact(schemaMatchArtifact)}>Check Schema Match</button>
           </div>
         </article>
       {/if}
@@ -464,7 +477,7 @@
             {#each artifacts as artifact}
               <li class={artifact.available ? "available" : "missing"}>
                 <span><span>{artifact.fileName}</span><small>{artifact.available ? formatBytes(artifact.sizeBytes) + " · " + formatJobTime(artifact.updatedAt) : "pending"}</small></span>
-                <button disabled={!artifact.available} on:click={() => openArtifact(artifact)}>{artifact.available ? "View" : "Pending"}</button>
+                <button disabled={!artifact.available} onclick={() => openArtifact(artifact)}>{artifact.available ? "View" : "Pending"}</button>
               </li>
             {/each}
           </ul>
@@ -493,10 +506,10 @@
       </div>
       <label class="file-picker">
         <span>{selectedFile ? selectedFile.name : "Select reference image up to 10 MB"}</span>
-        <input type="file" accept="image/*" on:change={onFileChange} />
+        <input type="file" accept="image/*" onchange={onFileChange} />
       </label>
-      <textarea bind:value={prompt} placeholder="Describe the model you want to create..." />
-      <button on:click={submitJob}>Generate</button>
+      <textarea bind:value={prompt} placeholder="Describe the model you want to create..."></textarea>
+      <button onclick={submitJob}>Generate</button>
     </div>
   </section>
 </main>
