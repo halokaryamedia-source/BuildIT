@@ -1,6 +1,6 @@
-# Blockbench MCP Integration Plan
+# Blockbench MCP Core App Integration Plan
 
-This document prepares BuildIT for integration with the external Blockbench MCP plugin repository:
+This document prepares BuildIT for integration with the Blockbench MCP core app repository:
 
 ```txt
 https://github.com/achmadawdi/mcp-blockbench
@@ -8,9 +8,9 @@ https://github.com/achmadawdi/mcp-blockbench
 
 ## Current status
 
-BuildIT does not vendor or copy the MCP Blockbench plugin code yet.
+BuildIT does not vendor or copy the MCP Blockbench core app code yet.
 
-BuildIT currently connects to a running MCP Blockbench server through HTTP JSON-RPC.
+BuildIT currently connects to the running MCP Blockbench core app through HTTP JSON-RPC.
 
 Default endpoint expected by BuildIT:
 
@@ -18,7 +18,7 @@ Default endpoint expected by BuildIT:
 http://localhost:3000/bb-mcp
 ```
 
-The external plugin repository provides the Blockbench plugin/server side. BuildIT provides the job workflow, model planning, MCP action preparation, execution reporting, and desktop diagnostics.
+The core app repository provides the Blockbench plugin/server side. BuildIT provides the job workflow, model planning, MCP action preparation, execution reporting, stored data artifacts, and desktop diagnostics.
 
 ## Intended architecture
 
@@ -31,14 +31,14 @@ BlockbenchMcpClient
 ↓
 http://localhost:3000/bb-mcp
 ↓
-achmadawdi/mcp-blockbench plugin
+achmadawdi/mcp-blockbench core app
 ↓
 Blockbench desktop
 ```
 
-## Do not mix responsibilities
+## Responsibility boundary
 
-BuildIT should own:
+BuildIT owns:
 
 - job input and output flow,
 - reference image handling,
@@ -52,7 +52,7 @@ BuildIT should own:
 - execution plan and execution report,
 - artifact storage and desktop diagnostics.
 
-MCP Blockbench should own:
+MCP Blockbench core app owns:
 
 - Blockbench plugin runtime,
 - MCP server endpoint,
@@ -62,31 +62,33 @@ MCP Blockbench should own:
 - screenshots/previews from Blockbench,
 - optional export from Blockbench.
 
-## Integration options
+## Recommended integration mode
 
-### Option A — External plugin only
+### Phase 1 — External core app
 
 Keep `achmadawdi/mcp-blockbench` separate.
 
-BuildIT only connects to the running endpoint.
+BuildIT connects to the running endpoint.
 
-This is the safest initial integration path.
+This is the safest current integration path because it preserves the core app as the source of truth.
 
-### Option B — Git submodule
+### Phase 2 — Version-pinned core app
 
-Add the MCP plugin repository under a vendor folder later, for example:
+Add version pinning later by documenting the exact core app commit or release that BuildIT was tested against.
+
+Possible future folder if needed:
 
 ```txt
 vendor/mcp-blockbench
 ```
 
-BuildIT still talks to the plugin through HTTP. The submodule only helps development and version pinning.
+This should only be used for development convenience and compatibility pinning.
 
-### Option C — Monorepo package later
+### Phase 3 — Monorepo package only if required
 
-Move or mirror the MCP plugin into BuildIT as a package only if we need one-command development.
+Move or mirror the MCP core app into BuildIT only if one-command development becomes necessary.
 
-This requires license and build-process review because the MCP plugin is GPL-3.0-only.
+This requires license and build-process review because the MCP core app is `GPL-3.0-only`.
 
 ## Required BuildIT contract
 
@@ -105,13 +107,13 @@ Optional tool:
 export_project
 ```
 
-The MCP plugin does not need to expose those exact names if aliases are mapped in BuildIT, but the final resolved tools must support equivalent behavior.
+The MCP core app does not need to expose those exact names if aliases are mapped in BuildIT, but the final resolved tools must support equivalent behavior.
 
 ## Required integration checks
 
 Before local functional testing:
 
-1. Load the MCP plugin in Blockbench.
+1. Run or load the MCP core app in Blockbench.
 2. Enable the MCP server in Blockbench settings.
 3. Confirm endpoint is reachable at `http://localhost:3000/bb-mcp`.
 4. Run BuildIT engine health check.
@@ -129,6 +131,6 @@ Before local functional testing:
 
 ## Important note
 
-Do not copy plugin code into BuildIT until the actual MCP tool list and schema have been inspected.
+Do not copy core app code into BuildIT until the actual MCP tool list and schema have been inspected.
 
 The current BuildIT side is ready to connect, but final compatibility depends on the real tool names and schemas provided by `achmadawdi/mcp-blockbench`.
