@@ -32,6 +32,24 @@ async function inspectArtifact(outputRoot: string, jobId: string, artifactName: 
   }
 }
 
+function markArtifactIndexAvailable(report: ArtifactIndex): ArtifactIndex {
+  const wasAvailable = report.artifacts.some((artifact) => artifact.name === "artifact_index" && artifact.available);
+
+  return {
+    ...report,
+    artifacts: report.artifacts.map((artifact) =>
+      artifact.name === "artifact_index"
+        ? {
+            ...artifact,
+            available: true,
+            updatedAt: report.generatedAt
+          }
+        : artifact
+    ),
+    availableCount: wasAvailable ? report.availableCount : report.availableCount + 1
+  };
+}
+
 export async function buildArtifactIndex(outputRoot: string, jobId: string): Promise<ArtifactIndex> {
   const artifacts = await Promise.all(jobArtifactNames.map((artifactName) => inspectArtifact(outputRoot, jobId, artifactName)));
   const availableCount = artifacts.filter((artifact) => artifact.available).length;
@@ -49,23 +67,9 @@ export async function saveArtifactIndex(outputRoot: string, jobId: string): Prom
   const jobDir = join(outputRoot, "jobs", jobId);
   await mkdir(jobDir, { recursive: true });
 
-  const report = await buildArtifactIndex(outputRoot, jobId);
+  const report = markArtifactIndexAvailable(await buildArtifactIndex(outputRoot, jobId));
   const reportPath = join(jobDir, "artifact_index.json");
   await writeFile(reportPath, JSON.stringify(report, null, 2));
 
-  return {
-    ...report,
-    artifacts: report.artifacts.map((artifact) =>
-      artifact.name === "artifact_index"
-        ? {
-            ...artifact,
-            available: true,
-            updatedAt: report.generatedAt
-          }
-        : artifact
-    ),
-    availableCount: report.artifacts.some((artifact) => artifact.name === "artifact_index" && artifact.available)
-      ? report.availableCount
-      : report.availableCount + 1
-  };
+  return report;
 }
