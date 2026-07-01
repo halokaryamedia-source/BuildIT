@@ -34,6 +34,7 @@ function getArtifactRole(name: string): StoredDataFile["role"] {
   if (name === "model_plan_validation") return "validation";
   if (
     name === "mcp_geometry_plan" ||
+    name === "mcp_material_plan" ||
     name === "mcp_actions" ||
     name === "mcp_tool_schema" ||
     name === "mcp_tool_name_mapping" ||
