@@ -43,19 +43,10 @@ interface JobArtifactSummary {
 }
 
 interface ArtifactIndex {
-  jobId: string;
-  generatedAt: string;
-  artifactCount: number;
-  availableCount: number;
   artifacts: JobArtifactSummary[];
 }
 
 interface StoredDataManifest {
-  jobId: string;
-  generatedAt: string;
-  manifestVersion: number;
-  manifestType: string;
-  storedDataRoot: string;
   openTargetPath: string;
   ready: boolean;
   missingRequiredFiles: string[];
@@ -80,9 +71,7 @@ interface HealthState {
 
 interface OpenStoredDataResponse {
   opened?: {
-    openedAt: string;
     path: string;
-    command: string;
   };
   storedDataManifest?: StoredDataManifest;
   error?: string;
@@ -90,11 +79,7 @@ interface OpenStoredDataResponse {
 
 async function readJsonResponse<T>(response: Response, fallbackError: string): Promise<T> {
   const data = (await response.json()) as T & { error?: string };
-
-  if (!response.ok) {
-    throw new Error(data.error ?? fallbackError);
-  }
-
+  if (!response.ok) throw new Error(data.error ?? fallbackError);
   return data;
 }
 
@@ -106,7 +91,7 @@ async function fetchJob(jobId: string): Promise<ModelJob> {
 
 async function fetchJobs(): Promise<ModelJob[]> {
   const response = await fetch(engineUrl + "/api/jobs");
-  const data = await readJsonResponse<{ jobs: ModelJob[] }>(response, "Unable to fetch jobs.");
+  const data = await readJsonResponse<{ jobs?: ModelJob[] }>(response, "Unable to fetch jobs.");
   return data.jobs ?? [];
 }
 
@@ -136,9 +121,7 @@ async function fetchJobArtifact(jobId: string, artifactName: string): Promise<Jo
 }
 
 async function requestOpenStoredData(jobId: string): Promise<OpenStoredDataResponse> {
-  const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/open-stored-data", {
-    method: "POST"
-  });
+  const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/open-stored-data", { method: "POST" });
   return readJsonResponse<OpenStoredDataResponse>(response, "Unable to open Stored Data Root.");
 }
 
@@ -186,16 +169,6 @@ function getStageLabel(stage: string | undefined): string {
   }
 }
 
-function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefined {
-  if (!artifact || artifact.name !== "blockbench_preview") return undefined;
-  if (!artifact.content || typeof artifact.content !== "object") return undefined;
-
-  const content = artifact.content as { imageDataUrl?: unknown };
-  return typeof content.imageDataUrl === "string" && content.imageDataUrl.startsWith("data:image/")
-    ? content.imageDataUrl
-    : undefined;
-}
-
 function formatJobTime(value: string | undefined): string {
   if (!value) return "Unknown time";
   const date = new Date(value);
@@ -210,13 +183,8 @@ function formatBytes(value: number | undefined): string {
 }
 
 function validateSelectedImage(file: File): void {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Please select an image file.");
-  }
-
-  if (file.size > maxReferenceImageBytes) {
-    throw new Error("Reference image must be 10 MB or smaller.");
-  }
+  if (!file.type.startsWith("image/")) throw new Error("Please select an image file.");
+  if (file.size > maxReferenceImageBytes) throw new Error("Reference image must be 10 MB or smaller.");
 }
 
 function isTerminalStatus(status: string): status is TerminalJobStatus {
@@ -241,6 +209,15 @@ function findArtifact(artifacts: JobArtifactSummary[], artifactName: string): Jo
   return artifacts.find((artifact) => artifact.name === artifactName && artifact.available);
 }
 
+function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefined {
+  if (!artifact || artifact.name !== "blockbench_preview") return undefined;
+  if (!artifact.content || typeof artifact.content !== "object") return undefined;
+  const content = artifact.content as { imageDataUrl?: unknown };
+  return typeof content.imageDataUrl === "string" && content.imageDataUrl.startsWith("data:image/")
+    ? content.imageDataUrl
+    : undefined;
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
@@ -260,19 +237,16 @@ function App() {
     }
   ]);
 
+  const activeJobId = activeJob?.id;
+  const activeJobStatus = activeJob?.status;
   const previewDataUrl = getPreviewDataUrl(selectedArtifact);
   const previewArtifact = findArtifact(artifacts, "blockbench_preview");
   const executionReportArtifact = findArtifact(artifacts, "mcp_execution_report");
   const schemaMatchArtifact = findArtifact(artifacts, "mcp_action_schema_match");
   const readyCardVisible = Boolean(activeJob && isTerminalStatus(activeJob.status));
 
-  async function refreshRecentJobs() {
-    try {
-      const jobs = await fetchJobs();
-      setRecentJobs(jobs.slice(0, 8));
-    } catch {
-      setRecentJobs([]);
-    }
+  function pushAssistantMessage(content: string) {
+    setMessages((current) => [...current, { role: "assistant", content }]);
   }
 
   function applyArtifactResponse(response: ArtifactResponse) {
@@ -283,7 +257,16 @@ function App() {
   function notifyTerminalJob(job: ModelJob) {
     if (!isTerminalStatus(job.status) || terminalNotifiedJobIds.current.has(job.id)) return;
     terminalNotifiedJobIds.current.add(job.id);
-    setMessages((current) => [...current, { role: "assistant", content: getTerminalMessage(job) }]);
+    pushAssistantMessage(getTerminalMessage(job));
+  }
+
+  async function refreshRecentJobs() {
+    try {
+      const jobs = await fetchJobs();
+      setRecentJobs(jobs.slice(0, 8));
+    } catch {
+      setRecentJobs([]);
+    }
   }
 
   useEffect(() => {
@@ -312,7 +295,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!activeJob) {
+    if (!activeJobId) {
       setArtifacts([]);
       setStoredDataManifest(null);
       setSelectedArtifact(null);
@@ -320,10 +303,11 @@ function App() {
     }
 
     let cancelled = false;
+    const jobId = activeJobId;
 
     async function refreshArtifacts() {
       try {
-        const nextArtifacts = await fetchJobArtifacts(activeJob.id);
+        const nextArtifacts = await fetchJobArtifacts(jobId);
         if (!cancelled) applyArtifactResponse(nextArtifacts);
       } catch {
         if (!cancelled) setArtifacts([]);
@@ -335,56 +319,43 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [activeJob]);
+  }, [activeJobId]);
 
   useEffect(() => {
-    if (!activeJob || isTerminalStatus(activeJob.status)) return;
+    if (!activeJobId || !activeJobStatus || isTerminalStatus(activeJobStatus)) return;
 
+    const jobId = activeJobId;
     const timer = window.setInterval(async () => {
       try {
-        const nextJob = await fetchJob(activeJob.id);
-        const nextArtifacts = await fetchJobArtifacts(activeJob.id);
+        const nextJob = await fetchJob(jobId);
+        const nextArtifacts = await fetchJobArtifacts(jobId);
         setActiveJob(nextJob);
         applyArtifactResponse(nextArtifacts);
         notifyTerminalJob(nextJob);
         void refreshRecentJobs();
       } catch (error) {
-        setMessages((current) => [
-          ...current,
-          { role: "assistant", content: error instanceof Error ? error.message : "Unable to refresh active job." }
-        ]);
+        pushAssistantMessage(error instanceof Error ? error.message : "Unable to refresh active job.");
       }
     }, 1500);
 
     return () => window.clearInterval(timer);
-  }, [activeJob]);
+  }, [activeJobId, activeJobStatus]);
 
   async function createReferenceImageUpload(): Promise<ReferenceImageUpload[]> {
     if (!selectedFile) return [];
-
     validateSelectedImage(selectedFile);
     const dataUrl = await readFileAsDataUrl(selectedFile);
-
-    return [
-      {
-        fileName: selectedFile.name,
-        mimeType: selectedFile.type,
-        dataUrl
-      }
-    ];
+    return [{ fileName: selectedFile.name, mimeType: selectedFile.type, dataUrl }];
   }
 
   async function openArtifact(artifact: JobArtifactSummary) {
-    if (!activeJob || !artifact.available) return;
+    if (!activeJobId || !artifact.available) return;
 
     try {
-      const nextArtifact = await fetchJobArtifact(activeJob.id, artifact.name);
+      const nextArtifact = await fetchJobArtifact(activeJobId, artifact.name);
       setSelectedArtifact(nextArtifact);
     } catch (error) {
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open artifact." }
-      ]);
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to open artifact.");
     }
   }
 
@@ -394,24 +365,14 @@ function App() {
   }
 
   async function openStoredData() {
-    if (!activeJob) return;
+    if (!activeJobId) return;
 
     try {
-      const result = await requestOpenStoredData(activeJob.id);
+      const result = await requestOpenStoredData(activeJobId);
       if (result.storedDataManifest) setStoredDataManifest(result.storedDataManifest);
-
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content: "Opened Stored Data Root: " + (result.opened?.path ?? storedDataManifest?.openTargetPath ?? activeJob.id)
-        }
-      ]);
+      pushAssistantMessage("Opened Stored Data Root: " + (result.opened?.path ?? storedDataManifest?.openTargetPath ?? activeJobId));
     } catch (error) {
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open Stored Data Root." }
-      ]);
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to open Stored Data Root.");
     }
   }
 
@@ -424,10 +385,7 @@ function App() {
       setSelectedArtifact(null);
       notifyTerminalJob(job);
     } catch (error) {
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open job." }
-      ]);
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to open job.");
     }
   }
 
@@ -437,10 +395,7 @@ function App() {
       setSelectedFile(file);
     } catch (error) {
       setSelectedFile(null);
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: error instanceof Error ? error.message : "Invalid reference image." }
-      ]);
+      pushAssistantMessage(error instanceof Error ? error.message : "Invalid reference image.");
     }
   }
 
@@ -456,7 +411,6 @@ function App() {
 
     try {
       const referenceImages = await createReferenceImageUpload();
-
       const response = await fetch(engineUrl + "/api/jobs", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -468,31 +422,19 @@ function App() {
           autoReview: true
         })
       });
-
       const data = await readJsonResponse<{ job?: ModelJob }>(response, "Unable to create job.");
-
-      if (!data.job) {
-        throw new Error("Unable to create job.");
-      }
+      if (!data.job) throw new Error("Unable to create job.");
 
       setActiveJob(data.job);
       setSelectedFile(null);
       await refreshRecentJobs();
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content:
-            referenceImages.length > 0
-              ? "Job created with a reference image for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
-              : "Job created for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
-        }
-      ]);
+      pushAssistantMessage(
+        referenceImages.length > 0
+          ? "Job created with a reference image for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
+          : "Job created for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
+      );
     } catch (error) {
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: error instanceof Error ? error.message : "Unable to reach the engine API." }
-      ]);
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to reach the engine API.");
     }
   }
 
@@ -521,7 +463,7 @@ function App() {
           <strong>Stored Data Root</strong>
           <span>{storedDataManifest?.openTargetPath ?? "No stored data yet"}</span>
           <span>{storedDataManifest?.ready ? "Ready to open" : "Waiting for required outputs"}</span>
-          <button disabled={!activeJob || !storedDataManifest} onClick={() => void openStoredData()}>
+          <button disabled={!activeJobId || !storedDataManifest} onClick={() => void openStoredData()}>
             Open Stored Data
           </button>
         </div>
@@ -562,7 +504,7 @@ function App() {
                 <button disabled={!previewArtifact} onClick={() => void openNamedArtifact("blockbench_preview")}>
                   View Preview
                 </button>
-                <button disabled={!activeJob || !storedDataManifest} onClick={() => void openStoredData()}>
+                <button disabled={!activeJobId || !storedDataManifest} onClick={() => void openStoredData()}>
                   Open Stored Data
                 </button>
                 <button disabled={!executionReportArtifact} onClick={() => void openNamedArtifact("mcp_execution_report")}>
