@@ -8,6 +8,7 @@ export const jobArtifactNames = [
   "model_plan_validation",
   "mcp_actions",
   "mcp_capabilities",
+  "blockbench_preview",
   "mcp_execution_report"
 ] as const;
 
