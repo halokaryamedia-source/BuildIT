@@ -11,6 +11,8 @@ The adapter is responsible for:
 - mapping Bedrock Entity plans to Blockbench project actions,
 - mapping Bedrock Block plans to Blockbench custom block actions,
 - building group and cube placement actions,
+- building preview capture actions,
+- building export actions,
 - validating supported tool names,
 - validating required tool argument shapes,
 - saving adapter warnings and errors inside `mcp_actions.json`.
@@ -24,6 +26,7 @@ create_project
 add_group
 place_cube
 capture_screenshot
+export_project
 ```
 
 The required tool list is exported as `requiredBlockbenchToolNames` and reused by MCP capability discovery.
