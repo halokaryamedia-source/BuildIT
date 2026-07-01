@@ -1,6 +1,7 @@
 import type { ModelPlan } from "../planning/model-plan.js";
 import { applyBedrockBlockGeometryRules } from "./mcp-bedrock-block-geometry.js";
 import { applyBedrockEntityGeometryRules } from "./mcp-bedrock-entity-geometry.js";
+import { evaluateGeometryPreflight, type McpGeometryPreflightReport } from "./mcp-geometry-preflight.js";
 
 export type Vec3 = [number, number, number];
 export type GeometryTargetFormat = "bedrock" | "bedrock_block";
@@ -41,6 +42,7 @@ export interface McpGeometryReport {
   groups: McpGeometryGroup[];
   cubes: McpGeometryCube[];
   issues: McpGeometryIssue[];
+  preflight?: McpGeometryPreflightReport;
 }
 
 function resolveFormat(format: string): GeometryTargetFormat {
@@ -220,6 +222,16 @@ function applyFormatSpecificRules(report: McpGeometryReport): McpGeometryReport 
   return applyBedrockEntityGeometryRules(report);
 }
 
+function withPreflight(report: McpGeometryReport): McpGeometryReport {
+  const preflight = evaluateGeometryPreflight(report);
+
+  return {
+    ...report,
+    preflight,
+    valid: report.valid && preflight.status !== "blocked"
+  };
+}
+
 export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
   const format = resolveFormat(plan.format);
   const bounds = getBounds(format);
@@ -249,5 +261,5 @@ export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
     issues
   };
 
-  return applyFormatSpecificRules(baseReport);
+  return withPreflight(applyFormatSpecificRules(baseReport));
 }
