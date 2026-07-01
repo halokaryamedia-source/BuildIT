@@ -32,7 +32,16 @@ function getArtifactRole(name: string): StoredDataFile["role"] {
   if (name === "image_analysis") return "input";
   if (name === "model_plan") return "plan";
   if (name === "model_plan_validation") return "validation";
-  if (name === "mcp_actions" || name === "mcp_tool_schema" || name === "mcp_capabilities" || name === "mcp_execution_report") return "mcp";
+  if (
+    name === "mcp_actions" ||
+    name === "mcp_tool_schema" ||
+    name === "mcp_tool_name_mapping" ||
+    name === "mcp_action_schema_match" ||
+    name === "mcp_capabilities" ||
+    name === "mcp_execution_report"
+  ) {
+    return "mcp";
+  }
   if (name === "blockbench_preview") return "preview";
   if (name === "blockbench_export") return "export";
   return "diagnostic";
