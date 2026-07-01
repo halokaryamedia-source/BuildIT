@@ -16,6 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src/main.tsx", "src/vite-env.d.ts", "src/desktop-api.d.ts"],
+  "include": ["src/main.tsx", "src/vite-env.d.ts"],
   "references": []
 }
