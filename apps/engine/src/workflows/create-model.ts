@@ -1,7 +1,7 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
 import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
-import { buildBlockbenchToolActions } from "../mcp/blockbench-tool-adapter.js";
+import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
@@ -160,12 +160,30 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
+  const missingOptionalToolSet = new Set(capabilityReport.missingOptionalTools ?? []);
+  const optionalToolSet = new Set<string>(optionalBlockbenchToolNames);
+
   currentJob = await enterStage(currentJob, "executing_mcp", options);
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
 
   for (const action of adapterResult.actions) {
     const startedAt = new Date().toISOString();
+
+    if (optionalToolSet.has(action.name) && missingOptionalToolSet.has(action.name)) {
+      steps.push({
+        toolName: action.name,
+        startedAt,
+        finishedAt: new Date().toISOString(),
+        success: true,
+        skipped: true
+      });
+      currentJob = await reportProgress(
+        appendJobLog(currentJob, "Skipping optional MCP tool: " + action.name + "."),
+        options
+      );
+      continue;
+    }
 
     if (action.name === "capture_screenshot") {
       currentJob = await enterStage(currentJob, "capturing_preview", options);
