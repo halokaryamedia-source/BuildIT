@@ -49,6 +49,22 @@ interface ArtifactIndex {
   artifacts: JobArtifactSummary[];
 }
 
+interface StoredDataManifest {
+  jobId: string;
+  generatedAt: string;
+  manifestVersion: number;
+  manifestType: string;
+  storedDataRoot: string;
+  openTargetPath: string;
+  ready: boolean;
+  missingRequiredFiles: string[];
+}
+
+interface ArtifactResponse {
+  artifacts: JobArtifactSummary[];
+  storedDataManifest?: StoredDataManifest;
+}
+
 interface JobArtifactContent extends JobArtifactSummary {
   content?: unknown;
   error?: string;
@@ -78,10 +94,18 @@ async function fetchHealth(): Promise<HealthState> {
   return (await response.json()) as HealthState;
 }
 
-async function fetchJobArtifacts(jobId: string): Promise<JobArtifactSummary[]> {
+async function fetchJobArtifacts(jobId: string): Promise<ArtifactResponse> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
-  const data = (await response.json()) as { artifacts?: JobArtifactSummary[]; artifactIndex?: ArtifactIndex };
-  return data.artifactIndex?.artifacts ?? data.artifacts ?? [];
+  const data = (await response.json()) as {
+    artifacts?: JobArtifactSummary[];
+    artifactIndex?: ArtifactIndex;
+    storedDataManifest?: StoredDataManifest;
+  };
+
+  return {
+    artifacts: data.artifactIndex?.artifacts ?? data.artifacts ?? [],
+    storedDataManifest: data.storedDataManifest
+  };
 }
 
 async function fetchJobArtifact(jobId: string, artifactName: string): Promise<JobArtifactContent> {
@@ -174,6 +198,7 @@ function App() {
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
   const [recentJobs, setRecentJobs] = useState<ModelJob[]>([]);
   const [artifacts, setArtifacts] = useState<JobArtifactSummary[]>([]);
+  const [storedDataManifest, setStoredDataManifest] = useState<StoredDataManifest | null>(null);
   const [selectedArtifact, setSelectedArtifact] = useState<JobArtifactContent | null>(null);
   const [health, setHealth] = useState<HealthState | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -193,6 +218,11 @@ function App() {
     } catch {
       setRecentJobs([]);
     }
+  }
+
+  function applyArtifactResponse(response: ArtifactResponse) {
+    setArtifacts(response.artifacts);
+    setStoredDataManifest(response.storedDataManifest ?? null);
   }
 
   useEffect(() => {
@@ -223,6 +253,7 @@ function App() {
   useEffect(() => {
     if (!activeJob) {
       setArtifacts([]);
+      setStoredDataManifest(null);
       setSelectedArtifact(null);
       return;
     }
@@ -231,7 +262,7 @@ function App() {
 
     async function refreshArtifacts() {
       const nextArtifacts = await fetchJobArtifacts(activeJob.id);
-      if (!cancelled) setArtifacts(nextArtifacts);
+      if (!cancelled) applyArtifactResponse(nextArtifacts);
     }
 
     void refreshArtifacts();
@@ -248,13 +279,13 @@ function App() {
       const nextJob = await fetchJob(activeJob.id);
       const nextArtifacts = await fetchJobArtifacts(activeJob.id);
       setActiveJob(nextJob);
-      setArtifacts(nextArtifacts);
+      applyArtifactResponse(nextArtifacts);
       void refreshRecentJobs();
 
       if (nextJob.status === "completed") {
         setMessages((current) => [
           ...current,
-          { role: "assistant", content: "Model generation completed. Please open Blockbench to review the result." }
+          { role: "assistant", content: "Model generation completed. Open the Stored Data Root to review saved outputs." }
         ]);
       }
 
@@ -295,7 +326,7 @@ function App() {
       const job = await fetchJob(jobId);
       const nextArtifacts = await fetchJobArtifacts(jobId);
       setActiveJob(job);
-      setArtifacts(nextArtifacts);
+      applyArtifactResponse(nextArtifacts);
       setSelectedArtifact(null);
     } catch (error) {
       setMessages((current) => [
@@ -325,6 +356,7 @@ function App() {
     setMessages((current) => [...current, { role: "user", content: getTargetLabel(targetFormat) + ": " + trimmedPrompt }]);
     setPrompt("");
     setArtifacts([]);
+    setStoredDataManifest(null);
     setSelectedArtifact(null);
 
     try {
@@ -390,6 +422,11 @@ function App() {
           <span>Stage: {getStageLabel(activeJob?.stage)}</span>
         </div>
         <div className="status-card">
+          <strong>Stored Data Root</strong>
+          <span>{storedDataManifest?.openTargetPath ?? "No stored data yet"}</span>
+          <span>{storedDataManifest?.ready ? "Ready to open" : "Waiting for required outputs"}</span>
+        </div>
+        <div className="status-card">
           <strong>Artifacts</strong>
           <span>{artifacts.filter((artifact) => artifact.available).length} available</span>
         </div>
@@ -424,6 +461,13 @@ function App() {
                   <li key={log.at}>{log.message}</li>
                 ))}
               </ul>
+            </article>
+          ) : null}
+          {storedDataManifest ? (
+            <article className="job-card">
+              <strong>Stored Data Root</strong>
+              <span>{storedDataManifest.openTargetPath}</span>
+              <span>{storedDataManifest.ready ? "Ready to open" : "Missing: " + storedDataManifest.missingRequiredFiles.join(", ")}</span>
             </article>
           ) : null}
           {artifacts.length > 0 ? (
