@@ -1,7 +1,7 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
 import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import type { BlockbenchMcpClient, McpToolCall } from "../mcp/blockbench-client.js";
-import { optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
+import { optionalBlockbenchToolNames, type SupportedBlockbenchFormat } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import {
   getCanonicalToolNameForResolvedName,
@@ -14,7 +14,7 @@ import { saveBlockbenchPreview } from "../preview/blockbench-preview-store.js";
 export interface McpExecutionRunnerOptions {
   blockbench: BlockbenchMcpClient;
   outputDir: string;
-  adapterFormat: string;
+  adapterFormat: SupportedBlockbenchFormat;
   toolNameMappingReport: McpToolNameMappingReport;
   missingOptionalTools: string[];
   onProgress?: (job: ModelJob) => void | Promise<void>;
