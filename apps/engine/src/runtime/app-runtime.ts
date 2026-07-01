@@ -1,4 +1,4 @@
-import { appendJobLog, createJob, setJobStatus, type ModelJobInput } from "../domain/job.js";
+import { appendJobLog, createJob, setJobStatus, type ModelJob, type ModelJobInput } from "../domain/job.js";
 import { JobStore } from "../jobs/job-store.js";
 import { saveJobSnapshot } from "../jobs/job-snapshot-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
@@ -29,6 +29,11 @@ export class AppRuntime {
     this.sync = new SyncManager(this.blockbench, options.blockbenchMcpUrl);
   }
 
+  private async persistJob(job: ModelJob): Promise<void> {
+    this.jobs.save(job);
+    await saveJobSnapshot(job, this.options.outputDir);
+  }
+
   async createModelJob(input: ModelJobInput, referenceUploads: ReferenceImageUpload[] = []) {
     let job = createJob(input);
 
@@ -48,8 +53,7 @@ export class AppRuntime {
         : "No reference image files were provided."
     );
 
-    await saveJobSnapshot(job, this.options.outputDir);
-    this.jobs.save(job);
+    await this.persistJob(job);
     void this.runJob(job.id);
 
     return job;
@@ -64,17 +68,18 @@ export class AppRuntime {
         ollama: this.ollama,
         vision: this.vision,
         blockbench: this.blockbench,
-        outputDir: this.options.outputDir
+        outputDir: this.options.outputDir,
+        onProgress: async (progressJob) => {
+          await this.persistJob(progressJob);
+        }
       });
-      await saveJobSnapshot(result, this.options.outputDir);
-      this.jobs.save(result);
+      await this.persistJob(result);
     } catch (error) {
       const failedJob = {
         ...setJobStatus(job, "failed"),
         error: error instanceof Error ? error.message : "Unknown job failure."
       };
-      await saveJobSnapshot(failedJob, this.options.outputDir);
-      this.jobs.save(failedJob);
+      await this.persistJob(failedJob);
     }
   }
 
