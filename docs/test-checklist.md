@@ -18,7 +18,10 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the job list includes memory jobs and persisted job snapshots.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
+- Confirm the artifact API returns `artifactIndex`.
+- Confirm `artifactIndex.artifacts` includes size and update metadata for available artifacts.
 - Confirm `job_snapshot.json` appears in the artifact list.
+- Confirm `artifact_index.json` appears in the artifact list.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
 - Confirm reference images larger than 10 MB are rejected by the engine.
@@ -43,6 +46,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm recent job logs appear in the job card.
 - Confirm artifact availability appears in the sidebar.
 - Confirm the job artifacts card shows available and pending artifact files.
+- Confirm available artifact rows show size and update time.
 - Click View on an available artifact.
 - Confirm the artifact JSON viewer displays formatted JSON.
 - Confirm `blockbench_preview.json` displays an image when `imageDataUrl` is present.
@@ -57,6 +61,7 @@ Use this checklist before merging a development slice into `V1`.
 
 - Confirm uploaded references are saved under `outputs/jobs/<jobId>/references/`.
 - Confirm `outputs/jobs/<jobId>/job_snapshot.json` is created and updated during progress.
+- Confirm `outputs/jobs/<jobId>/artifact_index.json` is created when artifact summaries are requested.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
