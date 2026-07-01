@@ -12,8 +12,11 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `blockbench.connected` reflects the local Blockbench MCP state.
 - Confirm `mcpCapabilities.valid` reflects whether the required MCP tools are available.
 - Confirm `mcpCapabilities.missingTools` is empty when the MCP server is compatible.
+- Confirm `mcpCapabilities.optionalTools` includes optional progressive enhancement tools.
+- Confirm `mcpCapabilities.missingOptionalTools` can include optional tools without making `valid` false.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
+- Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
 - Confirm reference images larger than 10 MB are rejected by the engine.
@@ -32,11 +35,13 @@ Use this checklist before merging a development slice into `V1`.
 - Click Generate.
 - Confirm a job is created.
 - Confirm the active job status appears in the sidebar.
+- Confirm workflow stage appears in the sidebar and job card.
 - Confirm recent job logs appear in the job card.
 - Confirm artifact availability appears in the sidebar.
 - Confirm the job artifacts card shows available and pending artifact files.
 - Click View on an available artifact.
 - Confirm the artifact JSON viewer displays formatted JSON.
+- Confirm `blockbench_preview.json` displays an image when `imageDataUrl` is present.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
 - Confirm the logs mention model plan validation.
@@ -47,14 +52,18 @@ Use this checklist before merging a development slice into `V1`.
 ## Output files
 
 - Confirm uploaded references are saved under `outputs/jobs/<jobId>/references/`.
+- Confirm `outputs/jobs/<jobId>/job_snapshot.json` is created and updated during progress.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
 - Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
 - Confirm `outputs/jobs/<jobId>/mcp_capabilities.json` is created before execution.
-- Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `missingTools`, and `valid`.
+- Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `optionalTools`, `missingTools`, `missingOptionalTools`, and `valid`.
+- Confirm `outputs/jobs/<jobId>/blockbench_preview.json` is created when preview capture runs.
+- Confirm `outputs/jobs/<jobId>/blockbench_export.json` is created only when optional export runs.
 - Confirm `outputs/jobs/<jobId>/mcp_execution_report.json` is created after execution starts.
+- Confirm skipped optional tools are recorded with `skipped: true` in `mcp_execution_report.json`.
 - Confirm Bedrock Entity jobs use `format: "bedrock"` in `model_plan.json`.
 - Confirm Bedrock Block jobs use `format: "bedrock_block"` in `model_plan.json`.
 - Confirm Bedrock Block validation keeps the plan in placeable Minecraft custom block context.
