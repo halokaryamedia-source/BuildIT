@@ -48,8 +48,8 @@ export function buildMcpExecutionPlan(
   mappingReport: McpToolNameMappingReport,
   missingOptionalTools: string[]
 ): McpExecutionPlanReport {
-  const optionalToolSet = new Set<string>(optionalBlockbenchToolNames);
-  const missingOptionalToolSet = new Set(missingOptionalTools);
+  const optionalToolSet = new Set<string>([...optionalBlockbenchToolNames]);
+  const missingOptionalToolSet = new Set<string>(missingOptionalTools);
 
   const items = actions.map((action, index): McpExecutionPlanItem => {
     const canonicalToolName = getCanonicalToolNameForResolvedName(action.name, mappingReport) ?? (action.name as CanonicalMcpToolName);
