@@ -1,8 +1,8 @@
-# Blockbench MCP Tool Contract
+# Blockbench MCP Core App Tool Contract
 
 This is the BuildIT-side contract for Blockbench MCP tools.
 
-The external plugin may use different tool names or argument shapes. BuildIT handles that through:
+The MCP Blockbench core app may use different tool names or argument shapes. BuildIT handles that through:
 
 ```txt
 apps/engine/src/mcp/mcp-tool-name-mapping.ts
@@ -85,7 +85,7 @@ Notes:
 
 - BuildIT batches cube placement.
 - Current max cube elements per action is controlled in `blockbench-tool-adapter.ts`.
-- If the plugin expects `cubes`, `boxes`, `position`, or `dimensions`, adapt it in `mcp-argument-shape-adapter.ts`.
+- If the core app expects `cubes`, `boxes`, `position`, or `dimensions`, adapt it in `mcp-argument-shape-adapter.ts`.
 
 ### `capture_screenshot`
 
@@ -136,7 +136,7 @@ A path-like value is preferred.
 
 Export is optional. Missing export support or incomplete export metadata should not fail the whole job.
 
-## Real plugin compatibility process
+## Real core app compatibility process
 
 When testing with `achmadawdi/mcp-blockbench`:
 
@@ -146,11 +146,11 @@ When testing with `achmadawdi/mcp-blockbench`:
 4. Open `mcp_tool_name_mapping.json`.
 5. Confirm all required canonical tools resolved.
 6. Open `mcp_argument_shape_adaptation.json`.
-7. Confirm arguments match real plugin schema.
+7. Confirm arguments match real core app schema.
 8. Open `mcp_action_schema_match.json`.
 9. Confirm no required schema errors remain.
 10. Open `mcp_execution_plan.json`.
-11. Confirm final payload is what the plugin expects.
+11. Confirm final payload is what the core app expects.
 
 ## Where to update if mismatch happens
 
