@@ -29,10 +29,22 @@ interface ModelJob {
   error?: string;
 }
 
+interface JobArtifactSummary {
+  name: string;
+  fileName: string;
+  available: boolean;
+}
+
 async function fetchJob(jobId: string): Promise<ModelJob> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId);
   const data = (await response.json()) as { job: ModelJob };
   return data.job;
+}
+
+async function fetchJobArtifacts(jobId: string): Promise<JobArtifactSummary[]> {
+  const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
+  const data = (await response.json()) as { artifacts: JobArtifactSummary[] };
+  return data.artifacts ?? [];
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -53,6 +65,7 @@ function App() {
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
+  const [artifacts, setArtifacts] = useState<JobArtifactSummary[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -61,11 +74,33 @@ function App() {
   ]);
 
   useEffect(() => {
+    if (!activeJob) {
+      setArtifacts([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function refreshArtifacts() {
+      const nextArtifacts = await fetchJobArtifacts(activeJob.id);
+      if (!cancelled) setArtifacts(nextArtifacts);
+    }
+
+    void refreshArtifacts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeJob]);
+
+  useEffect(() => {
     if (!activeJob || ["completed", "failed", "cancelled"].includes(activeJob.status)) return;
 
     const timer = window.setInterval(async () => {
       const nextJob = await fetchJob(activeJob.id);
+      const nextArtifacts = await fetchJobArtifacts(activeJob.id);
       setActiveJob(nextJob);
+      setArtifacts(nextArtifacts);
 
       if (nextJob.status === "completed") {
         setMessages((current) => [
@@ -105,6 +140,7 @@ function App() {
 
     setMessages((current) => [...current, { role: "user", content: getTargetLabel(targetFormat) + ": " + trimmedPrompt }]);
     setPrompt("");
+    setArtifacts([]);
 
     try {
       const referenceImages = await createReferenceImageUpload();
@@ -160,6 +196,10 @@ function App() {
           <strong>Active job</strong>
           <span>{activeJob ? activeJob.status : "No active job"}</span>
         </div>
+        <div className="status-card">
+          <strong>Artifacts</strong>
+          <span>{artifacts.filter((artifact) => artifact.available).length} available</span>
+        </div>
       </aside>
       <section className="chat-panel">
         <div className="messages">
@@ -175,6 +215,19 @@ function App() {
               <ul>
                 {activeJob.logs.slice(-5).map((log) => (
                   <li key={log.at}>{log.message}</li>
+                ))}
+              </ul>
+            </article>
+          ) : null}
+          {artifacts.length > 0 ? (
+            <article className="artifact-card">
+              <strong>Job artifacts</strong>
+              <ul>
+                {artifacts.map((artifact) => (
+                  <li key={artifact.name} className={artifact.available ? "available" : "missing"}>
+                    <span>{artifact.fileName}</span>
+                    <span>{artifact.available ? "available" : "pending"}</span>
+                  </li>
                 ))}
               </ul>
             </article>
