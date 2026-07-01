@@ -30,7 +30,7 @@ interface McpToolsListResult {
   tools?: unknown;
 }
 
-interface McpToolCallResult {
+export interface McpToolCallResult {
   content?: unknown;
   structuredContent?: unknown;
   isError?: boolean;
