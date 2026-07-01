@@ -6,6 +6,7 @@ BuildIT stores MCP actions and execution results so Blockbench MCP runs can be d
 
 ```txt
 mcp_actions.json
+mcp_execution_plan.json
 mcp_execution_report.json
 ```
 
@@ -13,19 +14,15 @@ mcp_execution_report.json
 
 This file contains the adapter-generated MCP action list before tool-name mapping, argument adaptation, schema matching, and execution.
 
-It is useful for debugging:
+## `mcp_execution_plan.json`
 
-- project creation,
-- group creation,
-- cube placement,
-- preview capture,
-- optional export,
-- action order,
-- adapter warnings and errors.
+This file contains the final action list that BuildIT intends to send to Blockbench MCP after mapping, adaptation, and schema matching.
+
+It is the best artifact for checking the intended execution order.
 
 ## `mcp_execution_report.json`
 
-This file records the actual MCP execution step by step.
+This file records what actually happened during Blockbench MCP execution.
 
 Each step can include:
 
@@ -38,9 +35,12 @@ Each step can include:
 - skipped state,
 - non-fatal optional failure state,
 - result summary,
+- result validation,
 - output artifact names,
 - error message.
 
 Required tool failures fail the job.
 
-Optional tool failures are recorded as `nonFatal: true` and the job continues. For example, if export fails but project creation, groups, cubes, and preview succeeded, the job can still complete with a recorded optional export failure.
+Required result validation failures also fail the job. For example, `capture_screenshot` must return an image data URL.
+
+Optional tool failures and optional result validation failures are recorded as `nonFatal: true` and the job continues.
