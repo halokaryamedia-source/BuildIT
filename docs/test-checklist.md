@@ -2,10 +2,11 @@
 
 Use this checklist before merging a development slice into `V1`.
 
-## External Blockbench MCP plugin
+## Blockbench MCP core app
 
-- Load the external Blockbench MCP plugin from `achmadawdi/mcp-blockbench`.
-- Confirm Blockbench desktop is running.
+- Treat `achmadawdi/mcp-blockbench` as the Blockbench MCP core app.
+- Confirm the boundary in `docs/buildit-mcp-core-boundary.md`.
+- Run or load the core app with Blockbench desktop.
 - Confirm the MCP server is enabled in Blockbench settings.
 - Confirm the active endpoint is available, normally:
 
@@ -13,8 +14,8 @@ Use this checklist before merging a development slice into `V1`.
 http://localhost:3000/bb-mcp
 ```
 
-- If multiple Blockbench windows are open, copy the exact endpoint from the plugin panel.
-- Use `docs/blockbench-mcp-integration-checklist.md` for the full plugin compatibility check.
+- If multiple Blockbench windows are open, copy the exact endpoint from the core app/plugin panel.
+- Use `docs/blockbench-mcp-integration-checklist.md` for the full core app compatibility check.
 
 ## Engine
 
