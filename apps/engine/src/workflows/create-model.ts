@@ -20,8 +20,8 @@ import {
   type CanonicalMcpToolName
 } from "../mcp/mcp-tool-name-mapping.js";
 import { saveMcpToolNameMappingReport } from "../mcp/mcp-tool-name-mapping-store.js";
+import { validateMcpToolResult } from "../mcp/mcp-tool-result-validation.js";
 import { saveMcpToolSchemaReport } from "../mcp/mcp-tool-schema-store.js";
-import { summarizeMcpToolResult } from "../mcp/mcp-tool-result-summary.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
@@ -55,6 +55,10 @@ function getRequiredFailureCount(steps: McpExecutionStep[]): number {
 
 function getOptionalFailureCount(steps: McpExecutionStep[]): number {
   return steps.filter((step) => !step.success && step.optional).length;
+}
+
+function getResultValidationFailureCount(steps: McpExecutionStep[]): number {
+  return steps.filter((step) => step.resultValidation && !step.resultValidation.valid).length;
 }
 
 async function failJob(currentJob: ModelJob, message: string, options: CreateModelWorkflowOptions): Promise<ModelJob> {
@@ -249,7 +253,48 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
     try {
       const toolResult = await options.blockbench.callTool(action);
+      const resultValidation = validateMcpToolResult(canonicalToolName, action.name, toolResult);
       const outputArtifacts: string[] = [];
+
+      if (!resultValidation.valid) {
+        steps.push({
+          toolName: action.name,
+          canonicalToolName,
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          success: false,
+          optional: isOptionalTool,
+          nonFatal: isOptionalTool,
+          resultSummary: resultValidation.summary,
+          resultValidation,
+          error: "MCP result validation failed."
+        });
+
+        if (isOptionalTool) {
+          currentJob = await reportProgress(
+            appendJobLog(currentJob, "Optional MCP result validation failed but job will continue: " + canonicalToolName + "."),
+            options
+          );
+          continue;
+        }
+
+        const reportPath = await saveMcpExecutionReport(
+          currentJob.id,
+          {
+            startedAt: executionStartedAt,
+            finishedAt: new Date().toISOString(),
+            success: false,
+            actionCount: executionActions.length,
+            requiredFailureCount: getRequiredFailureCount(steps),
+            optionalFailureCount: getOptionalFailureCount(steps),
+            resultValidationFailureCount: getResultValidationFailureCount(steps),
+            steps
+          },
+          options.outputDir
+        );
+
+        return failJob(currentJob, "MCP result validation failed. Review " + reportPath + " for details.", options);
+      }
 
       if (canonicalToolName === "capture_screenshot") {
         const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
@@ -270,7 +315,8 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
         finishedAt: new Date().toISOString(),
         success: true,
         optional: isOptionalTool,
-        resultSummary: summarizeMcpToolResult(toolResult),
+        resultSummary: resultValidation.summary,
+        resultValidation,
         outputArtifacts
       });
     } catch (error) {
@@ -302,6 +348,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
           actionCount: executionActions.length,
           requiredFailureCount: getRequiredFailureCount(steps),
           optionalFailureCount: getOptionalFailureCount(steps),
+          resultValidationFailureCount: getResultValidationFailureCount(steps),
           steps
         },
         options.outputDir
@@ -320,6 +367,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
       actionCount: executionActions.length,
       requiredFailureCount: getRequiredFailureCount(steps),
       optionalFailureCount: getOptionalFailureCount(steps),
+      resultValidationFailureCount: getResultValidationFailureCount(steps),
       steps
     },
     options.outputDir
