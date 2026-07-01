@@ -28,8 +28,15 @@ create_project
 add_group
 place_cube
 capture_screenshot
+```
+
+Current optional tools:
+
+```txt
 export_project
 ```
+
+Optional tools are progressive enhancements. If an optional tool is missing, the job can still complete.
 
 ## Job output
 
@@ -45,11 +52,14 @@ The report includes:
 - `valid`
 - `availableTools`
 - `requiredTools`
+- `optionalTools`
 - `missingTools`
+- `missingOptionalTools`
 - `extraTools`
 - `error`
 
 If required tools are missing, the workflow stops before Blockbench MCP execution.
+If optional tools are missing, the workflow records the missing optional tool and continues.
 
 ## Health API
 
