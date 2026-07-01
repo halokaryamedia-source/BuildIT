@@ -22,6 +22,12 @@ The report is saved by:
 apps/engine/src/mcp/mcp-geometry-store.ts
 ```
 
+Format-specific rules can live in separate modules. Bedrock Block rules are handled by:
+
+```txt
+apps/engine/src/mcp/mcp-bedrock-block-geometry.ts
+```
+
 ## Output
 
 Each job can save:
@@ -71,12 +77,29 @@ The geometry planner can:
 - round coordinates to quarter units,
 - calculate cube size and center.
 
+## Bedrock Block rules
+
+For `bedrock_block`, BuildIT applies a second rule layer after general normalization.
+
+That layer can:
+
+- enforce block core groups,
+- reassign vague or entity-like cube groups,
+- generate a grounded base cube when missing,
+- generate a readable static body cube when missing,
+- warn when the block footprint is too narrow,
+- warn when the block height is too low.
+
 ## Workflow behavior
 
 BuildIT flow:
 
 ```txt
 model_plan.json
+↓
+general geometry normalization
+↓
+format-specific geometry rules
 ↓
 mcp_geometry_plan.json
 ↓
