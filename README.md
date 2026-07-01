@@ -32,19 +32,21 @@ BuildIT currently focuses on two Blockbench project targets only:
 2. User uploads an image or writes a prompt.
 3. The app validates reference image type and size.
 4. The app creates a model generation job.
-5. The engine saves reference images under the job output folder.
-6. The engine analyzes reference images using the configured vision model.
-7. The engine saves `image_analysis.json` under the job output folder.
-8. The engine generates a typed model plan and saves `model_plan.json`.
-9. The engine validates the model plan and saves `model_plan_validation.json`.
-10. The engine stops before Blockbench execution if validation fails.
-11. The Blockbench MCP adapter builds and validates MCP tool calls.
-12. The engine saves `mcp_actions.json`.
-13. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
-14. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
-15. The engine saves `mcp_execution_report.json`.
-16. The desktop app shows progress, health status, artifact availability, artifact JSON content, and diagnostics.
-17. The user is notified when the model is ready in Blockbench.
+5. The engine saves `job_snapshot.json` under the job output folder.
+6. The engine saves reference images under the job output folder.
+7. The engine analyzes reference images using the configured vision model.
+8. The engine saves `image_analysis.json` under the job output folder.
+9. The engine generates a typed model plan and saves `model_plan.json`.
+10. The engine validates the model plan and saves `model_plan_validation.json`.
+11. The engine stops before Blockbench execution if validation fails.
+12. The Blockbench MCP adapter builds and validates MCP tool calls.
+13. The engine saves `mcp_actions.json`.
+14. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
+15. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
+16. The engine saves `mcp_execution_report.json`.
+17. The engine updates `job_snapshot.json` when the job completes or fails.
+18. The desktop app shows progress, health status, artifact availability, artifact JSON content, and diagnostics.
+19. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -80,9 +82,9 @@ Default local services:
 - `GET /api/health` checks main model, vision model, Blockbench MCP connectivity, and MCP tool capabilities.
 - `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
 - `GET /api/jobs` lists jobs stored in memory.
-- `GET /api/jobs/:id` returns a single job and its logs.
-- `GET /api/jobs/:id/artifacts` lists available job artifacts.
-- `GET /api/jobs/:id/artifacts/:artifactName` returns one job artifact.
+- `GET /api/jobs/:id` returns a single job and its logs. If the job is no longer in memory, the engine attempts to read `job_snapshot.json`.
+- `GET /api/jobs/:id/artifacts` lists available job artifacts from the output folder.
+- `GET /api/jobs/:id/artifacts/:artifactName` returns one job artifact from the output folder.
 
 Supported `POST /api/jobs` formats:
 
@@ -92,6 +94,7 @@ Supported `POST /api/jobs` formats:
 Reference images must be image files and must be 10 MB or smaller.
 Request bodies are limited to 16 MB.
 Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
+Job snapshots are stored at `outputs/jobs/<jobId>/job_snapshot.json`.
 Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.
 Typed model plans are stored at `outputs/jobs/<jobId>/model_plan.json`.
 Model plan validation reports are stored at `outputs/jobs/<jobId>/model_plan_validation.json`.
