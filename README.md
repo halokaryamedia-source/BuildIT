@@ -209,6 +209,7 @@ mcp_execution_report.json
 ## Documentation index
 
 ```txt
+docs/desktop-svelte-architecture.md
 docs/tauri-desktop-runtime.md
 docs/buildit-mcp-core-boundary.md
 docs/blockbench-mcp-integration-plan.md
