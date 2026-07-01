@@ -43,7 +43,6 @@ Confirm these canonical tools resolve:
 
 ```txt
 create_project
-add_group
 place_cube
 capture_screenshot
 ```
@@ -56,13 +55,33 @@ apps/engine/src/mcp/mcp-tool-name-mapping.ts
 
 ## Optional tool resolution
 
-Confirm whether this optional tool resolves:
+Confirm whether these optional tools resolve:
 
 ```txt
+add_group
 export_project
 ```
 
 If missing, the job should continue and record a skipped optional step.
+
+## Tool name adaptation
+
+Open:
+
+```txt
+mcp_tool_name_mapping.json
+```
+
+Confirm each resolved tool records one of:
+
+```txt
+canonical
+alias
+normalized
+semantic
+```
+
+If semantic matching resolves a tool, manually confirm the selected real tool is correct before trusting the execution result.
 
 ## Argument compatibility
 
@@ -73,13 +92,10 @@ Especially check:
 ```txt
 create_project.name
 create_project.format
-add_group.name
-add_group.origin
-place_cube.group
-place_cube.elements
-place_cube.elements[].from
-place_cube.elements[].to
-place_cube.elements[].material
+place_cube batch support or single-cube expansion
+place_cube.group or equivalent parent field
+place_cube.elements/cubes/boxes or single cube payload
+place_cube name/from/to/material or equivalent fields
 ```
 
 If mismatched, update:
@@ -87,6 +103,19 @@ If mismatched, update:
 ```txt
 apps/engine/src/mcp/mcp-argument-shape-adapter.ts
 ```
+
+## Cube batch compatibility
+
+Open:
+
+```txt
+mcp_argument_shape_adaptation.json
+```
+
+Confirm one of these is true:
+
+- The core app supports batch cube fields and BuildIT keeps batch placement.
+- The core app only supports single cube placement and BuildIT records `PLACE_CUBE_BATCH_EXPANDED`.
 
 ## Result validation
 
@@ -105,4 +134,4 @@ A first successful integration is accepted when:
 - Preview capture succeeds.
 - Stored Data Root contains all expected MCP diagnostic files.
 - Required MCP execution steps are successful.
-- Optional export failure, if any, is non-fatal.
+- Optional group/export failure, if any, is non-fatal.
