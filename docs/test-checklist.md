@@ -25,13 +25,20 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm recent job logs appear in the job card.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
+- Confirm the logs mention model plan validation.
+- Confirm the logs mention MCP action list creation.
+- Confirm the logs mention MCP execution reporting after execution.
 
 ## Output files
 
 - Confirm uploaded references are saved under `outputs/jobs/<jobId>/references/`.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
+- Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
+- Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
+- Confirm `outputs/jobs/<jobId>/mcp_execution_report.json` is created after execution starts.
 - Confirm Bedrock Entity jobs use `format: "bedrock"` in `model_plan.json`.
 - Confirm Bedrock Block jobs use `format: "bedrock_block"` in `model_plan.json`.
+- Confirm Bedrock Block validation keeps the plan in placeable Minecraft custom block context.
 - Confirm the job response includes `input.imagePaths`.
 - Confirm the job response includes `input.referenceImages` metadata.
