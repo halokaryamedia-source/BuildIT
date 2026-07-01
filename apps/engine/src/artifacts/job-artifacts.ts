@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const jobArtifactNames = [
+  "job_snapshot",
   "image_analysis",
   "model_plan",
   "model_plan_validation",
