@@ -1,4 +1,4 @@
-import { appendJobLog, createJob, setJobStatus, type ModelJob, type ModelJobInput } from "../domain/job.js";
+import { appendJobLog, createJob, setJobStage, setJobStatus, type ModelJob, type ModelJobInput } from "../domain/job.js";
 import { JobStore } from "../jobs/job-store.js";
 import { saveJobSnapshot } from "../jobs/job-snapshot-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
@@ -36,6 +36,10 @@ export class AppRuntime {
 
   async createModelJob(input: ModelJobInput, referenceUploads: ReferenceImageUpload[] = []) {
     let job = createJob(input);
+    await this.persistJob(job);
+
+    job = setJobStage(job, "saving_references");
+    await this.persistJob(job);
 
     const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
 
