@@ -8,6 +8,7 @@ import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
 import { validateModelPlan } from "../planning/model-plan-validation.js";
+import { saveBlockbenchPreview } from "../preview/blockbench-preview-store.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveImageAnalysis } from "../vision/image-analysis-store.js";
 import type { ImageAnalysis } from "../vision/image-analysis.js";
@@ -164,10 +165,21 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   for (const action of adapterResult.actions) {
     const startedAt = new Date().toISOString();
+
+    if (action.name === "capture_screenshot") {
+      currentJob = await enterStage(currentJob, "capturing_preview", options);
+    }
+
     currentJob = await reportProgress(appendJobLog(currentJob, "Running MCP tool: " + action.name), options);
 
     try {
-      await options.blockbench.callTool(action);
+      const toolResult = await options.blockbench.callTool(action);
+
+      if (action.name === "capture_screenshot") {
+        const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
+        currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench preview saved to " + previewPath + "."), options);
+      }
+
       steps.push({
         toolName: action.name,
         startedAt,
