@@ -45,8 +45,25 @@ BuildIT currently focuses on two Blockbench project targets only:
 15. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
 16. The engine saves `mcp_execution_report.json`.
 17. The engine updates `job_snapshot.json` throughout the workflow, including completion or failure.
-18. The desktop app shows progress, health status, artifact availability, artifact JSON content, and diagnostics.
+18. The desktop app shows progress, workflow stage, health status, artifact availability, artifact JSON content, and diagnostics.
 19. The user is notified when the model is ready in Blockbench.
+
+## Workflow stages
+
+Jobs include a `stage` field so the desktop app can show clear progress:
+
+```txt
+queued
+saving_references
+analyzing_image
+planning_model
+validating_plan
+building_mcp_actions
+checking_mcp_capabilities
+executing_mcp
+completed
+failed
+```
 
 ## Local development
 
