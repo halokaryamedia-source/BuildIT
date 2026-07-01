@@ -2,6 +2,7 @@ import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob }
 import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import type { BlockbenchMcpClient, McpToolCall } from "../mcp/blockbench-client.js";
 import { optionalBlockbenchToolNames, type SupportedBlockbenchFormat } from "../mcp/blockbench-tool-adapter.js";
+import type { McpSkippedAction } from "../mcp/mcp-action-availability.js";
 import { saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import {
   getCanonicalToolNameForResolvedName,
@@ -17,6 +18,7 @@ export interface McpExecutionRunnerOptions {
   adapterFormat: SupportedBlockbenchFormat;
   toolNameMappingReport: McpToolNameMappingReport;
   missingOptionalTools: string[];
+  skippedActions?: McpSkippedAction[];
   onProgress?: (job: ModelJob) => void | Promise<void>;
 }
 
@@ -39,6 +41,10 @@ function getOptionalFailureCount(steps: McpExecutionStep[]): number {
 
 function getResultValidationFailureCount(steps: McpExecutionStep[]): number {
   return steps.filter((step) => step.resultValidation && !step.resultValidation.valid).length;
+}
+
+function getTotalActionCount(executionActions: McpToolCall[], options: McpExecutionRunnerOptions): number {
+  return executionActions.length + (options.skippedActions?.length ?? 0);
 }
 
 async function failJob(currentJob: ModelJob, message: string, options: McpExecutionRunnerOptions): Promise<ModelJob> {
@@ -75,6 +81,34 @@ async function saveExecutionReport(
   );
 }
 
+async function recordSkippedActions(
+  currentJob: ModelJob,
+  steps: McpExecutionStep[],
+  options: McpExecutionRunnerOptions
+): Promise<ModelJob> {
+  let nextJob = currentJob;
+
+  for (const skippedAction of options.skippedActions ?? []) {
+    const startedAt = new Date().toISOString();
+    steps.push({
+      toolName: skippedAction.action.name,
+      canonicalToolName: skippedAction.canonicalToolName,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      success: true,
+      optional: true,
+      skipped: true
+    });
+
+    nextJob = await reportProgress(
+      appendJobLog(nextJob, "Skipping optional MCP tool before schema matching: " + skippedAction.canonicalToolName + "."),
+      options
+    );
+  }
+
+  return nextJob;
+}
+
 export async function runMcpExecution(
   job: ModelJob,
   executionActions: McpToolCall[],
@@ -85,6 +119,9 @@ export async function runMcpExecution(
   let currentJob = await enterStage(job, "executing_mcp", options);
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
+  const actionCount = getTotalActionCount(executionActions, options);
+
+  currentJob = await recordSkippedActions(currentJob, steps, options);
 
   for (const action of executionActions) {
     const startedAt = new Date().toISOString();
@@ -138,7 +175,7 @@ export async function runMcpExecution(
           continue;
         }
 
-        const reportPath = await saveExecutionReport(currentJob, executionStartedAt, executionActions.length, steps, false, options);
+        const reportPath = await saveExecutionReport(currentJob, executionStartedAt, actionCount, steps, false, options);
         return failJob(currentJob, "MCP result validation failed. Review " + reportPath + " for details.", options);
       }
 
@@ -185,7 +222,7 @@ export async function runMcpExecution(
         continue;
       }
 
-      const reportPath = await saveExecutionReport(currentJob, executionStartedAt, executionActions.length, steps, false, options);
+      const reportPath = await saveExecutionReport(currentJob, executionStartedAt, actionCount, steps, false, options);
       return failJob(currentJob, "MCP execution failed. Review " + reportPath + " for details.", options);
     }
   }
@@ -193,7 +230,7 @@ export async function runMcpExecution(
   const reportPath = await saveExecutionReport(
     currentJob,
     executionStartedAt,
-    executionActions.length,
+    actionCount,
     steps,
     getRequiredFailureCount(steps) === 0,
     options
