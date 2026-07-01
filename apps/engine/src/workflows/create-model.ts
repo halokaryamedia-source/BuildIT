@@ -1,10 +1,11 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
 import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
-import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
+import { BlockbenchMcpClient, type McpToolDefinition } from "../mcp/blockbench-client.js";
 import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
+import { saveMcpToolSchemaReport } from "../mcp/mcp-tool-schema-store.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
@@ -138,9 +139,13 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP connected."), options);
 
+  let availableTools: McpToolDefinition[] = [];
   let capabilityReport;
   try {
-    capabilityReport = evaluateMcpCapabilities(await options.blockbench.listTools());
+    availableTools = await options.blockbench.listTools();
+    const schemaPath = await saveMcpToolSchemaReport(currentJob.id, availableTools, options.outputDir);
+    currentJob = await reportProgress(appendJobLog(currentJob, "MCP tool schema saved to " + schemaPath + "."), options);
+    capabilityReport = evaluateMcpCapabilities(availableTools);
   } catch (error) {
     capabilityReport = createFailedMcpCapabilityReport(error);
   }
