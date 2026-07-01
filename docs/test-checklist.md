@@ -30,6 +30,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm `artifact_index.json` appears in the artifact list.
 - Confirm `stored_data_manifest.json` appears in the artifact list.
+- Confirm `mcp_geometry_plan.json` appears in the artifact list before MCP actions.
 - Confirm `mcp_tool_schema.json` appears in the artifact list after MCP capability discovery.
 - Confirm `mcp_tool_name_mapping.json` appears in the artifact list after MCP capability discovery.
 - Confirm `mcp_argument_shape_adaptation.json` appears in the artifact list before MCP schema matching.
@@ -63,6 +64,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm available artifact rows show size and update time.
 - Click View on an available artifact.
 - Confirm the artifact JSON viewer displays formatted JSON.
+- Confirm `mcp_geometry_plan.json` displays normalized groups, cubes, bounds, centers, and geometry issues.
 - Confirm `mcp_tool_schema.json` displays the captured Blockbench MCP tool definitions.
 - Confirm `mcp_tool_name_mapping.json` displays canonical and resolved tool names.
 - Confirm `mcp_argument_shape_adaptation.json` displays original and adapted MCP arguments.
@@ -71,6 +73,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
 - Confirm the logs mention model plan validation.
+- Confirm the logs mention MCP geometry planning.
 - Confirm the logs mention MCP action list creation.
 - Confirm the logs mention MCP tool schema reporting.
 - Confirm the logs mention MCP tool name mapping.
@@ -88,6 +91,10 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `outputs/jobs/<jobId>/image_analysis.json` is created when an image is selected.
 - Confirm `outputs/jobs/<jobId>/model_plan.json` is created.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
+- Confirm `outputs/jobs/<jobId>/mcp_geometry_plan.json` is created before MCP actions.
+- Confirm `mcp_geometry_plan.json` includes format bounds, group count, cube count, groups, cubes, and geometry issues.
+- Confirm Bedrock Block geometry is clamped to block-style bounds.
+- Confirm Bedrock Entity geometry is clamped to entity-style bounds.
 - Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
 - Confirm `outputs/jobs/<jobId>/mcp_tool_schema.json` is created after `tools/list` succeeds.
