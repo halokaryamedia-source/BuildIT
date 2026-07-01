@@ -35,9 +35,11 @@ BuildIT currently focuses on two Blockbench project targets only:
 5. The engine analyzes reference images using the configured vision model.
 6. The engine saves `image_analysis.json` under the job output folder.
 7. The engine generates a typed model plan and saves `model_plan.json`.
-8. The engine controls Blockbench through MCP.
-9. The app shows progress and preview status.
-10. The user is notified when the model is ready in Blockbench.
+8. The engine validates the model plan and saves `model_plan_validation.json`.
+9. The engine stops before Blockbench execution if validation fails.
+10. The engine controls Blockbench through MCP when the plan is valid.
+11. The app shows progress and preview status.
+12. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -83,3 +85,4 @@ Supported `POST /api/jobs` formats:
 Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
 Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.
 Typed model plans are stored at `outputs/jobs/<jobId>/model_plan.json`.
+Model plan validation reports are stored at `outputs/jobs/<jobId>/model_plan_validation.json`.
