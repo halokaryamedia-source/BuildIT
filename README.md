@@ -37,11 +37,12 @@ BuildIT currently focuses on two Blockbench project targets only:
 7. The engine generates a typed model plan and saves `model_plan.json`.
 8. The engine validates the model plan and saves `model_plan_validation.json`.
 9. The engine stops before Blockbench execution if validation fails.
-10. The engine builds and saves `mcp_actions.json`.
-11. The engine controls Blockbench through MCP when the plan is valid.
-12. The engine saves `mcp_execution_report.json`.
-13. The app shows progress and preview status.
-14. The user is notified when the model is ready in Blockbench.
+10. The Blockbench MCP adapter builds and validates MCP tool calls.
+11. The engine saves `mcp_actions.json`.
+12. The engine controls Blockbench through MCP when the adapter output is valid.
+13. The engine saves `mcp_execution_report.json`.
+14. The app shows progress and preview status.
+15. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
