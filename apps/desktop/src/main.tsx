@@ -26,6 +26,7 @@ interface JobLog {
 interface ModelJob {
   id: string;
   status: string;
+  stage?: string;
   logs: JobLog[];
   error?: string;
 }
@@ -82,6 +83,33 @@ function readFileAsDataUrl(file: File): Promise<string> {
 
 function getTargetLabel(format: TargetFormat): string {
   return format === "bedrock" ? "Bedrock Entity" : "Bedrock Block";
+}
+
+function getStageLabel(stage: string | undefined): string {
+  switch (stage) {
+    case "queued":
+      return "Queued";
+    case "saving_references":
+      return "Saving references";
+    case "analyzing_image":
+      return "Analyzing image";
+    case "planning_model":
+      return "Planning model";
+    case "validating_plan":
+      return "Validating plan";
+    case "building_mcp_actions":
+      return "Building MCP actions";
+    case "checking_mcp_capabilities":
+      return "Checking MCP capabilities";
+    case "executing_mcp":
+      return "Executing in Blockbench";
+    case "completed":
+      return "Completed";
+    case "failed":
+      return "Failed";
+    default:
+      return "Not started";
+  }
 }
 
 function validateSelectedImage(file: File): void {
@@ -280,6 +308,7 @@ function App() {
         <div className="status-card">
           <strong>Active job</strong>
           <span>{activeJob ? activeJob.status : "No active job"}</span>
+          <span>Stage: {getStageLabel(activeJob?.stage)}</span>
         </div>
         <div className="status-card">
           <strong>Artifacts</strong>
@@ -297,6 +326,7 @@ function App() {
             <article className="job-card">
               <strong>{activeJob.id}</strong>
               <span>Status: {activeJob.status}</span>
+              <span>Stage: {getStageLabel(activeJob.stage)}</span>
               <ul>
                 {activeJob.logs.slice(-5).map((log) => (
                   <li key={log.at}>{log.message}</li>
