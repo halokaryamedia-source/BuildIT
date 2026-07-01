@@ -16,7 +16,13 @@ export interface ToolAdapterResult {
   issues: ToolAdapterIssue[];
 }
 
-export const requiredBlockbenchToolNames = ["create_project", "add_group", "place_cube", "capture_screenshot"] as const;
+export const requiredBlockbenchToolNames = [
+  "create_project",
+  "add_group",
+  "place_cube",
+  "capture_screenshot",
+  "export_project"
+] as const;
 
 const supportedToolNames = new Set<string>(requiredBlockbenchToolNames);
 
@@ -65,6 +71,16 @@ function createScreenshotAction(): McpToolCall {
   return {
     name: "capture_screenshot",
     arguments: {}
+  };
+}
+
+function createExportAction(plan: ModelPlan): McpToolCall {
+  return {
+    name: "export_project",
+    arguments: {
+      name: plan.name,
+      format: resolveFormat(plan.format)
+    }
   };
 }
 
@@ -149,6 +165,26 @@ function validateCubeAction(action: McpToolCall, issues: ToolAdapterIssue[]): vo
   }
 }
 
+function validateExportAction(action: McpToolCall, issues: ToolAdapterIssue[]): void {
+  if (action.name !== "export_project") return;
+
+  if (typeof action.arguments.name !== "string" || action.arguments.name.trim().length === 0) {
+    issues.push({
+      severity: "error",
+      code: "INVALID_EXPORT_NAME",
+      message: "export_project requires a non-empty export name."
+    });
+  }
+
+  if (action.arguments.format !== "bedrock" && action.arguments.format !== "bedrock_block") {
+    issues.push({
+      severity: "error",
+      code: "INVALID_EXPORT_FORMAT",
+      message: "export_project format must be bedrock or bedrock_block."
+    });
+  }
+}
+
 export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
   const issues: ToolAdapterIssue[] = [];
   const format = resolveFormat(plan.format);
@@ -164,12 +200,14 @@ export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
   }
 
   actions.push(createScreenshotAction());
+  actions.push(createExportAction(plan));
 
   for (const action of actions) {
     validateAction(action, issues);
     validateProjectAction(action, issues);
     validateGroupAction(action, issues);
     validateCubeAction(action, issues);
+    validateExportAction(action, issues);
   }
 
   if (format === "bedrock_block") {
