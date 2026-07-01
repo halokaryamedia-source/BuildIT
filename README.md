@@ -30,20 +30,21 @@ BuildIT currently focuses on two Blockbench project targets only:
 
 1. User selects Bedrock Entity or Bedrock Block.
 2. User uploads an image or writes a prompt.
-3. The app creates a model generation job.
-4. The engine saves reference images under the job output folder.
-5. The engine analyzes reference images using the configured vision model.
-6. The engine saves `image_analysis.json` under the job output folder.
-7. The engine generates a typed model plan and saves `model_plan.json`.
-8. The engine validates the model plan and saves `model_plan_validation.json`.
-9. The engine stops before Blockbench execution if validation fails.
-10. The Blockbench MCP adapter builds and validates MCP tool calls.
-11. The engine saves `mcp_actions.json`.
-12. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
-13. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
-14. The engine saves `mcp_execution_report.json`.
-15. The desktop app shows progress, artifact availability, and diagnostics.
-16. The user is notified when the model is ready in Blockbench.
+3. The app validates reference image type and size.
+4. The app creates a model generation job.
+5. The engine saves reference images under the job output folder.
+6. The engine analyzes reference images using the configured vision model.
+7. The engine saves `image_analysis.json` under the job output folder.
+8. The engine generates a typed model plan and saves `model_plan.json`.
+9. The engine validates the model plan and saves `model_plan_validation.json`.
+10. The engine stops before Blockbench execution if validation fails.
+11. The Blockbench MCP adapter builds and validates MCP tool calls.
+12. The engine saves `mcp_actions.json`.
+13. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
+14. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
+15. The engine saves `mcp_execution_report.json`.
+16. The desktop app shows progress, health status, artifact availability, artifact JSON content, and diagnostics.
+17. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -88,6 +89,8 @@ Supported `POST /api/jobs` formats:
 - `bedrock` for Bedrock Entity.
 - `bedrock_block` for Bedrock Block.
 
+Reference images must be image files and must be 10 MB or smaller.
+Request bodies are limited to 16 MB.
 Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
 Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.
 Typed model plans are stored at `outputs/jobs/<jobId>/model_plan.json`.
