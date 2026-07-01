@@ -2,6 +2,7 @@ import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob }
 import { BlockbenchMcpClient, type McpToolCall, type McpToolDefinition } from "../mcp/blockbench-client.js";
 import { matchMcpActionsToSchemas } from "../mcp/mcp-action-schema-matcher.js";
 import { saveMcpActionSchemaMatchReport } from "../mcp/mcp-action-schema-store.js";
+import { splitMcpActionsByAvailability } from "../mcp/mcp-action-availability.js";
 import { saveMcpActions } from "../mcp/mcp-action-store.js";
 import { adaptMcpActionArgumentShapes } from "../mcp/mcp-argument-shape-adapter.js";
 import { saveMcpArgumentShapeAdaptationReport } from "../mcp/mcp-argument-shape-store.js";
@@ -179,7 +180,27 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
   const mappedActions = mapMcpActionToolNames(adapterResult.actions, toolNameMappingReport);
-  const argumentShapeReport = adaptMcpActionArgumentShapes(mappedActions, availableTools, toolNameMappingReport);
+  const actionAvailability = splitMcpActionsByAvailability(
+    mappedActions,
+    toolNameMappingReport,
+    capabilityReport.missingOptionalTools
+  );
+
+  if (actionAvailability.skippedActions.length > 0) {
+    currentJob = await reportProgress(
+      appendJobLog(
+        currentJob,
+        "Skipping " + actionAvailability.skippedActions.length + " optional MCP action(s) before schema matching."
+      ),
+      options
+    );
+  }
+
+  const argumentShapeReport = adaptMcpActionArgumentShapes(
+    actionAvailability.executableActions,
+    availableTools,
+    toolNameMappingReport
+  );
   const argumentShapePath = await saveMcpArgumentShapeAdaptationReport(currentJob.id, argumentShapeReport, options.outputDir);
   currentJob = await reportProgress(
     appendJobLog(currentJob, "MCP argument shape adaptation report saved to " + argumentShapePath + "."),
@@ -213,6 +234,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     adapterFormat: adapterResult.format,
     toolNameMappingReport,
     missingOptionalTools: capabilityReport.missingOptionalTools,
+    skippedActions: actionAvailability.skippedActions,
     onProgress: options.onProgress
   });
 }
