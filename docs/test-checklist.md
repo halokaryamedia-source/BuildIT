@@ -45,10 +45,15 @@ http://localhost:3000/bb-mcp
 - Run `npm run dev:desktop`.
 - Confirm the project type selector only shows Bedrock Entity and Bedrock Block.
 - Confirm the sidebar shows health, recent jobs, Stored Data Root, and artifact availability.
+- Confirm the sidebar shows Blockbench MCP connected/offline status.
 - Confirm clicking Open Stored Data opens the job output folder directly.
 - Confirm selecting a non-image file or image larger than 10 MB shows validation.
 - Create one Bedrock Entity job and one Bedrock Block job.
 - Confirm workflow stage, recent logs, artifact rows, artifact sizes, and artifact update times display.
+- Confirm the app shows `Model ready in Blockbench` after a successful job.
+- Confirm the ready card includes buttons for View Preview, Open Stored Data, Check MCP Report, and Check Schema Match.
+- Confirm completed/failed notification messages are not repeated while polling.
+- Confirm failed jobs show `Generation needs attention` with a clear error message.
 - Confirm `mcp_geometry_plan.json` displays groups, cubes, bounds, centers, issues, and preflight.
 - Confirm `mcp_material_plan.json` displays materials, placeholder colors, assignments, and normalization issues.
 - Confirm Bedrock Block jobs show `base`, `block_body`, and `decorative_details` groups.
