@@ -1,6 +1,16 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { McpToolCall } from "./blockbench-client.js";
+import type { ToolAdapterIssue } from "./blockbench-tool-adapter.js";
+
+export interface McpActionBuildReport {
+  createdAt: string;
+  valid: boolean;
+  format: string;
+  actionCount: number;
+  issues: ToolAdapterIssue[];
+  actions: McpToolCall[];
+}
 
 export interface McpExecutionStep {
   toolName: string;
@@ -18,23 +28,12 @@ export interface McpExecutionReport {
   steps: McpExecutionStep[];
 }
 
-export async function saveMcpActions(jobId: string, actions: McpToolCall[], outputRoot: string): Promise<string> {
+export async function saveMcpActions(jobId: string, report: McpActionBuildReport, outputRoot: string): Promise<string> {
   const jobDir = join(outputRoot, "jobs", jobId);
   await mkdir(jobDir, { recursive: true });
 
   const actionsPath = join(jobDir, "mcp_actions.json");
-  await writeFile(
-    actionsPath,
-    JSON.stringify(
-      {
-        createdAt: new Date().toISOString(),
-        actionCount: actions.length,
-        actions
-      },
-      null,
-      2
-    )
-  );
+  await writeFile(actionsPath, JSON.stringify(report, null, 2));
 
   return actionsPath;
 }
