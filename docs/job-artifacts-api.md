@@ -2,7 +2,7 @@
 
 BuildIT exposes job artifacts through the engine API so the desktop app can show diagnostics without reading local files directly.
 
-Artifacts are read from the job output folder, so artifact reads can still work even when the job is no longer present in the in-memory job store.
+Artifacts are read from the job stored data folder, so artifact reads can still work even when the job is no longer present in the in-memory job store.
 
 ## List artifacts
 
@@ -10,7 +10,7 @@ Artifacts are read from the job output folder, so artifact reads can still work 
 GET /api/jobs/:id/artifacts
 ```
 
-This endpoint refreshes the job artifact index and job bundle manifest before returning.
+This endpoint refreshes the job artifact index and stored data manifest before returning.
 
 Response:
 
@@ -32,13 +32,14 @@ Response:
     "availableCount": 5,
     "artifacts": []
   },
-  "jobBundle": {
+  "storedDataManifest": {
     "jobId": "job_123",
-    "bundleVersion": 1,
-    "bundleType": "buildit_job_output",
+    "manifestVersion": 1,
+    "manifestType": "buildit_stored_data",
+    "storedDataRoot": "outputs/jobs/job_123",
+    "openTargetPath": "outputs/jobs/job_123",
     "ready": true,
-    "missingRequiredFiles": [],
-    "files": []
+    "missingRequiredFiles": []
   }
 }
 ```
@@ -54,7 +55,7 @@ Supported artifact names:
 ```txt
 job_snapshot
 artifact_index
-job_bundle
+stored_data_manifest
 image_analysis
 model_plan
 model_plan_validation
@@ -80,10 +81,12 @@ Response:
 
 ## Job snapshot fallback
 
-`GET /api/jobs/:id` first checks the in-memory job store. If the job is not available in memory, the engine attempts to return `job_snapshot.json` from the job output folder.
+`GET /api/jobs/:id` first checks the in-memory job store. If the job is not available in memory, the engine attempts to return `job_snapshot.json` from the job stored data folder.
 
 ## Desktop diagnostics
 
 The desktop app polls artifact summaries while a job is running and displays whether each artifact is available or still pending.
 
 When `artifactIndex` is available, the desktop app prefers the manifest artifact list because it also includes file size and update time.
+
+When `storedDataManifest` is available, the desktop app shows the Stored Data Root so the saved output location is clear.
