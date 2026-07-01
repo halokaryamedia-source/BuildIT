@@ -47,6 +47,11 @@ interface ArgumentAliasRule {
   aliases: string[];
 }
 
+interface ExpandedActionSet {
+  actions: McpToolCall[];
+  issue?: McpArgumentShapeIssue;
+}
+
 const argumentAliasRules: Record<CanonicalMcpToolName, ArgumentAliasRule[]> = {
   create_project: [
     { canonicalArgument: "name", aliases: ["name", "projectName", "project_name", "title"] },
@@ -175,29 +180,29 @@ function toSingleCubeArguments(
 function expandPlaceCubeBatchIfNeeded(
   action: McpToolCall,
   canonicalName: CanonicalMcpToolName,
-  properties: Record<string, unknown> | null,
-  issues: McpArgumentShapeIssue[]
-): McpToolCall[] {
-  if (!shouldExpandPlaceCubeBatch(canonicalName, action, properties)) return [action];
+  properties: Record<string, unknown> | null
+): ExpandedActionSet {
+  if (!shouldExpandPlaceCubeBatch(canonicalName, action, properties)) return { actions: [action] };
 
   const elements = action.arguments.elements;
-  if (!Array.isArray(elements)) return [action];
+  if (!Array.isArray(elements)) return { actions: [action] };
 
-  issues.push({
-    severity: "warning",
-    toolName: action.name,
-    code: "PLACE_CUBE_BATCH_EXPANDED",
-    message: "place_cube batch was expanded into single-cube calls to match the MCP core app schema."
-  });
-
-  return elements.filter(isRecord).map((element, index) => ({
-    name: action.name,
-    arguments: {
-      ...toSingleCubeArguments(action, element, properties),
-      batchIndex: index,
-      batchCount: elements.length
-    }
-  }));
+  return {
+    issue: {
+      severity: "warning",
+      toolName: action.name,
+      code: "PLACE_CUBE_BATCH_EXPANDED",
+      message: "place_cube batch was expanded into single-cube calls to match the MCP core app schema."
+    },
+    actions: elements.filter(isRecord).map((element, index) => ({
+      name: action.name,
+      arguments: {
+        ...toSingleCubeArguments(action, element, properties),
+        batchIndex: index,
+        batchCount: elements.length
+      }
+    }))
+  };
 }
 
 function adaptOneExpandedAction(
@@ -255,20 +260,18 @@ function adaptOneAction(
   action: McpToolCall,
   tools: McpToolDefinition[],
   mappingReport: McpToolNameMappingReport
-): McpArgumentShapeAdaptedAction[] {
+): { actions: McpArgumentShapeAdaptedAction[]; issue?: McpArgumentShapeIssue } {
   const canonicalName = getCanonicalToolNameForResolvedName(action.name, mappingReport) ?? (action.name as CanonicalMcpToolName);
   const tool = findTool(tools, action.name);
   const properties = getSchemaProperties(tool);
-  const expansionIssues: McpArgumentShapeIssue[] = [];
-  const expandedActions = expandPlaceCubeBatchIfNeeded(action, canonicalName, properties, expansionIssues);
+  const expandedActionSet = expandPlaceCubeBatchIfNeeded(action, canonicalName, properties);
 
-  return expandedActions.map((expandedAction) => {
-    const adapted = adaptOneExpandedAction(action, expandedAction, tools, mappingReport, expandedActions.length > 1);
-    return {
-      ...adapted,
-      issues: [...expansionIssues, ...adapted.issues]
-    };
-  });
+  return {
+    issue: expandedActionSet.issue,
+    actions: expandedActionSet.actions.map((expandedAction) =>
+      adaptOneExpandedAction(action, expandedAction, tools, mappingReport, expandedActionSet.actions.length > 1)
+    )
+  };
 }
 
 export function adaptMcpActionArgumentShapes(
@@ -276,8 +279,12 @@ export function adaptMcpActionArgumentShapes(
   tools: McpToolDefinition[],
   mappingReport: McpToolNameMappingReport
 ): McpArgumentShapeAdaptationReport {
-  const adaptedActions = actions.flatMap((action) => adaptOneAction(action, tools, mappingReport));
-  const issues = adaptedActions.flatMap((action) => action.issues);
+  const adaptedActionSets = actions.map((action) => adaptOneAction(action, tools, mappingReport));
+  const adaptedActions = adaptedActionSets.flatMap((actionSet) => actionSet.actions);
+  const issues = [
+    ...adaptedActionSets.map((actionSet) => actionSet.issue).filter((issue): issue is McpArgumentShapeIssue => Boolean(issue)),
+    ...adaptedActions.flatMap((action) => action.issues)
+  ];
 
   return {
     createdAt: new Date().toISOString(),
