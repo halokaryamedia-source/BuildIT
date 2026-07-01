@@ -60,6 +60,21 @@ function toBundleFile(artifact: JobArtifactSummary): JobBundleFile {
   };
 }
 
+function markBundleManifestAvailable(bundle: JobBundleManifest): JobBundleManifest {
+  return {
+    ...bundle,
+    files: bundle.files.map((file) =>
+      file.name === "job_bundle"
+        ? {
+            ...file,
+            available: true,
+            updatedAt: bundle.generatedAt
+          }
+        : file
+    )
+  };
+}
+
 export async function buildJobBundle(outputRoot: string, jobId: string): Promise<JobBundleManifest> {
   const artifactIndex = await buildArtifactIndex(outputRoot, jobId);
   const files = artifactIndex.artifacts.map(toBundleFile);
@@ -83,7 +98,7 @@ export async function saveJobBundle(outputRoot: string, jobId: string): Promise<
   const jobDir = join(outputRoot, "jobs", jobId);
   await mkdir(jobDir, { recursive: true });
 
-  const bundle = await buildJobBundle(outputRoot, jobId);
+  const bundle = markBundleManifestAvailable(await buildJobBundle(outputRoot, jobId));
   await writeFile(join(jobDir, "job_bundle.json"), JSON.stringify(bundle, null, 2));
 
   return bundle;
