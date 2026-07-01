@@ -47,7 +47,7 @@ BuildIT currently focuses on two Blockbench project targets only:
 17. The engine exports the project and saves `blockbench_export.json` when the optional export tool is available.
 18. The engine saves `mcp_execution_report.json`.
 19. The engine updates `job_snapshot.json` throughout the workflow, including completion or failure.
-20. The desktop app shows progress, workflow stage, health status, artifact availability, preview image, artifact JSON content, and diagnostics.
+20. The desktop app shows progress, workflow stage, health status, recent jobs, artifact availability, preview image, artifact JSON content, and diagnostics.
 21. The user is notified when the model is ready in Blockbench.
 
 ## Workflow stages
@@ -102,7 +102,7 @@ Default local services:
 
 - `GET /api/health` checks main model, vision model, Blockbench MCP connectivity, and MCP tool capabilities.
 - `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
-- `GET /api/jobs` lists jobs stored in memory.
+- `GET /api/jobs` lists jobs from memory and persisted `job_snapshot.json` files.
 - `GET /api/jobs/:id` returns a single job and its logs. If the job is no longer in memory, the engine attempts to read `job_snapshot.json`.
 - `GET /api/jobs/:id/artifacts` lists available job artifacts from the output folder.
 - `GET /api/jobs/:id/artifacts/:artifactName` returns one job artifact from the output folder.
