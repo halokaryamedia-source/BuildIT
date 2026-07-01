@@ -1,6 +1,6 @@
 # Blockbench Preview Artifacts
 
-BuildIT preserves the result of the Blockbench MCP screenshot action.
+BuildIT preserves and validates the result of the Blockbench MCP screenshot action.
 
 ## Output
 
@@ -16,9 +16,27 @@ outputs/jobs/<jobId>/blockbench_preview.json
   "toolName": "capture_screenshot",
   "hasImageDataUrl": true,
   "imageDataUrl": "data:image/png;base64,...",
+  "validation": {
+    "valid": true,
+    "imageMimeType": "image/png",
+    "estimatedImageBytes": 123456,
+    "issues": []
+  },
   "rawResult": {}
 }
 ```
+
+## Validation
+
+Preview validation checks that:
+
+- an image data URL exists,
+- the image data URL uses an image MIME type,
+- the base64 payload is present,
+- the estimated image size is not suspiciously tiny,
+- the estimated image size is not excessively large.
+
+Missing or invalid preview image data is treated as an error because preview is the fastest proof that Blockbench MCP created a visible result.
 
 ## Desktop behavior
 
