@@ -9,6 +9,7 @@ import { runCreateModelWorkflow } from "../workflows/create-model.js";
 export interface AppRuntimeOptions {
   ollamaUrl: string;
   ollamaModel: string;
+  visionModel: string;
   blockbenchMcpUrl: string;
   outputDir: string;
 }
@@ -16,11 +17,13 @@ export interface AppRuntimeOptions {
 export class AppRuntime {
   readonly jobs = new JobStore();
   readonly ollama: OllamaProvider;
+  readonly vision: OllamaProvider;
   readonly blockbench: BlockbenchMcpClient;
   readonly sync: SyncManager;
 
   constructor(private readonly options: AppRuntimeOptions) {
     this.ollama = new OllamaProvider({ baseUrl: options.ollamaUrl, model: options.ollamaModel });
+    this.vision = new OllamaProvider({ baseUrl: options.ollamaUrl, model: options.visionModel });
     this.blockbench = new BlockbenchMcpClient({ endpoint: options.blockbenchMcpUrl });
     this.sync = new SyncManager(this.blockbench, options.blockbenchMcpUrl);
   }
@@ -57,7 +60,9 @@ export class AppRuntime {
     try {
       const result = await runCreateModelWorkflow(job, {
         ollama: this.ollama,
-        blockbench: this.blockbench
+        vision: this.vision,
+        blockbench: this.blockbench,
+        outputDir: this.options.outputDir
       });
       this.jobs.save(result);
     } catch (error) {
