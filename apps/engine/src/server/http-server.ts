@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { saveArtifactIndex } from "../artifacts/artifact-index-store.js";
+import { saveJobBundle } from "../artifacts/job-bundle-store.js";
 import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
 import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
@@ -83,6 +84,13 @@ function sendNotFound(response: ServerResponse): void {
   sendJson(response, 404, { error: "Route not found." });
 }
 
+async function refreshArtifactManifests(outputDir: string, jobId: string) {
+  await saveArtifactIndex(outputDir, jobId);
+  const jobBundle = await saveJobBundle(outputDir, jobId);
+  const artifactIndex = await saveArtifactIndex(outputDir, jobId);
+  return { artifactIndex, jobBundle };
+}
+
 export function startHttpServer(runtime: AppRuntime, port: number): void {
   const server = createServer(async (request, response) => {
     try {
@@ -157,9 +165,9 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
-        const artifactIndex = await saveArtifactIndex(runtime.getOptions().outputDir, jobId);
+        const { artifactIndex, jobBundle } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
         const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, jobId);
-        sendJson(response, 200, { artifacts, artifactIndex });
+        sendJson(response, 200, { artifacts, artifactIndex, jobBundle });
         return;
       }
 
@@ -171,8 +179,8 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
-        if (artifactMatch[2] === "artifact_index") {
-          await saveArtifactIndex(runtime.getOptions().outputDir, jobId);
+        if (artifactMatch[2] === "artifact_index" || artifactMatch[2] === "job_bundle") {
+          await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
         }
 
         const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, artifactMatch[2]);
