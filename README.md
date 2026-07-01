@@ -42,7 +42,7 @@ BuildIT currently focuses on two Blockbench project targets only:
 12. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
 13. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
 14. The engine saves `mcp_execution_report.json`.
-15. The app shows progress and preview status.
+15. The desktop app shows progress, artifact availability, and diagnostics.
 16. The user is notified when the model is ready in Blockbench.
 
 ## Local development
@@ -80,6 +80,8 @@ Default local services:
 - `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
 - `GET /api/jobs` lists jobs stored in memory.
 - `GET /api/jobs/:id` returns a single job and its logs.
+- `GET /api/jobs/:id/artifacts` lists available job artifacts.
+- `GET /api/jobs/:id/artifacts/:artifactName` returns one job artifact.
 
 Supported `POST /api/jobs` formats:
 

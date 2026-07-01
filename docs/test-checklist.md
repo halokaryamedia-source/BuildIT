@@ -12,6 +12,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `blockbench.connected` reflects the local Blockbench MCP state.
 - Confirm `mcpCapabilities.valid` reflects whether the required MCP tools are available.
 - Confirm `mcpCapabilities.missingTools` is empty when the MCP server is compatible.
+- Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
+- Confirm the artifact API returns available and pending artifact summaries.
 
 ## Desktop
 
@@ -25,6 +27,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm a job is created.
 - Confirm the active job status appears in the sidebar.
 - Confirm recent job logs appear in the job card.
+- Confirm artifact availability appears in the sidebar.
+- Confirm the job artifacts card shows available and pending artifact files.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
 - Confirm the logs mention model plan validation.
