@@ -14,21 +14,29 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `mcpCapabilities.missingTools` is empty when the MCP server is compatible.
 - Open `http://localhost:3987/api/jobs/<jobId>/artifacts` after creating a job.
 - Confirm the artifact API returns available and pending artifact summaries.
+- Confirm requests larger than 16 MB are rejected by the engine API.
+- Confirm non-image reference uploads are rejected by the engine.
+- Confirm reference images larger than 10 MB are rejected by the engine.
 
 ## Desktop
 
 - Run `npm run dev:desktop`.
 - Confirm the project type selector only shows Bedrock Entity and Bedrock Block.
 - Confirm the helper text explains that Bedrock Block is a placeable Minecraft Bedrock custom block.
+- Confirm the sidebar shows main model, vision model, and MCP tool health.
+- Confirm selecting a non-image file shows a validation message.
+- Confirm selecting an image larger than 10 MB shows a validation message.
 - Select Bedrock Entity and create a job.
 - Select Bedrock Block and create a job.
-- Select one reference image.
+- Select one valid reference image.
 - Click Generate.
 - Confirm a job is created.
 - Confirm the active job status appears in the sidebar.
 - Confirm recent job logs appear in the job card.
 - Confirm artifact availability appears in the sidebar.
 - Confirm the job artifacts card shows available and pending artifact files.
+- Click View on an available artifact.
+- Confirm the artifact JSON viewer displays formatted JSON.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
 - Confirm the logs mention model plan validation.
