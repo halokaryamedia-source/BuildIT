@@ -22,10 +22,18 @@ The report is saved by:
 apps/engine/src/mcp/mcp-geometry-store.ts
 ```
 
-Format-specific rules can live in separate modules. Bedrock Block rules are handled by:
+Format-specific rules can live in separate modules.
+
+Bedrock Block rules are handled by:
 
 ```txt
 apps/engine/src/mcp/mcp-bedrock-block-geometry.ts
+```
+
+Bedrock Entity rules are handled by:
+
+```txt
+apps/engine/src/mcp/mcp-bedrock-entity-geometry.ts
 ```
 
 ## Output
@@ -89,6 +97,18 @@ That layer can:
 - generate a readable static body cube when missing,
 - warn when the block footprint is too narrow,
 - warn when the block height is too low.
+
+## Bedrock Entity rules
+
+For `bedrock`, BuildIT applies a second rule layer after general normalization.
+
+That layer can:
+
+- enforce entity core groups,
+- reassign block-style cube groups into entity groups,
+- generate a readable entity body cube when missing,
+- warn when the entity height is too low,
+- warn when the entity footprint is too wide.
 
 ## Workflow behavior
 
