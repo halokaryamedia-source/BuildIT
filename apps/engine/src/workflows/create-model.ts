@@ -1,12 +1,11 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
-import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import { BlockbenchMcpClient, type McpToolCall, type McpToolDefinition } from "../mcp/blockbench-client.js";
 import { matchMcpActionsToSchemas } from "../mcp/mcp-action-schema-matcher.js";
 import { saveMcpActionSchemaMatchReport } from "../mcp/mcp-action-schema-store.js";
-import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
+import { saveMcpActions } from "../mcp/mcp-action-store.js";
 import { adaptMcpActionArgumentShapes } from "../mcp/mcp-argument-shape-adapter.js";
 import { saveMcpArgumentShapeAdaptationReport } from "../mcp/mcp-argument-shape-store.js";
-import { buildBlockbenchToolActionsFromGeometry, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
+import { buildBlockbenchToolActionsFromGeometry } from "../mcp/blockbench-tool-adapter.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
 import { buildMcpExecutionPlan } from "../mcp/mcp-execution-plan.js";
@@ -15,24 +14,18 @@ import { buildMcpGeometry } from "../mcp/mcp-geometry-planner.js";
 import { saveMcpGeometryReport } from "../mcp/mcp-geometry-store.js";
 import { applyMcpMaterialPlaceholders } from "../mcp/mcp-material-planner.js";
 import { saveMcpMaterialPlanReport } from "../mcp/mcp-material-store.js";
-import {
-  getCanonicalToolNameForResolvedName,
-  mapMcpActionToolNames,
-  resolveMcpToolNameMappings,
-  type CanonicalMcpToolName
-} from "../mcp/mcp-tool-name-mapping.js";
+import { mapMcpActionToolNames, resolveMcpToolNameMappings } from "../mcp/mcp-tool-name-mapping.js";
 import { saveMcpToolNameMappingReport } from "../mcp/mcp-tool-name-mapping-store.js";
-import { validateMcpToolResult } from "../mcp/mcp-tool-result-validation.js";
 import { saveMcpToolSchemaReport } from "../mcp/mcp-tool-schema-store.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
 import { validateModelPlan } from "../planning/model-plan-validation.js";
-import { saveBlockbenchPreview } from "../preview/blockbench-preview-store.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveImageAnalysis } from "../vision/image-analysis-store.js";
 import type { ImageAnalysis } from "../vision/image-analysis.js";
 import { analyzeReferenceImages } from "../vision/reference-image-analyzer.js";
+import { runMcpExecution } from "./mcp-execution-runner.js";
 
 export interface CreateModelWorkflowOptions {
   ollama: OllamaProvider;
@@ -49,18 +42,6 @@ async function reportProgress(job: ModelJob, options: CreateModelWorkflowOptions
 
 async function enterStage(job: ModelJob, stage: JobStage, options: CreateModelWorkflowOptions): Promise<ModelJob> {
   return reportProgress(setJobStage(job, stage), options);
-}
-
-function getRequiredFailureCount(steps: McpExecutionStep[]): number {
-  return steps.filter((step) => !step.success && !step.optional).length;
-}
-
-function getOptionalFailureCount(steps: McpExecutionStep[]): number {
-  return steps.filter((step) => !step.success && step.optional).length;
-}
-
-function getResultValidationFailureCount(steps: McpExecutionStep[]): number {
-  return steps.filter((step) => step.resultValidation && !step.resultValidation.valid).length;
 }
 
 async function failJob(currentJob: ModelJob, message: string, options: CreateModelWorkflowOptions): Promise<ModelJob> {
@@ -226,160 +207,12 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   const executionPlanPath = await saveMcpExecutionPlanReport(currentJob.id, executionPlan, options.outputDir);
   currentJob = await reportProgress(appendJobLog(currentJob, "MCP execution plan saved to " + executionPlanPath + "."), options);
 
-  const missingOptionalToolSet = new Set(capabilityReport.missingOptionalTools ?? []);
-  const optionalToolSet = new Set<string>(optionalBlockbenchToolNames);
-
-  currentJob = await enterStage(currentJob, "executing_mcp", options);
-  const executionStartedAt = new Date().toISOString();
-  const steps: McpExecutionStep[] = [];
-
-  for (const action of executionActions) {
-    const startedAt = new Date().toISOString();
-    const canonicalToolName = getCanonicalToolNameForResolvedName(action.name, toolNameMappingReport) ?? (action.name as CanonicalMcpToolName);
-    const isOptionalTool = optionalToolSet.has(canonicalToolName);
-
-    if (isOptionalTool && missingOptionalToolSet.has(canonicalToolName)) {
-      steps.push({
-        toolName: action.name,
-        canonicalToolName,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        success: true,
-        optional: true,
-        skipped: true
-      });
-      currentJob = await reportProgress(appendJobLog(currentJob, "Skipping optional MCP tool: " + canonicalToolName + "."), options);
-      continue;
-    }
-
-    if (canonicalToolName === "capture_screenshot") currentJob = await enterStage(currentJob, "capturing_preview", options);
-    if (canonicalToolName === "export_project") currentJob = await enterStage(currentJob, "exporting_model", options);
-
-    currentJob = await reportProgress(appendJobLog(currentJob, "Running MCP tool: " + canonicalToolName + " as " + action.name), options);
-
-    try {
-      const toolResult = await options.blockbench.callTool(action);
-      const resultValidation = validateMcpToolResult(canonicalToolName, action.name, toolResult);
-      const outputArtifacts: string[] = [];
-
-      if (!resultValidation.valid) {
-        steps.push({
-          toolName: action.name,
-          canonicalToolName,
-          startedAt,
-          finishedAt: new Date().toISOString(),
-          success: false,
-          optional: isOptionalTool,
-          nonFatal: isOptionalTool,
-          resultSummary: resultValidation.summary,
-          resultValidation,
-          error: "MCP result validation failed."
-        });
-
-        if (isOptionalTool) {
-          currentJob = await reportProgress(
-            appendJobLog(currentJob, "Optional MCP result validation failed but job will continue: " + canonicalToolName + "."),
-            options
-          );
-          continue;
-        }
-
-        const reportPath = await saveMcpExecutionReport(
-          currentJob.id,
-          {
-            startedAt: executionStartedAt,
-            finishedAt: new Date().toISOString(),
-            success: false,
-            actionCount: executionActions.length,
-            requiredFailureCount: getRequiredFailureCount(steps),
-            optionalFailureCount: getOptionalFailureCount(steps),
-            resultValidationFailureCount: getResultValidationFailureCount(steps),
-            steps
-          },
-          options.outputDir
-        );
-
-        return failJob(currentJob, "MCP result validation failed. Review " + reportPath + " for details.", options);
-      }
-
-      if (canonicalToolName === "capture_screenshot") {
-        const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
-        outputArtifacts.push("blockbench_preview");
-        currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench preview saved to " + previewPath + "."), options);
-      }
-
-      if (canonicalToolName === "export_project") {
-        const exportPath = await saveBlockbenchExport(currentJob.id, action.name, adapterResult.format, toolResult, options.outputDir);
-        outputArtifacts.push("blockbench_export");
-        currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench export saved to " + exportPath + "."), options);
-      }
-
-      steps.push({
-        toolName: action.name,
-        canonicalToolName,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        success: true,
-        optional: isOptionalTool,
-        resultSummary: resultValidation.summary,
-        resultValidation,
-        outputArtifacts
-      });
-    } catch (error) {
-      steps.push({
-        toolName: action.name,
-        canonicalToolName,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        success: false,
-        optional: isOptionalTool,
-        nonFatal: isOptionalTool,
-        error: error instanceof Error ? error.message : "Unknown MCP tool error."
-      });
-
-      if (isOptionalTool) {
-        currentJob = await reportProgress(
-          appendJobLog(currentJob, "Optional MCP tool failed but job will continue: " + canonicalToolName + "."),
-          options
-        );
-        continue;
-      }
-
-      const reportPath = await saveMcpExecutionReport(
-        currentJob.id,
-        {
-          startedAt: executionStartedAt,
-          finishedAt: new Date().toISOString(),
-          success: false,
-          actionCount: executionActions.length,
-          requiredFailureCount: getRequiredFailureCount(steps),
-          optionalFailureCount: getOptionalFailureCount(steps),
-          resultValidationFailureCount: getResultValidationFailureCount(steps),
-          steps
-        },
-        options.outputDir
-      );
-
-      return failJob(currentJob, "MCP execution failed. Review " + reportPath + " for details.", options);
-    }
-  }
-
-  const reportPath = await saveMcpExecutionReport(
-    currentJob.id,
-    {
-      startedAt: executionStartedAt,
-      finishedAt: new Date().toISOString(),
-      success: getRequiredFailureCount(steps) === 0,
-      actionCount: executionActions.length,
-      requiredFailureCount: getRequiredFailureCount(steps),
-      optionalFailureCount: getOptionalFailureCount(steps),
-      resultValidationFailureCount: getResultValidationFailureCount(steps),
-      steps
-    },
-    options.outputDir
-  );
-
-  currentJob = await reportProgress(appendJobLog(currentJob, "MCP execution report saved to " + reportPath + "."), options);
-  currentJob = await reportProgress(setJobStatus(currentJob, "completed"), options);
-  return reportProgress(appendJobLog(currentJob, "Model generation completed."), options);
+  return runMcpExecution(currentJob, executionActions, {
+    blockbench: options.blockbench,
+    outputDir: options.outputDir,
+    adapterFormat: adapterResult.format,
+    toolNameMappingReport,
+    missingOptionalTools: capabilityReport.missingOptionalTools ?? [],
+    onProgress: options.onProgress
+  });
 }
