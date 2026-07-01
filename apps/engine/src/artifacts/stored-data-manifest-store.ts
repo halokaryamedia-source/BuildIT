@@ -75,6 +75,24 @@ function toStoredDataFile(artifact: JobArtifactSummary): StoredDataFile {
   };
 }
 
+function markManifestArtifactAvailable(artifactIndex: ArtifactIndex, artifactName: "stored_data_manifest"): ArtifactIndex {
+  const wasAvailable = artifactIndex.artifacts.some((artifact) => artifact.name === artifactName && artifact.available);
+
+  return {
+    ...artifactIndex,
+    artifacts: artifactIndex.artifacts.map((artifact) =>
+      artifact.name === artifactName
+        ? {
+            ...artifact,
+            available: true,
+            updatedAt: artifactIndex.generatedAt
+          }
+        : artifact
+    ),
+    availableCount: wasAvailable ? artifactIndex.availableCount : artifactIndex.availableCount + 1
+  };
+}
+
 function markStoredDataManifestAvailable(manifest: StoredDataManifest): StoredDataManifest {
   return {
     ...manifest,
@@ -86,7 +104,8 @@ function markStoredDataManifestAvailable(manifest: StoredDataManifest): StoredDa
             updatedAt: manifest.generatedAt
           }
         : file
-    )
+    ),
+    artifactIndex: markManifestArtifactAvailable(manifest.artifactIndex, "stored_data_manifest")
   };
 }
 
