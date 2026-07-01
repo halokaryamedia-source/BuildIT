@@ -66,6 +66,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the artifact JSON viewer displays formatted JSON.
 - Confirm `mcp_geometry_plan.json` displays normalized groups, cubes, bounds, centers, and geometry issues.
 - Confirm Bedrock Block jobs show core groups such as `base`, `block_body`, and `decorative_details` in `mcp_geometry_plan.json`.
+- Confirm Bedrock Entity jobs show core groups such as `body`, `head`, and `accessories` in `mcp_geometry_plan.json`.
 - Confirm `mcp_tool_schema.json` displays the captured Blockbench MCP tool definitions.
 - Confirm `mcp_tool_name_mapping.json` displays canonical and resolved tool names.
 - Confirm `mcp_argument_shape_adaptation.json` displays original and adapted MCP arguments.
@@ -99,6 +100,9 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm missing Bedrock Block base/body support cubes are generated when needed.
 - Confirm Bedrock Block entity-like groups are reassigned into block-style groups.
 - Confirm Bedrock Entity geometry is clamped to entity-style bounds.
+- Confirm Bedrock Entity geometry includes `root`, `body`, `head`, and `accessories` groups.
+- Confirm missing Bedrock Entity body support cube is generated when needed.
+- Confirm Bedrock Entity block-style groups are reassigned into entity-style groups.
 - Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
 - Confirm `outputs/jobs/<jobId>/mcp_tool_schema.json` is created after `tools/list` succeeds.
