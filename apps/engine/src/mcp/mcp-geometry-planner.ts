@@ -1,5 +1,6 @@
 import type { ModelPlan } from "../planning/model-plan.js";
 import { applyBedrockBlockGeometryRules } from "./mcp-bedrock-block-geometry.js";
+import { applyBedrockEntityGeometryRules } from "./mcp-bedrock-entity-geometry.js";
 
 export type Vec3 = [number, number, number];
 export type GeometryTargetFormat = "bedrock" | "bedrock_block";
@@ -214,6 +215,11 @@ function addFormatWarnings(plan: ModelPlan, format: GeometryTargetFormat, issues
   }
 }
 
+function applyFormatSpecificRules(report: McpGeometryReport): McpGeometryReport {
+  if (report.format === "bedrock_block") return applyBedrockBlockGeometryRules(report);
+  return applyBedrockEntityGeometryRules(report);
+}
+
 export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
   const format = resolveFormat(plan.format);
   const bounds = getBounds(format);
@@ -243,5 +249,5 @@ export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
     issues
   };
 
-  return applyBedrockBlockGeometryRules(baseReport);
+  return applyFormatSpecificRules(baseReport);
 }
