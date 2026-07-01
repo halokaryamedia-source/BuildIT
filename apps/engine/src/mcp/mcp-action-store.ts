@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { McpToolCall } from "./blockbench-client.js";
 import type { ToolAdapterIssue } from "./blockbench-tool-adapter.js";
+import type { McpToolResultSummary } from "./mcp-tool-result-summary.js";
 
 export interface McpActionBuildReport {
   createdAt: string;
@@ -14,10 +15,15 @@ export interface McpActionBuildReport {
 
 export interface McpExecutionStep {
   toolName: string;
+  canonicalToolName?: string;
   startedAt: string;
   finishedAt: string;
   success: boolean;
   skipped?: boolean;
+  optional?: boolean;
+  nonFatal?: boolean;
+  resultSummary?: McpToolResultSummary;
+  outputArtifacts?: string[];
   error?: string;
 }
 
@@ -26,6 +32,8 @@ export interface McpExecutionReport {
   finishedAt: string;
   success: boolean;
   actionCount: number;
+  requiredFailureCount?: number;
+  optionalFailureCount?: number;
   steps: McpExecutionStep[];
 }
 
