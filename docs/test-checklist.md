@@ -11,7 +11,8 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `visionConnected` reflects the local vision model state.
 - Confirm `blockbench.connected` reflects the local Blockbench MCP state.
 - Confirm `mcpCapabilities.valid` reflects whether the required MCP tools are available.
-- Confirm `mcpCapabilities.missingTools` is empty when the MCP server is compatible.
+- Confirm `mcpCapabilities.toolNameResolutions` includes canonical and resolved tool names.
+- Confirm `mcpCapabilities.missingTools` is empty when required canonical tools are resolved.
 - Confirm `mcpCapabilities.optionalTools` includes optional progressive enhancement tools.
 - Confirm `mcpCapabilities.missingOptionalTools` can include optional tools without making `valid` false.
 - Open `http://localhost:3987/api/jobs` after creating a job.
@@ -30,6 +31,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `artifact_index.json` appears in the artifact list.
 - Confirm `stored_data_manifest.json` appears in the artifact list.
 - Confirm `mcp_tool_schema.json` appears in the artifact list after MCP capability discovery.
+- Confirm `mcp_tool_name_mapping.json` appears in the artifact list after MCP capability discovery.
 - Confirm `mcp_action_schema_match.json` appears in the artifact list before MCP execution.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
@@ -61,6 +63,7 @@ Use this checklist before merging a development slice into `V1`.
 - Click View on an available artifact.
 - Confirm the artifact JSON viewer displays formatted JSON.
 - Confirm `mcp_tool_schema.json` displays the captured Blockbench MCP tool definitions.
+- Confirm `mcp_tool_name_mapping.json` displays canonical and resolved tool names.
 - Confirm `mcp_action_schema_match.json` displays original and normalized MCP actions.
 - Confirm `blockbench_preview.json` displays an image when `imageDataUrl` is present.
 - Confirm the logs mention reference image analysis when an image is selected.
@@ -68,6 +71,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm the logs mention model plan validation.
 - Confirm the logs mention MCP action list creation.
 - Confirm the logs mention MCP tool schema reporting.
+- Confirm the logs mention MCP tool name mapping.
 - Confirm the logs mention MCP action schema matching.
 - Confirm the logs mention MCP capability reporting.
 - Confirm the logs mention MCP execution reporting after execution.
@@ -84,10 +88,12 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
 - Confirm `outputs/jobs/<jobId>/mcp_tool_schema.json` is created after `tools/list` succeeds.
+- Confirm `outputs/jobs/<jobId>/mcp_tool_name_mapping.json` is created after tool name mapping.
+- Confirm `mcp_tool_name_mapping.json` includes available tools, canonical tools, resolved names, missing required tools, and missing optional tools.
 - Confirm `outputs/jobs/<jobId>/mcp_action_schema_match.json` is created after MCP schema matching.
 - Confirm `mcp_action_schema_match.json` includes original actions, normalized actions, removed arguments, warnings, and errors.
 - Confirm `outputs/jobs/<jobId>/mcp_capabilities.json` is created before execution.
-- Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `optionalTools`, `missingTools`, `missingOptionalTools`, and `valid`.
+- Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `optionalTools`, `missingTools`, `missingOptionalTools`, `toolNameResolutions`, and `valid`.
 - Confirm `outputs/jobs/<jobId>/blockbench_preview.json` is created when preview capture runs.
 - Confirm `outputs/jobs/<jobId>/blockbench_export.json` is created only when optional export runs.
 - Confirm `outputs/jobs/<jobId>/mcp_execution_report.json` is created after execution starts.
