@@ -1,4 +1,5 @@
 import type { ModelPlan } from "../planning/model-plan.js";
+import { applyBedrockBlockGeometryRules } from "./mcp-bedrock-block-geometry.js";
 
 export type Vec3 = [number, number, number];
 export type GeometryTargetFormat = "bedrock" | "bedrock_block";
@@ -230,7 +231,7 @@ export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
     });
   }
 
-  return {
+  const baseReport: McpGeometryReport = {
     createdAt: new Date().toISOString(),
     format,
     valid: !issues.some((issue) => issue.severity === "error"),
@@ -241,4 +242,6 @@ export function buildMcpGeometry(plan: ModelPlan): McpGeometryReport {
     cubes,
     issues
   };
+
+  return applyBedrockBlockGeometryRules(baseReport);
 }
