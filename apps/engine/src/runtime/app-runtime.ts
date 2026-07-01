@@ -1,5 +1,6 @@
 import { appendJobLog, createJob, setJobStatus, type ModelJobInput } from "../domain/job.js";
 import { JobStore } from "../jobs/job-store.js";
+import { saveJobSnapshot } from "../jobs/job-snapshot-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveReferenceImages, type ReferenceImageUpload } from "../storage/reference-images.js";
@@ -47,6 +48,7 @@ export class AppRuntime {
         : "No reference image files were provided."
     );
 
+    await saveJobSnapshot(job, this.options.outputDir);
     this.jobs.save(job);
     void this.runJob(job.id);
 
@@ -64,12 +66,14 @@ export class AppRuntime {
         blockbench: this.blockbench,
         outputDir: this.options.outputDir
       });
+      await saveJobSnapshot(result, this.options.outputDir);
       this.jobs.save(result);
     } catch (error) {
       const failedJob = {
         ...setJobStatus(job, "failed"),
         error: error instanceof Error ? error.message : "Unknown job failure."
       };
+      await saveJobSnapshot(failedJob, this.options.outputDir);
       this.jobs.save(failedJob);
     }
   }
