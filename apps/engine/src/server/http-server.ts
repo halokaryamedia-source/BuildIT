@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AppRuntime } from "../runtime/app-runtime.js";
+import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
 
 interface CreateJobBody {
@@ -53,11 +54,20 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
         const blockbench = await runtime.sync.getState();
         const ollamaConnected = await runtime.ollama.health();
         const visionConnected = await runtime.vision.health();
+        let mcpCapabilities;
+
+        try {
+          mcpCapabilities = evaluateMcpCapabilities(await runtime.blockbench.listTools());
+        } catch (error) {
+          mcpCapabilities = createFailedMcpCapabilityReport(error);
+        }
+
         sendJson(response, 200, {
           status: "ok",
           ollamaConnected,
           visionConnected,
           blockbench,
+          mcpCapabilities,
           options: runtime.getOptions()
         });
         return;
