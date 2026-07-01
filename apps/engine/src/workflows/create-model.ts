@@ -18,44 +18,65 @@ export interface CreateModelWorkflowOptions {
   vision: OllamaProvider;
   blockbench: BlockbenchMcpClient;
   outputDir: string;
+  onProgress?: (job: ModelJob) => void | Promise<void>;
+}
+
+async function reportProgress(job: ModelJob, options: CreateModelWorkflowOptions): Promise<ModelJob> {
+  await options.onProgress?.(job);
+  return job;
 }
 
 export async function runCreateModelWorkflow(job: ModelJob, options: CreateModelWorkflowOptions): Promise<ModelJob> {
-  let currentJob = setJobStatus(job, "running");
+  let currentJob = await reportProgress(setJobStatus(job, "running"), options);
   let imageAnalysis: ImageAnalysis | null = null;
 
   if (currentJob.input.imagePaths.length > 0) {
-    currentJob = appendJobLog(currentJob, "Analyzing reference image input.");
+    currentJob = await reportProgress(appendJobLog(currentJob, "Analyzing reference image input."), options);
     imageAnalysis = await analyzeReferenceImages(currentJob, options.vision);
     const analysisPath = await saveImageAnalysis(currentJob.id, imageAnalysis, options.outputDir);
-    currentJob = appendJobLog(currentJob, "Reference image analysis saved to " + analysisPath + ".");
+    currentJob = await reportProgress(appendJobLog(currentJob, "Reference image analysis saved to " + analysisPath + "."), options);
   } else {
-    currentJob = appendJobLog(currentJob, "Skipping vision analysis because no reference image was provided.");
+    currentJob = await reportProgress(
+      appendJobLog(currentJob, "Skipping vision analysis because no reference image was provided."),
+      options
+    );
   }
 
-  currentJob = appendJobLog(currentJob, "Generating typed model plan for format " + currentJob.input.format + ".");
+  currentJob = await reportProgress(
+    appendJobLog(currentJob, "Generating typed model plan for format " + currentJob.input.format + "."),
+    options
+  );
   const plan = await generateModelPlan(currentJob, imageAnalysis, options.ollama);
   const planPath = await saveModelPlan(currentJob.id, plan, options.outputDir);
-  currentJob = appendJobLog(currentJob, "Model plan saved to " + planPath + ".");
+  currentJob = await reportProgress(appendJobLog(currentJob, "Model plan saved to " + planPath + "."), options);
 
   const validationReport = validateModelPlan(plan);
   const validationPath = await saveModelPlanValidation(currentJob.id, validationReport, options.outputDir);
-  currentJob = appendJobLog(currentJob, "Model plan validation saved to " + validationPath + ".");
+  currentJob = await reportProgress(
+    appendJobLog(currentJob, "Model plan validation saved to " + validationPath + "."),
+    options
+  );
 
   if (!validationReport.valid) {
-    return {
-      ...setJobStatus(currentJob, "failed"),
-      error: "Model plan validation failed. Review model_plan_validation.json for details."
-    };
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "Model plan validation failed. Review model_plan_validation.json for details."
+      },
+      options
+    );
   }
 
   if (validationReport.issues.length > 0) {
-    currentJob = appendJobLog(
-      currentJob,
-      "Model plan validation completed with " + validationReport.issues.length + " warning(s)."
+    currentJob = await reportProgress(
+      appendJobLog(
+        currentJob,
+        "Model plan validation completed with " + validationReport.issues.length + " warning(s)."
+      ),
+      options
     );
   } else {
-    currentJob = appendJobLog(currentJob, "Model plan validation completed with no issues.");
+    currentJob = await reportProgress(appendJobLog(currentJob, "Model plan validation completed with no issues."), options);
   }
 
   const adapterResult = buildBlockbenchToolActions(plan);
@@ -71,30 +92,36 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     },
     options.outputDir
   );
-  currentJob = appendJobLog(currentJob, "MCP action list saved to " + actionsPath + ".");
+  currentJob = await reportProgress(appendJobLog(currentJob, "MCP action list saved to " + actionsPath + "."), options);
 
   if (!adapterResult.valid) {
-    return {
-      ...setJobStatus(currentJob, "failed"),
-      error: "MCP tool adapter validation failed. Review mcp_actions.json for details."
-    };
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "MCP tool adapter validation failed. Review mcp_actions.json for details."
+      },
+      options
+    );
   }
 
   if (adapterResult.issues.length > 0) {
-    currentJob = appendJobLog(
-      currentJob,
-      "MCP tool adapter completed with " + adapterResult.issues.length + " warning(s)."
+    currentJob = await reportProgress(
+      appendJobLog(currentJob, "MCP tool adapter completed with " + adapterResult.issues.length + " warning(s)."),
+      options
     );
   } else {
-    currentJob = appendJobLog(currentJob, "MCP tool adapter completed with no issues.");
+    currentJob = await reportProgress(appendJobLog(currentJob, "MCP tool adapter completed with no issues."), options);
   }
 
   const isReady = await options.blockbench.health();
   if (!isReady) {
-    return { ...setJobStatus(currentJob, "failed"), error: "Blockbench MCP is not connected." };
+    return reportProgress(
+      { ...setJobStatus(currentJob, "failed"), error: "Blockbench MCP is not connected." },
+      options
+    );
   }
 
-  currentJob = appendJobLog(currentJob, "Blockbench MCP connected.");
+  currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP connected."), options);
 
   let capabilityReport;
   try {
@@ -104,23 +131,26 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   }
 
   const capabilityPath = await saveMcpCapabilityReport(currentJob.id, capabilityReport, options.outputDir);
-  currentJob = appendJobLog(currentJob, "MCP capability report saved to " + capabilityPath + ".");
+  currentJob = await reportProgress(appendJobLog(currentJob, "MCP capability report saved to " + capabilityPath + "."), options);
 
   if (!capabilityReport.valid) {
-    return {
-      ...setJobStatus(currentJob, "failed"),
-      error: "Blockbench MCP required tools are missing. Review mcp_capabilities.json for details."
-    };
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "Blockbench MCP required tools are missing. Review mcp_capabilities.json for details."
+      },
+      options
+    );
   }
 
-  currentJob = appendJobLog(currentJob, "Blockbench MCP capability check passed.");
+  currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
 
   for (const action of adapterResult.actions) {
     const startedAt = new Date().toISOString();
-    currentJob = appendJobLog(currentJob, "Running MCP tool: " + action.name);
+    currentJob = await reportProgress(appendJobLog(currentJob, "Running MCP tool: " + action.name), options);
 
     try {
       await options.blockbench.callTool(action);
@@ -151,10 +181,13 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
         options.outputDir
       );
 
-      return {
-        ...setJobStatus(currentJob, "failed"),
-        error: "MCP execution failed. Review " + reportPath + " for details."
-      };
+      return reportProgress(
+        {
+          ...setJobStatus(currentJob, "failed"),
+          error: "MCP execution failed. Review " + reportPath + " for details."
+        },
+        options
+      );
     }
   }
 
@@ -170,7 +203,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     options.outputDir
   );
 
-  currentJob = appendJobLog(currentJob, "MCP execution report saved to " + reportPath + ".");
-  currentJob = setJobStatus(currentJob, "completed");
-  return appendJobLog(currentJob, "Model generation completed.");
+  currentJob = await reportProgress(appendJobLog(currentJob, "MCP execution report saved to " + reportPath + "."), options);
+  currentJob = await reportProgress(setJobStatus(currentJob, "completed"), options);
+  return reportProgress(appendJobLog(currentJob, "Model generation completed."), options);
 }
