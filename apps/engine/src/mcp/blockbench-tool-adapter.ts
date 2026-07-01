@@ -16,15 +16,10 @@ export interface ToolAdapterResult {
   issues: ToolAdapterIssue[];
 }
 
-export const requiredBlockbenchToolNames = [
-  "create_project",
-  "add_group",
-  "place_cube",
-  "capture_screenshot",
-  "export_project"
-] as const;
+export const requiredBlockbenchToolNames = ["create_project", "add_group", "place_cube", "capture_screenshot"] as const;
+export const optionalBlockbenchToolNames = ["export_project"] as const;
 
-const supportedToolNames = new Set<string>(requiredBlockbenchToolNames);
+const supportedToolNames = new Set<string>([...requiredBlockbenchToolNames, ...optionalBlockbenchToolNames]);
 
 function resolveFormat(format: string): SupportedBlockbenchFormat {
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
