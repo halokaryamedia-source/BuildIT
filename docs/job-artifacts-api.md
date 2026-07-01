@@ -28,7 +28,7 @@ Response:
   "artifactIndex": {
     "jobId": "job_123",
     "generatedAt": "2026-01-01T00:00:00.000Z",
-    "artifactCount": 16,
+    "artifactCount": 18,
     "availableCount": 5,
     "artifacts": []
   },
