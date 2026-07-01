@@ -48,10 +48,13 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
       if (request.method === "GET" && url.pathname === "/api/health") {
         const blockbench = await runtime.sync.getState();
         const ollamaConnected = await runtime.ollama.health();
+        const visionConnected = await runtime.vision.health();
         sendJson(response, 200, {
           status: "ok",
           ollamaConnected,
-          blockbench
+          visionConnected,
+          blockbench,
+          options: runtime.getOptions()
         });
         return;
       }
