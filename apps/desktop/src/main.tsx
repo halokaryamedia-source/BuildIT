@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
@@ -70,11 +71,20 @@ interface HealthState {
 }
 
 interface OpenStoredDataResponse {
-  opened?: {
-    path: string;
-  };
+  opened?: { path: string };
   storedDataManifest?: StoredDataManifest;
   error?: string;
+}
+
+interface RuntimeStatus {
+  ollama_connected: boolean;
+  blockbench_mcp_port_open: boolean;
+}
+
+interface RuntimeCommandResult {
+  started: boolean;
+  path?: string;
+  message: string;
 }
 
 async function readJsonResponse<T>(response: Response, fallbackError: string): Promise<T> {
@@ -228,6 +238,7 @@ function App() {
   const [storedDataManifest, setStoredDataManifest] = useState<StoredDataManifest | null>(null);
   const [selectedArtifact, setSelectedArtifact] = useState<JobArtifactContent | null>(null);
   const [health, setHealth] = useState<HealthState | null>(null);
+  const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const terminalNotifiedJobIds = useRef<Set<string>>(new Set());
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -269,6 +280,42 @@ function App() {
     }
   }
 
+  async function checkDesktopRuntime() {
+    try {
+      const status = await invoke<RuntimeStatus>("check_runtime");
+      setRuntimeStatus(status);
+      pushAssistantMessage(
+        "Desktop runtime checked. Ollama: " +
+          (status.ollama_connected ? "connected" : "offline") +
+          ", Blockbench MCP port: " +
+          (status.blockbench_mcp_port_open ? "open" : "closed") +
+          "."
+      );
+    } catch (error) {
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to check desktop runtime. Make sure BuildIT is running as a Tauri app.");
+    }
+  }
+
+  async function startOllamaFromApp() {
+    try {
+      const result = await invoke<RuntimeCommandResult>("start_ollama");
+      pushAssistantMessage(result.message);
+      await checkDesktopRuntime();
+    } catch (error) {
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to start Ollama from BuildIT.");
+    }
+  }
+
+  async function openBlockbenchFromApp() {
+    try {
+      const result = await invoke<RuntimeCommandResult>("open_blockbench");
+      pushAssistantMessage(result.message + (result.path ? " Path: " + result.path : ""));
+      await checkDesktopRuntime();
+    } catch (error) {
+      pushAssistantMessage(error instanceof Error ? error.message : "Unable to open Blockbench from BuildIT.");
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -283,6 +330,7 @@ function App() {
 
     void refreshHealth();
     void refreshRecentJobs();
+    void checkDesktopRuntime();
     const timer = window.setInterval(() => {
       void refreshHealth();
       void refreshRecentJobs();
@@ -443,6 +491,14 @@ function App() {
       <aside className="sidebar">
         <h1>BuildIT</h1>
         <p>Blockbench Auto Model Studio</p>
+        <div className="status-card">
+          <strong>Desktop controls</strong>
+          <span>Ollama port: {runtimeStatus?.ollama_connected ? "open" : "unknown/offline"}</span>
+          <span>Blockbench MCP port: {runtimeStatus?.blockbench_mcp_port_open ? "open" : "unknown/offline"}</span>
+          <button onClick={() => void startOllamaFromApp()}>Start Ollama</button>
+          <button onClick={() => void openBlockbenchFromApp()}>Open Blockbench</button>
+          <button onClick={() => void checkDesktopRuntime()}>Check Runtime</button>
+        </div>
         <div className="status-card">
           <strong>Target type</strong>
           <span>{getTargetLabel(targetFormat)}</span>
