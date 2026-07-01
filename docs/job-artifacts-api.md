@@ -10,6 +10,8 @@ Artifacts are read from the job output folder, so artifact reads can still work 
 GET /api/jobs/:id/artifacts
 ```
 
+This endpoint refreshes the job artifact index before returning.
+
 Response:
 
 ```json
@@ -18,9 +20,18 @@ Response:
     {
       "name": "model_plan",
       "fileName": "model_plan.json",
-      "available": true
+      "available": true,
+      "sizeBytes": 1024,
+      "updatedAt": "2026-01-01T00:00:00.000Z"
     }
-  ]
+  ],
+  "artifactIndex": {
+    "jobId": "job_123",
+    "generatedAt": "2026-01-01T00:00:00.000Z",
+    "artifactCount": 10,
+    "availableCount": 4,
+    "artifacts": []
+  }
 }
 ```
 
@@ -34,11 +45,14 @@ Supported artifact names:
 
 ```txt
 job_snapshot
+artifact_index
 image_analysis
 model_plan
 model_plan_validation
 mcp_actions
 mcp_capabilities
+blockbench_preview
+blockbench_export
 mcp_execution_report
 ```
 
@@ -62,3 +76,5 @@ Response:
 ## Desktop diagnostics
 
 The desktop app polls artifact summaries while a job is running and displays whether each artifact is available or still pending.
+
+When `artifactIndex` is available, the desktop app prefers the manifest artifact list because it also includes file size and update time.
