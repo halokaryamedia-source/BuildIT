@@ -10,6 +10,10 @@ interface CreateJobBody {
   autoReview?: boolean;
 }
 
+function normalizeFormat(format: string | undefined): "bedrock" | "bedrock_block" {
+  return format === "bedrock_block" ? "bedrock_block" : "bedrock";
+}
+
 async function readJsonBody<T>(request: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
 
@@ -73,12 +77,14 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
+        const format = normalizeFormat(body.format);
+
         const job = await runtime.createModelJob(
           {
             prompt,
             imagePaths: body.imagePaths ?? [],
             referenceImages: [],
-            format: body.format ?? "bbmodel",
+            format,
             autoReview: body.autoReview ?? true
           },
           body.referenceImages ?? []
