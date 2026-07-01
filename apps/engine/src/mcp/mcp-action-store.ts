@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { McpToolCall } from "./blockbench-client.js";
 import type { ToolAdapterIssue } from "./blockbench-tool-adapter.js";
 import type { McpToolResultSummary } from "./mcp-tool-result-summary.js";
+import type { McpToolResultValidationReport } from "./mcp-tool-result-validation.js";
 
 export interface McpActionBuildReport {
   createdAt: string;
@@ -23,6 +24,7 @@ export interface McpExecutionStep {
   optional?: boolean;
   nonFatal?: boolean;
   resultSummary?: McpToolResultSummary;
+  resultValidation?: McpToolResultValidationReport;
   outputArtifacts?: string[];
   error?: string;
 }
@@ -34,6 +36,7 @@ export interface McpExecutionReport {
   actionCount: number;
   requiredFailureCount?: number;
   optionalFailureCount?: number;
+  resultValidationFailureCount?: number;
   steps: McpExecutionStep[];
 }
 
