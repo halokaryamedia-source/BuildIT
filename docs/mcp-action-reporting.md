@@ -19,6 +19,7 @@ It is useful for debugging:
 - group creation actions,
 - cube placement actions,
 - screenshot actions,
+- optional export actions,
 - action order,
 - adapter warnings,
 - adapter errors.
@@ -43,6 +44,8 @@ Each step includes:
 - start time,
 - finish time,
 - success state,
+- skipped state for unavailable optional tools,
 - error message when execution fails.
 
-If a tool fails, the workflow stops and writes the execution report before returning a failed job.
+If a required tool fails, the workflow stops and writes the execution report before returning a failed job.
+If an optional tool is unavailable during capability discovery, the workflow records it as skipped and continues.
