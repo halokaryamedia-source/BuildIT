@@ -185,7 +185,7 @@ function App() {
             <label>
               <span>Project type</span>
               <select value={targetFormat} onChange={(event) => setTargetFormat(event.target.value as TargetFormat)}>
-                <option value="bedrock_entity">Bedrock Entity</option>
+                <option value="bedrock">Bedrock Entity</option>
                 <option value="bedrock_block">Bedrock Block</option>
               </select>
             </label>
