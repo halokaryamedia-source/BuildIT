@@ -13,9 +13,8 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "noEmit": true
   },
-  "include": ["src/main.tsx", "src/vite-env.d.ts"],
+  "include": ["src/main.tsx", "src/App.svelte", "src/vite-env.d.ts"],
   "references": []
 }
