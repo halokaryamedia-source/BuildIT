@@ -4,6 +4,7 @@ import { join } from "node:path";
 export const jobArtifactNames = [
   "job_snapshot",
   "artifact_index",
+  "job_bundle",
   "image_analysis",
   "model_plan",
   "model_plan_validation",
