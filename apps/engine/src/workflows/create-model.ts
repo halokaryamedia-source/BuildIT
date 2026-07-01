@@ -6,7 +6,7 @@ import { saveMcpActions } from "../mcp/mcp-action-store.js";
 import { adaptMcpActionArgumentShapes } from "../mcp/mcp-argument-shape-adapter.js";
 import { saveMcpArgumentShapeAdaptationReport } from "../mcp/mcp-argument-shape-store.js";
 import { buildBlockbenchToolActionsFromGeometry } from "../mcp/blockbench-tool-adapter.js";
-import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
+import { createFailedMcpCapabilityReport, evaluateMcpCapabilities, type McpCapabilityReport } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
 import { buildMcpExecutionPlan } from "../mcp/mcp-execution-plan.js";
 import { saveMcpExecutionPlanReport } from "../mcp/mcp-execution-plan-store.js";
@@ -153,7 +153,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP connected."), options);
 
   let availableTools: McpToolDefinition[] = [];
-  let capabilityReport;
+  let capabilityReport: McpCapabilityReport;
   let toolNameMappingReport = resolveMcpToolNameMappings([]);
   try {
     availableTools = await options.blockbench.listTools();
@@ -212,7 +212,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     outputDir: options.outputDir,
     adapterFormat: adapterResult.format,
     toolNameMappingReport,
-    missingOptionalTools: capabilityReport.missingOptionalTools ?? [],
+    missingOptionalTools: capabilityReport.missingOptionalTools,
     onProgress: options.onProgress
   });
 }
