@@ -39,10 +39,11 @@ BuildIT currently focuses on two Blockbench project targets only:
 9. The engine stops before Blockbench execution if validation fails.
 10. The Blockbench MCP adapter builds and validates MCP tool calls.
 11. The engine saves `mcp_actions.json`.
-12. The engine controls Blockbench through MCP when the adapter output is valid.
-13. The engine saves `mcp_execution_report.json`.
-14. The app shows progress and preview status.
-15. The user is notified when the model is ready in Blockbench.
+12. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
+13. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
+14. The engine saves `mcp_execution_report.json`.
+15. The app shows progress and preview status.
+16. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -75,7 +76,7 @@ Default local services:
 
 ## Engine API
 
-- `GET /api/health` checks main model, vision model, and Blockbench MCP connectivity.
+- `GET /api/health` checks main model, vision model, Blockbench MCP connectivity, and MCP tool capabilities.
 - `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
 - `GET /api/jobs` lists jobs stored in memory.
 - `GET /api/jobs/:id` returns a single job and its logs.
@@ -90,4 +91,5 @@ Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.
 Typed model plans are stored at `outputs/jobs/<jobId>/model_plan.json`.
 Model plan validation reports are stored at `outputs/jobs/<jobId>/model_plan_validation.json`.
 MCP action lists are stored at `outputs/jobs/<jobId>/mcp_actions.json`.
+MCP capability reports are stored at `outputs/jobs/<jobId>/mcp_capabilities.json`.
 MCP execution reports are stored at `outputs/jobs/<jobId>/mcp_execution_report.json`.
