@@ -26,7 +26,21 @@ place_cube
 capture_screenshot
 ```
 
+The required tool list is exported as `requiredBlockbenchToolNames` and reused by MCP capability discovery.
+
 If the Blockbench MCP plugin changes its tool names or argument schema, update `apps/engine/src/mcp/blockbench-tool-adapter.ts` instead of changing workflow or planning code.
+
+## Capability check
+
+Before execution, BuildIT calls `tools/list` and compares the real MCP server tools against the adapter contract.
+
+The capability report is stored at:
+
+```txt
+outputs/jobs/<jobId>/mcp_capabilities.json
+```
+
+When required tools are missing, the workflow stops before Blockbench MCP execution.
 
 ## Output
 

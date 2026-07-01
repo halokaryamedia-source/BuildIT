@@ -2,6 +2,8 @@ import { appendJobLog, setJobStatus, type ModelJob } from "../domain/job.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { buildBlockbenchToolActions } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
+import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
+import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
 import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
@@ -93,6 +95,25 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   }
 
   currentJob = appendJobLog(currentJob, "Blockbench MCP connected.");
+
+  let capabilityReport;
+  try {
+    capabilityReport = evaluateMcpCapabilities(await options.blockbench.listTools());
+  } catch (error) {
+    capabilityReport = createFailedMcpCapabilityReport(error);
+  }
+
+  const capabilityPath = await saveMcpCapabilityReport(currentJob.id, capabilityReport, options.outputDir);
+  currentJob = appendJobLog(currentJob, "MCP capability report saved to " + capabilityPath + ".");
+
+  if (!capabilityReport.valid) {
+    return {
+      ...setJobStatus(currentJob, "failed"),
+      error: "Blockbench MCP required tools are missing. Review mcp_capabilities.json for details."
+    };
+  }
+
+  currentJob = appendJobLog(currentJob, "Blockbench MCP capability check passed.");
 
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];

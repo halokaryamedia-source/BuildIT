@@ -16,7 +16,9 @@ export interface ToolAdapterResult {
   issues: ToolAdapterIssue[];
 }
 
-const supportedToolNames = new Set(["create_project", "add_group", "place_cube", "capture_screenshot"]);
+export const requiredBlockbenchToolNames = ["create_project", "add_group", "place_cube", "capture_screenshot"] as const;
+
+const supportedToolNames = new Set<string>(requiredBlockbenchToolNames);
 
 function resolveFormat(format: string): SupportedBlockbenchFormat {
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
