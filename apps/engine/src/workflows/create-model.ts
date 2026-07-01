@@ -2,6 +2,8 @@ import { appendJobLog, setJobStatus, type ModelJob } from "../domain/job.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
+import { saveModelPlanValidation } from "../planning/model-plan-validation-store.js";
+import { validateModelPlan } from "../planning/model-plan-validation.js";
 import { modelPlanToToolActions } from "../planning/tool-actions.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveImageAnalysis } from "../vision/image-analysis-store.js";
@@ -32,6 +34,26 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   const plan = await generateModelPlan(currentJob, imageAnalysis, options.ollama);
   const planPath = await saveModelPlan(currentJob.id, plan, options.outputDir);
   currentJob = appendJobLog(currentJob, "Model plan saved to " + planPath + ".");
+
+  const validationReport = validateModelPlan(plan);
+  const validationPath = await saveModelPlanValidation(currentJob.id, validationReport, options.outputDir);
+  currentJob = appendJobLog(currentJob, "Model plan validation saved to " + validationPath + ".");
+
+  if (!validationReport.valid) {
+    return {
+      ...setJobStatus(currentJob, "failed"),
+      error: "Model plan validation failed. Review model_plan_validation.json for details."
+    };
+  }
+
+  if (validationReport.issues.length > 0) {
+    currentJob = appendJobLog(
+      currentJob,
+      "Model plan validation completed with " + validationReport.issues.length + " warning(s)."
+    );
+  } else {
+    currentJob = appendJobLog(currentJob, "Model plan validation completed with no issues.");
+  }
 
   const isReady = await options.blockbench.health();
   if (!isReady) {
