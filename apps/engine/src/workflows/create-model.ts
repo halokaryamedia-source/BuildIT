@@ -1,4 +1,4 @@
-import { appendJobLog, setJobStatus, type ModelJob } from "../domain/job.js";
+import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { buildBlockbenchToolActions } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
@@ -26,10 +26,19 @@ async function reportProgress(job: ModelJob, options: CreateModelWorkflowOptions
   return job;
 }
 
+async function enterStage(
+  job: ModelJob,
+  stage: JobStage,
+  options: CreateModelWorkflowOptions
+): Promise<ModelJob> {
+  return reportProgress(setJobStage(job, stage), options);
+}
+
 export async function runCreateModelWorkflow(job: ModelJob, options: CreateModelWorkflowOptions): Promise<ModelJob> {
   let currentJob = await reportProgress(setJobStatus(job, "running"), options);
   let imageAnalysis: ImageAnalysis | null = null;
 
+  currentJob = await enterStage(currentJob, "analyzing_image", options);
   if (currentJob.input.imagePaths.length > 0) {
     currentJob = await reportProgress(appendJobLog(currentJob, "Analyzing reference image input."), options);
     imageAnalysis = await analyzeReferenceImages(currentJob, options.vision);
@@ -42,6 +51,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     );
   }
 
+  currentJob = await enterStage(currentJob, "planning_model", options);
   currentJob = await reportProgress(
     appendJobLog(currentJob, "Generating typed model plan for format " + currentJob.input.format + "."),
     options
@@ -50,6 +60,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   const planPath = await saveModelPlan(currentJob.id, plan, options.outputDir);
   currentJob = await reportProgress(appendJobLog(currentJob, "Model plan saved to " + planPath + "."), options);
 
+  currentJob = await enterStage(currentJob, "validating_plan", options);
   const validationReport = validateModelPlan(plan);
   const validationPath = await saveModelPlanValidation(currentJob.id, validationReport, options.outputDir);
   currentJob = await reportProgress(
@@ -79,6 +90,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     currentJob = await reportProgress(appendJobLog(currentJob, "Model plan validation completed with no issues."), options);
   }
 
+  currentJob = await enterStage(currentJob, "building_mcp_actions", options);
   const adapterResult = buildBlockbenchToolActions(plan);
   const actionsPath = await saveMcpActions(
     currentJob.id,
@@ -113,6 +125,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
     currentJob = await reportProgress(appendJobLog(currentJob, "MCP tool adapter completed with no issues."), options);
   }
 
+  currentJob = await enterStage(currentJob, "checking_mcp_capabilities", options);
   const isReady = await options.blockbench.health();
   if (!isReady) {
     return reportProgress(
@@ -145,6 +158,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
+  currentJob = await enterStage(currentJob, "executing_mcp", options);
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
 
