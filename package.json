@@ -1,0 +1,1 @@
+{"name":"buildit","private":true,"version":"0.1.0","type":"module","scripts":{"build":"echo build","dev":"echo dev"},"devDependencies":{"typescript":"^5.7.2"}}
