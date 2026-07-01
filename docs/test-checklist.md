@@ -1,6 +1,32 @@
 # Test Checklist
 
-Use this checklist before merging a development slice into `V1`.
+Use this checklist before considering `V1` ready for manual local validation.
+
+## Tauri desktop shell
+
+- Run `npm run dev:desktop` from the repository root.
+- Confirm a native BuildIT desktop window opens.
+- Do not use the browser/Vite URL as the primary user-facing app.
+- Confirm `npm --workspace apps/desktop run dev:web` is only used for renderer debugging.
+- Confirm the Desktop Controls card is visible.
+- Confirm Desktop Controls includes:
+  - Start Engine
+  - Start Ollama
+  - Pull Models
+  - Open Blockbench
+  - Open MCP Plugin
+  - Check Runtime
+- Confirm Check Runtime reports:
+  - BuildIT engine port `3987`
+  - Ollama port `11434`
+  - Blockbench MCP port `3000`
+  - installed Ollama models
+  - missing Ollama models
+- Confirm the app can start the BuildIT engine in development mode.
+- Confirm the app can start Ollama when the `ollama` command is available.
+- Confirm the app can start pulling `qwen3:8b` and `qwen3-vl:4b`.
+- Confirm the app can open Blockbench from common install locations.
+- Confirm the app can open the MCP plugin URL.
 
 ## Blockbench MCP core app
 
@@ -19,8 +45,8 @@ http://localhost:3000/bb-mcp
 
 ## Engine
 
-- Run `npm run dev:engine`.
-- Open `http://localhost:3987/api/health`.
+- Run `npm run dev:engine` or use the Start Engine button from the Tauri app.
+- Open `http://localhost:3987/api/health` only as a debug check.
 - Confirm the API returns JSON.
 - Confirm `ollamaConnected`, `visionConnected`, and `blockbench.connected` reflect local service state.
 - Confirm `mcpCapabilities.valid` reflects whether required MCP tools are available.
@@ -40,9 +66,8 @@ http://localhost:3000/bb-mcp
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads and reference images larger than 10 MB are rejected by the engine.
 
-## Desktop
+## Desktop generation flow
 
-- Run `npm run dev:desktop`.
 - Confirm the project type selector only shows Bedrock Entity and Bedrock Block.
 - Confirm the sidebar shows health, recent jobs, Stored Data Root, and artifact availability.
 - Confirm the sidebar shows Blockbench MCP connected/offline status.
@@ -54,7 +79,7 @@ http://localhost:3000/bb-mcp
 - Confirm the ready card includes buttons for View Preview, Open Stored Data, Check MCP Report, and Check Schema Match.
 - Confirm completed/failed notification messages are not repeated while polling.
 - Confirm failed jobs show `Generation needs attention` with a clear error message.
-- Confirm `mcp_geometry_plan.json` displays groups, cubes, bounds, centers, issues, and preflight.
+- Confirm `mcp_geometry_plan.json` displays groups, cubes, bounds, centers, issues, and Geometry Preflight.
 - Confirm `mcp_material_plan.json` displays materials, placeholder colors, assignments, and normalization issues.
 - Confirm Bedrock Block jobs show `base`, `block_body`, and `decorative_details` groups.
 - Confirm Bedrock Entity jobs show `body`, `head`, and `accessories` groups.
@@ -67,7 +92,7 @@ http://localhost:3000/bb-mcp
 - Confirm `job_snapshot.json`, `artifact_index.json`, and `stored_data_manifest.json` are created.
 - Confirm `image_analysis.json` is created when an image is selected.
 - Confirm `model_plan.json` and `model_plan_validation.json` are created.
-- Confirm `mcp_geometry_plan.json` includes format bounds, groups, cubes, issues, and `preflight`.
+- Confirm `mcp_geometry_plan.json` includes format bounds, groups, cubes, issues, and Geometry Preflight.
 - Confirm `mcp_material_plan.json` includes material definitions, placeholder colors, and cube assignments.
 - Confirm material names in `mcp_actions.json` are normalized material names from `mcp_material_plan.json`.
 - Confirm Bedrock Block geometry is clamped to block-style bounds and has block-style groups.
