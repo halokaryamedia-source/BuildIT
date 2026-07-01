@@ -29,6 +29,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `job_snapshot.json` appears in the artifact list.
 - Confirm `artifact_index.json` appears in the artifact list.
 - Confirm `stored_data_manifest.json` appears in the artifact list.
+- Confirm `mcp_tool_schema.json` appears in the artifact list after MCP capability discovery.
 - Confirm requests larger than 16 MB are rejected by the engine API.
 - Confirm non-image reference uploads are rejected by the engine.
 - Confirm reference images larger than 10 MB are rejected by the engine.
@@ -58,11 +59,13 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm available artifact rows show size and update time.
 - Click View on an available artifact.
 - Confirm the artifact JSON viewer displays formatted JSON.
+- Confirm `mcp_tool_schema.json` displays the captured Blockbench MCP tool definitions.
 - Confirm `blockbench_preview.json` displays an image when `imageDataUrl` is present.
 - Confirm the logs mention reference image analysis when an image is selected.
 - Confirm the logs mention typed model plan generation.
 - Confirm the logs mention model plan validation.
 - Confirm the logs mention MCP action list creation.
+- Confirm the logs mention MCP tool schema reporting.
 - Confirm the logs mention MCP capability reporting.
 - Confirm the logs mention MCP execution reporting after execution.
 
@@ -77,6 +80,7 @@ Use this checklist before merging a development slice into `V1`.
 - Confirm `outputs/jobs/<jobId>/model_plan_validation.json` is created.
 - Confirm `outputs/jobs/<jobId>/mcp_actions.json` is created.
 - Confirm `mcp_actions.json` includes `valid`, `format`, `actionCount`, `issues`, and `actions`.
+- Confirm `outputs/jobs/<jobId>/mcp_tool_schema.json` is created after `tools/list` succeeds.
 - Confirm `outputs/jobs/<jobId>/mcp_capabilities.json` is created before execution.
 - Confirm `mcp_capabilities.json` includes `availableTools`, `requiredTools`, `optionalTools`, `missingTools`, `missingOptionalTools`, and `valid`.
 - Confirm `outputs/jobs/<jobId>/blockbench_preview.json` is created when preview capture runs.
