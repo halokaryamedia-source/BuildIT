@@ -10,6 +10,7 @@ export const jobArtifactNames = [
   "model_plan_validation",
   "mcp_actions",
   "mcp_tool_schema",
+  "mcp_action_schema_match",
   "mcp_capabilities",
   "blockbench_preview",
   "blockbench_export",
