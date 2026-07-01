@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { saveArtifactIndex } from "../artifacts/artifact-index-store.js";
 import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
 import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
@@ -156,8 +157,9 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
+        const artifactIndex = await saveArtifactIndex(runtime.getOptions().outputDir, jobId);
         const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, jobId);
-        sendJson(response, 200, { artifacts });
+        sendJson(response, 200, { artifacts, artifactIndex });
         return;
       }
 
@@ -167,6 +169,10 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
         if (!isSafeJobId(jobId)) {
           sendJson(response, 400, { error: "Invalid job id." });
           return;
+        }
+
+        if (artifactMatch[2] === "artifact_index") {
+          await saveArtifactIndex(runtime.getOptions().outputDir, jobId);
         }
 
         const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, artifactMatch[2]);
