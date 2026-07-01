@@ -1,9 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AppRuntime } from "../runtime/app-runtime.js";
+import type { ReferenceImageUpload } from "../storage/reference-images.js";
 
 interface CreateJobBody {
   prompt?: string;
   imagePaths?: string[];
+  referenceImages?: ReferenceImageUpload[];
   format?: string;
   autoReview?: boolean;
 }
@@ -68,12 +70,16 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
           return;
         }
 
-        const job = runtime.createModelJob({
-          prompt,
-          imagePaths: body.imagePaths ?? [],
-          format: body.format ?? "bbmodel",
-          autoReview: body.autoReview ?? true
-        });
+        const job = await runtime.createModelJob(
+          {
+            prompt,
+            imagePaths: body.imagePaths ?? [],
+            referenceImages: [],
+            format: body.format ?? "bbmodel",
+            autoReview: body.autoReview ?? true
+          },
+          body.referenceImages ?? []
+        );
 
         sendJson(response, 201, { job });
         return;
