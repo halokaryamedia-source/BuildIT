@@ -38,29 +38,38 @@ export class AppRuntime {
     let job = createJob(input);
     await this.persistJob(job);
 
-    job = setJobStage(job, "saving_references");
-    await this.persistJob(job);
+    try {
+      job = setJobStage(job, "saving_references");
+      await this.persistJob(job);
 
-    const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
+      const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
 
-    job = appendJobLog(
-      {
-        ...job,
-        input: {
-          ...job.input,
-          imagePaths: savedReferences.map((image) => image.path),
-          referenceImages: savedReferences
-        }
-      },
-      savedReferences.length > 0
-        ? "Saved " + savedReferences.length + " reference image file(s)."
-        : "No reference image files were provided."
-    );
+      job = appendJobLog(
+        {
+          ...job,
+          input: {
+            ...job.input,
+            imagePaths: savedReferences.map((image) => image.path),
+            referenceImages: savedReferences
+          }
+        },
+        savedReferences.length > 0
+          ? "Saved " + savedReferences.length + " reference image file(s)."
+          : "No reference image files were provided."
+      );
 
-    await this.persistJob(job);
-    void this.runJob(job.id);
+      await this.persistJob(job);
+      void this.runJob(job.id);
 
-    return job;
+      return job;
+    } catch (error) {
+      const failedJob = {
+        ...setJobStatus(job, "failed"),
+        error: error instanceof Error ? error.message : "Unable to save reference images."
+      };
+      await this.persistJob(failedJob);
+      throw error;
+    }
   }
 
   async runJob(jobId: string): Promise<void> {
@@ -79,8 +88,9 @@ export class AppRuntime {
       });
       await this.persistJob(result);
     } catch (error) {
+      const latestJob = this.jobs.get(jobId) ?? job;
       const failedJob = {
-        ...setJobStatus(job, "failed"),
+        ...setJobStatus(latestJob, "failed"),
         error: error instanceof Error ? error.message : "Unknown job failure."
       };
       await this.persistJob(failedJob);
