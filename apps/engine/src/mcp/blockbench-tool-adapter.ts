@@ -1,5 +1,6 @@
 import type { ModelPlan } from "../planning/model-plan.js";
 import type { McpToolCall } from "./blockbench-client.js";
+import { buildMcpGeometry, type McpGeometryCube, type McpGeometryReport } from "./mcp-geometry-planner.js";
 
 export type SupportedBlockbenchFormat = "bedrock" | "bedrock_block";
 
@@ -35,27 +36,29 @@ function createProjectAction(plan: ModelPlan): McpToolCall {
   };
 }
 
-function createGroupAction(groupName: string): McpToolCall {
+function createGroupAction(groupName: string, origin: [number, number, number]): McpToolCall {
   return {
     name: "add_group",
     arguments: {
       name: groupName,
-      origin: [0, 0, 0]
+      origin
     }
   };
 }
 
-function createCubeAction(part: ModelPlan["parts"][number]): McpToolCall {
+function createCubeAction(cube: McpGeometryCube): McpToolCall {
   return {
     name: "place_cube",
     arguments: {
-      group: part.group,
+      group: cube.group,
       elements: [
         {
-          name: part.name,
-          from: part.from,
-          to: part.to,
-          material: part.material
+          name: cube.name,
+          from: cube.from,
+          to: cube.to,
+          size: cube.size,
+          center: cube.center,
+          material: cube.material
         }
       ]
     }
@@ -180,18 +183,18 @@ function validateExportAction(action: McpToolCall, issues: ToolAdapterIssue[]): 
   }
 }
 
-export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
-  const issues: ToolAdapterIssue[] = [];
+export function buildBlockbenchToolActionsFromGeometry(plan: ModelPlan, geometry: McpGeometryReport): ToolAdapterResult {
+  const issues: ToolAdapterIssue[] = [...geometry.issues];
   const format = resolveFormat(plan.format);
 
   const actions: McpToolCall[] = [createProjectAction(plan)];
 
-  for (const group of plan.groups) {
-    actions.push(createGroupAction(group));
+  for (const group of geometry.groups) {
+    actions.push(createGroupAction(group.name, group.origin));
   }
 
-  for (const part of plan.parts) {
-    actions.push(createCubeAction(part));
+  for (const cube of geometry.cubes) {
+    actions.push(createCubeAction(cube));
   }
 
   actions.push(createScreenshotAction());
@@ -205,21 +208,14 @@ export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
     validateExportAction(action, issues);
   }
 
-  if (format === "bedrock_block") {
-    const groupNames = plan.groups.join(" ").toLowerCase();
-    if (groupNames.includes("head") || groupNames.includes("limb")) {
-      issues.push({
-        severity: "warning",
-        code: "ENTITY_GROUPS_FOR_BLOCK_ACTIONS",
-        message: "Bedrock Block actions were built from entity-like group names."
-      });
-    }
-  }
-
   return {
-    valid: !issues.some((issue) => issue.severity === "error"),
+    valid: geometry.valid && !issues.some((issue) => issue.severity === "error"),
     format,
     actions,
     issues
   };
+}
+
+export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
+  return buildBlockbenchToolActionsFromGeometry(plan, buildMcpGeometry(plan));
 }
