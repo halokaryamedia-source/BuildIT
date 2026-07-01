@@ -2,6 +2,14 @@
 
 The Blockbench MCP adapter is the bridge between `model_plan.json` and executable Blockbench MCP tool calls.
 
+Related integration docs:
+
+```txt
+docs/blockbench-mcp-integration-plan.md
+docs/blockbench-mcp-tool-contract.md
+docs/blockbench-mcp-integration-checklist.md
+```
+
 ## Purpose
 
 The planner creates a typed model plan. The geometry and material layers normalize that plan before MCP actions are built.
@@ -39,6 +47,22 @@ The required tool list is exported as `requiredBlockbenchToolNames` and reused b
 The optional tool list is exported as `optionalBlockbenchToolNames` and can be skipped at runtime when unavailable.
 
 If the Blockbench MCP plugin changes its tool names or argument schema, update the MCP mapping and adapter modules instead of changing model planning code.
+
+## External plugin target
+
+The current external MCP plugin target is:
+
+```txt
+https://github.com/achmadawdi/mcp-blockbench
+```
+
+BuildIT does not vendor that plugin yet. BuildIT connects to the running plugin endpoint.
+
+Default endpoint:
+
+```txt
+http://localhost:3000/bb-mcp
+```
 
 ## Current execution flow
 
