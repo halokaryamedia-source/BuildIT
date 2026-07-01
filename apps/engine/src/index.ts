@@ -15,6 +15,7 @@ const blockbench = new BlockbenchMcpClient({
 const job = createJob({
   prompt: "simple minecraft voxel crate",
   imagePaths: [],
+  referenceImages: [],
   format: "bbmodel",
   autoReview: true
 });
