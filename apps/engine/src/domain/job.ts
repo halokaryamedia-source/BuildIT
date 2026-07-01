@@ -1,8 +1,16 @@
 export type JobStatus = "queued" | "running" | "completed" | "failed" | "cancelled";
 
+export interface ReferenceImage {
+  fileName: string;
+  mimeType: string;
+  path: string;
+  sizeBytes: number;
+}
+
 export interface ModelJobInput {
   prompt: string;
   imagePaths: string[];
+  referenceImages: ReferenceImage[];
   format: string;
   autoReview: boolean;
 }
