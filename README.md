@@ -21,10 +21,12 @@ BuildIT is a local-first desktop application for generating Minecraft-style voxe
 
 1. User uploads an image or writes a prompt.
 2. The app creates a model generation job.
-3. The engine analyzes input using Ollama.
-4. The engine controls Blockbench through MCP.
-5. The app shows progress and preview status.
-6. The user is notified when the model is ready in Blockbench.
+3. The engine saves reference images under the job output folder.
+4. The engine analyzes reference images using the configured vision model.
+5. The engine saves `image_analysis.json` under the job output folder.
+6. The engine controls Blockbench through MCP.
+7. The app shows progress and preview status.
+8. The user is notified when the model is ready in Blockbench.
 
 ## Local development
 
@@ -50,11 +52,17 @@ Default local services:
 
 - Engine API: `http://localhost:3987`
 - Ollama: `http://localhost:11434`
+- Main model: `qwen3:8b`
+- Vision model: `qwen3-vl:4b`
 - Blockbench MCP: `http://localhost:3000/bb-mcp`
+- Output directory: `outputs`
 
 ## Engine API
 
-- `GET /api/health` checks Ollama and Blockbench MCP connectivity.
-- `POST /api/jobs` creates a model generation job.
+- `GET /api/health` checks main model, vision model, and Blockbench MCP connectivity.
+- `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
 - `GET /api/jobs` lists jobs stored in memory.
 - `GET /api/jobs/:id` returns a single job and its logs.
+
+Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
+Vision analysis is stored at `outputs/jobs/<jobId>/image_analysis.json`.

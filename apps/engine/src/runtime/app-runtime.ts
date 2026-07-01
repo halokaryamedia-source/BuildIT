@@ -1,31 +1,53 @@
-import { createJob, setJobStatus, type ModelJobInput } from "../domain/job.js";
+import { appendJobLog, createJob, setJobStatus, type ModelJobInput } from "../domain/job.js";
 import { JobStore } from "../jobs/job-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { OllamaProvider } from "../providers/ollama.js";
+import { saveReferenceImages, type ReferenceImageUpload } from "../storage/reference-images.js";
 import { SyncManager } from "../sync/sync-manager.js";
 import { runCreateModelWorkflow } from "../workflows/create-model.js";
 
 export interface AppRuntimeOptions {
   ollamaUrl: string;
   ollamaModel: string;
+  visionModel: string;
   blockbenchMcpUrl: string;
+  outputDir: string;
 }
 
 export class AppRuntime {
   readonly jobs = new JobStore();
   readonly ollama: OllamaProvider;
+  readonly vision: OllamaProvider;
   readonly blockbench: BlockbenchMcpClient;
   readonly sync: SyncManager;
 
   constructor(private readonly options: AppRuntimeOptions) {
     this.ollama = new OllamaProvider({ baseUrl: options.ollamaUrl, model: options.ollamaModel });
+    this.vision = new OllamaProvider({ baseUrl: options.ollamaUrl, model: options.visionModel });
     this.blockbench = new BlockbenchMcpClient({ endpoint: options.blockbenchMcpUrl });
     this.sync = new SyncManager(this.blockbench, options.blockbenchMcpUrl);
   }
 
-  createModelJob(input: ModelJobInput) {
-    const job = this.jobs.save(createJob(input));
+  async createModelJob(input: ModelJobInput, referenceUploads: ReferenceImageUpload[] = []) {
+    let job = createJob(input);
 
+    const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
+
+    job = appendJobLog(
+      {
+        ...job,
+        input: {
+          ...job.input,
+          imagePaths: savedReferences.map((image) => image.path),
+          referenceImages: savedReferences
+        }
+      },
+      savedReferences.length > 0
+        ? "Saved " + savedReferences.length + " reference image file(s)."
+        : "No reference image files were provided."
+    );
+
+    this.jobs.save(job);
     void this.runJob(job.id);
 
     return job;
@@ -38,7 +60,9 @@ export class AppRuntime {
     try {
       const result = await runCreateModelWorkflow(job, {
         ollama: this.ollama,
-        blockbench: this.blockbench
+        vision: this.vision,
+        blockbench: this.blockbench,
+        outputDir: this.options.outputDir
       });
       this.jobs.save(result);
     } catch (error) {
