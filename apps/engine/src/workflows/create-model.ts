@@ -13,6 +13,8 @@ import { buildMcpExecutionPlan } from "../mcp/mcp-execution-plan.js";
 import { saveMcpExecutionPlanReport } from "../mcp/mcp-execution-plan-store.js";
 import { buildMcpGeometry } from "../mcp/mcp-geometry-planner.js";
 import { saveMcpGeometryReport } from "../mcp/mcp-geometry-store.js";
+import { applyMcpMaterialPlaceholders } from "../mcp/mcp-material-planner.js";
+import { saveMcpMaterialPlanReport } from "../mcp/mcp-material-store.js";
 import {
   getCanonicalToolNameForResolvedName,
   mapMcpActionToolNames,
@@ -120,7 +122,11 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   );
 
   currentJob = await enterStage(currentJob, "building_mcp_actions", options);
-  const geometryReport = buildMcpGeometry(plan);
+  const materializedGeometry = applyMcpMaterialPlaceholders(buildMcpGeometry(plan));
+  const materialPath = await saveMcpMaterialPlanReport(currentJob.id, materializedGeometry.materialPlan, options.outputDir);
+  currentJob = await reportProgress(appendJobLog(currentJob, "MCP material plan saved to " + materialPath + "."), options);
+
+  const geometryReport = materializedGeometry.geometry;
   const geometryPath = await saveMcpGeometryReport(currentJob.id, geometryReport, options.outputDir);
   currentJob = await reportProgress(appendJobLog(currentJob, "MCP geometry plan saved to " + geometryPath + "."), options);
 
