@@ -1,10 +1,12 @@
 # MCP Argument Shape Adapter
 
-BuildIT adapts canonical MCP action arguments to the argument shape expected by the real Blockbench MCP tool schema.
+BuildIT adapts canonical MCP action arguments to the argument shape expected by the real Blockbench MCP core app schema.
+
+The core app is the source of truth. This adapter exists so the core app does not need to change for BuildIT.
 
 ## Purpose
 
-Tool name mapping resolves which tool should be called. Argument shape adaptation resolves what argument names should be sent.
+Tool name mapping resolves which tool should be called. Argument shape adaptation resolves what argument names and payload shapes should be sent.
 
 Example:
 
@@ -44,8 +46,46 @@ The report includes:
 - original action,
 - adapted action,
 - renamed arguments,
+- expanded action count,
+- source element name for expanded cube calls,
 - warnings,
 - errors.
+
+## place_cube batch adaptation
+
+BuildIT may initially create batched `place_cube` actions for efficiency.
+
+If the core app schema supports batch fields, BuildIT keeps the batch:
+
+```txt
+elements
+cubes
+cubeElements
+cube_elements
+boxes
+```
+
+If the core app schema only supports a single cube shape, BuildIT expands the batch into one action per cube.
+
+The adapter can also adapt to wrapper fields:
+
+```txt
+cube
+box
+element
+```
+
+or flattened top-level cube fields:
+
+```txt
+name
+from
+to
+position
+dimensions
+size
+material
+```
 
 ## Workflow behavior
 
@@ -67,4 +107,4 @@ The schema matcher validates adapted actions, not raw canonical actions.
 
 ## Maintenance
 
-When the real MCP schema changes argument names, update the alias rules in `mcp-argument-shape-adapter.ts`.
+When the real MCP core app schema changes argument names or payload shapes, update the alias and expansion rules in `mcp-argument-shape-adapter.ts`.
