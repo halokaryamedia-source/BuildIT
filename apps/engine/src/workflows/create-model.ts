@@ -5,10 +5,12 @@ import { matchMcpActionsToSchemas } from "../mcp/mcp-action-schema-matcher.js";
 import { saveMcpActionSchemaMatchReport } from "../mcp/mcp-action-schema-store.js";
 import { adaptMcpActionArgumentShapes } from "../mcp/mcp-argument-shape-adapter.js";
 import { saveMcpArgumentShapeAdaptationReport } from "../mcp/mcp-argument-shape-store.js";
-import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
+import { buildBlockbenchToolActionsFromGeometry, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
+import { buildMcpGeometry } from "../mcp/mcp-geometry-planner.js";
+import { saveMcpGeometryReport } from "../mcp/mcp-geometry-store.js";
 import {
   getCanonicalToolNameForResolvedName,
   mapMcpActionToolNames,
@@ -105,7 +107,21 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   }
 
   currentJob = await enterStage(currentJob, "building_mcp_actions", options);
-  const adapterResult = buildBlockbenchToolActions(plan);
+  const geometryReport = buildMcpGeometry(plan);
+  const geometryPath = await saveMcpGeometryReport(currentJob.id, geometryReport, options.outputDir);
+  currentJob = await reportProgress(appendJobLog(currentJob, "MCP geometry plan saved to " + geometryPath + "."), options);
+
+  if (!geometryReport.valid) {
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "MCP geometry planning failed. Review mcp_geometry_plan.json for details."
+      },
+      options
+    );
+  }
+
+  const adapterResult = buildBlockbenchToolActionsFromGeometry(plan, geometryReport);
   const actionsPath = await saveMcpActions(
     currentJob.id,
     {
