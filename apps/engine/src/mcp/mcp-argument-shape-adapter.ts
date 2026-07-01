@@ -23,6 +23,8 @@ export interface McpArgumentShapeAdaptedAction {
   original: McpToolCall;
   adapted: McpToolCall;
   renamedArguments: McpArgumentRename[];
+  expandedFromBatch?: boolean;
+  sourceElementName?: string;
   issues: McpArgumentShapeIssue[];
 }
 
@@ -31,6 +33,7 @@ export interface McpArgumentShapeAdaptationReport {
   valid: boolean;
   actionCount: number;
   adaptedActionCount: number;
+  expandedActionCount: number;
   issues: McpArgumentShapeIssue[];
   actions: McpArgumentShapeAdaptedAction[];
 }
@@ -54,8 +57,9 @@ const argumentAliasRules: Record<CanonicalMcpToolName, ArgumentAliasRule[]> = {
     { canonicalArgument: "origin", aliases: ["origin", "pivot", "position"] }
   ],
   place_cube: [
-    { canonicalArgument: "group", aliases: ["group", "groupName", "group_name", "parent", "parentGroup", "parent_group"] },
-    { canonicalArgument: "elements", aliases: ["elements", "cubes", "cubeElements", "cube_elements", "boxes"] }
+    { canonicalArgument: "group", aliases: ["group", "groupName", "group_name", "parent", "parentGroup", "parent_group", "bone"] },
+    { canonicalArgument: "elements", aliases: ["elements", "cubes", "cubeElements", "cube_elements", "boxes"] },
+    { canonicalArgument: "material", aliases: ["material", "texture", "textureName", "texture_name"] }
   ],
   capture_screenshot: [],
   export_project: [
@@ -76,6 +80,16 @@ function getSchemaProperties(tool: McpToolDefinition | undefined): Record<string
 
 function findTool(tools: McpToolDefinition[], toolName: string): McpToolDefinition | undefined {
   return tools.find((tool) => tool.name === toolName);
+}
+
+function hasAnyProperty(properties: Record<string, unknown> | null, names: string[]): boolean {
+  if (!properties) return false;
+  return names.some((name) => name in properties);
+}
+
+function findFirstProperty(properties: Record<string, unknown> | null, names: string[]): string | undefined {
+  if (!properties) return undefined;
+  return names.find((name) => name in properties);
 }
 
 function findTargetArgumentName(
@@ -118,10 +132,80 @@ function applyArgumentAliasRule(
   return nextArguments;
 }
 
-function adaptOneAction(
+function shouldExpandPlaceCubeBatch(
+  canonicalName: CanonicalMcpToolName,
+  action: McpToolCall,
+  properties: Record<string, unknown> | null
+): boolean {
+  if (canonicalName !== "place_cube") return false;
+  if (!Array.isArray(action.arguments.elements)) return false;
+  if (!properties) return false;
+
+  const supportsBatch = hasAnyProperty(properties, ["elements", "cubes", "cubeElements", "cube_elements", "boxes"]);
+  if (supportsBatch) return false;
+
+  return hasAnyProperty(properties, ["cube", "box", "element", "name", "from", "to", "position", "dimensions", "size"]);
+}
+
+function toSingleCubeArguments(
+  action: McpToolCall,
+  element: Record<string, unknown>,
+  properties: Record<string, unknown> | null
+): Record<string, unknown> {
+  const baseArguments = { ...action.arguments };
+  delete baseArguments.elements;
+  delete baseArguments.batchIndex;
+  delete baseArguments.batchCount;
+
+  const wrapperProperty = findFirstProperty(properties, ["cube", "box", "element"]);
+  if (wrapperProperty) {
+    return {
+      ...baseArguments,
+      [wrapperProperty]: element
+    };
+  }
+
+  return {
+    ...baseArguments,
+    ...element,
+    group: typeof element.group === "string" ? element.group : baseArguments.group
+  };
+}
+
+function expandPlaceCubeBatchIfNeeded(
+  action: McpToolCall,
+  canonicalName: CanonicalMcpToolName,
+  properties: Record<string, unknown> | null,
+  issues: McpArgumentShapeIssue[]
+): McpToolCall[] {
+  if (!shouldExpandPlaceCubeBatch(canonicalName, action, properties)) return [action];
+
+  const elements = action.arguments.elements;
+  if (!Array.isArray(elements)) return [action];
+
+  issues.push({
+    severity: "warning",
+    toolName: action.name,
+    code: "PLACE_CUBE_BATCH_EXPANDED",
+    message: "place_cube batch was expanded into single-cube calls to match the MCP core app schema."
+  });
+
+  return elements.filter(isRecord).map((element, index) => ({
+    name: action.name,
+    arguments: {
+      ...toSingleCubeArguments(action, element, properties),
+      batchIndex: index,
+      batchCount: elements.length
+    }
+  }));
+}
+
+function adaptOneExpandedAction(
+  originalAction: McpToolCall,
   action: McpToolCall,
   tools: McpToolDefinition[],
-  mappingReport: McpToolNameMappingReport
+  mappingReport: McpToolNameMappingReport,
+  expandedFromBatch: boolean
 ): McpArgumentShapeAdaptedAction {
   const canonicalName = getCanonicalToolNameForResolvedName(action.name, mappingReport) ?? (action.name as CanonicalMcpToolName);
   const tool = findTool(tools, action.name);
@@ -155,14 +239,36 @@ function adaptOneAction(
   return {
     canonicalName,
     toolName: action.name,
-    original: action,
+    original: originalAction,
     adapted: {
       ...action,
       arguments: adaptedArguments
     },
     renamedArguments,
+    expandedFromBatch,
+    sourceElementName: typeof adaptedArguments.name === "string" ? adaptedArguments.name : undefined,
     issues
   };
+}
+
+function adaptOneAction(
+  action: McpToolCall,
+  tools: McpToolDefinition[],
+  mappingReport: McpToolNameMappingReport
+): McpArgumentShapeAdaptedAction[] {
+  const canonicalName = getCanonicalToolNameForResolvedName(action.name, mappingReport) ?? (action.name as CanonicalMcpToolName);
+  const tool = findTool(tools, action.name);
+  const properties = getSchemaProperties(tool);
+  const expansionIssues: McpArgumentShapeIssue[] = [];
+  const expandedActions = expandPlaceCubeBatchIfNeeded(action, canonicalName, properties, expansionIssues);
+
+  return expandedActions.map((expandedAction) => {
+    const adapted = adaptOneExpandedAction(action, expandedAction, tools, mappingReport, expandedActions.length > 1);
+    return {
+      ...adapted,
+      issues: [...expansionIssues, ...adapted.issues]
+    };
+  });
 }
 
 export function adaptMcpActionArgumentShapes(
@@ -170,7 +276,7 @@ export function adaptMcpActionArgumentShapes(
   tools: McpToolDefinition[],
   mappingReport: McpToolNameMappingReport
 ): McpArgumentShapeAdaptationReport {
-  const adaptedActions = actions.map((action) => adaptOneAction(action, tools, mappingReport));
+  const adaptedActions = actions.flatMap((action) => adaptOneAction(action, tools, mappingReport));
   const issues = adaptedActions.flatMap((action) => action.issues);
 
   return {
@@ -178,6 +284,7 @@ export function adaptMcpActionArgumentShapes(
     valid: !issues.some((issue) => issue.severity === "error"),
     actionCount: actions.length,
     adaptedActionCount: adaptedActions.filter((action) => action.renamedArguments.length > 0).length,
+    expandedActionCount: adaptedActions.filter((action) => action.expandedFromBatch).length,
     issues,
     actions: adaptedActions
   };
