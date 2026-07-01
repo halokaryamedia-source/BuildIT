@@ -1,0 +1,7 @@
+Blockbench Auto Use
+
+Rules:
+- Check Blockbench MCP connection before tool execution.
+- Create group structure before adding cubes.
+- Prefer cube-based modeling for Minecraft-style objects.
+- Capture preview after meaningful geometry changes.
