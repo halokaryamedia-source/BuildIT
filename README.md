@@ -8,7 +8,7 @@ BuildIT is a local-first Tauri desktop application for generating Minecraft-styl
 
 BuildIT is intended to be used as a real desktop app, not as a browser-only web UI.
 
-The React/Vite renderer is still used internally, but the user-facing app is launched through Tauri:
+The desktop renderer uses Svelte for a lightweight UI. Tauri owns the native desktop shell and Rust runtime commands:
 
 ```bash
 npm run dev:desktop
@@ -46,6 +46,7 @@ BuildIT currently focuses on two Blockbench project targets only:
 ## Goals
 
 - Tauri desktop app, not browser-first UX.
+- Lightweight Svelte renderer.
 - Chat-like interface for image and prompt input.
 - Local runtime controls for the BuildIT engine, Ollama, Blockbench, and MCP setup.
 - Local job manager with progress tracking.
@@ -56,7 +57,7 @@ BuildIT currently focuses on two Blockbench project targets only:
 
 ## Applications
 
-- `apps/desktop` - Tauri desktop application with React renderer.
+- `apps/desktop` - Tauri desktop application with Svelte renderer.
 - `apps/engine` - TypeScript local agent engine and HTTP API.
 
 ## Runtime service manager
@@ -69,11 +70,11 @@ The desktop app includes runtime controls for:
 - starting Ollama.
 - checking installed Ollama models.
 - pulling required Ollama models: `qwen3:8b` and `qwen3-vl:4b`.
-- opening Blockbench from common install locations.
+- opening the local Blockbench application from common install locations.
 - checking the Blockbench MCP port `3000`.
 - opening the `mcp-blockbench` plugin URL.
 
-The first-time setup still requires the user to approve/install the Blockbench plugin inside Blockbench. BuildIT can open Blockbench and the plugin URL, but it should not silently force plugin installation or permissions.
+The first-time setup still requires the user to approve/install the Blockbench plugin inside Blockbench. BuildIT can open the Blockbench desktop app and the plugin URL, but it should not silently force plugin installation or permissions.
 
 ## Core workflow
 
@@ -104,123 +105,3 @@ The first-time setup still requires the user to approve/install the Blockbench p
 25. The engine updates `job_snapshot.json`, `artifact_index.json`, and `stored_data_manifest.json` throughout artifact reads.
 26. The desktop app shows progress, workflow stage, health status, recent jobs, artifact availability, preview image, artifact JSON content, and diagnostics.
 27. The user is notified when the model is ready in Blockbench.
-
-## Workflow stages
-
-Jobs include a `stage` field so the desktop app can show clear progress:
-
-```txt
-queued
-saving_references
-analyzing_image
-planning_model
-validating_plan
-building_mcp_actions
-checking_mcp_capabilities
-executing_mcp
-capturing_preview
-exporting_model
-completed
-failed
-```
-
-## Local development
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Typecheck all workspaces:
-
-```bash
-npm run check
-```
-
-Build renderer and engine workspaces:
-
-```bash
-npm run build
-```
-
-Run the Tauri desktop app:
-
-```bash
-npm run dev:desktop
-```
-
-Run the renderer only for debugging:
-
-```bash
-npm --workspace apps/desktop run dev:web
-```
-
-Run the engine API manually when needed:
-
-```bash
-npm run dev:engine
-```
-
-Default local services:
-
-- Engine API: `http://localhost:3987`
-- Ollama: `http://localhost:11434`
-- Main model: `qwen3:8b`
-- Vision model: `qwen3-vl:4b`
-- Blockbench MCP core app: `http://localhost:3000/bb-mcp`
-- Output directory: `outputs`
-
-## Engine API
-
-- `GET /api/health` checks main model, vision model, Blockbench MCP connectivity, and MCP tool capabilities.
-- `POST /api/jobs` creates a model generation job and accepts optional reference image uploads.
-- `GET /api/jobs` lists jobs from memory and persisted `job_snapshot.json` files.
-- `GET /api/jobs/:id` returns a single job and its logs. If the job is no longer in memory, the engine attempts to read `job_snapshot.json`.
-- `GET /api/jobs/:id/artifacts` refreshes `artifact_index.json` and `stored_data_manifest.json`, then returns artifact metadata.
-- `GET /api/jobs/:id/artifacts/:artifactName` returns one job artifact from the output folder.
-- `POST /api/jobs/:id/open-stored-data` opens the job Stored Data Root folder.
-
-Supported `POST /api/jobs` formats:
-
-- `bedrock` for Bedrock Entity.
-- `bedrock_block` for Bedrock Block.
-
-Reference images must be image files and must be 10 MB or smaller.
-Request bodies are limited to 16 MB.
-Reference images are sent as JSON data URLs and stored at `outputs/jobs/<jobId>/references/`.
-
-## Job artifacts
-
-Common job artifacts:
-
-```txt
-job_snapshot.json
-artifact_index.json
-stored_data_manifest.json
-image_analysis.json
-model_plan.json
-model_plan_validation.json
-mcp_geometry_plan.json
-mcp_material_plan.json
-mcp_actions.json
-mcp_tool_schema.json
-mcp_tool_name_mapping.json
-mcp_argument_shape_adaptation.json
-mcp_action_schema_match.json
-mcp_execution_plan.json
-mcp_capabilities.json
-blockbench_preview.json
-blockbench_export.json
-mcp_execution_report.json
-```
-
-## MCP core app integration docs
-
-```txt
-docs/buildit-mcp-core-boundary.md
-docs/blockbench-mcp-integration-plan.md
-docs/blockbench-mcp-tool-contract.md
-docs/blockbench-mcp-integration-checklist.md
-docs/blockbench-mcp-adapter.md
-```
