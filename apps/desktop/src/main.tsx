@@ -77,6 +77,16 @@ interface HealthState {
   mcpCapabilities?: { valid?: boolean; missingTools?: string[] };
 }
 
+interface OpenStoredDataResponse {
+  opened?: {
+    openedAt: string;
+    path: string;
+    command: string;
+  };
+  storedDataManifest?: StoredDataManifest;
+  error?: string;
+}
+
 async function fetchJob(jobId: string): Promise<ModelJob> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId);
   const data = (await response.json()) as { job: ModelJob };
@@ -112,6 +122,19 @@ async function fetchJobArtifact(jobId: string, artifactName: string): Promise<Jo
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts/" + artifactName);
   const data = (await response.json()) as { artifact: JobArtifactContent };
   return data.artifact;
+}
+
+async function requestOpenStoredData(jobId: string): Promise<OpenStoredDataResponse> {
+  const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/open-stored-data", {
+    method: "POST"
+  });
+  const data = (await response.json()) as OpenStoredDataResponse;
+
+  if (!response.ok) {
+    throw new Error(data.error ?? "Unable to open Stored Data Root.");
+  }
+
+  return data;
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -321,6 +344,28 @@ function App() {
     setSelectedArtifact(nextArtifact);
   }
 
+  async function openStoredData() {
+    if (!activeJob) return;
+
+    try {
+      const result = await requestOpenStoredData(activeJob.id);
+      if (result.storedDataManifest) setStoredDataManifest(result.storedDataManifest);
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: "Opened Stored Data Root: " + (result.opened?.path ?? storedDataManifest?.openTargetPath ?? activeJob.id)
+        }
+      ]);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open Stored Data Root." }
+      ]);
+    }
+  }
+
   async function openJob(jobId: string) {
     try {
       const job = await fetchJob(jobId);
@@ -425,6 +470,9 @@ function App() {
           <strong>Stored Data Root</strong>
           <span>{storedDataManifest?.openTargetPath ?? "No stored data yet"}</span>
           <span>{storedDataManifest?.ready ? "Ready to open" : "Waiting for required outputs"}</span>
+          <button disabled={!activeJob || !storedDataManifest} onClick={() => void openStoredData()}>
+            Open Stored Data
+          </button>
         </div>
         <div className="status-card">
           <strong>Artifacts</strong>
@@ -468,6 +516,7 @@ function App() {
               <strong>Stored Data Root</strong>
               <span>{storedDataManifest.openTargetPath}</span>
               <span>{storedDataManifest.ready ? "Ready to open" : "Missing: " + storedDataManifest.missingRequiredFiles.join(", ")}</span>
+              <button onClick={() => void openStoredData()}>Open Stored Data</button>
             </article>
           ) : null}
           {artifacts.length > 0 ? (
