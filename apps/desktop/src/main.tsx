@@ -77,8 +77,11 @@ interface OpenStoredDataResponse {
 }
 
 interface RuntimeStatus {
+  engine_connected: boolean;
   ollama_connected: boolean;
   blockbench_mcp_port_open: boolean;
+  installed_ollama_models: string[];
+  missing_ollama_models: string[];
 }
 
 interface RuntimeCommandResult {
@@ -228,6 +231,10 @@ function getPreviewDataUrl(artifact: JobArtifactContent | null): string | undefi
     : undefined;
 }
 
+function formatList(values: string[]): string {
+  return values.length > 0 ? values.join(", ") : "none";
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
@@ -285,10 +292,14 @@ function App() {
       const status = await invoke<RuntimeStatus>("check_runtime");
       setRuntimeStatus(status);
       pushAssistantMessage(
-        "Desktop runtime checked. Ollama: " +
+        "Desktop runtime checked. Engine: " +
+          (status.engine_connected ? "connected" : "offline") +
+          ", Ollama: " +
           (status.ollama_connected ? "connected" : "offline") +
           ", Blockbench MCP port: " +
           (status.blockbench_mcp_port_open ? "open" : "closed") +
+          ", missing models: " +
+          formatList(status.missing_ollama_models) +
           "."
       );
     } catch (error) {
@@ -296,23 +307,13 @@ function App() {
     }
   }
 
-  async function startOllamaFromApp() {
+  async function runRuntimeCommand(commandName: string, fallbackMessage: string) {
     try {
-      const result = await invoke<RuntimeCommandResult>("start_ollama");
-      pushAssistantMessage(result.message);
-      await checkDesktopRuntime();
-    } catch (error) {
-      pushAssistantMessage(error instanceof Error ? error.message : "Unable to start Ollama from BuildIT.");
-    }
-  }
-
-  async function openBlockbenchFromApp() {
-    try {
-      const result = await invoke<RuntimeCommandResult>("open_blockbench");
+      const result = await invoke<RuntimeCommandResult>(commandName);
       pushAssistantMessage(result.message + (result.path ? " Path: " + result.path : ""));
       await checkDesktopRuntime();
     } catch (error) {
-      pushAssistantMessage(error instanceof Error ? error.message : "Unable to open Blockbench from BuildIT.");
+      pushAssistantMessage(error instanceof Error ? error.message : fallbackMessage);
     }
   }
 
@@ -493,10 +494,16 @@ function App() {
         <p>Blockbench Auto Model Studio</p>
         <div className="status-card">
           <strong>Desktop controls</strong>
-          <span>Ollama port: {runtimeStatus?.ollama_connected ? "open" : "unknown/offline"}</span>
+          <span>Engine: {runtimeStatus?.engine_connected ? "connected" : "unknown/offline"}</span>
+          <span>Ollama: {runtimeStatus?.ollama_connected ? "connected" : "unknown/offline"}</span>
           <span>Blockbench MCP port: {runtimeStatus?.blockbench_mcp_port_open ? "open" : "unknown/offline"}</span>
-          <button onClick={() => void startOllamaFromApp()}>Start Ollama</button>
-          <button onClick={() => void openBlockbenchFromApp()}>Open Blockbench</button>
+          <span>Installed models: {formatList(runtimeStatus?.installed_ollama_models ?? [])}</span>
+          <span>Missing models: {formatList(runtimeStatus?.missing_ollama_models ?? [])}</span>
+          <button onClick={() => void runRuntimeCommand("start_buildit_engine", "Unable to start BuildIT engine from app.")}>Start Engine</button>
+          <button onClick={() => void runRuntimeCommand("start_ollama", "Unable to start Ollama from app.")}>Start Ollama</button>
+          <button onClick={() => void runRuntimeCommand("pull_required_ollama_models", "Unable to pull required Ollama models from app.")}>Pull Models</button>
+          <button onClick={() => void runRuntimeCommand("open_blockbench", "Unable to open Blockbench from app.")}>Open Blockbench</button>
+          <button onClick={() => void runRuntimeCommand("open_mcp_plugin_page", "Unable to open MCP plugin page from app.")}>Open MCP Plugin</button>
           <button onClick={() => void checkDesktopRuntime()}>Check Runtime</button>
         </div>
         <div className="status-card">
