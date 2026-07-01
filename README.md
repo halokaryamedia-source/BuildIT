@@ -62,15 +62,16 @@ BuildIT currently focuses on two Blockbench project targets only:
 13. The Blockbench MCP adapter builds and validates MCP tool calls.
 14. The engine saves `mcp_actions.json`.
 15. The engine checks the real Blockbench MCP core app capabilities and saves `mcp_tool_schema.json`, `mcp_tool_name_mapping.json`, and `mcp_capabilities.json`.
-16. The engine adapts arguments, matches schemas, and saves `mcp_argument_shape_adaptation.json` and `mcp_action_schema_match.json`.
-17. The engine saves the final `mcp_execution_plan.json`.
-18. The engine controls Blockbench through the MCP core app when the adapter output and MCP capabilities are valid.
-19. The engine captures a Blockbench preview and saves `blockbench_preview.json`.
-20. The engine exports the project and saves `blockbench_export.json` when the optional export tool is available.
-21. The engine saves `mcp_execution_report.json`.
-22. The engine updates `job_snapshot.json`, `artifact_index.json`, and `stored_data_manifest.json` throughout artifact reads.
-23. The desktop app shows progress, workflow stage, health status, recent jobs, artifact availability, preview image, artifact JSON content, and diagnostics.
-24. The user is notified when the model is ready in Blockbench.
+16. The engine skips missing optional MCP actions before schema matching.
+17. The engine adapts arguments, matches schemas, and saves `mcp_argument_shape_adaptation.json` and `mcp_action_schema_match.json`.
+18. The engine saves the final `mcp_execution_plan.json`.
+19. The engine controls Blockbench through the MCP core app when the adapter output and MCP capabilities are valid.
+20. The engine captures a Blockbench preview and saves `blockbench_preview.json`.
+21. The engine exports the project and saves `blockbench_export.json` when the optional export tool is available.
+22. The engine saves `mcp_execution_report.json`.
+23. The engine updates `job_snapshot.json`, `artifact_index.json`, and `stored_data_manifest.json` throughout artifact reads.
+24. The desktop app shows progress, workflow stage, health status, recent jobs, artifact availability, preview image, artifact JSON content, and diagnostics.
+25. The user is notified when the model is ready in Blockbench.
 
 ## Workflow stages
 
@@ -97,6 +98,18 @@ Install dependencies:
 
 ```bash
 npm install
+```
+
+Typecheck all workspaces:
+
+```bash
+npm run check
+```
+
+Build all workspaces:
+
+```bash
+npm run build
 ```
 
 Run the engine API:
@@ -167,6 +180,7 @@ mcp_execution_report.json
 ## MCP core app integration docs
 
 ```txt
+docs/buildit-mcp-core-boundary.md
 docs/blockbench-mcp-integration-plan.md
 docs/blockbench-mcp-tool-contract.md
 docs/blockbench-mcp-integration-checklist.md
