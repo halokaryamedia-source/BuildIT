@@ -1,14 +1,15 @@
 # Tauri Desktop Runtime
 
-BuildIT desktop is a Tauri application with a React/Vite renderer and a Rust runtime layer.
+BuildIT desktop is a Tauri application with a Svelte renderer and a Rust runtime layer.
 
-The app should not be treated as a browser-only UI. The browser renderer is only for debugging.
+The app should not be treated as a browser-only UI. The renderer debug server is only for development.
 
 ## Responsibility split
 
 ```txt
 BuildIT Tauri app
 - user-facing desktop window
+- lightweight Svelte UI
 - prompt and reference-image input
 - local runtime controls
 - service readiness display
@@ -22,11 +23,12 @@ BuildIT engine
 - MCP action generation and execution reporting
 
 Blockbench MCP core app
-- runs inside Blockbench
+- runs inside the local Blockbench desktop application
 - exposes the MCP endpoint
 - executes tool calls in Blockbench
 
 Blockbench
+- local desktop application
 - actual model workspace
 - generated model remains visible/editable there
 ```
@@ -42,7 +44,7 @@ The Tauri backend exposes commands for:
 - `open_blockbench`
 - `open_mcp_plugin_page`
 
-The renderer calls these commands through `@tauri-apps/api/core`.
+The Svelte renderer calls these commands through `@tauri-apps/api/core`.
 
 ## Required local services
 
@@ -63,7 +65,7 @@ The app checks installed models with `ollama list` and reports missing models in
 
 ## First-time Blockbench setup
 
-BuildIT can open Blockbench and the MCP plugin URL, but the first plugin installation/approval still happens inside Blockbench.
+BuildIT can open the local Blockbench desktop application and the MCP plugin URL, but the first plugin installation/approval still happens inside Blockbench.
 
 The expected plugin URL is:
 
@@ -81,7 +83,7 @@ Run the Tauri app:
 npm run dev:desktop
 ```
 
-Run the renderer only for debugging:
+Run the Svelte renderer only for debugging:
 
 ```bash
 npm --workspace apps/desktop run dev:web
@@ -99,7 +101,7 @@ Build renderer and engine workspaces:
 npm run build
 ```
 
-The regular CI build intentionally validates the TypeScript/Vite renderer and engine. Full Tauri packaging requires Rust, platform toolchains, and OS-specific WebView dependencies, so it should be validated separately on a configured desktop machine.
+The regular CI build intentionally validates the TypeScript/Svelte renderer and engine. Full Tauri packaging requires Rust, platform toolchains, and OS-specific WebView dependencies, so it should be validated separately on a configured desktop machine.
 
 ## Acceptance criteria
 
@@ -108,7 +110,7 @@ The regular CI build intentionally validates the TypeScript/Vite renderer and en
 - Desktop Controls can start/check Ollama.
 - Desktop Controls can show installed and missing Ollama models.
 - Desktop Controls can start pulling the required Ollama models.
-- Desktop Controls can open Blockbench from common install locations.
+- Desktop Controls can open the local Blockbench desktop application from common install locations.
 - Desktop Controls can open the MCP plugin URL.
 - Engine Health shows Ollama and Blockbench MCP readiness.
 - Generated results remain in Blockbench.
