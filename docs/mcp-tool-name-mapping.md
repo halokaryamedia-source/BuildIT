@@ -1,10 +1,12 @@
 # MCP Tool Name Mapping
 
-BuildIT uses canonical internal MCP tool names, then resolves them to the real tool names exposed by the running Blockbench MCP server.
+BuildIT uses canonical internal MCP tool names, then resolves them to the real tool names exposed by the running Blockbench MCP core app.
+
+The core app is the source of truth. BuildIT adapts to it.
 
 ## Purpose
 
-Blockbench MCP plugins may expose different tool names for the same operation.
+The MCP core app may expose different tool names for the same operation.
 
 For example, project creation could appear as:
 
@@ -15,7 +17,7 @@ createProject
 blockbench.createProject
 ```
 
-BuildIT should not force the workflow to know every possible MCP tool name.
+BuildIT should not force the core app to use BuildIT's internal naming.
 
 ## Modular layer
 
@@ -30,6 +32,27 @@ The mapping report is saved by:
 ```txt
 apps/engine/src/mcp/mcp-tool-name-mapping-store.ts
 ```
+
+## Resolution order
+
+BuildIT resolves tool names in this order:
+
+```txt
+1. canonical exact match
+2. alias match
+3. normalized alias match
+4. semantic match
+```
+
+Semantic match uses:
+
+```txt
+tool name
+tool description
+input schema keys
+```
+
+This is intentionally defensive so BuildIT can adapt to the core app without requiring tool renames.
 
 ## Output
 
@@ -46,6 +69,7 @@ The report includes:
 - canonical optional tool names,
 - resolved real tool names,
 - match type,
+- semantic score when semantic matching is used,
 - aliases,
 - missing required tools,
 - missing optional tools.
@@ -61,6 +85,8 @@ tool name mapping
 ↓
 real MCP action name
 ↓
+argument shape adaptation
+↓
 schema matching
 ↓
 execution
@@ -70,4 +96,4 @@ The workflow executes real resolved MCP tool names, while internal logic still u
 
 ## Maintenance
 
-When a Blockbench MCP plugin changes tool names, update only the alias map in `mcp-tool-name-mapping.ts`.
+When the MCP core app changes tool names, update alias and semantic rules in `mcp-tool-name-mapping.ts`.
