@@ -1,1 +1,21 @@
-{"name":"buildit","private":true,"version":"0.1.0","type":"module","scripts":{"build":"echo build","dev":"echo dev"},"devDependencies":{"typescript":"^5.7.2"}}
+{
+  "name": "buildit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Local-first Blockbench auto model studio powered by Ollama and Blockbench MCP.",
+  "scripts": {
+    "dev": "npm run dev:engine",
+    "dev:engine": "npm --workspace apps/engine run dev",
+    "build": "npm run build:engine",
+    "build:engine": "npm --workspace apps/engine run build",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "workspaces": [
+    "apps/*"
+  ]
+}
