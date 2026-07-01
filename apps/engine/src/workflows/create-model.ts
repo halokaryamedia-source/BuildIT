@@ -1,6 +1,8 @@
 import { appendJobLog, setJobStage, setJobStatus, type JobStage, type ModelJob } from "../domain/job.js";
 import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
-import { BlockbenchMcpClient, type McpToolDefinition } from "../mcp/blockbench-client.js";
+import { BlockbenchMcpClient, type McpToolCall, type McpToolDefinition } from "../mcp/blockbench-client.js";
+import { matchMcpActionsToSchemas } from "../mcp/mcp-action-schema-matcher.js";
+import { saveMcpActionSchemaMatchReport } from "../mcp/mcp-action-schema-store.js";
 import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
@@ -165,6 +167,24 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
+  const schemaMatchReport = matchMcpActionsToSchemas(adapterResult.actions, availableTools);
+  const schemaMatchPath = await saveMcpActionSchemaMatchReport(currentJob.id, schemaMatchReport, options.outputDir);
+  currentJob = await reportProgress(
+    appendJobLog(currentJob, "MCP action schema match report saved to " + schemaMatchPath + "."),
+    options
+  );
+
+  if (!schemaMatchReport.valid) {
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "MCP action schema matching failed. Review mcp_action_schema_match.json for details."
+      },
+      options
+    );
+  }
+
+  const executionActions: McpToolCall[] = schemaMatchReport.actions.map((action) => action.normalized);
   const missingOptionalToolSet = new Set(capabilityReport.missingOptionalTools ?? []);
   const optionalToolSet = new Set<string>(optionalBlockbenchToolNames);
 
@@ -172,7 +192,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   const executionStartedAt = new Date().toISOString();
   const steps: McpExecutionStep[] = [];
 
-  for (const action of adapterResult.actions) {
+  for (const action of executionActions) {
     const startedAt = new Date().toISOString();
 
     if (optionalToolSet.has(action.name) && missingOptionalToolSet.has(action.name)) {
@@ -240,7 +260,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
           startedAt: executionStartedAt,
           finishedAt: new Date().toISOString(),
           success: false,
-          actionCount: adapterResult.actions.length,
+          actionCount: executionActions.length,
           steps
         },
         options.outputDir
@@ -262,7 +282,7 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
       startedAt: executionStartedAt,
       finishedAt: new Date().toISOString(),
       success: true,
-      actionCount: adapterResult.actions.length,
+      actionCount: executionActions.length,
       steps
     },
     options.outputDir
