@@ -3,6 +3,8 @@ import { saveBlockbenchExport } from "../export/blockbench-export-store.js";
 import { BlockbenchMcpClient, type McpToolCall, type McpToolDefinition } from "../mcp/blockbench-client.js";
 import { matchMcpActionsToSchemas } from "../mcp/mcp-action-schema-matcher.js";
 import { saveMcpActionSchemaMatchReport } from "../mcp/mcp-action-schema-store.js";
+import { adaptMcpActionArgumentShapes } from "../mcp/mcp-argument-shape-adapter.js";
+import { saveMcpArgumentShapeAdaptationReport } from "../mcp/mcp-argument-shape-store.js";
 import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/blockbench-tool-adapter.js";
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
@@ -181,7 +183,29 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
   const mappedActions = mapMcpActionToolNames(adapterResult.actions, toolNameMappingReport);
-  const schemaMatchReport = matchMcpActionsToSchemas(mappedActions, availableTools);
+  const argumentShapeReport = adaptMcpActionArgumentShapes(mappedActions, availableTools, toolNameMappingReport);
+  const argumentShapePath = await saveMcpArgumentShapeAdaptationReport(
+    currentJob.id,
+    argumentShapeReport,
+    options.outputDir
+  );
+  currentJob = await reportProgress(
+    appendJobLog(currentJob, "MCP argument shape adaptation report saved to " + argumentShapePath + "."),
+    options
+  );
+
+  if (!argumentShapeReport.valid) {
+    return reportProgress(
+      {
+        ...setJobStatus(currentJob, "failed"),
+        error: "MCP argument shape adaptation failed. Review mcp_argument_shape_adaptation.json for details."
+      },
+      options
+    );
+  }
+
+  const adaptedActions = argumentShapeReport.actions.map((action) => action.adapted);
+  const schemaMatchReport = matchMcpActionsToSchemas(adaptedActions, availableTools);
   const schemaMatchPath = await saveMcpActionSchemaMatchReport(currentJob.id, schemaMatchReport, options.outputDir);
   currentJob = await reportProgress(
     appendJobLog(currentJob, "MCP action schema match report saved to " + schemaMatchPath + "."),
