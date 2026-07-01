@@ -64,6 +64,8 @@ export_project
 
 If missing, the job should continue and record a skipped optional step.
 
+Missing optional tools must not appear as schema errors in `mcp_action_schema_match.json`.
+
 ## Tool name adaptation
 
 Open:
