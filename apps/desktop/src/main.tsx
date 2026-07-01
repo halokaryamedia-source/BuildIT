@@ -9,6 +9,12 @@ interface Message {
   content: string;
 }
 
+interface ReferenceImageUpload {
+  fileName: string;
+  mimeType: string;
+  dataUrl: string;
+}
+
 interface JobLog {
   at: string;
   message: string;
@@ -27,8 +33,18 @@ async function fetchJob(jobId: string): Promise<ModelJob> {
   return data.job;
 }
 
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Unable to read selected image."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeJob, setActiveJob] = useState<ModelJob | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -62,6 +78,20 @@ function App() {
     return () => window.clearInterval(timer);
   }, [activeJob]);
 
+  async function createReferenceImageUpload(): Promise<ReferenceImageUpload[]> {
+    if (!selectedFile) return [];
+
+    const dataUrl = await readFileAsDataUrl(selectedFile);
+
+    return [
+      {
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type || "application/octet-stream",
+        dataUrl
+      }
+    ];
+  }
+
   async function submitJob() {
     const trimmedPrompt = prompt.trim();
     if (!trimmedPrompt) return;
@@ -70,10 +100,18 @@ function App() {
     setPrompt("");
 
     try {
+      const referenceImages = await createReferenceImageUpload();
+
       const response = await fetch(engineUrl + "/api/jobs", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ prompt: trimmedPrompt, imagePaths: [], format: "bbmodel", autoReview: true })
+        body: JSON.stringify({
+          prompt: trimmedPrompt,
+          referenceImages,
+          imagePaths: [],
+          format: "bbmodel",
+          autoReview: true
+        })
       });
 
       const data = (await response.json()) as { job?: ModelJob; error?: string };
@@ -83,9 +121,16 @@ function App() {
       }
 
       setActiveJob(data.job);
+      setSelectedFile(null);
       setMessages((current) => [
         ...current,
-        { role: "assistant", content: "Job created. The engine is now working with Blockbench MCP." }
+        {
+          role: "assistant",
+          content:
+            referenceImages.length > 0
+              ? "Job created with a reference image. The engine is now working with Blockbench MCP."
+              : "Job created. The engine is now working with Blockbench MCP."
+        }
       ]);
     } catch (error) {
       setMessages((current) => [
@@ -125,7 +170,14 @@ function App() {
           ) : null}
         </div>
         <div className="composer">
-          <input type="file" accept="image/*" />
+          <label className="file-picker">
+            <span>{selectedFile ? selectedFile.name : "Select reference image"}</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
           <textarea
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
