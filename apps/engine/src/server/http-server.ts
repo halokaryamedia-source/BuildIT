@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
@@ -101,6 +102,37 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
         );
 
         sendJson(response, 201, { job });
+        return;
+      }
+
+      const artifactsMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts$/);
+      if (request.method === "GET" && artifactsMatch) {
+        const job = runtime.jobs.get(artifactsMatch[1]);
+        if (!job) {
+          sendJson(response, 404, { error: "Job not found." });
+          return;
+        }
+
+        const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, job.id);
+        sendJson(response, 200, { artifacts });
+        return;
+      }
+
+      const artifactMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts\/([^/]+)$/);
+      if (request.method === "GET" && artifactMatch) {
+        const job = runtime.jobs.get(artifactMatch[1]);
+        if (!job) {
+          sendJson(response, 404, { error: "Job not found." });
+          return;
+        }
+
+        const artifact = await getJobArtifact(runtime.getOptions().outputDir, job.id, artifactMatch[2]);
+        if (!artifact) {
+          sendJson(response, 404, { error: "Artifact not found." });
+          return;
+        }
+
+        sendJson(response, 200, { artifact });
         return;
       }
 
