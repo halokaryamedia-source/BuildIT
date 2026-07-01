@@ -1,6 +1,6 @@
 # Blockbench Export Artifacts
 
-BuildIT preserves the result of the Blockbench MCP export action when the export tool is available.
+BuildIT preserves and validates the result of the Blockbench MCP export action when the export tool is available.
 
 ## Optional export behavior
 
@@ -9,6 +9,8 @@ BuildIT preserves the result of the Blockbench MCP export action when the export
 If the running Blockbench MCP server exposes `export_project`, BuildIT runs it and stores the export report.
 
 If the tool is missing, BuildIT skips export, records the skipped execution step, and still allows the job to complete.
+
+If export runs but returns incomplete metadata, BuildIT records warnings instead of failing the whole job.
 
 ## Output
 
@@ -26,12 +28,33 @@ This file is only created when export actually runs.
   "toolName": "export_project",
   "format": "bedrock_block",
   "exportPath": "optional/path/from/mcp",
+  "validation": {
+    "valid": true,
+    "expectedFormat": "bedrock_block",
+    "exportPath": "optional/path/from/mcp",
+    "exportExtension": ".bbmodel",
+    "issues": []
+  },
   "rawResult": {}
 }
 ```
 
+## Validation
+
+Export validation checks:
+
+- whether a path-like value was returned,
+- whether the output path has an extension,
+- whether the extension is common for the target format.
+
+Common expected extensions include:
+
+```txt
+.bbmodel
+.json
+.geo.json
+```
+
 ## Current scope
 
-This is an export foundation layer. It stores whatever the MCP export tool returns, including file paths or metadata.
-
-Future slices can extend this into explicit `.bbmodel`, Bedrock geometry, texture, or resource-pack export handling.
+This remains an export foundation layer. It validates MCP export metadata, but final `.bbmodel`, Bedrock geometry, texture, or resource-pack packaging can be extended later.
