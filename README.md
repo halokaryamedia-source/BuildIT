@@ -44,7 +44,7 @@ BuildIT currently focuses on two Blockbench project targets only:
 14. The engine checks the real Blockbench MCP tool capabilities and saves `mcp_capabilities.json`.
 15. The engine controls Blockbench through MCP when the adapter output and MCP capabilities are valid.
 16. The engine captures a Blockbench preview and saves `blockbench_preview.json`.
-17. The engine exports the project and saves `blockbench_export.json`.
+17. The engine exports the project and saves `blockbench_export.json` when the optional export tool is available.
 18. The engine saves `mcp_execution_report.json`.
 19. The engine updates `job_snapshot.json` throughout the workflow, including completion or failure.
 20. The desktop app shows progress, workflow stage, health status, artifact availability, preview image, artifact JSON content, and diagnostics.
@@ -122,5 +122,5 @@ Model plan validation reports are stored at `outputs/jobs/<jobId>/model_plan_val
 MCP action lists are stored at `outputs/jobs/<jobId>/mcp_actions.json`.
 MCP capability reports are stored at `outputs/jobs/<jobId>/mcp_capabilities.json`.
 Blockbench preview reports are stored at `outputs/jobs/<jobId>/blockbench_preview.json`.
-Blockbench export reports are stored at `outputs/jobs/<jobId>/blockbench_export.json`.
+Blockbench export reports are stored at `outputs/jobs/<jobId>/blockbench_export.json` when optional export runs.
 MCP execution reports are stored at `outputs/jobs/<jobId>/mcp_execution_report.json`.
