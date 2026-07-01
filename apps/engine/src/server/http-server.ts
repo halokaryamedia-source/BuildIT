@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
+import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
@@ -115,7 +116,9 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
       }
 
       if (request.method === "GET" && url.pathname === "/api/jobs") {
-        sendJson(response, 200, { jobs: runtime.jobs.list() });
+        const persistedJobs = await listPersistedJobs(runtime.getOptions().outputDir);
+        const jobs = mergeJobs(runtime.jobs.list(), persistedJobs);
+        sendJson(response, 200, { jobs });
         return;
       }
 
