@@ -7,6 +7,13 @@ import { buildBlockbenchToolActions, optionalBlockbenchToolNames } from "../mcp/
 import { saveMcpActions, saveMcpExecutionReport, type McpExecutionStep } from "../mcp/mcp-action-store.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
 import { saveMcpCapabilityReport } from "../mcp/mcp-capability-store.js";
+import {
+  getCanonicalToolNameForResolvedName,
+  mapMcpActionToolNames,
+  resolveMcpToolNameMappings,
+  type CanonicalMcpToolName
+} from "../mcp/mcp-tool-name-mapping.js";
+import { saveMcpToolNameMappingReport } from "../mcp/mcp-tool-name-mapping-store.js";
 import { saveMcpToolSchemaReport } from "../mcp/mcp-tool-schema-store.js";
 import { generateModelPlan } from "../planning/model-plan-generator.js";
 import { saveModelPlan } from "../planning/model-plan-store.js";
@@ -143,10 +150,16 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   let availableTools: McpToolDefinition[] = [];
   let capabilityReport;
+  let toolNameMappingReport = resolveMcpToolNameMappings([]);
   try {
     availableTools = await options.blockbench.listTools();
     const schemaPath = await saveMcpToolSchemaReport(currentJob.id, availableTools, options.outputDir);
     currentJob = await reportProgress(appendJobLog(currentJob, "MCP tool schema saved to " + schemaPath + "."), options);
+
+    toolNameMappingReport = resolveMcpToolNameMappings(availableTools);
+    const mappingPath = await saveMcpToolNameMappingReport(currentJob.id, toolNameMappingReport, options.outputDir);
+    currentJob = await reportProgress(appendJobLog(currentJob, "MCP tool name mapping saved to " + mappingPath + "."), options);
+
     capabilityReport = evaluateMcpCapabilities(availableTools);
   } catch (error) {
     capabilityReport = createFailedMcpCapabilityReport(error);
@@ -167,7 +180,8 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench MCP capability check passed."), options);
 
-  const schemaMatchReport = matchMcpActionsToSchemas(adapterResult.actions, availableTools);
+  const mappedActions = mapMcpActionToolNames(adapterResult.actions, toolNameMappingReport);
+  const schemaMatchReport = matchMcpActionsToSchemas(mappedActions, availableTools);
   const schemaMatchPath = await saveMcpActionSchemaMatchReport(currentJob.id, schemaMatchReport, options.outputDir);
   currentJob = await reportProgress(
     appendJobLog(currentJob, "MCP action schema match report saved to " + schemaMatchPath + "."),
@@ -194,8 +208,9 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
 
   for (const action of executionActions) {
     const startedAt = new Date().toISOString();
+    const canonicalToolName = getCanonicalToolNameForResolvedName(action.name, toolNameMappingReport) ?? (action.name as CanonicalMcpToolName);
 
-    if (optionalToolSet.has(action.name) && missingOptionalToolSet.has(action.name)) {
+    if (optionalToolSet.has(canonicalToolName) && missingOptionalToolSet.has(canonicalToolName)) {
       steps.push({
         toolName: action.name,
         startedAt,
@@ -204,31 +219,34 @@ export async function runCreateModelWorkflow(job: ModelJob, options: CreateModel
         skipped: true
       });
       currentJob = await reportProgress(
-        appendJobLog(currentJob, "Skipping optional MCP tool: " + action.name + "."),
+        appendJobLog(currentJob, "Skipping optional MCP tool: " + canonicalToolName + "."),
         options
       );
       continue;
     }
 
-    if (action.name === "capture_screenshot") {
+    if (canonicalToolName === "capture_screenshot") {
       currentJob = await enterStage(currentJob, "capturing_preview", options);
     }
 
-    if (action.name === "export_project") {
+    if (canonicalToolName === "export_project") {
       currentJob = await enterStage(currentJob, "exporting_model", options);
     }
 
-    currentJob = await reportProgress(appendJobLog(currentJob, "Running MCP tool: " + action.name), options);
+    currentJob = await reportProgress(
+      appendJobLog(currentJob, "Running MCP tool: " + canonicalToolName + " as " + action.name),
+      options
+    );
 
     try {
       const toolResult = await options.blockbench.callTool(action);
 
-      if (action.name === "capture_screenshot") {
+      if (canonicalToolName === "capture_screenshot") {
         const previewPath = await saveBlockbenchPreview(currentJob.id, action.name, toolResult, options.outputDir);
         currentJob = await reportProgress(appendJobLog(currentJob, "Blockbench preview saved to " + previewPath + "."), options);
       }
 
-      if (action.name === "export_project") {
+      if (canonicalToolName === "export_project") {
         const exportPath = await saveBlockbenchExport(
           currentJob.id,
           action.name,
