@@ -46,23 +46,37 @@ function createGroupAction(groupName: string, origin: [number, number, number]):
   };
 }
 
-function createCubeAction(cube: McpGeometryCube): McpToolCall {
+function toCubeElement(cube: McpGeometryCube): Record<string, unknown> {
   return {
+    name: cube.name,
+    from: cube.from,
+    to: cube.to,
+    size: cube.size,
+    center: cube.center,
+    material: cube.material
+  };
+}
+
+function groupCubesByGroup(cubes: McpGeometryCube[]): Map<string, McpGeometryCube[]> {
+  const grouped = new Map<string, McpGeometryCube[]>();
+
+  for (const cube of cubes) {
+    const existing = grouped.get(cube.group) ?? [];
+    existing.push(cube);
+    grouped.set(cube.group, existing);
+  }
+
+  return grouped;
+}
+
+function createCubeActions(cubes: McpGeometryCube[]): McpToolCall[] {
+  return Array.from(groupCubesByGroup(cubes).entries()).map(([group, groupCubes]) => ({
     name: "place_cube",
     arguments: {
-      group: cube.group,
-      elements: [
-        {
-          name: cube.name,
-          from: cube.from,
-          to: cube.to,
-          size: cube.size,
-          center: cube.center,
-          material: cube.material
-        }
-      ]
+      group,
+      elements: groupCubes.map(toCubeElement)
     }
-  };
+  }));
 }
 
 function createScreenshotAction(): McpToolCall {
@@ -186,17 +200,13 @@ function validateExportAction(action: McpToolCall, issues: ToolAdapterIssue[]): 
 export function buildBlockbenchToolActionsFromGeometry(plan: ModelPlan, geometry: McpGeometryReport): ToolAdapterResult {
   const issues: ToolAdapterIssue[] = [...geometry.issues];
   const format = resolveFormat(plan.format);
-
   const actions: McpToolCall[] = [createProjectAction(plan)];
 
   for (const group of geometry.groups) {
     actions.push(createGroupAction(group.name, group.origin));
   }
 
-  for (const cube of geometry.cubes) {
-    actions.push(createCubeAction(cube));
-  }
-
+  actions.push(...createCubeActions(geometry.cubes));
   actions.push(createScreenshotAction());
   actions.push(createExportAction(plan));
 
