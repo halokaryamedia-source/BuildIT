@@ -1,4 +1,17 @@
 export type JobStatus = "queued" | "running" | "completed" | "failed" | "cancelled";
+export type JobStage =
+  | "queued"
+  | "saving_references"
+  | "analyzing_image"
+  | "planning_model"
+  | "validating_plan"
+  | "building_mcp_actions"
+  | "checking_mcp_capabilities"
+  | "executing_mcp"
+  | "capturing_preview"
+  | "exporting_model"
+  | "completed"
+  | "failed";
 
 export interface ReferenceImage {
   fileName: string;
@@ -23,6 +36,7 @@ export interface ModelJobLog {
 export interface ModelJob {
   id: string;
   status: JobStatus;
+  stage: JobStage;
   input: ModelJobInput;
   createdAt: string;
   updatedAt: string;
@@ -35,6 +49,7 @@ export function createJob(input: ModelJobInput): ModelJob {
   return {
     id: "job_" + Date.now(),
     status: "queued",
+    stage: "queued",
     input,
     createdAt: now,
     updatedAt: now,
@@ -51,6 +66,11 @@ export function appendJobLog(job: ModelJob, message: string): ModelJob {
   };
 }
 
+export function setJobStage(job: ModelJob, stage: JobStage): ModelJob {
+  return appendJobLog({ ...job, stage }, "Stage changed to " + stage + ".");
+}
+
 export function setJobStatus(job: ModelJob, status: JobStatus): ModelJob {
-  return appendJobLog({ ...job, status }, "Status changed to " + status + ".");
+  const nextStage: JobStage = status === "completed" ? "completed" : status === "failed" ? "failed" : job.stage;
+  return appendJobLog({ ...job, status, stage: nextStage }, "Status changed to " + status + ".");
 }

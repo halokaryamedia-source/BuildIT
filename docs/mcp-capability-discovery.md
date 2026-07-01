@@ -4,7 +4,7 @@ BuildIT checks the real Blockbench MCP server before sending executable tool cal
 
 ## Why this exists
 
-The adapter can build valid tool calls, but the running Blockbench MCP server must actually expose the required tools.
+The adapter can build valid canonical tool calls, but the running Blockbench MCP server must actually expose compatible tools.
 
 Capability discovery prevents failures caused by:
 
@@ -15,19 +15,40 @@ Capability discovery prevents failures caused by:
 
 ## Required tools
 
-Required tools are exported from the adapter contract in:
+Required canonical tools are exported from the adapter contract in:
 
 ```txt
 apps/engine/src/mcp/blockbench-tool-adapter.ts
 ```
 
-Current required tools:
+Current required canonical tools:
 
 ```txt
 create_project
 add_group
 place_cube
 capture_screenshot
+```
+
+Current optional canonical tools:
+
+```txt
+export_project
+```
+
+Optional tools are progressive enhancements. If an optional tool is missing, the job can still complete.
+
+## Tool name mapping
+
+Capability discovery uses the MCP tool name mapping layer.
+
+This means a required canonical tool can still be valid when the real MCP server exposes a known alias.
+
+Example:
+
+```txt
+canonical: create_project
+real MCP: createProject
 ```
 
 ## Job output
@@ -44,11 +65,15 @@ The report includes:
 - `valid`
 - `availableTools`
 - `requiredTools`
+- `optionalTools`
 - `missingTools`
+- `missingOptionalTools`
 - `extraTools`
+- `toolNameResolutions`
 - `error`
 
-If required tools are missing, the workflow stops before Blockbench MCP execution.
+If required canonical tools cannot be resolved, the workflow stops before Blockbench MCP execution.
+If optional canonical tools are missing, the workflow records the missing optional tool and continues.
 
 ## Health API
 

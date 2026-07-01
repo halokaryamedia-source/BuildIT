@@ -1,5 +1,6 @@
 import type { ModelPlan } from "../planning/model-plan.js";
 import type { McpToolCall } from "./blockbench-client.js";
+import { buildMcpGeometry, type McpGeometryCube, type McpGeometryReport } from "./mcp-geometry-planner.js";
 
 export type SupportedBlockbenchFormat = "bedrock" | "bedrock_block";
 
@@ -16,9 +17,11 @@ export interface ToolAdapterResult {
   issues: ToolAdapterIssue[];
 }
 
-export const requiredBlockbenchToolNames = ["create_project", "add_group", "place_cube", "capture_screenshot"] as const;
+export const requiredBlockbenchToolNames = ["create_project", "place_cube", "capture_screenshot"] as const;
+export const optionalBlockbenchToolNames = ["add_group", "export_project"] as const;
 
-const supportedToolNames = new Set<string>(requiredBlockbenchToolNames);
+const supportedToolNames = new Set<string>([...requiredBlockbenchToolNames, ...optionalBlockbenchToolNames]);
+const maxCubeElementsPerAction = 24;
 
 function resolveFormat(format: string): SupportedBlockbenchFormat {
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
@@ -34,37 +37,95 @@ function createProjectAction(plan: ModelPlan): McpToolCall {
   };
 }
 
-function createGroupAction(groupName: string): McpToolCall {
+function createGroupAction(groupName: string, origin: [number, number, number]): McpToolCall {
   return {
     name: "add_group",
     arguments: {
       name: groupName,
-      origin: [0, 0, 0]
+      origin
     }
   };
 }
 
-function createCubeAction(part: ModelPlan["parts"][number]): McpToolCall {
+function toCubeElement(cube: McpGeometryCube): Record<string, unknown> {
   return {
-    name: "place_cube",
-    arguments: {
-      group: part.group,
-      elements: [
-        {
-          name: part.name,
-          from: part.from,
-          to: part.to,
-          material: part.material
-        }
-      ]
-    }
+    name: cube.name,
+    group: cube.group,
+    from: cube.from,
+    to: cube.to,
+    size: cube.size,
+    center: cube.center,
+    material: cube.material
   };
+}
+
+function groupCubesByGroup(cubes: McpGeometryCube[]): Map<string, McpGeometryCube[]> {
+  const grouped = new Map<string, McpGeometryCube[]>();
+
+  for (const cube of cubes) {
+    const existing = grouped.get(cube.group) ?? [];
+    existing.push(cube);
+    grouped.set(cube.group, existing);
+  }
+
+  return grouped;
+}
+
+function chunkCubes(cubes: McpGeometryCube[]): McpGeometryCube[][] {
+  const chunks: McpGeometryCube[][] = [];
+
+  for (let index = 0; index < cubes.length; index += maxCubeElementsPerAction) {
+    chunks.push(cubes.slice(index, index + maxCubeElementsPerAction));
+  }
+
+  return chunks;
+}
+
+function createCubeActions(cubes: McpGeometryCube[], issues: ToolAdapterIssue[]): McpToolCall[] {
+  const actions: McpToolCall[] = [];
+
+  for (const [group, groupCubes] of groupCubesByGroup(cubes).entries()) {
+    const chunks = chunkCubes(groupCubes);
+
+    if (chunks.length > 1) {
+      issues.push({
+        severity: "warning",
+        code: "CUBE_GROUP_BATCHED",
+        message:
+          "Cube group " + group + " was split into " + chunks.length + " place_cube action batches for safer MCP execution."
+      });
+    }
+
+    for (let batchIndex = 0; batchIndex < chunks.length; batchIndex += 1) {
+      actions.push({
+        name: "place_cube",
+        arguments: {
+          group,
+          batchIndex,
+          batchCount: chunks.length,
+          elements: chunks[batchIndex].map(toCubeElement)
+        }
+      });
+    }
+  }
+
+  return actions;
 }
 
 function createScreenshotAction(): McpToolCall {
   return {
     name: "capture_screenshot",
     arguments: {}
+  };
+}
+
+function createExportAction(plan: ModelPlan): McpToolCall {
+  return {
+    name: "export_project",
+    arguments: {
+      name: plan.name,
+      format: resolveFormat(plan.format)
+    }
   };
 }
 
@@ -147,46 +208,65 @@ function validateCubeAction(action: McpToolCall, issues: ToolAdapterIssue[]): vo
       message: "place_cube requires at least one cube element."
     });
   }
+
+  if (Array.isArray(action.arguments.elements) && action.arguments.elements.length > maxCubeElementsPerAction) {
+    issues.push({
+      severity: "error",
+      code: "CUBE_BATCH_TOO_LARGE",
+      message: "place_cube action exceeds the maximum cube element batch size."
+    });
+  }
 }
 
-export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
-  const issues: ToolAdapterIssue[] = [];
-  const format = resolveFormat(plan.format);
+function validateExportAction(action: McpToolCall, issues: ToolAdapterIssue[]): void {
+  if (action.name !== "export_project") return;
 
+  if (typeof action.arguments.name !== "string" || action.arguments.name.trim().length === 0) {
+    issues.push({
+      severity: "error",
+      code: "INVALID_EXPORT_NAME",
+      message: "export_project requires a non-empty export name."
+    });
+  }
+
+  if (action.arguments.format !== "bedrock" && action.arguments.format !== "bedrock_block") {
+    issues.push({
+      severity: "error",
+      code: "INVALID_EXPORT_FORMAT",
+      message: "export_project format must be bedrock or bedrock_block."
+    });
+  }
+}
+
+export function buildBlockbenchToolActionsFromGeometry(plan: ModelPlan, geometry: McpGeometryReport): ToolAdapterResult {
+  const issues: ToolAdapterIssue[] = [...geometry.issues];
+  const format = resolveFormat(plan.format);
   const actions: McpToolCall[] = [createProjectAction(plan)];
 
-  for (const group of plan.groups) {
-    actions.push(createGroupAction(group));
+  for (const group of geometry.groups) {
+    actions.push(createGroupAction(group.name, group.origin));
   }
 
-  for (const part of plan.parts) {
-    actions.push(createCubeAction(part));
-  }
-
+  actions.push(...createCubeActions(geometry.cubes, issues));
   actions.push(createScreenshotAction());
+  actions.push(createExportAction(plan));
 
   for (const action of actions) {
     validateAction(action, issues);
     validateProjectAction(action, issues);
     validateGroupAction(action, issues);
     validateCubeAction(action, issues);
-  }
-
-  if (format === "bedrock_block") {
-    const groupNames = plan.groups.join(" ").toLowerCase();
-    if (groupNames.includes("head") || groupNames.includes("limb")) {
-      issues.push({
-        severity: "warning",
-        code: "ENTITY_GROUPS_FOR_BLOCK_ACTIONS",
-        message: "Bedrock Block actions were built from entity-like group names."
-      });
-    }
+    validateExportAction(action, issues);
   }
 
   return {
-    valid: !issues.some((issue) => issue.severity === "error"),
+    valid: geometry.valid && !issues.some((issue) => issue.severity === "error"),
     format,
     actions,
     issues
   };
+}
+
+export function buildBlockbenchToolActions(plan: ModelPlan): ToolAdapterResult {
+  return buildBlockbenchToolActionsFromGeometry(plan, buildMcpGeometry(plan));
 }

@@ -1,12 +1,24 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 export const jobArtifactNames = [
+  "job_snapshot",
+  "artifact_index",
+  "stored_data_manifest",
   "image_analysis",
   "model_plan",
   "model_plan_validation",
+  "mcp_geometry_plan",
+  "mcp_material_plan",
   "mcp_actions",
+  "mcp_tool_schema",
+  "mcp_tool_name_mapping",
+  "mcp_argument_shape_adaptation",
+  "mcp_action_schema_match",
+  "mcp_execution_plan",
   "mcp_capabilities",
+  "blockbench_preview",
+  "blockbench_export",
   "mcp_execution_report"
 ] as const;
 
@@ -16,6 +28,8 @@ export interface JobArtifactSummary {
   name: JobArtifactName;
   fileName: string;
   available: boolean;
+  sizeBytes?: number;
+  updatedAt?: string;
 }
 
 export interface JobArtifactContent extends JobArtifactSummary {
@@ -35,11 +49,15 @@ async function readArtifact(outputRoot: string, jobId: string, artifactName: Job
   const fileName = artifactName + ".json";
 
   try {
-    const raw = await readFile(getArtifactPath(outputRoot, jobId, artifactName), "utf8");
+    const artifactPath = getArtifactPath(outputRoot, jobId, artifactName);
+    const [raw, metadata] = await Promise.all([readFile(artifactPath, "utf8"), stat(artifactPath)]);
+
     return {
       name: artifactName,
       fileName,
       available: true,
+      sizeBytes: metadata.size,
+      updatedAt: metadata.mtime.toISOString(),
       content: JSON.parse(raw)
     };
   } catch (error) {
@@ -58,7 +76,9 @@ export async function listJobArtifacts(outputRoot: string, jobId: string): Promi
   return artifacts.map((artifact) => ({
     name: artifact.name,
     fileName: artifact.fileName,
-    available: artifact.available
+    available: artifact.available,
+    sizeBytes: artifact.sizeBytes,
+    updatedAt: artifact.updatedAt
   }));
 }
 

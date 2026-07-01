@@ -1,48 +1,46 @@
 # MCP Action Reporting
 
-BuildIT stores the exact MCP tool actions that will be sent to Blockbench before execution.
+BuildIT stores MCP actions and execution results so Blockbench MCP runs can be debugged from the job stored data folder.
 
 ## Files
 
 ```txt
-outputs/jobs/<jobId>/mcp_actions.json
-outputs/jobs/<jobId>/mcp_execution_report.json
+mcp_actions.json
+mcp_execution_plan.json
+mcp_execution_report.json
 ```
 
 ## `mcp_actions.json`
 
-This file contains the generated tool call list after model plan validation and Blockbench MCP adapter validation.
+This file contains the adapter-generated MCP action list before tool-name mapping, argument adaptation, schema matching, and execution.
 
-It is useful for debugging:
+## `mcp_execution_plan.json`
 
-- project creation actions,
-- group creation actions,
-- cube placement actions,
-- screenshot actions,
-- action order,
-- adapter warnings,
-- adapter errors.
+This file contains the final action list that BuildIT intends to send to Blockbench MCP after mapping, adaptation, and schema matching.
 
-The file includes:
-
-- `valid`
-- `format`
-- `actionCount`
-- `issues`
-- `actions`
-
-When `valid` is false, the workflow stops before Blockbench MCP execution.
+It is the best artifact for checking the intended execution order.
 
 ## `mcp_execution_report.json`
 
-This file records MCP execution step by step.
+This file records what actually happened during Blockbench MCP execution.
 
-Each step includes:
+Each step can include:
 
-- tool name,
+- canonical BuildIT tool name,
+- resolved real MCP tool name,
 - start time,
 - finish time,
 - success state,
-- error message when execution fails.
+- optional state,
+- skipped state,
+- non-fatal optional failure state,
+- result summary,
+- result validation,
+- output artifact names,
+- error message.
 
-If a tool fails, the workflow stops and writes the execution report before returning a failed job.
+Required tool failures fail the job.
+
+Required result validation failures also fail the job. For example, `capture_screenshot` must return an image data URL.
+
+Optional tool failures and optional result validation failures are recorded as `nonFatal: true` and the job continues.

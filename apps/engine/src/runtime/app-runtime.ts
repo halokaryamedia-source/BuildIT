@@ -1,5 +1,6 @@
-import { appendJobLog, createJob, setJobStatus, type ModelJobInput } from "../domain/job.js";
+import { appendJobLog, createJob, setJobStage, setJobStatus, type ModelJob, type ModelJobInput } from "../domain/job.js";
 import { JobStore } from "../jobs/job-store.js";
+import { saveJobSnapshot } from "../jobs/job-snapshot-store.js";
 import { BlockbenchMcpClient } from "../mcp/blockbench-client.js";
 import { OllamaProvider } from "../providers/ollama.js";
 import { saveReferenceImages, type ReferenceImageUpload } from "../storage/reference-images.js";
@@ -28,29 +29,47 @@ export class AppRuntime {
     this.sync = new SyncManager(this.blockbench, options.blockbenchMcpUrl);
   }
 
+  private async persistJob(job: ModelJob): Promise<void> {
+    this.jobs.save(job);
+    await saveJobSnapshot(job, this.options.outputDir);
+  }
+
   async createModelJob(input: ModelJobInput, referenceUploads: ReferenceImageUpload[] = []) {
     let job = createJob(input);
+    await this.persistJob(job);
 
-    const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
+    try {
+      job = setJobStage(job, "saving_references");
+      await this.persistJob(job);
 
-    job = appendJobLog(
-      {
-        ...job,
-        input: {
-          ...job.input,
-          imagePaths: savedReferences.map((image) => image.path),
-          referenceImages: savedReferences
-        }
-      },
-      savedReferences.length > 0
-        ? "Saved " + savedReferences.length + " reference image file(s)."
-        : "No reference image files were provided."
-    );
+      const savedReferences = await saveReferenceImages(job.id, referenceUploads, this.options.outputDir);
 
-    this.jobs.save(job);
-    void this.runJob(job.id);
+      job = appendJobLog(
+        {
+          ...job,
+          input: {
+            ...job.input,
+            imagePaths: savedReferences.map((image) => image.path),
+            referenceImages: savedReferences
+          }
+        },
+        savedReferences.length > 0
+          ? "Saved " + savedReferences.length + " reference image file(s)."
+          : "No reference image files were provided."
+      );
 
-    return job;
+      await this.persistJob(job);
+      void this.runJob(job.id);
+
+      return job;
+    } catch (error) {
+      const failedJob = {
+        ...setJobStatus(job, "failed"),
+        error: error instanceof Error ? error.message : "Unable to save reference images."
+      };
+      await this.persistJob(failedJob);
+      throw error;
+    }
   }
 
   async runJob(jobId: string): Promise<void> {
@@ -62,15 +81,19 @@ export class AppRuntime {
         ollama: this.ollama,
         vision: this.vision,
         blockbench: this.blockbench,
-        outputDir: this.options.outputDir
+        outputDir: this.options.outputDir,
+        onProgress: async (progressJob) => {
+          await this.persistJob(progressJob);
+        }
       });
-      this.jobs.save(result);
+      await this.persistJob(result);
     } catch (error) {
+      const latestJob = this.jobs.get(jobId) ?? job;
       const failedJob = {
-        ...setJobStatus(job, "failed"),
+        ...setJobStatus(latestJob, "failed"),
         error: error instanceof Error ? error.message : "Unknown job failure."
       };
-      this.jobs.save(failedJob);
+      await this.persistJob(failedJob);
     }
   }
 

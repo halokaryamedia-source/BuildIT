@@ -1,8 +1,23 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { saveArtifactIndex } from "../artifacts/artifact-index-store.js";
+import { saveStoredDataManifest } from "../artifacts/stored-data-manifest-store.js";
 import { getJobArtifact, listJobArtifacts } from "../artifacts/job-artifacts.js";
+import { listPersistedJobs, mergeJobs } from "../jobs/job-history-store.js";
 import type { AppRuntime } from "../runtime/app-runtime.js";
 import { createFailedMcpCapabilityReport, evaluateMcpCapabilities } from "../mcp/mcp-capabilities.js";
+import { openStoredDataRoot } from "../storage/stored-data-opener.js";
 import type { ReferenceImageUpload } from "../storage/reference-images.js";
+
+const maxJsonBodyBytes = 16 * 1024 * 1024;
+
+class HttpRequestError extends Error {
+  constructor(
+    readonly statusCode: number,
+    message: string
+  ) {
+    super(message);
+  }
+}
 
 interface CreateJobBody {
   prompt?: string;
@@ -16,15 +31,44 @@ function normalizeFormat(format: string | undefined): "bedrock" | "bedrock_block
   return format === "bedrock_block" ? "bedrock_block" : "bedrock";
 }
 
+function isSafeJobId(jobId: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(jobId);
+}
+
+function resolveErrorStatus(error: unknown): number {
+  if (error instanceof HttpRequestError) return error.statusCode;
+
+  if (error instanceof Error) {
+    if (error.message.includes("Reference image") || error.message.includes("Reference upload")) return 400;
+    if (error.message.includes("Invalid image data URL")) return 400;
+    if (error.message.includes("MIME type")) return 400;
+  }
+
+  return 500;
+}
+
 async function readJsonBody<T>(request: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
+  let bodyBytes = 0;
 
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    bodyBytes += buffer.byteLength;
+
+    if (bodyBytes > maxJsonBodyBytes) {
+      throw new HttpRequestError(413, "Request body is too large. Maximum size is 16 MB.");
+    }
+
+    chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString("utf8");
-  return rawBody ? (JSON.parse(rawBody) as T) : ({} as T);
+
+  try {
+    return rawBody ? (JSON.parse(rawBody) as T) : ({} as T);
+  } catch {
+    throw new HttpRequestError(400, "Request body must be valid JSON.");
+  }
 }
 
 function sendJson(response: ServerResponse, statusCode: number, data: unknown): void {
@@ -39,6 +83,13 @@ function sendJson(response: ServerResponse, statusCode: number, data: unknown): 
 
 function sendNotFound(response: ServerResponse): void {
   sendJson(response, 404, { error: "Route not found." });
+}
+
+async function refreshArtifactManifests(outputDir: string, jobId: string) {
+  await saveArtifactIndex(outputDir, jobId);
+  const storedDataManifest = await saveStoredDataManifest(outputDir, jobId);
+  const artifactIndex = await saveArtifactIndex(outputDir, jobId);
+  return { artifactIndex, storedDataManifest };
 }
 
 export function startHttpServer(runtime: AppRuntime, port: number): void {
@@ -75,7 +126,9 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
       }
 
       if (request.method === "GET" && url.pathname === "/api/jobs") {
-        sendJson(response, 200, { jobs: runtime.jobs.list() });
+        const persistedJobs = await listPersistedJobs(runtime.getOptions().outputDir);
+        const jobs = mergeJobs(runtime.jobs.list(), persistedJobs);
+        sendJson(response, 200, { jobs });
         return;
       }
 
@@ -105,28 +158,47 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
         return;
       }
 
-      const artifactsMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts$/);
-      if (request.method === "GET" && artifactsMatch) {
-        const job = runtime.jobs.get(artifactsMatch[1]);
-        if (!job) {
-          sendJson(response, 404, { error: "Job not found." });
+      const openStoredDataMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/open-stored-data$/);
+      if (request.method === "POST" && openStoredDataMatch) {
+        const jobId = openStoredDataMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
           return;
         }
 
-        const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, job.id);
-        sendJson(response, 200, { artifacts });
+        const { storedDataManifest } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
+        const opened = await openStoredDataRoot(runtime.getOptions().outputDir, jobId);
+        sendJson(response, 200, { opened, storedDataManifest });
+        return;
+      }
+
+      const artifactsMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts$/);
+      if (request.method === "GET" && artifactsMatch) {
+        const jobId = artifactsMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
+          return;
+        }
+
+        const { artifactIndex, storedDataManifest } = await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
+        const artifacts = await listJobArtifacts(runtime.getOptions().outputDir, jobId);
+        sendJson(response, 200, { artifacts, artifactIndex, storedDataManifest });
         return;
       }
 
       const artifactMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)\/artifacts\/([^/]+)$/);
       if (request.method === "GET" && artifactMatch) {
-        const job = runtime.jobs.get(artifactMatch[1]);
-        if (!job) {
-          sendJson(response, 404, { error: "Job not found." });
+        const jobId = artifactMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
           return;
         }
 
-        const artifact = await getJobArtifact(runtime.getOptions().outputDir, job.id, artifactMatch[2]);
+        if (artifactMatch[2] === "artifact_index" || artifactMatch[2] === "stored_data_manifest") {
+          await refreshArtifactManifests(runtime.getOptions().outputDir, jobId);
+        }
+
+        const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, artifactMatch[2]);
         if (!artifact) {
           sendJson(response, 404, { error: "Artifact not found." });
           return;
@@ -138,8 +210,20 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
 
       const jobMatch = url.pathname.match(/^\/api\/jobs\/([^/]+)$/);
       if (request.method === "GET" && jobMatch) {
-        const job = runtime.jobs.get(jobMatch[1]);
+        const jobId = jobMatch[1];
+        if (!isSafeJobId(jobId)) {
+          sendJson(response, 400, { error: "Invalid job id." });
+          return;
+        }
+
+        const job = runtime.jobs.get(jobId);
         if (!job) {
+          const artifact = await getJobArtifact(runtime.getOptions().outputDir, jobId, "job_snapshot");
+          if (artifact?.available && artifact.content) {
+            sendJson(response, 200, { job: artifact.content });
+            return;
+          }
+
           sendJson(response, 404, { error: "Job not found." });
           return;
         }
@@ -150,7 +234,7 @@ export function startHttpServer(runtime: AppRuntime, port: number): void {
 
       sendNotFound(response);
     } catch (error) {
-      sendJson(response, 500, {
+      sendJson(response, resolveErrorStatus(error), {
         error: error instanceof Error ? error.message : "Internal server error."
       });
     }

@@ -8,10 +8,12 @@
     "dev": "npm run dev:engine",
     "dev:engine": "npm --workspace apps/engine run dev",
     "dev:desktop": "npm --workspace apps/desktop run dev",
-    "build": "npm run build:engine",
+    "build": "npm run build:engine && npm run build:desktop",
     "build:engine": "npm --workspace apps/engine run build",
     "build:desktop": "npm --workspace apps/desktop run build",
-    "check": "npm --workspace apps/engine run check"
+    "check": "npm run check:engine && npm run check:desktop",
+    "check:engine": "npm --workspace apps/engine run check",
+    "check:desktop": "npm --workspace apps/desktop run check"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
