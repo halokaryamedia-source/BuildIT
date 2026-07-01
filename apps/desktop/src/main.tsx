@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
@@ -6,6 +6,7 @@ const engineUrl = "http://localhost:3987";
 const maxReferenceImageBytes = 10 * 1024 * 1024;
 
 type TargetFormat = "bedrock" | "bedrock_block";
+type TerminalJobStatus = "completed" | "failed" | "cancelled";
 
 interface Message {
   role: "user" | "assistant";
@@ -87,30 +88,40 @@ interface OpenStoredDataResponse {
   error?: string;
 }
 
+async function readJsonResponse<T>(response: Response, fallbackError: string): Promise<T> {
+  const data = (await response.json()) as T & { error?: string };
+
+  if (!response.ok) {
+    throw new Error(data.error ?? fallbackError);
+  }
+
+  return data;
+}
+
 async function fetchJob(jobId: string): Promise<ModelJob> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId);
-  const data = (await response.json()) as { job: ModelJob };
+  const data = await readJsonResponse<{ job: ModelJob }>(response, "Unable to fetch job.");
   return data.job;
 }
 
 async function fetchJobs(): Promise<ModelJob[]> {
   const response = await fetch(engineUrl + "/api/jobs");
-  const data = (await response.json()) as { jobs: ModelJob[] };
+  const data = await readJsonResponse<{ jobs: ModelJob[] }>(response, "Unable to fetch jobs.");
   return data.jobs ?? [];
 }
 
 async function fetchHealth(): Promise<HealthState> {
   const response = await fetch(engineUrl + "/api/health");
-  return (await response.json()) as HealthState;
+  return readJsonResponse<HealthState>(response, "Unable to fetch engine health.");
 }
 
 async function fetchJobArtifacts(jobId: string): Promise<ArtifactResponse> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts");
-  const data = (await response.json()) as {
+  const data = await readJsonResponse<{
     artifacts?: JobArtifactSummary[];
     artifactIndex?: ArtifactIndex;
     storedDataManifest?: StoredDataManifest;
-  };
+  }>(response, "Unable to fetch job artifacts.");
 
   return {
     artifacts: data.artifactIndex?.artifacts ?? data.artifacts ?? [],
@@ -120,7 +131,7 @@ async function fetchJobArtifacts(jobId: string): Promise<ArtifactResponse> {
 
 async function fetchJobArtifact(jobId: string, artifactName: string): Promise<JobArtifactContent> {
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/artifacts/" + artifactName);
-  const data = (await response.json()) as { artifact: JobArtifactContent };
+  const data = await readJsonResponse<{ artifact: JobArtifactContent }>(response, "Unable to fetch artifact.");
   return data.artifact;
 }
 
@@ -128,13 +139,7 @@ async function requestOpenStoredData(jobId: string): Promise<OpenStoredDataRespo
   const response = await fetch(engineUrl + "/api/jobs/" + jobId + "/open-stored-data", {
     method: "POST"
   });
-  const data = (await response.json()) as OpenStoredDataResponse;
-
-  if (!response.ok) {
-    throw new Error(data.error ?? "Unable to open Stored Data Root.");
-  }
-
-  return data;
+  return readJsonResponse<OpenStoredDataResponse>(response, "Unable to open Stored Data Root.");
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -173,9 +178,9 @@ function getStageLabel(stage: string | undefined): string {
     case "exporting_model":
       return "Exporting model";
     case "completed":
-      return "Completed";
+      return "Ready in Blockbench";
     case "failed":
-      return "Failed";
+      return "Needs attention";
     default:
       return "Not started";
   }
@@ -214,6 +219,28 @@ function validateSelectedImage(file: File): void {
   }
 }
 
+function isTerminalStatus(status: string): status is TerminalJobStatus {
+  return status === "completed" || status === "failed" || status === "cancelled";
+}
+
+function getTerminalMessage(job: ModelJob): string {
+  if (job.status === "completed") {
+    return "Model ready in Blockbench. You can review the preview, Stored Data Root, and MCP execution report from BuildIT.";
+  }
+
+  if (job.status === "failed") {
+    return job.error
+      ? "Generation needs attention: " + job.error
+      : "Generation needs attention. Check the MCP report and Stored Data Root for details.";
+  }
+
+  return "Job was cancelled.";
+}
+
+function findArtifact(artifacts: JobArtifactSummary[], artifactName: string): JobArtifactSummary | undefined {
+  return artifacts.find((artifact) => artifact.name === artifactName && artifact.available);
+}
+
 function App() {
   const [prompt, setPrompt] = useState("");
   const [targetFormat, setTargetFormat] = useState<TargetFormat>("bedrock_block");
@@ -224,6 +251,7 @@ function App() {
   const [storedDataManifest, setStoredDataManifest] = useState<StoredDataManifest | null>(null);
   const [selectedArtifact, setSelectedArtifact] = useState<JobArtifactContent | null>(null);
   const [health, setHealth] = useState<HealthState | null>(null);
+  const terminalNotifiedJobIds = useRef<Set<string>>(new Set());
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -233,6 +261,10 @@ function App() {
   ]);
 
   const previewDataUrl = getPreviewDataUrl(selectedArtifact);
+  const previewArtifact = findArtifact(artifacts, "blockbench_preview");
+  const executionReportArtifact = findArtifact(artifacts, "mcp_execution_report");
+  const schemaMatchArtifact = findArtifact(artifacts, "mcp_action_schema_match");
+  const readyCardVisible = Boolean(activeJob && isTerminalStatus(activeJob.status));
 
   async function refreshRecentJobs() {
     try {
@@ -246,6 +278,12 @@ function App() {
   function applyArtifactResponse(response: ArtifactResponse) {
     setArtifacts(response.artifacts);
     setStoredDataManifest(response.storedDataManifest ?? null);
+  }
+
+  function notifyTerminalJob(job: ModelJob) {
+    if (!isTerminalStatus(job.status) || terminalNotifiedJobIds.current.has(job.id)) return;
+    terminalNotifiedJobIds.current.add(job.id);
+    setMessages((current) => [...current, { role: "assistant", content: getTerminalMessage(job) }]);
   }
 
   useEffect(() => {
@@ -284,8 +322,12 @@ function App() {
     let cancelled = false;
 
     async function refreshArtifacts() {
-      const nextArtifacts = await fetchJobArtifacts(activeJob.id);
-      if (!cancelled) applyArtifactResponse(nextArtifacts);
+      try {
+        const nextArtifacts = await fetchJobArtifacts(activeJob.id);
+        if (!cancelled) applyArtifactResponse(nextArtifacts);
+      } catch {
+        if (!cancelled) setArtifacts([]);
+      }
     }
 
     void refreshArtifacts();
@@ -296,26 +338,20 @@ function App() {
   }, [activeJob]);
 
   useEffect(() => {
-    if (!activeJob || ["completed", "failed", "cancelled"].includes(activeJob.status)) return;
+    if (!activeJob || isTerminalStatus(activeJob.status)) return;
 
     const timer = window.setInterval(async () => {
-      const nextJob = await fetchJob(activeJob.id);
-      const nextArtifacts = await fetchJobArtifacts(activeJob.id);
-      setActiveJob(nextJob);
-      applyArtifactResponse(nextArtifacts);
-      void refreshRecentJobs();
-
-      if (nextJob.status === "completed") {
+      try {
+        const nextJob = await fetchJob(activeJob.id);
+        const nextArtifacts = await fetchJobArtifacts(activeJob.id);
+        setActiveJob(nextJob);
+        applyArtifactResponse(nextArtifacts);
+        notifyTerminalJob(nextJob);
+        void refreshRecentJobs();
+      } catch (error) {
         setMessages((current) => [
           ...current,
-          { role: "assistant", content: "Model generation completed. Open the Stored Data Root to review saved outputs." }
-        ]);
-      }
-
-      if (nextJob.status === "failed") {
-        setMessages((current) => [
-          ...current,
-          { role: "assistant", content: nextJob.error ?? "Model generation failed." }
+          { role: "assistant", content: error instanceof Error ? error.message : "Unable to refresh active job." }
         ]);
       }
     }, 1500);
@@ -340,8 +376,21 @@ function App() {
 
   async function openArtifact(artifact: JobArtifactSummary) {
     if (!activeJob || !artifact.available) return;
-    const nextArtifact = await fetchJobArtifact(activeJob.id, artifact.name);
-    setSelectedArtifact(nextArtifact);
+
+    try {
+      const nextArtifact = await fetchJobArtifact(activeJob.id, artifact.name);
+      setSelectedArtifact(nextArtifact);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: error instanceof Error ? error.message : "Unable to open artifact." }
+      ]);
+    }
+  }
+
+  async function openNamedArtifact(artifactName: string) {
+    const artifact = findArtifact(artifacts, artifactName);
+    if (artifact) await openArtifact(artifact);
   }
 
   async function openStoredData() {
@@ -373,6 +422,7 @@ function App() {
       setActiveJob(job);
       applyArtifactResponse(nextArtifacts);
       setSelectedArtifact(null);
+      notifyTerminalJob(job);
     } catch (error) {
       setMessages((current) => [
         ...current,
@@ -419,10 +469,10 @@ function App() {
         })
       });
 
-      const data = (await response.json()) as { job?: ModelJob; error?: string };
+      const data = await readJsonResponse<{ job?: ModelJob }>(response, "Unable to create job.");
 
-      if (!response.ok || !data.job) {
-        throw new Error(data.error ?? "Unable to create job.");
+      if (!data.job) {
+        throw new Error("Unable to create job.");
       }
 
       setActiveJob(data.job);
@@ -434,8 +484,8 @@ function App() {
           role: "assistant",
           content:
             referenceImages.length > 0
-              ? "Job created with a reference image for " + getTargetLabel(targetFormat) + "."
-              : "Job created for " + getTargetLabel(targetFormat) + "."
+              ? "Job created with a reference image for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
+              : "Job created for " + getTargetLabel(targetFormat) + ". BuildIT will notify you when the model is ready in Blockbench."
         }
       ]);
     } catch (error) {
@@ -459,6 +509,7 @@ function App() {
           <strong>Engine health</strong>
           <span>Main model: {health?.ollamaConnected ? "connected" : "offline"}</span>
           <span>Vision model: {health?.visionConnected ? "connected" : "offline"}</span>
+          <span>Blockbench MCP: {health?.blockbench?.connected ? "connected" : "offline"}</span>
           <span>MCP tools: {health?.mcpCapabilities?.valid ? "valid" : "not ready"}</span>
         </div>
         <div className="status-card">
@@ -499,6 +550,30 @@ function App() {
               {message.content}
             </article>
           ))}
+          {readyCardVisible && activeJob ? (
+            <article className={"ready-card " + (activeJob.status === "completed" ? "success" : "failed")}>
+              <strong>{activeJob.status === "completed" ? "Model ready in Blockbench" : "Generation needs attention"}</strong>
+              <span>
+                {activeJob.status === "completed"
+                  ? "The generated model should now be available inside Blockbench. BuildIT has saved the review data below."
+                  : activeJob.error ?? "Check the MCP diagnostics below to understand what failed."}
+              </span>
+              <div className="ready-actions">
+                <button disabled={!previewArtifact} onClick={() => void openNamedArtifact("blockbench_preview")}>
+                  View Preview
+                </button>
+                <button disabled={!activeJob || !storedDataManifest} onClick={() => void openStoredData()}>
+                  Open Stored Data
+                </button>
+                <button disabled={!executionReportArtifact} onClick={() => void openNamedArtifact("mcp_execution_report")}>
+                  Check MCP Report
+                </button>
+                <button disabled={!schemaMatchArtifact} onClick={() => void openNamedArtifact("mcp_action_schema_match")}>
+                  Check Schema Match
+                </button>
+              </div>
+            </article>
+          ) : null}
           {activeJob ? (
             <article className="job-card">
               <strong>{activeJob.id}</strong>
@@ -558,9 +633,7 @@ function App() {
                 <option value="bedrock_block">Bedrock Block</option>
               </select>
             </label>
-            <p>
-              Bedrock Block is a placeable Minecraft Bedrock custom block. Bedrock Entity is an entity model.
-            </p>
+            <p>Bedrock Block is a placeable Minecraft Bedrock custom block. Bedrock Entity is an entity model.</p>
           </div>
           <label className="file-picker">
             <span>{selectedFile ? selectedFile.name : "Select reference image up to 10 MB"}</span>
@@ -571,7 +644,7 @@ function App() {
             onChange={(event) => setPrompt(event.target.value)}
             placeholder="Describe the model you want to create..."
           />
-          <button onClick={submitJob}>Generate</button>
+          <button onClick={() => void submitJob()}>Generate</button>
         </div>
       </section>
     </main>
