@@ -23,6 +23,18 @@
       purpose: 'App launcher, bridge runtime, and mode separation.',
     },
     {
+      id: '03-app-launcher',
+      title: 'App Launcher',
+      file: 'documentation/03-app-launcher.md',
+      purpose: 'Launcher screens, workflows, and operational navigation.',
+    },
+    {
+      id: '04-mcp-engine',
+      title: 'MCP Engine',
+      file: 'documentation/04-mcp-engine.md',
+      purpose: 'Bridge runtime behavior, process lifecycle, and diagnostics.',
+    },
+    {
       id: '05-ollama-ollmcp-mode',
       title: 'Ollama Mode',
       file: 'documentation/05-ollama-ollmcp-mode.md',
@@ -45,6 +57,18 @@
       title: 'Safety Policy',
       file: 'documentation/08-safety-policy.md',
       purpose: 'Localhost defaults, remote warnings, and refusal rules.',
+    },
+    {
+      id: '09-testing-plan',
+      title: 'Testing Plan',
+      file: 'documentation/09-testing-plan.md',
+      purpose: 'Manual and automated validation cases before release.',
+    },
+    {
+      id: '10-release-checklist',
+      title: 'Release Checklist',
+      file: 'documentation/10-release-checklist.md',
+      purpose: 'Final rollout and readiness checks for each release batch.',
     },
   ];
 

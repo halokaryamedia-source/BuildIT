@@ -13,6 +13,10 @@ const requiredFiles = [
   'app-launcher/src/routes/+layout.svelte',
   'app-launcher/src/routes/+layout.js',
   'app-launcher/src/routes/+page.svelte',
+  'documentation/03-app-launcher.md',
+  'documentation/04-mcp-engine.md',
+  'documentation/09-testing-plan.md',
+  'documentation/10-release-checklist.md',
 ];
 
 for (const file of requiredFiles) {
@@ -37,6 +41,10 @@ const requiredSnippets = [
   'Codex Configuration',
   'Settings',
   'Enable confirmation before writing configuration.',
+  "id: '03-app-launcher'",
+  "id: '04-mcp-engine'",
+  "id: '09-testing-plan'",
+  "id: '10-release-checklist'",
 ];
 
 const pageContent = fs.readFileSync(path.join(root, 'app-launcher/src/routes/+page.svelte'), 'utf8');
