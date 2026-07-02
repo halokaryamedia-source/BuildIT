@@ -29,3 +29,11 @@
 - No added modeling logic, tool invention, or source-contract override.
 - Source contract checks pass in local and CI environments.
 - Final commit is clean and pushed to `origin V1`.
+
+## Final release gate
+- Run all commands in [`RELEASE.md`](./RELEASE.md) before tagging.
+- Require screenshots/log evidence for:
+  - Endpoint detection at 3000/3001/3002.
+  - Missing-`uvx` and missing-`Ollama` warning flow.
+  - Successful Codex config write after confirmation.
+- CI and manual QA must both pass before release tag.

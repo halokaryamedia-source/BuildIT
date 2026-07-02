@@ -17,6 +17,8 @@ jobs:
         run: tsx tools/verify-source-contract.ts
       - name: Verify app launcher artifacts
         run: tsx tools/verify-app-launcher.ts
+      - name: Frontend smoke check
+        run: tsx tools/frontend-smoke-check.ts
       - name: Sanity check Rust engine crate
         run: cargo check --manifest-path mcp-engine/Cargo.toml
       - name: Sanity check Tauri bridge crate
