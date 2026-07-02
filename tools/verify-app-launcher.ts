@@ -36,6 +36,7 @@ const requiredSnippets = [
   'uvx ollmcp -u',
   'Codex Configuration',
   'Settings',
+  'Enable confirmation before writing configuration.',
 ];
 
 const pageContent = fs.readFileSync(path.join(root, 'app-launcher/src/routes/+page.svelte'), 'utf8');
@@ -43,6 +44,37 @@ for (const snippet of requiredSnippets) {
   if (!pageContent.includes(snippet)) {
     issues.push(`app-launcher/src/routes/+page.svelte missing snippet: ${snippet}`);
   }
+}
+
+if (issues.length > 0) {
+  console.error('app-launcher verification failed:');
+  for (const issue of issues) {
+    console.error(`- ${issue}`);
+  }
+  process.exit(1);
+}
+
+const forbiddenFolderNames = ['legacy', 'old', 'v1', 'v2', 'v3', 'new-engine', 'engine-final', 'engine-fixed'];
+for (const forbidden of forbiddenFolderNames) {
+  const forbiddenPath = path.join(root, 'app-launcher', forbidden);
+  if (fs.existsSync(forbiddenPath)) {
+    issues.push(`Forbidden launcher subfolder detected: app-launcher/${forbidden}`);
+  }
+}
+
+const engineRoot = path.join(root, 'app-launcher/src-tauri/src');
+const bannedTerms = ['cube count', 'cube placement', 'texture logic', 'animation logic', 'modeling logic'];
+const mainRust = path.join(root, 'app-launcher/src-tauri/src/main.rs');
+if (fs.existsSync(mainRust)) {
+  const content = fs.readFileSync(mainRust, 'utf8').toLowerCase();
+  if (bannedTerms.some((term) => content.includes(term))) {
+    issues.push('app-launcher/src-tauri/src/main.rs contains model-behavior terms');
+  }
+}
+
+const hasDuplicateEngineStart = (fs.existsSync(engineRoot) && fs.readFileSync(path.join(root, 'app-launcher/src-tauri/src/main.rs'), 'utf8').split('Command::new').length - 1) > 1;
+if (hasDuplicateEngineStart) {
+  issues.push('Detected multiple Command::new calls in app-launcher/src-tauri/src/main.rs; verify single bridge runtime path');
 }
 
 if (issues.length > 0) {
