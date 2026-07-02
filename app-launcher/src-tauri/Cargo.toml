@@ -4,5 +4,7 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["macros"] }
 mcp-engine = { path = "../../mcp-engine" }
+tokio = { version = "1", features = ["process", "io-util", "rt-multi-thread", "time"] }
+serde = { version = "1", features = ["derive"] }
