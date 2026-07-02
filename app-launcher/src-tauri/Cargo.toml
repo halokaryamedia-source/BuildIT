@@ -1,0 +1,8 @@
+[package]
+name = "app-launcher"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+mcp-engine = { path = "../../mcp-engine" }

@@ -1,0 +1,8 @@
+{
+  "name": "blockit",
+  "private": true,
+  "version": "0.0.0",
+  "description": "BlockIT workspace",
+  "license": "UNLICENSED",
+  "workspaces": ["app-launcher", "mcp-engine"]
+}

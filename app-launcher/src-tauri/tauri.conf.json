@@ -1,0 +1,24 @@
+{
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "devPath": "../",
+    "distDir": "../.svelte-kit/output"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "BlockIT",
+        "width": 1100,
+        "height": 760
+      }
+    ],
+    "security": {
+      "csp": ""
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all"
+  }
+}
