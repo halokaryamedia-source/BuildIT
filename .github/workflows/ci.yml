@@ -15,6 +15,8 @@ jobs:
         run: npm install -g tsx
       - name: Verify source contract and safety rules
         run: tsx tools/verify-source-contract.ts
+      - name: Verify app launcher artifacts
+        run: tsx tools/verify-app-launcher.ts
       - name: Sanity check Rust engine crate
         run: cargo check --manifest-path mcp-engine/Cargo.toml
       - name: Sanity check Tauri bridge crate
