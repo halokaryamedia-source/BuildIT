@@ -15,6 +15,8 @@ const requiredFiles = [
   'app-launcher/src/routes/+page.svelte',
   'documentation/03-app-launcher.md',
   'documentation/04-mcp-engine.md',
+  'documentation/05-ollama-ollmcp-mode.md',
+  'documentation/06-codex-mode.md',
   'documentation/09-testing-plan.md',
   'documentation/10-release-checklist.md',
 ];
@@ -68,12 +70,74 @@ for (const snippet of requiredSnippets) {
   }
 }
 
-if (issues.length > 0) {
-  console.error('app-launcher verification failed:');
-  for (const issue of issues) {
-    console.error(`- ${issue}`);
+const mandatoryDocs = [
+  'documentation/00-overview.md',
+  'documentation/01-source-contract.md',
+  'documentation/02-architecture.md',
+  'documentation/03-app-launcher.md',
+  'documentation/04-mcp-engine.md',
+  'documentation/05-ollama-ollmcp-mode.md',
+  'documentation/06-codex-mode.md',
+  'documentation/07-start-workspace-flow.md',
+  'documentation/08-safety-policy.md',
+  'documentation/09-testing-plan.md',
+  'documentation/10-release-checklist.md',
+];
+
+const catalogFromFile = Array.from(pageContent.matchAll(/id:\s*'([^']+)'[\s\S]*?file:\s*'([^']+)'/g)).map((entry) => ({
+  id: entry[1],
+  file: entry[2],
+}));
+
+const catalogFiles = new Set(catalogFromFile.map((item) => item.file));
+for (const doc of mandatoryDocs) {
+  if (!catalogFiles.has(doc)) {
+    issues.push(`Launcher doc catalog missing file: ${doc}`);
   }
-  process.exit(1);
+}
+
+if (!catalogFromFile.some((item) => item.id === '03-app-launcher' && item.file === 'documentation/03-app-launcher.md')) {
+  issues.push(`Launcher doc catalog missing expected pair: 03-app-launcher -> documentation/03-app-launcher.md`);
+}
+
+if (!catalogFromFile.some((item) => item.id === '04-mcp-engine' && item.file === 'documentation/04-mcp-engine.md')) {
+  issues.push(`Launcher doc catalog missing expected pair: 04-mcp-engine -> documentation/04-mcp-engine.md`);
+}
+
+if (!catalogFromFile.some((item) => item.id === '09-testing-plan' && item.file === 'documentation/09-testing-plan.md')) {
+  issues.push(`Launcher doc catalog missing expected pair: 09-testing-plan -> documentation/09-testing-plan.md`);
+}
+
+if (!catalogFromFile.some((item) => item.id === '10-release-checklist' && item.file === 'documentation/10-release-checklist.md')) {
+  issues.push(`Launcher doc catalog missing expected pair: 10-release-checklist -> documentation/10-release-checklist.md`);
+}
+
+if (!fs.existsSync(path.join(root, 'documentation'))) {
+  issues.push('documentation folder missing');
+} else {
+  const docsList = fs
+    .readdirSync(path.join(root, 'documentation'))
+    .filter((item) => /^\d{2}-/.test(item) && item.endsWith('.md'));
+  const expectedNames = [
+    '00-overview.md',
+    '01-source-contract.md',
+    '02-architecture.md',
+    '03-app-launcher.md',
+    '04-mcp-engine.md',
+    '05-ollama-ollmcp-mode.md',
+    '06-codex-mode.md',
+    '07-start-workspace-flow.md',
+    '08-safety-policy.md',
+    '09-testing-plan.md',
+    '10-release-checklist.md',
+  ];
+
+  const docsSet = new Set(docsList);
+  for (const file of expectedNames) {
+    if (!docsSet.has(file)) {
+      issues.push(`Expected documentation file missing in documentation folder: ${file}`);
+    }
+  }
 }
 
 const forbiddenFolderNames = ['legacy', 'old', 'v1', 'v2', 'v3', 'new-engine', 'engine-final', 'engine-fixed'];
