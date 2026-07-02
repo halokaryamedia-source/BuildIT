@@ -8,7 +8,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - name: Install tsx runtime
         run: npm install -g tsx
       - name: Verify source contract and safety rules
         run: tsx tools/verify-source-contract.ts
+      - name: Sanity check Rust engine crate
+        run: cargo check --manifest-path mcp-engine/Cargo.toml
+      - name: Sanity check Tauri bridge crate
+        run: cargo check --manifest-path app-launcher/src-tauri/Cargo.toml
+      - name: Run clippy on bridge crates (non-blocking style)
+        run: |
+          cargo clippy --manifest-path mcp-engine/Cargo.toml -- -D warnings
