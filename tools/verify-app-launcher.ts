@@ -31,6 +31,20 @@ try {
   if (!appPackage.name) {
     issues.push('app-launcher/package.json missing "name" field.');
   }
+  if (!appPackage.version) {
+    issues.push('app-launcher/package.json missing "version" field.');
+  }
+
+  const dependencies = {
+    ...(appPackage.dependencies || {}),
+    ...(appPackage.devDependencies || {}),
+  };
+  const requiredDeps = ['@tauri-apps/api', 'svelte'];
+  for (const dep of requiredDeps) {
+    if (!dependencies[dep]) {
+      issues.push(`app-launcher/package.json missing dependency: ${dep}`);
+    }
+  }
 } catch (error) {
   issues.push(`Invalid app-launcher/package.json: ${String(error)}`);
 }

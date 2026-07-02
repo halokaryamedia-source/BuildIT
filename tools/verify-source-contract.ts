@@ -22,6 +22,20 @@ const requiredSnippets = [
   'mcp_servers.blockbench',
 ];
 
+const requiredSourceUrls = [
+  'https://github.com/achmadawdi/mcp-blockbench',
+  'https://github.com/achmadawdi/mcp-blockbench/blob/master/README.md',
+  'https://github.com/achmadawdi/mcp-blockbench/blob/master/docs/api.json',
+  'https://github.com/achmadawdi/mcp-blockbench/blob/master/AGENTS.md',
+  'https://github.com/jasonjgardner/blockbench-mcp-project',
+  'https://github.com/jasonjgardner/blockbench-mcp-project/tree/main/skills/blockbench-use',
+  'https://github.com/jonigl/mcp-client-for-ollama',
+  'https://modelcontextprotocol.io/specification/2025-06-18/basic/transports',
+  'https://v2.tauri.app/',
+  'https://docs.astral.sh/uv/guides/tools/',
+  'https://github.com/ollama/ollama/blob/main/docs/api.md',
+];
+
 const forbiddenFolderNames = ['legacy', 'old', 'v1', 'v2', 'v3', 'new-engine', 'engine-final', 'engine-fixed'];
 
 const issues: string[] = [];
@@ -44,10 +58,24 @@ for (const filePath of requiredFiles) {
   }
 }
 
+if (exists('contracts/upstream/mcp-blockbench/pinned-commit.txt')) {
+  const pinned = readFile('contracts/upstream/mcp-blockbench/pinned-commit.txt').trim();
+  if (!pinned || pinned.length < 7) {
+    fail('contracts/upstream/mcp-blockbench/pinned-commit.txt is empty or too short.');
+  }
+}
+
 for (const snippet of requiredSnippets) {
   const content = exists('SOURCE_CONTRACT.md') ? readFile('SOURCE_CONTRACT.md') : '';
   if (!content.includes(snippet)) {
     fail(`Missing contract rule in SOURCE_CONTRACT.md: ${snippet}`);
+  }
+}
+
+const sourceContractContent = exists('SOURCE_CONTRACT.md') ? readFile('SOURCE_CONTRACT.md') : '';
+for (const sourceUrl of requiredSourceUrls) {
+  if (!sourceContractContent.includes(sourceUrl)) {
+    fail(`Missing required source URL in SOURCE_CONTRACT.md: ${sourceUrl}`);
   }
 }
 
