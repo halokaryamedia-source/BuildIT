@@ -14,10 +14,17 @@ pub async fn scan_local_endpoints() -> Vec<EndpointProbe> {
     for port in crate::SCAN_START_PORT..=crate::SCAN_END_PORT {
         let url = endpoint_from_port(port);
         let reachable = is_port_reachable(port).await;
+        let plugin_enabled = if reachable {
+            check_plugin_health(&url).await
+        } else {
+            false
+        };
+
         probes.push(EndpointProbe {
             url,
             port,
             reachable,
+            plugin_enabled,
         });
     }
 
@@ -30,4 +37,20 @@ pub async fn is_port_reachable(port: u16) -> bool {
         .await
         .map(|stream| stream.is_ok())
         .unwrap_or(false)
+}
+
+async fn check_plugin_health(url: &str) -> bool {
+    let request = reqwest::Client::new().get(url);
+    let response = timeout(Duration::from_millis(300), request.send())
+        .await
+        .ok()
+        .and_then(|result| result.ok());
+
+    match response {
+        Some(resp) => {
+            let status = resp.status().as_u16();
+            status >= 200 && status < 500 && status != 404
+        }
+        None => false,
+    }
 }
