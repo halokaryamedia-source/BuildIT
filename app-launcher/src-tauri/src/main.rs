@@ -65,6 +65,12 @@ async fn start_bridge(
     endpoint: String,
     allow_remote: bool,
 ) -> Result<String, String> {
+    let endpoint = endpoint.trim().to_string();
+
+    if endpoint.is_empty() {
+        return Err("Endpoint cannot be empty.".to_string());
+    }
+
     if !is_local_endpoint(&endpoint) && !allow_remote {
         return Err("Remote endpoint blocked by default. Enable explicit confirmation to continue.".to_string());
     }
@@ -78,10 +84,9 @@ async fn start_bridge(
         return Err("Bridge already running".to_string());
     }
 
-    let mut child = Command::new("uvx")
-        .arg("ollmcp")
-        .arg("-u")
-        .arg(&endpoint)
+    let command = mcp_engine::process::build_ollmcp_command(&endpoint);
+    let mut child = Command::new(&command[0])
+        .args(&command[1..])
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .spawn()

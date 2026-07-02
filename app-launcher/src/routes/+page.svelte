@@ -203,7 +203,7 @@
 
   async function writeCodexConfig(useFallback = false) {
     if (!confirmWrite) {
-      updateStatus('Aktifkan konfirmasi sebelum menulis file konfigurasi.');
+      updateStatus('Enable confirmation before writing configuration.');
       return;
     }
 
