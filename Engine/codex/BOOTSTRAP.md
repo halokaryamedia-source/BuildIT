@@ -1,35 +1,83 @@
 # Codex + Blockbench MCP Bootstrap
 
-This is the single operational entry point for local model production.
+Single operational entry point for local model production.
 
 ## Goal
 
-Build only what the approved reference package requires, with the fewest safe reads, MCP calls, screenshots, and user interruptions.
+Build only what the approved reference package requires, using the fewest safe reads, MCP calls, screenshots, and user interruptions.
 
-## Governance
+## 1. Governance
 
 Read once at session start or after context loss:
 
 ```text
 Engine/codex/GOVERNANCE.md
+active OpenSpec summary
 ```
-
-Core separation:
 
 ```text
-OpenSpec = remembers what was agreed, scope, stages, non-goals, and acceptance criteria
-Ponytail = selects the smallest efficient action needed now to satisfy that agreement
+OpenSpec = approved goal, boundaries, decisions, stages, non-goals, acceptance criteria
+Ponytail = smallest safe action required now to satisfy that agreement
 ```
 
-OpenSpec prevents scope drift and forgotten decisions.
+Do not repeat the full governance/spec before every small edit.
 
-Ponytail prevents token waste, unnecessary tools, redundant checks, speculative work, and overdevelopment.
+## 2. Canonical Local Connection
 
-Do not repeat the full OpenSpec or governance text before every small edit. Use them at session start, stage transition, scope conflict, broad change, or recovery.
+Read:
 
-## Runtime Contracts
+```text
+Engine/codex/CONNECTION_CONTRACT.md
+Engine/codex/connection-profile.json
+```
 
-Read these only when their rule is needed:
+Only connection:
+
+```text
+Codex server key: blockbench
+URL: http://localhost:3000/bb-mcp
+Blockbench plugin: mcp
+Port: 3000
+Endpoint: /bb-mcp
+Auto port: disabled
+```
+
+First-time Codex setup:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -InstallCodexConfig
+```
+
+Restart Codex once after the configuration changes.
+
+Normal asset startup:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset <asset>
+```
+
+Continue only when:
+
+```text
+SavedData/sessions/<asset>/reports/connection.json
+result: PASS
+```
+
+Do not scan ports, create alternate MCP keys, or rediscover the endpoint. After Codex connects, use `get_runtime_status` once for live confirmation.
+
+## 3. Runtime Authority
+
+```text
+SavedData/sessions/<asset>/state.json
+```
+
+Create missing state from:
+
+```text
+Engine/codex/state.template.json
+```
+
+Supporting contracts, opened only when relevant:
 
 ```text
 Engine/codex/STATE_MACHINE.md
@@ -39,13 +87,9 @@ Engine/codex/stage-profiles.json
 Engine/codex/LEGACY_WORKFLOW_AUDIT.md
 ```
 
-- `STATE_MACHINE.md`: review, approval, revision, reopen, and accepted-area protection.
-- `EVIDENCE_CONTRACT.md`: exact preview views and stable filenames.
-- `CHECKPOINT_RECOVERY.md`: persistent `.bbmodel` paths and rollback logic.
-- `stage-profiles.json`: required files, tool domains, checkpoints, and evidence per stage.
-- `LEGACY_WORKFLOW_AUDIT.md`: prevents accidental fallback to the old workflow.
+`state.json` overrides Markdown summaries and lock mirrors.
 
-## Required Input
+## 4. Required Reference Input
 
 ```text
 SavedData/sessions/<asset>/references/
@@ -59,33 +103,22 @@ SavedData/sessions/<asset>/references/
 └─ CODEX_REFERENCE_HANDOFF.md
 ```
 
-Runtime authority:
-
-```text
-SavedData/sessions/<asset>/state.json
-```
-
-Create missing state from:
-
-```text
-Engine/codex/state.template.json
-```
-
-## Minimum Read Order
+## 5. Minimum Read Order
 
 Read once when starting or recovering:
 
 1. `Engine/codex/GOVERNANCE.md`
 2. active OpenSpec summary
-3. `SavedData/sessions/<asset>/state.json`
-4. `references/reference_manifest.json`
-5. `references/PRODUCTION_CONTEXT.md`
-6. `references/<asset>_reference_visual.png`
-7. the active-stage document only
+3. `reports/connection.json`
+4. `state.json`
+5. `references/reference_manifest.json`
+6. `references/PRODUCTION_CONTEXT.md`
+7. `references/<asset>_reference_visual.png`
+8. active-stage category document only
 
-Do not load every workflow document. Open detailed playbooks only when their trigger occurs.
+Do not load every workflow document. Open failure playbooks only when their trigger occurs.
 
-## Ponytail Batch Gate
+## 6. Ponytail Batch Gate
 
 Before a meaningful work batch, answer internally:
 
@@ -102,25 +135,25 @@ Stop condition:
 Estimated MCP/evidence cost: Low / Medium / High
 ```
 
-If `Required now` is `No`, do not execute it.
+If `Required now: No`, do not execute it.
 
-Defer it only when there is a clear later value and revisit condition.
+## 7. One-Time Asset Preflight
 
-## One-Time Preflight
+Connection readiness is already handled by `sync-local-stack.ps1` and must not be repeated manually.
 
-Before the first MCP write in a session:
+Before the first MCP write:
 
-1. validate the reference package;
-2. confirm one active asset and one write session;
-3. verify MCP endpoint and active-stage tool capability;
-4. verify Blockbench project, UUID, format, UV mode, and texture size;
+1. validate the approved reference package;
+2. confirm one active asset and one Codex write session;
+3. call `get_runtime_status` once;
+4. confirm project UUID, format, UV mode, texture size, and active-stage capabilities;
 5. record manual edits that must be preserved;
 6. call `save_project_checkpoint` for `00_session_start.bbmodel`;
 7. update `state.json` only after checkpoint success.
 
-Do not repeat the full preflight for every edit. Re-run only the failed or stale check.
+Re-run only a stale or failed check. Do not repeat the full preflight for each edit or stage.
 
-## Production State Sequence
+## 8. State Sequence
 
 ```text
 REFERENCE_READY
@@ -138,156 +171,124 @@ REFERENCE_READY
 → DONE
 ```
 
-Revision states are defined in `STATE_MACHINE.md`.
-
-Internal passes do not create additional routine approval gates.
+Revision/reopen behavior is defined in `STATE_MACHINE.md`. Internal passes never create extra approval gates.
 
 # Stage 1 — Geometry
 
-Internal passes:
+Internal:
 
 ```text
-Pass A: scale envelope, root hierarchy, primary masses, ground contacts
-Pass B: silhouette-critical structure, attachments, transitions, cube reduction
+Primary Form
+→ Structural Detail
 ```
 
-Initial construction may use bounded multi-part batches.
-
-The one-issue rule applies to revisions, not initial construction.
+Initial work may use bounded multi-part batches. One-issue-per-cycle applies only to revisions.
 
 Forbidden:
 
-- UV packing;
-- texture painting;
+- UV and texture work;
 - decorative micro-cubes;
 - animation clips;
 - final export.
 
-Required output:
+Review output:
 
-- `save_project_checkpoint` → `checkpoints/10_geometry_review.bbmodel`;
-- cube/group count;
-- scale and hierarchy summary;
-- `capture_standard_views` using stage `GEOMETRY` for Front, Left Side, Back, Top / Footprint, and Front-left 3/4;
+- `checkpoints/10_geometry_review.bbmodel` via `save_project_checkpoint`;
+- cube/group, scale, and hierarchy summary;
+- five views via `capture_standard_views` with stage `GEOMETRY`;
 - `evidence/geometry/geometry_report.json`;
-- short result against `GEOMETRY.md` and the Reference Visual.
+- concise comparison to `GEOMETRY.md` and the Reference Visual.
 
 Stop at `GEOMETRY_REVIEW`.
 
-User response:
-
-- `APPROVED` → save `20_geometry_approved.bbmodel`, protect accepted areas, continue to Texture;
-- `REVISION: ...` → create a Geometry revision scope, patch only the named issue, recapture focused evidence, and return to review.
+- `APPROVED` → save `20_geometry_approved.bbmodel`, protect accepted areas, enter Texture.
+- `REVISION: ...` → patch only the named issue, capture focused evidence, return to Geometry Review.
 
 # Stage 2 — Texture
 
-Internal passes:
+Internal:
 
 ```text
-UV planning and packing
-→ base material placement
-→ detail texturing and focal-area polish
+UV
+→ Base Texture
+→ Detail Texture
 ```
 
-Do not stop for separate UV, Base Texture, and Detail Texture approvals.
+No approval between internal passes.
 
 Forbidden:
 
 - broad Geometry redesign;
-- geometry used to imitate pixels, seams, bands, or scratches;
+- geometry used to imitate pixels/seams/bands/scratches;
 - PBR or Vibrant Visuals;
 - Animation work.
 
-Required output:
+Review output:
 
-- `save_project_checkpoint` → `checkpoints/30_texture_review.bbmodel`;
-- texture atlas preview;
-- UV summary;
-- `capture_standard_views` using stage `TEXTURE` for Front, Left Side, Back, and Front-left 3/4;
+- `checkpoints/30_texture_review.bbmodel`;
+- atlas preview and UV summary;
+- required model views via `capture_standard_views` with stage `TEXTURE`;
 - `evidence/texture/texture_report.json`;
-- short result against `TEXTURING.md` and the Reference Visual.
+- concise comparison to `TEXTURING.md` and the Reference Visual.
 
 Stop at `TEXTURE_REVIEW`.
 
-User response:
-
-- `APPROVED` → save `40_texture_approved.bbmodel`, protect accepted areas, continue to Animation when required or Final Validation;
-- `REVISION: ...` → create a Texture revision scope, patch only the named Texture/UV issue, recapture atlas and affected views, and return to review.
+- `APPROVED` → save `40_texture_approved.bbmodel`, protect accepted areas, run/skip Animation.
+- `REVISION: ...` → patch only the named Texture/UV issue and recapture affected evidence.
 
 # Stage 3 — Animation (Optional)
 
-Run only when `reference_manifest.json` or `ANIMATION.md` lists at least one required animation family or interactive motion.
+Run only when the manifest or `ANIMATION.md` defines required motion.
 
-If not required:
+When not required:
 
 ```text
 state: ANIMATION_SKIPPED
-reason: not required by approved reference package
-checkpoint: 60_animation_skipped.bbmodel or approved Texture checkpoint as recovery source
+reason: not required by approved package
+recovery: approved Texture checkpoint
 ```
 
-Do not add optional animations merely for completeness.
+Do not add optional animation for completeness.
 
-When used, build only approved hierarchy, pivots, and clips without altering accepted Geometry or Texture.
+When required, build only approved hierarchy, pivots, and clips without altering accepted Geometry or Texture.
 
-Required output:
+Review output:
 
-- `save_project_checkpoint` → `checkpoints/50_animation_review.bbmodel`;
-- hierarchy and pivot summary;
-- required clips or sampled poses;
+- `checkpoints/50_animation_review.bbmodel`;
+- hierarchy/pivot summary;
+- required clips or samples;
 - neutral-pose recovery;
-- clipping and ground-contact result;
-- stable Animation evidence paths from `EVIDENCE_CONTRACT.md`.
+- clipping and ground-contact result.
 
 Stop at `ANIMATION_REVIEW`.
 
-User response:
-
-- `APPROVED` → save `60_animation_approved.bbmodel`, protect accepted areas, continue to Final Validation;
-- `REVISION: ...` → patch only the named motion, pivot, clipping, or timing issue.
+- `APPROVED` → save `60_animation_approved.bbmodel`, protect accepted areas, enter Final Validation.
+- `REVISION: ...` → patch only the named motion/pivot/clipping/timing issue.
 
 # Stage 4 — Final Validation
 
-Execute `VALIDATION.md` against:
+Execute `VALIDATION.md` against the final candidate, textures, five views, hierarchy/pivots, required animations, Blockbench validator, and export readiness.
 
-- final `.bbmodel` candidate;
-- textures;
-- standard-view evidence;
-- hierarchy and pivots;
-- animations when required;
-- Blockbench validator output;
-- export readiness.
+Codex may repair at most two clearly local failures automatically. Broad changes return to the relevant approved stage. No new features or unrelated polish.
 
-Codex may repair at most two clearly local validation failures automatically.
+Output:
 
-A fix that changes approved identity, scale, silhouette, palette, material read, or accepted stage scope must return to the relevant review stage.
-
-Do not add new features during Final Validation.
-
-Required output:
-
-- `save_project_checkpoint` → `checkpoints/70_final_candidate.bbmodel`;
-- final candidate `.bbmodel` in `final/`;
-- texture files;
+- `checkpoints/70_final_candidate.bbmodel`;
+- candidate `.bbmodel` and textures in `final/`;
 - completed `VALIDATION.md`;
-- `capture_standard_views` using stage `FINAL` for five final views;
-- final texture atlas;
-- concise revision summary;
-- result: `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
+- five views via `capture_standard_views` with stage `FINAL`;
+- final atlas and revision summary;
+- `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-After validation PASS, save `80_validation_pass.bbmodel`.
+After PASS, save `80_validation_pass.bbmodel`. Stop at `FINAL_REVIEW` and wait for approval/corrections.
 
-Stop at `FINAL_REVIEW` and wait for approval or corrections.
-
-## Revision Rule
+## 9. Revision Rule
 
 For revisions only:
 
 ```text
-one cycle = one named issue or one tightly related issue pair
+one cycle = one named issue or one tightly related pair
 ```
-
-Required feedback mapping:
 
 ```text
 Stage:
@@ -300,42 +301,21 @@ Verification:
 Rollback checkpoint:
 ```
 
-Do not rebuild accepted areas.
+Do not rebuild accepted areas. Follow `STATE_MACHINE.md` for local fix versus stage reopen.
 
-Follow `STATE_MACHINE.md` for local-fix versus stage-reopen decisions.
-
-## Overdevelopment Stop Test
-
-Do not execute work when any is true:
-
-- it does not serve the active stage acceptance criteria;
-- it is not requested by the user or required by the approved package;
-- it duplicates existing authority/state;
-- it creates a new abstraction without reducing current risk or repeated work;
-- it solves only a hypothetical future problem;
-- it consumes meaningful tokens/tool calls without reviewable progress;
-- it requires reopening accepted work without a proven conflict.
-
-Record only when useful:
-
-```text
-DEFERRED_NOT_REQUIRED
-Reason:
-Revisit condition:
-```
-
-## Stop Conditions
+## 10. Stop Conditions
 
 Stop and report only when:
 
 - `REFERENCE_CONFLICT`;
+- connection readiness is not `PASS`;
 - required MCP capability is unavailable;
-- active project/session ownership is ambiguous;
-- checkpoint or evidence creation fails;
+- project/session ownership is ambiguous;
+- checkpoint/evidence creation fails;
 - the same blocker fails twice;
-- a requested fix requires reopening an approved earlier stage.
+- a requested change requires reopening an approved stage.
 
-## Compact Stage Report
+## 11. Compact Stage Report
 
 ```text
 Stage:
@@ -348,23 +328,8 @@ Issues:
 Next user action: APPROVED or REVISION: ...
 ```
 
-## Local Dry Run
+## 12. Local Verification and CI
 
-After contracts and required tools are available locally, execute:
+Use `Engine/codex/LOCAL_DRY_RUN.md` after the local stack is ready.
 
-```text
-Engine/codex/LOCAL_DRY_RUN.md
-```
-
-Do not use CI as a substitute for the local Blockbench/MCP dry run.
-
-## CI and Release Rule
-
-CI, deployment preview, release preparation, and final comprehensive verification are deferred until the workflow implementation is intentionally ready for final review.
-
-During active rework:
-
-- use focused local verification for changed areas;
-- do not trigger continuous CI on every branch update;
-- do not open a merge PR merely to run automated checks;
-- keep all work isolated on `Rework` until the user explicitly approves final integration.
+CI, deployment preview, release preparation, PR reopening, and merge into `V1` remain deferred until the user explicitly opens final integration.
