@@ -4,12 +4,13 @@ Run only after the Rework plugin is built/reloaded locally. CI remains out of sc
 
 ## Goal
 
-Prove one approved reference package can move through deterministic connection, intake, Geometry, Texture, optional Animation, and Final Validation with:
+Prove one approved reference package can move through deterministic connection, exact tool exposure, intake, Geometry, Texture, optional Animation, and Final Validation with:
 
 - no connection searching;
 - no legacy numbered-sheet dependency;
 - one runtime authority;
 - one connection readiness report;
+- exact stage/repair tool profiles;
 - one asset preflight;
 - minimal document reads;
 - bounded MCP batches;
@@ -69,23 +70,50 @@ Verify:
 - `reports/connection.json` is `PASS`;
 - server key is `blockbench`;
 - URL is `http://localhost:3000/bb-mcp`;
-- smoke session is closed;
+- readiness session is closed;
 - required common tools exist;
+- expected profile is aligned before Codex connects;
 - active project UUID/format/UV mode/texture size are recorded;
 - Codex creates no alternate key, port, or session.
 
 After Codex connects, call `get_runtime_status` once. Do not repeat discovery if it passes.
 
-### 3. One-Time Asset Preflight
+### 3. Tool Profile Baseline
 
-- verify active-stage tools only;
+Call:
+
+```text
+get_tool_profile(include_tools=true)
+```
+
+For `BEDROCK_CUBOID_GEOMETRY`, verify:
+
+- profile status is `PASS`;
+- exposed count is `17`;
+- profile hash is present;
+- total library count is greater than exposed count;
+- PBR, Hytale, mesh UV, armature, UI automation, and eval tools are absent;
+- state profile ID/hash/count match runtime.
+
+Verify one cross-stage argument is rejected without changing the project:
+
+```text
+place_cube with explicit texture or custom face UV
+→ TOOL_PROFILE_ARGUMENT_BLOCKED
+```
+
+Do not intentionally execute a destructive forbidden tool merely to prove absence.
+
+### 4. One-Time Asset Preflight
+
 - verify one Codex write-session owner;
+- verify the exact Geometry profile;
 - record manual edits;
 - create `00_session_start.bbmodel`;
 - update state;
 - do not repeat unchanged checks.
 
-### 4. Geometry
+### 5. Geometry
 
 - run Primary Form + Structural Detail internally;
 - use bounded multi-part batches where safe;
@@ -96,7 +124,40 @@ After Codex connects, call `get_runtime_status` once. Do not repeat discovery if
 
 Test one approval path and one local revision path that preserves unrelated areas.
 
-### 5. Texture
+For revision:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/set-tool-profile.ps1 -Asset <asset> -Profile GEOMETRY_LOCAL_REPAIR
+```
+
+Verify:
+
+- one reconnect refreshes `tools/list`;
+- repair profile count is `15`;
+- a stale non-repair call returns `TOOL_PROFILE_BLOCKED`;
+- accepted areas remain unchanged.
+
+Return to `BEDROCK_CUBOID_GEOMETRY` only if more Geometry-stage work is genuinely required.
+
+### 6. Texture Profile Transition and Stage
+
+After Geometry approval:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/set-tool-profile.ps1 -Asset <asset> -Profile BEDROCK_CUBOID_TEXTURE
+```
+
+Reconnect the existing `blockbench` entry once.
+
+Verify:
+
+- exposed count is `24`;
+- `set_cube_face_uv` and `get_uv_layout` are present;
+- mesh UV, gradients, and PBR tools are absent;
+- stale Geometry calls are blocked;
+- profile hash/count are stable after reconnect.
+
+Then:
 
 - run UV + Base Texture + Detail Texture internally;
 - save Texture review checkpoint;
@@ -104,31 +165,62 @@ Test one approval path and one local revision path that preserves unrelated area
 - create Texture report;
 - stop at `TEXTURE_REVIEW`.
 
-Test one local Texture revision without reopening Geometry.
+Test one local Texture revision without reopening Geometry using `TEXTURE_LOCAL_REPAIR` and verify count `19`.
 
-### 6. Animation
+### 7. Animation Profile or Skip
 
 Use one branch:
 
 - `ANIMATION_SKIPPED` when not required; or
 - approved Animation work and review.
 
-When used, verify hierarchy, pivots, neutral recovery, clipping, and ground contact.
+When skipped:
 
-### 7. Final Validation
+- activate `FINAL_VALIDATION_READONLY`;
+- reconnect once;
+- do not expose Animation tools.
+
+When required:
+
+- activate `BEDROCK_CUBOID_ANIMATION`;
+- reconnect once;
+- verify exposed count `16`;
+- verify group/bone animation tools present;
+- verify armature and vertex-weight tools absent;
+- verify hierarchy, pivots, neutral recovery, clipping, and ground contact;
+- test `ANIMATION_LOCAL_REPAIR` count `13` only if a real local revision exists.
+
+### 8. Final Validation Profile and Stage
+
+Activate `FINAL_VALIDATION_READONLY`, reconnect once, and verify:
+
+- exposed count is `13`;
+- final inspection/evidence/export tools are present;
+- ordinary Geometry, Texture, and Animation write tools are absent.
+
+Then:
 
 - execute `VALIDATION.md`;
-- query Blockbench validator;
+- query Blockbench validator resources;
 - capture final five views and atlas;
+- route any local failure to the matching repair profile;
 - allow at most two local automatic fixes;
-- route broad failures to the correct stage;
+- route broad failures to the correct approved stage;
 - save final candidate and validation-pass checkpoints;
 - stop at `FINAL_REVIEW`.
 
-### 8. Final User Decision
+### 9. Diagnostic Escalation Negative Test
+
+Do not activate `DIAGNOSTIC_ESCALATION` during the successful path.
+
+Record it as unused unless a real blocker proves normal and repair profiles insufficient.
+
+If genuinely required, record blocker, high-risk tool, rollback checkpoint, verification, and stop condition before activation, then return immediately to the correct normal/repair profile.
+
+### 10. Final User Decision
 
 - approved → `DONE`;
-- revision → map to the correct stage;
+- revision → map to the correct stage/profile;
 - do not merge `Rework` into `V1`.
 
 ## Measurement Log
@@ -138,6 +230,16 @@ Record only actionable waste:
 ```text
 Connection search/retry:
 Alternate port/key created:
+Full library tool count:
+Geometry exposed count:
+Texture exposed count:
+Animation exposed count:
+Final exposed count:
+Profile transition reconnect count:
+Repeated tools/list call:
+Out-of-profile selection attempt:
+TOOL_PROFILE_BLOCKED occurrence:
+TOOL_PROFILE_ARGUMENT_BLOCKED occurrence:
 Repeated document read:
 Repeated preflight check:
 Unnecessary MCP call:
@@ -145,7 +247,6 @@ Unnecessary screenshot:
 Unnecessary approval:
 Ambiguous state transition:
 Unclear output filename:
-Tool selection error:
 Session ownership issue:
 Checkpoint/recovery issue:
 Context loss:
@@ -168,8 +269,14 @@ Revisit condition:
 
 - canonical connection succeeds with one command/report;
 - no port scan or alternate Codex entry occurs;
-- the smoke session is closed and one Codex write session remains;
+- the readiness session is closed and one Codex write session remains;
 - reference intake reads the new package directly;
+- normal profiles expose exact compact counts: Geometry 17, Texture 24, Animation 16, Final 13;
+- forbidden high-risk/format-specific tools are absent from normal profiles;
+- stale calls are blocked after profile transition;
+- cross-stage arguments are blocked;
+- each real profile transition needs at most one reconnect;
+- profile ID/hash/count stay synchronized with state;
 - full preflight is not repeated;
 - each user-visible stage has exactly one review gate;
 - Animation skips cleanly when not required;
