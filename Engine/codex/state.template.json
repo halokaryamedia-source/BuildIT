@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "asset": {
+    "id": "<asset_id>",
+    "display_name": "<DISPLAY NAME>",
+    "target": "minecraft_bedrock_entity"
+  },
+  "reference": {
+    "path": "SavedData/sessions/<asset_id>/references",
+    "status": "APPROVED",
+    "manifest": "reference_manifest.json",
+    "production_context": "PRODUCTION_CONTEXT.md",
+    "visual": "<asset_id>_reference_visual.png"
+  },
+  "workflow": {
+    "stage": "GEOMETRY",
+    "status": "NOT_STARTED",
+    "review_status": "NOT_REQUIRED_YET",
+    "animation_required": false,
+    "blockers": [],
+    "last_completed_stage": null,
+    "next_action": "RUN_PREFLIGHT"
+  },
+  "project": {
+    "name": null,
+    "uuid": null,
+    "format": "bedrock",
+    "uv_mode": "per_face",
+    "texture_width": null,
+    "texture_height": null,
+    "save_path": null
+  },
+  "mcp": {
+    "endpoint": "http://localhost:3000/bb-mcp",
+    "session_id": null,
+    "lock_owner": "codex",
+    "write_lease_status": "UNVERIFIED",
+    "last_verified_at": null
+  },
+  "preservation": {
+    "manual_edits_present": false,
+    "manual_edits_to_preserve": []
+  },
+  "checkpoints": {
+    "session_start": null,
+    "geometry": null,
+    "texture": null,
+    "animation": null,
+    "validation_pass": null
+  },
+  "evidence": {
+    "geometry": [],
+    "texture": [],
+    "animation": [],
+    "final": []
+  },
+  "validation": {
+    "status": "PENDING_BUILD",
+    "required_revisions": [],
+    "completed_at": null
+  },
+  "updated_at": null,
+  "updated_by": null
+}
