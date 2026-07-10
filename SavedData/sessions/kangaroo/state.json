@@ -1,5 +1,6 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
+  "state_revision": 1,
   "asset": {
     "id": "kangaroo",
     "display_name": "Kangaroo Bedrock Entity",
@@ -11,18 +12,82 @@
     "manifest": null,
     "production_context": null,
     "visual": null,
-    "legacy_reference_path": "SourceDocument/reference-samples/kangaroo"
+    "geometry": null,
+    "texturing": null,
+    "animation": null,
+    "validation": null,
+    "handoff": null,
+    "legacy_reference_path": "SourceDocument/reference-samples/kangaroo",
+    "conflicts": [
+      "Legacy numbered reference package has not been migrated to the approved package format."
+    ]
   },
   "workflow": {
-    "stage": "GEOMETRY",
+    "state": "BLOCKED",
+    "active_stage": "GEOMETRY",
     "status": "BLOCKED",
-    "review_status": "NOT_REQUIRED_YET",
     "animation_required": false,
-    "blockers": [
-      "Migrate or verify the legacy reference package against the approved package format before the next MCP write."
-    ],
     "last_completed_stage": null,
-    "next_action": "VALIDATE_REFERENCE_PACKAGE_AND_RUN_PREFLIGHT"
+    "next_action": "MIGRATE_REFERENCE_PACKAGE_THEN_RUN_ONE_TIME_PREFLIGHT",
+    "blockers": [
+      {
+        "code": "LEGACY_REFERENCE_MIGRATION_REQUIRED",
+        "message": "Migrate or verify the legacy reference package before the next MCP write.",
+        "safe_recovery": "Create the approved package in SavedData/sessions/kangaroo/references and re-run package intake."
+      },
+      {
+        "code": "MANUAL_EDIT_INVENTORY_REQUIRED",
+        "message": "Existing manual edits have not been inventoried against a persistent checkpoint.",
+        "safe_recovery": "Open the existing project read-only, record preserved areas, then save 00_session_start.bbmodel."
+      }
+    ],
+    "last_safe_checkpoint": null,
+    "stage_records": {
+      "GEOMETRY": {
+        "status": "BLOCKED",
+        "decision": "PENDING",
+        "approved_at": null,
+        "approved_checkpoint": null,
+        "accepted_areas": [],
+        "open_issues": [
+          "Reference migration required",
+          "Manual edits require inventory"
+        ],
+        "revision": null,
+        "reopen_reason": null
+      },
+      "TEXTURE": {
+        "status": "LOCKED",
+        "decision": "PENDING",
+        "approved_at": null,
+        "approved_checkpoint": null,
+        "accepted_areas": [],
+        "open_issues": [],
+        "revision": null,
+        "reopen_reason": null
+      },
+      "ANIMATION": {
+        "status": "LOCKED",
+        "decision": "PENDING",
+        "approved_at": null,
+        "approved_checkpoint": null,
+        "accepted_areas": [],
+        "open_issues": [],
+        "revision": null,
+        "reopen_reason": null,
+        "skip_reason": null
+      },
+      "FINAL_VALIDATION": {
+        "status": "LOCKED",
+        "decision": "PENDING",
+        "approved_at": null,
+        "approved_checkpoint": null,
+        "accepted_areas": [],
+        "open_issues": [],
+        "revision": null,
+        "reopen_reason": null
+      }
+    }
   },
   "project": {
     "name": "Kangaroo Bedrock Entity",
@@ -38,37 +103,102 @@
     "session_id": "a53fc9d2-53b2-414e-bc89-664370cf4c0b",
     "lock_owner": "codex",
     "write_lease_status": "LEGACY_LOCK_REQUIRES_VERIFICATION",
+    "active_tool_profile": "geometry",
+    "preflight": {
+      "status": "STALE",
+      "completed_at": "2026-07-06T00:00:00+07:00",
+      "stale_checks": [
+        "reference package",
+        "project UUID",
+        "session ownership",
+        "persistent checkpoint"
+      ],
+      "report": "SavedData/sessions/kangaroo/reports/preflight.json"
+    },
     "last_verified_at": "2026-07-06T00:00:00+07:00"
   },
   "preservation": {
     "manual_edits_present": true,
     "manual_edits_to_preserve": [
       "Preserve all existing user/manual edits until explicitly inventoried."
-    ]
+    ],
+    "globally_protected_areas": [
+      "All existing geometry and texture until inventory is complete"
+    ],
+    "approved_stage_areas": {
+      "GEOMETRY": [],
+      "TEXTURE": [],
+      "ANIMATION": []
+    }
   },
   "checkpoints": {
     "session_start": null,
-    "geometry": null,
-    "texture": null,
-    "animation": null,
+    "geometry_review": null,
+    "geometry_approved": null,
+    "texture_review": null,
+    "texture_approved": null,
+    "animation_review": null,
+    "animation_approved_or_skipped": null,
+    "final_candidate": null,
     "validation_pass": null
   },
   "evidence": {
-    "geometry": [],
-    "texture": [],
-    "animation": [],
-    "final": []
+    "geometry": {
+      "front": "SavedData/sessions/kangaroo/evidence/geometry/geometry_front.png",
+      "left": "SavedData/sessions/kangaroo/evidence/geometry/geometry_left.png",
+      "back": "SavedData/sessions/kangaroo/evidence/geometry/geometry_back.png",
+      "top": "SavedData/sessions/kangaroo/evidence/geometry/geometry_top.png",
+      "front_left_3_4": "SavedData/sessions/kangaroo/evidence/geometry/geometry_front_left_3_4.png",
+      "report": "SavedData/sessions/kangaroo/evidence/geometry/geometry_report.json",
+      "status": "MISSING"
+    },
+    "texture": {
+      "atlas": "SavedData/sessions/kangaroo/evidence/texture/texture_atlas.png",
+      "front": "SavedData/sessions/kangaroo/evidence/texture/texture_front.png",
+      "left": "SavedData/sessions/kangaroo/evidence/texture/texture_left.png",
+      "back": "SavedData/sessions/kangaroo/evidence/texture/texture_back.png",
+      "front_left_3_4": "SavedData/sessions/kangaroo/evidence/texture/texture_front_left_3_4.png",
+      "report": "SavedData/sessions/kangaroo/evidence/texture/texture_report.json",
+      "status": "MISSING"
+    },
+    "animation": {
+      "neutral_pose": "SavedData/sessions/kangaroo/evidence/animation/animation_neutral_pose.png",
+      "hierarchy": "SavedData/sessions/kangaroo/evidence/animation/animation_hierarchy.json",
+      "pivots": "SavedData/sessions/kangaroo/evidence/animation/animation_pivots.json",
+      "report": "SavedData/sessions/kangaroo/evidence/animation/animation_report.json",
+      "clips": [],
+      "status": "NOT_REQUIRED"
+    },
+    "final": {
+      "front": "SavedData/sessions/kangaroo/evidence/final/final_front.png",
+      "left": "SavedData/sessions/kangaroo/evidence/final/final_left.png",
+      "back": "SavedData/sessions/kangaroo/evidence/final/final_back.png",
+      "top": "SavedData/sessions/kangaroo/evidence/final/final_top.png",
+      "front_left_3_4": "SavedData/sessions/kangaroo/evidence/final/final_front_left_3_4.png",
+      "atlas": "SavedData/sessions/kangaroo/evidence/final/final_texture_atlas.png",
+      "validation_report": "SavedData/sessions/kangaroo/evidence/final/validation_report.json",
+      "completed_validation": "SavedData/sessions/kangaroo/evidence/final/completed_VALIDATION.md",
+      "status": "MISSING"
+    }
   },
   "validation": {
     "status": "PENDING_BUILD",
+    "automatic_local_fixes_used": 0,
+    "automatic_local_fix_limit": 2,
     "required_revisions": [],
     "completed_at": null
+  },
+  "final_output": {
+    "bbmodel": "SavedData/sessions/kangaroo/final/kangaroo.bbmodel",
+    "textures": [],
+    "revision_summary": "SavedData/sessions/kangaroo/final/revision_summary.md",
+    "status": "NOT_READY"
   },
   "migration": {
     "from_workflow": "legacy_eight_phase_and_numbered_reference_flow",
     "to_workflow": "four_stage_codex_local_rework",
     "required": true
   },
-  "updated_at": "2026-07-10T00:00:00+07:00",
+  "updated_at": "2026-07-11T00:00:00+07:00",
   "updated_by": "workflow_rework"
 }
