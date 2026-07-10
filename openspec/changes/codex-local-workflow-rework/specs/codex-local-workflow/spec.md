@@ -1,5 +1,28 @@
 # Codex Local Workflow Specification
 
+## Requirement: Governance Separation
+
+OpenSpec SHALL preserve the approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria.
+
+Ponytail SHALL filter execution to the smallest safe action required by the active stage.
+
+OpenSpec and Ponytail SHALL NOT duplicate full workflow analysis before every small edit.
+
+### Scenario: Proposed unrelated improvement
+
+- Given an improvement does not contribute to the active stage acceptance criteria
+- And it is not required by the approved reference package
+- When Codex evaluates the action through Ponytail
+- Then the action is not executed
+- And it MAY be recorded as `DEFERRED_NOT_REQUIRED` with a revisit condition
+
+### Scenario: Context recovery
+
+- Given a Codex session loses context
+- When the session resumes
+- Then it reads governance, the active OpenSpec summary, `state.json`, the reference core, and the active-stage document
+- And it does not reconstruct scope from unrelated legacy documents
+
 ## Requirement: Reference Package Intake
 
 The system SHALL accept the approved package:
@@ -54,6 +77,22 @@ The preflight SHALL verify:
 - manual edits to preserve;
 - persistent checkpoint readiness.
 
+## Requirement: Ponytail Batch Gate
+
+Before a meaningful execution batch, Codex SHALL identify:
+
+- active stage;
+- approved goal served;
+- whether the action is required now;
+- smallest complete batch;
+- reusable existing result/tool/checkpoint;
+- forbidden changes;
+- required tool profile;
+- verification method;
+- stop condition.
+
+If the action is not required now, Codex SHALL NOT execute it.
+
 ## Requirement: Geometry Stage
 
 Geometry SHALL contain internal Primary Form and Structural Detail passes.
@@ -97,6 +136,8 @@ Animation SHALL run only when required by the approved manifest or Animation doc
 
 When not required, the stage SHALL be recorded as `ANIMATION_SKIPPED` and Codex SHALL proceed to Final Validation.
 
+Codex SHALL NOT add optional animations merely for completeness.
+
 When required, Animation SHALL end with:
 
 - persistent checkpoint;
@@ -113,6 +154,8 @@ Final Validation SHALL execute `VALIDATION.md` and collect required evidence.
 Codex MAY automatically fix at most two local validation failures.
 
 A fix requiring redesign or reopening an approved earlier stage SHALL NOT be applied silently.
+
+Final Validation SHALL NOT add new features or unrelated polish.
 
 Final Validation SHALL end with:
 
@@ -142,10 +185,44 @@ Accepted areas SHALL NOT be rebuilt without explicit reopening.
 
 ## Requirement: Token and Tool Efficiency
 
-Codex SHALL read only the bootstrap, state, package core, and active-stage document during normal execution.
+Codex SHALL read only governance, the active OpenSpec summary, state, package core, and active-stage document during normal execution.
 
 Failure playbooks SHALL be loaded only after their trigger occurs.
 
 Codex SHALL use the smallest relevant tool profile for the active stage.
 
 Codex SHALL prefer one bounded edit batch followed by one focused evidence set over repeated single-cube calls during initial construction.
+
+Codex SHALL NOT repeat unchanged reference context or full preflight results in every response.
+
+## Requirement: Rework Branch Isolation
+
+The `Rework` branch SHALL remain separate from `V1` until explicit user approval for final integration.
+
+An exploratory or incomplete rework SHALL NOT be merged merely because some checks pass.
+
+## Requirement: Deferred Continuous Integration
+
+Continuous integration, PR-preview deployment, and release preparation SHALL be deferred until the workflow implementation is intentionally ready for final verification.
+
+During active rework:
+
+- no CI SHALL run on every `Rework` branch update;
+- no review PR SHALL remain open solely to trigger automated checks;
+- focused local verification MAY run for affected areas;
+- final CI SHALL be added as the last development stage before integration review.
+
+### Scenario: Active workflow development
+
+- Given P0–P3 implementation is incomplete
+- When a change is pushed to `Rework`
+- Then continuous CI is not triggered
+- And work remains isolated on `Rework`
+
+### Scenario: Workflow ready for integration
+
+- Given implementation and focused local verification are complete
+- And the user explicitly approves final verification
+- When final CI is added
+- Then typecheck, tests, build, and docs verification may run
+- And a new review PR may be opened against V1
