@@ -1,43 +1,80 @@
 # Pre-Modelling Gate
 
-Use this after the reference package is approved and before any Blockbench edit.
+Run this once after reference intake and before the first Geometry-stage MCP write.
 
-## Required Inputs
+## Required Reference Package
 
-- Asset brief is clear: target, function, scale, style, animation need, atlas target, and texture style.
-- Reference package exists.
-- `REFERENCE_PLAN.md` exists.
-- `CODEX_REFERENCE_HANDOFF.md` exists.
-- `reference_manifest.json` is valid.
-- Required sheets 01-07 have matching `.notes.md`.
-- Sheet 08 is present or marked not required.
-- Reference package matches the target asset from the brief.
-- User approved the reference package.
+```text
+PRODUCTION_CONTEXT.md
+<asset>_reference_visual.png
+GEOMETRY.md
+TEXTURING.md
+ANIMATION.md
+VALIDATION.md
+reference_manifest.json
+CODEX_REFERENCE_HANDOFF.md
+```
+
+Legacy numbered reference sheets are not required for new sessions.
+
+## Required Runtime Inputs
+
+- active `state.json`;
+- active OpenSpec change;
+- one active MCP write session;
+- verified endpoint and tool list;
+- active Blockbench project and UUID;
+- expected format;
+- UV mode and texture size;
+- manual edits to preserve;
+- persistent start checkpoint path.
 
 ## Gate Checks
 
 | Check | Status |
 | --- | --- |
-| Scale is locked | PASS / BLOCKER |
-| Front direction is locked | PASS / BLOCKER |
-| Geometry-level parts are listed | PASS / BLOCKER |
-| Texture-only details are listed | PASS / BLOCKER |
-| Atlas target is locked | PASS / BLOCKER |
-| Texture style is locked | PASS / BLOCKER |
-| Main Geometry build order is clear | PASS / BLOCKER |
-| Attachment/pivot risks are noted | PASS / BLOCKER |
-| Reference package matches the brief | PASS / BLOCKER |
-| Reference package is approved | PASS / BLOCKER |
-| User approved Main Geometry start | PASS / BLOCKER |
+| Reference package files present | PASS / BLOCKER |
+| Manifest valid | PASS / BLOCKER |
+| Production Context has no unresolved high-impact blocker | PASS / BLOCKER |
+| Reference Visual matches asset identity | PASS / BLOCKER |
+| Scale and front direction locked | PASS / BLOCKER |
+| Geometry parts/build order/hierarchy clear | PASS / BLOCKER |
+| Geometry-vs-texture split clear | PASS / BLOCKER |
+| Texture atlas/style/material rules clear | PASS / BLOCKER |
+| Animation requirement clear | PASS / BLOCKER |
+| Validation contract present | PASS / BLOCKER |
+| MCP endpoint/tools available | PASS / BLOCKER |
+| One write session confirmed | PASS / BLOCKER |
+| Project UUID/format/UV mode verified | PASS / BLOCKER |
+| Manual edits recorded | PASS / BLOCKER |
+| Persistent checkpoint ready | PASS / BLOCKER |
 
-## Main Geometry Start Rule
+## Start Rule
 
-Start Main Geometry only when every gate check is `PASS`.
+Geometry may start only when every gate check is `PASS`.
 
-If any check is `BLOCKER`, fix the reference package or ask the user before opening Blockbench.
-
-## Codex First Action
+If a reference conflict affects identity, scale, silhouette, hierarchy, material behavior, or required motion, report:
 
 ```text
-Read CODEX_REFERENCE_HANDOFF.md, reference_manifest.json, and the notes for Sheets 01-04 and 07. Use Sheets 05-06 only to avoid texture/detail mistakes. Do not begin UV or texturing during Main Geometry.
+REFERENCE_CONFLICT
 ```
+
+If a runtime requirement is missing, report:
+
+```text
+BLOCKER: pre-modelling gate failed
+Missing:
+- ...
+Safe next action:
+- ...
+```
+
+## Codex First Action After PASS
+
+1. Update `state.json` to `stage: GEOMETRY` and `status: IN_PROGRESS`.
+2. Save the session-start checkpoint.
+3. Load only the Geometry profile.
+4. Execute Primary Form, then Structural Detail.
+5. Capture stage evidence and stop at Geometry Review.
+
+Do not request a separate approval for the gate. The next user-visible approval is Geometry Review.
