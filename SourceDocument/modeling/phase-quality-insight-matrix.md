@@ -1,128 +1,237 @@
-# Phase Quality Insight Matrix (General Marketplace Standard)
+# Stage Quality Insight Matrix
 
-Use this as a quality lens during every phase.  
-If one row fails, do not advance phase.
+Use this as a compact quality lens for the four user-visible stages.
 
-This matrix is a general control model and must be reused for all model types, not as shape-specific pattern matching.
+Internal passes do not create separate user approvals.
 
-## 1. Reference Collection
+## 0. Reference Intake — Automatic Gate
 
-- Required quality:
-  - Target class, scale, front side, and orientation are explicit.
-  - Focal areas and attachment logic are identified.
-  - Texture-only vs geometry-only decisions are separated.
-  - Missing or conflicting refs are marked as `Needs verification`.
-- Failure signal:
-  - Ambiguous target class or scale.
-  - No explicit silhouette priority.
-  - No cube budget direction.
+Required quality:
 
-## 2. Main Geometry
+- approved package contains `PRODUCTION_CONTEXT.md`, one Reference Visual, `GEOMETRY.md`, `TEXTURING.md`, `ANIMATION.md`, `VALIDATION.md`, manifest, and handoff;
+- target, scale, front direction, intended use, geometry-vs-texture split, and Animation requirement are explicit;
+- no material reference conflict exists;
+- `state.json` is created or recovered.
 
-- Required quality:
-  - Silhouette readable from front and side.
-  - Major mass blocks exist and are attached.
-  - No obvious floating core parts.
-  - No micro-cube decoration introduced.
-- Hard no's:
-  - No detached decorative props.
-  - No repeated tiny trim cubes.
-- Failure signal:
-  - Silhouette unclear.
-  - Major part disconnected.
-  - Tiny cubes dominate the form.
+Failure signals:
 
-## 3. Geometry Detailing
+- legacy numbered sheets are treated as mandatory;
+- target or scale is ambiguous;
+- manifest and documents disagree materially;
+- reference package cannot determine the active Geometry scope.
 
-- Required quality:
-  - Added geometry improves silhouette, structure, or attachment.
-  - Pivot/parent logic remains clean.
-  - Geometry-to-texture boundary is cleaner than phase 2.
-- Failure signal:
-  - Decorative cubes added for color.
-  - New collisions/overlaps.
-  - Attachment logic becomes ambiguous.
+Result:
 
-## 4. UV Texture
+- `PASS` → one-time preflight and Geometry;
+- `REFERENCE_CONFLICT` → stop before Blockbench edits;
+- `BLOCKER` → repair the missing runtime/reference prerequisite.
 
-- Required quality:
-  - One atlas plan exists for current material strategy.
-  - Repeated or mirrored parts reuse UV logically where possible.
-  - Focal faces receive sufficient UV area.
-  - Hidden faces do not overconsume space.
-- Hard no's:
-  - No accidental multi-texture drift.
-  - No full-repaint without local edit path.
-- Failure signal:
-  - Empty UV islands too many.
-  - Focal areas compressed.
-  - UV overlap in important faces.
+No user approval is required for a valid intake.
 
-## 5. Base Texturing
+## 1. Geometry
 
-- Required quality:
-  - Major materials readable by large face areas.
-  - Base color values have 3+ stepped tones.
-- Hard no's:
-  - No flat single-tone cover on hero faces.
-  - No unplanned palette expansion beyond approved material groups.
-- Failure signal:
-  - Single-tone flat fill on large visible surfaces.
-  - Hard edges missing on large flat faces.
+Internal passes:
 
-## 6. Detail Texturing
+```text
+Primary Form
+→ Structural Detail
+```
 
-- Required quality:
-  - Focal details match reference intent.
-- Hard no's:
-  - No smooth blur.
-  - No random pixel noise without directional shading intent.
-- Failure signal:
-  - No gradient on large readable material areas.
-  - Overuse of random micro patterns.
-  - Texture-only detail does not support structure.
+Required quality:
 
-## 7. Polish
+- scale envelope matches the approved package;
+- Front, Left Side, Back, Top / Footprint, and Front-left 3/4 are readable;
+- primary masses and silhouette-critical parts exist;
+- ground contacts are correct;
+- hierarchy and attachments are stable;
+- cube count is intentional;
+- geometry-only and texture-only decisions are respected;
+- no floating major part, bad collision, or z-fighting remains.
 
-- Required quality:
-  - Final pass removes remaining collision and floating artifacts.
-  - Texture and geometry are coherent; no contradictory cues.
-  - Model quality score is clearly above internal baseline by phase.
-- Failure signal:
-  - Same defects repeated across front/side/back.
-  - Over-polish that breaks phase-approved structure.
+Hard no's:
 
-## 8. Final Review
+- UV or texture work;
+- decorative micro-cubes;
+- geometry used only for seams, stripes, shading, scratches, or tiny trim;
+- unapproved broad redesign;
+- final export.
 
-- Required quality:
-  - User confirms:
-    - silhouette,
-    - attachment,
-    - gradient/material depth,
-    - no major float/collision issues,
-    - cube budget logic.
-- Failure signal:
-  - One or more phase failure signals unresolved.
+Failure signals:
 
-Token-safe scoring check:
+- wrong scale or asset class;
+- Front or Left Side silhouette fails;
+- disconnected major part;
+- unstable parent/attachment chain;
+- repeated tiny cubes dominate the form;
+- accepted manual work changes without approval.
 
-- If all hard no's are still unresolved, phase cannot move even if many user requests are "minor adjustments only".
+Review evidence:
 
-## Decision Rule for MCP
+- five standard views;
+- dimensions/hierarchy/cube report;
+- persistent Geometry checkpoint.
 
-- If scorecard has `BLOCKER`: stay in phase and fix.
-- If scorecard has no blocker and up to 2 `NEEDS_MINOR_FIX` items: fix those items and re-check.
-- If scorecard has `PASS`: request user approval for next phase.
+User decision:
 
-Phase transition policy:
+- `APPROVED` → freeze accepted Geometry and continue to Texture;
+- `REVISION: ...` → patch one named issue or tightly related pair.
 
-- Any `BLOCKER` status in the scorecard keeps the same phase.
-- `NEEDS_MINOR_FIX` allows only bounded fixes (max 2 critical issues).
-- `PASS` is required for handoff approval.
+## 2. Texture
 
-## Acceptance Criteria
+Internal passes:
 
-- Any unresolved hard no/Failure Signal keeps the phase blocked.
-- Scorecard decision is aligned with phase-specific quality matrix before moving forward.
-- The matrix is applied to all assets without shape-specific reinterpretation.
-- If a blocker repeats, phase reset/re-plan is requested before broad continuation.
+```text
+UV
+→ Base Texture
+→ Detail Texture
+```
+
+Required quality:
+
+- approved atlas and UV strategy are used;
+- focal faces have sufficient texel density;
+- safe mirrored/shared areas reuse UV;
+- directional/unique areas remain unique where required;
+- palette and material zones match the Reference Visual;
+- large visible faces have readable pixel-stepped depth;
+- seams, alpha, and emissive behavior follow `TEXTURING.md`;
+- Classic Bedrock constraints are preserved.
+
+Hard no's:
+
+- approval between internal Texture passes;
+- broad Geometry redesign;
+- PBR or Vibrant Visuals;
+- smooth blur;
+- random pixel noise without material/shading purpose;
+- unnecessary additional textures or atlas growth.
+
+Failure signals:
+
+- compressed focal UVs;
+- important UV overlap;
+- visible seam or stretch;
+- wrong color/material family;
+- flat hero surfaces;
+- texture detail placed on the wrong side;
+- geometry created to solve a pixel-level issue.
+
+Review evidence:
+
+- atlas;
+- Front, Left Side, Back, and Front-left 3/4;
+- UV/material report;
+- persistent Texture checkpoint.
+
+User decision:
+
+- `APPROVED` → freeze accepted Texture and continue to Animation or Final Validation;
+- `REVISION: ...` → patch one named Texture/UV issue or tightly related pair.
+
+## 3. Animation — Optional
+
+Run only when required by the approved manifest or `ANIMATION.md`.
+
+Required quality when used:
+
+- hierarchy and pivots match the approved contract;
+- only required clips or motion families are created;
+- neutral pose is recovered exactly;
+- ground contact is acceptable;
+- cuboids remain rigid unless the approved model explicitly requires another behavior;
+- no critical clipping occurs;
+- accepted Geometry and Texture are preserved.
+
+Hard no's:
+
+- optional clips added merely for completeness;
+- approved Geometry or Texture changed silently;
+- unauthorized motion axes;
+- broad rig redesign not required by the package.
+
+Failure signals:
+
+- wrong pivot;
+- broken parent-child motion;
+- floating/sliding contacts;
+- neutral-pose drift;
+- clipping or deformation that changes identity.
+
+Review evidence:
+
+- hierarchy and pivot summary;
+- neutral pose;
+- required clips or representative samples;
+- ground-contact and clipping report;
+- persistent Animation checkpoint.
+
+When not required:
+
+```text
+ANIMATION_SKIPPED
+Reason: not required by approved reference package
+```
+
+No fake animation evidence is created.
+
+## 4. Final Validation
+
+Required quality:
+
+- final `.bbmodel` and textures exist;
+- five standard views match the approved Reference Visual;
+- Geometry, Texturing, and Animation/skip contracts pass;
+- Blockbench validator has no unresolved blocking error;
+- naming and export readiness are correct;
+- completed `VALIDATION.md` and revision summary exist;
+- no new feature or broad polish was introduced during validation.
+
+Automatic repair rule:
+
+- at most two clearly local validation failures may be fixed automatically;
+- broad failures return to the relevant stage review;
+- accepted areas remain protected.
+
+Failure signals:
+
+- unresolved identity, scale, silhouette, palette, hierarchy, or animation mismatch;
+- missing evidence or final artifacts;
+- final output differs from the reviewed stage checkpoint;
+- validation work expands scope.
+
+Final evidence:
+
+- final `.bbmodel` path;
+- texture files;
+- five standard views;
+- final atlas;
+- completed validation report;
+- Animation evidence when applicable;
+- concise revision summary.
+
+User decision:
+
+- `APPROVED` → `DONE`;
+- `REVISION: ...` → map the issue to Geometry, Texture, Animation, or a local Final Validation correction.
+
+## Decision Rule
+
+- `BLOCKER`: stop and report one recovery action.
+- `REVISION_REQUIRED`: apply only the named local revision scope.
+- `PASS`: present the user-visible stage preview and wait for approval.
+- Same blocker after two focused attempts: stop and request strategy reset.
+
+## Ponytail Check
+
+Before any meaningful batch:
+
+```text
+Does this serve the active stage acceptance criteria?
+Is it required now?
+What is the smallest complete safe batch?
+What accepted area must remain unchanged?
+What focused evidence proves completion?
+When should work stop?
+```
+
+If the action is not required now, use `DEFERRED_NOT_REQUIRED` rather than executing it.
