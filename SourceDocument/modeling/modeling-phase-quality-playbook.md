@@ -1,83 +1,153 @@
-﻿# Phase Quality Playbook (General)
+# Stage Quality Playbook
 
-Use this for every new model session. This is the operational one-liner version of the phase contract.
+Use this compact playbook for every local Codex model session.
 
-Single mode only:
+## Operating Mode
 
-- This is the single workflow mode: **Efficiency-First**.
-- No phase crossover, no speculative edits, no broad rework.
-- Each phase starts with a short execution target and ends once gate evidence is recorded.
+- Efficiency-first.
+- One user-visible stage active at a time.
+- Internal passes are completed without routine user interruption.
+- Stage review happens only when required evidence is ready.
+- No speculative tools, sessions, cubes, screenshots, or documents.
 
-## Pre-Session (non-negotiable)
+## One-Time Pre-Session
 
-1. OpenSpec read + active change confirmed.  
-2. `blockbench-use` loaded (then phase-specific skill only).  
-3. MCP endpoint, runtime tool list, active session, and active project verified.  
-4. Scope locked: one current phase only.  
-5. Reference pack accepted and phase blockers marked.
+1. Read active OpenSpec change.
+2. Read `Engine/codex/BOOTSTRAP.md` and active `state.json`.
+3. Validate the approved reference package.
+4. Load `blockbench-use` and the active-stage skill only.
+5. Verify endpoint, tools, project, UUID, format, UV mode, and session ownership.
+6. Record manual edits to preserve.
+7. Save persistent start checkpoint.
 
-## Per-Phase Execution Template
+Do not repeat the full preflight for every edit.
 
-Before edit:
+## Active Stages
 
-- State exact phase (Reference Collection / Main Geometry / Geometry Detailing / UV Texture / Base Texturing / Detail Texturing / Polish / Final Review).
-- Set expected output for this phase.
-- Set one minimal edit target.
-- Confirm what is forbidden in this phase.
+```text
+GEOMETRY
+TEXTURE
+ANIMATION — optional
+FINAL_VALIDATION
+```
 
-During edit:
+## Stage Start Template
 
-- Use only required tools for this phase.
-- Avoid extra MCP sessions.
-- Do not add micro-cubes for color/material only.
-- Verify with screenshots at gate points, not after every micro-edit.
-- Hard stop: if an issue is cosmetic-only and does not affect scope-critical checks, defer it.
+```text
+Stage:
+Goal:
+Internal passes:
+Required output:
+Forbidden work:
+Reference authority:
+Checkpoint:
+```
 
-Before moving on:
+## During Initial Stage Work
 
-- Fill: `phase-quality-scorecard-template.md`
-- Fill: required screenshot/artifact checklist for the phase
-- Confirm all phase failure conditions are addressed
-- Resolve: `BLOCKER` before leaving phase
-- For `NEEDS_MINOR_FIX`: max 2 critical fixes, then re-score
-- Require user approval to continue
+- Use bounded batches that complete one coherent structural or surface unit.
+- Use only stage-relevant tools.
+- Keep one active MCP write session.
+- Capture evidence at meaningful checkpoints, not after every micro-edit.
+- Do not create geometry for color/material-only detail.
+- Do not open failure playbooks unless their trigger occurs.
 
-Token-saving execution caps (fixed mode):
+## Stage Review Gate
 
-- Max active issue claims carried forward per phase: 5
-- Max open `NEEDS_MINOR_FIX` items per cycle: 2
-- Max additional screenshot sets in one cycle: 2
-- If unresolved after 2 cycles, request strategy reset from user.
+Before requesting review:
 
-## Exit Gate Rules
+- required stage artifacts exist;
+- required previews exist;
+- stage checks are complete;
+- no blocker remains;
+- `state.json` is updated;
+- persistent checkpoint is saved;
+- result is `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-- `BLOCKER` -> remain in this phase.
-- `NEEDS_MINOR_FIX` -> patch only listed critical fixes (max 2), re-check.
-- `PASS` + user approval -> next phase.
+Review report:
 
-## Review Hygiene
+```text
+Stage:
+Status:
+Completed:
+Preserved:
+Evidence:
+Issues:
+Next user action: APPROVED or REVISION: ...
+```
 
-- Keep feedback as:
-  - Phase:
-  - Part:
-  - Issue:
-  - Expected:
-  - Do not change:
-  - Reference:
-- If feedback is broad ("make better"), request phase + part before edit.
-- If feedback is broad after 2 cycles, convert to: 3 numbered action items or user-led reset.
+## Revision Cycle
 
-## Post-Phase Record
+One issue or tightly related pair per cycle:
 
-- What changed (short).
-- What deferred (explicit, by phase).
-- What must stay unchanged in next phase.
-- Known risks for next phase.
+```text
+Stage:
+Part:
+Issue:
+Expected:
+Do not change:
+Reference:
+Verification:
+```
+
+Rules:
+
+- patch locally;
+- preserve accepted areas;
+- one focused edit batch;
+- one focused verification set;
+- return to the same stage review;
+- stop after two repeated failures and request strategy reset.
+
+## Evidence by Stage
+
+### Geometry
+
+- Front
+- Left Side
+- Back
+- Top / Footprint
+- Front-left 3/4
+- scale/hierarchy/cube summary
+
+### Texture
+
+- atlas
+- UV summary
+- Front
+- Left Side
+- Back
+- Front-left 3/4
+
+### Animation — when required
+
+- hierarchy/pivots
+- required clips or sampled poses
+- neutral-pose recovery
+- clipping/ground-contact result
+
+### Final Validation
+
+- final candidate `.bbmodel`
+- textures
+- completed validation
+- five standard views
+- animation evidence when relevant
+- revision summary
+
+## Token-Saving Caps
+
+- Maximum open critical revision items per cycle: 2.
+- Maximum extra evidence sets for one revision cycle: 1, unless the issue affects multiple required views.
+- Maximum repeated attempts for the same blocker: 2.
+- Do not restate unchanged reference context.
+- Do not reload all category documents; load the active one.
 
 ## Acceptance Criteria
 
-- One and only one phase is active per cycle.
-- Each cycle has explicit scope target and forbidden items.
-- Every gate cycle outputs a scorecard + screenshot evidence plan.
-- No phase transition happens without `PASS` + user approval.
-
+- One user-visible stage is active.
+- Internal passes do not ask for separate approval.
+- Every review is evidence-based.
+- Revision scope is local and explicit.
+- Accepted work is preserved.
+- Final Validation waits for user approval or correction request.
