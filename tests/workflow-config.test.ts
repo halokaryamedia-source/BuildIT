@@ -66,6 +66,7 @@ describe("Codex local workflow configuration", () => {
     const registry = readFileSync("src/server/tools.ts", "utf8");
     const docsManifest = readFileSync("build/docs-manifest.ts", "utf8");
     const profileRuntime = readFileSync("src/lib/toolProfiles.ts", "utf8");
+    const panel = readFileSync("src/ui/panel.html", "utf8");
 
     expect(runtime).toContain('name: "get_runtime_status"');
     expect(runtime).toContain('name: "get_tool_profile"');
@@ -75,9 +76,12 @@ describe("Codex local workflow configuration", () => {
     expect(registry).toContain("registerRuntimeTools");
     expect(registry).toContain("initializeToolProfiles");
     expect(profileRuntime).toContain("TOOL_PROFILE_BLOCKED");
+    expect(profileRuntime).toContain("TOOL_PROFILE_ARGUMENT_BLOCKED");
     expect(profileRuntime).toContain("applyToolExposure");
     expect(docsManifest).toContain("runtimeToolDocs");
     expect(docsManifest).toContain('category: "Runtime"');
+    expect(panel).toContain("toolProfile.profile_id");
+    expect(panel).toContain("toolProfile.exposed_tool_count");
   });
 
   test("exact tool profiles reference registered tools and keep normal profiles compact", () => {
@@ -222,7 +226,7 @@ describe("Codex local workflow configuration", () => {
     expect(bootstrap).toContain("TEXTURE_REVIEW");
     expect(bootstrap).toContain("ANIMATION_REVIEW");
     expect(bootstrap).toContain("FINAL_REVIEW");
-    expect(bootstrap).toContain("one-issue rule applies to revisions");
+    expect(bootstrap).toContain("One-issue-per-cycle applies only to revisions");
     expect(bootstrap).toContain("save_project_checkpoint");
     expect(bootstrap).toContain("capture_standard_views");
   });
@@ -237,6 +241,7 @@ describe("Codex local workflow configuration", () => {
     expect(bootstrap).toContain("STATE_MACHINE.md");
     expect(bootstrap).toContain("EVIDENCE_CONTRACT.md");
     expect(bootstrap).toContain("CHECKPOINT_RECOVERY.md");
+    expect(bootstrap).toContain("TOOL_PROFILE_CONTRACT.md");
     expect(stateMachine).toContain("accepted areas are immutable by default");
     expect(evidence).toContain("geometry_front.png");
     expect(checkpoint).toContain("80_validation_pass.bbmodel");
