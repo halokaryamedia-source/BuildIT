@@ -20,22 +20,65 @@ SavedData/sessions/<asset>/
 │  └─ CODEX_REFERENCE_HANDOFF.md
 ├─ checkpoints/
 │  ├─ 00_session_start.bbmodel
+│  ├─ 00_session_start.json
 │  ├─ 10_geometry_review.bbmodel
-│  ├─ 20_texture_review.bbmodel
-│  ├─ 30_animation_review.bbmodel
-│  └─ 40_validation_pass.bbmodel
+│  ├─ 10_geometry_review.json
+│  ├─ 20_geometry_approved.bbmodel
+│  ├─ 20_geometry_approved.json
+│  ├─ 30_texture_review.bbmodel
+│  ├─ 30_texture_review.json
+│  ├─ 40_texture_approved.bbmodel
+│  ├─ 40_texture_approved.json
+│  ├─ 50_animation_review.bbmodel
+│  ├─ 50_animation_review.json
+│  ├─ 60_animation_approved.bbmodel
+│  ├─ 60_animation_approved.json
+│  ├─ 60_animation_skipped.bbmodel
+│  ├─ 60_animation_skipped.json
+│  ├─ 70_final_candidate.bbmodel
+│  ├─ 70_final_candidate.json
+│  ├─ 80_validation_pass.bbmodel
+│  └─ 80_validation_pass.json
 ├─ evidence/
 │  ├─ geometry/
+│  │  ├─ geometry_front.png
+│  │  ├─ geometry_left.png
+│  │  ├─ geometry_back.png
+│  │  ├─ geometry_top.png
+│  │  ├─ geometry_front_left_3_4.png
+│  │  └─ geometry_report.json
 │  ├─ texture/
+│  │  ├─ texture_atlas.png
+│  │  ├─ texture_front.png
+│  │  ├─ texture_left.png
+│  │  ├─ texture_back.png
+│  │  ├─ texture_front_left_3_4.png
+│  │  └─ texture_report.json
 │  ├─ animation/
+│  │  ├─ animation_neutral_pose.png
+│  │  ├─ animation_hierarchy.json
+│  │  ├─ animation_pivots.json
+│  │  ├─ animation_<clip_name>.<preview_format>
+│  │  └─ animation_report.json
 │  └─ final/
+│     ├─ final_front.png
+│     ├─ final_left.png
+│     ├─ final_back.png
+│     ├─ final_top.png
+│     ├─ final_front_left_3_4.png
+│     ├─ final_texture_atlas.png
+│     ├─ validation_report.json
+│     └─ completed_VALIDATION.md
 ├─ reports/
 │  ├─ preflight.json
 │  └─ validation.json
 └─ final/
    ├─ <asset>.bbmodel
-   └─ textures/
+   ├─ textures/
+   └─ revision_summary.md
 ```
+
+Create only the Animation checkpoint/evidence files that are relevant. When Animation is skipped, do not create fake clips or hierarchy evidence.
 
 ## Naming
 
@@ -43,55 +86,52 @@ SavedData/sessions/<asset>/
 <asset> = lowercase_snake_case
 ```
 
-Examples:
+Do not add timestamps, `_v2`, `_final_final`, or other version suffixes to approved checkpoint/evidence filenames.
 
-```text
-SavedData/sessions/kangaroo/
-SavedData/sessions/samurai_guard/
-SavedData/sessions/sound_truck/
-```
+Use cache/archive folders for failed or superseded attempts.
 
 ## Authority
 
 - `state.json`: runtime authority.
-- `session.md`: optional summary generated from state when useful.
+- `session.md`: optional human summary generated from state when useful.
 - `session-lock.md`: session ownership mirror; cannot override state.
-- `references/`: approved immutable input package unless the reference stage is reopened.
-- `checkpoints/`: persistent recovery states.
-- `evidence/`: approved stage-review evidence.
-- `reports/`: machine-readable preflight and validation outputs.
-- `final/`: only final accepted model and textures.
+- `references/`: approved immutable input unless the reference stage is reopened.
+- `checkpoints/`: persistent recovery states and adjacent metadata.
+- `evidence/`: stable user-review and validation evidence.
+- `reports/`: machine-readable preflight and validation results.
+- `final/`: only final accepted model, textures, and concise revision summary.
 
-## Evidence Filenames
+## Checkpoint Rule
 
-Recommended stable names:
+Use `save_project_checkpoint`.
+
+Required durable points:
+
+- session start;
+- each stage review;
+- each approved stage;
+- final candidate;
+- validation pass.
+
+Checkpoint creation must succeed before `state.json` points to it.
+
+See:
 
 ```text
-geometry/front.png
-geometry/left_side.png
-geometry/back.png
-geometry/top_footprint.png
-geometry/front_left_3_4.png
-
-texture/atlas.png
-texture/front.png
-texture/left_side.png
-texture/back.png
-texture/front_left_3_4.png
-
-animation/hierarchy.json
-animation/pivots.json
-animation/neutral_pose.png
-animation/<clip_name>.<ext>
-
-final/front.png
-final/left_side.png
-final/back.png
-final/top_footprint.png
-final/front_left_3_4.png
+Engine/codex/CHECKPOINT_RECOVERY.md
 ```
 
-Do not add timestamps or version suffixes to approved filenames. Store prior review cycles in a clearly named archive subfolder only when history is required.
+## Evidence Rule
+
+Use `capture_standard_views` for Geometry and final five-view sets, and for the required Texture view subset.
+
+See:
+
+```text
+Engine/codex/EVIDENCE_CONTRACT.md
+```
+
+A revision recaptures affected views only unless the change can affect global consistency.
 
 ## Temporary Files
 
@@ -106,7 +146,8 @@ for:
 - failed screenshots;
 - experiments;
 - temporary exports;
-- diagnostic data dumps.
+- diagnostics;
+- superseded review candidates that are not required for recovery.
 
 Do not mix temporary files with approved evidence or final output.
 
@@ -117,20 +158,30 @@ For a new asset:
 1. create the folder structure;
 2. copy the approved reference package into `references/`;
 3. create `state.json` from `Engine/codex/state.template.json`;
-4. create a lock only after session/project verification;
-5. save `00_session_start.bbmodel` before the first meaningful write;
-6. update state with reference paths, project UUID, stage, and checkpoint.
+4. validate package and Animation requirement;
+5. create/verify the session lock after project and endpoint verification;
+6. call `save_project_checkpoint` for `00_session_start.bbmodel`;
+7. update state only after checkpoint success;
+8. enter `GEOMETRY_IN_PROGRESS`.
 
 ## Cleanup
 
-- Keep approved stage evidence.
-- Remove or move failed attempts to cache after resolution.
-- Keep one final accepted model package.
-- Do not retain redundant reports that duplicate `state.json`.
+Keep:
+
+- approved stage checkpoints;
+- current review candidate;
+- validation pass;
+- approved evidence;
+- final accepted output.
+
+Remove or move failed attempts to cache after resolution.
+
+Do not retain redundant reports that duplicate `state.json`.
 
 ## Acceptance Criteria
 
-- Each asset has one clear runtime workspace.
+- Each asset has one clear workspace.
 - New sessions recover from governance, OpenSpec, state, references, and the active-stage document.
 - Runtime state is not fragmented across competing Markdown files.
-- Checkpoints and evidence are stable and stage-specific.
+- Checkpoints, evidence, and final paths match the active contracts.
+- Approved work can be recovered without relying on Undo history alone.
