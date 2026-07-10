@@ -18,6 +18,7 @@ const WATCHED_FILES = new Set(
     "package.json",
     "tsconfig.json",
     join("Engine", "icon.svg"),
+    join("Engine", "codex", "tool-profiles.json"),
     join("SourceDocument", "engine", "about.md"),
   ].map((path) => normalize(path))
 );
