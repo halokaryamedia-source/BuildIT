@@ -1,477 +1,317 @@
 # Quality Implementation Rules
 
-This document captures the practical quality rules learned from previous Samurai modelling feedback. It is general-purpose and applies to any Minecraft Bedrock / Blockbench model.
+These rules apply to all four user-visible stages.
 
-Use this with:
+Authority:
 
-- `phase-detail-contract.md`
-- `mandatory-blockbench-mcp-procedure.md`
-- `model-session-checklist-template.md`
-- `common-failure-patterns.md`
-- `phase-quality-scorecard-template.md`
-- `phase-quality-insight-matrix.md`
+1. `PRODUCTION_CONTEXT.md` — intent, function, assumptions, and resolved decisions.
+2. `<asset>_reference_visual.png` — visible identity, silhouette, proportions, pose, color, materials, and attachments.
+3. active category document — implementation detail.
+4. `VALIDATION.md` — final test contract.
 
-## Geometry Freedom Rule
+Use `REFERENCE_CONFLICT` instead of averaging contradictory requirements.
 
-Minecraft / Bedrock style does not mean every cube must be a rigid 1:1 block.
+# 1. Geometry Quality
 
-Allowed geometry creativity:
+## Creative Cuboid Rule
 
-- varied cuboid sizes,
-- long and thin cuboids,
-- wide and flat cuboids,
-- rotated cuboids,
-- offset layers,
-- stepped silhouettes,
-- angled armor or organic forms,
-- varied thickness,
-- asymmetry when intentional,
-- silhouette-driven accessories.
+Minecraft/Bedrock style does not require rigid 1×1 blocks.
 
-Keep geometry Blockbench-friendly and performance-aware. Use creative cuboids to improve silhouette and structure, not to add noisy tiny decoration.
+Allowed when they improve the approved form:
 
-## Geometry Reliability Rule
+- varied cuboid sizes;
+- long/thin or wide/flat cuboids;
+- rotated cuboids;
+- offset layers;
+- stepped silhouettes;
+- intentional asymmetry;
+- silhouette-defining attachments.
 
-Geometry phases must prove shape accuracy before adding detail.
+Do not use small cubes as substitute pixels.
 
-For Main Geometry and Geometry Detailing, use this order:
+## Geometry Order
 
 ```text
-1. Scale envelope
-2. Silhouette lock
-3. Structural lock
+scale envelope
+→ primary silhouette
+→ hierarchy and attachments
+→ structural detail
+→ cube reduction
 ```
 
-Scale envelope:
+Scale envelope includes:
 
-- Record target height, width, depth, ground/contact point, and front direction.
-- Keep the model inside that envelope unless the user approves a scale change.
-- If scale is unknown, mark `Needs verification` before editing.
+- height;
+- width;
+- depth;
+- front direction;
+- ground/contact plane;
+- highest geometry point;
+- major attachment extents.
 
-Silhouette lock:
+## Geometry Decision Paths
 
-- Judge the model from front, side, back, and 3/4 screenshots using placeholder colors only.
-- Required large parts must be readable before any small detail is added.
-- If front or side fails, stay in Main Geometry.
-
-Structural lock:
-
-- Check parent chain, pivot logic, attachments, floating parts, collisions, and z-fighting.
-- Fix parent/pivot/attachment causes before resizing decorative cubes.
-- If the same geometry issue fails twice, stop and run the failure recovery flow instead of repeating edits.
-
-## Geometry Decision Tree
-
-Before any geometry edit, classify the issue and apply the first matching fix path:
+Before a geometry revision, choose one:
 
 ```text
-1. Wrong total size or proportion?
-   -> fix scale envelope first; do not move details.
-
-2. Wrong front/side silhouette?
-   -> fix primary mass or major part bounding box; do not add detail.
-
-3. Part looks detached or floating?
-   -> fix parent, pivot, and attachment point before resizing cubes.
-
-4. Part collides, flickers, or z-fights?
-   -> separate volumes or simplify overlap; do not hide with texture.
-
-5. Model looks noisy or messy?
-   -> remove small cubes and move minor detail to texture plan.
-
-6. Only color, trim, seam, scratch, or surface pattern is missing?
-   -> defer to texture; geometry is already done for that issue.
+scale envelope
+front/side silhouette
+back/top/3-4 consistency
+parent/pivot/attachment
+collision/z-fighting
+cube noise reduction
+defer to texture
 ```
 
-If two paths seem true, choose the earlier path. Scale and silhouette errors invalidate later detail decisions.
-
-## Complexity And Atlas Rule
-
-Model complexity is inferred from the user request and references.
-
-Use the simplest category that fits the requested asset:
-
-- Simple: small block, small prop, simple item, simple decorative object.
-- Medium: detailed prop, tool, weapon, furniture, small creature, or medium entity.
-- Complex: character, large creature, vehicle, machine, boss, large structure, or multi-part entity.
-
-Atlas size follows the user request first. If the user does not specify it, infer it from reference complexity and visible focal detail.
-
-Rules:
-
-- Do not force a larger atlas when the model does not need it.
-- Do not force a smaller atlas when the reference needs readable detail.
-- If atlas size is unclear, mark it `Needs verification`.
-- Higher atlas sizes require a visible reason: complex silhouette, many materials, large model, or important focal texture detail.
-
-## Animation Boundary Rule
-
-Animation is out of scope for the current workflow unless the user explicitly opens an animation phase.
-
-Current priority:
-
-1. Good geometry.
-2. Good UV.
-3. Good texturing.
-4. Animation later.
-
-Still keep models modular-ready:
-
-- readable root group,
-- clean parent groups,
-- sensible pivots,
-- separated limbs or moving parts when relevant,
-- no unnecessary baked-in pose that blocks future animation.
+Earlier paths take priority. Do not add detail while scale or primary silhouette is wrong.
 
 ## Cube Purpose Rule
 
-Every cube must serve at least one purpose:
+Every cube must improve at least one:
 
-- silhouette,
-- structure,
-- depth,
-- attachment,
-- pose,
-- pivot or animation,
-- gameplay readability,
+- silhouette;
+- structure;
+- depth;
+- attachment;
+- pose;
+- pivot/animation readiness;
+- gameplay readability;
 - focal identity.
 
-If a cube only represents color, stripe, scratch, seam, shadow, small panel, trim, or 1 to 2 pixel detail, it should be texture instead.
+Use texture for:
 
-For geometry phases, reject any cube that cannot answer:
+- stripes;
+- seams;
+- scratches;
+- small panels;
+- trim;
+- gradients;
+- shadows;
+- color bands;
+- one- or two-pixel details.
+
+## Initial Build and Revision
+
+- Initial Geometry may use bounded multi-part batches.
+- Revision work uses one named issue or tightly related issue pair per cycle.
+- Accepted areas must not be rebuilt without reopening Geometry.
+
+## Geometry Review Evidence
+
+Required:
+
+- Front;
+- Left Side;
+- Back;
+- Top / Footprint;
+- Front-left 3/4;
+- scale envelope;
+- hierarchy summary;
+- cube/group count;
+- persistent checkpoint.
+
+Front and Left Side must pass before Geometry approval.
+
+# 2. Texture and UV Quality
+
+## Complexity and Atlas
+
+Use the smallest atlas that preserves required focal detail.
+
+Texture style and atlas size are separate decisions.
+
+Examples:
+
+- `16x style` may use a `128×128` or `256×256` atlas;
+- `32x style` may use a larger atlas when justified.
+
+Do not enlarge the atlas without visible need. Do not shrink it until focal details become unreadable.
+
+## UV Rules
+
+- Use Per-face UV by default for custom Bedrock assets unless approved otherwise.
+- Pack compactly before painting.
+- Reuse/mirror repeated areas only where markings and direction allow it.
+- Give focal faces sufficient unique texel space.
+- Avoid accidental overlap on active faces.
+- Keep hidden/low-priority faces efficient.
+
+## Material and Palette Rules
+
+- Follow the Reference Visual color family.
+- Use a limited, intentional palette.
+- Separate material families through value and hue, not random noise.
+- Large visible faces should not remain flat when the reference shows form depth.
+- Use stepped pixel shading rather than smooth blur.
+- Preserve directional patterns and unique markings.
+
+## Gradient Standard
+
+For visible large faces, use approximately three stepped values when space permits:
+
+- darker: lower, inner, recessed, or covered areas;
+- base: main material body;
+- lighter: upper, outer, or exposed areas.
+
+Focal areas may use four or five values when justified.
+
+## Material Pipeline
+
+- Classic Bedrock only.
+- No PBR maps.
+- No Vibrant Visuals dependency.
+- Alpha-test, alpha-blend, and emissive zones only where explicitly approved.
+
+## Texture Review Evidence
+
+Required:
+
+- atlas preview;
+- UV summary;
+- Front;
+- Left Side;
+- Back;
+- Front-left 3/4;
+- material/alpha/emissive summary;
+- persistent checkpoint.
+
+# 3. Animation Quality
+
+Animation is optional and runs only when required by the approved package.
+
+When not required, record `ANIMATION_SKIPPED`.
+
+When required:
+
+- preserve approved Geometry and Texture;
+- use clean parent-child chains;
+- place pivots at functional joints or attachment roots;
+- use only approved axes and qualitative ranges;
+- preserve rigid cuboid behavior;
+- recover exactly to neutral pose;
+- preserve required ground contacts;
+- prevent clipping and floating.
+
+Animation Review evidence:
+
+- hierarchy/pivot summary;
+- required clips or sampled poses;
+- neutral-pose recovery;
+- ground-contact result;
+- clipping/deformation result;
+- persistent checkpoint.
+
+# 4. Final Validation Quality
+
+Final Validation must execute `VALIDATION.md` and include:
+
+- `.bbmodel` candidate;
+- texture files;
+- five standard views;
+- hierarchy/pivot result;
+- animation evidence when applicable;
+- Blockbench validator summary;
+- export readiness;
+- revision summary.
+
+Codex may automatically repair at most two local validation failures.
+
+Do not silently repair anything that changes:
+
+- identity;
+- scale;
+- major silhouette;
+- approved material read;
+- accepted stage scope.
+
+Results:
+
+- `PASS`;
+- `REVISION_REQUIRED`;
+- `BLOCKER`.
+
+# 5. Reference Conflict Handling
+
+Authority order:
+
+1. explicit user instruction recorded in Production Context;
+2. approved Reference Visual for visible form;
+3. active category document for technical implementation;
+4. manifest for machine-readable values;
+5. validation contract for tests.
+
+If a conflict affects identity, scale, major silhouette, attachments, material behavior, hierarchy, or required motion, stop with:
 
 ```text
-What reference part does this match?
-What does it improve: silhouette, scale, structure, attachment, pivot, or focal identity?
-Which view proves it works: front, side, back, or 3/4?
+REFERENCE_CONFLICT
+Sources:
+- ...
+Conflict:
+- ...
+Decision required:
+- ...
 ```
 
-## Professional Naming Rule
+# 6. Naming
 
-Project and root names follow the object being created.
-
-Rules:
-
-- Project name should follow the asset/object name.
-- Root group name should be short, readable, and asset-specific.
+- Project name follows the asset.
+- Root group is short and asset-specific.
 - Use lowercase snake_case for technical names.
-- Avoid random generated names.
-- Avoid overly long names.
-- Include side when useful: `_left`, `_right`.
-- Include role when useful: `body`, `head`, `tail`, `blade`, `wheel`, `panel`, `leg_left`.
+- Include role and side where useful.
+- Avoid random/generated names.
 
 Examples:
 
 ```text
 kangaroo_root
-samurai_root
-sound_truck_root
-dragon_boss_root
+body
+head
+leg_front_left
+wheel_rear_right
+seat_driver
 ```
 
-## Geometry Translation Plan
+# 7. MCP and Token Efficiency
 
-Before Main Geometry, produce:
+- Run full preflight once per session.
+- Load only the active-stage document and tool profile.
+- Use one active MCP write session.
+- Prefer bounded initial batches over repeated single-cube calls.
+- Use screenshots at stage reviews or meaningful revision checkpoints.
+- Avoid full outline/data dumps when a focused structured result is enough.
+- Open failure playbooks only after the documented trigger.
+- Stop when stage acceptance criteria are met.
 
-```text
-Geometry Blueprint:
-- global envelope: height / width / depth
-- front direction:
-- ground/contact points:
-- part build order:
-- part bounding boxes:
-  - part:
-    - height / width / depth:
-    - position relative to root:
-    - attachment point:
-    - rotation:
+# 8. Failure Recovery
 
-Geometry must be cube:
-- ...
-
-Texture-only detail:
-- ...
-
-Forbidden small cube detail:
-- ...
-
-Silhouette priority:
-- ...
-
-Cube budget:
-Low / Medium / High
-```
-
-Do not start Blockbench geometry until this plan is clear.
-
-Build order rule:
+When a later stage reveals an earlier-stage problem:
 
 ```text
-1. root / primary body mass
-2. head or primary focal mass
-3. base / legs / ground-contact parts
-4. major attachments
-5. secondary silhouette parts
-6. structural detail only after silhouette pass
-```
-
-Main Geometry cube budget guide:
-
-- Simple: 6-12 cubes.
-- Medium: 12-25 cubes.
-- Complex: 25-45 cubes.
-
-These are guides, not hard limits. Exceed them only when the reference needs it and every extra cube passes the Cube Purpose Rule.
-
-Orthographic check:
-
-- Front view checks height ratio, width ratio, main mass position, and left/right balance.
-- Side view checks depth ratio, lean/pose, and attachment continuity.
-- Back and 3/4 views check hidden drift, disconnected parts, and silhouette readability.
-- If front or side does not match the blueprint, fix Main Geometry before adding detail.
-
-Pre-MCP geometry action plan:
-
-```text
-Issue:
-Decision tree path:
-Affected part:
-Do not change:
-Single edit:
-Expected screenshot proof:
-Rollback if:
-```
-
-Do not run a geometry edit without this plan.
-
-## Texture Translation Plan
-
-Before UV Texture or Base Texturing, produce:
-
-```text
-Material groups:
-- ...
-
-Gradient targets:
-- ...
-
-Focal texture areas:
-- ...
-
-Reusable / shared texture areas:
-- ...
-
-Large flat-face risks:
-- ...
-
-Texture-only details replacing cube work:
-- ...
-```
-
-Texture must not feel like simple palette fill. Palette is the base; gradient and material depth make it readable.
-
-## Gradient Standard
-
-Gradient is required for visible texture quality.
-
-Rules:
-
-- Every large visible face should use at least 3 stepped values.
-- Focal areas should use 4 to 5 stepped values when space allows.
-- Use darker values on lower, inner, recessed, or covered areas.
-- Use mid values for the main material body.
-- Use brighter values on outer edges, upper edges, or exposed surfaces.
-- Add small highlights sparingly.
-- Avoid smooth blur.
-- Keep the finish pixel-stepped and Minecraft-readable.
-
-## UV Efficiency Audit
-
-Before Base Texturing, check:
-
-```text
-Single atlas used:
-Atlas size justified:
-Large empty spaces avoided:
-Repeated / mirrored parts reuse UV where safe:
-Focal areas have unique and sufficient UV space:
-Hidden or low-priority faces use minimal space:
-No accidental overlap on important faces:
-No unexpected multi-texture setup:
-```
-
-If any answer blocks texture quality, fix UV before painting.
-
-## Reference Conflict Handling
-
-Reference sheets can conflict. Do not average conflicting information blindly.
-
-Authority order:
-
-1. Orthographic views: shape, orientation, proportions.
-2. Scale sheet: measurements and contact points.
-3. Silhouette sheet: distance readability.
-4. Part breakdown: geometry groups and attachment logic.
-5. Color palette sheet: atlas target, texture style, material, and shading.
-6. Close-up detail: focal area detail.
-7. Execution target sheet: DO-only failure prevention and visual locks.
-8. Animation pivot sheet: future movement only.
-
-If lower-priority reference conflicts with higher-priority reference, follow the higher-priority reference and mark:
-
-```text
-Needs verification:
-```
-
-If the conflict affects major geometry, stop before editing and ask the user.
-
-## User-Friendly Review Prompt
-
-After showing screenshots, ask the user:
-
-```text
-This phase is ready for review.
-Please tell me:
-
-Part that feels wrong:
-Compared to which reference:
-What you expected:
-Do not change:
-```
-
-Codex maps this feedback back to the technical phase and part. The user does not need to use technical wording.
-
-## MCP Tool Use Efficiency
-
-MCP must be verified, but tools must be used only when needed.
-
-Rules:
-
-- Verify endpoint and runtime tool list before editing.
-- Use `blockbench-modeling` only for geometry phases.
-- Use `blockbench-texturing` only for UV/texture phases.
-- Use screenshots at phase gates, not after every tiny edit.
-- Avoid full outline dumps unless hierarchy is relevant.
-- Avoid texture inspection outside texture phases.
-- Do not create extra sessions unless they perform necessary work.
-- Stop if a required tool is missing instead of silently using a risky workaround.
-- Token budget guard (default):
-  - If a phase has no visible progress, stop after 2 passes and request user reset.
-  - Use one targeted fix batch per issue instead of combined broad edits.
-  - Reuse the previous issue map; do not re-state unchanged context.
-
-## Ponytail Token-Saving Rules For MCP Blockbench
-
-Ponytail is used to reduce unnecessary MCP work without reducing model quality.
-
-Rules:
-
-- Do only the current approved phase.
-- Inspect only the affected part when possible.
-- Use only the tools required for the current phase.
-- Do not inspect UV or texture data during geometry phases.
-- Do not inspect full model data when a screenshot or selected-part check is enough.
-- Do not take screenshots after every micro edit.
-- Take screenshots at phase gates or after a meaningful correction batch.
-- Do not rebuild the model when a local fix is enough.
-- Do not create geometry for minor texture details.
-- Do not add polish while the phase is still blockout or base work.
-- Stop when the current phase acceptance criteria are met.
-- Ask before broad rebuilds, phase reopen, or risky fallback tools.
-- Reuse the Reference Collection summary instead of rereading every reference every phase.
-- Keep one intended MCP working session per model.
-
-Short rule:
-
-```text
-Current phase only.
-Affected part only.
-Required tool only.
-Screenshot at gates.
-Texture for minor detail.
-Stop when good enough for the phase.
-```
-
-Before a large edit, ask internally:
-
-```text
-What is wrong?
-What is the smallest safe fix?
-Does this require reopening a phase?
-What must not change?
-Can texture solve this instead of geometry?
-```
-
-## Common Failure Prevention
-
-Before moving to the next phase, check:
-
-```text
-Silhouette readable:
-Scale close to reference:
-No floating geometry:
-No bad collision or z-fighting:
-Cube count justified:
-Small decorative cubes avoided:
-Texture-only details deferred correctly:
-UV efficient before painting:
-Large faces have gradient before polish:
-Focal detail is on the correct side:
-```
-
-If any check fails, stay in the current phase and fix the issue before continuing.
-
-After any phase check, record the result in the phase scorecard and determine:
-
-- Gate status (PASS / NEEDS_MINOR_FIX / BLOCKER),
-- Critical fixes (max 2),
-- Explicit user handoff.
-
-## Phase Reopen And Failure Recovery
-
-If a later phase reveals an earlier phase problem, report it before fixing.
-
-Allowed direct fix:
-
-- The issue is local.
-- The fix does not damage approved geometry.
-- The fix does not change the model direction.
-- The user has not said to preserve that part unchanged.
-
-Report format:
-
-```text
-Needs earlier-phase correction:
-Phase affected:
+Earlier stage affected:
 Part:
 Issue:
-Safe fix:
-Risk:
+Why current stage cannot solve it safely:
+Preserve:
+Required review stage:
 ```
 
-If the fix is broad, changes silhouette, changes scale, or can damage accepted work, stop and ask approval before editing.
+Local non-destructive corrections may be applied only when they do not change accepted identity, scale, silhouette, or material read.
 
-Do not continue to finalization with known phase-blocking problems.
+Broad changes require reopening the relevant approved stage.
 
-## Screenshot Cleanup Rule
+# 9. Screenshot and Evidence Cleanup
 
-Screenshots are used for phase review, but process screenshots should not become final clutter.
+- Keep stage review evidence and final validation evidence.
+- Store failed/temporary experiments in `SavedData/cache/` or remove them after resolution.
+- Do not mix temporary images into approved evidence folders.
+- Final evidence must use stable camera framing and filenames.
 
-Rules:
+# Acceptance Criteria
 
-- Keep only the screenshots needed for the current phase review.
-- At final review, keep only final screenshots unless the user asks to preserve process history.
-- Final screenshot set should include front, side, back, 3/4, and texture atlas when textured.
-- Temporary or failed-attempt screenshots may be deleted after the issue is resolved.
-
-## Acceptance Criteria
-
-- Geometry stays creative but cube-efficient.
-- Cube detail is justified by purpose.
-- Texture uses gradient and material depth, not flat palette fill.
-- UV layout is efficient before painting.
-- User review is easy and screenshot-based.
-- Common Samurai failure patterns are prevented before finalization.
-- Animation remains modular-ready but out of scope until explicitly requested.
-- Project/root naming is professional and asset-specific.
+- Geometry is recognizable without texture.
+- Every cube has a structural purpose.
+- UVs are intentional and compact.
+- Texture has readable material depth without blur or noise.
+- Optional Animation preserves identity, neutral pose, and contacts.
+- Final Validation is evidence-based.
+- User review is limited to completed Geometry, Texture, optional Animation, and Final Validation stages.
