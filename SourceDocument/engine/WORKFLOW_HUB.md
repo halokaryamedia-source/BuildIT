@@ -1,106 +1,141 @@
-# MCP Blockbench Workflow Hub (Single Source for Operational Context)
+# MCP Blockbench Workflow Hub
 
-> This is the operational "single source" you use to run one model end-to-end.
+This is the operational index. Local Codex starts from:
 
-## 1) Active Project State (isi dari sini dulu)
+```text
+Engine/codex/BOOTSTRAP.md
+```
 
-- Project: `MCP-Blockbench Asset Studio`
-- Current model: `kangaroo`
-- Target category: `Bedrock Entity`
-- Current phase: `Reference Collection` / `Main Geometry` / `Geometry Detailing` / `UV Texture` / `Base Texturing` / `Detail Texturing` / `Polish` / `Final Review`
-- Status: `Not Started` / `In Progress` / `Blocked` / `Review` / `Paused` / `Done`
-- Last updated: `<date>`
-- Owner: `<owner_name>`
+Runtime state comes from:
 
-## 2) Core Required Files (always load once per session)
+```text
+SavedData/sessions/<asset>/state.json
+```
 
-- `Active model control`: `SavedData/ACTIVE_PROJECT.md`
-- `Workflow index`: `SourceDocument/engine/project-hub.md`
-- `Execution baseline`: `SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md`
-- `Operator guardrail`: `SourceDocument/modeling/operator-one-page-checklist.md`
-- `Phase contract`: `SourceDocument/modeling/phase-detail-contract.md`
-- `Quality rules`: `SourceDocument/modeling/quality-implementation-rules.md`
-- `Session lock`: `SourceDocument/modeling/model-session-lock-template.md`
-- `OpenSpec`: `openspec/config.yaml` and `openspec/changes/mcp-blockbench-workflow/`
+Do not reconstruct state from several Markdown files when `state.json` exists.
 
-## 3) Exact Session Flow (one phase only)
+## 1. Approved Reference Package
 
-1. Read required source (`SavedData/ACTIVE_PROJECT.md` + `SourceDocument/README.md` + `operator-one-page-checklist.md`)
-2. Run preflight:
-   - phase-risk simulation
-   - MCP smoke test
-   - session lock check (single active `session_id`)
-3. Execute only approved phase
-4. Scorecard + screenshots required
-5. Get explicit user approval before next phase
+```text
+SavedData/sessions/<asset>/references/
+├─ PRODUCTION_CONTEXT.md
+├─ <asset>_reference_visual.png
+├─ GEOMETRY.md
+├─ TEXTURING.md
+├─ ANIMATION.md
+├─ VALIDATION.md
+├─ reference_manifest.json
+└─ CODEX_REFERENCE_HANDOFF.md
+```
 
-Do not do:
-- multi-phase execution in one pass
-- re-initialize MCP session without reset reason
-- broad edits outside allowed phase scope
+Legacy numbered reference sheets are not required for new sessions.
 
-## 4) File Ownership Map
+## 2. User-Visible Stages
 
-- Planning documents:
-  - `SourceDocument/planning/*`
-- Modelling workflow:
-  - `SourceDocument/modeling/*`
-- MCP control + ops:
-  - `SourceDocument/modeling/ops/*`
-- Active model data (per asset):
-  - `SavedData/sessions/<asset>/session.md`
-  - `SavedData/sessions/<asset>/session-lock.md`
-  - `SavedData/sessions/<asset>/references/`
-  - `SavedData/sessions/<asset>/final-screenshots/`
-- ChatGPT reference generator pack:
-  - `SourceDocument/modeling/chatgpt-system-read-first.md`
-  - `SourceDocument/modeling/chatgpt-ready-reference-generator-prompt.md`
-  - `SourceDocument/chatgpt-bedrock-blockbench-reference-generator-upload.zip`
-  - `SourceDocument/modeling/chatgpt-upload-zip-rebuild-instructions.md`
+```text
+1. GEOMETRY
+2. TEXTURE
+3. ANIMATION — optional
+4. FINAL_VALIDATION
+```
 
-ChatGPT sync rule:
-- If geometry, phase, reference, or quality logic changes in `SourceDocument/modeling/`, update the ChatGPT-facing prompt/docs and rebuild `SourceDocument/chatgpt-bedrock-blockbench-reference-generator-upload.zip` before using ChatGPT for new references.
-- Minimum trigger files: `mandatory-blockbench-mcp-procedure.md`, `phase-detail-contract.md`, `quality-implementation-rules.md`, `reference-package-pass-fail-checklist.md`, `model-session-checklist-template.md`, and `operator-one-page-checklist.md`.
+Each completed stage produces preview evidence and waits for user approval or targeted revision instructions.
 
-## 5) Root Access (only these when starting)
+Internal passes do not create extra routine approval gates.
 
-- `SavedData/ACTIVE_PROJECT.md`
-- `SourceDocument/engine/WORKFLOW_HUB.md`
-- `SourceDocument/README.md`
-- `SourceDocument/modeling/`
-- `SavedData/sessions/`
-- `openspec/`
-- `SourceDocument/engine/project-hub.md` (compact path map)
+### Geometry
 
-## 6) Anti-Spam Session Rule (hard)
+Internal passes:
 
-- One model request = one active MCP session unless explicitly reset.
-- Keep one `session_id` per active phase group.
-- If a second session appears unexpectedly:
-  - stop edits
-  - log blocker
-  - request explicit reset approval
+- Primary Form
+- Structural Detail
 
-## 7) Completion Gate
+Review evidence:
 
-Session is eligible to close when:
-- smoke test and risk simulation are clean,
-- scorecard result is `PASS`,
-- user approval is recorded,
-- no unresolved `BLOCKER`,
-- final screenshots and session lock updated.
+- Front
+- Left Side
+- Back
+- Top / Footprint
+- Front-left 3/4
 
-## 8) What to update for new model
+### Texture
 
-Before new model:
-1. Update `SavedData/ACTIVE_PROJECT.md`
-2. Create `SavedData/sessions/<asset>/session.md` and `session-lock.md`
-3. Copy phase contract + session checklist fields
-4. Start flow from **Reference Collection**
+Internal passes:
 
-## 9) Reference Package Locations
+- UV
+- Base Texture
+- Detail Texture
 
-- Active calibration sample: `SourceDocument/reference-samples/ninja-master-bedrock-entity/`
-- Legacy layout comparison: `SourceDocument/reference-samples/legacy/kangaroo_legacy_9sheet/`
-- Active per-asset sessions: `SavedData/sessions/<asset>/`
+Review evidence:
 
+- texture atlas
+- UV summary
+- Front
+- Left Side
+- Back
+- Front-left 3/4
+
+### Animation
+
+Run only when required by the approved package.
+
+Review evidence:
+
+- hierarchy/pivots
+- required clips or sampled poses
+- neutral pose recovery
+- clipping and ground contact
+
+### Final Validation
+
+Run `VALIDATION.md`, collect final evidence, repair at most two local failures, and wait for final user approval or corrections.
+
+## 3. Minimum Normal Read Set
+
+1. `Engine/codex/BOOTSTRAP.md`
+2. `SavedData/sessions/<asset>/state.json`
+3. `references/reference_manifest.json`
+4. `references/PRODUCTION_CONTEXT.md`
+5. `references/<asset>_reference_visual.png`
+6. the active-stage document only
+
+Open detailed playbooks only after a relevant failure trigger.
+
+## 4. Session Rules
+
+- One asset = one active write session.
+- Run full preflight once before the first write.
+- Re-run only stale or failed checks.
+- Save persistent stage checkpoints.
+- Preserve user manual edits unless an earlier stage is explicitly reopened.
+- Initial construction may use bounded multi-part batches.
+- One-issue-per-cycle applies to revision work.
+
+## 5. Stage Transition Rule
+
+A stage may advance only when:
+
+- required evidence exists;
+- stage result is `PASS`;
+- no unresolved blocker exists;
+- user explicitly approves the stage preview.
+
+User revision feedback must name the stage, part, issue, expected result, and anything that must not change.
+
+## 6. Stop Conditions
+
+Stop only for:
+
+- `REFERENCE_CONFLICT`;
+- missing required MCP capability;
+- ambiguous project/session ownership;
+- same blocker repeated twice;
+- requested change that reopens an approved earlier stage.
+
+## 7. Repository Responsibilities
+
+- `Engine/codex/`: compact execution control and schemas.
+- `SavedData/sessions/<asset>/`: runtime state, references, checkpoints, evidence, reports, and final output.
+- `SourceDocument/modeling/`: human-facing detailed guidance and failure playbooks.
+- `src/`: MCP plugin implementation.
+- `openspec/changes/codex-local-workflow-rework/`: current rework specification.
