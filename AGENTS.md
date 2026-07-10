@@ -8,9 +8,15 @@
 - Ponytail is the execution filter: perform the smallest safe work required now, reuse accepted work, limit tools/evidence, and stop when the active requirement is met.
 - Do not duplicate full OpenSpec or workflow analysis before every small edit.
 - For local Blockbench production, start with `Engine/codex/BOOTSTRAP.md`.
+- Use `Engine/codex/CONNECTION_CONTRACT.md` and `Engine/codex/connection-profile.json` as the connection authority.
+- The only normal Codex MCP entry is `blockbench` at `http://localhost:3000/bb-mcp`.
+- Do not scan ports, use fallback ports, create project-specific `blockbench_*` keys, or rediscover the endpoint.
+- Run `Engine/codex/scripts/sync-local-stack.ps1` before the asset preflight and continue only when `reports/connection.json` is `PASS`.
+- Use exactly one Blockbench process and one active Codex write session per asset.
+- Call `get_runtime_status` once after Codex connects; do not repeat separate connection-discovery calls when it passes.
 - Use `SavedData/sessions/<asset>/state.json` as runtime authority.
 - Use Blockbench skills before MCP work: load `blockbench-use` first, then only the active-stage modelling or texturing skill.
-- Run full preflight once before the first write. Re-run only stale or failed checks.
+- Run full asset preflight once before the first write. Re-run only stale or failed checks.
 - Follow `SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md` as the hard baseline.
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Internal passes do not require separate routine approval.
@@ -19,14 +25,13 @@
 - Preserve accepted work and manual user edits unless an earlier stage is explicitly reopened.
 - Reject work unrelated to the active stage as `DEFERRED_NOT_REQUIRED` when appropriate.
 - For Bedrock Entity and Bedrock Block, use Per-face UV by default unless the approved package explicitly requires otherwise.
-- Do not add another Blockbench MCP server entry when the existing `blockbench` endpoint already points to `http://localhost:3000/bb-mcp`.
 - Do not require legacy numbered reference sheets for new sessions. Use the approved package format documented in `Engine/codex/BOOTSTRAP.md`.
 - Keep active workflow development isolated on branch `Rework` until explicit user approval for final integration.
 - Continuous integration, PR preview deployment, and release preparation are deferred until the workflow implementation is stable and the user opens final verification.
 
 ## Project Structure & Module Organization
 
-- `Engine/codex/`: governance, bootstrap, state template, and stage profiles.
+- `Engine/codex/`: governance, connection, bootstrap, state, evidence, checkpoint, and stage profiles.
 - `SavedData/sessions/<asset>/`: runtime state, references, checkpoints, evidence, reports, and final output.
 - `SourceDocument/`: human-facing planning, modelling, engine, and project guidance.
 - `src/index.ts`: Blockbench plugin entry.
@@ -157,8 +162,8 @@ Do not create a new workflow document when an existing authority can be simplifi
 
 ## Security and Configuration
 
-- MCP settings live in Blockbench Settings; default endpoint is `:3000/bb-mcp`.
-- Do not commit secrets.
+- Canonical MCP URL is `http://localhost:3000/bb-mcp` with auto-port disabled.
+- Do not commit secrets or user-specific Codex config files.
 - Keep network and filesystem actions behind explicit tools and permissions.
 - Validate all external inputs with Zod.
 - Preserve one active project write owner per asset session.
