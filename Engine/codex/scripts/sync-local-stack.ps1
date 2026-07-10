@@ -70,14 +70,26 @@ function Get-CodexConfigPath {
 }
 
 function Get-CodexSectionPattern {
-  $header = [regex]::Escape("[mcp_servers.$serverKey]")
+  param([string]$Key)
+  $header = [regex]::Escape("[mcp_servers.$Key]")
   "(?m)^$header\s*(?:\r?\n(?:(?!^\[)[^\r\n]*))*"
+}
+
+function Get-BlockbenchServerKeys {
+  param([string]$Content)
+  if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
+  @(
+    [regex]::Matches(
+      $Content,
+      "(?m)^\[mcp_servers\.(blockbench[^\]]*)\]\s*$"
+    ) | ForEach-Object { $_.Groups[1].Value }
+  )
 }
 
 function Test-CodexSection {
   param([string]$Content)
   if ([string]::IsNullOrWhiteSpace($Content)) { return $false }
-  $match = [regex]::Match($Content, (Get-CodexSectionPattern))
+  $match = [regex]::Match($Content, (Get-CodexSectionPattern -Key $serverKey))
   if (-not $match.Success) { return $false }
   $url = [regex]::Escape($canonicalUrl)
   [regex]::IsMatch(
@@ -91,7 +103,16 @@ function Set-CodexSection {
   $directory = Split-Path -Parent $Path
   New-Item -ItemType Directory -Path $directory -Force | Out-Null
   $content = if (Test-Path $Path) { Get-Content -Raw -Path $Path } else { "" }
-  $cleaned = [regex]::Replace($content, (Get-CodexSectionPattern), "").TrimEnd()
+
+  foreach ($key in (Get-BlockbenchServerKeys -Content $content)) {
+    $content = [regex]::Replace(
+      $content,
+      (Get-CodexSectionPattern -Key $key),
+      ""
+    )
+  }
+
+  $cleaned = $content.TrimEnd()
   $section = "[mcp_servers.$serverKey]`nurl = `"$canonicalUrl`""
   $newContent = if ($cleaned) { "$cleaned`n`n$section`n" } else { "$section`n" }
   Set-Content -Path $Path -Value $newContent -Encoding utf8
@@ -125,15 +146,23 @@ function Set-ObjectProperty {
 $codexConfigPath = Get-CodexConfigPath
 $before = if (Test-Path $codexConfigPath) { Get-Content -Raw -Path $codexConfigPath } else { "" }
 $codexMatchedBefore = Test-CodexSection -Content $before
+$oldBlockbenchKeysBefore = @(Get-BlockbenchServerKeys -Content $before | Where-Object { $_ -ne $serverKey })
 $codexChanged = $false
-if (-not $codexMatchedBefore -and $InstallCodexConfig) {
+
+if ($InstallCodexConfig -and (-not $codexMatchedBefore -or $oldBlockbenchKeysBefore.Count -gt 0)) {
   Set-CodexSection -Path $codexConfigPath
   $codexChanged = $true
 }
+
 $after = if (Test-Path $codexConfigPath) { Get-Content -Raw -Path $codexConfigPath } else { "" }
 $codexMatched = Test-CodexSection -Content $after
+$oldBlockbenchKeysAfter = @(Get-BlockbenchServerKeys -Content $after | Where-Object { $_ -ne $serverKey })
+
 if (-not $codexMatched) {
   Add-Blocker "CODEX_CONFIG_MISSING" "Codex does not contain mcp_servers.$serverKey with the canonical URL." "Run this script with -InstallCodexConfig, then restart Codex once."
+}
+if ($oldBlockbenchKeysAfter.Count -gt 0) {
+  Add-Blocker "DUPLICATE_CODEX_BLOCKBENCH_ENTRIES" ("Extra Blockbench MCP keys remain: " + ($oldBlockbenchKeysAfter -join ", ")) "Run this script with -InstallCodexConfig to keep only mcp_servers.blockbench."
 }
 
 # 2. One visible Blockbench application instance. Electron child processes are ignored.
@@ -158,6 +187,7 @@ $endpointReachable = $false
 $handshakeSucceeded = $false
 $smokeSessionId = $null
 $smokeSessionClosed = $false
+$postCleanupSessionCount = $null
 $toolNames = @()
 $missingTools = @()
 $runtimeStatus = $null
@@ -242,6 +272,19 @@ try {
       $warnings.Add("Temporary smoke session could not be closed explicitly; server timeout must remove it.")
     }
   }
+
+  if ($endpointReachable) {
+    try {
+      $health = Invoke-WebRequest -Uri "$canonicalUrl/health" -Method Get -TimeoutSec 5 -UseBasicParsing
+      $healthPayload = [string]$health.Content | ConvertFrom-Json
+      $postCleanupSessionCount = [int]$healthPayload.sessions.active
+      if ($postCleanupSessionCount -gt 1) {
+        Add-Blocker "MULTIPLE_MCP_WRITE_SESSIONS" "$postCleanupSessionCount sessions remain after readiness cleanup." "Close stale MCP clients so at most one Codex write session remains."
+      }
+    } catch {
+      $warnings.Add("Post-cleanup health check was unavailable.")
+    }
+  }
 }
 
 if ($runtimeStatus) {
@@ -256,10 +299,13 @@ if ($runtimeStatus) {
   }
 }
 
-$result = if ($blockers.Count -eq 0) { "PASS" } else { "BLOCKER" }
-if ($codexChanged) {
+if ($blockers.Count -gt 0) {
+  $result = "BLOCKER"
+} elseif ($codexChanged) {
   $result = "RESTART_REQUIRED"
   $warnings.Add("Codex configuration changed; restart Codex once.")
+} else {
+  $result = "PASS"
 }
 
 $report = [ordered]@{
@@ -273,12 +319,15 @@ $report = [ordered]@{
     endpoint_reachable = $endpointReachable
     handshake_succeeded = $handshakeSucceeded
     smoke_session_closed = $smokeSessionClosed
+    post_cleanup_session_count = $postCleanupSessionCount
   }
   codex = [ordered]@{
     config_path = $codexConfigPath
     config_matched_before = $codexMatchedBefore
+    old_blockbench_keys_before = $oldBlockbenchKeysBefore
     config_changed = $codexChanged
     config_matched = $codexMatched
+    old_blockbench_keys_after = $oldBlockbenchKeysAfter
     restart_required = $codexChanged
   }
   blockbench = [ordered]@{
