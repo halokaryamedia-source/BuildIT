@@ -22,8 +22,8 @@ UV mode:
 Texture size:
 Active stage:
 Required stage tool profile available: Yes / No
-Screenshot capability available: Yes / No
-Undo/checkpoint capability available: Yes / No
+Standard preview capability available when required: Yes / No
+Persistent checkpoint capability available: Yes / No
 One active write session confirmed: Yes / No
 Unexpected extra sessions: None / List
 Manual edits to preserve recorded: Yes / No
@@ -46,7 +46,37 @@ Check only the tools required by the active stage profile in:
 Engine/codex/stage-profiles.json
 ```
 
+Minimum cross-stage workflow capabilities:
+
+```text
+get_project_info
+save_project_checkpoint
+capture_standard_views
+```
+
+Stage-specific modelling, texturing, animation, validator, and export tools are checked only when their stage is active.
+
 Do not inspect all tool domains when the active stage does not need them.
+
+## Checkpoint Readiness
+
+Before the first meaningful write, verify that `save_project_checkpoint` can:
+
+- see the active project;
+- validate the expected project UUID;
+- write to the asset checkpoint directory;
+- use the Blockbench `project` codec;
+- create adjacent metadata.
+
+The smoke test does not need to create a permanent checkpoint. The actual `00_session_start.bbmodel` is created immediately after preflight PASS.
+
+## Standard Preview Readiness
+
+For Geometry and Final Validation, verify `capture_standard_views` is listed.
+
+For Texture, verify it can capture the required view subset.
+
+Actual evidence is captured at stage review, not during smoke test.
 
 ## Result
 
@@ -58,6 +88,8 @@ Stage:
 Project UUID:
 Session ID:
 Required tool profile:
+Checkpoint capability:
+Standard preview capability:
 Next action:
 ```
 
@@ -87,8 +119,8 @@ $tools = ($toolResp.Content | ConvertFrom-Json).result.tools | ForEach-Object { 
 
 $sessionId
 $tools -contains "get_project_info"
-$tools -contains "capture_screenshot"
-$tools -contains "save_checkpoint"
+$tools -contains "save_project_checkpoint"
+$tools -contains "capture_standard_views"
 ```
 
 A healthy endpoint returns HTTP 200, a session ID, and the active-stage required tools.
