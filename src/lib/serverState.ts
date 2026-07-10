@@ -30,7 +30,7 @@ const DEFAULT_STATE: McpServerState = {
   status: "stopped",
   requestedPort: 3000,
   endpoint: "/bb-mcp",
-  autoPort: true,
+  autoPort: false,
   fallbackUsed: false,
 };
 
@@ -76,7 +76,7 @@ export const serverState = {
   },
 };
 
-/** Slugify a project name for MCP server config keys. */
+/** Slugify a project name for non-Codex integrations. */
 export function slugifyProjectName(name: string): string {
   const slug = name
     .toLowerCase()
@@ -85,7 +85,7 @@ export function slugifyProjectName(name: string): string {
   return slug || "project";
 }
 
-/** Build a unique MCP server config key preferring project slug, falling back to port. */
+/** Build a unique integration key. Codex always uses the fixed key `blockbench`. */
 export function getMcpServerKey(
   projectName: string | null | undefined,
   port: number
