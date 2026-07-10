@@ -38,6 +38,14 @@ export interface ToolProfileSnapshot {
 
 const config = profileConfigJson as ToolProfileConfig;
 const wrappedTools = new Set<string>();
+const geometryProfiles = new Set([
+  "BEDROCK_CUBOID_GEOMETRY",
+  "GEOMETRY_LOCAL_REPAIR",
+]);
+const classicTextureProfiles = new Set([
+  "BEDROCK_CUBOID_TEXTURE",
+  "TEXTURE_LOCAL_REPAIR",
+]);
 let activeProfileId = config.default_profile;
 let profileRevision = 1;
 let initialized = false;
@@ -122,6 +130,60 @@ function applyToolExposure(): void {
   }
 }
 
+function hasOwn(args: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(args, key) && args[key] !== undefined;
+}
+
+function assertToolArgumentsAllowed(
+  toolName: string,
+  args: Record<string, unknown>
+): void {
+  if (activeProfileId === "DIAGNOSTIC_ESCALATION") return;
+
+  if (geometryProfiles.has(activeProfileId)) {
+    if (toolName === "place_cube") {
+      if (hasOwn(args, "texture")) {
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: explicit texture assignment is not allowed in ${activeProfileId}. Geometry must remain untextured or use an existing neutral placeholder implicitly.`
+        );
+      }
+      const faces = args.faces;
+      if (
+        Array.isArray(faces) &&
+        faces.some((face) => typeof face === "object" && face !== null && "uv" in face)
+      ) {
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: custom face UV data is not allowed in ${activeProfileId}.`
+        );
+      }
+    }
+
+    if (toolName === "modify_cube") {
+      const forbiddenGeometryArguments = [
+        "autouv",
+        "uv_offset",
+        "mirror_uv",
+        "faces",
+      ].filter((key) => hasOwn(args, key));
+      if (forbiddenGeometryArguments.length > 0) {
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: ${forbiddenGeometryArguments.join(", ")} belong to Texture stage, not ${activeProfileId}.`
+        );
+      }
+    }
+  }
+
+  if (
+    classicTextureProfiles.has(activeProfileId) &&
+    toolName === "create_texture" &&
+    hasOwn(args, "pbr_channel")
+  ) {
+    throw new Error(
+      `TOOL_PROFILE_ARGUMENT_BLOCKED: pbr_channel is forbidden in ${activeProfileId}. Use Classic Bedrock color/alpha/emissive behavior only.`
+    );
+  }
+}
+
 function installExecutionGuards(): void {
   const definitions = getAllToolDefinitions() as Record<
     string,
@@ -137,6 +199,7 @@ function installExecutionGuards(): void {
           `TOOL_PROFILE_BLOCKED: tool "${name}" is not allowed by active profile "${activeProfileId}". Activate the correct profile and reconnect once.`
         );
       }
+      assertToolArgumentsAllowed(name, args);
       return originalExecute(args, context);
     };
     wrappedTools.add(name);
