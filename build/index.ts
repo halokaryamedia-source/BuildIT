@@ -10,6 +10,48 @@ const OUTPUT_DIR = "./dist";
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
 const entryFile = resolve("./src/index.ts");
 
+const WATCHED_DIRECTORIES = ["src", "build", "prompts"].map((path) =>
+  normalize(path)
+);
+const WATCHED_FILES = new Set(
+  [
+    "package.json",
+    "tsconfig.json",
+    join("Engine", "icon.svg"),
+    join("SourceDocument", "engine", "about.md"),
+  ].map((path) => normalize(path))
+);
+
+function shouldTriggerRebuild(filename: string): boolean {
+  const normalizedFilename = normalize(filename);
+
+  if (
+    normalizedFilename === OUTPUT_DIR_NAME ||
+    normalizedFilename.startsWith(`${OUTPUT_DIR_NAME}${sep}`)
+  ) {
+    return false;
+  }
+
+  if (
+    normalizedFilename.endsWith(".js.map") ||
+    normalizedFilename.includes(".git") ||
+    normalizedFilename.startsWith(`node_modules${sep}`) ||
+    normalizedFilename === "node_modules"
+  ) {
+    return false;
+  }
+
+  if (WATCHED_FILES.has(normalizedFilename)) {
+    return true;
+  }
+
+  return WATCHED_DIRECTORIES.some(
+    (directory) =>
+      normalizedFilename === directory ||
+      normalizedFilename.startsWith(`${directory}${sep}`)
+  );
+}
+
 async function cleanOutputDir() {
   try {
     const info = await stat(OUTPUT_DIR);
@@ -137,7 +179,7 @@ let process = requireNativeModule('process');`;
 
 // Function to watch for file changes
 function watchFiles() {
-  log.info("[Build] Watching for changes...");
+  log.info("[Build] Watching source/build inputs only...");
 
   // Build serialization to prevent overlapping builds
   let currentBuild: Promise<void> | null = null;
@@ -173,29 +215,7 @@ function watchFiles() {
     "./",
     { recursive: true },
     (_eventType, filename) => {
-      if (!filename) return;
-
-      // Normalize filename for consistent comparison
-      const normalizedFilename = normalize(filename);
-
-      // Ignore output directory (compare normalized paths)
-      if (
-        normalizedFilename === OUTPUT_DIR_NAME ||
-        normalizedFilename.startsWith(`${OUTPUT_DIR_NAME}${sep}`)
-      ) {
-        return;
-      }
-
-      // Ignore other non-source files
-      if (
-        normalizedFilename.endsWith(".js.map") ||
-        normalizedFilename.includes(".git") ||
-        normalizedFilename.startsWith(`node_modules${sep}`) ||
-        normalizedFilename === "node_modules"
-      ) {
-        return;
-      }
-
+      if (!filename || !shouldTriggerRebuild(filename)) return;
       queueRebuild(filename);
     }
   );
