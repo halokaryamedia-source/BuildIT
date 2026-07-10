@@ -8,13 +8,30 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
-$profile = Get-Content -Raw -Path (Join-Path $repoRoot "Engine\codex\connection-profile.json") | ConvertFrom-Json
-$canonicalUrl = [string]$profile.canonical_url
-$serverKey = [string]$profile.codex.server_key
-$requiredTools = @($profile.required_common_tools)
+$connectionProfilePath = Join-Path $repoRoot "Engine\codex\connection-profile.json"
+$connectionProfile = Get-Content -Raw -Path $connectionProfilePath | ConvertFrom-Json
+$canonicalUrl = [string]$connectionProfile.canonical_url
+$serverKey = [string]$connectionProfile.codex.server_key
+$requiredTools = @($connectionProfile.required_common_tools)
 $checkedAt = (Get-Date).ToUniversalTime().ToString("o")
 $blockers = [System.Collections.Generic.List[object]]::new()
 $warnings = [System.Collections.Generic.List[string]]::new()
+
+$statePath = if ($Asset) {
+  Join-Path $repoRoot ("SavedData\sessions\" + $Asset + "\state.json")
+} else {
+  $null
+}
+$state = if ($statePath -and (Test-Path $statePath)) {
+  Get-Content -Raw -Path $statePath | ConvertFrom-Json
+} else {
+  $null
+}
+$expectedProfile = if ($state -and $state.mcp.active_tool_profile) {
+  [string]$state.mcp.active_tool_profile
+} else {
+  [string]$connectionProfile.default_tool_profile
+}
 
 function Add-Blocker {
   param([string]$Code, [string]$Message, [string]$SafeAction)
@@ -142,7 +159,7 @@ function Set-ObjectProperty {
   }
 }
 
-# 1. Codex configuration
+# 1. Canonical Codex configuration
 $codexConfigPath = Get-CodexConfigPath
 $before = if (Test-Path $codexConfigPath) { Get-Content -Raw -Path $codexConfigPath } else { "" }
 $codexMatchedBefore = Test-CodexSection -Content $before
@@ -169,20 +186,20 @@ if ($oldBlockbenchKeysAfter.Count -gt 0) {
 $blockbenchProcesses = @()
 $blockbenchWindows = @()
 if (-not $SkipProcessCheck) {
-  $blockbenchProcesses = @(Get-Process -Name ([string]$profile.blockbench.process_name) -ErrorAction SilentlyContinue)
+  $blockbenchProcesses = @(Get-Process -Name ([string]$connectionProfile.blockbench.process_name) -ErrorAction SilentlyContinue)
   $blockbenchWindows = @(
     $blockbenchProcesses | Where-Object {
       $_.MainWindowHandle -ne 0 -or -not [string]::IsNullOrWhiteSpace($_.MainWindowTitle)
     }
   )
   if ($blockbenchWindows.Count -eq 0) {
-    Add-Blocker "BLOCKBENCH_NOT_RUNNING" "No visible Blockbench application window is running." "Launch one Blockbench window, load the MCP plugin, and open the intended project."
+    Add-Blocker "BLOCKBENCH_NOT_RUNNING" "No visible Blockbench application window is running." "Launch one Blockbench window, load the Rework MCP plugin, and open the intended project."
   } elseif ($blockbenchWindows.Count -gt 1) {
     Add-Blocker "MULTIPLE_BLOCKBENCH_INSTANCES" "More than one Blockbench application window is open." "Keep only the intended Blockbench project window open."
   }
 }
 
-# 3. Temporary read-only MCP smoke session
+# 3. Temporary readiness session: handshake, capabilities, runtime and profile alignment.
 $endpointReachable = $false
 $handshakeSucceeded = $false
 $smokeSessionId = $null
@@ -191,6 +208,8 @@ $postCleanupSessionCount = $null
 $toolNames = @()
 $missingTools = @()
 $runtimeStatus = $null
+$profileActivation = $null
+$profileStatus = $null
 
 try {
   $uri = [uri]$canonicalUrl
@@ -240,19 +259,64 @@ try {
     Add-Blocker "MCP_CAPABILITY_MISMATCH" ("Missing required tools: " + ($missingTools -join ", ")) "Build and reload the Rework MCP plugin; do not substitute risky tools."
   }
 
-  if ("get_runtime_status" -in $toolNames) {
-    $runtime = Invoke-McpPost -SessionId $smokeSessionId -Body @{
+  if (("get_tool_profile" -in $toolNames) -and ("activate_tool_profile" -in $toolNames)) {
+    $profileCall = Invoke-McpPost -SessionId $smokeSessionId -Body @{
       jsonrpc = "2.0"
       id = 3
       method = "tools/call"
-      params = @{ name = "get_runtime_status"; arguments = @{} }
+      params = @{ name = "get_tool_profile"; arguments = @{ include_tools = $false } }
     }
-    if (-not $runtime.Payload.error) {
-      $runtimeStatus = $runtime.Payload.result.structuredContent
+    if ($profileCall.Payload.error) {
+      throw "get_tool_profile error: $($profileCall.Payload.error.message)"
+    }
+    $profileStatus = $profileCall.Payload.result.structuredContent
+
+    if ([string]$profileStatus.profile_id -ne $expectedProfile) {
+      $activateCall = Invoke-McpPost -SessionId $smokeSessionId -Body @{
+        jsonrpc = "2.0"
+        id = 4
+        method = "tools/call"
+        params = @{ name = "activate_tool_profile"; arguments = @{ profile_id = $expectedProfile } }
+      }
+      if ($activateCall.Payload.error) {
+        throw "activate_tool_profile error: $($activateCall.Payload.error.message)"
+      }
+      $profileActivation = $activateCall.Payload.result.structuredContent
+
+      $profileCall = Invoke-McpPost -SessionId $smokeSessionId -Body @{
+        jsonrpc = "2.0"
+        id = 5
+        method = "tools/call"
+        params = @{ name = "get_tool_profile"; arguments = @{ include_tools = $false } }
+      }
+      if ($profileCall.Payload.error) {
+        throw "get_tool_profile verification error: $($profileCall.Payload.error.message)"
+      }
+      $profileStatus = $profileCall.Payload.result.structuredContent
+    }
+
+    if ([string]$profileStatus.status -ne "PASS") {
+      Add-Blocker "TOOL_PROFILE_INVALID" "The active MCP tool profile failed configuration validation." "Fix Engine/codex/tool-profiles.json or reload the current Rework plugin."
+    }
+    if ([string]$profileStatus.profile_id -ne $expectedProfile) {
+      Add-Blocker "TOOL_PROFILE_MISMATCH" "The runtime profile is $($profileStatus.profile_id), expected $expectedProfile." "Activate the expected exact profile and reconnect the canonical blockbench entry once."
     }
   }
+
+  if ("get_runtime_status" -in $toolNames) {
+    $runtime = Invoke-McpPost -SessionId $smokeSessionId -Body @{
+      jsonrpc = "2.0"
+      id = 6
+      method = "tools/call"
+      params = @{ name = "get_runtime_status"; arguments = @{} }
+    }
+    if ($runtime.Payload.error) {
+      throw "get_runtime_status error: $($runtime.Payload.error.message)"
+    }
+    $runtimeStatus = $runtime.Payload.result.structuredContent
+  }
 } catch {
-  Add-Blocker "MCP_ENDPOINT_UNAVAILABLE" $_.Exception.Message "Verify one Blockbench window, the Rework MCP plugin, and the canonical endpoint."
+  Add-Blocker "MCP_ENDPOINT_UNAVAILABLE" $_.Exception.Message "Verify one Blockbench window, the current Rework MCP plugin, and the canonical endpoint."
 } finally {
   if ($smokeSessionId) {
     try {
@@ -288,6 +352,14 @@ try {
 }
 
 if ($runtimeStatus) {
+  if ([string]$runtimeStatus.status -ne "PASS") {
+    $runtimeMessage = if ($runtimeStatus.blockers -and $runtimeStatus.blockers.Count -gt 0) {
+      [string]$runtimeStatus.blockers[0].message
+    } else {
+      "Runtime readiness did not pass."
+    }
+    Add-Blocker "MCP_RUNTIME_NOT_READY" $runtimeMessage "Resolve the reported runtime blocker and rerun this command."
+  }
   if ((Normalize-LocalUrl ([string]$runtimeStatus.server.url)) -ne (Normalize-LocalUrl $canonicalUrl)) {
     Add-Blocker "CONNECTION_CONTRACT_MISMATCH" "The plugin reports $($runtimeStatus.server.url), expected $canonicalUrl." "Reload the Rework plugin and remove the process occupying port 3000."
   }
@@ -309,12 +381,12 @@ if ($blockers.Count -gt 0) {
 }
 
 $report = [ordered]@{
-  schema_version = "1.0"
+  schema_version = "1.1"
   checked_at = $checkedAt
   result = $result
   connection = [ordered]@{
     server_key = $serverKey
-    transport = [string]$profile.transport
+    transport = [string]$connectionProfile.transport
     canonical_url = $canonicalUrl
     endpoint_reachable = $endpointReachable
     handshake_succeeded = $handshakeSucceeded
@@ -338,15 +410,20 @@ $report = [ordered]@{
     })
   }
   capabilities = [ordered]@{
-    tool_count = $toolNames.Count
+    advertised_tool_count = $toolNames.Count
     required_common_tools = $requiredTools
     missing_tools = $missingTools
+  }
+  tool_profile = [ordered]@{
+    expected = $expectedProfile
+    activation = $profileActivation
+    runtime = $profileStatus
   }
   runtime = $runtimeStatus
   blockers = @($blockers)
   warnings = @($warnings)
   next_action = if ($result -eq "PASS") {
-    "Continue with the active asset preflight through the canonical blockbench MCP connection."
+    "Connect or resume Codex through the canonical blockbench entry and continue with the active asset preflight."
   } elseif ($result -eq "RESTART_REQUIRED") {
     "Restart Codex once, then rerun this command without -InstallCodexConfig."
   } elseif ($blockers.Count -gt 0) {
@@ -367,35 +444,39 @@ $reportPath = if ($Asset) {
 }
 $report | ConvertTo-Json -Depth 40 | Set-Content -Path $reportPath -Encoding utf8
 
-if ($Asset) {
-  $statePath = Join-Path $repoRoot ("SavedData\sessions\" + $Asset + "\state.json")
-  if (Test-Path $statePath) {
-    $state = Get-Content -Raw -Path $statePath | ConvertFrom-Json
-    Set-ObjectProperty $state.mcp "server_key" $serverKey
-    Set-ObjectProperty $state.mcp "canonical_url" $canonicalUrl
-    Set-ObjectProperty $state.mcp "resolved_url" $(if ($runtimeStatus) { $runtimeStatus.server.url } else { $null })
-    Set-ObjectProperty $state.mcp "connection_status" $result
-    Set-ObjectProperty $state.mcp "capability_status" $(if ($missingTools.Count -eq 0) { "PASS" } else { "BLOCKER" })
-    Set-ObjectProperty $state.mcp "required_tools_missing" $missingTools
-    Set-ObjectProperty $state.mcp "connection_report" ("SavedData/sessions/" + $Asset + "/reports/connection.json")
-    $state.mcp.last_verified_at = $checkedAt
-    if ($runtimeStatus -and $runtimeStatus.project) {
-      $state.project.name = $runtimeStatus.project.name
-      $state.project.uuid = $runtimeStatus.project.uuid
-      $state.project.format = $runtimeStatus.project.format
-      $state.project.uv_mode = $runtimeStatus.project.uv_mode
-      $state.project.texture_width = $runtimeStatus.project.texture_width
-      $state.project.texture_height = $runtimeStatus.project.texture_height
-    }
-    $state.updated_at = $checkedAt
-    $state.updated_by = "sync-local-stack"
-    $state | ConvertTo-Json -Depth 40 | Set-Content -Path $statePath -Encoding utf8
+if ($state) {
+  Set-ObjectProperty $state.mcp "server_key" $serverKey
+  Set-ObjectProperty $state.mcp "canonical_url" $canonicalUrl
+  Set-ObjectProperty $state.mcp "resolved_url" $(if ($runtimeStatus) { $runtimeStatus.server.url } else { $null })
+  Set-ObjectProperty $state.mcp "connection_status" $result
+  Set-ObjectProperty $state.mcp "capability_status" $(if ($missingTools.Count -eq 0) { "PASS" } else { "BLOCKER" })
+  Set-ObjectProperty $state.mcp "required_tools_missing" $missingTools
+  Set-ObjectProperty $state.mcp "connection_report" ("SavedData/sessions/" + $Asset + "/reports/connection.json")
+  Set-ObjectProperty $state.mcp "active_tool_profile" $(if ($profileStatus) { [string]$profileStatus.profile_id } else { $expectedProfile })
+  Set-ObjectProperty $state.mcp "tool_profile_revision" $(if ($profileStatus) { $profileStatus.profile_revision } else { $null })
+  Set-ObjectProperty $state.mcp "tool_profile_hash" $(if ($profileStatus) { [string]$profileStatus.tool_profile_hash } else { $null })
+  Set-ObjectProperty $state.mcp "exposed_tool_count" $(if ($profileStatus) { $profileStatus.exposed_tool_count } else { $null })
+  Set-ObjectProperty $state.mcp "total_library_tool_count" $(if ($profileStatus) { $profileStatus.total_library_tool_count } else { $null })
+  Set-ObjectProperty $state.mcp "profile_reconnect_required" $false
+  Set-ObjectProperty $state.mcp "last_verified_at" $checkedAt
+
+  if ($runtimeStatus -and $runtimeStatus.project) {
+    $state.project.name = $runtimeStatus.project.name
+    $state.project.uuid = $runtimeStatus.project.uuid
+    $state.project.format = $runtimeStatus.project.format
+    $state.project.uv_mode = $runtimeStatus.project.uv_mode
+    $state.project.texture_width = $runtimeStatus.project.texture_width
+    $state.project.texture_height = $runtimeStatus.project.texture_height
   }
+  $state.updated_at = $checkedAt
+  $state.updated_by = "sync-local-stack"
+  $state | ConvertTo-Json -Depth 40 | Set-Content -Path $statePath -Encoding utf8
 }
 
 Write-Host "Connection result: $result"
 Write-Host "Canonical MCP: $canonicalUrl"
 Write-Host "Codex server key: $serverKey"
+Write-Host "Expected tool profile: $expectedProfile"
 Write-Host "Report: $reportPath"
 Write-Host "Next action: $($report.next_action)"
 
