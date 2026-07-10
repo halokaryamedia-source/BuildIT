@@ -36,6 +36,8 @@ export interface ToolProfileSnapshot {
   exposed_tools?: string[];
 }
 
+export const TOOL_PROFILE_CHANGED_EVENT = "mcp-tool-profile-changed";
+
 const config = profileConfigJson as ToolProfileConfig;
 const wrappedTools = new Set<string>();
 const geometryProfiles = new Set([
@@ -130,6 +132,15 @@ function applyToolExposure(): void {
   }
 }
 
+function emitToolProfileChanged(): void {
+  if (typeof document === "undefined") return;
+  document.dispatchEvent(
+    new CustomEvent(TOOL_PROFILE_CHANGED_EVENT, {
+      detail: getToolProfileSnapshot(false),
+    })
+  );
+}
+
 function hasOwn(args: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(args, key) && args[key] !== undefined;
 }
@@ -211,6 +222,7 @@ export function initializeToolProfiles(): ToolProfileSnapshot {
   validationErrors = validateProfileConfiguration();
   applyToolExposure();
   initialized = true;
+  emitToolProfileChanged();
 
   if (validationErrors.length > 0) {
     console.error("[MCP] Tool profile configuration errors:", validationErrors);
@@ -248,6 +260,7 @@ export function activateToolProfile(profileId: string): {
     activeProfileId = profileId;
     profileRevision += 1;
     applyToolExposure();
+    emitToolProfileChanged();
     console.log(
       `[MCP] Tool profile changed: ${previousProfile} -> ${activeProfileId}. Reconnect required for a reduced tool list.`
     );
