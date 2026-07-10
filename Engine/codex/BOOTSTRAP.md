@@ -4,7 +4,7 @@ Single operational entry point for local model production.
 
 ## Goal
 
-Build only what the approved reference package requires, using the fewest safe reads, MCP calls, screenshots, and user interruptions.
+Build only what the approved reference package requires, using the fewest safe reads, exposed tools, MCP calls, screenshots, and user interruptions.
 
 ## 1. Governance
 
@@ -24,7 +24,7 @@ Do not repeat the full governance/spec before every small edit.
 
 ## 2. Canonical Local Connection
 
-Read:
+Authority:
 
 ```text
 Engine/codex/CONNECTION_CONTRACT.md
@@ -36,21 +36,21 @@ Only connection:
 ```text
 Codex server key: blockbench
 URL: http://localhost:3000/bb-mcp
-Blockbench plugin: mcp
+Plugin: mcp
 Port: 3000
 Endpoint: /bb-mcp
 Auto port: disabled
 ```
 
-First-time Codex setup:
+First-time setup:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -InstallCodexConfig
 ```
 
-Restart Codex once after the configuration changes.
+Restart Codex once only when the config changed.
 
-Normal asset startup:
+Normal startup:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset <asset>
@@ -63,12 +63,14 @@ SavedData/sessions/<asset>/reports/connection.json
 result: PASS
 ```
 
-Do not scan ports, create alternate MCP keys, or rediscover the endpoint. After Codex connects, use `get_runtime_status` once for live confirmation.
+Do not scan ports, create another MCP key, or rediscover the endpoint.
 
-## 3. Runtime Authority
+## 3. Runtime Authorities
 
 ```text
 SavedData/sessions/<asset>/state.json
+Engine/codex/stage-profiles.json
+Engine/codex/tool-profiles.json
 ```
 
 Create missing state from:
@@ -77,13 +79,13 @@ Create missing state from:
 Engine/codex/state.template.json
 ```
 
-Supporting contracts, opened only when relevant:
+Open only when relevant:
 
 ```text
 Engine/codex/STATE_MACHINE.md
 Engine/codex/EVIDENCE_CONTRACT.md
 Engine/codex/CHECKPOINT_RECOVERY.md
-Engine/codex/stage-profiles.json
+Engine/codex/TOOL_PROFILE_CONTRACT.md
 Engine/codex/LEGACY_WORKFLOW_AUDIT.md
 ```
 
@@ -107,20 +109,71 @@ SavedData/sessions/<asset>/references/
 
 Read once when starting or recovering:
 
-1. `Engine/codex/GOVERNANCE.md`
-2. active OpenSpec summary
-3. `reports/connection.json`
-4. `state.json`
-5. `references/reference_manifest.json`
-6. `references/PRODUCTION_CONTEXT.md`
-7. `references/<asset>_reference_visual.png`
-8. active-stage category document only
+1. governance and active OpenSpec summary;
+2. `reports/connection.json`;
+3. `state.json`;
+4. `reference_manifest.json`;
+5. `PRODUCTION_CONTEXT.md`;
+6. Reference Visual;
+7. active-stage category document only.
 
-Do not load every workflow document. Open failure playbooks only when their trigger occurs.
+Do not load every workflow document. Open detailed contracts or failure playbooks only when their trigger occurs.
 
-## 6. Ponytail Batch Gate
+## 6. Exact MCP Tool Profiles
 
-Before a meaningful work batch, answer internally:
+Authority:
+
+```text
+Engine/codex/TOOL_PROFILE_CONTRACT.md
+Engine/codex/tool-profiles.json
+```
+
+Stage mapping:
+
+```text
+GEOMETRY         → BEDROCK_CUBOID_GEOMETRY
+TEXTURE          → BEDROCK_CUBOID_TEXTURE
+ANIMATION        → BEDROCK_CUBOID_ANIMATION
+FINAL_VALIDATION → FINAL_VALIDATION_READONLY
+```
+
+Repair mapping:
+
+```text
+Geometry revision  → GEOMETRY_LOCAL_REPAIR
+Texture revision   → TEXTURE_LOCAL_REPAIR
+Animation revision → ANIMATION_LOCAL_REPAIR
+```
+
+At startup:
+
+1. call `get_runtime_status` once;
+2. confirm the runtime profile matches `state.json` and the active stage;
+3. call `get_tool_profile` only when exact names are needed for diagnosis.
+
+On a real profile transition:
+
+```text
+activate_tool_profile
+→ update state profile fields
+→ reconnect the existing canonical `blockbench` entry once
+→ call get_runtime_status once
+→ continue only when profile ID/hash/count match
+```
+
+Do not reconnect after normal edits. Do not create another server key or use another port.
+
+A tool outside the active profile must fail with:
+
+```text
+TOOL_PROFILE_BLOCKED
+```
+
+Do not bypass it with `risky_eval`, UI automation, PBR, Hytale, mesh UV, or armature tools.
+
+## 7. Ponytail Batch Gate
+
+Before a meaningful batch, answer internally:
 
 ```text
 Stage:
@@ -128,8 +181,8 @@ Approved goal:
 Required now: Yes / No
 Smallest complete batch:
 Reuse available:
-Forbidden changes:
-Required tool profile:
+Protected areas:
+Active tool profile:
 Verification:
 Stop condition:
 Estimated MCP/evidence cost: Low / Medium / High
@@ -137,23 +190,23 @@ Estimated MCP/evidence cost: Low / Medium / High
 
 If `Required now: No`, do not execute it.
 
-## 7. One-Time Asset Preflight
+## 8. One-Time Asset Preflight
 
-Connection readiness is already handled by `sync-local-stack.ps1` and must not be repeated manually.
+Connection readiness is already handled by `sync-local-stack.ps1` and must not be rediscovered manually.
 
-Before the first MCP write:
+Before the first write:
 
 1. validate the approved reference package;
 2. confirm one active asset and one Codex write session;
-3. call `get_runtime_status` once;
-4. confirm project UUID, format, UV mode, texture size, and active-stage capabilities;
-5. record manual edits that must be preserved;
-6. call `save_project_checkpoint` for `00_session_start.bbmodel`;
-7. update `state.json` only after checkpoint success.
+3. confirm `BEDROCK_CUBOID_GEOMETRY` profile;
+4. verify project UUID, format, UV mode, and texture size;
+5. record manual edits to preserve;
+6. save `checkpoints/00_session_start.bbmodel`;
+7. update state only after checkpoint success.
 
-Re-run only a stale or failed check. Do not repeat the full preflight for each edit or stage.
+Re-run only stale or failed checks.
 
-## 8. State Sequence
+## 9. State Sequence
 
 ```text
 REFERENCE_READY
@@ -171,9 +224,15 @@ REFERENCE_READY
 → DONE
 ```
 
-Revision/reopen behavior is defined in `STATE_MACHINE.md`. Internal passes never create extra approval gates.
+Internal passes never create extra approval gates.
 
 # Stage 1 — Geometry
+
+Profile:
+
+```text
+BEDROCK_CUBOID_GEOMETRY
+```
 
 Internal:
 
@@ -193,18 +252,26 @@ Forbidden:
 
 Review output:
 
-- `checkpoints/10_geometry_review.bbmodel` via `save_project_checkpoint`;
+- `10_geometry_review.bbmodel`;
 - cube/group, scale, and hierarchy summary;
-- five views via `capture_standard_views` with stage `GEOMETRY`;
-- `evidence/geometry/geometry_report.json`;
+- Front, Left, Back, Top, and Front-left 3/4;
+- `geometry_report.json`;
 - concise comparison to `GEOMETRY.md` and the Reference Visual.
 
 Stop at `GEOMETRY_REVIEW`.
 
-- `APPROVED` → save `20_geometry_approved.bbmodel`, protect accepted areas, enter Texture.
-- `REVISION: ...` → patch only the named issue, capture focused evidence, return to Geometry Review.
+User decision:
+
+- `APPROVED` → save `20_geometry_approved.bbmodel`, protect accepted areas, activate `BEDROCK_CUBOID_TEXTURE`, reconnect once, enter Texture;
+- `REVISION: ...` → activate `GEOMETRY_LOCAL_REPAIR`, reconnect once if changed, patch only the named issue, capture focused evidence, return to review.
 
 # Stage 2 — Texture
+
+Profile:
+
+```text
+BEDROCK_CUBOID_TEXTURE
+```
 
 Internal:
 
@@ -219,26 +286,39 @@ No approval between internal passes.
 Forbidden:
 
 - broad Geometry redesign;
-- geometry used to imitate pixels/seams/bands/scratches;
+- geometry used to imitate pixels, seams, bands, or scratches;
 - PBR or Vibrant Visuals;
+- mesh UV for normal cuboid assets;
 - Animation work.
 
 Review output:
 
-- `checkpoints/30_texture_review.bbmodel`;
+- `30_texture_review.bbmodel`;
 - atlas preview and UV summary;
-- required model views via `capture_standard_views` with stage `TEXTURE`;
-- `evidence/texture/texture_report.json`;
+- required model views;
+- `texture_report.json`;
 - concise comparison to `TEXTURING.md` and the Reference Visual.
 
 Stop at `TEXTURE_REVIEW`.
 
-- `APPROVED` → save `40_texture_approved.bbmodel`, protect accepted areas, run/skip Animation.
-- `REVISION: ...` → patch only the named Texture/UV issue and recapture affected evidence.
+User decision:
+
+- `APPROVED` → save `40_texture_approved.bbmodel`, protect accepted areas, then:
+  - required Animation → activate `BEDROCK_CUBOID_ANIMATION`, reconnect once;
+  - no Animation → set `ANIMATION_SKIPPED`, activate `FINAL_VALIDATION_READONLY`, reconnect once;
+- `REVISION: ...` → activate `TEXTURE_LOCAL_REPAIR`, reconnect once if changed, patch only the named UV/texture issue, recapture atlas and affected views.
 
 # Stage 3 — Animation (Optional)
 
 Run only when the manifest or `ANIMATION.md` defines required motion.
+
+Profile:
+
+```text
+BEDROCK_CUBOID_ANIMATION
+```
+
+The normal profile uses Blockbench group/bone animation. It excludes mesh armatures and vertex weights.
 
 When not required:
 
@@ -254,35 +334,45 @@ When required, build only approved hierarchy, pivots, and clips without altering
 
 Review output:
 
-- `checkpoints/50_animation_review.bbmodel`;
+- `50_animation_review.bbmodel`;
 - hierarchy/pivot summary;
-- required clips or samples;
+- required clips or sampled poses;
 - neutral-pose recovery;
 - clipping and ground-contact result.
 
 Stop at `ANIMATION_REVIEW`.
 
-- `APPROVED` → save `60_animation_approved.bbmodel`, protect accepted areas, enter Final Validation.
-- `REVISION: ...` → patch only the named motion/pivot/clipping/timing issue.
+User decision:
+
+- `APPROVED` → save `60_animation_approved.bbmodel`, protect accepted areas, activate `FINAL_VALIDATION_READONLY`, reconnect once;
+- `REVISION: ...` → activate `ANIMATION_LOCAL_REPAIR`, reconnect once if changed, patch only the named motion/pivot/clipping/timing issue.
 
 # Stage 4 — Final Validation
 
+Profile:
+
+```text
+FINAL_VALIDATION_READONLY
+```
+
 Execute `VALIDATION.md` against the final candidate, textures, five views, hierarchy/pivots, required animations, Blockbench validator, and export readiness.
 
-Codex may repair at most two clearly local failures automatically. Broad changes return to the relevant approved stage. No new features or unrelated polish.
+The profile is read-mostly. It does not silently expose Geometry, Texture, or Animation write tools.
+
+Codex may repair at most two clearly local failures, but must first activate the matching local-repair profile and route back to the correct stage. Broad changes always return to the relevant approved stage. No new features or unrelated polish.
 
 Output:
 
-- `checkpoints/70_final_candidate.bbmodel`;
+- `70_final_candidate.bbmodel`;
 - candidate `.bbmodel` and textures in `final/`;
 - completed `VALIDATION.md`;
-- five views via `capture_standard_views` with stage `FINAL`;
-- final atlas and revision summary;
+- five final views and atlas;
+- revision summary;
 - `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-After PASS, save `80_validation_pass.bbmodel`. Stop at `FINAL_REVIEW` and wait for approval/corrections.
+After PASS, save `80_validation_pass.bbmodel`. Stop at `FINAL_REVIEW` and wait for approval or corrections.
 
-## 9. Revision Rule
+## 10. Revision Rule
 
 For revisions only:
 
@@ -297,29 +387,48 @@ Issue:
 Expected:
 Do not change:
 Reference:
+Tool repair profile:
 Verification:
 Rollback checkpoint:
 ```
 
-Do not rebuild accepted areas. Follow `STATE_MACHINE.md` for local fix versus stage reopen.
+Do not rebuild accepted areas.
 
-## 10. Stop Conditions
+## 11. Diagnostic Escalation
+
+`DIAGNOSTIC_ESCALATION` may expose the full library only after recording:
+
+```text
+Blocker:
+Why normal stage/repair tools cannot solve it:
+Allowed high-risk tool:
+Rollback checkpoint:
+Verification:
+Stop condition:
+```
+
+Return to the correct normal or repair profile immediately after the blocker is resolved.
+
+## 12. Stop Conditions
 
 Stop and report only when:
 
 - `REFERENCE_CONFLICT`;
 - connection readiness is not `PASS`;
-- required MCP capability is unavailable;
+- tool profile validation fails;
+- required capability is unavailable from the correct profile;
 - project/session ownership is ambiguous;
 - checkpoint/evidence creation fails;
 - the same blocker fails twice;
 - a requested change requires reopening an approved stage.
 
-## 11. Compact Stage Report
+## 13. Compact Stage Report
 
 ```text
 Stage:
 Status: PASS / REVISION_REQUIRED / BLOCKER
+Active profile:
+Exposed tool count:
 Completed:
 Preserved:
 Checkpoint:
@@ -328,7 +437,7 @@ Issues:
 Next user action: APPROVED or REVISION: ...
 ```
 
-## 12. Local Verification and CI
+## 14. Local Verification and CI
 
 Use `Engine/codex/LOCAL_DRY_RUN.md` after the local stack is ready.
 
