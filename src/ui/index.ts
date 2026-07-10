@@ -4,6 +4,11 @@ import { VERSION } from "@/lib/constants";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
 import { sessionManager, type Session } from "@/lib/sessions";
 import { serverState, type McpServerState } from "@/lib/serverState";
+import {
+  getToolProfileSnapshot,
+  TOOL_PROFILE_CHANGED_EVENT,
+  type ToolProfileSnapshot,
+} from "@/lib/toolProfiles";
 import { openToolTestDialog } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
 import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
@@ -16,6 +21,7 @@ let panel: Panel | undefined;
 let unsubscribe: (() => void) | undefined;
 let unsubscribeServer: (() => void) | undefined;
 let overrideListener: (() => void) | undefined;
+let toolProfileListener: (() => void) | undefined;
 
 export function uiSetup({
   server,
@@ -31,6 +37,14 @@ export function uiSetup({
   Blockbench.addCSS(panelCSS);
 
   statusBarSetup(server);
+
+  const mapTools = () =>
+    Object.values(tools).map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      enabled: tool.enabled,
+      status: tool.status,
+    }));
 
   panel = new Panel("mcp_panel", {
     id: "mcp_panel",
@@ -66,9 +80,19 @@ export function uiSetup({
           vm.server.projectUuid = runtime.projectUuid ?? "";
         });
 
-        const handler = () => vm.$forceUpdate();
-        document.addEventListener(PROMPT_OVERRIDE_CHANGED, handler);
-        overrideListener = () => document.removeEventListener(PROMPT_OVERRIDE_CHANGED, handler);
+        const overrideHandler = () => vm.$forceUpdate();
+        document.addEventListener(PROMPT_OVERRIDE_CHANGED, overrideHandler);
+        overrideListener = () =>
+          document.removeEventListener(PROMPT_OVERRIDE_CHANGED, overrideHandler);
+
+        const profileHandler = () => {
+          vm.tools = mapTools();
+          vm.toolProfile = getToolProfileSnapshot(false);
+          vm.$forceUpdate();
+        };
+        document.addEventListener(TOOL_PROFILE_CHANGED_EVENT, profileHandler);
+        toolProfileListener = () =>
+          document.removeEventListener(TOOL_PROFILE_CHANGED_EVENT, profileHandler);
       },
       beforeDestroy() {
         if (unsubscribe) {
@@ -83,9 +107,19 @@ export function uiSetup({
           overrideListener();
           overrideListener = undefined;
         }
+        if (toolProfileListener) {
+          toolProfileListener();
+          toolProfileListener = undefined;
+        }
       },
       data: () => ({
-        sessions: [] as Array<{ id: string; connectedAt: Date; lastActivity: Date; clientName?: string; clientVersion?: string }>,
+        sessions: [] as Array<{
+          id: string;
+          connectedAt: Date;
+          lastActivity: Date;
+          clientName?: string;
+          clientVersion?: string;
+        }>,
         server: {
           connected: false,
           name: "Blockbench MCP",
@@ -101,12 +135,8 @@ export function uiSetup({
           projectName: "",
           projectUuid: "",
         },
-        tools: Object.values(tools).map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          enabled: tool.enabled,
-          status: tool.status,
-        })),
+        toolProfile: getToolProfileSnapshot(false) as ToolProfileSnapshot,
+        tools: mapTools(),
         resources: Object.values(resources).map((resource) => ({
           name: resource.name,
           description: resource.description,
@@ -132,17 +162,43 @@ export function uiSetup({
         },
       }),
       computed: {
-        filteredTools(): Array<{ name: string; description: string; enabled: boolean; status: string }> {
+        filteredTools(): Array<{
+          name: string;
+          description: string;
+          enabled: boolean;
+          status: string;
+        }> {
           // @ts-ignore - Vue component context
           const { tools, toolsFilter } = this;
           const searchLower = toolsFilter.search.toLowerCase();
-          return tools.filter((tool: { name: string; status: string }) => {
-            if (tool.status === "experimental" && !toolsFilter.showExperimental) return false;
-            if (searchLower && !tool.name.toLowerCase().includes(searchLower)) return false;
-            return true;
-          });
+          return tools.filter(
+            (tool: {
+              name: string;
+              status: string;
+              enabled: boolean;
+            }) => {
+              if (!tool.enabled) return false;
+              if (
+                tool.status === "experimental" &&
+                !toolsFilter.showExperimental
+              ) {
+                return false;
+              }
+              if (
+                searchLower &&
+                !tool.name.toLowerCase().includes(searchLower)
+              ) {
+                return false;
+              }
+              return true;
+            }
+          );
         },
-        filteredResources(): Array<{ name: string; description: string; uriTemplate: string }> {
+        filteredResources(): Array<{
+          name: string;
+          description: string;
+          uriTemplate: string;
+        }> {
           // @ts-ignore - Vue component context
           const { resources, resourcesFilter } = this;
           const searchLower = resourcesFilter.search.toLowerCase();
@@ -151,25 +207,50 @@ export function uiSetup({
             resource.name.toLowerCase().includes(searchLower)
           );
         },
-        filteredPrompts(): Array<{ name: string; description: string; enabled: boolean; status: string; argumentCount: number }> {
+        filteredPrompts(): Array<{
+          name: string;
+          description: string;
+          enabled: boolean;
+          status: string;
+          argumentCount: number;
+        }> {
           // @ts-ignore - Vue component context
           const { prompts, promptsFilter } = this;
           const searchLower = promptsFilter.search.toLowerCase();
-          return prompts.filter((prompt: { name: string; status: string }) => {
-            if (prompt.status === "experimental" && !promptsFilter.showExperimental) return false;
-            if (searchLower && !prompt.name.toLowerCase().includes(searchLower)) return false;
-            return true;
-          });
+          return prompts.filter(
+            (prompt: { name: string; status: string }) => {
+              if (
+                prompt.status === "experimental" &&
+                !promptsFilter.showExperimental
+              ) {
+                return false;
+              }
+              if (
+                searchLower &&
+                !prompt.name.toLowerCase().includes(searchLower)
+              ) {
+                return false;
+              }
+              return true;
+            }
+          );
         },
       },
       methods: {
-        tl(key: string, variables?: string | number | (string | number)[]): string {
+        tl(
+          key: string,
+          variables?: string | number | (string | number)[]
+        ): string {
           return tl(key, variables);
         },
         getDisplayName(toolName: string): string {
           return toolName.replace("blockbench_", "");
         },
-        formatSessionId(session: { id: string; clientName?: string; clientVersion?: string }): string {
+        formatSessionId(session: {
+          id: string;
+          clientName?: string;
+          clientVersion?: string;
+        }): string {
           if (session.clientName) {
             return session.clientVersion
               ? `${session.clientName} v${session.clientVersion}`
