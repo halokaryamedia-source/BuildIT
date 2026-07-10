@@ -1,214 +1,249 @@
 # Bedrock Model Production Workflow
 
-This is the short production flow for Minecraft Bedrock / Blockbench MCP work.
+This is the short production overview for the Rework branch.
 
-Use this as the phase overview. Execution details stay in:
-
-- `workflow-quick-reference.md`
-- `reference-package-pass-fail-checklist.md`
-- `pre-modelling-gate.md`
-- `mandatory-blockbench-mcp-procedure.md`
-- `phase-detail-contract.md`
-- `quality-implementation-rules.md`
-
-## Core Flow
-
-1. Brief Asset
-2. Reference Package
-3. Reference Gate
-4. Main Geometry
-5. Geometry Detailing
-6. UV Texture
-7. Base Texturing
-8. Detail Texturing
-9. Polish
-10. Final Review
-
-## 1. Brief Asset
-
-Goal: understand the asset before generating references or editing Blockbench.
-
-Required answers:
-
-- What to make.
-- In-game function.
-- Target size/scale.
-- Style/theme.
-- Animation needed: yes/no/not sure.
-- UV atlas target.
-- Texture style target.
-
-The brief can come directly from the user, Codex, ChatGPT, or another reference helper. The tool does not matter; the output must be clear enough for Codex to build the reference package.
-
-## 2. Reference Package
-
-Goal: create asset-specific references from the approved 8-sheet template.
-
-Required structure:
+Primary operational entry:
 
 ```text
-01 shape / orthographic views
-02 scale
-03 silhouette
-04 part breakdown
-05 color / texture
-06 close-up detail
-07 execution target
-08 pivot optional
+Engine/codex/BOOTSTRAP.md
 ```
 
-References must match the actual target asset from the brief. Do not reuse a sample asset identity unless the user asks to model that asset. Sample packages teach layout, quality, and interpretation only.
+Runtime authority:
 
-## 3. Reference Gate
+```text
+SavedData/sessions/<asset>/state.json
+```
 
-Goal: prove the reference package is usable before Blockbench.
+## Approved Reference Package
 
-Required pass:
+```text
+PRODUCTION_CONTEXT.md
+<asset>_reference_visual.png
+GEOMETRY.md
+TEXTURING.md
+ANIMATION.md
+VALIDATION.md
+reference_manifest.json
+CODEX_REFERENCE_HANDOFF.md
+```
 
-- All required sheets and `.notes.md` exist.
-- `reference_manifest.json` is valid.
-- `CODEX_REFERENCE_HANDOFF.md` is clear.
-- Geometry-level and texture-only details do not conflict.
-- Scale, front direction, atlas target, and texture style are locked.
-- User approves the reference package.
+New sessions do not require legacy numbered reference sheets.
 
-Use `reference-package-pass-fail-checklist.md` and `pre-modelling-gate.md`.
+## User-Visible Flow
 
-## 4. Main Geometry
+```text
+Reference Intake + One-Time Preflight
+→ Geometry
+→ Geometry Review
+→ Texture
+→ Texture Review
+→ Animation Review when required, otherwise skip
+→ Final Validation
+→ Final Review
+→ Done
+```
 
-Goal: build only the large readable form.
+Internal technical passes remain explicit but do not create separate user approvals.
 
-Use reference sheets:
+## 0. Reference Intake and Preflight
 
-- Sheet 01 for shape and views.
-- Sheet 02 for scale.
-- Sheet 03 for silhouette.
-- Sheet 04 for construction zones.
-- Sheet 07 for execution locks.
-- Sheet 08 only for pivot-readiness if relevant.
+Goal: prove the package and runtime are ready before the first Blockbench write.
 
-Allowed:
+Required:
 
-- scale envelope
-- silhouette
-- broad part groups
-- parent/attachment structure
-- placeholder colors
+- package files exist and manifest is valid;
+- Production Context and Reference Visual identify one clear target;
+- Geometry, Texturing, Animation, and Validation documents do not conflict materially;
+- Animation requirement is explicit;
+- `state.json` exists;
+- one active project/session owner is clear;
+- MCP endpoint and active-stage tools are available;
+- project UUID, format, UV mode, and texture dimensions are recorded;
+- manual edits to preserve are recorded;
+- persistent session-start checkpoint is created.
 
-Forbidden:
+No user approval is required when intake and preflight pass.
 
-- UV work
-- texture painting
-- tiny trim/detail cubes
-- solving geometry failure with color
+Stop only for `REFERENCE_CONFLICT` or a runtime `BLOCKER`.
 
-## 5. Geometry Detailing
+## 1. Geometry
 
-Goal: add only structural details that improve the model.
+Internal passes:
 
-Use Sheet 04, Sheet 06, Sheet 07, and Sheet 08 if relevant.
+```text
+Primary Form
+→ Structural Detail
+```
 
-Allowed:
-
-- secondary silhouette detail
-- clear attachments
-- readable structural accents
-
-Forbidden:
-
-- texture-only seams, scratches, color bands, glow pixels, or tiny trim as geometry
-- UV or texture work
-
-## 6. UV Texture
-
-Goal: prepare the atlas and per-face UV logic.
-
-Use Sheet 02 for atlas target and Sheet 05 for texture placement.
-
-Allowed:
-
-- atlas setup
-- per-face UV layout
-- symmetry/UV consistency checks
-
-Forbidden:
-
-- final painting
-- changing geometry to fit texture unless a blocker is found
-
-## 7. Base Texturing
-
-Goal: place broad material zones and main colors.
-
-Use Sheet 05 as the authority.
+Goal: produce the complete approved physical form before texture work.
 
 Allowed:
 
-- main material colors
-- large color zones
-- stepped base shading
+- scale envelope;
+- primary and silhouette-critical masses;
+- ground-contact parts;
+- hierarchy and attachments;
+- rotations that improve approved form;
+- bounded multi-part initial construction;
+- structural detail that texture cannot represent;
+- placeholder/untextured geometry.
 
 Forbidden:
 
-- micro detail before base material zones read clearly
-- changing UV or geometry without reopening the relevant phase
+- UV packing;
+- texture painting;
+- decorative micro-cubes;
+- geometry used only for color, seams, scratches, bands, or tiny trim;
+- animation clips;
+- final export.
 
-## 8. Detail Texturing
+Review output:
 
-Goal: add pixel detail after the base read works.
+- persistent Geometry review checkpoint;
+- Front, Left Side, Back, Top / Footprint, and Front-left 3/4;
+- dimensions, hierarchy, ground-contact, and cube report;
+- `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-Use Sheet 05 and Sheet 06.
+After approval, save the approved Geometry checkpoint and protect accepted areas.
+
+## 2. Texture
+
+Internal passes:
+
+```text
+UV
+→ Base Texture
+→ Detail Texture
+```
+
+Goal: produce the approved Classic Bedrock texture and UV result without interrupting the user between internal passes.
 
 Allowed:
 
-- pixel detail
-- trim
-- stepped shading
-- accent colors
-- small texture-only features
+- approved atlas setup;
+- per-face/Box UV according to `TEXTURING.md`;
+- safe shared/mirrored UV;
+- unique directional areas where required;
+- base material zones;
+- stepped shading;
+- focal detail;
+- local seam and palette corrections.
 
 Forbidden:
 
-- adding geometry for texture details
-- making accents overpower the main material read
+- broad Geometry redesign;
+- geometry used to solve pixel-level detail;
+- PBR or Vibrant Visuals;
+- Animation work;
+- extra texture files or larger atlas without approved need.
 
-## 9. Polish
+Review output:
 
-Goal: small fixes only.
+- persistent Texture review checkpoint;
+- texture atlas;
+- Front, Left Side, Back, and Front-left 3/4;
+- UV/material report;
+- `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-Use all approved sheets, especially Sheet 07.
+After approval, save the approved Texture checkpoint and protect accepted areas.
 
-Allowed:
+## 3. Animation — Optional
 
-- local visual fixes
-- small UV/texture cleanup
-- final view consistency
+Run only when the manifest or `ANIMATION.md` requires at least one animation family or interactive motion.
+
+When not required:
+
+```text
+ANIMATION_SKIPPED
+```
+
+Do not create optional animation merely for completeness.
+
+When required, allowed work includes:
+
+- approved hierarchy and pivots;
+- required clips or sampled motion;
+- neutral-pose recovery;
+- ground-contact and clipping correction.
 
 Forbidden:
 
-- broad redesign
-- changing scale or silhouette without reopening earlier phases
+- changing approved Geometry or Texture silently;
+- unrequested clips;
+- broad rig redesign beyond the approved motion contract.
 
-## 10. Final Review
+Review output:
 
-Goal: compare the final model against the reference package per sheet.
+- persistent Animation review checkpoint;
+- hierarchy/pivot summary;
+- neutral pose;
+- required clips or representative samples;
+- clipping/ground-contact result.
 
-Review checklist:
+## 4. Final Validation
 
-- Sheet 01: shape and view match.
-- Sheet 02: scale and atlas target match.
-- Sheet 03: silhouette readable.
-- Sheet 04: part groups correct.
-- Sheet 05: palette, material zones, texture style correct.
-- Sheet 06: detail interpretation correct.
-- Sheet 07: execution target passed.
-- Sheet 08: pivot/hierarchy safe if relevant.
+Goal: prove the final candidate matches all approved authorities and is ready for user acceptance.
 
-## Global Rules
+Validate:
 
-- Do not edit Blockbench before the Reference Gate passes.
-- Do not skip phases unless the user explicitly approves.
-- Do not continue to the next phase until the user approves the current phase.
-- Use the reference package in every phase, not only at the start.
-- Use geometry for silhouette, structure, depth, attachment, pose, animation readiness, gameplay readability, and focal identity.
-- Use texture for stripes, seams, scratches, small panels, shadows, gradients, trims, and 1-2 pixel details.
+- final `.bbmodel` and textures;
+- five standard views;
+- Reference Visual match;
+- Geometry contract;
+- Texturing contract;
+- Animation contract or skip;
+- Blockbench validator;
+- naming and export readiness;
+- completed `VALIDATION.md`.
+
+Codex may fix at most two clearly local validation failures automatically.
+
+Broad failure returns to Geometry, Texture, or Animation review. Final Validation cannot add new features or perform broad polish.
+
+Review output:
+
+- final candidate `.bbmodel`;
+- textures;
+- five final views and atlas;
+- completed validation report;
+- animation evidence when applicable;
+- concise revision summary;
+- `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
+
+User approval changes state to `DONE`.
+
+## Revision Rule
+
+Initial stage construction may use bounded multi-part batches.
+
+Revision cycles use:
+
+```text
+one named issue or one tightly related issue pair
+```
+
+Each revision records:
+
+- stage;
+- part;
+- issue;
+- expected result;
+- accepted areas to preserve;
+- reference;
+- verification;
+- rollback checkpoint.
+
+Do not rebuild accepted work unless the relevant earlier stage is explicitly reopened.
+
+## Global Efficiency Rules
+
+- OpenSpec remembers goal, boundaries, decisions, and acceptance criteria.
+- Ponytail selects the smallest complete safe action needed now.
+- Run the full preflight once; re-run only stale checks.
+- Use the active-stage document and tool profile only.
+- Capture screenshots at review gates or after meaningful revision batches.
+- Prefer bounded initial batches over one MCP call per cube.
+- Prefer focused evidence over large data dumps.
+- Use texture for minor surface detail.
+- Stop when the active stage acceptance criteria are met.
+- CI and integration remain deferred until Rework is intentionally ready for final verification.
