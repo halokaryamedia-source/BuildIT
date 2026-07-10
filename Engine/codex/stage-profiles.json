@@ -1,14 +1,16 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "global": {
     "runtime_authority": "SavedData/sessions/<asset>/state.json",
     "governance": "Engine/codex/GOVERNANCE.md",
     "state_contract": "Engine/codex/STATE_MACHINE.md",
     "evidence_contract": "Engine/codex/EVIDENCE_CONTRACT.md",
     "checkpoint_contract": "Engine/codex/CHECKPOINT_RECOVERY.md",
+    "tool_profile_contract": "Engine/codex/tool-profiles.json",
     "initial_build_mode": "bounded_batches",
     "revision_mode": "one_named_issue_or_tightly_related_pair",
-    "accepted_area_policy": "immutable_unless_explicitly_reopened"
+    "accepted_area_policy": "immutable_unless_explicitly_reopened",
+    "profile_transition_policy": "activate_then_reconnect_once"
   },
   "camera": {
     "front_axis_default": "-z",
@@ -24,6 +26,8 @@
   },
   "profiles": {
     "GEOMETRY": {
+      "tool_profile_id": "BEDROCK_CUBOID_GEOMETRY",
+      "repair_tool_profile_id": "GEOMETRY_LOCAL_REPAIR",
       "entry_states": ["REFERENCE_READY", "GEOMETRY_REVISION"],
       "working_state": "GEOMETRY_IN_PROGRESS",
       "review_state": "GEOMETRY_REVIEW",
@@ -35,17 +39,6 @@
         "GEOMETRY.md"
       ],
       "required_skill_profiles": ["blockbench-use", "blockbench-modeling"],
-      "preferred_tool_domains": [
-        "project",
-        "history",
-        "groups",
-        "cubes",
-        "elements",
-        "camera",
-        "outline",
-        "export"
-      ],
-      "forbidden_tool_domains": ["paint", "uv", "animation", "final_export"],
       "internal_passes": ["PRIMARY_FORM", "STRUCTURAL_DETAIL"],
       "review_gate": "GEOMETRY_REVIEW",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
@@ -62,6 +55,8 @@
       "next_after_approval": "TEXTURE_IN_PROGRESS"
     },
     "TEXTURE": {
+      "tool_profile_id": "BEDROCK_CUBOID_TEXTURE",
+      "repair_tool_profile_id": "TEXTURE_LOCAL_REPAIR",
       "entry_states": ["GEOMETRY_APPROVED", "TEXTURE_REVISION"],
       "working_state": "TEXTURE_IN_PROGRESS",
       "review_state": "TEXTURE_REVIEW",
@@ -74,17 +69,6 @@
         "TEXTURING.md"
       ],
       "required_skill_profiles": ["blockbench-use", "blockbench-texturing"],
-      "preferred_tool_domains": [
-        "project",
-        "history",
-        "texture",
-        "uv",
-        "cube_uv",
-        "paint",
-        "camera",
-        "export"
-      ],
-      "forbidden_tool_domains": ["animation", "broad_geometry_rebuild", "final_export"],
       "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
       "review_gate": "TEXTURE_REVIEW",
       "review_checkpoint": "checkpoints/30_texture_review.bbmodel",
@@ -101,6 +85,8 @@
       "next_after_approval": "ANIMATION_IN_PROGRESS_OR_SKIPPED"
     },
     "ANIMATION": {
+      "tool_profile_id": "BEDROCK_CUBOID_ANIMATION",
+      "repair_tool_profile_id": "ANIMATION_LOCAL_REPAIR",
       "entry_states": ["TEXTURE_APPROVED", "ANIMATION_REVISION"],
       "working_state": "ANIMATION_IN_PROGRESS",
       "review_state": "ANIMATION_REVIEW",
@@ -114,16 +100,6 @@
         "ANIMATION.md"
       ],
       "required_skill_profiles": ["blockbench-use", "blockbench-modeling"],
-      "preferred_tool_domains": [
-        "project",
-        "history",
-        "groups",
-        "armature",
-        "animation",
-        "camera",
-        "export"
-      ],
-      "forbidden_tool_domains": ["broad_geometry_rebuild", "texture_repaint", "final_export"],
       "optional": true,
       "run_when": "manifest or ANIMATION.md lists at least one required animation family or interactive motion",
       "skip_when": "no required animation family or interactive motion is listed",
@@ -141,6 +117,7 @@
       "next_after_approval_or_skip": "FINAL_VALIDATION"
     },
     "FINAL_VALIDATION": {
+      "tool_profile_id": "FINAL_VALIDATION_READONLY",
       "entry_states": ["ANIMATION_APPROVED", "ANIMATION_SKIPPED", "FINAL_REVISION"],
       "working_state": "FINAL_VALIDATION",
       "review_state": "FINAL_REVIEW",
@@ -155,17 +132,6 @@
         "VALIDATION.md"
       ],
       "required_skill_profiles": ["blockbench-use"],
-      "preferred_tool_domains": [
-        "project",
-        "validator",
-        "camera",
-        "outline",
-        "texture",
-        "animation",
-        "export",
-        "history"
-      ],
-      "forbidden_tool_domains": ["unscoped_redesign", "new_features", "broad_polish"],
       "automatic_local_fix_limit": 2,
       "review_gate": "FINAL_REVIEW",
       "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
@@ -182,7 +148,7 @@
         "front_left_3_4": "evidence/final/final_front_left_3_4.png",
         "atlas": "evidence/final/final_texture_atlas.png"
       },
-      "broad_failure_rule": "return to the relevant approved stage instead of silently fixing"
+      "broad_failure_rule": "activate the relevant repair profile and return to the correct stage instead of silently fixing"
     }
   }
 }
