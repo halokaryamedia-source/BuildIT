@@ -1,100 +1,33 @@
 # Active Project
 
-## Current Project State
+This file is a human-readable pointer only.
 
-Project: MCP-Blockbench Asset Studio
-Current model in progress: kangaroo
-Target Category: Bedrock Entity
-Current Phase: Reference Collection
-Status: In Progress
-Priority: High / Medium / Low
-Start Date:
-Last Updated:
-Project Owner:
-Expected Output:
-- Model file package in Blockbench only (no final export yet)
+Runtime authority:
 
-Active model folder:
-- `SavedData/sessions/kangaroo/`
+```text
+SavedData/sessions/<asset>/state.json
+```
 
-## Active Source References
+## Current Asset
 
-- OpenSpec:
-  - `openspec/config.yaml`
-  - `openspec/changes/mcp-blockbench-workflow/`
-- Core workflow docs:
-  - `SourceDocument/README.md`
-  - `SourceDocument/modeling/operator-one-page-checklist.md`
-  - `SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md`
-  - `SourceDocument/modeling/phase-detail-contract.md`
-  - `SourceDocument/modeling/quality-implementation-rules.md`
-- MCP/session controls:
-  - `SourceDocument/modeling/efficient-mcp-session-flow.md`
-  - `SourceDocument/modeling/model-session-checklist-template.md`
-  - `SourceDocument/modeling/model-session-lock-template.md`
-  - `SourceDocument/modeling/ops/README.md`
-  - `SourceDocument/modeling/ops/session-lock-protocol.md`
-- ChatGPT reference orchestration:
-  - `SourceDocument/modeling/chatgpt-system-read-first.md`
-  - `SourceDocument/modeling/chatgpt-ready-reference-generator-prompt.md`
-  - `SourceDocument/modeling/chatgpt-upload-zip-rebuild-instructions.md`
-- Engineering/design specs:
-  - `SourceDocument/planning/00-context-lock.md`
-  - `SourceDocument/planning/01-prd.md`
-  - `SourceDocument/planning/02-srs.md`
-  - `SourceDocument/planning/03-system-design.md`
-  - `SourceDocument/planning/04-uiux-flow.md`
-  - `SourceDocument/planning/05-task-breakdown.md`
-- QA and quality:
-  - `SourceDocument/modeling/modeling-phase-quality-playbook.md`
-  - `SourceDocument/modeling/phase-quality-insight-matrix.md`
-  - `SourceDocument/modeling/phase-quality-scorecard-template.md`
-  - `SourceDocument/modeling/visual-qa-checklist.md`
-  - `SourceDocument/modeling/quality-implementation-rules.md`
+- Project: MCP-Blockbench Asset Studio
+- Asset: `kangaroo`
+- Target: Bedrock Entity
+- Session folder: `SavedData/sessions/kangaroo/`
+- State file: `SavedData/sessions/kangaroo/state.json`
+- Workflow: `Engine/codex/BOOTSTRAP.md`
+- Active OpenSpec change: `openspec/changes/codex-local-workflow-rework/`
 
-## Asset Workspace
+## Migration Note
 
-- Session folder: `SavedData/sessions/<asset_name>/`
-  - `session.md` (single source of session progress)
-  - `session-lock.md` (per-session MCP lock)
-  - `references/` (reference package)
-  - `final-screenshots/` (approved captures)
-  - `phase-screenshots/` (optional, per phase only)
+The existing kangaroo session was created under the legacy phase/reference flow.
 
-## Workflow Checkpoints
+Before the next MCP write:
 
-- Before start:
-  - Validate OpenSpec + required checks
-  - Confirm one active session lock
-  - Run smoke test
-  - Run `phase-risk-simulation`
-- Per phase:
-  - one phase only
-  - phase scorecard required
-  - no broad redesign
-  - max 2 critical fixes per cycle
-- Before next phase:
-  - scorecard must be PASS
-  - user explicit approval recorded
+1. create or update `SavedData/sessions/kangaroo/state.json` from `Engine/codex/state.template.json`;
+2. validate or replace the legacy reference package with the approved package format;
+3. run the one-time pre-modelling gate;
+4. set the current user-visible stage to Geometry, Texture, optional Animation, or Final Validation based on verified artifacts;
+5. preserve all existing manual model edits.
 
-## Decisions & Logs
-
-- Key decisions:
-  - <entry>
-- Blockers:
-  - <entry>
-- Validation failures:
-  - <entry>
-- Final note:
-  - <entry>
-
-## Finalization
-
-- Final visual review:
-  - Front / Side / Back / 3-4
-  - Texture atlas
-  - UV compactness check
-  - Cube budget check
-- Final status:
-  - Ready for handoff / Hold for manual edits / Needs new reference / Export pending
-
+Do not infer active stage from this pointer when `state.json` exists.
