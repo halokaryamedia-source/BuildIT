@@ -70,6 +70,7 @@ SavedData/sessions/<asset>/
 │     ├─ validation_report.json
 │     └─ completed_VALIDATION.md
 ├─ reports/
+│  ├─ connection.json
 │  ├─ preflight.json
 │  └─ validation.json
 └─ final/
@@ -78,7 +79,7 @@ SavedData/sessions/<asset>/
    └─ revision_summary.md
 ```
 
-Create only the Animation checkpoint/evidence files that are relevant. When Animation is skipped, do not create fake clips or hierarchy evidence.
+Create only relevant Animation files. When Animation is skipped, do not create fake clips or hierarchy evidence.
 
 ## Naming
 
@@ -86,26 +87,34 @@ Create only the Animation checkpoint/evidence files that are relevant. When Anim
 <asset> = lowercase_snake_case
 ```
 
-Do not add timestamps, `_v2`, `_final_final`, or other version suffixes to approved checkpoint/evidence filenames.
-
-Use cache/archive folders for failed or superseded attempts.
+Do not add timestamps, `_v2`, `_final_final`, or other version suffixes to approved checkpoint/evidence filenames. Use cache/archive folders for failed or superseded attempts.
 
 ## Authority
 
 - `state.json`: runtime authority.
+- `reports/connection.json`: canonical Codex ↔ Blockbench MCP readiness result.
 - `session.md`: optional human summary generated from state when useful.
 - `session-lock.md`: session ownership mirror; cannot override state.
 - `references/`: approved immutable input unless the reference stage is reopened.
 - `checkpoints/`: persistent recovery states and adjacent metadata.
 - `evidence/`: stable user-review and validation evidence.
-- `reports/`: machine-readable preflight and validation results.
+- `reports/`: connection, preflight, and validation results.
 - `final/`: only final accepted model, textures, and concise revision summary.
+
+## Connection Rule
+
+Use:
+
+```text
+Engine/codex/CONNECTION_CONTRACT.md
+Engine/codex/scripts/sync-local-stack.ps1
+```
+
+`connection.json` must be `PASS` before asset preflight or any MCP write. Do not create alternate endpoint reports or project-specific MCP keys.
 
 ## Checkpoint Rule
 
-Use `save_project_checkpoint`.
-
-Required durable points:
+Use `save_project_checkpoint` at:
 
 - session start;
 - each stage review;
@@ -113,25 +122,13 @@ Required durable points:
 - final candidate;
 - validation pass.
 
-Checkpoint creation must succeed before `state.json` points to it.
-
-See:
-
-```text
-Engine/codex/CHECKPOINT_RECOVERY.md
-```
+Checkpoint creation must succeed before `state.json` points to it. See `Engine/codex/CHECKPOINT_RECOVERY.md`.
 
 ## Evidence Rule
 
-Use `capture_standard_views` for Geometry and final five-view sets, and for the required Texture view subset.
+Use `capture_standard_views` for Geometry and final five-view sets, and for the required Texture subset. See `Engine/codex/EVIDENCE_CONTRACT.md`.
 
-See:
-
-```text
-Engine/codex/EVIDENCE_CONTRACT.md
-```
-
-A revision recaptures affected views only unless the change can affect global consistency.
+A revision recaptures affected views only unless the change affects global consistency.
 
 ## Temporary Files
 
@@ -141,15 +138,7 @@ Use:
 SavedData/cache/<asset>/
 ```
 
-for:
-
-- failed screenshots;
-- experiments;
-- temporary exports;
-- diagnostics;
-- superseded review candidates that are not required for recovery.
-
-Do not mix temporary files with approved evidence or final output.
+for failed screenshots, experiments, temporary exports, diagnostics, and superseded candidates not needed for recovery. Do not mix temporary files with approved evidence or final output.
 
 ## Session Creation
 
@@ -158,30 +147,26 @@ For a new asset:
 1. create the folder structure;
 2. copy the approved reference package into `references/`;
 3. create `state.json` from `Engine/codex/state.template.json`;
-4. validate package and Animation requirement;
-5. create/verify the session lock after project and endpoint verification;
-6. call `save_project_checkpoint` for `00_session_start.bbmodel`;
-7. update state only after checkpoint success;
-8. enter `GEOMETRY_IN_PROGRESS`.
+4. open one Blockbench instance and the intended project;
+5. run `sync-local-stack.ps1 -Asset <asset>`;
+6. continue only when `reports/connection.json` is `PASS`;
+7. validate package and Animation requirement;
+8. create/verify the Codex session lock;
+9. call `save_project_checkpoint` for `00_session_start.bbmodel`;
+10. update state only after checkpoint success;
+11. enter `GEOMETRY_IN_PROGRESS`.
 
 ## Cleanup
 
-Keep:
+Keep approved stage checkpoints, current review candidate, validation pass, approved evidence, connection/preflight/validation reports, and final accepted output.
 
-- approved stage checkpoints;
-- current review candidate;
-- validation pass;
-- approved evidence;
-- final accepted output.
-
-Remove or move failed attempts to cache after resolution.
-
-Do not retain redundant reports that duplicate `state.json`.
+Move failed attempts to cache after resolution. Do not retain redundant reports that duplicate `state.json`.
 
 ## Acceptance Criteria
 
 - Each asset has one clear workspace.
-- New sessions recover from governance, OpenSpec, state, references, and the active-stage document.
+- Connection identity is recorded before preflight.
+- New sessions recover from governance, OpenSpec, state, references, and active-stage documents.
 - Runtime state is not fragmented across competing Markdown files.
-- Checkpoints, evidence, and final paths match the active contracts.
+- Checkpoints, evidence, reports, and final paths match active contracts.
 - Approved work can be recovered without relying on Undo history alone.
