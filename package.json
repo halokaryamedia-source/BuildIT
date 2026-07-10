@@ -16,10 +16,12 @@
   "main": "dist/mcp.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
     "prompts:build": "bun run ./build/generate-manifest.ts",
     "dev": "bun run prompts:build && bun run ./build --sourcemap",
-    "dev:watch": "bun run prompts:build && bun run dev --watch",
+    "dev:watch": "bun run prompts:build && bun run ./build --sourcemap --watch",
     "build": "bun run prompts:build && bun run ./build --minify",
+    "verify:quick": "bun run typecheck && bun run build && bun run docs:build",
     "docs:build": "bun run ./build/docs.ts",
     "docs:serve": "bun run docs/index.html",
     "docs": "bun run prompts:build && bun run docs:build && bun run docs:serve",
