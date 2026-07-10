@@ -37,50 +37,75 @@ Codex
 
 The components must not independently invent another port, endpoint, server key, or active project.
 
-## Required Blockbench Settings
+## Required Blockbench Runtime
+
+Rework enforces these effective values in plugin startup:
 
 ```text
-mcp_port: 3000
-mcp_auto_port: false
-mcp_endpoint: /bb-mcp
-mcp_session_timeout: 30 minutes
-mcp_sse_heartbeat: 15 seconds
+port: 3000
+endpoint: /bb-mcp
+auto-port: false
+minimum session timeout: 30 minutes
+SSE heartbeat: 15 seconds
 ```
 
-Only one Blockbench instance may own port 3000 during an asset session.
+Saved legacy UI settings may still be visible until resaved, but they cannot silently move the Rework runtime to another port or endpoint.
 
-If port 3000 is already occupied, do not scan for another port. Stop with `BLOCKER` and close or reconfigure the conflicting process intentionally.
+Only one visible Blockbench application window may be active during an asset session. Electron child processes do not count as extra Blockbench instances.
+
+If port 3000 is occupied, do not scan for another port. Stop with `BLOCKER` and resolve the conflicting process intentionally.
+
+## Build and Reload the Rework Plugin
+
+After source changes to the MCP plugin:
+
+```powershell
+bun install
+bun run dev
+```
+
+Then in the single Blockbench window:
+
+1. load or reload `dist/mcp.js`;
+2. grant local network permission when Blockbench requests it;
+3. confirm the MCP panel shows `http://localhost:3000/bb-mcp`;
+4. open or create the intended Blockbench project.
+
+Do not run the readiness command against an old plugin build. A missing `get_runtime_status`, `save_project_checkpoint`, or `capture_standard_views` tool means the Rework build was not loaded correctly.
 
 ## Required Codex Configuration
 
-The Codex user configuration must contain exactly one canonical entry:
+The Codex user configuration must contain exactly one Blockbench MCP entry:
 
 ```toml
 [mcp_servers.blockbench]
 url = "http://localhost:3000/bb-mcp"
 ```
 
-Use:
+First-time synchronization:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -InstallCodexConfig
 ```
 
-The script updates only the `mcp_servers.blockbench` section. When the configuration changes, restart Codex once. Normal asset sessions must not rewrite the config.
+The script removes stale `blockbench_*` entries, preserves unrelated TOML sections, and writes the canonical `mcp_servers.blockbench` section. When it changes the configuration, restart Codex once.
+
+Normal asset sessions must not rewrite Codex configuration.
 
 ## Deterministic Startup Order
 
 ```text
 1. Open the Rework workspace.
-2. Launch one Blockbench instance.
-3. Ensure the MCP plugin is loaded.
+2. Build/reload the current Rework plugin when source changed.
+3. Keep one visible Blockbench window open.
 4. Open or create the intended Blockbench project.
 5. Run sync-local-stack.ps1 for the active asset.
 6. Read reports/connection.json.
-7. Start or resume Codex work only when result = PASS.
+7. Restart Codex only when result = RESTART_REQUIRED.
+8. Start or resume stage work only when result = PASS.
 ```
 
-Example:
+Normal example:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset black_rhinoceros
@@ -96,15 +121,16 @@ SavedData/sessions/<asset>/reports/connection.json
 
 The report records:
 
-- canonical URL;
-- Codex config status;
-- Blockbench process count;
+- canonical server key and URL;
+- Codex config status and stale-key cleanup;
+- visible Blockbench window count;
 - MCP handshake status;
-- plugin/runtime version;
-- actual server URL and settings;
+- actual plugin/runtime version;
+- actual server URL and effective settings;
 - active project name, UUID, format, UV mode, and texture size;
 - required common tool availability;
 - transient smoke-session cleanup result;
+- remaining active session count;
 - one exact next action when blocked.
 
 Codex reads this report instead of searching the machine or re-running multiple connection experiments.
@@ -117,7 +143,9 @@ After Codex is connected, call once:
 get_runtime_status
 ```
 
-This returns the live plugin, server, project, and session state in one structured result.
+This returns the live plugin, server, project, effective settings, and session state in one structured result.
+
+The temporary readiness smoke session is explicitly marked and excluded from write-session ambiguity checks while it exists.
 
 Do not call separate discovery tools when `get_runtime_status` already proves the required facts.
 
@@ -129,6 +157,7 @@ Codex must not:
 - create alternate MCP server keys per project;
 - add another `blockbench_*` connection;
 - repeatedly initialize smoke sessions;
+- initialize a new write session for each stage;
 - inspect every MCP tool before each stage;
 - infer the project from an old Markdown file;
 - continue when the actual URL differs from the canonical URL.
@@ -141,30 +170,30 @@ Codex must not:
 INSTALL_AND_RESTART_CODEX
 ```
 
-Run the sync script with `-InstallCodexConfig`, restart Codex once, and rerun the readiness check.
+Run the sync script with `-InstallCodexConfig`, restart Codex once, and rerun the normal asset readiness check.
 
 ### Blockbench not running
 
 ```text
 BLOCKER: BLOCKBENCH_NOT_RUNNING
-Safe action: launch Blockbench once.
+Safe action: launch one Blockbench window.
 ```
 
 ### Plugin or endpoint unavailable
 
 ```text
 BLOCKER: MCP_ENDPOINT_UNAVAILABLE
-Safe action: load/reload the MCP plugin and verify the canonical settings.
+Safe action: build/reload the Rework plugin and verify local network permission.
 ```
 
 ### Port or endpoint mismatch
 
 ```text
 BLOCKER: CONNECTION_CONTRACT_MISMATCH
-Safe action: restore port 3000, endpoint /bb-mcp, and auto-port disabled.
+Safe action: ensure the current Rework build owns port 3000 and /bb-mcp.
 ```
 
-### Multiple Blockbench instances
+### Multiple Blockbench windows
 
 ```text
 BLOCKER: MULTIPLE_BLOCKBENCH_INSTANCES
@@ -178,11 +207,18 @@ BLOCKER: MCP_CAPABILITY_MISMATCH
 Safe action: rebuild/reload the Rework plugin; do not use a risky workaround.
 ```
 
+### Multiple write sessions
+
+```text
+BLOCKER: MULTIPLE_MCP_WRITE_SESSIONS
+Safe action: close stale MCP clients so only the intended Codex session remains.
+```
+
 ## Session Rule
 
 The readiness script uses a temporary read-only smoke session and closes it before returning.
 
-The actual Codex MCP session is created by Codex through the canonical `blockbench` entry and becomes the single active write session recorded in `state.json`.
+The actual Codex MCP session is created through the canonical `blockbench` entry and becomes the single write session recorded in `state.json`.
 
 Do not store the smoke-session ID as the Codex write-session ID.
 
@@ -190,11 +226,12 @@ Do not store the smoke-session ID as the Codex write-session ID.
 
 Connection readiness is `PASS` only when:
 
-- exactly one Blockbench process is running;
-- the MCP plugin listens at the canonical URL;
+- exactly one visible Blockbench application window is running;
+- the current Rework MCP plugin listens at the canonical URL;
 - auto-port fallback is not active;
-- the Codex config matches the canonical server key and URL;
+- Codex has only the canonical Blockbench MCP key and URL;
 - the common workflow tools exist;
 - the intended Blockbench project is open and identifiable;
 - the temporary smoke session is closed;
+- no more than one non-readiness/write session remains;
 - no connection blocker remains.
