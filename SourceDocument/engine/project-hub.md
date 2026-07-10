@@ -1,9 +1,15 @@
 # Operational Hub Index
 
-Primary file: [WORKFLOW_HUB.md](WORKFLOW_HUB.md)
+Primary local Codex entry:
 
-For this project, use:
+- [`../../Engine/codex/BOOTSTRAP.md`](../../Engine/codex/BOOTSTRAP.md)
 
-- `SavedData/ACTIVE_PROJECT.md` for current model state
-- `SavedData/sessions/<asset>/` for execution logs and lock/session files
+Human workflow summary:
 
+- [`WORKFLOW_HUB.md`](WORKFLOW_HUB.md)
+
+Runtime state:
+
+- `SavedData/sessions/<asset>/state.json` — authority
+- `SavedData/ACTIVE_PROJECT.md` — pointer only
+- `SavedData/sessions/<asset>/` — references, checkpoints, evidence, reports, and final output
