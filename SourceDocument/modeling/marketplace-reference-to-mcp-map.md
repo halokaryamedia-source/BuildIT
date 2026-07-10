@@ -1,145 +1,167 @@
 # Marketplace Reference → MCP Implementation Intelligence
 
-This map is a general pattern extractor for marketplace-style quality.
-It is for learning intent and execution behavior, not for modeling one specific pack.
+This is a conditional interpretation aid.
 
-Use this document to convert sample packs into a reliable modeling pipeline.
+Normal Rework sessions already receive an approved reference package and do not need this document.
 
-## 1) What to extract from each reference pack
+Open it only when the package leaves an execution detail genuinely ambiguous.
 
-Create one **Reference Signature** before Geometry work:
+## Authority
 
-- Asset Type: `entity`, `block`, `armor`, `weapon`, `furniture`, `projectile`, `misc`.
-- Visual Priority (ranked): silhouette / proportions / material / trim / face detail.
-- Animation Priority: `none`, `basic`, `combat`, `boss`.
-- Geometry Budget: `low`, `medium`, `high`.
-- Atlas Baseline: `16`, `32`, `64`, `128`, or custom.
-- Bone Strategy: flat torso-root, segmented limbs, attachment groups, accessory groups.
-- Texture Strategy: flat fill only / gradients present / layered materials / painted patterns.
+```text
+PRODUCTION_CONTEXT.md
+→ <asset>_reference_visual.png
+→ active category document
+```
 
-## 2) MCP Execution Intelligence Rule
+Samples teach quality and execution patterns only. They never override the approved asset package.
 
-Do not copy the sample mesh.
-Do not copy the exact UV layout.
+## Reference Signature
 
-Only implement these rules:
+Before Geometry, extract only unresolved implementation fields:
 
-- Silhouette must match the reference intent.
-- Component hierarchy must be readable and non-overlapping.
-- Performance balance must come from texture-first detail, not micro-cubes.
-- Per-face UV is default.
+```text
+Asset type:
+Visual priority:
+Required silhouette features:
+Geometry budget: low / medium / high
+Atlas baseline:
+Hierarchy/bone strategy:
+Texture strategy:
+Animation requirement:
+Interaction/attachment requirements:
+```
 
-## 3) Phase-by-phase extraction template
+Do not duplicate fields already resolved in Production Context or manifest.
 
-### Phase: Reference Collection
+## Stage Translation
 
-- Pick 1 hero model + 1 style sibling + 1 technical sibling for category.
-- Extract target pose, body proportions, and visible silhouette only.
-- Confirm texture density range needed (`16`, `32`, `64`, `128`, etc).
-- If animation intended, extract only required motion patterns.
+### Geometry
 
-### Phase: Main Geometry
+Translate reference intent into:
 
-- Build major body masses first from largest to smallest.
-- Use bone names that match function (`root`, `body`, `waist`, `head`, `left_arm`, `right_arm`, `left_leg`, `right_leg`, `weapon`, `armor_layer`).
-- Avoid final ornamentation until detail phase.
+- global scale envelope;
+- primary masses;
+- silhouette-critical secondary forms;
+- ground contacts;
+- hierarchy and attachments;
+- animation-ready separation when required;
+- geometry-vs-texture boundary.
 
-### Phase: Geometry Detailing
+Rules:
 
-- Add non-fragile secondary forms only if they change silhouette.
-- Convert micro-details (nails, seams, stitches, scratches) into texturing work.
-- Keep parts attached to parent pivots; no hovering accessories.
+- build largest masses first;
+- use functional lowercase snake_case names;
+- add secondary geometry only when it improves silhouette, structure, attachment, pivot, interaction, or gameplay readability;
+- move seams, scratches, stripes, nails, stitches, small panels, and 1–2 pixel details to Texture;
+- never copy a sample mesh or exact UV layout.
 
-### Phase: UV Texture
+### Texture
 
-- Group textures by material family before paint.
-- Keep UV compact; prioritize continuity.
-- Reuse symmetry and mirrored faces where plausible.
+Translate reference intent into:
 
-### Phase: Base Texturing
+- atlas size and UV strategy;
+- material families;
+- shared/mirrored and unique/directional UV areas;
+- base, shadow, light, and accent values;
+- focal texel density;
+- texture-only details;
+- alpha/emissive zones when approved.
 
-- Establish main color families: base, shadow, highlight, edge wear.
-- Add readable material separation (cloth/metal/skin/wood).
-- No single-color flat fills for large visible surfaces.
+Rules:
 
-### Phase: Detail Texturing
+- keep one atlas unless the package requires otherwise;
+- keep UV islands compact and purposeful;
+- reuse safe symmetry;
+- reserve unique space for focal/directional details;
+- avoid flat hero surfaces and smooth blur;
+- do not remodel Geometry to solve a pixel-level issue.
 
-1. Build silhouette and proportions first; this is the only phase that can change major form.
-2. Convert fine details to texture unless silhouette or collider logic requires geometry.
-3. Check attachment relation before detailing; any part without a clear parent is flagged.
-4. Keep UV islands contiguous by material where possible; fragmented islands are allowed only when needed for symmetry or repeat.
-5. Any phase can only change one core decision:
-   - phase main geometry: mass and hierarchy
-   - geometry detailing: silhouette-supporting forms
-   - UV: map reuse and continuity
-   - base/detail texturing: shape illusion and material hierarchy
+### Animation — when required
 
-Use this checklist as MCP intelligence trigger:
+Translate only approved motion:
 
-- If collision/overlap is detected => pause and fix geometry before paint.
-- If tiny decorative details exceed 5% of total cubes => move to texturing.
-- If palette lacks gradient separation => continue to detail texturing, not UV.
-- If attachment is floating/unanchored => return to geometry detailing.
+- hierarchy;
+- pivots;
+- allowed axes/ranges;
+- required clips or interaction motions;
+- neutral-pose recovery;
+- ground-contact and clipping limits.
 
-## 2) Direct implementation rule
-- Validate no stretching seams at attachments.
+Do not add optional clips merely for completeness.
 
-### Phase: Polish
+### Final Validation
 
-- Compare final preview to reference intent, not exact pixel match.
-- Reduce geometry where detail can be moved to texture.
-- Keep armature clean and future-animatable.
+Check:
 
-## 4) Marketplace quality signals (from provided samples)
+- silhouette and scale;
+- hierarchy and attachments;
+- cube-purpose discipline;
+- atlas and material read;
+- Animation contract or skip;
+- validator/export readiness;
+- final evidence against the Reference Visual.
 
-- Good models usually show:
-  - Strong silhouette first.
-  - Explicit bone hierarchy with reusable parts.
-  - Texture used for pattern and micro-detail.
-  - Clear naming by function.
-- Warning signs:
-  - Excessive micro-cubes on small decorative edges.
-  - Free-floating ornaments.
-  - Texture islands too fragmented.
-  - One-size UV approach for all materials.
+Final Validation may fix at most two local failures. Broad failures return to the affected stage.
 
-## 5) Quick acceptance check (before phase progression)
+## Quality Signals
 
-- Does silhouette remain clear after each phase?
-- Can the same detail be expressed with fewer cubes?
-- Are main materials readable under single lighting pass?
-- Are all attachment parts anchored and named logically?
-- Did we keep references as intent only, not as a copied mesh?
+Good:
 
-## 6) Example category mapping
+- strong readable silhouette;
+- clear functional hierarchy;
+- attached, non-floating parts;
+- texture-first micro detail;
+- compact purposeful UV;
+- material depth with stepped pixel shading;
+- only required animations;
+- stable five-view evidence.
 
-### Creature / Dinosaur
+Warnings:
 
-- Focus on body mass + limb articulation.
-- Use medium-high atlas if anatomy variation is required.
-- Prioritize animation readability over micro-cubes.
+- tiny decorative cubes;
+- floating ornaments;
+- fragmented UV without reason;
+- one UV strategy forced onto every material;
+- flat single-tone large surfaces;
+- optional work added outside the approved package;
+- sample identity copied into the target asset.
+
+## Category Hints
+
+### Creature
+
+- prioritize mass, posture, contacts, head/readable identity, and articulation-ready separation;
+- use texture for fur/skin pattern and minor anatomy cues;
+- keep required locomotion readable when Animation exists.
 
 ### Weapon / Armor
 
-- Focus on profile, grip, and silhouette edge.
-- Small atlas is often enough (`16/32`) unless ornament is central.
-- Use consistent slot naming and origin pivot conventions.
+- prioritize profile, grip/attachment, focal silhouette, and clear material separation;
+- use texture for ornament unless it changes profile or attachment.
 
-### Furniture / Static Entity
+### Vehicle / Mount
 
-- Start with axis-aligned primitives.
-- Preserve scale cues from reference.
-- Emphasize trim/material transitions through UV blocks.
+- prioritize scale, seats/attachments, wheels/support contacts, moving groups, and collision clearance;
+- model interior only when the approved package requires it.
 
-## 7) Anti-hallucination behavior
+### Furniture / Static Prop
 
-- MCP should not generate unseen parts.
-- MCP should ask for missing material or pose references before adding new motifs.
-- MCP should preserve the user intent and project direction from the reference package.
+- prioritize placement plane, usable/interactable parts, dimensions, and all-side readability;
+- use UV/material transitions rather than trim-cube noise.
 
-## Acceptance Criteria
+## Conflict Rule
 
-- The map includes extracted fields needed before Main Geometry (asset type, geometry budget, atlas baseline, texture strategy).
-- Anti-pattern blockers force pause before progression.
-- Micro-details are consistently routed to texturing when they do not support silhouette or attachment.
-- No "copy mesh" interpretation is allowed; only intent transfer is permitted.
+If an unresolved detail materially affects identity, scale, silhouette, hierarchy, material behavior, or required motion:
+
+```text
+REFERENCE_CONFLICT
+```
+
+Do not average conflicting sources or invent unseen parts.
+
+## Ponytail Rule
+
+Use this document only to resolve a current ambiguity.
+
+Do not create a new analysis artifact when the approved package already contains the answer.
