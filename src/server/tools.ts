@@ -2,6 +2,7 @@
 /// <reference types="blockbench-types" />
 
 import { tools, prompts } from "@/lib/factories";
+import { initializeToolProfiles } from "@/lib/toolProfiles";
 
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
@@ -60,16 +61,19 @@ const optionalRegistrationFunctions = [
   registerHytalePrompts,
 ];
 
-// Register all core tools immediately when this module loads
+// Build the complete capability library first.
 for (const register of registrationFunctions) {
   register();
 }
 
-// Register optional plugin integrations
-// Each function checks if its plugin is installed before registering
 for (const register of optionalRegistrationFunctions) {
   register();
 }
+
+// Then expose only the exact default profile to future MCP sessions and install
+// call-time guards for every tool definition. The complete library remains
+// available for an explicit diagnostic profile without burdening normal stages.
+initializeToolProfiles();
 
 // Function to get tool count - called at runtime after registration
 export function getToolCount(): number {
