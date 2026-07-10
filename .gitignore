@@ -2,3 +2,7 @@ node_modules
 dist/
 .claude
 nul
+.codex/visual-checks/
+.codex/cache/
+SavedData/cache/
+SourceDocument/.tmp_*/

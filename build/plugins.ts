@@ -12,12 +12,12 @@ import { resolve } from "node:path";
 export const textFileLoaderPlugin: BunPlugin = {
   name: "text-file-loader",
   setup(build) {
-    const projectRoot = resolve(".");
+    const projectRoot = resolve("./src");
 
     // Resolve path, handling @/ alias
     const resolvePath = (importPath: string, resolveDir: string): string => {
       if (importPath.startsWith("@/")) {
-        // @/ alias points to project root
+        // @/ alias points to src/
         return resolve(projectRoot, importPath.slice(2));
       }
       return resolve(resolveDir, importPath);

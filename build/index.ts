@@ -8,7 +8,7 @@ import { version } from "../package.json";
 const OUTPUT_DIR = "./dist";
 // Normalized output dir name for path comparison (strips "./" prefix)
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
-const entryFile = resolve("./index.ts");
+const entryFile = resolve("./src/index.ts");
 
 async function cleanOutputDir() {
   try {
@@ -87,7 +87,7 @@ async function buildPlugin(): Promise<boolean> {
 
   log.header("[Build] Assets");
 
-  const iconSource = resolve("./icon.svg");
+  const iconSource = resolve("./Engine/icon.svg");
   const iconDest = join(OUTPUT_DIR, "icon.svg");
 
   if (await Bun.file(iconSource).exists()) {
@@ -124,7 +124,7 @@ let process = requireNativeModule('process');`;
   }
 
   // Copy the README file
-  const readmeSource = resolve("./about.md");
+  const readmeSource = resolve("./SourceDocument/engine/about.md");
   const readmeDest = join(OUTPUT_DIR, "about.md");
 
   if (await Bun.file(readmeSource).exists()) {

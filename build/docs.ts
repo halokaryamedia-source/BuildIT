@@ -1,7 +1,7 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
 import { toolManifest, promptDocs, resourceDocs } from "./docs-manifest";
-import type { ToolSpec, PromptSpec, ResourceSpec } from "../lib/factories";
+import type { ToolSpec, PromptSpec, ResourceSpec } from "../src/lib/factories";
 import { version } from "../package.json";
 import { log } from "./utils";
 

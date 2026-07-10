@@ -1,14 +1,34 @@
 # Repository Guidelines
 
+## Mandatory Development Guardrails
+- Use OpenSpec before development: read `openspec/config.yaml` and the active change under `openspec/changes/` before editing source.
+- Use Ponytail review before done: prefer the smallest source-aligned change, reject unnecessary dependencies, new frameworks, and speculative architecture.
+- Use Blockbench skills before modelling: load `blockbench-use` first, then `blockbench-mcp-overview`, `blockbench-modeling`, or `blockbench-texturing` as needed before Blockbench MCP tool calls.
+- For Blockbench MCP modelling, follow `SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md` as the hard baseline. Do not edit Blockbench before OpenSpec, Ponytail, required Blockbench skill, MCP endpoint, active project, current phase, expected output, and manual-edit preservation are confirmed.
+- Do not jump modelling phases. Required phases are Reference Collection, Main Geometry, Geometry Detailing, UV Texture, Base Texturing, Detail Texturing, Polish, and Final Review. Stop at each phase gate and wait for user approval before continuing.
+- For MCP modelling, focus on Bedrock Entity and Bedrock Block only; use Per-face UV by default for both.
+- Do not add another Blockbench MCP server entry when the existing `blockbench` endpoint already points to `http://localhost:3000/bb-mcp`.
+
 ## Project Structure & Module Organization
-- `index.ts`: Blockbench plugin entry (registers MCP server and UI).
-- `server/`: MCP server glue (`server.ts`), `tools/`, `resources.ts`, `prompts.ts`.
-- `ui/`: Panel UI and settings (`index.ts`, `settings.ts`).
-- `lib/`: Shared utilities and factories (`constants.ts`, `factories.ts`, `util.ts`, `zodObjects.ts`).
-- `prompts/` and `macros/`: Prompt templates and helpers.
+- `SourceDocument/`: Human-facing source documents for planning, modelling workflow, engine notes, and project guidance.
+- `src/index.ts`: Blockbench plugin entry (registers MCP server and UI).
+- `src/server/`: MCP server glue (`server.ts`), `tools/`, `resources.ts`, `prompts.ts`.
+- `src/ui/`: Panel UI and settings (`index.ts`, `settings.ts`).
+- `src/lib/`: Shared utilities and factories (`constants.ts`, `factories.ts`, `util.ts`, `zodObjects.ts`).
+- `prompts/` and `src/macros/`: Prompt templates and build-time helpers.
 - `dist/`: Build output (`mcp.js`, maps, copied assets like `icon.svg`, `about.md`).
 - `docs/`: Auto-generated documentation (`api.json`, `index.html`, `style.css`).
 - `build/`: Build scripts (`index.ts`, `utils.ts`, `plugins.ts`, `docs.ts`, `docs-manifest.ts`).
+
+Do not move the following for functionality:
+- `.agents/`, `.codex/`, `openspec/`, `src/`, `build/`, `docs/`, `prompts/`, `dist/`, `node_modules/`
+- runtime/config files required by plugin/tooling (`package.json`, `bun.lock`, `tsconfig.json`, `.gitignore`, `AGENTS.md`, `skills-lock.json`, etc.)
+
+What is allowed to move:
+- Operational workflow artifacts and process state docs can be consolidated under:
+  - `Engine/` (execution controls)
+  - `SavedData/` (active per-asset session state)
+- For any moved item, keep a pointer link/reference at the original location if another tool depends on the old path.
 
 ## Build, Test, and Development Commands
 - `bun install`: Install dependencies.
@@ -22,7 +42,7 @@
 
 ## Adding New Tools
 
-Every tool file in `server/tools/` follows a two-part pattern:
+Every tool file in `src/server/tools/` follows a two-part pattern:
 
 1. **Export parameter schemas and a `toolDocs` array** at module level (no Blockbench globals):
 ```ts
@@ -61,7 +81,7 @@ export function registerMyTools() {
    - Import the `toolDocs` array from your tool file.
    - Add it to `toolManifest` with the appropriate category.
 
-4. **Register in `server/tools.ts`**: Import and call your `registerXxxTools()` function.
+4. **Register in `src/server/tools.ts`**: Import and call your `registerXxxTools()` function.
 
 5. **Regenerate docs**: Run `bun run docs` to update `docs/api.json` and `docs/index.html`.
 
@@ -75,9 +95,9 @@ Documentation is auto-generated from Zod schemas at build time:
 
 - **`build/docs-manifest.ts`**: Imports all `toolDocs` arrays from tool files plus inline prompt/resource specs. This is the single source of truth for what appears in the docs.
 - **`build/docs.ts`**: Reads the manifest, converts Zod schemas to JSON Schema via `zod-to-json-schema`, and outputs `docs/api.json` (machine-readable) and `docs/index.html` (Tailwind-styled page).
-- **`lib/factories.ts`**: Defines `ToolSpec`, `PromptSpec`, and `ResourceSpec` interfaces used by both tool files and the manifest.
+- **`src/lib/factories.ts`**: Defines `ToolSpec`, `PromptSpec`, and `ResourceSpec` interfaces used by both tool files and the manifest.
 
-Prompt and resource specs are defined **inline in the manifest** (not imported from their source files) because `server/prompts.ts` uses Bun macros and `server/resources.ts` accesses Blockbench globals at module level.
+Prompt and resource specs are defined **inline in the manifest** (not imported from their source files) because `src/server/prompts.ts` uses Bun macros and `src/server/resources.ts` accesses Blockbench globals at module level.
 
 ## Coding Style & Naming Conventions
 - Language: TypeScript (strict), ESNext modules, CJS output for the plugin.

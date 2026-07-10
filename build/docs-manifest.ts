@@ -1,24 +1,24 @@
 import { z } from "zod";
-import type { ToolSpec, PromptSpec, ResourceSpec } from "../lib/factories";
+import type { ToolSpec, PromptSpec, ResourceSpec } from "../src/lib/factories";
 
 // Tool docs imports — each file exports schemas at module level with zero Blockbench deps
-import { cameraToolDocs } from "../server/tools/camera";
-import { cubeToolDocs } from "../server/tools/cubes";
-import { elementToolDocs } from "../server/tools/element";
-import { importToolDocs } from "../server/tools/import";
-import { meshToolDocs } from "../server/tools/mesh";
-import { paintToolDocs } from "../server/tools/paint";
-import { projectToolDocs } from "../server/tools/project";
-import { cubeUvToolDocs } from "../server/tools/cubeUv";
-import { textureToolDocs } from "../server/tools/texture";
-import { armatureToolDocs } from "../server/tools/armature";
-import { animationToolDocs } from "../server/tools/animation";
-import { uiToolDocs } from "../server/tools/ui";
-import { hytaleToolDocs } from "../server/tools/hytale";
-import { materialInstanceToolDocs } from "../server/tools/material-instances";
-import { uvToolDocs } from "../server/tools/uv";
-import { historyToolDocs } from "../server/tools/history";
-import { exportToolDocs } from "../server/tools/export";
+import { cameraToolDocs } from "../src/server/tools/camera";
+import { cubeToolDocs } from "../src/server/tools/cubes";
+import { elementToolDocs } from "../src/server/tools/element";
+import { importToolDocs } from "../src/server/tools/import";
+import { meshToolDocs } from "../src/server/tools/mesh";
+import { paintToolDocs } from "../src/server/tools/paint";
+import { projectToolDocs } from "../src/server/tools/project";
+import { cubeUvToolDocs } from "../src/server/tools/cubeUv";
+import { textureToolDocs } from "../src/server/tools/texture";
+import { armatureToolDocs } from "../src/server/tools/armature";
+import { animationToolDocs } from "../src/server/tools/animation";
+import { uiToolDocs } from "../src/server/tools/ui";
+import { hytaleToolDocs } from "../src/server/tools/hytale";
+import { materialInstanceToolDocs } from "../src/server/tools/material-instances";
+import { uvToolDocs } from "../src/server/tools/uv";
+import { historyToolDocs } from "../src/server/tools/history";
+import { exportToolDocs } from "../src/server/tools/export";
 
 export interface CategoryGroup {
   category: string;
@@ -45,7 +45,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Hytale Integration", tools: hytaleToolDocs },
 ];
 
-// Prompt specs defined inline — server/prompts.ts uses macros that complicate direct import
+// Prompt specs defined inline — src/server/prompts.ts uses macros that complicate direct import
 export const promptDocs: PromptSpec[] = [
   {
     name: "blockbench_native_apis",
@@ -119,7 +119,7 @@ export const promptDocs: PromptSpec[] = [
   },
 ];
 
-// Resource specs defined inline — server/resources.ts uses Blockbench globals at module level
+// Resource specs defined inline — src/server/resources.ts uses Blockbench globals at module level
 export const resourceDocs: ResourceSpec[] = [
   {
     name: "projects",

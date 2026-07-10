@@ -1,0 +1,78 @@
+{
+  "asset": "ninja_master",
+  "status": "approved",
+  "source": "SourceDocument/blockbench-samples/ninja_master.geo.bbmodel",
+  "format": "Bedrock Entity",
+  "scale": {
+    "block_px": 16,
+    "player_height_px": 28.8,
+    "model_bounds_px": {
+      "width": 16.2,
+      "depth": 11.2,
+      "height": 41.4
+    }
+  },
+  "texture": {
+    "uv_atlas_target": "256x256",
+    "pixel_style": "16x16 pixel style",
+    "source_texture_resolution": "160x160"
+  },
+  "sheets": [
+    {
+      "order": "01",
+      "status": "approved",
+      "image": "01_ninja_master_orthographic_views.png",
+      "notes": "01_ninja_master_orthographic_views.notes.md",
+      "purpose": "Orthographic shape and view reference"
+    },
+    {
+      "order": "02",
+      "status": "approved",
+      "image": "02_ninja_master_scale_sheet.png",
+      "notes": "02_ninja_master_scale_sheet.notes.md",
+      "purpose": "Scale, UV atlas target, and texture style lock"
+    },
+    {
+      "order": "03",
+      "status": "approved",
+      "image": "03_ninja_master_silhouette_sheet.png",
+      "notes": "03_ninja_master_silhouette_sheet.notes.md",
+      "purpose": "Silhouette and part-mask readability"
+    },
+    {
+      "order": "04",
+      "status": "approved",
+      "image": "04_ninja_master_part_breakdown_sheet.png",
+      "notes": "04_ninja_master_part_breakdown_sheet.notes.md",
+      "purpose": "Broad construction-zone breakdown"
+    },
+    {
+      "order": "05",
+      "status": "approved",
+      "image": "05_ninja_master_color_palette_sheet.png",
+      "notes": "05_ninja_master_color_palette_sheet.notes.md",
+      "purpose": "Color palette, texture placement, atlas target, and texture style"
+    },
+    {
+      "order": "06",
+      "status": "approved",
+      "image": "06_ninja_master_closeup_detail_sheet.png",
+      "notes": "06_ninja_master_closeup_detail_sheet.notes.md",
+      "purpose": "Close-up detail interpretation"
+    },
+    {
+      "order": "07",
+      "status": "approved",
+      "image": "07_ninja_master_execution_target_sheet.png",
+      "notes": "07_ninja_master_execution_target_sheet.notes.md",
+      "purpose": "DO-only visual execution locks"
+    },
+    {
+      "order": "08",
+      "status": "approved",
+      "image": "08_ninja_master_animation_pivot_sheet_optional.png",
+      "notes": "08_ninja_master_animation_pivot_sheet_optional.notes.md",
+      "purpose": "Animation pivot readiness category guide"
+    }
+  ]
+}

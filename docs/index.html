@@ -57,10 +57,116 @@
       </header>
 
       <section id="install" class="doc-section">
-        <h2>Installation</h2>
+        <h1>Blockbench MCP Installation</h1>
+<p>This file helps AI assistants configure the Blockbench MCP server connection.</p>
+<h2>Prerequisites</h2>
+<p>Before configuring the MCP connection, please confirm:</p>
+<ol>
+<li>
+<p><strong>Is Blockbench running?</strong></p>
 <ul>
-<li><a href="https://achmadawdi.github.io/mcp-blockbench/mcp.js">Stable</a></li>
-<li><a href="https://achmadawdi.github.io/mcp-blockbench/nightly/mcp.js">Latest</a></li>
+<li>The Blockbench desktop application must be open</li>
+<li>The MCP plugin must be installed (File &gt; Plugins &gt; Load from URL: <code>https://achmadawdi.github.io/mcp-blockbench/mcp.js</code>)</li>
+</ul>
+</li>
+<li>
+<p><strong>What are your server settings?</strong></p>
+<ul>
+<li>Default: <code>http://localhost:3000/bb-mcp</code></li>
+<li>If the port number and endpoint are something other than the default values (<code>:3000/bb-mcp</code>), check the MCP panel in Blockbench for the active URL</li>
+<li>Settings can be changed in Blockbench: Settings &gt; General &gt; MCP Server Port / MCP Server Endpoint / Auto-select Available Port</li>
+</ul>
+</li>
+</ol>
+<h2>Multiple Blockbench Windows</h2>
+<p>When multiple Blockbench windows are open, each gets its own MCP port (3000, 3001, 3002, …) if <strong>Auto-select Available Port</strong> is enabled (default).</p>
+<p>Copy the exact URL from the MCP panel in each window. Each window needs a <strong>unique</strong> <code>mcpServers</code> key:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;blockbench_sofa&quot;: { &quot;url&quot;: &quot;http://localhost:3000/bb-mcp&quot; },
+    &quot;blockbench_chair&quot;: { &quot;url&quot;: &quot;http://localhost:3001/bb-mcp&quot; }
+  }
+}
+</code></pre>
+<h2>Per-Face UV</h2>
+<p>For custom texture atlases, create projects with per-face UV (<code>box_uv: false</code>). Use the <code>texture_uv_workflow</code> MCP prompt and tools <code>get_uv_layout</code>, <code>set_cube_face_uv</code>, and <code>configure_project</code>.</p>
+<h2>Configuration</h2>
+<p>Once confirmed, add the MCP server to your client:</p>
+<h3>Cline</h3>
+<p>Add to <code>cline_mcp_settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;blockbench&quot;: {
+      &quot;url&quot;: &quot;http://localhost:{PORT}/{ENDPOINT}&quot;,
+      &quot;type&quot;: &quot;streamableHttp&quot;,
+      &quot;disabled&quot;: false,
+      &quot;autoApprove&quot;: []
+    }
+  }
+}
+</code></pre>
+<h3>VS Code</h3>
+<p>Create <code>.vscode/mcp.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;servers&quot;: {
+    &quot;blockbench&quot;: {
+      &quot;url&quot;: &quot;http://localhost:{PORT}/{ENDPOINT}&quot;,
+      &quot;type&quot;: &quot;http&quot;
+    }
+  }
+}
+</code></pre>
+<h3>Claude Desktop</h3>
+<p>Add to <code>claude_desktop_config.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;blockbench&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;mcp-remote&quot;, &quot;http://localhost:{PORT}/{ENDPOINT}&quot;]
+    }
+  }
+}
+</code></pre>
+<h3>Claude Code</h3>
+<pre><code class="language-bash">claude mcp add blockbench --transport http http://localhost:{PORT}/{ENDPOINT}
+</code></pre>
+<h3>Cursor</h3>
+<p>Add to <code>.cursor/mcp.json</code> (project) or <code>~/.cursor/mcp.json</code> (global):</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;blockbench&quot;: {
+      &quot;url&quot;: &quot;http://localhost:{PORT}/{ENDPOINT}&quot;
+    }
+  }
+}
+</code></pre>
+<h3>Codex</h3>
+<p>Add to <code>~/.codex/config.toml</code> (or project <code>.codex/config.toml</code> in trusted projects).</p>
+<p>Direct Streamable HTTP:</p>
+<pre><code class="language-toml">[mcp_servers.blockbench]
+url = &quot;http://localhost:{PORT}/{ENDPOINT}&quot;
+</code></pre>
+<p>If direct HTTP fails to list tools, use the stdio bridge (recommended fallback):</p>
+<pre><code class="language-toml">[mcp_servers.blockbench]
+command = &quot;npx&quot;
+args = [&quot;mcp-remote&quot;, &quot;http://localhost:{PORT}/{ENDPOINT}&quot;]
+</code></pre>
+<h3>Antigravity</h3>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;blockbench&quot;: {
+      &quot;serverUrl&quot;: &quot;http://localhost:{PORT}/{ENDPOINT}&quot;
+    }
+  }
+}
+</code></pre>
+<p>Replace <code>{PORT}</code> with the port number (default: <code>3000</code>) and <code>{ENDPOINT}</code> with the endpoint path (default: <code>bb-mcp</code>).</p>
+<h2>Acceptance Criteria</h2>
+<ul>
+<li>Default endpoint (<code>http://localhost:3000/bb-mcp</code>) and alternate port cases are clearly documented.</li>
+<li>At least one direct Streamable HTTP path and a <code>mcp-remote</code> fallback are present.</li>
+<li>Fallback is explicitly marked as contingency when direct tool listing fails.</li>
+<li>A user can configure a client without prior project memory.</li>
 </ul>
 
       </section>
@@ -4624,7 +4730,7 @@
       </section>
 
       <footer class="page-footer">
-        Generated 2026-06-29T09:51:18.918Z from Zod schemas
+        Generated 2026-07-05T19:35:40.049Z from Zod schemas
       </footer>
     </main>
   </div>

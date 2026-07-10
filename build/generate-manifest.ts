@@ -1,7 +1,7 @@
 import { Glob } from "bun";
 import { log } from "./utils";
 import { version } from "../package.json";
-import type { PromptManifest } from "../lib/promptLoader";
+import type { PromptManifest } from "../src/lib/promptLoader";
 
 async function main() {
   log.header("Prompt Manifest Generator");
