@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "profiles": {
+    "GEOMETRY": {
+      "required_reference_files": [
+        "reference_manifest.json",
+        "PRODUCTION_CONTEXT.md",
+        "<asset>_reference_visual.png",
+        "GEOMETRY.md"
+      ],
+      "required_skill_profiles": ["blockbench-use", "blockbench-modeling"],
+      "preferred_tool_domains": ["project", "history", "groups", "cubes", "elements", "camera", "outline"],
+      "forbidden_tool_domains": ["paint", "uv", "animation", "export"],
+      "internal_passes": ["PRIMARY_FORM", "STRUCTURAL_DETAIL"],
+      "review_gate": "GEOMETRY_REVIEW",
+      "required_evidence": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
+    },
+    "TEXTURE": {
+      "required_reference_files": [
+        "reference_manifest.json",
+        "PRODUCTION_CONTEXT.md",
+        "<asset>_reference_visual.png",
+        "GEOMETRY.md",
+        "TEXTURING.md"
+      ],
+      "required_skill_profiles": ["blockbench-use", "blockbench-texturing"],
+      "preferred_tool_domains": ["project", "history", "texture", "uv", "cube_uv", "paint", "camera"],
+      "forbidden_tool_domains": ["animation", "broad_geometry_rebuild", "export"],
+      "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
+      "review_gate": "TEXTURE_REVIEW",
+      "required_evidence": ["atlas", "front", "left_side", "back", "front_left_3_4"]
+    },
+    "ANIMATION": {
+      "required_reference_files": [
+        "reference_manifest.json",
+        "PRODUCTION_CONTEXT.md",
+        "<asset>_reference_visual.png",
+        "GEOMETRY.md",
+        "ANIMATION.md"
+      ],
+      "required_skill_profiles": ["blockbench-use", "blockbench-modeling"],
+      "preferred_tool_domains": ["project", "history", "groups", "armature", "animation", "camera"],
+      "forbidden_tool_domains": ["broad_geometry_rebuild", "texture_repaint", "export"],
+      "optional": true,
+      "skip_when": "reference_manifest.animation.animation_ready is false or no required animation families are listed",
+      "review_gate": "ANIMATION_REVIEW",
+      "required_evidence": ["hierarchy", "pivots", "neutral_pose", "required_clips_or_samples"]
+    },
+    "FINAL_VALIDATION": {
+      "required_reference_files": [
+        "reference_manifest.json",
+        "PRODUCTION_CONTEXT.md",
+        "<asset>_reference_visual.png",
+        "GEOMETRY.md",
+        "TEXTURING.md",
+        "ANIMATION.md",
+        "VALIDATION.md"
+      ],
+      "required_skill_profiles": ["blockbench-use"],
+      "preferred_tool_domains": ["project", "validator", "camera", "outline", "texture", "animation", "export", "history"],
+      "forbidden_tool_domains": ["unscoped_redesign"],
+      "automatic_local_fix_limit": 2,
+      "review_gate": "FINAL_REVIEW",
+      "required_evidence": ["bbmodel", "textures", "validation_report", "front", "left_side", "back", "top_footprint", "front_left_3_4"]
+    }
+  }
+}
