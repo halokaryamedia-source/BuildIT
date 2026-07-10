@@ -16,7 +16,11 @@ $requiredTools = @($profile.required_common_tools)
 $checkedAt = (Get-Date).ToUniversalTime().ToString("o")
 
 function ConvertFrom-McpPayload {
-  param([Parameter(Mandatory = $true)][string]$Content)
+  param([AllowEmptyString()][string]$Content)
+
+  if ([string]::IsNullOrWhiteSpace($Content)) {
+    return $null
+  }
 
   $trimmed = $Content.Trim()
   if ($trimmed.StartsWith("{")) {
@@ -54,15 +58,17 @@ function Invoke-McpPost {
     $headers["mcp-session-id"] = $SessionId
   }
 
-  $response = Invoke-WebRequest \
-    -Uri $canonicalUrl \
-    -Method Post \
-    -Headers $headers \
-    -Body ($Body | ConvertTo-Json -Depth 30 -Compress) \
-    -TimeoutSec 10 \
-    -UseBasicParsing
+  $request = @{
+    Uri = $canonicalUrl
+    Method = "Post"
+    Headers = $headers
+    Body = ($Body | ConvertTo-Json -Depth 30 -Compress)
+    TimeoutSec = 10
+    UseBasicParsing = $true
+  }
+  $response = Invoke-WebRequest @request
 
-  return [pscustomobject]@{
+  [pscustomobject]@{
     Response = $response
     Payload = ConvertFrom-McpPayload -Content ([string]$response.Content)
   }
@@ -77,17 +83,17 @@ function Get-CodexConfigPath {
 
 function Get-CanonicalCodexSection {
   param([string]$Key, [string]$Url)
-  return "[mcp_servers.$Key]`nurl = `"$Url`""
+  "[mcp_servers.$Key]`nurl = `"$Url`""
 }
 
 function Test-CodexSection {
   param([string]$Content, [string]$Key, [string]$Url)
 
-  if (-not $Content) { return $false }
+  if ([string]::IsNullOrWhiteSpace($Content)) { return $false }
   $header = [regex]::Escape("[mcp_servers.$Key]")
   $urlValue = [regex]::Escape($Url)
-  $pattern = "(?ms)^$header\s*\r?\n(?:(?!^\[).*$\r?\n?)*?^\s*url\s*=\s*[`"']$urlValue[`"']\s*$"
-  return [regex]::IsMatch($Content, $pattern)
+  $pattern = "(?ms)^$header\s*\r?\n(?:(?!^\[).*(?:\r?\n|$))*?^\s*url\s*=\s*[`"']$urlValue[`"']\s*$"
+  [regex]::IsMatch($Content, $pattern)
 }
 
 function Set-CodexSection {
@@ -121,20 +127,33 @@ function Add-Blocker {
   })
 }
 
+function Normalize-LocalUrl {
+  param([string]$Value)
+
+  if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
+  try {
+    $uri = [uri]$Value
+    $hostName = if ($uri.Host -eq "127.0.0.1") { "localhost" } else { $uri.Host }
+    $path = $uri.AbsolutePath.TrimEnd("/")
+    if (-not $path) { $path = "/" }
+    $portPart = if ($uri.IsDefaultPort) { "" } else { ":$($uri.Port)" }
+    return "$($uri.Scheme)://$hostName$portPart$path"
+  } catch {
+    return $Value.TrimEnd("/")
+  }
+}
+
 $blockers = [System.Collections.Generic.List[object]]::new()
 $warnings = [System.Collections.Generic.List[string]]::new()
 
-# Codex configuration is checked before creating a smoke session.
+# Check and optionally install the single canonical Codex MCP entry.
 $codexConfigPath = Get-CodexConfigPath
 $codexConfigBefore = if (Test-Path $codexConfigPath) {
   Get-Content -Raw -Path $codexConfigPath
 } else {
   ""
 }
-$codexConfigMatchedBefore = Test-CodexSection \
-  -Content $codexConfigBefore \
-  -Key $serverKey \
-  -Url $canonicalUrl
+$codexConfigMatchedBefore = Test-CodexSection -Content $codexConfigBefore -Key $serverKey -Url $canonicalUrl
 $codexConfigChanged = $false
 
 if (-not $codexConfigMatchedBefore -and $InstallCodexConfig) {
@@ -147,35 +166,20 @@ $codexConfigAfter = if (Test-Path $codexConfigPath) {
 } else {
   ""
 }
-$codexConfigMatched = Test-CodexSection \
-  -Content $codexConfigAfter \
-  -Key $serverKey \
-  -Url $canonicalUrl
+$codexConfigMatched = Test-CodexSection -Content $codexConfigAfter -Key $serverKey -Url $canonicalUrl
 
 if (-not $codexConfigMatched) {
-  Add-Blocker \
-    -List $blockers \
-    -Code "CODEX_CONFIG_MISSING" \
-    -Message "Codex does not contain the canonical mcp_servers.$serverKey entry." \
-    -SafeAction "Run this script with -InstallCodexConfig, then restart Codex once."
+  Add-Blocker -List $blockers -Code "CODEX_CONFIG_MISSING" -Message "Codex does not contain the canonical mcp_servers.$serverKey entry." -SafeAction "Run this script with -InstallCodexConfig, then restart Codex once."
 }
 
-# Exactly one Blockbench process prevents project/port ambiguity.
+# One Blockbench process prevents port/project ambiguity.
 $blockbenchProcesses = @()
 if (-not $SkipProcessCheck) {
   $blockbenchProcesses = @(Get-Process -Name ([string]$profile.blockbench.process_name) -ErrorAction SilentlyContinue)
   if ($blockbenchProcesses.Count -eq 0) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "BLOCKBENCH_NOT_RUNNING" \
-      -Message "No Blockbench process is running." \
-      -SafeAction "Launch one Blockbench instance, load the MCP plugin, and open the intended project."
+    Add-Blocker -List $blockers -Code "BLOCKBENCH_NOT_RUNNING" -Message "No Blockbench process is running." -SafeAction "Launch one Blockbench instance, load the MCP plugin, and open the intended project."
   } elseif ($blockbenchProcesses.Count -gt 1) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "MULTIPLE_BLOCKBENCH_INSTANCES" \
-      -Message "More than one Blockbench process is running." \
-      -SafeAction "Keep only the intended Blockbench project window open."
+    Add-Blocker -List $blockers -Code "MULTIPLE_BLOCKBENCH_INSTANCES" -Message "More than one Blockbench process is running." -SafeAction "Keep only the intended Blockbench project window open."
   }
 }
 
@@ -222,12 +226,11 @@ try {
   if (-not $smokeSessionId) {
     throw "MCP initialize did not return mcp-session-id."
   }
-  if ($initialize.Payload.error) {
+  if ($initialize.Payload -and $initialize.Payload.error) {
     throw "MCP initialize returned an error: $($initialize.Payload.error.message)"
   }
   $handshakeSucceeded = $true
 
-  # Complete MCP initialization before requesting tools.
   $null = Invoke-McpPost -SessionId $smokeSessionId -Body @{
     jsonrpc = "2.0"
     method = "notifications/initialized"
@@ -248,11 +251,7 @@ try {
   $missingTools = @($requiredTools | Where-Object { $_ -notin $toolNames })
 
   if ($missingTools.Count -gt 0) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "MCP_CAPABILITY_MISMATCH" \
-      -Message ("Missing required common tools: " + ($missingTools -join ", ")) \
-      -SafeAction "Build and reload the Rework MCP plugin. Do not substitute risky tools."
+    Add-Blocker -List $blockers -Code "MCP_CAPABILITY_MISMATCH" -Message ("Missing required common tools: " + ($missingTools -join ", ")) -SafeAction "Build and reload the Rework MCP plugin. Do not substitute risky tools."
   }
 
   if ("get_runtime_status" -in $toolNames) {
@@ -270,11 +269,7 @@ try {
     }
   }
 } catch {
-  Add-Blocker \
-    -List $blockers \
-    -Code "MCP_ENDPOINT_UNAVAILABLE" \
-    -Message $_.Exception.Message \
-    -SafeAction "Verify one Blockbench instance, plugin loaded, port 3000, endpoint /bb-mcp, and auto-port disabled."
+  Add-Blocker -List $blockers -Code "MCP_ENDPOINT_UNAVAILABLE" -Message $_.Exception.Message -SafeAction "Verify one Blockbench instance, plugin loaded, port 3000, endpoint /bb-mcp, and auto-port disabled."
 } finally {
   if ($smokeSessionId) {
     try {
@@ -282,12 +277,14 @@ try {
         Accept = "application/json, text/event-stream"
         "mcp-session-id" = $smokeSessionId
       }
-      $null = Invoke-WebRequest \
-        -Uri $canonicalUrl \
-        -Method Delete \
-        -Headers $deleteHeaders \
-        -TimeoutSec 5 \
-        -UseBasicParsing
+      $deleteRequest = @{
+        Uri = $canonicalUrl
+        Method = "Delete"
+        Headers = $deleteHeaders
+        TimeoutSec = 5
+        UseBasicParsing = $true
+      }
+      $null = Invoke-WebRequest @deleteRequest
       $smokeSessionClosed = $true
     } catch {
       $warnings.Add("Transient smoke session could not be explicitly closed; the server timeout must clean it up.")
@@ -296,26 +293,16 @@ try {
 }
 
 if ($runtimeStatus) {
-  if ($runtimeStatus.server.url -and [string]$runtimeStatus.server.url -ne $canonicalUrl) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "CONNECTION_CONTRACT_MISMATCH" \
-      -Message "The plugin reports $($runtimeStatus.server.url), expected $canonicalUrl." \
-      -SafeAction "Restore the canonical port and endpoint, then reload the plugin."
+  $actualUrl = Normalize-LocalUrl -Value ([string]$runtimeStatus.server.url)
+  $expectedUrl = Normalize-LocalUrl -Value $canonicalUrl
+  if ($actualUrl -ne $expectedUrl) {
+    Add-Blocker -List $blockers -Code "CONNECTION_CONTRACT_MISMATCH" -Message "The plugin reports $($runtimeStatus.server.url), expected $canonicalUrl." -SafeAction "Restore the canonical port and endpoint, then reload the plugin."
   }
   if ($runtimeStatus.settings.auto_port -eq $true) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "AUTO_PORT_ENABLED" \
-      -Message "Blockbench MCP auto-port fallback is enabled." \
-      -SafeAction "Disable MCP Auto Port so Codex always uses port 3000."
+    Add-Blocker -List $blockers -Code "AUTO_PORT_ENABLED" -Message "Blockbench MCP auto-port fallback is enabled." -SafeAction "Disable MCP Auto Port so Codex always uses port 3000."
   }
-  if (-not $runtimeStatus.project.uuid) {
-    Add-Blocker \
-      -List $blockers \
-      -Code "NO_ACTIVE_PROJECT" \
-      -Message "The MCP plugin has no active Blockbench project." \
-      -SafeAction "Open or create the intended project before starting Codex stage work."
+  if (-not $runtimeStatus.project -or -not $runtimeStatus.project.uuid) {
+    Add-Blocker -List $blockers -Code "NO_ACTIVE_PROJECT" -Message "The MCP plugin has no active Blockbench project." -SafeAction "Open or create the intended project before starting Codex stage work."
   }
 }
 
