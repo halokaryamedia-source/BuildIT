@@ -35,6 +35,12 @@
             <dd v-if="server.fallbackUsed" class="server-warning">{{tl('mcp.status.fallback_tooltip', [server.requestedPort, server.port])}}</dd>
             <dt>{{tl('mcp.server.project')}}</dt>
             <dd>{{server.projectName || '—'}}</dd>
+            <dt>Tool Profile</dt>
+            <dd><code>{{toolProfile.profile_id}}</code></dd>
+            <dt>Exposed Tools</dt>
+            <dd>{{toolProfile.exposed_tool_count}} / {{toolProfile.total_library_tool_count}}</dd>
+            <dt>Profile Hash</dt>
+            <dd><code>{{toolProfile.tool_profile_hash}}</code></dd>
             <dt>{{tl('mcp.server.name')}}</dt>
             <dd>{{server.name}}</dd>
             <dt>{{tl('mcp.server.version')}}</dt>
@@ -44,6 +50,9 @@
             <dt>{{tl('mcp.server.connected_clients')}}</dt>
             <dd>{{sessions.length}}</dd>
         </dl>
+        <p v-if="toolProfile.validation_errors.length > 0" class="server-error">
+            {{toolProfile.validation_errors[0]}}
+        </p>
         <p v-if="server.errorMessage" class="server-error">{{server.errorMessage}}</p>
         <div v-if="server.url" class="snippet-actions">
             <p class="snippet-hint">{{tl('mcp.server.snippet_hint')}}</p>
