@@ -25,6 +25,7 @@ export const runtimeToolDocs: ToolSpec[] = [
 const CANONICAL_URL = "http://localhost:3000/bb-mcp";
 const CANONICAL_SERVER_KEY = "blockbench";
 const EFFECTIVE_SESSION_TIMEOUT_MINUTES = 30;
+const READINESS_CLIENT_NAME = "buildit-readiness-smoke";
 
 function normalizeLocalUrl(value: string | undefined): string | null {
   if (!value) return null;
@@ -49,6 +50,9 @@ export function registerRuntimeTools() {
         serverState.refreshProject();
         const server = serverState.get();
         const sessions = sessionManager.getAll();
+        const writeSessions = sessions.filter(
+          (session) => session.clientName !== READINESS_CLIENT_NAME
+        );
 
         const configuredAutoPort = Settings.get("mcp_auto_port") !== false;
         const configuredPort = Number(Settings.get("mcp_port") ?? 3000);
@@ -128,10 +132,10 @@ export function registerRuntimeTools() {
             message: "No Blockbench project is open.",
           });
         }
-        if (sessions.length > 1) {
+        if (writeSessions.length > 1) {
           blockers.push({
-            code: "MULTIPLE_MCP_SESSIONS",
-            message: `${sessions.length} MCP sessions are active; one write owner is required.`,
+            code: "MULTIPLE_MCP_WRITE_SESSIONS",
+            message: `${writeSessions.length} non-readiness MCP sessions are active; one write owner is required.`,
           });
         }
 
@@ -178,7 +182,7 @@ export function registerRuntimeTools() {
               url_matches: normalizedActualUrl === normalizedCanonicalUrl,
               auto_port_disabled: !server.autoPort && !server.fallbackUsed,
               one_active_project: Boolean(project),
-              one_or_zero_sessions: sessions.length <= 1,
+              one_or_zero_write_sessions: writeSessions.length <= 1,
             },
             server,
             effective_settings: {
@@ -200,10 +204,17 @@ export function registerRuntimeTools() {
               sse_heartbeat_seconds: heartbeat,
             },
             project,
+            session_summary: {
+              total: sessions.length,
+              readiness: sessions.length - writeSessions.length,
+              write_or_other: writeSessions.length,
+            },
             sessions: sessions.map((session) => ({
               id: session.id,
               client_name: session.clientName ?? null,
               client_version: session.clientVersion ?? null,
+              transient_readiness_session:
+                session.clientName === READINESS_CLIENT_NAME,
               connected_at: session.connectedAt.toISOString(),
               last_activity: session.lastActivity.toISOString(),
             })),
