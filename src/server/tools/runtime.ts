@@ -5,19 +5,59 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE, VERSION } from "@/lib/constants";
 import { serverState } from "@/lib/serverState";
 import { sessionManager } from "@/lib/sessions";
+import {
+  activateToolProfile,
+  getToolProfileIds,
+  getToolProfileSnapshot,
+} from "@/lib/toolProfiles";
 
 export const getRuntimeStatusParameters = z.object({});
+export const getToolProfileParameters = z.object({
+  include_tools: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe("Include the exact exposed tool names. Keep false for compact status checks."),
+});
+export const activateToolProfileParameters = z.object({
+  profile_id: z
+    .string()
+    .min(1)
+    .describe("Exact profile ID from get_tool_profile."),
+});
 
 export const runtimeToolDocs: ToolSpec[] = [
   {
     name: "get_runtime_status",
     description:
-      "Returns one structured readiness snapshot for the Blockbench MCP plugin, canonical server URL, active project, effective connection settings, and sessions. Use this instead of repeating separate connection-discovery calls.",
+      "Returns one structured readiness snapshot for the Blockbench MCP plugin, canonical server URL, active project, effective settings, sessions, and active tool profile.",
     annotations: {
       title: "Get Runtime Status",
       readOnlyHint: true,
     },
     parameters: getRuntimeStatusParameters,
+    status: STATUS_STABLE,
+  },
+  {
+    name: "get_tool_profile",
+    description:
+      "Returns the active exact MCP tool profile, exposed tool count, profile hash, and optionally the exposed names.",
+    annotations: {
+      title: "Get Tool Profile",
+      readOnlyHint: true,
+    },
+    parameters: getToolProfileParameters,
+    status: STATUS_STABLE,
+  },
+  {
+    name: "activate_tool_profile",
+    description:
+      "Activates one exact stage or repair tool profile. Calls outside the new profile are blocked immediately; reconnect once to receive the reduced tool list.",
+    annotations: {
+      title: "Activate Tool Profile",
+      destructiveHint: false,
+    },
+    parameters: activateToolProfileParameters,
     status: STATUS_STABLE,
   },
 ];
@@ -59,6 +99,7 @@ export function registerRuntimeTools() {
         const configuredEndpoint = String(Settings.get("mcp_endpoint") ?? "/bb-mcp");
         const configuredTimeout = Number(Settings.get("mcp_session_timeout") ?? 30);
         const heartbeat = Number(Settings.get("mcp_sse_heartbeat") ?? 15);
+        const toolProfile = getToolProfileSnapshot(false);
 
         const format = typeof Format !== "undefined"
           ? (Format as {
@@ -138,6 +179,12 @@ export function registerRuntimeTools() {
             message: `${writeSessions.length} non-readiness MCP sessions are active; one write owner is required.`,
           });
         }
+        if (toolProfile.validation_errors.length > 0) {
+          blockers.push({
+            code: "TOOL_PROFILE_INVALID",
+            message: toolProfile.validation_errors[0],
+          });
+        }
 
         if (
           configuredAutoPort ||
@@ -164,7 +211,7 @@ export function registerRuntimeTools() {
               type: "text" as const,
               text:
                 status === "PASS"
-                  ? `Blockbench MCP is ready at ${CANONICAL_URL} for project ${project?.name ?? "unknown"}.`
+                  ? `Blockbench MCP is ready at ${CANONICAL_URL} for project ${project?.name ?? "unknown"} with profile ${toolProfile.profile_id} (${toolProfile.exposed_tool_count} tools).`
                   : `Blockbench MCP readiness: BLOCKER. ${blockers[0]?.message ?? "Review runtime details."}`,
             },
           ],
@@ -184,6 +231,7 @@ export function registerRuntimeTools() {
               one_active_project: Boolean(project),
               one_or_zero_write_sessions: writeSessions.length <= 1,
             },
+            tool_profile: toolProfile,
             server,
             effective_settings: {
               port: server.port ?? server.requestedPort,
@@ -225,5 +273,63 @@ export function registerRuntimeTools() {
       },
     },
     runtimeToolDocs[0].status
+  );
+
+  createTool(
+    runtimeToolDocs[1].name,
+    {
+      ...runtimeToolDocs[1],
+      async execute({ include_tools }) {
+        const snapshot = getToolProfileSnapshot(include_tools);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Active MCP tool profile: ${snapshot.profile_id} (${snapshot.exposed_tool_count}/${snapshot.total_library_tool_count} tools).`,
+            },
+          ],
+          structuredContent: {
+            status: snapshot.validation_errors.length > 0 ? "BLOCKER" : "PASS",
+            available_profiles: getToolProfileIds(),
+            ...snapshot,
+          },
+        };
+      },
+    },
+    runtimeToolDocs[1].status
+  );
+
+  createTool(
+    runtimeToolDocs[2].name,
+    {
+      ...runtimeToolDocs[2],
+      async execute({ profile_id }) {
+        const result = activateToolProfile(profile_id);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: result.changed
+                ? `Tool profile changed from ${result.previous_profile} to ${result.snapshot.profile_id}. Reconnect the canonical blockbench MCP server once before the next stage call.`
+                : `Tool profile ${result.snapshot.profile_id} is already active; no reconnect is required.`,
+            },
+          ],
+          structuredContent: {
+            status: result.snapshot.validation_errors.length > 0 ? "BLOCKER" : "PASS",
+            changed: result.changed,
+            previous_profile: result.previous_profile,
+            active_profile: result.snapshot.profile_id,
+            exposed_tool_count: result.snapshot.exposed_tool_count,
+            total_library_tool_count: result.snapshot.total_library_tool_count,
+            tool_profile_hash: result.snapshot.tool_profile_hash,
+            reconnect_required: result.changed,
+            next_action: result.changed
+              ? "Reconnect the existing canonical blockbench MCP entry once. Do not create another server key or scan another port."
+              : "Continue with the active stage.",
+          },
+        };
+      },
+    },
+    runtimeToolDocs[2].status
   );
 }
