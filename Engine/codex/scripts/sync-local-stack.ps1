@@ -111,6 +111,15 @@ function Normalize-LocalUrl {
   }
 }
 
+function Set-ObjectProperty {
+  param([object]$Object, [string]$Name, [object]$Value)
+  if ($Object.PSObject.Properties.Name -contains $Name) {
+    $Object.$Name = $Value
+  } else {
+    $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value
+  }
+}
+
 # 1. Codex configuration
 $codexConfigPath = Get-CodexConfigPath
 $before = if (Test-Path $codexConfigPath) { Get-Content -Raw -Path $codexConfigPath } else { "" }
@@ -312,13 +321,13 @@ if ($Asset) {
   $statePath = Join-Path $repoRoot ("SavedData\sessions\" + $Asset + "\state.json")
   if (Test-Path $statePath) {
     $state = Get-Content -Raw -Path $statePath | ConvertFrom-Json
-    $state.mcp | Add-Member server_key $serverKey -Force
-    $state.mcp | Add-Member canonical_url $canonicalUrl -Force
-    $state.mcp | Add-Member resolved_url $(if ($runtimeStatus) { $runtimeStatus.server.url } else { $null }) -Force
-    $state.mcp | Add-Member connection_status $result -Force
-    $state.mcp | Add-Member capability_status $(if ($missingTools.Count -eq 0) { "PASS" } else { "BLOCKER" }) -Force
-    $state.mcp | Add-Member required_tools_missing $missingTools -Force
-    $state.mcp | Add-Member connection_report ("SavedData/sessions/" + $Asset + "/reports/connection.json") -Force
+    Set-ObjectProperty $state.mcp "server_key" $serverKey
+    Set-ObjectProperty $state.mcp "canonical_url" $canonicalUrl
+    Set-ObjectProperty $state.mcp "resolved_url" $(if ($runtimeStatus) { $runtimeStatus.server.url } else { $null })
+    Set-ObjectProperty $state.mcp "connection_status" $result
+    Set-ObjectProperty $state.mcp "capability_status" $(if ($missingTools.Count -eq 0) { "PASS" } else { "BLOCKER" })
+    Set-ObjectProperty $state.mcp "required_tools_missing" $missingTools
+    Set-ObjectProperty $state.mcp "connection_report" ("SavedData/sessions/" + $Asset + "/reports/connection.json")
     $state.mcp.last_verified_at = $checkedAt
     if ($runtimeStatus -and $runtimeStatus.project) {
       $state.project.name = $runtimeStatus.project.name
