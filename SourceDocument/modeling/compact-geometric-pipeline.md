@@ -1,73 +1,118 @@
-# Pipeline Ringkas Bedrock MCP
+# Compact Codex + Blockbench Pipeline
 
-Tujuan: jalur minimum yang tetap memakai reference package secara disiplin.
+Goal: reach the approved model with the least safe amount of reading, MCP calls, screenshots, and approval interruptions.
 
-## 4 Aturan inti
+## Four Rules
 
-1. **Satu fase aktif**
-   - Fase tidak boleh dilompati.
+1. **One active user-visible stage**
+   - Geometry, Texture, optional Animation, or Final Validation.
 
-2. **Satu isu per siklus**
-   - Satu putaran = satu target (ekor, tangan, kaki, pivot, atau attachment).
+2. **Bounded batches for initial work**
+   - Build a complete logical unit, then verify.
+   - One-issue-per-cycle applies only to revisions.
 
-3. **PASS gate**
-   - Jika hasil tidak PASS, tidak lanjut ke tindakan berikutnya.
+3. **One review at the end of each stage**
+   - Internal passes do not require separate approval.
 
-4. **Geometri dulu**
-   - Main Geometry: bentuk, sambungan, dan pose saja.
-   - UV/tekstur: fase berikutnya.
+4. **Reference-driven validation**
+   - Production Context controls intent.
+   - Reference Visual controls visible form.
+   - Category documents control implementation details.
 
-## Flow penuh
+## Fast Flow
 
-1. Brief Asset.
-2. Reference Package.
-3. Reference Gate.
-4. Main Geometry.
-5. Geometry Detailing.
-6. UV Texture.
-7. Base Texturing.
-8. Detail Texturing.
-9. Polish.
-10. Final Review.
+```text
+Reference package intake
+→ one-time preflight
+→ Geometry internal passes
+→ Geometry preview + review
+→ Texture internal passes
+→ Texture preview + review
+→ optional Animation + review
+→ Final Validation + final review
+```
 
-## Precheck sebelum edit Blockbench
+## Geometry Cycle
 
-- Brief asset jelas, dari user/Codex/external tool.
-- Reference package valid: Sheet `01-07` = PASS, Sheet `08` = PASS atau optional/not required.
-- `REFERENCE_PLAN.md`, `CODEX_REFERENCE_HANDOFF.md`, dan `reference_manifest.json` ada.
-- `pre-modelling-gate.md` = PASS sebelum Main Geometry.
-- State session stabil: endpoint, active project, format, phase, UV mode.
-- Ambil rollback point sebelum edit.
+```text
+Primary Form batch
+→ Structural Detail batch
+→ standard five-view capture
+→ geometry result
+→ user review
+```
 
-## Satu siklus kerja
+Do not use texture or UV to hide geometry failure.
 
-1. pilih satu isu kritis
-2. tulis akar dugaan 1 baris
-3. lakukan 1 paket edit
-4. ambil SS Front + Side (`+Back/3-4` jika perlu)
-5. rekam hasil:
-   - `status: PASS / PARTIAL / BLOCKER`
-   - `next: lanjut / rollback`
+## Texture Cycle
 
-## Exit gate referensi untuk masing-masing jalur
+```text
+UV
+→ Base Texture
+→ Detail Texture
+→ atlas + model capture
+→ texture result
+→ user review
+```
 
-- Main Geometry: pakai Sheet 01-04 dan 07; bentuk menyambung, tidak ada bagian mengambang, skala konsisten.
-- Geometry Detailing: pakai Sheet 04, 06, 07, dan 08 jika relevan; hanya detail struktur.
-- UV Texture: pakai Sheet 02 dan 05; UV tidak tumpang tindih untuk area aktif.
-- Base Texturing: pakai Sheet 05; warna utama dan material zones terbaca.
-- Detail Texturing: pakai Sheet 05-06; pixel detail, trim, shading, accent.
-- Polish: pakai semua sheet; small fixes saja.
-- Final Review: bandingkan hasil ke package per sheet.
+Do not rebuild accepted geometry unless Geometry is explicitly reopened.
 
-## 10 penyebab utama dan respon cepat
+## Animation Cycle — Optional
 
-1. Referensi ambigu -> prioritaskan 01 -> 02 -> 03 -> 04.
-2. Campur fase -> fokuskan scope (jangan UV saat geometri).
-3. Pivot salah -> cek parent chain + offset akar.
-4. Limb / tail disconnect -> reset parent, sambung ulang ke root-body.
-5. Skala berubah -> lock ukuran awal, edit secara proporsional.
-6. Over-detail cube -> pindahkan ke texture jika ukuran kecil.
-7. Iterasi terlalu banyak -> 1 loop = 1 isu.
-8. Missing Front/Side -> ambil SS wajib.
-9. Manual edit bentrok auto -> cek checkpoint dan ulangi dari backup.
-10. MCP tidak stabil -> ulang preflight endpoint/project/format/phase.
+```text
+hierarchy/pivots
+→ required clips or sampled poses
+→ neutral-pose and clipping check
+→ user review
+```
+
+Skip automatically when the approved package does not require animation.
+
+## Final Validation Cycle
+
+```text
+run VALIDATION.md
+→ run Blockbench validator
+→ capture final evidence
+→ repair max 2 local failures
+→ PASS / REVISION_REQUIRED / BLOCKER
+→ final user review
+```
+
+## Revision Cycle
+
+```text
+one named issue
+→ one local edit batch
+→ one focused verification set
+→ return to same stage review
+```
+
+Revision input:
+
+```text
+Stage:
+Part:
+Issue:
+Expected:
+Do not change:
+```
+
+## Stop Conditions
+
+- major reference conflict;
+- endpoint/tool unavailable;
+- session/project ownership ambiguous;
+- same blocker repeated twice;
+- fix requires reopening an approved earlier stage.
+
+## Minimum Report
+
+```text
+Stage:
+Status:
+Completed:
+Evidence:
+Issues:
+Next user action:
+```
