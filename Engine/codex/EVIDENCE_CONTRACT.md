@@ -20,15 +20,17 @@ Blockbench coordinates use Y as vertical.
 
 The default Reference Visual front is treated as `-Z` unless the approved package defines another front axis.
 
-| View | Direction from target | Projection | Purpose |
-|---|---|---|---|
-| Front | +Z looking toward target | Orthographic | Width, height, symmetry, front identity |
-| Left Side | +X looking toward target | Orthographic | Depth, posture, attachments, ground contact |
-| Back | -Z looking toward target | Orthographic | Rear silhouette and hidden drift |
-| Top / Footprint | +Y looking downward | Orthographic | Width/depth envelope and contact layout |
-| Front-left 3/4 | +X +Z with slight +Y | Orthographic | Volume, attachment continuity, focal read |
+For the default `-Z` front axis:
 
-When another `front_axis` is approved, rotate the horizontal view directions consistently rather than changing the model.
+| View | Camera position from target | Projection | Purpose |
+|---|---|---|---|
+| Front | -Z looking toward target | Orthographic | Width, height, symmetry, front identity |
+| Left Side | -X looking toward target | Orthographic | Depth, posture, attachments, ground contact |
+| Back | +Z looking toward target | Orthographic | Rear silhouette and hidden drift |
+| Top / Footprint | +Y looking downward | Orthographic | Width/depth envelope and contact layout |
+| Front-left 3/4 | -X -Z with slight +Y | Orthographic | Volume, attachment continuity, focal read |
+
+When another `front_axis` is approved, rotate all horizontal view directions consistently rather than changing the model.
 
 ## 3. Stable Evidence Filenames
 
