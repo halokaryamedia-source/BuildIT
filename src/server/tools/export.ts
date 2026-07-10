@@ -44,6 +44,10 @@ export const exportModelParameters = z.object({
 });
 
 export const saveProjectCheckpointParameters = z.object({
+  asset_id: z
+    .string()
+    .regex(/^[a-z0-9_]+$/)
+    .describe("Lowercase snake_case asset ID used in checkpoint metadata."),
   path: z
     .string()
     .min(1)
@@ -55,6 +59,12 @@ export const saveProjectCheckpointParameters = z.object({
     .optional()
     .describe(
       "Optional absolute JSON metadata path. Defaults to the checkpoint path with .json extension."
+    ),
+  session_root: z
+    .string()
+    .optional()
+    .describe(
+      "Optional absolute active asset-session root. When provided, checkpoint and metadata paths must stay inside it."
     ),
   checkpoint_name: z
     .string()
@@ -135,6 +145,8 @@ interface RuntimeCodec {
   fileName?: () => string;
 }
 
+type Vec3 = [number, number, number];
+
 function isStringifiable(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -184,7 +196,9 @@ function getCodecRegistry(): Record<string, RuntimeCodec> {
   return Codecs as Record<string, RuntimeCodec>;
 }
 
-function getProjectCodecOrThrow(): RuntimeCodec {
+function getProjectCodecOrThrow(): RuntimeCodec & {
+  compile: (opts?: unknown) => unknown;
+} {
   const registry = getCodecRegistry();
   const codec = registry.project;
   if (!codec || typeof codec.compile !== "function") {
@@ -192,7 +206,7 @@ function getProjectCodecOrThrow(): RuntimeCodec {
       'Blockbench project codec "project" is unavailable or cannot compile .bbmodel files.'
     );
   }
-  return codec;
+  return codec as RuntimeCodec & { compile: (opts?: unknown) => unknown };
 }
 
 function parentDirectory(path: string): string | null {
@@ -206,6 +220,102 @@ function defaultMetadataPath(path: string): string {
   return path.toLowerCase().endsWith(".bbmodel")
     ? `${path.slice(0, -8)}.json`
     : `${path}.json`;
+}
+
+function normalizePathForCompare(path: string): string {
+  const normalized = path.replace(/\\/g, "/").replace(/\/$/, "");
+  return /^[a-zA-Z]:\//.test(normalized) ? normalized.toLowerCase() : normalized;
+}
+
+function assertInsideSession(path: string, sessionRoot?: string): void {
+  if (!sessionRoot) return;
+  const target = normalizePathForCompare(path);
+  const root = normalizePathForCompare(sessionRoot);
+  if (target !== root && !target.startsWith(`${root}/`)) {
+    throw new Error(
+      `Checkpoint output "${path}" is outside the approved session root "${sessionRoot}".`
+    );
+  }
+}
+
+function getRawGeometryBounds(): {
+  min: Vec3 | null;
+  max: Vec3 | null;
+  size: Vec3 | null;
+} {
+  const points: Vec3[] = [];
+
+  for (const cube of Cube.all) {
+    const from = cube.from as Vec3;
+    const to = cube.to as Vec3;
+    points.push(
+      [Math.min(from[0], to[0]), Math.min(from[1], to[1]), Math.min(from[2], to[2])],
+      [Math.max(from[0], to[0]), Math.max(from[1], to[1]), Math.max(from[2], to[2])]
+    );
+  }
+
+  for (const mesh of Mesh.all) {
+    const vertices = (mesh as unknown as { vertices?: Record<string, number[]> }).vertices;
+    if (!vertices) continue;
+    for (const vertex of Object.values(vertices)) {
+      if (Array.isArray(vertex) && vertex.length >= 3) {
+        points.push([Number(vertex[0]), Number(vertex[1]), Number(vertex[2])]);
+      }
+    }
+  }
+
+  if (points.length === 0) {
+    return { min: null, max: null, size: null };
+  }
+
+  const min: Vec3 = [Infinity, Infinity, Infinity];
+  const max: Vec3 = [-Infinity, -Infinity, -Infinity];
+  for (const point of points) {
+    for (let axis = 0; axis < 3; axis++) {
+      min[axis] = Math.min(min[axis], point[axis]);
+      max[axis] = Math.max(max[axis], point[axis]);
+    }
+  }
+
+  return {
+    min,
+    max,
+    size: [max[0] - min[0], max[1] - min[1], max[2] - min[2]],
+  };
+}
+
+function restoreBackup(fs: any, target: string, backup: string): void {
+  if (fs.existsSync(target)) fs.rmSync(target, { force: true });
+  if (fs.existsSync(backup)) fs.renameSync(backup, target);
+}
+
+function replacePairAtomically(
+  fs: any,
+  modelTemp: string,
+  modelTarget: string,
+  metadataTemp: string,
+  metadataTarget: string
+): void {
+  const modelBackup = `${modelTarget}.bak`;
+  const metadataBackup = `${metadataTarget}.bak`;
+
+  for (const backup of [modelBackup, metadataBackup]) {
+    if (fs.existsSync(backup)) fs.rmSync(backup, { force: true });
+  }
+
+  if (fs.existsSync(modelTarget)) fs.renameSync(modelTarget, modelBackup);
+  if (fs.existsSync(metadataTarget)) fs.renameSync(metadataTarget, metadataBackup);
+
+  try {
+    fs.renameSync(modelTemp, modelTarget);
+    fs.renameSync(metadataTemp, metadataTarget);
+    if (fs.existsSync(modelBackup)) fs.rmSync(modelBackup, { force: true });
+    if (fs.existsSync(metadataBackup)) fs.rmSync(metadataBackup, { force: true });
+  } catch (error) {
+    restoreBackup(fs, modelTarget, modelBackup);
+    restoreBackup(fs, metadataTarget, metadataBackup);
+    throw error;
+  }
 }
 
 export function registerExportTools() {
@@ -290,6 +400,9 @@ export function registerExportTools() {
             : undefined);
         const rawResult = codec.compile(effectiveOptions);
         const writable = toWritableData(rawResult);
+        if (writable.byteLength === 0) {
+          throw new Error(`Codec "${resolvedId}" returned empty output.`);
+        }
 
         let wroteToPath: string | null = null;
         if (path) {
@@ -352,8 +465,10 @@ export function registerExportTools() {
     {
       ...exportToolDocs[2],
       async execute({
+        asset_id,
         path,
         metadata_path,
+        session_root,
         checkpoint_name,
         stage,
         state,
@@ -376,13 +491,20 @@ export function registerExportTools() {
           );
         }
 
+        const metadataPath = metadata_path ?? defaultMetadataPath(path);
+        assertInsideSession(path, session_root);
+        assertInsideSession(metadataPath, session_root);
+
         const codec = getProjectCodecOrThrow();
-        const rawResult = codec.compile?.(
+        const rawResult = codec.compile(
           typeof codec.getExportOptions === "function"
             ? codec.getExportOptions()
             : undefined
         );
         const writable = toWritableData(rawResult);
+        if (writable.byteLength === 0) {
+          throw new Error("Blockbench project codec returned empty checkpoint output.");
+        }
 
         // @ts-ignore - requireNativeModule is a Blockbench runtime global.
         const fs = requireNativeModule("fs", {
@@ -392,17 +514,15 @@ export function registerExportTools() {
           throw new Error("Filesystem access was denied. Checkpoint was not created.");
         }
 
-        const metadataPath = metadata_path ?? defaultMetadataPath(path);
-        const tempPath = `${path}.tmp`;
-        const tempMetadataPath = `${metadataPath}.tmp`;
         const modelDirectory = parentDirectory(path);
         const metadataDirectory = parentDirectory(metadataPath);
         if (modelDirectory) fs.mkdirSync(modelDirectory, { recursive: true });
         if (metadataDirectory) fs.mkdirSync(metadataDirectory, { recursive: true });
 
+        const bounds = getRawGeometryBounds();
         const metadata = {
           schema_version: "1.0",
-          asset_id: Project.name,
+          asset_id,
           checkpoint_name,
           stage,
           state,
@@ -423,6 +543,7 @@ export function registerExportTools() {
             // @ts-ignore - Animation.all exists at runtime.
             animations: Animation.all?.length ?? 0,
           },
+          raw_model_bounds: bounds,
           accepted_areas,
           open_issues,
           byte_length: writable.byteLength,
@@ -430,15 +551,17 @@ export function registerExportTools() {
           sha256: null,
         };
 
+        const modelTemp = `${path}.tmp`;
+        const metadataTemp = `${metadataPath}.tmp`;
+
         try {
-          fs.writeFileSync(tempPath, writable.data);
-          fs.renameSync(tempPath, path);
-          fs.writeFileSync(tempMetadataPath, JSON.stringify(metadata, null, 2));
-          fs.renameSync(tempMetadataPath, metadataPath);
+          fs.writeFileSync(modelTemp, writable.data);
+          fs.writeFileSync(metadataTemp, JSON.stringify(metadata, null, 2));
+          replacePairAtomically(fs, modelTemp, path, metadataTemp, metadataPath);
         } catch (error) {
           try {
-            if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-            if (fs.existsSync(tempMetadataPath)) fs.unlinkSync(tempMetadataPath);
+            if (fs.existsSync(modelTemp)) fs.rmSync(modelTemp, { force: true });
+            if (fs.existsSync(metadataTemp)) fs.rmSync(metadataTemp, { force: true });
           } catch {
             // Preserve the original write error.
           }
