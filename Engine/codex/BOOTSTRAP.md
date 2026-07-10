@@ -6,6 +6,27 @@ This is the single operational entry point for local model production.
 
 Build only what the approved reference package requires, with the fewest safe reads, MCP calls, screenshots, and user interruptions.
 
+## Governance
+
+Read once at session start or after context loss:
+
+```text
+Engine/codex/GOVERNANCE.md
+```
+
+Core separation:
+
+```text
+OpenSpec = remembers what was agreed, scope, stages, non-goals, and acceptance criteria
+Ponytail = selects the smallest efficient action needed now to satisfy that agreement
+```
+
+OpenSpec prevents scope drift and forgotten decisions.
+
+Ponytail prevents token waste, unnecessary tools, redundant checks, speculative work, and overdevelopment.
+
+Do not repeat the full OpenSpec or governance text before every small edit. Use them at session start, stage transition, scope conflict, broad change, or recovery.
+
 ## Required Input
 
 ```text
@@ -26,19 +47,46 @@ Runtime authority:
 SavedData/sessions/<asset>/state.json
 ```
 
-If `state.json` does not exist, create it from `Engine/codex/state.template.json`.
+Create missing state from:
+
+```text
+Engine/codex/state.template.json
+```
 
 ## Minimum Read Order
 
-Read once when starting or recovering a session:
+Read once when starting or recovering:
 
-1. `SavedData/sessions/<asset>/state.json`
-2. `references/reference_manifest.json`
-3. `references/PRODUCTION_CONTEXT.md`
-4. `references/<asset>_reference_visual.png`
-5. the document for the active stage only
+1. `Engine/codex/GOVERNANCE.md`
+2. active OpenSpec summary
+3. `SavedData/sessions/<asset>/state.json`
+4. `references/reference_manifest.json`
+5. `references/PRODUCTION_CONTEXT.md`
+6. `references/<asset>_reference_visual.png`
+7. the active-stage document only
 
-Do not load every workflow document. Open failure playbooks only when their trigger occurs.
+Do not load every workflow document. Open detailed playbooks only when their trigger occurs.
+
+## Ponytail Batch Gate
+
+Before a meaningful work batch, answer internally:
+
+```text
+Stage:
+Approved goal:
+Required now: Yes / No
+Smallest complete batch:
+Reuse available:
+Forbidden changes:
+Required tool profile:
+Verification:
+Stop condition:
+Estimated MCP/evidence cost: Low / Medium / High
+```
+
+If `Required now` is `No`, do not execute it.
+
+Defer it only when there is a clear later value and revisit condition.
 
 ## One-Time Preflight
 
@@ -46,13 +94,13 @@ Before the first MCP write in a session:
 
 1. validate the reference package;
 2. confirm one active asset and one write session;
-3. verify MCP endpoint and tool availability;
-4. verify active Blockbench project, UUID, format, UV mode, and texture size;
+3. verify MCP endpoint and active-stage tool capability;
+4. verify Blockbench project, UUID, format, UV mode, and texture size;
 5. record manual edits that must be preserved;
 6. save a persistent start checkpoint;
 7. update `state.json`.
 
-Do not repeat the full preflight for every small edit. Re-run only the failed or stale check.
+Do not repeat the full preflight for every edit. Re-run only the failed or stale check.
 
 ## Production Stages
 
@@ -69,7 +117,9 @@ REFERENCE_READY
 → DONE
 ```
 
-### Stage 1 — Geometry
+Internal passes do not create additional routine approval gates.
+
+# Stage 1 — Geometry
 
 Internal passes:
 
@@ -78,9 +128,11 @@ Pass A: scale envelope, root hierarchy, primary masses, ground contacts
 Pass B: silhouette-critical structure, attachments, transitions, cube reduction
 ```
 
-Initial construction may use bounded multi-part batches. The one-issue rule applies only to revision cycles.
+Initial construction may use bounded multi-part batches.
 
-Forbidden during Geometry:
+The one-issue rule applies to revisions, not initial construction.
+
+Forbidden:
 
 - UV packing;
 - texture painting;
@@ -88,21 +140,26 @@ Forbidden during Geometry:
 - animation clips;
 - final export.
 
-Stage output:
+Required output:
 
-- persistent geometry checkpoint;
+- persistent Geometry checkpoint;
 - cube/group count;
-- Front, Left Side, Back, Top/Footprint, and Front-left 3/4 previews;
-- short geometry result against `GEOMETRY.md` and the Reference Visual.
+- scale and hierarchy summary;
+- Front preview;
+- Left Side preview;
+- Back preview;
+- Top / Footprint preview;
+- Front-left 3/4 preview;
+- short result against `GEOMETRY.md` and the Reference Visual.
 
-Then stop at `GEOMETRY_REVIEW`.
+Stop at `GEOMETRY_REVIEW`.
 
 User response:
 
 - `APPROVED` → continue to Texture;
-- `REVISION: ...` → revise only the named geometry issue, recapture affected evidence, and return to review.
+- `REVISION: ...` → revise only the named Geometry issue and return to review.
 
-### Stage 2 — Texture
+# Stage 2 — Texture
 
 Internal passes:
 
@@ -112,83 +169,96 @@ UV planning and packing
 → detail texturing and focal-area polish
 ```
 
-Do not stop for separate UV, base-texture, and detail-texture approvals.
+Do not stop for separate UV, Base Texture, and Detail Texture approvals.
 
-Forbidden during Texture:
+Forbidden:
 
-- broad geometry redesign;
-- new geometry used to imitate pixels, seams, bands, or scratches;
+- broad Geometry redesign;
+- geometry used to imitate pixels, seams, bands, or scratches;
 - PBR or Vibrant Visuals;
-- animation work.
+- Animation work.
 
-Stage output:
+Required output:
 
-- persistent textured checkpoint;
+- persistent Texture checkpoint;
 - texture atlas preview;
 - UV summary;
-- Front, Left Side, Back, and Front-left 3/4 textured previews;
-- short texture result against `TEXTURING.md` and the Reference Visual.
+- Front preview;
+- Left Side preview;
+- Back preview;
+- Front-left 3/4 preview;
+- short result against `TEXTURING.md` and the Reference Visual.
 
-Then stop at `TEXTURE_REVIEW`.
+Stop at `TEXTURE_REVIEW`.
 
 User response:
 
 - `APPROVED` → continue to Animation when required, otherwise Final Validation;
-- `REVISION: ...` → revise only the named texture/UV issue and return to review.
+- `REVISION: ...` → revise only the named Texture/UV issue and return to review.
 
-### Stage 3 — Animation (Optional)
+# Stage 3 — Animation (Optional)
 
-Run only when `reference_manifest.json` or `ANIMATION.md` requires animation.
+Run only when `reference_manifest.json` or `ANIMATION.md` requires Animation.
 
-If animation is not required:
+If not required:
 
 ```text
 stage: ANIMATION_SKIPPED
 reason: not required by approved reference package
 ```
 
-When used, build hierarchy/pivots and required clips without altering approved geometry or texture.
+Do not add optional animations merely for completeness.
 
-Stage output:
+When used, build only approved hierarchy, pivots, and clips without altering accepted Geometry or Texture.
 
-- persistent animation checkpoint;
+Required output:
+
+- persistent Animation checkpoint;
 - hierarchy and pivot summary;
-- required animation clips or sampled poses;
-- neutral-pose recovery capture;
+- required clips or sampled poses;
+- neutral-pose recovery;
 - clipping and ground-contact result.
 
-Then stop at `ANIMATION_REVIEW`.
+Stop at `ANIMATION_REVIEW`.
 
 User response:
 
 - `APPROVED` → continue to Final Validation;
 - `REVISION: ...` → revise only the named motion, pivot, clipping, or timing issue.
 
-### Stage 4 — Final Validation
+# Stage 4 — Final Validation
 
 Execute `VALIDATION.md` against:
 
 - final `.bbmodel` candidate;
-- texture files;
+- textures;
 - standard-view evidence;
 - hierarchy and pivots;
 - animations when required;
 - Blockbench validator output;
 - export readiness.
 
-Codex may repair at most two clearly local validation failures automatically. A fix that changes approved identity, scale, silhouette, palette, or stage scope must return to the relevant review stage.
+Codex may repair at most two clearly local validation failures automatically.
 
-Stage output:
+A fix that changes approved identity, scale, silhouette, palette, material read, or accepted stage scope must return to the relevant review stage.
+
+Do not add new features during Final Validation.
+
+Required output:
 
 - final candidate `.bbmodel`;
 - texture files;
 - completed `VALIDATION.md`;
-- Front, Left Side, Back, Top/Footprint, and Front-left 3/4 final previews;
-- animation evidence when applicable;
+- Front preview;
+- Left Side preview;
+- Back preview;
+- Top / Footprint preview;
+- Front-left 3/4 preview;
+- Animation evidence when applicable;
 - concise revision summary;
 - result: `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
 
-Then stop at `FINAL_REVIEW` and wait for approval or user-requested corrections.
+Stop at `FINAL_REVIEW` and wait for approval or corrections.
 
 ## Revision Rule
 
@@ -198,7 +268,7 @@ For revisions only:
 one cycle = one named issue or one tightly related issue pair
 ```
 
-Each revision cycle must state:
+Required feedback mapping:
 
 ```text
 Stage:
@@ -210,6 +280,26 @@ Verification:
 ```
 
 Do not rebuild accepted areas.
+
+## Overdevelopment Stop Test
+
+Do not execute work when any is true:
+
+- it does not serve the active stage acceptance criteria;
+- it is not requested by the user or required by the approved package;
+- it duplicates existing authority/state;
+- it creates a new abstraction without reducing current risk or repeated work;
+- it solves only a hypothetical future problem;
+- it consumes meaningful tokens/tool calls without reviewable progress;
+- it requires reopening accepted work without a proven conflict.
+
+Record only when useful:
+
+```text
+DEFERRED_NOT_REQUIRED
+Reason:
+Revisit condition:
+```
 
 ## Stop Conditions
 
@@ -232,3 +322,14 @@ Evidence:
 Issues:
 Next user action: APPROVED or REVISION: ...
 ```
+
+## CI and Release Rule
+
+CI, deployment preview, release preparation, and final comprehensive verification are deferred until the workflow implementation is intentionally ready for final review.
+
+During active rework:
+
+- use focused local verification for changed areas;
+- do not trigger continuous CI on every branch update;
+- do not open a merge PR merely to run automated checks;
+- keep all work isolated on `Rework` until the user explicitly approves final integration.
