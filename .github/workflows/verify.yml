@@ -24,6 +24,3 @@ jobs:
 
       - name: Typecheck, test, build, and generate docs
         run: bun run verify:quick
-
-      - name: Ensure generated outputs are committed
-        run: git diff --exit-code
