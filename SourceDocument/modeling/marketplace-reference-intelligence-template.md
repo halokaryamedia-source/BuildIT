@@ -1,94 +1,126 @@
-# Marketplace Reference Intelligence Intake
+# Marketplace Reference Intelligence — Conditional Gap Intake
 
-Use this template before starting **Main Geometry** for any new model.
+Do not use this template for every new model.
 
-This is a general template for reference understanding only.
-It is intentionally not per-pack or product-dedicated, and it should not hardcode any specific marketplace source.
+The approved reference package normally already contains the required intelligence.
 
-## 1) Core Project Identity
+Use this document only when a real implementation gap remains after reading:
 
-- Asset Name:
-- Identifier Prefix:
-- Category: `Bedrock Entity`
-- Asset Scale:
-- Visual Role:
-- Animation Scope: `none` / `basic` / `combat` / `boss`
+```text
+PRODUCTION_CONTEXT.md
+<asset>_reference_visual.png
+reference_manifest.json
+active-stage category document
+```
 
-## 2) Reference Set
+## 1. Gap Definition
 
-- Reference 1 (main):
-- Reference 2 (sibling style):
-- Reference 3 (technical/UV style):
+```text
+Active stage:
+Missing decision:
+Why existing package does not resolve it:
+Technical consequence:
+Can work continue safely without it: Yes / No
+```
 
-For each reference:
-- Silhouette match level: `High / Medium / Low`
-- Material identity: `cloth / metal / stone / skin / wood / other`
-- Complexity level: `Low / Medium / High`
+If the answer is already present in the approved package, stop and do not create this intake.
 
-## 3) Required MCP Phase Decisions
+## 2. Minimal Reference Evidence
 
-- Main Geometry Budget:
-  - `Low`: minimal cubes, major shapes only
-  - `Medium`: main body + arms/legs + major accessories
-  - `High`: silhouette-critical details only
-- UV Baseline:
-  - `16` / `32` / `64` / `128`
-- Atlas Priority:
-  - `single`
-  - `split per material`
-  - `shared with repeated elements`
-- Dominant Bone Pattern:
-  - root / body / waist / torso
-  - limb groups
-- Attachment Points:
-  - weapon socket
-  - shield mount
-  - armor parent groups
+Use the smallest set needed:
 
-## 4) Quality Targets (per phase)
+```text
+Primary approved source:
+Relevant visual panel/view:
+Optional quality calibration sample:
+Optional technical sample:
+```
 
-### Main Geometry
-- Target silhouette clear in front and side
-- No free-floating parts
-- No minor cube spam
+Samples may inform quality and execution behavior only. They cannot replace the approved subject identity or dimensions.
 
-### Geometry Detailing
-- All detail cubes must support silhouette
-- Micro details should be marked for texturing
+## 3. Resolve Only the Active Gap
 
-### UV Texture
-- UV islands grouped by material
-- Texture space compact and reuse-friendly
+Possible decision fields:
 
-### Base / Detail Texturing
-- Base color block separation visible
-- Gradient present on at least one major surface type
+```text
+Asset role:
+Scale/envelope:
+Silhouette priority:
+Geometry budget:
+Required hierarchy/attachment:
+Atlas baseline:
+UV reuse policy:
+Material family:
+Focal texel area:
+Animation family/pivot:
+Validation evidence:
+```
 
-## 5) Anti-Pattern Checklist (hard blockers)
+Fill only fields needed to resolve the current blocker.
 
-- Floating knees, knees/arms not attached, floating accessories
-- Severe collision between sibling cubes
-- Tiny decorative cubes where gradient/texture can replace form
-- Over-concentration of unique UV islands with no material reason
+## 4. Stage Consequence
 
-## 6) Output Plan (one row only)
+### Geometry
 
-- Phase 1 (Geometry): ...
-- Phase 2 (Detailing): ...
-- Phase 3 (UV): ...
-- Phase 4 (Base): ...
-- Phase 5 (Detail): ...
-- Polish:
+```text
+Affected mass/part:
+Bounding-box or attachment consequence:
+Must be geometry:
+Must remain texture-only:
+Accepted areas to preserve:
+Required comparison views:
+```
 
-## 7) Codex Request Guard
+### Texture
 
-- If required references are missing: `BLOCK` and request only missing references.
-- If any blocker is still active: `BLOCK` and fix before next phase.
-- If references are aligned: proceed to Main Geometry with this plan.
+```text
+Affected material/face:
+Atlas/UV consequence:
+Unique or mirrored:
+Palette/material consequence:
+Accepted areas to preserve:
+Required atlas/model evidence:
+```
 
-## Acceptance Criteria
+### Animation
 
-- Reference identity (asset, category, scale, animation scope) is complete before Main Geometry.
-- Silhouette, budget, attachment, and texture strategy are explicitly captured.
-- Anti-patterns are recorded as hard blockers (not suggestions).
-- Plan line items are phase-safe and do not mix phase scopes.
+```text
+Affected group/chain:
+Pivot/axis/range consequence:
+Neutral-pose consequence:
+Accepted areas to preserve:
+Required motion evidence:
+```
+
+### Final Validation
+
+```text
+Failed contract item:
+Local repair or stage reopen:
+Required evidence:
+Rollback checkpoint:
+```
+
+## 5. Decision Output
+
+```text
+Resolution:
+Confidence: HIGH / MEDIUM / LOW
+Authority used:
+State/OpenSpec update required:
+Stage reopen required: Yes / No
+Smallest safe next action:
+Stop condition:
+```
+
+A low-confidence answer that affects identity, global scale, broad silhouette, hierarchy architecture, material identity, or required motion becomes:
+
+```text
+REFERENCE_CONFLICT
+```
+
+## Ponytail Rule
+
+This template must reduce ambiguity for current work.
+
+Do not use it to create a broad marketplace research exercise, duplicate Production Context, or add optional quality features outside the active stage.
