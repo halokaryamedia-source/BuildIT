@@ -1,578 +1,406 @@
-# Phase Detail Contract
+# Stage Detail Contract
 
-This document defines the detailed working contract for each Minecraft Bedrock / Blockbench MCP production phase.
+This document defines the four user-visible production stages for Codex + Blockbench MCP.
 
-Use it with:
+Use with:
 
+- `../../Engine/codex/BOOTSTRAP.md`
 - `mandatory-blockbench-mcp-procedure.md`
-- `model-session-checklist-template.md`
 - `quality-implementation-rules.md`
-- `phase-quality-scorecard-template.md`
-- OpenSpec `mcp-blockbench-workflow`
+- active `state.json`
+- approved reference package
 
-Codex must keep the current phase visible while working. If the requested edit does not belong to the current phase, mark it `Out of scope for this phase`.
+## Global Stage Report
 
-## Global Phase Report Format
-
-Every phase must end with:
+Every stage ends with:
 
 ```text
-Phase:
+Stage:
 Goal:
+Status: PASS / REVISION_REQUIRED / BLOCKER
 Completed:
+Preserved:
 Skipped:
-Screenshots / artifacts:
+Evidence:
 Issues:
 Assumptions:
-Needs user approval before next phase: Yes
+Next user action: APPROVED or REVISION: ...
 ```
 
-## Phase Quality Gate
+## Global Gate Rule
 
-A phase can only advance after its quality gate is complete and recorded:
+A stage advances only when:
+
+- its required output exists;
+- required previews/evidence exist;
+- no blocker remains;
+- stage status is `PASS`;
+- the user explicitly approves the stage preview.
+
+Internal passes do not require separate user approval.
+
+## Revision Rule
+
+The one-issue-per-cycle rule applies to revision work.
 
 ```text
-Scorecard used: Yes
-Scorecard status:
-- PASS
-- NEEDS_MINOR_FIX
-- BLOCKER
-Decision:
-- BLOCKER -> stay in this phase
-- NEEDS_MINOR_FIX -> fix listed items before continuing
-- PASS -> request user approval
-Critical fixes before transition: max 2
-Critical fixes are tied to a named part / concrete issue
+Stage:
+Part:
+Issue:
+Expected:
+Do not change:
+Verification:
 ```
 
-Token constraint:
+A revision must preserve accepted areas. After two repeated failures on the same issue, stop and use the relevant failure playbook.
 
-- Max 2 additional edit passes for the same blocker in one phase.
-- If still blocked after 2 passes, pause and request re-scope before broad change.
+# Stage 0 — Reference Intake and Preflight
 
-If any quality signal is ambiguous, the phase is treated as:
+This is automatic and does not require routine user approval.
+
+## Required Input
+
+- `reference_manifest.json`
+- `PRODUCTION_CONTEXT.md`
+- `<asset>_reference_visual.png`
+- `GEOMETRY.md`
+- `TEXTURING.md`
+- `ANIMATION.md`
+- `VALIDATION.md`
+- `CODEX_REFERENCE_HANDOFF.md`
+
+## Required Decisions
+
+- asset identity and target;
+- scale, front direction, and neutral pose;
+- geometry-vs-texture split;
+- required hierarchy/attachments;
+- atlas and texture style;
+- whether Animation is required;
+- manual edits to preserve.
+
+## Preflight Checks
+
+- package integrity;
+- active OpenSpec change;
+- MCP endpoint and tools;
+- one active write session;
+- project UUID, format, UV mode, and texture size;
+- persistent checkpoint readiness;
+- state file exists and is consistent.
+
+## Exit
+
+- `PASS` → enter Geometry;
+- `REFERENCE_CONFLICT` → stop before editing;
+- `BLOCKER` → report missing runtime requirement.
+
+# Stage 1 — Geometry
+
+## Goal
+
+Create the complete approved physical form before UV, texture painting, animation clips, or export.
+
+## Required Input
+
+- approved reference package;
+- `GEOMETRY.md`;
+- approved scale envelope;
+- build order;
+- hierarchy and attachment plan;
+- cube-vs-texture decisions;
+- Geometry stage checkpoint.
+
+## Internal Pass A — Primary Form
+
+Build:
+
+- root group;
+- primary parent structure;
+- global envelope;
+- main body/object masses;
+- major silhouette parts;
+- ground/contact parts;
+- defining large attachments;
+- placeholder colors only.
+
+Initial construction may use a bounded multi-part batch when the parts form one coherent hierarchy or silhouette unit.
+
+## Internal Pass B — Structural Detail
+
+Add only geometry that improves:
+
+- silhouette;
+- depth;
+- attachment continuity;
+- part transition;
+- pivot/animation readiness;
+- focal identity that texture cannot solve.
+
+Reduce or remove:
+
+- decorative micro-cubes;
+- texture-like seams/bands/pixels;
+- redundant overlapping masses;
+- unsupported floaters;
+- z-fighting.
+
+## Forbidden
+
+- UV packing;
+- texture painting;
+- final palette polish;
+- animation clips;
+- export;
+- broad work outside the approved asset.
+
+## Required Evidence
+
+- Front preview;
+- Left Side preview;
+- Back preview;
+- Top / Footprint preview;
+- Front-left 3/4 preview;
+- scale envelope;
+- cube/group count;
+- hierarchy summary;
+- attachment/ground-contact summary;
+- persistent Geometry checkpoint.
+
+## Geometry Gate
 
 ```text
-Needs user clarification
+Scale: PASS / REVISION_REQUIRED / BLOCKER
+Front silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Left Side silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Back silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Top / Footprint: PASS / REVISION_REQUIRED / BLOCKER
+Front-left 3/4: PASS / REVISION_REQUIRED / BLOCKER
+Attachment continuity: PASS / REVISION_REQUIRED / BLOCKER
+Hierarchy/pivot readiness: PASS / REVISION_REQUIRED / BLOCKER
+Floating/collision/z-fighting: PASS / REVISION_REQUIRED / BLOCKER
+Cube-purpose check: PASS / REVISION_REQUIRED / BLOCKER
 ```
 
-and may not advance until resolved.
+## Exit
 
-## Geometry Precision Gate
+Stop at `GEOMETRY_REVIEW`.
 
-Main Geometry and Geometry Detailing must pass this gate before moving forward:
+- `APPROVED` → lock Geometry checkpoint and enter Texture.
+- `REVISION: ...` → patch only the named issue and return to Geometry Review.
+
+# Stage 2 — Texture
+
+## Goal
+
+Create the approved atlas, UV layout, material zones, palette, and final pixel-art surface treatment.
+
+## Required Input
+
+- approved Geometry checkpoint;
+- `TEXTURING.md`;
+- approved Reference Visual;
+- atlas target;
+- UV strategy;
+- material palette and zones.
+
+## Internal Pass A — UV
+
+- configure approved atlas size;
+- use Per-face UV unless explicitly overridden;
+- pack compactly;
+- share/mirror safe repeated areas;
+- preserve unique/directional areas;
+- reserve sufficient density for focal faces;
+- avoid unintended overlap.
+
+## Internal Pass B — Base Texture
+
+- apply broad material colors;
+- establish approved material zones;
+- preserve base color family;
+- keep palette limited and readable;
+- avoid detail noise.
+
+## Internal Pass C — Detail Texture
+
+- add stepped shading;
+- add edge highlights and overlap shadows;
+- add texture-only seams, bands, scars, patterns, symbols, and focal pixels;
+- correct visible seams;
+- improve focal readability;
+- keep pixel edges sharp.
+
+## Forbidden
+
+- broad geometry redesign;
+- decorative geometry for pixel details;
+- PBR maps;
+- Vibrant Visuals dependency;
+- animation work;
+- export.
+
+## Required Evidence
+
+- texture atlas preview;
+- UV summary;
+- Front textured preview;
+- Left Side textured preview;
+- Back textured preview;
+- Front-left 3/4 textured preview;
+- material/alpha/emissive summary;
+- persistent Texture checkpoint.
+
+## Texture Gate
 
 ```text
-Scale envelope recorded: Yes / No
-Front silhouette: PASS / PARTIAL / BLOCKER
-Side silhouette: PASS / PARTIAL / BLOCKER
-Back silhouette: PASS / PARTIAL / BLOCKER
-3/4 silhouette: PASS / PARTIAL / BLOCKER
-Attachment continuity: PASS / PARTIAL / BLOCKER
-Parent / pivot logic: PASS / PARTIAL / BLOCKER
-Floating / collision / z-fighting: PASS / PARTIAL / BLOCKER
-Cube purpose check: PASS / PARTIAL / BLOCKER
-Decision: PASS / NEEDS_MINOR_FIX / BLOCKER
+Atlas/UV: PASS / REVISION_REQUIRED / BLOCKER
+Palette: PASS / REVISION_REQUIRED / BLOCKER
+Material zones: PASS / REVISION_REQUIRED / BLOCKER
+Focal details: PASS / REVISION_REQUIRED / BLOCKER
+Pixel sharpness: PASS / REVISION_REQUIRED / BLOCKER
+Seams: PASS / REVISION_REQUIRED / BLOCKER
+Alpha/emissive: PASS / REVISION_REQUIRED / BLOCKER
+Classic Bedrock compliance: PASS / REVISION_REQUIRED / BLOCKER
 ```
 
-Rules:
+## Exit
 
-- Front and side must be `PASS` before leaving Main Geometry.
-- Any floating major part, broken attachment, or unstable parent chain is a `BLOCKER`.
-- If the same geometry blocker appears twice, stop and use `geometry-failure-prevention-playbook.md` before another edit pass.
-- Do not solve geometry failure with texture, UV, or color.
-- Every geometry fix must state the Geometry Decision Tree path before editing.
+Stop at `TEXTURE_REVIEW`.
 
-## Ponytail Phase Rule
+- `APPROVED` → lock Texture checkpoint and enter Animation when required, otherwise Final Validation.
+- `REVISION: ...` → patch only the named UV/texture issue and return to Texture Review.
 
-Each phase should use the smallest useful work unit:
+# Stage 3 — Animation (Optional)
+
+## Activation
+
+Run only when required by `reference_manifest.json` or `ANIMATION.md`.
+
+If not required:
 
 ```text
-Work unit:
-Affected part:
-Allowed edit:
-Forbidden edit:
-Verification:
-Stop when:
+stage: ANIMATION_SKIPPED
+reason: not required by approved reference package
 ```
 
-Avoid broad inspections, repeated screenshots, or unrelated tool calls when a focused check is enough.
-
-## Phase 1: Reference Collection
-
-Purpose: convert ChatGPT output and user references into a reliable modelling plan.
-
-Required input:
-
-- Asset name.
-- Bedrock Entity.
-- In-game function.
-- Scale target.
-- Reference images or reference sheet package.
-- Current requested phase.
-
-Must inspect:
-
-- Orthographic views for orientation and proportions.
-- Scale sheet for size and contact points.
-- Silhouette sheet for recognizability.
-- Part breakdown for geometry groups.
-- Close-up sheet for focal areas.
-- Execution target sheet for DO-only visual locks and known failure prevention.
-
-Must decide:
-
-- Front side.
-- Scale.
-- Main silhouette features.
-- Required large geometry parts.
-- Geometry Blueprint with global envelope, part build order, and part bounding boxes.
-- Texture-only details.
-- Focal areas.
-- Rough cube budget: low, medium, or high.
-- Atlas size: 64x64, 128x128, 256x256, 512x512, or explicitly approved other.
-- Pixel style: default Minecraft 16x style or cleaner 32x style.
-- Complexity level inferred from request and references.
-- Project name and root group naming.
-- Geometry Translation Plan.
-- Texture Translation Plan.
-
-Allowed:
-
-- Summarize references.
-- Mark conflicts.
-- Ask missing questions.
-- Produce geometry plan.
-
-Forbidden:
-
-- Blockbench edits.
-- MCP model changes.
-- Texture or UV work.
-- Assuming missing scale, front side, or target category.
-
-Exit output:
-
-- Asset summary.
-- Reference priority.
-- Geometry Blueprint.
-- Cube-vs-texture list.
-- Phase risks.
-- Assumptions / Needs verification.
-- Approval request for Main Geometry.
-
-Failure conditions:
-
-- Asset target unclear.
-- Bedrock category unclear.
-- Reference conflict affects major shape.
-- Scale or front side unclear.
-- Quality gate scorecard shows any blocker.
-
-## Phase 2: Main Geometry
-
-Purpose: create the readable large form only.
-
-Required input:
-
-- Approved Reference Collection summary.
-- Scale target.
-- Geometry Blueprint.
-- Scale envelope: height, width, depth, front direction, ground/contact point.
-- Pre-MCP geometry action plan for the first build batch.
-- Main silhouette list.
-- Required large parts.
-- Cube budget expectation.
-
-Must build:
-
-- Root group.
-- Main body or primary object mass.
-- Major silhouette parts.
-- Large attachments or props that define identity.
-- Animation-ready parent groups for entities.
-- Asset-specific root name.
-- Front/side/back readable blockout before any detailing.
-- Parts in the approved build order.
-- Part bounding boxes close to the approved blueprint.
-
-Allowed:
-
-- Placeholder colors.
-- Large cuboids.
-- Simple rotations if they improve silhouette.
-- Clean hierarchy.
-- One checkpoint before meaningful edits.
-
-Forbidden:
-
-- UV work.
-- Texture painting.
-- Detail gradients.
-- Small decorative cubes.
-- Micro trims.
-- Export.
-- Animation work unless explicitly requested.
-
-Verification:
-
-- Front screenshot.
-- Side screenshot.
-- Back screenshot.
-- 3/4 screenshot.
-- Scale envelope comparison.
-- Part bounding box comparison for major parts.
-- Orthographic front/side comparison against the blueprint.
-- Decision tree path result.
-- Geometry Precision Gate.
-- Cube count.
-- Short hierarchy report.
-
-Exit gate:
-
-- Model is recognizable without texture.
-- Major parts exist.
-- Scale is close enough.
-- Front and side silhouettes pass against reference.
-- No obvious floating parts.
-- No obvious z-fighting.
-- Parent/attachment logic is stable enough for detailing.
-- User approves Geometry Detailing.
-
-Failure conditions:
-
-- Silhouette does not read.
-- Model resembles a wrong asset class.
-- Large parts are disconnected.
-- Scale envelope is missing or contradicted by screenshots.
-- Major part bounding boxes are missing or contradicted by screenshots.
-- Build order was skipped and caused unstable attachments.
-- Edit was made without a stated decision-tree path.
-- Front or side silhouette is `PARTIAL` or `BLOCKER`.
-- Parent, pivot, or attachment issue repeats twice.
-- Cube budget already wasted on tiny details.
-
-## Phase 3: Geometry Detailing
-
-Purpose: add important physical structure without wasting cubes.
-
-Required input:
-
-- Approved Main Geometry screenshots.
-- Structural detail list.
-- Texture-only detail list.
-- Cube budget expectation.
-
-Must review:
-
-- Floating parts.
-- Colliding/z-fighting parts.
-- Side profile.
-- Attachment logic.
-- Animation pivot logic.
-- Scale envelope drift.
-- Cube count.
-
-Allowed:
-
-- Larger layered plates or structural forms.
-- Side-profile improvements.
-- Focal geometry that cannot be texture-only.
-- Cube reduction where texture can replace small detail.
-- Better parent/group placement.
-
-Forbidden:
-
-- Pixel-scale cube decoration.
-- Repeating tiny stripe cubes.
-- Texture painting.
-- UV repack.
-- Full redesign unless Main Geometry is reopened.
-
-Verification:
-
-- Front/side/back/3/4 screenshots.
-- Geometry Precision Gate.
-- List of added structural details.
-- List of details deferred to texture.
-- Any cube optimizations.
-
-Exit gate:
-
-- Structure is cleaner than blockout.
-- No known floating/collision issues.
-- Cube count is justified.
-- Texture-only details are not modelled as cubes.
-- Parent, pivot, and attachment decisions remain stable.
-- Scale envelope remains unchanged unless user approved a change.
-- User approves UV Texture.
+Then proceed to Final Validation.
 
-Failure conditions:
+## Goal
 
-- New geometry creates clutter.
-- Small cube noise increases.
-- Important parts still look detached.
-- Geometry is less readable than Main Geometry.
-- Detailing hides a failed Main Geometry silhouette.
-- A repeated issue was retried without root-cause recovery.
+Create the approved animation-ready hierarchy, pivots, and required motion without changing accepted Geometry or Texture.
+
+## Required Input
 
-## Phase 4: UV Texture
+- approved Geometry and Texture checkpoints;
+- `ANIMATION.md`;
+- required animation families;
+- pivot and parent-child plan;
+- neutral pose and ground-contact rules.
 
-Purpose: prepare an efficient single-atlas UV layout before painting.
+## Allowed
 
-Required input:
+- approved groups/bones;
+- approved pivots;
+- approved motion axes and ranges;
+- required clips;
+- local clipping fixes that do not redesign the asset;
+- neutral-pose recovery.
 
-- Approved Geometry Detailing.
-- Texture atlas size.
-- Focal area priority.
-- Repeated/mirrored parts list.
+## Forbidden
 
-Must decide:
+- broad geometry redesign;
+- texture repaint unrelated to motion;
+- new unapproved motion families;
+- unapproved root motion;
+- export.
 
-- Single atlas target.
-- Unique UV areas.
-- Shared UV areas.
-- Hidden/low-priority areas.
-- Focal pixel density.
+## Required Evidence
 
-Allowed:
+- hierarchy summary;
+- pivot summary;
+- required clips or sampled poses;
+- neutral pose;
+- ground-contact result;
+- clipping/deformation result;
+- persistent Animation checkpoint.
 
-- Create/select one texture atlas.
-- Pack UVs.
-- Reuse UV for repeated or mirrored parts.
-- Reserve larger space for focal areas.
+## Animation Gate
 
-Forbidden:
+```text
+Hierarchy: PASS / REVISION_REQUIRED / BLOCKER
+Pivots: PASS / REVISION_REQUIRED / BLOCKER
+Allowed axes/ranges: PASS / REVISION_REQUIRED / BLOCKER
+Neutral-pose recovery: PASS / REVISION_REQUIRED / BLOCKER
+Ground contact: PASS / REVISION_REQUIRED / BLOCKER
+Clipping: PASS / REVISION_REQUIRED / BLOCKER
+Rigid-cuboid behavior: PASS / REVISION_REQUIRED / BLOCKER
+```
 
-- Final painting.
-- Detail shading.
-- Large geometry redesign.
-- Multiple texture files unless approved.
+## Exit
 
-Verification:
+Stop at `ANIMATION_REVIEW`.
 
-- Texture atlas screenshot.
-- Model screenshot.
-- Focal UV areas identified.
-- Reused UV areas identified.
-- UV Efficiency Audit from `quality-implementation-rules.md`.
+- `APPROVED` → lock Animation checkpoint and enter Final Validation.
+- `REVISION: ...` → patch only the named motion/pivot issue and return to Animation Review.
 
-Exit gate:
+# Stage 4 — Final Validation
 
-- Atlas is compact.
-- Focal areas have enough space.
-- Repeated parts reuse UV safely.
-- No unexpected multi-texture setup.
-- User approves Base Texturing.
+## Goal
 
-Failure conditions:
+Prove the final candidate follows the approved reference package and is ready for final user acceptance.
 
-- Atlas has excessive empty space.
-- Focal UVs are too small.
-- Important faces overlap accidentally.
-- Multiple textures appear without approval.
+## Required Input
 
-## Phase 5: Base Texturing
+- latest approved stage checkpoints;
+- `VALIDATION.md`;
+- `.bbmodel` candidate;
+- texture files;
+- animations when required;
+- Blockbench validator output.
 
-Purpose: establish broad material placement.
+## Required Work
 
-Required input:
+- execute all applicable `VALIDATION.md` checks;
+- capture five standard views;
+- verify dimensions and scale;
+- verify hierarchy/pivots;
+- verify geometry-vs-texture compliance;
+- verify atlas/UV/material behavior;
+- verify neutral pose and ground contact;
+- verify animation when used;
+- verify naming and export readiness.
 
-- Approved UV Texture.
-- Material palette.
-- Material placement notes.
+Codex may repair at most two clearly local failures automatically.
 
-Must paint:
+A correction requiring redesign or reopening accepted stage scope must be reported and routed back to the relevant review stage.
 
-- Dominant material.
-- Secondary material.
-- Basic shadow material.
-- Basic highlight material.
-- Accent placement only where approved.
+## Required Output
 
-Allowed:
+- final candidate `.bbmodel`;
+- texture files;
+- completed `VALIDATION.md`;
+- Front preview;
+- Left Side preview;
+- Back preview;
+- Top / Footprint preview;
+- Front-left 3/4 preview;
+- animation evidence when required;
+- Blockbench validator summary;
+- concise revision summary;
+- persistent Validation PASS checkpoint when successful.
 
-- Broad fills.
-- Simple material separation.
-- Limited color palette.
-- Placeholder-level material readability.
+## Results
 
-Forbidden:
+- `PASS`: ready for final approval.
+- `REVISION_REQUIRED`: named correction required.
+- `BLOCKER`: safe completion is not currently possible.
 
-- Heavy gradient polish.
-- Micro scratches.
-- UV repack unless blocked.
-- Geometry redesign.
+## Exit
 
-Verification:
+Stop at `FINAL_REVIEW` and wait for:
 
-- Front/side/back/3/4 screenshots.
-- Atlas screenshot.
-- Material placement report.
+- `APPROVED`; or
+- `REVISION: ...`.
 
-Exit gate:
-
-- Materials are readable.
-- Major regions use correct colors.
-- Accent colors are controlled.
-- User approves Detail Texturing.
-
-Failure conditions:
-
-- Large visible region uses wrong material.
-- Palette drifts from reference.
-- Colors are too flat to judge material separation.
-
-## Phase 6: Detail Texturing
-
-Purpose: add Bedrock-style depth and texture-only detail.
-
-Required input:
-
-- Approved Base Texturing.
-- Texture reference sheet.
-- Focal area list.
-- Texture-only detail list.
-
-Must add:
-
-- Stepped gradients.
-- Edge highlights.
-- Recess shadows.
-- Seams / trims / panel lines.
-- Material-specific detail.
-- Focal identity detail.
-- Gradient coverage on large visible faces.
-
-Allowed:
-
-- Local atlas edits.
-- Reusable detail for repeated parts.
-- Stronger detail on hero areas.
-- Texture replacement for minor cube detail.
-
-Forbidden:
-
-- Full atlas repaint when local edits work.
-- Geometry redesign unless reopened.
-- Smooth blurred shading.
-- Random noisy pixels.
-
-Verification:
-
-- Front/side/back/3/4 screenshots.
-- Atlas screenshot.
-- Focal close-up.
-- Flat-face issue list.
-
-Exit gate:
-
-- Large visible faces have gradient or material depth.
-- Focal details read from intended view.
-- Texture remains pixel-art style.
-- User approves Polish.
-
-Failure conditions:
-
-- Texture is still flat.
-- Focal detail is on the wrong side.
-- Detail looks random instead of material-based.
-- Atlas becomes wasteful or chaotic.
-
-## Phase 7: Polish
-
-Purpose: fix visible issues only.
-
-Required input:
-
-- Approved Detail Texturing.
-- Screenshot-based issue list.
-- Parts that must not change.
-
-Allowed:
-
-- Local color balance.
-- Local gradient improvement.
-- Focal readability fix.
-- Small texture cleanup.
-- Small geometry fix only if it blocks final quality and user approves.
-- Earlier-phase local correction when reported and safe.
-
-Forbidden:
-
-- Broad redesign.
-- Reopening UV without clear blocker.
-- Repainting the whole atlas.
-- Export unless requested.
-- Broad earlier-phase redesign without approval.
-
-Verification:
-
-- Final screenshot set.
-- Atlas screenshot if texture changed.
-- Before/after issue summary.
-
-Exit gate:
-
-- Visible issues are fixed or accepted.
-- No new regression.
-- User approves Final Review.
-
-Failure conditions:
-
-- Fix creates new geometry/texture problems.
-- Polish becomes redesign.
-- Work continues without visible issue.
-
-## Phase 8: Final Review
-
-Purpose: decide the final state.
-
-Required input:
-
-- Approved Polish output.
-- Final screenshots.
-- Final atlas screenshot if textured.
-
-Must report:
-
-- Geometry score.
-- Texture score.
-- Remaining visible issues.
-- Whether issues are blocking or acceptable.
-- Suggested next action: revise, pause, export, or new asset.
-- Final project name.
-- Final screenshot set location.
-
-Allowed:
-
-- Review.
-- Scoring.
-- Mapping feedback to a phase.
-
-Forbidden:
-
-- New edits.
-- Export without explicit export request.
-- Starting a new model without user request.
-- Keeping failed-attempt screenshots as final deliverables unless requested.
-
-Exit gate:
-
-- User chooses revise, pause, export, or start another asset.
-- Any revision is assigned to a specific phase.
-
-Failure conditions:
-
-- Score is not based on screenshots.
-- Review hides known issues.
-- User feedback is too broad and Codex edits anyway.
-- Final scorecard status is still "Blocker".
-
-## Acceptance Criteria
-
-- Each phase has clear inputs, allowed work, forbidden work, verification, exit gate, and failure conditions.
-- Codex can recover context from the current phase alone.
-- Later-phase work cannot leak into earlier phases.
-- User feedback can be mapped back to one phase.
-- Every phase-to-phase transition must pass the phase quality gate.
+No automatic continuation after Final Review.
