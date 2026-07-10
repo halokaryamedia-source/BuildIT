@@ -12,7 +12,7 @@ export const runtimeToolDocs: ToolSpec[] = [
   {
     name: "get_runtime_status",
     description:
-      "Returns one structured readiness snapshot for the Blockbench MCP plugin, canonical server URL, active project, settings, and sessions. Use this instead of repeating separate connection-discovery calls.",
+      "Returns one structured readiness snapshot for the Blockbench MCP plugin, canonical server URL, active project, effective connection settings, and sessions. Use this instead of repeating separate connection-discovery calls.",
     annotations: {
       title: "Get Runtime Status",
       readOnlyHint: true,
@@ -24,6 +24,7 @@ export const runtimeToolDocs: ToolSpec[] = [
 
 const CANONICAL_URL = "http://localhost:3000/bb-mcp";
 const CANONICAL_SERVER_KEY = "blockbench";
+const EFFECTIVE_SESSION_TIMEOUT_MINUTES = 30;
 
 function normalizeLocalUrl(value: string | undefined): string | null {
   if (!value) return null;
@@ -49,11 +50,11 @@ export function registerRuntimeTools() {
         const server = serverState.get();
         const sessions = sessionManager.getAll();
 
-        const actualAutoPort = Settings.get("mcp_auto_port") !== false;
-        const actualPort = Number(Settings.get("mcp_port") ?? 3000);
-        const actualEndpoint = String(Settings.get("mcp_endpoint") ?? "/bb-mcp");
-        const actualTimeout = Number(Settings.get("mcp_session_timeout") ?? 30);
-        const actualHeartbeat = Number(Settings.get("mcp_sse_heartbeat") ?? 15);
+        const configuredAutoPort = Settings.get("mcp_auto_port") !== false;
+        const configuredPort = Number(Settings.get("mcp_port") ?? 3000);
+        const configuredEndpoint = String(Settings.get("mcp_endpoint") ?? "/bb-mcp");
+        const configuredTimeout = Number(Settings.get("mcp_session_timeout") ?? 30);
+        const heartbeat = Number(Settings.get("mcp_sse_heartbeat") ?? 15);
 
         const format = typeof Format !== "undefined"
           ? (Format as {
@@ -103,23 +104,22 @@ export function registerRuntimeTools() {
             message: `Actual MCP URL is ${server.url ?? "unset"}; expected ${CANONICAL_URL}.`,
           });
         }
-        if (actualPort !== 3000) {
+        if (server.requestedPort !== 3000 || server.port !== 3000) {
           blockers.push({
             code: "PORT_MISMATCH",
-            message: `Configured port is ${actualPort}; expected 3000.`,
+            message: `Effective MCP port is ${server.port ?? server.requestedPort}; expected 3000.`,
           });
         }
-        if (actualEndpoint.replace(/\/$/, "") !== "/bb-mcp") {
+        if (server.endpoint.replace(/\/$/, "") !== "/bb-mcp") {
           blockers.push({
             code: "ENDPOINT_MISMATCH",
-            message: `Configured endpoint is ${actualEndpoint}; expected /bb-mcp.`,
+            message: `Effective endpoint is ${server.endpoint}; expected /bb-mcp.`,
           });
         }
-        if (actualAutoPort || server.autoPort || server.fallbackUsed) {
+        if (server.autoPort || server.fallbackUsed) {
           blockers.push({
             code: "AUTO_PORT_ENABLED",
-            message:
-              "Auto-port or fallback-port behavior is enabled; canonical connection cannot be guaranteed.",
+            message: "Effective auto-port or fallback-port behavior is enabled.",
           });
         }
         if (!project) {
@@ -134,19 +134,21 @@ export function registerRuntimeTools() {
             message: `${sessions.length} MCP sessions are active; one write owner is required.`,
           });
         }
-        if (actualTimeout < 30) {
+
+        if (
+          configuredAutoPort ||
+          configuredPort !== 3000 ||
+          configuredEndpoint.replace(/\/$/, "") !== "/bb-mcp" ||
+          configuredTimeout < EFFECTIVE_SESSION_TIMEOUT_MINUTES
+        ) {
           warnings.push({
-            code: "SESSION_TIMEOUT_LOW",
-            message: `Session timeout is ${actualTimeout} minute(s); 30 minutes is recommended.`,
+            code: "SAVED_SETTINGS_OVERRIDDEN",
+            message:
+              "Saved legacy MCP settings differ from the Rework contract; runtime canonical values are enforced until settings are resaved.",
           });
         }
 
-        const status = blockers.length > 0
-          ? "BLOCKER"
-          : warnings.length > 0
-            ? "REVISION_REQUIRED"
-            : "PASS";
-
+        const status = blockers.length > 0 ? "BLOCKER" : "PASS";
         const blockbenchVersion =
           typeof Blockbench !== "undefined"
             ? (Blockbench as unknown as { version?: string }).version ?? null
@@ -159,7 +161,7 @@ export function registerRuntimeTools() {
               text:
                 status === "PASS"
                   ? `Blockbench MCP is ready at ${CANONICAL_URL} for project ${project?.name ?? "unknown"}.`
-                  : `Blockbench MCP readiness: ${status}. ${blockers[0]?.message ?? warnings[0]?.message ?? "Review runtime details."}`,
+                  : `Blockbench MCP readiness: BLOCKER. ${blockers[0]?.message ?? "Review runtime details."}`,
             },
           ],
           structuredContent: {
@@ -174,18 +176,28 @@ export function registerRuntimeTools() {
               server_key: CANONICAL_SERVER_KEY,
               canonical_url: CANONICAL_URL,
               url_matches: normalizedActualUrl === normalizedCanonicalUrl,
-              auto_port_disabled:
-                !actualAutoPort && !server.autoPort && !server.fallbackUsed,
+              auto_port_disabled: !server.autoPort && !server.fallbackUsed,
               one_active_project: Boolean(project),
               one_or_zero_sessions: sessions.length <= 1,
             },
             server,
-            settings: {
-              port: actualPort,
-              endpoint: actualEndpoint,
-              auto_port: actualAutoPort,
-              session_timeout_minutes: actualTimeout,
-              sse_heartbeat_seconds: actualHeartbeat,
+            effective_settings: {
+              port: server.port ?? server.requestedPort,
+              endpoint: server.endpoint,
+              auto_port: server.autoPort,
+              fallback_used: server.fallbackUsed,
+              session_timeout_minutes: Math.max(
+                EFFECTIVE_SESSION_TIMEOUT_MINUTES,
+                Number.isFinite(configuredTimeout) ? configuredTimeout : 0
+              ),
+              sse_heartbeat_seconds: heartbeat,
+            },
+            configured_settings: {
+              port: configuredPort,
+              endpoint: configuredEndpoint,
+              auto_port: configuredAutoPort,
+              session_timeout_minutes: configuredTimeout,
+              sse_heartbeat_seconds: heartbeat,
             },
             project,
             sessions: sessions.map((session) => ({
