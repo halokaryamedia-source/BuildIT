@@ -1,43 +1,83 @@
-# Workflow Quick Reference (Single Entry Point)
+# Workflow Quick Reference
 
-Gunakan ini **pertama kali** sebelum memulai sesi baru.
+Start with:
 
-## Urutan kerja
+```text
+Engine/codex/BOOTSTRAP.md
+```
 
-1. Pastikan Brief Asset jelas.
-   - Sumber boleh user, Codex, ChatGPT, atau tool lain.
-2. Pastikan Reference Package mengikuti 8-sheet template.
-3. Baca [compact-geometric-pipeline.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/compact-geometric-pipeline.md)  
-   - Aturan inti eksekusi 1 isu.
-4. Isi [model-session-checklist-template.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/model-session-checklist-template.md) (ringkas).
-5. Validasi referensi pada [reference-package-pass-fail-checklist.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/reference-package-pass-fail-checklist.md).
-6. Jalankan [pre-modelling-gate.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/pre-modelling-gate.md) sebelum Blockbench edit.
-7. Jika gagal berulang, pakai [geometry-failure-prevention-playbook.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/geometry-failure-prevention-playbook.md) untuk diagnosa.
+## Startup
 
-## Kapan berhenti
+1. Open active `state.json`.
+2. Validate the approved reference package.
+3. Read manifest, Production Context, Reference Visual, and active-stage document.
+4. Run one-time preflight.
+5. Save persistent start checkpoint.
+6. Begin the active stage.
 
-- Jika referensi utama atau endpoint tidak stabil => `BLOCKER`.
-- Jika perubahan utama tidak mencapai bentuk sesuai referensi => `BLOCKER` lalu rollback.
-- Jika minor issue visual/texture => `PARTIAL`, lanjutkan per 1 isu.
+## Stage Order
 
-## Keputusan status (tetap dipakai)
+```text
+GEOMETRY
+→ GEOMETRY REVIEW
+→ TEXTURE
+→ TEXTURE REVIEW
+→ ANIMATION or SKIP
+→ ANIMATION REVIEW when used
+→ FINAL VALIDATION
+→ FINAL REVIEW
+```
 
-- PASS: lanjut fase berikutnya.
-- PARTIAL: revisi kecil terukur.
-- BLOCKER: rollback + minta user setuju sebelum melanjutkan.
+## Geometry
 
-## Jalur cepat (tanpa gate berlapis)
+- Internal: Primary Form + Structural Detail.
+- Initial work may use bounded batches.
+- Review only after five standard previews are ready.
 
-- Ambil SS Front + Side untuk tiap perubahan.
-- Isi satu status + satu aksi berikutnya.
-- Tutup 1 isu per cycle.
-- Tidak ada pengulangan checklist yang tidak perlu.
+## Texture
 
-## Sumber keputusan
+- Internal: UV + Base Texture + Detail Texture.
+- Review only after atlas and model previews are ready.
 
-- Sumber referensi/format: [reference-package-pass-fail-checklist.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/reference-package-pass-fail-checklist.md)
-- Gate sebelum modelling: [pre-modelling-gate.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/pre-modelling-gate.md)
-- Aturan geometri & loop: [compact-geometric-pipeline.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/compact-geometric-pipeline.md)
-- Diagnosa kalau jalan buntu: [geometry-failure-prevention-playbook.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/geometry-failure-prevention-playbook.md)
-- Detail batas/wajib per fase: [phase-detail-contract.md](/D:/Work/AI%20Stuff/MCP-Blockbench/SourceDocument/modeling/phase-detail-contract.md)  
-  (dibuka saat fase dimulai, bukan di setiap aksi kecil.)
+## Animation
+
+- Run only when required.
+- Otherwise record `ANIMATION_SKIPPED`.
+- Review clips/samples, pivots, neutral pose, clipping, and ground contact.
+
+## Final Validation
+
+- Execute `VALIDATION.md`.
+- Repair at most two local failures.
+- Return `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
+- Wait for final user approval or corrections.
+
+## Revision Rule
+
+One issue or tightly related pair per revision cycle.
+
+```text
+Stage:
+Part:
+Issue:
+Expected:
+Do not change:
+```
+
+## Do Not
+
+- repeat full preflight for every edit;
+- open every workflow document;
+- request approval between internal passes;
+- create a new MCP session without a reset reason;
+- rebuild accepted areas;
+- turn texture details into micro-cubes;
+- use PBR/Vibrant Visuals;
+- export before Final Validation.
+
+## Status
+
+- `PASS`: ready for user stage approval.
+- `REVISION_REQUIRED`: local, named correction required.
+- `BLOCKER`: stop and report safe recovery.
+- `REFERENCE_CONFLICT`: stop before editing.
