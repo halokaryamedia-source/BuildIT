@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -19,14 +19,11 @@
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Minecraft Bedrock cuboid geometry construction and review.",
+      "description": "Minecraft Bedrock cuboid geometry construction and review for an already-open valid project.",
       "allowed_tools": [
-        "create_project",
-        "configure_project",
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
-        "get_selection",
         "place_cube",
         "modify_cube",
         "duplicate_element",
@@ -36,16 +33,14 @@
         "redo",
         "get_undo_stack",
         "save_project_checkpoint",
-        "capture_standard_views",
-        "capture_screenshot"
+        "capture_standard_views"
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
-      "description": "Classic Bedrock cuboid UV and pixel texture work; PBR and mesh UV are excluded.",
+      "description": "Classic Bedrock cuboid UV and pixel texture work; PBR, gradients, and mesh UV are excluded.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
-        "get_selection",
         "list_textures",
         "get_texture",
         "create_texture",
@@ -63,8 +58,7 @@
         "redo",
         "get_undo_stack",
         "save_project_checkpoint",
-        "capture_standard_views",
-        "capture_screenshot"
+        "capture_standard_views"
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
@@ -93,7 +87,6 @@
         "get_texture",
         "get_uv_layout",
         "capture_standard_views",
-        "capture_screenshot",
         "list_export_formats",
         "export_model",
         "save_project_checkpoint"
@@ -112,14 +105,12 @@
         "undo",
         "redo",
         "save_project_checkpoint",
-        "capture_standard_views",
-        "capture_screenshot"
+        "capture_standard_views"
       ]
     },
     "TEXTURE_LOCAL_REPAIR": {
       "description": "Small Classic Bedrock UV or pixel texture correction scope.",
       "allowed_tools": [
-        "get_selection",
         "list_textures",
         "get_texture",
         "apply_texture",
@@ -134,8 +125,7 @@
         "undo",
         "redo",
         "save_project_checkpoint",
-        "capture_standard_views",
-        "capture_screenshot"
+        "capture_standard_views"
       ]
     },
     "ANIMATION_LOCAL_REPAIR": {
