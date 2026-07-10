@@ -1,6 +1,18 @@
 # Pre-Modelling Gate
 
-Run this once after reference intake and before the first Geometry-stage MCP write.
+Run this once after canonical connection readiness and reference intake, before the first Geometry-stage MCP write.
+
+## Gate Order
+
+```text
+sync-local-stack.ps1
+→ reports/connection.json = PASS
+→ reference/package/project pre-modelling gate
+→ 00_session_start.bbmodel
+→ Geometry
+```
+
+Do not repeat connection discovery inside this gate.
 
 ## Required Reference Package
 
@@ -19,22 +31,25 @@ Legacy numbered reference sheets are not required for new sessions.
 
 ## Required Runtime Inputs
 
-- active `state.json` using schema 2.0;
+- active `state.json` using schema 2.1;
+- `reports/connection.json` with `result: PASS`;
+- live `get_runtime_status` result without blocker;
 - active OpenSpec change;
-- one active MCP write session;
-- verified endpoint and active-stage tool list;
+- one active Codex MCP write session;
 - active Blockbench project and UUID;
-- expected format;
-- UV mode and texture size;
+- expected format, UV mode, and texture size;
 - manual/accepted areas to preserve;
 - writable checkpoint directory;
+- active Geometry tool profile;
 - `save_project_checkpoint` capability;
-- `capture_standard_views` capability for stage evidence.
+- `capture_standard_views` capability.
 
 ## Gate Checks
 
 | Check | Status |
 | --- | --- |
+| Canonical connection report PASS | PASS / BLOCKER |
+| Live runtime status matches canonical URL/project | PASS / BLOCKER |
 | Reference package files present | PASS / BLOCKER |
 | Manifest valid | PASS / BLOCKER |
 | Production Context has no unresolved high-impact blocker | PASS / BLOCKER |
@@ -45,25 +60,25 @@ Legacy numbered reference sheets are not required for new sessions.
 | Texture atlas/style/material rules clear | PASS / BLOCKER |
 | Animation requirement clear | PASS / BLOCKER |
 | Validation contract present | PASS / BLOCKER |
-| MCP endpoint and Geometry tools available | PASS / BLOCKER |
+| Geometry tools available | PASS / BLOCKER |
 | `save_project_checkpoint` available | PASS / BLOCKER |
 | `capture_standard_views` available | PASS / BLOCKER |
-| One write session confirmed | PASS / BLOCKER |
+| One Codex write session confirmed | PASS / BLOCKER |
 | Project UUID/format/UV mode verified | PASS / BLOCKER |
 | Manual and accepted areas recorded | PASS / BLOCKER |
 | Checkpoint output path writable | PASS / BLOCKER |
 
 ## Start Rule
 
-Geometry may start only when every gate check is `PASS`.
+Geometry may start only when every check is `PASS`.
 
-If a reference conflict affects identity, scale, silhouette, hierarchy, material behavior, or required motion, report:
+Reference authority conflict:
 
 ```text
 REFERENCE_CONFLICT
 ```
 
-If a runtime requirement is missing, report:
+Runtime or connection failure:
 
 ```text
 BLOCKER: pre-modelling gate failed
@@ -72,6 +87,8 @@ Missing:
 Safe next action:
 - ...
 ```
+
+Do not scan another port, create another MCP key, or open another session as a fallback.
 
 ## Codex First Action After PASS
 
@@ -86,4 +103,4 @@ Safe next action:
 4. Execute Primary Form, then Structural Detail.
 5. Capture stage evidence with `capture_standard_views` and stop at Geometry Review.
 
-Do not request a separate approval for the gate. The next user-visible approval is Geometry Review.
+Do not request a separate approval for connection readiness or the gate. The next user-visible approval is Geometry Review.
