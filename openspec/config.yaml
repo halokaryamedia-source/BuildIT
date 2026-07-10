@@ -8,6 +8,9 @@ context: |
   Guardrails: do not create a new MCP server, replace the architecture, or introduce unrelated agent frameworks.
   Active workflow change: openspec/changes/codex-local-workflow-rework/.
   Codex entry point: Engine/codex/BOOTSTRAP.md.
+  Governance: Engine/codex/GOVERNANCE.md.
+  OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
+  Ponytail responsibility: select the smallest safe action required now, reuse existing work, limit tools/evidence, preserve accepted areas, and stop when the active requirement is met.
   Runtime authority: SavedData/sessions/<asset>/state.json.
   Reference package: PRODUCTION_CONTEXT.md, one Reference Visual, GEOMETRY.md, TEXTURING.md, ANIMATION.md, VALIDATION.md, reference_manifest.json, and CODEX_REFERENCE_HANDOFF.md.
   User-visible production stages: Geometry, Texture, optional Animation, and Final Validation.
@@ -15,10 +18,11 @@ context: |
   Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
   Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
   Codex workflow: use direct Streamable HTTP first, fall back to mcp-remote only if direct HTTP cannot list tools.
-  Review: apply Ponytail anti-overengineering rules when available; otherwise perform the same smallest-safe-work review manually.
   Modelling context: use the installed blockbench-use skill and only the active-stage skill/tool profile.
   Mandatory procedure: SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md.
   Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
   UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
+  Branch policy: keep all active workflow rework isolated on Rework until the user explicitly approves final integration.
+  CI policy: continuous integration, PR-preview deployment, and release verification are deferred until workflow implementation is stable and the user opens the final verification stage.
 
 # Per-artifact rules may be added under rules when required.
