@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "asset": {
+    "id": "kangaroo",
+    "display_name": "Kangaroo Bedrock Entity",
+    "target": "minecraft_bedrock_entity"
+  },
+  "reference": {
+    "path": "SavedData/sessions/kangaroo/references",
+    "status": "NEEDS_MIGRATION_OR_VERIFICATION",
+    "manifest": null,
+    "production_context": null,
+    "visual": null,
+    "legacy_reference_path": "SourceDocument/reference-samples/kangaroo"
+  },
+  "workflow": {
+    "stage": "GEOMETRY",
+    "status": "BLOCKED",
+    "review_status": "NOT_REQUIRED_YET",
+    "animation_required": false,
+    "blockers": [
+      "Migrate or verify the legacy reference package against the approved package format before the next MCP write."
+    ],
+    "last_completed_stage": null,
+    "next_action": "VALIDATE_REFERENCE_PACKAGE_AND_RUN_PREFLIGHT"
+  },
+  "project": {
+    "name": "Kangaroo Bedrock Entity",
+    "uuid": null,
+    "format": "bedrock",
+    "uv_mode": "per_face",
+    "texture_width": 32,
+    "texture_height": 32,
+    "save_path": null
+  },
+  "mcp": {
+    "endpoint": "http://localhost:3000/bb-mcp",
+    "session_id": "a53fc9d2-53b2-414e-bc89-664370cf4c0b",
+    "lock_owner": "codex",
+    "write_lease_status": "LEGACY_LOCK_REQUIRES_VERIFICATION",
+    "last_verified_at": "2026-07-06T00:00:00+07:00"
+  },
+  "preservation": {
+    "manual_edits_present": true,
+    "manual_edits_to_preserve": [
+      "Preserve all existing user/manual edits until explicitly inventoried."
+    ]
+  },
+  "checkpoints": {
+    "session_start": null,
+    "geometry": null,
+    "texture": null,
+    "animation": null,
+    "validation_pass": null
+  },
+  "evidence": {
+    "geometry": [],
+    "texture": [],
+    "animation": [],
+    "final": []
+  },
+  "validation": {
+    "status": "PENDING_BUILD",
+    "required_revisions": [],
+    "completed_at": null
+  },
+  "migration": {
+    "from_workflow": "legacy_eight_phase_and_numbered_reference_flow",
+    "to_workflow": "four_stage_codex_local_rework",
+    "required": true
+  },
+  "updated_at": "2026-07-10T00:00:00+07:00",
+  "updated_by": "workflow_rework"
+}
