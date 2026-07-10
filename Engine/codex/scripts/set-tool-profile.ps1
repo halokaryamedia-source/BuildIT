@@ -80,6 +80,15 @@ function Invoke-McpPost {
   }
 }
 
+function Set-ObjectProperty {
+  param([object]$Object, [string]$Name, [object]$Value)
+  if ($Object.PSObject.Properties.Name -contains $Name) {
+    $Object.$Name = $Value
+  } else {
+    $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value
+  }
+}
+
 function Resolve-ProfileFromState {
   param($RuntimeState)
 
@@ -236,14 +245,14 @@ $report = [ordered]@{
 $report | ConvertTo-Json -Depth 30 | Set-Content -Path $reportPath -Encoding utf8
 
 if ($result -eq "PASS") {
-  $state.mcp.active_tool_profile = [string]$profileResult.profile_id
-  $state.mcp.tool_profile_revision = $profileResult.profile_revision
-  $state.mcp.tool_profile_hash = [string]$profileResult.tool_profile_hash
-  $state.mcp.exposed_tool_count = $profileResult.exposed_tool_count
-  $state.mcp.total_library_tool_count = $profileResult.total_library_tool_count
-  $state.mcp.profile_reconnect_required = [bool]$activationResult.reconnect_required
-  $state.updated_at = $checkedAt
-  $state.updated_by = "set-tool-profile"
+  Set-ObjectProperty $state.mcp "active_tool_profile" ([string]$profileResult.profile_id)
+  Set-ObjectProperty $state.mcp "tool_profile_revision" $profileResult.profile_revision
+  Set-ObjectProperty $state.mcp "tool_profile_hash" ([string]$profileResult.tool_profile_hash)
+  Set-ObjectProperty $state.mcp "exposed_tool_count" $profileResult.exposed_tool_count
+  Set-ObjectProperty $state.mcp "total_library_tool_count" $profileResult.total_library_tool_count
+  Set-ObjectProperty $state.mcp "profile_reconnect_required" ([bool]$activationResult.reconnect_required)
+  Set-ObjectProperty $state "updated_at" $checkedAt
+  Set-ObjectProperty $state "updated_by" "set-tool-profile"
   $state | ConvertTo-Json -Depth 40 | Set-Content -Path $statePath -Encoding utf8
 }
 
