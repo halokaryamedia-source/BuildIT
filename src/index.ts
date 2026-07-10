@@ -15,12 +15,13 @@ import { sessionManager } from "@/lib/sessions";
 import { initPromptLoader } from "@/lib/promptLoader";
 import type { NetServer, SessionTransports } from "@/server/net";
 import createNetServer from "@/server/net";
-import {
-  serverState,
-  normalizeEndpoint,
-  toValidPort,
-} from "@/lib/serverState";
+import { serverState } from "@/lib/serverState";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
+
+const CANONICAL_MCP_PORT = 3000;
+const CANONICAL_MCP_ENDPOINT = "/bb-mcp";
+const MINIMUM_SESSION_TIMEOUT_MINUTES = 30;
+const DEFAULT_SSE_HEARTBEAT_SECONDS = 15;
 
 let httpServer: NetServer | null = null;
 let sessionTransports: SessionTransports | null = null;
@@ -34,11 +35,10 @@ BBPlugin.register("mcp", {
   icon: getIcon(),
   variant: "desktop",
   async onload() {
-    // Get network module with Blockbench permission handling
     // @ts-ignore - requireNativeModule is a Blockbench global
     const net = requireNativeModule("net", {
       message: "Network access is required for the MCP server to accept connections.",
-      detail: "The MCP plugin needs to create a local server that AI assistants can connect to.",
+      detail: "The MCP plugin needs to create a local server that Codex can connect to.",
       optional: false,
     });
 
@@ -48,14 +48,9 @@ BBPlugin.register("mcp", {
       return;
     }
 
-    // Initialize internationalization before any UI
     setupI18n();
-
     settingsSetup();
 
-    // Load prompt manifest from CDN/cache before server starts.
-    // Must never abort onload — missing prompts should degrade gracefully,
-    // e.g. when a new version is tagged before the CDN asset is published.
     try {
       const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") !== false;
       await initPromptLoader(cdnEnabled);
@@ -63,22 +58,28 @@ BBPlugin.register("mcp", {
       console.error("[MCP] Prompt loader initialization failed — continuing without prompts:", err);
     }
 
-    // Create TCP server to handle HTTP requests
     const toFiniteNumber = (raw: unknown, fallback: number): number => {
       const n = Number(raw);
       return Number.isFinite(n) ? n : fallback;
     };
-    const sessionTimeoutMin = toFiniteNumber(
+
+    // Rework uses one deterministic local connection. Existing saved settings may
+    // still be displayed in the UI, but runtime connection identity is canonical.
+    const configuredTimeout = toFiniteNumber(
       Settings.get("mcp_session_timeout"),
-      30
+      MINIMUM_SESSION_TIMEOUT_MINUTES
+    );
+    const sessionTimeoutMin = Math.max(
+      MINIMUM_SESSION_TIMEOUT_MINUTES,
+      configuredTimeout
     );
     const sseHeartbeatSec = toFiniteNumber(
       Settings.get("mcp_sse_heartbeat"),
-      15
+      DEFAULT_SSE_HEARTBEAT_SECONDS
     );
-    const requestedPort = toValidPort(Settings.get("mcp_port"), 3000);
-    const endpoint = normalizeEndpoint(Settings.get("mcp_endpoint"));
-    const autoPort = Settings.get("mcp_auto_port") !== false;
+    const requestedPort = CANONICAL_MCP_PORT;
+    const endpoint = CANONICAL_MCP_ENDPOINT;
+    const autoPort = false;
 
     serverState.set({
       status: "starting",
@@ -94,12 +95,12 @@ BBPlugin.register("mcp", {
       port: requestedPort,
       endpoint,
       autoPort,
-      portScanLimit: 20,
+      portScanLimit: 0,
       keepAlive: {
         sseHeartbeatIntervalMs: Math.max(0, sseHeartbeatSec) * 1000,
       },
       sessionConfig: {
-        inactivityTimeoutMs: Math.max(1, sessionTimeoutMin) * 60 * 1000,
+        inactivityTimeoutMs: sessionTimeoutMin * 60 * 1000,
       },
       onListening(info) {
         serverState.set({
@@ -122,7 +123,6 @@ BBPlugin.register("mcp", {
       },
     });
 
-    // Create a reference server for UI display purposes
     const referenceServer = createServer();
     uiSetup({
       server: referenceServer,
@@ -133,20 +133,17 @@ BBPlugin.register("mcp", {
   },
 
   onunload() {
-    // Close HTTP server
     if (httpServer) {
       httpServer.close();
       httpServer = null;
     }
 
-    // Close all session transports
     const values = Array.from(sessionTransports?.values() ?? []);
     for (const session of values) {
       session.transport.close();
     }
     sessionTransports?.clear();
 
-    // Clear all sessions
     sessionManager.clear();
     serverState.set({ status: "stopped" });
     serverState.clear();
