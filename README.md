@@ -1,14 +1,24 @@
-# MCP Blockbench Workspace (Root)
+# MCP Blockbench Workspace
 
-This repository keeps operational workflow logic in:
+Local Codex production starts here:
 
-- `Engine/` for execution controls and project orchestration.
-- `SavedData/` for active model sessions and per-model state.
+- [Codex Bootstrap](Engine/codex/BOOTSTRAP.md)
+- [Active Project Pointer](SavedData/ACTIVE_PROJECT.md)
+- [Workflow Hub](SourceDocument/engine/WORKFLOW_HUB.md)
+- [Source Document Index](SourceDocument/README.md)
+- [Root Layout Constraints](SourceDocument/engine/root-layout-constraints.md)
 
-Keep this root minimal for tooling compatibility.  
-Project source/build/runtime files stay in their existing paths (do not move).
+## User-Visible Stages
 
-- Start here: [SourceDocument/engine/WORKFLOW_HUB.md](SourceDocument/engine/WORKFLOW_HUB.md)
-- Current active session: [SavedData/ACTIVE_PROJECT.md](SavedData/ACTIVE_PROJECT.md)
-- Full source document index: [SourceDocument/README.md](SourceDocument/README.md)
-- Project constraints and structure: [SourceDocument/engine/root-layout-constraints.md](SourceDocument/engine/root-layout-constraints.md)
+```text
+Geometry
+→ Texture
+→ Animation when required
+→ Final Validation
+```
+
+Each stage ends with preview evidence and waits for user approval or targeted revisions.
+
+Operational controls belong in `Engine/`. Runtime asset state, references, checkpoints, evidence, reports, and final outputs belong in `SavedData/sessions/<asset>/`.
+
+Keep source/build/runtime paths required by the plugin and tooling in place.
