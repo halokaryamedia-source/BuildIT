@@ -19,6 +19,7 @@ import { materialInstanceToolDocs } from "../src/server/tools/material-instances
 import { uvToolDocs } from "../src/server/tools/uv";
 import { historyToolDocs } from "../src/server/tools/history";
 import { exportToolDocs } from "../src/server/tools/export";
+import { runtimeToolDocs } from "../src/server/tools/runtime";
 
 export interface CategoryGroup {
   category: string;
@@ -26,6 +27,7 @@ export interface CategoryGroup {
 }
 
 export const toolManifest: CategoryGroup[] = [
+  { category: "Runtime", tools: runtimeToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
   { category: "Animation", tools: animationToolDocs },
