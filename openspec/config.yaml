@@ -2,25 +2,23 @@ schema: spec-driven
 
 context: |
   Project: MCP Blockbench, a TypeScript/Bun Blockbench plugin exposing tools, prompts, and resources through MCP.
-  Existing architecture: preserve the current plugin source, server/ MCP glue, generated docs/api.json, and Blockbench settings endpoint.
+  Existing architecture: preserve the current plugin source, server/MCP glue, generated docs/api.json, and Blockbench settings endpoint.
   Default MCP endpoint: http://localhost:3000/bb-mcp; multiple Blockbench windows may use later ports and must be verified.
-  Current source facts: package version 1.6.0; generated API docs report 109 tools, 7 prompts, and 12 resources.
-  Guardrails: do not create a new MCP server, add dependencies, replace architecture, invent tools, or introduce unrelated agent frameworks.
+  Current source facts: package version 1.6.0; generated API docs and runtime tool counts must be verified rather than assumed.
+  Guardrails: do not create a new MCP server, replace the architecture, or introduce unrelated agent frameworks.
+  Active workflow change: openspec/changes/codex-local-workflow-rework/.
+  Codex entry point: Engine/codex/BOOTSTRAP.md.
+  Runtime authority: SavedData/sessions/<asset>/state.json.
+  Reference package: PRODUCTION_CONTEXT.md, one Reference Visual, GEOMETRY.md, TEXTURING.md, ANIMATION.md, VALIDATION.md, reference_manifest.json, and CODEX_REFERENCE_HANDOFF.md.
+  User-visible production stages: Geometry, Texture, optional Animation, and Final Validation.
+  Internal passes do not require separate routine approval.
+  Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
+  Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
   Codex workflow: use direct Streamable HTTP first, fall back to mcp-remote only if direct HTTP cannot list tools.
-  Review: run Ponytail anti-overengineering review when available; otherwise perform the same manual review.
-  Modelling context: Minecraft / Blockbench workflows must use the SourceDocument/modeling context pack and the installed blockbench-use skill before modelling.
-  Mandatory modelling procedure: SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md controls phase gates, required skills, MCP readiness, session rules, and user approval before any Blockbench edit.
-  Required production phases: Reference Collection, Main Geometry, Geometry Detailing, UV Texture, Base Texturing, Detail Texturing, Polish, and Final Review. Do not skip or merge phases without explicit user approval.
-  Active modelling category: Bedrock Entity only, unless explicitly overridden.
-  UV default: use Per-face UV for Bedrock Entity projects.
-  Reference sample: use SourceDocument/modeling/bedrock-mcp-modeling-focus.md for lessons from the Ninja Weapon Academy resource pack.
+  Review: apply Ponytail anti-overengineering rules when available; otherwise perform the same smallest-safe-work review manually.
+  Modelling context: use the installed blockbench-use skill and only the active-stage skill/tool profile.
+  Mandatory procedure: SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md.
+  Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
+  UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Per-artifact rules may be added under rules when required.
