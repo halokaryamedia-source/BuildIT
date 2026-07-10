@@ -3,11 +3,7 @@ import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
 import { sessionManager, type Session } from "@/lib/sessions";
-import {
-  serverState,
-  getMcpServerKey,
-  type McpServerState,
-} from "@/lib/serverState";
+import { serverState, type McpServerState } from "@/lib/serverState";
 import { openToolTestDialog } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
 import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
@@ -34,7 +30,6 @@ export function uiSetup({
 }) {
   Blockbench.addCSS(panelCSS);
 
-  // Setup the status bar
   statusBarSetup(server);
 
   panel = new Panel("mcp_panel", {
@@ -45,8 +40,7 @@ export function uiSetup({
     resizable: true,
     component: {
       mounted() {
-        // Subscribe to session changes
-        // @ts-ignore
+        // @ts-ignore - Vue component context
         const vm = this;
         unsubscribe = sessionManager.subscribe((sessions: Session[]) => {
           vm.sessions = sessions.map((s: Session) => ({
@@ -72,7 +66,6 @@ export function uiSetup({
           vm.server.projectUuid = runtime.projectUuid ?? "";
         });
 
-        // Listen for override changes to refresh badge state
         const handler = () => vm.$forceUpdate();
         document.addEventListener(PROMPT_OVERRIDE_CHANGED, handler);
         overrideListener = () => document.removeEventListener(PROMPT_OVERRIDE_CHANGED, handler);
@@ -102,7 +95,7 @@ export function uiSetup({
           port: undefined as number | undefined,
           endpoint: "/bb-mcp",
           url: "",
-          autoPort: true,
+          autoPort: false,
           fallbackUsed: false,
           errorMessage: "",
           projectName: "",
@@ -126,7 +119,6 @@ export function uiSetup({
           status: prompt.status,
           argumentCount: Object.keys(prompt.arguments).length,
         })),
-        // Filter states
         toolsFilter: {
           search: "",
           showExperimental: true,
@@ -145,9 +137,7 @@ export function uiSetup({
           const { tools, toolsFilter } = this;
           const searchLower = toolsFilter.search.toLowerCase();
           return tools.filter((tool: { name: string; status: string }) => {
-            // Check status filter (stable always visible, experimental based on toggle)
             if (tool.status === "experimental" && !toolsFilter.showExperimental) return false;
-            // Check search filter (name only)
             if (searchLower && !tool.name.toLowerCase().includes(searchLower)) return false;
             return true;
           });
@@ -166,16 +156,13 @@ export function uiSetup({
           const { prompts, promptsFilter } = this;
           const searchLower = promptsFilter.search.toLowerCase();
           return prompts.filter((prompt: { name: string; status: string }) => {
-            // Check status filter (stable always visible, experimental based on toggle)
             if (prompt.status === "experimental" && !promptsFilter.showExperimental) return false;
-            // Check search filter (name only)
             if (searchLower && !prompt.name.toLowerCase().includes(searchLower)) return false;
             return true;
           });
         },
       },
       methods: {
-        // Expose tl() to Vue template
         tl(key: string, variables?: string | number | (string | number)[]): string {
           return tl(key, variables);
         },
@@ -239,12 +226,7 @@ export function uiSetup({
           return tl(keyMap[status] ?? "mcp.server.status_starting");
         },
         serverKey(): string {
-          // @ts-ignore - Vue component context
-          const { server } = this;
-          return getMcpServerKey(
-            server.projectName || null,
-            server.port ?? server.requestedPort
-          );
+          return "blockbench";
         },
         async copyText(text: string): Promise<void> {
           try {
@@ -261,15 +243,13 @@ export function uiSetup({
         getCodexSnippet(): string {
           // @ts-ignore - Vue component context
           const { server } = this;
-          const key = this.serverKey();
-          return `[mcp_servers.${key}]\nurl = "${server.url}"`;
+          return `[mcp_servers.blockbench]\nurl = "${server.url}"`;
         },
         getCursorSnippet(): string {
           // @ts-ignore - Vue component context
           const { server } = this;
-          const key = this.serverKey();
           return JSON.stringify(
-            { mcpServers: { [key]: { url: server.url } } },
+            { mcpServers: { blockbench: { url: server.url } } },
             null,
             2
           );
@@ -280,11 +260,10 @@ export function uiSetup({
         getClaudeDesktopSnippet(): string {
           // @ts-ignore - Vue component context
           const { server } = this;
-          const key = this.serverKey();
           return JSON.stringify(
             {
               mcpServers: {
-                [key]: {
+                blockbench: {
                   command: "npx",
                   args: ["-y", "mcp-remote", server.url],
                 },
