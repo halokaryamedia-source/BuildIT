@@ -6,6 +6,14 @@ Local Codex starts from:
 Engine/codex/BOOTSTRAP.md
 ```
 
+Runtime state:
+
+```text
+SavedData/sessions/<asset>/state.json
+```
+
+Do not reconstruct state from several Markdown files when `state.json` exists.
+
 ## 1. Canonical Connection
 
 ```text
@@ -14,37 +22,13 @@ Engine/codex/connection-profile.json
 ```
 
 ```text
-Codex MCP key: blockbench
+Codex key: blockbench
 URL: http://localhost:3000/bb-mcp
-Blockbench instances: one
-Codex write sessions: one
-Auto-port fallback: disabled
 ```
 
-Run before asset preflight:
+Do not scan ports or create project-specific MCP keys.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset <asset>
-```
-
-Continue only when:
-
-```text
-SavedData/sessions/<asset>/reports/connection.json
-result: PASS
-```
-
-Do not search ports, add alternate MCP keys, or rediscover the active project.
-
-## 2. Runtime Authority
-
-```text
-SavedData/sessions/<asset>/state.json
-```
-
-Do not reconstruct state from several Markdown files when `state.json` exists.
-
-## 3. Approved Reference Package
+## 2. Approved Reference Package
 
 ```text
 SavedData/sessions/<asset>/references/
@@ -60,7 +44,7 @@ SavedData/sessions/<asset>/references/
 
 Legacy numbered reference sheets are not required for new sessions.
 
-## 4. User-Visible Stages
+## 3. User-Visible Stages
 
 ```text
 1. GEOMETRY
@@ -69,74 +53,154 @@ Legacy numbered reference sheets are not required for new sessions.
 4. FINAL_VALIDATION
 ```
 
-Each completed stage produces preview evidence and waits for user approval or targeted revision instructions. Internal passes do not create extra approval gates.
+Each completed stage produces preview evidence and waits for user approval or targeted revision instructions.
+
+Internal passes do not create extra routine approval gates.
 
 ### Geometry
 
-Internal: Primary Form → Structural Detail.
+Internal:
 
-Review: Front, Left Side, Back, Top/Footprint, Front-left 3/4, scale/hierarchy/cube report, persistent checkpoint.
+- Primary Form
+- Structural Detail
+
+Review:
+
+- Front
+- Left Side
+- Back
+- Top / Footprint
+- Front-left 3/4
 
 ### Texture
 
-Internal: UV → Base Texture → Detail Texture.
+Internal:
 
-Review: texture atlas, UV summary, Front, Left Side, Back, Front-left 3/4, persistent checkpoint.
+- UV
+- Base Texture
+- Detail Texture
+
+Review:
+
+- texture atlas
+- UV summary
+- Front
+- Left Side
+- Back
+- Front-left 3/4
 
 ### Animation
 
-Run only when required. Review hierarchy/pivots, required clips or samples, neutral-pose recovery, clipping, ground contact, and checkpoint.
+Run only when required by the approved package.
+
+Review:
+
+- hierarchy/pivots
+- required clips or sampled poses
+- neutral pose recovery
+- clipping and ground contact
 
 ### Final Validation
 
-Run `VALIDATION.md`, collect final evidence, repair at most two local failures, and wait for final user approval or corrections.
+Run `VALIDATION.md`, collect final evidence, route failures to the correct repair profile, and wait for final user approval or corrections.
+
+## 4. Exact MCP Tool Profiles
+
+Authority:
+
+```text
+Engine/codex/tool-profiles.json
+Engine/codex/TOOL_PROFILE_CONTRACT.md
+```
+
+```text
+GEOMETRY         → BEDROCK_CUBOID_GEOMETRY
+TEXTURE          → BEDROCK_CUBOID_TEXTURE
+ANIMATION        → BEDROCK_CUBOID_ANIMATION
+FINAL_VALIDATION → FINAL_VALIDATION_READONLY
+```
+
+Revisions use:
+
+```text
+GEOMETRY_LOCAL_REPAIR
+TEXTURE_LOCAL_REPAIR
+ANIMATION_LOCAL_REPAIR
+```
+
+Profile transition:
+
+```text
+activate_tool_profile
+→ reconnect existing canonical blockbench entry once
+→ get_runtime_status
+→ continue only when profile ID/hash/count match state
+```
+
+Normal profiles hide and block:
+
+- PBR/Vibrant Visuals tools;
+- Hytale tools;
+- mesh UV tools;
+- armature and vertex-weight tools;
+- UI automation and `risky_eval`;
+- tools outside the active stage.
+
+The full capability library remains available only through recorded `DIAGNOSTIC_ESCALATION`.
 
 ## 5. Minimum Normal Read Set
 
-1. `Engine/codex/GOVERNANCE.md`
-2. active OpenSpec summary
-3. `reports/connection.json`
-4. `state.json`
-5. reference manifest
-6. Production Context
-7. Reference Visual
-8. active-stage document only
+1. `Engine/codex/BOOTSTRAP.md`
+2. `SavedData/sessions/<asset>/state.json`
+3. `references/reference_manifest.json`
+4. `references/PRODUCTION_CONTEXT.md`
+5. `references/<asset>_reference_visual.png`
+6. active-stage document only
 
-Open detailed playbooks only after a relevant failure trigger.
+Open detailed contracts or failure playbooks only after a relevant trigger.
 
 ## 6. Session Rules
 
-- One asset = one Blockbench window + one Codex write session.
-- Connection readiness runs once before asset preflight.
-- Asset preflight runs once before the first write.
+- One asset = one active write session.
+- One canonical MCP key = `blockbench`.
+- One canonical URL = `http://localhost:3000/bb-mcp`.
+- Run full connection sync and asset preflight once.
 - Re-run only stale or failed checks.
 - Save persistent stage checkpoints.
-- Preserve user/manual and approved work unless a stage is explicitly reopened.
-- Initial construction may use bounded batches.
+- Preserve user manual edits and approved areas.
+- Initial construction may use bounded multi-part batches.
 - One-issue-per-cycle applies to revision work.
+- Reconnect only on a real tool-profile transition.
 
-## 7. Stage Transition
+## 7. Stage Transition Rule
 
-Advance only when required evidence exists, result is `PASS`, no blocker remains, and the user approves the stage preview.
+A stage may advance only when:
 
-Revision feedback names stage, part, issue, expected result, and anything that must not change.
+- required evidence exists;
+- stage result is `PASS`;
+- no unresolved blocker exists;
+- user explicitly approves the stage preview;
+- next exact tool profile is activated and verified.
+
+User revision feedback must name the stage, part, issue, expected result, and anything that must not change.
 
 ## 8. Stop Conditions
 
-Stop for:
+Stop only for:
 
-- connection readiness not `PASS`;
 - `REFERENCE_CONFLICT`;
-- missing required MCP capability;
+- connection result not `PASS`;
+- invalid tool profile configuration;
+- missing required capability in the correct profile;
+- `TOOL_PROFILE_BLOCKED` after a reconnect attempt;
 - ambiguous project/session ownership;
-- checkpoint/evidence failure;
 - same blocker repeated twice;
-- change that requires reopening an approved stage.
+- change that reopens an approved earlier stage.
 
 ## 9. Repository Responsibilities
 
-- `Engine/codex/`: connection, governance, bootstrap, state/evidence/checkpoint contracts, and schemas.
+- `Engine/codex/`: compact execution, connection, profile, state, evidence, and checkpoint control.
 - `SavedData/sessions/<asset>/`: runtime state, references, checkpoints, evidence, reports, and final output.
-- `SourceDocument/modeling/`: detailed guidance and conditional failure playbooks.
+- `SourceDocument/modeling/`: human-facing detailed guidance and failure playbooks.
 - `src/`: MCP plugin implementation.
-- `openspec/changes/codex-local-workflow-rework/`: current rework specification.
+- `openspec/changes/codex-local-workflow-rework/`: durable current agreement.
