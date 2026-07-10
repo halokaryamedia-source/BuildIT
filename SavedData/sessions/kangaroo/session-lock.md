@@ -1,16 +1,14 @@
 asset: kangaroo
-phase: Main Geometry
+runtime_authority: SavedData/sessions/kangaroo/state.json
+stage: GEOMETRY
 endpoint: http://localhost:3000/bb-mcp
-session_id: a53fc9d2-53b2-414e-bc89-664370cf4c0b
+legacy_session_id: a53fc9d2-53b2-414e-bc89-664370cf4c0b
 lock_owner: codex
-started_at: 2026-07-06T00:00:00+07:00
-status: active
-expected_tool_scope: modeling
-tool_profile: blockbench-modeling
-checkpoint_target: session.md
-approval_ref: user_approved_kangaroo_player_height
-can_reuse_same_session: yes
-last_verify_at: 2026-07-06T00:00:00+07:00
-last_verify_by: operator
-last_blocker: none
-last_blocker_reason:
+status: requires_verification
+expected_tool_scope: geometry
+stage_profile: Engine/codex/stage-profiles.json
+persistent_checkpoint_target: SavedData/sessions/kangaroo/checkpoints/00_session_start.bbmodel
+can_reuse_legacy_session: verify_first
+last_verified_at: 2026-07-06T00:00:00+07:00
+blocker: reference_package_migration_or_verification_required
+safe_next_action: validate reference package, verify endpoint/project/session, then update state.json and acquire the active write session
