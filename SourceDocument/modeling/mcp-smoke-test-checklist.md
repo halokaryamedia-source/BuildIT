@@ -1,126 +1,122 @@
-# MCP Smoke Test Checklist
+# MCP Connection Readiness
 
-Run this read-only check before the first MCP write in a session.
+Normal local work must not search for ports, endpoints, project windows, or alternate MCP server keys.
 
-Do not repeat it for every edit. Re-run only when the endpoint, session, project, or required tool capability becomes stale or fails.
-
-## Required Checks
+Authority:
 
 ```text
-Blockbench open: Yes / No
-MCP plugin loaded: Yes / No
-Endpoint: http://localhost:3000/bb-mcp or verified alternate
-Endpoint reachable: Yes / No
-Protocol initialize succeeded: Yes / No
-mcp-session-id captured: Yes / No
-Runtime tool list available: Yes / No
-Active project detected: Yes / No
-Project name:
-Project UUID:
-Project format:
-UV mode:
-Texture size:
-Active stage:
-Required stage tool profile available: Yes / No
-Standard preview capability available when required: Yes / No
-Persistent checkpoint capability available: Yes / No
-One active write session confirmed: Yes / No
-Unexpected extra sessions: None / List
-Manual edits to preserve recorded: Yes / No
-state.json updated: Yes / No
+Engine/codex/CONNECTION_CONTRACT.md
+Engine/codex/connection-profile.json
 ```
 
-## Session Rule
-
-- Reuse one working session for the active asset.
-- Do not run a new initialize loop when the active session is healthy.
-- Reinitialize only when the endpoint changed, the user requested reset, or the session is unavailable.
-- If ownership is ambiguous or an unexpected writer exists, stop with `BLOCKER`.
-- Record verified session/project details in `SavedData/sessions/<asset>/state.json`.
-
-## Tool Scope
-
-Check only the tools required by the active stage profile in:
+## Canonical Stack
 
 ```text
-Engine/codex/stage-profiles.json
+Codex MCP key: blockbench
+URL: http://localhost:3000/bb-mcp
+Blockbench plugin: MCP Server (`mcp`)
+Blockbench instances: exactly one
+Active Codex write session: exactly one
 ```
 
-Minimum cross-stage workflow capabilities:
+## First-Time Setup
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -InstallCodexConfig
+```
+
+Restart Codex once if the script changes `~/.codex/config.toml` or `$CODEX_HOME/config.toml`.
+
+## Normal Asset Check
+
+Open the intended Blockbench project, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset <asset>
+```
+
+Read:
 
 ```text
+SavedData/sessions/<asset>/reports/connection.json
+```
+
+Continue only when:
+
+```text
+result: PASS
+```
+
+## What the Script Proves
+
+- Codex has exactly one canonical `mcp_servers.blockbench` entry;
+- one Blockbench process is running;
+- port 3000 is reachable;
+- MCP initialize succeeds;
+- a temporary smoke session is created and closed;
+- required common tools are present;
+- `get_runtime_status` confirms the actual URL and active project;
+- project name, UUID, format, UV mode, and texture size are recorded;
+- `state.json` receives the connection report and project identity.
+
+## Codex Live Confirmation
+
+After Codex connects through the canonical MCP entry, call once:
+
+```text
+get_runtime_status
+```
+
+Do not run separate connection discovery when this result is `PASS`.
+
+## Required Common Tools
+
+```text
+get_runtime_status
 get_project_info
 save_project_checkpoint
 capture_standard_views
 ```
 
-Stage-specific modelling, texturing, animation, validator, and export tools are checked only when their stage is active.
+Stage-specific tools are checked through `Engine/codex/stage-profiles.json` during the one-time asset preflight.
 
-Do not inspect all tool domains when the active stage does not need them.
+## No-Search Rule
 
-## Checkpoint Readiness
+Do not:
 
-Before the first meaningful write, verify that `save_project_checkpoint` can:
+- scan ports;
+- add project-specific `blockbench_*` MCP keys;
+- create multiple smoke sessions;
+- initialize a new session for every stage;
+- list every tool repeatedly;
+- infer the active project from legacy session Markdown;
+- continue on a fallback port.
 
-- see the active project;
-- validate the expected project UUID;
-- write to the asset checkpoint directory;
-- use the Blockbench `project` codec;
-- create adjacent metadata.
+## Results
 
-The smoke test does not need to create a permanent checkpoint. The actual `00_session_start.bbmodel` is created immediately after preflight PASS.
-
-## Standard Preview Readiness
-
-For Geometry and Final Validation, verify `capture_standard_views` is listed.
-
-For Texture, verify it can capture the required view subset.
-
-Actual evidence is captured at stage review, not during smoke test.
-
-## Result
-
-PASS:
+### PASS
 
 ```text
-MCP smoke test: PASS
-Stage:
-Project UUID:
-Session ID:
-Required tool profile:
-Checkpoint capability:
-Standard preview capability:
-Next action:
+Connection: PASS
+Canonical URL: http://localhost:3000/bb-mcp
+Project UUID: <uuid>
+Next action: run the asset preflight once
 ```
 
-Failure:
+### RESTART_REQUIRED
 
 ```text
-MCP smoke test: BLOCKER
-Failed check:
-Runtime evidence:
-Safe recovery:
+Codex config was installed or changed.
+Restart Codex once and rerun the normal asset check.
 ```
 
-Do not modify the model during smoke test.
+### BLOCKER
 
-## Quick PowerShell Verification
+Use the first blocker and exact safe action from `connection.json`. Do not try alternate endpoints or risky fallbacks.
 
-```powershell
-$uri = "http://localhost:3000/bb-mcp"
-$initBody = '{"jsonrpc":"2.0","id":"1","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"codex-smoke","version":"1.0"}}}'
-$headers = @{ Accept = "application/json, text/event-stream"; "Content-Type" = "application/json" }
+## Acceptance Criteria
 
-$initResp = Invoke-WebRequest -Uri $uri -Method Post -Headers $headers -Body $initBody -TimeoutSec 8
-$sessionId = $initResp.Headers["mcp-session-id"]
-$listBody = '{"jsonrpc":"2.0","id":"2","method":"tools/list","params":{}}'
-$toolResp = Invoke-WebRequest -Uri $uri -Method Post -Headers (@{ Accept = "application/json, text/event-stream"; "Content-Type" = "application/json"; "mcp-session-id" = $sessionId }) -Body $listBody -TimeoutSec 8
-$tools = ($toolResp.Content | ConvertFrom-Json).result.tools | ForEach-Object { $_.name }
-
-$sessionId
-$tools -contains "get_project_info"
-$tools -contains "save_project_checkpoint"
-$tools -contains "capture_standard_views"
-```
-
-A healthy endpoint returns HTTP 200, a session ID, and the active-stage required tools.
+- Codex, Blockbench MCP, and the active Blockbench project share one recorded connection identity.
+- The readiness check is one command and one report.
+- The transient smoke session is cleaned up.
+- No MCP write occurs before connection readiness is `PASS`.
