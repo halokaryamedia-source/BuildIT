@@ -70,7 +70,7 @@ BBPlugin.register("mcp", {
     };
     const sessionTimeoutMin = toFiniteNumber(
       Settings.get("mcp_session_timeout"),
-      5
+      30
     );
     const sseHeartbeatSec = toFiniteNumber(
       Settings.get("mcp_sse_heartbeat"),
