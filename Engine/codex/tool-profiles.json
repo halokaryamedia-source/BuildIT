@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0",
+  "default_profile": "BEDROCK_CUBOID_GEOMETRY",
+  "profile_change_policy": "activate_then_reconnect_once",
+  "core_tools": [
+    "get_runtime_status",
+    "get_project_info",
+    "get_tool_profile",
+    "activate_tool_profile"
+  ],
+  "profiles": {
+    "BOOTSTRAP": {
+      "description": "Readiness, project creation/configuration, and profile selection only.",
+      "allowed_tools": [
+        "create_project",
+        "configure_project",
+        "save_project_checkpoint",
+        "capture_standard_views"
+      ]
+    },
+    "BEDROCK_CUBOID_GEOMETRY": {
+      "description": "Minecraft Bedrock cuboid geometry construction and review.",
+      "allowed_tools": [
+        "create_project",
+        "configure_project",
+        "add_group",
+        "list_outline",
+        "find_elements_by_criteria",
+        "get_selection",
+        "place_cube",
+        "modify_cube",
+        "duplicate_element",
+        "rename_element",
+        "remove_element",
+        "undo",
+        "redo",
+        "get_undo_stack",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "BEDROCK_CUBOID_TEXTURE": {
+      "description": "Classic Bedrock cuboid UV and pixel texture work; PBR and mesh UV are excluded.",
+      "allowed_tools": [
+        "list_outline",
+        "find_elements_by_criteria",
+        "get_selection",
+        "list_textures",
+        "get_texture",
+        "create_texture",
+        "apply_texture",
+        "activate_texture",
+        "set_cube_face_uv",
+        "get_uv_layout",
+        "paint_settings",
+        "paint_fill_tool",
+        "draw_shape_tool",
+        "paint_with_brush",
+        "eraser_tool",
+        "color_picker_tool",
+        "undo",
+        "redo",
+        "get_undo_stack",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "BEDROCK_CUBOID_ANIMATION": {
+      "description": "Bedrock group/bone rigging and required animation clips without mesh armatures or vertex weights.",
+      "allowed_tools": [
+        "list_outline",
+        "find_elements_by_criteria",
+        "bone_rigging",
+        "create_animation",
+        "manage_keyframes",
+        "animation_timeline",
+        "undo",
+        "redo",
+        "get_undo_stack",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "FINAL_VALIDATION_READONLY": {
+      "description": "Read-mostly final validation, evidence capture, checkpointing, and final export.",
+      "allowed_tools": [
+        "list_outline",
+        "find_elements_by_criteria",
+        "list_textures",
+        "get_texture",
+        "get_uv_layout",
+        "capture_standard_views",
+        "capture_screenshot",
+        "list_export_formats",
+        "export_model",
+        "save_project_checkpoint"
+      ]
+    },
+    "GEOMETRY_LOCAL_REPAIR": {
+      "description": "Small geometry-only revision scope after user review or validation routing.",
+      "allowed_tools": [
+        "list_outline",
+        "find_elements_by_criteria",
+        "place_cube",
+        "modify_cube",
+        "duplicate_element",
+        "rename_element",
+        "remove_element",
+        "undo",
+        "redo",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "TEXTURE_LOCAL_REPAIR": {
+      "description": "Small Classic Bedrock UV or pixel texture correction scope.",
+      "allowed_tools": [
+        "get_selection",
+        "list_textures",
+        "get_texture",
+        "apply_texture",
+        "activate_texture",
+        "set_cube_face_uv",
+        "get_uv_layout",
+        "paint_fill_tool",
+        "draw_shape_tool",
+        "paint_with_brush",
+        "eraser_tool",
+        "color_picker_tool",
+        "undo",
+        "redo",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "ANIMATION_LOCAL_REPAIR": {
+      "description": "Small motion, keyframe, pivot, or clipping correction scope.",
+      "allowed_tools": [
+        "list_outline",
+        "bone_rigging",
+        "manage_keyframes",
+        "animation_timeline",
+        "undo",
+        "redo",
+        "save_project_checkpoint",
+        "capture_standard_views",
+        "capture_screenshot"
+      ]
+    },
+    "DIAGNOSTIC_ESCALATION": {
+      "description": "All tools for a recorded blocker only. Never activate for normal stage work.",
+      "include_all": true
+    }
+  },
+  "stage_map": {
+    "GEOMETRY": "BEDROCK_CUBOID_GEOMETRY",
+    "TEXTURE": "BEDROCK_CUBOID_TEXTURE",
+    "ANIMATION": "BEDROCK_CUBOID_ANIMATION",
+    "FINAL_VALIDATION": "FINAL_VALIDATION_READONLY"
+  },
+  "forbidden_in_normal_profiles": [
+    "risky_eval",
+    "trigger_action",
+    "emulate_clicks",
+    "fill_dialog",
+    "create_pbr_material",
+    "configure_material",
+    "import_texture_set",
+    "assign_texture_channel",
+    "save_material_config",
+    "set_mesh_uv",
+    "auto_uv_mesh",
+    "rotate_mesh_uv",
+    "add_armature",
+    "add_armature_bone",
+    "set_vertex_weight",
+    "set_vertex_weights_batch",
+    "clear_vertex_weights"
+  ]
+}
