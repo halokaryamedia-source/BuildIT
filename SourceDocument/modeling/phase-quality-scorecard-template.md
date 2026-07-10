@@ -1,130 +1,182 @@
-# Phase Quality Scorecard (General)
+# Stage Quality Scorecard
 
-Use this for every phase gate before moving forward, for any model family.
+Use one compact scorecard at the end of each user-visible stage.
 
-## Phase
+Do not create a separate scorecard for internal passes.
+
+## Stage Identity
 
 ```text
-Phase: ...
-Date/Session: ...
-Model/Asset: ...
+Asset:
+Stage: GEOMETRY / TEXTURE / ANIMATION / FINAL_VALIDATION
+Session ID:
+Project UUID:
+Checkpoint:
+Reference Visual:
+Active category document:
+Date:
 ```
 
-## Score Rules
+## Result Values
 
-Status values:
-
-- PASS
-- NEEDS_MINOR_FIX
-- BLOCKER
+- `PASS`
+- `REVISION_REQUIRED`
+- `BLOCKER`
 
 Rules:
 
-- `BLOCKER` means this phase must stop.
-- `NEEDS_MINOR_FIX` means apply up to 2 critical fixes before advancing.
-- `PASS` means request user approval to continue to the next phase.
+- `PASS`: required output and evidence are ready for user review.
+- `REVISION_REQUIRED`: one or more named local corrections are required.
+- `BLOCKER`: safe continuation is not possible.
+- Maximum automatic local fixes during Final Validation: 2.
+- Same blocker after two focused attempts: stop and request strategy reset.
 
-Critical fixes limit:
+## Ponytail Evidence
 
-- Max 2 critical fixes per transition.
-- More than 2 critical issues requires one more local patch cycle, then re-score.
-- If a phase is `BLOCKER` for the same reason 2 consecutive cycles, stop and request explicit user direction before continuing.
+```text
+Approved goal served:
+Smallest complete batch used:
+Reused work/checkpoints/tools:
+Unnecessary work avoided:
+Accepted areas preserved:
+Stop condition reached: Yes / No
+```
 
-Token-saving gate:
+## Geometry Scorecard
 
-- Do not open new phase docs during a fix cycle if `phase-quality-scorecard-template.md` and `phase-detail-contract.md` already define scope.
-- Fixes must be described in 1–3 bullets and one screenshot batch.
+Fill only for Geometry.
 
-## Score Row
+```text
+Scale envelope: PASS / REVISION_REQUIRED / BLOCKER
+Front silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Left Side silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Back silhouette: PASS / REVISION_REQUIRED / BLOCKER
+Top / Footprint: PASS / REVISION_REQUIRED / BLOCKER
+Front-left 3/4: PASS / REVISION_REQUIRED / BLOCKER
+Hierarchy/attachments: PASS / REVISION_REQUIRED / BLOCKER
+Ground contacts: PASS / REVISION_REQUIRED / BLOCKER
+Collision/z-fighting: PASS / REVISION_REQUIRED / BLOCKER
+Cube-purpose discipline: PASS / REVISION_REQUIRED / BLOCKER
+Geometry-vs-texture split: PASS / REVISION_REQUIRED / BLOCKER
+```
 
-### 1. Silhouette / Form Readability
-- Status:
-- Note:
-- Front:
-- Side:
-- Back:
-- 3/4:
+## Texture Scorecard
 
-### 2. Attachment Logic
-- Status:
-- Note:
-- Parent chain:
-- Pivot logic:
+Fill only for Texture.
 
-### 3. Collision / Floating Control
-- Status:
-- Note:
+```text
+Atlas size/strategy: PASS / REVISION_REQUIRED / BLOCKER
+UV compactness: PASS / REVISION_REQUIRED / BLOCKER
+Safe mirroring/reuse: PASS / REVISION_REQUIRED / BLOCKER
+Focal texel density: PASS / REVISION_REQUIRED / BLOCKER
+Palette match: PASS / REVISION_REQUIRED / BLOCKER
+Material zones: PASS / REVISION_REQUIRED / BLOCKER
+Pixel sharpness: PASS / REVISION_REQUIRED / BLOCKER
+Visible seams: PASS / REVISION_REQUIRED / BLOCKER
+Alpha/emissive behavior: PASS / REVISION_REQUIRED / BLOCKER
+Classic Bedrock compliance: PASS / REVISION_REQUIRED / BLOCKER
+```
 
-### 4. Cube Budget Discipline
-- Status:
-- Note:
-- Cube purpose failures:
+## Animation Scorecard
 
-### 4a. Geometry Precision Gate
-- Scale envelope recorded: Yes / No / N/A
-- Scale drift: PASS / PARTIAL / BLOCKER / N/A
-- Part bounding boxes recorded: Yes / No / N/A
-- Build order followed: Yes / No / N/A
-- Orthographic front/side match: PASS / PARTIAL / BLOCKER / N/A
-- Reference match: PASS / PARTIAL / BLOCKER / N/A
-- Repeated blocker: Yes / No
-- Recovery required: Yes / No
+Fill only when Animation is required.
 
-### 5. Texture Readiness
-- Status:
-- Note:
+```text
+Hierarchy: PASS / REVISION_REQUIRED / BLOCKER
+Pivots: PASS / REVISION_REQUIRED / BLOCKER
+Allowed axes/ranges: PASS / REVISION_REQUIRED / BLOCKER
+Required clips/samples: PASS / REVISION_REQUIRED / BLOCKER
+Neutral-pose recovery: PASS / REVISION_REQUIRED / BLOCKER
+Ground contact: PASS / REVISION_REQUIRED / BLOCKER
+Clipping: PASS / REVISION_REQUIRED / BLOCKER
+Rigid-cuboid behavior: PASS / REVISION_REQUIRED / BLOCKER
+```
 
-### 6. UV / Material Coherence
-- Status:
-- Note:
+When skipped:
 
-### 7. Feedback Mapping
-- Status:
-- Note:
+```text
+Animation status: ANIMATION_SKIPPED
+Reason: not required by approved package
+```
 
-### 8. Marketplace Baseline
-- Status:
-- Note:
-- Silhouette readable from gameplay distance:
-- Clean hierarchy / attachment:
-- Texture-only micro detail preserved:
-- Material depth planned or present:
-- Execution target risks addressed:
+## Final Validation Scorecard
 
-## Phase Decision
+Fill only for Final Validation.
 
-- `Advance`: Yes / No
-- `Blocker` (if No):
-- `Critical Fixes (max 2)`:
-- `Optional Fixes`:
-- `User Approved Next Phase`: Yes / No
+```text
+Package/file integrity: PASS / REVISION_REQUIRED / BLOCKER
+Final .bbmodel: PASS / REVISION_REQUIRED / BLOCKER
+Textures: PASS / REVISION_REQUIRED / BLOCKER
+Five standard views: PASS / REVISION_REQUIRED / BLOCKER
+Reference match: PASS / REVISION_REQUIRED / BLOCKER
+Geometry contract: PASS / REVISION_REQUIRED / BLOCKER
+Texture contract: PASS / REVISION_REQUIRED / BLOCKER
+Animation contract or skip: PASS / REVISION_REQUIRED / BLOCKER
+Blockbench validator: PASS / REVISION_REQUIRED / BLOCKER
+Naming/export readiness: PASS / REVISION_REQUIRED / BLOCKER
+Completed VALIDATION.md: PASS / REVISION_REQUIRED / BLOCKER
+```
 
-- If `Critical Fixes` is filled, set `Advance: No` and keep phase lock.
+## Critical Issues
 
-Reopen condition:
+Maximum two local issues in one revision cycle.
 
-- `Needs user clarification` only if required references are missing or conflicting and no deterministic fix can be made.
+```text
+1. Stage:
+   Part:
+   Issue:
+   Expected:
+   Do not change:
+   Verification:
 
-## Quick Summary
+2. Stage:
+   Part:
+   Issue:
+   Expected:
+   Do not change:
+   Verification:
+```
 
-- What changed:
-- What was deferred to next phase:
-- What must not be changed in next phase:
+Broad issues must reopen the relevant earlier stage instead of being hidden in this scorecard.
 
-## Gate Traceability
+## Evidence
 
-- Screenshot check:
-- Tool check:
-- Reference check:
+```text
+Required evidence present: Yes / No
+Evidence paths:
+- ...
+Missing evidence:
+- ...
+```
 
-Evidence summary (max 5 lines):
-- what improved:
-- what deferred:
-- what stayed unchanged:
+## Stage Decision
+
+```text
+Overall result: PASS / REVISION_REQUIRED / BLOCKER
+Blockers:
+Required revisions:
+Deferred not required:
+User decision: PENDING / APPROVED / REVISION_REQUESTED
+Next safe action:
+```
+
+## Compact User Review Report
+
+```text
+Stage:
+Status:
+Completed:
+Preserved:
+Evidence:
+Issues:
+Next user action: APPROVED or REVISION: ...
+```
 
 ## Acceptance Criteria
 
-- Score status is explicit: PASS / NEEDS_MINOR_FIX / BLOCKER.
-- At most 2 critical fixes are recorded before re-score.
-- Tool check, reference check, and screenshot check are filled for the gate.
-- Phase decision is tied to user approval state and next phase is blocked if not approved.
+- Only the active stage section is filled.
+- Result is explicit.
+- Required evidence exists.
+- Accepted work is preserved.
+- Revision scope is local and named.
+- No internal-pass approval is requested.
