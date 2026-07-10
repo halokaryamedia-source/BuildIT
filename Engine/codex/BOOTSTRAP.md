@@ -27,6 +27,24 @@ Ponytail prevents token waste, unnecessary tools, redundant checks, speculative 
 
 Do not repeat the full OpenSpec or governance text before every small edit. Use them at session start, stage transition, scope conflict, broad change, or recovery.
 
+## Runtime Contracts
+
+Read these only when their rule is needed:
+
+```text
+Engine/codex/STATE_MACHINE.md
+Engine/codex/EVIDENCE_CONTRACT.md
+Engine/codex/CHECKPOINT_RECOVERY.md
+Engine/codex/stage-profiles.json
+Engine/codex/LEGACY_WORKFLOW_AUDIT.md
+```
+
+- `STATE_MACHINE.md`: review, approval, revision, reopen, and accepted-area protection.
+- `EVIDENCE_CONTRACT.md`: exact preview views and stable filenames.
+- `CHECKPOINT_RECOVERY.md`: persistent `.bbmodel` paths and rollback logic.
+- `stage-profiles.json`: required files, tool domains, checkpoints, and evidence per stage.
+- `LEGACY_WORKFLOW_AUDIT.md`: prevents accidental fallback to the old workflow.
+
 ## Required Input
 
 ```text
@@ -97,25 +115,30 @@ Before the first MCP write in a session:
 3. verify MCP endpoint and active-stage tool capability;
 4. verify Blockbench project, UUID, format, UV mode, and texture size;
 5. record manual edits that must be preserved;
-6. save a persistent start checkpoint;
-7. update `state.json`.
+6. call `save_project_checkpoint` for `00_session_start.bbmodel`;
+7. update `state.json` only after checkpoint success.
 
 Do not repeat the full preflight for every edit. Re-run only the failed or stale check.
 
-## Production Stages
+## Production State Sequence
 
 ```text
 REFERENCE_READY
-→ GEOMETRY
+→ GEOMETRY_IN_PROGRESS
 → GEOMETRY_REVIEW
-→ TEXTURE
+→ GEOMETRY_APPROVED
+→ TEXTURE_IN_PROGRESS
 → TEXTURE_REVIEW
-→ ANIMATION or ANIMATION_SKIPPED
+→ TEXTURE_APPROVED
+→ ANIMATION_IN_PROGRESS or ANIMATION_SKIPPED
 → ANIMATION_REVIEW when used
+→ ANIMATION_APPROVED when used
 → FINAL_VALIDATION
 → FINAL_REVIEW
 → DONE
 ```
+
+Revision states are defined in `STATE_MACHINE.md`.
 
 Internal passes do not create additional routine approval gates.
 
@@ -142,22 +165,19 @@ Forbidden:
 
 Required output:
 
-- persistent Geometry checkpoint;
+- `save_project_checkpoint` → `checkpoints/10_geometry_review.bbmodel`;
 - cube/group count;
 - scale and hierarchy summary;
-- Front preview;
-- Left Side preview;
-- Back preview;
-- Top / Footprint preview;
-- Front-left 3/4 preview;
+- `capture_standard_views` using stage `GEOMETRY` for Front, Left Side, Back, Top / Footprint, and Front-left 3/4;
+- `evidence/geometry/geometry_report.json`;
 - short result against `GEOMETRY.md` and the Reference Visual.
 
 Stop at `GEOMETRY_REVIEW`.
 
 User response:
 
-- `APPROVED` → continue to Texture;
-- `REVISION: ...` → revise only the named Geometry issue and return to review.
+- `APPROVED` → save `20_geometry_approved.bbmodel`, protect accepted areas, continue to Texture;
+- `REVISION: ...` → create a Geometry revision scope, patch only the named issue, recapture focused evidence, and return to review.
 
 # Stage 2 — Texture
 
@@ -180,31 +200,30 @@ Forbidden:
 
 Required output:
 
-- persistent Texture checkpoint;
+- `save_project_checkpoint` → `checkpoints/30_texture_review.bbmodel`;
 - texture atlas preview;
 - UV summary;
-- Front preview;
-- Left Side preview;
-- Back preview;
-- Front-left 3/4 preview;
+- `capture_standard_views` using stage `TEXTURE` for Front, Left Side, Back, and Front-left 3/4;
+- `evidence/texture/texture_report.json`;
 - short result against `TEXTURING.md` and the Reference Visual.
 
 Stop at `TEXTURE_REVIEW`.
 
 User response:
 
-- `APPROVED` → continue to Animation when required, otherwise Final Validation;
-- `REVISION: ...` → revise only the named Texture/UV issue and return to review.
+- `APPROVED` → save `40_texture_approved.bbmodel`, protect accepted areas, continue to Animation when required or Final Validation;
+- `REVISION: ...` → create a Texture revision scope, patch only the named Texture/UV issue, recapture atlas and affected views, and return to review.
 
 # Stage 3 — Animation (Optional)
 
-Run only when `reference_manifest.json` or `ANIMATION.md` requires Animation.
+Run only when `reference_manifest.json` or `ANIMATION.md` lists at least one required animation family or interactive motion.
 
 If not required:
 
 ```text
-stage: ANIMATION_SKIPPED
+state: ANIMATION_SKIPPED
 reason: not required by approved reference package
+checkpoint: 60_animation_skipped.bbmodel or approved Texture checkpoint as recovery source
 ```
 
 Do not add optional animations merely for completeness.
@@ -213,18 +232,19 @@ When used, build only approved hierarchy, pivots, and clips without altering acc
 
 Required output:
 
-- persistent Animation checkpoint;
+- `save_project_checkpoint` → `checkpoints/50_animation_review.bbmodel`;
 - hierarchy and pivot summary;
 - required clips or sampled poses;
 - neutral-pose recovery;
-- clipping and ground-contact result.
+- clipping and ground-contact result;
+- stable Animation evidence paths from `EVIDENCE_CONTRACT.md`.
 
 Stop at `ANIMATION_REVIEW`.
 
 User response:
 
-- `APPROVED` → continue to Final Validation;
-- `REVISION: ...` → revise only the named motion, pivot, clipping, or timing issue.
+- `APPROVED` → save `60_animation_approved.bbmodel`, protect accepted areas, continue to Final Validation;
+- `REVISION: ...` → patch only the named motion, pivot, clipping, or timing issue.
 
 # Stage 4 — Final Validation
 
@@ -246,17 +266,16 @@ Do not add new features during Final Validation.
 
 Required output:
 
-- final candidate `.bbmodel`;
+- `save_project_checkpoint` → `checkpoints/70_final_candidate.bbmodel`;
+- final candidate `.bbmodel` in `final/`;
 - texture files;
 - completed `VALIDATION.md`;
-- Front preview;
-- Left Side preview;
-- Back preview;
-- Top / Footprint preview;
-- Front-left 3/4 preview;
-- Animation evidence when applicable;
+- `capture_standard_views` using stage `FINAL` for five final views;
+- final texture atlas;
 - concise revision summary;
 - result: `PASS`, `REVISION_REQUIRED`, or `BLOCKER`.
+
+After validation PASS, save `80_validation_pass.bbmodel`.
 
 Stop at `FINAL_REVIEW` and wait for approval or corrections.
 
@@ -276,10 +295,14 @@ Part:
 Issue:
 Expected:
 Do not change:
+Reference:
 Verification:
+Rollback checkpoint:
 ```
 
 Do not rebuild accepted areas.
+
+Follow `STATE_MACHINE.md` for local-fix versus stage-reopen decisions.
 
 ## Overdevelopment Stop Test
 
@@ -308,6 +331,7 @@ Stop and report only when:
 - `REFERENCE_CONFLICT`;
 - required MCP capability is unavailable;
 - active project/session ownership is ambiguous;
+- checkpoint or evidence creation fails;
 - the same blocker fails twice;
 - a requested fix requires reopening an approved earlier stage.
 
@@ -318,10 +342,21 @@ Stage:
 Status: PASS / REVISION_REQUIRED / BLOCKER
 Completed:
 Preserved:
+Checkpoint:
 Evidence:
 Issues:
 Next user action: APPROVED or REVISION: ...
 ```
+
+## Local Dry Run
+
+After contracts and required tools are available locally, execute:
+
+```text
+Engine/codex/LOCAL_DRY_RUN.md
+```
+
+Do not use CI as a substitute for the local Blockbench/MCP dry run.
 
 ## CI and Release Rule
 
