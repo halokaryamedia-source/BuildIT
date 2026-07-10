@@ -1,30 +1,46 @@
 # Model Session Folder Convention
 
-Use this convention for each model when Codex receives a ChatGPT-generated brief and reference package.
+Use one self-contained runtime workspace per asset.
 
 ## Folder Layout
 
 ```text
-SavedData/sessions/[asset]/
-  session.md
-  session-lock.md
-  references/
-  final-screenshots/
+SavedData/sessions/<asset>/
+├─ state.json
+├─ session.md                 # optional human summary
+├─ session-lock.md            # compact lock mirror
+├─ references/
+│  ├─ PRODUCTION_CONTEXT.md
+│  ├─ <asset>_reference_visual.png
+│  ├─ GEOMETRY.md
+│  ├─ TEXTURING.md
+│  ├─ ANIMATION.md
+│  ├─ VALIDATION.md
+│  ├─ reference_manifest.json
+│  └─ CODEX_REFERENCE_HANDOFF.md
+├─ checkpoints/
+│  ├─ 00_session_start.bbmodel
+│  ├─ 10_geometry_review.bbmodel
+│  ├─ 20_texture_review.bbmodel
+│  ├─ 30_animation_review.bbmodel
+│  └─ 40_validation_pass.bbmodel
+├─ evidence/
+│  ├─ geometry/
+│  ├─ texture/
+│  ├─ animation/
+│  └─ final/
+├─ reports/
+│  ├─ preflight.json
+│  └─ validation.json
+└─ final/
+   ├─ <asset>.bbmodel
+   └─ textures/
 ```
-
-Optional folders only when useful:
-
-```text
-SavedData/sessions/[asset]/
-  phase-screenshots/
-```
-
-Do not keep failed-attempt screenshots unless the user asks for process history.
 
 ## Naming
 
 ```text
-[asset] = lowercase snake_case
+<asset> = lowercase_snake_case
 ```
 
 Examples:
@@ -35,46 +51,86 @@ SavedData/sessions/samurai_guard/
 SavedData/sessions/sound_truck/
 ```
 
-## Required Files
+## Authority
 
-`session.md` should be based on:
+- `state.json`: runtime authority.
+- `session.md`: optional summary generated from state when useful.
+- `session-lock.md`: session ownership mirror; cannot override state.
+- `references/`: approved immutable input package unless the reference stage is reopened.
+- `checkpoints/`: persistent recovery states.
+- `evidence/`: approved stage-review evidence.
+- `reports/`: machine-readable preflight and validation outputs.
+- `final/`: only final accepted model and textures.
+
+## Evidence Filenames
+
+Recommended stable names:
 
 ```text
-SourceDocument/modeling/model-session-checklist-template.md
+geometry/front.png
+geometry/left_side.png
+geometry/back.png
+geometry/top_footprint.png
+geometry/front_left_3_4.png
+
+texture/atlas.png
+texture/front.png
+texture/left_side.png
+texture/back.png
+texture/front_left_3_4.png
+
+animation/hierarchy.json
+animation/pivots.json
+animation/neutral_pose.png
+animation/<clip_name>.<ext>
+
+final/front.png
+final/left_side.png
+final/back.png
+final/top_footprint.png
+final/front_left_3_4.png
 ```
 
-`session-lock.md` should contain only the runtime session lock payload for anti-spam control.
+Do not add timestamps or version suffixes to approved filenames. Store prior review cycles in a clearly named archive subfolder only when history is required.
+
+## Temporary Files
+
+Use:
 
 ```text
-session_id:
-active_phase:
-endpoint:
-lock_owner:
-status: active / reset / stale / closed
-started_at:
+SavedData/cache/<asset>/
 ```
 
-Use this template:
+for:
 
-- `SourceDocument/modeling/model-session-lock-template.md`
+- failed screenshots;
+- experiments;
+- temporary exports;
+- diagnostic data dumps.
 
-Before first session start, also run the pre-flight phase risk sweep in:
+Do not mix temporary files with approved evidence or final output.
 
-- `SourceDocument/modeling/ops/phase-risk-simulation.md`
+## Session Creation
 
-`references/` stores the approved reference package for the asset.
+For a new asset:
 
-`final-screenshots/` stores only final or phase-approved screenshots.
+1. create the folder structure;
+2. copy the approved reference package into `references/`;
+3. create `state.json` from `Engine/codex/state.template.json`;
+4. create a lock only after session/project verification;
+5. save `00_session_start.bbmodel` before the first meaningful write;
+6. update state with reference paths, project UUID, stage, and checkpoint.
 
-## Screenshot Cleanup
+## Cleanup
 
-- Keep current phase screenshots only while reviewing that phase.
-- Move approved final images to `final-screenshots/`.
-- Delete failed or temporary screenshots after the issue is resolved.
+- Keep approved stage evidence.
+- Remove or move failed attempts to cache after resolution.
+- Keep one final accepted model package.
+- Do not retain redundant reports that duplicate `state.json`.
 
 ## Acceptance Criteria
 
-- Each model has one clear session folder.
-- New chats can recover the model context from `session.md`.
-- Final screenshots are not mixed with failed attempts.
-
+- Each asset has one clear runtime workspace.
+- New sessions recover from governance, OpenSpec, state, references, and the active-stage document.
+- Runtime state is not fragmented across competing Markdown files.
+- Checkpoints and evidence are stable and stage-specific.
