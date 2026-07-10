@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "connection_id": "blockbench",
   "transport": "streamable_http",
   "canonical_url": "http://localhost:3000/bb-mcp",
@@ -31,15 +31,20 @@
   "required_common_tools": [
     "get_runtime_status",
     "get_project_info",
+    "get_tool_profile",
+    "activate_tool_profile",
     "save_project_checkpoint",
     "capture_standard_views"
   ],
+  "tool_profile_contract": "Engine/codex/tool-profiles.json",
+  "default_tool_profile": "BEDROCK_CUBOID_GEOMETRY",
   "readiness_report": "SavedData/sessions/<asset>/reports/connection.json",
   "failure_policy": {
     "endpoint_unreachable": "BLOCKER",
     "endpoint_mismatch": "BLOCKER",
     "plugin_not_loaded": "BLOCKER",
     "required_tool_missing": "BLOCKER",
+    "tool_profile_invalid": "BLOCKER",
     "multiple_blockbench_instances": "BLOCKER",
     "multiple_write_sessions": "BLOCKER",
     "codex_config_missing": "INSTALL_AND_RESTART_CODEX"
