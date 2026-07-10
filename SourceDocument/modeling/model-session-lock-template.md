@@ -1,53 +1,74 @@
 # Model Session Lock Template
 
-Copy this file to `SavedData/sessions/[asset]/session-lock.md` and fill all fields before Blockbench MCP write actions.
+`state.json` is the runtime authority. This file is a compact lock mirror for human inspection and compatibility.
+
+Copy to:
 
 ```text
-asset: samurai_guard
-phase: Main Geometry
-endpoint: http://localhost:3000/bb-mcp
-session_id:
-lock_owner: codex-session-01
-started_at: 2026-07-06T00:00:00+07:00
-status: active
-
-# Phase control
-expected_tool_scope: modeling
-tool_profile: blockbench-modeling
-checkpoint_target: session.md
-approval_ref: user-brief-001
-
-# Gate / reuse policy
-can_reuse_same_session: yes
-reset_allowed_on:
-  - endpoint_changed
-  - session_unresponsive
-  - user_approved_reset
-
-# Last action lock evidence
-last_verify_at: 2026-07-06T00:00:00+07:00
-last_verify_by: operator
-last_blocker: none
-last_blocker_reason:
+SavedData/sessions/<asset>/session-lock.md
 ```
 
-### Minimal required fields (do not leave empty before edit)
+## Template
+
+```yaml
+asset: <asset_id>
+runtime_authority: SavedData/sessions/<asset_id>/state.json
+stage: GEOMETRY | TEXTURE | ANIMATION | FINAL_VALIDATION
+endpoint: http://localhost:3000/bb-mcp
+session_id: <mcp-session-id>
+lock_owner: codex
+status: active | requires_verification | stale | reset | closed
+stage_profile: Engine/codex/stage-profiles.json
+expected_tool_scope: geometry | texture | animation | validation
+project_uuid: <uuid>
+project_name: <name>
+persistent_checkpoint_target: SavedData/sessions/<asset_id>/checkpoints/<checkpoint>.bbmodel
+approval_ref: <approved-stage-or-reference>
+can_reuse_same_session: yes | verify_first | no
+started_at: <iso-8601>
+last_verified_at: <iso-8601>
+last_blocker: none | <blocker-code>
+last_blocker_reason: <reason>
+safe_next_action: <action>
+```
+
+## Required Fields Before a Write
 
 - `asset`
-- `phase`
+- `runtime_authority`
+- `stage`
 - `endpoint`
 - `session_id`
 - `lock_owner`
-- `status` (`active` or `stale` or `reset` or `closed`)
+- `status: active`
 - `expected_tool_scope`
-- `can_reuse_same_session`
+- `project_uuid`
+- `persistent_checkpoint_target`
+- `last_verified_at`
 
-### Update rules
+## Rules
 
-- On new asset request: create lock and set `started_at`.
-- On normal phase progression: keep the same `session_id` and update:
-  - `phase`
-  - `approval_ref`
-  - `last_verify_at`
-- On reset: set `status: reset`, archive reason, then create a new lock with new `session_id` and `started_at`.
+- Use one active write session per asset.
+- Keep the same healthy session across internal passes and normal stage progression.
+- Update the stage and profile after user approval moves work forward.
+- Do not create a new session merely because a new revision cycle begins.
+- Reset only when the endpoint changed, the session is unavailable, ownership is ambiguous, or the user approved reset.
+- A legacy or unverified lock cannot authorize a write.
+- The lock mirror must match `state.json`; when they conflict, stop and repair state/lock consistency.
+- Persistent checkpoint path must be recorded before a meaningful write batch.
 
+## Reset Sequence
+
+1. set old lock `status: reset` or `closed`;
+2. record the reset reason in `state.json`;
+3. initialize/verify the new session once;
+4. update project UUID and stage profile;
+5. save a persistent checkpoint;
+6. set the new lock `status: active`.
+
+## Acceptance Criteria
+
+- One active session owner is clear.
+- Project UUID and active stage are explicit.
+- Lock and `state.json` agree.
+- The next safe action is unambiguous.
