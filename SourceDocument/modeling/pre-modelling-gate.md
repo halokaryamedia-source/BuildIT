@@ -7,7 +7,8 @@ Run this once after canonical connection readiness and reference intake, before 
 ```text
 sync-local-stack.ps1
 → reports/connection.json = PASS
-→ reference/package/project pre-modelling gate
+→ exact BEDROCK_CUBOID_GEOMETRY profile verified
+→ reference/package/project gate
 → 00_session_start.bbmodel
 → Geometry
 ```
@@ -34,13 +35,14 @@ Legacy numbered reference sheets are not required for new sessions.
 - active `state.json` using schema 2.1;
 - `reports/connection.json` with `result: PASS`;
 - live `get_runtime_status` result without blocker;
+- runtime profile `BEDROCK_CUBOID_GEOMETRY`;
+- profile ID, revision, hash, and exposed count synchronized to `state.json`;
 - active OpenSpec change;
 - one active Codex MCP write session;
 - active Blockbench project and UUID;
 - expected format, UV mode, and texture size;
 - manual/accepted areas to preserve;
 - writable checkpoint directory;
-- active Geometry tool profile;
 - `save_project_checkpoint` capability;
 - `capture_standard_views` capability.
 
@@ -50,6 +52,10 @@ Legacy numbered reference sheets are not required for new sessions.
 | --- | --- |
 | Canonical connection report PASS | PASS / BLOCKER |
 | Live runtime status matches canonical URL/project | PASS / BLOCKER |
+| Active profile is `BEDROCK_CUBOID_GEOMETRY` | PASS / BLOCKER |
+| Runtime profile hash/count match state | PASS / BLOCKER |
+| Profile validation errors empty | PASS / BLOCKER |
+| PBR/Hytale/mesh UV/armature/UI/eval absent from exposed tools | PASS / BLOCKER |
 | Reference package files present | PASS / BLOCKER |
 | Manifest valid | PASS / BLOCKER |
 | Production Context has no unresolved high-impact blocker | PASS / BLOCKER |
@@ -88,7 +94,15 @@ Safe next action:
 - ...
 ```
 
-Do not scan another port, create another MCP key, or open another session as a fallback.
+Profile mismatch:
+
+```text
+powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/set-tool-profile.ps1 -Asset <asset>
+```
+
+Then reconnect the existing canonical `blockbench` MCP entry once only when the script reports a real profile change.
+
+Do not scan another port, create another MCP key, activate diagnostic escalation, or open another session as a fallback.
 
 ## Codex First Action After PASS
 
@@ -98,9 +112,9 @@ Do not scan another port, create another MCP key, or open another session as a f
    - `workflow.active_stage: GEOMETRY`;
    - `workflow.status: IN_PROGRESS`;
    - `workflow.last_safe_checkpoint: checkpoints/00_session_start.bbmodel`;
-   - `workflow.stage_records.GEOMETRY.status: IN_PROGRESS`.
-3. Load only the Geometry profile.
-4. Execute Primary Form, then Structural Detail.
-5. Capture stage evidence with `capture_standard_views` and stop at Geometry Review.
+   - `workflow.stage_records.GEOMETRY.status: IN_PROGRESS`;
+   - preserve verified profile ID/hash/count.
+3. Execute Primary Form, then Structural Detail using only the active exact profile.
+4. Capture stage evidence with `capture_standard_views` and stop at Geometry Review.
 
 Do not request a separate approval for connection readiness or the gate. The next user-visible approval is Geometry Review.
