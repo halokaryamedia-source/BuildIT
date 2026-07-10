@@ -69,14 +69,20 @@ function Get-CodexConfigPath {
   Join-Path (Join-Path $HOME ".codex") "config.toml"
 }
 
+function Get-CodexSectionPattern {
+  $header = [regex]::Escape("[mcp_servers.$serverKey]")
+  "(?m)^$header\s*(?:\r?\n(?:(?!^\[)[^\r\n]*))*"
+}
+
 function Test-CodexSection {
   param([string]$Content)
   if ([string]::IsNullOrWhiteSpace($Content)) { return $false }
-  $header = [regex]::Escape("[mcp_servers.$serverKey]")
+  $match = [regex]::Match($Content, (Get-CodexSectionPattern))
+  if (-not $match.Success) { return $false }
   $url = [regex]::Escape($canonicalUrl)
   [regex]::IsMatch(
-    $Content,
-    "(?ms)^$header\s*\r?\n(?:(?!^\[).*(?:\r?\n|$))*?^\s*url\s*=\s*[`"']$url[`"']\s*$"
+    $match.Value,
+    "(?m)^\s*url\s*=\s*[`"']$url[`"']\s*$"
   )
 }
 
@@ -85,12 +91,7 @@ function Set-CodexSection {
   $directory = Split-Path -Parent $Path
   New-Item -ItemType Directory -Path $directory -Force | Out-Null
   $content = if (Test-Path $Path) { Get-Content -Raw -Path $Path } else { "" }
-  $header = [regex]::Escape("[mcp_servers.$serverKey]")
-  $cleaned = [regex]::Replace(
-    $content,
-    "(?ms)^$header\s*\r?\n(?:(?!^\[).*(?:\r?\n|$))*",
-    ""
-  ).TrimEnd()
+  $cleaned = [regex]::Replace($content, (Get-CodexSectionPattern), "").TrimEnd()
   $section = "[mcp_servers.$serverKey]`nurl = `"$canonicalUrl`""
   $newContent = if ($cleaned) { "$cleaned`n`n$section`n" } else { "$section`n" }
   Set-Content -Path $Path -Value $newContent -Encoding utf8
