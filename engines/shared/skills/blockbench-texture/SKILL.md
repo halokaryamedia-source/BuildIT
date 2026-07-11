@@ -7,7 +7,7 @@ description: "Texture-stage skill for Classic Minecraft Bedrock cuboid assets. P
 
 ## Entry
 
-Use only when the active stage is `TEXTURE` with tool profile `BEDROCK_CUBOID_TEXTURE` or `TEXTURE_LOCAL_REPAIR`.
+Use only when the active stage is `TEXTURE` with tool profile `BEDROCK_CUBOID_TEXTURE` or `TEXTURE_LOCAL_REPAIR` and the current MCP session owns the project write lease.
 
 Read:
 
@@ -34,7 +34,6 @@ UV
 - Use the approved atlas dimensions and Per-face UV unless the reference package explicitly states otherwise.
 - Keep pixels sharp and use the approved palette/material zones.
 - Mirror only approved regions; keep directional details unique.
-- Use direct texture evidence writing instead of returning image base64 through the agent.
 - Preserve approved Geometry.
 
 ## Forbidden
@@ -48,4 +47,10 @@ UV
 
 ## Review Output
 
-Create the Texture review checkpoint, atlas evidence, required model views, and `texture_report.json`. Run `validate_reference_contract` for Texture and stop for `APPROVED` or `REVISION: ...`.
+1. Use `save_texture_evidence` to write the atlas directly inside the active session; do not return texture base64 through the agent.
+2. Save the Texture review checkpoint.
+3. Call `capture_standard_views` with the active project UUID, absolute session root, Texture evidence directory, and `return_images: false`.
+4. Run `validate_reference_contract` for Texture.
+5. Write `texture_report.json` and stop for `APPROVED` or `REVISION: ...`.
+
+Regenerate only affected evidence during a targeted revision.
