@@ -18,7 +18,7 @@ const stages = JSON.parse(
 ) as Record<string, any>;
 
 describe("visual-grounded Geometry workflow", () => {
-  test("registers visual, deterministic, guarded mutation, and approval tools", () => {
+  test("registers visual, deterministic, guarded mutation, review, and approval tools", () => {
     for (const name of [
       "get_stage_context",
       "inspect_reference_visual",
@@ -27,7 +27,7 @@ describe("visual-grounded Geometry workflow", () => {
       "place_cubes_safe",
       "modify_cubes",
       "record_geometry_visual_result",
-      "verify_geometry_visual_gate",
+      "verify_geometry_review_ready",
       "complete_geometry_stage",
     ]) {
       expect(toolNames.has(name), name).toBe(true);
@@ -45,6 +45,7 @@ describe("visual-grounded Geometry workflow", () => {
       expect(allowed.has("modify_cubes"), profileId).toBe(true);
       expect(allowed.has("capture_visual_feedback"), profileId).toBe(true);
       expect(allowed.has("compare_reference_views"), profileId).toBe(true);
+      expect(allowed.has("verify_geometry_review_ready"), profileId).toBe(true);
       expect(allowed.has("place_cube"), profileId).toBe(false);
       expect(allowed.has("modify_cube"), profileId).toBe(false);
     }
@@ -59,8 +60,11 @@ describe("visual-grounded Geometry workflow", () => {
     expect(stages.profiles.GEOMETRY.deterministic_visual_tool).toBe(
       "compare_reference_views"
     );
-    expect(stages.profiles.GEOMETRY.visual_validation_tool).toBe(
-      "verify_geometry_visual_gate"
+    expect(stages.profiles.GEOMETRY.review_readiness_tool).toBe(
+      "verify_geometry_review_ready"
+    );
+    expect(stages.geometry_visual_policy.gate_tool).toBe(
+      "verify_geometry_review_ready"
     );
     expect(stages.geometry_visual_policy.multimodal_review_required).toBe(true);
     expect(stages.geometry_visual_policy.deterministic_guard_required).toBe(true);
@@ -129,7 +133,7 @@ describe("rotation-aware bounds primitives", () => {
 });
 
 describe("source-level safety contracts", () => {
-  test("requires explicit pivots, deterministic metrics, and stale protection", () => {
+  test("requires explicit pivots, deterministic metrics, stale protection, and unified review readiness", () => {
     const feedback = readFileSync(
       "src/server/tools/geometry-feedback.ts",
       "utf8"
@@ -138,17 +142,22 @@ describe("source-level safety contracts", () => {
       "src/server/tools/visual-compare.ts",
       "utf8"
     );
+    const reviewGate = readFileSync(
+      "src/server/tools/geometry-review-gate.ts",
+      "utf8"
+    );
     const completion = readFileSync(
       "src/server/tools/geometry-completion.ts",
       "utf8"
     );
     expect(feedback).toContain("ROTATION_ORIGIN_REQUIRED");
     expect(feedback).toContain("COMPOUND_ROTATION_REJECTED");
-    expect(feedback).toContain("VISUAL_REPORT_STALE");
     expect(compare).toContain("geometry_visual_metrics.json");
     expect(compare).toContain("silhouette_iou");
-    expect(completion).toContain("GEOMETRY_VISUAL_REPORT_STALE");
-    expect(completion).toContain("GEOMETRY_VISUAL_METRICS_STALE");
-    expect(completion).toContain("GEOMETRY_ROTATION_NOT_SAFE");
+    expect(reviewGate).toContain("GEOMETRY_VISUAL_REPORT_STALE");
+    expect(reviewGate).toContain("GEOMETRY_VISUAL_METRICS_STALE");
+    expect(reviewGate).toContain("GEOMETRY_ROTATION_NOT_SAFE");
+    expect(completion).toContain("verify_geometry_review_ready");
+    expect(completion).toContain("GEOMETRY_REVIEW_GATE_NOT_PASS");
   });
 });
