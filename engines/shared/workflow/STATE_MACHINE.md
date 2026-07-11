@@ -5,7 +5,6 @@
 ```text
 REFERENCE_READY
 → GEOMETRY_IN_PROGRESS
-→ GEOMETRY_VISUAL_CHECK
 → GEOMETRY_REVIEW
 → GEOMETRY_APPROVED
 → TEXTURE_IN_PROGRESS
@@ -19,16 +18,56 @@ REFERENCE_READY
 → DONE
 ```
 
-`GEOMETRY_VISUAL_CHECK` is an internal gate. It requires current-model image feedback, a recorded visual result, and rotation-safe world-transform validation. It is not a user approval state.
+## Geometry internal runtime
 
-Geometry review requires:
+Inside `GEOMETRY_IN_PROGRESS`, MCP enforces:
 
 ```text
+PRIMARY_FORM
+→ STRUCTURAL_DETAIL
+→ FINAL_REVIEW_READY
+```
+
+Alternative terminal/internal routes:
+
+```text
+PRIMARY_FORM or STRUCTURAL_DETAIL
+→ two non-improving diagnosis cycles
+→ VISUAL_CONVERGENCE_FAILED
+
+multiple primary masses or views fail
+→ GEOMETRY_VISUAL_REBUILD
+→ PRIMARY_FORM
+
+one part or related pair fails after review
+→ GEOMETRY_LOCAL_REPAIR
+→ STRUCTURAL_DETAIL
+```
+
+`PRIMARY_FORM` allows body masses, neck/head/muzzle, provisional legs, and ground relationship only. Horns, ears, final feet, tail, and detail remain locked until Left, Front, and Top multimodal inspection plus fixed-scale diagnosis pass.
+
+Every Geometry mutation invalidates earlier fixed-scale metrics, multimodal report, and review readiness. Every non-zero cube rotation must use its machine-readable attachment contract and affected-view before/after score.
+
+## Geometry review requirements
+
+```text
+runtime_phase = FINAL_REVIEW_READY
 structural_status = PASS
 visual_status = PASS
+deterministic_visual_status = PASS
 rotation_status = PASS or non-blocking WARNING
 evidence_status = CURRENT
+result = PASS
 ```
+
+Review evidence must be bound to the current:
+
+- project UUID;
+- Geometry fingerprint;
+- Reference Visual SHA-256;
+- five standard views;
+- `geometry_projection_region_v2` analyzer;
+- fixed approved scale with free-rescale disabled.
 
 A structural PASS alone must never transition to `GEOMETRY_REVIEW` or `GEOMETRY_APPROVED`.
 
@@ -46,11 +85,12 @@ REFERENCE_REOPEN
 
 REFERENCE_CONFLICT
 → stop
+
+LEGACY_SKILL_CONFLICT
+→ stop
 ```
 
-Use `MAJOR_FORM_REVISION` when multiple primary masses or multiple standard views fail. Previous checkpoints remain immutable.
-
-Any Geometry mutation, including a cube rotation, invalidates the current visual report until new affected-view evidence is inspected and recorded.
+Use `MAJOR_FORM_REVISION` when multiple primary masses or standard views fail, or a local repair does not converge. Previous checkpoints remain immutable.
 
 ## Workspace lifecycle
 
@@ -72,4 +112,4 @@ or
 
 The completed baseline remains immutable while a reopened revision is active.
 
-Every write checks project UUID, active profile, workflow state, state revision, owner session, and MCP session root. `mcp/state.json` overrides Markdown summaries. `workspace.json` is only an index and never overrides project state.
+Every write checks project UUID, active profile, workflow state, state revision, owner session, and MCP session root. `mcp/state.json` overrides Markdown summaries. `workspace.json` is only an index.
