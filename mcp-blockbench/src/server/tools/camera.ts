@@ -2,10 +2,20 @@
 /// <reference types="blockbench-types" />
 
 import { z } from "zod";
-import { createTool, getAllToolDefinitions, type ToolSpec } from "@/lib/factories";
+import {
+  createTool,
+  getAllToolDefinitions,
+  type ToolContext,
+  type ToolSpec,
+} from "@/lib/factories";
 import { captureScreenshot, captureAppScreenshot } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
+import {
+  assertInsideRoot,
+  writeFileAtomically,
+  type NativeFsLike,
+} from "@/lib/atomicFiles";
 
 export const captureScreenshotParameters = z.object({
   project: z.string().optional().describe("Project name or UUID."),
@@ -28,21 +38,20 @@ const standardViewEnum = z.enum([
   "front_left_3_4",
 ]);
 
+type StandardView = z.infer<typeof standardViewEnum>;
+
 export const captureStandardViewsParameters = z
   .object({
     project: z.string().optional().describe("Project name or UUID."),
-    expected_project_uuid: z
-      .string()
-      .optional()
-      .describe("Fails when the active project UUID differs."),
+    expected_project_uuid: z.string().optional(),
     stage: z
       .enum(["GEOMETRY", "TEXTURE", "FINAL", "CUSTOM"])
       .optional()
-      .default("CUSTOM")
-      .describe("Controls stable evidence filename prefixes."),
+      .default("CUSTOM"),
     views: z
       .array(standardViewEnum)
       .min(1)
+      .max(5)
       .optional()
       .default([
         "front",
@@ -51,31 +60,12 @@ export const captureStandardViewsParameters = z
         "top_footprint",
         "front_left_3_4",
       ]),
-    front_axis: z
-      .enum(["-z", "+z", "-x", "+x"])
-      .optional()
-      .default("-z")
-      .describe("Approved model-facing axis."),
+    front_axis: z.enum(["-z", "+z", "-x", "+x"]).optional().default("-z"),
     margin: z.number().min(1).max(3).optional().default(1.25),
-    output_dir: z
-      .string()
-      .optional()
-      .describe("Absolute evidence directory inside session_root."),
-    session_root: z
-      .string()
-      .optional()
-      .describe("Absolute active asset-session root required for file output."),
-    return_images: z
-      .boolean()
-      .optional()
-      .describe(
-        "Return image payloads. Defaults to false when files are written and true otherwise."
-      ),
-    custom_prefix: z
-      .string()
-      .regex(/^[a-z0-9_]+$/)
-      .optional()
-      .describe("Filename prefix used only when stage is CUSTOM."),
+    output_dir: z.string().optional(),
+    session_root: z.string().optional(),
+    return_images: z.boolean().optional(),
+    custom_prefix: z.string().regex(/^[a-z0-9_]+$/).optional(),
   })
   .superRefine((value, context) => {
     if (value.output_dir && !value.session_root) {
@@ -119,7 +109,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_standard_views",
     description:
-      "Captures clean rotation-aware standard views through the visual-feedback engine: orthographic Front/Left/Back/Top, perspective front-left 3/4, stable filenames, and atomic evidence output.",
+      "Captures clean rotation-aware standard views through the visual-feedback engine and writes canonical evidence names: <prefix>_front, _left, _back, _top, and _front_left_3_4.",
     annotations: {
       title: "Capture Standard Views",
       readOnlyHint: true,
@@ -138,6 +128,49 @@ function prefixFor(
   if (stage === "TEXTURE") return "texture";
   if (stage === "FINAL") return "final";
   return customPrefix ?? "preview";
+}
+
+function canonicalViewName(view: StandardView): string {
+  if (view === "left_side") return "left";
+  if (view === "top_footprint") return "top";
+  return view;
+}
+
+function joinPath(directory: string, filename: string): string {
+  const separator =
+    directory.includes("\\") && !directory.includes("/") ? "\\" : "/";
+  return `${directory.replace(/[\\/]$/, "")}${separator}${filename}`;
+}
+
+function nativeFs(outputDir: string): NativeFsLike {
+  // @ts-ignore - Blockbench runtime permission API.
+  const fs = requireNativeModule("fs", {
+    message: `MCP standard-view capture requested write access to ${outputDir}`,
+    optional: false,
+  });
+  if (!fs) throw new Error("Filesystem access was denied.");
+  return fs as NativeFsLike;
+}
+
+function sha256(data: Buffer): string {
+  // @ts-ignore - Blockbench runtime permission API.
+  const cryptoModule = requireNativeModule("crypto", {
+    message: "Standard-view evidence needs SHA-256 integrity metadata.",
+    optional: false,
+  }) as {
+    createHash: (algorithm: string) => {
+      update: (value: Buffer) => { digest: (encoding: string) => string };
+    };
+  };
+  if (!cryptoModule) throw new Error("Crypto access was denied.");
+  return cryptoModule.createHash("sha256").update(data).digest("hex");
+}
+
+function pngDimensions(data: Buffer): [number | null, number | null] {
+  if (data.length < 24 || data.toString("ascii", 1, 4) !== "PNG") {
+    return [null, null];
+  }
+  return [data.readUInt32BE(16), data.readUInt32BE(20)];
 }
 
 export function registerCameraTools(): void {
@@ -182,52 +215,120 @@ export function registerCameraTools(): void {
     cameraToolDocs[3].name,
     {
       ...cameraToolDocs[3],
-      async execute({
-        project,
-        expected_project_uuid,
-        stage,
-        views,
-        front_axis,
-        margin,
-        output_dir,
-        session_root,
-        return_images,
-        custom_prefix,
-      }) {
+      async execute(
+        {
+          project,
+          expected_project_uuid,
+          stage,
+          views,
+          front_axis,
+          margin,
+          output_dir,
+          session_root,
+          return_images,
+          custom_prefix,
+        },
+        context?: ToolContext
+      ) {
         if (!Project) throw new Error("No project is open.");
         if (expected_project_uuid && Project.uuid !== expected_project_uuid) {
           throw new Error(
             `PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`
           );
         }
+        if (output_dir && session_root) {
+          assertInsideRoot(output_dir, session_root);
+        }
 
-        const feedbackTool = getAllToolDefinitions()["capture_visual_feedback"] as unknown as {
-          execute?: (args: Record<string, unknown>) => Promise<any>;
+        const feedbackTool = getAllToolDefinitions()[
+          "capture_visual_feedback"
+        ] as unknown as {
+          execute?: (
+            args: Record<string, unknown>,
+            context?: ToolContext
+          ) => Promise<any>;
         };
         if (!feedbackTool?.execute) {
           throw new Error("capture_visual_feedback is unavailable.");
         }
 
-        const delegated = await feedbackTool.execute({
-          project,
-          expected_project_uuid,
-          session_root,
-          views,
-          front_axis,
-          margin,
-          output_dir,
-          return_images,
-          include_reference: false,
-          custom_prefix: prefixFor(stage, custom_prefix),
-        });
+        const delegated = await feedbackTool.execute(
+          {
+            project,
+            expected_project_uuid,
+            session_root,
+            views,
+            front_axis,
+            margin,
+            return_images: true,
+            include_reference: false,
+            custom_prefix: "standard_capture_transient",
+          },
+          context
+        );
+        const images = (delegated?.content ?? []).filter(
+          (entry: any) => entry?.type === "image"
+        );
+        if (images.length !== views.length) {
+          throw new Error(
+            `STANDARD_VIEW_CAPTURE_COUNT_MISMATCH: captured ${images.length}; expected ${views.length}.`
+          );
+        }
+
+        const prefix = prefixFor(stage, custom_prefix);
+        const includeImages = return_images ?? !output_dir;
+        const fs = output_dir ? nativeFs(output_dir) : null;
+        if (fs && output_dir) fs.mkdirSync(output_dir, { recursive: true });
+        const content: Array<
+          | { type: "text"; text: string }
+          | { type: "image"; data: string; mimeType: string }
+        > = [];
+        const captures: Array<Record<string, unknown>> = [];
+        for (let index = 0; index < views.length; index += 1) {
+          const view = views[index];
+          const image = images[index] as {
+            type: "image";
+            data: string;
+            mimeType: string;
+          };
+          const data = Buffer.from(image.data, "base64");
+          const filename = `${prefix}_${canonicalViewName(view)}.png`;
+          const path = output_dir ? joinPath(output_dir, filename) : null;
+          if (path && fs && session_root) {
+            assertInsideRoot(path, session_root);
+            writeFileAtomically(fs, path, data);
+          }
+          const [width, height] = pngDimensions(data);
+          content.push({
+            type: "text",
+            text: `${view}: ${path ?? filename}`,
+          });
+          if (includeImages) content.push(image);
+          captures.push({
+            view,
+            filename,
+            path,
+            sha256: sha256(data),
+            byte_length: data.byteLength,
+            width,
+            height,
+            projection:
+              view === "front_left_3_4" ? "perspective" : "orthographic",
+          });
+        }
 
         return {
-          content: delegated?.content ?? [],
+          content,
           structuredContent: {
-            ...(delegated?.structuredContent ?? {}),
             status: delegated?.structuredContent?.status ?? "PASS",
             stage,
             delegated_to: "capture_visual_feedback",
+            returned_images: includeImages,
+            world_bounds: delegated?.structuredContent?.world_bounds ?? null,
+            rotation_audit: delegated?.structuredContent?.rotation_audit ?? null,
+            geometry_fingerprint:
+              delegated?.structuredContent?.geometry_fingerprint ?? null,
+            captures,
             projection_policy: {
               front: "orthographic",
               left_side: "orthographic",
