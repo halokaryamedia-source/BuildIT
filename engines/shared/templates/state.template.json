@@ -6,8 +6,16 @@
     "display_name": "<DISPLAY NAME>",
     "target": "minecraft_bedrock_entity"
   },
+  "lifecycle": {
+    "status": "ACTIVE",
+    "origin": "NEW",
+    "reopened_from": null,
+    "baseline_model_sha256": null,
+    "reason": null,
+    "reopened_stage": null
+  },
   "reference": {
-    "path": "workspace/sessions/<asset_id>/references",
+    "path": "workspace/active/<asset_id>/mcp/references",
     "status": "APPROVED",
     "manifest": "reference_manifest.json",
     "production_context": "PRODUCTION_CONTEXT.md",
@@ -26,7 +34,7 @@
     "uv_mode": "per_face",
     "texture_width": null,
     "texture_height": null,
-    "save_path": null
+    "save_path": "workspace/active/<asset_id>/blockbench/<asset_id>.bbmodel"
   },
   "mcp": {
     "server_key": "blockbench",
@@ -39,12 +47,12 @@
     "exposed_tool_count": null,
     "total_library_tool_count": null,
     "profile_reconnect_required": false,
-    "connection_report": "workspace/sessions/<asset_id>/reports/connection.json",
+    "connection_report": "workspace/active/<asset_id>/mcp/reports/connection.json",
     "preflight": {
       "status": "NOT_RUN",
       "completed_at": null,
       "stale_checks": [],
-      "report": "workspace/sessions/<asset_id>/reports/preflight.json"
+      "report": "workspace/active/<asset_id>/mcp/reports/preflight.json"
     }
   },
   "workflow": {
@@ -86,7 +94,7 @@
   "validation": {
     "status": "PENDING_BUILD",
     "result": null,
-    "report": "workspace/sessions/<asset_id>/evidence/final/validation_report.json"
+    "report": "workspace/active/<asset_id>/mcp/evidence/final/validation_report.json"
   },
   "updated_at": null,
   "updated_by": null
