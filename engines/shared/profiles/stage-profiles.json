@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.3",
+  "schema_version": "2.4",
   "global": {
     "runtime_authority": "workspace/sessions/<asset>/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -17,6 +17,7 @@
       "reference_inspections": 1,
       "primary_form_checks": 2,
       "structural_detail_checks": 2,
+      "deterministic_comparisons": 2,
       "final_review_checks": 1,
       "maximum_unsuccessful_cycles": 2
     }
@@ -33,9 +34,12 @@
   "geometry_visual_policy": {
     "reference_tool": "inspect_reference_visual",
     "feedback_tool": "capture_visual_feedback",
+    "deterministic_compare_tool": "compare_reference_views",
     "record_tool": "record_geometry_visual_result",
     "gate_tool": "verify_geometry_visual_gate",
     "structural_pass_is_visual_pass": false,
+    "multimodal_review_required": true,
+    "deterministic_guard_required": true,
     "required_final_visual_result": "PASS",
     "primary_form_views": ["left_side", "front", "top_footprint"],
     "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
@@ -64,11 +68,14 @@
         "REFERENCE_VISUAL_LOAD",
         "PRIMARY_FORM",
         "PRIMARY_FORM_VISUAL_CHECK",
+        "PRIMARY_FORM_DETERMINISTIC_COMPARE",
         "STRUCTURAL_DETAIL",
         "STRUCTURAL_DETAIL_VISUAL_CHECK",
+        "FULL_DETERMINISTIC_COMPARE",
         "FULL_VISUAL_GATE"
       ],
       "compact_validation_tool": "validate_reference_contract",
+      "deterministic_visual_tool": "compare_reference_views",
       "visual_validation_tool": "verify_geometry_visual_gate",
       "approval_transition_tool": "complete_geometry_stage",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
@@ -79,6 +86,8 @@
         "back": "evidence/geometry/geometry_back.png",
         "top_footprint": "evidence/geometry/geometry_top.png",
         "front_left_3_4": "evidence/geometry/geometry_front_left_3_4.png",
+        "visual_metrics": "evidence/geometry/geometry_visual_metrics.json",
+        "visual_diff": "evidence/geometry/geometry_visual_diff.png",
         "visual_report": "evidence/geometry/geometry_visual_report.json",
         "report": "evidence/geometry/geometry_report.json"
       }
