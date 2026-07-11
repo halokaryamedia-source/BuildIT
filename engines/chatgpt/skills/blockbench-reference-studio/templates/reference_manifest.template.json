@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.1",
+  "schema_version": "3.2",
   "package_type": "blockbench_reference",
   "asset": {
     "id": "<asset_id>",
@@ -151,10 +151,14 @@
     "required": true,
     "reference_tool": "inspect_reference_visual",
     "feedback_tool": "capture_visual_feedback",
+    "deterministic_compare_tool": "compare_reference_views",
     "record_tool": "record_geometry_visual_result",
     "gate_tool": "verify_geometry_visual_gate",
     "approval_tool": "complete_geometry_stage",
     "structural_pass_is_visual_pass": false,
+    "multimodal_review_required": true,
+    "deterministic_guard_required": true,
+    "maximum_correction_cycles_per_pass": 2,
     "primary_form_views": [
       "left_side",
       "front",
@@ -167,13 +171,40 @@
       "top_footprint",
       "front_left_3_4"
     ],
-    "maximum_correction_cycles_per_pass": 2
+    "panels": {
+      "left_side": {
+        "crop_normalized": [0, 0, 0, 0],
+        "projection": "orthographic",
+        "min_score": 0.75
+      },
+      "front": {
+        "crop_normalized": [0, 0, 0, 0],
+        "projection": "orthographic",
+        "min_score": 0.75
+      },
+      "back": {
+        "crop_normalized": [0, 0, 0, 0],
+        "projection": "orthographic",
+        "min_score": 0.72
+      },
+      "top_footprint": {
+        "crop_normalized": [0, 0, 0, 0],
+        "projection": "orthographic",
+        "min_score": 0.70
+      },
+      "front_left_3_4": {
+        "crop_normalized": [0, 0, 0, 0],
+        "projection": "perspective",
+        "min_score": 0.68
+      }
+    }
   },
   "validation": {
     "execution_status": "PENDING_BUILD",
     "required_results": [
       "structural_status",
       "visual_status",
+      "deterministic_visual_status",
       "rotation_status",
       "evidence_status",
       "result"
