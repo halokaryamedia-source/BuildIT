@@ -21,12 +21,24 @@ export const geometryReviewGateToolDocs: ToolSpec[] = [
   {
     name: "verify_geometry_review_ready",
     description:
-      "Verifies deterministic metrics, Codex multimodal review, evidence freshness, Reference Visual identity, standard views, and cube-rotation safety before Geometry may enter user review or approval.",
-    annotations: { title: "Verify Geometry Review Ready", readOnlyHint: true, openWorldHint: true },
+      "Verifies complete five-view deterministic metrics, Codex multimodal review, evidence freshness, actual Reference Visual identity, standard views, and cube-rotation safety before Geometry may enter user review or approval.",
+    annotations: {
+      title: "Verify Geometry Review Ready",
+      readOnlyHint: true,
+      openWorldHint: true,
+    },
     parameters: verifyGeometryReviewReadyParameters,
     status: STATUS_EXPERIMENTAL,
   },
 ];
+
+const REQUIRED_VIEWS = [
+  "front",
+  "left_side",
+  "back",
+  "top_footprint",
+  "front_left_3_4",
+] as const;
 
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
@@ -40,12 +52,16 @@ function nativeFs(message: string): NativeFsLike {
   return fs as NativeFsLike;
 }
 
-function sha256(data: string): string {
+function sha256(data: string | Buffer): string {
   // @ts-ignore - Blockbench runtime permission API.
   const cryptoModule = requireNativeModule("crypto", {
-    message: "Geometry review readiness requires model fingerprint verification.",
+    message: "Geometry review readiness requires integrity verification.",
     optional: false,
-  }) as { createHash: (algorithm: string) => { update: (value: string) => any; digest: (encoding: string) => string } };
+  }) as {
+    createHash: (algorithm: string) => {
+      update: (value: string | Buffer) => { digest: (encoding: string) => string };
+    };
+  };
   if (!cryptoModule) throw new Error("Crypto access was denied.");
   return cryptoModule.createHash("sha256").update(data).digest("hex");
 }
@@ -66,6 +82,10 @@ function geometryFingerprint(): string {
   return sha256(JSON.stringify(cubes));
 }
 
+function asBuffer(value: Buffer | string): Buffer {
+  return Buffer.isBuffer(value) ? value : Buffer.from(value);
+}
+
 export function registerGeometryReviewGateTools(): void {
   createTool(
     geometryReviewGateToolDocs[0].name,
@@ -79,7 +99,13 @@ export function registerGeometryReviewGateTools(): void {
           );
         }
 
-        const fs = nativeFs("MCP Geometry review gate needs evidence read access.");
+        const fs = nativeFs(
+          "MCP Geometry review gate needs reference and evidence read access."
+        );
+        const manifestPath = joinPath(
+          session_root,
+          "references/reference_manifest.json"
+        );
         const visualReportPath = joinPath(
           session_root,
           "evidence/geometry/geometry_visual_report.json"
@@ -92,13 +118,15 @@ export function registerGeometryReviewGateTools(): void {
           session_root,
           "evidence/geometry/geometry_visual_diff.png"
         );
-        const requiredViews = [
+        const requiredViewPaths = [
           "geometry_front.png",
           "geometry_left.png",
           "geometry_back.png",
           "geometry_top.png",
           "geometry_front_left_3_4.png",
-        ].map((filename) => joinPath(session_root, `evidence/geometry/${filename}`));
+        ].map((filename) =>
+          joinPath(session_root, `evidence/geometry/${filename}`)
+        );
 
         const issues: Array<{
           code: string;
@@ -106,18 +134,21 @@ export function registerGeometryReviewGateTools(): void {
           message: string;
         }> = [];
 
-        for (const path of [visualReportPath, metricsPath, diffPath]) {
+        for (const path of [manifestPath, visualReportPath, metricsPath, diffPath]) {
           assertInsideRoot(path, session_root);
           if (!fs.existsSync(path)) {
             issues.push({
-              code: "GEOMETRY_VISUAL_EVIDENCE_MISSING",
+              code:
+                path === manifestPath
+                  ? "REFERENCE_MANIFEST_MISSING"
+                  : "GEOMETRY_VISUAL_EVIDENCE_MISSING",
               severity: "BLOCKER",
-              message: `Missing required Geometry visual evidence: ${path}`,
+              message: `Missing required Geometry review input: ${path}`,
             });
           }
         }
         if (require_standard_views) {
-          for (const path of requiredViews) {
+          for (const path of requiredViewPaths) {
             assertInsideRoot(path, session_root);
             if (!fs.existsSync(path)) {
               issues.push({
@@ -129,13 +160,62 @@ export function registerGeometryReviewGateTools(): void {
           }
         }
 
-        const currentFingerprint = geometryFingerprint();
+        const manifest = fs.existsSync(manifestPath)
+          ? readJsonFile<Record<string, any>>(fs, manifestPath)
+          : null;
         const visualReport = fs.existsSync(visualReportPath)
           ? readJsonFile<Record<string, any>>(fs, visualReportPath)
           : null;
         const metrics = fs.existsSync(metricsPath)
           ? readJsonFile<Record<string, any>>(fs, metricsPath)
           : null;
+        const currentFingerprint = geometryFingerprint();
+
+        const referenceFilename =
+          manifest?.reference_visual_lock?.filename ??
+          manifest?.package?.reference_visual ??
+          (manifest?.asset?.id
+            ? `${manifest.asset.id}_reference_visual.png`
+            : null);
+        const expectedReferenceHash = String(
+          manifest?.reference_visual_lock?.sha256 ?? ""
+        ).toLowerCase();
+        let actualReferenceHash: string | null = null;
+        let referencePath: string | null = null;
+        if (!referenceFilename) {
+          issues.push({
+            code: "REFERENCE_VISUAL_PATH_MISSING",
+            severity: "BLOCKER",
+            message: "Manifest does not identify the approved Reference Visual.",
+          });
+        } else {
+          referencePath = joinPath(
+            session_root,
+            `references/${referenceFilename}`
+          );
+          assertInsideRoot(referencePath, session_root);
+          if (!fs.existsSync(referencePath)) {
+            issues.push({
+              code: "REFERENCE_VISUAL_MISSING",
+              severity: "BLOCKER",
+              message: `Approved Reference Visual is missing: ${referencePath}`,
+            });
+          } else {
+            actualReferenceHash = sha256(
+              asBuffer(fs.readFileSync(referencePath))
+            );
+            if (
+              expectedReferenceHash &&
+              actualReferenceHash !== expectedReferenceHash
+            ) {
+              issues.push({
+                code: "REFERENCE_VISUAL_HASH_MISMATCH",
+                severity: "BLOCKER",
+                message: `Reference Visual hash ${actualReferenceHash} differs from manifest ${expectedReferenceHash}.`,
+              });
+            }
+          }
+        }
 
         if (visualReport) {
           if (visualReport.result !== "PASS") {
@@ -157,6 +237,19 @@ export function registerGeometryReviewGateTools(): void {
               code: "GEOMETRY_VISUAL_REPORT_STALE",
               severity: "BLOCKER",
               message: "Geometry changed after Codex visual inspection.",
+            });
+          }
+          const compared = new Set<string>(
+            Array.isArray(visualReport.compared_views)
+              ? visualReport.compared_views.map(String)
+              : []
+          );
+          const missing = REQUIRED_VIEWS.filter((view) => !compared.has(view));
+          if (missing.length > 0) {
+            issues.push({
+              code: "GEOMETRY_MULTIMODAL_VIEWS_INCOMPLETE",
+              severity: "BLOCKER",
+              message: `Codex visual report did not inspect all final views: ${missing.join(", ")}.`,
             });
           }
         }
@@ -190,19 +283,77 @@ export function registerGeometryReviewGateTools(): void {
               message: "Geometry changed after deterministic comparison.",
             });
           }
+          const measured = new Map<string, any>(
+            Array.isArray(metrics.views)
+              ? metrics.views.map((view: any) => [String(view?.view ?? ""), view])
+              : []
+          );
+          const missing = REQUIRED_VIEWS.filter((view) => !measured.has(view));
+          if (missing.length > 0) {
+            issues.push({
+              code: "GEOMETRY_DETERMINISTIC_VIEWS_INCOMPLETE",
+              severity: "BLOCKER",
+              message: `Deterministic comparison did not include all final views: ${missing.join(", ")}.`,
+            });
+          }
+          for (const view of REQUIRED_VIEWS) {
+            const metric = measured.get(view);
+            if (metric && metric.result !== "PASS") {
+              issues.push({
+                code: String(
+                  metric.issue_code ?? "GEOMETRY_VIEW_SILHOUETTE_MISMATCH"
+                ),
+                severity: "REVISION_REQUIRED",
+                message: `${view} deterministic score ${Number(
+                  metric.score ?? 0
+                ).toFixed(3)} is below ${Number(
+                  metric.minimum_score ?? 0
+                ).toFixed(3)}.`,
+              });
+            }
+          }
+          if (
+            metrics.analyzer !== "geometry_projection_v2" &&
+            metrics.analyzer !== "geometry_projection_region_v2"
+          ) {
+            issues.push({
+              code: "GEOMETRY_ANALYZER_LEGACY",
+              severity: "BLOCKER",
+              message: `Geometry metrics were produced by unsupported analyzer ${metrics.analyzer ?? "unknown"}.`,
+            });
+          }
         }
 
-        const reportReference = visualReport?.reference_visual?.sha256;
-        const metricsReference = metrics?.reference_visual?.sha256;
+        const reportReference = String(
+          visualReport?.reference_visual?.sha256 ?? ""
+        ).toLowerCase();
+        const metricsReference = String(
+          metrics?.reference_visual?.sha256 ?? ""
+        ).toLowerCase();
         if (
           visualReport &&
           metrics &&
-          (!reportReference || !metricsReference || reportReference !== metricsReference)
+          (!reportReference ||
+            !metricsReference ||
+            reportReference !== metricsReference)
         ) {
           issues.push({
             code: "GEOMETRY_REFERENCE_VISUAL_EVIDENCE_MISMATCH",
             severity: "BLOCKER",
-            message: "Multimodal and deterministic evidence use different Reference Visual hashes.",
+            message:
+              "Multimodal and deterministic evidence use different Reference Visual hashes.",
+          });
+        }
+        if (
+          actualReferenceHash &&
+          ((reportReference && reportReference !== actualReferenceHash) ||
+            (metricsReference && metricsReference !== actualReferenceHash))
+        ) {
+          issues.push({
+            code: "GEOMETRY_EVIDENCE_REFERENCE_STALE",
+            severity: "BLOCKER",
+            message:
+              "Visual evidence was produced from a different Reference Visual than the current approved file.",
           });
         }
 
@@ -233,18 +384,28 @@ export function registerGeometryReviewGateTools(): void {
             geometry_fingerprint: currentFingerprint,
             multimodal_status: visualReport?.result ?? "MISSING",
             deterministic_status: metrics?.result ?? "MISSING",
-            reference_sha256: reportReference ?? metricsReference ?? null,
+            reference_sha256: actualReferenceHash,
+            expected_reference_sha256: expectedReferenceHash || null,
             rotation_status: rotationAudit.status,
-            evidence_status: issues.some((issue) => issue.code.includes("MISSING") || issue.code.includes("STALE"))
+            evidence_status: issues.some(
+              (issue) =>
+                issue.code.includes("MISSING") ||
+                issue.code.includes("STALE") ||
+                issue.code.includes("INCOMPLETE") ||
+                issue.code.includes("MISMATCH") ||
+                issue.code.includes("LEGACY")
+            )
               ? "INVALID"
               : "CURRENT",
             rotation_audit: rotationAudit,
             issues,
             paths: {
+              manifest: manifestPath,
+              reference_visual: referencePath,
               visual_report: visualReportPath,
               visual_metrics: metricsPath,
               visual_diff: diffPath,
-              standard_views: requiredViews,
+              standard_views: requiredViewPaths,
             },
           },
         };
