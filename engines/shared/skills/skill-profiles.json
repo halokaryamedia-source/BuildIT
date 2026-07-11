@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "canonical_root": "engines/shared/skills",
   "host_adapters": [
     ".agents/skills",
@@ -74,7 +74,7 @@
     "TEXTURE_IN_PROGRESS": "TEXTURE",
     "TEXTURE_REVIEW": "TEXTURE",
     "TEXTURE_REVISION": "TEXTURE",
-    "TEXTURE_APPROVED": "ANIMATION",
+    "TEXTURE_APPROVED": "ANIMATION_OR_FINAL_VALIDATION",
     "ANIMATION_IN_PROGRESS": "ANIMATION",
     "ANIMATION_REVIEW": "ANIMATION",
     "ANIMATION_REVISION": "ANIMATION",
@@ -84,6 +84,13 @@
     "FINAL_REVIEW": "FINAL_VALIDATION",
     "FINAL_REVISION": "FINAL_VALIDATION",
     "DONE": "FINAL_VALIDATION"
+  },
+  "conditional_profiles": {
+    "ANIMATION_OR_FINAL_VALIDATION": {
+      "condition": "workflow.animation_required",
+      "when_true": "ANIMATION",
+      "when_false": "FINAL_VALIDATION"
+    }
   },
   "repository_development": {
     "forbidden_production_skills": [
