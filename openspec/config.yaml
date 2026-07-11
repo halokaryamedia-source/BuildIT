@@ -20,7 +20,7 @@ context: |
   Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
   Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
   Modelling context: use the installed blockbench-use skill and only the active-stage skill/tool profile.
-  Mandatory procedure: docs/workflow/mandatory-blockbench-mcp-procedure.md.
+  Mandatory local procedure: engines/codex/BOOTSTRAP.md and the active-stage contract under engines/shared/.
   Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
   UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
   Branch policy: keep all active workflow rework isolated on Rework until the user explicitly approves final integration.
