@@ -21,6 +21,7 @@
     "prompts:build": "bun run ./scripts/generate-manifest.ts",
     "skills:sync": "bun run ../engines/shared/skills/scripts/sync-skills.ts",
     "skills:check": "bun run ../engines/shared/skills/scripts/sync-skills.ts --check",
+    "workspace": "bun run ../engines/shared/workspace/manage-workspace.ts",
     "dev": "bun run prompts:build && bun run ./scripts --sourcemap",
     "dev:watch": "bun run prompts:build && bun run ./scripts --sourcemap --watch",
     "build": "bun run prompts:build && bun run ./scripts --minify",
