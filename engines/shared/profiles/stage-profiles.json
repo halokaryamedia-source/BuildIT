@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.2",
+  "schema_version": "2.3",
   "global": {
     "runtime_authority": "workspace/sessions/<asset>/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -9,27 +9,67 @@
     "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
     "skill_profile_contract": "engines/shared/skills/skill-profiles.json",
     "max_loaded_production_skills": 2,
-    "initial_build_mode": "bounded_batches",
-    "revision_mode": "one_named_issue_or_tightly_related_pair",
+    "initial_build_mode": "visual_grounded_coarse_to_fine",
+    "revision_mode": "classify_local_or_major_before_mutation",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
-    "profile_transition_policy": "complete_stage_then_reconnect_once"
+    "profile_transition_policy": "complete_stage_then_reconnect_once",
+    "visual_feedback_budget": {
+      "reference_inspections": 1,
+      "primary_form_checks": 2,
+      "structural_detail_checks": 2,
+      "final_review_checks": 1,
+      "maximum_unsuccessful_cycles": 2
+    }
   },
   "camera": {
     "front_axis_default": "-z",
-    "projection": "orthographic",
+    "orthographic_views": ["front", "left_side", "back", "top_footprint"],
+    "perspective_views": ["front_left_3_4"],
     "views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"],
-    "frame_margin_ratio": 1.25
+    "frame_margin_ratio": 1.25,
+    "clean_capture": true,
+    "world_bounds_required": true
+  },
+  "geometry_visual_policy": {
+    "reference_tool": "inspect_reference_visual",
+    "feedback_tool": "capture_visual_feedback",
+    "record_tool": "record_geometry_visual_result",
+    "gate_tool": "verify_geometry_visual_gate",
+    "structural_pass_is_visual_pass": false,
+    "required_final_visual_result": "PASS",
+    "primary_form_views": ["left_side", "front", "top_footprint"],
+    "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
+  },
+  "geometry_rotation_policy": {
+    "placement_tool": "place_cubes_safe",
+    "modification_tool": "modify_cubes",
+    "preferred_axes_per_cube": 1,
+    "maximum_axes_per_cube": 1,
+    "maximum_absolute_degrees": 45,
+    "explicit_origin_required_when_rotating": true,
+    "pivot_margin_ratio": 1,
+    "capture_affected_view_after_rotated_batch": true,
+    "reject_stale_visual_report_after_rotation": true
   },
   "profiles": {
     "GEOMETRY": {
       "tool_profile_id": "BEDROCK_CUBOID_GEOMETRY",
       "repair_tool_profile_id": "GEOMETRY_LOCAL_REPAIR",
+      "major_repair_tool_profile_id": "GEOMETRY_VISUAL_REBUILD",
       "skill_profile_id": "GEOMETRY",
       "working_state": "GEOMETRY_IN_PROGRESS",
       "review_state": "GEOMETRY_REVIEW",
       "approved_state": "GEOMETRY_APPROVED",
-      "internal_passes": ["PRIMARY_FORM", "STRUCTURAL_DETAIL"],
+      "internal_passes": [
+        "REFERENCE_VISUAL_LOAD",
+        "PRIMARY_FORM",
+        "PRIMARY_FORM_VISUAL_CHECK",
+        "STRUCTURAL_DETAIL",
+        "STRUCTURAL_DETAIL_VISUAL_CHECK",
+        "FULL_VISUAL_GATE"
+      ],
       "compact_validation_tool": "validate_reference_contract",
+      "visual_validation_tool": "verify_geometry_visual_gate",
       "approval_transition_tool": "complete_stage",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
       "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
@@ -39,6 +79,7 @@
         "back": "evidence/geometry/geometry_back.png",
         "top_footprint": "evidence/geometry/geometry_top.png",
         "front_left_3_4": "evidence/geometry/geometry_front_left_3_4.png",
+        "visual_report": "evidence/geometry/geometry_visual_report.json",
         "report": "evidence/geometry/geometry_report.json"
       }
     },
@@ -87,6 +128,7 @@
       "approved_state": "DONE",
       "automatic_local_fix_limit": 2,
       "compact_validation_tool": "validate_reference_contract",
+      "geometry_visual_gate_tool": "verify_geometry_visual_gate",
       "atlas_evidence_tool": "save_texture_evidence",
       "approval_transition_tool": "complete_stage",
       "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
