@@ -7,6 +7,7 @@ import {
   getProjectWriteLeaseSnapshot,
   releaseProjectWriteLease,
   renewProjectWriteLease,
+  type ProjectWriteLeaseSnapshot,
 } from "@/lib/writeLease";
 
 const actionEnum = z.enum(["acquire", "renew", "release", "status"]);
@@ -64,7 +65,7 @@ export function registerLeaseTools(): void {
       ...leaseToolDocs[0],
       async execute(value, rawContext?: ToolContext) {
         const context = resolveMutationExecutionContext(rawContext);
-        let lease;
+        let lease: ProjectWriteLeaseSnapshot;
         if (value.action === "acquire") {
           lease = acquireProjectWriteLease(
             {
