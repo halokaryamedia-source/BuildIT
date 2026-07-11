@@ -10,4 +10,20 @@ Approved reference package
 → Final Validation review
 ```
 
-Every stage uses an exact MCP tool profile, a persistent checkpoint, stable evidence filenames, compact validation, and one user decision. Detailed machine contracts live in `engines/shared/`.
+Every stage uses:
+
+- one exact MCP tool profile;
+- `blockbench-production` plus exactly one matching stage skill;
+- a persistent checkpoint;
+- stable evidence filenames;
+- compact validation;
+- one user decision.
+
+```text
+Geometry         → blockbench-geometry
+Texture          → blockbench-texture
+Animation        → blockbench-animation only when required
+Final Validation → blockbench-validation
+```
+
+Maximum loaded production skills: `2`. Skill changes do not require MCP reconnects. Detailed machine contracts live in `engines/shared/`.
