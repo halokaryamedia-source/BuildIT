@@ -5,7 +5,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "..",
     "declaration": true,
     "sourceMap": true,
     "strict": true,
