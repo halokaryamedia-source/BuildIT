@@ -1,6 +1,8 @@
 import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import { getAllToolDefinitions, tools } from "@/lib/factories";
 import { setExecutionProfileState } from "@/lib/executionState";
+import { resolveMutationExecutionContext } from "@/lib/mutationContext";
+import { assertToolMutationAllowed } from "@/lib/writeLease";
 
 interface ToolProfileDefinition {
   description: string;
@@ -19,6 +21,7 @@ interface ToolProfileConfig {
 
 interface ToolDefinitionLike {
   execute: (args: Record<string, unknown>, context?: unknown) => Promise<unknown>;
+  annotations?: { readOnlyHint?: boolean };
 }
 
 export interface ToolProfileSnapshot {
@@ -143,6 +146,12 @@ function installGuards(): void {
         throw new Error(`TOOL_PROFILE_BLOCKED: "${name}" is not allowed by "${activeProfileId}".`);
       }
       assertArguments(name, args);
+      assertToolMutationAllowed(
+        name,
+        args,
+        resolveMutationExecutionContext(context),
+        definition.annotations?.readOnlyHint
+      );
       return execute(args, context);
     };
     wrapped.add(name);
