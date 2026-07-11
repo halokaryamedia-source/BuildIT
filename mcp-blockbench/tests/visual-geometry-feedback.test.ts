@@ -18,10 +18,12 @@ const stages = JSON.parse(
 ) as Record<string, any>;
 
 describe("visual-grounded Geometry workflow", () => {
-  test("registers the required visual and guarded mutation tools", () => {
+  test("registers visual, deterministic, guarded mutation, and approval tools", () => {
     for (const name of [
+      "get_stage_context",
       "inspect_reference_visual",
       "capture_visual_feedback",
+      "compare_reference_views",
       "place_cubes_safe",
       "modify_cubes",
       "record_geometry_visual_result",
@@ -42,23 +44,43 @@ describe("visual-grounded Geometry workflow", () => {
       expect(allowed.has("place_cubes_safe"), profileId).toBe(true);
       expect(allowed.has("modify_cubes"), profileId).toBe(true);
       expect(allowed.has("capture_visual_feedback"), profileId).toBe(true);
+      expect(allowed.has("compare_reference_views"), profileId).toBe(true);
       expect(allowed.has("place_cube"), profileId).toBe(false);
       expect(allowed.has("modify_cube"), profileId).toBe(false);
     }
   });
 
-  test("Geometry completion cannot bypass the visual gate", () => {
+  test("Geometry completion cannot bypass deterministic or multimodal gates", () => {
     const allowed = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     );
     expect(allowed.has("complete_geometry_stage")).toBe(true);
     expect(allowed.has("complete_stage")).toBe(false);
+    expect(stages.profiles.GEOMETRY.deterministic_visual_tool).toBe(
+      "compare_reference_views"
+    );
     expect(stages.profiles.GEOMETRY.visual_validation_tool).toBe(
       "verify_geometry_visual_gate"
     );
+    expect(stages.geometry_visual_policy.multimodal_review_required).toBe(true);
+    expect(stages.geometry_visual_policy.deterministic_guard_required).toBe(true);
     expect(stages.geometry_rotation_policy.explicit_origin_required_when_rotating).toBe(
       true
     );
+  });
+
+  test("compact stage context is core and profile tool counts remain bounded", () => {
+    expect(profiles.core_tools).toContain("get_stage_context");
+    for (const [profileId, profile] of Object.entries<Record<string, any>>(
+      profiles.profiles
+    )) {
+      if (profile.include_all) continue;
+      const exposed = new Set([
+        ...profiles.core_tools,
+        ...(profile.allowed_tools ?? []),
+      ]);
+      expect(exposed.size, profileId).toBeLessThanOrEqual(30);
+    }
   });
 });
 
@@ -107,9 +129,13 @@ describe("rotation-aware bounds primitives", () => {
 });
 
 describe("source-level safety contracts", () => {
-  test("requires explicit rotation origins and stale visual protection", () => {
+  test("requires explicit pivots, deterministic metrics, and stale protection", () => {
     const feedback = readFileSync(
       "src/server/tools/geometry-feedback.ts",
+      "utf8"
+    );
+    const compare = readFileSync(
+      "src/server/tools/visual-compare.ts",
       "utf8"
     );
     const completion = readFileSync(
@@ -119,7 +145,10 @@ describe("source-level safety contracts", () => {
     expect(feedback).toContain("ROTATION_ORIGIN_REQUIRED");
     expect(feedback).toContain("COMPOUND_ROTATION_REJECTED");
     expect(feedback).toContain("VISUAL_REPORT_STALE");
+    expect(compare).toContain("geometry_visual_metrics.json");
+    expect(compare).toContain("silhouette_iou");
     expect(completion).toContain("GEOMETRY_VISUAL_REPORT_STALE");
+    expect(completion).toContain("GEOMETRY_VISUAL_METRICS_STALE");
     expect(completion).toContain("GEOMETRY_ROTATION_NOT_SAFE");
   });
 });
