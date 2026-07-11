@@ -24,11 +24,18 @@ describe("workflow configuration", () => {
   });
 
   test("four user-visible stage profiles remain singular", () => {
-    const stages = readJson(
+    const config = readJson(
       "../engines/shared/profiles/stage-profiles.json"
-    ).profiles;
-    expect(Object.keys(stages).sort()).toEqual(
+    );
+    expect(Object.keys(config.profiles).sort()).toEqual(
       ["ANIMATION", "FINAL_VALIDATION", "GEOMETRY", "TEXTURE"].sort()
     );
+    expect(config.global.skill_profile_contract).toBe(
+      "engines/shared/skills/skill-profiles.json"
+    );
+    expect(config.global.max_loaded_production_skills).toBe(2);
+    for (const stage of Object.keys(config.profiles)) {
+      expect(config.profiles[stage].skill_profile_id).toBe(stage);
+    }
   });
 });
