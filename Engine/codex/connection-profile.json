@@ -33,13 +33,19 @@
     "get_project_info",
     "get_tool_profile",
     "activate_tool_profile",
-    "validate_reference_contract",
     "save_project_checkpoint",
-    "capture_standard_views",
-    "complete_stage"
+    "capture_standard_views"
   ],
   "profile_specific_tools": {
-    "BEDROCK_CUBOID_TEXTURE": ["save_texture_evidence"],
+    "BEDROCK_CUBOID_GEOMETRY": [
+      "validate_reference_contract",
+      "complete_stage"
+    ],
+    "BEDROCK_CUBOID_TEXTURE": [
+      "save_texture_evidence",
+      "complete_stage"
+    ],
+    "BEDROCK_CUBOID_ANIMATION": ["complete_stage"],
     "FINAL_VALIDATION_READONLY": [
       "validate_reference_contract",
       "save_texture_evidence",
