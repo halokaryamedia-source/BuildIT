@@ -21,7 +21,7 @@ source image
 → Production Context
 → one approved Reference Visual
 → Geometry/Texture/Animation/Validation contracts
-→ reference manifest
+→ reference manifest with panel metadata
 → Codex handoff
 → final package
 
@@ -67,6 +67,7 @@ Then create:
 - Hidden per-angle generation: forbidden.
 - Geometry, construction, texture, material, UV, motion, pivot, animation, pose, or extra-view sheets: forbidden.
 - The original source copy is input evidence and is not counted as generated output.
+- Runtime panel crops and comparison masks are derived evidence, not generated reference images.
 
 ## Mandatory flow
 
@@ -99,6 +100,15 @@ Generate one clean board containing all required views inside one canvas:
 
 The views must show the same design, scale, proportions, pose, features, and material family. Do not generate each view separately.
 
+Layout requirements:
+
+- every view must have a non-overlapping rectangular panel;
+- every subject must fit inside its panel with a stable margin;
+- Front, Left, Back, and Top must be orthographic in intent;
+- Front-left 3/4 may use perspective;
+- panel boundaries and subject regions must be measurable programmatically;
+- avoid decorative elements crossing into subject panels.
+
 Run automatic QA. When necessary, perform at most one targeted edit of the same image. Then wait for explicit Reference Visual approval.
 
 ### Phase 3 — Automatic technical package
@@ -114,6 +124,14 @@ After Reference Visual approval, generate without further image creation or rout
 
 These files translate approved decisions and the single Reference Visual into implementation requirements. They must not introduce a new design decision.
 
+The manifest must record normalized `[x, y, width, height]` crop coordinates for every approved panel. Coordinates use `0..1` relative to the full Reference Visual. Validate that every crop:
+
+- stays inside image bounds;
+- has positive width and height;
+- does not overlap another subject panel materially;
+- contains the intended complete subject;
+- matches the declared projection.
+
 ### Phase 4 — Audit and package
 
 1. Verify all required files exist.
@@ -121,8 +139,10 @@ These files translate approved decisions and the single Reference Visual into im
 3. Verify forbidden numbered or technical PNG files are absent.
 4. Verify manifest values match all Markdown contracts.
 5. Verify the Reference Visual hash and dimensions.
-6. Verify `VALIDATION.md` starts as `PENDING_BUILD`.
-7. Create the final ZIP.
+6. Verify all five normalized panel crops are valid and complete.
+7. Verify visual-grounding tools and review gate are named in the manifest/handoff.
+8. Verify `VALIDATION.md` starts as `PENDING_BUILD`.
+9. Create the final ZIP.
 
 ## Authority order
 
@@ -132,8 +152,8 @@ These files translate approved decisions and the single Reference Visual into im
 4. `TEXTURING.md`: atlas, UV, palette, material zones, and pixel-detail rules.
 5. `ANIMATION.md`: required clips or explicit `ANIMATION_SKIPPED`, plus pivot readiness.
 6. `VALIDATION.md`: post-build acceptance tests.
-7. `reference_manifest.json`: machine-readable lock and file inventory.
-8. `CODEX_REFERENCE_HANDOFF.md`: import, stage, visual-grounding, and stop rules.
+7. `reference_manifest.json`: machine-readable lock, panel metadata, and file inventory.
+8. `CODEX_REFERENCE_HANDOFF.md`: import, stage, visual-grounding, deterministic comparison, and stop rules.
 
 Conflicts must stop as `REFERENCE_CONFLICT`; never silently redesign.
 
@@ -158,24 +178,29 @@ Rotation guidance must state:
 - avoid compound rotation unless essential;
 - use stepped cuboids instead of rotating large masses to fake taper;
 - inspect affected Side/3/4 view after rotation;
-- world bounds must include transforms.
+- world bounds must include cube and parent transforms;
+- any Geometry mutation invalidates previous visual evidence.
 
 ## Codex visual-grounding contract
 
 `CODEX_REFERENCE_HANDOFF.md` must require:
 
 ```text
-inspect_reference_visual
+get_stage_context
+→ inspect_reference_visual
 → coarse primary form
 → capture_visual_feedback
+→ compare_reference_views
 → targeted repair
 → structural detail
-→ final five-view visual gate
-→ structural validation
+→ final five-view multimodal and deterministic checks
+→ record_geometry_visual_result
+→ validate_reference_contract
+→ verify_geometry_review_ready
 → user review
 ```
 
-A structural PASS must not be treated as a visual PASS. Codex must use safe batch Geometry mutation tools and must not enter Texture until Geometry is explicitly approved.
+A structural PASS must not be treated as a visual PASS. Deterministic silhouette comparison is a guardrail and does not replace Codex or user review. Codex must use safe batch Geometry mutation tools and must not enter Texture until Geometry is explicitly approved.
 
 ## Manifest requirements
 
@@ -190,11 +215,27 @@ The manifest must record at minimum:
     "post_visual_image_generations": 0,
     "hidden_per_angle_generation_allowed": false,
     "additional_technical_images_allowed": false
+  },
+  "visual_grounding": {
+    "required": true,
+    "reference_tool": "inspect_reference_visual",
+    "feedback_tool": "capture_visual_feedback",
+    "deterministic_compare_tool": "compare_reference_views",
+    "record_tool": "record_geometry_visual_result",
+    "gate_tool": "verify_geometry_review_ready",
+    "approval_tool": "complete_geometry_stage",
+    "panels": {
+      "left_side": { "crop_normalized": [0, 0, 0, 0] },
+      "front": { "crop_normalized": [0, 0, 0, 0] },
+      "back": { "crop_normalized": [0, 0, 0, 0] },
+      "top_footprint": { "crop_normalized": [0, 0, 0, 0] },
+      "front_left_3_4": { "crop_normalized": [0, 0, 0, 0] }
+    }
   }
 }
 ```
 
-It must also record package paths, Reference Visual hash/dimensions, scale, geometry strategy, hierarchy, segment counts, texture configuration, animation readiness, validation requirements, and unresolved blockers.
+Zero crop placeholders must be replaced with measured final values before packaging. The manifest must also record package paths, Reference Visual hash/dimensions, scale, geometry strategy, hierarchy, segment counts, rotation policy, texture configuration, animation readiness, validation requirements, and unresolved blockers.
 
 ## Stop conditions
 
@@ -202,6 +243,7 @@ Stop and report when:
 
 - Production Context is not approved;
 - Reference Visual identity or cross-view consistency remains invalid after one targeted edit;
+- panel crops cannot isolate all required views reliably;
 - a technical contract introduces a new design;
 - files conflict or are missing;
 - more than one generated Reference Visual exists;
