@@ -31,13 +31,13 @@ function exposed(profileId: string): Set<string> {
 describe("exact MCP tool profile contract", () => {
   test("normal profile counts are intentionally compact and stable", () => {
     const expectedCounts: Record<string, number> = {
-      BOOTSTRAP: 8,
-      BEDROCK_CUBOID_GEOMETRY: 17,
-      BEDROCK_CUBOID_TEXTURE: 24,
-      BEDROCK_CUBOID_ANIMATION: 16,
-      FINAL_VALIDATION_READONLY: 13,
+      BOOTSTRAP: 9,
+      BEDROCK_CUBOID_GEOMETRY: 19,
+      BEDROCK_CUBOID_TEXTURE: 26,
+      BEDROCK_CUBOID_ANIMATION: 17,
+      FINAL_VALIDATION_READONLY: 16,
       GEOMETRY_LOCAL_REPAIR: 15,
-      TEXTURE_LOCAL_REPAIR: 19,
+      TEXTURE_LOCAL_REPAIR: 20,
       ANIMATION_LOCAL_REPAIR: 13,
     };
 
@@ -83,6 +83,8 @@ describe("exact MCP tool profile contract", () => {
     expect(geometry.has("set_cube_face_uv")).toBe(false);
     expect(geometry.has("create_animation")).toBe(false);
     expect(geometry.has("export_model")).toBe(false);
+    expect(geometry.has("validate_reference_contract")).toBe(true);
+    expect(geometry.has("complete_stage")).toBe(true);
 
     const runtime = readFileSync("src/lib/toolProfiles.ts", "utf8");
     expect(runtime).toContain("TOOL_PROFILE_ARGUMENT_BLOCKED");
@@ -95,6 +97,7 @@ describe("exact MCP tool profile contract", () => {
     const texture = exposed("BEDROCK_CUBOID_TEXTURE");
     expect(texture.has("set_cube_face_uv")).toBe(true);
     expect(texture.has("get_uv_layout")).toBe(true);
+    expect(texture.has("save_texture_evidence")).toBe(true);
     expect(texture.has("gradient_tool")).toBe(false);
     expect(texture.has("set_mesh_uv")).toBe(false);
     expect(texture.has("create_pbr_material")).toBe(false);
@@ -103,6 +106,8 @@ describe("exact MCP tool profile contract", () => {
     expect(finalProfile.has("export_model")).toBe(true);
     expect(finalProfile.has("save_project_checkpoint")).toBe(true);
     expect(finalProfile.has("capture_standard_views")).toBe(true);
+    expect(finalProfile.has("validate_reference_contract")).toBe(true);
+    expect(finalProfile.has("complete_stage")).toBe(true);
     expect(finalProfile.has("place_cube")).toBe(false);
     expect(finalProfile.has("paint_with_brush")).toBe(false);
     expect(finalProfile.has("manage_keyframes")).toBe(false);
