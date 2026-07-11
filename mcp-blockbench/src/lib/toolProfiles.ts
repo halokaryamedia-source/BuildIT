@@ -1,6 +1,6 @@
 import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import { getAllToolDefinitions, tools } from "@/lib/factories";
-import { setExecutionProfileState } from "@/lib/executionState";
+import { setExecutionProfileState, getExecutionProfileState } from "@/lib/executionState";
 import { resolveMutationExecutionContext } from "@/lib/mutationContext";
 import {
   assertToolMutationAllowed,
@@ -43,8 +43,14 @@ export const TOOL_PROFILE_CHANGED_EVENT = "mcp-tool-profile-changed";
 
 const config = profileConfigJson as ToolProfileConfig;
 const wrapped = new Set<string>();
-const geometryProfiles = new Set(["BEDROCK_CUBOID_GEOMETRY", "GEOMETRY_LOCAL_REPAIR"]);
-const textureProfiles = new Set(["BEDROCK_CUBOID_TEXTURE", "TEXTURE_LOCAL_REPAIR"]);
+const geometryProfiles = new Set([
+  "BEDROCK_CUBOID_GEOMETRY",
+  "GEOMETRY_LOCAL_REPAIR",
+]);
+const textureProfiles = new Set([
+  "BEDROCK_CUBOID_TEXTURE",
+  "TEXTURE_LOCAL_REPAIR",
+]);
 let activeProfileId = config.default_profile;
 let profileRevision = 1;
 let initialized = false;
@@ -77,25 +83,38 @@ function allowedNames(profileId = activeProfileId): string[] {
 function validateConfig(): string[] {
   const known = new Set(Object.keys(getAllToolDefinitions()));
   const errors: string[] = [];
-  if (!config.profiles[config.default_profile]) errors.push("Default tool profile is missing.");
-  for (const name of config.core_tools) if (!known.has(name)) errors.push(`Unknown core tool: ${name}`);
+  if (!config.profiles[config.default_profile]) {
+    errors.push("Default tool profile is missing.");
+  }
+  for (const name of config.core_tools) {
+    if (!known.has(name)) errors.push(`Unknown core tool: ${name}`);
+  }
   for (const [profileId, definition] of Object.entries(config.profiles)) {
     for (const name of definition.allowed_tools ?? []) {
-      if (!known.has(name)) errors.push(`${profileId} references unknown tool ${name}.`);
-      if (!definition.include_all && config.forbidden_in_normal_profiles.includes(name)) {
+      if (!known.has(name)) {
+        errors.push(`${profileId} references unknown tool ${name}.`);
+      }
+      if (
+        !definition.include_all &&
+        config.forbidden_in_normal_profiles.includes(name)
+      ) {
         errors.push(`${profileId} exposes forbidden tool ${name}.`);
       }
     }
   }
   for (const [stage, profileId] of Object.entries(config.stage_map)) {
-    if (!config.profiles[profileId]) errors.push(`${stage} maps to unknown profile ${profileId}.`);
+    if (!config.profiles[profileId]) {
+      errors.push(`${stage} maps to unknown profile ${profileId}.`);
+    }
   }
   return errors;
 }
 
 function applyExposure(): void {
   const allowed = new Set(allowedNames());
-  for (const [name, metadata] of Object.entries(tools)) metadata.enabled = allowed.has(name);
+  for (const [name, metadata] of Object.entries(tools)) {
+    metadata.enabled = allowed.has(name);
+  }
 }
 
 function publishExecutionState(snapshot: ToolProfileSnapshot): void {
@@ -108,7 +127,11 @@ function publishExecutionState(snapshot: ToolProfileSnapshot): void {
 
 function emitChanged(): void {
   if (typeof document !== "undefined") {
-    document.dispatchEvent(new CustomEvent(TOOL_PROFILE_CHANGED_EVENT, { detail: getToolProfileSnapshot(false) }));
+    document.dispatchEvent(
+      new CustomEvent(TOOL_PROFILE_CHANGED_EVENT, {
+        detail: getToolProfileSnapshot(false),
+      })
+    );
   }
 }
 
@@ -121,43 +144,89 @@ function assertArguments(toolName: string, args: Record<string, unknown>): void 
   if (geometryProfiles.has(activeProfileId)) {
     if (toolName === "place_cube") {
       if (hasArg(args, "texture")) {
-        throw new Error(`TOOL_PROFILE_ARGUMENT_BLOCKED: texture assignment is not allowed in ${activeProfileId}.`);
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: texture assignment is not allowed in ${activeProfileId}.`
+        );
       }
-      if (Array.isArray(args.faces) && args.faces.some((face) => typeof face === "object" && face !== null && "uv" in face)) {
-        throw new Error(`TOOL_PROFILE_ARGUMENT_BLOCKED: custom face UV is not allowed in ${activeProfileId}.`);
+      if (
+        Array.isArray(args.faces) &&
+        args.faces.some(
+          (face) =>
+            typeof face === "object" && face !== null && "uv" in face
+        )
+      ) {
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: custom face UV is not allowed in ${activeProfileId}.`
+        );
       }
     }
     if (toolName === "modify_cube") {
-      const blocked = ["autouv", "uv_offset", "mirror_uv", "faces"].filter((key) => hasArg(args, key));
+      const blocked = ["autouv", "uv_offset", "mirror_uv", "faces"].filter(
+        (key) => hasArg(args, key)
+      );
       if (blocked.length) {
-        throw new Error(`TOOL_PROFILE_ARGUMENT_BLOCKED: ${blocked.join(", ")} belong to Texture stage.`);
+        throw new Error(
+          `TOOL_PROFILE_ARGUMENT_BLOCKED: ${blocked.join(", ")} belong to Texture stage.`
+        );
       }
     }
   }
-  if (textureProfiles.has(activeProfileId) && toolName === "create_texture" && hasArg(args, "pbr_channel")) {
-    throw new Error(`TOOL_PROFILE_ARGUMENT_BLOCKED: PBR is forbidden in ${activeProfileId}.`);
+  if (
+    textureProfiles.has(activeProfileId) &&
+    toolName === "create_texture" &&
+    hasArg(args, "pbr_channel")
+  ) {
+    throw new Error(
+      `TOOL_PROFILE_ARGUMENT_BLOCKED: PBR is forbidden in ${activeProfileId}.`
+    );
   }
 }
 
+function canEnterBootstrapWithoutProject(
+  toolName: string,
+  args: Record<string, unknown>
+): boolean {
+  return (
+    toolName === "activate_tool_profile" &&
+    (typeof Project === "undefined" || !Project) &&
+    args.profile_id === "BOOTSTRAP"
+  );
+}
+
 function installGuards(): void {
-  const definitions = getAllToolDefinitions() as Record<string, ToolDefinitionLike>;
+  const definitions = getAllToolDefinitions() as Record<
+    string,
+    ToolDefinitionLike
+  >;
   for (const [name, definition] of Object.entries(definitions)) {
     if (wrapped.has(name)) continue;
     const execute = definition.execute;
     definition.execute = async (args, context) => {
       if (!isToolAllowed(name)) {
-        throw new Error(`TOOL_PROFILE_BLOCKED: "${name}" is not allowed by "${activeProfileId}".`);
+        throw new Error(
+          `TOOL_PROFILE_BLOCKED: "${name}" is not allowed by "${activeProfileId}".`
+        );
       }
       assertArguments(name, args);
       const mutationContext = resolveMutationExecutionContext(context);
-      assertToolMutationAllowed(
-        name,
-        args,
-        mutationContext,
-        definition.annotations?.readOnlyHint
-      );
+      if (!canEnterBootstrapWithoutProject(name, args)) {
+        assertToolMutationAllowed(
+          name,
+          args,
+          mutationContext,
+          definition.annotations?.readOnlyHint
+        );
+      }
+
+      const profileBefore = getExecutionProfileState();
       const result = await execute(args, context);
-      if (name === "complete_stage" || name === "activate_tool_profile") {
+      const profileChanged =
+        getExecutionProfileState().profileRevision !==
+        profileBefore.profileRevision;
+      if (
+        name === "complete_stage" ||
+        (name === "activate_tool_profile" && profileChanged)
+      ) {
         releaseProjectWriteLease(mutationContext);
       }
       return result;
@@ -177,9 +246,16 @@ export function initializeToolProfiles(): ToolProfileSnapshot {
   return snapshot;
 }
 
-export function isToolAllowed(toolName: string, profileId = activeProfileId): boolean {
+export function isToolAllowed(
+  toolName: string,
+  profileId = activeProfileId
+): boolean {
   const current = profile(profileId);
-  return current.include_all === true || config.core_tools.includes(toolName) || (current.allowed_tools ?? []).includes(toolName);
+  return (
+    current.include_all === true ||
+    config.core_tools.includes(toolName) ||
+    (current.allowed_tools ?? []).includes(toolName)
+  );
 }
 
 export function activateToolProfile(profileId: string): {
@@ -201,7 +277,9 @@ export function activateToolProfile(profileId: string): {
   return { changed, previous_profile: previous, snapshot };
 }
 
-export function getToolProfileSnapshot(includeTools = false): ToolProfileSnapshot {
+export function getToolProfileSnapshot(
+  includeTools = false
+): ToolProfileSnapshot {
   const exposed = allowedNames();
   return {
     profile_id: activeProfileId,
