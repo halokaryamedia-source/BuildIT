@@ -47,7 +47,7 @@ jobs:
       - name: Verify plugin identity
         working-directory: mcp-blockbench
         run: |
-          bun -e 'const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of ["BuildIT MCP Server", "achmadawdi", "1.6.2", "min_version", "5.0.0", "/bb-mcp"]) { if (!text.includes(required)) throw new Error(`Missing plugin identity marker: ${required}`); }'
+          bun -e 'const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of ["BuildIT MCP Server", "MIVUBI", "1.6.3", "min_version", "5.0.0", "/bb-mcp"]) { if (!text.includes(required)) throw new Error(`Missing plugin identity marker: ${required}`); }'
 
       - name: Publish canonical bundle to Rework
         shell: bash
