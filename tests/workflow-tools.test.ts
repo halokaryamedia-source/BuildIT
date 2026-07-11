@@ -38,11 +38,21 @@ describe("compact workflow tools", () => {
   test("complete_stage reuses checkpointing and updates state atomically", () => {
     const source = readFileSync("src/server/tools/workflow.ts", "utf8");
 
-    expect(source).toContain('getAllToolDefinitions()["save_project_checkpoint"]');
+    expect(source).toContain('"save_project_checkpoint"');
+    expect(source).toContain("checkpointTool.execute");
     expect(source).toContain("writeJsonAtomically(fs, statePath, state)");
     expect(source).toContain("activateToolProfile(nextProfile)");
     expect(source).toContain("STATE_REVISION_MISMATCH");
     expect(source).toContain("STAGE_EVIDENCE_MISSING");
+    expect(source).toContain("STAGE_REPORT_NOT_PASS");
+  });
+
+  test("validation is stage-aware and does not require unfinished build output during preflight", () => {
+    const source = readFileSync("src/server/tools/workflow.ts", "utf8");
+
+    expect(source).toContain('const validateBuiltGeometry = require_evidence || stage !== "GEOMETRY"');
+    expect(source).toContain('const validateTexture = stage === "TEXTURE" || stage === "FINAL_VALIDATION"');
+    expect(source).toContain('const validateAnimation = stage === "ANIMATION" || stage === "FINAL_VALIDATION"');
   });
 
   test("texture evidence avoids returning PNG base64 through Codex", () => {
@@ -57,8 +67,8 @@ describe("compact workflow tools", () => {
     const project = readFileSync("src/server/tools/project.ts", "utf8");
     const cubeUv = readFileSync("src/server/tools/cubeUv.ts", "utf8");
 
-    expect(project).toContain("structuredContent: { status: \"PASS\", ...snapshot }");
-    expect(cubeUv).toContain("structuredContent: { status: \"PASS\", ...layout }");
+    expect(project).toContain('structuredContent: { status: "PASS", ...snapshot }');
+    expect(cubeUv).toContain('structuredContent: { status: "PASS", ...layout }');
     expect(cubeUv).toContain('id: elementIdSchema.describe("Explicit cube UUID or name.")');
   });
 
