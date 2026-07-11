@@ -181,7 +181,9 @@ Internal:
 Primary Form → Structural Detail
 ```
 
-Initial work may use bounded multi-part batches. The one-issue rule applies to revisions, not initial construction.
+Initial work may use bounded multi-part batches.
+
+One-issue-per-cycle applies only to revisions.
 
 Forbidden: UV, texture painting, animation, decorative micro-cubes, final export.
 
