@@ -23,6 +23,7 @@ import { workflowToolDocs } from "../src/server/tools/workflow";
 import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
+import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
 import { visualCompareToolDocs } from "../src/server/tools/visual-compare";
 
@@ -38,6 +39,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Visual Comparison", tools: visualCompareToolDocs },
+  { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
