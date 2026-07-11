@@ -1,27 +1,14 @@
 # Local End-to-End Dry Run
 
-Run only after the Rework plugin is built/reloaded locally. CI remains out of scope.
+Run only after the Rework plugin is built and reloaded locally. CI remains out of scope.
 
 ## Goal
 
-Prove one approved reference package can move through deterministic connection, exact tool exposure, intake, Geometry, Texture, optional Animation, and Final Validation with:
+Prove one approved package can complete deterministic connection, Geometry, Texture, optional Animation, and Final Validation with minimal reads, exposed tools, payload, calls, reconnects, and approvals.
 
-- no connection searching;
-- no legacy numbered-sheet dependency;
-- one runtime authority;
-- one connection readiness report;
-- exact stage/repair tool profiles;
-- one asset preflight;
-- minimal document reads;
-- bounded MCP batches;
-- stable evidence;
-- correct review/revision transitions;
-- persistent checkpoints;
-- no unnecessary approvals or overdevelopment.
+Do not use the legacy kangaroo session first unless it has been migrated.
 
-## Test Asset
-
-Use one new/disposable asset with:
+## Required Test Package
 
 ```text
 PRODUCTION_CONTEXT.md
@@ -34,255 +21,166 @@ reference_manifest.json
 CODEX_REFERENCE_HANDOFF.md
 ```
 
-Do not use the legacy kangaroo session first unless it has been migrated.
+## 1. Intake and Connection
 
-## Run Sequence
-
-### 1. Workspace and Intake
-
-- create `SavedData/sessions/<asset>/` from the folder convention;
-- copy the approved package;
-- create `state.json` from schema 2.1;
-- validate package and authority order;
-- record Animation required/skipped logic;
-- result: `REFERENCE_READY` or explicit blocker.
-
-### 2. Deterministic Connection
-
-- open exactly one Blockbench window;
-- load the rebuilt Rework MCP plugin;
-- open/create the intended project;
-- first time only, run:
+1. Create `SavedData/sessions/<asset>/` and `state.json` from schema 2.1.
+2. Copy the approved package.
+3. Build/reload `dist/mcp.js` in exactly one Blockbench window.
+4. Run first-time Codex sync only when needed:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -InstallCodexConfig
 ```
 
-- restart Codex once if required;
-- run:
+5. Run normal readiness:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/sync-local-stack.ps1 -Asset <asset>
 ```
 
-Verify:
+6. Continue only when `reports/connection.json` is `PASS`.
+7. Call `get_runtime_status` once.
 
-- `reports/connection.json` is `PASS`;
-- server key is `blockbench`;
-- URL is `http://localhost:3000/bb-mcp`;
-- readiness session is closed;
-- required common tools exist;
-- expected profile is aligned before Codex connects;
-- active project UUID/format/UV mode/texture size are recorded;
-- Codex creates no alternate key, port, or session.
+Verify no alternate key, port, or session was created.
 
-After Codex connects, call `get_runtime_status` once. Do not repeat discovery if it passes.
+## 2. One-Time Asset Preflight
 
-### 3. Tool Profile Baseline
+Under `BEDROCK_CUBOID_GEOMETRY`:
 
-Call:
+1. call `validate_reference_contract` with `require_evidence=false`;
+2. verify project UUID, format, UV mode, texture dimensions, and package;
+3. record manual edits;
+4. save `00_session_start.bbmodel`;
+5. update state;
+6. do not repeat unchanged checks.
 
-```text
-get_tool_profile(include_tools=true)
-```
+## 3. Geometry
 
-For `BEDROCK_CUBOID_GEOMETRY`, verify:
-
-- profile status is `PASS`;
-- exposed count is `17`;
-- profile hash is present;
-- total library count is greater than exposed count;
-- PBR, Hytale, mesh UV, armature, UI automation, and eval tools are absent;
-- state profile ID/hash/count match runtime.
-
-Verify one cross-stage argument is rejected without changing the project:
-
-```text
-place_cube with explicit texture or custom face UV
-→ TOOL_PROFILE_ARGUMENT_BLOCKED
-```
-
-Do not intentionally execute a destructive forbidden tool merely to prove absence.
-
-### 4. One-Time Asset Preflight
-
-- verify one Codex write-session owner;
-- verify the exact Geometry profile;
-- record manual edits;
-- create `00_session_start.bbmodel`;
-- update state;
-- do not repeat unchanged checks.
-
-### 5. Geometry
-
-- run Primary Form + Structural Detail internally;
-- use bounded multi-part batches where safe;
-- save Geometry review checkpoint;
+- run Primary Form and Structural Detail internally;
+- use bounded multi-part batches;
+- save `10_geometry_review.bbmodel`;
 - capture five standard views;
-- create Geometry report;
+- create `geometry_report.json`;
+- call `validate_reference_contract` for `GEOMETRY`;
 - stop at `GEOMETRY_REVIEW`.
 
-Test one approval path and one local revision path that preserves unrelated areas.
+Test one local revision with `GEOMETRY_LOCAL_REPAIR`.
 
-For revision:
+After explicit approval, call `complete_stage` once. Verify:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/set-tool-profile.ps1 -Asset <asset> -Profile GEOMETRY_LOCAL_REPAIR
+```text
+20_geometry_approved.bbmodel
+state revision +1
+accepted Geometry areas protected
+next profile = BEDROCK_CUBOID_TEXTURE
+one reconnect only
 ```
 
-Verify:
+## 4. Texture
 
-- one reconnect refreshes `tools/list`;
-- repair profile count is `15`;
-- a stale non-repair call returns `TOOL_PROFILE_BLOCKED`;
-- accepted areas remain unchanged.
-
-Return to `BEDROCK_CUBOID_GEOMETRY` only if more Geometry-stage work is genuinely required.
-
-### 6. Texture Profile Transition and Stage
-
-After Geometry approval:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File Engine/codex/scripts/set-tool-profile.ps1 -Asset <asset> -Profile BEDROCK_CUBOID_TEXTURE
-```
-
-Reconnect the existing `blockbench` entry once.
-
-Verify:
-
-- exposed count is `24`;
-- `set_cube_face_uv` and `get_uv_layout` are present;
-- mesh UV, gradients, and PBR tools are absent;
-- stale Geometry calls are blocked;
-- profile hash/count are stable after reconnect.
-
-Then:
-
-- run UV + Base Texture + Detail Texture internally;
-- save Texture review checkpoint;
-- capture atlas and required model views;
-- create Texture report;
+- run UV, Base Texture, and Detail Texture internally;
+- call `save_texture_evidence` for `texture_atlas.png`;
+- save `30_texture_review.bbmodel`;
+- capture required standard views;
+- create `texture_report.json`;
 - stop at `TEXTURE_REVIEW`.
 
-Test one local Texture revision without reopening Geometry using `TEXTURE_LOCAL_REPAIR` and verify count `19`.
+Verify no full atlas base64 round-trip is needed merely to persist evidence.
 
-### 7. Animation Profile or Skip
+Test one local revision with `TEXTURE_LOCAL_REPAIR`.
 
-Use one branch:
+After explicit approval, call `complete_stage` once. Verify either:
 
-- `ANIMATION_SKIPPED` when not required; or
-- approved Animation work and review.
+```text
+BEDROCK_CUBOID_ANIMATION
+```
 
-When skipped:
+or, when Animation is not required:
 
-- activate `FINAL_VALIDATION_READONLY`;
-- reconnect once;
-- do not expose Animation tools.
+```text
+ANIMATION_SKIPPED
+FINAL_VALIDATION_READONLY
+```
+
+## 5. Animation
 
 When required:
 
-- activate `BEDROCK_CUBOID_ANIMATION`;
-- reconnect once;
-- verify exposed count `16`;
-- verify group/bone animation tools present;
-- verify armature and vertex-weight tools absent;
-- verify hierarchy, pivots, neutral recovery, clipping, and ground contact;
-- test `ANIMATION_LOCAL_REPAIR` count `13` only if a real local revision exists.
+- create only approved hierarchy, pivots, and clips;
+- save review checkpoint/evidence;
+- stop at `ANIMATION_REVIEW`;
+- test one named repair when useful;
+- after explicit approval, call `complete_stage` once.
 
-### 8. Final Validation Profile and Stage
+When not required, create no fake clips or evidence.
 
-Activate `FINAL_VALIDATION_READONLY`, reconnect once, and verify:
+## 6. Final Validation
 
-- exposed count is `13`;
-- final inspection/evidence/export tools are present;
-- ordinary Geometry, Texture, and Animation write tools are absent.
+Under `FINAL_VALIDATION_READONLY`:
 
-Then:
+1. export final candidate;
+2. call `save_texture_evidence` for `final_texture_atlas.png`;
+3. capture final five views;
+4. complete `VALIDATION.md` and reports;
+5. call `validate_reference_contract` for `FINAL_VALIDATION`;
+6. route local failures to the smallest repair profile;
+7. allow at most two local automatic fixes;
+8. stop at `FINAL_REVIEW`.
 
-- execute `VALIDATION.md`;
-- query Blockbench validator resources;
-- capture final five views and atlas;
-- route any local failure to the matching repair profile;
-- allow at most two local automatic fixes;
-- route broad failures to the correct approved stage;
-- save final candidate and validation-pass checkpoints;
-- stop at `FINAL_REVIEW`.
+After explicit final approval, call `complete_stage` once and verify `DONE` plus `80_validation_pass.bbmodel`.
 
-### 9. Diagnostic Escalation Negative Test
+## Runtime Profile Proof
 
-Do not activate `DIAGNOSTIC_ESCALATION` during the successful path.
+For every normal profile verify:
 
-Record it as unused unless a real blocker proves normal and repair profiles insufficient.
+- `tools/list` matches the exact count in `TOOL_PROFILE_AUDIT.md`;
+- hash is stable after reconnect;
+- forbidden tools are absent;
+- stale calls return `TOOL_PROFILE_BLOCKED`;
+- cross-stage arguments return `TOOL_PROFILE_ARGUMENT_BLOCKED`;
+- one profile change needs at most one reconnect.
 
-If genuinely required, record blocker, high-risk tool, rollback checkpoint, verification, and stop condition before activation, then return immediately to the correct normal/repair profile.
+## Compact Tool Proof
 
-### 10. Final User Decision
+Verify:
 
-- approved → `DONE`;
-- revision → map to the correct stage/profile;
-- do not merge `Rework` into `V1`.
+- `validate_reference_contract` returns one deterministic structured issue list;
+- `save_texture_evidence` writes PNG + metadata inside the session root;
+- outside-root writes fail;
+- missing evidence blocks `complete_stage`;
+- stale state revision blocks `complete_stage`;
+- checkpoint, state, accepted areas, and profile remain consistent;
+- `get_project_info` and `get_uv_layout` return structured content.
 
 ## Measurement Log
 
 Record only actionable waste:
 
 ```text
-Connection search/retry:
-Alternate port/key created:
-Full library tool count:
-Geometry exposed count:
-Texture exposed count:
-Animation exposed count:
-Final exposed count:
-Profile transition reconnect count:
-Repeated tools/list call:
-Out-of-profile selection attempt:
-TOOL_PROFILE_BLOCKED occurrence:
-TOOL_PROFILE_ARGUMENT_BLOCKED occurrence:
 Repeated document read:
-Repeated preflight check:
+Repeated preflight/validation call:
 Unnecessary MCP call:
+Large avoidable payload:
 Unnecessary screenshot:
 Unnecessary approval:
-Ambiguous state transition:
-Unclear output filename:
-Session ownership issue:
-Checkpoint/recovery issue:
-Context loss:
+Profile reconnect beyond stage transition:
+Tool-selection error:
+State/checkpoint mismatch:
 Manual step repeated enough to justify automation:
-```
-
-## Ponytail Decision for New Automation
-
-A new tool is justified only when dry-run evidence proves repeated calls, frequent orchestration error, material token savings, state/evidence risk, or unsafe recovery.
-
-Otherwise:
-
-```text
-DEFERRED_NOT_REQUIRED
-Reason:
-Revisit condition:
 ```
 
 ## Pass Criteria
 
-- canonical connection succeeds with one command/report;
-- no port scan or alternate Codex entry occurs;
-- the readiness session is closed and one Codex write session remains;
-- reference intake reads the new package directly;
-- normal profiles expose exact compact counts: Geometry 17, Texture 24, Animation 16, Final 13;
-- forbidden high-risk/format-specific tools are absent from normal profiles;
-- stale calls are blocked after profile transition;
-- cross-stage arguments are blocked;
-- each real profile transition needs at most one reconnect;
-- profile ID/hash/count stay synchronized with state;
-- full preflight is not repeated;
-- each user-visible stage has exactly one review gate;
-- Animation skips cleanly when not required;
-- local revisions preserve accepted areas;
-- standard evidence names are used;
-- every stage has a persistent recovery point;
-- Final Validation adds no features/broad polish;
-- final output contains `.bbmodel`, textures, completed validation, evidence, and revision summary;
-- identified waste has a concrete fix or is explicitly not worth automating.
+- one connection command/report;
+- one asset preflight;
+- exact stage profiles;
+- no connection search;
+- no base64 evidence round-trip;
+- one compact validation result per required gate;
+- one `complete_stage` call per approved stage;
+- each user-visible stage has one review gate;
+- persistent recovery exists at every stage;
+- Final Validation adds no features;
+- no CI and no merge to `V1` during this proof.
+
+A new automation is justified only by measured repeated work or meaningful token/error reduction. Otherwise record `DEFERRED_NOT_REQUIRED`.
