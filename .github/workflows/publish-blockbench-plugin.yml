@@ -5,18 +5,6 @@ on:
   push:
     branches:
       - Rework
-    paths:
-      - ".github/workflows/publish-blockbench-plugin.yml"
-      - "mcp-blockbench/src/**"
-      - "mcp-blockbench/scripts/**"
-      - "mcp-blockbench/prompts/**"
-      - "mcp-blockbench/tests/**"
-      - "mcp-blockbench/package.json"
-      - "mcp-blockbench/bun.lock"
-      - "mcp-blockbench/tsconfig.json"
-      - "engines/shared/skills/**"
-      - "engines/shared/profiles/**"
-      - "docs/product/about.md"
 
 permissions:
   contents: write
@@ -27,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-publish:
-    if: github.ref == 'refs/heads/Rework'
+    if: github.ref == 'refs/heads/Rework' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
