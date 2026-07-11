@@ -2,50 +2,67 @@
 
 ## Active Goal
 
-Reduce rework, stale calls, unsafe concurrent edits, oversized evidence payloads, and unverifiable checkpoints without expanding modelling capability or changing the approved four-stage workflow.
+Make completed Blockbench work easy for users to take, preserve enough MCP context for future revisions, and avoid repeated discovery or duplicate project data without expanding modelling capability or changing the approved four-stage workflow.
 
 ## Required Now
 
 ```text
-Project write lease
-→ global mutation guard
-→ project/stage/state/profile stale-call checks
-→ sandboxed evidence writes
-→ omit image payloads when evidence files are written
-→ real checkpoint/export SHA-256 metadata
-→ matching source-level tests and workflow instructions
+active/ and completed/ lifecycle
+→ one local workspace index
+→ user-facing blockbench/ package
+→ separate mcp/ internal package
+→ completion promotion from validated staging
+→ immutable completed baseline during reopen
+→ selected-project connection lookup
+→ source-level tests and workflow instructions
 ```
 
 ## Reuse
 
-- existing tool-profile execution wrapper;
-- existing session manager;
-- existing `atomicFiles` helpers;
-- existing `capture_standard_views`;
-- existing `save_project_checkpoint` and `export_model`;
-- existing production-skill dispatcher.
+- existing `state.json` and `project.json` concepts;
+- existing final export/checkpoint/evidence outputs;
+- existing canonical MCP connection profile;
+- existing write lease and stale-call guard;
+- existing active-stage skills and tool profiles;
+- one compact engine-neutral workspace CLI.
 
-No parallel MCP server, duplicate evidence tool, duplicate checkpoint tool, or new stage is introduced.
+No new MCP modelling tool, stage, approval gate, connection key, live-session persistence, duplicate final model, or versioned filename is introduced.
+
+## Separation Rule
+
+```text
+blockbench/
+= canonical .bbmodel, textures, reference images, approved previews
+
+mcp/
+= project/state metadata, technical reference contract, checkpoints, evidence, reports
+```
+
+Temporary final-validation staging may exist only under `mcp/final/`. Successful completion promotes it into `blockbench/` and removes the staging copy.
 
 ## Stop Condition
 
 Stop this implementation batch when:
 
-1. one composite `manage_project_write_lease` tool exists;
-2. normal project/filesystem mutations require the lease;
-3. the lease is bound to project UUID, asset, session root, stage, state revision, and tool-profile revision;
-4. stage/profile transitions release the lease and require reacquisition after reconnect;
-5. standard evidence can write atomically without returning image payloads;
-6. checkpoints and final exports return real SHA-256 values;
-7. source tests and active workflow docs cover these contracts.
+1. `workspace/workspace.json` selects one project without folder scanning;
+2. active and completed projects use the same `blockbench/` plus `mcp/` layout;
+3. one lifecycle command supports init, list, activate, inspect, complete, and reopen;
+4. completion requires `DONE`, promotes validated outputs, freezes MCP state, and moves the project to `completed/`;
+5. reopen preserves the completed baseline and marks downstream stages for revalidation;
+6. Codex readiness/profile scripts resolve `workspace/active/<asset>/mcp` automatically;
+7. source tests and active documentation cover the lifecycle and separation.
 
 ## Deferred Not Required
 
-The following remain `DEFERRED_NOT_REQUIRED` until the first local end-to-end dry run proves a real need:
+The following remain `DEFERRED_NOT_REQUIRED` until local lifecycle and end-to-end dry runs prove a real need:
 
+- Git LFS or remote completed-artifact storage;
+- automatic ZIP packaging of `blockbench/`;
+- multiple simultaneous selected projects;
+- persistent live MCP sessions or write leases;
 - transformed world-space bounds refactor;
 - deep hierarchy, UV-overlap, pivot, ground-contact, and sampled-animation validation;
-- stage-transition crash journal and startup recovery automation;
+- stage-transition crash journal beyond the current atomic replacement safeguards;
 - MCP resource/prompt profile filtering;
 - dynamic skill server or runtime skill-loading enforcement;
 - Claude and Ollama adapter completion;
