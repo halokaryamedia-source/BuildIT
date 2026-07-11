@@ -1,5 +1,6 @@
 import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import { getAllToolDefinitions, tools } from "@/lib/factories";
+import { setExecutionProfileState } from "@/lib/executionState";
 
 interface ToolProfileDefinition {
   description: string;
@@ -91,6 +92,14 @@ function applyExposure(): void {
   for (const [name, metadata] of Object.entries(tools)) metadata.enabled = allowed.has(name);
 }
 
+function publishExecutionState(snapshot: ToolProfileSnapshot): void {
+  setExecutionProfileState({
+    profileId: snapshot.profile_id,
+    profileRevision: snapshot.profile_revision,
+    profileHash: snapshot.tool_profile_hash,
+  });
+}
+
 function emitChanged(): void {
   if (typeof document !== "undefined") {
     document.dispatchEvent(new CustomEvent(TOOL_PROFILE_CHANGED_EVENT, { detail: getToolProfileSnapshot(false) }));
@@ -145,8 +154,10 @@ export function initializeToolProfiles(): ToolProfileSnapshot {
   validationErrors = validateConfig();
   applyExposure();
   initialized = true;
+  const snapshot = getToolProfileSnapshot(false);
+  publishExecutionState(snapshot);
   emitChanged();
-  return getToolProfileSnapshot(false);
+  return snapshot;
 }
 
 export function isToolAllowed(toolName: string, profileId = activeProfileId): boolean {
@@ -166,9 +177,11 @@ export function activateToolProfile(profileId: string): {
     activeProfileId = profileId;
     profileRevision += 1;
     applyExposure();
-    emitChanged();
   }
-  return { changed, previous_profile: previous, snapshot: getToolProfileSnapshot(false) };
+  const snapshot = getToolProfileSnapshot(false);
+  publishExecutionState(snapshot);
+  if (changed) emitChanged();
+  return { changed, previous_profile: previous, snapshot };
 }
 
 export function getToolProfileSnapshot(includeTools = false): ToolProfileSnapshot {
