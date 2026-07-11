@@ -7,6 +7,8 @@ The plugin uses one deterministic local endpoint at `http://localhost:3000/bb-mc
 Plugin identity:
 
 - Title: `BuildIT MCP Server`
-- Author: `achmadawdi`
+- Author: `MIVUBI`
+- Version: `1.6.3`
 - Plugin ID: `mcp`
 - Canonical bundle: `mcp-blockbench/dist/mcp.js`
+- Upstream foundation: `achmadawdi/mcp-blockbench`
