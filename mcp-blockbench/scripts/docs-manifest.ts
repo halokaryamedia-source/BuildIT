@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { ToolSpec, PromptSpec, ResourceSpec } from "../src/lib/factories";
 
-// Tool docs imports — each file exports schemas at module level with zero Blockbench deps
 import { cameraToolDocs } from "../src/server/tools/camera";
 import { cubeToolDocs } from "../src/server/tools/cubes";
 import { elementToolDocs } from "../src/server/tools/element";
@@ -21,6 +20,7 @@ import { historyToolDocs } from "../src/server/tools/history";
 import { exportToolDocs } from "../src/server/tools/export";
 import { runtimeToolDocs } from "../src/server/tools/runtime";
 import { workflowToolDocs } from "../src/server/tools/workflow";
+import { leaseToolDocs } from "../src/server/tools/lease";
 
 export interface CategoryGroup {
   category: string;
@@ -29,6 +29,7 @@ export interface CategoryGroup {
 
 export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
+  { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
@@ -49,7 +50,6 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Hytale Integration", tools: hytaleToolDocs },
 ];
 
-// Prompt specs defined inline — src/server/prompts.ts uses macros that complicate direct import
 export const promptDocs: PromptSpec[] = [
   {
     name: "blockbench_native_apis",
@@ -68,14 +68,8 @@ export const promptDocs: PromptSpec[] = [
     title: "Model Creation Strategy",
     description: "A strategy for creating a new 3D model in Blockbench.",
     argsSchema: z.object({
-      format: z
-        .enum(["java_block", "bedrock"])
-        .optional()
-        .describe("Target model format."),
-      approach: z
-        .enum(["ui", "programmatic", "import"])
-        .optional()
-        .describe("Creation approach to use."),
+      format: z.enum(["java_block", "bedrock"]).optional().describe("Target model format."),
+      approach: z.enum(["ui", "programmatic", "import"]).optional().describe("Creation approach to use."),
     }),
     status: "stable",
   },
@@ -123,7 +117,6 @@ export const promptDocs: PromptSpec[] = [
   },
 ];
 
-// Resource specs defined inline — src/server/resources.ts uses Blockbench globals at module level
 export const resourceDocs: ResourceSpec[] = [
   {
     name: "projects",
@@ -192,21 +185,18 @@ export const resourceDocs: ResourceSpec[] = [
     name: "hytale-attachments",
     uriTemplate: "hytale://attachments/{id}",
     title: "Hytale Attachments",
-    description:
-      "Returns information about attachment collections.",
+    description: "Returns information about attachment collections.",
   },
   {
     name: "hytale-pieces",
     uriTemplate: "hytale://pieces/{id}",
     title: "Hytale Attachment Pieces",
-    description:
-      "Returns groups marked as attachment pieces.",
+    description: "Returns groups marked as attachment pieces.",
   },
   {
     name: "hytale-cubes",
     uriTemplate: "hytale://cubes/{id}",
     title: "Hytale Cubes",
-    description:
-      "Returns cubes with Hytale-specific properties.",
+    description: "Returns cubes with Hytale-specific properties.",
   },
 ];
