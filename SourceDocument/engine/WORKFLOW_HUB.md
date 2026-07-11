@@ -6,32 +6,27 @@ Local Codex starts from:
 Engine/codex/BOOTSTRAP.md
 ```
 
-Runtime state:
+Runtime authority:
 
 ```text
 SavedData/sessions/<asset>/state.json
 ```
 
-Do not reconstruct state from several Markdown files when `state.json` exists.
+Do not reconstruct state from several Markdown files.
 
-## 1. Canonical Connection
-
-```text
-Engine/codex/CONNECTION_CONTRACT.md
-Engine/codex/connection-profile.json
-```
+## Canonical Connection
 
 ```text
 Codex key: blockbench
 URL: http://localhost:3000/bb-mcp
 ```
 
-Do not scan ports or create project-specific MCP keys.
+Use `sync-local-stack.ps1`; do not scan ports or create project-specific MCP keys.
 
-## 2. Approved Reference Package
+## Approved Package
 
 ```text
-SavedData/sessions/<asset>/references/
+references/
 ├─ PRODUCTION_CONTEXT.md
 ├─ <asset>_reference_visual.png
 ├─ GEOMETRY.md
@@ -42,9 +37,9 @@ SavedData/sessions/<asset>/references/
 └─ CODEX_REFERENCE_HANDOFF.md
 ```
 
-Legacy numbered reference sheets are not required for new sessions.
+Legacy numbered sheets are not required.
 
-## 3. User-Visible Stages
+## User-Visible Stages
 
 ```text
 1. GEOMETRY
@@ -53,65 +48,9 @@ Legacy numbered reference sheets are not required for new sessions.
 4. FINAL_VALIDATION
 ```
 
-Each completed stage produces preview evidence and waits for user approval or targeted revision instructions.
+Each stage ends with one preview/review gate. Internal passes do not create extra approvals.
 
-Internal passes do not create extra routine approval gates.
-
-### Geometry
-
-Internal:
-
-- Primary Form
-- Structural Detail
-
-Review:
-
-- Front
-- Left Side
-- Back
-- Top / Footprint
-- Front-left 3/4
-
-### Texture
-
-Internal:
-
-- UV
-- Base Texture
-- Detail Texture
-
-Review:
-
-- texture atlas
-- UV summary
-- Front
-- Left Side
-- Back
-- Front-left 3/4
-
-### Animation
-
-Run only when required by the approved package.
-
-Review:
-
-- hierarchy/pivots
-- required clips or sampled poses
-- neutral pose recovery
-- clipping and ground contact
-
-### Final Validation
-
-Run `VALIDATION.md`, collect final evidence, route failures to the correct repair profile, and wait for final user approval or corrections.
-
-## 4. Exact MCP Tool Profiles
-
-Authority:
-
-```text
-Engine/codex/tool-profiles.json
-Engine/codex/TOOL_PROFILE_CONTRACT.md
-```
+## Exact Profiles
 
 ```text
 GEOMETRY         → BEDROCK_CUBOID_GEOMETRY
@@ -120,87 +59,121 @@ ANIMATION        → BEDROCK_CUBOID_ANIMATION
 FINAL_VALIDATION → FINAL_VALIDATION_READONLY
 ```
 
-Revisions use:
-
 ```text
-GEOMETRY_LOCAL_REPAIR
-TEXTURE_LOCAL_REPAIR
-ANIMATION_LOCAL_REPAIR
+Geometry revision  → GEOMETRY_LOCAL_REPAIR
+Texture revision   → TEXTURE_LOCAL_REPAIR
+Animation revision → ANIMATION_LOCAL_REPAIR
 ```
 
-Profile transition:
+Normal profiles hide PBR, Hytale, mesh UV, armature/weights, UI automation, eval, and cross-stage tools.
+
+## Compact Operations
+
+### Preflight and Review Validation
 
 ```text
-activate_tool_profile
-→ reconnect existing canonical blockbench entry once
-→ get_runtime_status
-→ continue only when profile ID/hash/count match state
+validate_reference_contract
 ```
 
-Normal profiles hide and block:
+Use one call for package, project, format, dimensions, UV/atlas, no-PBR, required groups/animations, evidence, and Blockbench validator summary. Do not repeat these checks manually.
 
-- PBR/Vibrant Visuals tools;
-- Hytale tools;
-- mesh UV tools;
-- armature and vertex-weight tools;
-- UI automation and `risky_eval`;
-- tools outside the active stage.
+### Texture Atlas Evidence
 
-The full capability library remains available only through recorded `DIAGNOSTIC_ESCALATION`.
+```text
+save_texture_evidence
+```
 
-## 5. Minimum Normal Read Set
+Writes PNG + compact metadata directly inside the session root. Do not return a full atlas as base64 merely to save it.
 
-1. `Engine/codex/BOOTSTRAP.md`
-2. `SavedData/sessions/<asset>/state.json`
-3. `references/reference_manifest.json`
-4. `references/PRODUCTION_CONTEXT.md`
-5. `references/<asset>_reference_visual.png`
-6. active-stage document only
+### Approved Stage Transition
 
-Open detailed contracts or failure playbooks only after a relevant trigger.
+```text
+complete_stage
+```
 
-## 6. Session Rules
+After explicit user approval, one call verifies evidence/report `PASS`, saves the approved checkpoint, protects accepted areas, updates state, activates the next profile, and returns one reconnect instruction when required.
 
-- One asset = one active write session.
-- One canonical MCP key = `blockbench`.
-- One canonical URL = `http://localhost:3000/bb-mcp`.
-- Run full connection sync and asset preflight once.
-- Re-run only stale or failed checks.
-- Save persistent stage checkpoints.
-- Preserve user manual edits and approved areas.
-- Initial construction may use bounded multi-part batches.
-- One-issue-per-cycle applies to revision work.
-- Reconnect only on a real tool-profile transition.
+## Stage Outputs
 
-## 7. Stage Transition Rule
+### Geometry
 
-A stage may advance only when:
+```text
+10_geometry_review.bbmodel
+five standard views
+geometry_report.json with result
+```
 
-- required evidence exists;
-- stage result is `PASS`;
-- no unresolved blocker exists;
-- user explicitly approves the stage preview;
-- next exact tool profile is activated and verified.
+Approval uses `complete_stage` → `20_geometry_approved.bbmodel` → Texture.
 
-User revision feedback must name the stage, part, issue, expected result, and anything that must not change.
+### Texture
 
-## 8. Stop Conditions
+```text
+30_texture_review.bbmodel
+texture_atlas.png
+four standard views
+texture_report.json with result
+```
 
-Stop only for:
+Approval uses `complete_stage` → `40_texture_approved.bbmodel` → Animation or skip.
+
+### Animation
+
+Only when required:
+
+```text
+50_animation_review.bbmodel
+hierarchy/pivots
+required clips/samples
+animation_report.json with result
+```
+
+Approval uses `complete_stage` → Final Validation.
+
+### Final Validation
+
+```text
+final/<asset>.bbmodel
+final/textures/
+final five views
+final_texture_atlas.png
+validation_report.json with result: PASS
+completed_VALIDATION.md
+```
+
+Final approval uses `complete_stage` → `80_validation_pass.bbmodel` → `DONE`.
+
+## Minimum Read Set
+
+1. `BOOTSTRAP.md`;
+2. connection report;
+3. `state.json`;
+4. manifest;
+5. Production Context;
+6. Reference Visual;
+7. active-stage document only.
+
+Open detailed contracts/failure playbooks only after a trigger.
+
+## Session Rules
+
+- one asset = one write session;
+- one key = `blockbench`;
+- one preflight;
+- one profile reconnect only at real stage transition;
+- bounded batches for initial work;
+- one issue per revision cycle;
+- approved/manual areas remain protected;
+- stage reports require explicit `result`;
+- CI and merge remain deferred.
+
+## Stop Conditions
+
+Stop for:
 
 - `REFERENCE_CONFLICT`;
-- connection result not `PASS`;
-- invalid tool profile configuration;
-- missing required capability in the correct profile;
-- `TOOL_PROFILE_BLOCKED` after a reconnect attempt;
-- ambiguous project/session ownership;
-- same blocker repeated twice;
-- change that reopens an approved earlier stage.
-
-## 9. Repository Responsibilities
-
-- `Engine/codex/`: compact execution, connection, profile, state, evidence, and checkpoint control.
-- `SavedData/sessions/<asset>/`: runtime state, references, checkpoints, evidence, reports, and final output.
-- `SourceDocument/modeling/`: human-facing detailed guidance and failure playbooks.
-- `src/`: MCP plugin implementation.
-- `openspec/changes/codex-local-workflow-rework/`: durable current agreement.
+- connection/profile mismatch;
+- wrong project UUID or stale state revision;
+- missing capability/evidence/checkpoint;
+- report not `PASS`;
+- same blocker twice;
+- required earlier-stage reopen.
