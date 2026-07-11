@@ -1,4 +1,4 @@
-import { watch } from "node:fs";
+import { watch, type FSWatcher } from "node:fs";
 import { mkdir, copyFile, rename, rm, stat } from "node:fs/promises";
 import { resolve, join, normalize, sep } from "node:path";
 import { log, c, isCleanMode, isProduction, isWatchMode } from "./utils";
@@ -8,17 +8,14 @@ import { version } from "../package.json";
 const OUTPUT_DIR = "./dist";
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
 const ENTRY_FILE = resolve("./src/index.ts");
-const WATCHED_DIRECTORIES = ["src", "build", "prompts"].map(normalize);
+const WATCHED_DIRECTORIES = ["src", "scripts", "prompts"].map(normalize);
 const WATCHED_FILES = new Set(
-  [
-    "package.json",
-    "tsconfig.json",
-    join("src", "assets", "icon.svg"),
-    join("engines", "shared", "profiles", "tool-profiles.json"),
-    join("engines", "shared", "profiles", "stage-profiles.json"),
-    join("docs", "product", "about.md"),
-  ].map(normalize)
+  ["package.json", "tsconfig.json", join("src", "assets", "icon.svg")].map(normalize)
 );
+const EXTERNAL_WATCH_TARGETS = [
+  resolve("../engines/shared/profiles"),
+  resolve("../docs/product/about.md"),
+];
 
 function shouldRebuild(filename: string): boolean {
   const path = normalize(filename);
@@ -101,7 +98,7 @@ async function buildPlugin(): Promise<boolean> {
   const indexMap = join(OUTPUT_DIR, "index.js.map");
   if (await Bun.file(indexMap).exists()) await rename(indexMap, join(OUTPUT_DIR, "mcp.js.map"));
 
-  const aboutSource = resolve("./docs/product/about.md");
+  const aboutSource = resolve("../docs/product/about.md");
   if (await Bun.file(aboutSource).exists()) {
     await copyFile(aboutSource, join(OUTPUT_DIR, "about.md"));
   }
@@ -112,6 +109,7 @@ async function buildPlugin(): Promise<boolean> {
 function watchFiles(): void {
   let running: Promise<void> | null = null;
   let pending = false;
+  const watchers: FSWatcher[] = [];
 
   const queue = (filename: string) => {
     if (running) {
@@ -130,11 +128,26 @@ function watchFiles(): void {
     });
   };
 
-  const watcher = watch("./", { recursive: true }, (_event, filename) => {
-    if (filename && shouldRebuild(filename)) queue(filename);
-  });
+  watchers.push(
+    watch("./", { recursive: true }, (_event, filename) => {
+      if (filename && shouldRebuild(filename)) queue(filename);
+    })
+  );
+
+  for (const target of EXTERNAL_WATCH_TARGETS) {
+    try {
+      watchers.push(
+        watch(target, { recursive: true }, (_event, filename) => {
+          queue(filename ? `${target}:${filename}` : target);
+        })
+      );
+    } catch {
+      log.dim(`[Build] Optional watch target unavailable: ${target}`);
+    }
+  }
+
   process.on("SIGINT", () => {
-    watcher.close();
+    watchers.forEach((watcher) => watcher.close());
     process.exit(0);
   });
 }
