@@ -14,7 +14,7 @@
 - Ponytail selects the smallest safe work required now.
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Stop after each stage preview for approval or targeted revision.
-- Initial work may use bounded batches; revisions use one named issue or a tightly related pair.
+- Initial work may use bounded batches; revisions use one named issue or one tightly related pair.
 - Preserve approved areas and manual edits unless a stage is explicitly reopened.
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
@@ -23,11 +23,13 @@
 
 ## Root Boundaries
 
-- `src/`: application logic.
-- `engines/`: shared and engine-specific orchestration.
+- `mcp-blockbench/`: the complete MCP Blockbench package, including `src/`, `scripts/`, `prompts/`, `tests/`, and `dist/`.
+- `engines/`: shared and engine-specific AI orchestration.
 - `workspace/`: mutable local production data.
-- `docs/`: human/generated documentation.
+- `docs/`: authored documentation; generated API output belongs only in `docs/api/`.
 - `openspec/`: durable work agreement.
-- `build/`: build tooling.
+- `.agents/`, `.codex/`, `.github/`, and `.vscode/`: tool-native adapters and discovery paths.
 
-Do not recreate `Engine/`, `SavedData/`, or `SourceDocument/`. Do not add versioned duplicate folders or files.
+Run Bun package commands from `mcp-blockbench/`.
+
+Do not recreate root `src/`, `build/`, `prompts/`, `tests/`, `Engine/`, `SavedData/`, or `SourceDocument/`. Do not add versioned, `new`, `latest`, `backup`, or parallel-authority names.
