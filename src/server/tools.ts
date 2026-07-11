@@ -22,6 +22,7 @@ import { registerArmatureTools } from "./tools/armature";
 import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
 import { registerRuntimeTools } from "./tools/runtime";
+import { registerWorkflowTools } from "./tools/workflow";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -50,11 +51,11 @@ const registrationFunctions = [
   registerUITools,
   registerUVTools,
   registerCubeUvTools,
+  registerWorkflowTools,
   registerValidatorResources,
 ];
 
 // Optional plugin registration functions
-// These check internally if their plugin is installed before registering
 const optionalRegistrationFunctions = [
   registerHytaleTools,
   registerHytaleResources,
@@ -75,10 +76,8 @@ for (const register of optionalRegistrationFunctions) {
 // available for an explicit diagnostic profile without burdening normal stages.
 initializeToolProfiles();
 
-// Function to get tool count - called at runtime after registration
 export function getToolCount(): number {
   return Object.keys(tools).length;
 }
 
-// Re-export tools and prompts for use by other modules
 export { tools, prompts };
