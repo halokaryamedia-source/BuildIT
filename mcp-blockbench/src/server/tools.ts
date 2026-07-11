@@ -23,6 +23,7 @@ import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
 import { registerRuntimeTools } from "./tools/runtime";
 import { registerWorkflowTools } from "./tools/workflow";
+import { registerLeaseTools } from "./tools/lease";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -42,6 +43,7 @@ const registrationFunctions = [
   registerExportTools,
   registerHistoryTools,
   registerImportTools,
+  registerLeaseTools,
   registerMaterialInstanceTools,
   registerMeshTools,
   registerPaintTools,
