@@ -2,4 +2,6 @@
 applyTo: '*'
 ---
 
-This project is a Blockbench plugin that integrates with the Model Context Protocol (MCP) to allow AI models to interact with Blockbench through commands or directly execute JavaScript code in its context.
+BuildIT contains one MCP Blockbench plugin package under `mcp-blockbench/`, shared engine orchestration under `engines/`, local runtime data under `workspace/`, documentation under `docs/`, and OpenSpec under `openspec/`.
+
+Normal agents must use the exact active MCP tool profile and must not bypass it with direct JavaScript execution, alternate source roots, or versioned duplicate files.
