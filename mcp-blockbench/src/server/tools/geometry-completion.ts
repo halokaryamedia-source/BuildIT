@@ -24,7 +24,7 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
   {
     name: "complete_geometry_stage",
     description:
-      "Completes Geometry only after current deterministic metrics, multimodal visual review, project fingerprint, Reference Visual, and cube-rotation gates all pass; then delegates to the atomic stage transition.",
+      "Completes Geometry only after current deterministic metrics, multimodal visual review, project fingerprint, Reference Visual, standard evidence, and cube-rotation gates all pass; then delegates to the atomic stage transition.",
     annotations: { title: "Complete Geometry Stage", destructiveHint: true, openWorldHint: true },
     parameters: completeGeometryStageParameters,
     status: STATUS_EXPERIMENTAL,
@@ -161,16 +161,20 @@ export function registerGeometryCompletionTools(): void {
           );
         }
 
-        const visualGate = getAllToolDefinitions()["verify_geometry_visual_gate"] as unknown as {
+        const reviewGate = getAllToolDefinitions()["verify_geometry_review_ready"] as unknown as {
           execute?: (args: Record<string, unknown>) => Promise<any>;
         };
-        if (!visualGate?.execute) {
-          throw new Error("verify_geometry_visual_gate is unavailable.");
+        if (!reviewGate?.execute) {
+          throw new Error("verify_geometry_review_ready is unavailable.");
         }
-        const gateResult = await visualGate.execute({ session_root });
+        const gateResult = await reviewGate.execute({
+          session_root,
+          expected_project_uuid,
+          require_standard_views: true,
+        });
         if (gateResult?.structuredContent?.result !== "PASS") {
           throw new Error(
-            `GEOMETRY_VISUAL_GATE_NOT_PASS: ${gateResult?.structuredContent?.result ?? "UNKNOWN"}.`
+            `GEOMETRY_REVIEW_GATE_NOT_PASS: ${gateResult?.structuredContent?.result ?? "UNKNOWN"}.`
           );
         }
 
@@ -194,7 +198,7 @@ export function registerGeometryCompletionTools(): void {
           content: [
             {
               type: "text",
-              text: "Deterministic visual, multimodal visual, fingerprint, reference, and rotation gates passed; Geometry stage completion delegated successfully.",
+              text: "Deterministic visual, multimodal visual, standard evidence, fingerprint, reference, and rotation gates passed; Geometry stage completion delegated successfully.",
             },
           ],
           structuredContent: {
@@ -204,7 +208,7 @@ export function registerGeometryCompletionTools(): void {
             geometry_fingerprint: currentFingerprint,
             reference_sha256: reportReferenceHash,
             rotation_audit: rotationAudit,
-            visual_gate: gateResult?.structuredContent ?? null,
+            review_gate: gateResult?.structuredContent ?? null,
             delegated_result: delegated,
           },
         };
