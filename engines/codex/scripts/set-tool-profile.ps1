@@ -1,0 +1,56 @@
+[CmdletBinding()]
+param(
+  [Parameter(Mandatory = $true)][string]$Asset,
+  [string]$Profile
+)
+
+$ErrorActionPreference = "Stop"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$connection = Get-Content -Raw (Join-Path $repoRoot "engines\codex\connection-profile.json") | ConvertFrom-Json
+$stages = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\stage-profiles.json") | ConvertFrom-Json
+$profiles = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\tool-profiles.json") | ConvertFrom-Json
+$statePath = Join-Path $repoRoot "workspace\sessions\$Asset\state.json"
+if (-not (Test-Path $statePath)) { throw "State file not found: $statePath" }
+$state = Get-Content -Raw $statePath | ConvertFrom-Json
+$url = [string]$connection.canonical_url
+
+if (-not $Profile) {
+  $stage = [string]$state.workflow.active_stage
+  $Profile = [string]$stages.profiles.$stage.tool_profile_id
+}
+if (-not $profiles.profiles.$Profile) { throw "Unknown profile: $Profile" }
+
+function Post([hashtable]$Body, [string]$SessionId) {
+  $headers = @{ Accept = "application/json, text/event-stream"; "Content-Type" = "application/json" }
+  if ($SessionId) { $headers["mcp-session-id"] = $SessionId }
+  Invoke-WebRequest -Uri $url -Method Post -Headers $headers -Body ($Body | ConvertTo-Json -Depth 30 -Compress) -TimeoutSec 10 -UseBasicParsing
+}
+
+$sessionId = $null
+try {
+  $init = Post @{ jsonrpc = "2.0"; id = 1; method = "initialize"; params = @{ protocolVersion = "2024-11-05"; capabilities = @{}; clientInfo = @{ name = "buildit-profile-sync"; version = "1" } } } $null
+  $sessionId = [string]$init.Headers["mcp-session-id"]
+  $null = Post @{ jsonrpc = "2.0"; method = "notifications/initialized"; params = @{} } $sessionId
+  $activate = Post @{ jsonrpc = "2.0"; id = 2; method = "tools/call"; params = @{ name = "activate_tool_profile"; arguments = @{ profile_id = $Profile } } } $sessionId
+  $result = ([string]$activate.Content | ConvertFrom-Json).result.structuredContent
+  if ($result.status -ne "PASS") { throw "Profile activation failed." }
+
+  $state.mcp.active_tool_profile = $result.active_profile
+  $state.mcp.tool_profile_hash = $result.tool_profile_hash
+  $state.mcp.exposed_tool_count = $result.exposed_tool_count
+  $state.mcp.total_library_tool_count = $result.total_library_tool_count
+  $state.mcp.profile_reconnect_required = [bool]$result.reconnect_required
+  $state.updated_at = (Get-Date).ToUniversalTime().ToString("o")
+  $state.updated_by = "set-tool-profile"
+  $state | ConvertTo-Json -Depth 40 | Set-Content $statePath -Encoding utf8
+
+  $reportDir = Join-Path $repoRoot "workspace\sessions\$Asset\reports"
+  New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+  $result | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $reportDir "tool-profile.json") -Encoding utf8
+  Write-Host "Active profile: $($result.active_profile)"
+  Write-Host "Reconnect required: $($result.reconnect_required)"
+} finally {
+  if ($sessionId) {
+    try { Invoke-WebRequest -Uri $url -Method Delete -Headers @{ Accept = "application/json"; "mcp-session-id" = $sessionId } -TimeoutSec 5 -UseBasicParsing | Out-Null } catch {}
+  }
+}

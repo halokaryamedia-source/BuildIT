@@ -1,8 +1,16 @@
-node_modules
+node_modules/
 dist/
-.claude
-nul
-.codex/visual-checks/
-.codex/cache/
-SavedData/cache/
-SourceDocument/.tmp_*/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local production sessions are runtime data, not repository history.
+workspace/sessions/
+workspace/cache/
+workspace/tmp/
+
+# Keep canonical workspace navigation files.
+!workspace/README.md
+!workspace/active-session.json
+!workspace/archive/
+!workspace/archive/README.md

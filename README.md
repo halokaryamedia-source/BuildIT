@@ -1,14 +1,31 @@
-# MCP Blockbench Workspace
+# BuildIT — MCP Blockbench
 
-Local Codex production starts here:
+BuildIT is the MCP Blockbench application and its shared AI-engine workflow.
 
-- [Codex Bootstrap](Engine/codex/BOOTSTRAP.md)
-- [Active Project Pointer](SavedData/ACTIVE_PROJECT.md)
-- [Workflow Hub](SourceDocument/engine/WORKFLOW_HUB.md)
-- [Source Document Index](SourceDocument/README.md)
-- [Root Layout Constraints](SourceDocument/engine/root-layout-constraints.md)
+## Repository Map
 
-## User-Visible Stages
+| Path | Purpose |
+| --- | --- |
+| `src/` | MCP Blockbench plugin and runtime implementation. |
+| `engines/` | Shared workflow plus Codex, Claude, and Ollama integration boundaries. |
+| `workspace/` | Local asset sessions, state, checkpoints, evidence, reports, and final outputs. |
+| `docs/` | Human guides, architecture, integration notes, references, and generated API docs. |
+| `openspec/` | Approved scope, decisions, tasks, and anti-overdevelopment contract. |
+| `build/` | Build and documentation tooling. |
+| `prompts/` | MCP prompt assets. |
+| `tests/` | Focused source and workflow verification. |
+| `.agents/`, `.codex/`, `.github/`, `.vscode/` | Tool-native integration paths that must remain at repository root. |
+
+## Start Here
+
+- MCP development: `src/`
+- Shared workflow: `engines/shared/README.md`
+- Codex production: `engines/codex/BOOTSTRAP.md`
+- Active asset pointer: `workspace/active-session.json`
+- Documentation: `docs/README.md`
+- Current work agreement: `openspec/changes/codex-local-workflow-rework/`
+
+## Production Stages
 
 ```text
 Geometry
@@ -17,8 +34,8 @@ Geometry
 → Final Validation
 ```
 
-Each stage ends with preview evidence and waits for user approval or targeted revisions.
+Each stage ends with one preview/review gate. Internal passes do not add approval gates.
 
-Operational controls belong in `Engine/`. Runtime asset state, references, checkpoints, evidence, reports, and final outputs belong in `SavedData/sessions/<asset>/`.
+## Naming Rule
 
-Keep source/build/runtime paths required by the plugin and tooling in place.
+There is one canonical path for every concern. Do not create parallel `v2`, `new`, `latest`, or duplicate root folders. Git history is the archive.

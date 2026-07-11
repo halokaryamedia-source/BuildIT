@@ -1,0 +1,93 @@
+{
+  "schema_version": "2.1",
+  "state_revision": 0,
+  "asset": {
+    "id": "<asset_id>",
+    "display_name": "<DISPLAY NAME>",
+    "target": "minecraft_bedrock_entity"
+  },
+  "reference": {
+    "path": "workspace/sessions/<asset_id>/references",
+    "status": "APPROVED",
+    "manifest": "reference_manifest.json",
+    "production_context": "PRODUCTION_CONTEXT.md",
+    "visual": "<asset_id>_reference_visual.png",
+    "geometry": "GEOMETRY.md",
+    "texturing": "TEXTURING.md",
+    "animation": "ANIMATION.md",
+    "validation": "VALIDATION.md",
+    "handoff": "CODEX_REFERENCE_HANDOFF.md",
+    "conflicts": []
+  },
+  "project": {
+    "name": null,
+    "uuid": null,
+    "format": "bedrock",
+    "uv_mode": "per_face",
+    "texture_width": null,
+    "texture_height": null,
+    "save_path": null
+  },
+  "mcp": {
+    "server_key": "blockbench",
+    "canonical_url": "http://localhost:3000/bb-mcp",
+    "connection_status": "NOT_RUN",
+    "capability_status": "NOT_RUN",
+    "active_tool_profile": "BEDROCK_CUBOID_GEOMETRY",
+    "tool_profile_revision": null,
+    "tool_profile_hash": null,
+    "exposed_tool_count": null,
+    "total_library_tool_count": null,
+    "profile_reconnect_required": false,
+    "connection_report": "workspace/sessions/<asset_id>/reports/connection.json",
+    "preflight": {
+      "status": "NOT_RUN",
+      "completed_at": null,
+      "stale_checks": [],
+      "report": "workspace/sessions/<asset_id>/reports/preflight.json"
+    }
+  },
+  "workflow": {
+    "state": "REFERENCE_READY",
+    "status": "READY",
+    "active_stage": "GEOMETRY",
+    "next_action": "RUN_CONNECTION_SYNC_AND_PREFLIGHT",
+    "animation_required": false,
+    "last_completed_stage": null,
+    "last_safe_checkpoint": null,
+    "stage_records": {
+      "GEOMETRY": { "status": "NOT_STARTED", "decision": null, "accepted_areas": [], "open_issues": [] },
+      "TEXTURE": { "status": "LOCKED", "decision": null, "accepted_areas": [], "open_issues": [] },
+      "ANIMATION": { "status": "LOCKED", "decision": null, "accepted_areas": [], "open_issues": [] },
+      "FINAL_VALIDATION": { "status": "LOCKED", "decision": null, "accepted_areas": [], "open_issues": [] }
+    }
+  },
+  "preservation": {
+    "manual_edits_present": false,
+    "manual_edits_to_preserve": [],
+    "globally_protected_areas": [],
+    "approved_stage_areas": {
+      "GEOMETRY": [],
+      "TEXTURE": [],
+      "ANIMATION": []
+    }
+  },
+  "checkpoints": {
+    "session_start": null,
+    "geometry_review": null,
+    "geometry_approved": null,
+    "texture_review": null,
+    "texture_approved": null,
+    "animation_review": null,
+    "animation_approved_or_skipped": null,
+    "final_candidate": null,
+    "validation_pass": null
+  },
+  "validation": {
+    "status": "PENDING_BUILD",
+    "result": null,
+    "report": "workspace/sessions/<asset_id>/evidence/final/validation_report.json"
+  },
+  "updated_at": null,
+  "updated_by": null
+}

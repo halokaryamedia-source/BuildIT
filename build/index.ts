@@ -6,82 +6,43 @@ import { blockbenchCompatPlugin, textFileLoaderPlugin } from "./plugins";
 import { version } from "../package.json";
 
 const OUTPUT_DIR = "./dist";
-// Normalized output dir name for path comparison (strips "./" prefix)
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
-const entryFile = resolve("./src/index.ts");
-
-const WATCHED_DIRECTORIES = ["src", "build", "prompts"].map((path) =>
-  normalize(path)
-);
+const ENTRY_FILE = resolve("./src/index.ts");
+const WATCHED_DIRECTORIES = ["src", "build", "prompts"].map(normalize);
 const WATCHED_FILES = new Set(
   [
     "package.json",
     "tsconfig.json",
-    join("Engine", "icon.svg"),
-    join("Engine", "codex", "tool-profiles.json"),
-    join("SourceDocument", "engine", "about.md"),
-  ].map((path) => normalize(path))
+    join("src", "assets", "icon.svg"),
+    join("engines", "shared", "profiles", "tool-profiles.json"),
+    join("engines", "shared", "profiles", "stage-profiles.json"),
+    join("docs", "product", "about.md"),
+  ].map(normalize)
 );
 
-function shouldTriggerRebuild(filename: string): boolean {
-  const normalizedFilename = normalize(filename);
-
-  if (
-    normalizedFilename === OUTPUT_DIR_NAME ||
-    normalizedFilename.startsWith(`${OUTPUT_DIR_NAME}${sep}`)
-  ) {
-    return false;
-  }
-
-  if (
-    normalizedFilename.endsWith(".js.map") ||
-    normalizedFilename.includes(".git") ||
-    normalizedFilename.startsWith(`node_modules${sep}`) ||
-    normalizedFilename === "node_modules"
-  ) {
-    return false;
-  }
-
-  if (WATCHED_FILES.has(normalizedFilename)) {
-    return true;
-  }
-
-  return WATCHED_DIRECTORIES.some(
-    (directory) =>
-      normalizedFilename === directory ||
-      normalizedFilename.startsWith(`${directory}${sep}`)
-  );
+function shouldRebuild(filename: string): boolean {
+  const path = normalize(filename);
+  if (path === OUTPUT_DIR_NAME || path.startsWith(`${OUTPUT_DIR_NAME}${sep}`)) return false;
+  if (path.includes(".git") || path === "node_modules" || path.startsWith(`node_modules${sep}`)) return false;
+  if (path.endsWith(".js.map")) return false;
+  if (WATCHED_FILES.has(path)) return true;
+  return WATCHED_DIRECTORIES.some((dir) => path === dir || path.startsWith(`${dir}${sep}`));
 }
 
-async function cleanOutputDir() {
+async function cleanOutput(): Promise<void> {
   try {
-    const info = await stat(OUTPUT_DIR);
-    if (info.isDirectory()) {
-      log.header("[Build] Clean");
-      log.step(`Cleaning output directory: ${c.cyan}${OUTPUT_DIR}${c.reset}`);
+    if ((await stat(OUTPUT_DIR)).isDirectory()) {
       await rm(OUTPUT_DIR, { recursive: true, force: true });
     }
   } catch {
-    log.dim("[Build] Output directory does not exist, no need to clean.");
+    // Output does not exist.
   }
 }
 
-// Function to handle the build process
 async function buildPlugin(): Promise<boolean> {
-  // Ensure output directory exists
-  try {
-    await mkdir(OUTPUT_DIR, { recursive: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code !== "EEXIST") {
-      log.header(`${c.red}[Build] Error${c.reset}`);
-      log.error(`Error creating output directory: ${error}`);
-      return false;
-    }
-  }
-
-  // Build the plugin
+  await mkdir(OUTPUT_DIR, { recursive: true });
   const result = await Bun.build({
-    entrypoints: [entryFile],
+    entrypoints: [ENTRY_FILE],
     outdir: OUTPUT_DIR,
     target: "node",
     format: "cjs",
@@ -90,7 +51,6 @@ async function buildPlugin(): Promise<boolean> {
     external: [
       "three",
       "tinycolor2",
-      // Native modules that require permission in Blockbench v5.0+
       "node:module",
       "node:fs",
       "node:fs/promises",
@@ -111,152 +71,84 @@ async function buildPlugin(): Promise<boolean> {
       "v8",
     ],
     minify: isProduction,
-    // Compile-time constants for dead code elimination
     define: {
       "process.env.NODE_ENV": isProduction ? '"production"' : '"development"',
       __DEV__: isProduction ? "false" : "true",
     },
-    // Remove debugger statements in production
     drop: isProduction ? ["debugger"] : [],
   });
 
   if (!result.success) {
-    log.header(`${c.red}[Build] Failed${c.reset}`);
-    for (const message of result.logs) {
-      log.error(String(message));
-    }
+    result.logs.forEach((entry) => log.error(String(entry)));
     return false;
   }
 
-  log.header("[Build] Assets");
-
-  const iconSource = resolve("./Engine/icon.svg");
-  const iconDest = join(OUTPUT_DIR, "icon.svg");
-
+  const iconSource = resolve("./src/assets/icon.svg");
   if (await Bun.file(iconSource).exists()) {
-    await copyFile(iconSource, iconDest);
-    log.step(`Copied ${c.cyan}icon.svg${c.reset}`);
+    await copyFile(iconSource, join(OUTPUT_DIR, "icon.svg"));
   }
 
   const indexFile = join(OUTPUT_DIR, "index.js");
   const mcpFile = join(OUTPUT_DIR, "mcp.js");
+  if (await Bun.file(indexFile).exists()) await rename(indexFile, mcpFile);
 
-  if (await Bun.file(indexFile).exists()) {
-    await rename(indexFile, mcpFile);
-    log.step(`Renamed ${c.gray}index.js${c.reset} → ${c.cyan}mcp.js${c.reset}`);
+  if (await Bun.file(mcpFile).exists()) {
+    const current = await Bun.file(mcpFile).text();
+    const banner = `/* v${version} */\nlet process = requireNativeModule('process');`;
+    if (!current.startsWith(banner)) await Bun.write(mcpFile, banner + current);
   }
 
-  const mcpBunFile = Bun.file(mcpFile);
-  if (await mcpBunFile.exists()) {
-    const mcpContent = await mcpBunFile.text();
-    const banner = /* js */ `/* v${version} */
-let process = requireNativeModule('process');`;
+  const indexMap = join(OUTPUT_DIR, "index.js.map");
+  if (await Bun.file(indexMap).exists()) await rename(indexMap, join(OUTPUT_DIR, "mcp.js.map"));
 
-    if (!mcpContent.startsWith(banner)) {
-      await Bun.write(mcpFile, banner + mcpContent);
-    }
-  }
-
-  // Rename the sourcemap file
-  const indexMapFile = join(OUTPUT_DIR, "index.js.map");
-  const mcpMapFile = join(OUTPUT_DIR, "mcp.js.map");
-
-  if (await Bun.file(indexMapFile).exists()) {
-    await rename(indexMapFile, mcpMapFile);
-    log.step(`Renamed ${c.gray}index.js.map${c.reset} → ${c.cyan}mcp.js.map${c.reset}`);
-  }
-
-  // Copy the README file
-  const readmeSource = resolve("./SourceDocument/engine/about.md");
-  const readmeDest = join(OUTPUT_DIR, "about.md");
-
-  if (await Bun.file(readmeSource).exists()) {
-    await copyFile(readmeSource, readmeDest);
-    log.step(`Copied ${c.cyan}about.md${c.reset}`);
+  const aboutSource = resolve("./docs/product/about.md");
+  if (await Bun.file(aboutSource).exists()) {
+    await copyFile(aboutSource, join(OUTPUT_DIR, "about.md"));
   }
 
   return true;
 }
 
-// Function to watch for file changes
-function watchFiles() {
-  log.info("[Build] Watching source/build inputs only...");
+function watchFiles(): void {
+  let running: Promise<void> | null = null;
+  let pending = false;
 
-  // Build serialization to prevent overlapping builds
-  let currentBuild: Promise<void> | null = null;
-  let pendingRebuild = false;
-
-  async function queueRebuild(filename: string) {
-    // If a build is in progress, mark as pending and return
-    if (currentBuild) {
-      pendingRebuild = true;
+  const queue = (filename: string) => {
+    if (running) {
+      pending = true;
       return;
     }
-
-    // Start the build
-    currentBuild = (async () => {
+    running = (async () => {
       do {
-        pendingRebuild = false;
-        log.header(`${c.yellow}[Build] Rebuild${c.reset}`);
+        pending = false;
         log.step(`File changed: ${c.cyan}${filename}${c.reset}`);
-        await cleanOutputDir();
-        await buildPlugin();
-        log.success("Rebuild complete");
-      } while (pendingRebuild);
-    })();
+        await cleanOutput();
+        if (!(await buildPlugin())) throw new Error("Rebuild failed");
+      } while (pending);
+    })().finally(() => {
+      running = null;
+    });
+  };
 
-    try {
-      await currentBuild;
-    } finally {
-      currentBuild = null;
-    }
-  }
-
-  const watcher = watch(
-    "./",
-    { recursive: true },
-    (_eventType, filename) => {
-      if (!filename || !shouldTriggerRebuild(filename)) return;
-      queueRebuild(filename);
-    }
-  );
-
-  // Handle process termination
+  const watcher = watch("./", { recursive: true }, (_event, filename) => {
+    if (filename && shouldRebuild(filename)) queue(filename);
+  });
   process.on("SIGINT", () => {
     watcher.close();
-    log.dim("[Build] Watch mode stopped");
     process.exit(0);
   });
 }
 
-async function main() {
+async function main(): Promise<void> {
   log.header("[Build] MCP Plugin");
-
-  if (isCleanMode) {
-    await cleanOutputDir();
-  }
-
-  if (isWatchMode) {
-    log.info("Building with watch mode...");
-    const success = await buildPlugin();
-    if (success) {
-      log.success(`Initial build completed. Output in ${c.cyan}${OUTPUT_DIR}${c.reset}`);
-      watchFiles();
-    }
-  } else {
-    log.info("Building...");
-    const success = await buildPlugin();
-    if (success) {
-      log.success(`Build completed. Output in ${c.cyan}${OUTPUT_DIR}${c.reset}`);
-    }
-    if (!success) {
-      process.exit(1);
-    }
-  }
+  if (isCleanMode) await cleanOutput();
+  const success = await buildPlugin();
+  if (!success) process.exit(1);
+  log.success(`Build completed in ${OUTPUT_DIR}`);
+  if (isWatchMode) watchFiles();
 }
 
-main().catch((err) => {
-  log.header(`${c.red}[Build] Fatal Error${c.reset}`);
-  log.error(String(err));
+main().catch((error) => {
+  log.error(String(error));
   process.exit(1);
 });

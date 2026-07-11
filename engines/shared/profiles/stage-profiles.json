@@ -1,0 +1,90 @@
+{
+  "schema_version": "2.1",
+  "global": {
+    "runtime_authority": "workspace/sessions/<asset>/state.json",
+    "governance": "engines/shared/workflow/GOVERNANCE.md",
+    "state_contract": "engines/shared/workflow/STATE_MACHINE.md",
+    "evidence_contract": "engines/shared/workflow/EVIDENCE_CONTRACT.md",
+    "checkpoint_contract": "engines/shared/workflow/CHECKPOINT_RECOVERY.md",
+    "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
+    "initial_build_mode": "bounded_batches",
+    "revision_mode": "one_named_issue_or_tightly_related_pair",
+    "accepted_area_policy": "immutable_unless_explicitly_reopened",
+    "profile_transition_policy": "complete_stage_then_reconnect_once"
+  },
+  "camera": {
+    "front_axis_default": "-z",
+    "projection": "orthographic",
+    "views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"],
+    "frame_margin_ratio": 1.25
+  },
+  "profiles": {
+    "GEOMETRY": {
+      "tool_profile_id": "BEDROCK_CUBOID_GEOMETRY",
+      "repair_tool_profile_id": "GEOMETRY_LOCAL_REPAIR",
+      "working_state": "GEOMETRY_IN_PROGRESS",
+      "review_state": "GEOMETRY_REVIEW",
+      "approved_state": "GEOMETRY_APPROVED",
+      "internal_passes": ["PRIMARY_FORM", "STRUCTURAL_DETAIL"],
+      "compact_validation_tool": "validate_reference_contract",
+      "approval_transition_tool": "complete_stage",
+      "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
+      "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
+      "required_evidence": {
+        "front": "evidence/geometry/geometry_front.png",
+        "left_side": "evidence/geometry/geometry_left.png",
+        "back": "evidence/geometry/geometry_back.png",
+        "top_footprint": "evidence/geometry/geometry_top.png",
+        "front_left_3_4": "evidence/geometry/geometry_front_left_3_4.png",
+        "report": "evidence/geometry/geometry_report.json"
+      }
+    },
+    "TEXTURE": {
+      "tool_profile_id": "BEDROCK_CUBOID_TEXTURE",
+      "repair_tool_profile_id": "TEXTURE_LOCAL_REPAIR",
+      "working_state": "TEXTURE_IN_PROGRESS",
+      "review_state": "TEXTURE_REVIEW",
+      "approved_state": "TEXTURE_APPROVED",
+      "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
+      "compact_validation_tool": "validate_reference_contract",
+      "atlas_evidence_tool": "save_texture_evidence",
+      "approval_transition_tool": "complete_stage",
+      "review_checkpoint": "checkpoints/30_texture_review.bbmodel",
+      "approved_checkpoint": "checkpoints/40_texture_approved.bbmodel",
+      "required_evidence": {
+        "atlas": "evidence/texture/texture_atlas.png",
+        "front": "evidence/texture/texture_front.png",
+        "left_side": "evidence/texture/texture_left.png",
+        "back": "evidence/texture/texture_back.png",
+        "front_left_3_4": "evidence/texture/texture_front_left_3_4.png",
+        "report": "evidence/texture/texture_report.json"
+      }
+    },
+    "ANIMATION": {
+      "tool_profile_id": "BEDROCK_CUBOID_ANIMATION",
+      "repair_tool_profile_id": "ANIMATION_LOCAL_REPAIR",
+      "working_state": "ANIMATION_IN_PROGRESS",
+      "review_state": "ANIMATION_REVIEW",
+      "approved_state": "ANIMATION_APPROVED",
+      "skipped_state": "ANIMATION_SKIPPED",
+      "optional": true,
+      "compact_validation_tool": "validate_reference_contract",
+      "approval_transition_tool": "complete_stage",
+      "review_checkpoint": "checkpoints/50_animation_review.bbmodel",
+      "approved_checkpoint": "checkpoints/60_animation_approved.bbmodel",
+      "skipped_checkpoint": "checkpoints/60_animation_skipped.bbmodel"
+    },
+    "FINAL_VALIDATION": {
+      "tool_profile_id": "FINAL_VALIDATION_READONLY",
+      "working_state": "FINAL_VALIDATION",
+      "review_state": "FINAL_REVIEW",
+      "approved_state": "DONE",
+      "automatic_local_fix_limit": 2,
+      "compact_validation_tool": "validate_reference_contract",
+      "atlas_evidence_tool": "save_texture_evidence",
+      "approval_transition_tool": "complete_stage",
+      "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
+      "pass_checkpoint": "checkpoints/80_validation_pass.bbmodel"
+    }
+  }
+}
