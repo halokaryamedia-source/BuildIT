@@ -26,6 +26,7 @@ import { registerWorkflowTools } from "./tools/workflow";
 import { registerLeaseTools } from "./tools/lease";
 import { registerGeometryFeedbackTools } from "./tools/geometry-feedback";
 import { registerGeometryCompletionTools } from "./tools/geometry-completion";
+import { registerGeometryReviewGateTools } from "./tools/geometry-review-gate";
 import { registerStageContextTools } from "./tools/stage-context";
 import { registerVisualCompareTools } from "./tools/visual-compare";
 
@@ -47,6 +48,7 @@ const registrationFunctions = [
   registerExportTools,
   registerGeometryFeedbackTools,
   registerGeometryCompletionTools,
+  registerGeometryReviewGateTools,
   registerStageContextTools,
   registerVisualCompareTools,
   registerHistoryTools,
