@@ -2,6 +2,7 @@ export interface NativeFsLike {
   existsSync(path: string): boolean;
   mkdirSync(path: string, options?: { recursive?: boolean }): void;
   readFileSync(path: string, encoding?: string): string | Buffer;
+  readdirSync?(path: string): string[];
   writeFileSync(path: string, data: string | Buffer): void;
   renameSync(from: string, to: string): void;
   rmSync(path: string, options?: { force?: boolean }): void;
@@ -79,4 +80,10 @@ export function bufferFromDataUrl(dataUrl: string): Buffer {
   return match[2]
     ? Buffer.from(encoded, "base64")
     : Buffer.from(decodeURIComponent(encoded), "utf8");
+}
+
+export function directoryHasFiles(fs: NativeFsLike, path: string): boolean {
+  if (!fs.existsSync(path)) return false;
+  if (!fs.readdirSync) return true;
+  return fs.readdirSync(path).length > 0;
 }
