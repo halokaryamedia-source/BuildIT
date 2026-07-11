@@ -47,7 +47,7 @@ Verify no alternate key, port, or session was created.
 
 Under `BEDROCK_CUBOID_GEOMETRY`:
 
-1. call `validate_reference_contract` with `require_evidence=false`;
+1. call `validate_reference_contract` with `stage=GEOMETRY` and `require_evidence=false`;
 2. verify project UUID, format, UV mode, texture dimensions, and package;
 3. record manual edits;
 4. save `00_session_start.bbmodel`;
@@ -60,8 +60,8 @@ Under `BEDROCK_CUBOID_GEOMETRY`:
 - use bounded multi-part batches;
 - save `10_geometry_review.bbmodel`;
 - capture five standard views;
-- create `geometry_report.json`;
-- call `validate_reference_contract` for `GEOMETRY`;
+- create `geometry_report.json` with top-level `result`;
+- call `validate_reference_contract` for `GEOMETRY` with evidence enabled;
 - stop at `GEOMETRY_REVIEW`.
 
 Test one local revision with `GEOMETRY_LOCAL_REPAIR`.
@@ -82,7 +82,8 @@ one reconnect only
 - call `save_texture_evidence` for `texture_atlas.png`;
 - save `30_texture_review.bbmodel`;
 - capture required standard views;
-- create `texture_report.json`;
+- create `texture_report.json` with top-level `result`;
+- call `validate_reference_contract` for `TEXTURE` with evidence enabled;
 - stop at `TEXTURE_REVIEW`.
 
 Verify no full atlas base64 round-trip is needed merely to persist evidence.
@@ -108,6 +109,8 @@ When required:
 
 - create only approved hierarchy, pivots, and clips;
 - save review checkpoint/evidence;
+- create `animation_report.json` with top-level `result`;
+- call `validate_reference_contract` for `ANIMATION` with evidence enabled;
 - stop at `ANIMATION_REVIEW`;
 - test one named repair when useful;
 - after explicit approval, call `complete_stage` once.
@@ -121,8 +124,8 @@ Under `FINAL_VALIDATION_READONLY`:
 1. export final candidate;
 2. call `save_texture_evidence` for `final_texture_atlas.png`;
 3. capture final five views;
-4. complete `VALIDATION.md` and reports;
-5. call `validate_reference_contract` for `FINAL_VALIDATION`;
+4. complete `VALIDATION.md` and create `validation_report.json` with top-level `result`;
+5. call `validate_reference_contract` for `FINAL_VALIDATION` with evidence enabled;
 6. route local failures to the smallest repair profile;
 7. allow at most two local automatic fixes;
 8. stop at `FINAL_REVIEW`.
@@ -144,13 +147,14 @@ For every normal profile verify:
 
 Verify:
 
-- `validate_reference_contract` returns one deterministic structured issue list;
+- `validate_reference_contract` returns one deterministic structured issue list in every normal review stage;
+- preflight mode does not require unfinished stage output;
 - `save_texture_evidence` writes PNG + metadata inside the session root;
-- outside-root writes fail;
-- missing evidence blocks `complete_stage`;
+- outside-root and traversal writes fail;
+- missing evidence or non-PASS report blocks `complete_stage`;
 - stale state revision blocks `complete_stage`;
 - checkpoint, state, accepted areas, and profile remain consistent;
-- `get_project_info` and `get_uv_layout` return structured content.
+- project, UV, and history results are structured and bounded.
 
 ## Measurement Log
 
@@ -176,7 +180,7 @@ Manual step repeated enough to justify automation:
 - exact stage profiles;
 - no connection search;
 - no base64 evidence round-trip;
-- one compact validation result per required gate;
+- one compact validation result per review gate;
 - one `complete_stage` call per approved stage;
 - each user-visible stage has one review gate;
 - persistent recovery exists at every stage;
