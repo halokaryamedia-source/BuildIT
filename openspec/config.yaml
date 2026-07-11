@@ -1,25 +1,26 @@
 schema: spec-driven
 
 context: |
-  Project: MCP Blockbench, a TypeScript/Bun Blockbench plugin exposing tools, prompts, and resources through MCP.
-  Existing architecture: preserve the current plugin source, server/MCP glue, generated docs/api.json, and Blockbench settings endpoint.
-  Default MCP endpoint: http://localhost:3000/bb-mcp; multiple Blockbench windows may use later ports and must be verified.
-  Current source facts: package version 1.6.0; generated API docs and runtime tool counts must be verified rather than assumed.
-  Guardrails: do not create a new MCP server, replace the architecture, or introduce unrelated agent frameworks.
+  Project: BuildIT contains one MCP Blockbench TypeScript/Bun plugin package plus shared AI-engine orchestration.
+  MCP package root: mcp-blockbench/ contains src/, scripts/, prompts/, tests/, package files, and generated dist/ output.
+  Shared engine workflow: engines/shared/.
+  Codex entry point: engines/codex/BOOTSTRAP.md.
+  Governance: engines/shared/workflow/GOVERNANCE.md.
+  Runtime authority: workspace/sessions/<asset>/state.json.
+  Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
+  Default and only normal MCP endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
+  Current source facts: package version 1.6.0; runtime tool counts must be verified rather than assumed.
+  Guardrails: do not create a second MCP server, parallel source root, versioned folder, or unrelated agent framework.
   Active workflow change: openspec/changes/codex-local-workflow-rework/.
-  Codex entry point: Engine/codex/BOOTSTRAP.md.
-  Governance: Engine/codex/GOVERNANCE.md.
   OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
   Ponytail responsibility: select the smallest safe action required now, reuse existing work, limit tools/evidence, preserve accepted areas, and stop when the active requirement is met.
-  Runtime authority: SavedData/sessions/<asset>/state.json.
   Reference package: PRODUCTION_CONTEXT.md, one Reference Visual, GEOMETRY.md, TEXTURING.md, ANIMATION.md, VALIDATION.md, reference_manifest.json, and CODEX_REFERENCE_HANDOFF.md.
   User-visible production stages: Geometry, Texture, optional Animation, and Final Validation.
   Internal passes do not require separate routine approval.
   Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
   Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
-  Codex workflow: use direct Streamable HTTP first, fall back to mcp-remote only if direct HTTP cannot list tools.
   Modelling context: use the installed blockbench-use skill and only the active-stage skill/tool profile.
-  Mandatory procedure: SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md.
+  Mandatory procedure: docs/workflow/mandatory-blockbench-mcp-procedure.md.
   Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
   UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
   Branch policy: keep all active workflow rework isolated on Rework until the user explicitly approves final integration.
