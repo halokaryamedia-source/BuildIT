@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "<asset_id>",
+  "display_name": "<DISPLAY NAME>",
+  "lifecycle": {
+    "status": "ACTIVE",
+    "origin": "NEW",
+    "reopened_from": null,
+    "reopened_stage": null,
+    "reason": null,
+    "baseline_model_sha256": null
+  },
+  "project": {
+    "uuid": null,
+    "format": "bedrock",
+    "uv_mode": "per_face",
+    "texture_width": null,
+    "texture_height": null,
+    "front_axis": "-z"
+  },
+  "paths": {
+    "blockbench_root": "workspace/active/<asset_id>/blockbench",
+    "model": "workspace/active/<asset_id>/blockbench/<asset_id>.bbmodel",
+    "textures": "workspace/active/<asset_id>/blockbench/textures",
+    "references": "workspace/active/<asset_id>/blockbench/references",
+    "previews": "workspace/active/<asset_id>/blockbench/previews",
+    "mcp_root": "workspace/active/<asset_id>/mcp",
+    "state": "workspace/active/<asset_id>/mcp/state.json",
+    "technical_reference": "workspace/active/<asset_id>/mcp/references",
+    "checkpoints": "workspace/active/<asset_id>/mcp/checkpoints",
+    "evidence": "workspace/active/<asset_id>/mcp/evidence",
+    "reports": "workspace/active/<asset_id>/mcp/reports"
+  },
+  "connection": {
+    "profile": "engines/codex/connection-profile.json",
+    "server_key": "blockbench",
+    "canonical_url": "http://localhost:3000/bb-mcp"
+  },
+  "artifacts": {
+    "model_sha256": null,
+    "reference_manifest_sha256": null,
+    "validation": null
+  },
+  "completion": {
+    "completed_at": null,
+    "approval_ref": null,
+    "last_approved_state": null
+  },
+  "created_at": null,
+  "updated_at": null
+}
