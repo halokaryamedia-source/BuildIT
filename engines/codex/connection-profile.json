@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "connection_id": "blockbench",
   "transport": "streamable_http",
   "canonical_url": "http://localhost:3000/bb-mcp",
@@ -33,6 +33,7 @@
     "get_project_info",
     "get_tool_profile",
     "activate_tool_profile",
+    "manage_project_write_lease",
     "save_project_checkpoint",
     "capture_standard_views"
   ],
