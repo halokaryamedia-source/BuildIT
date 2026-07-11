@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "global": {
     "runtime_authority": "workspace/sessions/<asset>/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -7,6 +7,8 @@
     "evidence_contract": "engines/shared/workflow/EVIDENCE_CONTRACT.md",
     "checkpoint_contract": "engines/shared/workflow/CHECKPOINT_RECOVERY.md",
     "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
+    "skill_profile_contract": "engines/shared/skills/skill-profiles.json",
+    "max_loaded_production_skills": 2,
     "initial_build_mode": "bounded_batches",
     "revision_mode": "one_named_issue_or_tightly_related_pair",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
@@ -22,6 +24,7 @@
     "GEOMETRY": {
       "tool_profile_id": "BEDROCK_CUBOID_GEOMETRY",
       "repair_tool_profile_id": "GEOMETRY_LOCAL_REPAIR",
+      "skill_profile_id": "GEOMETRY",
       "working_state": "GEOMETRY_IN_PROGRESS",
       "review_state": "GEOMETRY_REVIEW",
       "approved_state": "GEOMETRY_APPROVED",
@@ -42,6 +45,7 @@
     "TEXTURE": {
       "tool_profile_id": "BEDROCK_CUBOID_TEXTURE",
       "repair_tool_profile_id": "TEXTURE_LOCAL_REPAIR",
+      "skill_profile_id": "TEXTURE",
       "working_state": "TEXTURE_IN_PROGRESS",
       "review_state": "TEXTURE_REVIEW",
       "approved_state": "TEXTURE_APPROVED",
@@ -63,6 +67,7 @@
     "ANIMATION": {
       "tool_profile_id": "BEDROCK_CUBOID_ANIMATION",
       "repair_tool_profile_id": "ANIMATION_LOCAL_REPAIR",
+      "skill_profile_id": "ANIMATION",
       "working_state": "ANIMATION_IN_PROGRESS",
       "review_state": "ANIMATION_REVIEW",
       "approved_state": "ANIMATION_APPROVED",
@@ -76,6 +81,7 @@
     },
     "FINAL_VALIDATION": {
       "tool_profile_id": "FINAL_VALIDATION_READONLY",
+      "skill_profile_id": "FINAL_VALIDATION",
       "working_state": "FINAL_VALIDATION",
       "review_state": "FINAL_REVIEW",
       "approved_state": "DONE",
