@@ -24,6 +24,7 @@ import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
 import { geometryAnalyzerToolDocs } from "../src/server/tools/geometry-analyzer";
 import { geometryRotationToolDocs } from "../src/server/tools/geometry-rotation";
+import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validator";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
@@ -42,6 +43,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
+  { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
   { category: "Legacy Geometry Visual Comparison", tools: visualCompareToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
@@ -151,7 +153,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use the slugified project name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Returns information about textures. List URIs use the slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
   },
   {
     name: "reference_models",
