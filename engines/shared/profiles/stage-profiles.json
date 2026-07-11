@@ -70,7 +70,7 @@
       ],
       "compact_validation_tool": "validate_reference_contract",
       "visual_validation_tool": "verify_geometry_visual_gate",
-      "approval_transition_tool": "complete_stage",
+      "approval_transition_tool": "complete_geometry_stage",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
       "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
       "required_evidence": {
