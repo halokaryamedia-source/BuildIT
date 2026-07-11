@@ -5,6 +5,36 @@ description: "Optional Animation-stage skill for approved Bedrock cuboid assets.
 
 # Blockbench Animation
 
-Load only when approved motion is required. Use `BEDROCK_CUBOID_ANIMATION` or `ANIMATION_LOCAL_REPAIR`. Create only required rigid cuboid group/bone motion, preserve prior stages, capture hierarchy/pivot/clip evidence, validate, and stop at `ANIMATION_REVIEW`.
+## Entry
 
-No mesh armature, vertex weights, redesign, optional clips, or final export.
+Load only when the manifest or `ANIMATION.md` requires at least one animation family or interactive motion. Otherwise mark Animation skipped and proceed to Final Validation without loading this skill.
+
+Use tool profile `BEDROCK_CUBOID_ANIMATION` or `ANIMATION_LOCAL_REPAIR`.
+
+Read:
+
+1. `PRODUCTION_CONTEXT.md`
+2. the approved Reference Visual
+3. `GEOMETRY.md`
+4. `ANIMATION.md`
+5. the current session state
+
+## Work
+
+- Verify required groups, hierarchy, neutral pose, and pivots.
+- Create only required clips.
+- Use rigid cuboid group/bone motion.
+- Preserve Geometry and Texture.
+- Check inherited motion, ground contact, clipping, and neutral-pose recovery.
+- Use one named issue or tightly related pair during revision.
+
+## Forbidden
+
+- mesh armatures or vertex weights for normal cuboid assets;
+- new geometry, texture redesign, or optional clips;
+- motion outside approved axes/ranges;
+- final export.
+
+## Review Output
+
+Create the Animation review checkpoint, hierarchy, pivot, neutral-pose, required clip evidence, and `animation_report.json`. Run `validate_reference_contract` for Animation and stop for `APPROVED` or `REVISION: ...`.
