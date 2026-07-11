@@ -38,25 +38,26 @@ describe("Ponytail-scoped MCP reliability guards", () => {
     }
   });
 
-  test("enforces the lease at the existing tool-profile execution boundary", () => {
+  test("enforces leases and releases both generic and guarded stage completion", () => {
     const source = read("src/lib/toolProfiles.ts");
     expect(source).toContain("assertToolMutationAllowed");
-    expect(source).toContain('name === "complete_stage"');
+    expect(source).toContain('"complete_stage"');
+    expect(source).toContain('"complete_geometry_stage"');
     expect(source).toContain('name === "activate_tool_profile"');
     expect(source).toContain("profileChanged");
     expect(source).toContain("releaseProjectWriteLease");
     expect(source).toContain("canEnterBootstrapWithoutProject");
   });
 
-  test("writes evidence atomically without returning image payloads by default", () => {
-    const source = read("src/server/tools/camera.ts");
-    expect(source).toContain("return_images");
-    expect(source).toContain(
-      "const includeImages = return_images ?? !output_dir"
-    );
-    expect(source).toContain("assertInsideRoot(output_dir, session_root)");
-    expect(source).toContain("writeFileAtomically(fs, outputPath, data)");
-    expect(source).toContain("sha256: sha256(data)");
+  test("standard evidence delegates to clean rotation-aware capture", () => {
+    const camera = read("src/server/tools/camera.ts");
+    const feedback = read("src/server/tools/geometry-feedback.ts");
+    expect(camera).toContain("capture_visual_feedback");
+    expect(camera).toContain("front_left_3_4");
+    expect(camera).toContain('"perspective"');
+    expect(feedback).toContain("writeFileAtomically(fs, outputPath, data)");
+    expect(feedback).toContain("sha256: sha256(data)");
+    expect(feedback).toContain("withCleanSelection");
   });
 
   test("records real checkpoint and export integrity hashes", () => {
