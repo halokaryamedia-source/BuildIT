@@ -9,13 +9,44 @@ export interface NativeFsLike {
 }
 
 export function normalizePathForCompare(path: string): string {
-  const normalized = path.replace(/\\/g, "/").replace(/\/$/, "");
-  return /^[a-zA-Z]:\//.test(normalized) ? normalized.toLowerCase() : normalized;
+  const slashed = path.replace(/\\/g, "/");
+  const driveMatch = slashed.match(/^([a-zA-Z]:)(?:\/|$)/);
+  const isAbsolutePosix = !driveMatch && slashed.startsWith("/");
+  const prefix = driveMatch
+    ? `${driveMatch[1].toLowerCase()}/`
+    : isAbsolutePosix
+      ? "/"
+      : "";
+  const remainder = driveMatch
+    ? slashed.slice(driveMatch[0].length)
+    : isAbsolutePosix
+      ? slashed.slice(1)
+      : slashed;
+  const parts: string[] = [];
+
+  for (const segment of remainder.split("/")) {
+    if (!segment || segment === ".") continue;
+    if (segment === "..") {
+      if (parts.length > 0 && parts[parts.length - 1] !== "..") {
+        parts.pop();
+      } else if (!prefix) {
+        parts.push("..");
+      }
+      continue;
+    }
+    parts.push(segment);
+  }
+
+  const normalized = `${prefix}${parts.join("/")}`.replace(/\/$/, "");
+  return driveMatch ? normalized.toLowerCase() : normalized;
 }
 
 export function assertInsideRoot(path: string, root: string): void {
   const target = normalizePathForCompare(path);
   const normalizedRoot = normalizePathForCompare(root);
+  if (!normalizedRoot || normalizedRoot === "." || normalizedRoot === "..") {
+    throw new Error("Approved output root must resolve to a concrete directory.");
+  }
   if (target !== normalizedRoot && !target.startsWith(`${normalizedRoot}/`)) {
     throw new Error(`Output path "${path}" is outside approved root "${root}".`);
   }
