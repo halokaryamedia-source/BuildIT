@@ -2,12 +2,14 @@
 
 Core Blockbench MCP plugin package.
 
-## Contents
+## Package Map
 
-- `src/` — plugin implementation
-- `scripts/` — build and documentation tooling
-- `prompts/` — MCP prompt assets
-- `tests/` — focused verification
-- `dist/` — generated plugin output
+| Path | Purpose |
+| --- | --- |
+| `src/` | Plugin and MCP runtime implementation. |
+| `build/` | Build, manifest, and API documentation tooling. |
+| `prompts/` | MCP prompt assets. |
+| `tests/` | Focused package and workflow verification. |
+| `dist/` | Generated Blockbench plugin output. |
 
-Run package commands from this directory.
+Run Bun commands from this directory.

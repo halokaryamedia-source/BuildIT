@@ -1,29 +1,26 @@
 # BuildIT — MCP Blockbench
 
-BuildIT is the MCP Blockbench application and its shared AI-engine workflow.
+BuildIT contains the MCP Blockbench application, shared AI-engine orchestration, local production workspace, documentation, and OpenSpec work contract.
 
 ## Repository Map
 
 | Path | Purpose |
 | --- | --- |
-| `src/` | MCP Blockbench plugin and runtime implementation. |
+| `mcp-blockbench/` | MCP Blockbench plugin package: source, build tooling, prompts, tests, and generated output. |
 | `engines/` | Shared workflow plus Codex, Claude, and Ollama integration boundaries. |
 | `workspace/` | Local asset sessions, state, checkpoints, evidence, reports, and final outputs. |
-| `docs/` | Human guides, architecture, integration notes, references, and generated API docs. |
+| `docs/` | Product, workflow, architecture, integration, reference, and generated API documentation. |
 | `openspec/` | Approved scope, decisions, tasks, and anti-overdevelopment contract. |
-| `build/` | Build and documentation tooling. |
-| `prompts/` | MCP prompt assets. |
-| `tests/` | Focused source and workflow verification. |
-| `.agents/`, `.codex/`, `.github/`, `.vscode/` | Tool-native integration paths that must remain at repository root. |
+| `.agents/`, `.codex/`, `.github/`, `.vscode/` | Tool-native adapter and discovery paths. |
 
 ## Start Here
 
-- MCP development: `src/`
+- MCP application: `mcp-blockbench/README.md`
 - Shared workflow: `engines/shared/README.md`
 - Codex production: `engines/codex/BOOTSTRAP.md`
 - Active asset pointer: `workspace/active-session.json`
 - Documentation: `docs/README.md`
-- Current work agreement: `openspec/changes/codex-local-workflow-rework/`
+- Current agreement: `openspec/changes/codex-local-workflow-rework/`
 
 ## Production Stages
 
@@ -34,8 +31,8 @@ Geometry
 → Final Validation
 ```
 
-Each stage ends with one preview/review gate. Internal passes do not add approval gates.
+Each stage has one preview/review gate. Internal passes do not add routine approvals.
 
 ## Naming Rule
 
-There is one canonical path for every concern. Do not create parallel `v2`, `new`, `latest`, or duplicate root folders. Git history is the archive.
+Use one canonical path and filename for every concern. Do not create `v2`, `new`, `latest`, `backup`, or parallel authority names. Git history stores revisions.
