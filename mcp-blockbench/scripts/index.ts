@@ -48,6 +48,7 @@ function hasStaticPluginMetadata(bundle: string): boolean {
     /title\s*:\s*["']BuildIT MCP Server["']/,
     /author\s*:\s*["']achmadawdi["']/,
     /description\s*:\s*["']Connect Blockbench to BuildIT/,
+    /icon\s*:\s*["']hub["']/,
     /variant\s*:\s*["']desktop["']/,
     /min_version\s*:\s*["']5\.0\.0["']/,
   ];
@@ -115,7 +116,7 @@ async function buildPlugin(): Promise<boolean> {
 
     if (!hasStaticPluginMetadata(finalBundle)) {
       throw new Error(
-        "Generated plugin metadata is not statically discoverable by Blockbench. Keep version, title, author, description, variant, and min_version as direct literals in BBPlugin.register()."
+        "Generated plugin metadata is not statically discoverable by Blockbench. Keep version, title, author, description, icon, variant, and min_version as direct literals in BBPlugin.register()."
       );
     }
 
