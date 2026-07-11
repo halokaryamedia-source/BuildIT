@@ -19,17 +19,17 @@ activate_tool_profile
 
 | Profile | Exposed Tool Target | Purpose |
 | --- | ---: | --- |
-| `BOOTSTRAP` | 8 | readiness, project setup, profile selection |
-| `BEDROCK_CUBOID_GEOMETRY` | 17 | cuboid groups, cubes, history, checkpoint, evidence |
-| `BEDROCK_CUBOID_TEXTURE` | 24 | Classic Bedrock cube UV and pixel painting |
-| `BEDROCK_CUBOID_ANIMATION` | 16 | group/bone animation without mesh deformation |
-| `FINAL_VALIDATION_READONLY` | 13 | read-mostly inspection, evidence, checkpoint, export |
+| `BOOTSTRAP` | 9 | readiness, project setup, compact contract validation |
+| `BEDROCK_CUBOID_GEOMETRY` | 19 | cuboid geometry, checkpoint, evidence, validation, approval transition |
+| `BEDROCK_CUBOID_TEXTURE` | 26 | Classic Bedrock UV/painting, atlas evidence, approval transition |
+| `BEDROCK_CUBOID_ANIMATION` | 17 | group/bone animation and approval transition |
+| `FINAL_VALIDATION_READONLY` | 16 | compact contract validation, evidence, checkpoint, export, final approval |
 | `GEOMETRY_LOCAL_REPAIR` | 15 | named geometry correction only |
-| `TEXTURE_LOCAL_REPAIR` | 19 | named UV/texture correction only |
+| `TEXTURE_LOCAL_REPAIR` | 20 | named UV/texture correction plus focused atlas evidence |
 | `ANIMATION_LOCAL_REPAIR` | 13 | named motion/pivot correction only |
 | `DIAGNOSTIC_ESCALATION` | runtime total | recorded blocker only |
 
-The runtime tool `get_tool_profile` must report the actual exposed count and deterministic profile hash after the plugin is loaded.
+`get_tool_profile` must report the actual exposed count and deterministic profile hash after the plugin is loaded.
 
 ## Geometry Profile
 
@@ -39,23 +39,24 @@ Included:
 - bounded cube construction;
 - explicit element lookup and local edits;
 - undo/redo inspection;
+- one-call reference contract validation;
 - persistent checkpoint;
-- standard evidence capture.
+- standard evidence capture;
+- atomic approved-stage completion.
 
 Excluded:
 
 - project creation/configuration after preflight;
 - selection-dependent editing;
 - ad-hoc current-view screenshots;
-- painting;
-- UV editing;
+- painting and UV editing;
 - animation;
 - PBR;
 - mesh/armature workflows;
 - final export;
 - UI automation and eval.
 
-Project creation and configuration remain available only in `BOOTSTRAP`.
+Project creation/configuration remain available only in `BOOTSTRAP`.
 
 ## Texture Profile
 
@@ -65,7 +66,8 @@ Included:
 - cuboid per-face UV;
 - UV layout inspection;
 - pixel-oriented fill, shape, brush, erase, and color-pick operations;
-- checkpoint and standard review capture.
+- direct atomic PNG evidence writing through `save_texture_evidence`;
+- checkpoint, standard review capture, and approved-stage completion.
 
 Excluded:
 
@@ -88,7 +90,8 @@ Included:
 - keyframe management;
 - timeline control;
 - checkpoint and evidence capture;
-- current-view screenshots only for sampled animation poses.
+- current-view screenshots only for sampled animation poses;
+- approved-stage completion.
 
 Excluded:
 
@@ -104,9 +107,12 @@ Excluded:
 Included:
 
 - project, outline, texture, and UV inspection;
+- one-call reference contract validation;
+- direct final texture-atlas evidence writing;
 - final standard views;
 - checkpointing;
-- export format inspection and final export.
+- export format inspection and final export;
+- final approval transition to `DONE`.
 
 Excluded:
 
@@ -118,6 +124,20 @@ Excluded:
 - new features.
 
 A failure activates the matching repair profile and returns to the relevant review stage.
+
+## Token-Saving Composite Operations
+
+### `validate_reference_contract`
+
+Replaces repeated manual calls for project identity, format, dimensions, atlas, required files, evidence, animation presence, PBR conflicts, and Blockbench validator counts.
+
+### `save_texture_evidence`
+
+Writes PNG evidence directly inside the session workspace and returns only compact metadata. Codex no longer needs to receive and retransmit a full base64 atlas merely to save it.
+
+### `complete_stage`
+
+After explicit user approval, verifies evidence, creates the approved checkpoint, updates `state.json`, protects accepted areas, activates the next profile, and returns one reconnect instruction.
 
 ## High-Risk Library Capabilities Hidden from Normal Work
 
@@ -138,15 +158,8 @@ Even when a reusable tool is present in a profile, unsafe cross-stage arguments 
 
 - Geometry `place_cube` cannot assign an explicit texture or custom face UV;
 - Geometry `modify_cube` cannot change auto-UV, UV offsets, mirroring, or face UV;
-- Classic Texture `create_texture` cannot set `pbr_channel`.
-
-The runtime returns:
-
-```text
-TOOL_PROFILE_ARGUMENT_BLOCKED
-```
-
-instead of silently performing out-of-stage work.
+- Classic Texture `create_texture` cannot set `pbr_channel`;
+- `set_cube_face_uv` requires an explicit cube ID.
 
 ## Runtime Proof Still Required
 
@@ -158,7 +171,10 @@ After build/reload, verify for every normal profile:
 4. a forbidden tool is absent from the list;
 5. a stale call outside the newly activated profile returns `TOOL_PROFILE_BLOCKED`;
 6. a cross-stage argument returns `TOOL_PROFILE_ARGUMENT_BLOCKED`;
-7. one reconnect refreshes the reduced list;
-8. no new port or MCP server key is created.
+7. `validate_reference_contract` returns one compact result;
+8. `save_texture_evidence` writes PNG without a base64 round-trip;
+9. `complete_stage` writes checkpoint/state and changes profile consistently;
+10. one reconnect refreshes the reduced list;
+11. no new port or MCP server key is created.
 
 Do not mark this audit runtime-verified until those checks pass in actual Blockbench and Codex.
