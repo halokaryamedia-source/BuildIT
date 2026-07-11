@@ -8,15 +8,17 @@
 - [x] Add deterministic `blockbench` MCP connection.
 - [x] Add exact stage and repair tool profiles.
 - [x] Add persistent checkpoints, standard evidence, compact validation, direct texture evidence, and atomic stage completion.
-- [x] Consolidate root architecture into `src/`, `engines/`, `workspace/`, `docs/`, `openspec/`, and `build/`.
-- [x] Remove duplicate custom roots `Engine/`, `SavedData/`, and `SourceDocument/`.
-- [x] Remove stale committed runtime artifacts and legacy documentation from the active tree; retain them in Git history.
-- [x] Keep one canonical naming set with no versioned duplicate folders/files.
+- [x] Consolidate the complete plugin package under `mcp-blockbench/`.
+- [x] Consolidate AI workflow under `engines/`, runtime data under `workspace/`, and documentation under `docs/`.
+- [x] Remove duplicate custom roots `Engine/`, `SavedData`, `SourceDocument`, root `src`, root `build`, root `prompts`, and root `tests`.
+- [x] Move generated API output to the single `docs/api/` target.
+- [x] Remove stale committed runtime artifacts and legacy documentation from the active tree; retain history in Git.
+- [x] Keep one canonical naming set with no versioned or parallel folders/files.
 
 ## Local Proof Still Required
 
-- [ ] Run focused typecheck, tests, and development build locally.
-- [ ] Reload `dist/mcp.js` in Blockbench.
+- [ ] Run focused typecheck, tests, and development build from `mcp-blockbench/`.
+- [ ] Reload `mcp-blockbench/dist/mcp.js` in Blockbench.
 - [ ] Run `engines/codex/scripts/sync-local-stack.ps1` against one project.
 - [ ] Verify exact profile counts and one reconnect per stage transition.
 - [ ] Verify blocked out-of-profile and cross-stage calls.
