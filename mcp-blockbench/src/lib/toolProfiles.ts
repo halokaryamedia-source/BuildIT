@@ -6,6 +6,10 @@ import {
   assertToolMutationAllowed,
   releaseProjectWriteLease,
 } from "@/lib/writeLease";
+import {
+  assertGeometryMutationPhase,
+  recordGeometryVisualRuntimeResult,
+} from "@/lib/geometryRuntime";
 
 interface ToolProfileDefinition {
   description: string;
@@ -46,10 +50,15 @@ const wrapped = new Set<string>();
 const geometryProfiles = new Set([
   "BEDROCK_CUBOID_GEOMETRY",
   "GEOMETRY_LOCAL_REPAIR",
+  "GEOMETRY_VISUAL_REBUILD",
 ]);
 const textureProfiles = new Set([
   "BEDROCK_CUBOID_TEXTURE",
   "TEXTURE_LOCAL_REPAIR",
+]);
+const stageCompletionTools = new Set([
+  "complete_stage",
+  "complete_geometry_stage",
 ]);
 let activeProfileId = config.default_profile;
 let profileRevision = 1;
@@ -142,6 +151,7 @@ function hasArg(args: Record<string, unknown>, key: string): boolean {
 function assertArguments(toolName: string, args: Record<string, unknown>): void {
   if (activeProfileId === "DIAGNOSTIC_ESCALATION") return;
   if (geometryProfiles.has(activeProfileId)) {
+    assertGeometryMutationPhase(toolName, args, activeProfileId);
     if (toolName === "place_cube") {
       if (hasArg(args, "texture")) {
         throw new Error(
@@ -220,11 +230,14 @@ function installGuards(): void {
 
       const profileBefore = getExecutionProfileState();
       const result = await execute(args, context);
+      if (name === "record_geometry_visual_result") {
+        recordGeometryVisualRuntimeResult(args, result);
+      }
       const profileChanged =
         getExecutionProfileState().profileRevision !==
         profileBefore.profileRevision;
       if (
-        name === "complete_stage" ||
+        stageCompletionTools.has(name) ||
         (name === "activate_tool_profile" && profileChanged)
       ) {
         releaseProjectWriteLease(mutationContext);
