@@ -1,18 +1,21 @@
 # Local Production Workspace
 
-`workspace/` contains mutable asset production data and is not a second source-code tree.
+`workspace/` contains mutable asset production data and is not a source-code tree.
 
 ```text
-active-session.json
-sessions/<asset>/
+active-session.example.json
+active-session.json              # local only, ignored by Git
+sessions/<asset>/                 # local only, ignored by Git
   state.json
   references/
   checkpoints/
   evidence/
   reports/
   final/
-cache/
-archive/
+cache/                            # local only
+archive/                          # local only except this README
 ```
 
-`state.json` is the runtime authority. Session output is ignored by Git by default. Historical sessions removed during the root cleanup remain available through Git history.
+Create `active-session.json` from the example when selecting an asset. `state.json` remains the runtime authority; the active-session file is only a pointer.
+
+Do not commit real session output, checkpoints, previews, or final binaries. Git history retains removed legacy examples.
