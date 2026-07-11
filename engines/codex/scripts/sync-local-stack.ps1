@@ -134,9 +134,26 @@ $state.mcp.connection_status = $result
 $state.mcp.connection_report = "workspace/active/$Asset/mcp/reports/connection.json"
 if ($runtime.tool_profile) {
   $state.mcp.active_tool_profile = $runtime.tool_profile.profile_id
+  $state.mcp.active_tool_profile_revision = $runtime.tool_profile.profile_revision
   $state.mcp.tool_profile_hash = $runtime.tool_profile.tool_profile_hash
   $state.mcp.exposed_tool_count = $runtime.tool_profile.exposed_tool_count
   $state.mcp.total_library_tool_count = $runtime.tool_profile.total_library_tool_count
+}
+if ($runtime.project -and $blockers.Count -eq 0) {
+  $state.project.name = $runtime.project.name
+  $state.project.uuid = $runtime.project.uuid
+  $state.project.format = $runtime.project.format
+  $state.project.uv_mode = $runtime.project.uv_mode
+  $state.project.texture_width = $runtime.project.texture_width
+  $state.project.texture_height = $runtime.project.texture_height
+
+  $projectMetadata.project.uuid = $runtime.project.uuid
+  $projectMetadata.project.format = $runtime.project.format
+  $projectMetadata.project.uv_mode = $runtime.project.uv_mode
+  $projectMetadata.project.texture_width = $runtime.project.texture_width
+  $projectMetadata.project.texture_height = $runtime.project.texture_height
+  $projectMetadata.updated_at = $checkedAt
+  $projectMetadata | ConvertTo-Json -Depth 40 | Set-Content $projectMetadataPath -Encoding utf8
 }
 $state.updated_at = $checkedAt
 $state.updated_by = "sync-local-stack"
