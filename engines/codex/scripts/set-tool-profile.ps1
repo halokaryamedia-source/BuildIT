@@ -1,15 +1,24 @@
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory = $true)][string]$Asset,
+  [string]$Asset,
   [string]$Profile
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+$workspaceIndexPath = Join-Path $repoRoot "workspace\workspace.json"
+if (-not $Asset -and (Test-Path $workspaceIndexPath)) {
+  $workspaceIndex = Get-Content -Raw $workspaceIndexPath | ConvertFrom-Json
+  $Asset = [string]$workspaceIndex.selected_asset_id
+}
+if (-not $Asset) {
+  throw "No active workspace project is selected. Run 'cd mcp-blockbench; bun run workspace -- activate <asset_id>'."
+}
+
 $connection = Get-Content -Raw (Join-Path $repoRoot "engines\codex\connection-profile.json") | ConvertFrom-Json
 $stages = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\stage-profiles.json") | ConvertFrom-Json
 $profiles = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\tool-profiles.json") | ConvertFrom-Json
-$sessionRoot = Join-Path $repoRoot "workspace\sessions\$Asset"
+$sessionRoot = Join-Path $repoRoot "workspace\active\$Asset\mcp"
 $statePath = Join-Path $sessionRoot "state.json"
 if (-not (Test-Path $statePath)) { throw "State file not found: $statePath" }
 $state = Get-Content -Raw $statePath | ConvertFrom-Json
@@ -61,6 +70,7 @@ try {
   $reportDir = Join-Path $sessionRoot "reports"
   New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
   $result | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $reportDir "tool-profile.json") -Encoding utf8
+  Write-Host "Asset: $Asset"
   Write-Host "Active profile: $($result.active_profile)"
   Write-Host "Reconnect required: $($result.reconnect_required)"
 } finally {
