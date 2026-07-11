@@ -6,6 +6,9 @@ This directory is the engine-neutral authority for model production.
 workflow/   state, evidence, checkpoint, governance, and profile contracts
 profiles/   exact stage and MCP tool allowlists
 templates/  canonical runtime state template
+skills/     shared skill registry and lock metadata
 ```
 
-Codex, Claude, and Ollama integrations may adapt transport or prompt behavior, but must not redefine the four production stages or create parallel profile files.
+The MCP implementation itself lives only in `mcp-blockbench/`.
+
+Codex, Claude, Ollama, and other integrations may adapt transport or prompt behavior, but must not redefine the four production stages, copy profile authorities, or create versioned workflow files.
