@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -60,6 +60,7 @@
         "undo",
         "redo",
         "get_undo_stack",
+        "validate_reference_contract",
         "save_texture_evidence",
         "save_project_checkpoint",
         "capture_standard_views",
@@ -78,6 +79,7 @@
         "undo",
         "redo",
         "get_undo_stack",
+        "validate_reference_contract",
         "save_project_checkpoint",
         "capture_standard_views",
         "capture_screenshot",
