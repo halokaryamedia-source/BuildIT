@@ -21,6 +21,8 @@ import { exportToolDocs } from "../src/server/tools/export";
 import { runtimeToolDocs } from "../src/server/tools/runtime";
 import { workflowToolDocs } from "../src/server/tools/workflow";
 import { leaseToolDocs } from "../src/server/tools/lease";
+import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
+import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 
 export interface CategoryGroup {
   category: string;
@@ -31,6 +33,8 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
+  { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
+  { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
   { category: "Animation", tools: animationToolDocs },
@@ -179,24 +183,6 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "hytale://format",
     title: "Hytale Format Information",
     description:
-      "Returns comprehensive information about the current Hytale format, including format type, block size, node limits, and feature support.",
-  },
-  {
-    name: "hytale-attachments",
-    uriTemplate: "hytale://attachments/{id}",
-    title: "Hytale Attachments",
-    description: "Returns information about attachment collections.",
-  },
-  {
-    name: "hytale-pieces",
-    uriTemplate: "hytale://pieces/{id}",
-    title: "Hytale Attachment Pieces",
-    description: "Returns groups marked as attachment pieces.",
-  },
-  {
-    name: "hytale-cubes",
-    uriTemplate: "hytale://cubes/{id}",
-    title: "Hytale Cubes",
-    description: "Returns cubes with Hytale-specific properties.",
+      "Returns information about the active Hytale model format and its constraints.",
   },
 ];
