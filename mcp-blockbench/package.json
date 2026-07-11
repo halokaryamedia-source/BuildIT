@@ -1,6 +1,6 @@
 {
   "name": "blockbench-mcp",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "BuildIT Blockbench MCP server for deterministic Codex and AI-assisted production workflows",
   "keywords": [
     "Blockbench",
@@ -11,7 +11,7 @@
     "AI"
   ],
   "license": "GPL-3.0-only",
-  "author": "achmadawdi",
+  "author": "MIVUBI",
   "repository": {
     "type": "git",
     "url": "https://github.com/halokaryamedia-source/BuildIT.git",
