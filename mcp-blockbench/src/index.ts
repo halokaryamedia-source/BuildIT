@@ -15,7 +15,6 @@ import { initPromptLoader } from "@/lib/promptLoader";
 import type { NetServer, SessionTransports } from "@/server/net";
 import createNetServer from "@/server/net";
 import { serverState } from "@/lib/serverState";
-import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 const CANONICAL_MCP_PORT = 3000;
 const CANONICAL_MCP_ENDPOINT = "/bb-mcp";
@@ -25,8 +24,8 @@ const DEFAULT_SSE_HEARTBEAT_SECONDS = 15;
 let httpServer: NetServer | null = null;
 let sessionTransports: SessionTransports | null = null;
 
-// Keep all registry metadata as direct string literals. Blockbench inspects local
-// plugin files before execution and cannot resolve imported or aliased constants.
+// Keep registry metadata as direct literals. Blockbench inspects local plugin
+// files before execution and cannot resolve imported or aliased constants.
 BBPlugin.register("mcp", {
   version: "1.6.2",
   title: "BuildIT MCP Server",
@@ -34,7 +33,7 @@ BBPlugin.register("mcp", {
   description:
     "Connect Blockbench to BuildIT and MCP-compatible AI clients through the canonical local server.",
   tags: ["MCP", "AI", "Codex", "BuildIT"],
-  icon: getIcon(),
+  icon: "hub",
   variant: "desktop",
   min_version: "5.0.0",
   async onload() {
