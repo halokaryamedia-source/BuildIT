@@ -1,16 +1,17 @@
 {
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
     "get_runtime_status",
     "get_project_info",
     "get_tool_profile",
-    "activate_tool_profile"
+    "activate_tool_profile",
+    "manage_project_write_lease"
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Readiness, project setup, compact reference validation, and profile selection only.",
+      "description": "Readiness, project setup, compact reference validation, write-lease acquisition, and profile selection only.",
       "allowed_tools": [
         "create_project",
         "configure_project",
