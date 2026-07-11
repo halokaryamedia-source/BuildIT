@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -11,23 +11,26 @@
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Readiness, project setup, compact reference validation, write-lease acquisition, and profile selection only.",
+      "description": "Readiness, project setup, compact reference validation, visual grounding, write-lease acquisition, and profile selection only.",
       "allowed_tools": [
         "create_project",
         "configure_project",
         "validate_reference_contract",
+        "inspect_reference_visual",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Minecraft Bedrock cuboid geometry construction and review for an already-open valid project.",
+      "description": "Visual-grounded Minecraft Bedrock cuboid Geometry construction and review for an already-open valid project.",
       "allowed_tools": [
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
-        "place_cube",
-        "modify_cube",
+        "inspect_reference_visual",
+        "capture_visual_feedback",
+        "place_cubes_safe",
+        "modify_cubes",
         "duplicate_element",
         "rename_element",
         "remove_element",
@@ -35,6 +38,8 @@
         "redo",
         "get_undo_stack",
         "validate_reference_contract",
+        "record_geometry_visual_result",
+        "verify_geometry_visual_gate",
         "save_project_checkpoint",
         "capture_standard_views",
         "complete_stage"
@@ -88,7 +93,7 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation, evidence capture, checkpointing, and final export.",
+      "description": "Read-mostly final validation, Geometry visual-gate verification, evidence capture, checkpointing, and final export.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
@@ -96,6 +101,7 @@
         "get_texture",
         "get_uv_layout",
         "validate_reference_contract",
+        "verify_geometry_visual_gate",
         "save_texture_evidence",
         "capture_standard_views",
         "list_export_formats",
@@ -105,17 +111,44 @@
       ]
     },
     "GEOMETRY_LOCAL_REPAIR": {
-      "description": "Small geometry-only revision scope after user review or validation routing.",
+      "description": "Small visual-grounded Geometry-only correction after user review; restricted to one named issue or tightly related pair.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
-        "place_cube",
-        "modify_cube",
+        "inspect_reference_visual",
+        "capture_visual_feedback",
+        "place_cubes_safe",
+        "modify_cubes",
         "duplicate_element",
         "rename_element",
         "remove_element",
         "undo",
         "redo",
+        "record_geometry_visual_result",
+        "verify_geometry_visual_gate",
+        "save_project_checkpoint",
+        "capture_standard_views"
+      ]
+    },
+    "GEOMETRY_VISUAL_REBUILD": {
+      "description": "Major primary-form rebuild when multiple masses or multiple views fail visual review. Preserves project identity and prior checkpoints while permitting broad Geometry correction.",
+      "allowed_tools": [
+        "add_group",
+        "list_outline",
+        "find_elements_by_criteria",
+        "inspect_reference_visual",
+        "capture_visual_feedback",
+        "place_cubes_safe",
+        "modify_cubes",
+        "duplicate_element",
+        "rename_element",
+        "remove_element",
+        "undo",
+        "redo",
+        "get_undo_stack",
+        "validate_reference_contract",
+        "record_geometry_visual_result",
+        "verify_geometry_visual_gate",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
