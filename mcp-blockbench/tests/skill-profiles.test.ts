@@ -50,6 +50,18 @@ describe("production skill orchestration", () => {
     ]);
   });
 
+  test("skips Animation skill when animation is not required", () => {
+    expect(config.state_map.TEXTURE_APPROVED).toBe(
+      "ANIMATION_OR_FINAL_VALIDATION"
+    );
+    expect(config.conditional_profiles.ANIMATION_OR_FINAL_VALIDATION).toEqual({
+      condition: "workflow.animation_required",
+      when_true: "ANIMATION",
+      when_false: "FINAL_VALIDATION",
+    });
+    expect(config.state_map.ANIMATION_SKIPPED).toBe("FINAL_VALIDATION");
+  });
+
   test("canonical skills exist and host adapters match", () => {
     for (const name of productionSkills) {
       const canonical = `${root}/engines/shared/skills/${name}/SKILL.md`;
