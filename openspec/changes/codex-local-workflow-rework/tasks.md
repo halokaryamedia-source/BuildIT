@@ -26,7 +26,7 @@
 - [x] Define one canonical URL: `http://localhost:3000/bb-mcp`.
 - [x] Add `Engine/codex/connection-profile.json`.
 - [x] Add `Engine/codex/CONNECTION_CONTRACT.md`.
-- [x] Add `Engine/codex/scripts/sync-local-stack.ps1` for Codex config, Blockbench process, MCP handshake, capabilities, project identity, report, and state synchronization.
+- [x] Add `Engine/codex/scripts/sync-local-stack.ps1`.
 - [x] Add `get_runtime_status` as one structured live readiness call.
 - [x] Register runtime tools in the MCP server and docs manifest.
 - [x] Make Blockbench runtime use port 3000, endpoint `/bb-mcp`, auto-port disabled, and minimum 30-minute session timeout.
@@ -46,30 +46,36 @@
 - [x] Require explicit cube IDs for agent modifications by default.
 - [x] Allow untextured/placeholder Geometry-stage cube construction.
 - [x] Define persistent `.bbmodel` stage checkpoint paths and requirements.
-- [x] Add `save_project_checkpoint` for persistent `.bbmodel` and metadata output.
-- [x] Add `capture_standard_views` for consistent stage evidence and stable filenames.
-- [x] Add `Engine/codex/tool-profiles.json` with exact stage, repair, and diagnostic allowlists.
-- [x] Add `Engine/codex/TOOL_PROFILE_CONTRACT.md`.
-- [x] Add `get_tool_profile` and `activate_tool_profile` runtime controls.
+- [x] Add `save_project_checkpoint`.
+- [x] Add `capture_standard_views`.
+- [x] Add exact stage, repair, and diagnostic tool-profile allowlists.
+- [x] Add `get_tool_profile` and `activate_tool_profile`.
 - [x] Apply exact profile exposure to future MCP sessions.
-- [x] Add call-time `TOOL_PROFILE_BLOCKED` guards for tools outside the active profile.
+- [x] Add call-time `TOOL_PROFILE_BLOCKED` guards.
 - [x] Bind Geometry, Texture, Animation, Final Validation, and local repairs to exact profile IDs.
-- [x] Exclude PBR, Hytale, mesh UV, armature/vertex-weight, UI automation, and eval from normal Bedrock cuboid profiles.
+- [x] Exclude PBR, Hytale, mesh UV, armature/vertex-weight, UI automation, and eval from normal profiles.
 - [x] Add profile ID, revision, exposed count, total count, and deterministic hash to runtime status.
+- [x] Add `validate_reference_contract` to replace repeated project/reference/evidence checks.
+- [x] Add `save_texture_evidence` to avoid base64 atlas round-trips.
+- [x] Add `complete_stage` to combine approved checkpoint, state update, accepted-area lock, and next-profile activation.
+- [x] Add shared atomic filesystem helpers for workflow state/evidence writes.
+- [x] Convert `get_project_info` and cuboid UV inspection to structured results.
+- [x] Require explicit cube ID for `set_cube_face_uv`.
 - [ ] Build/reload the plugin and prove reduced `tools/list` counts for every normal profile.
-- [ ] Prove Geometry → Texture → optional Animation → Final profile transitions require only one deterministic reconnect each.
-- [ ] Prove stale/out-of-profile calls are blocked in the actual MCP runtime.
-- [ ] Add reference-contract validation automation.
-- [ ] Add a server-enforced exclusive project write lease only if actual multi-writer ambiguity remains after deterministic connection and profile sync.
-- [ ] Generate Markdown session summaries automatically from `state.json` only if manual summary drift appears in dry run.
-- [ ] Add a compact workflow preflight tool only if the local dry run proves it removes repeated real-world calls beyond `get_runtime_status`.
-- [x] Review checkpoint, standard-view, runtime-status, and tool-profile controls through Ponytail: each reduces repeated calls, ambiguity, or high-risk selection.
+- [ ] Prove Geometry → Texture → optional Animation → Final transitions require only one deterministic reconnect each.
+- [ ] Prove stale/out-of-profile calls are blocked in actual MCP runtime.
+- [ ] Prove cross-stage arguments are blocked in actual MCP runtime.
+- [ ] Prove `validate_reference_contract`, `save_texture_evidence`, and `complete_stage` in actual Blockbench.
+- [ ] Add a server-enforced exclusive project write lease only if actual multi-writer ambiguity remains after deterministic connection/profile sync.
+- [ ] Generate Markdown session summaries from `state.json` only if manual summary drift appears in dry run.
+- [ ] Add another composite preflight tool only if dry-run evidence shows repeated calls remain beyond `get_runtime_status` and `validate_reference_contract`.
+- [x] Review checkpoint, standard-view, runtime-status, profile-control, validation, evidence, and stage-completion tools through Ponytail.
 - [ ] Review every later proposed tool through Ponytail before implementation.
 
 ## P3 — Workflow Precision
 
-- [x] Define exact standard camera behavior and stable evidence filenames in `EVIDENCE_CONTRACT.md`.
-- [x] Define stage-specific checkpoint metadata and recovery rules in `CHECKPOINT_RECOVERY.md`.
+- [x] Define exact standard camera behavior and stable evidence filenames.
+- [x] Define stage-specific checkpoint metadata and recovery rules.
 - [x] Define how stage approval is written into `state.json`.
 - [x] Define how broad revision feedback reopens an earlier stage.
 - [x] Define how local revision feedback preserves accepted areas.
@@ -77,26 +83,30 @@
 - [x] Ensure Animation skip logic uses the manifest and `ANIMATION.md` consistently.
 - [x] Ensure Final Validation cannot add new features or broad polish.
 - [x] Add `LOCAL_DRY_RUN.md` for end-to-end local proof without CI.
+- [x] Add OpenSpec requirements for compact validation, direct texture evidence, atomic stage completion, and structured inspection.
 - [ ] Execute one complete local dry run against an approved current-format reference package.
-- [ ] Use dry-run evidence to decide whether further automation is actually required.
+- [ ] Measure repeated reads, payload size, MCP calls, reconnects, and repair loops.
+- [ ] Use dry-run evidence to decide whether further automation is required.
 
 ## P4 — Development Reliability
 
 Completed groundwork:
 
-- [x] Narrow the build watcher so runtime/reference/evidence changes do not rebuild the plugin.
+- [x] Narrow the build watcher.
 - [x] Fix duplicate `dev:watch` build chaining.
 - [x] Add focused Bun tests for workflow configuration.
-- [x] Add focused profile configuration tests for unknown tools, forbidden capabilities, stage mapping, and maximum normal profile size.
-- [x] Return structured MCP results from cube, checkpoint, standard-view, runtime-status, and profile-control tools.
+- [x] Add focused profile tests.
+- [x] Add focused tests for compact workflow tools, atomic filesystem use, and structured outputs.
+- [x] Return structured MCP results from cube, checkpoint, standard-view, runtime-status, profile-control, project, UV, and workflow tools.
+- [x] Register workflow tools in generated API documentation input.
 
 Still required before final integration:
 
 - [ ] Perform focused local typecheck/test/build verification for the current Rework source batch.
 - [ ] Reload the compiled plugin in Blockbench.
-- [ ] Run Blockbench runtime checks for `get_runtime_status`, `get_tool_profile`, `activate_tool_profile`, `save_project_checkpoint`, and `capture_standard_views`.
-- [ ] Add runtime tests for strict group, explicit ID, and untextured cube execution inside Blockbench.
-- [ ] Perform a complete final local verification pass after workflow implementation stabilizes.
+- [ ] Run Blockbench runtime checks for all profile and workflow tools.
+- [ ] Add runtime tests for strict group, explicit ID, untextured cube, UV explicit ID, and failed atomic writes.
+- [ ] Perform a complete final local verification pass after implementation stabilizes.
 
 ## P5 — CI and Integration — DEFERRED UNTIL LAST
 
@@ -112,20 +122,17 @@ CI is not part of the current active scope and must not interrupt workflow rewor
 
 ## Acceptance Checks
 
-- [x] Reference intake accepts `PRODUCTION_CONTEXT.md`, one Reference Visual, four category docs, manifest, and handoff.
-- [x] Geometry ends with five-view preview and user review.
-- [x] Texture ends with atlas/model preview and user review.
-- [x] Animation is skipped when not required and reviewed when required.
-- [x] Final Validation waits for user approval or correction request.
+- [x] Reference intake accepts the current package format.
+- [x] Geometry, Texture, optional Animation, and Final Validation each end in one user review.
 - [x] No internal pass asks for separate routine approval.
 - [x] One-issue-per-cycle applies to revisions, not initial bounded construction.
 - [x] Final output contract includes `.bbmodel`, textures, evidence, completed validation, and revision summary.
-- [x] OpenSpec and Ponytail have distinct, complementary responsibilities.
+- [x] OpenSpec and Ponytail have distinct responsibilities.
 - [x] Work unrelated to the active stage can be rejected as `DEFERRED_NOT_REQUIRED`.
-- [x] Branch remains isolated from V1 during active rework.
-- [x] State transitions, accepted-area protection, evidence filenames, checkpoint paths, and tool-profile IDs are explicit.
-- [x] Codex, Blockbench MCP, and Blockbench have one canonical connection contract and one readiness report.
-- [x] Normal Bedrock cuboid profiles use exact allowlists and hide unrelated high-risk capabilities.
-- [ ] Local connection verification passes with the actual Blockbench installation.
-- [ ] Local profile transition verification passes with actual Codex and Blockbench MCP.
+- [x] Branch remains isolated from V1.
+- [x] State transitions, accepted-area protection, evidence filenames, checkpoint paths, and profile IDs are explicit.
+- [x] Normal Bedrock cuboid profiles use exact allowlists.
+- [x] Composite workflow tools reduce repeated inspection, base64 transfer, and stage-transition calls.
+- [ ] Local connection verification passes with actual Blockbench.
+- [ ] Local profile and compact-workflow tool verification passes with actual Codex/Blockbench MCP.
 - [ ] Local dry run proves the entire stage flow using actual Blockbench MCP.
