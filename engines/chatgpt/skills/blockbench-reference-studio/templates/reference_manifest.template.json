@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.2",
+  "schema_version": "3.3",
   "package_type": "blockbench_reference",
   "asset": {
     "id": "<asset_id>",
@@ -69,8 +69,8 @@
   "reference_visual_lock": {
     "filename": "<asset_id>_reference_visual.png",
     "sha256": "<sha256>",
-    "width_px": 0,
-    "height_px": 0,
+    "width_px": "<positive_integer>",
+    "height_px": "<positive_integer>",
     "format": "PNG",
     "role": "single_visual_source_of_truth",
     "approved": true,
@@ -84,14 +84,22 @@
     "scale_marker": "<scale_marker>"
   },
   "main_format": {
-    "height_blocks": 0,
-    "width_blocks": 0,
-    "depth_blocks": 0,
-    "height_units": 0,
-    "width_units": 0,
-    "depth_units": 0,
+    "height_blocks": "<positive_number>",
+    "width_blocks": "<positive_number>",
+    "depth_blocks": "<positive_number>",
+    "height_units": "<positive_number>",
+    "width_units": "<positive_number>",
+    "depth_units": "<positive_number>",
     "blockbench_units_per_block": 16,
     "bounds_tolerance_units": 1,
+    "coordinate_envelope": {
+      "x_min": "<number>",
+      "x_max": "<number>",
+      "y_min": 0,
+      "y_max": "<positive_number>",
+      "z_min": "<number>",
+      "z_max": "<number>"
+    },
     "ground_plane_y": 0,
     "front_direction": "-Z",
     "neutral_pose": "<neutral_pose>",
@@ -103,10 +111,10 @@
     "geometry_type": "cuboid_only",
     "mesh_allowed": false,
     "expected_cube_count": {
-      "minimum": 0,
-      "preferred_minimum": 0,
-      "preferred_maximum": 0,
-      "maximum": 0
+      "minimum": "<integer>",
+      "preferred_minimum": "<integer>",
+      "preferred_maximum": "<integer>",
+      "maximum": "<integer>"
     },
     "root_group": "<asset_id>_root",
     "primary_masses": [],
@@ -119,9 +127,93 @@
       "maximum_axes_per_cube": 1,
       "maximum_absolute_degrees": 45,
       "explicit_origin_required_when_rotating": true,
+      "explicit_attachment_contract_required": true,
       "pivot_margin_ratio": 1,
       "capture_affected_view_after_rotated_batch": true,
-      "world_space_bounds_required": true
+      "world_space_bounds_required": true,
+      "direction_validation_required": true,
+      "connection_validation_required_when_declared": true,
+      "before_after_visual_score_required": true,
+      "automatic_visual_regression_rollback": true
+    },
+    "part_constraints": [
+      {
+        "id": "<part_id>",
+        "role": "PRIMARY_MASS",
+        "name_patterns": [
+          "<cube_or_group_pattern>"
+        ],
+        "parent": "<parent_group>",
+        "center_range_units": {
+          "min": [
+            "<x_min>",
+            "<y_min>",
+            "<z_min>"
+          ],
+          "max": [
+            "<x_max>",
+            "<y_max>",
+            "<z_max>"
+          ]
+        },
+        "size_range_units": {
+          "min": [
+            "<width_min>",
+            "<height_min>",
+            "<depth_min>"
+          ],
+          "max": [
+            "<width_max>",
+            "<height_max>",
+            "<depth_max>"
+          ]
+        },
+        "visual_views": [
+          "left_side",
+          "front",
+          "top_footprint"
+        ]
+      }
+    ],
+    "rotation_contracts": {
+      "<contract_id>": {
+        "id": "<contract_id>",
+        "cube_patterns": [
+          "<cube_pattern>"
+        ],
+        "allowed_axis": "x",
+        "minimum_degrees": "<number>",
+        "maximum_degrees": "<number>",
+        "pivot_anchor": [
+          "center",
+          "min",
+          "center"
+        ],
+        "tip_anchor": [
+          "center",
+          "max",
+          "center"
+        ],
+        "expected_direction": [
+          "<x>",
+          "<y>",
+          "<z>"
+        ],
+        "minimum_direction_dot": 0.45,
+        "connection_tolerance_units": 1.5,
+        "connect_to_patterns": [
+          "<optional_target_pattern>"
+        ],
+        "connect_to_anchor": [
+          "center",
+          "center",
+          "center"
+        ],
+        "affected_views": [
+          "left_side",
+          "front_left_3_4"
+        ]
+      }
     }
   },
   "texturing": {
@@ -151,13 +243,17 @@
     "required": true,
     "reference_tool": "inspect_reference_visual",
     "feedback_tool": "capture_visual_feedback",
-    "deterministic_compare_tool": "compare_reference_views",
+    "diagnosis_tool": "analyze_geometry_views",
     "record_tool": "record_geometry_visual_result",
-    "gate_tool": "verify_geometry_visual_gate",
+    "gate_tool": "verify_geometry_review_ready",
     "approval_tool": "complete_geometry_stage",
+    "safe_rotation_tool": "rotate_cube_about_attachment",
+    "structural_validation_tool": "validate_geometry_contract",
     "structural_pass_is_visual_pass": false,
     "multimodal_review_required": true,
-    "deterministic_guard_required": true,
+    "diagnostic_guard_required": true,
+    "fixed_scale_required": true,
+    "free_rescale_forbidden": true,
     "maximum_correction_cycles_per_pass": 2,
     "primary_form_views": [
       "left_side",
@@ -171,32 +267,89 @@
       "top_footprint",
       "front_left_3_4"
     ],
+    "camera_lock": {
+      "canvas_size": 256,
+      "margin_pixels": 18,
+      "front_axis": "-z"
+    },
     "panels": {
       "left_side": {
-        "crop_normalized": [0, 0, 0, 0],
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
         "projection": "orthographic",
-        "min_score": 0.75
+        "min_score": 0.74,
+        "scale_basis": "height",
+        "regions": []
       },
       "front": {
-        "crop_normalized": [0, 0, 0, 0],
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
         "projection": "orthographic",
-        "min_score": 0.75
+        "min_score": 0.74,
+        "scale_basis": "height",
+        "regions": []
       },
       "back": {
-        "crop_normalized": [0, 0, 0, 0],
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
         "projection": "orthographic",
-        "min_score": 0.72
+        "min_score": 0.7,
+        "scale_basis": "height",
+        "regions": []
       },
       "top_footprint": {
-        "crop_normalized": [0, 0, 0, 0],
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
         "projection": "orthographic",
-        "min_score": 0.70
+        "min_score": 0.68,
+        "scale_basis": "depth",
+        "regions": []
       },
       "front_left_3_4": {
-        "crop_normalized": [0, 0, 0, 0],
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
         "projection": "perspective",
-        "min_score": 0.68
+        "min_score": 0.62,
+        "scale_basis": "height",
+        "regions": []
       }
+    },
+    "region_template": {
+      "id": "<region_id>",
+      "rect": [
+        "<x>",
+        "<y>",
+        "<width_positive>",
+        "<height_positive>"
+      ],
+      "weight": 1,
+      "minimum_score": 0.6,
+      "critical": true,
+      "issue_code": "<UPPERCASE_CODE>",
+      "parts": [
+        "<part_or_group>"
+      ],
+      "recommendation": "<specific_repair_instruction>"
     }
   },
   "validation": {
