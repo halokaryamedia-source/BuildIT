@@ -18,6 +18,11 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "../engines/shared/workspace/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
