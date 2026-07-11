@@ -10,6 +10,7 @@ Port: 3000
 Endpoint: /bb-mcp
 Auto-port: disabled
 Session timeout: minimum 30 minutes
+Write owner: one leased MCP session
 ```
 
 Machine authority: `engines/codex/connection-profile.json`.
@@ -31,4 +32,6 @@ Reload exactly `mcp-blockbench/dist/mcp.js`, grant local network permission, ope
 powershell -ExecutionPolicy Bypass -File engines/codex/scripts/sync-local-stack.ps1 -Asset <asset>
 ```
 
-Do not load a second plugin copy, create another MCP key, or use a versioned output filename.
+After readiness `PASS`, acquire `manage_project_write_lease` from the active Codex session before any mutation. The lease binds that session to the project UUID, asset session, stage, state revision, and active tool profile. A stage/profile transition releases it; reacquire after the single required reconnect.
+
+Do not load a second plugin copy, create another MCP key, bypass ownership, or use a versioned output filename.
