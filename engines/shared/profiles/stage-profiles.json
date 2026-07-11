@@ -1,7 +1,7 @@
 {
-  "schema_version": "2.5",
+  "schema_version": "2.6",
   "global": {
-    "runtime_authority": "workspace/sessions/<asset>/state.json",
+    "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
     "state_contract": "engines/shared/workflow/STATE_MACHINE.md",
     "evidence_contract": "engines/shared/workflow/EVIDENCE_CONTRACT.md",
@@ -9,15 +9,15 @@
     "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
     "skill_profile_contract": "engines/shared/skills/skill-profiles.json",
     "max_loaded_production_skills": 2,
-    "initial_build_mode": "visual_grounded_coarse_to_fine",
+    "initial_build_mode": "fixed_scale_visual_grounded_coarse_to_fine",
     "revision_mode": "classify_local_or_major_before_mutation",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
-    "profile_transition_policy": "complete_stage_then_reconnect_once",
+    "profile_transition_policy": "guarded_completion_then_reconnect_once",
     "visual_feedback_budget": {
       "reference_inspections": 1,
       "primary_form_checks": 2,
       "structural_detail_checks": 2,
-      "deterministic_comparisons": 2,
+      "diagnostic_comparisons": 3,
       "final_review_checks": 1,
       "maximum_unsuccessful_cycles": 2
     }
@@ -29,17 +29,20 @@
     "views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"],
     "frame_margin_ratio": 1.25,
     "clean_capture": true,
-    "world_bounds_required": true
+    "world_bounds_required": true,
+    "fixed_approved_envelope_for_diagnosis": true
   },
   "geometry_visual_policy": {
     "reference_tool": "inspect_reference_visual",
     "feedback_tool": "capture_visual_feedback",
-    "deterministic_compare_tool": "compare_reference_views",
+    "diagnosis_tool": "analyze_geometry_views",
     "record_tool": "record_geometry_visual_result",
     "gate_tool": "verify_geometry_review_ready",
     "structural_pass_is_visual_pass": false,
     "multimodal_review_required": true,
-    "deterministic_guard_required": true,
+    "diagnostic_guard_required": true,
+    "fixed_scale_required": true,
+    "free_rescale_forbidden": true,
     "required_final_visual_result": "PASS",
     "primary_form_views": ["left_side", "front", "top_footprint"],
     "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
@@ -47,12 +50,17 @@
   "geometry_rotation_policy": {
     "placement_tool": "place_cubes_safe",
     "modification_tool": "modify_cubes",
+    "contract_rotation_tool": "rotate_cube_about_attachment",
     "preferred_axes_per_cube": 1,
     "maximum_axes_per_cube": 1,
     "maximum_absolute_degrees": 45,
+    "explicit_attachment_contract_required": true,
     "explicit_origin_required_when_rotating": true,
     "pivot_margin_ratio": 1,
-    "capture_affected_view_after_rotated_batch": true,
+    "direction_validation_required": true,
+    "connection_validation_required_when_declared": true,
+    "before_after_visual_score_required": true,
+    "automatic_visual_regression_rollback": true,
     "reject_stale_visual_report_after_rotation": true
   },
   "profiles": {
@@ -64,18 +72,27 @@
       "working_state": "GEOMETRY_IN_PROGRESS",
       "review_state": "GEOMETRY_REVIEW",
       "approved_state": "GEOMETRY_APPROVED",
+      "internal_runtime_phases": [
+        "PRIMARY_FORM",
+        "STRUCTURAL_DETAIL",
+        "FINAL_REVIEW_READY",
+        "VISUAL_CONVERGENCE_FAILED"
+      ],
       "internal_passes": [
         "REFERENCE_VISUAL_LOAD",
-        "PRIMARY_FORM",
-        "PRIMARY_FORM_VISUAL_CHECK",
-        "PRIMARY_FORM_DETERMINISTIC_COMPARE",
-        "STRUCTURAL_DETAIL",
-        "STRUCTURAL_DETAIL_VISUAL_CHECK",
-        "FULL_DETERMINISTIC_COMPARE",
+        "PRIMARY_FORM_BUILD",
+        "PRIMARY_FORM_MULTIMODAL_CHECK",
+        "PRIMARY_FORM_FIXED_SCALE_DIAGNOSIS",
+        "STRUCTURAL_DETAIL_BUILD",
+        "AFFECTED_VIEW_MULTIMODAL_CHECK",
+        "AFFECTED_VIEW_FIXED_SCALE_DIAGNOSIS",
+        "FULL_FIVE_VIEW_DIAGNOSIS",
         "FULL_REVIEW_READINESS_GATE"
       ],
+      "compact_context_tool": "get_stage_context",
       "compact_validation_tool": "validate_reference_contract",
-      "deterministic_visual_tool": "compare_reference_views",
+      "diagnostic_visual_tool": "analyze_geometry_views",
+      "safe_rotation_tool": "rotate_cube_about_attachment",
       "review_readiness_tool": "verify_geometry_review_ready",
       "approval_transition_tool": "complete_geometry_stage",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
@@ -89,6 +106,7 @@
         "visual_metrics": "evidence/geometry/geometry_visual_metrics.json",
         "visual_diff": "evidence/geometry/geometry_visual_diff.png",
         "visual_report": "evidence/geometry/geometry_visual_report.json",
+        "runtime": "evidence/geometry/geometry_runtime.json",
         "report": "evidence/geometry/geometry_report.json"
       }
     },
