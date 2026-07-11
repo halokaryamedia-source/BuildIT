@@ -47,6 +47,19 @@ export interface ProjectedGeometryMask {
   cube_count: number;
 }
 
+export interface ProjectableCube {
+  name?: string;
+  uuid?: string;
+  from?: number[];
+  to?: number[];
+  origin?: number[];
+  rotation?: number[];
+  inflate?: number;
+  visibility?: boolean;
+  export?: boolean;
+  parent?: any;
+}
+
 interface Point2 {
   x: number;
   y: number;
@@ -126,12 +139,7 @@ function cameraBasis(
   const right = normalize(cross(front, worldUp));
 
   if (view === "front") {
-    return {
-      right,
-      up: worldUp,
-      camera_direction: front,
-      perspective: false,
-    };
+    return { right, up: worldUp, camera_direction: front, perspective: false };
   }
   if (view === "back") {
     return {
@@ -185,7 +193,10 @@ function projectPhysical(
   if (!basis.perspective) return { x: horizontal, y: vertical };
 
   const towardCamera = dot(relative, basis.camera_direction);
-  const denominator = Math.max(cameraDistance - towardCamera, cameraDistance * 0.3);
+  const denominator = Math.max(
+    cameraDistance - towardCamera,
+    cameraDistance * 0.3
+  );
   const perspectiveScale = cameraDistance / denominator;
   return {
     x: horizontal * perspectiveScale,
@@ -198,7 +209,6 @@ function projectedEnvelope(
   envelope: CoordinateEnvelope,
   frontAxis: "-z" | "+z" | "-x" | "+x"
 ): {
-  points: Point2[];
   minimum_u: number;
   maximum_u: number;
   minimum_v: number;
@@ -217,7 +227,6 @@ function projectedEnvelope(
     projectPhysical(point, center, view, frontAxis, cameraDistance)
   );
   return {
-    points,
     minimum_u: Math.min(...points.map((point) => point.x)),
     maximum_u: Math.max(...points.map((point) => point.x)),
     minimum_v: Math.min(...points.map((point) => point.y)),
@@ -255,7 +264,8 @@ export function createProjectionFrame(input: {
   );
   const renderedWidth = physicalWidth * scale;
   const renderedHeight = physicalHeight * scale;
-  const offsetX = (input.width - renderedWidth) / 2 - projected.minimum_u * scale;
+  const offsetX =
+    (input.width - renderedWidth) / 2 - projected.minimum_u * scale;
   const offsetY =
     (input.height - renderedHeight) / 2 + projected.maximum_v * scale;
   const center = envelopeCenter(input.envelope);
@@ -266,9 +276,8 @@ export function createProjectionFrame(input: {
     input.front_axis,
     projected.camera_distance
   );
-  const groundPoint: Vec3 = [center[0], input.envelope.y_min, center[2]];
   const groundProjection = projectPhysical(
-    groundPoint,
+    [center[0], input.envelope.y_min, center[2]],
     center,
     input.view,
     input.front_axis,
@@ -388,14 +397,17 @@ function fillPolygon(mask: BinaryMask, polygon: Point2[]): void {
   }
 }
 
-export function projectCurrentGeometry(input: {
-  view: StandardGeometryView;
-  envelope: CoordinateEnvelope;
-  front_axis: "-z" | "+z" | "-x" | "+x";
-  width: number;
-  height: number;
-  margin: number;
-}): ProjectedGeometryMask {
+export function projectElementsGeometry(
+  elements: ProjectableCube[],
+  input: {
+    view: StandardGeometryView;
+    envelope: CoordinateEnvelope;
+    front_axis: "-z" | "+z" | "-x" | "+x";
+    width: number;
+    height: number;
+    margin: number;
+  }
+): ProjectedGeometryMask {
   const frame = createProjectionFrame(input);
   const mask: BinaryMask = {
     width: input.width,
@@ -411,7 +423,7 @@ export function projectCurrentGeometry(input: {
   );
   const cameraDistance = maxExtent * 3.2;
   let count = 0;
-  for (const cube of Cube.all ?? []) {
+  for (const cube of elements) {
     if (cube.visibility === false || cube.export === false) continue;
     const projected = transformedCubeCorners(cube).map((point) =>
       physicalToPixel(
@@ -429,6 +441,29 @@ export function projectCurrentGeometry(input: {
     count += 1;
   }
   return { mask, frame, cube_count: count };
+}
+
+export function projectCurrentGeometry(input: {
+  view: StandardGeometryView;
+  envelope: CoordinateEnvelope;
+  front_axis: "-z" | "+z" | "-x" | "+x";
+  width: number;
+  height: number;
+  margin: number;
+}): ProjectedGeometryMask {
+  const elements: ProjectableCube[] = (Cube.all ?? []).map((cube) => ({
+    name: cube.name,
+    uuid: cube.uuid,
+    from: [...cube.from],
+    to: [...cube.to],
+    origin: [...cube.origin],
+    rotation: [...cube.rotation],
+    inflate: cube.inflate,
+    visibility: cube.visibility,
+    export: (cube as unknown as { export?: boolean }).export,
+    parent: cube.parent,
+  }));
+  return projectElementsGeometry(elements, input);
 }
 
 export function maskBounds(mask: BinaryMask): {
@@ -477,8 +512,14 @@ export function cropMask(
 ): BinaryMask {
   const x0 = Math.max(0, Math.floor(rect[0] * mask.width));
   const y0 = Math.max(0, Math.floor(rect[1] * mask.height));
-  const x1 = Math.min(mask.width, Math.ceil((rect[0] + rect[2]) * mask.width));
-  const y1 = Math.min(mask.height, Math.ceil((rect[1] + rect[3]) * mask.height));
+  const x1 = Math.min(
+    mask.width,
+    Math.ceil((rect[0] + rect[2]) * mask.width)
+  );
+  const y1 = Math.min(
+    mask.height,
+    Math.ceil((rect[1] + rect[3]) * mask.height)
+  );
   const width = Math.max(1, x1 - x0);
   const height = Math.max(1, y1 - y0);
   const data = new Uint8Array(width * height);
