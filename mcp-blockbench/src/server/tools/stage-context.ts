@@ -63,7 +63,7 @@ export function registerStageContextTools(): void {
         const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
 
         const context = {
-          schema_version: "1.0",
+          schema_version: "1.1",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
@@ -144,9 +144,13 @@ export function registerStageContextTools(): void {
             required: stage === "GEOMETRY",
             reference_tool: "inspect_reference_visual",
             feedback_tool: "capture_visual_feedback",
+            deterministic_compare_tool: "compare_reference_views",
             record_tool: "record_geometry_visual_result",
-            gate_tool: "verify_geometry_visual_gate",
+            gate_tool: "verify_geometry_review_ready",
             approval_tool: "complete_geometry_stage",
+            structural_pass_is_visual_pass: false,
+            multimodal_review_required: true,
+            deterministic_guard_required: true,
             maximum_correction_cycles_per_pass: 2,
           },
         };
