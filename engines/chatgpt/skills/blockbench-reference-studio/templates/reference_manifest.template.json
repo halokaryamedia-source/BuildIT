@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "package_type": "blockbench_reference",
+  "asset_id": "<asset_id>",
+  "display_name": "<display_name>",
+  "status": "APPROVED",
+  "format": "bedrock_entity",
+  "front_direction": "<front_direction>",
+  "scale": {
+    "units_per_block": 16,
+    "player_height_units": 28.8,
+    "width_units": 0,
+    "depth_units": 0,
+    "height_units": 0,
+    "ground_plane": 0
+  },
+  "texture": {
+    "uv_mode": "box_uv",
+    "atlas_width": 64,
+    "atlas_height": 64,
+    "pixel_style": "16x",
+    "classic_bedrock": true,
+    "pbr": false,
+    "vibrant_visuals": false
+  },
+  "animation": {
+    "required": false,
+    "status": "ANIMATION_SKIPPED",
+    "required_clips": []
+  },
+  "authorities": {
+    "production_context": "PRODUCTION_CONTEXT.md",
+    "primary_visual": "01_<asset_id>_form_scale_reference.png",
+    "handoff_visual_alias": "<asset_id>_reference_visual.png",
+    "construction_sheet": "02_<asset_id>_construction_reference.png",
+    "texture_sheet": "03_<asset_id>_texture_material_reference.png",
+    "motion_sheet": "04_<asset_id>_motion_pivot_reference.png",
+    "geometry_contract": "GEOMETRY.md",
+    "texture_contract": "TEXTURING.md",
+    "animation_contract": "ANIMATION.md",
+    "validation_contract": "VALIDATION.md",
+    "codex_handoff": "CODEX_REFERENCE_HANDOFF.md"
+  },
+  "approvals": {
+    "production_context": {
+      "status": "APPROVED",
+      "reference": "<approval_reference>"
+    },
+    "sheet_01": {
+      "status": "APPROVED",
+      "reference": "<approval_reference>"
+    },
+    "technical_sheets": {
+      "status": "APPROVED",
+      "reference": "<approval_reference>"
+    },
+    "stage_contracts": {
+      "status": "APPROVED",
+      "reference": "<approval_reference>"
+    }
+  },
+  "files": [
+    {
+      "path": "PRODUCTION_CONTEXT.md",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "01_<asset_id>_form_scale_reference.png",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "<asset_id>_reference_visual.png",
+      "sha256": "<same_sha256_as_sheet_01>"
+    },
+    {
+      "path": "02_<asset_id>_construction_reference.png",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "03_<asset_id>_texture_material_reference.png",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "04_<asset_id>_motion_pivot_reference.png",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "GEOMETRY.md",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "TEXTURING.md",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "ANIMATION.md",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "VALIDATION.md",
+      "sha256": "<sha256>"
+    },
+    {
+      "path": "CODEX_REFERENCE_HANDOFF.md",
+      "sha256": "<sha256>"
+    }
+  ]
+}
