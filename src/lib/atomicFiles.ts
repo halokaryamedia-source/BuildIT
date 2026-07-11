@@ -75,11 +75,10 @@ export function writeFileAtomically(
   const backup = `${path}.bak`;
   removeIfPresent(fs, temp);
   removeIfPresent(fs, backup);
-
   fs.writeFileSync(temp, data);
-  if (fs.existsSync(path)) fs.renameSync(path, backup);
 
   try {
+    if (fs.existsSync(path)) fs.renameSync(path, backup);
     fs.renameSync(temp, path);
     removeIfPresent(fs, backup);
   } catch (error) {
