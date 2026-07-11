@@ -20,6 +20,7 @@ import { uvToolDocs } from "../src/server/tools/uv";
 import { historyToolDocs } from "../src/server/tools/history";
 import { exportToolDocs } from "../src/server/tools/export";
 import { runtimeToolDocs } from "../src/server/tools/runtime";
+import { workflowToolDocs } from "../src/server/tools/workflow";
 
 export interface CategoryGroup {
   category: string;
@@ -28,6 +29,7 @@ export interface CategoryGroup {
 
 export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
+  { category: "Workflow", tools: workflowToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
   { category: "Animation", tools: animationToolDocs },
@@ -128,28 +130,28 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "projects://{id}",
     title: "Blockbench Projects",
     description:
-      "Returns information about available projects. List URIs use the slugified project name (e.g. `projects://my-character`) when unique, or `projects://<slug>~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns information about available projects. List URIs use the slugified project name when unique, or <slug>~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
   },
   {
     name: "nodes",
     uriTemplate: "nodes://{id}",
     title: "Blockbench Nodes",
     description:
-      "Returns the current 3D nodes in the editor. List URIs use slugified names (e.g. `nodes://head`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns the current 3D nodes in the editor. List URIs use slugified names when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
   },
   {
     name: "textures",
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use slugified names (e.g. `textures://skin`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Returns information about textures. List URIs use slugified names when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
   },
   {
     name: "reference_models",
     uriTemplate: "reference_models://{id}",
     title: "Reference Models",
     description:
-      "Returns reference models in the current project. Requires the Reference Models plugin. List URIs use slugified names (e.g. `reference_models://turntable`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns reference models in the current project. Requires the Reference Models plugin.",
   },
   {
     name: "validator-status",
@@ -163,7 +165,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "validator://checks/{id}",
     title: "Validator Checks",
     description:
-      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID to get details about a specific check.",
+      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID for details.",
   },
   {
     name: "validator-warnings",
@@ -191,20 +193,20 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "hytale://attachments/{id}",
     title: "Hytale Attachments",
     description:
-      "Returns information about attachment collections. List URIs use slugified collection names (e.g. `hytale://attachments/helmet`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns information about attachment collections.",
   },
   {
     name: "hytale-pieces",
     uriTemplate: "hytale://pieces/{id}",
     title: "Hytale Attachment Pieces",
     description:
-      "Returns groups marked as attachment pieces — they connect to like-named bones in the main model. List URIs use slugified bone names (e.g. `hytale://pieces/hand-right`) with `~<uuid-prefix>` on collision.",
+      "Returns groups marked as attachment pieces.",
   },
   {
     name: "hytale-cubes",
     uriTemplate: "hytale://cubes/{id}",
     title: "Hytale Cubes",
     description:
-      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision.",
+      "Returns cubes with Hytale-specific properties.",
   },
 ];
