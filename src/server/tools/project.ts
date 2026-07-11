@@ -88,6 +88,11 @@ function projectSnapshot() {
   };
 }
 
+function cancelUndoEdit(): void {
+  (Undo as unknown as { cancelEdit?: (amend?: boolean) => void })
+    .cancelEdit?.(false);
+}
+
 export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
@@ -169,7 +174,7 @@ export function registerProjectTools() {
           if (texture_height !== undefined) Project.texture_height = texture_height;
           Undo.finishEdit("Configure project");
         } catch (error) {
-          Undo.cancelEdit?.(false);
+          cancelUndoEdit();
           throw error;
         }
 
