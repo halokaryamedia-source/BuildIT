@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "black_rhinoceros",
+  "stage": "GEOMETRY",
+  "state": "GEOMETRY_REVIEW",
+  "approval_status": "AWAITING_USER_REVIEW",
+  "result": "PASS",
+  "validator": {
+    "issues": 0,
+    "warnings": 0
+  },
+  "project_uuid": "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+  "profile": {
+    "id": "BEDROCK_CUBOID_GEOMETRY",
+    "revision": 3,
+    "hash": "c812b783"
+  },
+  "geometry": {
+    "cuboids": 25,
+    "groups": 22,
+    "meshes": 0,
+    "animations": 0,
+    "bounds": {
+      "min": [-13.6, 0, -30],
+      "max": [13.6, 40, 23],
+      "size": [27.2, 40, 53]
+    },
+    "root_group": "black_rhinoceros_root",
+    "front_direction": "-Z",
+    "ground_plane": 0
+  },
+  "checkpoint": "../../checkpoints/10_geometry_review.bbmodel",
+  "evidence": [
+    "geometry_front.png",
+    "geometry_left.png",
+    "geometry_back.png",
+    "geometry_top.png",
+    "geometry_front_left_3_4.png"
+  ]
+}

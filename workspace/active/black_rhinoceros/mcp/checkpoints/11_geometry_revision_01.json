@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.1",
+  "asset_id": "black_rhinoceros",
+  "checkpoint_name": "Black Rhinoceros Geometry Revision 01",
+  "stage": "GEOMETRY",
+  "state": "GEOMETRY_REVIEW",
+  "project_uuid": "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+  "project_name": "black_rhinoceros",
+  "bbmodel_path": "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\mcp\\checkpoints\\11_geometry_revision_01.bbmodel",
+  "metadata_path": "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\mcp\\checkpoints\\11_geometry_revision_01.json",
+  "created_at": "2026-07-11T20:06:47.397Z",
+  "created_by": "mcp-blockbench",
+  "approved": false,
+  "approval_ref": null,
+  "source_state_revision": 2,
+  "profile": {
+    "profileId": "GEOMETRY_LOCAL_REPAIR",
+    "profileRevision": 4,
+    "profileHash": "399dd1d3"
+  },
+  "plugin_version": "1.6.3",
+  "blockbench_version": "5.1.4",
+  "counts": {
+    "cubes": 25,
+    "meshes": 0,
+    "groups": 22,
+    "textures": 0,
+    "animations": 0
+  },
+  "raw_model_bounds": {
+    "min": [
+      -13.6,
+      0,
+      -30
+    ],
+    "max": [
+      13.6,
+      40,
+      23
+    ],
+    "size": [
+      27.2,
+      40,
+      53
+    ]
+  },
+  "accepted_areas": [],
+  "open_issues": [],
+  "byte_length": 22102,
+  "encoding": "utf-8",
+  "bbmodel_sha256": "2815ae05f18de1a270155f3594597de8fd960da312c553901c701b954690aca1",
+  "reference_manifest_sha256": "c6fbdcdcb01cda6157a1662addb03634c513c0adab48bf4e018fd3ac95e728a4",
+  "metadata_payload_sha256": "5e3319d4d6cb0637e4c714b4349904fb23b1645691fee5e40532ac4ae9b404e2"
+}

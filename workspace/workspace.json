@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "selected_asset_id": "black_rhinoceros",
+  "projects": {
+    "black_rhinoceros": {
+      "lifecycle": "ACTIVE",
+      "active_path": "workspace/active/black_rhinoceros",
+      "completed_path": null,
+      "blockbench_path": "workspace/active/black_rhinoceros/blockbench",
+      "mcp_path": "workspace/active/black_rhinoceros/mcp",
+      "updated_at": "2026-07-11T19:44:00.502Z"
+    }
+  }
+}

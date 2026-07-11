@@ -1,0 +1,151 @@
+{
+    "schema_version":  "2.2",
+    "state_revision":  3,
+    "asset":  {
+                  "id":  "black_rhinoceros",
+                  "display_name":  "Black Rhinoceros",
+                  "target":  "minecraft_bedrock_entity"
+              },
+    "lifecycle":  {
+                      "status":  "ACTIVE",
+                      "origin":  "NEW",
+                      "reopened_from":  null,
+                      "baseline_model_sha256":  null,
+                      "reason":  null,
+                      "reopened_stage":  null
+                  },
+    "reference":  {
+                      "path":  "workspace/active/black_rhinoceros/mcp/references",
+                      "status":  "APPROVED",
+                      "manifest":  "reference_manifest.json",
+                      "production_context":  "PRODUCTION_CONTEXT.md",
+                      "visual":  "black_rhinoceros_reference_visual.png",
+                      "geometry":  "GEOMETRY.md",
+                      "texturing":  "TEXTURING.md",
+                      "animation":  "ANIMATION.md",
+                      "validation":  "VALIDATION.md",
+                      "handoff":  "CODEX_REFERENCE_HANDOFF.md",
+                      "conflicts":  [
+
+                                    ]
+                  },
+    "project":  {
+                    "name":  "black_rhinoceros",
+                    "uuid":  "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+                    "format":  "bedrock",
+                    "uv_mode":  "per_face",
+                    "texture_width":  128,
+                    "texture_height":  128,
+                    "save_path":  "workspace/active/black_rhinoceros/blockbench/black_rhinoceros.bbmodel"
+                },
+    "mcp":  {
+                "server_key":  "blockbench",
+                "canonical_url":  "http://localhost:3000/bb-mcp",
+                "connection_status":  "PASS",
+                "capability_status":  "NOT_RUN",
+                "active_tool_profile":  "BEDROCK_CUBOID_GEOMETRY",
+                "tool_profile_revision":  5,
+                "tool_profile_hash":  "c812b783",
+                "exposed_tool_count":  20,
+                "total_library_tool_count":  106,
+                "profile_reconnect_required":  false,
+                "connection_report":  "workspace/active/black_rhinoceros/mcp/reports/connection.json",
+                "preflight":  {
+                                  "status":  "NOT_RUN",
+                                  "completed_at":  null,
+                                  "stale_checks":  [
+
+                                                   ],
+                                  "report":  "workspace/active/black_rhinoceros/mcp/reports/preflight.json"
+                              }
+            },
+    "workflow":  {
+                     "state":  "GEOMETRY_REVIEW",
+                     "status":  "AWAITING_USER_REVIEW",
+                     "active_stage":  "GEOMETRY",
+                     "next_action":  "AWAIT_GEOMETRY_REVIEW",
+                     "animation_required":  false,
+                     "last_completed_stage":  null,
+                     "last_safe_checkpoint":  "workspace/active/black_rhinoceros/mcp/checkpoints/11_geometry_revision_01.bbmodel",
+                     "stage_records":  {
+                                           "GEOMETRY":  {
+                                                            "status":  "AWAITING_REVIEW",
+                                                            "decision":  null,
+                                                            "accepted_areas":  [
+
+                                                                               ],
+                                                            "open_issues":  [
+
+                                                                            ]
+                                                        },
+                                           "TEXTURE":  {
+                                                           "status":  "LOCKED",
+                                                           "decision":  null,
+                                                           "accepted_areas":  [
+
+                                                                              ],
+                                                           "open_issues":  [
+
+                                                                           ]
+                                                       },
+                                           "ANIMATION":  {
+                                                             "status":  "LOCKED",
+                                                             "decision":  null,
+                                                             "accepted_areas":  [
+
+                                                                                ],
+                                                             "open_issues":  [
+
+                                                                             ]
+                                                         },
+                                           "FINAL_VALIDATION":  {
+                                                                    "status":  "LOCKED",
+                                                                    "decision":  null,
+                                                                    "accepted_areas":  [
+
+                                                                                       ],
+                                                                    "open_issues":  [
+
+                                                                                    ]
+                                                                }
+                                       }
+                 },
+    "preservation":  {
+                         "manual_edits_present":  false,
+                         "manual_edits_to_preserve":  [
+
+                                                      ],
+                         "globally_protected_areas":  [
+
+                                                      ],
+                         "approved_stage_areas":  {
+                                                      "GEOMETRY":  [
+
+                                                                   ],
+                                                      "TEXTURE":  [
+
+                                                                  ],
+                                                      "ANIMATION":  [
+
+                                                                    ]
+                                                  }
+                     },
+    "checkpoints":  {
+                        "session_start":  null,
+                        "geometry_review":  "workspace/active/black_rhinoceros/mcp/checkpoints/11_geometry_revision_01.bbmodel",
+                        "geometry_approved":  null,
+                        "texture_review":  null,
+                        "texture_approved":  null,
+                        "animation_review":  null,
+                        "animation_approved_or_skipped":  null,
+                        "final_candidate":  null,
+                        "validation_pass":  null
+                    },
+    "validation":  {
+                       "status":  "PENDING_BUILD",
+                       "result":  null,
+                       "report":  "workspace/active/black_rhinoceros/mcp/evidence/final/validation_report.json"
+                   },
+    "updated_at":  "2026-07-11T20:04:54.7077333Z",
+    "updated_by":  "set-tool-profile"
+}

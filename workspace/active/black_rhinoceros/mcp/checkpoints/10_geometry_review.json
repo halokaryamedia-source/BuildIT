@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.1",
+  "asset_id": "black_rhinoceros",
+  "checkpoint_name": "Black Rhinoceros Geometry Review",
+  "stage": "GEOMETRY",
+  "state": "GEOMETRY_REVIEW",
+  "project_uuid": "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+  "project_name": "black_rhinoceros",
+  "bbmodel_path": "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\mcp\\checkpoints\\10_geometry_review.bbmodel",
+  "metadata_path": "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\mcp\\checkpoints\\10_geometry_review.json",
+  "created_at": "2026-07-11T19:55:57.468Z",
+  "created_by": "mcp-blockbench",
+  "approved": false,
+  "approval_ref": null,
+  "source_state_revision": 0,
+  "profile": {
+    "profileId": "BEDROCK_CUBOID_GEOMETRY",
+    "profileRevision": 3,
+    "profileHash": "c812b783"
+  },
+  "plugin_version": "1.6.3",
+  "blockbench_version": "5.1.4",
+  "counts": {
+    "cubes": 25,
+    "meshes": 0,
+    "groups": 22,
+    "textures": 0,
+    "animations": 0
+  },
+  "raw_model_bounds": {
+    "min": [
+      -13.6,
+      0,
+      -30
+    ],
+    "max": [
+      13.6,
+      40,
+      23
+    ],
+    "size": [
+      27.2,
+      40,
+      53
+    ]
+  },
+  "accepted_areas": [],
+  "open_issues": [],
+  "byte_length": 21854,
+  "encoding": "utf-8",
+  "bbmodel_sha256": "834e3a9f92b26d0a032eba912df6ab857f2d241683403b9c142fb6d626ee792f",
+  "reference_manifest_sha256": "c6fbdcdcb01cda6157a1662addb03634c513c0adab48bf4e018fd3ac95e728a4",
+  "metadata_payload_sha256": "d8c0da711acf5a780bc3d4b770ea4941bf5d5732de61d730a8e392f3bf6f7313"
+}

@@ -1,0 +1,126 @@
+﻿{
+    "schema_version":  "1.0",
+    "checked_at":  "2026-07-11T19:51:21.1418841Z",
+    "result":  "PASS",
+    "asset_id":  "black_rhinoceros",
+    "active_root":  "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros",
+    "blockbench_root":  "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\blockbench",
+    "mcp_root":  "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\mcp",
+    "model_path":  "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros\\blockbench\\black_rhinoceros.bbmodel",
+    "canonical_url":  "http://localhost:3000/bb-mcp",
+    "plugin_output":  "D:\\Work\\AI Stuff\\BuildIT\\mcp-blockbench\\dist\\mcp.js",
+    "plugin_output_exists":  true,
+    "codex_config":  "C:\\Users\\Administrator\\.codex\\config.toml",
+    "config_changed":  false,
+    "exposed_tool_count":  10,
+    "runtime":  {
+                    "status":  "PASS",
+                    "plugin":  {
+                                   "id":  "mcp",
+                                   "title":  "MCP Server",
+                                   "version":  "1.6.3",
+                                   "blockbench_version":  "5.1.4"
+                               },
+                    "contract":  {
+                                     "server_key":  "blockbench",
+                                     "canonical_url":  "http://localhost:3000/bb-mcp",
+                                     "one_active_project":  true,
+                                     "one_or_zero_write_sessions":  true
+                                 },
+                    "tool_profile":  {
+                                         "profile_id":  "BOOTSTRAP",
+                                         "profile_revision":  2,
+                                         "description":  "Readiness, project setup, compact reference validation, write-lease acquisition, and profile selection only.",
+                                         "exposed_tool_count":  10,
+                                         "total_library_tool_count":  106,
+                                         "tool_profile_hash":  "1b7c11cd",
+                                         "reconnect_required_after_change":  true,
+                                         "validation_errors":  [
+
+                                                               ]
+                                     },
+                    "write_lease":  {
+                                        "status":  "UNCLAIMED",
+                                        "project_uuid":  null,
+                                        "asset_id":  null,
+                                        "owner_session_id":  null,
+                                        "owner_client":  null,
+                                        "session_root":  null,
+                                        "stage":  null,
+                                        "state_revision":  null,
+                                        "profile_id":  null,
+                                        "profile_revision":  null,
+                                        "profile_hash":  null,
+                                        "acquired_at":  null,
+                                        "renewed_at":  null,
+                                        "expires_at":  null
+                                    },
+                    "server":  {
+                                   "status":  "listening",
+                                   "requestedPort":  3000,
+                                   "endpoint":  "/bb-mcp",
+                                   "autoPort":  false,
+                                   "fallbackUsed":  false,
+                                   "projectName":  "black_rhinoceros",
+                                   "projectUuid":  "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+                                   "port":  3000,
+                                   "url":  "http://localhost:3000/bb-mcp"
+                               },
+                    "effective_settings":  {
+                                               "port":  3000,
+                                               "endpoint":  "/bb-mcp",
+                                               "auto_port":  false,
+                                               "fallback_used":  false,
+                                               "session_timeout_minutes":  30,
+                                               "sse_heartbeat_seconds":  15
+                                           },
+                    "configured_settings":  {
+                                                "port":  3000,
+                                                "endpoint":  "/bb-mcp",
+                                                "auto_port":  false,
+                                                "session_timeout_minutes":  30,
+                                                "sse_heartbeat_seconds":  15
+                                            },
+                    "project":  {
+                                    "name":  "black_rhinoceros",
+                                    "uuid":  "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+                                    "format":  "bedrock",
+                                    "format_name":  "Bedrock Entity",
+                                    "uv_mode":  "per_face",
+                                    "texture_width":  128,
+                                    "texture_height":  128,
+                                    "save_path":  "",
+                                    "counts":  {
+                                                   "cubes":  0,
+                                                   "meshes":  0,
+                                                   "groups":  0,
+                                                   "textures":  0,
+                                                   "animations":  0
+                                               }
+                                },
+                    "session_summary":  {
+                                            "total":  1,
+                                            "readiness":  1,
+                                            "write_or_other":  0
+                                        },
+                    "sessions":  [
+                                     {
+                                         "id":  "747a4e89-bf0e-4a5c-a067-9e27c8fe2e0d",
+                                         "client_name":  "buildit-readiness",
+                                         "client_version":  "1",
+                                         "transient_readiness_session":  true,
+                                         "connected_at":  "2026-07-11T19:51:21.551Z",
+                                         "last_activity":  "2026-07-11T19:51:21.595Z"
+                                     }
+                                 ],
+                    "blockers":  [
+
+                                 ],
+                    "warnings":  [
+
+                                 ]
+                },
+    "blockers":  [
+
+                 ]
+}

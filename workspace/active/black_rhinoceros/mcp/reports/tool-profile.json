@@ -1,0 +1,12 @@
+﻿{
+    "status":  "PASS",
+    "changed":  true,
+    "previous_profile":  "BEDROCK_CUBOID_GEOMETRY",
+    "active_profile":  "GEOMETRY_LOCAL_REPAIR",
+    "exposed_tool_count":  16,
+    "total_library_tool_count":  106,
+    "tool_profile_hash":  "399dd1d3",
+    "reconnect_required":  true,
+    "write_lease_reacquire_required":  true,
+    "next_action":  "Reconnect the existing canonical blockbench MCP entry once, call get_runtime_status once, then reacquire manage_project_write_lease."
+}

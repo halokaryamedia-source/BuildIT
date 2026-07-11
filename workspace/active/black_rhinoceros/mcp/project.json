@@ -1,0 +1,51 @@
+{
+    "schema_version":  "1.0",
+    "asset_id":  "black_rhinoceros",
+    "display_name":  "Black Rhinoceros",
+    "lifecycle":  {
+                      "status":  "ACTIVE",
+                      "origin":  "NEW",
+                      "reopened_from":  null,
+                      "reopened_stage":  null,
+                      "reason":  null,
+                      "baseline_model_sha256":  null
+                  },
+    "project":  {
+                    "uuid":  "63bbae6c-cd3b-9075-26f2-b55c109d25b5",
+                    "format":  "bedrock",
+                    "uv_mode":  "per_face",
+                    "texture_width":  128,
+                    "texture_height":  128,
+                    "front_axis":  "-z"
+                },
+    "paths":  {
+                  "blockbench_root":  "workspace/active/black_rhinoceros/blockbench",
+                  "model":  "workspace/active/black_rhinoceros/blockbench/black_rhinoceros.bbmodel",
+                  "textures":  "workspace/active/black_rhinoceros/blockbench/textures",
+                  "references":  "workspace/active/black_rhinoceros/blockbench/references",
+                  "previews":  "workspace/active/black_rhinoceros/blockbench/previews",
+                  "mcp_root":  "workspace/active/black_rhinoceros/mcp",
+                  "state":  "workspace/active/black_rhinoceros/mcp/state.json",
+                  "technical_reference":  "workspace/active/black_rhinoceros/mcp/references",
+                  "checkpoints":  "workspace/active/black_rhinoceros/mcp/checkpoints",
+                  "evidence":  "workspace/active/black_rhinoceros/mcp/evidence",
+                  "reports":  "workspace/active/black_rhinoceros/mcp/reports"
+              },
+    "connection":  {
+                       "profile":  "engines/codex/connection-profile.json",
+                       "server_key":  "blockbench",
+                       "canonical_url":  "http://localhost:3000/bb-mcp"
+                   },
+    "artifacts":  {
+                      "model_sha256":  null,
+                      "reference_manifest_sha256":  null,
+                      "validation":  null
+                  },
+    "completion":  {
+                       "completed_at":  null,
+                       "approval_ref":  null,
+                       "last_approved_state":  null
+                   },
+    "created_at":  "2026-07-11T19:44:00.396Z",
+    "updated_at":  "2026-07-11T19:51:21.1418841Z"
+}
