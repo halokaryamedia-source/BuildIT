@@ -7,30 +7,49 @@ The complete Blockbench MCP plugin package used by BuildIT.
 | Field | Value |
 | --- | --- |
 | Title | `BuildIT MCP Server` |
-| Author | `achmadawdi` |
+| Author | `MIVUBI` |
 | Plugin ID | `mcp` |
-| Version source | `package.json` |
+| Version | `1.6.3` |
 | Canonical endpoint | `http://localhost:3000/bb-mcp` |
 | Canonical bundle | `dist/mcp.js` |
 
-The expected Blockbench plugin card is **BuildIT MCP Server — by achmadawdi**. A plain local entry displayed only as `mcp` should be treated as an old or incomplete local copy.
+The expected Blockbench plugin card is **BuildIT MCP Server — by MIVUBI**. A plain local entry displayed only as `mcp` with version `0.0.1` means the bundle failed before `BBPlugin.register()` completed.
 
 ## Install in Blockbench
 
-1. Download `mcp-blockbench/dist/mcp.js` from branch `Rework`.
+### Preferred distribution method: URL
+
+After `mcp-blockbench/dist/mcp.js` is published on branch `Rework`, use **File → Plugins → Load Plugin from URL** with:
+
+```text
+https://raw.githubusercontent.com/halokaryamedia-source/BuildIT/Rework/mcp-blockbench/dist/mcp.js
+```
+
+URL installation is preferred for normal use because Blockbench remembers the remote source and downloads the same canonical bundle. It does not bypass runtime errors; the bundle must still execute successfully.
+
+### Local development method: File
+
+1. Build from `mcp-blockbench/` with `bun run build`.
 2. Open exactly one Blockbench desktop window.
 3. Use **File → Plugins → Load Plugin from File**.
-4. Select the downloaded `mcp.js`.
-5. Grant the local network permission requested by Blockbench.
-6. Confirm the plugin reports `BuildIT MCP ready at http://localhost:3000/bb-mcp`.
+4. Select `mcp-blockbench/dist/mcp.js`.
+5. Grant the requested process and network permissions.
+6. Confirm the plugin card shows `BuildIT MCP Server`, author `MIVUBI`, version `1.6.3`.
+7. Confirm the plugin reports `BuildIT MCP ready at http://localhost:3000/bb-mcp`.
 
-Do not keep multiple local copies active at the same time.
+Do not keep multiple local or remote copies active at the same time.
+
+## Bootstrap Reliability
+
+The dependency-free entry in `src/index.ts` registers the plugin identity before loading the MCP runtime from `src/runtime.ts`. This prevents Blockbench from leaving a failed local bundle as the fallback `mcp v0.0.1` entry with an empty author.
 
 ## Package Map
 
 | Path | Purpose |
 | --- | --- |
-| `src/` | Plugin, MCP runtime, tools, resources, and UI. |
+| `src/index.ts` | Dependency-free Blockbench plugin registration bootstrap. |
+| `src/runtime.ts` | Deferred MCP server, UI, sessions, prompts, and shutdown runtime. |
+| `src/` | Remaining MCP runtime, tools, resources, and UI. |
 | `scripts/` | Build, prompt-manifest, API-documentation, and maintenance tooling. |
 | `prompts/` | MCP prompt assets. |
 | `tests/` | Focused package, workflow, tool-profile, skill-profile, and workspace verification. |
@@ -56,7 +75,7 @@ bun run build
 
 ## GitHub Bundle Publication
 
-`.github/workflows/publish-blockbench-plugin.yml` validates and rebuilds the canonical bundle after relevant `Rework` source changes. The workflow commits only:
+`.github/workflows/publish-blockbench-plugin.yml` validates and rebuilds the canonical bundle after `Rework` source changes. The workflow commits only:
 
 ```text
 mcp-blockbench/dist/mcp.js
