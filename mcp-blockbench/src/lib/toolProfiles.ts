@@ -2,7 +2,10 @@ import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.js
 import { getAllToolDefinitions, tools } from "@/lib/factories";
 import { setExecutionProfileState } from "@/lib/executionState";
 import { resolveMutationExecutionContext } from "@/lib/mutationContext";
-import { assertToolMutationAllowed } from "@/lib/writeLease";
+import {
+  assertToolMutationAllowed,
+  releaseProjectWriteLease,
+} from "@/lib/writeLease";
 
 interface ToolProfileDefinition {
   description: string;
@@ -146,13 +149,18 @@ function installGuards(): void {
         throw new Error(`TOOL_PROFILE_BLOCKED: "${name}" is not allowed by "${activeProfileId}".`);
       }
       assertArguments(name, args);
+      const mutationContext = resolveMutationExecutionContext(context);
       assertToolMutationAllowed(
         name,
         args,
-        resolveMutationExecutionContext(context),
+        mutationContext,
         definition.annotations?.readOnlyHint
       );
-      return execute(args, context);
+      const result = await execute(args, context);
+      if (name === "complete_stage" || name === "activate_tool_profile") {
+        releaseProjectWriteLease(mutationContext);
+      }
+      return result;
     };
     wrapped.add(name);
   }
