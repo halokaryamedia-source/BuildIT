@@ -1,4 +1,4 @@
-import profileConfigJson from "../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
+import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import { getAllToolDefinitions, tools } from "@/lib/factories";
 
 interface ToolProfileDefinition {
