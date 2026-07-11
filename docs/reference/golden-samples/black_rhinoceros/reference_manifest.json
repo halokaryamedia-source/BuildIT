@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "package_type": "blockbench_reference",
+  "sample_type": "golden_sample",
+  "asset_id": "black_rhinoceros",
+  "display_name": "Black Rhinoceros",
+  "status": "APPROVED",
+  "format": "bedrock_entity",
+  "front_direction": "-Z",
+  "scale": {
+    "units_per_block": 16,
+    "player_height_units": 28.8,
+    "width_units": 27.2,
+    "depth_units": 52.8,
+    "height_units": 40,
+    "ground_plane_y": 0,
+    "bounds_tolerance_units": 1
+  },
+  "geometry": {
+    "type": "cuboid_only",
+    "expected_cube_count_min": 22,
+    "expected_cube_count_max": 32,
+    "root_group": "black_rhinoceros_root",
+    "mesh_allowed": false
+  },
+  "texture": {
+    "uv_mode": "box_uv_with_selective_per_face",
+    "atlas_width": 128,
+    "atlas_height": 128,
+    "pixel_style": "16x",
+    "classic_bedrock": true,
+    "pbr": false,
+    "vibrant_visuals": false
+  },
+  "animation": {
+    "required": false,
+    "status": "ANIMATION_SKIPPED",
+    "required_clips": []
+  },
+  "authorities": {
+    "golden_sample": "GOLDEN_SAMPLE.md",
+    "production_context": "PRODUCTION_CONTEXT.md",
+    "primary_visual": "01_black_rhinoceros_form_scale_reference.png",
+    "handoff_visual_alias": "black_rhinoceros_reference_visual.png",
+    "construction_sheet": "02_black_rhinoceros_construction_reference.png",
+    "texture_sheet": "03_black_rhinoceros_texture_material_reference.png",
+    "motion_sheet": "04_black_rhinoceros_motion_pivot_reference.png",
+    "geometry_contract": "GEOMETRY.md",
+    "texture_contract": "TEXTURING.md",
+    "animation_contract": "ANIMATION.md",
+    "validation_contract": "VALIDATION.md",
+    "codex_handoff": "CODEX_REFERENCE_HANDOFF.md"
+  },
+  "approvals": {
+    "production_context": {
+      "status": "APPROVED",
+      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
+    },
+    "sheet_01": {
+      "status": "APPROVED",
+      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
+    },
+    "technical_sheets": {
+      "status": "APPROVED",
+      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
+    },
+    "stage_contracts": {
+      "status": "APPROVED",
+      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
+    }
+  },
+  "files": [
+    {
+      "path": "01_black_rhinoceros_form_scale_reference.png",
+      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
+      "bytes": 2233908
+    },
+    {
+      "path": "02_black_rhinoceros_construction_reference.png",
+      "sha256": "b1efcc3d48f411a2a9d2505853dc4cee5082338bfa2d6e4bfa710778f944a8a4",
+      "bytes": 367317
+    },
+    {
+      "path": "03_black_rhinoceros_texture_material_reference.png",
+      "sha256": "089d9849ae2a69f4d7c3e1f95fe679ece3cdec47584f9dc27c692c0840401e2f",
+      "bytes": 531901
+    },
+    {
+      "path": "04_black_rhinoceros_motion_pivot_reference.png",
+      "sha256": "8a3ef8cbd874263b7c1c29b1a9babf523080b7683fdde103ecae5ccfccdd8e04",
+      "bytes": 394560
+    },
+    {
+      "path": "ANIMATION.md",
+      "sha256": "c60313d960685ee5f1f20dbbc0b09f5d35a90556c77aa386c46f34a332e84937",
+      "bytes": 977
+    },
+    {
+      "path": "CODEX_REFERENCE_HANDOFF.md",
+      "sha256": "39ebbaa179f7cc2a4326faa52ecc46a9053a889a60f89f3379570a67755a85b4",
+      "bytes": 2807
+    },
+    {
+      "path": "GEOMETRY.md",
+      "sha256": "d170d250bcd9699575cb1e078ce1c2c79d9009d40ac85079f9b3df8d976d164d",
+      "bytes": 2442
+    },
+    {
+      "path": "GOLDEN_SAMPLE.md",
+      "sha256": "268f6db6ac4051513cdb8add52c840847a11d785749f4a30ef3cebc3c8e50273",
+      "bytes": 1791
+    },
+    {
+      "path": "PRODUCTION_CONTEXT.md",
+      "sha256": "b3957bc1b8738ad215e997754348f33d10a88698b7c85aecd28408eb1803b2f3",
+      "bytes": 4549
+    },
+    {
+      "path": "TEXTURING.md",
+      "sha256": "271d68a15b5be29176d29f7b70f312b8cfcc5cfb49bf75d7389d54330a6aeb83",
+      "bytes": 2353
+    },
+    {
+      "path": "VALIDATION.md",
+      "sha256": "be10c793f39ba85cdc6a8766de3dcfcfd0271ac2dbdc9ed787d13a44990b74c9",
+      "bytes": 1645
+    },
+    {
+      "path": "black_rhinoceros_reference_visual.png",
+      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
+      "bytes": 2233908
+    },
+    {
+      "path": "source/README.md",
+      "sha256": "bba4cf96d14ab73f96601e61bb18abc683adbad72dbe16807a0d6e0d8e7df7e3",
+      "bytes": 244
+    },
+    {
+      "path": "source/approved_reference_source.png",
+      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
+      "bytes": 2233908
+    }
+  ]
+}
