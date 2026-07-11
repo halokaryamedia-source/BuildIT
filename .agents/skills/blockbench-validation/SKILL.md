@@ -1,62 +1,72 @@
 ---
 name: blockbench-validation
-description: "Final Validation-stage skill for approved Blockbench assets. Performs read-mostly contract validation, writes validated output to MCP staging, and waits for final user approval before workspace completion promotes user files."
+description: "Final Validation-stage skill for approved Blockbench assets. Re-verifies current Geometry visual/rotation evidence, performs read-mostly contract validation, writes validated output to MCP staging, and waits for final user approval."
 ---
 
 # Blockbench Validation
 
 ## Entry
 
-Use only when the active stage is `FINAL_VALIDATION` with tool profile `FINAL_VALIDATION_READONLY` and the current MCP session owns the project write lease.
+Use only when stage is `FINAL_VALIDATION`, profile is `FINAL_VALIDATION_READONLY`, and the current MCP session owns the write lease.
 
-Read:
+Call `get_stage_context` first, then read only the exact final contracts and evidence paths recorded in the active project.
 
-1. `mcp/project.json`
-2. `reference_manifest.json`
-3. `PRODUCTION_CONTEXT.md`
-4. the approved Reference Visual
-5. `GEOMETRY.md`
-6. `TEXTURING.md`
-7. `ANIMATION.md`
-8. `VALIDATION.md`
-9. `mcp/state.json`
-
-## Work
+## Mandatory order
 
 ```text
-final candidate checkpoint
-→ final atlas evidence
-→ five standard views
-→ validate_reference_contract
+verify_geometry_review_ready
+→ final candidate checkpoint
+→ final texture atlas evidence
+→ clean five-view final capture
+→ validate_reference_contract: FINAL_VALIDATION
 → complete VALIDATION.md
 → export to mcp/final staging
 → FINAL_REVIEW
 ```
 
-- Keep the stage read-mostly.
+`verify_geometry_review_ready` must pass against the current model before final validation continues. A previously approved Geometry report is insufficient if Geometry changed during Texture, Animation, manual edits, reopen, or export preparation.
+
+The Geometry gate must confirm:
+
+- current project UUID;
+- current Geometry fingerprint;
+- actual Reference Visual hash;
+- all five multimodal views;
+- all five fixed-scale diagnostic views;
+- current non-legacy analyzer;
+- current evidence files;
+- safe rotations and pivots.
+
+If it fails, route to the earliest affected Geometry repair profile. Do not silently fix Geometry during Final Validation.
+
+## Work rules
+
+- Keep this stage read-mostly.
 - Use canonical non-versioned output names.
-- Route a failure to the smallest matching local-repair profile and earliest affected stage.
-- Allow no more than the approved automatic local-fix limit.
-- Preserve all approved areas.
-- Treat `mcp/final/` as temporary validated staging, not the user handoff folder.
+- Preserve approved areas.
+- Route each failure to the smallest valid repair profile and earliest affected stage.
+- Allow no more than the configured automatic local-fix limit.
+- Treat `mcp/final/` as temporary validated staging only.
 
 ## Forbidden
 
-- new features, broad polish, or redesign;
+- new features, redesign, or broad polish;
 - silent Geometry, Texture, or Animation repair;
-- alternate export names such as `v2`, `latest`, or `final-final`;
-- export outside the active project's `mcp/final/` staging directory;
-- copying MCP state/checkpoints/reports into the user-facing `blockbench/` folder;
-- declaring `PASS` without evidence.
+- accepting stale Geometry evidence;
+- alternate names such as `v2`, `latest`, or `final-final`;
+- export outside the active project's `mcp/final/` directory;
+- copying MCP state/checkpoints/reports into `blockbench/`;
+- declaring `PASS` without current evidence.
 
-## Review Output
+## Review output
 
-1. Save final atlas evidence directly to `mcp/evidence/final/`.
-2. Call `capture_standard_views` with the active project UUID, absolute `mcp/` session root, Final evidence directory, and `return_images: false`.
-3. Run `validate_reference_contract` and complete `VALIDATION.md`.
-4. Use `export_model` with `session_root`, expected project UUID, `mcp/final/<asset_id>.bbmodel`, and `max_content_length: 0`.
-5. Place validated textures under `mcp/final/textures/`.
-6. Confirm the returned export and checkpoint SHA-256 values are present.
-7. Provide final review evidence and stop for final `APPROVED` or targeted revision feedback.
+1. Verify Geometry review readiness first.
+2. Save final atlas evidence to `mcp/evidence/final/`.
+3. Capture final standard views with the active UUID and canonical evidence names.
+4. Run final contract validation and complete `VALIDATION.md`.
+5. Export `mcp/final/<asset_id>.bbmodel` with `max_content_length: 0`.
+6. Place validated textures under `mcp/final/textures/`.
+7. Confirm model, texture, checkpoint, evidence, and report hashes.
+8. Stop for final user `APPROVED` or targeted revision feedback.
 
-After final user approval, run the workspace completion command. It promotes the validated model, textures, and approved previews into `blockbench/`, removes temporary staging, freezes MCP metadata, and moves the project to `workspace/completed/`.
+After final approval, run workspace completion to promote validated user files into `blockbench/`, remove temporary staging, freeze MCP metadata, and move the project to `workspace/completed/`.
