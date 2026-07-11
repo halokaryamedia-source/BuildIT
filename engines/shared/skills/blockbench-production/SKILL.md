@@ -61,7 +61,7 @@ get_stage_context
 → final compare_reference_views
 → record_geometry_visual_result
 → validate_reference_contract
-→ verify_geometry_visual_gate
+→ verify_geometry_review_ready
 → checkpoint and user review
 ```
 
