@@ -36,6 +36,25 @@ async function cleanOutput(): Promise<void> {
   }
 }
 
+function hasStaticPluginMetadata(bundle: string): boolean {
+  const registration = bundle.match(
+    /BBPlugin\.register\(\s*["']mcp["']\s*,\s*\{[\s\S]{0,1600}?\}\s*\)/
+  )?.[0];
+
+  if (!registration) return false;
+
+  const requiredPatterns = [
+    /version\s*:\s*["']1\.6\.2["']/,
+    /title\s*:\s*["']BuildIT MCP Server["']/,
+    /author\s*:\s*["']achmadawdi["']/,
+    /description\s*:\s*["']Connect Blockbench to BuildIT/,
+    /variant\s*:\s*["']desktop["']/,
+    /min_version\s*:\s*["']5\.0\.0["']/,
+  ];
+
+  return requiredPatterns.every((pattern) => pattern.test(registration));
+}
+
 async function buildPlugin(): Promise<boolean> {
   await mkdir(OUTPUT_DIR, { recursive: true });
   const result = await Bun.build({
@@ -92,7 +111,15 @@ async function buildPlugin(): Promise<boolean> {
   if (await Bun.file(mcpFile).exists()) {
     const current = await Bun.file(mcpFile).text();
     const banner = `/* v${version} */\nlet process = requireNativeModule('process');`;
-    if (!current.startsWith(banner)) await Bun.write(mcpFile, banner + current);
+    const finalBundle = current.startsWith(banner) ? current : banner + current;
+
+    if (!hasStaticPluginMetadata(finalBundle)) {
+      throw new Error(
+        "Generated plugin metadata is not statically discoverable by Blockbench. Keep version, title, author, description, variant, and min_version as direct literals in BBPlugin.register()."
+      );
+    }
+
+    await Bun.write(mcpFile, finalBundle);
   }
 
   const indexMap = join(OUTPUT_DIR, "index.js.map");
