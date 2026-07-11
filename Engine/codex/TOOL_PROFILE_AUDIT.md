@@ -21,9 +21,9 @@ activate_tool_profile
 | --- | ---: | --- |
 | `BOOTSTRAP` | 9 | readiness, project setup, compact contract validation |
 | `BEDROCK_CUBOID_GEOMETRY` | 19 | cuboid geometry, checkpoint, evidence, validation, approval transition |
-| `BEDROCK_CUBOID_TEXTURE` | 26 | Classic Bedrock UV/painting, atlas evidence, approval transition |
-| `BEDROCK_CUBOID_ANIMATION` | 17 | group/bone animation and approval transition |
-| `FINAL_VALIDATION_READONLY` | 16 | compact contract validation, evidence, checkpoint, export, final approval |
+| `BEDROCK_CUBOID_TEXTURE` | 27 | Classic Bedrock UV/painting, compact validation, atlas evidence, approval transition |
+| `BEDROCK_CUBOID_ANIMATION` | 18 | group/bone animation, compact validation, approval transition |
+| `FINAL_VALIDATION_READONLY` | 16 | compact validation, evidence, checkpoint, export, final approval |
 | `GEOMETRY_LOCAL_REPAIR` | 15 | named geometry correction only |
 | `TEXTURE_LOCAL_REPAIR` | 20 | named UV/texture correction plus focused atlas evidence |
 | `ANIMATION_LOCAL_REPAIR` | 13 | named motion/pivot correction only |
@@ -66,6 +66,7 @@ Included:
 - cuboid per-face UV;
 - UV layout inspection;
 - pixel-oriented fill, shape, brush, erase, and color-pick operations;
+- one-call stage-aware reference contract validation;
 - direct atomic PNG evidence writing through `save_texture_evidence`;
 - checkpoint, standard review capture, and approved-stage completion.
 
@@ -89,6 +90,7 @@ Included:
 - required animation creation;
 - keyframe management;
 - timeline control;
+- one-call stage-aware contract validation;
 - checkpoint and evidence capture;
 - current-view screenshots only for sampled animation poses;
 - approved-stage completion.
@@ -129,7 +131,7 @@ A failure activates the matching repair profile and returns to the relevant revi
 
 ### `validate_reference_contract`
 
-Replaces repeated manual calls for project identity, format, dimensions, atlas, required files, evidence, animation presence, PBR conflicts, and Blockbench validator counts.
+Replaces repeated manual calls for project identity, format, dimensions, atlas, required files, evidence, animation presence, PBR conflicts, and Blockbench validator counts. It is available in every normal review stage.
 
 ### `save_texture_evidence`
 
@@ -137,7 +139,7 @@ Writes PNG evidence directly inside the session workspace and returns only compa
 
 ### `complete_stage`
 
-After explicit user approval, verifies evidence, creates the approved checkpoint, updates `state.json`, protects accepted areas, activates the next profile, and returns one reconnect instruction.
+After explicit user approval, verifies evidence and a `PASS` report, creates the approved checkpoint, updates `state.json`, protects accepted areas, activates the next profile, and returns one reconnect instruction.
 
 ## High-Risk Library Capabilities Hidden from Normal Work
 
@@ -154,11 +156,9 @@ These remain in the complete plugin library but are not advertised to normal sta
 
 ## Argument-Level Guardrails
 
-Even when a reusable tool is present in a profile, unsafe cross-stage arguments are blocked:
-
-- Geometry `place_cube` cannot assign an explicit texture or custom face UV;
-- Geometry `modify_cube` cannot change auto-UV, UV offsets, mirroring, or face UV;
-- Classic Texture `create_texture` cannot set `pbr_channel`;
+- Geometry `place_cube` cannot assign an explicit texture or custom face UV.
+- Geometry `modify_cube` cannot change auto-UV, UV offsets, mirroring, or face UV.
+- Classic Texture `create_texture` cannot set `pbr_channel`.
 - `set_cube_face_uv` requires an explicit cube ID.
 
 ## Runtime Proof Still Required
@@ -171,9 +171,9 @@ After build/reload, verify for every normal profile:
 4. a forbidden tool is absent from the list;
 5. a stale call outside the newly activated profile returns `TOOL_PROFILE_BLOCKED`;
 6. a cross-stage argument returns `TOOL_PROFILE_ARGUMENT_BLOCKED`;
-7. `validate_reference_contract` returns one compact result;
+7. `validate_reference_contract` returns one compact result in each review stage;
 8. `save_texture_evidence` writes PNG without a base64 round-trip;
-9. `complete_stage` writes checkpoint/state and changes profile consistently;
+9. `complete_stage` refuses non-PASS reports and keeps checkpoint/state/profile consistent;
 10. one reconnect refreshes the reduced list;
 11. no new port or MCP server key is created.
 
