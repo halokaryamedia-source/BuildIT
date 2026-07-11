@@ -7,6 +7,18 @@ description: "Mandatory dispatcher for approved Blockbench asset production. Rea
 
 Use this skill only for asset production from an approved reference package.
 
+## Upstream Reference Boundary
+
+The package may be created by the ChatGPT-only skill at:
+
+```text
+engines/chatgpt/skills/blockbench-reference-studio/SKILL.md
+```
+
+That ChatGPT skill is not loaded during Codex production. Codex receives only the approved `<asset_id>_blockbench_reference.zip`, validates it using the manifest and handoff contract, imports it into the active workspace, and then starts this dispatcher.
+
+A valid imported package contains Production Context, four approved sheets, `GEOMETRY.md`, `TEXTURING.md`, `ANIMATION.md`, `VALIDATION.md`, `reference_manifest.json`, and `CODEX_REFERENCE_HANDOFF.md`.
+
 ## Dispatch
 
 1. Read `workspace/workspace.json` and resolve `selected_asset_id`.
