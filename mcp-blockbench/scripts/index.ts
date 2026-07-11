@@ -36,24 +36,24 @@ async function cleanOutput(): Promise<void> {
   }
 }
 
-function hasStaticPluginMetadata(bundle: string): boolean {
-  const registration = bundle.match(
-    /BBPlugin\.register\(\s*["']mcp["']\s*,\s*\{[\s\S]{0,1600}?\}\s*\)/
-  )?.[0];
+function hasBootstrapPluginMetadata(bundle: string): boolean {
+  const registrationIndex = bundle.search(/BBPlugin\.register\(\s*["']mcp["']/);
+  if (registrationIndex < 0) return false;
 
-  if (!registration) return false;
-
+  // The bootstrap is intentionally small and dependency-free. Inspect only the
+  // registration area instead of trying to parse the entire bundled runtime.
+  const bootstrap = bundle.slice(registrationIndex, registrationIndex + 3200);
   const requiredPatterns = [
-    /version\s*:\s*["']1\.6\.2["']/,
+    /version\s*:\s*["']1\.6\.3["']/,
     /title\s*:\s*["']BuildIT MCP Server["']/,
-    /author\s*:\s*["']achmadawdi["']/,
+    /author\s*:\s*["']MIVUBI["']/,
     /description\s*:\s*["']Connect Blockbench to BuildIT/,
     /icon\s*:\s*["']hub["']/,
     /variant\s*:\s*["']desktop["']/,
     /min_version\s*:\s*["']5\.0\.0["']/,
   ];
 
-  return requiredPatterns.every((pattern) => pattern.test(registration));
+  return requiredPatterns.every((pattern) => pattern.test(bootstrap));
 }
 
 async function buildPlugin(): Promise<boolean> {
@@ -111,12 +111,15 @@ async function buildPlugin(): Promise<boolean> {
 
   if (await Bun.file(mcpFile).exists()) {
     const current = await Bun.file(mcpFile).text();
-    const banner = `/* v${version} */\nlet process = requireNativeModule('process');`;
+
+    // Do not request native permissions before BBPlugin.register executes.
+    // The bootstrap assigns this bundle-scoped variable during onload.
+    const banner = `/* v${version} */\nlet process;`;
     const finalBundle = current.startsWith(banner) ? current : banner + current;
 
-    if (!hasStaticPluginMetadata(finalBundle)) {
+    if (!hasBootstrapPluginMetadata(finalBundle)) {
       throw new Error(
-        "Generated plugin metadata is not statically discoverable by Blockbench. Keep version, title, author, description, icon, variant, and min_version as direct literals in BBPlugin.register()."
+        "Generated plugin bootstrap metadata is invalid. Keep version, title, author, description, icon, variant, and min_version as direct literals in the dependency-free BBPlugin.register entry."
       );
     }
 
