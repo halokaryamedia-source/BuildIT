@@ -24,6 +24,7 @@ import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
+import { visualCompareToolDocs } from "../src/server/tools/visual-compare";
 
 export interface CategoryGroup {
   category: string;
@@ -36,6 +37,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Workflow", tools: workflowToolDocs },
   { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
+  { category: "Geometry Visual Comparison", tools: visualCompareToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
@@ -111,7 +113,7 @@ export const promptDocs: PromptSpec[] = [
     name: "hytale_attachments",
     title: "Hytale Attachments System",
     description:
-      "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
+      "Guide for creating and managing attachments for Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
     status: "experimental",
   },
   {
