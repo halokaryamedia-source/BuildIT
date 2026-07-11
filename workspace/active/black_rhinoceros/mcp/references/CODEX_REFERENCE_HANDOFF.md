@@ -38,7 +38,7 @@ get_stage_context
 → final five-view compare_reference_views
 → record_geometry_visual_result
 → validate_reference_contract
-→ verify_geometry_visual_gate
+→ verify_geometry_review_ready
 → non-approved checkpoint
 → GEOMETRY_REVIEW / AWAITING_USER_REVIEW
 ```
@@ -154,4 +154,4 @@ When authorities conflict, stop with `REFERENCE_CONFLICT`.
 
 ## Stage approval
 
-After explicit user approval, use `complete_geometry_stage`, not generic `complete_stage`. It must reject missing, stale, deterministically failed, multimodally failed, reference-mismatched, or rotation-unsafe Geometry evidence.
+After explicit user approval, use `complete_geometry_stage`, not generic `complete_stage`. It must call the unified `verify_geometry_review_ready` gate and reject missing, stale, deterministically failed, multimodally failed, reference-mismatched, or rotation-unsafe Geometry evidence.
