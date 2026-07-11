@@ -10,7 +10,14 @@
 6. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
 7. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
 8. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
-9. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current reliability implementation boundary.
+9. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
+
+## Legacy Context Rejection
+
+- Current repository authorities override copied chat context, downloaded project-context ZIPs, old prompt packs, and stale skill snapshots.
+- Do not load or follow a Blockbench workflow that requires four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
+- The approved package uses one Reference Visual plus Markdown and JSON contracts.
+- When legacy instructions are active or cannot be isolated, stop with `LEGACY_SKILL_CONFLICT` and report the conflicting source.
 
 ## Execution Guardrails
 
@@ -18,7 +25,10 @@
 - Ponytail selects the smallest safe work required now.
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Stop after each stage preview for approval or targeted revision.
-- Initial work may use bounded batches; revisions use one named issue or one tightly related pair.
+- Geometry uses enforced internal phases: `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY`.
+- Geometry decisions require Codex visual inspection, fixed-scale `analyze_geometry_views` diagnosis, and `validate_geometry_contract`.
+- Geometry corrections must use ranked failing views, semantic regions, affected parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
+- Non-zero cube rotation must use `rotate_cube_about_attachment`; generic Geometry cube tools are for unrotated placement/modification.
 - Preserve approved areas and manual edits unless a stage is explicitly reopened.
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
@@ -32,7 +42,7 @@
 - Keep user-facing model files only in `workspace/*/<asset>/blockbench/`.
 - Keep MCP state, contracts, checkpoints, evidence, and reports only in `workspace/*/<asset>/mcp/`.
 - Completed baselines remain immutable while a reopened revision is active.
-- CI and merge into `V1` remain deferred until explicit final-verification approval.
+- Keep active work on `Rework` until explicit integration approval.
 
 ## Root Boundaries
 
