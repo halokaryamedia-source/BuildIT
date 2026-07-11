@@ -1,9 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { workflowToolDocs } from "../src/server/tools/workflow";
-import { assertInsideRoot, normalizePathForCompare } from "../src/lib/atomicFiles";
+import {
+  assertInsideRoot,
+  normalizePathForCompare,
+} from "../src/lib/atomicFiles";
 
-const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8")) as Record<string, any>;
+const readJson = (path: string) =>
+  JSON.parse(readFileSync(path, "utf8")) as Record<string, any>;
 
 describe("compact workflow tools", () => {
   test("keeps only three high-value orchestration tools", () => {
@@ -15,10 +19,16 @@ describe("compact workflow tools", () => {
   });
 
   test("profiles expose orchestration only where needed", () => {
-    const config = readJson("engines/shared/profiles/tool-profiles.json");
-    expect(config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools).toContain("complete_stage");
-    expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain("save_texture_evidence");
-    expect(config.profiles.GEOMETRY_LOCAL_REPAIR.allowed_tools).not.toContain("complete_stage");
+    const config = readJson("../engines/shared/profiles/tool-profiles.json");
+    expect(config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools).toContain(
+      "complete_stage"
+    );
+    expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain(
+      "save_texture_evidence"
+    );
+    expect(config.profiles.GEOMETRY_LOCAL_REPAIR.allowed_tools).not.toContain(
+      "complete_stage"
+    );
   });
 
   test("workflow writes are atomic and state-revision guarded", () => {
@@ -29,7 +39,13 @@ describe("compact workflow tools", () => {
   });
 
   test("path authorization collapses traversal", () => {
-    expect(normalizePathForCompare("C:\\repo\\session\\evidence\\..\\..\\outside.png")).toBe("c:/repo/outside.png");
-    expect(() => assertInsideRoot("C:\\repo\\outside.png", "C:\\repo\\session")).toThrow("outside approved root");
+    expect(
+      normalizePathForCompare(
+        "C:\\repo\\session\\evidence\\..\\..\\outside.png"
+      )
+    ).toBe("c:/repo/outside.png");
+    expect(() =>
+      assertInsideRoot("C:\\repo\\outside.png", "C:\\repo\\session")
+    ).toThrow("outside approved root");
   });
 });
