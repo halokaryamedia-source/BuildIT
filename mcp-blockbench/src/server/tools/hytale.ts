@@ -624,23 +624,17 @@ export function registerHytaleTools() {
           throw new Error("Current project is not using a Hytale format.");
         }
 
-        // Find animation
-        // @ts-ignore - Animation is globally available
-        let animation: Animation;
-        if (animation_id) {
-          // @ts-ignore - Animation is globally available
-          animation = Animation.all.find(
-            (a: Animation) => a.uuid === animation_id || a.name === animation_id
+        const animation = animation_id
+          ? Animator.animations.find(
+              (item) => item.uuid === animation_id || item.name === animation_id
+            )
+          : Animator.selected;
+        if (!animation) {
+          throw new Error(
+            animation_id
+              ? `Animation "${animation_id}" not found.`
+              : "No animation selected and no animation_id provided."
           );
-          if (!animation) {
-            throw new Error(`Animation "${animation_id}" not found.`);
-          }
-        } else {
-          // @ts-ignore - Animation is globally available
-          animation = Animation.selected;
-          if (!animation) {
-            throw new Error("No animation selected and no animation_id provided.");
-          }
         }
 
         // Find bone animator
@@ -691,23 +685,17 @@ export function registerHytaleTools() {
           throw new Error("Current project is not using a Hytale format.");
         }
 
-        // Find animation
-        // @ts-ignore - Animation is globally available
-        let animation: Animation;
-        if (animation_id) {
-          // @ts-ignore - Animation is globally available
-          animation = Animation.all.find(
-            (a: Animation) => a.uuid === animation_id || a.name === animation_id
+        const animation = animation_id
+          ? Animator.animations.find(
+              (item) => item.uuid === animation_id || item.name === animation_id
+            )
+          : Animator.selected;
+        if (!animation) {
+          throw new Error(
+            animation_id
+              ? `Animation "${animation_id}" not found.`
+              : "No animation selected and no animation_id provided."
           );
-          if (!animation) {
-            throw new Error(`Animation "${animation_id}" not found.`);
-          }
-        } else {
-          // @ts-ignore - Animation is globally available
-          animation = Animation.selected;
-          if (!animation) {
-            throw new Error("No animation selected and no animation_id provided.");
-          }
         }
 
         // @ts-ignore - Undo is globally available

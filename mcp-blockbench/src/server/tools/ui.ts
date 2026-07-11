@@ -163,7 +163,7 @@ export function registerUITools() {
         if (barItem && barItem instanceof Action) {
           const { event, ...rest } = parsedArgs;
           barItem.trigger(
-            new Event(event || "click", {
+            new Event(typeof event === "string" ? event : "click", {
               ...rest,
             })
           );
@@ -276,14 +276,16 @@ export function registerUITools() {
         }
 
         const keys = Object.keys(Dialog.open?.getFormResult() ?? {});
-        const valuesToFill = Object.entries(parsedValues).reduce(
+        const valuesToFill = Object.entries(parsedValues).reduce<
+          Record<string, FormResultValue>
+        >(
           (acc, [key, value]) => {
             if (keys.includes(key)) {
-              acc[key as keyof FormResultValue] = value as FormResultValue;
+              acc[key] = value as FormResultValue;
             }
             return acc;
           },
-          {} as Record<keyof FormResultValue, FormResultValue>
+          {}
         );
         Dialog.open?.setFormValues(valuesToFill, true);
 

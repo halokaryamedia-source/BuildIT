@@ -282,6 +282,35 @@ export const textureLayerManagementParameters = z.object({
     .describe("Target position for moving layers."),
 });
 
+function resizeTextureSelection(selection: IntMatrix, amount: number): void {
+  const radius = Math.abs(amount);
+  if (selection.is_custom && selection.array) {
+    const source = selection.array.slice();
+    const expected = amount < 0 ? 0 : 1;
+    selection.forEachPixel((x, y, value, index) => {
+      if (value === expected) return;
+      for (let offsetX = -radius; offsetX <= radius; offsetX++) {
+        for (let offsetY = -radius; offsetY <= radius; offsetY++) {
+          if (selection.get(x + offsetX, y + offsetY) === expected) {
+            source[index] = expected;
+            return;
+          }
+        }
+      }
+    });
+    selection.array = source;
+  } else if (selection.override === true && amount < 0) {
+    selection.setOverride(null);
+    selection.forEachPixel((x, y, _value, index) => {
+      selection.array![index] =
+        x >= radius && y >= radius &&
+        x < selection.width - radius && y < selection.height - radius
+          ? 1
+          : 0;
+    });
+  }
+}
+
 export const paintToolDocs: ToolSpec[] = [
   {
     name: "paint_fill_tool",
@@ -449,7 +478,7 @@ export function registerPaintTools() {
         BarItems.fill_tool.select();
 
         // Perform fill
-        Painter.startPaintTool(texture, x, y, {}, { shiftKey: false });
+        Painter.startPaintTool(texture, x, y, undefined, { shiftKey: false });
         Painter.stopPaintTool();
 
         Undo.finishEdit("Fill tool");
@@ -504,7 +533,7 @@ export function registerPaintTools() {
         BarItems.draw_shape_tool.select();
 
         // Draw shape
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        Painter.startPaintTool(texture, start.x, start.y, undefined, { shiftKey: false });
         Painter.useShapeTool(texture, end.x, end.y, {});
         Painter.stopPaintTool();
 
@@ -554,7 +583,7 @@ export function registerPaintTools() {
         BarItems.gradient_tool.select();
 
         // Apply gradient
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        Painter.startPaintTool(texture, start.x, start.y, undefined, { shiftKey: false });
         Painter.useGradientTool(texture, end.x, end.y, {});
         Painter.stopPaintTool();
 
@@ -632,12 +661,12 @@ export function registerPaintTools() {
         BarItems.copy_brush.select();
 
         // Set source point (Ctrl+click equivalent)
-        Painter.startPaintTool(texture, source.x, source.y, {}, {
+        Painter.startPaintTool(texture, source.x, source.y, undefined, {
           ctrlOrCmd: true,
         });
 
         // Apply at target point
-        Painter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
+        Painter.startPaintTool(texture, target.x, target.y, undefined, { shiftKey: false });
         Painter.stopPaintTool();
 
         Undo.finishEdit("Copy brush");
@@ -693,7 +722,7 @@ export function registerPaintTools() {
 
           if (i === 0 || !connect_strokes) {
             // Start new stroke
-            Painter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
+            Painter.startPaintTool(texture, coord.x, coord.y, undefined, { shiftKey: false });
           } else {
             // Continue stroke
             Painter.movePaintTool(texture, coord.x, coord.y, {});
@@ -728,13 +757,18 @@ export function registerPaintTools() {
         pick_color_opacity,
         pick_combined_color,
       }) {
-        const settings: string[] = [];
+        const changes: string[] = [];
+        const runtimePainter = Painter as {
+          mirror_painting: boolean;
+          lock_alpha: boolean;
+          erase_mode: boolean;
+        };
 
         // Mirror painting
         if (mirror_painting !== undefined) {
           setBarItemValue("mirror_painting", mirror_painting.enabled);
-          Painter.mirror_painting = mirror_painting.enabled;
-          settings.push(`Mirror painting: ${mirror_painting.enabled}`);
+          runtimePainter.mirror_painting = mirror_painting.enabled;
+          changes.push(`Mirror painting: ${mirror_painting.enabled}`);
 
           if (
             mirror_painting.enabled &&
@@ -745,8 +779,8 @@ export function registerPaintTools() {
             // @ts-ignore
             const options = Painter.mirror_painting_options;
             if (mirror_painting.axis) {
-              mirror_painting.axis.forEach((axis) => {
-                options[axis] = true;
+              mirror_painting.axis.forEach((axis: "x" | "y" | "z") => {
+                if (axis === "x" || axis === "z") options.axis[axis] = true;
               });
             }
             if (mirror_painting.texture !== undefined) {
@@ -758,67 +792,67 @@ export function registerPaintTools() {
                 mirror_painting.texture_center.y,
               ];
             }
-            settings.push(`Mirror options updated`);
+            changes.push(`Mirror options updated`);
           }
         }
 
         // Lock alpha
         if (lock_alpha !== undefined) {
-          Painter.lock_alpha = lock_alpha;
-          settings.push(`Lock alpha: ${lock_alpha}`);
+          runtimePainter.lock_alpha = lock_alpha;
+          changes.push(`Lock alpha: ${lock_alpha}`);
         }
 
         // Pixel perfect
         if (pixel_perfect !== undefined) {
           setBarItemValue("pixel_perfect_drawing", pixel_perfect);
-          settings.push(`Pixel perfect: ${pixel_perfect}`);
+          changes.push(`Pixel perfect: ${pixel_perfect}`);
         }
 
         // Color erase mode
         if (color_erase_mode !== undefined) {
           setBarItemValue("color_erase_mode", color_erase_mode);
-          Painter.erase_mode = color_erase_mode;
-          settings.push(`Color erase mode: ${color_erase_mode}`);
+          runtimePainter.erase_mode = color_erase_mode;
+          changes.push(`Color erase mode: ${color_erase_mode}`);
         }
 
         // Settings that require accessing the settings object
         if (paint_side_restrict !== undefined) {
           // @ts-ignore
           settings.paint_side_restrict.value = paint_side_restrict;
-          settings.push(`Paint side restrict: ${paint_side_restrict}`);
+          changes.push(`Paint side restrict: ${paint_side_restrict}`);
         }
 
         if (brush_opacity_modifier !== undefined) {
           // @ts-ignore
           settings.brush_opacity_modifier.value = brush_opacity_modifier;
-          settings.push(`Brush opacity modifier: ${brush_opacity_modifier}`);
+          changes.push(`Brush opacity modifier: ${brush_opacity_modifier}`);
         }
 
         if (brush_size_modifier !== undefined) {
           // @ts-ignore
           settings.brush_size_modifier.value = brush_size_modifier;
-          settings.push(`Brush size modifier: ${brush_size_modifier}`);
+          changes.push(`Brush size modifier: ${brush_size_modifier}`);
         }
 
         if (paint_with_stylus_only !== undefined) {
           // @ts-ignore
           settings.paint_with_stylus_only.value = paint_with_stylus_only;
-          settings.push(`Paint with stylus only: ${paint_with_stylus_only}`);
+          changes.push(`Paint with stylus only: ${paint_with_stylus_only}`);
         }
 
         if (pick_color_opacity !== undefined) {
           // @ts-ignore
           settings.pick_color_opacity.value = pick_color_opacity;
-          settings.push(`Pick color opacity: ${pick_color_opacity}`);
+          changes.push(`Pick color opacity: ${pick_color_opacity}`);
         }
 
         if (pick_combined_color !== undefined) {
           // @ts-ignore
           settings.pick_combined_color.value = pick_combined_color;
-          settings.push(`Pick combined color: ${pick_combined_color}`);
+          changes.push(`Pick combined color: ${pick_combined_color}`);
         }
 
-        return `Updated paint settings: ${settings.join(", ")}`;
+        return `Updated paint settings: ${changes.join(", ")}`;
       },
     },
     paintToolDocs[6].status
@@ -947,7 +981,7 @@ export function registerPaintTools() {
       async execute({ preset_name }) {
         // @ts-ignore
         const preset = StateMemory.brush_presets.find(
-          (p) => p.name === preset_name
+          (p: { name: string }) => p.name === preset_name
         );
 
         if (!preset) {
@@ -983,11 +1017,11 @@ export function registerPaintTools() {
               throw new Error("Coordinates required for rectangle selection.");
             }
             selection.clear();
-            selection.start_x = coordinates.x1;
-            selection.start_y = coordinates.y1;
-            selection.end_x = coordinates.x2;
-            selection.end_y = coordinates.y2;
-            selection.is_custom = false;
+            for (let x = Math.floor(coordinates.x1); x <= Math.ceil(coordinates.x2); x++) {
+              for (let y = Math.floor(coordinates.y1); y <= Math.ceil(coordinates.y2); y++) {
+                selection.set(x, y, 1);
+              }
+            }
             break;
 
           case "select_ellipse":
@@ -996,7 +1030,6 @@ export function registerPaintTools() {
             }
             selection.clear();
             // Create elliptical selection
-            selection.is_custom = true;
             const centerX = (coordinates.x1 + coordinates.x2) / 2;
             const centerY = (coordinates.y1 + coordinates.y2) / 2;
             const radiusX = Math.abs(coordinates.x2 - coordinates.x1) / 2;
@@ -1015,7 +1048,7 @@ export function registerPaintTools() {
                 const dx = (x - centerX) / radiusX;
                 const dy = (y - centerY) / radiusY;
                 if (dx * dx + dy * dy <= 1) {
-                  selection.set(x, y, true);
+                  selection.set(x, y, 1);
                 }
               }
             }
@@ -1025,12 +1058,7 @@ export function registerPaintTools() {
             // `selection.selectAll()` doesn't exist on current Blockbench
             // (`H.selectAll is not a function`). Emulate via a full-texture
             // rectangular selection instead, matching what the UI does.
-            selection.clear();
-            selection.start_x = 0;
-            selection.start_y = 0;
-            selection.end_x = texture.width;
-            selection.end_y = texture.height;
-            selection.is_custom = false;
+            selection.setOverride(true);
             break;
 
           case "clear_selection":
@@ -1038,29 +1066,32 @@ export function registerPaintTools() {
             break;
 
           case "invert_selection":
-            selection.invert();
+            if (selection.is_custom) {
+              selection.forEachPixel((x, y, value) => selection.set(x, y, value ? 0 : 1));
+            } else {
+              selection.setOverride(!selection.override);
+            }
             break;
 
           case "expand_selection":
             if (radius === undefined) {
               throw new Error("Radius required for expand selection.");
             }
-            selection.expand(radius);
+            resizeTextureSelection(selection, radius);
             break;
 
           case "contract_selection":
             if (radius === undefined) {
               throw new Error("Radius required for contract selection.");
             }
-            selection.contract(radius);
+            resizeTextureSelection(selection, -radius);
             break;
 
           case "feather_selection":
             if (radius === undefined) {
               throw new Error("Radius required for feather selection.");
             }
-            selection.feather(radius);
-            break;
+            throw new Error("Feather selection is not supported by the current Blockbench runtime.");
         }
 
         // Update UI
@@ -1117,7 +1148,7 @@ export function registerPaintTools() {
               throw new Error("No layer selected.");
             }
             const layerToDelete = TextureLayer.selected;
-            layerToDelete.remove();
+            layerToDelete.remove(true);
             result = `Deleted layer "${layerToDelete.name}"`;
             break;
 
@@ -1126,8 +1157,12 @@ export function registerPaintTools() {
               throw new Error("No layer selected.");
             }
             const layerToDuplicate = TextureLayer.selected;
-            const duplicatedLayer = layerToDuplicate.duplicate();
+            const duplicatedLayer = new TextureLayer(
+              layerToDuplicate.getUndoCopy(true),
+              texture
+            );
             duplicatedLayer.name = `${layerToDuplicate.name} copy`;
+            duplicatedLayer.addForEditing();
             result = `Duplicated layer "${duplicatedLayer.name}"`;
             break;
 
@@ -1192,7 +1227,9 @@ export function registerPaintTools() {
             if (!texture.layers_enabled) {
               throw new Error("Texture has no layers to flatten.");
             }
-            texture.flattenLayers();
+            texture.layers_enabled = false;
+            texture.selected_layer = null;
+            texture.layers.length = 0;
             result = "Flattened all layers";
             break;
         }

@@ -17,6 +17,31 @@ import {
   keyframeDataSchema,
 } from "@/lib/zodObjects";
 
+function toVector3(value: number | number[]): [number, number, number] {
+  return typeof value === "number"
+    ? [value, value, value]
+    : [Number(value[0]), Number(value[1]), Number(value[2])];
+}
+
+type AnimationChannel = z.output<typeof animationChannelEnum>;
+
+interface ClipboardKeyframe {
+  time: number;
+  values: (number | string)[];
+  interpolation: string;
+  bezier_left_time?: ArrayVector3;
+  bezier_left_value?: ArrayVector3;
+  bezier_right_time?: ArrayVector3;
+  bezier_right_value?: ArrayVector3;
+}
+
+interface AnimationClipboard {
+  bone_name: string;
+  channels: Partial<Record<AnimationChannel, ClipboardKeyframe[]>>;
+}
+
+let animationClipboard: AnimationClipboard | null = null;
+
 export const createAnimationParameters = z.object({
   name: z.string().describe("Name of the animation"),
   loop: z
@@ -329,7 +354,11 @@ createTool(
   animationToolDocs[0].name,
   {
     ...animationToolDocs[0],
-    async execute({ name, loop, animation_length, bones, particle_effects }) {
+    async execute(
+      { name, loop, animation_length, bones, particle_effects }: z.output<
+        typeof createAnimationParameters
+      >
+    ) {
       const animationData = {
         loop,
         ...(animation_length && { animation_length }),
@@ -383,13 +412,17 @@ createTool(
   animationToolDocs[1].name,
   {
     ...animationToolDocs[1],
-    async execute({ animation_id, action, bone_name, channel, keyframes }) {
+    async execute(
+      { animation_id, action, bone_name, channel, keyframes }: z.output<
+        typeof manageKeyframesParameters
+      >
+    ) {
       // Find or select animation
       const animation = animation_id
-        ? Animation.all.find(
+        ? Animator.animations.find(
             (a) => a.uuid === animation_id || a.name === animation_id
           )
-        : Animation.selected;
+        : Animator.selected;
 
       if (!animation) {
         throw new Error("No animation found or selected.");
@@ -404,6 +437,7 @@ createTool(
         animator = new BoneAnimator(group.uuid, animation, bone_name);
         animation.animators[group.uuid] = animator;
       }
+      const channelKeyframes = animator[channel] as _Keyframe[] | undefined;
 
       Undo.initEdit({
         animations: [animation],
@@ -428,23 +462,23 @@ createTool(
             if (kf.interpolation === "bezier" && kf.bezier_handles) {
               // @ts-ignore
               if (kf.bezier_handles.left_time !== undefined)
-                keyframe.bezier_left_time = kf.bezier_handles.left_time;
+                keyframe.bezier_left_time = toVector3(kf.bezier_handles.left_time);
               // @ts-ignore
               if (kf.bezier_handles.left_value)
-                keyframe.bezier_left_value = kf.bezier_handles.left_value;
+                keyframe.bezier_left_value = toVector3(kf.bezier_handles.left_value);
               // @ts-ignore
               if (kf.bezier_handles.right_time !== undefined)
-                keyframe.bezier_right_time = kf.bezier_handles.right_time;
+                keyframe.bezier_right_time = toVector3(kf.bezier_handles.right_time);
               // @ts-ignore
               if (kf.bezier_handles.right_value)
-                keyframe.bezier_right_value = kf.bezier_handles.right_value;
+                keyframe.bezier_right_value = toVector3(kf.bezier_handles.right_value);
             }
           });
           break;
 
         case "delete":
           keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
+            const keyframe = channelKeyframes?.find(
               (k) => Math.abs(k.time - kf.time) < 0.001
             );
             if (keyframe) {
@@ -455,12 +489,12 @@ createTool(
 
         case "edit":
           keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
+            const keyframe = channelKeyframes?.find(
               (k) => Math.abs(k.time - kf.time) < 0.001
             );
             if (keyframe) {
               if (kf.values) {
-                keyframe.set("values", kf.values);
+                animator.fillValues(keyframe, kf.values, true);
               }
               if (kf.interpolation) {
                 keyframe.interpolation = kf.interpolation;
@@ -468,16 +502,16 @@ createTool(
               if (kf.interpolation === "bezier" && kf.bezier_handles) {
                 // @ts-ignore
                 if (kf.bezier_handles.left_time !== undefined)
-                  keyframe.bezier_left_time = kf.bezier_handles.left_time;
+                  keyframe.bezier_left_time = toVector3(kf.bezier_handles.left_time);
                 // @ts-ignore
                 if (kf.bezier_handles.left_value)
-                  keyframe.bezier_left_value = kf.bezier_handles.left_value;
+                  keyframe.bezier_left_value = toVector3(kf.bezier_handles.left_value);
                 // @ts-ignore
                 if (kf.bezier_handles.right_time !== undefined)
-                  keyframe.bezier_right_time = kf.bezier_handles.right_time;
+                  keyframe.bezier_right_time = toVector3(kf.bezier_handles.right_time);
                 // @ts-ignore
                 if (kf.bezier_handles.right_value)
-                  keyframe.bezier_right_value = kf.bezier_handles.right_value;
+                  keyframe.bezier_right_value = toVector3(kf.bezier_handles.right_value);
               }
             }
           });
@@ -486,7 +520,7 @@ createTool(
         case "select":
           Timeline.selected.empty();
           keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
+            const keyframe = channelKeyframes?.find(
               (k) => Math.abs(k.time - kf.time) < 0.001
             );
             if (keyframe) {
@@ -517,12 +551,12 @@ createTool(
       action,
       keyframe_range,
       custom_curve,
-    }) {
+    }: z.output<typeof animationGraphEditorParameters>) {
       const animation = animation_id
-        ? Animation.all.find(
+        ? Animator.animations.find(
             (a) => a.uuid === animation_id || a.name === animation_id
           )
-        : Animation.selected;
+        : Animator.selected;
 
       if (!animation) {
         throw new Error("No animation found or selected.");
@@ -531,16 +565,17 @@ createTool(
       const group = findGroupOrThrow(bone_name);
 
       const animator = animation.animators[group.uuid];
-      if (!animator || !animator[channel]) {
+      const channelKeyframes = animator?.[channel] as _Keyframe[] | undefined;
+      if (!animator || !channelKeyframes) {
         throw new Error(`No keyframes found for ${bone_name}.${channel}`);
       }
 
       Undo.initEdit({
         animations: [animation],
-        keyframes: animator[channel],
+        keyframes: channelKeyframes,
       });
 
-      const keyframes = animator[channel].filter((kf) => {
+      const keyframes = channelKeyframes.filter((kf) => {
         if (!keyframe_range) return true;
         return kf.time >= keyframe_range.start && kf.time <= keyframe_range.end;
       });
@@ -626,7 +661,9 @@ createTool(
   animationToolDocs[3].name,
   {
     ...animationToolDocs[3],
-    async execute({ action, bone_data }) {
+    async execute(
+      { action, bone_data }: z.output<typeof boneRiggingParameters>
+    ) {
       Undo.initEdit({
         outliner: true,
         elements: [],
@@ -639,8 +676,8 @@ createTool(
         case "create": {
           const group = new Group({
             name: bone_data.name,
-            origin: bone_data.origin || [0, 0, 0],
-            rotation: bone_data.rotation || [0, 0, 0],
+            origin: toVector3(bone_data.origin || [0, 0, 0]),
+            rotation: toVector3(bone_data.rotation || [0, 0, 0]),
           }).init();
 
           // Set parent
@@ -717,7 +754,7 @@ createTool(
           const bone = findGroupOrThrow(bone_data.name);
 
           if (bone_data.origin) {
-            bone.origin = bone_data.origin;
+            bone.origin = toVector3(bone_data.origin);
           }
           result = `Set pivot point for "${bone_data.name}"`;
           break;
@@ -771,8 +808,12 @@ createTool(
   animationToolDocs[4].name,
   {
     ...animationToolDocs[4],
-    async execute({ action, time, length, fps, loop_mode, range }) {
-      if (!Animation.selected) {
+    async execute(
+      { action, time, length, fps, loop_mode, range }: z.output<
+        typeof animationTimelineParameters
+      >
+    ) {
+      if (!Animator.selected) {
         throw new Error("No animation selected.");
       }
 
@@ -807,7 +848,7 @@ createTool(
           if (length === undefined) {
             throw new Error("Length parameter required for set_length action.");
           }
-          Animation.selected.length = length;
+          Animator.selected.length = length;
           result = `Set animation length to ${length} seconds`;
           break;
 
@@ -815,15 +856,15 @@ createTool(
           if (fps === undefined) {
             throw new Error("FPS parameter required for set_fps action.");
           }
-          Animation.selected.snapping = fps;
+          Animator.selected.snapping = fps;
           result = `Set animation FPS to ${fps}`;
           break;
 
         case "loop":
           if (loop_mode) {
-            Animation.selected.loop = loop_mode;
+            Animator.selected.loop = loop_mode;
           }
-          result = `Set loop mode to ${loop_mode || Animation.selected.loop}`;
+          result = `Set loop mode to ${loop_mode || Animator.selected.loop}`;
           break;
 
         case "select_range":
@@ -856,13 +897,19 @@ createTool(
   animationToolDocs[5].name,
   {
     ...animationToolDocs[5],
-    async execute({ selection, range, pattern, operation, parameters = {} }) {
-      if (!Animation.selected) {
+    async execute({
+      selection,
+      range,
+      pattern,
+      operation,
+      parameters = {},
+    }: z.output<typeof batchKeyframeOperationsParameters>) {
+      if (!Animator.selected) {
         throw new Error("No animation selected.");
       }
 
       // Gather keyframes based on selection type
-      let keyframes: any[] = [];
+      let keyframes: _Keyframe[] = [];
 
       switch (selection) {
         case "all":
@@ -909,11 +956,12 @@ createTool(
             }
             if (parameters.offset_values) {
               const values = kf.getArray();
-              kf.set("values", [
-                values[0] + parameters.offset_values[0],
-                values[1] + parameters.offset_values[1],
-                values[2] + parameters.offset_values[2],
-              ]);
+              const adjusted = values.map((value, axis) =>
+                typeof value === "number"
+                  ? value + parameters.offset_values![axis]
+                  : value
+              );
+              kf.animator.fillValues(kf, adjusted, true);
             }
           });
           break;
@@ -947,8 +995,10 @@ createTool(
               : 2;
           keyframes.forEach((kf) => {
             const values = kf.getArray();
-            values[axisIndex] *= -1;
-            kf.set("values", values);
+            if (typeof values[axisIndex] === "number") {
+              values[axisIndex] = -values[axisIndex];
+            }
+            kf.animator.fillValues(kf, values, true);
           });
           break;
 
@@ -961,13 +1011,13 @@ createTool(
 
         case "bake":
           const interval =
-            parameters.bake_interval || 1 / Animation.selected.snapping;
+            parameters.bake_interval || 1 / Animator.selected.snapping;
           const animators = new Set(keyframes.map((kf) => kf.animator));
 
           animators.forEach((animator) => {
-            const channels = ["rotation", "position", "scale"];
+            const channels: AnimationChannel[] = ["rotation", "position", "scale"];
             channels.forEach((channel) => {
-              const channelKfs = animator[channel];
+              const channelKfs = animator[channel] as _Keyframe[] | undefined;
               if (!channelKfs || channelKfs.length < 2) return;
 
               const startTime = Math.min(...channelKfs.map((kf) => kf.time));
@@ -1012,14 +1062,9 @@ createTool(
   animationToolDocs[6].name,
   {
     ...animationToolDocs[6],
-    async execute({ action, source, target }) {
-      // Static storage for copied data between copy/paste operations
-      // @ts-ignore
-      if (!global.animationClipboard) {
-        // @ts-ignore
-        global.animationClipboard = null;
-      }
-
+    async execute(
+      { action, source, target }: z.output<typeof animationCopyPasteParameters>
+    ) {
       switch (action) {
         case "copy": {
           if (!source) {
@@ -1027,11 +1072,11 @@ createTool(
           }
 
           const srcAnimation = source.animation
-            ? Animation.all.find(
+            ? Animator.animations.find(
                 (a) =>
                   a.uuid === source.animation || a.name === source.animation
               )
-            : Animation.selected;
+            : Animator.selected;
 
           if (!srcAnimation) {
             throw new Error("Source animation not found.");
@@ -1045,20 +1090,22 @@ createTool(
           }
 
           // Copy keyframe data
-          const copiedData: any = {
+          const copiedData: AnimationClipboard = {
             bone_name: source.bone,
             channels: {},
           };
 
           source.channels.forEach((channel) => {
-            if (!animator[channel]) return;
+            const channelKeyframes = animator[channel] as _Keyframe[] | undefined;
+            if (!channelKeyframes) return;
 
-            let keyframes = animator[channel];
-            if (source.time_range) {
+            let keyframes = channelKeyframes;
+            const timeRange = source.time_range;
+            if (timeRange) {
               keyframes = keyframes.filter(
                 (kf) =>
-                  kf.time >= source.time_range.start &&
-                  kf.time <= source.time_range.end
+                  kf.time >= timeRange.start &&
+                  kf.time <= timeRange.end
               );
             }
 
@@ -1077,8 +1124,7 @@ createTool(
             }));
           });
 
-          // @ts-ignore
-          global.animationClipboard = copiedData;
+          animationClipboard = copiedData;
 
           return `Copied animation data from "${source.bone}" (${Object.keys(
             copiedData.channels
@@ -1091,17 +1137,16 @@ createTool(
             throw new Error("Target data required for paste operation.");
           }
 
-          // @ts-ignore
-          if (!global.animationClipboard) {
+          if (!animationClipboard) {
             throw new Error("No animation data in clipboard. Copy first.");
           }
 
           const tgtAnimation = target.animation
-            ? Animation.all.find(
+            ? Animator.animations.find(
                 (a) =>
                   a.uuid === target.animation || a.name === target.animation
               )
-            : Animation.selected;
+            : Animator.selected;
 
           if (!tgtAnimation) {
             throw new Error("Target animation not found.");
@@ -1124,8 +1169,7 @@ createTool(
             keyframes: [],
           });
 
-          // @ts-ignore
-          const clipboardData = global.animationClipboard;
+          const clipboardData = animationClipboard;
           const mirrorAxis =
             action === "mirror_paste" ? target.mirror_axis || "x" : null;
           const axisIndex =
@@ -1137,8 +1181,11 @@ createTool(
               ? 2
               : -1;
 
-          Object.entries(clipboardData.channels).forEach(
-            ([channel, keyframes]: [string, any[]]) => {
+          (Object.entries(clipboardData.channels) as [
+            AnimationChannel,
+            ClipboardKeyframe[]
+          ][]).forEach(
+            ([channel, keyframes]) => {
               keyframes.forEach((kfData) => {
                 const values = [...kfData.values];
 
@@ -1147,7 +1194,9 @@ createTool(
                   mirrorAxis &&
                   (channel === "rotation" || channel === "position")
                 ) {
-                  values[axisIndex] *= -1;
+                  if (typeof values[axisIndex] === "number") {
+                    values[axisIndex] = -values[axisIndex];
+                  }
                 }
 
                 const keyframe = animator.createKeyframe(

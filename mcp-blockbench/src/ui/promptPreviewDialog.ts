@@ -216,7 +216,8 @@ export function openPromptPreviewDialog(promptName: string) {
     buttons: [tl("mcp.dialog.generate_prompt"), tl("mcp.dialog.cancel")],
     confirmIndex: 0,
     cancelIndex: 1,
-    async onConfirm(formResult: Record<string, unknown>) {
+    onConfirm(formResult: Record<string, unknown>) {
+      void (async () => {
       // Filter out empty values for optional args
       const args: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(formResult)) {
@@ -246,6 +247,7 @@ export function openPromptPreviewDialog(promptName: string) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         showPromptContentDialog(promptName, `Error: ${errorMessage}`, true);
       }
+      })();
     },
   });
 

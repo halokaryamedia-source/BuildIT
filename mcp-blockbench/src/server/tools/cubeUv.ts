@@ -37,18 +37,23 @@ export const cubeUvToolDocs: ToolSpec[] = [
   },
 ];
 
-function resolveTextureName(index: number): string | null {
-  const texture = Texture.all[index];
-  return texture?.name ?? texture?.uuid ?? null;
+function resolveTextureName(reference: string | false | undefined): string | null {
+  if (!reference) return null;
+  const texture = Texture.all.find(({ uuid }) => uuid === reference);
+  return texture?.name ?? reference;
 }
 
 function applyFaceRects(cube: Cube, faces: z.infer<typeof faceUvRectSchema>[]): void {
   faces.forEach(({ face, uv, texture, rotation }) => {
     const faceData = cube.faces[face];
     if (!faceData) throw new Error(`Face "${face}" not found on cube "${cube.name}".`);
+    const textureReference = texture === undefined ? undefined : Texture.all[texture]?.uuid;
+    if (texture !== undefined && !textureReference) {
+      throw new Error(`Texture index ${texture} not found.`);
+    }
     faceData.extend({
       uv: uv as [number, number, number, number],
-      ...(texture !== undefined ? { texture } : {}),
+      ...(textureReference !== undefined ? { texture: textureReference } : {}),
       ...(rotation !== undefined ? { rotation: Number(rotation) } : {}),
     });
   });
@@ -123,7 +128,7 @@ export function registerCubeUvTools() {
       async execute({ cube_ids }) {
         if (!Project) throw new Error("No project is open.");
         const cubes = cube_ids?.length
-          ? cube_ids.map((cubeId) => {
+          ? cube_ids.map((cubeId: string) => {
               const element = findElementOrThrow(cubeId);
               if (!(element instanceof Cube)) throw new Error(`Element "${cubeId}" is not a cube.`);
               return element;

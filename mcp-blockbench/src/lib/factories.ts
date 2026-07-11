@@ -10,6 +10,7 @@ export interface ToolSpec {
   annotations?: {
     title?: string;
     destructiveHint?: boolean;
+    idempotentHint?: boolean;
     readOnlyHint?: boolean;
     openWorldHint?: boolean;
   };
@@ -136,6 +137,7 @@ export function createTool<T extends z.ZodType>(
     annotations?: {
       title?: string;
       destructiveHint?: boolean;
+      idempotentHint?: boolean;
       openWorldHint?: boolean;
       readOnlyHint?: boolean;
     };
@@ -406,7 +408,7 @@ interface PromptDefinition {
   generate: (args: Record<string, unknown>) => Promise<{
     messages: Array<{
       role: "user" | "assistant";
-      content: { type: string; text: string };
+      content: { type: "text"; text: string };
     }>;
   }>;
 }
@@ -427,13 +429,13 @@ export function createPrompt<
       | {
           messages: Array<{
             role: "user" | "assistant";
-            content: { type: string; text: string };
+            content: { type: "text"; text: string };
           }>;
         }
       | Promise<{
           messages: Array<{
             role: "user" | "assistant";
-            content: { type: string; text: string };
+            content: { type: "text"; text: string };
           }>;
         }>;
   },
@@ -454,7 +456,18 @@ export function createPrompt<
         prompt.generate!(args as z.infer<z.ZodObject<T>>),
     };
     promptDefinitions[name] = promptDefinition;
-    getServer().registerPrompt(
+    const server = getServer() as unknown as {
+      registerPrompt: (
+        promptName: string,
+        definition: {
+          title: string;
+          description: string;
+          argsSchema?: Record<string, z.ZodType>;
+        },
+        callback: PromptDefinition["generate"]
+      ) => void;
+    };
+    server.registerPrompt(
       name,
       {
         title: promptDefinition.title,

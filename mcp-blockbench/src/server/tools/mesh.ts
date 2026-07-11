@@ -1,6 +1,7 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
+import { Vector3 } from "three";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import {
   meshSchema,
@@ -311,7 +312,11 @@ export const meshToolDocs: ToolSpec[] = [
 export function registerMeshTools() {
   createTool(meshToolDocs[0].name, {
     ...meshToolDocs[0],
-    async execute({ elements, texture, group }, { reportProgress }) {
+    async execute(
+      { elements, texture, group }: z.output<typeof placeMeshParameters>,
+      context
+    ) {
+      const reportProgress = context?.reportProgress ?? (() => {});
       Undo.initEdit({
         elements: [],
         outliner: true,
@@ -404,7 +409,11 @@ export function registerMeshTools() {
 
   createTool(meshToolDocs[3].name, {
     ...meshToolDocs[3],
-    async execute({ elements, texture, group }, { reportProgress }) {
+    async execute(
+      { elements, texture, group }: z.output<typeof createSphereParameters>,
+      context
+    ) {
+      const reportProgress = context?.reportProgress ?? (() => {});
       Undo.initEdit({
         elements: [],
         outliner: true,
@@ -540,7 +549,11 @@ export function registerMeshTools() {
 
   createTool(meshToolDocs[4].name, {
     ...meshToolDocs[4],
-    async execute({ mesh_id, mode, elements, action }) {
+    async execute(
+      { mesh_id, mode, elements, action }: z.output<
+        typeof selectMeshElementsParameters
+      >
+    ) {
       const mesh = findMeshOrThrow(mesh_id);
 
       Undo.initEdit({
@@ -689,7 +702,9 @@ export function registerMeshTools() {
 
   createTool(meshToolDocs[5].name, {
     ...meshToolDocs[5],
-    async execute({ mesh_id, offset, vertices }) {
+    async execute(
+      { mesh_id, offset, vertices }: z.output<typeof moveMeshVerticesParameters>
+    ) {
       const mesh = getMeshOrSelected(mesh_id);
 
       Undo.initEdit({
@@ -864,7 +879,11 @@ export function registerMeshTools() {
 
   createTool(meshToolDocs[9].name, {
     ...meshToolDocs[9],
-    async execute({ elements, texture, group }, { reportProgress }) {
+    async execute(
+      { elements, texture, group }: z.output<typeof createCylinderParameters>,
+      context
+    ) {
+      const reportProgress = context?.reportProgress ?? (() => {});
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
       const total = elements.length;
       const projectTexture = texture
@@ -948,7 +967,9 @@ export function registerMeshTools() {
 
   createTool(meshToolDocs[10].name, {
     ...meshToolDocs[10],
-    async execute({ mesh_id, points }) {
+    async execute(
+      { mesh_id, points }: z.output<typeof knifeToolParameters>
+    ) {
       const mesh = findMeshOrThrow(mesh_id);
 
       Undo.initEdit({
@@ -967,7 +988,7 @@ export function registerMeshTools() {
       // Add points to the knife path
       points.forEach((point) => {
         knifeContext.points.push({
-          position: new THREE.Vector3(...point.position),
+          position: new Vector3(...point.position),
           fkey: point.face,
           type: point.face ? "face" : "edge",
         });

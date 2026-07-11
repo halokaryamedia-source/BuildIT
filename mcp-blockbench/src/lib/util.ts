@@ -96,8 +96,14 @@ export function getProjectTexture(id: string): Texture | null {
  * `… .set is not a function` on current Blockbench builds.
  */
 export function setBarItemValue(id: string, value: unknown): void {
-  // @ts-ignore - BarItems is a Blockbench global
-  const item = BarItems?.[id];
+  interface RuntimeBarItem {
+    value?: unknown;
+    set?: (value: unknown) => void;
+    update?: () => void;
+    change?: (value: unknown) => void;
+  }
+
+  const item = BarItems?.[id] as RuntimeBarItem | undefined;
   if (!item) return;
   if (typeof item.set === "function") {
     try {

@@ -946,7 +946,11 @@ export function registerArmatureTools() {
   // ---------------------------------------------------------------------------
   createTool(armatureToolDocs[14].name, {
     ...armatureToolDocs[14],
-    async execute({ bone_id, mesh_id, weights }) {
+    async execute(
+      { bone_id, mesh_id, weights }: z.output<
+        typeof setVertexWeightsBatchParameters
+      >
+    ) {
       const bone = findArmatureBoneOrThrow(bone_id);
 
       let mesh: Mesh | undefined;

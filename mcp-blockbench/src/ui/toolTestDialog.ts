@@ -320,7 +320,8 @@ export function openToolTestDialog(toolName: string) {
         return false;
       }
     },
-    async onConfirm(formResult: Record<string, unknown>) {
+    onConfirm(formResult: Record<string, unknown>) {
+      void (async () => {
       const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
 
       // Show loading message
@@ -349,6 +350,7 @@ export function openToolTestDialog(toolName: string) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         showResultDialog(toolName, `Error: ${errorMessage}`, true);
       }
+      })();
     },
   });
 

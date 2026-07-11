@@ -178,7 +178,9 @@ export function countProjectNodes(): number {
     // and counted as part of the group. Otherwise count separately.
     const parent = cube.parent;
     if (parent instanceof Group) {
-      const siblings = parent.children.filter((c: OutlinerElement) => c instanceof Cube);
+      const siblings = parent.children.filter(
+        (c: OutlinerNode): c is Cube => c instanceof Cube
+      );
       if (siblings.length > 1) {
         count += 1;
       }

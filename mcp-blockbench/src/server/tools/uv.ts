@@ -107,7 +107,7 @@ export function registerUVTools() {
         }
 
         // Set UV coordinates for each vertex
-        Object.entries(uv_mapping).forEach(([vkey, uv]) => {
+        Object.entries(uv_mapping as Record<string, ArrayVector2>).forEach(([vkey, uv]) => {
           if (face.vertices.includes(vkey)) {
             face.uv[vkey] = uv;
           }
@@ -130,20 +130,22 @@ export function registerUVTools() {
       ...uvToolDocs[1],
       async execute({ mesh_id, mode, faces }) {
         const mesh = getMeshOrSelected(mesh_id);
+        const project = Project;
+        if (!project) throw new Error("No project is open.");
 
         Undo.initEdit({
           elements: [mesh],
           uv_only: true,
         });
 
-        const selectedFaces = faces || UVEditor.getSelectedFaces(mesh);
+        const selectedFaces: string[] = faces || UVEditor.getSelectedFaces(mesh);
 
         if (mode === "project") {
           // Use project from view
-          BarItems.uv_project_from_view.click();
+          (BarItems.uv_project_from_view as BarItem & { click: () => void }).click();
         } else {
           // Manual UV mapping based on mode
-          selectedFaces.forEach((fkey) => {
+          selectedFaces.forEach((fkey: string) => {
             const face = mesh.faces[fkey];
             if (!face) return;
 
@@ -157,8 +159,8 @@ export function registerUVTools() {
                 const vertex = mesh.vertices[vkey];
                 const angle = Math.atan2(vertex[0], vertex[2]);
                 const u =
-                  ((angle + Math.PI) / (2 * Math.PI)) * Project.texture_width;
-                const v = ((vertex[1] + 8) / 16) * Project.texture_height;
+                  ((angle + Math.PI) / (2 * Math.PI)) * project.texture_width;
+                const v = ((vertex[1] + 8) / 16) * project.texture_height;
                 face.uv[vkey] = [u, v];
               });
             } else if (mode === "sphere") {
@@ -172,8 +174,8 @@ export function registerUVTools() {
                 const theta = Math.acos(vertex[1] / length);
                 const phi = Math.atan2(vertex[0], vertex[2]);
                 const u =
-                  ((phi + Math.PI) / (2 * Math.PI)) * Project.texture_width;
-                const v = (theta / Math.PI) * Project.texture_height;
+                  ((phi + Math.PI) / (2 * Math.PI)) * project.texture_width;
+                const v = (theta / Math.PI) * project.texture_height;
                 face.uv[vkey] = [u, v];
               });
             }

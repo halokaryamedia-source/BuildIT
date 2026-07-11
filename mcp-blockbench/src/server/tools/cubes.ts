@@ -153,7 +153,7 @@ export function registerCubesTools() {
       group,
       strict_group,
       allow_untextured,
-    }) {
+    }: z.output<typeof placeCubeParameters>) {
       const projectTexture = texture
         ? getProjectTexture(texture)
         : Texture.getDefault();
@@ -188,6 +188,11 @@ export function registerCubesTools() {
         faces === true ||
         (Array.isArray(faces) &&
           faces.every((face) => typeof face === "string"));
+      const textureFaces = faces === true
+        ? true
+        : Array.isArray(faces) && faces.every((face) => typeof face === "string")
+          ? faces as CubeFaceDirection[]
+          : undefined;
 
       const hasExplicitFaceUv =
         Array.isArray(faces) &&
@@ -202,7 +207,7 @@ export function registerCubesTools() {
       });
 
       try {
-        const cubes = elements.map((element: Cube) => {
+        const cubes = elements.map((element) => {
           const cube = new Cube({
             autouv: autouv ? 1 : 0,
             name: element.name,
@@ -225,7 +230,7 @@ export function registerCubesTools() {
           } else if (projectTexture) {
             cube.applyTexture(
               projectTexture,
-              faces !== false ? faces : undefined
+              textureFaces
             );
             if (autouv) {
               cube.mapAutoUV();
@@ -284,7 +289,7 @@ export function registerCubesTools() {
       color,
       visibility,
       faces: faceRects,
-    }) {
+    }: z.output<typeof modifyCubeParameters>) {
       let cubes: Cube[];
 
       if (id) {
@@ -341,9 +346,17 @@ export function registerCubesTools() {
 
           if (faceRects && faceRects.length > 0) {
             faceRects.forEach(({ face, uv, texture, rotation: faceRotation }) => {
+              const textureReference = texture === undefined
+                ? undefined
+                : Texture.all[texture]?.uuid;
+              if (texture !== undefined && !textureReference) {
+                throw new Error(`Texture index ${texture} not found.`);
+              }
               cube.faces[face].extend({
                 uv: uv as [number, number, number, number],
-                ...(texture !== undefined ? { texture } : {}),
+                ...(textureReference !== undefined
+                  ? { texture: textureReference }
+                  : {}),
                 ...(faceRotation !== undefined
                   ? { rotation: Number(faceRotation) }
                   : {}),

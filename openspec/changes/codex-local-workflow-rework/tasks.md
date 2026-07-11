@@ -35,7 +35,14 @@
 
 ## Local Proof Still Required
 
-- [ ] Run `bun run skills:check`, focused typecheck, tests, and development build from `mcp-blockbench/`.
+- [x] Run `bun run skills:check`, focused typecheck, tests, and development build from `mcp-blockbench/`.
+  - BLOCKER (2026-07-11, commit `8ef79596d38709eb70ff0f9ce944b443e008325e`): `skills:check` passed, but `bun run typecheck` failed with TypeScript errors across the existing plugin source. Per the local validation gate, tests, build, workspace lifecycle, and Blockbench runtime validation were not continued.
+  - TRIAGE: the complete baseline contains 173 errors across 19 files. Four minimal batches reduced it to 164 by fixing stale package paths, restoring CSS module typing, aligning the MCP prompt contract, and handling optional mesh tool context. Typecheck remains blocked; no checkbox is complete.
+  - CONTINUED TRIAGE: shared runtime declarations plus utility, element/project, texture, and UV fixes reduced the current count from 164 to 123. The next isolated domain is paint (45 errors); static validation remains incomplete.
+  - PAINT TRIAGE: 45 Paint errors reduced to zero; repository total is now 78. `skills:check` passes, full typecheck remains blocked by non-Paint domains, and tests/build remain unrun.
+  - MESH TRIAGE: 14 Mesh errors reduced to zero; repository total is now 64. `skills:check` passes, full typecheck remains blocked by non-Mesh domains, and tests/build/runtime remain unrun.
+  - ANIMATION TRIAGE: 41 Animation errors reduced to zero; repository total is now 23. `skills:check` passes, full typecheck remains blocked by non-Animation domains, and tests/build/runtime remain unrun.
+  - FINAL STATIC GATE (2026-07-11): remaining Hytale, Cubes, Material Instances, UI, and Armature errors reduced from 23 to zero. `skills:check`, full typecheck, all 35 tests, and dev build pass; `dist/mcp.js` is generated. Runtime validation remains pending.
 - [ ] Run `bun run workspace -- init`, `activate`, `inspect`, `complete`, and `reopen` against a disposable local asset.
 - [ ] Verify `blockbench/` alone contains the `.bbmodel`, textures, reference images, and previews needed by a user.
 - [ ] Verify `mcp/` alone contains state, contracts, checkpoints, evidence, reports, and no duplicate canonical model/texture files after completion.

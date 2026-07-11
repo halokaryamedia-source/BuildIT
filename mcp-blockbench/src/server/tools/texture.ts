@@ -507,7 +507,7 @@ export function registerTextureTools() {
       // Save prior selection so the call is non-destructive to UI state.
       const prevCubeSelection = [...Cube.selected];
       const prevMeshSelection = [...Mesh.selected];
-      const prevGroup = Group.selected ?? null;
+      const prevGroup = Group.first_selected ?? null;
 
       // Undo must capture the element face-texture state, not just outliner.
       Undo.initEdit({
@@ -590,15 +590,15 @@ export function registerTextureTools() {
 
       if (textures) {
         const textureList = textures
-          .map((texture) => getProjectTexture(texture))
-          .filter(Boolean);
+          .map((texture: string) => getProjectTexture(texture))
+          .filter((texture: Texture | null): texture is Texture => texture !== null);
 
         if (textureList.length === 0) {
           throw new Error(`No textures found for "${textures}".`);
         }
 
-        textureList.forEach((texture) => {
-          texture?.extend({
+        textureList.forEach((texture: Texture) => {
+          texture.extend({
             group: textureGroup.uuid,
           });
         });
@@ -912,6 +912,7 @@ export function registerTextureTools() {
 
       // @ts-ignore - fs module available via Blockbench
       const fs = requireNativeModule("fs");
+      if (!fs) throw new Error("File system access was not granted.");
       if (!fs.existsSync(path)) {
         throw new Error(`File not found: ${path}`);
       }

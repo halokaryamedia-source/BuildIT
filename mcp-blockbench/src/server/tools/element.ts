@@ -367,8 +367,7 @@ export function registerElementTools() {
 
       const parentGroup = parent === "root"
         ? "root"
-        : // `@ts-expect-error` getAllGroups is a Blockbench global
-          getAllGroups().find((g: Group) => g.name === parent || g.uuid === parent);
+        : Group.all.find((g: Group) => g.name === parent || g.uuid === parent);
       group.addTo(parentGroup);
 
       Undo.finishEdit("Agent added group");
@@ -446,14 +445,19 @@ export function registerElementTools() {
     ...elementToolDocs[3],
     async execute({ id, offset, newName }) {
       const element = findElementOrThrow(id);
+      const shifted = (vector: ArrayVector3): ArrayVector3 => [
+        vector[0] + offset[0],
+        vector[1] + offset[1],
+        vector[2] + offset[2],
+      ];
 
       // Helper functions for each type; match patterns used in existing tools:contentReference[oaicite:5]{index=5}.
       function cloneCube(cube: Cube, parent: any) {
         const dupe = new Cube({
           name: newName || `${cube.name}_copy`,
-          from: cube.from.map((v, i) => v + offset[i]),
-          to: cube.to.map((v, i) => v + offset[i]),
-          origin: cube.origin.map((v, i) => v + offset[i]),
+          from: shifted(cube.from),
+          to: shifted(cube.to),
+          origin: shifted(cube.origin),
           rotation: cube.rotation,
           autouv: cube.autouv,
           uv_offset: cube.uv_offset,
@@ -480,7 +484,7 @@ export function registerElementTools() {
       function cloneGroup(group: Group, parent: any) {
         const dupeGroup = new Group({
           name: newName || `${group.name}_copy`,
-          origin: group.origin.map((v, i) => v + offset[i]),
+          origin: shifted(group.origin),
           rotation: group.rotation,
           autouv: group.autouv,
           selected: group.selected,
@@ -496,7 +500,7 @@ export function registerElementTools() {
         const dupe = new Mesh({
           name: newName || `${mesh.name}_copy`,
           vertices: {},
-          origin: mesh.origin.map((v, i) => v + offset[i]),
+          origin: shifted(mesh.origin),
           rotation: mesh.rotation,
         }).init();
         const map: Record<string, any> = {};
@@ -507,7 +511,7 @@ export function registerElementTools() {
             coords[2] + offset[2],
           ])[0];
         });
-        mesh.faces.forEach((face: any) => {
+        Object.values(mesh.faces).forEach((face) => {
           dupe.addFaces(
             new MeshFace(dupe, {
               vertices: face.vertices.map((v: any) => map[v]),

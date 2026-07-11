@@ -209,7 +209,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubes,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
@@ -296,7 +295,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubesToEdit,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
@@ -348,7 +346,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubes,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
