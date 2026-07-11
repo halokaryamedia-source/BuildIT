@@ -9,15 +9,17 @@ describe("workflow configuration", () => {
     const state = readJson("../engines/shared/templates/state.template.json");
     expect(state.workflow.state).toBe("REFERENCE_READY");
     expect(state.workflow.active_stage).toBe("GEOMETRY");
+    expect(state.workflow.next_action).toContain("ACQUIRE_WRITE_LEASE");
     expect(state.mcp.active_tool_profile).toBe("BEDROCK_CUBOID_GEOMETRY");
     expect(state.reference.path).toContain("workspace/sessions/");
   });
 
-  test("connection uses one fixed endpoint", () => {
+  test("connection uses one fixed endpoint and one write-lease capability", () => {
     const profile = readJson("../engines/codex/connection-profile.json");
     expect(profile.canonical_url).toBe("http://localhost:3000/bb-mcp");
     expect(profile.allow_port_scan).toBe(false);
     expect(profile.codex.server_key).toBe("blockbench");
+    expect(profile.required_common_tools).toContain("manage_project_write_lease");
     expect(profile.tool_profile_contract).toBe(
       "engines/shared/profiles/tool-profiles.json"
     );
