@@ -8,18 +8,27 @@ import {
   readJsonFile,
   type NativeFsLike,
 } from "@/lib/atomicFiles";
+import { mergeGeometryReferenceProfile } from "@/lib/geometryReferenceProfiles";
+import { readGeometryRuntimeContext } from "@/lib/geometryRuntime";
 
 const getStageContextParameters = z.object({
   session_root: z.string().min(1),
-  stage: z.enum(["GEOMETRY", "TEXTURE", "ANIMATION", "FINAL_VALIDATION"]).optional().default("GEOMETRY"),
+  stage: z
+    .enum(["GEOMETRY", "TEXTURE", "ANIMATION", "FINAL_VALIDATION"])
+    .optional()
+    .default("GEOMETRY"),
 });
 
 export const stageContextToolDocs: ToolSpec[] = [
   {
     name: "get_stage_context",
     description:
-      "Returns the compact active-stage decision lock, open issues, accepted areas, visual tools, and rotation policy without loading full Markdown contracts into Codex context.",
-    annotations: { title: "Get Compact Stage Context", readOnlyHint: true, openWorldHint: true },
+      "Returns the compact active-stage decision lock, Geometry blueprint, runtime phase and iteration budget, open issues, accepted areas, visual diagnosis tools, and rotation contracts without loading full Markdown contracts into Codex context.",
+    annotations: {
+      title: "Get Compact Stage Context",
+      readOnlyHint: true,
+      openWorldHint: true,
+    },
     parameters: getStageContextParameters,
     status: STATUS_STABLE,
   },
@@ -42,7 +51,11 @@ function sha256(data: string): string {
   const cryptoModule = requireNativeModule("crypto", {
     message: "Compact stage context uses SHA-256 for cache identity.",
     optional: false,
-  }) as { createHash: (algorithm: string) => { update: (value: string) => any; digest: (encoding: string) => string } };
+  }) as {
+    createHash: (algorithm: string) => {
+      update: (value: string) => { digest: (encoding: string) => string };
+    };
+  };
   if (!cryptoModule) throw new Error("Crypto access was denied.");
   return cryptoModule.createHash("sha256").update(data).digest("hex");
 }
@@ -53,17 +66,31 @@ export function registerStageContextTools(): void {
     {
       ...stageContextToolDocs[0],
       async execute({ session_root, stage }) {
-        const fs = nativeFs("MCP compact stage context needs asset-session read access.");
-        const manifestPath = joinPath(session_root, "references/reference_manifest.json");
+        const fs = nativeFs(
+          "MCP compact stage context needs asset-session read access."
+        );
+        const manifestPath = joinPath(
+          session_root,
+          "references/reference_manifest.json"
+        );
         const statePath = joinPath(session_root, "state.json");
         assertInsideRoot(manifestPath, session_root);
         assertInsideRoot(statePath, session_root);
         const manifest = readJsonFile<Record<string, any>>(fs, manifestPath);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
         const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
+        const geometryProfile = mergeGeometryReferenceProfile({
+          referenceSha256: manifest.reference_visual_lock?.sha256,
+          visualGrounding: manifest.visual_grounding,
+          geometry: manifest.geometry,
+        });
+        const geometryRuntime =
+          stage === "GEOMETRY" || stage === "FINAL_VALIDATION"
+            ? readGeometryRuntimeContext(session_root)
+            : null;
 
         const context = {
-          schema_version: "1.1",
+          schema_version: "1.2",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
@@ -81,6 +108,19 @@ export function registerStageContextTools(): void {
             decision: stageRecord.decision ?? null,
             accepted_areas: stageRecord.accepted_areas ?? [],
             open_issues: stageRecord.open_issues ?? [],
+          },
+          legacy_context_policy: {
+            repository_authority_only: true,
+            reject_external_four_sheet_workflow: true,
+            conflict_code: "LEGACY_SKILL_CONFLICT",
+            forbidden_markers: [
+              "four mandatory sheets",
+              "three approval moments",
+              "01_<asset_id>_form_scale_reference.png",
+              "02_<asset_id>_construction_reference.png",
+              "03_<asset_id>_texture_material_reference.png",
+              "04_<asset_id>_motion_pivot_reference.png",
+            ],
           },
           reference_visual: manifest.reference_visual_lock
             ? {
@@ -113,6 +153,26 @@ export function registerStageContextTools(): void {
                     explicit_origin_required_when_rotating: true,
                     pivot_margin_ratio: 1,
                   },
+                  part_constraints: geometryProfile?.part_constraints ?? [],
+                  rotation_contracts:
+                    geometryProfile?.rotation_contracts ?? {},
+                  panel_regions: geometryProfile
+                    ? Object.fromEntries(
+                        Object.entries(geometryProfile.panels).map(
+                          ([view, panel]) => [
+                            view,
+                            {
+                              crop_normalized: panel.crop_normalized,
+                              projection: panel.projection,
+                              minimum_score: panel.minimum_score,
+                              scale_basis: panel.scale_basis,
+                              regions: panel.regions,
+                            },
+                          ]
+                        )
+                      )
+                    : {},
+                  runtime: geometryRuntime,
                 }
               : null,
           texturing:
@@ -124,7 +184,8 @@ export function registerStageContextTools(): void {
                   pipeline: manifest.texturing?.pipeline,
                   pbr: manifest.texturing?.pbr,
                   vibrant_visuals: manifest.texturing?.vibrant_visuals,
-                  material_families: manifest.texturing?.material_families ?? [],
+                  material_families:
+                    manifest.texturing?.material_families ?? [],
                   critical_pixel_details:
                     manifest.texturing?.critical_pixel_details ?? [],
                 }
@@ -140,17 +201,21 @@ export function registerStageContextTools(): void {
                     manifest.animation?.pivot_requirements ?? [],
                 }
               : null,
-          visual_grounding: manifest.visual_grounding ?? {
+          visual_grounding: {
+            ...(manifest.visual_grounding ?? {}),
             required: stage === "GEOMETRY",
             reference_tool: "inspect_reference_visual",
             feedback_tool: "capture_visual_feedback",
-            deterministic_compare_tool: "compare_reference_views",
+            diagnosis_tool: "analyze_geometry_views",
             record_tool: "record_geometry_visual_result",
             gate_tool: "verify_geometry_review_ready",
             approval_tool: "complete_geometry_stage",
+            safe_rotation_tool: "rotate_cube_about_attachment",
             structural_pass_is_visual_pass: false,
             multimodal_review_required: true,
             deterministic_guard_required: true,
+            fixed_scale_required: true,
+            free_rescale_forbidden: true,
             maximum_correction_cycles_per_pass: 2,
           },
         };
@@ -159,7 +224,10 @@ export function registerStageContextTools(): void {
           content: [
             {
               type: "text",
-              text: `Compact ${stage} context ready (${contextHash.slice(0, 12)}).`,
+              text: `Compact ${stage} context ready (${contextHash.slice(
+                0,
+                12
+              )}). Geometry phase: ${geometryRuntime?.phase ?? "n/a"}.`,
             },
           ],
           structuredContent: {
