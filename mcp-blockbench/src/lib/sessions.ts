@@ -1,5 +1,7 @@
-/** Default session inactivity timeout (5 minutes) */
-export const DEFAULT_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+import { releaseProjectWriteLeaseForSession } from "@/lib/writeLease";
+
+/** Default session inactivity timeout (30 minutes). */
+export const DEFAULT_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
 
 /** Default ping interval (30 seconds) - per MCP best practices */
 export const DEFAULT_PING_INTERVAL_MS = 30 * 1000;
@@ -47,23 +49,19 @@ class SessionManager {
     maxFailedPings: DEFAULT_MAX_FAILED_PINGS,
   };
 
-  /**
-   * Configure session manager settings
-   */
+  /** Configure session manager settings. */
   configure(config: Partial<SessionConfig>): void {
     this.config = { ...this.config, ...config };
-    console.log(`[MCP] Session config updated: timeout=${this.config.inactivityTimeoutMs}ms, ping=${this.config.pingIntervalMs}ms`);
+    console.log(
+      `[MCP] Session config updated: timeout=${this.config.inactivityTimeoutMs}ms, ping=${this.config.pingIntervalMs}ms`
+    );
   }
 
-  /**
-   * Get current configuration
-   */
   getConfig(): Readonly<SessionConfig> {
     return { ...this.config };
   }
 
   add(sessionId: string): void {
-    // Don't add duplicate sessions
     if (this.sessions.has(sessionId)) {
       this.updateActivity(sessionId);
       return;
@@ -88,15 +86,12 @@ class SessionManager {
     if (!session) return;
 
     this.clearSessionTimers(session);
-
-    // Delete from map FIRST to prevent re-entrancy issues
-    // (e.g., if removalCallback triggers onsessionclosed which calls remove() again)
     this.sessions.delete(sessionId);
+    releaseProjectWriteLeaseForSession(sessionId);
     this.notifyListeners();
 
     console.log(`[MCP] Session disconnected: ${sessionId.slice(0, 8)}...`);
 
-    // Notify removal callback (e.g., to close transport) after removing from map
     if (this.removalCallback) {
       try {
         this.removalCallback(sessionId);
@@ -110,64 +105,62 @@ class SessionManager {
     const session = this.sessions.get(sessionId);
     if (session) {
       session.lastActivity = new Date();
-      session.failedPings = 0; // Reset failed pings on activity
+      session.failedPings = 0;
       this.resetTimeout(session);
     }
   }
 
-  /**
-   * Record that a ping was sent to the session
-   */
   recordPingSent(sessionId: string): void {
     const session = this.sessions.get(sessionId);
-    if (session) {
-      session.lastPingAt = new Date();
-    }
+    if (session) session.lastPingAt = new Date();
   }
 
   /**
-   * Record that a pong (ping response) was received from the session.
-   * This confirms the transport is alive but does NOT count as client
-   * activity — only real MCP requests should reset the inactivity timer
-   * (via updateActivity).
+   * A pong confirms transport liveness and refreshes the transport inactivity
+   * timeout. The project write lease has its own expiry and is not extended here.
    */
   recordPongReceived(sessionId: string): void {
     const session = this.sessions.get(sessionId);
     if (session) {
       session.lastPongAt = new Date();
       session.failedPings = 0;
-      // Reset inactivity timeout — a pong confirms the client is alive
       this.resetTimeout(session);
     }
   }
 
-  /**
-   * Record a failed ping attempt
-   * @returns true if session was terminated due to max failed pings
-   */
   recordPingFailed(sessionId: string): boolean {
     const session = this.sessions.get(sessionId);
     if (!session) return false;
 
     session.failedPings++;
-    console.log(`[MCP] Ping failed for session ${sessionId.slice(0, 8)}... (${session.failedPings}/${this.config.maxFailedPings})`);
+    console.log(
+      `[MCP] Ping failed for session ${sessionId.slice(0, 8)}... (${session.failedPings}/${this.config.maxFailedPings})`
+    );
 
     if (session.failedPings >= this.config.maxFailedPings) {
-      console.log(`[MCP] Session ${sessionId.slice(0, 8)}... terminated: max failed pings reached`);
+      console.log(
+        `[MCP] Session ${sessionId.slice(0, 8)}... terminated: max failed pings reached`
+      );
       this.remove(sessionId);
       return true;
     }
     return false;
   }
 
-  updateClientInfo(sessionId: string, clientName?: string, clientVersion?: string): void {
+  updateClientInfo(
+    sessionId: string,
+    clientName?: string,
+    clientVersion?: string
+  ): void {
     const session = this.sessions.get(sessionId);
     if (session) {
       session.clientName = clientName;
       session.clientVersion = clientVersion;
       this.notifyListeners();
-      const displayName = clientName || sessionId.slice(0, 8) + '...';
-      console.log(`[MCP] Session identified: ${displayName}${clientVersion ? ` v${clientVersion}` : ''}`);
+      const displayName = clientName || sessionId.slice(0, 8) + "...";
+      console.log(
+        `[MCP] Session identified: ${displayName}${clientVersion ? ` v${clientVersion}` : ""}`
+      );
     }
   }
 
@@ -183,9 +176,7 @@ class SessionManager {
   }
 
   private resetTimeout(session: Session): void {
-    if (session.timeoutHandle) {
-      clearTimeout(session.timeoutHandle);
-    }
+    if (session.timeoutHandle) clearTimeout(session.timeoutHandle);
     session.timeoutHandle = setTimeout(() => {
       console.log(`[MCP] Session timed out: ${session.id.slice(0, 8)}...`);
       this.remove(session.id);
@@ -193,7 +184,6 @@ class SessionManager {
   }
 
   private startPingInterval(session: Session): void {
-    // Don't start ping if interval is 0 (disabled) or no callback
     if (this.config.pingIntervalMs <= 0) return;
 
     session.pingHandle = setInterval(async () => {
@@ -208,7 +198,10 @@ class SessionManager {
           this.recordPingFailed(session.id);
         }
       } catch (error) {
-        console.error(`[MCP] Ping error for session ${session.id.slice(0, 8)}...:`, error);
+        console.error(
+          `[MCP] Ping error for session ${session.id.slice(0, 8)}...:`,
+          error
+        );
         this.recordPingFailed(session.id);
       }
     }, this.config.pingIntervalMs);
@@ -232,23 +225,14 @@ class SessionManager {
 
   subscribe(listener: SessionListener): () => void {
     this.listeners.add(listener);
-    // Immediately call with current state
     listener(this.getAll());
     return () => this.listeners.delete(listener);
   }
 
-  /**
-   * Sets a callback to be invoked when a session is removed (timeout or explicit).
-   * Used to synchronize transport cleanup with session removal.
-   */
   setRemovalCallback(callback: RemovalCallback | null): void {
     this.removalCallback = callback;
   }
 
-  /**
-   * Sets a callback to be invoked for pinging a session.
-   * The callback should send an MCP ping request and return true if successful.
-   */
   setPingCallback(callback: PingCallback | null): void {
     this.pingCallback = callback;
   }
@@ -264,17 +248,13 @@ class SessionManager {
     });
   }
 
-  /**
-   * Clears all sessions and timeouts. Used during plugin unload.
-   */
   clear(): void {
-    for (const session of this.sessions.values()) {
-      this.clearSessionTimers(session);
+    for (const session of this.sessions.values()) this.clearSessionTimers(session);
+    for (const sessionId of this.sessions.keys()) {
+      releaseProjectWriteLeaseForSession(sessionId);
     }
     this.sessions.clear();
-    this.listeners.clear();
-    this.pingCallback = null;
-    this.removalCallback = null;
+    this.notifyListeners();
   }
 }
 
