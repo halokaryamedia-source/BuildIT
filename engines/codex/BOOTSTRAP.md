@@ -2,19 +2,25 @@
 
 ## Goal
 
-Build only what the approved reference package requires using the fewest safe reads, loaded skills, exposed tools, calls, screenshots, and interruptions.
+Build only what the approved package requires using the fewest safe reads, skills, tools, calls, images, and repair cycles while preserving visual accuracy.
 
-## One-Time Local Package Build
+## Authority lock
 
-Run from the repository root:
+Use only the current repository and selected asset session. Do not load downloaded project-context ZIPs, copied chat context, or stale prompt packs as workflow authority.
+
+Stop with `LEGACY_SKILL_CONFLICT` if another instruction requires four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
+
+## One-time local build
+
+Run from repository root:
 
 ```powershell
 cd mcp-blockbench
-bun install
+bun install --frozen-lockfile
 bun run skills:check
 bun run typecheck
 bun test
-bun run dev
+bun run build
 cd ..
 ```
 
@@ -26,106 +32,86 @@ mcp-blockbench/dist/mcp.js
 
 Do not search for another plugin output.
 
-## Workspace Selection
-
-Projects are stored under:
+## Workspace selection
 
 ```text
 workspace/active/<asset>/
 ├─ blockbench/   # user-facing model, textures, references, previews
-└─ mcp/          # state, technical contracts, checkpoints, evidence, reports
+└─ mcp/          # state, contracts, checkpoints, evidence, reports
 ```
 
-Select one active project from `mcp-blockbench/`:
+Activate one project from `mcp-blockbench/`:
 
 ```powershell
 bun run workspace -- activate <asset_id>
 ```
 
-`workspace/workspace.json` is only the selected-project index. Runtime authority remains:
+`workspace/workspace.json` is only an index. Runtime authority remains `workspace/active/<asset>/mcp/state.json`.
+
+## Asset startup
+
+1. Read `AGENTS.md`, governance, and active OpenSpec summary.
+2. Resolve the selected asset from `workspace/workspace.json`.
+3. Read exact model/session paths from `mcp/project.json` and stage state from `mcp/state.json`.
+4. Load `blockbench-production` plus exactly one active-stage skill.
+5. Open one Blockbench window and the exact canonical model.
+6. Run `engines/codex/scripts/sync-local-stack.ps1` using the selected workspace.
+7. Continue only when connection report is `PASS` and `dist/mcp.js` exists.
+8. Call `get_stage_context` before long contract reads.
+9. Verify the exact tool profile.
+10. Acquire the write lease using asset ID, absolute session root, project UUID, state revision, and active stage.
+11. Begin mutations only after lease acquisition passes.
+
+## Geometry startup
+
+Geometry must use:
 
 ```text
-workspace/active/<asset>/mcp/state.json
+get_stage_context
+inspect_reference_visual
+capture_visual_feedback
+analyze_geometry_views
+place_cubes_safe / modify_cubes
+rotate_cube_about_attachment
+record_geometry_visual_result
+validate_geometry_contract
+verify_geometry_review_ready
 ```
 
-## Asset Startup
+Do not use `compare_reference_views` as the normal Geometry analyzer. Do not use generic non-zero cube rotations. Do not enter detail while runtime phase is `PRIMARY_FORM`.
 
-1. Read `engines/shared/workflow/GOVERNANCE.md` and the active OpenSpec summary.
-2. Read `workspace/workspace.json` and the selected project metadata.
-3. Read the selected project's `mcp/state.json`.
-4. Load `blockbench-production`.
-5. Resolve the exact stage skill from `engines/shared/skills/skill-profiles.json`.
-6. Open one Blockbench window and the exact model at `workspace/active/<asset>/blockbench/<asset>.bbmodel` when it exists.
-7. Run:
+Codex must inspect image payloads, then use `analyze_geometry_views` to receive exact failing views, semantic regions, affected parts, direction, magnitude, and recommended repair profile. Change only those parts or stop.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File engines/codex/scripts/sync-local-stack.ps1
-```
+## Exact stage orchestration
 
-The script reads the selected asset automatically. `-Asset <asset>` remains available only as an explicit override.
-
-8. Continue only when `workspace/active/<asset>/mcp/reports/connection.json` reports `PASS` and confirms `mcp-blockbench/dist/mcp.js` exists.
-9. Acquire the write lease once with `manage_project_write_lease` using the exact asset ID, absolute `workspace/active/<asset>/mcp` root, project UUID, current `state_revision`, and current `workflow.active_stage`.
-10. Begin stage mutations only after lease acquisition returns `PASS`.
-
-First-time Codex configuration adds `-InstallCodexConfig`, followed by one Codex restart.
-
-## Minimum Read Set
-
-1. `workspace/workspace.json`;
-2. `mcp/project.json`;
-3. connection report;
-4. `mcp/state.json`;
-5. `reference_manifest.json`;
-6. `PRODUCTION_CONTEXT.md`;
-7. Reference Visual;
-8. active-stage document only.
-
-Do not read the whole `blockbench/` or `mcp/` tree when the exact paths are already recorded in `project.json`.
-
-## Exact Stage Orchestration
-
-| Stage | MCP tool profile | Loaded production skills |
+| Stage | MCP tool profile | Loaded skills |
 | --- | --- | --- |
-| Geometry | `BEDROCK_CUBOID_GEOMETRY` | `blockbench-production` + `blockbench-geometry` |
-| Texture | `BEDROCK_CUBOID_TEXTURE` | `blockbench-production` + `blockbench-texture` |
-| Animation | `BEDROCK_CUBOID_ANIMATION` | `blockbench-production` + `blockbench-animation` |
-| Final Validation | `FINAL_VALIDATION_READONLY` | `blockbench-production` + `blockbench-validation` |
+| Geometry | `BEDROCK_CUBOID_GEOMETRY` | production + Geometry |
+| Texture | `BEDROCK_CUBOID_TEXTURE` | production + Texture |
+| Animation | `BEDROCK_CUBOID_ANIMATION` | production + Animation |
+| Final Validation | `FINAL_VALIDATION_READONLY` | production + Validation |
 
-Maximum loaded production skills: `2`.
+Maximum loaded production skills: `2`. Do not load Animation when skipped.
 
-Do not load Animation skill when Animation is skipped. Use the same stage skill with the matching local-repair tool profile for targeted revisions.
+A successful stage/profile transition releases the previous lease. Reconnect the existing `blockbench` entry once, call `get_runtime_status`, then reacquire the lease from the new state.
 
-A successful stage/profile transition releases the previous write lease. Reconnect the existing `blockbench` entry once, call `get_runtime_status` once, then reacquire the lease from the new state before the next mutation. Skill changes do not require MCP reconnects.
+## Completion and reopen
 
-## Completion and Reopen
-
-After final user approval:
+After final approval:
 
 ```powershell
 cd mcp-blockbench
 bun run workspace -- complete <asset_id> --approval-ref "<user approval>"
 ```
 
-This promotes validated model files into `blockbench/`, freezes MCP metadata, and moves the project to `workspace/completed/`.
-
 To revise later:
 
 ```powershell
-bun run workspace -- reopen <asset_id> --stage TEXTURE --reason "<reason>"
+bun run workspace -- reopen <asset_id> --stage <STAGE> --reason "<reason>"
 ```
 
-The approved completed baseline remains unchanged until the reopened revision is approved again.
+The completed baseline remains immutable while revision is active.
 
-## Stage Flow
+## Stop conditions
 
-```text
-Geometry review
-→ Texture review
-→ Animation review or skip
-→ Final review
-```
-
-At each review: checkpoint, stable evidence, compact validation, concise report, then wait for `APPROVED` or `REVISION: ...`.
-
-Do not scan ports, bypass the write lease, mix Blockbench user files with MCP internals, load legacy production skills, load all Blockbench skills together, add optional features, create another MCP package root, or create versioned duplicate files.
+Stop on legacy context, reference conflict, missing visual profile, failed fixed-scale diagnosis, unsafe contract rotation, stale evidence, convergence failure, lease/state/profile mismatch, or user review gate. Do not scan ports, create alternate MCP keys, mix workspace areas, load deprecated skills, create duplicate roots, or create versioned outputs.
