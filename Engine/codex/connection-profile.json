@@ -42,10 +42,14 @@
       "complete_stage"
     ],
     "BEDROCK_CUBOID_TEXTURE": [
+      "validate_reference_contract",
       "save_texture_evidence",
       "complete_stage"
     ],
-    "BEDROCK_CUBOID_ANIMATION": ["complete_stage"],
+    "BEDROCK_CUBOID_ANIMATION": [
+      "validate_reference_contract",
+      "complete_stage"
+    ],
     "FINAL_VALIDATION_READONLY": [
       "validate_reference_contract",
       "save_texture_evidence",
