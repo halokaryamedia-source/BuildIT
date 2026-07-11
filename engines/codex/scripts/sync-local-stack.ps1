@@ -134,7 +134,7 @@ $state.mcp.connection_status = $result
 $state.mcp.connection_report = "workspace/active/$Asset/mcp/reports/connection.json"
 if ($runtime.tool_profile) {
   $state.mcp.active_tool_profile = $runtime.tool_profile.profile_id
-  $state.mcp.active_tool_profile_revision = $runtime.tool_profile.profile_revision
+  $state.mcp.tool_profile_revision = $runtime.tool_profile.profile_revision
   $state.mcp.tool_profile_hash = $runtime.tool_profile.tool_profile_hash
   $state.mcp.exposed_tool_count = $runtime.tool_profile.exposed_tool_count
   $state.mcp.total_library_tool_count = $runtime.tool_profile.total_library_tool_count
