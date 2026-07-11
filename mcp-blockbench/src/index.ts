@@ -4,7 +4,6 @@
  */
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
-import { VERSION } from "@/lib/constants";
 import { createServer } from "@/server/server";
 import { tools, prompts } from "@/server/tools";
 import { resources } from "@/server";
@@ -18,10 +17,6 @@ import createNetServer from "@/server/net";
 import { serverState } from "@/lib/serverState";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
-const PLUGIN_TITLE = "BuildIT MCP Server";
-const PLUGIN_AUTHOR = "achmadawdi";
-const PLUGIN_DESCRIPTION =
-  "Connect Blockbench to BuildIT and MCP-compatible AI clients through the canonical local server.";
 const CANONICAL_MCP_PORT = 3000;
 const CANONICAL_MCP_ENDPOINT = "/bb-mcp";
 const MINIMUM_SESSION_TIMEOUT_MINUTES = 30;
@@ -30,14 +25,18 @@ const DEFAULT_SSE_HEARTBEAT_SECONDS = 15;
 let httpServer: NetServer | null = null;
 let sessionTransports: SessionTransports | null = null;
 
+// Keep all registry metadata as direct string literals. Blockbench inspects local
+// plugin files before execution and cannot resolve imported or aliased constants.
 BBPlugin.register("mcp", {
-  version: VERSION,
-  title: PLUGIN_TITLE,
-  author: PLUGIN_AUTHOR,
-  description: PLUGIN_DESCRIPTION,
+  version: "1.6.2",
+  title: "BuildIT MCP Server",
+  author: "achmadawdi",
+  description:
+    "Connect Blockbench to BuildIT and MCP-compatible AI clients through the canonical local server.",
   tags: ["MCP", "AI", "Codex", "BuildIT"],
   icon: getIcon(),
   variant: "desktop",
+  min_version: "5.0.0",
   async onload() {
     // @ts-ignore - requireNativeModule is a Blockbench global
     const net = requireNativeModule("net", {
