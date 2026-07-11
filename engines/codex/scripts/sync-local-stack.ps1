@@ -10,6 +10,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $profile = Get-Content -Raw (Join-Path $repoRoot "engines\codex\connection-profile.json") | ConvertFrom-Json
 $url = [string]$profile.canonical_url
 $key = [string]$profile.codex.server_key
+$pluginOutput = Join-Path $repoRoot ([string]$profile.blockbench.plugin_output)
 $checkedAt = (Get-Date).ToUniversalTime().ToString("o")
 $blockers = [System.Collections.Generic.List[string]]::new()
 
@@ -31,6 +32,10 @@ function McpPost([hashtable]$Body, [string]$SessionId) {
   $headers = @{ Accept = "application/json, text/event-stream"; "Content-Type" = "application/json" }
   if ($SessionId) { $headers["mcp-session-id"] = $SessionId }
   return Invoke-WebRequest -Uri $url -Method Post -Headers $headers -Body ($Body | ConvertTo-Json -Depth 30 -Compress) -TimeoutSec 10 -UseBasicParsing
+}
+
+if (-not (Test-Path $pluginOutput)) {
+  $blockers.Add("Compiled MCP plugin is missing: $pluginOutput. Run Bun commands from mcp-blockbench and reload this exact file in Blockbench.")
 }
 
 $configPath = CodexConfigPath
@@ -83,6 +88,8 @@ $report = [ordered]@{
   checked_at = $checkedAt
   result = $result
   canonical_url = $url
+  plugin_output = $pluginOutput
+  plugin_output_exists = Test-Path $pluginOutput
   codex_config = $configPath
   config_changed = $changed
   exposed_tool_count = $toolNames.Count
@@ -120,6 +127,7 @@ if ($Asset) {
 }
 
 Write-Host "Connection result: $result"
+Write-Host "Plugin output: $pluginOutput"
 Write-Host "Report: $reportPath"
 if ($result -eq "PASS") { exit 0 }
 exit 1
