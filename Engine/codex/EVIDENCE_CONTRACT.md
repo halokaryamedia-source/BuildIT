@@ -1,40 +1,41 @@
 # Stage Evidence Contract
 
-Stage previews exist for user review and objective validation. They must be stable, comparable, and minimal.
+Stage evidence exists for user review and objective validation. It must be stable, comparable, minimal, and machine-readable.
 
-## 1. General Rules
+## General Rules
 
 - Use fixed filenames without timestamps or version suffixes.
-- Use the same accepted project state for all views in one review set.
-- Hide selection outlines, gizmos, grids, and unrelated UI unless the evidence specifically needs them.
-- Use orthographic projection for Front, Left Side, Back, and Top / Footprint.
-- Use one consistent orthographic-style Front-left 3/4 view.
-- Frame the complete visible model with a small consistent margin.
-- Keep the model centered on the same target and ground plane.
-- Do not create extra screenshots when required evidence already proves the result.
-- Revision cycles recapture only affected views plus mandatory comparison views.
+- Use one committed project state for each review set.
+- Hide selection outlines, gizmos, grids, and unrelated UI.
+- Use orthographic Front, Left Side, Back, and Top / Footprint.
+- Use one stable orthographic-style Front-left 3/4 view.
+- Frame the complete model with a consistent margin and ground plane.
+- Do not create extra screenshots when required evidence is sufficient.
+- A local revision recaptures affected views plus the minimum comparison view.
 
-## 2. Standard Camera Contract
+Default front axis is `-Z` unless the approved package says otherwise.
 
-Blockbench coordinates use Y as vertical.
+## Required Report Result
 
-The default Reference Visual front is treated as `-Z` unless the approved package defines another front axis.
+Every stage JSON report must contain one top-level field:
 
-For the default `-Z` front axis:
+```json
+{
+  "result": "PASS"
+}
+```
 
-| View | Camera position from target | Projection | Purpose |
-|---|---|---|---|
-| Front | -Z looking toward target | Orthographic | Width, height, symmetry, front identity |
-| Left Side | -X looking toward target | Orthographic | Depth, posture, attachments, ground contact |
-| Back | +Z looking toward target | Orthographic | Rear silhouette and hidden drift |
-| Top / Footprint | +Y looking downward | Orthographic | Width/depth envelope and contact layout |
-| Front-left 3/4 | -X -Z with slight +Y | Orthographic | Volume, attachment continuity, focal read |
+Allowed values:
 
-When another `front_axis` is approved, rotate all horizontal view directions consistently rather than changing the model.
+```text
+PASS
+REVISION_REQUIRED
+BLOCKER
+```
 
-## 3. Stable Evidence Filenames
+`complete_stage` refuses approval when the required report is missing, has no explicit result, or is not `PASS`.
 
-### Geometry
+## Geometry
 
 ```text
 evidence/geometry/
@@ -46,43 +47,53 @@ evidence/geometry/
 └─ geometry_report.json
 ```
 
-`geometry_report.json` must include:
+`geometry_report.json` includes:
 
-- checkpoint path;
-- project UUID;
-- dimensions;
-- cube/group counts;
-- hierarchy summary;
-- ground-contact result;
-- Geometry scorecard result;
-- accepted areas;
-- open issues.
+```text
+result
+checkpoint
+project_uuid
+dimensions
+cube_count
+group_count
+hierarchy_summary
+ground_contact
+accepted_areas
+open_issues
+```
 
-### Texture
+Before review, call `validate_reference_contract` with `stage=GEOMETRY` and `require_evidence=true`. Merge its compact issue result into the report; do not repeat each underlying check manually.
+
+## Texture
 
 ```text
 evidence/texture/
+├─ texture_atlas.png
 ├─ texture_front.png
 ├─ texture_left.png
 ├─ texture_back.png
 ├─ texture_front_left_3_4.png
-├─ texture_atlas.png
 └─ texture_report.json
 ```
 
-`texture_report.json` must include:
+Write `texture_atlas.png` with `save_texture_evidence`; do not return the full PNG as base64 merely to persist it.
 
-- checkpoint path;
-- texture filenames and dimensions;
-- UV mode;
-- atlas occupancy summary when available;
-- palette/material-zone result;
-- seam and mirroring result;
-- Texture scorecard result;
-- accepted areas;
-- open issues.
+`texture_report.json` includes:
 
-### Animation — when required
+```text
+result
+checkpoint
+project_uuid
+texture_files
+texture_dimensions
+uv_mode
+palette_material_result
+seam_mirroring_result
+accepted_areas
+open_issues
+```
+
+## Animation — Only When Required
 
 ```text
 evidence/animation/
@@ -93,21 +104,23 @@ evidence/animation/
 └─ animation_report.json
 ```
 
-`animation_report.json` must include:
+`animation_report.json` includes:
 
-- checkpoint path;
-- required animation families;
-- clip/sample list;
-- neutral-pose recovery result;
-- ground-contact result;
-- clipping/deformation result;
-- Animation scorecard result;
-- accepted areas;
-- open issues.
+```text
+result
+checkpoint
+required_animation_families
+clips_or_samples
+neutral_pose_recovery
+ground_contact
+clipping_deformation
+accepted_areas
+open_issues
+```
 
-When animation is not required, no fake preview is created. Record `ANIMATION_SKIPPED` in state.
+When Animation is not required, create no fake evidence. Record `ANIMATION_SKIPPED` in state.
 
-### Final Validation
+## Final Validation
 
 ```text
 evidence/final/
@@ -121,74 +134,47 @@ evidence/final/
 └─ completed_VALIDATION.md
 ```
 
-Include animation evidence only when Animation was required.
+Also required:
 
-## 4. Review Preview Requirements
+```text
+final/<asset>.bbmodel
+final/textures/
+```
 
-### Geometry Review
+Write the final atlas with `save_texture_evidence`. Run `validate_reference_contract` with `stage=FINAL_VALIDATION` and `require_evidence=true`.
 
-Required:
+`validation_report.json` must contain top-level `result: PASS` before final approval can be completed.
 
-- Front;
-- Left Side;
-- Back;
-- Top / Footprint;
-- Front-left 3/4;
-- concise dimensions/hierarchy/cube report.
+## Camera Contract
 
-### Texture Review
+For default `-Z` front:
 
-Required:
+| View | Direction |
+|---|---|
+| Front | camera at -Z |
+| Left Side | camera at -X |
+| Back | camera at +Z |
+| Top / Footprint | camera at +Y |
+| Front-left 3/4 | camera at -X/-Z with slight +Y |
 
-- texture atlas;
-- Front;
-- Left Side;
-- Back;
-- Front-left 3/4;
-- concise UV/material report.
+Rotate all horizontal directions together when another front axis is approved. Do not rotate the model merely to satisfy evidence labels.
 
-### Animation Review
+## Focused Revision Examples
 
-Required only when animation exists:
+- tail length: Left Side + Front-left 3/4;
+- front width: Front + Top;
+- rear attachment: Back + Left Side or 3/4;
+- palette: atlas + affected views;
+- pivot: pivot summary + neutral pose + affected clip.
 
-- neutral pose;
-- hierarchy/pivot summary;
-- each required clip or representative sample;
-- clipping and ground-contact result.
-
-### Final Review
-
-Required:
-
-- five standard views;
-- final atlas;
-- validation result;
-- final `.bbmodel` path;
-- concise revision summary;
-- animation evidence when applicable.
-
-## 5. Focused Revision Evidence
-
-A revision recaptures only what is required to verify the named issue.
-
-Examples:
-
-- Side-tail length issue: Left Side + Front-left 3/4.
-- Front-width issue: Front + Top.
-- Rear attachment issue: Back + Left Side or 3/4.
-- Palette issue: atlas + one or two affected model views.
-- Pivot issue: pivot summary + neutral pose + affected clip.
-
-Do not regenerate the complete evidence set after every local correction unless the correction affects global consistency.
-
-## 6. Evidence Validity
+## Invalid Evidence
 
 Evidence is invalid when:
 
-- different views come from different project states;
-- camera orientation is mislabeled;
+- views come from different project states;
+- camera labels are wrong;
 - model parts are cropped;
-- hidden UI state changes the appearance materially;
-- the screenshot is taken before the edit is committed;
-- a required view cannot prove the stated acceptance criterion;
-- filenames or paths do not match this contract.
+- screenshots precede committed edits;
+- files do not match stable paths;
+- the report lacks an explicit result;
+- the evidence does not prove the stated acceptance criterion.
