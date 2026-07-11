@@ -1,195 +1,139 @@
-# Repository Guidelines
+# BuildIT Agent Rules
 
-## Mandatory Development Guardrails
+## Start Here
 
-- Read `openspec/config.yaml` and the active OpenSpec change before source or workflow development.
-- Read `Engine/codex/GOVERNANCE.md` before local Codex production or after context loss.
-- OpenSpec is the durable agreement: goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria.
-- Ponytail is the execution filter: perform the smallest safe work required now, reuse accepted work, limit tools/evidence, and stop when the active requirement is met.
-- Do not duplicate full OpenSpec or workflow analysis before every small edit.
-- For local Blockbench production, start with `Engine/codex/BOOTSTRAP.md`.
-- Use `Engine/codex/CONNECTION_CONTRACT.md` and `Engine/codex/connection-profile.json` as the connection authority.
-- Use `Engine/codex/TOOL_PROFILE_CONTRACT.md` and `Engine/codex/tool-profiles.json` as the exact MCP capability authority.
-- The only normal Codex MCP entry is `blockbench` at `http://localhost:3000/bb-mcp`.
-- Do not scan ports, use fallback ports, create project-specific `blockbench_*` keys, or rediscover the endpoint.
-- Run `Engine/codex/scripts/sync-local-stack.ps1` before the asset preflight and continue only when `reports/connection.json` is `PASS`.
-- Use exactly one Blockbench process and one active Codex write session per asset.
-- Call `get_runtime_status` once after Codex connects; do not repeat separate connection-discovery calls when it passes.
-- Keep only the exact active stage or repair tool profile exposed. Do not use broad domains as permission.
-- On a real stage/profile transition, call `activate_tool_profile`, reconnect the existing canonical `blockbench` entry once, then continue. Do not create another connection.
-- Treat `TOOL_PROFILE_BLOCKED` as a profile/reconnect issue, not a reason to use `risky_eval`, UI automation, another port, or another server key.
-- PBR, Hytale, mesh UV, armature/vertex-weight, UI automation, and eval remain hidden during normal Bedrock cuboid work.
-- Use `SavedData/sessions/<asset>/state.json` as runtime authority and keep its profile ID/hash/count synchronized with `get_runtime_status`.
-- Use Blockbench skills before MCP work: load `blockbench-use` first, then only the active-stage modelling or texturing skill.
-- Run full asset preflight once before the first write. Re-run only stale or failed checks.
-- Follow `SourceDocument/modeling/mandatory-blockbench-mcp-procedure.md` as the hard baseline.
-- User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
-- Internal passes do not require separate routine approval.
-- Stop after each user-visible stage preview and wait for user approval or targeted revision feedback.
-- Initial construction may use bounded multi-part batches. One-issue-per-cycle applies to revision work.
-- Preserve accepted work and manual user edits unless an earlier stage is explicitly reopened.
-- Reject work unrelated to the active stage as `DEFERRED_NOT_REQUIRED` when appropriate.
-- For Bedrock Entity and Bedrock Block, use Per-face UV by default unless the approved package explicitly requires otherwise.
-- Do not require legacy numbered reference sheets for new sessions. Use the approved package format documented in `Engine/codex/BOOTSTRAP.md`.
-- Keep active workflow development isolated on branch `Rework` until explicit user approval for final integration.
-- Continuous integration, PR preview deployment, and release preparation are deferred until the workflow implementation is stable and the user opens final verification.
-
-## Project Structure & Module Organization
-
-- `Engine/codex/`: governance, connection, bootstrap, state, evidence, checkpoint, stage, and exact tool-profile contracts.
-- `SavedData/sessions/<asset>/`: runtime state, references, checkpoints, evidence, reports, and final output.
-- `SourceDocument/`: human-facing planning, modelling, engine, and project guidance.
-- `src/index.ts`: Blockbench plugin entry.
-- `src/server/`: MCP server glue, tools, resources, and prompts.
-- `src/ui/`: panel UI and settings.
-- `src/lib/`: shared utilities, factories, constants, schemas, and tool-profile enforcement.
-- `prompts/` and `src/macros/`: prompt templates and build-time helpers.
-- `dist/`: build output.
-- `docs/`: generated API documentation.
-- `build/`: build and docs scripts.
-
-Do not move paths required by build/runtime tooling:
-
-- `.agents/`, `.codex/`, `openspec/`, `src/`, `build/`, `docs/`, `prompts/`, `dist/`, `node_modules/`;
-- `package.json`, `bun.lock`, `tsconfig.json`, `.gitignore`, `skills-lock.json`, and repository metadata.
-
-Operational workflow artifacts may be consolidated under `Engine/`. Runtime state belongs under `SavedData/`.
-
-## Build, Test, and Development Commands
-
-- `bun install`: install dependencies.
-- `bun run dev`: build once with sourcemaps.
-- `bun run dev:watch`: rebuild source changes in watch mode.
-- `bun run build`: minified production build to `dist/mcp.js`.
-- `bun run ./build.ts --clean`: remove `dist/` before a fresh build.
-- `bun run docs:build`: generate API documentation.
-- `bun run docs:serve`: serve generated docs.
-- `bunx @modelcontextprotocol/inspector`: launch MCP Inspector.
-
-Use focused local commands only when they verify the current change. Do not run the full suite continuously during active rework.
-
-## Adding New Tools
-
-Before implementing a new tool, Ponytail must confirm:
+For source/workflow development:
 
 ```text
-Current blocker or repeated need:
-Existing tool cannot safely solve it:
-Expected token/MCP reduction:
-Smallest useful interface:
-Verification:
+openspec/config.yaml
+active OpenSpec change
+```
+
+For local model production:
+
+```text
+Engine/codex/BOOTSTRAP.md
+SavedData/sessions/<asset>/state.json
+```
+
+```text
+OpenSpec = durable goal, scope, decisions, non-goals, and acceptance criteria
+Ponytail = smallest safe action required now
+state.json = runtime authority
+```
+
+Do not repeat full analysis before every edit.
+
+## Non-Negotiable Runtime Rules
+
+- Branch remains `Rework`; do not merge into `V1` without explicit final approval.
+- CI, preview deployment, release work, and review PR remain deferred.
+- Only MCP key: `blockbench`.
+- Only URL: `http://localhost:3000/bb-mcp`.
+- Never scan ports, use fallback ports, or create `blockbench_*` project keys.
+- Run `Engine/codex/scripts/sync-local-stack.ps1`; continue only when the connection report is `PASS`.
+- One visible Blockbench window and one Codex write session per asset.
+- Call `get_runtime_status` once after connection; repeat only when stale/failed.
+- Use exact stage/repair profiles from `Engine/codex/tool-profiles.json`.
+- Reconnect the existing MCP entry once only on a real profile transition.
+- Never bypass `TOOL_PROFILE_BLOCKED` or `TOOL_PROFILE_ARGUMENT_BLOCKED` with eval, UI automation, PBR, Hytale, mesh UV, or armature tools.
+
+## Production Flow
+
+```text
+GEOMETRY → review → approval/revision
+TEXTURE → review → approval/revision
+ANIMATION → review when required, otherwise skip
+FINAL_VALIDATION → review → approval/revision
+```
+
+Internal passes do not create extra approvals.
+
+- Initial work may use bounded batches.
+- One-issue-per-cycle applies only to revisions.
+- Preserve manual and approved areas unless explicitly reopened.
+- Use Per-face UV for Bedrock Entity/Block unless the approved package states otherwise.
+- New sessions use Production Context + one Reference Visual + Geometry/Texturing/Animation/Validation docs + manifest + handoff; no legacy numbered sheets.
+
+## Token-Saving Operations
+
+Prefer:
+
+```text
+validate_reference_contract
+save_texture_evidence
+complete_stage
+```
+
+- `validate_reference_contract`: one package/project/format/dimension/UV/evidence/validator result instead of repeated inspection calls.
+- `save_texture_evidence`: writes PNG directly; do not round-trip atlas base64 through Codex.
+- `complete_stage`: after explicit approval, verifies PASS evidence, saves the approved checkpoint, protects accepted areas, updates state, and activates the next profile.
+
+Do not manually repeat work already proved by these tools.
+
+## Repository Map
+
+- `Engine/codex/`: compact workflow, connection, state, profile, evidence, and checkpoint contracts.
+- `SavedData/sessions/<asset>/`: references, state, checkpoints, evidence, reports, final artifacts.
+- `src/server/`: MCP server, tools, resources, prompts.
+- `src/lib/`: factories, guards, shared utilities.
+- `src/ui/`: Blockbench UI/settings.
+- `build/`: build/docs scripts.
+- `tests/`: focused tests.
+
+Do not move `.agents/`, `.codex/`, `openspec/`, `src/`, `build/`, `prompts/`, `dist/`, package files, lockfiles, or repository metadata.
+
+## Development Commands
+
+```text
+bun install
+bun run typecheck
+bun test
+bun run dev
+bun run build
+bun run docs:build
+```
+
+During active Rework, run only focused checks that prove the current batch. Full verification and CI happen last.
+
+## Tool Development Gate
+
+Before adding a tool, confirm:
+
+```text
+Current repeated need/blocker:
+Why existing tool/orchestration is insufficient:
+Expected call/token/error reduction:
+Smallest interface:
+Rollback/verification:
 Maintenance cost:
 ```
 
-If an existing tool or orchestration rule is sufficient, do not add a new tool.
+Do not add speculative tools.
 
-Every accepted tool file in `src/server/tools/` follows this pattern:
+Accepted tool requirements:
 
-1. Export parameter schemas and a `toolDocs` array at module level without Blockbench globals.
-2. Register with `createTool()` inside a `registerXxxTools()` function.
-3. Update `build/docs-manifest.ts`.
-4. Register in `src/server/tools.ts`.
-5. Add the tool to an exact profile only when the active workflow genuinely needs it.
-6. Regenerate docs during final verification or when documentation is specifically required.
+1. schemas/docs exported at module level without Blockbench globals;
+2. runtime globals used only inside `execute()`;
+3. register through `createTool()` and `src/server/tools.ts`;
+4. add to `build/docs-manifest.ts`;
+5. expose only in exact profiles that require it;
+6. prefer explicit project/element/texture IDs;
+7. return concise text plus `structuredContent`;
+8. filesystem writes stay inside approved roots and use atomic replacement when workflow-critical.
 
-Example:
-
-```ts
-import { z } from "zod";
-import { createTool, type ToolSpec } from "@/lib/factories";
-
-export const myToolParameters = z.object({
-  name: z.string().describe("Name of the thing."),
-});
-
-export const myToolDocs: ToolSpec[] = [
-  {
-    name: "my_tool",
-    description: "Does something useful.",
-    annotations: { title: "My Tool", destructiveHint: true },
-    parameters: myToolParameters,
-    status: "stable",
-  },
-];
-
-export function registerMyTools() {
-  createTool(myToolDocs[0].name, {
-    ...myToolDocs[0],
-    async execute({ name }) {
-      return `Hello, ${name}!`;
-    },
-  }, myToolDocs[0].status);
-}
-```
-
-### No Blockbench Globals in Schemas
-
-Schemas are imported by the docs generator outside Blockbench. Never use runtime globals during schema construction. Validate dynamic values inside `execute()`.
-
-### Tool Profile Review
-
-Before exposing a new tool in a normal profile, record:
-
-```text
-Profile:
-Why required in this stage:
-Why a narrower existing tool is insufficient:
-Mutates project: Yes / No
-Rollback/checkpoint:
-Expected call/token reduction:
-```
-
-High-risk, format-specific, or diagnostic tools stay out of normal profiles unless OpenSpec explicitly approves them.
-
-## Documentation System
-
-- `build/docs-manifest.ts`: API documentation manifest.
-- `build/docs.ts`: JSON Schema and HTML generation.
-- `src/lib/factories.ts`: shared tool, prompt, and resource specifications.
-- `Engine/codex/tool-profiles.json`: machine-readable exact exposure allowlists.
-- `src/lib/toolProfiles.ts`: runtime exposure and call-time enforcement.
-
-Prompt and resource specs may remain inline in the docs manifest when their runtime modules access Blockbench globals.
-
-Do not create a new workflow document when an existing authority can be simplified or updated.
-
-## Coding Style & Naming
+## Code and Test Style
 
 - TypeScript strict, ESNext modules, CJS plugin output.
-- Use `@/*` aliases.
-- Two-space indentation.
-- Prefer explicit return types and narrow types.
-- Keep UI text concise.
-- Schema names: `{camelCaseToolName}Parameters`.
-- Docs arrays: `{domainName}ToolDocs`.
-- New workflow tools should return structured content when practical.
-- Mutating tools should prefer explicit project, element, and parent identifiers.
-- Tool-profile IDs use exact uppercase identifiers from `tool-profiles.json`.
+- `@/*` imports, two-space indentation, narrow types.
+- Keep UI and tool text concise.
+- Use focused Bun tests and actual Blockbench runtime verification.
+- Verify profile count/hash, blocked calls, reconnect count, checkpoint/evidence integrity, and state consistency.
 
-## Testing During Rework
+## Security and Stop Conditions
 
-- Prefer focused Bun tests for changed logic.
-- Co-locate focused tests or use `tests/`.
-- Use Blockbench runtime verification for changed MCP tools.
-- Verify profile count, hash, blocked calls, and one-reconnect transitions in the actual MCP runtime.
-- Verify only the affected stage flow after each batch.
-- Do not keep continuous CI enabled during active workflow rework.
-- Comprehensive typecheck, tests, build, docs generation, CI, and deploy preview happen in the final verification stage.
-
-## Commits and Pull Requests
-
-- Use conventional prefixes: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`.
-- Avoid vague commit messages.
-- Keep work on `Rework` while the workflow is incomplete.
-- Do not keep a review PR open merely to trigger CI or preview deployment.
-- Open a new review PR against V1 only after explicit user approval for final verification/integration.
-- Final PR should include scope, OpenSpec change, runtime verification, screenshots/GIFs when relevant, and final CI results.
-
-## Security and Configuration
-
-- Canonical MCP URL is `http://localhost:3000/bb-mcp` with auto-port disabled.
-- Do not commit secrets or user-specific Codex config files.
-- Keep network and filesystem actions behind explicit tools and permissions.
-- Validate all external inputs with Zod.
-- Preserve one active project write owner per asset session.
-- Keep `DIAGNOSTIC_ESCALATION` disabled unless a recorded blocker, rollback checkpoint, and stop condition justify it.
+- No secrets or user-specific Codex config in Git.
+- Network/filesystem access requires explicit tools and permission.
+- Validate external inputs with Zod.
+- `DIAGNOSTIC_ESCALATION` requires a recorded blocker, allowed tool, rollback checkpoint, verification, and stop condition.
+- Stop for reference conflict, wrong project UUID, stale state revision, missing evidence/checkpoint, repeated blocker, or required earlier-stage reopen.
