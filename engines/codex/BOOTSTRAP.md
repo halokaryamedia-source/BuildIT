@@ -40,9 +40,11 @@ Do not search for another plugin output.
 powershell -ExecutionPolicy Bypass -File engines/codex/scripts/sync-local-stack.ps1 -Asset <asset>
 ```
 
-First-time Codex configuration adds `-InstallCodexConfig`, followed by one Codex restart.
+8. Continue only when `workspace/sessions/<asset>/reports/connection.json` reports `PASS` and confirms `mcp-blockbench/dist/mcp.js` exists.
+9. Acquire the write lease once with `manage_project_write_lease` using the exact asset ID, absolute session root, project UUID, current `state_revision`, and current `workflow.active_stage`.
+10. Begin stage mutations only after lease acquisition returns `PASS`.
 
-Continue only when `workspace/sessions/<asset>/reports/connection.json` reports `PASS` and confirms `mcp-blockbench/dist/mcp.js` exists.
+First-time Codex configuration adds `-InstallCodexConfig`, followed by one Codex restart.
 
 ## Minimum Read Set
 
@@ -66,7 +68,7 @@ Maximum loaded production skills: `2`.
 
 Do not load Animation skill when Animation is skipped. Use the same stage skill with the matching local-repair tool profile for targeted revisions.
 
-On a real tool-profile transition, activate the next profile, reconnect the existing `blockbench` entry once, then call `get_runtime_status` once. Skill changes do not require MCP reconnects.
+A successful stage/profile transition releases the previous write lease. Reconnect the existing `blockbench` entry once, call `get_runtime_status` once, then reacquire the lease from the new state before the next mutation. Skill changes do not require MCP reconnects.
 
 ## Stage Flow
 
@@ -79,4 +81,4 @@ Geometry review
 
 At each review: checkpoint, stable evidence, compact validation, concise report, then wait for `APPROVED` or `REVISION: ...`.
 
-Do not scan ports, load legacy production skills, load all Blockbench skills together, add optional features, create another MCP package root, or create versioned duplicate files.
+Do not scan ports, bypass the write lease, load legacy production skills, load all Blockbench skills together, add optional features, create another MCP package root, or create versioned duplicate files.
