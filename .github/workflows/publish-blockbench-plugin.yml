@@ -1,0 +1,75 @@
+name: Publish Blockbench Plugin Bundle
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - Rework
+    paths:
+      - ".github/workflows/publish-blockbench-plugin.yml"
+      - "mcp-blockbench/src/**"
+      - "mcp-blockbench/scripts/**"
+      - "mcp-blockbench/prompts/**"
+      - "mcp-blockbench/tests/**"
+      - "mcp-blockbench/package.json"
+      - "mcp-blockbench/bun.lock"
+      - "mcp-blockbench/tsconfig.json"
+      - "engines/shared/skills/**"
+      - "engines/shared/profiles/**"
+      - "docs/product/about.md"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-blockbench-plugin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    if: github.ref == 'refs/heads/Rework'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: mcp-blockbench
+        run: bun install --frozen-lockfile
+
+      - name: Verify source
+        working-directory: mcp-blockbench
+        run: |
+          bun run skills:check
+          bun run typecheck
+          bun test
+
+      - name: Build canonical plugin
+        working-directory: mcp-blockbench
+        run: bun run build
+
+      - name: Verify plugin identity
+        working-directory: mcp-blockbench
+        run: |
+          bun -e 'const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of ["BuildIT MCP Server", "achmadawdi", "/bb-mcp"]) { if (!text.includes(required)) throw new Error(`Missing plugin identity marker: ${required}`); }'
+
+      - name: Publish canonical bundle to Rework
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f mcp-blockbench/dist/mcp.js
+          if git diff --cached --quiet; then
+            echo "Canonical plugin bundle is already current."
+            exit 0
+          fi
+          git commit -m "build: refresh Blockbench plugin bundle"
+          git push origin HEAD:Rework
