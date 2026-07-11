@@ -25,6 +25,7 @@ import { registerRuntimeTools } from "./tools/runtime";
 import { registerWorkflowTools } from "./tools/workflow";
 import { registerLeaseTools } from "./tools/lease";
 import { registerGeometryFeedbackTools } from "./tools/geometry-feedback";
+import { registerGeometryCompletionTools } from "./tools/geometry-completion";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -43,6 +44,7 @@ const registrationFunctions = [
   registerElementTools,
   registerExportTools,
   registerGeometryFeedbackTools,
+  registerGeometryCompletionTools,
   registerHistoryTools,
   registerImportTools,
   registerLeaseTools,
