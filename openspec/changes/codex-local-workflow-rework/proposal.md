@@ -28,6 +28,8 @@ Inside `mcp-blockbench/`, source, scripts, prompts, tests, and generated plugin 
 - deterministic Blockbench MCP connection;
 - one runtime state authority;
 - exact stage and repair tool profiles;
+- exact stage skill profiles with at most two loaded production skills;
+- one canonical production-skill source plus synchronized host adapters;
 - persistent checkpoints and stable evidence;
 - compact reference validation;
 - direct texture evidence writes;
@@ -40,4 +42,5 @@ Inside `mcp-blockbench/`, source, scripts, prompts, tests, and generated plugin 
 - merge into `V1`;
 - continuous CI or preview deployment;
 - speculative new modelling tools;
-- duplicate workflow documents or versioned folder names.
+- dynamic skill servers or MCP skill-selection tools;
+- duplicate workflow documents, skills, or versioned folder names.
