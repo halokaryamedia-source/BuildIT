@@ -6,13 +6,19 @@ context: |
   Shared engine workflow: engines/shared/.
   Codex entry point: engines/codex/BOOTSTRAP.md.
   Governance: engines/shared/workflow/GOVERNANCE.md.
-  Runtime authority: workspace/sessions/<asset>/state.json.
+  Workspace index: workspace/workspace.json selects one active project and is not runtime authority.
+  Runtime authority: workspace/active/<asset>/mcp/state.json.
+  Project resume metadata: workspace/active/<asset>/mcp/project.json.
+  User-facing Blockbench data: workspace/*/<asset>/blockbench/ contains the canonical .bbmodel, textures, reference PNGs, and approved previews.
+  MCP internal data: workspace/*/<asset>/mcp/ contains state, technical contracts, checkpoints, evidence, and reports.
+  Completed projects: workspace/completed/<asset>/ retains both separated areas so the model can be copied alone or reopened later without rediscovery.
   Tool-profile authority: engines/shared/profiles/tool-profiles.json.
   Skill-profile authority: engines/shared/skills/skill-profiles.json.
+  Workspace lifecycle authority: engines/shared/workspace/WORKSPACE_CONTRACT.md.
   Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
   Default and only normal MCP endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
   Current source facts: package version 1.6.0; runtime tool counts must be verified rather than assumed.
-  Guardrails: do not create a second MCP server, parallel source root, versioned folder, or unrelated agent framework.
+  Guardrails: do not create a second MCP server, parallel source root, versioned folder, duplicate canonical model, or unrelated agent framework.
   Active workflow change: openspec/changes/codex-local-workflow-rework/.
   OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
   Ponytail responsibility: select the smallest safe action required now, reuse existing work, limit tools/evidence, preserve accepted areas, and stop when the active requirement is met.
