@@ -8,6 +8,7 @@
 4. Use `workspace/sessions/<asset>/state.json` as runtime authority.
 5. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
 6. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
+7. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current reliability implementation boundary.
 
 ## Execution Guardrails
 
@@ -20,6 +21,9 @@
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 - Do not scan ports, create alternate MCP keys, or bypass tool profiles.
+- Acquire `manage_project_write_lease` before asset mutations or evidence/checkpoint/final writes.
+- Never bypass `WRITE_LEASE_*` errors; realign project, state, stage, profile, and owner session instead.
+- A successful stage/profile transition releases the old lease; reacquire it after the one allowed reconnect.
 - Asset production loads `blockbench-production` plus exactly one active-stage skill; maximum loaded production skills is `2`.
 - Repository development must not load production skills.
 - Skill changes do not require MCP reconnects; tool-profile changes may reconnect the canonical entry once.
