@@ -1,17 +1,17 @@
 ---
 name: blockbench-reference-studio
-description: "Create a complete approved Minecraft Bedrock / Blockbench reference package in ChatGPT using one generated Reference Visual, then hand the Markdown/JSON package to Codex and MCP-Blockbench. Do not use for direct Blockbench modelling."
+description: "Create a complete approved Minecraft Bedrock / Blockbench package in ChatGPT using one generated Reference Visual, then produce machine-readable Geometry diagnosis, rotation, texture, animation, validation, and Codex handoff contracts."
 ---
 
 # Blockbench Reference Studio
 
-Create the complete reference package in ChatGPT. Codex and MCP-Blockbench are not involved until the package is approved and complete.
+Create the complete reference package in ChatGPT. Codex and MCP-Blockbench begin only after the package is approved and complete.
 
 ## Language
 
 - Speak with the user in Indonesian.
-- Write production contracts, manifest data, labels, and Codex handoff instructions in English.
-- Preserve approved asset names, IDs, dimensions, and filenames exactly.
+- Write production contracts, manifest data, labels, and handoff instructions in English.
+- Preserve approved names, IDs, dimensions, and filenames exactly.
 
 ## Responsibility boundary
 
@@ -21,18 +21,17 @@ source image
 → Production Context
 → one approved Reference Visual
 → Geometry/Texture/Animation/Validation contracts
-→ reference manifest with panel metadata
+→ machine-readable panel, region, part, and rotation data
 → Codex handoff
 → final package
 
 Codex + MCP-Blockbench
 approved package
-→ validate/import
-→ visually grounded staged production
+→ visually grounded fixed-scale production
 → .bbmodel
 ```
 
-Do not connect to MCP, edit `.bbmodel`, acquire a write lease, or simulate Codex execution from this skill.
+Do not connect to MCP, edit `.bbmodel`, acquire a lease, or simulate production from this skill.
 
 ## Final package
 
@@ -40,8 +39,7 @@ Produce exactly:
 
 ```text
 <asset_id>_blockbench_reference/
-├─ source/
-│  └─ original_reference.<ext>
+├─ source/original_reference.<ext>
 ├─ PRODUCTION_CONTEXT.md
 ├─ <asset_id>_reference_visual.png
 ├─ GEOMETRY.md
@@ -52,43 +50,34 @@ Produce exactly:
 └─ CODEX_REFERENCE_HANDOFF.md
 ```
 
-Then create:
-
-```text
-<asset_id>_blockbench_reference.zip
-```
+Then create `<asset_id>_blockbench_reference.zip`.
 
 ## Image-generation lock
 
-- Normal generated images: exactly `1`.
-- Canonical generated image: `<asset_id>_reference_visual.png`.
-- Maximum targeted correction before approval: `1` edit of the same visual.
-- Generated images after Reference Visual approval: `0`.
-- Hidden per-angle generation: forbidden.
-- Geometry, construction, texture, material, UV, motion, pivot, animation, pose, or extra-view sheets: forbidden.
-- The original source copy is input evidence and is not counted as generated output.
-- Runtime panel crops and comparison masks are derived evidence, not generated reference images.
+- Exactly one normal generated image: `<asset_id>_reference_visual.png`.
+- Maximum one targeted edit of that same visual before approval.
+- No generated images after Reference Visual approval.
+- Hidden per-angle generation is forbidden.
+- Geometry, construction, texture, UV, material, motion, pivot, animation, pose, or extra-view sheets are forbidden.
+- The original source copy is input evidence, not generated output.
+- Runtime crops, masks, projections, and diff images are derived evidence, not additional reference images.
 
 ## Mandatory flow
 
 ### Phase 1 — Production Context
 
-1. Review the source image and user notes.
-2. Do not generate an image yet.
-3. Prepare `PRODUCTION_CONTEXT.md` with exactly four main categories:
-   - Main Format;
-   - Geometry;
-   - Texture;
-   - Animation.
-4. Include asset identity, intended use, scale, front direction, neutral pose, must-preserve features, interaction profile, assumptions, constraints, and forbidden redesigns inside those categories.
-5. Explain the decisions in Indonesian.
-6. Wait for explicit Production Context approval.
+Prepare `PRODUCTION_CONTEXT.md` before image generation with exactly four main categories:
 
-Retain approved context; never ask the user to repeat it.
+1. Main Format
+2. Geometry
+3. Texture
+4. Animation
+
+Inside them record identity, intended use, approved scale, front direction, ground plane, neutral pose, must-preserve features, interaction profile, assumptions, constraints, and forbidden redesigns. Explain in Indonesian and wait for explicit approval.
 
 ### Phase 2 — One Reference Visual
 
-Generate one clean board containing all required views inside one canvas:
+Generate one board containing:
 
 - Left Side;
 - Front;
@@ -96,24 +85,15 @@ Generate one clean board containing all required views inside one canvas:
 - Top / Footprint;
 - Front-left 3/4;
 - scale marker;
-- compact technical footer.
+- compact footer.
 
-The views must show the same design, scale, proportions, pose, features, and material family. Do not generate each view separately.
+Every panel must be rectangular, non-overlapping, measurable, and contain the complete subject with stable margin. Front, Left, Back, and Top are orthographic in intent. Front-left 3/4 may use perspective. Do not let decorative elements cross subject panels.
 
-Layout requirements:
-
-- every view must have a non-overlapping rectangular panel;
-- every subject must fit inside its panel with a stable margin;
-- Front, Left, Back, and Top must be orthographic in intent;
-- Front-left 3/4 may use perspective;
-- panel boundaries and subject regions must be measurable programmatically;
-- avoid decorative elements crossing into subject panels.
-
-Run automatic QA. When necessary, perform at most one targeted edit of the same image. Then wait for explicit Reference Visual approval.
+Run QA and at most one targeted edit. Wait for explicit approval.
 
 ### Phase 3 — Automatic technical package
 
-After Reference Visual approval, generate without further image creation or routine approval:
+After visual approval, generate without further image creation:
 
 - `GEOMETRY.md`;
 - `TEXTURING.md`;
@@ -122,129 +102,131 @@ After Reference Visual approval, generate without further image creation or rout
 - `reference_manifest.json`;
 - `CODEX_REFERENCE_HANDOFF.md`.
 
-These files translate approved decisions and the single Reference Visual into implementation requirements. They must not introduce a new design decision.
+These files may add technical precision but may not introduce a new visible design.
 
-The manifest must record normalized `[x, y, width, height]` crop coordinates for every approved panel. Coordinates use `0..1` relative to the full Reference Visual. Validate that every crop:
+### Phase 4 — Machine-readable Geometry data
 
-- stays inside image bounds;
-- has positive width and height;
-- does not overlap another subject panel materially;
-- contains the intended complete subject;
-- matches the declared projection.
+The manifest must include data that allows MCP to diagnose errors rather than guess.
 
-### Phase 4 — Audit and package
+#### Panel crops
 
-1. Verify all required files exist.
-2. Verify there is exactly one generated Reference Visual.
-3. Verify forbidden numbered or technical PNG files are absent.
-4. Verify manifest values match all Markdown contracts.
-5. Verify the Reference Visual hash and dimensions.
-6. Verify all five normalized panel crops are valid and complete.
-7. Verify visual-grounding tools and review gate are named in the manifest/handoff.
-8. Verify `VALIDATION.md` starts as `PENDING_BUILD`.
-9. Create the final ZIP.
+For all five views record normalized `[x, y, width, height]` values in full-image `0..1` space. Every crop must:
+
+- have positive width and height;
+- stay inside the image;
+- isolate the intended complete subject;
+- declare projection and minimum score;
+- use no zero placeholder in the final package.
+
+#### Semantic view regions
+
+For each panel define weighted normalized regions for silhouette-critical areas. Use asset-specific regions such as:
+
+- head/muzzle;
+- shoulder/front mass;
+- central torso;
+- rear taper;
+- legs/ground support;
+- horns/ears/tail;
+- top footprint;
+- 3/4 identity.
+
+Each region records:
+
+```json
+{
+  "id": "<region_id>",
+  "rect": [0.0, 0.0, 1.0, 1.0],
+  "weight": 1.0,
+  "minimum_score": 0.6,
+  "critical": true,
+  "issue_code": "<UPPERCASE_CODE>",
+  "parts": ["<group_or_part>"],
+  "recommendation": "Specific repair instruction"
+}
+```
+
+Critical identity regions may fail the view even when whole-body overlap is moderate.
+
+#### Part constraints
+
+For every primary mass and silhouette-critical detail record:
+
+- canonical ID and name patterns;
+- phase role: `PRIMARY_MASS`, `PROVISIONAL_SUPPORT`, or `STRUCTURAL_DETAIL`;
+- parent group;
+- approximate center and size ranges when reliable;
+- required standard views;
+- rotation contract ID when applicable.
+
+#### Rotation contracts
+
+For each intentionally rotated part record:
+
+- matching cube names;
+- one allowed axis;
+- minimum and maximum angle;
+- pivot anchor;
+- tip anchor;
+- expected world-space direction vector;
+- minimum direction alignment;
+- optional connection target/anchor/tolerance;
+- affected review views.
+
+Do not authorize compound rotation unless the design truly requires it. Use stepped cuboids instead of rotating large masses to fake taper.
+
+### Phase 5 — Audit and package
+
+Verify:
+
+1. every required file exists;
+2. exactly one generated Reference Visual exists;
+3. numbered/technical PNGs are absent;
+4. manifest and Markdown decisions agree;
+5. Reference Visual hash and dimensions match;
+6. all five crops are non-zero and valid;
+7. semantic regions cover identity-critical silhouette areas;
+8. part constraints cover primary masses and critical details;
+9. all authorized rotations have contracts;
+10. `VALIDATION.md` starts `PENDING_BUILD`;
+11. handoff names the final MCP tools;
+12. final ZIP contains only approved package files.
 
 ## Authority order
 
-1. `PRODUCTION_CONTEXT.md`: intent, scale, constraints, assumptions, resolved decisions.
-2. `<asset_id>_reference_visual.png`: sole visual authority for identity, silhouette, proportions, pose, cross-view consistency, and visible material appearance.
-3. `GEOMETRY.md`: buildable cuboid form, hierarchy, pivots, segmentation, ground contacts, and rotation policy.
-4. `TEXTURING.md`: atlas, UV, palette, material zones, and pixel-detail rules.
-5. `ANIMATION.md`: required clips or explicit `ANIMATION_SKIPPED`, plus pivot readiness.
-6. `VALIDATION.md`: post-build acceptance tests.
-7. `reference_manifest.json`: machine-readable lock, panel metadata, and file inventory.
-8. `CODEX_REFERENCE_HANDOFF.md`: import, stage, visual-grounding, deterministic comparison, and stop rules.
+1. `PRODUCTION_CONTEXT.md`: intent, scale, constraints, assumptions.
+2. Reference Visual: sole visual authority for identity, silhouette, proportions, pose, and appearance.
+3. `GEOMETRY.md`: build order, dimensions, hierarchy, pivots, segmentation, ground contacts, and rotation intent.
+4. Manifest Geometry data: executable panel/region/part/rotation contracts.
+5. `TEXTURING.md`.
+6. `ANIMATION.md`.
+7. `VALIDATION.md`.
+8. `CODEX_REFERENCE_HANDOFF.md`.
 
-Conflicts must stop as `REFERENCE_CONFLICT`; never silently redesign.
+Stop `REFERENCE_CONFLICT` when authorities cannot be reconciled without guessing.
 
-## Geometry contract requirements
+## Codex handoff contract
 
-`GEOMETRY.md` must include:
-
-- approved envelope and coordinate convention;
-- primary form ratios per standard view;
-- hierarchy and build order;
-- approximate part sizes/positions;
-- geometry-only versus texture-only features;
-- allowed segment counts;
-- ground contacts;
-- cube-density range;
-- rotation and pivot guidance.
-
-Rotation guidance must state:
-
-- explicit pivot required for rotated cubes;
-- one local axis preferred;
-- avoid compound rotation unless essential;
-- use stepped cuboids instead of rotating large masses to fake taper;
-- inspect affected Side/3/4 view after rotation;
-- world bounds must include cube and parent transforms;
-- any Geometry mutation invalidates previous visual evidence.
-
-## Codex visual-grounding contract
-
-`CODEX_REFERENCE_HANDOFF.md` must require:
+Require this Geometry route:
 
 ```text
 get_stage_context
 → inspect_reference_visual
-→ coarse primary form
+→ PRIMARY_FORM
 → capture_visual_feedback
-→ compare_reference_views
-→ targeted repair
-→ structural detail
-→ final five-view multimodal and deterministic checks
+→ analyze_geometry_views
+→ targeted repair from ranked diagnostics
+→ STRUCTURAL_DETAIL
+→ affected-view diagnosis
+→ final five-view diagnosis
 → record_geometry_visual_result
-→ validate_reference_contract
+→ validate_geometry_contract
 → verify_geometry_review_ready
 → user review
 ```
 
-A structural PASS must not be treated as a visual PASS. Deterministic silhouette comparison is a guardrail and does not replace Codex or user review. Codex must use safe batch Geometry mutation tools and must not enter Texture until Geometry is explicitly approved.
-
-## Manifest requirements
-
-The manifest must record at minimum:
-
-```json
-{
-  "workflow": {
-    "approval_moments": 2,
-    "normal_image_generations": 1,
-    "targeted_edit_max": 1,
-    "post_visual_image_generations": 0,
-    "hidden_per_angle_generation_allowed": false,
-    "additional_technical_images_allowed": false
-  },
-  "visual_grounding": {
-    "required": true,
-    "reference_tool": "inspect_reference_visual",
-    "feedback_tool": "capture_visual_feedback",
-    "deterministic_compare_tool": "compare_reference_views",
-    "record_tool": "record_geometry_visual_result",
-    "gate_tool": "verify_geometry_review_ready",
-    "approval_tool": "complete_geometry_stage",
-    "panels": {
-      "left_side": { "crop_normalized": [0, 0, 0, 0] },
-      "front": { "crop_normalized": [0, 0, 0, 0] },
-      "back": { "crop_normalized": [0, 0, 0, 0] },
-      "top_footprint": { "crop_normalized": [0, 0, 0, 0] },
-      "front_left_3_4": { "crop_normalized": [0, 0, 0, 0] }
-    }
-  }
-}
-```
-
-Zero crop placeholders must be replaced with measured final values before packaging. The manifest must also record package paths, Reference Visual hash/dimensions, scale, geometry strategy, hierarchy, segment counts, rotation policy, texture configuration, animation readiness, validation requirements, and unresolved blockers.
+Require `rotate_cube_about_attachment` for every non-zero cube rotation. Require `complete_geometry_stage` after explicit approval. Forbid free-rescaling, unrelated trial-and-error changes, and Texture before Geometry approval.
 
 ## Stop conditions
 
-Stop and report when:
-
-- Production Context is not approved;
-- Reference Visual identity or cross-view consistency remains invalid after one targeted edit;
-- panel crops cannot isolate all required views reliably;
-- a technical contract introduces a new design;
-- files conflict or are missing;
-- more than one generated Reference Visual exists;
-- the user requests MCP execution before the package is complete.
+Stop and report when Production Context is unapproved, Reference Visual remains inconsistent after one edit, panel crops cannot be isolated, semantic/part/rotation contracts cannot be derived safely, technical documents redesign the asset, files conflict or are missing, more than one generated visual exists, or MCP execution is requested before package completion.
