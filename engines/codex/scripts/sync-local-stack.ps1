@@ -8,6 +8,24 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $profile = Get-Content -Raw (Join-Path $repoRoot "engines\codex\connection-profile.json") | ConvertFrom-Json
+$workspaceIndexPath = Join-Path $repoRoot "workspace\workspace.json"
+if (-not $Asset -and (Test-Path $workspaceIndexPath)) {
+  $workspaceIndex = Get-Content -Raw $workspaceIndexPath | ConvertFrom-Json
+  $Asset = [string]$workspaceIndex.selected_asset_id
+}
+if (-not $Asset) {
+  throw "No active workspace project is selected. Run 'cd mcp-blockbench; bun run workspace -- activate <asset_id>'."
+}
+
+$activeRoot = Join-Path $repoRoot "workspace\active\$Asset"
+$mcpRoot = Join-Path $activeRoot "mcp"
+$blockbenchRoot = Join-Path $activeRoot "blockbench"
+$statePath = Join-Path $mcpRoot "state.json"
+$projectMetadataPath = Join-Path $mcpRoot "project.json"
+if (-not (Test-Path $statePath)) { throw "Active state file not found: $statePath" }
+if (-not (Test-Path $projectMetadataPath)) { throw "Active project metadata not found: $projectMetadataPath" }
+$projectMetadata = Get-Content -Raw $projectMetadataPath | ConvertFrom-Json
+
 $url = [string]$profile.canonical_url
 $key = [string]$profile.codex.server_key
 $pluginOutput = Join-Path $repoRoot ([string]$profile.blockbench.plugin_output)
@@ -73,6 +91,10 @@ try {
     $status = McpPost @{ jsonrpc = "2.0"; id = 3; method = "tools/call"; params = @{ name = "get_runtime_status"; arguments = @{} } } $sessionId
     $runtime = ([string]$status.Content | ConvertFrom-Json).result.structuredContent
     if ($runtime.status -ne "PASS") { $blockers.Add("Runtime status is not PASS.") }
+    $expectedUuid = [string]$projectMetadata.project.uuid
+    if ($expectedUuid -and $runtime.project.uuid -ne $expectedUuid) {
+      $blockers.Add("Active Blockbench project UUID $($runtime.project.uuid) does not match workspace project UUID $expectedUuid.")
+    }
   }
 } catch {
   $blockers.Add($_.Exception.Message)
@@ -87,6 +109,11 @@ $report = [ordered]@{
   schema_version = "1.0"
   checked_at = $checkedAt
   result = $result
+  asset_id = $Asset
+  active_root = $activeRoot
+  blockbench_root = $blockbenchRoot
+  mcp_root = $mcpRoot
+  model_path = Join-Path $blockbenchRoot "$Asset.bbmodel"
   canonical_url = $url
   plugin_output = $pluginOutput
   plugin_output_exists = Test-Path $pluginOutput
@@ -97,37 +124,28 @@ $report = [ordered]@{
   blockers = @($blockers)
 }
 
-$reportPath = if ($Asset) {
-  $dir = Join-Path $repoRoot "workspace\sessions\$Asset\reports"
-  New-Item -ItemType Directory -Path $dir -Force | Out-Null
-  Join-Path $dir "connection.json"
-} else {
-  $dir = Join-Path $repoRoot "workspace\cache"
-  New-Item -ItemType Directory -Path $dir -Force | Out-Null
-  Join-Path $dir "connection.json"
-}
+$reportDir = Join-Path $mcpRoot "reports"
+New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+$reportPath = Join-Path $reportDir "connection.json"
 $report | ConvertTo-Json -Depth 30 | Set-Content $reportPath -Encoding utf8
 
-if ($Asset) {
-  $statePath = Join-Path $repoRoot "workspace\sessions\$Asset\state.json"
-  if (Test-Path $statePath) {
-    $state = Get-Content -Raw $statePath | ConvertFrom-Json
-    $state.mcp.connection_status = $result
-    $state.mcp.connection_report = "workspace/sessions/$Asset/reports/connection.json"
-    if ($runtime.tool_profile) {
-      $state.mcp.active_tool_profile = $runtime.tool_profile.profile_id
-      $state.mcp.tool_profile_hash = $runtime.tool_profile.tool_profile_hash
-      $state.mcp.exposed_tool_count = $runtime.tool_profile.exposed_tool_count
-      $state.mcp.total_library_tool_count = $runtime.tool_profile.total_library_tool_count
-    }
-    $state.updated_at = $checkedAt
-    $state.updated_by = "sync-local-stack"
-    $state | ConvertTo-Json -Depth 40 | Set-Content $statePath -Encoding utf8
-  }
+$state = Get-Content -Raw $statePath | ConvertFrom-Json
+$state.mcp.connection_status = $result
+$state.mcp.connection_report = "workspace/active/$Asset/mcp/reports/connection.json"
+if ($runtime.tool_profile) {
+  $state.mcp.active_tool_profile = $runtime.tool_profile.profile_id
+  $state.mcp.tool_profile_hash = $runtime.tool_profile.tool_profile_hash
+  $state.mcp.exposed_tool_count = $runtime.tool_profile.exposed_tool_count
+  $state.mcp.total_library_tool_count = $runtime.tool_profile.total_library_tool_count
 }
+$state.updated_at = $checkedAt
+$state.updated_by = "sync-local-stack"
+$state | ConvertTo-Json -Depth 40 | Set-Content $statePath -Encoding utf8
 
 Write-Host "Connection result: $result"
-Write-Host "Plugin output: $pluginOutput"
+Write-Host "Asset: $Asset"
+Write-Host "Blockbench files: $blockbenchRoot"
+Write-Host "MCP files: $mcpRoot"
 Write-Host "Report: $reportPath"
 if ($result -eq "PASS") { exit 0 }
 exit 1
