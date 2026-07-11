@@ -2,9 +2,10 @@ import { getExecutionProfileState } from "@/lib/executionState";
 import { sessionManager } from "@/lib/sessions";
 import type { MutationExecutionContext } from "@/lib/writeLease";
 
-const READINESS_CLIENT_NAMES = new Set([
+const TRANSIENT_CLIENT_NAMES = new Set([
   "buildit-readiness",
   "buildit-readiness-smoke",
+  "buildit-profile-sync",
 ]);
 
 function explicitIdentity(raw: unknown): {
@@ -42,14 +43,14 @@ export function resolveMutationExecutionContext(
       .getAll()
       .filter(
         (session) =>
-          !session.clientName || !READINESS_CLIENT_NAMES.has(session.clientName)
+          !session.clientName || !TRANSIENT_CLIENT_NAMES.has(session.clientName)
       );
     if (candidates.length === 1) {
       sessionId = candidates[0].id;
       clientName = candidates[0].clientName ?? null;
     } else if (candidates.length > 1) {
       throw new Error(
-        `WRITE_LEASE_SESSION_AMBIGUOUS: ${candidates.length} non-readiness MCP sessions are active.`
+        `WRITE_LEASE_SESSION_AMBIGUOUS: ${candidates.length} non-transient MCP sessions are active.`
       );
     }
   }
