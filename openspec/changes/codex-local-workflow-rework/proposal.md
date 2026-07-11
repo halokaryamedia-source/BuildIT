@@ -7,15 +7,14 @@ Make local MCP Blockbench production precise, stage-gated, recoverable, and toke
 ## Canonical Architecture
 
 ```text
-src/        MCP Blockbench implementation
-engines/    shared and engine-specific orchestration
-workspace/  local session state and outputs
-docs/       human/generated documentation
-openspec/   approved scope and decisions
-build/      build tooling
+mcp-blockbench/  complete MCP Blockbench package
+engines/         shared and engine-specific orchestration
+workspace/       local session state and outputs
+docs/            authored documentation and generated API output
+openspec/        approved scope and decisions
 ```
 
-No parallel versioned roots are allowed.
+Inside `mcp-blockbench/`, source, scripts, prompts, tests, and generated plugin output have one package root. No parallel or versioned roots are allowed.
 
 ## User-Visible Stages
 
@@ -34,7 +33,7 @@ No parallel versioned roots are allowed.
 - direct texture evidence writes;
 - atomic stage completion;
 - shared workflow for Codex, Claude, and Ollama boundaries;
-- root consolidation and legacy-context removal.
+- singular MCP package root and legacy-context removal.
 
 ## Excluded Until Final Verification
 
