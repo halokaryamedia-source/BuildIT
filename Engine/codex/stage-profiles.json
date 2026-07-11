@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "global": {
     "runtime_authority": "SavedData/sessions/<asset>/state.json",
     "governance": "Engine/codex/GOVERNANCE.md",
@@ -10,18 +10,12 @@
     "initial_build_mode": "bounded_batches",
     "revision_mode": "one_named_issue_or_tightly_related_pair",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
-    "profile_transition_policy": "activate_then_reconnect_once"
+    "profile_transition_policy": "complete_stage_then_reconnect_once"
   },
   "camera": {
     "front_axis_default": "-z",
     "projection": "orthographic",
-    "views": [
-      "front",
-      "left_side",
-      "back",
-      "top_footprint",
-      "front_left_3_4"
-    ],
+    "views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"],
     "frame_margin_ratio": 1.25
   },
   "profiles": {
@@ -40,6 +34,8 @@
       ],
       "required_skill_profiles": ["blockbench-use", "blockbench-modeling"],
       "internal_passes": ["PRIMARY_FORM", "STRUCTURAL_DETAIL"],
+      "compact_validation_tool": "validate_reference_contract",
+      "approval_transition_tool": "complete_stage",
       "review_gate": "GEOMETRY_REVIEW",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
       "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
@@ -70,6 +66,8 @@
       ],
       "required_skill_profiles": ["blockbench-use", "blockbench-texturing"],
       "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
+      "atlas_evidence_tool": "save_texture_evidence",
+      "approval_transition_tool": "complete_stage",
       "review_gate": "TEXTURE_REVIEW",
       "review_checkpoint": "checkpoints/30_texture_review.bbmodel",
       "approved_checkpoint": "checkpoints/40_texture_approved.bbmodel",
@@ -103,6 +101,7 @@
       "optional": true,
       "run_when": "manifest or ANIMATION.md lists at least one required animation family or interactive motion",
       "skip_when": "no required animation family or interactive motion is listed",
+      "approval_transition_tool": "complete_stage",
       "review_gate": "ANIMATION_REVIEW",
       "review_checkpoint": "checkpoints/50_animation_review.bbmodel",
       "approved_checkpoint": "checkpoints/60_animation_approved.bbmodel",
@@ -133,6 +132,9 @@
       ],
       "required_skill_profiles": ["blockbench-use"],
       "automatic_local_fix_limit": 2,
+      "compact_validation_tool": "validate_reference_contract",
+      "atlas_evidence_tool": "save_texture_evidence",
+      "approval_transition_tool": "complete_stage",
       "review_gate": "FINAL_REVIEW",
       "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
       "pass_checkpoint": "checkpoints/80_validation_pass.bbmodel",
