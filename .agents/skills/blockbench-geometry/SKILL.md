@@ -7,7 +7,7 @@ description: "Geometry-stage skill for approved Minecraft Bedrock cuboid assets.
 
 ## Entry
 
-Use only when the active stage is `GEOMETRY` with tool profile `BEDROCK_CUBOID_GEOMETRY` or `GEOMETRY_LOCAL_REPAIR`.
+Use only when the active stage is `GEOMETRY` with tool profile `BEDROCK_CUBOID_GEOMETRY` or `GEOMETRY_LOCAL_REPAIR` and the current MCP session owns the project write lease.
 
 Read:
 
@@ -45,4 +45,9 @@ PRIMARY_FORM
 
 ## Review Output
 
-Create the Geometry review checkpoint, five standard views, and `geometry_report.json`. Run `validate_reference_contract` for Geometry and stop for `APPROVED` or `REVISION: ...`.
+1. Save the Geometry review checkpoint inside the active session.
+2. Call `capture_standard_views` with the active project UUID, absolute session root, Geometry evidence directory, and `return_images: false`.
+3. Run `validate_reference_contract` for Geometry.
+4. Write `geometry_report.json` and stop for `APPROVED` or `REVISION: ...`.
+
+Do not capture extra screenshots when the standard evidence set is already current.

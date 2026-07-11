@@ -9,7 +9,7 @@ description: "Optional Animation-stage skill for approved Bedrock cuboid assets.
 
 Load only when the manifest or `ANIMATION.md` requires at least one animation family or interactive motion. Otherwise mark Animation skipped and proceed to Final Validation without loading this skill.
 
-Use tool profile `BEDROCK_CUBOID_ANIMATION` or `ANIMATION_LOCAL_REPAIR`.
+Use tool profile `BEDROCK_CUBOID_ANIMATION` or `ANIMATION_LOCAL_REPAIR`, and require the current MCP session to own the project write lease.
 
 Read:
 
@@ -37,4 +37,9 @@ Read:
 
 ## Review Output
 
-Create the Animation review checkpoint, hierarchy, pivot, neutral-pose, required clip evidence, and `animation_report.json`. Run `validate_reference_contract` for Animation and stop for `APPROVED` or `REVISION: ...`.
+1. Save the Animation review checkpoint inside the active session.
+2. Write hierarchy, pivot, neutral-pose, and required clip evidence only once at review.
+3. Run `validate_reference_contract` for Animation.
+4. Write `animation_report.json` and stop for `APPROVED` or `REVISION: ...`.
+
+Do not create extra clips or captures merely for completeness.
