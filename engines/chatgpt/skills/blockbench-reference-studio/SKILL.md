@@ -1,16 +1,16 @@
 ---
 name: blockbench-reference-studio
-description: "Create a complete approved Minecraft Bedrock / Blockbench reference package in ChatGPT, then hand the final ZIP to Codex and MCP-Blockbench. Use for source-image analysis, production context, reference sheets, stage contracts, manifest, and Codex handoff. Do not use for direct Blockbench modelling."
+description: "Create a complete approved Minecraft Bedrock / Blockbench reference package in ChatGPT using one generated Reference Visual, then hand the Markdown/JSON package to Codex and MCP-Blockbench. Do not use for direct Blockbench modelling."
 ---
 
 # Blockbench Reference Studio
 
-Create the complete reference package in ChatGPT. Codex and MCP-Blockbench are not involved until the approved ZIP exists.
+Create the complete reference package in ChatGPT. Codex and MCP-Blockbench are not involved until the package is approved and complete.
 
 ## Language
 
 - Speak with the user in Indonesian.
-- Write production specifications, sheet labels, manifests, and Codex handoff documents in English.
+- Write production contracts, manifest data, labels, and Codex handoff instructions in English.
 - Preserve approved asset names, IDs, dimensions, and filenames exactly.
 
 ## Responsibility boundary
@@ -19,16 +19,17 @@ Create the complete reference package in ChatGPT. Codex and MCP-Blockbench are n
 ChatGPT
 source image
 → Production Context
-→ four approved sheets
+→ one approved Reference Visual
 → Geometry/Texture/Animation/Validation contracts
 → reference manifest
 → Codex handoff
-→ final ZIP
+→ final package
 
 Codex + MCP-Blockbench
-final ZIP
-→ validate and import
-→ build .bbmodel through staged production skills
+approved package
+→ validate/import
+→ visually grounded staged production
+→ .bbmodel
 ```
 
 Do not connect to MCP, edit `.bbmodel`, acquire a write lease, or simulate Codex execution from this skill.
@@ -40,12 +41,9 @@ Produce exactly:
 ```text
 <asset_id>_blockbench_reference/
 ├─ source/
+│  └─ original_reference.<ext>
 ├─ PRODUCTION_CONTEXT.md
 ├─ <asset_id>_reference_visual.png
-├─ 01_<asset_id>_form_scale_reference.png
-├─ 02_<asset_id>_construction_reference.png
-├─ 03_<asset_id>_texture_material_reference.png
-├─ 04_<asset_id>_motion_pivot_reference.png
 ├─ GEOMETRY.md
 ├─ TEXTURING.md
 ├─ ANIMATION.md
@@ -60,16 +58,15 @@ Then create:
 <asset_id>_blockbench_reference.zip
 ```
 
-`<asset_id>_reference_visual.png` must be a byte-identical handoff alias of Sheet 01. It is not a second visual authority.
+## Image-generation lock
 
-## Efficiency target
-
-- Normal image-generation calls: `1`
-- Maximum targeted correction: `1`
-- Subject regeneration for Sheets 02–04: `0`
-- Mandatory user approval gates: `3`
-
-Do not generate hidden orthographic images individually unless the user explicitly reopens the efficiency decision.
+- Normal generated images: exactly `1`.
+- Canonical generated image: `<asset_id>_reference_visual.png`.
+- Maximum targeted correction before approval: `1` edit of the same visual.
+- Generated images after Reference Visual approval: `0`.
+- Hidden per-angle generation: forbidden.
+- Geometry, construction, texture, material, UV, motion, pivot, animation, pose, or extra-view sheets: forbidden.
+- The original source copy is input evidence and is not counted as generated output.
 
 ## Mandatory flow
 
@@ -77,185 +74,135 @@ Do not generate hidden orthographic images individually unless the user explicit
 
 1. Review the source image and user notes.
 2. Do not generate an image yet.
-3. Prepare `PRODUCTION_CONTEXT.md` with:
-   - Main Format
-   - Asset Identity
-   - Scale
-   - Geometry
-   - Texture
-   - Animation
-   - Validation
-4. Explain the decisions in Indonesian.
-5. Wait for explicit approval.
+3. Prepare `PRODUCTION_CONTEXT.md` with exactly four main categories:
+   - Main Format;
+   - Geometry;
+   - Texture;
+   - Animation.
+4. Include asset identity, intended use, scale, front direction, neutral pose, must-preserve features, interaction profile, assumptions, constraints, and forbidden redesigns inside those categories.
+5. Explain the decisions in Indonesian.
+6. Wait for explicit Production Context approval.
 
-After approval, retain:
+Retain approved context; never ask the user to repeat it.
 
-- Canonical Asset Lock
-- Structural Fingerprint
-- Camera Lock
-- Render Lock
-- Revision Baseline
+### Phase 2 — One Reference Visual
 
-The user must not be asked to repeat approved context.
+Generate one clean board containing all required views inside one canvas:
 
-### Phase 2 — One Turnaround Generation
+- Left Side;
+- Front;
+- Back;
+- Top / Footprint;
+- Front-left 3/4;
+- scale marker;
+- compact technical footer.
 
-Generate one clean board containing only:
+The views must show the same design, scale, proportions, pose, features, and material family. Do not generate each view separately.
 
-- Front orthographic
-- Left-side orthographic
-- Back orthographic
-- Front-left three-quarter preview
+Run automatic QA. When necessary, perform at most one targeted edit of the same image. Then wait for explicit Reference Visual approval.
 
-Do not ask the image model to create technical labels, dimensions, hierarchy, footprint, UV, palette, or pivots.
+### Phase 3 — Automatic technical package
 
-Use the exact approved source, asset lock, camera lock, render lock, and accepted result in every revision.
+After Reference Visual approval, generate without further image creation or routine approval:
 
-Run automatic QA. When required, perform at most one targeted correction of the same image.
+- `GEOMETRY.md`;
+- `TEXTURING.md`;
+- `ANIMATION.md`;
+- `VALIDATION.md`;
+- `reference_manifest.json`;
+- `CODEX_REFERENCE_HANDOFF.md`.
 
-### Phase 3 — Deterministic Sheet 01
+These files translate approved decisions and the single Reference Visual into implementation requirements. They must not introduce a new design decision.
 
-Compose:
+### Phase 4 — Audit and package
+
+1. Verify all required files exist.
+2. Verify there is exactly one generated Reference Visual.
+3. Verify forbidden numbered or technical PNG files are absent.
+4. Verify manifest values match all Markdown contracts.
+5. Verify the Reference Visual hash and dimensions.
+6. Verify `VALIDATION.md` starts as `PENDING_BUILD`.
+7. Create the final ZIP.
+
+## Authority order
+
+1. `PRODUCTION_CONTEXT.md`: intent, scale, constraints, assumptions, resolved decisions.
+2. `<asset_id>_reference_visual.png`: sole visual authority for identity, silhouette, proportions, pose, cross-view consistency, and visible material appearance.
+3. `GEOMETRY.md`: buildable cuboid form, hierarchy, pivots, segmentation, ground contacts, and rotation policy.
+4. `TEXTURING.md`: atlas, UV, palette, material zones, and pixel-detail rules.
+5. `ANIMATION.md`: required clips or explicit `ANIMATION_SKIPPED`, plus pivot readiness.
+6. `VALIDATION.md`: post-build acceptance tests.
+7. `reference_manifest.json`: machine-readable lock and file inventory.
+8. `CODEX_REFERENCE_HANDOFF.md`: import, stage, visual-grounding, and stop rules.
+
+Conflicts must stop as `REFERENCE_CONFLICT`; never silently redesign.
+
+## Geometry contract requirements
+
+`GEOMETRY.md` must include:
+
+- approved envelope and coordinate convention;
+- primary form ratios per standard view;
+- hierarchy and build order;
+- approximate part sizes/positions;
+- geometry-only versus texture-only features;
+- allowed segment counts;
+- ground contacts;
+- cube-density range;
+- rotation and pivot guidance.
+
+Rotation guidance must state:
+
+- explicit pivot required for rotated cubes;
+- one local axis preferred;
+- avoid compound rotation unless essential;
+- use stepped cuboids instead of rotating large masses to fake taper;
+- inspect affected Side/3/4 view after rotation;
+- world bounds must include transforms.
+
+## Codex visual-grounding contract
+
+`CODEX_REFERENCE_HANDOFF.md` must require:
 
 ```text
-01_<asset_id>_form_scale_reference.png
+inspect_reference_visual
+→ coarse primary form
+→ capture_visual_feedback
+→ targeted repair
+→ structural detail
+→ final five-view visual gate
+→ structural validation
+→ user review
 ```
 
-Add exact text and measurements programmatically:
+A structural PASS must not be treated as a visual PASS. Codex must use safe batch Geometry mutation tools and must not enter Texture until Geometry is explicitly approved.
 
-- display name
-- view labels
-- asset envelope
-- `16u = 1 block`
-- front direction
-- ground line
-- fixed borders and footer
+## Manifest requirements
 
-Create the byte-identical alias:
+The manifest must record at minimum:
 
-```text
-<asset_id>_reference_visual.png
+```json
+{
+  "workflow": {
+    "approval_moments": 2,
+    "normal_image_generations": 1,
+    "targeted_edit_max": 1,
+    "post_visual_image_generations": 0,
+    "hidden_per_angle_generation_allowed": false,
+    "additional_technical_images_allowed": false
+  }
+}
 ```
 
-Request Approval Gate 1.
-
-### Phase 4 — Deterministic Sheets 02–04
-
-After Sheet 01 approval, derive without new subject generation:
-
-```text
-02_<asset_id>_construction_reference.png
-03_<asset_id>_texture_material_reference.png
-04_<asset_id>_motion_pivot_reference.png
-```
-
-- Sheet 02: hierarchy, part construction, attachments, geometry-vs-texture, schematic footprint.
-- Sheet 03: palette, material zones, atlas, UV strategy, pixel-detail placement.
-- Sheet 04: hierarchy motion chain, pivots, axes, neutral pose, clipping risks.
-
-Request Approval Gate 2 for Sheets 02–04.
-
-### Phase 5 — Stage contracts
-
-Derive these documents from the approved Production Context and sheets:
-
-- `GEOMETRY.md`
-- `TEXTURING.md`
-- `ANIMATION.md`
-- `VALIDATION.md`
-
-They must not introduce new design decisions.
-
-Request Approval Gate 3 for the stage contracts and final package summary.
-
-### Phase 6 — Audit and package
-
-After Approval Gate 3:
-
-1. Run the package consistency audit.
-2. Create `reference_manifest.json`.
-3. Create `CODEX_REFERENCE_HANDOFF.md`.
-4. Verify all required files exist.
-5. Create `<asset_id>_blockbench_reference.zip`.
-
-Codex may validate and execute the package but must not redesign it.
-
-## Source authority
-
-- `PRODUCTION_CONTEXT.md`: global decisions.
-- Sheet 01: form, scale, identity, color family, neutral pose.
-- Sheet 02: construction, hierarchy, attachments, footprint.
-- Sheet 03: UV, atlas, texture style, material zones.
-- Sheet 04: motion, pivots, axes, clipping risks.
-- `GEOMETRY.md`: Geometry-stage execution contract.
-- `TEXTURING.md`: Texture-stage execution contract.
-- `ANIMATION.md`: required clips or explicit skip decision.
-- `VALIDATION.md`: final acceptance criteria.
-- `reference_manifest.json`: machine-readable authority and file hashes.
-- `CODEX_REFERENCE_HANDOFF.md`: Codex import and execution authority.
-
-## Geometry rules
-
-- Use smart cuboid construction.
-- Before adding a cube: resize, stretch, flatten, rotate, offset, or reuse.
-- Avoid dense voxel sculpture and micro-cube decoration.
-- Keep silhouette-critical parts as geometry.
-- Keep seams, markings, small straps, scratches, and patterns texture-first.
-- Separate parts needed for future animation and pivots.
-
-## Texture rules
-
-- Geometry scale, atlas size, and pixel style are separate decisions.
-- Default pixel style: `16x`.
-- Use `32x` only when approved critical details do not fit at 16x.
-- Use Classic Bedrock planning.
-- Box UV is preferred unless selective per-face UV is justified.
-- Do not use PBR or Vibrant Visuals.
-
-## Animation rules
-
-- State explicitly whether animation is required.
-- When not required, `ANIMATION.md` must contain `ANIMATION_SKIPPED` and the reason.
-- When required, define groups, pivots, allowed axes, required clips, neutral-pose recovery, ground-contact rules, and clipping risks.
-
-## Revision classification
-
-Classify feedback as:
-
-- `LOCAL_REVISION`
-- `SHEET_REOPEN`
-- `FULL_DESIGN_REOPEN`
-
-For local revisions, preserve unrelated approved decisions.
-
-If Sheet 01 changes, revalidate Sheets 02–04 and all stage contracts.
-If Sheet 02 changes, revalidate Sheet 04 and Geometry/Animation contracts.
-If Sheet 03 changes, revalidate the Texture contract.
-If Sheet 04 changes, revalidate the Animation and Validation contracts.
+It must also record package paths, Reference Visual hash/dimensions, scale, geometry strategy, hierarchy, segment counts, texture configuration, animation readiness, validation requirements, and unresolved blockers.
 
 ## Stop conditions
 
 Stop and report when:
 
-- Production Context is not approved.
-- Turnaround identity or camera drift remains after one targeted correction.
-- A later sheet introduces a new design.
-- A stage contract conflicts with an approved sheet.
-- Required output files are missing.
-- The user asks for Codex/MCP execution before the final ZIP is approved.
-
-## Required references
-
-Read:
-
-- `references/FLOW.md`
-- `references/SHEET_SPECIFICATIONS.md`
-- `references/CAMERA_AND_RENDER_LOCK.md`
-- `references/QA_AND_REVISION_PROTOCOL.md`
-- `references/CODEX_HANDOFF_CONTRACT.md`
-
-Use templates in:
-
-```text
-templates/
-```
+- Production Context is not approved;
+- Reference Visual identity or cross-view consistency remains invalid after one targeted edit;
+- a technical contract introduces a new design;
+- files conflict or are missing;
+- more than one generated Reference Visual exists;
+- the user requests MCP execution before the package is complete.
