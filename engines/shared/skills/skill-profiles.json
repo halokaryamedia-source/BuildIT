@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "canonical_root": "engines/shared/skills",
+  "host_adapters": [
+    ".agents/skills",
+    ".codex/skills"
+  ],
+  "max_production_skills_loaded": 2,
+  "production_skills": [
+    "blockbench-production",
+    "blockbench-geometry",
+    "blockbench-texture",
+    "blockbench-animation",
+    "blockbench-validation"
+  ],
+  "profiles": {
+    "BOOTSTRAP": {
+      "required": ["blockbench-production"],
+      "forbidden": [
+        "blockbench-geometry",
+        "blockbench-texture",
+        "blockbench-animation",
+        "blockbench-validation"
+      ],
+      "max_loaded": 1
+    },
+    "GEOMETRY": {
+      "required": ["blockbench-production", "blockbench-geometry"],
+      "forbidden": [
+        "blockbench-texture",
+        "blockbench-animation",
+        "blockbench-validation",
+        "mcp-builder"
+      ],
+      "max_loaded": 2
+    },
+    "TEXTURE": {
+      "required": ["blockbench-production", "blockbench-texture"],
+      "forbidden": [
+        "blockbench-geometry",
+        "blockbench-animation",
+        "blockbench-validation",
+        "mcp-builder"
+      ],
+      "max_loaded": 2
+    },
+    "ANIMATION": {
+      "required": ["blockbench-production", "blockbench-animation"],
+      "forbidden": [
+        "blockbench-geometry",
+        "blockbench-texture",
+        "blockbench-validation",
+        "mcp-builder"
+      ],
+      "max_loaded": 2
+    },
+    "FINAL_VALIDATION": {
+      "required": ["blockbench-production", "blockbench-validation"],
+      "forbidden": [
+        "blockbench-geometry",
+        "blockbench-texture",
+        "blockbench-animation",
+        "mcp-builder"
+      ],
+      "max_loaded": 2
+    }
+  },
+  "state_map": {
+    "REFERENCE_READY": "BOOTSTRAP",
+    "GEOMETRY_IN_PROGRESS": "GEOMETRY",
+    "GEOMETRY_REVIEW": "GEOMETRY",
+    "GEOMETRY_REVISION": "GEOMETRY",
+    "GEOMETRY_APPROVED": "TEXTURE",
+    "TEXTURE_IN_PROGRESS": "TEXTURE",
+    "TEXTURE_REVIEW": "TEXTURE",
+    "TEXTURE_REVISION": "TEXTURE",
+    "TEXTURE_APPROVED": "ANIMATION",
+    "ANIMATION_IN_PROGRESS": "ANIMATION",
+    "ANIMATION_REVIEW": "ANIMATION",
+    "ANIMATION_REVISION": "ANIMATION",
+    "ANIMATION_APPROVED": "FINAL_VALIDATION",
+    "ANIMATION_SKIPPED": "FINAL_VALIDATION",
+    "FINAL_VALIDATION": "FINAL_VALIDATION",
+    "FINAL_REVIEW": "FINAL_VALIDATION",
+    "FINAL_REVISION": "FINAL_VALIDATION",
+    "DONE": "FINAL_VALIDATION"
+  },
+  "repository_development": {
+    "forbidden_production_skills": [
+      "blockbench-production",
+      "blockbench-geometry",
+      "blockbench-texture",
+      "blockbench-animation",
+      "blockbench-validation"
+    ],
+    "load_only_when_required": [
+      "mcp-builder",
+      "typescript-expert",
+      "zod",
+      "openspec-*"
+    ]
+  },
+  "deprecated_skill_names": [
+    "blockbench-use",
+    "blockbench-modeling",
+    "blockbench-texturing"
+  ]
+}
