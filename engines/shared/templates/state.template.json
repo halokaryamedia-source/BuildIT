@@ -39,15 +39,6 @@
     "exposed_tool_count": null,
     "total_library_tool_count": null,
     "profile_reconnect_required": false,
-    "write_lease": {
-      "status": "UNCLAIMED",
-      "owner_session_id": null,
-      "project_uuid": null,
-      "stage": null,
-      "state_revision": null,
-      "profile_revision": null,
-      "expires_at": null
-    },
     "connection_report": "workspace/sessions/<asset_id>/reports/connection.json",
     "preflight": {
       "status": "NOT_RUN",
