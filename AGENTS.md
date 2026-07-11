@@ -7,6 +7,7 @@
 3. For local Codex production, start at `engines/codex/BOOTSTRAP.md`.
 4. Use `workspace/sessions/<asset>/state.json` as runtime authority.
 5. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
+6. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
 
 ## Execution Guardrails
 
@@ -19,6 +20,9 @@
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 - Do not scan ports, create alternate MCP keys, or bypass tool profiles.
+- Asset production loads `blockbench-production` plus exactly one active-stage skill; maximum loaded production skills is `2`.
+- Repository development must not load production skills.
+- Skill changes do not require MCP reconnects; tool-profile changes may reconnect the canonical entry once.
 - CI and merge into `V1` remain deferred until explicit final-verification approval.
 
 ## Root Boundaries
@@ -32,4 +36,4 @@
 
 Run Bun package commands from `mcp-blockbench/`.
 
-Do not recreate root `src/`, `build/`, `prompts/`, `tests/`, `Engine/`, `SavedData/`, or `SourceDocument/`. Do not add versioned, `new`, `latest`, `backup`, or parallel-authority names.
+Do not recreate deprecated production skills `blockbench-use`, `blockbench-modeling`, or `blockbench-texturing`. Do not recreate root `src/`, `build/`, `prompts/`, `tests/`, `Engine/`, `SavedData/`, or `SourceDocument/`. Do not add versioned, `new`, `latest`, `backup`, or parallel-authority names.
