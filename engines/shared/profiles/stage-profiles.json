@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.6",
+  "schema_version": "2.7",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -90,7 +90,7 @@
         "FULL_REVIEW_READINESS_GATE"
       ],
       "compact_context_tool": "get_stage_context",
-      "compact_validation_tool": "validate_reference_contract",
+      "compact_validation_tool": "validate_geometry_contract",
       "diagnostic_visual_tool": "analyze_geometry_views",
       "safe_rotation_tool": "rotate_cube_about_attachment",
       "review_readiness_tool": "verify_geometry_review_ready",
