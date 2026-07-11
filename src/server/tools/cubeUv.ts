@@ -4,68 +4,48 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { findElementOrThrow } from "@/lib/util";
 import { STATUS_STABLE } from "@/lib/constants";
-import {
-  elementIdSchema,
-  faceUvRectSchema,
-} from "@/lib/zodObjects";
+import { elementIdSchema, faceUvRectSchema } from "@/lib/zodObjects";
 
 export const setCubeFaceUvParameters = z.object({
-  id: elementIdSchema
-    .optional()
-    .describe(
-      "Cube ID or name. Defaults to all selected cubes if omitted."
-    ),
-  faces: z
-    .array(faceUvRectSchema)
-    .min(1)
-    .describe("Face UV rectangles to apply."),
+  id: elementIdSchema.describe("Explicit cube UUID or name."),
+  faces: z.array(faceUvRectSchema).min(1).describe("Face UV rectangles to apply."),
 });
 
 export const getUvLayoutParameters = z.object({
   cube_ids: z
     .array(z.string())
     .optional()
-    .describe(
-      "Optional list of cube IDs or names. When omitted, exports all cubes."
-    ),
+    .describe("Optional explicit cube IDs or names. When omitted, inspects all cubes."),
 });
 
 export const cubeUvToolDocs: ToolSpec[] = [
   {
     name: "set_cube_face_uv",
     description:
-      "Sets per-face UV rectangles on one or more cubes. Disables auto UV on affected cubes.",
-    annotations: {
-      title: "Set Cube Face UV",
-      destructiveHint: true,
-    },
+      "Sets per-face UV rectangles on one explicitly identified cube and disables auto UV for that cube.",
+    annotations: { title: "Set Cube Face UV", destructiveHint: true },
     parameters: setCubeFaceUvParameters,
     status: STATUS_STABLE,
   },
   {
     name: "get_uv_layout",
     description:
-      "Returns all cube face UV rectangles and texture references for the active project. Use before painting textures.",
-    annotations: {
-      title: "Get UV Layout",
-      readOnlyHint: true,
-    },
+      "Returns one compact structured cube UV layout with texture references and atlas dimensions.",
+    annotations: { title: "Get UV Layout", readOnlyHint: true },
     parameters: getUvLayoutParameters,
     status: STATUS_STABLE,
   },
 ];
 
 function resolveTextureName(index: number): string | null {
-  const tex = Texture.all[index];
-  return tex?.name ?? tex?.uuid ?? null;
+  const texture = Texture.all[index];
+  return texture?.name ?? texture?.uuid ?? null;
 }
 
 function applyFaceRects(cube: Cube, faces: z.infer<typeof faceUvRectSchema>[]): void {
   faces.forEach(({ face, uv, texture, rotation }) => {
     const faceData = cube.faces[face];
-    if (!faceData) {
-      throw new Error(`Face "${face}" not found on cube "${cube.name}".`);
-    }
+    if (!faceData) throw new Error(`Face "${face}" not found on cube "${cube.name}".`);
     faceData.extend({
       uv: uv as [number, number, number, number],
       ...(texture !== undefined ? { texture } : {}),
@@ -76,11 +56,7 @@ function applyFaceRects(cube: Cube, faces: z.infer<typeof faceUvRectSchema>[]): 
 }
 
 function exportCubeUv(cube: Cube) {
-  const faces: Record<
-    string,
-    { uv: number[]; texture: string | null; rotation: number }
-  > = {};
-
+  const faces: Record<string, { uv: number[]; texture: string | null; rotation: number }> = {};
   (Object.keys(cube.faces) as Array<keyof typeof cube.faces>).forEach((key) => {
     const face = cube.faces[key];
     if (!face) return;
@@ -90,7 +66,6 @@ function exportCubeUv(cube: Cube) {
       rotation: face.rotation ?? 0,
     };
   });
-
   return {
     name: cube.name,
     uuid: cube.uuid,
@@ -106,43 +81,36 @@ export function registerCubeUvTools() {
     {
       ...cubeUvToolDocs[0],
       async execute({ id, faces }) {
-        let cubes: Cube[];
-        if (id) {
-          const cube = findElementOrThrow(id);
-          if (!(cube instanceof Cube)) {
-            throw new Error(`Element "${id}" is not a cube.`);
-          }
-          cubes = [cube];
-        } else {
-          cubes = Cube.selected;
-          if (!cubes.length) {
-            throw new Error(
-              "No cube selected and no id provided. Select a cube or provide an id."
-            );
-          }
+        const element = findElementOrThrow(id);
+        if (!(element instanceof Cube)) throw new Error(`Element "${id}" is not a cube.`);
+
+        Undo.initEdit({ elements: [element], uv_only: true });
+        try {
+          applyFaceRects(element, faces);
+          element.preview_controller?.updateUV(element);
+          if (typeof UVEditor !== "undefined") UVEditor.loadData();
+          Undo.finishEdit("Set cube face UV");
+        } catch (error) {
+          (Undo as unknown as { cancelEdit?: (amend?: boolean) => void }).cancelEdit?.(false);
+          throw error;
         }
 
-        Undo.initEdit({
-          elements: cubes,
-          uv_only: true,
-        });
-
-        cubes.forEach((cube) => applyFaceRects(cube, faces));
-
-        cubes.forEach((cube) => {
-          cube.preview_controller?.updateUV(cube);
-        });
-        if (typeof UVEditor !== "undefined") {
-          UVEditor.loadData();
-        }
-
-        Undo.finishEdit("Set cube face UV");
         Canvas.updateView({
-          elements: cubes,
+          elements: [element],
           element_aspects: { uv: true, faces: true },
         });
 
-        return `Set UV on ${faces.length} face(s) for ${cubes.length} cube(s).`;
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Set ${faces.length} UV face(s) on cube ${element.name}.`,
+          }],
+          structuredContent: {
+            status: "PASS",
+            cube: exportCubeUv(element),
+            changed_face_count: faces.length,
+          },
+        };
       },
     },
     cubeUvToolDocs[0].status
@@ -153,30 +121,28 @@ export function registerCubeUvTools() {
     {
       ...cubeUvToolDocs[1],
       async execute({ cube_ids }) {
-        if (!Project) {
-          throw new Error("No project is open.");
-        }
+        if (!Project) throw new Error("No project is open.");
+        const cubes = cube_ids?.length
+          ? cube_ids.map((cubeId) => {
+              const element = findElementOrThrow(cubeId);
+              if (!(element instanceof Cube)) throw new Error(`Element "${cubeId}" is not a cube.`);
+              return element;
+            })
+          : Cube.all;
 
-        let cubes = Cube.all;
-        if (cube_ids && cube_ids.length > 0) {
-          cubes = cube_ids.map((cubeId) => {
-            const el = findElementOrThrow(cubeId);
-            if (!(el instanceof Cube)) {
-              throw new Error(`Element "${cubeId}" is not a cube.`);
-            }
-            return el;
-          });
-        }
-
-        return JSON.stringify(
-          {
-            uv_mode: Project.box_uv ? "box" : "per_face",
-            texture_size: [Project.texture_width, Project.texture_height],
-            elements: cubes.map(exportCubeUv),
-          },
-          null,
-          2
-        );
+        const layout = {
+          uv_mode: Project.box_uv ? "box" : "per_face",
+          texture_size: [Project.texture_width, Project.texture_height],
+          element_count: cubes.length,
+          elements: cubes.map(exportCubeUv),
+        };
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Inspected UV layout for ${cubes.length} cube(s) at ${Project.texture_width}x${Project.texture_height}.`,
+          }],
+          structuredContent: { status: "PASS", ...layout },
+        };
       },
     },
     cubeUvToolDocs[1].status
