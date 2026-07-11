@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "state_revision": 0,
   "asset": {
     "id": "<asset_id>",
@@ -39,6 +39,15 @@
     "exposed_tool_count": null,
     "total_library_tool_count": null,
     "profile_reconnect_required": false,
+    "write_lease": {
+      "status": "UNCLAIMED",
+      "owner_session_id": null,
+      "project_uuid": null,
+      "stage": null,
+      "state_revision": null,
+      "profile_revision": null,
+      "expires_at": null
+    },
     "connection_report": "workspace/sessions/<asset_id>/reports/connection.json",
     "preflight": {
       "status": "NOT_RUN",
@@ -51,7 +60,7 @@
     "state": "REFERENCE_READY",
     "status": "READY",
     "active_stage": "GEOMETRY",
-    "next_action": "RUN_CONNECTION_SYNC_AND_PREFLIGHT",
+    "next_action": "RUN_CONNECTION_SYNC_THEN_ACQUIRE_WRITE_LEASE",
     "animation_required": false,
     "last_completed_stage": null,
     "last_safe_checkpoint": null,
