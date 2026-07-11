@@ -1,144 +1,456 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "3.0",
   "package_type": "blockbench_reference",
   "sample_type": "golden_sample",
-  "asset_id": "black_rhinoceros",
-  "display_name": "Black Rhinoceros",
-  "status": "APPROVED",
-  "format": "bedrock_entity",
-  "front_direction": "-Z",
-  "scale": {
-    "units_per_block": 16,
-    "player_height_units": 28.8,
+  "asset": {
+    "id": "black_rhinoceros",
+    "display_name": "Black Rhinoceros",
+    "object_type": "black_rhinoceros_creature",
+    "asset_archetype": "organic_quadruped_creature",
+    "target": "minecraft_bedrock_entity",
+    "canonical_model_filename": "black_rhinoceros.bbmodel"
+  },
+  "workflow": {
+    "status": "approved_reference_package",
+    "approval_moments": 2,
+    "approval_sequence": [
+      "production_context",
+      "reference_visual"
+    ],
+    "technical_document_approval_required": false,
+    "normal_image_generations": 1,
+    "targeted_edit_max": 1,
+    "post_visual_image_generations": 0,
+    "hidden_per_angle_generation_allowed": false,
+    "additional_technical_images_allowed": false,
+    "final_state": "reference_package_complete_validation_pending_build"
+  },
+  "package": {
+    "root_name": "black_rhinoceros_blockbench_reference",
+    "source_directory": "source",
+    "source_image": "source/original_reference.png",
+    "production_context": "PRODUCTION_CONTEXT.md",
+    "reference_visual": "black_rhinoceros_reference_visual.png",
+    "geometry": "GEOMETRY.md",
+    "texturing": "TEXTURING.md",
+    "animation": "ANIMATION.md",
+    "validation": "VALIDATION.md",
+    "codex_handoff": "CODEX_REFERENCE_HANDOFF.md",
+    "manifest": "reference_manifest.json",
+    "required_files": [
+      "source/original_reference.png",
+      "PRODUCTION_CONTEXT.md",
+      "black_rhinoceros_reference_visual.png",
+      "GEOMETRY.md",
+      "TEXTURING.md",
+      "ANIMATION.md",
+      "VALIDATION.md",
+      "reference_manifest.json",
+      "CODEX_REFERENCE_HANDOFF.md"
+    ],
+    "generated_image_files": [
+      "black_rhinoceros_reference_visual.png"
+    ],
+    "input_image_files": [
+      "source/original_reference.png"
+    ],
+    "forbidden_legacy_visual_files": [
+      "01_black_rhinoceros_form_scale_reference.png",
+      "02_black_rhinoceros_construction_reference.png",
+      "03_black_rhinoceros_texture_material_reference.png",
+      "04_black_rhinoceros_motion_pivot_reference.png",
+      "geometry_sheet.png",
+      "texture_sheet.png",
+      "animation_sheet.png",
+      "construction_sheet.png",
+      "additional_view.png",
+      "ghost_model.png",
+      "foreshadow_model.png"
+    ]
+  },
+  "reference_visual_lock": {
+    "filename": "black_rhinoceros_reference_visual.png",
+    "sha256": "fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f",
+    "width_px": 1491,
+    "height_px": 1055,
+    "format": "PNG",
+    "role": "single_visual_source_of_truth",
+    "approved": true,
+    "required_panels": [
+      "left_side",
+      "front",
+      "back",
+      "top_footprint",
+      "front_left_3_4"
+    ],
+    "scale_marker": "2.5_blocks_tall",
+    "legacy_literal_text_note": "The approved Golden Sample image contains legacy SHEET 01 and ORTHOGRAPHIC REFERENCE labels. New assets must use current Reference Visual naming; the Black Rhinoceros image remains locked as the Golden Sample itself."
+  },
+  "main_format": {
+    "height_blocks": 2.5,
+    "width_blocks": 1.7,
+    "depth_blocks": 3.3,
+    "height_units": 40,
     "width_units": 27.2,
     "depth_units": 52.8,
-    "height_units": 40,
+    "blockbench_units_per_block": 16,
+    "bounds_tolerance_units": 1,
+    "coordinate_envelope": {
+      "x_min": -13.6,
+      "x_max": 13.6,
+      "y_min": 0,
+      "y_max": 40,
+      "z_min": -30,
+      "z_max": 22.8
+    },
     "ground_plane_y": 0,
-    "bounds_tolerance_units": 1
+    "front_direction": "-Z",
+    "neutral_pose": "four_foot_grounded_standing_head_low_ears_upright_tail_close_to_rear",
+    "base_color_family": "warm_gray_brown",
+    "interaction_profile": "non_rideable_no_external_attachments",
+    "variant_policy": "single_canonical_variant"
   },
   "geometry": {
-    "type": "cuboid_only",
-    "expected_cube_count_min": 22,
-    "expected_cube_count_max": 32,
+    "strategy": "smart_cuboid",
+    "geometry_type": "cuboid_only",
+    "mesh_allowed": false,
+    "expected_cube_count": {
+      "minimum": 22,
+      "preferred_minimum": 26,
+      "preferred_maximum": 29,
+      "maximum": 32
+    },
     "root_group": "black_rhinoceros_root",
-    "mesh_allowed": false
+    "primary_masses": [
+      "shoulder_mass",
+      "torso_core",
+      "rear_mass",
+      "neck",
+      "head",
+      "muzzle"
+    ],
+    "silhouette_critical_parts": [
+      "dominant_front_horn",
+      "smaller_rear_horn",
+      "high_shoulder",
+      "low_broad_head",
+      "rectangular_muzzle",
+      "compact_upright_ears",
+      "four_thick_legs",
+      "rear_taper",
+      "short_tail"
+    ],
+    "segment_counts": {
+      "body_mass_system": {
+        "minimum": 4,
+        "maximum": 6
+      },
+      "head_muzzle_system": {
+        "minimum": 3,
+        "maximum": 5
+      },
+      "front_horn": 3,
+      "rear_horn": 2,
+      "ear_each": {
+        "minimum": 1,
+        "maximum": 2
+      },
+      "front_left_leg_chain": 2,
+      "front_right_leg_chain": 2,
+      "rear_left_leg_chain": 2,
+      "rear_right_leg_chain": 2,
+      "tail": 2
+    },
+    "hierarchy": {
+      "black_rhinoceros_root": [
+        "body"
+      ],
+      "body": [
+        "shoulder_mass",
+        "torso_core",
+        "rear_mass",
+        "neck",
+        "leg_front_left",
+        "leg_front_right",
+        "leg_rear_left",
+        "leg_rear_right",
+        "tail_base"
+      ],
+      "neck": [
+        "head"
+      ],
+      "head": [
+        "muzzle",
+        "horn_front",
+        "horn_rear",
+        "ear_left",
+        "ear_right"
+      ],
+      "leg_front_left": [
+        "foot_front_left"
+      ],
+      "leg_front_right": [
+        "foot_front_right"
+      ],
+      "leg_rear_left": [
+        "foot_rear_left"
+      ],
+      "leg_rear_right": [
+        "foot_rear_right"
+      ],
+      "tail_base": [
+        "tail_tip"
+      ]
+    },
+    "ground_contacts": [
+      "foot_front_left",
+      "foot_front_right",
+      "foot_rear_left",
+      "foot_rear_right"
+    ],
+    "geometry_only_features": [
+      "body_mass_transitions",
+      "head_and_muzzle_volume",
+      "horns",
+      "ears",
+      "legs",
+      "feet",
+      "two_segment_tail"
+    ],
+    "texture_only_features": [
+      "eyes",
+      "nostrils",
+      "mouth_line",
+      "wrinkles",
+      "skin_folds",
+      "scars",
+      "muscle_shading",
+      "hoof_separation",
+      "hide_mottling"
+    ],
+    "forbidden_micro_cubes": [
+      "wrinkle_cubes",
+      "nostril_cubes",
+      "eye_or_eyelid_cubes",
+      "toe_cubes",
+      "scar_strips",
+      "random_hide_bumps",
+      "decorative_horn_ridges",
+      "dense_voxel_smoothing"
+    ]
   },
-  "texture": {
-    "uv_mode": "box_uv_with_selective_per_face",
-    "atlas_width": 128,
-    "atlas_height": 128,
-    "pixel_style": "16x",
-    "classic_bedrock": true,
+  "texturing": {
+    "style": "16x",
+    "atlas": "128x128",
+    "texture_format": "png",
+    "uv_strategy": "box_uv_first_selective_per_face",
+    "target_texels_per_block": 16,
+    "pixel_perfect": true,
+    "anti_aliasing": false,
+    "filtering": "nearest_neighbor",
+    "pipeline": "classic_bedrock",
     "pbr": false,
-    "vibrant_visuals": false
+    "vibrant_visuals": false,
+    "material_families": [
+      "warm_gray_brown_hide",
+      "darker_head_and_muzzle",
+      "dark_olive_brown_charcoal_horns_and_hooves",
+      "near_black_facial_accents"
+    ],
+    "base_palette": {
+      "hide_deep_shadow": "#3A352E",
+      "hide_shadow": "#514A40",
+      "hide_base": "#756B5B",
+      "hide_light": "#8E8270",
+      "hide_highlight": "#A79A85",
+      "horn_hoof_deep": "#26251F",
+      "horn_hoof_base": "#504B3E",
+      "facial_near_black": "#171714"
+    },
+    "box_uv_groups": [
+      "shoulder_mass",
+      "torso_core",
+      "rear_mass",
+      "neck",
+      "leg_front_left",
+      "leg_front_right",
+      "leg_rear_left",
+      "leg_rear_right",
+      "foot_front_left",
+      "foot_front_right",
+      "foot_rear_left",
+      "foot_rear_right",
+      "tail_base",
+      "tail_tip"
+    ],
+    "selective_per_face_groups": [
+      "head",
+      "muzzle",
+      "horn_front",
+      "horn_rear",
+      "ear_left",
+      "ear_right"
+    ],
+    "shared_or_mirrored_regions": [
+      "paired_front_legs",
+      "paired_rear_legs",
+      "paired_front_feet",
+      "paired_rear_feet",
+      "paired_ears"
+    ],
+    "unique_or_directional_regions": [
+      "left_head_face",
+      "right_head_face",
+      "muzzle_front_and_sides",
+      "horn_segment_progression",
+      "torso_front_and_back",
+      "tail_tip"
+    ],
+    "critical_pixel_details": [
+      "eyes",
+      "nostrils",
+      "mouth_line",
+      "hoof_separation",
+      "ear_interiors",
+      "horn_value_progression"
+    ],
+    "alpha_test_zones": [],
+    "alpha_blend_zones": [],
+    "emissive_zones": []
   },
   "animation": {
-    "required": false,
+    "animation_included_in_reference_stage": false,
     "status": "ANIMATION_SKIPPED",
-    "required_clips": []
+    "animation_ready": true,
+    "required_clips": [],
+    "forbidden_inferred_clips": [
+      "idle",
+      "walk",
+      "charge",
+      "attack",
+      "hurt",
+      "death",
+      "jaw",
+      "rider",
+      "special"
+    ],
+    "moving_groups": [
+      "head",
+      "ear_left",
+      "ear_right",
+      "leg_front_left",
+      "foot_front_left",
+      "leg_front_right",
+      "foot_front_right",
+      "leg_rear_left",
+      "foot_rear_left",
+      "leg_rear_right",
+      "foot_rear_right",
+      "tail_base",
+      "tail_tip"
+    ],
+    "static_groups": [
+      "black_rhinoceros_root",
+      "body",
+      "shoulder_mass",
+      "torso_core",
+      "rear_mass",
+      "neck",
+      "muzzle",
+      "horn_front",
+      "horn_rear"
+    ],
+    "pivot_requirements": [
+      "root_at_ground_center",
+      "body_at_torso_center",
+      "head_at_neck_skull_transition",
+      "ears_at_head_attachments",
+      "legs_at_body_attachments",
+      "feet_at_lower_leg_connections",
+      "tail_base_at_rear_body",
+      "tail_tip_at_tail_base_end"
+    ],
+    "motion_chains": [
+      "root_to_body_to_neck_to_head_to_muzzle_horns_ears",
+      "body_to_each_leg_to_corresponding_foot",
+      "body_to_tail_base_to_tail_tip"
+    ],
+    "root_motion_policy": "none_in_reference_scope",
+    "neutral_ground_contact_rule": "all_four_feet_return_to_y_0"
   },
-  "authorities": {
-    "golden_sample": "GOLDEN_SAMPLE.md",
-    "production_context": "PRODUCTION_CONTEXT.md",
-    "primary_visual": "01_black_rhinoceros_form_scale_reference.png",
-    "handoff_visual_alias": "black_rhinoceros_reference_visual.png",
-    "construction_sheet": "02_black_rhinoceros_construction_reference.png",
-    "texture_sheet": "03_black_rhinoceros_texture_material_reference.png",
-    "motion_sheet": "04_black_rhinoceros_motion_pivot_reference.png",
-    "geometry_contract": "GEOMETRY.md",
-    "texture_contract": "TEXTURING.md",
-    "animation_contract": "ANIMATION.md",
-    "validation_contract": "VALIDATION.md",
-    "codex_handoff": "CODEX_REFERENCE_HANDOFF.md"
+  "validation": {
+    "file": "VALIDATION.md",
+    "execution_status": "PENDING_BUILD",
+    "allowed_results": [
+      "PASS",
+      "REVISION_REQUIRED",
+      "BLOCKER"
+    ],
+    "required_views": [
+      "left_side",
+      "front",
+      "back",
+      "top_footprint",
+      "front_left_3_4"
+    ],
+    "required_evidence": [
+      "black_rhinoceros.bbmodel",
+      "texture_atlas_png",
+      "five_standard_view_captures",
+      "hierarchy_group_list",
+      "pivot_coordinate_list",
+      "cuboid_and_segment_count_report",
+      "animation_list_confirming_skipped",
+      "export_error_log",
+      "completed_validation_md",
+      "sha256_hash_report"
+    ],
+    "conflict_code": "REFERENCE_CONFLICT"
   },
-  "approvals": {
-    "production_context": {
-      "status": "APPROVED",
-      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
-    },
-    "sheet_01": {
-      "status": "APPROVED",
-      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
-    },
-    "technical_sheets": {
-      "status": "APPROVED",
-      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
-    },
-    "stage_contracts": {
-      "status": "APPROVED",
-      "reference": "User request to complete the Black Rhinoceros Golden Sample package from approved Sheet 01"
-    }
+  "approval": {
+    "production_context": "approved",
+    "reference_visual": "approved",
+    "technical_package": "auto_generated_after_visual_approval",
+    "technical_document_approval_required": false,
+    "documentation_revision_date": "2026-07-12"
   },
-  "files": [
-    {
-      "path": "01_black_rhinoceros_form_scale_reference.png",
-      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
-      "bytes": 2233908
-    },
-    {
-      "path": "02_black_rhinoceros_construction_reference.png",
-      "sha256": "b1efcc3d48f411a2a9d2505853dc4cee5082338bfa2d6e4bfa710778f944a8a4",
-      "bytes": 367317
-    },
-    {
-      "path": "03_black_rhinoceros_texture_material_reference.png",
-      "sha256": "089d9849ae2a69f4d7c3e1f95fe679ece3cdec47584f9dc27c692c0840401e2f",
-      "bytes": 531901
-    },
-    {
-      "path": "04_black_rhinoceros_motion_pivot_reference.png",
-      "sha256": "8a3ef8cbd874263b7c1c29b1a9babf523080b7683fdde103ecae5ccfccdd8e04",
-      "bytes": 394560
-    },
-    {
-      "path": "ANIMATION.md",
-      "sha256": "c60313d960685ee5f1f20dbbc0b09f5d35a90556c77aa386c46f34a332e84937",
-      "bytes": 977
-    },
-    {
-      "path": "CODEX_REFERENCE_HANDOFF.md",
-      "sha256": "39ebbaa179f7cc2a4326faa52ecc46a9053a889a60f89f3379570a67755a85b4",
-      "bytes": 2807
-    },
-    {
-      "path": "GEOMETRY.md",
-      "sha256": "d170d250bcd9699575cb1e078ce1c2c79d9009d40ac85079f9b3df8d976d164d",
-      "bytes": 2442
-    },
-    {
-      "path": "GOLDEN_SAMPLE.md",
-      "sha256": "268f6db6ac4051513cdb8add52c840847a11d785749f4a30ef3cebc3c8e50273",
-      "bytes": 1791
-    },
-    {
-      "path": "PRODUCTION_CONTEXT.md",
-      "sha256": "b3957bc1b8738ad215e997754348f33d10a88698b7c85aecd28408eb1803b2f3",
-      "bytes": 4549
-    },
-    {
-      "path": "TEXTURING.md",
-      "sha256": "271d68a15b5be29176d29f7b70f312b8cfcc5cfb49bf75d7389d54330a6aeb83",
-      "bytes": 2353
-    },
-    {
-      "path": "VALIDATION.md",
-      "sha256": "be10c793f39ba85cdc6a8766de3dcfcfd0271ac2dbdc9ed787d13a44990b74c9",
-      "bytes": 1645
-    },
-    {
-      "path": "black_rhinoceros_reference_visual.png",
-      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
-      "bytes": 2233908
-    },
-    {
-      "path": "source/README.md",
-      "sha256": "bba4cf96d14ab73f96601e61bb18abc683adbad72dbe16807a0d6e0d8e7df7e3",
-      "bytes": 244
-    },
-    {
-      "path": "source/approved_reference_source.png",
-      "sha256": "5958cecc4184c762ed91a09ded0a833304a16f049bb5bccab5fb723db51ae515",
-      "bytes": 2233908
-    }
-  ]
+  "authority": {
+    "primary_visual": "black_rhinoceros_reference_visual.png",
+    "decision_logic": "PRODUCTION_CONTEXT.md",
+    "geometry_execution": "GEOMETRY.md",
+    "texturing_execution": "TEXTURING.md",
+    "animation_execution": "ANIMATION.md",
+    "post_build_validation": "VALIDATION.md",
+    "machine_readable": "reference_manifest.json",
+    "codex_execution": "CODEX_REFERENCE_HANDOFF.md"
+  },
+  "decision_core": {
+    "asset_archetype": "organic_quadruped_creature",
+    "secondary_archetype": "golden_sample_pipeline_validation_asset",
+    "intended_use": "canonical_buildit_reference_to_codex_mcp_blockbench_validation",
+    "fidelity_priority": "approved_visible_identity_and_silhouette_first",
+    "scale_basis": "approved_reference_visual_and_written_2_5_block_height_lock",
+    "interaction_profile": "non_rideable_no_external_equipment_or_socket",
+    "functional_state": "static_neutral_reference_animation_ready",
+    "symmetry_policy": "bilateral_core_mirroring_with_directional_face_control",
+    "hidden_side_policy": "reconstruct_from_symmetry_and_front_back_top_panels",
+    "variant_policy": "single_canonical_variant",
+    "user_confirmed_decisions": [
+      "exact_display_name_black_rhinoceros",
+      "single_approved_reference_visual",
+      "2_5_block_height",
+      "cuboid_only_bedrock_entity",
+      "geometry_and_texture_required",
+      "animation_clips_skipped",
+      "technical_documents_auto_generated_after_visual_approval"
+    ],
+    "recommended_defaults_accepted": [
+      "front_direction_negative_z",
+      "ground_plane_y_0",
+      "paired_geometry_may_be_mirrored",
+      "surface_details_are_texture_first",
+      "classic_bedrock_pipeline"
+    ],
+    "unresolved_blockers": []
+  }
 }
