@@ -23,6 +23,7 @@ import { workflowToolDocs } from "../src/server/tools/workflow";
 import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
+import { stageContextToolDocs } from "../src/server/tools/stage-context";
 
 export interface CategoryGroup {
   category: string;
@@ -33,6 +34,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
+  { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
