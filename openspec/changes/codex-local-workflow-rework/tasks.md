@@ -26,12 +26,23 @@
 - [x] Sandbox standard-view evidence writes, use atomic file replacement, return SHA-256 metadata, and omit image payloads when files are written.
 - [x] Sandbox final exports and record real checkpoint/export integrity hashes.
 - [x] Add source-level tests for write ownership, stale-call checks, evidence payload control, and checkpoint integrity.
+- [x] Replace the old session/archive workspace with `active/` and `completed/` lifecycles.
+- [x] Separate user-facing `.bbmodel`, textures, reference PNGs, and previews under `blockbench/` from MCP internals under `mcp/`.
+- [x] Add one local `workspace.json` index and one compact lifecycle command for init/list/activate/inspect/complete/reopen.
+- [x] Keep completed baselines immutable while reopened revisions are active.
+- [x] Preserve project/connection metadata for future revisions without persisting live sessions or write leases.
+- [x] Update Codex readiness/profile scripts to resolve the selected active workspace project without directory scanning.
 
 ## Local Proof Still Required
 
 - [ ] Run `bun run skills:check`, focused typecheck, tests, and development build from `mcp-blockbench/`.
+- [ ] Run `bun run workspace -- init`, `activate`, `inspect`, `complete`, and `reopen` against a disposable local asset.
+- [ ] Verify `blockbench/` alone contains the `.bbmodel`, textures, reference images, and previews needed by a user.
+- [ ] Verify `mcp/` alone contains state, contracts, checkpoints, evidence, reports, and no duplicate canonical model/texture files after completion.
+- [ ] Verify completion promotes `mcp/final/` staging into `blockbench/`, removes staging, and moves the project to `completed/`.
+- [ ] Verify reopen preserves the completed baseline, creates an active revision, and marks downstream stages for revalidation.
 - [ ] Reload `mcp-blockbench/dist/mcp.js` in Blockbench.
-- [ ] Run `engines/codex/scripts/sync-local-stack.ps1` against one project.
+- [ ] Run `engines/codex/scripts/sync-local-stack.ps1` using only `workspace.json` selection.
 - [ ] Verify `manage_project_write_lease` acquires for one Codex session and rejects a second writer.
 - [ ] Verify a wrong project UUID, stale state revision, stale stage, and stale tool-profile revision are blocked.
 - [ ] Verify exact tool profile counts and one reconnect per stage transition.
@@ -53,6 +64,7 @@
 - [ ] Filter MCP resources/prompts only if the dry run shows meaningful context clutter.
 - [ ] Add runtime skill-loading enforcement only if agent-side exact skill profiles fail in practice.
 - [ ] Complete Claude and Ollama adapters only after the Codex path is stable.
+- [ ] Add Git LFS only if completed binary history is intentionally committed and local storage alone is insufficient.
 
 ## Deferred Until Last
 
