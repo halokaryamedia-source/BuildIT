@@ -5,16 +5,19 @@ const readJson = (path: string) =>
   JSON.parse(readFileSync(path, "utf8")) as Record<string, any>;
 
 describe("workflow configuration", () => {
-  test("state starts reference-ready with canonical paths", () => {
+  test("state starts reference-ready with separated canonical paths", () => {
     const state = readJson("../engines/shared/templates/state.template.json");
     expect(state.workflow.state).toBe("REFERENCE_READY");
     expect(state.workflow.active_stage).toBe("GEOMETRY");
     expect(state.workflow.next_action).toContain("ACQUIRE_WRITE_LEASE");
     expect(state.mcp.active_tool_profile).toBe("BEDROCK_CUBOID_GEOMETRY");
-    expect(state.reference.path).toContain("workspace/sessions/");
+    expect(state.reference.path).toContain("workspace/active/<asset_id>/mcp/");
+    expect(state.project.save_path).toBe(
+      "workspace/active/<asset_id>/blockbench/<asset_id>.bbmodel"
+    );
   });
 
-  test("connection uses one fixed endpoint and one write-lease capability", () => {
+  test("connection uses one fixed endpoint and selected workspace project", () => {
     const profile = readJson("../engines/codex/connection-profile.json");
     expect(profile.canonical_url).toBe("http://localhost:3000/bb-mcp");
     expect(profile.allow_port_scan).toBe(false);
@@ -23,6 +26,9 @@ describe("workflow configuration", () => {
     expect(profile.tool_profile_contract).toBe(
       "engines/shared/profiles/tool-profiles.json"
     );
+    expect(profile.workspace.index).toBe("workspace/workspace.json");
+    expect(profile.workspace.blockbench_files).toContain("/blockbench/");
+    expect(profile.workspace.mcp_files).toContain("/mcp/");
   });
 
   test("four user-visible stage profiles remain singular", () => {
