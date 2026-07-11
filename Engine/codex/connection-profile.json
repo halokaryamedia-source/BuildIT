@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "connection_id": "blockbench",
   "transport": "streamable_http",
   "canonical_url": "http://localhost:3000/bb-mcp",
@@ -33,9 +33,19 @@
     "get_project_info",
     "get_tool_profile",
     "activate_tool_profile",
+    "validate_reference_contract",
     "save_project_checkpoint",
-    "capture_standard_views"
+    "capture_standard_views",
+    "complete_stage"
   ],
+  "profile_specific_tools": {
+    "BEDROCK_CUBOID_TEXTURE": ["save_texture_evidence"],
+    "FINAL_VALIDATION_READONLY": [
+      "validate_reference_contract",
+      "save_texture_evidence",
+      "complete_stage"
+    ]
+  },
   "tool_profile_contract": "Engine/codex/tool-profiles.json",
   "default_tool_profile": "BEDROCK_CUBOID_GEOMETRY",
   "readiness_report": "SavedData/sessions/<asset>/reports/connection.json",
