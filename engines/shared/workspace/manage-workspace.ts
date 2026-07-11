@@ -6,10 +6,9 @@ import {
   readFile,
   rename,
   rm,
-  stat,
   writeFile,
 } from "node:fs/promises";
-import { basename, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 
 interface WorkspaceEntry {
   lifecycle: "ACTIVE" | "COMPLETED" | "REOPENED";
@@ -30,6 +29,14 @@ interface JsonRecord {
   [key: string]: any;
 }
 
+type Stage = "GEOMETRY" | "TEXTURE" | "ANIMATION" | "FINAL_VALIDATION";
+
+const stageOrder: Stage[] = [
+  "GEOMETRY",
+  "TEXTURE",
+  "ANIMATION",
+  "FINAL_VALIDATION",
+];
 const repoRoot = resolve(import.meta.dir, "../../..");
 const workspaceRoot = join(repoRoot, "workspace");
 const indexPath = join(workspaceRoot, "workspace.json");
@@ -55,11 +62,45 @@ async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, "utf8")) as T;
 }
 
-async function writeJsonAtomic(path: string, value: unknown): Promise<void> {
-  await mkdir(resolve(path, ".."), { recursive: true });
+async function writeFileAtomic(path: string, data: string | Buffer): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
   const temp = `${path}.tmp`;
-  await writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  await rename(temp, path);
+  const backup = `${path}.bak`;
+  await rm(temp, { force: true });
+  await rm(backup, { force: true });
+  await writeFile(temp, data);
+  if (await exists(path)) await rename(path, backup);
+  try {
+    await rename(temp, path);
+    await rm(backup, { force: true });
+  } catch (error) {
+    await rm(path, { force: true });
+    if (await exists(backup)) await rename(backup, path);
+    await rm(temp, { force: true });
+    throw error;
+  }
+}
+
+async function writeJsonAtomic(path: string, value: unknown): Promise<void> {
+  await writeFileAtomic(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function replaceDirectoryFrom(source: string, target: string): Promise<void> {
+  const staged = `${target}.staging.tmp`;
+  const previous = `${target}.previous.tmp`;
+  await rm(staged, { recursive: true, force: true });
+  await rm(previous, { recursive: true, force: true });
+  await cp(source, staged, { recursive: true });
+  if (await exists(target)) await rename(target, previous);
+  try {
+    await rename(staged, target);
+    await rm(previous, { recursive: true, force: true });
+  } catch (error) {
+    await rm(target, { recursive: true, force: true });
+    if (await exists(previous)) await rename(previous, target);
+    await rm(staged, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 async function loadIndex(): Promise<WorkspaceIndex> {
@@ -101,28 +142,36 @@ function paths(assetId: string, lifecycle: "active" | "completed") {
   };
 }
 
-function replaceTokens(value: unknown, assetId: string, displayName: string): unknown {
-  if (typeof value === "string") {
-    return value
-      .replaceAll("<asset_id>", assetId)
-      .replaceAll("<DISPLAY NAME>", displayName)
-      .replaceAll(
-        `workspace/sessions/${assetId}`,
-        `workspace/active/${assetId}/mcp`
-      );
-  }
+function rewriteStrings(value: unknown, from: string, to: string): unknown {
+  if (typeof value === "string") return value.replaceAll(from, to);
   if (Array.isArray(value)) {
-    return value.map((item) => replaceTokens(item, assetId, displayName));
+    return value.map((item) => rewriteStrings(item, from, to));
   }
   if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value).map(([key, item]) => [
         key,
-        replaceTokens(item, assetId, displayName),
+        rewriteStrings(item, from, to),
       ])
     );
   }
   return value;
+}
+
+function replaceTemplateTokens(
+  value: unknown,
+  assetId: string,
+  displayName: string
+): unknown {
+  return rewriteStrings(
+    rewriteStrings(
+      rewriteStrings(value, "<asset_id>", assetId),
+      "<DISPLAY NAME>",
+      displayName
+    ),
+    `workspace/sessions/${assetId}`,
+    `workspace/active/${assetId}/mcp`
+  );
 }
 
 async function hashFile(path: string): Promise<string> {
@@ -148,9 +197,9 @@ async function ensureLayout(assetId: string, displayName: string): Promise<void>
   }
 
   const blockbenchReadme = `# ${displayName}\n\nThis folder is the user-facing Blockbench package.\n\n- ${assetId}.bbmodel — canonical model\n- textures/ — model textures\n- references/ — source and approved reference images\n- previews/ — approved preview renders\n\nThe sibling mcp/ folder is agent/runtime data and is not required for ordinary Blockbench use.\n`;
-  await writeFile(join(target.blockbench, "README.md"), blockbenchReadme, "utf8");
+  await writeFileAtomic(join(target.blockbench, "README.md"), blockbenchReadme);
 
-  const projectTemplate = replaceTokens(
+  const projectTemplate = replaceTemplateTokens(
     await readJson<JsonRecord>(projectTemplatePath),
     assetId,
     displayName
@@ -159,7 +208,7 @@ async function ensureLayout(assetId: string, displayName: string): Promise<void>
   projectTemplate.updated_at = projectTemplate.created_at;
   await writeJsonAtomic(target.project, projectTemplate);
 
-  const stateTemplate = replaceTokens(
+  const stateTemplate = replaceTemplateTokens(
     await readJson<JsonRecord>(stateTemplatePath),
     assetId,
     displayName
@@ -174,8 +223,12 @@ async function ensureLayout(assetId: string, displayName: string): Promise<void>
   };
   stateTemplate.project.save_path = posix(target.model);
   stateTemplate.reference.path = posix(target.technicalReference);
-  stateTemplate.mcp.connection_report = posix(join(target.reports, "connection.json"));
-  stateTemplate.mcp.preflight.report = posix(join(target.reports, "preflight.json"));
+  stateTemplate.mcp.connection_report = posix(
+    join(target.reports, "connection.json")
+  );
+  stateTemplate.mcp.preflight.report = posix(
+    join(target.reports, "preflight.json")
+  );
   stateTemplate.validation.report = posix(
     join(target.evidence, "final", "validation_report.json")
   );
@@ -232,7 +285,9 @@ async function inspect(assetId: string): Promise<void> {
   const active = paths(assetId, "active");
   const completed = paths(assetId, "completed");
   const selected = (await exists(active.root)) ? active : completed;
-  if (!(await exists(selected.root))) throw new Error(`Project not found: ${assetId}`);
+  if (!(await exists(selected.root))) {
+    throw new Error(`Project not found: ${assetId}`);
+  }
   const project = await readJson<JsonRecord>(selected.project);
   const state = await readJson<JsonRecord>(selected.state);
   console.log(
@@ -262,9 +317,9 @@ async function promoteFinal(assetId: string): Promise<void> {
   if (!(await exists(stagedTextures))) {
     throw new Error(`Validated final texture directory is missing: ${stagedTextures}`);
   }
-  await cp(stagedModel, active.model, { force: true });
-  await rm(active.textures, { recursive: true, force: true });
-  await cp(stagedTextures, active.textures, { recursive: true, force: true });
+
+  await writeFileAtomic(active.model, await readFile(stagedModel));
+  await replaceDirectoryFrom(stagedTextures, active.textures);
 
   const finalEvidence = join(active.evidence, "final");
   if (await exists(finalEvidence)) {
@@ -278,13 +333,21 @@ async function promoteFinal(assetId: string): Promise<void> {
       "final_texture_atlas.png",
     ]) {
       const source = join(finalEvidence, filename);
-      if (await exists(source)) await cp(source, join(active.previews, filename), { force: true });
+      if (await exists(source)) {
+        await writeFileAtomic(
+          join(active.previews, filename),
+          await readFile(source)
+        );
+      }
     }
   }
   await rm(active.finalStaging, { recursive: true, force: true });
 }
 
-async function replaceCompleted(activeRoot: string, completedRoot: string): Promise<void> {
+async function replaceCompleted(
+  activeRoot: string,
+  completedRoot: string
+): Promise<void> {
   const previous = `${completedRoot}.previous.tmp`;
   await rm(previous, { recursive: true, force: true });
   if (await exists(completedRoot)) await rename(completedRoot, previous);
@@ -292,7 +355,7 @@ async function replaceCompleted(activeRoot: string, completedRoot: string): Prom
     await rename(activeRoot, completedRoot);
     await rm(previous, { recursive: true, force: true });
   } catch (error) {
-    if (await exists(completedRoot)) await rm(completedRoot, { recursive: true, force: true });
+    await rm(completedRoot, { recursive: true, force: true });
     if (await exists(previous)) await rename(previous, completedRoot);
     throw error;
   }
@@ -303,14 +366,26 @@ async function complete(assetId: string, approvalRef: string): Promise<void> {
   if (!approvalRef) throw new Error("--approval-ref is required.");
   const active = paths(assetId, "active");
   const completed = paths(assetId, "completed");
-  if (!(await exists(active.root))) throw new Error(`Active project not found: ${assetId}`);
-  const state = await readJson<JsonRecord>(active.state);
-  if (state.workflow?.state !== "DONE") {
-    throw new Error(`Project must be DONE before completion; found ${state.workflow?.state}.`);
+  if (!(await exists(active.root))) {
+    throw new Error(`Active project not found: ${assetId}`);
+  }
+
+  const originalProject = await readJson<JsonRecord>(active.project);
+  const originalState = await readJson<JsonRecord>(active.state);
+  if (originalState.workflow?.state !== "DONE") {
+    throw new Error(
+      `Project must be DONE before completion; found ${originalState.workflow?.state}.`
+    );
   }
 
   await promoteFinal(assetId);
-  const project = await readJson<JsonRecord>(active.project);
+  const activePrefix = `workspace/active/${assetId}`;
+  const completedPrefix = `workspace/completed/${assetId}`;
+  const project = rewriteStrings(
+    originalProject,
+    activePrefix,
+    completedPrefix
+  ) as JsonRecord;
   project.lifecycle = {
     status: "COMPLETED",
     origin: project.lifecycle?.origin ?? "NEW",
@@ -319,35 +394,40 @@ async function complete(assetId: string, approvalRef: string): Promise<void> {
     reason: project.lifecycle?.reason ?? null,
     baseline_model_sha256: project.lifecycle?.baseline_model_sha256 ?? null,
   };
-  project.paths = Object.fromEntries(
-    Object.entries(project.paths ?? {}).map(([key, value]) => [
-      key,
-      typeof value === "string"
-        ? value.replace(
-            `workspace/active/${assetId}`,
-            `workspace/completed/${assetId}`
-          )
-        : value,
-    ])
-  );
   project.artifacts.model_sha256 = await hashFile(active.model);
+  const manifestPath = join(
+    active.technicalReference,
+    "reference_manifest.json"
+  );
+  project.artifacts.reference_manifest_sha256 = (await exists(manifestPath))
+    ? await hashFile(manifestPath)
+    : null;
   project.completion = {
     completed_at: now(),
     approval_ref: approvalRef,
     last_approved_state: "DONE",
   };
   project.updated_at = now();
-  await writeJsonAtomic(active.project, project);
 
-  state.lifecycle = {
-    ...(state.lifecycle ?? {}),
-    status: "COMPLETED",
-  };
+  const state = rewriteStrings(
+    originalState,
+    activePrefix,
+    completedPrefix
+  ) as JsonRecord;
+  state.lifecycle = { ...(state.lifecycle ?? {}), status: "COMPLETED" };
   state.updated_at = now();
   state.updated_by = "workspace-complete";
-  await writeJsonAtomic(active.state, state);
 
-  await replaceCompleted(active.root, completed.root);
+  await writeJsonAtomic(active.project, project);
+  await writeJsonAtomic(active.state, state);
+  try {
+    await replaceCompleted(active.root, completed.root);
+  } catch (error) {
+    await writeJsonAtomic(active.project, originalProject);
+    await writeJsonAtomic(active.state, originalState);
+    throw error;
+  }
+
   const index = await loadIndex();
   if (index.selected_asset_id === assetId) index.selected_asset_id = null;
   index.projects[assetId] = {
@@ -362,9 +442,6 @@ async function complete(assetId: string, approvalRef: string): Promise<void> {
   console.log(`Completed ${assetId}. User files: ${posix(completed.blockbench)}`);
 }
 
-const stageOrder = ["GEOMETRY", "TEXTURE", "ANIMATION", "FINAL_VALIDATION"] as const;
-type Stage = (typeof stageOrder)[number];
-
 function revisionState(stage: Stage): string {
   return stage === "FINAL_VALIDATION" ? "FINAL_REVISION" : `${stage}_REVISION`;
 }
@@ -375,11 +452,25 @@ async function reopen(assetId: string, stage: Stage, reason: string): Promise<vo
   if (!reason) throw new Error("--reason is required.");
   const active = paths(assetId, "active");
   const completed = paths(assetId, "completed");
-  if (await exists(active.root)) throw new Error(`Active project already exists: ${assetId}`);
-  if (!(await exists(completed.root))) throw new Error(`Completed project not found: ${assetId}`);
+  if (await exists(active.root)) {
+    throw new Error(`Active project already exists: ${assetId}`);
+  }
+  if (!(await exists(completed.root))) {
+    throw new Error(`Completed project not found: ${assetId}`);
+  }
 
-  await cp(completed.root, active.root, { recursive: true });
-  const project = await readJson<JsonRecord>(active.project);
+  const stagedActive = `${active.root}.staging.tmp`;
+  await rm(stagedActive, { recursive: true, force: true });
+  await cp(completed.root, stagedActive, { recursive: true });
+  await rename(stagedActive, active.root);
+
+  const completedPrefix = `workspace/completed/${assetId}`;
+  const activePrefix = `workspace/active/${assetId}`;
+  const project = rewriteStrings(
+    await readJson<JsonRecord>(active.project),
+    completedPrefix,
+    activePrefix
+  ) as JsonRecord;
   const baselineHash = await hashFile(active.model);
   project.lifecycle = {
     status: "ACTIVE",
@@ -389,17 +480,6 @@ async function reopen(assetId: string, stage: Stage, reason: string): Promise<vo
     reason,
     baseline_model_sha256: baselineHash,
   };
-  project.paths = Object.fromEntries(
-    Object.entries(project.paths ?? {}).map(([key, value]) => [
-      key,
-      typeof value === "string"
-        ? value.replace(
-            `workspace/completed/${assetId}`,
-            `workspace/active/${assetId}`
-          )
-        : value,
-    ])
-  );
   project.completion = {
     completed_at: null,
     approval_ref: null,
@@ -408,7 +488,11 @@ async function reopen(assetId: string, stage: Stage, reason: string): Promise<vo
   project.updated_at = now();
   await writeJsonAtomic(active.project, project);
 
-  const state = await readJson<JsonRecord>(active.state);
+  const state = rewriteStrings(
+    await readJson<JsonRecord>(active.state),
+    completedPrefix,
+    activePrefix
+  ) as JsonRecord;
   state.lifecycle = {
     status: "ACTIVE",
     origin: "REOPENED",
@@ -452,12 +536,13 @@ async function reopen(assetId: string, stage: Stage, reason: string): Promise<vo
     updated_at: now(),
   };
   await writeJsonAtomic(indexPath, index);
-  console.log(`Reopened ${assetId} at ${stage}. Completed baseline remains unchanged.`);
+  console.log(
+    `Reopened ${assetId} at ${stage}. Completed baseline remains unchanged.`
+  );
 }
 
 async function list(): Promise<void> {
-  const index = await loadIndex();
-  console.log(JSON.stringify(index, null, 2));
+  console.log(JSON.stringify(await loadIndex(), null, 2));
 }
 
 function option(name: string): string | null {
