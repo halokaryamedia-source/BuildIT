@@ -9,11 +9,13 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $connection = Get-Content -Raw (Join-Path $repoRoot "engines\codex\connection-profile.json") | ConvertFrom-Json
 $stages = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\stage-profiles.json") | ConvertFrom-Json
 $profiles = Get-Content -Raw (Join-Path $repoRoot "engines\shared\profiles\tool-profiles.json") | ConvertFrom-Json
-$statePath = Join-Path $repoRoot "workspace\sessions\$Asset\state.json"
+$sessionRoot = Join-Path $repoRoot "workspace\sessions\$Asset"
+$statePath = Join-Path $sessionRoot "state.json"
 if (-not (Test-Path $statePath)) { throw "State file not found: $statePath" }
 $state = Get-Content -Raw $statePath | ConvertFrom-Json
 $url = [string]$connection.canonical_url
 
+if (-not $state.project.uuid) { throw "state.project.uuid is required before profile activation." }
 if (-not $Profile) {
   $stage = [string]$state.workflow.active_stage
   $Profile = [string]$stages.profiles.$stage.tool_profile_id
@@ -31,7 +33,19 @@ try {
   $init = Post @{ jsonrpc = "2.0"; id = 1; method = "initialize"; params = @{ protocolVersion = "2024-11-05"; capabilities = @{}; clientInfo = @{ name = "buildit-profile-sync"; version = "1" } } } $null
   $sessionId = [string]$init.Headers["mcp-session-id"]
   $null = Post @{ jsonrpc = "2.0"; method = "notifications/initialized"; params = @{} } $sessionId
-  $activate = Post @{ jsonrpc = "2.0"; id = 2; method = "tools/call"; params = @{ name = "activate_tool_profile"; arguments = @{ profile_id = $Profile } } } $sessionId
+
+  $lease = Post @{ jsonrpc = "2.0"; id = 2; method = "tools/call"; params = @{ name = "manage_project_write_lease"; arguments = @{
+    action = "acquire"
+    asset_id = $Asset
+    session_root = $sessionRoot
+    expected_project_uuid = [string]$state.project.uuid
+    expected_state_revision = [int]$state.state_revision
+    expected_stage = [string]$state.workflow.active_stage
+  } } } $sessionId
+  $leaseResult = ([string]$lease.Content | ConvertFrom-Json).result.structuredContent
+  if ($leaseResult.status -ne "PASS") { throw "Write lease acquisition failed." }
+
+  $activate = Post @{ jsonrpc = "2.0"; id = 3; method = "tools/call"; params = @{ name = "activate_tool_profile"; arguments = @{ profile_id = $Profile } } } $sessionId
   $result = ([string]$activate.Content | ConvertFrom-Json).result.structuredContent
   if ($result.status -ne "PASS") { throw "Profile activation failed." }
 
@@ -44,7 +58,7 @@ try {
   $state.updated_by = "set-tool-profile"
   $state | ConvertTo-Json -Depth 40 | Set-Content $statePath -Encoding utf8
 
-  $reportDir = Join-Path $repoRoot "workspace\sessions\$Asset\reports"
+  $reportDir = Join-Path $sessionRoot "reports"
   New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
   $result | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $reportDir "tool-profile.json") -Encoding utf8
   Write-Host "Active profile: $($result.active_profile)"
