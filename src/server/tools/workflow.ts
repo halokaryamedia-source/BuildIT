@@ -4,10 +4,7 @@ import { z } from "zod";
 import { createTool, getAllToolDefinitions, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL } from "@/lib/constants";
 import { findTextureOrThrow } from "@/lib/util";
-import {
-  activateToolProfile,
-  getToolProfileSnapshot,
-} from "@/lib/toolProfiles";
+import { activateToolProfile, getToolProfileSnapshot } from "@/lib/toolProfiles";
 import {
   assertInsideRoot,
   bufferFromDataUrl,
@@ -24,9 +21,12 @@ const workflowStageEnum = z.enum([
   "FINAL_VALIDATION",
 ]);
 
+type WorkflowStage = z.infer<typeof workflowStageEnum>;
+type Vec3 = [number, number, number];
+
 export const validateReferenceContractParameters = z.object({
   session_root: z.string().min(1).describe("Absolute SavedData/sessions/<asset> directory."),
-  manifest_path: z.string().optional().describe("Optional absolute manifest path. Defaults to references/reference_manifest.json."),
+  manifest_path: z.string().optional(),
   expected_project_uuid: z.string().optional(),
   stage: workflowStageEnum.optional().default("FINAL_VALIDATION"),
   dimension_tolerance_units: z.number().min(0).max(16).optional().default(1),
@@ -36,8 +36,8 @@ export const validateReferenceContractParameters = z.object({
 export const saveTextureEvidenceParameters = z.object({
   texture_id: z.string().min(1).describe("Explicit texture UUID, ID, or name."),
   path: z.string().min(1).describe("Absolute PNG evidence output path."),
-  metadata_path: z.string().optional().describe("Optional adjacent JSON metadata path."),
-  session_root: z.string().min(1).describe("Absolute active asset-session root."),
+  metadata_path: z.string().optional(),
+  session_root: z.string().min(1),
   expected_project_uuid: z.string().optional(),
 });
 
@@ -55,7 +55,7 @@ export const workflowToolDocs: ToolSpec[] = [
   {
     name: "validate_reference_contract",
     description:
-      "Runs one compact manifest/project/evidence/Blockbench validation pass and routes local failures to the smallest repair profile.",
+      "Runs one stage-aware manifest/project/evidence/Blockbench validation pass and returns the smallest repair route.",
     annotations: { title: "Validate Reference Contract", readOnlyHint: true, openWorldHint: true },
     parameters: validateReferenceContractParameters,
     status: STATUS_EXPERIMENTAL,
@@ -71,15 +71,12 @@ export const workflowToolDocs: ToolSpec[] = [
   {
     name: "complete_stage",
     description:
-      "After explicit user approval, verifies stage evidence, saves the approved checkpoint, updates state atomically, and activates the next exact tool profile.",
+      "After explicit user approval, verifies review evidence/report, saves the approved checkpoint, updates state atomically, and activates the next profile.",
     annotations: { title: "Complete Stage", destructiveHint: true, openWorldHint: true },
     parameters: completeStageParameters,
     status: STATUS_EXPERIMENTAL,
   },
 ];
-
-type Vec3 = [number, number, number];
-type WorkflowStage = z.infer<typeof workflowStageEnum>;
 
 interface ContractIssue {
   code: string;
@@ -99,14 +96,11 @@ interface ReferenceManifest {
     blockbench_units_per_block?: number;
   };
   geometry?: { hierarchy?: Record<string, unknown> };
-  texturing?: {
-    atlas?: string;
-    pipeline?: string;
-    pbr?: boolean;
-  };
+  texturing?: { atlas?: string; pipeline?: string; pbr?: boolean };
   animation?: {
     animation_ready?: boolean;
     required_clips?: string[];
+    required_animations?: string[];
     animations?: string[];
   };
 }
@@ -145,6 +139,7 @@ function getBounds(): { min: Vec3 | null; max: Vec3 | null; size: Vec3 | null } 
     }
   }
   if (!points.length) return { min: null, max: null, size: null };
+
   const min: Vec3 = [Infinity, Infinity, Infinity];
   const max: Vec3 = [-Infinity, -Infinity, -Infinity];
   for (const point of points) {
@@ -169,12 +164,12 @@ function profileForStage(stage: WorkflowStage, repair = false): string {
     ANIMATION: "BEDROCK_CUBOID_ANIMATION",
     FINAL_VALIDATION: "FINAL_VALIDATION_READONLY",
   };
-  const repairProfiles: Partial<Record<WorkflowStage, string>> = {
+  const repairs: Partial<Record<WorkflowStage, string>> = {
     GEOMETRY: "GEOMETRY_LOCAL_REPAIR",
     TEXTURE: "TEXTURE_LOCAL_REPAIR",
     ANIMATION: "ANIMATION_LOCAL_REPAIR",
   };
-  return repair ? (repairProfiles[stage] ?? normal[stage]) : normal[stage];
+  return repair ? (repairs[stage] ?? normal[stage]) : normal[stage];
 }
 
 function canonicalEvidence(sessionRoot: string, stage: WorkflowStage): string[] {
@@ -215,10 +210,23 @@ function canonicalEvidence(sessionRoot: string, stage: WorkflowStage): string[] 
   return relative[stage].map((path) => joinPath(sessionRoot, path));
 }
 
+function stageReportPath(sessionRoot: string, stage: WorkflowStage): string {
+  const relative: Record<WorkflowStage, string> = {
+    GEOMETRY: "evidence/geometry/geometry_report.json",
+    TEXTURE: "evidence/texture/texture_report.json",
+    ANIMATION: "evidence/animation/animation_report.json",
+    FINAL_VALIDATION: "evidence/final/validation_report.json",
+  };
+  return joinPath(sessionRoot, relative[stage]);
+}
+
 function requiredReferenceFiles(manifest: ReferenceManifest): string[] {
+  const assetId = manifest.asset?.id;
   const canonical = [
-    "PRODUCTION_CONTEXT.md",
-    manifest.package?.reference_visual ?? manifest.package?.visual ?? "",
+    manifest.package?.production_context ?? "PRODUCTION_CONTEXT.md",
+    manifest.package?.reference_visual ??
+      manifest.package?.visual ??
+      (assetId ? `${assetId}_reference_visual.png` : ""),
     manifest.package?.geometry ?? "GEOMETRY.md",
     manifest.package?.texturing ?? "TEXTURING.md",
     manifest.package?.animation ?? "ANIMATION.md",
@@ -229,26 +237,54 @@ function requiredReferenceFiles(manifest: ReferenceManifest): string[] {
   return Array.from(new Set(canonical.filter(Boolean)));
 }
 
-function stageCheckpoint(stage: WorkflowStage): { name: string; file: string; stateKey: string } {
-  return {
-    GEOMETRY: { name: "20_geometry_approved", file: "20_geometry_approved.bbmodel", stateKey: "geometry_approved" },
-    TEXTURE: { name: "40_texture_approved", file: "40_texture_approved.bbmodel", stateKey: "texture_approved" },
-    ANIMATION: { name: "60_animation_approved", file: "60_animation_approved.bbmodel", stateKey: "animation_approved_or_skipped" },
-    FINAL_VALIDATION: { name: "80_validation_pass", file: "80_validation_pass.bbmodel", stateKey: "validation_pass" },
-  }[stage];
+function stageCheckpoint(stage: WorkflowStage): {
+  name: string;
+  file: string;
+  stateKey: string;
+} {
+  const checkpoints: Record<WorkflowStage, { name: string; file: string; stateKey: string }> = {
+    GEOMETRY: {
+      name: "20_geometry_approved",
+      file: "20_geometry_approved.bbmodel",
+      stateKey: "geometry_approved",
+    },
+    TEXTURE: {
+      name: "40_texture_approved",
+      file: "40_texture_approved.bbmodel",
+      stateKey: "texture_approved",
+    },
+    ANIMATION: {
+      name: "60_animation_approved",
+      file: "60_animation_approved.bbmodel",
+      stateKey: "animation_approved_or_skipped",
+    },
+    FINAL_VALIDATION: {
+      name: "80_validation_pass",
+      file: "80_validation_pass.bbmodel",
+      stateKey: "validation_pass",
+    },
+  };
+  return checkpoints[stage];
 }
 
 function expectedReviewState(stage: WorkflowStage): string {
-  return {
+  const states: Record<WorkflowStage, string> = {
     GEOMETRY: "GEOMETRY_REVIEW",
     TEXTURE: "TEXTURE_REVIEW",
     ANIMATION: "ANIMATION_REVIEW",
     FINAL_VALIDATION: "FINAL_REVIEW",
-  }[stage];
+  };
+  return states[stage];
 }
 
-function stageRecordKey(stage: WorkflowStage): string {
-  return stage;
+function reportResult(report: Record<string, any>): string | null {
+  const value =
+    report.result ??
+    report.status ??
+    report.final_result ??
+    report.validation?.status ??
+    report.summary?.result;
+  return typeof value === "string" ? value.toUpperCase() : null;
 }
 
 export function registerWorkflowTools() {
@@ -256,14 +292,24 @@ export function registerWorkflowTools() {
     workflowToolDocs[0].name,
     {
       ...workflowToolDocs[0],
-      async execute({ session_root, manifest_path, expected_project_uuid, stage, dimension_tolerance_units, require_evidence }) {
+      async execute({
+        session_root,
+        manifest_path,
+        expected_project_uuid,
+        stage,
+        dimension_tolerance_units,
+        require_evidence,
+      }) {
         if (!Project) throw new Error("No Blockbench project is open.");
         if (expected_project_uuid && Project.uuid !== expected_project_uuid) {
-          throw new Error(`PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`);
+          throw new Error(
+            `PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`
+          );
         }
 
         const fs = nativeFs("MCP validation needs read access to the active asset session.");
-        const manifestPath = manifest_path ?? joinPath(session_root, "references/reference_manifest.json");
+        const manifestPath =
+          manifest_path ?? joinPath(session_root, "references/reference_manifest.json");
         assertInsideRoot(manifestPath, session_root);
         const manifest = readJsonFile<ReferenceManifest>(fs, manifestPath);
         const issues: ContractIssue[] = [];
@@ -272,29 +318,52 @@ export function registerWorkflowTools() {
           issueStage: WorkflowStage,
           severity: ContractIssue["severity"],
           message: string
-        ) => issues.push({
-          code,
-          stage: issueStage,
-          severity,
-          message,
-          recommended_profile: severity === "REVISION_REQUIRED" ? profileForStage(issueStage, true) : null,
-        });
+        ) =>
+          issues.push({
+            code,
+            stage: issueStage,
+            severity,
+            message,
+            recommended_profile:
+              severity === "REVISION_REQUIRED" ? profileForStage(issueStage, true) : null,
+          });
 
         for (const file of requiredReferenceFiles(manifest)) {
           const path = joinPath(session_root, `references/${file}`);
-          if (!fs.existsSync(path)) add("REFERENCE_FILE_MISSING", stage, "BLOCKER", `Missing required reference file: ${file}`);
+          if (!fs.existsSync(path)) {
+            add(
+              "REFERENCE_FILE_MISSING",
+              stage,
+              "BLOCKER",
+              `Missing required reference file: ${file}`
+            );
+          }
         }
 
         const formatId = currentFormatId();
         if (!formatId || !formatId.toLowerCase().includes("bedrock")) {
-          add("FORMAT_MISMATCH", GEOMETRY_STAGE, "BLOCKER", `Active format ${formatId ?? "unknown"} is not Bedrock.`);
+          add(
+            "FORMAT_MISMATCH",
+            "GEOMETRY",
+            "BLOCKER",
+            `Active format ${formatId ?? "unknown"} is not Bedrock.`
+          );
         }
         if (Project.box_uv) {
-          add("UV_MODE_MISMATCH", "TEXTURE", "REVISION_REQUIRED", "Project uses Box UV; approved workflow expects Per-face UV.");
+          add(
+            "UV_MODE_MISMATCH",
+            "TEXTURE",
+            "REVISION_REQUIRED",
+            "Project uses Box UV; approved workflow expects Per-face UV."
+          );
         }
 
         const expectedAtlas = parseAtlas(manifest.texturing?.atlas);
-        if (expectedAtlas && (Project.texture_width !== expectedAtlas[0] || Project.texture_height !== expectedAtlas[1])) {
+        if (
+          expectedAtlas &&
+          (Project.texture_width !== expectedAtlas[0] ||
+            Project.texture_height !== expectedAtlas[1])
+        ) {
           add(
             "ATLAS_SIZE_MISMATCH",
             "TEXTURE",
@@ -303,72 +372,138 @@ export function registerWorkflowTools() {
           );
         }
 
-        if (manifest.texturing?.pbr === true || String(manifest.texturing?.pipeline ?? "").toLowerCase().includes("pbr")) {
-          add("PBR_REFERENCE_CONFLICT", "TEXTURE", "BLOCKER", "Manifest requests PBR, which conflicts with the approved Classic Bedrock workflow.");
-        }
-        const pbrTextures = Texture.all.filter((texture) => Boolean((texture as unknown as { pbr_channel?: string }).pbr_channel));
-        if (pbrTextures.length > 0) {
-          add("PBR_TEXTURE_PRESENT", "TEXTURE", "REVISION_REQUIRED", `${pbrTextures.length} texture(s) use PBR channels.`);
+        if (
+          manifest.texturing?.pbr === true ||
+          String(manifest.texturing?.pipeline ?? "").toLowerCase().includes("pbr")
+        ) {
+          add(
+            "PBR_REFERENCE_CONFLICT",
+            "TEXTURE",
+            "BLOCKER",
+            "Manifest requests PBR, conflicting with the approved Classic Bedrock workflow."
+          );
         }
 
+        const validateBuiltGeometry = require_evidence || stage !== "GEOMETRY";
+        const validateTexture = stage === "TEXTURE" || stage === "FINAL_VALIDATION";
+        const validateAnimation = stage === "ANIMATION" || stage === "FINAL_VALIDATION";
         const bounds = getBounds();
-        const unitsPerBlock = manifest.main_format?.blockbench_units_per_block ?? 16;
-        const expectedSize: Array<[number | undefined, number, string]> = [
-          [manifest.main_format?.width_blocks, 0, "width"],
-          [manifest.main_format?.height_blocks, 1, "height"],
-          [manifest.main_format?.depth_blocks, 2, "depth"],
-        ];
-        if (!bounds.size) {
-          add("EMPTY_GEOMETRY", "GEOMETRY", "BLOCKER", "Project has no cube or mesh geometry.");
-        } else {
-          for (const [blocks, axis, label] of expectedSize) {
-            if (typeof blocks !== "number" || blocks <= 0) continue;
-            const expected = blocks * unitsPerBlock;
-            const actual = bounds.size[axis];
-            if (Math.abs(actual - expected) > dimension_tolerance_units) {
+
+        if (validateBuiltGeometry) {
+          const unitsPerBlock = manifest.main_format?.blockbench_units_per_block ?? 16;
+          const expectedSize: Array<[number | undefined, number, string]> = [
+            [manifest.main_format?.width_blocks, 0, "width"],
+            [manifest.main_format?.height_blocks, 1, "height"],
+            [manifest.main_format?.depth_blocks, 2, "depth"],
+          ];
+          if (!bounds.size) {
+            add("EMPTY_GEOMETRY", "GEOMETRY", "BLOCKER", "Project has no geometry.");
+          } else {
+            for (const [blocks, axis, label] of expectedSize) {
+              if (typeof blocks !== "number" || blocks <= 0) continue;
+              const expected = blocks * unitsPerBlock;
+              const actual = bounds.size[axis];
+              if (Math.abs(actual - expected) > dimension_tolerance_units) {
+                add(
+                  `DIMENSION_${label.toUpperCase()}_MISMATCH`,
+                  "GEOMETRY",
+                  "REVISION_REQUIRED",
+                  `${label} is ${actual} units; expected ${expected} ± ${dimension_tolerance_units}.`
+                );
+              }
+            }
+          }
+
+          const groupNames = new Set(Group.all.map((group) => group.name));
+          for (const groupName of Object.keys(manifest.geometry?.hierarchy ?? {})) {
+            if (!groupNames.has(groupName)) {
               add(
-                `DIMENSION_${label.toUpperCase()}_MISMATCH`,
+                "REQUIRED_GROUP_MISSING",
                 "GEOMETRY",
                 "REVISION_REQUIRED",
-                `${label} is ${actual} units; expected ${expected} ± ${dimension_tolerance_units}.`
+                `Required hierarchy group is missing: ${groupName}`
               );
             }
           }
         }
 
-        const hierarchyKeys = Object.keys(manifest.geometry?.hierarchy ?? {});
-        const groupNames = new Set(Group.all.map((group) => group.name));
-        for (const groupName of hierarchyKeys) {
-          if (!groupNames.has(groupName)) {
-            add("REQUIRED_GROUP_MISSING", "GEOMETRY", "REVISION_REQUIRED", `Required hierarchy group is missing: ${groupName}`);
+        if (validateTexture) {
+          const pbrTextures = Texture.all.filter((texture) =>
+            Boolean((texture as unknown as { pbr_channel?: string }).pbr_channel)
+          );
+          if (pbrTextures.length > 0) {
+            add(
+              "PBR_TEXTURE_PRESENT",
+              "TEXTURE",
+              "REVISION_REQUIRED",
+              `${pbrTextures.length} texture(s) use PBR channels.`
+            );
+          }
+          if (Texture.all.length === 0) {
+            add("TEXTURE_MISSING", "TEXTURE", "REVISION_REQUIRED", "No project texture exists.");
           }
         }
 
         const animationNames = new Set(
-          (((globalThis as unknown as { Animation?: { all?: Array<{ name: string }> } }).Animation?.all) ?? [])
-            .map((animation) => animation.name)
+          (((globalThis as unknown as {
+            Animation?: { all?: Array<{ name: string }> };
+          }).Animation?.all) ?? []).map((animation) => animation.name)
         );
-        const requiredAnimations = manifest.animation?.required_clips ?? manifest.animation?.animations ?? [];
-        for (const animation of requiredAnimations) {
-          if (!animationNames.has(animation)) {
-            add("REQUIRED_ANIMATION_MISSING", "ANIMATION", "REVISION_REQUIRED", `Required animation is missing: ${animation}`);
+        if (validateAnimation) {
+          const requiredAnimations =
+            manifest.animation?.required_clips ??
+            manifest.animation?.required_animations ??
+            manifest.animation?.animations ??
+            [];
+          for (const animation of requiredAnimations) {
+            if (!animationNames.has(animation)) {
+              add(
+                "REQUIRED_ANIMATION_MISSING",
+                "ANIMATION",
+                "REVISION_REQUIRED",
+                `Required animation is missing: ${animation}`
+              );
+            }
           }
         }
 
         if (require_evidence) {
           for (const path of canonicalEvidence(session_root, stage)) {
             assertInsideRoot(path, session_root);
-            if (!fs.existsSync(path)) add("EVIDENCE_MISSING", stage, "BLOCKER", `Missing stage evidence: ${path}`);
+            if (!fs.existsSync(path)) {
+              add("EVIDENCE_MISSING", stage, "BLOCKER", `Missing stage evidence: ${path}`);
+            }
+          }
+          if (stage === "FINAL_VALIDATION" && manifest.asset?.id) {
+            const finalModel = joinPath(session_root, `final/${manifest.asset.id}.bbmodel`);
+            const finalTextures = joinPath(session_root, "final/textures");
+            if (!fs.existsSync(finalModel)) {
+              add("FINAL_MODEL_MISSING", stage, "BLOCKER", `Missing final model: ${finalModel}`);
+            }
+            if (!fs.existsSync(finalTextures)) {
+              add("FINAL_TEXTURE_DIRECTORY_MISSING", stage, "BLOCKER", `Missing final texture directory: ${finalTextures}`);
+            }
           }
         }
 
         const runtimeValidator = (globalThis as unknown as {
-          Validator?: { validate?: (trigger?: string) => void; errors?: unknown[]; warnings?: unknown[] };
+          Validator?: {
+            validate?: (trigger?: string) => void;
+            errors?: unknown[];
+            warnings?: unknown[];
+          };
         }).Validator;
         runtimeValidator?.validate?.("manual");
         const validatorErrors = runtimeValidator?.errors?.length ?? 0;
         const validatorWarnings = runtimeValidator?.warnings?.length ?? 0;
-        if (validatorErrors > 0) add("BLOCKBENCH_VALIDATOR_ERROR", stage, "REVISION_REQUIRED", `${validatorErrors} Blockbench validator error(s) remain.`);
+        if (validatorErrors > 0 && validateBuiltGeometry) {
+          add(
+            "BLOCKBENCH_VALIDATOR_ERROR",
+            stage,
+            "REVISION_REQUIRED",
+            `${validatorErrors} Blockbench validator error(s) remain.`
+          );
+        }
 
         const result = issues.some((issue) => issue.severity === "BLOCKER")
           ? "BLOCKER"
@@ -377,13 +512,16 @@ export function registerWorkflowTools() {
             : "PASS";
 
         return {
-          content: [{
-            type: "text" as const,
-            text: `Reference contract validation: ${result}. ${issues.length} issue(s), ${validatorWarnings} validator warning(s).`,
-          }],
+          content: [
+            {
+              type: "text" as const,
+              text: `Reference contract validation: ${result}. ${issues.length} issue(s), ${validatorWarnings} validator warning(s).`,
+            },
+          ],
           structuredContent: {
             result,
             stage,
+            mode: require_evidence ? "STAGE_REVIEW" : "PREFLIGHT",
             project_uuid: Project.uuid,
             format: formatId,
             uv_mode: Project.box_uv ? "box" : "per_face",
@@ -396,9 +534,13 @@ export function registerWorkflowTools() {
               textures: Texture.all.length,
               animations: animationNames.size,
             },
-            blockbench_validator: { errors: validatorErrors, warnings: validatorWarnings },
+            blockbench_validator: {
+              errors: validatorErrors,
+              warnings: validatorWarnings,
+            },
             issues,
-            next_profile: issues.find((issue) => issue.recommended_profile)?.recommended_profile ?? null,
+            next_profile:
+              issues.find((issue) => issue.recommended_profile)?.recommended_profile ?? null,
           },
         };
       },
@@ -410,12 +552,22 @@ export function registerWorkflowTools() {
     workflowToolDocs[1].name,
     {
       ...workflowToolDocs[1],
-      async execute({ texture_id, path, metadata_path, session_root, expected_project_uuid }) {
+      async execute({
+        texture_id,
+        path,
+        metadata_path,
+        session_root,
+        expected_project_uuid,
+      }) {
         if (!Project) throw new Error("No Blockbench project is open.");
         if (expected_project_uuid && Project.uuid !== expected_project_uuid) {
-          throw new Error(`PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`);
+          throw new Error(
+            `PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`
+          );
         }
-        if (!path.toLowerCase().endsWith(".png")) throw new Error("Texture evidence path must end with .png.");
+        if (!path.toLowerCase().endsWith(".png")) {
+          throw new Error("Texture evidence path must end with .png.");
+        }
         assertInsideRoot(path, session_root);
         const metadataPath = metadata_path ?? path.replace(/\.png$/i, ".json");
         assertInsideRoot(metadataPath, session_root);
@@ -423,9 +575,10 @@ export function registerWorkflowTools() {
         const texture = findTextureOrThrow(texture_id);
         const data = bufferFromDataUrl(texture.getDataURL());
         const { ctx } = texture.getActiveCanvas();
-        let alphaPresent = false;
+        let alphaPresent: boolean | null = null;
         try {
           const pixels = ctx.getImageData(0, 0, texture.width, texture.height).data;
+          alphaPresent = false;
           for (let index = 3; index < pixels.length; index += 4) {
             if (pixels[index] < 255) {
               alphaPresent = true;
@@ -433,10 +586,12 @@ export function registerWorkflowTools() {
             }
           }
         } catch {
-          alphaPresent = false;
+          alphaPresent = null;
         }
 
-        const fs = nativeFs(`MCP save_texture_evidence requested write access to ${path}`);
+        const fs = nativeFs(
+          `MCP save_texture_evidence requested write access to ${path}`
+        );
         writeFileAtomically(fs, path, data);
         const metadata = {
           schema_version: "1.0",
@@ -452,8 +607,17 @@ export function registerWorkflowTools() {
         writeJsonAtomically(fs, metadataPath, metadata);
 
         return {
-          content: [{ type: "text" as const, text: `Saved texture evidence ${texture.name} to ${path}.` }],
-          structuredContent: { status: "PASS", evidence: metadata, metadata_path: metadataPath },
+          content: [
+            {
+              type: "text" as const,
+              text: `Saved texture evidence ${texture.name} to ${path}.`,
+            },
+          ],
+          structuredContent: {
+            status: "PASS",
+            evidence: metadata,
+            metadata_path: metadataPath,
+          },
         };
       },
     },
@@ -464,36 +628,75 @@ export function registerWorkflowTools() {
     workflowToolDocs[2].name,
     {
       ...workflowToolDocs[2],
-      async execute({ asset_id, session_root, stage, expected_state_revision, expected_project_uuid, approval_ref, accepted_areas }) {
+      async execute({
+        asset_id,
+        session_root,
+        stage,
+        expected_state_revision,
+        expected_project_uuid,
+        approval_ref,
+        accepted_areas,
+      }) {
         if (!Project) throw new Error("No Blockbench project is open.");
         if (Project.uuid !== expected_project_uuid) {
-          throw new Error(`PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`);
+          throw new Error(
+            `PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`
+          );
         }
 
         const fs = nativeFs("MCP complete_stage needs asset-session write access.");
         const statePath = joinPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
-        if (state.asset?.id !== asset_id) throw new Error(`ASSET_ID_MISMATCH: state has ${state.asset?.id}, expected ${asset_id}.`);
+        if (state.asset?.id !== asset_id) {
+          throw new Error(
+            `ASSET_ID_MISMATCH: state has ${state.asset?.id}, expected ${asset_id}.`
+          );
+        }
         if (state.state_revision !== expected_state_revision) {
-          throw new Error(`STATE_REVISION_MISMATCH: state is ${state.state_revision}, expected ${expected_state_revision}.`);
+          throw new Error(
+            `STATE_REVISION_MISMATCH: state is ${state.state_revision}, expected ${expected_state_revision}.`
+          );
         }
         const requiredState = expectedReviewState(stage);
         if (state.workflow?.state !== requiredState) {
-          throw new Error(`STAGE_STATE_MISMATCH: ${stage} approval requires ${requiredState}, found ${state.workflow?.state}.`);
+          throw new Error(
+            `STAGE_STATE_MISMATCH: ${stage} approval requires ${requiredState}, found ${state.workflow?.state}.`
+          );
         }
 
-        const missingEvidence = canonicalEvidence(session_root, stage).filter((path) => !fs.existsSync(path));
+        const requiredEvidence = canonicalEvidence(session_root, stage);
+        if (stage === "FINAL_VALIDATION") {
+          requiredEvidence.push(joinPath(session_root, `final/${asset_id}.bbmodel`));
+          requiredEvidence.push(joinPath(session_root, "final/textures"));
+        }
+        const missingEvidence = requiredEvidence.filter((path) => !fs.existsSync(path));
         if (missingEvidence.length > 0) {
           throw new Error(`STAGE_EVIDENCE_MISSING: ${missingEvidence.join(", ")}`);
         }
 
+        const reportPath = stageReportPath(session_root, stage);
+        const report = readJsonFile<Record<string, any>>(fs, reportPath);
+        const result = reportResult(report);
+        if (result !== "PASS") {
+          throw new Error(
+            `STAGE_REPORT_NOT_PASS: ${reportPath} reports ${result ?? "no explicit result"}.`
+          );
+        }
+
         const checkpoint = stageCheckpoint(stage);
-        const checkpointPath = joinPath(session_root, `checkpoints/${checkpoint.file}`);
-        const checkpointTool = getAllToolDefinitions()["save_project_checkpoint"] as unknown as {
+        const checkpointPath = joinPath(
+          session_root,
+          `checkpoints/${checkpoint.file}`
+        );
+        const checkpointTool = getAllToolDefinitions()[
+          "save_project_checkpoint"
+        ] as unknown as {
           execute: (args: Record<string, unknown>) => Promise<unknown>;
         };
-        if (!checkpointTool) throw new Error("save_project_checkpoint is unavailable.");
+        if (!checkpointTool) {
+          throw new Error("save_project_checkpoint is unavailable.");
+        }
         await checkpointTool.execute({
           asset_id,
           path: checkpointPath,
@@ -509,7 +712,10 @@ export function registerWorkflowTools() {
           open_issues: [],
         });
 
-        const stageRecord = state.workflow.stage_records[stageRecordKey(stage)];
+        const stageRecord = state.workflow?.stage_records?.[stage];
+        if (!stageRecord) {
+          throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
+        }
         const approvedAt = new Date().toISOString();
         stageRecord.status = "APPROVED";
         stageRecord.decision = "APPROVED";
@@ -520,10 +726,12 @@ export function registerWorkflowTools() {
         stageRecord.revision = null;
         state.checkpoints[checkpoint.stateKey] = checkpointPath;
         state.preservation.approved_stage_areas[stage] = accepted_areas;
-        state.preservation.globally_protected_areas = Array.from(new Set([
-          ...(state.preservation.globally_protected_areas ?? []),
-          ...accepted_areas,
-        ]));
+        state.preservation.globally_protected_areas = Array.from(
+          new Set([
+            ...(state.preservation.globally_protected_areas ?? []),
+            ...accepted_areas,
+          ])
+        );
         state.workflow.last_completed_stage = stage;
         state.workflow.last_safe_checkpoint = checkpointPath;
 
@@ -552,7 +760,8 @@ export function registerWorkflowTools() {
             nextAction = "RUN_FINAL_VALIDATION";
             state.workflow.stage_records.ANIMATION.status = "SKIPPED";
             state.workflow.stage_records.ANIMATION.decision = "SKIPPED";
-            state.workflow.stage_records.ANIMATION.skip_reason = "Not required by approved reference package.";
+            state.workflow.stage_records.ANIMATION.skip_reason =
+              "Not required by approved reference package.";
             state.workflow.stage_records.FINAL_VALIDATION.status = "IN_PROGRESS";
           }
         } else if (stage === "ANIMATION") {
@@ -587,10 +796,12 @@ export function registerWorkflowTools() {
         }
 
         return {
-          content: [{
-            type: "text" as const,
-            text: `${stage} approved. Saved ${checkpoint.name}; next state ${nextState} with profile ${nextProfile}.`,
-          }],
+          content: [
+            {
+              type: "text" as const,
+              text: `${stage} approved. Saved ${checkpoint.name}; next state ${nextState} with profile ${nextProfile}.`,
+            },
+          ],
           structuredContent: {
             status: "PASS",
             completed_stage: stage,
@@ -610,5 +821,3 @@ export function registerWorkflowTools() {
     workflowToolDocs[2].status
   );
 }
-
-const GEOMETRY_STAGE: WorkflowStage = "GEOMETRY";
