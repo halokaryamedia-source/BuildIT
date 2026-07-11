@@ -10,6 +10,7 @@ import {
   type NativeFsLike,
 } from "@/lib/atomicFiles";
 import { auditProjectRotations, DEFAULT_ROTATION_POLICY } from "@/lib/worldBounds";
+import { readGeometryRuntimeContext } from "@/lib/geometryRuntime";
 
 const verifyGeometryReviewReadyParameters = z.object({
   session_root: z.string().min(1),
@@ -21,7 +22,7 @@ export const geometryReviewGateToolDocs: ToolSpec[] = [
   {
     name: "verify_geometry_review_ready",
     description:
-      "Verifies complete five-view deterministic metrics, Codex multimodal review, evidence freshness, actual Reference Visual identity, standard views, and cube-rotation safety before Geometry may enter user review or approval.",
+      "Verifies final Geometry runtime phase, complete five-view fixed-scale metrics, Codex multimodal review, evidence freshness, actual Reference Visual identity, standard views, and cube-rotation safety before user review or approval.",
     annotations: {
       title: "Verify Geometry Review Ready",
       readOnlyHint: true,
@@ -160,6 +161,21 @@ export function registerGeometryReviewGateTools(): void {
           }
         }
 
+        const runtime = readGeometryRuntimeContext(session_root);
+        if (runtime.phase !== "FINAL_REVIEW_READY") {
+          issues.push({
+            code:
+              runtime.phase === "VISUAL_CONVERGENCE_FAILED"
+                ? "VISUAL_CONVERGENCE_FAILED"
+                : "GEOMETRY_RUNTIME_PHASE_NOT_READY",
+            severity:
+              runtime.phase === "VISUAL_CONVERGENCE_FAILED"
+                ? "BLOCKER"
+                : "REVISION_REQUIRED",
+            message: `Geometry runtime phase is ${runtime.phase}; final review requires FINAL_REVIEW_READY.`,
+          });
+        }
+
         const manifest = fs.existsSync(manifestPath)
           ? readJsonFile<Record<string, any>>(fs, manifestPath)
           : null;
@@ -266,21 +282,23 @@ export function registerGeometryReviewGateTools(): void {
             issues.push({
               code: "GEOMETRY_DETERMINISTIC_VISUAL_NOT_PASS",
               severity: "REVISION_REQUIRED",
-              message: `Deterministic visual comparison failed: ${failingViews || "unknown"}.`,
+              message: `Fixed-scale Geometry diagnosis failed: ${
+                failingViews || "unknown"
+              }.`,
             });
           }
           if (metrics.project?.uuid !== Project.uuid) {
             issues.push({
               code: "GEOMETRY_METRICS_PROJECT_MISMATCH",
               severity: "BLOCKER",
-              message: "Deterministic metrics belong to a different project UUID.",
+              message: "Geometry metrics belong to a different project UUID.",
             });
           }
           if (metrics.geometry_fingerprint !== currentFingerprint) {
             issues.push({
               code: "GEOMETRY_VISUAL_METRICS_STALE",
               severity: "BLOCKER",
-              message: "Geometry changed after deterministic comparison.",
+              message: "Geometry changed after fixed-scale diagnosis.",
             });
           }
           const measured = new Map<string, any>(
@@ -293,7 +311,7 @@ export function registerGeometryReviewGateTools(): void {
             issues.push({
               code: "GEOMETRY_DETERMINISTIC_VIEWS_INCOMPLETE",
               severity: "BLOCKER",
-              message: `Deterministic comparison did not include all final views: ${missing.join(", ")}.`,
+              message: `Fixed-scale diagnosis did not include all final views: ${missing.join(", ")}.`,
             });
           }
           for (const view of REQUIRED_VIEWS) {
@@ -304,22 +322,30 @@ export function registerGeometryReviewGateTools(): void {
                   metric.issue_code ?? "GEOMETRY_VIEW_SILHOUETTE_MISMATCH"
                 ),
                 severity: "REVISION_REQUIRED",
-                message: `${view} deterministic score ${Number(
-                  metric.score ?? 0
-                ).toFixed(3)} is below ${Number(
-                  metric.minimum_score ?? 0
-                ).toFixed(3)}.`,
+                message: `${view} score ${Number(metric.score ?? 0).toFixed(
+                  3
+                )} is below ${Number(metric.minimum_score ?? 0).toFixed(3)}.`,
               });
             }
           }
-          if (
-            metrics.analyzer !== "geometry_projection_v2" &&
-            metrics.analyzer !== "geometry_projection_region_v2"
-          ) {
+          if (metrics.analyzer !== "geometry_projection_region_v2") {
             issues.push({
               code: "GEOMETRY_ANALYZER_LEGACY",
               severity: "BLOCKER",
-              message: `Geometry metrics were produced by unsupported analyzer ${metrics.analyzer ?? "unknown"}.`,
+              message: `Geometry metrics were produced by unsupported analyzer ${
+                metrics.analyzer ?? "unknown"
+              }.`,
+            });
+          }
+          if (
+            metrics.coordinate_policy?.fixed_approved_scale !== true ||
+            metrics.coordinate_policy?.free_rescale_current_model !== false
+          ) {
+            issues.push({
+              code: "GEOMETRY_FIXED_SCALE_POLICY_MISSING",
+              severity: "BLOCKER",
+              message:
+                "Geometry metrics do not prove fixed approved scale with current-model free rescale disabled.",
             });
           }
         }
@@ -341,7 +367,7 @@ export function registerGeometryReviewGateTools(): void {
             code: "GEOMETRY_REFERENCE_VISUAL_EVIDENCE_MISMATCH",
             severity: "BLOCKER",
             message:
-              "Multimodal and deterministic evidence use different Reference Visual hashes.",
+              "Multimodal and fixed-scale evidence use different Reference Visual hashes.",
           });
         }
         if (
@@ -382,6 +408,7 @@ export function registerGeometryReviewGateTools(): void {
             result,
             project_uuid: Project.uuid,
             geometry_fingerprint: currentFingerprint,
+            runtime_phase: runtime.phase,
             multimodal_status: visualReport?.result ?? "MISSING",
             deterministic_status: metrics?.result ?? "MISSING",
             reference_sha256: actualReferenceHash,
@@ -393,7 +420,8 @@ export function registerGeometryReviewGateTools(): void {
                 issue.code.includes("STALE") ||
                 issue.code.includes("INCOMPLETE") ||
                 issue.code.includes("MISMATCH") ||
-                issue.code.includes("LEGACY")
+                issue.code.includes("LEGACY") ||
+                issue.code.includes("POLICY")
             )
               ? "INVALID"
               : "CURRENT",
