@@ -27,6 +27,7 @@ import { registerLeaseTools } from "./tools/lease";
 import { registerGeometryFeedbackTools } from "./tools/geometry-feedback";
 import { registerGeometryCompletionTools } from "./tools/geometry-completion";
 import { registerStageContextTools } from "./tools/stage-context";
+import { registerVisualCompareTools } from "./tools/visual-compare";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -47,6 +48,7 @@ const registrationFunctions = [
   registerGeometryFeedbackTools,
   registerGeometryCompletionTools,
   registerStageContextTools,
+  registerVisualCompareTools,
   registerHistoryTools,
   registerImportTools,
   registerLeaseTools,
