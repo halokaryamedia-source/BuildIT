@@ -1,92 +1,117 @@
 ---
 name: blockbench-production
-description: "Mandatory dispatcher for approved Blockbench asset production. Reads the selected active workspace state, acquires the single project write lease, selects exactly one stage skill, enforces the matching MCP tool profile, and stops at the stage review gate. Do not use for MCP repository development."
+description: "Mandatory dispatcher for approved Blockbench asset production. Resolves the active workspace, acquires the write lease, loads exactly one stage skill, enforces the matching tool profile, and stops at the stage review gate."
 ---
 
 # Blockbench Production
 
-Use this skill only for asset production from an approved reference package.
+Use this skill only for production from an approved single-Reference-Visual package.
 
-## Upstream Reference Boundary
+## Approved package boundary
 
-The package may be created by the ChatGPT-only skill at:
+A valid imported package contains:
 
 ```text
-engines/chatgpt/skills/blockbench-reference-studio/SKILL.md
+source/original_reference.*
+PRODUCTION_CONTEXT.md
+<asset_id>_reference_visual.png
+GEOMETRY.md
+TEXTURING.md
+ANIMATION.md
+VALIDATION.md
+reference_manifest.json
+CODEX_REFERENCE_HANDOFF.md
 ```
 
-That ChatGPT skill is not loaded during Codex production. Codex receives only the approved `<asset_id>_blockbench_reference.zip`, validates it using the manifest and handoff contract, imports it into the active workspace, and then starts this dispatcher.
-
-A valid imported package contains Production Context, four approved sheets, `GEOMETRY.md`, `TEXTURING.md`, `ANIMATION.md`, `VALIDATION.md`, `reference_manifest.json`, and `CODEX_REFERENCE_HANDOFF.md`.
+The Reference Visual is the sole visual authority. Technical Markdown and JSON translate it into executable constraints. Do not create replacement or additional technical reference images.
 
 ## Dispatch
 
 1. Read `workspace/workspace.json` and resolve `selected_asset_id`.
 2. Read `workspace/active/<asset>/mcp/project.json` and `mcp/state.json`.
-3. Resolve the skill profile from `engines/shared/skills/skill-profiles.json`.
+3. Resolve the stage and skill profile.
 4. Verify the expected MCP tool profile from `engines/shared/profiles/stage-profiles.json`.
-5. Call `manage_project_write_lease` once with:
-   - `action: acquire`
-   - exact asset ID
-   - absolute `workspace/active/<asset>/mcp` session root
-   - active project UUID
-   - current `state_revision`
-   - current `workflow.active_stage`
-6. Load exactly one stage skill in addition to this dispatcher.
-7. Read only the reference manifest, Production Context, Reference Visual, and active-stage document.
+5. Acquire the single project write lease using the exact asset, project UUID, session root, state revision, and active stage.
+6. Load exactly this dispatcher plus one stage skill.
+7. Read only the manifest, Production Context, approved Reference Visual, active-stage document, and current open issues.
 8. Execute the smallest complete stage batch.
-9. Stop at the required user review gate.
+9. Stop at the required review gate.
 
-## Workspace Boundary
+## Visual-grounding rule
+
+A structural validator result is never sufficient proof of visual correctness.
+
+For Geometry:
+
+```text
+inspect_reference_visual
+→ build primary form
+→ capture_visual_feedback
+→ targeted correction
+→ add structural detail
+→ capture_visual_feedback
+→ record_geometry_visual_result
+→ validate_reference_contract
+→ verify_geometry_visual_gate
+→ checkpoint and user review
+```
+
+Codex must actually receive image payloads during internal visual checks. `return_images: false` is reserved for archival evidence after visual inspection, not for the feedback loop.
+
+## Geometry rotation rule
+
+- Use `place_cubes_safe` and `modify_cubes` for Geometry mutations.
+- Rotated cubes require an explicit origin/pivot.
+- Prefer one local rotation axis per cube.
+- Reject compound rotation unless the active contract explicitly requires it.
+- Default absolute rotation limit is `45°`.
+- After a rotated batch, inspect the affected view before continuing.
+- World bounds and review framing must include cube and parent transforms.
+
+## Revision classification
+
+Before activating a repair profile, classify feedback:
+
+- `LOCAL_REPAIR`: one part or tightly related pair; no broad primary-form change.
+- `MAJOR_FORM_REVISION`: multiple primary masses or multiple views fail.
+- `REFERENCE_REOPEN`: the approved reference itself must change.
+- `REFERENCE_CONFLICT`: authorities disagree; stop.
+
+Use `GEOMETRY_LOCAL_REPAIR` only for local scope. Use `GEOMETRY_VISUAL_REBUILD` for broad body/head/footprint failures while preserving prior checkpoints.
+
+## Workspace boundary
 
 ```text
 workspace/active/<asset>/
-├─ blockbench/   # user-facing .bbmodel, textures, references, previews
-└─ mcp/          # project/state metadata, technical contracts, checkpoints, evidence, reports
+├─ blockbench/   # canonical model, textures, references, approved previews
+└─ mcp/          # state, contracts, checkpoints, evidence, reports
 ```
 
-- Never place MCP reports, state files, or checkpoints inside `blockbench/`.
-- Never place the canonical `.bbmodel` or user textures inside permanent MCP metadata folders.
-- Temporary final-validation staging may exist under `mcp/final/`; completion promotes validated files into `blockbench/` and removes the staging folder.
-- Completed projects move to `workspace/completed/<asset>/` with the same separation.
+Never put MCP state/checkpoints inside `blockbench/`, and never put the canonical model inside permanent MCP metadata folders.
 
-## Stage Routing
+## Efficiency rules
+
+- Reuse fresh PASS readiness reports.
+- Use paths from `mcp/project.json`; do not rescan the tree.
+- Load no more than two production skills.
+- Use exact stage profiles only.
+- Use bounded cube batches and one atomic `modify_cubes` call instead of many single-cube calls.
+- Inspect the Reference Visual once per stage unless its hash changes.
+- During internal Geometry passes, request only the views needed to diagnose the current issue.
+- Maximum automatic visual correction cycles per internal pass: `2`.
+- If the visual result does not improve twice, stop with `VISUAL_CONVERGENCE_FAILED`.
+- Write full-resolution evidence to disk, but return only the image payloads needed for the current comparison.
+- Do not use mesh, PBR, Hytale, armature, UI automation, or eval capabilities in the normal Bedrock cuboid workflow.
+
+## Stage routing
 
 ```text
 GEOMETRY         → blockbench-geometry
 TEXTURE          → blockbench-texture
-ANIMATION        → blockbench-animation, only when required
+ANIMATION        → blockbench-animation only when required
 FINAL_VALIDATION → blockbench-validation
 ```
 
-Maximum loaded production skills: `2`.
+## Stop conditions
 
-## Write Ownership
-
-- Only the lease-owning MCP session may mutate the project or write evidence/checkpoints.
-- The lease is bound to project UUID, asset, MCP session root, stage, state revision, and tool-profile revision.
-- A successful stage/profile transition releases the lease automatically.
-- After the required single MCP reconnect, reacquire the lease using the new state and profile before any next-stage mutation.
-- On `WRITE_LEASE_*` errors, stop and repair ownership/state alignment; never bypass the guard.
-
-## Efficiency Rules
-
-- Reuse a fresh `PASS` connection/preflight report; do not rerun discovery.
-- Use paths from `mcp/project.json`; do not scan the workspace tree.
-- Use only tools exposed by the active exact MCP profile.
-- Do not load all Blockbench skills together.
-- Do not load MCP-development skills during asset production.
-- Do not use PBR, Hytale, mesh, armature, UI automation, or eval capabilities in the normal Bedrock cuboid workflow.
-- Capture evidence only at stage review or for an affected revision view.
-- When evidence is written to disk, use `return_images: false` to avoid unnecessary image payloads.
-- Export only in Final Validation and only to the active project's `mcp/final/` staging area; workspace completion promotes validated files.
-
-## Revision Mode
-
-Keep the same stage skill and activate the matching local-repair tool profile. Reacquire the write lease after the profile transition. Change only the named issue or tightly related pair, preserve approved areas, regenerate affected evidence, and return to the same review gate.
-
-A completed project is reopened through the workspace lifecycle command. The approved completed baseline remains immutable until the new revision is approved.
-
-## Stop Conditions
-
-Stop immediately on `REFERENCE_CONFLICT`, `BLOCKER`, required user review, lease/state mismatch, or completion of the active stage acceptance criteria.
+Stop immediately on `REFERENCE_CONFLICT`, blocker, stale visual report, unsafe rotation, visual convergence failure, lease/state mismatch, required user review, or completion of the active-stage acceptance criteria.
