@@ -12,11 +12,36 @@ geometry_left.png
 geometry_back.png
 geometry_top.png
 geometry_front_left_3_4.png
+geometry_visual_metrics.json
+geometry_visual_diff.png
 geometry_visual_report.json
 geometry_report.json
 ```
 
-`geometry_visual_report.json` must bind the visual judgment to:
+`geometry_visual_metrics.json` is deterministic guardrail evidence. It must bind:
+
+- project UUID;
+- current Geometry fingerprint;
+- approved Reference Visual SHA-256;
+- analyzer version;
+- silhouette IoU;
+- row and column profile errors;
+- aspect-ratio error;
+- minimum score and result for every compared view.
+
+`geometry_visual_diff.png` is one compact contact sheet:
+
+```text
+reference mask | current mask | overlap/missing/excess diff
+```
+
+Diff colors:
+
+- green: matching silhouette;
+- red: required Reference silhouette missing from current model;
+- blue: current Geometry extends beyond the Reference silhouette.
+
+`geometry_visual_report.json` is Codex multimodal judgment evidence. It must bind:
 
 - project UUID;
 - current Geometry fingerprint;
@@ -28,19 +53,20 @@ geometry_report.json
 - rotation audit;
 - rotation-aware world bounds.
 
-Any Geometry mutation after the visual report makes it stale. A stale report cannot authorize review or approval.
+Any Geometry mutation after either visual report makes both reports stale. Stale evidence cannot authorize review or approval.
 
 `geometry_report.json` must keep these statuses separate:
 
 ```text
 structural_status
 visual_status
+deterministic_visual_status
 rotation_status
 evidence_status
 result
 ```
 
-Final Geometry `result` is PASS only when required statuses pass.
+Final Geometry `result` is PASS only when all required statuses pass. Deterministic comparison is a guardrail and does not replace Codex or user visual review.
 
 ## Texture
 
