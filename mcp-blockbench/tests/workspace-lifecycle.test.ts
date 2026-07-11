@@ -56,8 +56,9 @@ describe("workspace lifecycle", () => {
     expect(source).toContain("stagedModel");
     expect(source).toContain("stagedTextures");
     expect(source).toContain("await promoteFinal(assetId)");
-    expect(source).toContain('lifecycle: "COMPLETED"');
+    expect(source).toContain('status: "COMPLETED"');
     expect(source).toContain("await replaceCompleted(active.root, completed.root)");
+    expect(source).toContain("reference_manifest_sha256");
   });
 
   test("reopen preserves completed baseline and invalidates downstream stages", () => {
@@ -66,17 +67,19 @@ describe("workspace lifecycle", () => {
     expect(source).toContain('origin: "REOPENED"');
     expect(source).toContain('record.status = "REVALIDATION_REQUIRED"');
     expect(source).toContain("baseline_model_sha256");
+    expect(source).toContain("completedPrefix");
+    expect(source).toContain("activePrefix");
   });
 
   test("Codex scripts resolve the selected active MCP root", () => {
-    for (const path of [
-      "../engines/codex/scripts/sync-local-stack.ps1",
-      "../engines/codex/scripts/set-tool-profile.ps1",
-    ]) {
-      const source = read(path);
-      expect(source).toContain("workspace\\workspace.json");
-      expect(source).toContain("workspace\\active\\$Asset");
-      expect(source).toContain('Join-Path $activeRoot "mcp"');
-    }
+    const sync = read("../engines/codex/scripts/sync-local-stack.ps1");
+    expect(sync).toContain("workspace\\workspace.json");
+    expect(sync).toContain("workspace\\active\\$Asset");
+    expect(sync).toContain('Join-Path $activeRoot "mcp"');
+    expect(sync).toContain('Join-Path $activeRoot "blockbench"');
+
+    const profile = read("../engines/codex/scripts/set-tool-profile.ps1");
+    expect(profile).toContain("workspace\\workspace.json");
+    expect(profile).toContain("workspace\\active\\$Asset\\mcp");
   });
 });
