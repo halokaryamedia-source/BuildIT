@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5",
+  "schema_version": "1.6",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -41,7 +41,7 @@
         "get_undo_stack",
         "validate_reference_contract",
         "record_geometry_visual_result",
-        "verify_geometry_visual_gate",
+        "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views",
         "complete_geometry_stage"
@@ -95,7 +95,7 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation, Geometry visual-gate verification, evidence capture, checkpointing, and final export.",
+      "description": "Read-mostly final validation, Geometry review-readiness verification, evidence capture, checkpointing, and final export.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
@@ -103,7 +103,7 @@
         "get_texture",
         "get_uv_layout",
         "validate_reference_contract",
-        "verify_geometry_visual_gate",
+        "verify_geometry_review_ready",
         "save_texture_evidence",
         "capture_standard_views",
         "list_export_formats",
@@ -128,7 +128,7 @@
         "undo",
         "redo",
         "record_geometry_visual_result",
-        "verify_geometry_visual_gate",
+        "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
@@ -152,7 +152,7 @@
         "get_undo_stack",
         "validate_reference_contract",
         "record_geometry_visual_result",
-        "verify_geometry_visual_gate",
+        "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
