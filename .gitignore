@@ -22,3 +22,8 @@ workspace/tmp/
 # Keep canonical workspace documentation and examples.
 !workspace/README.md
 !workspace/workspace.example.json
+
+# Keep exactly one canonical downloadable Blockbench bundle.
+!mcp-blockbench/dist/
+mcp-blockbench/dist/*
+!mcp-blockbench/dist/mcp.js
