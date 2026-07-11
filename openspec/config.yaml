@@ -7,6 +7,8 @@ context: |
   Codex entry point: engines/codex/BOOTSTRAP.md.
   Governance: engines/shared/workflow/GOVERNANCE.md.
   Runtime authority: workspace/sessions/<asset>/state.json.
+  Tool-profile authority: engines/shared/profiles/tool-profiles.json.
+  Skill-profile authority: engines/shared/skills/skill-profiles.json.
   Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
   Default and only normal MCP endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
   Current source facts: package version 1.6.0; runtime tool counts must be verified rather than assumed.
@@ -19,7 +21,8 @@ context: |
   Internal passes do not require separate routine approval.
   Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
   Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
-  Modelling context: use the installed blockbench-use skill and only the active-stage skill/tool profile.
+  Production skill context: load blockbench-production plus exactly one active-stage skill; maximum loaded production skills is 2.
+  Repository development must not load production skills.
   Mandatory local procedure: engines/codex/BOOTSTRAP.md and the active-stage contract under engines/shared/.
   Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
   UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
