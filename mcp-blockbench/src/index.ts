@@ -1,6 +1,6 @@
 /**
  * @author achmadawdi
- * @github https://github.com/achmadawdi/mcp-blockbench
+ * @github https://github.com/halokaryamedia-source/BuildIT
  */
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
@@ -18,6 +18,10 @@ import createNetServer from "@/server/net";
 import { serverState } from "@/lib/serverState";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
+const PLUGIN_TITLE = "BuildIT MCP Server";
+const PLUGIN_AUTHOR = "achmadawdi";
+const PLUGIN_DESCRIPTION =
+  "Connect Blockbench to BuildIT and MCP-compatible AI clients through the canonical local server.";
 const CANONICAL_MCP_PORT = 3000;
 const CANONICAL_MCP_ENDPOINT = "/bb-mcp";
 const MINIMUM_SESSION_TIMEOUT_MINUTES = 30;
@@ -28,23 +32,24 @@ let sessionTransports: SessionTransports | null = null;
 
 BBPlugin.register("mcp", {
   version: VERSION,
-  title: "MCP Server",
-  author: "achmadawdi",
-  description: "Create an MCP server inside Blockbench.",
-  tags: ["MCP", "AI"],
+  title: PLUGIN_TITLE,
+  author: PLUGIN_AUTHOR,
+  description: PLUGIN_DESCRIPTION,
+  tags: ["MCP", "AI", "Codex", "BuildIT"],
   icon: getIcon(),
   variant: "desktop",
   async onload() {
     // @ts-ignore - requireNativeModule is a Blockbench global
     const net = requireNativeModule("net", {
-      message: "Network access is required for the MCP server to accept connections.",
-      detail: "The MCP plugin needs to create a local server that Codex can connect to.",
+      message: "Network access is required for BuildIT MCP to accept local connections.",
+      detail:
+        "BuildIT MCP creates a local server that Codex and other MCP-compatible clients can connect to.",
       optional: false,
     });
 
     if (!net) {
-      console.error("[MCP] Failed to get net module - server will not start");
-      Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
+      console.error("[BuildIT MCP] Failed to get net module - server will not start");
+      Blockbench.showQuickMessage("BuildIT MCP requires network permission", 3000);
       return;
     }
 
@@ -55,7 +60,10 @@ BBPlugin.register("mcp", {
       const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") !== false;
       await initPromptLoader(cdnEnabled);
     } catch (err) {
-      console.error("[MCP] Prompt loader initialization failed — continuing without prompts:", err);
+      console.error(
+        "[BuildIT MCP] Prompt loader initialization failed — continuing without prompts:",
+        err
+      );
     }
 
     const toFiniteNumber = (raw: unknown, fallback: number): number => {
@@ -114,12 +122,19 @@ BBPlugin.register("mcp", {
           projectName: info.projectName ?? null,
           projectUuid: info.projectUuid ?? null,
         });
+        console.info(`[BuildIT MCP] Listening at ${info.url}`);
+        Blockbench.showQuickMessage(`BuildIT MCP ready at ${info.url}`, 3000);
       },
       onListenError(error) {
         serverState.set({
           status: "error",
           errorMessage: error.message,
         });
+        console.error("[BuildIT MCP] Server failed to start:", error);
+        Blockbench.showQuickMessage(
+          `BuildIT MCP failed to start: ${error.message}`,
+          4000
+        );
       },
     });
 
@@ -153,11 +168,11 @@ BBPlugin.register("mcp", {
   },
 
   oninstall() {
-    Blockbench.showQuickMessage("Installed MCP Server plugin", 2000);
+    Blockbench.showQuickMessage("Installed BuildIT MCP Server", 2500);
   },
 
   onuninstall() {
-    Blockbench.showQuickMessage("Uninstalled MCP Server plugin", 2000);
+    Blockbench.showQuickMessage("Uninstalled BuildIT MCP Server", 2500);
     settingsTeardown();
   },
 });
