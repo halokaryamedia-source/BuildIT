@@ -7,6 +7,7 @@
 - Target: Minecraft Bedrock Entity
 - Package Status: `APPROVED`
 - Primary Visual Authority: `black_rhinoceros_reference_visual.png`
+- Reference Visual SHA-256: `fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f`
 - Canonical Model: `black_rhinoceros.bbmodel`
 - Animation: `ANIMATION_SKIPPED`
 - Geometry: cuboid-only
@@ -14,27 +15,27 @@
 - Ground: `Y = 0`
 - Envelope: `27.2u W × 40u H × 52.8u D`, tolerance `±1u`
 
-## Read order
+## Compact read order
 
-1. `reference_manifest.json`
-2. `PRODUCTION_CONTEXT.md`
-3. `black_rhinoceros_reference_visual.png`
-4. `GEOMETRY.md`
-5. active-stage document
-6. `VALIDATION.md`
+1. Call `get_stage_context` for `GEOMETRY`.
+2. Call `inspect_reference_visual` and inspect the returned image.
+3. Open full `PRODUCTION_CONTEXT.md`, `GEOMETRY.md`, or manifest sections only when compact context is insufficient or conflicting.
 
 The single Reference Visual is the sole visual authority. Do not generate or substitute numbered sheets, loose angles, technical sheets, or replacement images.
 
 ## Required Geometry workflow
 
 ```text
-inspect_reference_visual
+get_stage_context
+→ inspect_reference_visual
 → build primary form only
 → capture_visual_feedback: left_side + front + top_footprint
+→ compare_reference_views: left_side + front + top_footprint
 → correct primary silhouette
 → add horns, ears, feet, tail, and final hierarchy
-→ capture affected visual feedback
-→ capture final five-view visual feedback
+→ capture and compare affected views
+→ final five-view capture_visual_feedback
+→ final five-view compare_reference_views
 → record_geometry_visual_result
 → validate_reference_contract
 → verify_geometry_visual_gate
@@ -42,13 +43,16 @@ inspect_reference_visual
 → GEOMETRY_REVIEW / AWAITING_USER_REVIEW
 ```
 
-Codex must inspect the returned image payloads. Paths or successful screenshot writes alone are not visual evidence.
+Codex must inspect actual image payloads. Paths or successful screenshot writes alone are not visual evidence.
 
-A structural validator PASS is not a visual PASS. Geometry may reach review only when:
+`compare_reference_views` provides deterministic silhouette/profile metrics and a compact diff contact sheet. It is a guardrail, not a substitute for Codex or user review.
+
+Geometry may reach review only when:
 
 ```text
 structural_status = PASS
 visual_status = PASS
+deterministic_visual_status = PASS
 rotation_status = PASS or non-blocking WARNING
 evidence_status = CURRENT
 ```
@@ -67,6 +71,20 @@ Before detail, the untextured model must already match the approved overall read
 
 Do not add detail to compensate for a wrong body silhouette.
 
+## Deterministic diff reading
+
+The visual diff contact sheet is ordered:
+
+```text
+Reference mask | Current mask | Difference
+```
+
+- green: overlap;
+- red: Reference silhouette missing from current Geometry;
+- blue: current Geometry exceeds the Reference silhouette.
+
+The approved Golden Sample board layout is recognized by its locked SHA-256. Do not generate panel crops or substitute images.
+
 ## Rotation and pivot lock
 
 Use `place_cubes_safe` and `modify_cubes` for all Geometry mutation.
@@ -81,14 +99,14 @@ Use `place_cubes_safe` and `modify_cubes` for all Geometry mutation.
 - Ear rotation must not invert or cross the head centerline.
 - Head/neck rotation must move toward the approved low-forward profile, not upward.
 - World bounds and camera framing must include cube and parent transforms.
-- A stale visual report after any Geometry or rotation mutation is invalid.
+- Any Geometry mutation makes earlier deterministic metrics and multimodal reports stale.
 
 ## Geometry mutation efficiency
 
 - Use bounded related batches.
 - Prefer one `modify_cubes` call over many single-cube calls.
 - Inspect the Reference Visual once unless its hash changes.
-- Request only the views needed by the current correction.
+- Request only views needed by the current correction.
 - Maximum automatic visual repair cycles per internal pass: `2`.
 - If two cycles do not improve the result, stop with `VISUAL_CONVERGENCE_FAILED`.
 
@@ -128,11 +146,12 @@ Texture-only details include eyes, nostrils, mouth, wrinkles, scars, folds, musc
 - texture/UV work before Geometry approval;
 - animation clips;
 - extra reference-image generation;
-- automatic approval based only on bounds, group names, cube count, or Blockbench validator output;
+- approval based only on bounds, group names, cube count, or Blockbench validator output;
+- ignoring a failed deterministic comparison;
 - silent authority repair.
 
 When authorities conflict, stop with `REFERENCE_CONFLICT`.
 
 ## Stage approval
 
-After explicit user approval, use `complete_geometry_stage`, not generic `complete_stage`. The guarded tool must reject missing, stale, visually failed, reference-mismatched, or rotation-unsafe Geometry evidence.
+After explicit user approval, use `complete_geometry_stage`, not generic `complete_stage`. It must reject missing, stale, deterministically failed, multimodally failed, reference-mismatched, or rotation-unsafe Geometry evidence.
