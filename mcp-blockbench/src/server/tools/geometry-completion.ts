@@ -24,7 +24,7 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
   {
     name: "complete_geometry_stage",
     description:
-      "Completes Geometry only after the current visual report is PASS, non-stale, reference-matched, and rotation-safe; then delegates to the guarded stage transition.",
+      "Completes Geometry only after current deterministic metrics, multimodal visual review, project fingerprint, Reference Visual, and cube-rotation gates all pass; then delegates to the atomic stage transition.",
     annotations: { title: "Complete Geometry Stage", destructiveHint: true, openWorldHint: true },
     parameters: completeGeometryStageParameters,
     status: STATUS_EXPERIMENTAL,
@@ -89,32 +89,88 @@ export function registerGeometryCompletionTools(): void {
           );
         }
 
-        const fs = nativeFs("MCP Geometry completion needs visual evidence access.");
+        const fs = nativeFs("MCP Geometry completion needs current visual evidence access.");
         const visualReportPath = joinPath(
           session_root,
           "evidence/geometry/geometry_visual_report.json"
         );
+        const metricsPath = joinPath(
+          session_root,
+          "evidence/geometry/geometry_visual_metrics.json"
+        );
         assertInsideRoot(visualReportPath, session_root);
+        assertInsideRoot(metricsPath, session_root);
         if (!fs.existsSync(visualReportPath)) {
           throw new Error(`GEOMETRY_VISUAL_REPORT_MISSING: ${visualReportPath}`);
         }
+        if (!fs.existsSync(metricsPath)) {
+          throw new Error(`GEOMETRY_VISUAL_METRICS_MISSING: ${metricsPath}`);
+        }
+
         const visualReport = readJsonFile<Record<string, any>>(fs, visualReportPath);
+        const metrics = readJsonFile<Record<string, any>>(fs, metricsPath);
         if (visualReport.result !== "PASS") {
           throw new Error(
-            `GEOMETRY_VISUAL_NOT_PASS: report result is ${visualReport.result ?? "UNKNOWN"}.`
+            `GEOMETRY_VISUAL_NOT_PASS: multimodal report is ${visualReport.result ?? "UNKNOWN"}.`
           );
         }
-        if (visualReport.project?.uuid !== Project.uuid) {
+        if (metrics.result !== "PASS") {
+          const failures = Array.isArray(metrics.views)
+            ? metrics.views
+                .filter((view: any) => view?.result !== "PASS")
+                .map((view: any) => view?.view)
+                .filter(Boolean)
+                .join(", ")
+            : "unknown";
+          throw new Error(
+            `GEOMETRY_DETERMINISTIC_VISUAL_NOT_PASS: failing views ${failures || "unknown"}.`
+          );
+        }
+        if (
+          visualReport.project?.uuid !== Project.uuid ||
+          metrics.project?.uuid !== Project.uuid
+        ) {
           throw new Error("GEOMETRY_VISUAL_PROJECT_MISMATCH");
         }
+
         const currentFingerprint = geometryFingerprint();
         if (visualReport.geometry_fingerprint !== currentFingerprint) {
-          throw new Error("GEOMETRY_VISUAL_REPORT_STALE: Geometry changed after visual inspection.");
+          throw new Error(
+            "GEOMETRY_VISUAL_REPORT_STALE: Geometry changed after multimodal inspection."
+          );
         }
+        if (metrics.geometry_fingerprint !== currentFingerprint) {
+          throw new Error(
+            "GEOMETRY_VISUAL_METRICS_STALE: Geometry changed after deterministic comparison."
+          );
+        }
+        const reportReferenceHash = visualReport.reference_visual?.sha256;
+        const metricsReferenceHash = metrics.reference_visual?.sha256;
+        if (
+          !reportReferenceHash ||
+          !metricsReferenceHash ||
+          reportReferenceHash !== metricsReferenceHash
+        ) {
+          throw new Error("GEOMETRY_REFERENCE_VISUAL_EVIDENCE_MISMATCH");
+        }
+
         const rotationAudit = auditProjectRotations(DEFAULT_ROTATION_POLICY);
         if (rotationAudit.status === "REVISION_REQUIRED") {
           throw new Error(
             `GEOMETRY_ROTATION_NOT_SAFE: ${rotationAudit.issues.map((issue) => issue.message).join(" ")}`
+          );
+        }
+
+        const visualGate = getAllToolDefinitions()["verify_geometry_visual_gate"] as unknown as {
+          execute?: (args: Record<string, unknown>) => Promise<any>;
+        };
+        if (!visualGate?.execute) {
+          throw new Error("verify_geometry_visual_gate is unavailable.");
+        }
+        const gateResult = await visualGate.execute({ session_root });
+        if (gateResult?.structuredContent?.result !== "PASS") {
+          throw new Error(
+            `GEOMETRY_VISUAL_GATE_NOT_PASS: ${gateResult?.structuredContent?.result ?? "UNKNOWN"}.`
           );
         }
 
@@ -138,14 +194,17 @@ export function registerGeometryCompletionTools(): void {
           content: [
             {
               type: "text",
-              text: "Geometry visual, fingerprint, and rotation gates passed; Geometry stage completion delegated successfully.",
+              text: "Deterministic visual, multimodal visual, fingerprint, reference, and rotation gates passed; Geometry stage completion delegated successfully.",
             },
           ],
           structuredContent: {
             status: "PASS",
             visual_report_path: visualReportPath,
+            visual_metrics_path: metricsPath,
             geometry_fingerprint: currentFingerprint,
+            reference_sha256: reportReferenceHash,
             rotation_audit: rotationAudit,
+            visual_gate: gateResult?.structuredContent ?? null,
             delegated_result: delegated,
           },
         };
