@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.6",
+  "schema_version": "1.7",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -23,16 +23,17 @@
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Visual-grounded Minecraft Bedrock cuboid Geometry construction and review for an already-open valid project.",
+      "description": "Fixed-scale, region-diagnosed Minecraft Bedrock cuboid Geometry construction and review for an already-open valid project.",
       "allowed_tools": [
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
         "inspect_reference_visual",
         "capture_visual_feedback",
-        "compare_reference_views",
+        "analyze_geometry_views",
         "place_cubes_safe",
         "modify_cubes",
+        "rotate_cube_about_attachment",
         "duplicate_element",
         "rename_element",
         "remove_element",
@@ -95,7 +96,7 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation, Geometry review-readiness verification, evidence capture, checkpointing, and final export.",
+      "description": "Read-mostly final validation with mandatory Geometry review-readiness verification, evidence capture, checkpointing, and final export.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
@@ -113,15 +114,16 @@
       ]
     },
     "GEOMETRY_LOCAL_REPAIR": {
-      "description": "Small visual-grounded Geometry-only correction after user review; restricted to one named issue or tightly related pair.",
+      "description": "Small fixed-scale visual-grounded Geometry correction after user review; restricted to one named issue or tightly related pair.",
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
         "inspect_reference_visual",
         "capture_visual_feedback",
-        "compare_reference_views",
+        "analyze_geometry_views",
         "place_cubes_safe",
         "modify_cubes",
+        "rotate_cube_about_attachment",
         "duplicate_element",
         "rename_element",
         "remove_element",
@@ -134,16 +136,17 @@
       ]
     },
     "GEOMETRY_VISUAL_REBUILD": {
-      "description": "Major primary-form rebuild when multiple masses or multiple views fail visual review. Preserves project identity and prior checkpoints while permitting broad Geometry correction.",
+      "description": "Major primary-form rebuild when multiple masses or views fail. Preserves project identity and checkpoints while enforcing the same phase, diagnosis, and rotation guards as normal Geometry.",
       "allowed_tools": [
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
         "inspect_reference_visual",
         "capture_visual_feedback",
-        "compare_reference_views",
+        "analyze_geometry_views",
         "place_cubes_safe",
         "modify_cubes",
+        "rotate_cube_about_attachment",
         "duplicate_element",
         "rename_element",
         "remove_element",
