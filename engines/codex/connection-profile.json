@@ -28,6 +28,12 @@
     "single_active_instance": true,
     "single_active_write_session": true
   },
+  "workspace": {
+    "index": "workspace/workspace.json",
+    "active_project": "workspace/active/<asset>/",
+    "blockbench_files": "workspace/active/<asset>/blockbench/",
+    "mcp_files": "workspace/active/<asset>/mcp/"
+  },
   "required_common_tools": [
     "get_runtime_status",
     "get_project_info",
@@ -45,5 +51,5 @@
   },
   "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
   "default_tool_profile": "BEDROCK_CUBOID_GEOMETRY",
-  "readiness_report": "workspace/sessions/<asset>/reports/connection.json"
+  "readiness_report": "workspace/active/<asset>/mcp/reports/connection.json"
 }
