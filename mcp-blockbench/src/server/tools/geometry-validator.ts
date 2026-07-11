@@ -21,6 +21,8 @@ import {
   transformedCubeCorners,
   DEFAULT_ROTATION_POLICY,
 } from "@/lib/worldBounds";
+import { mergeGeometryReferenceProfile } from "@/lib/geometryReferenceProfiles";
+import { evaluateGeometryBlueprint } from "@/lib/geometryBlueprint";
 
 const validateGeometryContractParameters = z.object({
   session_root: z.string().min(1),
@@ -33,7 +35,7 @@ export const geometryValidatorToolDocs: ToolSpec[] = [
   {
     name: "validate_geometry_contract",
     description:
-      "Validates Geometry with transformed world bounds, cube-count range, hierarchy, ground contacts, mesh/animation restrictions, rotation audit, and current unified visual readiness. Writes geometry_report.json with structural, multimodal, deterministic, rotation, evidence, and final statuses.",
+      "Validates Geometry with transformed world bounds, machine-readable part ranges, cube-count range, hierarchy, true ground contacts, mesh/animation restrictions, rotation audit, and current unified visual readiness. Writes strict geometry_report.json statuses.",
     annotations: {
       title: "Validate Geometry Contract",
       destructiveHint: false,
@@ -84,6 +86,22 @@ function animationCount(): number {
   );
 }
 
+function numeric(value: unknown): number | null {
+  const result = Number(value);
+  return Number.isFinite(result) ? result : null;
+}
+
+function expectedUnits(
+  unitsValue: unknown,
+  blocksValue: unknown,
+  unitsPerBlock: number
+): number | null {
+  const explicit = numeric(unitsValue);
+  if (explicit !== null) return explicit;
+  const blocks = numeric(blocksValue);
+  return blocks === null ? null : blocks * unitsPerBlock;
+}
+
 export function registerGeometryValidatorTools(): void {
   createTool(
     geometryValidatorToolDocs[0].name,
@@ -120,26 +138,36 @@ export function registerGeometryValidatorTools(): void {
         }> = [];
         const bounds = computeProjectWorldBounds();
         const unitsPerBlock =
-          manifest.main_format?.blockbench_units_per_block ?? 16;
+          numeric(manifest.main_format?.blockbench_units_per_block) ?? 16;
         const expected = [
-          manifest.main_format?.width_units ??
-            manifest.main_format?.width_blocks * unitsPerBlock,
-          manifest.main_format?.height_units ??
-            manifest.main_format?.height_blocks * unitsPerBlock,
-          manifest.main_format?.depth_units ??
-            manifest.main_format?.depth_blocks * unitsPerBlock,
+          expectedUnits(
+            manifest.main_format?.width_units,
+            manifest.main_format?.width_blocks,
+            unitsPerBlock
+          ),
+          expectedUnits(
+            manifest.main_format?.height_units,
+            manifest.main_format?.height_blocks,
+            unitsPerBlock
+          ),
+          expectedUnits(
+            manifest.main_format?.depth_units,
+            manifest.main_format?.depth_blocks,
+            unitsPerBlock
+          ),
         ];
         const labels = ["WIDTH", "HEIGHT", "DEPTH"];
         for (let axis = 0; axis < 3; axis += 1) {
-          if (!Number.isFinite(Number(expected[axis]))) continue;
-          const delta = Math.abs(bounds.size[axis] - Number(expected[axis]));
+          if (expected[axis] === null) continue;
+          const target = expected[axis] as number;
+          const delta = Math.abs(bounds.size[axis] - target);
           if (delta > dimension_tolerance_units) {
             issues.push({
               code: `DIMENSION_${labels[axis]}_MISMATCH`,
               severity: "REVISION_REQUIRED",
               message: `${labels[axis].toLowerCase()} is ${bounds.size[
                 axis
-              ].toFixed(3)}u; expected ${Number(expected[axis]).toFixed(
+              ].toFixed(3)}u; expected ${target.toFixed(
                 3
               )} ± ${dimension_tolerance_units}u using transformed world bounds.`,
             });
@@ -147,8 +175,9 @@ export function registerGeometryValidatorTools(): void {
         }
 
         const expectedCount = manifest.geometry?.expected_cube_count ?? {};
-        const minimum = Number(expectedCount.minimum ?? 0);
-        const maximum = Number(expectedCount.maximum ?? Number.POSITIVE_INFINITY);
+        const minimum = numeric(expectedCount.minimum) ?? 0;
+        const maximum =
+          numeric(expectedCount.maximum) ?? Number.POSITIVE_INFINITY;
         if (Cube.all.length < minimum || Cube.all.length > maximum) {
           issues.push({
             code: "CUBE_COUNT_OUT_OF_RANGE",
@@ -156,7 +185,7 @@ export function registerGeometryValidatorTools(): void {
             message: `Geometry has ${Cube.all.length} cubes; expected ${minimum}..${maximum}.`,
           });
         }
-        if (Mesh.all.length > 0 || manifest.geometry?.mesh_allowed === false && Mesh.all.length > 0) {
+        if (Mesh.all.length > 0) {
           issues.push({
             code: "MESH_PRESENT",
             severity: "BLOCKER",
@@ -183,7 +212,32 @@ export function registerGeometryValidatorTools(): void {
           }
         }
 
-        const groundY = Number(manifest.main_format?.ground_plane_y ?? 0);
+        const profile = mergeGeometryReferenceProfile({
+          referenceSha256: manifest.reference_visual_lock?.sha256,
+          visualGrounding: manifest.visual_grounding,
+          geometry: manifest.geometry,
+        });
+        const blueprint = profile
+          ? evaluateGeometryBlueprint(
+              (Cube.all ?? []).map((cube) => ({
+                name: cube.name,
+                from: [...cube.from],
+                to: [...cube.to],
+                visibility: cube.visibility,
+                export: (cube as unknown as { export?: boolean }).export,
+              })),
+              profile.part_constraints
+            )
+          : null;
+        for (const issue of blueprint?.issues ?? []) {
+          issues.push({
+            code: issue.code,
+            severity: "REVISION_REQUIRED",
+            message: issue.message,
+          });
+        }
+
+        const groundY = numeric(manifest.main_format?.ground_plane_y) ?? 0;
         const groundContacts: Array<{
           group: string;
           minimum_world_y: number | null;
@@ -248,16 +302,24 @@ export function registerGeometryValidatorTools(): void {
             issues.push({
               code: String(issue.code ?? "GEOMETRY_REVIEW_GATE_ISSUE"),
               severity:
-                issue.severity === "BLOCKER" ? "BLOCKER" : "REVISION_REQUIRED",
+                issue.severity === "BLOCKER"
+                  ? "BLOCKER"
+                  : "REVISION_REQUIRED",
               message: String(issue.message ?? "Geometry review gate failed."),
             });
           }
         }
 
+        const visualIssueCodes = [
+          "VISUAL",
+          "REFERENCE",
+          "MULTIMODAL",
+          "DETERMINISTIC",
+          "ANALYZER",
+        ];
         const structuralStatus = issues.some(
           (issue) =>
-            !issue.code.includes("VISUAL") &&
-            !issue.code.includes("REFERENCE") &&
+            !visualIssueCodes.some((marker) => issue.code.includes(marker)) &&
             issue.severity !== "WARNING"
         )
           ? "REVISION_REQUIRED"
@@ -295,7 +357,7 @@ export function registerGeometryValidatorTools(): void {
         );
         assertInsideRoot(reportPath, session_root);
         const report = {
-          schema_version: "2.0",
+          schema_version: "2.1",
           asset_id: manifest.asset?.id ?? null,
           stage: "GEOMETRY",
           project_uuid: Project.uuid,
@@ -313,6 +375,7 @@ export function registerGeometryValidatorTools(): void {
             textures: Texture.all.length,
             animations,
           },
+          blueprint,
           ground_contacts: groundContacts,
           rotation_audit: rotationAudit,
           review_gate: reviewGate?.structuredContent ?? null,
