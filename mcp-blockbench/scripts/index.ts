@@ -56,6 +56,10 @@ function hasBootstrapPluginMetadata(bundle: string): boolean {
   return requiredPatterns.every((pattern) => pattern.test(bootstrap));
 }
 
+function hasUnsupportedThreeLoader(bundle: string): boolean {
+  return /(?:require|requireNativeModule)\(\s*["']three["']\s*\)/.test(bundle);
+}
+
 async function buildPlugin(): Promise<boolean> {
   await mkdir(OUTPUT_DIR, { recursive: true });
   const result = await Bun.build({
@@ -66,7 +70,6 @@ async function buildPlugin(): Promise<boolean> {
     sourcemap: Bun.argv.includes("--sourcemap") ? "external" : "none",
     plugins: [blockbenchCompatPlugin, textFileLoaderPlugin],
     external: [
-      "three",
       "tinycolor2",
       "node:module",
       "node:fs",
@@ -120,6 +123,12 @@ async function buildPlugin(): Promise<boolean> {
     if (!hasBootstrapPluginMetadata(finalBundle)) {
       throw new Error(
         "Generated plugin bootstrap metadata is invalid. Keep version, title, author, description, icon, variant, and min_version as direct literals in the dependency-free BBPlugin.register entry."
+      );
+    }
+
+    if (hasUnsupportedThreeLoader(finalBundle)) {
+      throw new Error(
+        'Generated plugin still contains an unsupported runtime load for "three". Use the Blockbench THREE compatibility shim instead.'
       );
     }
 
