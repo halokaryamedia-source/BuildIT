@@ -33,8 +33,8 @@ describe("exact MCP tool profile contract", () => {
     const expectedCounts: Record<string, number> = {
       BOOTSTRAP: 9,
       BEDROCK_CUBOID_GEOMETRY: 19,
-      BEDROCK_CUBOID_TEXTURE: 26,
-      BEDROCK_CUBOID_ANIMATION: 17,
+      BEDROCK_CUBOID_TEXTURE: 27,
+      BEDROCK_CUBOID_ANIMATION: 18,
       FINAL_VALIDATION_READONLY: 16,
       GEOMETRY_LOCAL_REPAIR: 15,
       TEXTURE_LOCAL_REPAIR: 20,
@@ -91,6 +91,17 @@ describe("exact MCP tool profile contract", () => {
     expect(runtime).toContain('toolName === "place_cube"');
     expect(runtime).toContain('toolName === "modify_cube"');
     expect(runtime).toContain('toolName === "create_texture"');
+  });
+
+  test("every normal review stage exposes compact validation", () => {
+    for (const profileId of [
+      "BEDROCK_CUBOID_GEOMETRY",
+      "BEDROCK_CUBOID_TEXTURE",
+      "BEDROCK_CUBOID_ANIMATION",
+      "FINAL_VALIDATION_READONLY",
+    ]) {
+      expect(exposed(profileId).has("validate_reference_contract"), profileId).toBe(true);
+    }
   });
 
   test("Texture is cuboid/classic-only and Final Validation is read-mostly", () => {
