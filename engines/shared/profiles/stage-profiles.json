@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.4",
+  "schema_version": "2.5",
   "global": {
     "runtime_authority": "workspace/sessions/<asset>/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -36,7 +36,7 @@
     "feedback_tool": "capture_visual_feedback",
     "deterministic_compare_tool": "compare_reference_views",
     "record_tool": "record_geometry_visual_result",
-    "gate_tool": "verify_geometry_visual_gate",
+    "gate_tool": "verify_geometry_review_ready",
     "structural_pass_is_visual_pass": false,
     "multimodal_review_required": true,
     "deterministic_guard_required": true,
@@ -72,11 +72,11 @@
         "STRUCTURAL_DETAIL",
         "STRUCTURAL_DETAIL_VISUAL_CHECK",
         "FULL_DETERMINISTIC_COMPARE",
-        "FULL_VISUAL_GATE"
+        "FULL_REVIEW_READINESS_GATE"
       ],
       "compact_validation_tool": "validate_reference_contract",
       "deterministic_visual_tool": "compare_reference_views",
-      "visual_validation_tool": "verify_geometry_visual_gate",
+      "review_readiness_tool": "verify_geometry_review_ready",
       "approval_transition_tool": "complete_geometry_stage",
       "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
       "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
@@ -137,7 +137,7 @@
       "approved_state": "DONE",
       "automatic_local_fix_limit": 2,
       "compact_validation_tool": "validate_reference_contract",
-      "geometry_visual_gate_tool": "verify_geometry_visual_gate",
+      "geometry_review_readiness_tool": "verify_geometry_review_ready",
       "atlas_evidence_tool": "save_texture_evidence",
       "approval_transition_tool": "complete_stage",
       "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
