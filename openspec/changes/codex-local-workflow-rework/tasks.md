@@ -1,82 +1,81 @@
 # Tasks: Codex Local Workflow Rework
 
-## Completed Structure and Workflow
+## Completed foundation
 
-- [x] Keep work isolated on branch `Rework`.
-- [x] Preserve OpenSpec as durable scope memory and Ponytail as execution filter.
+- [x] Keep active work isolated on `Rework`.
+- [x] Use one `mcp-blockbench/` package root.
+- [x] Use one runtime state authority and one workspace selection index.
+- [x] Separate user-facing `blockbench/` from internal `mcp/` data.
 - [x] Use Geometry, Texture, optional Animation, and Final Validation review stages.
-- [x] Add deterministic `blockbench` MCP connection.
-- [x] Add exact stage and repair tool profiles.
-- [x] Add persistent checkpoints, standard evidence, compact validation, direct texture evidence, and atomic stage completion.
-- [x] Consolidate the complete plugin package under `mcp-blockbench/`.
-- [x] Consolidate AI workflow under `engines/`, runtime data under `workspace/`, and documentation under `docs/`.
-- [x] Remove duplicate custom roots `Engine/`, `SavedData`, `SourceDocument`, root `src`, root `build`, root `prompts`, and root `tests`.
-- [x] Move generated API output to the single `docs/api/` target.
-- [x] Remove stale committed runtime artifacts and legacy documentation from the active tree; retain history in Git.
-- [x] Keep one canonical naming set with no versioned or parallel folders/files.
-- [x] Add exact production skill profiles with a maximum of two loaded production skills.
-- [x] Replace broad production skills with `blockbench-production`, Geometry, Texture, optional Animation, and Validation skills.
-- [x] Add one canonical skill source plus synchronized `.agents` and `.codex` adapters.
-- [x] Remove deprecated `blockbench-use`, `blockbench-modeling`, and `blockbench-texturing` production skills.
-- [x] Apply the Ponytail reliability scope recorded in `PONYTAIL_EXECUTION.md`.
-- [x] Add one composite project write-lease capability and enforce it at the existing tool-profile execution boundary.
-- [x] Bind project mutations to owner session, project UUID, asset, session root, stage, state revision, and tool-profile revision.
-- [x] Release the write lease after successful stage/profile transitions so the next stage must reacquire after reconnect.
-- [x] Align session timeout defaults with the 30-minute connection contract and release ownership on session removal.
-- [x] Sandbox standard-view evidence writes, use atomic file replacement, return SHA-256 metadata, and omit image payloads when files are written.
-- [x] Sandbox final exports and record real checkpoint/export integrity hashes.
-- [x] Add source-level tests for write ownership, stale-call checks, evidence payload control, and checkpoint integrity.
-- [x] Replace the old session/archive workspace with `active/` and `completed/` lifecycles.
-- [x] Separate user-facing `.bbmodel`, textures, reference PNGs, and previews under `blockbench/` from MCP internals under `mcp/`.
-- [x] Add one local `workspace.json` index and one compact lifecycle command for init/list/activate/inspect/complete/reopen.
-- [x] Keep completed baselines immutable while reopened revisions are active.
-- [x] Preserve project/connection metadata for future revisions without persisting live sessions or write leases.
-- [x] Update Codex readiness/profile scripts to resolve the selected active workspace project without directory scanning.
+- [x] Add exact stage/repair tool profiles and synchronized production skills.
+- [x] Add persistent checkpoints, stable evidence, direct texture evidence, atomic stage completion, and write-lease protection.
+- [x] Add active/completed workspace lifecycle and immutable completed baselines.
+- [x] Replace the old four-sheet package with one Reference Visual plus Markdown/JSON contracts.
 
-## Local Proof Still Required
+## Geometry quality implementation
 
-- [x] Run `bun run skills:check`, focused typecheck, tests, and development build from `mcp-blockbench/`.
-  - BLOCKER (2026-07-11, commit `8ef79596d38709eb70ff0f9ce944b443e008325e`): `skills:check` passed, but `bun run typecheck` failed with TypeScript errors across the existing plugin source. Per the local validation gate, tests, build, workspace lifecycle, and Blockbench runtime validation were not continued.
-  - TRIAGE: the complete baseline contains 173 errors across 19 files. Four minimal batches reduced it to 164 by fixing stale package paths, restoring CSS module typing, aligning the MCP prompt contract, and handling optional mesh tool context. Typecheck remains blocked; no checkbox is complete.
-  - CONTINUED TRIAGE: shared runtime declarations plus utility, element/project, texture, and UV fixes reduced the current count from 164 to 123. The next isolated domain is paint (45 errors); static validation remains incomplete.
-  - PAINT TRIAGE: 45 Paint errors reduced to zero; repository total is now 78. `skills:check` passes, full typecheck remains blocked by non-Paint domains, and tests/build remain unrun.
-  - MESH TRIAGE: 14 Mesh errors reduced to zero; repository total is now 64. `skills:check` passes, full typecheck remains blocked by non-Mesh domains, and tests/build/runtime remain unrun.
-  - ANIMATION TRIAGE: 41 Animation errors reduced to zero; repository total is now 23. `skills:check` passes, full typecheck remains blocked by non-Animation domains, and tests/build/runtime remain unrun.
-  - FINAL STATIC GATE (2026-07-11): remaining Hytale, Cubes, Material Instances, UI, and Armature errors reduced from 23 to zero. `skills:check`, full typecheck, all 35 tests, and dev build pass; `dist/mcp.js` is generated. Runtime validation remains pending.
-- [ ] Run `bun run workspace -- init`, `activate`, `inspect`, `complete`, and `reopen` against a disposable local asset.
-- [ ] Verify `blockbench/` alone contains the `.bbmodel`, textures, reference images, and previews needed by a user.
-- [ ] Verify `mcp/` alone contains state, contracts, checkpoints, evidence, reports, and no duplicate canonical model/texture files after completion.
-- [ ] Verify completion promotes `mcp/final/` staging into `blockbench/`, removes staging, and moves the project to `completed/`.
-- [ ] Verify reopen preserves the completed baseline, creates an active revision, and marks downstream stages for revalidation.
-- [ ] Reload `mcp-blockbench/dist/mcp.js` in Blockbench.
-- [ ] Run `engines/codex/scripts/sync-local-stack.ps1` using only `workspace.json` selection.
-- [ ] Verify `manage_project_write_lease` acquires for one Codex session and rejects a second writer.
-- [ ] Verify a wrong project UUID, stale state revision, stale stage, and stale tool-profile revision are blocked.
-- [ ] Verify exact tool profile counts and one reconnect per stage transition.
-- [ ] Verify a successful stage/profile transition releases the old lease and the next stage reacquires it.
-- [ ] Verify each stage loads only `blockbench-production` plus one matching stage skill.
-- [ ] Verify Animation skill is not loaded when Animation is skipped.
-- [ ] Verify blocked out-of-profile and cross-stage calls.
-- [ ] Verify standard-view file output returns metadata without image payloads and cannot escape the session root.
-- [ ] Verify checkpoint and final-export SHA-256 values match files on disk.
-- [ ] Verify compact validator, texture evidence, checkpoint, and stage completion tools.
-- [ ] Execute one end-to-end local dry run with a current reference package.
-- [ ] Measure repeated reads, loaded skills, payload size, calls, reconnects, and repair loops.
+- [x] Return the approved Reference Visual as an MCP image payload.
+- [x] Return clean current-model visual feedback images.
+- [x] Add transformed cube/group world-space bounds.
+- [x] Add fixed approved-scale cuboid projection with no current-model free rescale.
+- [x] Add global silhouette, profile, bounding-box, and semantic-region metrics.
+- [x] Add actionable view/region/direction/magnitude/part recommendations.
+- [x] Add Black Rhinoceros built-in compatibility profile keyed by approved Reference Visual hash.
+- [x] Add manifest-extensible panel, region, part, and rotation contracts.
+- [x] Add enforced `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` runtime phases.
+- [x] Block horns, ears, final feet, tail, and detail during `PRIMARY_FORM`.
+- [x] Add two-cycle convergence tracking and `VISUAL_CONVERGENCE_FAILED`.
+- [x] Apply Geometry guards to `GEOMETRY_VISUAL_REBUILD`.
+- [x] Add `rotate_cube_about_attachment` with pivot, axis/range, direction, connection, before/after score, and rollback.
+- [x] Reject direct non-zero rotation through generic Geometry cube tools.
+- [x] Add strict five-view/current-hash/current-fingerprint review readiness.
+- [x] Add transformed Geometry contract validation and strict `geometry_report.json` statuses.
+- [x] Remove generic Geometry completion bypass and preserve lease/session transition behavior.
+- [x] Require final validation to re-check current Geometry readiness.
+- [x] Add repository-level legacy-context rejection.
 
-## Deferred Until Dry-Run Evidence
+## Documentation and package alignment
 
-- [ ] Add transformed world-space bounds only if raw bounds produce a demonstrated mismatch.
-- [ ] Deepen hierarchy, UV-overlap, pivot, ground-contact, and sampled-animation validation only from observed failures.
-- [ ] Add a stage-transition crash journal only if local failure injection shows the current rollback path is insufficient.
-- [ ] Filter MCP resources/prompts only if the dry run shows meaningful context clutter.
-- [ ] Add runtime skill-loading enforcement only if agent-side exact skill profiles fail in practice.
-- [ ] Complete Claude and Ollama adapters only after the Codex path is stable.
-- [ ] Add Git LFS only if completed binary history is intentionally committed and local storage alone is insufficient.
+- [x] Update canonical Production and Geometry skills.
+- [x] Synchronize `.agents` and `.codex` Production/Geometry skills.
+- [x] Update Validation skill and adapters.
+- [x] Update Codex bootstrap and repository agent rules.
+- [x] Update tool and stage profiles.
+- [x] Register Geometry diagnosis, rotation, validation, review, and completion tools in runtime and docs manifests.
+- [ ] Update Reference Studio manifest template with mandatory non-zero crops, weighted regions, part constraints, and rotation contracts.
+- [ ] Update Black Rhinoceros handoff and Geometry contract to name the final analyzer/rotation/validator flow.
 
-## Deferred Until Last
+## Regression coverage before testing
 
-- [ ] Add final CI only after local runtime proof is stable.
-- [ ] Open a new integration PR only after explicit user approval.
-- [ ] Run final CI and request approval before merging into `V1`.
+- [ ] Add pure projection tests proving fixed scale and ground alignment.
+- [ ] Add profile tests proving Geometry profiles expose only guarded tools.
+- [ ] Add phase tests proving detail is blocked during primary form.
+- [ ] Add rotation-contract tests for axis, direction, connection, and rollback markers.
+- [ ] Add negative fixture test proving the failed Black Rhinoceros checkpoint cannot pass Geometry quality gates.
+- [ ] Add positive synthetic projection test.
+- [ ] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
+- [ ] Confirm skill adapters are byte-identical to canonical skills.
 
-CI remains disabled during active Rework development.
+## Final test step — do only after implementation is complete
+
+- [ ] Run `bun install --frozen-lockfile`.
+- [ ] Run `bun run skills:check`.
+- [ ] Run full `bun run typecheck`.
+- [ ] Run all `bun test` tests.
+- [ ] Run `bun run build` and confirm `dist/mcp.js` exists.
+- [ ] Inspect the `MCP Verify` workflow result for the final branch head.
+- [ ] Fix every failure and repeat until all static gates pass.
+- [ ] Reload `dist/mcp.js` locally.
+- [ ] Run one controlled Black Rhinoceros Geometry dry run.
+- [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts instead of generic mismatch text.
+- [ ] Confirm unsafe rotation is rejected or rolled back.
+- [ ] Confirm non-improving cycles stop.
+- [ ] Confirm Geometry cannot reach review or approval without all current evidence.
+
+## Deferred until explicit integration approval
+
+- [ ] Merge into `V1`.
+- [ ] Release or deployment.
+- [ ] Persistent live MCP sessions.
+- [ ] Unrelated modelling capability expansion.
+- [ ] Duplicate or versioned workflow authorities and outputs.
