@@ -16,20 +16,8 @@ export const createProjectParameters = z.object({
     .describe(
       "Default UV mode. false = per-face UV (recommended for custom texture atlases). When omitted, uses the format default."
     ),
-  texture_width: z
-    .number()
-    .int()
-    .min(1)
-    .max(4096)
-    .optional()
-    .describe("Texture atlas width in pixels."),
-  texture_height: z
-    .number()
-    .int()
-    .min(1)
-    .max(4096)
-    .optional()
-    .describe("Texture atlas height in pixels."),
+  texture_width: z.number().int().min(1).max(4096).optional(),
+  texture_height: z.number().int().min(1).max(4096).optional(),
 });
 
 export const configureProjectParameters = z.object({
@@ -37,23 +25,9 @@ export const configureProjectParameters = z.object({
   box_uv: z
     .boolean()
     .optional()
-    .describe(
-      "Switch UV mode. false = per-face UV, true = box UV. Requires format support."
-    ),
-  texture_width: z
-    .number()
-    .int()
-    .min(1)
-    .max(4096)
-    .optional()
-    .describe("Texture atlas width in pixels."),
-  texture_height: z
-    .number()
-    .int()
-    .min(1)
-    .max(4096)
-    .optional()
-    .describe("Texture atlas height in pixels."),
+    .describe("Switch UV mode. false = per-face UV, true = box UV. Requires format support."),
+  texture_width: z.number().int().min(1).max(4096).optional(),
+  texture_height: z.number().int().min(1).max(4096).optional(),
 });
 
 export const getProjectInfoParameters = z.object({});
@@ -69,38 +43,72 @@ function getUvInfo() {
   };
 }
 
+function projectSnapshot() {
+  if (!Project) {
+    throw new Error("No project is open. Use create_project or open an existing file in Blockbench.");
+  }
+
+  const format = Format as {
+    id?: string;
+    name?: string;
+    display_name?: string;
+    box_uv?: boolean;
+  } | undefined;
+  const rootGroups = Outliner.root
+    .filter((node): node is Group => node instanceof Group)
+    .map((group) => ({
+      name: group.name,
+      uuid: group.uuid,
+      children: group.children?.length ?? 0,
+    }));
+
+  return {
+    project: {
+      name: Project.name,
+      uuid: Project.uuid,
+      save_path: (Project as { save_path?: string }).save_path ?? null,
+    },
+    format: {
+      id: format?.id ?? null,
+      name: format?.display_name ?? format?.name ?? null,
+    },
+    uv: getUvInfo(),
+    resolution: {
+      texture_width: Project.texture_width ?? null,
+      texture_height: Project.texture_height ?? null,
+    },
+    counts: {
+      cubes: Cube.all.length,
+      meshes: Mesh.all.length,
+      groups: Group.all.length,
+      textures: Texture.all.length,
+      outliner_elements: Outliner.elements.length,
+    },
+    root_groups: rootGroups,
+  };
+}
+
 export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new project with the given name and project type. For custom texture atlases, set box_uv to false (per-face UV) and specify texture_width/height.",
-    annotations: {
-      title: "Create Project",
-      destructiveHint: true,
-      openWorldHint: true,
-    },
+      "Creates a new project with the given name and project type. For custom texture atlases, set box_uv to false and specify texture dimensions.",
+    annotations: { title: "Create Project", destructiveHint: true, openWorldHint: true },
     parameters: createProjectParameters,
     status: STATUS_STABLE,
   },
   {
     name: "configure_project",
-    description:
-      "Updates project settings: name, UV mode (box vs per-face), and texture resolution.",
-    annotations: {
-      title: "Configure Project",
-      destructiveHint: true,
-    },
+    description: "Updates project name, UV mode, and texture resolution.",
+    annotations: { title: "Configure Project", destructiveHint: true },
     parameters: configureProjectParameters,
     status: STATUS_STABLE,
   },
   {
     name: "get_project_info",
     description:
-      "Returns read-only project orientation: format id and display name, project name/UUID, UV mode, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
-    annotations: {
-      title: "Get Project Info",
-      readOnlyHint: true,
-    },
+      "Returns one compact structured project snapshot: identity, format, UV mode, texture size, counts, and top-level groups.",
+    annotations: { title: "Get Project Info", readOnlyHint: true },
     parameters: getProjectInfoParameters,
     status: STATUS_STABLE,
   },
@@ -114,36 +122,29 @@ export function registerProjectTools() {
       async execute({ name, format, box_uv, texture_width, texture_height }) {
         const formatDef = Formats[format];
         if (!formatDef) {
-          throw new Error(
-            `Unknown format "${format}". Use a valid format ID from Blockbench's Formats registry.`
-          );
+          throw new Error(`Unknown format "${format}". Use a valid Blockbench format ID.`);
         }
-
         const created = newProject(formatDef);
-        if (!created) {
-          throw new Error("Failed to create project.");
-        }
+        if (!created) throw new Error("Failed to create project.");
 
         Project!.name = name;
-
         if (box_uv !== undefined) {
           if (box_uv && !formatDef.box_uv) {
-            throw new Error(
-              `Format "${format}" does not support box UV mode.`
-            );
+            throw new Error(`Format "${format}" does not support box UV mode.`);
           }
           Project!.box_uv = box_uv;
         }
+        if (texture_width !== undefined) Project!.texture_width = texture_width;
+        if (texture_height !== undefined) Project!.texture_height = texture_height;
 
-        if (texture_width !== undefined) {
-          Project!.texture_width = texture_width;
-        }
-        if (texture_height !== undefined) {
-          Project!.texture_height = texture_height;
-        }
-
-        const uvMode = Project!.box_uv ? "box" : "per_face";
-        return `Created project "${name}" (UUID: ${Project?.uuid}) with format "${format}" and UV mode "${uvMode}".`;
+        const snapshot = projectSnapshot();
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Created project ${snapshot.project.name} (${snapshot.project.uuid}) using ${snapshot.format.id} and ${snapshot.uv.mode} UV.`,
+          }],
+          structuredContent: { status: "PASS", ...snapshot },
+        };
       },
     },
     projectToolDocs[0].status
@@ -154,43 +155,34 @@ export function registerProjectTools() {
     {
       ...projectToolDocs[1],
       async execute({ name, box_uv, texture_width, texture_height }) {
-        if (!Project) {
-          throw new Error(
-            "No project is open. Use create_project to start a new one."
-          );
-        }
-
+        if (!Project) throw new Error("No project is open. Use create_project first.");
         const format = Format as { box_uv?: boolean } | undefined;
-
-        if (box_uv !== undefined) {
-          if (box_uv && !format?.box_uv) {
-            throw new Error("Current format does not support box UV mode.");
-          }
+        if (box_uv && !format?.box_uv) {
+          throw new Error("Current format does not support box UV mode.");
         }
 
         Undo.initEdit({});
-
-        if (name !== undefined) {
-          Project.name = name;
-        }
-        if (box_uv !== undefined) {
-          Project.box_uv = box_uv;
-        }
-        if (texture_width !== undefined) {
-          Project.texture_width = texture_width;
-        }
-        if (texture_height !== undefined) {
-          Project.texture_height = texture_height;
+        try {
+          if (name !== undefined) Project.name = name;
+          if (box_uv !== undefined) Project.box_uv = box_uv;
+          if (texture_width !== undefined) Project.texture_width = texture_width;
+          if (texture_height !== undefined) Project.texture_height = texture_height;
+          Undo.finishEdit("Configure project");
+        } catch (error) {
+          Undo.cancelEdit?.(false);
+          throw error;
         }
 
-        Undo.finishEdit("Configure project");
         Canvas.updateAll();
-        if (typeof UVEditor !== "undefined") {
-          UVEditor.loadData();
-        }
-
-        const uv = getUvInfo();
-        return `Project configured: name="${Project.name}", UV mode="${uv.mode}", resolution=${uv.texture_width}x${uv.texture_height}.`;
+        if (typeof UVEditor !== "undefined") UVEditor.loadData();
+        const snapshot = projectSnapshot();
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Configured ${snapshot.project.name}: ${snapshot.uv.mode} UV at ${snapshot.resolution.texture_width}x${snapshot.resolution.texture_height}.`,
+          }],
+          structuredContent: { status: "PASS", ...snapshot },
+        };
       },
     },
     projectToolDocs[1].status
@@ -201,55 +193,14 @@ export function registerProjectTools() {
     {
       ...projectToolDocs[2],
       async execute() {
-        if (!Project) {
-          throw new Error(
-            "No project is open. Use create_project to start a new one, or open an existing file in Blockbench."
-          );
-        }
-
-        const format = Format as {
-          id?: string;
-          name?: string;
-          display_name?: string;
-          box_uv?: boolean;
-        } | undefined;
-
-        const rootGroups = Outliner.root
-          .filter((n): n is Group => n instanceof Group)
-          .map((g) => ({
-            name: g.name,
-            uuid: g.uuid,
-            children: g.children?.length ?? 0,
-          }));
-
-        return JSON.stringify(
-          {
-            project: {
-              name: Project.name,
-              uuid: Project.uuid,
-              save_path: (Project as { save_path?: string }).save_path ?? null,
-            },
-            format: {
-              id: format?.id ?? null,
-              name: format?.display_name ?? format?.name ?? null,
-            },
-            uv: getUvInfo(),
-            resolution: {
-              texture_width: Project.texture_width ?? null,
-              texture_height: Project.texture_height ?? null,
-            },
-            counts: {
-              cubes: Cube.all.length,
-              meshes: Mesh.all.length,
-              groups: Group.all.length,
-              textures: Texture.all.length,
-              outliner_elements: Outliner.elements.length,
-            },
-            root_groups: rootGroups,
-          },
-          null,
-          2
-        );
+        const snapshot = projectSnapshot();
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Project ${snapshot.project.name}: ${snapshot.counts.cubes} cubes, ${snapshot.counts.groups} groups, ${snapshot.counts.textures} textures.`,
+          }],
+          structuredContent: { status: "PASS", ...snapshot },
+        };
       },
     },
     projectToolDocs[2].status
