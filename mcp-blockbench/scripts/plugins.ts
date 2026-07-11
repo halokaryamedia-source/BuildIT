@@ -89,6 +89,25 @@ export const textFileLoaderPlugin: BunPlugin = {
 export const blockbenchCompatPlugin: BunPlugin = {
   name: "blockbench-compat",
   setup(build) {
+    // Blockbench already exposes its own THREE runtime globally. Never emit a
+    // runtime require("three") call because Blockbench's scoped loader rejects it.
+    build.onResolve({ filter: /^three$/ }, (args) => {
+      return { path: args.path, namespace: "blockbench-compat" };
+    });
+
+    build.onLoad({ filter: /^three$/, namespace: "blockbench-compat" }, () => {
+      return {
+        contents: `
+const runtimeThree = typeof THREE !== 'undefined' ? THREE : globalThis.THREE;
+if (!runtimeThree) {
+  throw new Error('Blockbench THREE runtime is unavailable.');
+}
+module.exports = runtimeThree;
+        `,
+        loader: "js",
+      };
+    });
+
     build.onResolve({ filter: /^process$/ }, (args) => {
       return { path: args.path, namespace: "blockbench-compat" };
     });
