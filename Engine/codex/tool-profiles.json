@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -10,10 +10,11 @@
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Readiness, project creation/configuration, and profile selection only.",
+      "description": "Readiness, project setup, compact reference validation, and profile selection only.",
       "allowed_tools": [
         "create_project",
         "configure_project",
+        "validate_reference_contract",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
@@ -32,8 +33,10 @@
         "undo",
         "redo",
         "get_undo_stack",
+        "validate_reference_contract",
         "save_project_checkpoint",
-        "capture_standard_views"
+        "capture_standard_views",
+        "complete_stage"
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
@@ -57,8 +60,10 @@
         "undo",
         "redo",
         "get_undo_stack",
+        "save_texture_evidence",
         "save_project_checkpoint",
-        "capture_standard_views"
+        "capture_standard_views",
+        "complete_stage"
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
@@ -75,7 +80,8 @@
         "get_undo_stack",
         "save_project_checkpoint",
         "capture_standard_views",
-        "capture_screenshot"
+        "capture_screenshot",
+        "complete_stage"
       ]
     },
     "FINAL_VALIDATION_READONLY": {
@@ -86,10 +92,13 @@
         "list_textures",
         "get_texture",
         "get_uv_layout",
+        "validate_reference_contract",
+        "save_texture_evidence",
         "capture_standard_views",
         "list_export_formats",
         "export_model",
-        "save_project_checkpoint"
+        "save_project_checkpoint",
+        "complete_stage"
       ]
     },
     "GEOMETRY_LOCAL_REPAIR": {
@@ -124,6 +133,7 @@
         "color_picker_tool",
         "undo",
         "redo",
+        "save_texture_evidence",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
