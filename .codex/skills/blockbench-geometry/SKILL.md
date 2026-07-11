@@ -43,7 +43,7 @@ get_stage_context
 → FULL_5_VIEW_DETERMINISTIC_COMPARE
 → record_geometry_visual_result
 → validate_reference_contract
-→ verify_geometry_visual_gate
+→ verify_geometry_review_ready
 → REVIEW_CHECKPOINT
 → GEOMETRY_REVIEW
 ```
@@ -93,7 +93,7 @@ Before checkpointing:
    - blue = excess current silhouette.
 4. If deterministic metrics fail, do not record multimodal PASS.
 5. Record Codex's visual decision with `record_geometry_visual_result`.
-6. Call `verify_geometry_visual_gate`.
+6. Call `verify_geometry_review_ready`; it must confirm current five-view evidence, deterministic metrics, multimodal report, reference hash, Geometry fingerprint, and rotation safety.
 
 The 3/4 view uses perspective; Front, Left, Back, and Top use orthographic projection.
 
