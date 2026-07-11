@@ -42,7 +42,7 @@
         "verify_geometry_visual_gate",
         "save_project_checkpoint",
         "capture_standard_views",
-        "complete_stage"
+        "complete_geometry_stage"
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
