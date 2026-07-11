@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Geometry-stage skill for approved Minecraft Bedrock cuboid assets. Builds coarse-to-fine form, validates cube rotations and pivots, compares live views to the approved Reference Visual, and stops for user review."
+description: "Visual-grounded Geometry-stage skill for approved Minecraft Bedrock cuboid assets. Builds coarse-to-fine form, validates cube rotations and pivots, combines deterministic silhouette checks with Codex visual inspection, and stops for user review."
 ---
 
 # Blockbench Geometry
@@ -13,35 +13,37 @@ Use only when the active stage is `GEOMETRY`, the current MCP session owns the w
 - `GEOMETRY_LOCAL_REPAIR`
 - `GEOMETRY_VISUAL_REBUILD`
 
-Read only:
+Call `get_stage_context` first. Use its compact decision lock for routine work. Open full `PRODUCTION_CONTEXT.md`, `GEOMETRY.md`, or manifest sections only when the compact context is missing a required decision or reports a conflict.
 
-1. `PRODUCTION_CONTEXT.md`
-2. `reference_manifest.json`
-3. the approved Reference Visual
-4. `GEOMETRY.md`
-5. current state, accepted areas, and open issues
+## Dual visual rule
 
-## Non-negotiable visual rule
+Geometry requires both:
 
-The model must be visually inspected by Codex during construction. A valid file, correct bounds, cube count, hierarchy, and zero Blockbench warnings do not prove visual similarity.
+1. **Codex multimodal inspection** of the approved Reference Visual and current model images.
+2. **Deterministic silhouette/profile comparison** from `compare_reference_views`.
 
-Call `inspect_reference_visual` once before the first mutation and actually inspect the returned image payload.
+Neither structural validation nor deterministic metrics alone proves visual quality. A final PASS requires both visual layers plus rotation safety.
+
+Call `inspect_reference_visual` once before the first mutation and inspect the returned image payload.
 
 ## Coarse-to-fine workflow
 
 ```text
-REFERENCE_VISUAL_LOAD
+get_stage_context
+→ inspect_reference_visual
 → PRIMARY_FORM_PLAN
 → PRIMARY_FORM_BUILD
-→ PRIMARY_FORM_VISUAL_CHECK
+→ capture_visual_feedback: left + front + top
+→ compare_reference_views: left + front + top
 → TARGETED_PRIMARY_REPAIR
 → STRUCTURAL_DETAIL
-→ STRUCTURAL_DETAIL_VISUAL_CHECK
-→ TARGETED_DETAIL_REPAIR
-→ FULL_5_VIEW_VISUAL_GATE
-→ STRUCTURAL_VALIDATION
-→ VISUAL_REPORT
-→ VISUAL_GATE_VERIFY
+→ capture affected views
+→ compare affected views
+→ FULL_5_VIEW_VISUAL_FEEDBACK
+→ FULL_5_VIEW_DETERMINISTIC_COMPARE
+→ record_geometry_visual_result
+→ validate_reference_contract
+→ verify_geometry_visual_gate
 → REVIEW_CHECKPOINT
 → GEOMETRY_REVIEW
 ```
@@ -58,17 +60,17 @@ Build only the silhouette foundation first:
 - four provisional leg columns;
 - ground relationship.
 
-Do not spend calls on horns, ears, feet, tail, or minor segmentation until primary form passes visual comparison in at least:
+Do not spend calls on horns, ears, final feet, tail, or minor segmentation until primary form passes visual comparison in:
 
 - Left Side;
 - Front;
 - Top / Footprint.
 
-Call `capture_visual_feedback` with only those views and `return_images: true`. Compare the returned current model images against the approved Reference Visual. If body length, body height, shoulder/rear relation, head level, width, footprint, or leg placement is materially wrong, repair before adding detail.
+Call `capture_visual_feedback` with only those views and `return_images: true`. Then call `compare_reference_views` for the same views. If either Codex inspection or deterministic metrics identifies a material mismatch, repair before detail.
 
 ### Structural detail
 
-After primary form is visually acceptable, add only silhouette-critical detail:
+After primary form is acceptable, add only silhouette-critical detail:
 
 - horns;
 - ears;
@@ -77,21 +79,23 @@ After primary form is visually acceptable, add only silhouette-critical detail:
 - required hierarchy separation;
 - ground-contact correction.
 
-Capture only affected views during correction. Do not repeatedly return all five images.
+Capture and compare only affected views during correction. Do not repeatedly return all five images.
 
 ### Final visual gate
 
-Before checkpointing, capture all five standard views with image payloads:
+Before checkpointing:
 
-- Front;
-- Left Side;
-- Back;
-- Top / Footprint;
-- Front-left 3/4.
+1. Capture all five standard views with image payloads.
+2. Run `compare_reference_views` for all five views.
+3. Inspect the returned diff contact sheet:
+   - green = overlap;
+   - red = missing target silhouette;
+   - blue = excess current silhouette.
+4. If deterministic metrics fail, do not record multimodal PASS.
+5. Record Codex's visual decision with `record_geometry_visual_result`.
+6. Call `verify_geometry_visual_gate`.
 
-The 3/4 view uses perspective; the four technical views use orthographic projection.
-
-Record the result with `record_geometry_visual_result`. A PASS requires no unresolved visual issue. Then call `verify_geometry_visual_gate`; it must return PASS for the current project UUID, Geometry fingerprint, Reference Visual hash, and rotation audit.
+The 3/4 view uses perspective; Front, Left, Back, and Top use orthographic projection.
 
 ## Cube mutation policy
 
@@ -100,28 +104,29 @@ Use:
 - `place_cubes_safe` for new Geometry;
 - `modify_cubes` for revisions.
 
-Do not use legacy single-cube mutation tools for production Geometry when the safe batch tools are available.
+Do not use legacy single-cube mutation tools when the safe batch tools are available.
 
-Prefer one bounded atomic batch for a related mass or paired structure. Keep batches small enough to review as one visual decision.
+Prefer one bounded atomic batch for a related mass or paired structure. Keep each batch small enough to review as one visual decision.
 
 ## Rotation and pivot safety
 
-Cube rotation is high risk because a numerically valid rotation can produce a visually incorrect silhouette.
+Cube rotation is high risk because a numerically valid rotation can produce a visibly wrong direction, disconnected segment, or false bounds result.
 
 Rules:
 
-1. Provide an explicit `origin` whenever setting or changing `rotation`.
-2. The origin must represent the real attachment pivot, not the cube center by habit.
+1. Provide explicit `origin` whenever setting or changing `rotation`.
+2. The origin must be the intended attachment pivot, not automatically the cube center.
 3. Prefer one local axis per cube.
 4. Compound cube rotation is rejected unless the approved contract explicitly requires it.
 5. Default absolute rotation limit is `45°`.
-6. Rotate the smallest necessary part; do not tilt large body masses to fake taper when stepped cuboids are more stable.
-7. For multi-segment parts, verify each segment remains connected after rotation.
-8. After every rotated batch, capture the affected Side or 3/4 view before continuing.
-9. If a rotated result moves opposite the intended direction, undo it; do not compensate with unrelated offsets.
-10. World-space bounds must include cube rotation and parent-group transforms.
+6. Rotate the smallest necessary part; use stepped cuboid sizes instead of tilting large body masses to fake taper.
+7. Verify multi-segment parts remain connected after rotation.
+8. After every rotated batch, inspect the affected Side or 3/4 view.
+9. If a part moves in the opposite direction, undo it; do not compensate with unrelated offsets.
+10. World bounds and camera framing must include cube rotation and parent transforms.
+11. Any Geometry mutation invalidates previous visual metrics and visual reports.
 
-Recommended rotation sequence:
+Recommended sequence:
 
 ```text
 identify attachment point
@@ -134,40 +139,52 @@ identify attachment point
 
 ## Revision classification
 
-Use `GEOMETRY_LOCAL_REPAIR` only when one part or tightly related pair is wrong and primary masses remain acceptable.
+Use `GEOMETRY_LOCAL_REPAIR` only when one part or a tightly related pair is wrong and primary masses remain acceptable.
 
-Use `GEOMETRY_VISUAL_REBUILD` when any of the following applies:
+Use `GEOMETRY_VISUAL_REBUILD` when:
 
 - two or more primary masses are wrong;
 - two or more standard views fail;
-- body/head/footprint must be rebuilt;
-- previous local repair did not improve the silhouette;
-- broad user feedback cannot be isolated safely.
+- body/head/footprint needs broad reconstruction;
+- a local repair fails to improve the silhouette;
+- broad feedback cannot be isolated safely.
 
-Preserve prior checkpoints. A major visual rebuild may replace broad Geometry but must not replace the Reference Visual, project identity, root contract, or approved scale without reopening the reference stage.
+Preserve earlier checkpoints. A major rebuild may replace broad Geometry but must preserve the approved Reference Visual, project identity, root contract, and scale.
 
 ## Convergence and token limits
 
+- Use `get_stage_context`; avoid repeatedly loading long contracts.
 - Inspect the Reference Visual once unless its hash changes.
-- Use two or three current views for primary form, then only affected views.
+- Use three views for primary form, then only affected views.
 - Maximum automatic correction cycles per internal pass: `2`.
-- Prefer `modify_cubes` over many sequential `modify_cube` calls.
-- Do not resend full Markdown contracts after context is resolved.
-- If two consecutive correction cycles do not improve the visible mismatch, stop with `VISUAL_CONVERGENCE_FAILED` and report the unresolved views/parts.
+- Maximum deterministic comparisons during ordinary Geometry: `2` primary/detail checks plus one final gate.
+- Prefer `modify_cubes` over many sequential calls.
+- If two consecutive cycles do not improve the same mismatch, stop with `VISUAL_CONVERGENCE_FAILED`.
 
 ## Structural validation
 
-After the visual result is PASS:
+After both visual layers pass:
 
 1. run `validate_reference_contract` for Geometry;
 2. confirm bounds, required groups, ground contacts, cube count, mesh count, and animation count;
-3. confirm rotation audit has no `REVISION_REQUIRED` issue;
-4. write archival standard views to disk;
-5. write `geometry_report.json` with separate fields:
-   - `structural_status`;
-   - `visual_status`;
-   - `rotation_status`;
-   - final `result`.
+3. confirm no rotation audit issue requires revision;
+4. save archival standard views;
+5. retain:
+   - `geometry_visual_metrics.json`;
+   - `geometry_visual_diff.png`;
+   - `geometry_visual_report.json`;
+   - `geometry_report.json`.
+
+`geometry_report.json` must separate:
+
+```text
+structural_status
+visual_status
+deterministic_visual_status
+rotation_status
+evidence_status
+result
+```
 
 Final result is PASS only when all required statuses pass.
 
@@ -178,22 +195,22 @@ Final result is PASS only when all required statuses pass.
 - mesh conversion, subdivision, or vertex editing;
 - animation keyframes;
 - final export;
-- hidden extra reference-image generation;
-- automatic approval based only on numeric validation;
-- continuing after a stale/missing visual report;
+- extra reference-image generation;
+- approval based only on bounds, cube count, hierarchy, or Blockbench warnings;
+- ignoring a deterministic failed view;
+- continuing after stale visual evidence;
 - silently accepting unsafe rotation or pivot placement.
 
 ## Review output
 
 1. Preserve all earlier checkpoints.
 2. Save a new non-approved Geometry checkpoint.
-3. Store the five final evidence views.
-4. Store `geometry_visual_report.json` and `geometry_report.json`.
-5. Stop at:
+3. Store five final evidence views and both visual reports.
+4. Stop at:
 
 ```text
 GEOMETRY_REVIEW
 AWAITING_USER_REVIEW
 ```
 
-Never continue to Texture until the user explicitly approves the Geometry.
+After explicit user approval, use `complete_geometry_stage`. Never continue to Texture without that approval.
