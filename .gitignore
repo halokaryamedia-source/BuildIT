@@ -10,15 +10,15 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Local production sessions are runtime data, not repository history.
-workspace/sessions/*
-!workspace/sessions/.gitkeep
+# Local workspace index and project payloads.
+workspace/workspace.json
+workspace/active/*
+!workspace/active/.gitkeep
+workspace/completed/*
+!workspace/completed/.gitkeep
 workspace/cache/
 workspace/tmp/
-workspace/archive/*
-!workspace/archive/README.md
-workspace/active-session.json
 
-# Keep canonical workspace navigation files.
+# Keep canonical workspace documentation and examples.
 !workspace/README.md
-!workspace/active-session.example.json
+!workspace/workspace.example.json
