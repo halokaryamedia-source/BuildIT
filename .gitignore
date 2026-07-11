@@ -1,3 +1,9 @@
+# MCP Blockbench package outputs
+mcp-blockbench/node_modules/
+mcp-blockbench/dist/
+mcp-blockbench/*.log
+
+# Generic local noise
 node_modules/
 dist/
 *.log
@@ -5,12 +11,14 @@ dist/
 Thumbs.db
 
 # Local production sessions are runtime data, not repository history.
-workspace/sessions/
+workspace/sessions/*
+!workspace/sessions/.gitkeep
 workspace/cache/
 workspace/tmp/
+workspace/archive/*
+!workspace/archive/README.md
+workspace/active-session.json
 
 # Keep canonical workspace navigation files.
 !workspace/README.md
-!workspace/active-session.json
-!workspace/archive/
-!workspace/archive/README.md
+!workspace/active-session.example.json
