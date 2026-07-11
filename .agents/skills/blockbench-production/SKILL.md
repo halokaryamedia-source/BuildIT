@@ -30,7 +30,7 @@ The Reference Visual is the sole visual authority. Technical Markdown and JSON t
 1. Read `workspace/workspace.json` and resolve `selected_asset_id`.
 2. Read `workspace/active/<asset>/mcp/project.json` and `mcp/state.json`.
 3. Call `get_stage_context` for the active stage and use its compact result as the normal decision context.
-4. Open full Markdown contracts only for a missing field, explicit conflict, or a decision that cannot be resolved from the compact context.
+4. Open full Markdown contracts only for a missing field, explicit conflict, or unresolved decision.
 5. Resolve the stage and skill profile.
 6. Verify the expected MCP tool profile from `engines/shared/profiles/stage-profiles.json`.
 7. Acquire the single project write lease using the exact asset, project UUID, session root, state revision, and active stage.
@@ -38,27 +38,36 @@ The Reference Visual is the sole visual authority. Technical Markdown and JSON t
 9. Execute the smallest complete stage batch.
 10. Stop at the required review gate.
 
-## Visual-grounding rule
+## Geometry visual-grounding rule
 
-A structural validator result is never sufficient proof of visual correctness.
+A structural validator result is never sufficient proof of visual correctness. Geometry uses two complementary visual checks:
 
-For Geometry:
+- Codex multimodal inspection of actual image payloads;
+- deterministic silhouette/profile comparison.
+
+Required flow:
 
 ```text
 get_stage_context
 → inspect_reference_visual
 → build primary form
 → capture_visual_feedback
+→ compare_reference_views
 → targeted correction
 → add structural detail
-→ capture_visual_feedback
+→ capture affected visual feedback
+→ compare affected views
+→ final five-view capture
+→ final compare_reference_views
 → record_geometry_visual_result
 → validate_reference_contract
 → verify_geometry_visual_gate
 → checkpoint and user review
 ```
 
-Codex must actually receive image payloads during internal visual checks. `return_images: false` is reserved for archival evidence after visual inspection, not for the feedback loop.
+`return_images: false` is reserved for archival evidence after visual inspection, not for the feedback loop.
+
+A deterministic score is a guardrail, not a replacement for Codex or user review. Both deterministic metrics and multimodal judgment must be current and PASS before Geometry approval.
 
 ## Geometry rotation rule
 
@@ -69,6 +78,7 @@ Codex must actually receive image payloads during internal visual checks. `retur
 - Default absolute rotation limit is `45°`.
 - After a rotated batch, inspect the affected view before continuing.
 - World bounds and review framing must include cube and parent transforms.
+- Any Geometry mutation invalidates prior visual metrics and reports.
 
 ## Revision classification
 
@@ -101,7 +111,7 @@ Never put MCP state/checkpoints inside `blockbench/`, and never put the canonica
 - Use bounded cube batches and one atomic `modify_cubes` call instead of many single-cube calls.
 - Inspect the Reference Visual once per stage unless its hash changes.
 - During internal Geometry passes, request only the views needed to diagnose the current issue.
-- Maximum automatic visual correction cycles per internal pass: `2`.
+- Maximum automatic correction cycles per internal pass: `2`.
 - If the visual result does not improve twice, stop with `VISUAL_CONVERGENCE_FAILED`.
 - Write full-resolution evidence to disk, but return only the image payloads needed for the current comparison.
 - Do not use mesh, PBR, Hytale, armature, UI automation, or eval capabilities in the normal Bedrock cuboid workflow.
@@ -117,4 +127,4 @@ FINAL_VALIDATION → blockbench-validation
 
 ## Stop conditions
 
-Stop immediately on `REFERENCE_CONFLICT`, blocker, stale visual report, unsafe rotation, visual convergence failure, lease/state mismatch, required user review, or completion of the active-stage acceptance criteria.
+Stop immediately on `REFERENCE_CONFLICT`, blocker, failed deterministic comparison, stale visual evidence, unsafe rotation, visual convergence failure, lease/state mismatch, required user review, or completion of active-stage acceptance criteria.
