@@ -29,13 +29,14 @@ The Reference Visual is the sole visual authority. Technical Markdown and JSON t
 
 1. Read `workspace/workspace.json` and resolve `selected_asset_id`.
 2. Read `workspace/active/<asset>/mcp/project.json` and `mcp/state.json`.
-3. Resolve the stage and skill profile.
-4. Verify the expected MCP tool profile from `engines/shared/profiles/stage-profiles.json`.
-5. Acquire the single project write lease using the exact asset, project UUID, session root, state revision, and active stage.
-6. Load exactly this dispatcher plus one stage skill.
-7. Read only the manifest, Production Context, approved Reference Visual, active-stage document, and current open issues.
-8. Execute the smallest complete stage batch.
-9. Stop at the required review gate.
+3. Call `get_stage_context` for the active stage and use its compact result as the normal decision context.
+4. Open full Markdown contracts only for a missing field, explicit conflict, or a decision that cannot be resolved from the compact context.
+5. Resolve the stage and skill profile.
+6. Verify the expected MCP tool profile from `engines/shared/profiles/stage-profiles.json`.
+7. Acquire the single project write lease using the exact asset, project UUID, session root, state revision, and active stage.
+8. Load exactly this dispatcher plus one stage skill.
+9. Execute the smallest complete stage batch.
+10. Stop at the required review gate.
 
 ## Visual-grounding rule
 
@@ -44,7 +45,8 @@ A structural validator result is never sufficient proof of visual correctness.
 For Geometry:
 
 ```text
-inspect_reference_visual
+get_stage_context
+→ inspect_reference_visual
 → build primary form
 → capture_visual_feedback
 → targeted correction
@@ -93,6 +95,7 @@ Never put MCP state/checkpoints inside `blockbench/`, and never put the canonica
 
 - Reuse fresh PASS readiness reports.
 - Use paths from `mcp/project.json`; do not rescan the tree.
+- Use `get_stage_context`; do not reload 300–500 line contracts for routine iterations.
 - Load no more than two production skills.
 - Use exact stage profiles only.
 - Use bounded cube batches and one atomic `modify_cubes` call instead of many single-cube calls.
