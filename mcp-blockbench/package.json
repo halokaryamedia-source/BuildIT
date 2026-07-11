@@ -1,0 +1,38 @@
+{
+  "name": "blockbench-mcp",
+  "version": "1.6.0",
+  "description": "Blockbench MCP server plugin",
+  "keywords": ["Blockbench", "MCP"],
+  "license": "GPL-3.0-only",
+  "author": "achmadawdi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/achmadawdi/mcp-blockbench.git"
+  },
+  "type": "module",
+  "main": "dist/mcp.js",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prompts:build": "bun run ./scripts/generate-manifest.ts",
+    "dev": "bun run prompts:build && bun run ./scripts --sourcemap",
+    "dev:watch": "bun run prompts:build && bun run ./scripts --sourcemap --watch",
+    "build": "bun run prompts:build && bun run ./scripts --minify",
+    "verify:quick": "bun run typecheck && bun test && bun run build && bun run docs:build",
+    "docs:build": "bun run ./scripts/docs.ts",
+    "docs:serve": "bun run ../docs/api/index.html",
+    "docs": "bun run prompts:build && bun run docs:build && bun run docs:serve",
+    "inspect": "bunx @modelcontextprotocol/inspector"
+  },
+  "dependencies": {
+    "zod": "^3.25.76",
+    "@modelcontextprotocol/sdk": "^1.25.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.8",
+    "blockbench-types": "^5.0.6",
+    "tinycolor2": "^1.6.0",
+    "typescript": "^5.9.3",
+    "zod-to-json-schema": "^3.25.1"
+  }
+}
