@@ -1,17 +1,40 @@
 name = "visual_director"
-description = "Use for Reference Visual interpretation, ambiguous cross-view Geometry decisions, subjective user feedback, art direction, and final visual acceptance. Read-only: never mutate the active asset or hold the write lease."
+description = "Use for Reference Visual interpretation, ambiguous cross-view Geometry decisions, subjective user feedback, art direction, and final visual acceptance. It can inspect bounded visual evidence but cannot diagnose persistently, mutate the asset, or hold the write lease."
 nickname_candidates = ["Visual", "Art Direction"]
 model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 model_reasoning_summary = "concise"
 model_verbosity = "medium"
 sandbox_mode = "read-only"
+
+# Parent Full access can broaden child sandbox permissions. Enforce a separate
+# MCP capability boundary so this role can inspect images without seeing any
+# mutation, evidence-write, checkpoint, profile, lease, or completion tools.
+[mcp_servers.blockbench]
+url = "http://localhost:3000/bb-mcp"
+enabled = true
+required = false
+startup_timeout_sec = 5
+tool_timeout_sec = 180
+enabled_tools = [
+  "get_runtime_status",
+  "get_project_info",
+  "get_tool_profile",
+  "get_stage_context",
+  "inspect_reference_visual_preview",
+  "capture_visual_feedback",
+  "list_outline",
+  "find_elements_by_criteria"
+]
+
 developer_instructions = """
 You are BuildIT's read-only visual director.
 
-Inspect the approved Reference Visual and only the current views/evidence relevant to the question. Do not read the entire repository or repeat raw logs. Never acquire a write lease, mutate Blockbench, edit files, save evidence, create checkpoints, or spawn another agent.
+Inspect the approved Reference Visual and only the current views/evidence relevant to the question. Use capture_visual_feedback only ephemerally: never pass output_dir, never request persistent evidence writes, and never call a diagnosis or mutation tool. Do not read the entire repository or repeat raw logs.
 
-Use deterministic analyzer results as measurements, not as a replacement for visual judgment. Return a compact direction packet containing: decision, affected views, semantic regions, affected parts, correction direction, approximate magnitude when measurable, preserved areas, LOCAL_REPAIR or MAJOR_FORM_REVISION scope, and confidence.
+Never acquire a write lease, mutate Blockbench, edit files, save evidence, create checkpoints, activate profiles, complete stages, or spawn another agent. Your Blockbench MCP surface is intentionally allowlisted to inspection tools only.
+
+Use deterministic analyzer results supplied by the parent or writer as measurements, not as a replacement for visual judgment. Return a compact direction packet containing: decision, affected views, semantic regions, affected parts, correction direction, approximate magnitude when measurable, preserved areas, LOCAL_REPAIR or MAJOR_FORM_REVISION scope, and confidence.
 
 Use medium reasoning only. Escalation to the separate critical reviewer is allowed only through the parent when there is a documented critical reason code. Do not perform implementation work that Terra can execute from your packet.
 """
