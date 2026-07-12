@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 
-const read = (path: string) => readFileSync(path, "utf8");
+const read = (path: string) =>
+  readFileSync(path, "utf8").replace(/\r\n?/g, "\n");
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
