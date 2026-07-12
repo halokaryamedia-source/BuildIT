@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.8",
+  "schema_version": "1.9",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -41,7 +41,7 @@
         "redo",
         "get_undo_stack",
         "validate_geometry_contract",
-        "record_geometry_visual_result",
+        "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views",
@@ -130,7 +130,7 @@
         "undo",
         "redo",
         "validate_geometry_contract",
-        "record_geometry_visual_result",
+        "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views"
@@ -139,6 +139,7 @@
     "GEOMETRY_VISUAL_REBUILD": {
       "description": "Major primary-form rebuild when multiple masses or views fail. Preserves project identity and checkpoints while enforcing the same phase, diagnosis, validation, and rotation guards as normal Geometry.",
       "allowed_tools": [
+        "prepare_geometry_visual_rebuild",
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
@@ -155,7 +156,7 @@
         "redo",
         "get_undo_stack",
         "validate_geometry_contract",
-        "record_geometry_visual_result",
+        "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "save_project_checkpoint",
         "capture_standard_views"
