@@ -67,7 +67,7 @@ describe("Geometry diagnostic authority", () => {
 });
 
 describe("single-session Geometry workflow", () => {
-  test("normal Geometry exposes identity sync and major revision preparation", () => {
+  test("normal Geometry exposes identity sync and revision preparation", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     const geometry = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
@@ -99,19 +99,22 @@ describe("single-session Geometry workflow", () => {
     );
   });
 
-  test("major revision remains inside the normal Geometry profile and is non-destructive by default", () => {
+  test("local and major revision remain in the normal Geometry profile", () => {
     const source = read("src/server/tools/geometry-rebuild.ts");
     for (const marker of [
-      "GEOMETRY_MAJOR_DIAGNOSIS_REQUIRED",
+      "LOCAL_REPAIR",
+      "MAJOR_FORM_REVISION",
+      "GEOMETRY_REVISION_DIAGNOSIS_REQUIRED",
       "GEOMETRY_DIAGNOSIS_STALE",
       "GEOMETRY_IN_PROGRESS",
+      "GEOMETRY_REVIEW",
       "CONTINUE_GEOMETRY",
-      "revision_mode: \"MAJOR_FORM_REVISION\"",
       "profile_switch_required: false",
       "reconnect_required: false",
       "writeJsonFilesAtomically",
       "updateProjectWriteLeaseWorkflow",
       "remove_structural_detail: z.boolean().optional().default(false)",
+      "GEOMETRY_LOCAL_REPAIR_CANNOT_REMOVE_STRUCTURAL_DETAIL",
     ]) {
       expect(source).toContain(marker);
     }
