@@ -144,6 +144,18 @@ function hasArg(args: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(args, key) && args[key] !== undefined;
 }
 
+function normalizeGeometryDiagnosisResult(result: unknown): void {
+  if (!result || typeof result !== "object") return;
+  const response = result as Record<string, any>;
+  const structured = response.structuredContent;
+  if (!structured || typeof structured !== "object") return;
+  structured.revision_mode = structured.recommended_scope ?? null;
+  structured.active_profile = "BEDROCK_CUBOID_GEOMETRY";
+  structured.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
+  structured.profile_switch_required = false;
+  structured.reconnect_required = false;
+}
+
 function assertArguments(toolName: string, args: Record<string, unknown>): void {
   if (activeProfileId === "DIAGNOSTIC_ESCALATION") return;
   if (geometryProfiles.has(activeProfileId)) {
@@ -233,6 +245,9 @@ function installGuards(): void {
 
       const profileBefore = getExecutionProfileState();
       const result = await execute(args, context);
+      if (name === "analyze_geometry_views") {
+        normalizeGeometryDiagnosisResult(result);
+      }
       if (name === "record_geometry_visual_decision") {
         recordGeometryVisualRuntimeResult(args, result);
       }
