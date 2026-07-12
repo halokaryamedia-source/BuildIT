@@ -12,6 +12,7 @@ import {
 import {
   activateToolProfile,
   getToolProfileSnapshot,
+  type ToolProfileSnapshot,
 } from "@/lib/toolProfiles";
 import {
   clearProjectWriteLease,
@@ -111,6 +112,20 @@ function earlierApprovedAreas(
     if (Array.isArray(areas)) values.push(...areas.map(String));
   }
   return Array.from(new Set(values));
+}
+
+function applyProfileMetadata(
+  state: Record<string, any>,
+  profile: ToolProfileSnapshot,
+  reconnectRequired: boolean
+): void {
+  state.mcp = state.mcp ?? {};
+  state.mcp.active_tool_profile = profile.profile_id;
+  state.mcp.tool_profile_revision = profile.profile_revision;
+  state.mcp.tool_profile_hash = profile.tool_profile_hash;
+  state.mcp.exposed_tool_count = profile.exposed_tool_count;
+  state.mcp.total_library_tool_count = profile.total_library_tool_count;
+  state.mcp.profile_reconnect_required = reconnectRequired;
 }
 
 export function registerStageReopenTools(): void {
@@ -236,21 +251,11 @@ export function registerStageReopenTools(): void {
             target
           );
 
-          const profile = activation.snapshot;
-          state.mcp = state.mcp ?? {};
-          state.mcp.active_tool_profile = profile.profile_id;
-          state.mcp.tool_profile_revision = profile.profile_revision;
-          state.mcp.tool_profile_hash = profile.tool_profile_hash;
-          state.mcp.exposed_tool_count = profile.exposed_tool_count;
-          state.mcp.total_library_tool_count =
-            profile.total_library_tool_count;
-          state.mcp.profile_reconnect_required = activation.changed;
+          applyProfileMetadata(state, activation.snapshot, activation.changed);
           state.updated_at = reopenedAt;
           state.updated_by = "reopen_stage_for_revision";
 
           writeJsonAtomically(fs, statePath, state);
-          // The reconnect creates a new MCP session owner; never leave the old
-          // later-stage session holding a lease across the profile transition.
           clearProjectWriteLease();
 
           return {
@@ -267,7 +272,7 @@ export function registerStageReopenTools(): void {
               reopened_stage: target,
               workflow_state: workingStateForStage[target],
               state_revision: nextRevision,
-              active_profile: profile.profile_id,
+              active_profile: activation.snapshot.profile_id,
               profile_switch_required: activation.changed,
               reconnect_required: activation.changed,
               lease_status: "UNCLAIMED",
@@ -283,10 +288,14 @@ export function registerStageReopenTools(): void {
             },
           };
         } catch (error) {
+          let restoredProfile = previousProfile;
           if (activation.changed) {
-            activateToolProfile(previousProfile.profile_id);
+            restoredProfile = activateToolProfile(previousProfile.profile_id).snapshot;
           }
           clearProjectWriteLease();
+          applyProfileMetadata(previousState, restoredProfile, activation.changed);
+          previousState.updated_at = new Date().toISOString();
+          previousState.updated_by = "reopen_stage_for_revision_rollback";
           writeJsonAtomically(fs, statePath, previousState);
           throw error;
         }
