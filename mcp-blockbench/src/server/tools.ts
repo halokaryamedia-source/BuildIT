@@ -7,6 +7,8 @@ import { installFinalValidationGeometryGuards } from "./final-validation-geometr
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installReviewSubmissionLeaseGuards } from "./review-submission-lease-guards";
+import { installSessionContinuityGuards } from "./session-continuity-guards";
+import { installStableToolSurface } from "./stable-tool-surface";
 import { installStageCompletionFreshnessGuards } from "./stage-completion-freshness-guards";
 import { installStageContextRootGuards } from "./stage-context-root-guards";
 import { installStageContextRoutingGuards } from "./stage-context-routing-guards";
@@ -124,11 +126,20 @@ installProfileStateReconciliationGuards();
 
 initializeToolProfiles();
 
+// Keep one registered tool surface for the lifetime of the plugin. Logical
+// profiles still guard every execution, but profile changes no longer invalidate
+// the connected client's tool list.
+installStableToolSurface();
+
 // Result-routing guards must be outermost: first let compatibility/profile
 // normalization run, then calculate canonical upstream revision routing and one
 // final next-safe operation from current identity, lease, workflow, and evidence.
 installStageValidationRoutingGuards();
 installStageContextRoutingGuards();
+
+// Final user-facing normalization: stage/profile transitions remain in the same
+// MCP and Codex session. A fresh lease is still required after a profile change.
+installSessionContinuityGuards();
 
 export function getToolCount(): number {
   return Object.keys(tools).length;
