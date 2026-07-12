@@ -7,17 +7,21 @@ on:
     paths:
       - "mcp-blockbench/**"
       - "engines/shared/**"
+      - "engines/codex/**"
       - "engines/chatgpt/skills/blockbench-reference-studio/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
+      - "AGENTS.md"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
     paths:
       - "mcp-blockbench/**"
       - "engines/shared/**"
+      - "engines/codex/**"
       - "engines/chatgpt/skills/blockbench-reference-studio/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
+      - "AGENTS.md"
   workflow_dispatch:
 
 permissions:
