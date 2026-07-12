@@ -1,64 +1,33 @@
 ---
 name: blockbench-geometry
-description: "Fixed-scale visual-grounded Geometry skill for approved Minecraft Bedrock cuboid assets. Builds coarse-to-fine form, receives actionable visual diagnosis, uses bounded image transport and contract-driven rotations, validates transformed Geometry, and stops for user review."
+description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, local or major revision, validation, and review."
 ---
 
 # Blockbench Geometry
 
-## Entry
-
-Use only when stage is `GEOMETRY`, the current MCP session owns the project write lease, and the active profile is one of:
-
-- `BEDROCK_CUBOID_GEOMETRY`;
-- `GEOMETRY_LOCAL_REPAIR`;
-- `GEOMETRY_VISUAL_REBUILD`.
-
-Call `get_stage_context` first. Use its compact asset lock, part constraints, panel regions, rotation contracts, runtime phase, open issues, accepted areas, and image-transport policy. Read long Markdown contracts only when compact data is incomplete or contradictory.
-
-If another context requires four sheets, three approval moments, or numbered technical images, stop with `LEGACY_SKILL_CONFLICT`.
-
-## Three proof layers
-
-Geometry needs all three:
-
-1. **Codex visual inspection** of the approved Reference Visual and current Blockbench images.
-2. **Fixed-scale machine diagnosis** from `analyze_geometry_views`.
-3. **Structural validation** from `validate_geometry_contract`.
-
-Bounds, cube count, hierarchy, or a successful screenshot do not prove visual quality.
-
-## Stable Reference Visual transport
-
-Use only:
+Use only for stage `GEOMETRY` with profile:
 
 ```text
-inspect_reference_visual_preview
+BEDROCK_CUBOID_GEOMETRY
 ```
 
-The tool verifies the original Reference Visual file at full SHA-256 and source dimensions, then returns a bounded ephemeral JPEG/PNG transport preview. The original file remains the sole authority. The transport preview:
+There are no separate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD` profiles. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes handled by Codex in the current session.
 
-- is not stored in the reference package;
-- does not count as an additional generated image;
-- must remain below the declared transport byte budget;
-- must report original and preview metadata separately.
+## Start
 
-Do not call the legacy `inspect_reference_visual` tool in normal production. It embeds the original multi-megabyte binary in one MCP response and is reserved for diagnostic escalation only.
+Call `get_stage_context` and follow `next_safe_operation`.
 
-## Enforced workflow
+The normal sequence is:
 
 ```text
 get_stage_context
+→ rebind_active_project_identity when required
+→ manage_project_write_lease acquire
 → inspect_reference_visual_preview
-→ PRIMARY_FORM_PLAN
-→ PRIMARY_FORM_BUILD
-→ capture_visual_feedback: left + front + top
-→ analyze_geometry_views: left + front + top
-→ targeted primary repair
-→ STRUCTURAL_DETAIL_BUILD
-→ capture affected views
-→ analyze affected views
-→ final five-view capture
-→ final five-view analyze_geometry_views
+→ capture_visual_feedback
+→ analyze_geometry_views
+→ edit diagnosed parts
+→ final five-view review
 → record_geometry_visual_decision
 → validate_geometry_contract
 → verify_geometry_review_ready
@@ -66,194 +35,96 @@ get_stage_context
 → GEOMETRY_REVIEW
 ```
 
-## Primary form phase
+Do not ask the user to edit workspace JSON, switch profiles, close the model, or reconnect between Geometry revision scopes. Codex performs the available operation directly.
 
-Build only:
+## Identity synchronization
 
-- torso/core mass;
-- elevated shoulder mass;
-- lower narrowing rear mass;
-- short neck transition;
-- low head and muzzle;
-- four provisional leg columns;
-- approved ground relationship.
+A reopened Blockbench project may have a new runtime UUID. When compact context reports `rebind_required`:
 
-Do not add horns, ears, final feet, tail, micro-detail, or decorative segmentation yet. MCP blocks those parts while runtime phase is `PRIMARY_FORM`.
+1. call `rebind_active_project_identity` before acquiring a lease;
+2. use the exact runtime UUID, stored UUID, state revision, Geometry fingerprint, and Reference Visual SHA-256;
+3. continue in the same profile and session;
+4. acquire the lease using the new revision and UUID.
 
-Run Left, Front, and Top diagnosis. Use the returned ranked issues exactly:
+The rebind tool may update only `state.json` and `project.json`. It must not change Geometry.
 
-```text
-view
-region
-missing/excess direction
-magnitude_units
-parts
-recommendation
-recommended_profile
-```
+## Visual grounding
 
-Modify only the implicated masses or their directly related pair. Do not compensate for a wrong shoulder by changing horns; do not compensate for a wrong head by resizing the full torso.
+Use `inspect_reference_visual_preview`. It verifies the original Reference Visual SHA-256 and dimensions while returning a bounded ephemeral preview. Never request the original multi-megabyte image through normal MCP production.
 
-Primary form passes only when both Codex inspection and fixed-scale diagnosis accept Left, Front, and Top. The runtime then unlocks `STRUCTURAL_DETAIL`.
+Geometry quality requires all three:
 
-## Structural detail phase
+1. Codex visual inspection of actual Reference and current-model image payloads;
+2. fixed-scale diagnosis from `analyze_geometry_views`;
+3. structural validation from `validate_geometry_contract`.
 
-Add only silhouette-critical detail:
+A structural pass alone is not a visual pass.
 
-- three-segment dominant front horn;
-- two-segment smaller rear horn;
-- paired compact ears;
-- final feet;
-- two-part tail;
-- required hierarchy separation;
-- ground-contact correction.
+## Diagnosis and revision
 
-Capture and diagnose only affected views while repairing. Preserve passing regions.
+`analyze_geometry_views` must identify:
 
-## Fixed-scale diagnosis rules
+- failing views and semantic regions;
+- missing or excessive silhouette;
+- affected parts;
+- correction direction and approximate magnitude;
+- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
 
-`analyze_geometry_views` projects transformed cuboids directly. Current geometry is not segmented from viewport colors and is not independently fit to the reference.
+Modify only the implicated parts. Do not compensate for one incorrect mass by changing unrelated detail.
 
-Alignment is locked to:
+When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. This is an internal cleanup operation, not a new stage. It:
 
-- approved coordinate envelope;
-- fixed pixels per Blockbench unit;
-- approved center axis;
-- approved ground line;
-- manifest/built-in panel crop;
-- view-specific projection.
+- preserves all checkpoints;
+- preserves primary masses and project identity;
+- optionally removes only machine-classified structural detail;
+- returns workflow state to `GEOMETRY_IN_PROGRESS`;
+- continues normal Geometry work without profile switching or reconnecting.
 
-The report combines:
+## Internal progress markers
 
-- global silhouette IoU;
-- row/column profile error;
-- fixed-scale bounding-box error;
-- weighted semantic region scores;
-- critical-region failure;
-- edge and center displacement in Blockbench units.
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user approval gates.
 
-A critical head, shoulder, rear-taper, footprint, or identity-region failure forces `REVISION_REQUIRED` even when whole-body overlap is moderate.
+Use coarse-to-fine work as a practical order:
 
-The diff sheet is:
+1. body, shoulder, rear taper, neck, head, muzzle, legs, and ground relationship;
+2. horns, ears, feet, tail, hierarchy, and connection cleanup;
+3. final evidence.
 
-```text
-Reference | Current | Difference
-```
+Codex may repair related parts in the same profile. Two non-improving checks set an attention flag but do not lock the model or require a new profile.
 
-- green: overlap;
-- red: approved silhouette missing from current geometry;
-- blue: current geometry exceeds the approved silhouette.
+Any mutation after `FINAL_REVIEW_READY` automatically invalidates old review readiness and returns Geometry to working state.
 
-## Mutation policy
+## Mutation tools
 
 Use:
 
 - `place_cubes_safe` for unrotated new cubes;
-- `modify_cubes` for unrotated revisions;
-- `rotate_cube_about_attachment` for every non-zero cube rotation.
+- `modify_cubes` for unrotated changes;
+- `rotate_cube_about_attachment` for every non-zero rotation.
 
-Do not put non-zero `rotation` inside `place_cubes_safe` or `modify_cubes`; MCP rejects it.
+Direct non-zero rotation through generic cube tools is forbidden. Rotation must validate pivot, axis, direction, connection, and affected-view score.
 
-Use one bounded atomic batch per related visual decision. Prefer resizing, repositioning, flattening, or stepped cuboids before adding cubes.
+Prefer one bounded atomic edit for one diagnosed issue. Use only affected views during correction.
 
-## Contract-driven rotation
+## Final review
 
-Rotation is not selected by trial and error.
+Before user review:
 
-`rotate_cube_about_attachment` must resolve a contract that defines:
+1. capture Front, Left, Back, Top, and Front-left 3/4;
+2. inspect all image payloads;
+3. run `analyze_geometry_views` for all five views;
+4. record the multimodal decision;
+5. run `validate_geometry_contract`;
+6. run `verify_geometry_review_ready`;
+7. save a new non-approved review checkpoint.
 
-- allowed cube pattern;
-- allowed axis;
-- minimum/maximum angle;
-- pivot anchor;
-- tip anchor;
-- expected world-space direction;
-- optional connection target and tolerance;
-- affected review views.
+Final Geometry passes only when current visual evidence, fixed-scale metrics, structural validation, Reference Visual identity, Geometry fingerprint, standard views, and rotation audit all pass.
 
-For each rotation, the tool:
+## Efficiency and UX
 
-```text
-analyze affected views before
-→ derive attachment pivot
-→ apply one-axis rotation
-→ verify direction
-→ verify connection when declared
-→ analyze affected views after
-→ keep or automatic rollback
-```
-
-Do not rotate large torso masses to simulate body taper. Use stepped mass sizing.
-
-## Revision routing
-
-Use `GEOMETRY_LOCAL_REPAIR` when one part or a tightly related pair fails and primary masses remain valid.
-
-Use `GEOMETRY_VISUAL_REBUILD` when:
-
-- two or more primary masses fail;
-- two or more standard views fail;
-- body/head/footprint requires broad reconstruction;
-- local repair did not improve;
-- diagnosis recommends `MAJOR_FORM_REVISION`.
-
-A visual rebuild resets runtime to `PRIMARY_FORM` and preserves previous checkpoints.
-
-## Convergence and token budget
-
-- Inspect the approved Reference Visual preview once unless the source hash changes.
-- Use three diagnostic views for primary form.
-- Use only affected views during local correction.
-- Use one final five-view pass.
-- Maximum two non-improving cycles per phase.
-- Prefer one `modify_cubes` call over sequential single-cube calls.
-- Do not reload full contracts after `get_stage_context` resolves the decision.
-- Never request the original Reference Visual binary through MCP when the bounded preview is available.
-
-After two non-improving cycles, MCP records and throws:
-
-```text
-VISUAL_CONVERGENCE_FAILED
-```
-
-Stop and report failing views, regions, named parts, and recommended profile.
-
-## Final Geometry gate
-
-Before review:
-
-1. Capture all five standard views with clean current-model image payloads.
-2. Run `analyze_geometry_views` for all five views to canonical evidence paths.
-3. Inspect current images and the diagnostic diff.
-4. Record multimodal result with `record_geometry_visual_decision` using all five `compared_views`.
-5. Run `validate_geometry_contract` with visual evidence required.
-6. Run `verify_geometry_review_ready`.
-7. Save a new non-approved checkpoint; never overwrite earlier checkpoints.
-
-`geometry_report.json` must contain:
-
-```text
-structural_status
-visual_status
-deterministic_visual_status
-rotation_status
-evidence_status
-result
-```
-
-Final result is `PASS` only when every required layer is current and passes.
-
-## Forbidden
-
-- texture or UV work;
-- mesh, subdivision, or vertex editing;
-- animation keyframes;
-- final export;
-- extra reference-image generation;
-- original multi-megabyte Reference Visual payload in normal MCP production;
-- free-rescaling current geometry before comparison;
-- unrelated trial-and-error changes;
-- bypassing primary-form phase;
-- direct non-zero rotation through generic cube tools;
-- approval based on structural metrics alone;
-- continuing after stale evidence or convergence failure.
+- Inspect the Reference Visual preview once unless its hash changes.
+- Reuse compact context and fresh diagnosis.
+- Do not reload long contracts without a real conflict.
+- Do not create extra reference images.
+- Do not ask for manual file edits or repeated restarts.
+- Stop only for a real authority conflict, unavailable MCP endpoint, unsafe mutation, stale evidence that cannot be regenerated, failed final review, or required user approval.
