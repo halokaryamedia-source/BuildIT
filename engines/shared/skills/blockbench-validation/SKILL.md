@@ -1,20 +1,20 @@
 ---
 name: blockbench-validation
-description: "Final Validation workflow with identity recovery, current Geometry freshness, automatic final review submission, same-stage package revision, and guarded upstream reopen."
+description: "Final Validation workflow with current Geometry readiness, project-bound final evidence, guarded upstream reopen, automatic review, and final completion."
 ---
 
 # Blockbench Validation
 
-Use only for stage `FINAL_VALIDATION` with profile `FINAL_VALIDATION_READONLY`.
+Use only when stage is `FINAL_VALIDATION` with profile `FINAL_VALIDATION_READONLY`.
 
 ## Entry
 
 1. Call `get_stage_context`.
 2. Rebind identity before lease acquisition when requested.
-3. Use the selected Terra writer for required evidence/export/state writes and acquire the Final Validation lease.
-4. Read only current final contracts and evidence paths.
+3. Use the selected Terra writer and acquire the Final Validation lease before evidence/export writes.
+4. Read only the exact current contracts and evidence paths.
 
-## Mandatory order
+## Flow
 
 ```text
 verify_geometry_review_ready
@@ -22,28 +22,31 @@ verify_geometry_review_ready
 → clean five-view final capture
 → validate_reference_contract: FINAL_VALIDATION
 → complete VALIDATION.md
-→ export to mcp/final staging
-→ validation_report.json with current created_at and PASS/REVISION_REQUIRED
+→ export canonical final model/textures to mcp/final
+→ record_stage_review_report
 → submit_stage_for_review
+→ lease released
 → FINAL_REVIEW
 ```
 
-`verify_geometry_review_ready` must pass against the current model, compatibility fingerprint, transformed world-space signature, Reference Visual hash, five views, analyzer output, and rotations. Previously approved Geometry evidence is insufficient after any Geometry/hierarchy/group-transform change.
+`verify_geometry_review_ready` must pass against the current model. Previously approved Geometry evidence is insufficient after Geometry, hierarchy, Texture, Animation, manual edit, reopen, or export preparation changes.
+
+`record_stage_review_report` creates the canonical `validation_report.json` and binds it to current project serialization plus hashes of final views, atlas, completed validation document, final model, and final textures. Do not write a free-form PASS report manually.
+
+`submit_stage_for_review` verifies current report/evidence, runs fresh final contract validation, creates the next unused final candidate checkpoint, enters `FINAL_REVIEW`, then releases the writer lease.
 
 ## Failure routing
 
-- Final packaging/evidence issue only: during `FINAL_REVIEW`, call `prepare_stage_revision` and remain in `FINAL_VALIDATION`.
-- Geometry, Texture, or Animation issue: call `reopen_stage_for_revision` for the earliest affected stage. Preserve approved checkpoints, mark downstream stages for revalidation, reconnect the canonical MCP entry once after the profile transition, and acquire the target-stage lease.
-- Never silently repair an earlier stage during Final Validation.
+- Final-package-only issue: remain in `FINAL_VALIDATION`; after user feedback, acquire a fresh Final Validation lease and call `prepare_stage_revision`.
+- Geometry, Texture, or Animation issue: do not repair silently in Final Validation. Acquire a current Final Validation lease and call `reopen_stage_for_revision` for the earliest affected approved stage.
 
-## Work rules
-
-Keep this stage read-mostly. Use canonical non-versioned final output names. Preserve approved areas. Treat `mcp/final/` as temporary validated staging. No new features, redesign, broad polish, stale evidence, alternate `v2/latest/final-final` names, or exports outside the active session.
-
-`submit_stage_for_review` validates current evidence/report, saves the next unused final candidate checkpoint, advances state/lease revision, and enters `FINAL_REVIEW` without profile switch.
+Upstream reopen preserves approved checkpoints as rollback baselines, marks downstream stages `REVALIDATION_REQUIRED`, activates the canonical target-stage profile, releases the old lease, and requires one canonical stage-transition reconnect. Do not activate removed repair profiles.
 
 ## User decision
 
-- `APPROVED`: ensure the current session owns the Final Validation lease, then call `complete_stage` for `FINAL_VALIDATION` and run workspace completion.
-- Final-package `REVISION`: call `prepare_stage_revision`, regenerate affected final evidence/export, create a newer report, and submit again.
-- Earlier-stage `REVISION`: use `reopen_stage_for_revision` as described above.
+- `APPROVED`: Codex acquires a fresh Final Validation lease and calls `complete_stage` for `FINAL_VALIDATION`, then runs workspace completion.
+- `REVISION`: follow the failure routing above.
+
+## Forbidden
+
+No new features, broad polish, silent upstream repair, stale evidence acceptance, versioned output names, export outside `mcp/final/`, or manual state/checkpoint edits.
