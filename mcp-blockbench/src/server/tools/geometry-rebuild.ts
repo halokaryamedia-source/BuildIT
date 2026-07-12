@@ -21,14 +21,14 @@ const prepareGeometryVisualRebuildParameters = z.object({
   expected_state_revision: z.number().int().nonnegative(),
   expected_geometry_fingerprint: z.string().regex(/^[a-f0-9]{64}$/i),
   expected_reference_sha256: z.string().regex(/^[a-f0-9]{64}$/i),
-  remove_structural_detail: z.boolean().optional().default(true),
+  remove_structural_detail: z.boolean().optional().default(false),
 });
 
 export const geometryRebuildToolDocs: ToolSpec[] = [
   {
     name: "prepare_geometry_visual_rebuild",
     description:
-      "Prepares a diagnosed major revision inside the current Geometry profile and MCP session. It preserves checkpoints and primary masses, clears only profile-classified structural detail when requested, and continues normal Geometry work without profile switching or reconnecting.",
+      "Prepares a diagnosed major revision inside the current Geometry profile and MCP session. It preserves checkpoints and primary masses, keeps existing detail by default, optionally clears only profile-classified structural detail when explicitly requested, and continues normal Geometry work without profile switching or reconnecting.",
     annotations: {
       title: "Prepare Major Geometry Revision",
       destructiveHint: true,
@@ -322,6 +322,7 @@ export function registerGeometryRebuildTools(): void {
             phase: "PRIMARY_FORM",
             revision_mode: "MAJOR_FORM_REVISION",
             rebuild_mode: true,
+            structural_detail_removed: remove_structural_detail,
             removed_structural_detail: removed,
             preserved_checkpoints: true,
             runtime_path: runtimePath,
