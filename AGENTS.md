@@ -47,6 +47,7 @@ If they are missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED` and ask th
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Stop after each stage preview for approval or targeted revision.
 - Geometry uses only `BEDROCK_CUBOID_GEOMETRY`; `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes.
+- Texture, Animation, and Final Validation each use one canonical stage profile. Do not create or activate local-repair profiles.
 - `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user gates.
 - Geometry decisions require actual image inspection, fixed-scale `analyze_geometry_views`, and `validate_geometry_contract`.
 - Geometry corrections use ranked views, regions, parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
@@ -54,11 +55,15 @@ If they are missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED` and ask th
 - Synchronize a changed runtime UUID with `rebind_active_project_identity` before acquiring a lease; never ask the user to edit JSON.
 - `analyze_geometry_views` persists canonical evidence and therefore requires the current Geometry write lease.
 - Current Geometry evidence is bound to both the compatibility fingerprint and transformed world-space signature. Rerun capture/analyze after hierarchy or group-transform changes.
-- Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision/lease, and enters `GEOMETRY_REVIEW`.
+- Texture, Animation, and Final Validation reports must be written through `record_stage_review_report`; free-form PASS reports are not authority.
+- Submit Geometry through `submit_geometry_for_review`; submit other stages through `submit_stage_for_review`.
+- Successful review submission checkpoints the current snapshot, enters the review state, and releases the writer lease. After user `APPROVED` or `REVISION`, Codex acquires a fresh current-stage lease before completion or revision preparation.
+- Review-state mutation is blocked until `prepare_geometry_visual_rebuild` or `prepare_stage_revision` returns the workflow to a working state.
+- Later-stage failures affecting an earlier approved stage use `reopen_stage_for_revision`; preserve approved checkpoints and revalidate downstream stages.
 - Use only MCP key `blockbench` at `http://localhost:3000/bb-mcp`. Do not scan ports or create alternate keys.
 - Acquire `manage_project_write_lease` before model, evidence, checkpoint, final-output, or persistent-analysis writes. Metadata-only identity synchronization is the narrow exception.
 - Never bypass `WRITE_LEASE_*`; realign project, state, stage, profile, and owner through MCP.
-- Stage transitions release the previous lease. Geometry revision and review submission stay in the same profile/session.
+- Stage profile transitions release the previous lease. Same-stage revision and review submission do not require reconnecting.
 - Production loads `blockbench-production` plus exactly one active-stage skill; maximum `2`.
 - Repository development must not load production skills.
 - Reload the plugin only after binary changes or an actually unavailable endpoint.
