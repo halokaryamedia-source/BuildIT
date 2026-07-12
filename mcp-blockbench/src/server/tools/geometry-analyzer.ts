@@ -106,6 +106,12 @@ interface MaskMetric {
   edge_delta_units: Record<string, number | null>;
   regions: RegionMetric[];
   diagnostics: ActionableIssue[];
+  blocking_diagnostics: ActionableIssue[];
+  warnings: ActionableIssue[];
+  score_result: "PASS" | "REVISION_REQUIRED";
+  critical_region_result: "PASS" | "REVISION_REQUIRED";
+  foreground_result: "PASS" | "REVISION_REQUIRED";
+  final_view_result: "PASS" | "REVISION_REQUIRED";
 }
 
 interface RegionMetric {
@@ -427,6 +433,40 @@ function regionMetric(
   };
 }
 
+export function diagnosticThresholds(view: StandardGeometryView) {
+  const perspective = view === "front_left_3_4";
+  return {
+    extent: perspective ? 1.5 : 1,
+    ground: perspective ? 1.25 : 0.75,
+    center: perspective ? 1.5 : 1,
+  };
+}
+
+export function classifyViewStatus(input: {
+  score: number;
+  minimumScore: number;
+  criticalRegionFailed: boolean;
+  blockingDiagnostics: number;
+  foregroundPassed?: boolean;
+}) {
+  const score_result =
+    input.score >= input.minimumScore ? "PASS" : "REVISION_REQUIRED";
+  const critical_region_result = input.criticalRegionFailed
+    ? "REVISION_REQUIRED"
+    : "PASS";
+  const foreground_result = input.foregroundPassed === false
+    ? "REVISION_REQUIRED"
+    : "PASS";
+  const final_view_result =
+    score_result === "PASS" &&
+    critical_region_result === "PASS" &&
+    foreground_result === "PASS" &&
+    input.blockingDiagnostics === 0
+      ? "PASS"
+      : "REVISION_REQUIRED";
+  return { score_result, critical_region_result, foreground_result, final_view_result } as const;
+}
+
 function edgeDiagnostics(input: {
   view: StandardGeometryView;
   reference: NonNullable<ReturnType<typeof maskBounds>>;
@@ -446,8 +486,8 @@ function edgeDiagnostics(input: {
       (input.current.center_y - input.reference.center_y) / input.pixelsPerUnit,
   };
   const issues: ActionableIssue[] = [];
-  const threshold = 1.25;
-  if (Math.abs(deltas.width) > threshold) {
+  const thresholds = diagnosticThresholds(input.view);
+  if (Math.abs(deltas.width) > thresholds.extent) {
     issues.push({
       code: deltas.width > 0 ? "VIEW_WIDTH_EXCESS" : "VIEW_WIDTH_MISSING",
       view: input.view,
@@ -461,7 +501,7 @@ function edgeDiagnostics(input: {
           : "Correct bilateral width in the affected masses rather than scaling the whole asset.",
     });
   }
-  if (Math.abs(deltas.height) > threshold) {
+  if (Math.abs(deltas.height) > thresholds.extent) {
     issues.push({
       code: deltas.height > 0 ? "VIEW_HEIGHT_EXCESS" : "VIEW_HEIGHT_MISSING",
       view: input.view,
@@ -473,7 +513,7 @@ function edgeDiagnostics(input: {
         "Correct the specific topmost or lowest part identified by regional diagnostics; preserve Y=0 ground contact.",
     });
   }
-  if (Math.abs(deltas.center_x) > threshold) {
+  if (Math.abs(deltas.center_x) > thresholds.center) {
     issues.push({
       code: "VIEW_HORIZONTAL_CENTER_OFFSET",
       view: input.view,
@@ -485,7 +525,10 @@ function edgeDiagnostics(input: {
         "Correct asymmetric part placement or front/rear mass distribution; do not move the root away from the approved origin.",
     });
   }
-  if (input.view !== "top_footprint" && Math.abs(deltas.bottom) > 0.75) {
+  if (
+    input.view !== "top_footprint" &&
+    Math.abs(deltas.bottom) > thresholds.ground
+  ) {
     issues.push({
       code: "GROUND_ALIGNMENT_MISMATCH",
       view: input.view,
@@ -537,6 +580,20 @@ function compareView(input: {
             "The analyzer could not find a valid full silhouette in this view. Verify camera orientation, visible Geometry, and reference crop.",
         },
       ],
+      blocking_diagnostics: [
+        {
+          code: `${input.view.toUpperCase()}_FOREGROUND_MISSING`,
+          view: input.view,
+          severity: "REVISION_REQUIRED",
+          parts: [],
+          recommendation: "Verify camera orientation, visible Geometry, and reference crop.",
+        },
+      ],
+      warnings: [],
+      score_result: "REVISION_REQUIRED",
+      critical_region_result: "REVISION_REQUIRED",
+      foreground_result: "REVISION_REQUIRED",
+      final_view_result: "REVISION_REQUIRED",
     };
   }
 
@@ -575,10 +632,6 @@ function compareView(input: {
   const criticalFailure = regions.some(
     (region) => region.critical && region.result !== "PASS"
   );
-  const result =
-    score >= input.panel.minimum_score && !criticalFailure
-      ? "PASS"
-      : "REVISION_REQUIRED";
   const edge = edgeDiagnostics({
     view: input.view,
     reference: referenceBounds,
@@ -591,13 +644,23 @@ function compareView(input: {
       .map((region) => ({
         code: region.issue_code,
         view: input.view,
-        severity: "REVISION_REQUIRED" as const,
+        severity: region.critical ? ("REVISION_REQUIRED" as const) : ("WARNING" as const),
         region: region.id,
         parts: region.parts,
         recommendation: region.recommendation,
       })),
     ...edge.issues,
   ];
+  const blockingDiagnostics = diagnostics.filter(
+    (issue) => issue.severity === "REVISION_REQUIRED"
+  );
+  const warnings = diagnostics.filter((issue) => issue.severity === "WARNING");
+  const classified = classifyViewStatus({
+    score,
+    minimumScore: input.panel.minimum_score,
+    criticalRegionFailed: criticalFailure,
+    blockingDiagnostics: blockingDiagnostics.length,
+  });
 
   return {
     view: input.view,
@@ -607,9 +670,9 @@ function compareView(input: {
     column_profile_error: columnError,
     bbox_score: bboxScore,
     minimum_score: input.panel.minimum_score,
-    result,
+    result: classified.final_view_result,
     issue_code:
-      result === "PASS"
+      classified.final_view_result === "PASS"
         ? null
         : `${input.view.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_SILHOUETTE_MISMATCH`,
     fixed_scale: true,
@@ -620,6 +683,12 @@ function compareView(input: {
     edge_delta_units: edge.deltas,
     regions,
     diagnostics,
+    blocking_diagnostics: blockingDiagnostics,
+    warnings,
+    score_result: classified.score_result,
+    critical_region_result: classified.critical_region_result,
+    foreground_result: classified.foreground_result,
+    final_view_result: classified.final_view_result,
   };
 }
 
@@ -875,11 +944,13 @@ export function registerGeometryAnalyzerTools(): void {
           );
         }
 
-        const result = metrics.every((metric) => metric.result === "PASS")
+        const result = metrics.every(
+          (metric) => metric.final_view_result === "PASS"
+        )
           ? "PASS"
           : "REVISION_REQUIRED";
         const failingViews = metrics
-          .filter((metric) => metric.result !== "PASS")
+          .filter((metric) => metric.final_view_result !== "PASS")
           .map((metric) => metric.view);
         const recommendedScope =
           failingViews.length >= 2 ||

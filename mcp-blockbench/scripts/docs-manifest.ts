@@ -31,6 +31,7 @@ import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
+import { projectIdentityToolDocs } from "../src/server/tools/project-identity";
 
 export interface CategoryGroup {
   category: string;
@@ -42,6 +43,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
   { category: "Compact Stage Context", tools: stageContextToolDocs },
+  { category: "Project Identity", tools: projectIdentityToolDocs },
   { category: "Reference Visual Transport", tools: referenceVisualPreviewToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },

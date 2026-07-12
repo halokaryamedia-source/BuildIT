@@ -103,6 +103,31 @@ export function writeJsonAtomically(
   writeFileAtomically(fs, path, JSON.stringify(value, null, 2));
 }
 
+export function writeJsonFilesAtomically(
+  fs: NativeFsLike,
+  entries: Array<{ path: string; value: unknown }>
+): void {
+  for (const entry of entries) {
+    const directory = parentDirectory(entry.path);
+    if (directory) fs.mkdirSync(directory, { recursive: true });
+    removeIfPresent(fs, `${entry.path}.tmp`);
+    removeIfPresent(fs, `${entry.path}.bak`);
+    fs.writeFileSync(`${entry.path}.tmp`, JSON.stringify(entry.value, null, 2));
+  }
+  try {
+    for (const entry of entries) if (fs.existsSync(entry.path)) fs.renameSync(entry.path, `${entry.path}.bak`);
+    for (const entry of entries) fs.renameSync(`${entry.path}.tmp`, entry.path);
+    for (const entry of entries) removeIfPresent(fs, `${entry.path}.bak`);
+  } catch (error) {
+    for (const entry of entries) {
+      removeIfPresent(fs, entry.path);
+      if (fs.existsSync(`${entry.path}.bak`)) fs.renameSync(`${entry.path}.bak`, entry.path);
+      removeIfPresent(fs, `${entry.path}.tmp`);
+    }
+    throw error;
+  }
+}
+
 export function bufferFromDataUrl(dataUrl: string): Buffer {
   const match = dataUrl.match(/^data:([^;,]+)?(;base64)?,(.*)$/s);
   if (!match) throw new Error("Texture source is not a valid data URL.");

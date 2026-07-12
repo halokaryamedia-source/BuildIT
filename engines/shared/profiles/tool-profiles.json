@@ -15,6 +15,7 @@
       "description": "Readiness, project setup, compact reference validation, bounded visual grounding, write-lease acquisition, and profile selection only.",
       "allowed_tools": [
         "create_project",
+        "rebind_active_project_identity",
         "configure_project",
         "validate_reference_contract",
         "inspect_reference_visual_preview",
