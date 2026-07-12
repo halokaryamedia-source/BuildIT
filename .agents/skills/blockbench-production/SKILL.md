@@ -76,7 +76,7 @@ get_stage_context
 → analyze affected views
 → final five-view capture
 → final five-view analyze_geometry_views
-→ record_geometry_visual_result
+→ record_geometry_visual_decision
 → validate_geometry_contract
 → verify_geometry_review_ready
 → checkpoint
