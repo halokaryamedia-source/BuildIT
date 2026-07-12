@@ -4,7 +4,9 @@
 
 Make local MCP Blockbench production precise, visually grounded, recoverable, easy to hand off, and token-efficient without merging into `V1` before explicit approval.
 
-The workflow must remain practical: Codex performs normal identity synchronization, diagnosis, revision, and validation through MCP. The user is not asked to edit state files, select Geometry repair profiles, or repeatedly close and reopen Blockbench.
+The workflow must remain practical: Codex performs normal identity synchronization, model routing, diagnosis, revision, and validation through MCP. The user is not asked to edit state files, select Geometry repair profiles or worker models, or repeatedly close and reopen Blockbench.
+
+Token efficiency must not reduce production quality. Codex uses deterministic routing, the cheapest eligible locked role, deterministic validation, and evidence-based escalation. Sol is reserved for visual or critical judgment rather than mechanical work.
 
 ## Canonical architecture
 
@@ -32,7 +34,7 @@ mcp/          state, contracts, checkpoints, evidence, reports
 3. Animation review when required
 4. Final Validation review
 
-Internal Geometry correction is not a separate stage or approval moment.
+Internal Geometry correction and model routing are not separate stages or approval moments.
 
 ## Approved Geometry quality scope
 
@@ -51,10 +53,29 @@ Included now:
 - contract-driven cube rotation with pivot, direction, connection, before/after visual scoring, and rollback;
 - unified five-view review readiness gate;
 - strict Geometry report with structural, multimodal, deterministic, rotation, evidence, and final statuses;
+- automatic guarded review checkpoint and transition to `GEOMETRY_REVIEW`;
 - guarded Geometry completion without generic-stage bypass;
 - negative visual regression fixtures based on the failed Black Rhinoceros build.
 
 The system must tell Codex which view, region, direction, magnitude, and parts are wrong. Broad visual guessing is not acceptable.
+
+## Approved adaptive model routing
+
+```text
+parent default       Luna Medium
+routine_auditor      5.4 Mini Low, read-only
+mcp_builder          Terra Medium, standard implementation and sole MCP writer
+visual_director      Sol Medium, read-only visual judgment
+critical_reviewer    Sol High, rare read-only critical review
+```
+
+- High is the maximum configured reasoning effort.
+- xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel MCP writers are excluded.
+- The parent uses deterministic task classification; no model call is spent only to select another model.
+- Explicit user model selection affects only the parent thread. Workers remain locked to their roles.
+- Deterministic gates replace expensive review when they can answer the question.
+- Heavy judgment de-escalates immediately to Terra implementation and Mini audit.
+- The user changes models only if a required custom agent is unavailable.
 
 ## Included workflow infrastructure
 
@@ -62,6 +83,9 @@ The system must tell Codex which view, region, direction, magnitude, and parts a
 - one runtime state authority;
 - one Geometry tool profile, plus stage profiles for Texture, Animation, and Final Validation;
 - maximum two loaded production skills;
+- project Codex defaults with maximum two agent threads and depth one;
+- four narrow custom agents with locked models, efforts, and sandbox roles;
+- one active Blockbench writer;
 - persistent checkpoints and stable evidence;
 - direct texture evidence writes;
 - atomic stage completion;
@@ -77,5 +101,6 @@ The system must tell Codex which view, region, direction, magnitude, and parts a
 - merge into `V1`;
 - production release or deployment;
 - persistent live MCP sessions;
+- persistent model-routing telemetry or a learned routing service;
 - duplicate workflow authorities, models, or versioned folders;
 - unrelated modelling capabilities outside the approved Bedrock cuboid workflow.
