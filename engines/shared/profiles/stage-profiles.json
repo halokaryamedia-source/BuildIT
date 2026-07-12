@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.3",
+  "schema_version": "3.4",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -11,10 +11,11 @@
     "max_loaded_production_skills": 2,
     "geometry_profile_policy": "single_profile_one_session",
     "profile_transition_policy": "stage_transition_only",
+    "revision_policy": "same_stage_profile_no_reconnect",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
     "identity_recovery_policy": "available_in_every_active_stage_before_lease",
     "review_submission_policy": "automatic_guarded_transition",
-    "checkpoint_policy": "next_unused_for_review_and_approval",
+    "checkpoint_policy": "next_unused_review; geometry_approval_next_unused; generic_approval_archives_prior_canonical",
     "visual_feedback_budget": {
       "reference_inspections": 1,
       "targeted_diagnostic_checks": 3,
@@ -116,19 +117,20 @@
     },
     "TEXTURE": {
       "tool_profile_id": "BEDROCK_CUBOID_TEXTURE",
-      "repair_tool_profile_id": "TEXTURE_LOCAL_REPAIR",
       "skill_profile_id": "TEXTURE",
       "working_state": "TEXTURE_IN_PROGRESS",
       "review_state": "TEXTURE_REVIEW",
       "approved_state": "TEXTURE_APPROVED",
       "identity_sync_tool": "rebind_active_project_identity",
+      "revision_prepare_tool": "prepare_stage_revision",
+      "revision_requires_profile_switch": false,
       "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
       "compact_validation_tool": "validate_reference_contract",
       "atlas_evidence_tool": "save_texture_evidence",
       "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
       "review_checkpoint_policy": "next_unused_texture_review_checkpoint",
-      "approved_checkpoint_policy": "next_unused_texture_approved_checkpoint",
+      "approved_checkpoint_policy": "canonical_current_40_texture_approved_with_numbered_history",
       "required_evidence": {
         "atlas": "evidence/texture/texture_atlas.png",
         "front": "evidence/texture/texture_front.png",
@@ -140,7 +142,6 @@
     },
     "ANIMATION": {
       "tool_profile_id": "BEDROCK_CUBOID_ANIMATION",
-      "repair_tool_profile_id": "ANIMATION_LOCAL_REPAIR",
       "skill_profile_id": "ANIMATION",
       "working_state": "ANIMATION_IN_PROGRESS",
       "review_state": "ANIMATION_REVIEW",
@@ -148,11 +149,13 @@
       "skipped_state": "ANIMATION_SKIPPED",
       "optional": true,
       "identity_sync_tool": "rebind_active_project_identity",
+      "revision_prepare_tool": "prepare_stage_revision",
+      "revision_requires_profile_switch": false,
       "compact_validation_tool": "validate_reference_contract",
       "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
       "review_checkpoint_policy": "next_unused_animation_review_checkpoint",
-      "approved_checkpoint_policy": "next_unused_animation_approved_or_skipped_checkpoint"
+      "approved_checkpoint_policy": "canonical_current_60_animation_approved_with_numbered_history"
     },
     "FINAL_VALIDATION": {
       "tool_profile_id": "FINAL_VALIDATION_READONLY",
@@ -162,13 +165,15 @@
       "approved_state": "DONE",
       "automatic_local_fix_limit": 2,
       "identity_sync_tool": "rebind_active_project_identity",
+      "revision_prepare_tool": "prepare_stage_revision",
+      "revision_requires_profile_switch": false,
       "compact_validation_tool": "validate_reference_contract",
       "geometry_review_readiness_tool": "verify_geometry_review_ready",
       "atlas_evidence_tool": "save_texture_evidence",
       "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
       "candidate_checkpoint_policy": "next_unused_final_candidate_checkpoint",
-      "pass_checkpoint_policy": "next_unused_validation_pass_checkpoint"
+      "pass_checkpoint_policy": "canonical_current_80_validation_pass_with_numbered_history"
     }
   }
 }
