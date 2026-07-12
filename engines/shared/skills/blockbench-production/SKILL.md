@@ -9,20 +9,7 @@ Use for an approved single-Reference-Visual package.
 
 ## Preflight
 
-Read `AGENTS.md`, `engines/codex/MODEL_ROUTING.md`, the selected asset state, and its reference package.
-
-Confirm these project agents are visible:
-
-```text
-routine_auditor
-mcp_builder
-visual_director
-critical_reviewer
-```
-
-When missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED`; project trust/config is not active.
-
-Reject legacy four-sheet, numbered-image, or three-approval workflows with `LEGACY_SKILL_CONFLICT`.
+Read `AGENTS.md`, `engines/codex/MODEL_ROUTING.md`, the selected asset state, and its reference package. Confirm `routine_auditor`, `mcp_builder`, `visual_director`, and `critical_reviewer` are visible. When missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED`. Reject legacy four-sheet, numbered-image, or three-approval workflows with `LEGACY_SKILL_CONFLICT`.
 
 ## Routing
 
@@ -34,23 +21,23 @@ visual judgment        → visual_director / Sol Medium
 critical decision      → critical_reviewer / Sol High once
 ```
 
-Select exactly one writer: Terra parent or `mcp_builder`, never both. Mini and critical review have Blockbench MCP disabled. Visual direction has inspection-only MCP tools. High is the ceiling.
-
-Do not call Sol for deterministic checks or a repair whose part, direction, and magnitude are already known.
+Select exactly one writer: Terra parent or `mcp_builder`, never both. Mini and critical review have Blockbench MCP disabled. Visual direction has inspection-only MCP tools. High is the ceiling. Do not call Sol for deterministic checks or a repair whose part, direction, and magnitude are already known.
 
 ## User experience
 
-Codex owns identity synchronization, lease handling, routing, evidence, checkpoint naming, and review transitions. Do not ask the user to edit JSON, select repair profiles, select workers, reconnect within Geometry, or repeatedly reopen Blockbench.
+Codex owns identity synchronization, lease handling, routing, evidence, report creation, checkpoint naming, review transitions, and recovery. Do not ask the user to edit JSON, select repair profiles/workers, reconnect inside a stage, or repeatedly reopen Blockbench.
 
 ## Dispatch
 
 1. Resolve asset, canonical model, and session root.
 2. Load this skill plus exactly one active-stage skill.
 3. Call `get_runtime_status`, then `get_stage_context`.
-4. Rebind identity before lease acquisition when required.
-5. Select one writer and acquire the lease before persistent writes.
-6. Follow `next_safe_operation`.
+4. Follow `next_safe_operation`.
+5. Rebind identity before lease acquisition when required.
+6. Select one writer and acquire the lease before persistent writes.
 7. Submit the stage through its MCP review transition and stop for user review.
+
+A successful review submission releases the writer lease. After the user gives `APPROVED` or `REVISION`, Codex acquires a fresh current-stage lease before calling completion or revision preparation. This is automatic and must not be delegated to the user.
 
 ## Geometry
 
@@ -67,6 +54,7 @@ get_stage_context
 → final five-view capture/analyze
 → record_geometry_visual_decision
 → submit_geometry_for_review
+→ lease released
 → user review
 ```
 
@@ -74,9 +62,22 @@ get_stage_context
 
 Current Geometry evidence must match project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual hash, five views, analyzer, visual decision, and rotation audit. Hierarchy or group-transform changes require fresh capture/analyze.
 
-`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. `prepare_geometry_visual_rebuild` handles either in the same profile/session and preserves checkpoints/detail by default.
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. `prepare_geometry_visual_rebuild` handles either in the same profile/session and preserves checkpoints/detail by default. Use `place_cubes_safe` and `modify_cubes` for unrotated work. Every non-zero rotation uses `rotate_cube_about_attachment`.
 
-Use `place_cubes_safe` and `modify_cubes` for unrotated work. Every non-zero rotation uses `rotate_cube_about_attachment`.
+## Other stages
+
+Texture, Animation, and Final Validation use:
+
+```text
+work and evidence
+→ record_stage_review_report
+→ validate_reference_contract
+→ submit_stage_for_review
+→ lease released
+→ user review
+```
+
+User revision returns to the same stage profile through `prepare_stage_revision`. A later-stage failure affecting an earlier approved stage uses `reopen_stage_for_revision`, preserves approved checkpoints, marks downstream revalidation, changes the canonical stage profile, releases the old lease, and requires only the canonical stage-transition reconnect.
 
 ## Sol boundary
 
