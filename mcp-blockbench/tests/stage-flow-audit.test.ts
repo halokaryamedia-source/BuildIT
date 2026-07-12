@@ -31,20 +31,26 @@ describe("audited multi-stage MCP flow", () => {
     const source = read("src/server/tools.ts");
     for (const marker of [
       "installGeometryFreshnessGuards();",
-      "installStageValidationRoutingGuards();",
       "installStageReviewMutationGuards();",
       "installStageCompletionFreshnessGuards();",
       "installReviewSubmissionLeaseGuards();",
+      "installFinalValidationGeometryGuards();",
       "installStageTransitionGuards();",
       "installProfileStateReconciliationGuards();",
       "initializeToolProfiles();",
+      "installStageValidationRoutingGuards();",
       "installStageContextRoutingGuards();",
     ]) {
       expect(source).toContain(marker);
     }
-    expect(source.indexOf("installStageContextRoutingGuards();")).toBeGreaterThan(
-      source.indexOf("initializeToolProfiles();")
-    );
+    for (const marker of [
+      "installStageValidationRoutingGuards();",
+      "installStageContextRoutingGuards();",
+    ]) {
+      expect(source.indexOf(marker), marker).toBeGreaterThan(
+        source.indexOf("initializeToolProfiles();")
+      );
+    }
   });
 
   test("binds non-Geometry review reports to current project and evidence", () => {
@@ -86,15 +92,26 @@ describe("audited multi-stage MCP flow", () => {
     expect(lease).toContain('lease_status = "UNCLAIMED"');
   });
 
+  test("enforces current Geometry readiness during final review and approval", () => {
+    const guard = read("src/server/final-validation-geometry-guards.ts");
+    expect(guard).toContain("submit_stage_for_review");
+    expect(guard).toContain("complete_stage");
+    expect(guard).toContain("verify_geometry_review_ready");
+    expect(guard).toContain("FINAL_GEOMETRY_REVIEW_NOT_READY");
+  });
+
   test("supports same-profile revision and guarded upstream reopen", () => {
     const revision = read("src/server/tools/stage-revision.ts");
     const reopen = read("src/server/tools/stage-reopen.ts");
+    const routing = read("src/server/stage-validation-routing-guards.ts");
     expect(revision).toContain("profile_switch_required: false");
     expect(revision).toContain("reconnect_required: false");
     expect(revision).toContain("evidence_after");
     expect(reopen).toContain("BLOCKED_BY_UPSTREAM_REVISION");
     expect(reopen).toContain("preserved_approved_checkpoints: true");
     expect(reopen).toContain("clearProjectWriteLease");
+    expect(routing).toContain('"reopen_stage_for_revision"');
+    expect(routing).toContain("earlierThan");
   });
 
   test("preserves approved checkpoint history and reconciles failed transitions", () => {
