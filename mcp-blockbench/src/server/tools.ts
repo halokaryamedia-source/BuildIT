@@ -4,7 +4,9 @@
 import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
+import { installStageCompletionFreshnessGuards } from "./stage-completion-freshness-guards";
 import { installStageContextRoutingGuards } from "./stage-context-routing-guards";
+import { installStageReviewMutationGuards } from "./stage-review-mutation-guards";
 import { installStageValidationRoutingGuards } from "./stage-validation-routing-guards";
 import { installStageTransitionGuards } from "./stage-transition-guards";
 
@@ -53,7 +55,6 @@ import { registerHytaleTools } from "./tools/hytale";
 import { registerHytaleResources } from "./resources/hytale";
 import { registerHytalePrompts } from "./prompts/hytale";
 
-// All registration functions - MUST be used to prevent tree-shaking
 const registrationFunctions = [
   registerAnimationTools,
   registerArmatureTools,
@@ -93,31 +94,24 @@ const registrationFunctions = [
   registerValidatorResources,
 ];
 
-// Optional plugin registration functions
 const optionalRegistrationFunctions = [
   registerHytaleTools,
   registerHytaleResources,
   registerHytalePrompts,
 ];
 
-// Build the complete capability library first.
-for (const register of registrationFunctions) {
-  register();
-}
+for (const register of registrationFunctions) register();
+for (const register of optionalRegistrationFunctions) register();
 
-for (const register of optionalRegistrationFunctions) {
-  register();
-}
-
-// Install additive correctness and routing guards before profile/write-lease wrappers.
+// Guard order matters: evidence and review-state checks are installed before
+// completion rollback and before the final profile/write-lease wrapper.
 installGeometryFreshnessGuards();
 installStageContextRoutingGuards();
 installStageValidationRoutingGuards();
+installStageReviewMutationGuards();
+installStageCompletionFreshnessGuards();
 installStageTransitionGuards();
 
-// Then expose only the exact default profile to future MCP sessions and install
-// call-time guards for every tool definition. The complete library remains
-// available for an explicit diagnostic profile without burdening normal stages.
 initializeToolProfiles();
 
 export function getToolCount(): number {
