@@ -70,7 +70,7 @@ describe("single-Reference-Visual authority", () => {
       expect(codex).toBe(canonical);
       expect(canonical).toContain("analyze_geometry_views");
       expect(canonical).toContain("rotate_cube_about_attachment");
-      expect(canonical).toContain("validate_geometry_contract");
+      expect(canonical).toContain("submit_geometry_for_review");
       expect(canonical).toContain("BEDROCK_CUBOID_GEOMETRY");
       expect(canonical).not.toContain("activate `GEOMETRY_VISUAL_REBUILD`");
     }
