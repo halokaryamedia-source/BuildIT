@@ -36,6 +36,10 @@ async function cleanOutput(): Promise<void> {
   }
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function hasBootstrapPluginMetadata(bundle: string): boolean {
   const registrationIndex = bundle.search(/BBPlugin\.register\(\s*["']mcp["']/);
   if (registrationIndex < 0) return false;
@@ -44,7 +48,7 @@ function hasBootstrapPluginMetadata(bundle: string): boolean {
   // registration area instead of trying to parse the entire bundled runtime.
   const bootstrap = bundle.slice(registrationIndex, registrationIndex + 3200);
   const requiredPatterns = [
-    /version\s*:\s*["']1\.6\.3["']/,
+    new RegExp(`version\\s*:\\s*["']${escapeRegExp(version)}["']`),
     /title\s*:\s*["']BuildIT MCP Server["']/,
     /author\s*:\s*["']MIVUBI["']/,
     /description\s*:\s*["']Connect Blockbench to BuildIT/,
@@ -122,7 +126,7 @@ async function buildPlugin(): Promise<boolean> {
 
     if (!hasBootstrapPluginMetadata(finalBundle)) {
       throw new Error(
-        "Generated plugin bootstrap metadata is invalid. Keep version, title, author, description, icon, variant, and min_version as direct literals in the dependency-free BBPlugin.register entry."
+        `Generated plugin bootstrap metadata is invalid for package version ${version}. Keep version, title, author, description, icon, variant, and min_version as direct literals in the dependency-free BBPlugin.register entry.`
       );
     }
 
