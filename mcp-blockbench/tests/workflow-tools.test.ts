@@ -10,7 +10,7 @@ const readJson = (path: string) =>
   JSON.parse(readFileSync(path, "utf8")) as Record<string, any>;
 
 describe("compact workflow tools", () => {
-  test("keeps only three high-value generic orchestration tools", () => {
+  test("keeps the generic workflow surface compact", () => {
     expect(workflowToolDocs.map((tool) => tool.name)).toEqual([
       "validate_reference_contract",
       "save_texture_evidence",
@@ -18,21 +18,51 @@ describe("compact workflow tools", () => {
     ]);
   });
 
-  test("profiles expose guarded Geometry completion and generic completion only where appropriate", () => {
+  test("exposes one canonical profile per stage with automatic review and revision", () => {
     const config = readJson("../engines/shared/profiles/tool-profiles.json");
     const geometry = config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools;
     expect(geometry).toContain("complete_geometry_stage");
     expect(geometry).not.toContain("complete_stage");
     expect(geometry).toContain("rebind_active_project_identity");
     expect(geometry).toContain("prepare_geometry_visual_rebuild");
-    expect(config.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
-    expect(config.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
-    expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain(
-      "save_texture_evidence"
-    );
-    expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain(
-      "complete_stage"
-    );
+    expect(geometry).toContain("submit_geometry_for_review");
+
+    for (const profileId of [
+      "BEDROCK_CUBOID_TEXTURE",
+      "BEDROCK_CUBOID_ANIMATION",
+      "FINAL_VALIDATION_READONLY",
+    ]) {
+      const allowed = config.profiles[profileId].allowed_tools;
+      expect(allowed, profileId).toContain("rebind_active_project_identity");
+      expect(allowed, profileId).toContain("prepare_stage_revision");
+      expect(allowed, profileId).toContain("reopen_stage_for_revision");
+      expect(allowed, profileId).toContain("record_stage_review_report");
+      expect(allowed, profileId).toContain("submit_stage_for_review");
+      expect(allowed, profileId).toContain("complete_stage");
+    }
+
+    for (const removed of [
+      "GEOMETRY_LOCAL_REPAIR",
+      "GEOMETRY_VISUAL_REBUILD",
+      "TEXTURE_LOCAL_REPAIR",
+      "ANIMATION_LOCAL_REPAIR",
+    ]) {
+      expect(config.profiles[removed]).toBeUndefined();
+    }
+  });
+
+  test("normal profiles remain within the 30-tool budget", () => {
+    const config = readJson("../engines/shared/profiles/tool-profiles.json");
+    for (const [profileId, profile] of Object.entries<Record<string, any>>(
+      config.profiles
+    )) {
+      if (profile.include_all) continue;
+      const exposed = new Set([
+        ...config.core_tools,
+        ...(profile.allowed_tools ?? []),
+      ]);
+      expect(exposed.size, profileId).toBeLessThanOrEqual(30);
+    }
   });
 
   test("workflow writes are atomic and state-revision guarded", () => {
