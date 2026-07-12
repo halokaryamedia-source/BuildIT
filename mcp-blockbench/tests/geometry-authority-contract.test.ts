@@ -14,15 +14,34 @@ describe("single-Reference-Visual authority", () => {
     }
   });
 
-  test("reference template requires diagnostic, rotation, and strict validation tools", () => {
+  test("reference template requires compact transport, one Geometry profile, diagnosis, rotation, and strict validation", () => {
     const manifest = json(
       "../engines/chatgpt/skills/blockbench-reference-studio/templates/reference_manifest.template.json"
     );
     expect(manifest.schema_version).toBe("3.3");
     expect(manifest.workflow.normal_image_generations).toBe(1);
     expect(manifest.workflow.post_visual_image_generations).toBe(0);
+    expect(manifest.visual_grounding.geometry_profile).toBe(
+      "BEDROCK_CUBOID_GEOMETRY"
+    );
+    expect(manifest.visual_grounding.reference_tool).toBe(
+      "inspect_reference_visual_preview"
+    );
+    expect(manifest.visual_grounding.identity_sync_tool).toBe(
+      "rebind_active_project_identity"
+    );
+    expect(manifest.visual_grounding.revision_scopes_are_profiles).toBe(false);
+    expect(
+      manifest.visual_grounding.profile_switch_required_inside_geometry
+    ).toBe(false);
+    expect(manifest.visual_grounding.reconnect_required_inside_geometry).toBe(
+      false
+    );
     expect(manifest.visual_grounding.diagnosis_tool).toBe(
       "analyze_geometry_views"
+    );
+    expect(manifest.visual_grounding.record_tool).toBe(
+      "record_geometry_visual_decision"
     );
     expect(manifest.visual_grounding.safe_rotation_tool).toBe(
       "rotate_cube_about_attachment"
@@ -52,6 +71,8 @@ describe("single-Reference-Visual authority", () => {
       expect(canonical).toContain("analyze_geometry_views");
       expect(canonical).toContain("rotate_cube_about_attachment");
       expect(canonical).toContain("validate_geometry_contract");
+      expect(canonical).toContain("BEDROCK_CUBOID_GEOMETRY");
+      expect(canonical).not.toContain("activate `GEOMETRY_VISUAL_REBUILD`");
     }
   });
 });
