@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.1",
+  "schema_version": "3.2",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -76,12 +76,13 @@
       "review_state": "GEOMETRY_REVIEW",
       "approved_state": "GEOMETRY_APPROVED",
       "identity_sync_tool": "rebind_active_project_identity",
-      "major_revision_prepare_tool": "prepare_geometry_visual_rebuild",
+      "revision_prepare_tool": "prepare_geometry_visual_rebuild",
       "revision_scope": {
         "values": ["LOCAL_REPAIR", "MAJOR_FORM_REVISION"],
         "role": "internal_codex_decision",
         "requires_profile_switch": false,
-        "requires_reconnect": false
+        "requires_reconnect": false,
+        "review_state_returns_to_working_state": true
       },
       "internal_progress_markers": ["PRIMARY_FORM", "STRUCTURAL_DETAIL", "FINAL_REVIEW_READY"],
       "internal_progress_markers_are_user_gates": false,
