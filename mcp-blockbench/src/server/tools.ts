@@ -105,12 +105,9 @@ const optionalRegistrationFunctions = [
 for (const register of registrationFunctions) register();
 for (const register of optionalRegistrationFunctions) register();
 
-// Guard order matters: evidence and review-state checks are installed before
-// completion rollback. Review submissions release the writer while waiting for
-// user input. Profile/state reconciliation remains the outermost transition
-// recovery guard before the final profile/write-lease wrapper.
+// Install mutation/evidence/transition guards before the profile wrapper so the
+// profile and lease checks remain the final mutation boundary.
 installGeometryFreshnessGuards();
-installStageContextRoutingGuards();
 installStageValidationRoutingGuards();
 installStageReviewMutationGuards();
 installStageCompletionFreshnessGuards();
@@ -119,6 +116,11 @@ installStageTransitionGuards();
 installProfileStateReconciliationGuards();
 
 initializeToolProfiles();
+
+// Compact context routing must be outermost: first let the profile wrapper
+// normalize the tool result, then compute one final next-safe operation from
+// current identity, lease, workflow, report, and evidence authority.
+installStageContextRoutingGuards();
 
 export function getToolCount(): number {
   return Object.keys(tools).length;
