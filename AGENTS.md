@@ -5,7 +5,7 @@
 1. Read `openspec/config.yaml` and the active OpenSpec change before workflow development.
 2. Read `engines/shared/workflow/GOVERNANCE.md` after context loss.
 3. For local Codex production, start at `engines/codex/BOOTSTRAP.md`.
-4. Use `engines/codex/MODEL_ROUTING.md` as the model, effort, delegation, and single-writer authority.
+4. Use `engines/codex/MODEL_ROUTING.md` as the model, effort, delegation, permission, and active-writer authority.
 5. Use `workspace/workspace.json` only as the selected-project index.
 6. Use `workspace/active/<asset>/mcp/state.json` as runtime authority.
 7. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
@@ -13,65 +13,68 @@
 9. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
 10. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
 
+## Project Config Preflight
+
+Project-scoped `.codex/` configuration is mandatory for adaptive routing. At the beginning of a new local project session, confirm that `routine_auditor`, `mcp_builder`, `visual_director`, and `critical_reviewer` are available.
+
+If they are missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED` and ask the user to trust the current BuildIT project. Do not invent substitute role definitions and do not repeat the request after the roles appear.
+
 ## Legacy Context Rejection
 
 - Current repository authorities override copied chat context, downloaded project-context ZIPs, old prompt packs, and stale skill snapshots.
-- Do not load or follow a Blockbench workflow that requires four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
+- Reject workflows requiring four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
 - The approved package uses one Reference Visual plus Markdown and JSON contracts.
-- When legacy instructions are active or cannot be isolated, stop with `LEGACY_SKILL_CONFLICT` and report the conflicting source.
+- Stop conflicts with `LEGACY_SKILL_CONFLICT` and report the source.
 
 ## Adaptive Model Routing
 
-- Project default is `gpt-5.6-luna` with medium reasoning. An explicit composer selection changes only the parent thread; route substantive work through the locked custom agents.
-- Classify by deterministic rules before delegation. Do not spend a model call only to choose another model.
-- `routine_auditor` is 5.4 Mini Low and read-only; use it for mechanical search, hashes, evidence, tests, and compact logs.
-- `mcp_builder` is Terra Medium and is the standard implementation worker. During asset production it is the only agent allowed to hold the Blockbench write lease or mutate the active asset.
-- `visual_director` is Sol Medium and read-only; use it only for Reference Visual interpretation, ambiguous cross-view decisions, subjective feedback, and final visual acceptance.
-- `critical_reviewer` is Sol High and read-only; use it at most once for one valid reason code defined in `MODEL_ROUTING.md`.
-- High is the maximum allowed effort. Never route to xhigh, Extra High, Max, Ultra, Fast mode, recursive agents, or parallel MCP writers.
-- Keep `agents.max_threads = 2` and `agents.max_depth = 1`. Do not spawn a subagent for a micro-task when direct execution is cheaper.
-- If the parent is overqualified, keep it to orchestration. If it is underqualified, delegate before risky work. Do not ask the user to change models unless the required custom agent is unavailable.
-- Deterministic validation replaces expensive review whenever it can answer the question.
+- Project default is `gpt-5.6-terra` with medium reasoning. Terra performs normal implementation directly; do not pay for a separate controller and Terra child on standard work.
+- A user-selected composer model affects the parent only. Follow `MODEL_ROUTING.md` when the parent is over- or under-qualified.
+- Use deterministic classification; never spend a model call only to choose another model.
+- `routine_auditor`: 5.4 Mini Low, sizeable mechanical read-only work, Blockbench MCP disabled.
+- `mcp_builder`: Terra Medium fallback writer when the parent is not the selected Terra writer or isolation is materially safer.
+- `visual_director`: Sol Medium, read-only visual judgment with an inspection-only Blockbench MCP allowlist.
+- `critical_reviewer`: packet-only Sol High, Blockbench MCP disabled, at most once for one approved reason code.
+- Exactly one active writer exists: the default Terra parent or `mcp_builder`, never both concurrently.
+- High is the ceiling. Never route to Extra High, Max, Ultra, Fast, recursive agents, or parallel writers.
+- Keep `agents.max_threads = 2` and `agents.max_depth = 1`.
+- Subagent sandbox defaults are not the final active-asset boundary when the parent uses Full access. Enforce MCP allowlists, one writer, and the Blockbench write lease.
+- Deterministic validation replaces expensive model review whenever it can answer the question.
 
 ## Execution Guardrails
 
-- OpenSpec preserves approved scope and decisions.
-- Ponytail selects the smallest safe work required now.
+- OpenSpec preserves scope; Ponytail selects the smallest safe work.
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Stop after each stage preview for approval or targeted revision.
-- Geometry uses one profile: `BEDROCK_CUBOID_GEOMETRY`.
-- `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not separate user gates or profiles.
-- `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes and never require Geometry profile switching or reconnecting.
-- Geometry decisions require Codex visual inspection, fixed-scale `analyze_geometry_views` diagnosis, and `validate_geometry_contract`.
-- Geometry corrections must use ranked failing views, semantic regions, affected parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
-- Non-zero cube rotation must use `rotate_cube_about_attachment`; generic Geometry cube tools are for unrotated placement/modification.
-- When runtime UUID differs from stored metadata, Codex uses `rebind_active_project_identity` before acquiring the write lease. Do not ask the user to edit JSON files.
-- When Geometry evidence is final and current, Codex uses `submit_geometry_for_review`; this tool creates the next unused review checkpoint and moves state to `GEOMETRY_REVIEW` without user file edits or checkpoint naming.
-- Preserve approved areas and manual edits unless a stage is explicitly reopened.
-- Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
-- Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
-- Do not scan ports, create alternate MCP keys, or bypass tool profiles.
-- Acquire `manage_project_write_lease` before model mutations or evidence/checkpoint/final writes. Metadata-only identity synchronization is the narrow exception.
-- Never bypass `WRITE_LEASE_*` errors; realign project, state, stage, profile, and owner session through MCP tools.
-- A successful stage transition releases the old lease. Geometry revision scopes and review submission do not transition profiles or require reconnecting.
-- Asset production loads `blockbench-production` plus exactly one active-stage skill; maximum loaded production skills is `2`.
+- Geometry uses only `BEDROCK_CUBOID_GEOMETRY`; `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes.
+- `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user gates.
+- Geometry decisions require actual image inspection, fixed-scale `analyze_geometry_views`, and `validate_geometry_contract`.
+- Geometry corrections use ranked views, regions, parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
+- Every non-zero cube rotation uses `rotate_cube_about_attachment`.
+- Synchronize a changed runtime UUID with `rebind_active_project_identity` before acquiring a lease; never ask the user to edit JSON.
+- `analyze_geometry_views` persists canonical evidence and therefore requires the current Geometry write lease.
+- Current Geometry evidence is bound to both the compatibility fingerprint and transformed world-space signature. Rerun capture/analyze after hierarchy or group-transform changes.
+- Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision/lease, and enters `GEOMETRY_REVIEW`.
+- Use only MCP key `blockbench` at `http://localhost:3000/bb-mcp`. Do not scan ports or create alternate keys.
+- Acquire `manage_project_write_lease` before model, evidence, checkpoint, final-output, or persistent-analysis writes. Metadata-only identity synchronization is the narrow exception.
+- Never bypass `WRITE_LEASE_*`; realign project, state, stage, profile, and owner through MCP.
+- Stage transitions release the previous lease. Geometry revision and review submission stay in the same profile/session.
+- Production loads `blockbench-production` plus exactly one active-stage skill; maximum `2`.
 - Repository development must not load production skills.
-- Skill changes do not require MCP reconnects. Geometry identity sync, revision preparation, and review submission do not require reconnects.
-- Reload the plugin only after the plugin binary changes or when the canonical endpoint is actually unavailable.
-- Keep user-facing model files only in `workspace/*/<asset>/blockbench/`.
-- Keep MCP state, contracts, checkpoints, evidence, and reports only in `workspace/*/<asset>/mcp/`.
-- Completed baselines remain immutable while a reopened revision is active.
+- Reload the plugin only after binary changes or an actually unavailable endpoint.
+- Keep user files under `workspace/*/<asset>/blockbench/` and MCP internals under `workspace/*/<asset>/mcp/`.
+- Completed baselines remain immutable during reopened revisions.
 - Keep active work on `Rework` until explicit integration approval.
 
 ## Root Boundaries
 
-- `mcp-blockbench/`: the complete MCP Blockbench package, including `src/`, `scripts/`, `prompts/`, `tests/`, and `dist/`.
-- `engines/`: shared and engine-specific AI orchestration.
+- `mcp-blockbench/`: MCP package source, prompts, scripts, tests, and generated output.
+- `engines/`: shared and engine-specific orchestration.
 - `workspace/active/`: current editable projects.
-- `workspace/completed/`: approved projects that can be inspected or reopened.
-- `docs/`: authored documentation; generated API output belongs only in `docs/api/`.
+- `workspace/completed/`: approved projects.
+- `docs/`: authored documentation; generated API output belongs in `docs/api/`.
 - `openspec/`: durable work agreement.
-- `.agents/`, `.codex/`, `.github/`, and `.vscode/`: tool-native adapters and discovery paths.
+- `.agents/`, `.codex/`, `.github/`, `.vscode/`: tool-native adapters and discovery.
 
 Run Bun package commands from `mcp-blockbench/`.
 
