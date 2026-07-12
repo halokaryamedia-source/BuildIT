@@ -27,7 +27,7 @@ describe("audited multi-stage MCP flow", () => {
     }
   });
 
-  test("wires every correctness guard in the intended order", () => {
+  test("wires every correctness and continuity guard in the intended order", () => {
     const source = read("src/server/tools.ts");
     for (const marker of [
       "installStageContextRootGuards();",
@@ -39,22 +39,24 @@ describe("audited multi-stage MCP flow", () => {
       "installStageTransitionGuards();",
       "installProfileStateReconciliationGuards();",
       "initializeToolProfiles();",
+      "installStableToolSurface();",
       "installStageValidationRoutingGuards();",
       "installStageContextRoutingGuards();",
+      "installSessionContinuityGuards();",
     ]) {
       expect(source).toContain(marker);
     }
-    expect(source.indexOf("installStageContextRootGuards();")).toBeLessThan(
-      source.indexOf("initializeToolProfiles();")
-    );
-    for (const marker of [
-      "installStageValidationRoutingGuards();",
-      "installStageContextRoutingGuards();",
-    ]) {
-      expect(source.indexOf(marker), marker).toBeGreaterThan(
-        source.indexOf("initializeToolProfiles();")
-      );
-    }
+    const root = source.indexOf("installStageContextRootGuards();");
+    const profiles = source.indexOf("initializeToolProfiles();");
+    const stable = source.indexOf("installStableToolSurface();");
+    const validation = source.indexOf("installStageValidationRoutingGuards();");
+    const context = source.indexOf("installStageContextRoutingGuards();");
+    const continuity = source.indexOf("installSessionContinuityGuards();");
+    expect(root).toBeLessThan(profiles);
+    expect(stable).toBeGreaterThan(profiles);
+    expect(validation).toBeGreaterThan(stable);
+    expect(context).toBeGreaterThan(validation);
+    expect(continuity).toBeGreaterThan(context);
   });
 
   test("binds non-Geometry review reports to current project and evidence", () => {
@@ -118,7 +120,7 @@ describe("audited multi-stage MCP flow", () => {
     expect(routing).toContain("earlierThan");
   });
 
-  test("preserves approved checkpoint history and reconciles failed transitions", () => {
+  test("preserves checkpoint history and reconciles failed transitions without reconnect", () => {
     const transitions = read("src/server/stage-transition-guards.ts");
     const reconciliation = read(
       "src/server/profile-state-reconciliation-guards.ts"
@@ -127,7 +129,9 @@ describe("audited multi-stage MCP flow", () => {
     expect(transitions).toContain("restoreCanonicalCheckpoint");
     expect(transitions).toContain("removeNewCheckpointEntries");
     expect(reconciliation).toContain("const mismatch");
-    expect(reconciliation).toContain("profile_reconnect_required = true");
+    expect(reconciliation).toContain("profile_reconnect_required = false");
+    expect(reconciliation).toContain("stable_tool_surface = true");
+    expect(reconciliation).not.toContain("profile_reconnect_required = true");
     expect(reconciliation).toContain("clearProjectWriteLease");
   });
 
@@ -150,6 +154,10 @@ describe("audited multi-stage MCP flow", () => {
     ]) {
       expect(profiles.profiles[removed]).toBeUndefined();
     }
+    expect(stages.global.profile_transition_policy).toBe(
+      "stage_transition_same_session"
+    );
+    expect(stages.global.stage_transition_reconnect_required).toBe(false);
     for (const stage of ["TEXTURE", "ANIMATION", "FINAL_VALIDATION"]) {
       expect(stages.profiles[stage].identity_sync_tool).toBe(
         "rebind_active_project_identity"
