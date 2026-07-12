@@ -822,7 +822,7 @@ export function registerGeometryAnalyzerTools(): void {
             "GEOMETRY_REFERENCE_PROFILE_MISSING: add visual_grounding panels/regions and Geometry constraints to the manifest."
           );
         }
-        for (const view of views) {
+        for (const view of views as StandardGeometryView[]) {
           const panel = profile.panels[view];
           if (
             !panel ||
@@ -841,7 +841,7 @@ export function registerGeometryAnalyzerTools(): void {
         const currentMasks = new Map<StandardGeometryView, BinaryMask>();
         const metrics: MaskMetric[] = [];
 
-        for (const view of views) {
+        for (const view of views as StandardGeometryView[]) {
           const panel = profile.panels[view];
           const current = projectCurrentGeometry({
             view,
@@ -929,7 +929,12 @@ export function registerGeometryAnalyzerTools(): void {
           "geometry_visual_metrics.json"
         );
         writeJsonAtomically(fs, reportPath, report);
-        const diff = contactSheet(views, referenceMasks, currentMasks, metrics);
+        const diff = contactSheet(
+          views as StandardGeometryView[],
+          referenceMasks,
+          currentMasks,
+          metrics
+        );
         const diffPath = joinPath(evidenceRoot, "geometry_visual_diff.png");
         writeFileAtomically(fs, diffPath, diff);
 
