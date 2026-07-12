@@ -26,6 +26,7 @@ import { geometryAnalyzerToolDocs } from "../src/server/tools/geometry-analyzer"
 import { geometryDecisionToolDocs } from "../src/server/tools/geometry-decision";
 import { geometryRotationToolDocs } from "../src/server/tools/geometry-rotation";
 import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validator";
+import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
@@ -45,6 +46,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
+  { category: "Geometry Visual Rebuild", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
