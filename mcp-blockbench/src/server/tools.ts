@@ -25,6 +25,7 @@ import { registerRuntimeTools } from "./tools/runtime";
 import { registerWorkflowTools } from "./tools/workflow";
 import { registerLeaseTools } from "./tools/lease";
 import { registerGeometryFeedbackTools } from "./tools/geometry-feedback";
+import { registerReferenceVisualPreviewTools } from "./tools/reference-visual-preview";
 import { registerGeometryAnalyzerTools } from "./tools/geometry-analyzer";
 import { registerGeometryDecisionTools } from "./tools/geometry-decision";
 import { registerGeometryRotationTools } from "./tools/geometry-rotation";
@@ -51,6 +52,7 @@ const registrationFunctions = [
   registerElementTools,
   registerExportTools,
   registerGeometryFeedbackTools,
+  registerReferenceVisualPreviewTools,
   registerGeometryAnalyzerTools,
   registerGeometryDecisionTools,
   registerGeometryRotationTools,
