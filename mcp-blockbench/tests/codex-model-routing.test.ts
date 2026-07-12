@@ -180,6 +180,15 @@ describe("usage-efficient Codex routing", () => {
     expect(agents["mcp-builder.toml"]).toContain("fallback single MCP writer");
   });
 
+  test("permits multiple read-only sessions without weakening mutation ownership", () => {
+    const policy = read("../engines/codex/MODEL_ROUTING.md");
+    const mutationContext = read("src/lib/mutationContext.ts");
+    expect(policy).toContain("Multiple read-only MCP sessions are allowed");
+    expect(policy).toContain("A mutation still requires explicit caller identity");
+    expect(mutationContext).not.toContain("WRITE_LEASE_SESSION_AMBIGUOUS");
+    expect(mutationContext).toContain("WRITE_LEASE_SESSION_REQUIRED");
+  });
+
   test("requires trusted project config and deterministic de-escalation", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     const agentsRules = read("../AGENTS.md");
