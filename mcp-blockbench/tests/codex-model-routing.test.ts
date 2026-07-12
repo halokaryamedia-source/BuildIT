@@ -195,7 +195,7 @@ describe("usage-efficient Codex routing", () => {
     ]) {
       expect(policy).toContain(marker);
     }
-    expect(policy).toContain("Full access");
+    expect(policy).toContain("Full-access caveat");
     expect(policy).toContain("MCP allowlists");
   });
 
