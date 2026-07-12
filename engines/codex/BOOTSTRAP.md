@@ -21,13 +21,7 @@ visual_director
 critical_reviewer
 ```
 
-If any are missing, stop with:
-
-```text
-CODEX_PROJECT_CONFIG_NOT_LOADED
-```
-
-Ask the user to trust the current project once. Project-local `.codex/` configuration is not active until trust is granted. Do not invent fallback role definitions.
+If any are missing, stop with `CODEX_PROJECT_CONFIG_NOT_LOADED`. Ask the user to trust the current project once. Project-local `.codex/` configuration is not active until trust is granted. Do not invent fallback role definitions.
 
 ## Model routing
 
@@ -81,7 +75,7 @@ workspace/active/<asset>/
 4. Use MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 5. Call `get_runtime_status`, then `get_stage_context`.
 6. Follow `next_safe_operation`.
-7. Select one writer before any persistent tool call.
+7. Select one writer before persistent tool calls.
 8. Do not ask the user to edit JSON, choose checkpoints, select repair profiles, or select worker models.
 
 ## Geometry flow
@@ -99,6 +93,7 @@ get_stage_context
 → final five-view capture/analyze
 → record_geometry_visual_decision
 → submit_geometry_for_review
+→ lease released
 → user review
 ```
 
@@ -106,19 +101,31 @@ get_stage_context
 
 Use `visual_director` once per unchanged Reference Visual hash, only for ambiguous corrections, and once for final visual acceptance. Repairs with concrete part/direction/magnitude stay with Terra.
 
-Geometry evidence is bound to:
+Geometry evidence is bound to project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual SHA-256, and current five-view metrics/decision. Hierarchy or group-transform changes require a new capture/analyze pass.
 
-- project UUID;
-- compatibility Geometry fingerprint;
-- transformed world-space signature including group transforms;
-- Reference Visual SHA-256;
-- current five-view metrics and visual decision.
-
-Hierarchy/group-transform changes require a new capture/analyze pass.
-
-`submit_geometry_for_review` revalidates, creates the next unused non-approved checkpoint, advances state/lease revision, and enters `GEOMETRY_REVIEW` without reconnecting.
+`submit_geometry_for_review` revalidates, creates the next unused non-approved checkpoint, enters `GEOMETRY_REVIEW`, and releases the writer lease without reconnecting.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles. `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers.
+
+## Texture, Animation, and Final Validation
+
+Each stage remains in one canonical profile:
+
+```text
+get_stage_context
+→ rebind identity when required
+→ selected writer acquires lease
+→ work and canonical evidence
+→ record_stage_review_report
+→ validate_reference_contract
+→ submit_stage_for_review
+→ lease released
+→ user review
+```
+
+Reports are bound to current project serialization and required evidence hashes. Do not author free-form PASS JSON.
+
+After user `APPROVED` or `REVISION`, Codex acquires a fresh stage lease. Approval uses `complete_stage`; same-stage revision uses `prepare_stage_revision`. A later-stage failure affecting an earlier approved stage uses `reopen_stage_for_revision`, preserves approved checkpoints, marks downstream revalidation, activates the canonical target profile, releases the old lease, and performs only the required stage-transition reconnect.
 
 ## Stage routing
 
@@ -129,7 +136,7 @@ Hierarchy/group-transform changes require a new capture/analyze pass.
 | Animation | `BEDROCK_CUBOID_ANIMATION` | production + Animation | selected Terra writer |
 | Final Validation | `FINAL_VALIDATION_READONLY` | production + Validation | selected Terra writer for required writes |
 
-Do not load Animation when skipped. Profile changes occur only between user-visible stages.
+Do not load Animation when skipped. Profile changes occur only between user-visible stages or when reopening an earlier affected stage.
 
 ## Missing-role fallback
 
