@@ -30,6 +30,7 @@ import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validato
 import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
+import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
 import { projectIdentityToolDocs } from "../src/server/tools/project-identity";
 
@@ -52,6 +53,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
   { category: "Geometry Major Revision", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
+  { category: "Geometry Review Submission", tools: geometryReviewSubmitToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
@@ -164,7 +166,7 @@ export const resourceDocs: ResourceSpec[] = [
   {
     name: "reference_models",
     uriTemplate: "reference_models://{id}",
-    title: "Reference Models",
+    title: "Blockbench Reference Models",
     description:
       "Returns reference models in the current project. Requires the Reference Models plugin.",
   },
