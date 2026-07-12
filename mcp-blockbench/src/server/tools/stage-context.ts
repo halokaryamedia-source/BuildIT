@@ -23,7 +23,7 @@ export const stageContextToolDocs: ToolSpec[] = [
   {
     name: "get_stage_context",
     description:
-      "Returns the compact active-stage decision lock, Geometry blueprint, runtime phase and iteration budget, open issues, accepted areas, visual diagnosis tools, and rotation contracts without loading full Markdown contracts into Codex context.",
+      "Returns the compact active-stage decision lock, Geometry blueprint, runtime phase and iteration budget, open issues, accepted areas, bounded visual transport, visual diagnosis tools, and rotation contracts without loading full Markdown contracts into Codex context.",
     annotations: {
       title: "Get Compact Stage Context",
       readOnlyHint: true,
@@ -90,7 +90,7 @@ export function registerStageContextTools(): void {
             : null;
 
         const context = {
-          schema_version: "1.3",
+          schema_version: "1.4",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
@@ -204,7 +204,15 @@ export function registerStageContextTools(): void {
           visual_grounding: {
             ...(manifest.visual_grounding ?? {}),
             required: stage === "GEOMETRY",
-            reference_tool: "inspect_reference_visual",
+            reference_tool: "inspect_reference_visual_preview",
+            reference_transport: {
+              original_binary_in_response_forbidden: true,
+              default_format: "jpeg",
+              default_max_dimension: 1400,
+              default_max_transport_bytes: 768 * 1024,
+              original_hash_remains_authority: true,
+              preview_is_ephemeral: true,
+            },
             feedback_tool: "capture_visual_feedback",
             diagnosis_tool: "analyze_geometry_views",
             record_tool: "record_geometry_visual_decision",
