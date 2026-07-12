@@ -34,7 +34,7 @@ export const stageReviewSubmitToolDocs: ToolSpec[] = [
   {
     name: "submit_stage_for_review",
     description:
-      "Validates current Texture, Animation, or Final Validation evidence/report, saves the next unused non-approved review checkpoint, and atomically moves workflow state to the corresponding user-review gate without changing profile.",
+      "Validates current Texture, Animation, or Final Validation evidence/report, rejects reports older than the latest prepared revision, saves the next unused non-approved review checkpoint, and atomically enters the user-review state without changing profile.",
     annotations: {
       title: "Submit Stage for User Review",
       destructiveHint: true,
@@ -57,7 +57,7 @@ interface StagePolicy {
   reviewState: string;
   reviewStatus: string;
   nextAction: string;
-  profileIds: string[];
+  profileId: string;
   checkpointBase: number;
   checkpointStem: string;
   checkpointStateKey: string;
@@ -71,7 +71,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "TEXTURE_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_TEXTURE_REVIEW",
-    profileIds: ["BEDROCK_CUBOID_TEXTURE", "TEXTURE_LOCAL_REPAIR"],
+    profileId: "BEDROCK_CUBOID_TEXTURE",
     checkpointBase: 30,
     checkpointStem: "texture_review",
     checkpointStateKey: "texture_review",
@@ -90,7 +90,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "ANIMATION_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_ANIMATION_REVIEW",
-    profileIds: ["BEDROCK_CUBOID_ANIMATION", "ANIMATION_LOCAL_REPAIR"],
+    profileId: "BEDROCK_CUBOID_ANIMATION",
     checkpointBase: 50,
     checkpointStem: "animation_review",
     checkpointStateKey: "animation_review",
@@ -107,7 +107,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "FINAL_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_FINAL_REVIEW",
-    profileIds: ["FINAL_VALIDATION_READONLY"],
+    profileId: "FINAL_VALIDATION_READONLY",
     checkpointBase: 70,
     checkpointStem: "final_candidate",
     checkpointStateKey: "final_candidate",
@@ -158,6 +158,28 @@ function reportResult(report: Record<string, any>): string | null {
     report.validation?.status ??
     report.summary?.result;
   return typeof value === "string" ? value.toUpperCase() : null;
+}
+
+function timestamp(value: unknown): number | null {
+  const parsed = Date.parse(String(value ?? ""));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function assertReportFresh(
+  report: Record<string, any>,
+  stageRecord: Record<string, any>
+): void {
+  const boundary = timestamp(
+    stageRecord.revision?.evidence_after ?? stageRecord.revision?.prepared_at
+  );
+  if (boundary === null) return;
+
+  const reportTime = timestamp(report.created_at ?? report.updated_at);
+  if (reportTime === null || reportTime <= boundary) {
+    throw new Error(
+      "STAGE_REPORT_STALE: create fresh evidence and a new PASS report after prepare_stage_revision before submitting for review."
+    );
+  }
 }
 
 function nextCheckpoint(
@@ -262,9 +284,14 @@ export function registerStageReviewSubmitTools(): void {
           lease.project_uuid !== expected_project_uuid ||
           lease.state_revision !== expected_state_revision ||
           lease.stage !== stage ||
-          !policy.profileIds.includes(String(lease.profile_id ?? ""))
+          lease.profile_id !== policy.profileId
         ) {
           throw new Error("STAGE_REVIEW_WRITE_LEASE_REQUIRED");
+        }
+
+        const stageRecord = state.workflow?.stage_records?.[stage];
+        if (!stageRecord) {
+          throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
         }
 
         const requiredEvidence = [...policy.requiredEvidence];
@@ -284,6 +311,7 @@ export function registerStageReviewSubmitTools(): void {
         const reportPath = joinPath(session_root, policy.reportRelative);
         assertInsideRoot(reportPath, session_root);
         const report = readJsonFile<Record<string, any>>(fs, reportPath);
+        assertReportFresh(report, stageRecord);
         const currentReportResult = reportResult(report);
         if (currentReportResult !== "PASS") {
           throw new Error(
@@ -312,11 +340,6 @@ export function registerStageReviewSubmitTools(): void {
           throw new Error(
             `STAGE_VALIDATION_NOT_PASS: ${validation?.structuredContent?.result ?? "UNKNOWN"}; ${codes}`
           );
-        }
-
-        const stageRecord = state.workflow?.stage_records?.[stage];
-        if (!stageRecord) {
-          throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
         }
 
         const checkpoint = nextCheckpoint(fs, session_root, policy);
@@ -348,6 +371,7 @@ export function registerStageReviewSubmitTools(): void {
         state.workflow.last_safe_checkpoint = checkpoint.modelPath;
         stageRecord.status = "AWAITING_REVIEW";
         stageRecord.decision = null;
+        stageRecord.revision = null;
         stageRecord.review_checkpoint = checkpoint.modelPath;
         stageRecord.review_submitted_at = submittedAt;
         stageRecord.open_issues = [];
@@ -398,7 +422,7 @@ export function registerStageReviewSubmitTools(): void {
             checkpoint: checkpoint.modelPath,
             checkpoint_metadata: checkpoint.metadataPath,
             state_revision: nextRevision,
-            active_profile: lease.profile_id,
+            active_profile: policy.profileId,
             profile_switch_required: false,
             reconnect_required: false,
             validation: validation?.structuredContent ?? null,
