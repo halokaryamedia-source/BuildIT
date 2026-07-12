@@ -69,7 +69,7 @@ or isolated worker is materially safer
 
 Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently. The Blockbench write lease is the final runtime authority.
 
-Multiple read-only MCP sessions are allowed. A mutation requires explicit caller identity or ownership of the active write lease.
+Multiple read-only MCP sessions are allowed. A mutation still requires explicit caller identity or ownership of the active write lease.
 
 ## One-session continuity
 
@@ -123,12 +123,7 @@ Blockbench MCP is disabled. Failure returns a blocker; effort never rises above 
 
 Codex can reapply the parent turn's live permission mode to children. `sandbox_mode = "read-only"` is defense-in-depth, not the active-asset write boundary.
 
-BuildIT enforces active-asset safety through:
-
-1. custom-agent MCP allowlists/disablement;
-2. one selected writer;
-3. project UUID/state/profile-aware write lease;
-4. current evidence and world-space freshness guards.
+BuildIT enforces active-asset safety through MCP allowlists, one selected writer, the project UUID/state/profile-aware write lease, and current evidence/world-space freshness guards.
 
 ## Deterministic classification
 
