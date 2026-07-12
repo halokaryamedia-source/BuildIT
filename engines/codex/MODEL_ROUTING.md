@@ -34,17 +34,19 @@ Forbidden automatic routes:
 
 The parent reads the user request, loads compact authority, classifies the work, delegates only when delegation is cheaper or safer, and consolidates the result. It does not keep doing expensive work merely because the user selected a large model.
 
+The parent may directly perform a micro-task or a deterministic command that must create generated repository output, when spawning a worker would cost more. It must not mutate an active Blockbench asset.
+
 ### `routine_auditor`
 
 Use for mechanical, read-only work:
 
 - targeted repository search;
 - file, hash, profile, adapter, evidence, and checkpoint checks;
-- test/build execution and compact failure summaries;
-- schema/list consistency checks;
+- existing test/build result inspection and compact failure summaries;
+- read-only schema/list consistency checks;
 - read-only comparison and reporting.
 
-Do not use for visual judgment, architecture, implementation, or MCP mutation.
+Do not use for generated-output writes, visual judgment, architecture, implementation, or MCP mutation.
 
 ### `mcp_builder`
 
@@ -52,6 +54,7 @@ Use for normal implementation after the desired result is clear:
 
 - ordinary BuildIT source changes;
 - MCP tool implementation from an approved plan;
+- commands that create or replace generated repository output when parent-direct work is not appropriate;
 - Geometry, Texture, or Animation mutation;
 - deterministic repair;
 - evidence, checkpoint, and stage operations.
@@ -91,7 +94,7 @@ High is the ceiling. If this role cannot clear the decision, report a blocker in
 | --- | --- | --- |
 | `MICRO` | One obvious low-risk change, no visual judgment, no active-asset mutation, little exploration | Parent directly, maximum medium |
 | `ROUTINE` | Mechanical/read-only, result fully verifiable | `routine_auditor` |
-| `STANDARD_BUILD` | Requirements clear, implementation or tool use needed | `mcp_builder` |
+| `STANDARD_BUILD` | Requirements clear, implementation or workspace write needed | `mcp_builder` |
 | `COMPLEX_VISUAL` | Species, style, silhouette, cross-view, or subjective judgment | `visual_director`, then `mcp_builder` |
 | `CRITICAL` | Valid critical reason code and medium route is insufficient | `critical_reviewer`, then `mcp_builder` |
 
@@ -135,12 +138,12 @@ Use `visual_director` with only the Reference Visual, current final views, analy
 
 ### Final deterministic checks
 
-Use `routine_auditor` for hashes, files, profile size, adapter equality, tests, and build summaries. Deterministic checks must not trigger Sol review.
+Use `routine_auditor` for hashes, files, profile size, adapter equality, and existing test/build result summaries. The parent or `mcp_builder` runs commands that must write generated outputs. Deterministic checks must not trigger Sol review.
 
 ## One-writer rule
 
 ```text
-parent/controller  orchestration only
+parent/controller  orchestration only for active assets
 routine_auditor    read-only
 visual_director    read-only
 critical_reviewer  read-only
