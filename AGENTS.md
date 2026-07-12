@@ -5,12 +5,13 @@
 1. Read `openspec/config.yaml` and the active OpenSpec change before workflow development.
 2. Read `engines/shared/workflow/GOVERNANCE.md` after context loss.
 3. For local Codex production, start at `engines/codex/BOOTSTRAP.md`.
-4. Use `workspace/workspace.json` only as the selected-project index.
-5. Use `workspace/active/<asset>/mcp/state.json` as runtime authority.
-6. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
-7. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
-8. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
-9. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
+4. Use `engines/codex/MODEL_ROUTING.md` as the model, effort, delegation, and single-writer authority.
+5. Use `workspace/workspace.json` only as the selected-project index.
+6. Use `workspace/active/<asset>/mcp/state.json` as runtime authority.
+7. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
+8. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
+9. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
+10. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
 
 ## Legacy Context Rejection
 
@@ -18,6 +19,19 @@
 - Do not load or follow a Blockbench workflow that requires four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
 - The approved package uses one Reference Visual plus Markdown and JSON contracts.
 - When legacy instructions are active or cannot be isolated, stop with `LEGACY_SKILL_CONFLICT` and report the conflicting source.
+
+## Adaptive Model Routing
+
+- Project default is `gpt-5.6-luna` with medium reasoning. An explicit composer selection changes only the parent thread; route substantive work through the locked custom agents.
+- Classify by deterministic rules before delegation. Do not spend a model call only to choose another model.
+- `routine_auditor` is 5.4 Mini Low and read-only; use it for mechanical search, hashes, evidence, tests, and compact logs.
+- `mcp_builder` is Terra Medium and is the standard implementation worker. During asset production it is the only agent allowed to hold the Blockbench write lease or mutate the active asset.
+- `visual_director` is Sol Medium and read-only; use it only for Reference Visual interpretation, ambiguous cross-view decisions, subjective feedback, and final visual acceptance.
+- `critical_reviewer` is Sol High and read-only; use it at most once for one valid reason code defined in `MODEL_ROUTING.md`.
+- High is the maximum allowed effort. Never route to xhigh, Extra High, Max, Ultra, Fast mode, recursive agents, or parallel MCP writers.
+- Keep `agents.max_threads = 2` and `agents.max_depth = 1`. Do not spawn a subagent for a micro-task when direct execution is cheaper.
+- If the parent is overqualified, keep it to orchestration. If it is underqualified, delegate before risky work. Do not ask the user to change models unless the required custom agent is unavailable.
+- Deterministic validation replaces expensive review whenever it can answer the question.
 
 ## Execution Guardrails
 
