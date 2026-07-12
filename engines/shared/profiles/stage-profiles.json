@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.4",
+  "schema_version": "3.5",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -10,7 +10,10 @@
     "skill_profile_contract": "engines/shared/skills/skill-profiles.json",
     "max_loaded_production_skills": 2,
     "geometry_profile_policy": "single_profile_one_session",
-    "profile_transition_policy": "stage_transition_only",
+    "registered_tool_surface_policy": "stable_full_library_profile_guarded",
+    "profile_transition_policy": "stage_transition_same_session",
+    "stage_transition_reconnect_required": false,
+    "codex_session_restart_required": false,
     "revision_policy": "same_stage_profile_no_reconnect",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
     "identity_recovery_policy": "available_in_every_active_stage_before_lease",
