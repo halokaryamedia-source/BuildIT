@@ -16,9 +16,9 @@ single Reference Visual authority
 → ranked view/region/part repair instructions
 → local or major revision as an internal scope
 → contract-driven rotations
-→ five-view readiness gate
-→ transformed Geometry validation
-→ guarded completion
+→ final structural and five-view validation
+→ automatic review checkpoint and GEOMETRY_REVIEW transition
+→ guarded approval completion
 → final static and runtime proof
 ```
 
@@ -50,6 +50,19 @@ Revision scope is an internal Codex decision inside `BEDROCK_CUBOID_GEOMETRY`. I
 
 Current Geometry is projected from transformed cuboids at approved scale. Free-rescaling current Geometry to fit the reference is forbidden.
 
+## Geometry review submission rule
+
+When final Geometry is current, Codex calls `submit_geometry_for_review`. The tool must:
+
+- run fresh `validate_geometry_contract`, including its embedded review-readiness gate;
+- save the next unused non-approved Geometry review checkpoint;
+- atomically move state to `GEOMETRY_REVIEW` / `AWAITING_USER_REVIEW`;
+- advance the existing Geometry lease to the new state revision;
+- remain in `BEDROCK_CUBOID_GEOMETRY` without reconnecting;
+- require no user JSON edits or checkpoint naming.
+
+Generic Geometry revision output must route to `BEDROCK_CUBOID_GEOMETRY`, then use `analyze_geometry_views` to classify the internal scope.
+
 ## Rotation rule
 
 Every non-zero cube rotation uses a machine-readable attachment contract. The rotation tool derives the pivot, checks axis/sign/range, expected direction, declared connection, and affected-view score. Visual regression or broken connection rolls back automatically.
@@ -62,7 +75,7 @@ Every non-zero cube rotation uses a machine-readable attachment contract. The ro
 - bounded atomic cube batches;
 - compact stage context instead of repeated long-document reads;
 - non-improving cycles set an attention flag rather than creating a new gate/profile;
-- no manual JSON edits, Geometry profile switches, or reconnects requested from the user.
+- no manual JSON edits, checkpoint naming, Geometry profile switches, or reconnects requested from the user.
 
 ## Workspace separation
 
@@ -87,9 +100,10 @@ Implementation is complete only when:
 7. internal progress markers do not create user-facing gates;
 8. five current views, Reference Visual hash, fingerprint, and analyzer are mandatory for review;
 9. Geometry uses transformed world bounds and true ground contacts;
-10. completion preserves lease/session correctness and cannot use generic bypass;
-11. negative fixtures reject the failed Black Rhinoceros model;
-12. skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
+10. review submission automatically validates, checkpoints, and transitions to `GEOMETRY_REVIEW`;
+11. Geometry approval preserves lease/session correctness and cannot use generic bypass;
+12. negative fixtures reject the failed Black Rhinoceros model;
+13. skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
 
 ## Deferred not required
 
