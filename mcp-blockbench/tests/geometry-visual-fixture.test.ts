@@ -22,6 +22,16 @@ interface Fixture {
   views: Record<StandardGeometryView, SampleProfile>;
 }
 
+interface ProfileDiagnostics {
+  bound_error: number;
+  row_error: number;
+  column_error: number;
+  pixel_error: number;
+  combined_error: number;
+  critical_component_error: number;
+  rejected: boolean;
+}
+
 const fixture = JSON.parse(
   readFileSync(
     "tests/fixtures/black_rhinoceros_reference_profile16.json",
@@ -44,6 +54,9 @@ const envelope: CoordinateEnvelope = {
   z_max: 22.8,
 };
 
+const CRITICAL_COMPONENT_THRESHOLD = 0.05;
+const COMBINED_ERROR_THRESHOLD = 0.035;
+
 function profile(mask: BinaryMask, bins: number): SampleProfile {
   const bounds = maskBounds(mask);
   if (!bounds) {
@@ -54,6 +67,7 @@ function profile(mask: BinaryMask, bins: number): SampleProfile {
       column_samples: Array(bins).fill(null),
     };
   }
+
   const rowSamples: SampleProfile["row_samples"] = [];
   for (let bin = 0; bin < bins; bin += 1) {
     const y0 = Math.round((bin * mask.height) / bins);
@@ -78,6 +92,7 @@ function profile(mask: BinaryMask, bins: number): SampleProfile {
         : null
     );
   }
+
   const columnSamples: SampleProfile["column_samples"] = [];
   for (let bin = 0; bin < bins; bin += 1) {
     const x0 = Math.round((bin * mask.width) / bins);
@@ -102,6 +117,7 @@ function profile(mask: BinaryMask, bins: number): SampleProfile {
         : null
     );
   }
+
   return {
     bounds: [
       bounds.min_x / (mask.width - 1),
@@ -128,7 +144,10 @@ function tupleError(
   ) / 3;
 }
 
-function profileError(reference: SampleProfile, current: SampleProfile): number {
+function profileDiagnostics(
+  reference: SampleProfile,
+  current: SampleProfile
+): ProfileDiagnostics {
   const boundError =
     reference.bounds.reduce(
       (sum, value, index) => sum + Math.abs(value - current.bounds[index]),
@@ -147,7 +166,29 @@ function profileError(reference: SampleProfile, current: SampleProfile): number 
       0
     ) / reference.column_samples.length;
   const pixelError = Math.abs(reference.pixel_ratio - current.pixel_ratio);
-  return 0.3 * boundError + 0.3 * rowError + 0.3 * columnError + 0.1 * pixelError;
+  const combinedError =
+    0.3 * boundError +
+    0.3 * rowError +
+    0.3 * columnError +
+    0.1 * pixelError;
+  const criticalComponentError = Math.max(
+    boundError,
+    rowError,
+    columnError,
+    pixelError
+  );
+
+  return {
+    bound_error: boundError,
+    row_error: rowError,
+    column_error: columnError,
+    pixel_error: pixelError,
+    combined_error: combinedError,
+    critical_component_error: criticalComponentError,
+    rejected:
+      criticalComponentError > CRITICAL_COMPONENT_THRESHOLD ||
+      combinedError > COMBINED_ERROR_THRESHOLD,
+  };
 }
 
 function project(view: StandardGeometryView): SampleProfile {
@@ -176,27 +217,54 @@ function project(view: StandardGeometryView): SampleProfile {
   );
 }
 
+function diagnosticSummary(
+  diagnostics: Record<StandardGeometryView, ProfileDiagnostics>
+): string {
+  return JSON.stringify(diagnostics, null, 2);
+}
+
 describe("failed Black Rhinoceros visual regression fixture", () => {
   test("the preserved failed checkpoint is rejected across multiple real reference views", () => {
     expect(fixture.reference_sha256).toBe(
       "fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f"
     );
-    const errors = Object.fromEntries(
-      (
-        [
-          "front",
-          "left_side",
-          "back",
-          "top_footprint",
-          "front_left_3_4",
-        ] as StandardGeometryView[]
-      ).map((view) => [view, profileError(fixture.views[view], project(view))])
-    ) as Record<StandardGeometryView, number>;
 
-    const failedViews = Object.entries(errors).filter(([, error]) => error > 0.08);
-    expect(failedViews.length).toBeGreaterThanOrEqual(3);
-    expect(errors.left_side).toBeGreaterThan(0.08);
-    expect(errors.top_footprint).toBeGreaterThan(0.08);
-    expect(errors.front_left_3_4).toBeGreaterThan(0.08);
+    const views: StandardGeometryView[] = [
+      "front",
+      "left_side",
+      "back",
+      "top_footprint",
+      "front_left_3_4",
+    ];
+    const diagnostics = Object.fromEntries(
+      views.map((view) => [
+        view,
+        profileDiagnostics(fixture.views[view], project(view)),
+      ])
+    ) as Record<StandardGeometryView, ProfileDiagnostics>;
+
+    const failedViews = views.filter((view) => diagnostics[view].rejected);
+    const summary = diagnosticSummary(diagnostics);
+
+    expect(failedViews.length, summary).toBeGreaterThanOrEqual(3);
+    expect(diagnostics.left_side.rejected, summary).toBe(true);
+    expect(diagnostics.top_footprint.rejected, summary).toBe(true);
+    expect(diagnostics.front_left_3_4.rejected, summary).toBe(true);
+
+    // The test intentionally checks the strongest component as well as the
+    // aggregate. Localized horn, head, shoulder, rear-taper, or footprint drift
+    // must not be diluted by otherwise overlapping body pixels.
+    expect(
+      diagnostics.left_side.critical_component_error,
+      summary
+    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
+    expect(
+      diagnostics.top_footprint.critical_component_error,
+      summary
+    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
+    expect(
+      diagnostics.front_left_3_4.critical_component_error,
+      summary
+    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
   });
 });
