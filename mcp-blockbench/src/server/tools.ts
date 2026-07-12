@@ -4,6 +4,7 @@
 import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
+import { installStageTransitionGuards } from "./stage-transition-guards";
 
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
@@ -98,9 +99,9 @@ for (const register of optionalRegistrationFunctions) {
   register();
 }
 
-// Add world-space evidence freshness and correct analyzer write semantics before
-// installing profile and write-lease wrappers around the complete tool library.
+// Install additive correctness guards before profile and write-lease wrappers.
 installGeometryFreshnessGuards();
+installStageTransitionGuards();
 
 // Then expose only the exact default profile to future MCP sessions and install
 // call-time guards for every tool definition. The complete library remains
