@@ -14,6 +14,13 @@ const stageProfiles: Record<string, string> = {
   FINAL_VALIDATION: "FINAL_VALIDATION_READONLY",
 };
 
+const stageOrder = [
+  "GEOMETRY",
+  "TEXTURE",
+  "ANIMATION",
+  "FINAL_VALIDATION",
+];
+
 const removedProfiles = new Set([
   "GEOMETRY_LOCAL_REPAIR",
   "GEOMETRY_VISUAL_REBUILD",
@@ -29,11 +36,25 @@ function scope(stage: string): string {
     : "TARGETED_STAGE_REVISION";
 }
 
+function earlierThan(candidate: string, current: string): boolean {
+  const candidateIndex = stageOrder.indexOf(candidate);
+  const currentIndex = stageOrder.indexOf(current);
+  return candidateIndex >= 0 && currentIndex >= 0 && candidateIndex < currentIndex;
+}
+
+function earliest(stages: string[]): string | null {
+  return stages
+    .filter((stage) => stageProfiles[stage])
+    .sort((a, b) => stageOrder.indexOf(a) - stageOrder.indexOf(b))[0] ?? null;
+}
+
 function normalize(result: any): void {
   const structured = result?.structuredContent;
   if (!structured || typeof structured !== "object") return;
 
-  let firstRevisionStage: string | null = null;
+  const currentStage = String(structured.stage ?? "");
+  const revisionStages: string[] = [];
+
   if (Array.isArray(structured.issues)) {
     for (const issue of structured.issues) {
       if (
@@ -43,45 +64,56 @@ function normalize(result: any): void {
       ) {
         continue;
       }
-      const stage = String(issue.stage ?? structured.stage ?? "");
-      const profile = stageProfiles[stage];
+      const issueStage = String(issue.stage ?? currentStage);
+      const profile = stageProfiles[issueStage];
       if (!profile) continue;
-      firstRevisionStage ??= stage;
+      revisionStages.push(issueStage);
+      const upstream = earlierThan(issueStage, currentStage);
       issue.recommended_profile = profile;
-      issue.recommended_scope = scope(stage);
-      issue.profile_switch_required = false;
-      issue.reconnect_required = false;
+      issue.recommended_scope = scope(issueStage);
+      issue.prepare_tool = upstream
+        ? "reopen_stage_for_revision"
+        : issueStage === "GEOMETRY"
+          ? "prepare_geometry_visual_rebuild"
+          : "prepare_stage_revision";
+      issue.profile_switch_required = upstream;
+      issue.reconnect_required = upstream;
     }
   }
 
-  const topStage = String(structured.stage ?? "");
-  const topProfile = stageProfiles[topStage];
+  const currentProfile = stageProfiles[currentStage];
+  const topLevelRevision =
+    structured.result === "REVISION_REQUIRED" && Boolean(currentProfile);
+  if (topLevelRevision && revisionStages.length === 0) {
+    revisionStages.push(currentStage);
+  }
+
   const selectedRemovedProfile = removedProfiles.has(
     String(structured.next_profile ?? "")
   );
-  const topLevelRevision =
-    structured.result === "REVISION_REQUIRED" && Boolean(topProfile);
-  const routedStage = topLevelRevision ? topStage : firstRevisionStage;
-  const routedProfile = routedStage ? stageProfiles[routedStage] : null;
+  const affectedStage = earliest(revisionStages);
+  if (!affectedStage && !selectedRemovedProfile) return;
 
-  if (!routedProfile && !selectedRemovedProfile) return;
+  const targetStage = affectedStage ?? currentStage;
+  const targetProfile = stageProfiles[targetStage];
+  if (!targetProfile) return;
 
-  const effectiveStage = routedStage ?? topStage;
-  const effectiveProfile =
-    routedProfile ?? stageProfiles[effectiveStage] ?? null;
-  if (!effectiveProfile) return;
-
-  structured.next_profile = effectiveProfile;
+  const upstream = earlierThan(targetStage, currentStage);
+  structured.next_profile = targetProfile;
   structured.revision_route = {
-    stage: effectiveStage,
-    profile: effectiveProfile,
-    scope: scope(effectiveStage),
-    prepare_tool:
-      effectiveStage === "GEOMETRY"
+    current_stage: currentStage,
+    target_stage: targetStage,
+    profile: targetProfile,
+    scope: scope(targetStage),
+    prepare_tool: upstream
+      ? "reopen_stage_for_revision"
+      : targetStage === "GEOMETRY"
         ? "prepare_geometry_visual_rebuild"
         : "prepare_stage_revision",
-    profile_switch_required: false,
-    reconnect_required: false,
+    profile_switch_required: upstream,
+    reconnect_required: upstream,
+    preserve_approved_checkpoints: upstream,
+    downstream_revalidation_required: upstream,
   };
 }
 
