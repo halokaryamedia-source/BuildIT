@@ -1,7 +1,7 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "2.1",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
-  "profile_change_policy": "activate_then_reconnect_once",
+  "profile_change_policy": "stage_transition_only",
   "core_tools": [
     "get_runtime_status",
     "get_project_info",
@@ -12,7 +12,7 @@
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Readiness, project setup, compact reference validation, bounded visual grounding, write-lease acquisition, and profile selection only.",
+      "description": "Initial project setup and readiness only. Normal Geometry work does not switch back to this profile.",
       "allowed_tools": [
         "create_project",
         "rebind_active_project_identity",
@@ -24,8 +24,10 @@
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Fixed-scale, region-diagnosed Minecraft Bedrock cuboid Geometry construction and review for an already-open valid project.",
+      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and one MCP session, including safe identity synchronization, diagnosis, local or major revision, validation, and review.",
       "allowed_tools": [
+        "rebind_active_project_identity",
+        "prepare_geometry_visual_rebuild",
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
@@ -112,55 +114,6 @@
         "export_model",
         "save_project_checkpoint",
         "complete_stage"
-      ]
-    },
-    "GEOMETRY_LOCAL_REPAIR": {
-      "description": "Small fixed-scale visual-grounded Geometry correction after user review; restricted to one named issue or tightly related pair.",
-      "allowed_tools": [
-        "list_outline",
-        "find_elements_by_criteria",
-        "inspect_reference_visual_preview",
-        "capture_visual_feedback",
-        "analyze_geometry_views",
-        "place_cubes_safe",
-        "modify_cubes",
-        "rotate_cube_about_attachment",
-        "duplicate_element",
-        "rename_element",
-        "remove_element",
-        "undo",
-        "redo",
-        "validate_geometry_contract",
-        "record_geometry_visual_decision",
-        "verify_geometry_review_ready",
-        "save_project_checkpoint",
-        "capture_standard_views"
-      ]
-    },
-    "GEOMETRY_VISUAL_REBUILD": {
-      "description": "Major primary-form rebuild when multiple masses or views fail. Preserves project identity and checkpoints while enforcing the same phase, diagnosis, validation, bounded visual transport, and rotation guards as normal Geometry.",
-      "allowed_tools": [
-        "prepare_geometry_visual_rebuild",
-        "add_group",
-        "list_outline",
-        "find_elements_by_criteria",
-        "inspect_reference_visual_preview",
-        "capture_visual_feedback",
-        "analyze_geometry_views",
-        "place_cubes_safe",
-        "modify_cubes",
-        "rotate_cube_about_attachment",
-        "duplicate_element",
-        "rename_element",
-        "remove_element",
-        "undo",
-        "redo",
-        "get_undo_stack",
-        "validate_geometry_contract",
-        "record_geometry_visual_decision",
-        "verify_geometry_review_ready",
-        "save_project_checkpoint",
-        "capture_standard_views"
       ]
     },
     "TEXTURE_LOCAL_REPAIR": {
