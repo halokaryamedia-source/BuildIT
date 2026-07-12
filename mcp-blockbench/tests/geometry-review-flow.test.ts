@@ -37,11 +37,11 @@ describe("automatic Geometry review submission", () => {
     expect(exposed.size).toBeLessThanOrEqual(30);
   });
 
-  test("submission validates, verifies readiness, saves a unique checkpoint, and moves state to review", () => {
+  test("submission validates, uses embedded readiness, saves a unique checkpoint, and moves state to review", () => {
     const source = read("src/server/tools/geometry-review-submit.ts");
     for (const marker of [
       "validate_geometry_contract",
-      "verify_geometry_review_ready",
+      "review_gate",
       "save_project_checkpoint",
       "GEOMETRY_IN_PROGRESS",
       "GEOMETRY_REVIEW",
