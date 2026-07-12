@@ -30,12 +30,13 @@ Codex owns identity synchronization, lease handling, routing, evidence, report c
 ## Dispatch
 
 1. Resolve asset, canonical model, and session root.
-2. Load this skill plus exactly one active-stage skill.
-3. Call `get_runtime_status`, then `get_stage_context`.
-4. Follow `next_safe_operation`.
-5. Rebind identity before lease acquisition when required.
-6. Select one writer and acquire the lease before persistent writes.
-7. Submit the stage through its MCP review transition and stop for user review.
+2. The canonical session root is `workspace/active/<asset>/mcp`. `get_stage_context` may receive the asset root and will normalize it automatically; reuse the returned `canonical_session_root` for later MCP calls.
+3. Load this skill plus exactly one active-stage skill.
+4. Call `get_runtime_status`, then `get_stage_context`.
+5. Follow `next_safe_operation`.
+6. Rebind identity before lease acquisition when required.
+7. Select one writer and acquire the lease before persistent writes.
+8. Submit the stage through its MCP review transition and stop for user review.
 
 A successful review submission releases the writer lease. After the user gives `APPROVED` or `REVISION`, Codex acquires a fresh current-stage lease before calling completion or revision preparation. This is automatic and must not be delegated to the user.
 
