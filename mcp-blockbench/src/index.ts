@@ -18,7 +18,7 @@ type BuildITRuntime = typeof import("./runtime");
 let runtime: BuildITRuntime | null = null;
 
 BBPlugin.register("mcp", {
-  version: "1.6.3",
+  version: "1.7.0",
   title: "BuildIT MCP Server",
   author: "MIVUBI",
   description:
