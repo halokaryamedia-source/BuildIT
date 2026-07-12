@@ -1,45 +1,36 @@
 ---
 name: blockbench-animation
-description: "Optional Animation-stage skill for approved Bedrock cuboid assets. Creates only required group/bone motion, captures hierarchy and pivot evidence, validates Animation, and stops for review."
+description: "Optional Bedrock Animation workflow with identity recovery, one selected Terra writer, automatic review submission, and same-profile revision."
 ---
 
 # Blockbench Animation
 
+Load only when the approved package requires Animation. Otherwise skip it during the Texture approval transition.
+
+Use only for stage `ANIMATION` with profile `BEDROCK_CUBOID_ANIMATION`.
+
 ## Entry
 
-Load only when the manifest or `ANIMATION.md` requires at least one animation family or interactive motion. Otherwise mark Animation skipped and proceed to Final Validation without loading this skill.
-
-Use tool profile `BEDROCK_CUBOID_ANIMATION` or `ANIMATION_LOCAL_REPAIR`, and require the current MCP session to own the project write lease.
-
-Read:
-
-1. `PRODUCTION_CONTEXT.md`
-2. the approved Reference Visual
-3. `GEOMETRY.md`
-4. `ANIMATION.md`
-5. the current session state
+1. Call `get_stage_context`.
+2. Rebind identity before lease acquisition when requested.
+3. Use the selected Terra writer and acquire the Animation lease before persistent work.
+4. Preserve approved Geometry and Texture.
 
 ## Work
 
 - Verify required groups, hierarchy, neutral pose, and pivots.
-- Create only required clips.
-- Use rigid cuboid group/bone motion.
-- Preserve Geometry and Texture.
+- Create only required rigid cuboid clips.
 - Check inherited motion, ground contact, clipping, and neutral-pose recovery.
-- Use one named issue or tightly related pair during revision.
+- Save hierarchy, pivot, neutral-pose, and required-clip evidence.
+- Write `animation_report.json` with a current `created_at` and explicit result.
+- Run `validate_reference_contract`.
+- Call `submit_stage_for_review` to enter `ANIMATION_REVIEW`.
 
-## Forbidden
+No mesh armatures, vertex weights, new Geometry, Texture redesign, optional clips, unapproved motion ranges, or final export.
 
-- mesh armatures or vertex weights for normal cuboid assets;
-- new geometry, texture redesign, or optional clips;
-- motion outside approved axes/ranges;
-- final export.
+## User decision
 
-## Review Output
+- `APPROVED`: ensure the current session owns the Animation lease, then call `complete_stage` for `ANIMATION`.
+- `REVISION`: call `prepare_stage_revision` with targeted feedback before mutation. It returns to `ANIMATION_IN_PROGRESS` in the same profile. Regenerate affected evidence and create a newer report before submitting again.
 
-1. Save the Animation review checkpoint inside the active session.
-2. Write hierarchy, pivot, neutral-pose, and required clip evidence only once at review.
-3. Run `validate_reference_contract` for Animation.
-4. Write `animation_report.json` and stop for `APPROVED` or `REVISION: ...`.
-
-Do not create extra clips or captures merely for completeness.
+Do not activate an Animation repair profile or ask the user to edit state/checkpoint files.
