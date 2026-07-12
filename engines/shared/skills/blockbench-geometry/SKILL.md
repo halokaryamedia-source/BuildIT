@@ -29,12 +29,11 @@ get_stage_context
 → edit diagnosed parts
 → final five-view review
 → record_geometry_visual_decision
-→ validate_geometry_contract
 → submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
 
-`submit_geometry_for_review` runs the final readiness gate internally, saves the next unused non-approved Geometry review checkpoint, and updates workflow state. Codex must not ask the user to edit state files or choose a checkpoint name.
+`submit_geometry_for_review` runs fresh Geometry contract validation with its embedded review-readiness gate, saves the next unused non-approved Geometry review checkpoint, and updates workflow state. Codex must not ask the user to edit state files or choose a checkpoint name.
 
 Do not ask the user to edit workspace JSON, switch profiles, close the model, or reconnect between Geometry revision scopes. Codex performs the available operation directly.
 
@@ -73,14 +72,16 @@ A structural pass alone is not a visual pass.
 
 Modify only the implicated parts. Do not compensate for one incorrect mass by changing unrelated detail.
 
-When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. This is an internal cleanup operation, not a new stage. It:
+`prepare_geometry_visual_rebuild` is the compatibility name for preparing any diagnosed Geometry revision. It accepts a fresh `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` diagnosis in the current profile and:
 
-- preserves all checkpoints;
-- preserves primary masses and project identity;
+- returns `GEOMETRY_REVIEW` to `GEOMETRY_IN_PROGRESS` when the user requests revision;
+- preserves all checkpoints, primary masses, and project identity;
 - keeps structural detail by default;
-- optionally removes only machine-classified structural detail when explicitly requested;
-- returns workflow state to `GEOMETRY_IN_PROGRESS`;
+- allows structural-detail removal only for an explicit major revision;
+- advances the current lease and state revision together;
 - continues normal Geometry work without profile switching or reconnecting.
+
+For revision feedback received during `GEOMETRY_REVIEW`, capture and diagnose the affected views first, then call `prepare_geometry_visual_rebuild` with the fresh fingerprint and Reference Visual hash. Do not mutate while leaving the main workflow in review state.
 
 Generic validation may report that Geometry needs revision, but it must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal repair scope; never activate a removed repair profile.
 
@@ -118,10 +119,9 @@ Before user review:
 2. inspect all image payloads;
 3. run `analyze_geometry_views` for all five views;
 4. record the multimodal decision;
-5. run `validate_geometry_contract`;
-6. call `submit_geometry_for_review`.
+5. call `submit_geometry_for_review`.
 
-The submission tool re-runs `verify_geometry_review_ready`, creates a new unique non-approved checkpoint, changes state to `GEOMETRY_REVIEW`, keeps the Geometry lease current, and returns `AWAIT_GEOMETRY_REVIEW` without reconnecting.
+The submission tool runs fresh structural and visual validation, creates a new unique non-approved checkpoint, changes state to `GEOMETRY_REVIEW`, keeps the Geometry lease current, and returns `AWAIT_GEOMETRY_REVIEW` without reconnecting.
 
 Final Geometry passes only when current visual evidence, fixed-scale metrics, structural validation, Reference Visual identity, Geometry fingerprint, standard views, and rotation audit all pass.
 
