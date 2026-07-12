@@ -30,6 +30,7 @@ describe("audited multi-stage MCP flow", () => {
   test("wires every correctness guard in the intended order", () => {
     const source = read("src/server/tools.ts");
     for (const marker of [
+      "installStageContextRootGuards();",
       "installGeometryFreshnessGuards();",
       "installStageReviewMutationGuards();",
       "installStageCompletionFreshnessGuards();",
@@ -43,6 +44,9 @@ describe("audited multi-stage MCP flow", () => {
     ]) {
       expect(source).toContain(marker);
     }
+    expect(source.indexOf("installStageContextRootGuards();")).toBeLessThan(
+      source.indexOf("initializeToolProfiles();")
+    );
     for (const marker of [
       "installStageValidationRoutingGuards();",
       "installStageContextRoutingGuards();",
@@ -132,6 +136,7 @@ describe("audited multi-stage MCP flow", () => {
     expect(context).toContain("getProjectWriteLeaseSnapshot");
     expect(context).toContain('lease.status === "ACTIVE"');
     expect(context).toContain("lease.owner_session_id");
+    expect(context).not.toContain("WRITE_LEASE_SESSION_AMBIGUOUS");
   });
 
   test("stage policy exposes automatic transitions without removed repair profiles", () => {
