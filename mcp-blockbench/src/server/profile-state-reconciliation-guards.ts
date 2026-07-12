@@ -52,7 +52,9 @@ function reconcileIfNeeded(root: string, toolName: string): boolean {
     metadata.tool_profile_revision !== profile.profile_revision ||
     metadata.tool_profile_hash !== profile.tool_profile_hash ||
     metadata.exposed_tool_count !== profile.exposed_tool_count ||
-    metadata.total_library_tool_count !== profile.total_library_tool_count;
+    metadata.total_library_tool_count !== profile.total_library_tool_count ||
+    metadata.profile_reconnect_required !== false ||
+    metadata.stable_tool_surface !== true;
 
   if (!mismatch) return false;
 
@@ -62,7 +64,10 @@ function reconcileIfNeeded(root: string, toolName: string): boolean {
   state.mcp.tool_profile_hash = profile.tool_profile_hash;
   state.mcp.exposed_tool_count = profile.exposed_tool_count;
   state.mcp.total_library_tool_count = profile.total_library_tool_count;
-  state.mcp.profile_reconnect_required = true;
+  state.mcp.profile_reconnect_required = false;
+  state.mcp.stable_tool_surface = true;
+  state.mcp.registered_tool_surface = "STABLE_FULL_LIBRARY";
+  state.mcp.execution_surface = "ACTIVE_PROFILE_GUARDED";
   state.updated_at = new Date().toISOString();
   state.updated_by = `${toolName}_profile_reconciliation`;
   writeJsonAtomically(fs, statePath, state);
