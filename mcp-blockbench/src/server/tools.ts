@@ -39,6 +39,7 @@ import { registerGeometryCompletionTools } from "./tools/geometry-completion";
 import { registerGeometryReviewGateTools } from "./tools/geometry-review-gate";
 import { registerGeometryReviewSubmitTools } from "./tools/geometry-review-submit";
 import { registerStageReviewSubmitTools } from "./tools/stage-review-submit";
+import { registerStageReportTools } from "./tools/stage-report";
 import { registerStageRevisionTools } from "./tools/stage-revision";
 import { registerStageReopenTools } from "./tools/stage-reopen";
 import { registerStageContextTools } from "./tools/stage-context";
@@ -71,6 +72,7 @@ const registrationFunctions = [
   registerGeometryReviewGateTools,
   registerGeometryReviewSubmitTools,
   registerStageReviewSubmitTools,
+  registerStageReportTools,
   registerStageRevisionTools,
   registerStageReopenTools,
   registerStageContextTools,
