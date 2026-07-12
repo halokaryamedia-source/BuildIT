@@ -3,6 +3,7 @@
 
 import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
+import { installFinalValidationGeometryGuards } from "./final-validation-geometry-guards";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installReviewSubmissionLeaseGuards } from "./review-submission-lease-guards";
@@ -111,6 +112,7 @@ installGeometryFreshnessGuards();
 installStageReviewMutationGuards();
 installStageCompletionFreshnessGuards();
 installReviewSubmissionLeaseGuards();
+installFinalValidationGeometryGuards();
 installStageTransitionGuards();
 installProfileStateReconciliationGuards();
 
