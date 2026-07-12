@@ -37,7 +37,7 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
   {
     name: "complete_geometry_stage",
     description:
-      "Completes Geometry only after fresh structural validation, five-view deterministic and multimodal evidence, Reference Visual integrity, evidence fingerprint freshness, and rotation safety all pass. Saves the approved checkpoint and transitions atomically to Texture without exposing generic completion to Geometry profiles.",
+      "Completes Geometry only after fresh structural validation and its embedded five-view review-readiness gate pass. Saves the next unused approved checkpoint and rolls back the new checkpoint/profile/state if the coordinated Texture transition fails.",
     annotations: {
       title: "Complete Geometry Stage",
       destructiveHint: true,
@@ -55,13 +55,19 @@ interface RegisteredTool {
   ) => Promise<any>;
 }
 
+interface CheckpointTarget {
+  modelPath: string;
+  metadataPath: string;
+  checkpointName: string;
+}
+
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
   return `${root.replace(/[\\/]$/, "")}${separator}${relative.replace(/^[\\/]/, "")}`;
 }
 
 function nativeFs(message: string): NativeFsLike {
-  // @ts-ignore - Blockbench runtime permission API.
+  // @ts-ignore Blockbench runtime permission API.
   const fs = requireNativeModule("fs", { message, optional: false });
   if (!fs) throw new Error("Filesystem access was denied.");
   return fs as NativeFsLike;
@@ -78,18 +84,19 @@ async function executeRegisteredTool(
 }
 
 function assertValidationPass(validationResult: any): Record<string, any> {
-  const report = validationResult?.structuredContent as Record<string, any> | undefined;
+  const report = validationResult?.structuredContent as
+    | Record<string, any>
+    | undefined;
   if (!report) throw new Error("GEOMETRY_VALIDATION_RESULT_MISSING");
 
-  const required = [
+  for (const field of [
     "structural_status",
     "visual_status",
     "deterministic_visual_status",
     "rotation_status",
     "evidence_status",
     "result",
-  ];
-  for (const field of required) {
+  ]) {
     if (typeof report[field] !== "string") {
       throw new Error(`GEOMETRY_REPORT_FIELD_MISSING: ${field}`);
     }
@@ -114,7 +121,9 @@ function assertValidationPass(validationResult: any): Record<string, any> {
     "evidence_status",
   ]) {
     if (String(report[field]).toUpperCase() !== "PASS") {
-      throw new Error(`GEOMETRY_REPORT_GATE_NOT_PASS: ${field}=${report[field]}`);
+      throw new Error(
+        `GEOMETRY_REPORT_GATE_NOT_PASS: ${field}=${report[field]}`
+      );
     }
   }
 
@@ -128,23 +137,54 @@ function assertValidationPass(validationResult: any): Record<string, any> {
     );
   }
 
-  return report;
-}
-
-function assertReviewGatePass(gateResult: any): Record<string, any> {
-  const gate = gateResult?.structuredContent as Record<string, any> | undefined;
-  if (!gate || gate.result !== "PASS") {
-    const codes = Array.isArray(gate?.issues)
-      ? gate.issues
+  const reviewGate = report.review_gate as Record<string, any> | undefined;
+  if (!reviewGate || reviewGate.result !== "PASS") {
+    const codes = Array.isArray(reviewGate?.issues)
+      ? reviewGate.issues
           .map((issue: any) => issue?.code)
           .filter(Boolean)
           .join(", ")
       : "unknown";
     throw new Error(
-      `GEOMETRY_REVIEW_GATE_NOT_PASS: ${gate?.result ?? "UNKNOWN"}; ${codes}`
+      `GEOMETRY_REVIEW_GATE_NOT_PASS: ${reviewGate?.result ?? "UNKNOWN"}; ${codes}`
     );
   }
-  return gate;
+
+  return report;
+}
+
+function nextApprovedCheckpoint(
+  fs: NativeFsLike,
+  sessionRoot: string
+): CheckpointTarget {
+  const directory = joinPath(sessionRoot, "checkpoints");
+  assertInsideRoot(directory, sessionRoot);
+  fs.mkdirSync(directory, { recursive: true });
+
+  let number = 20;
+  for (const entry of fs.readdirSync?.(directory) ?? []) {
+    const match = entry.match(/^(\d+)_geometry_/i);
+    if (match) number = Math.max(number, Number(match[1]) + 1);
+  }
+
+  while (number < 10000) {
+    const prefix = String(number).padStart(2, "0");
+    const checkpointName = `${prefix}_geometry_approved`;
+    const modelPath = joinPath(directory, `${checkpointName}.bbmodel`);
+    const metadataPath = joinPath(directory, `${checkpointName}.json`);
+    if (!fs.existsSync(modelPath) && !fs.existsSync(metadataPath)) {
+      return { modelPath, metadataPath, checkpointName };
+    }
+    number += 1;
+  }
+
+  throw new Error("GEOMETRY_APPROVED_CHECKPOINT_NAME_EXHAUSTED");
+}
+
+function removeCheckpoint(fs: NativeFsLike, target: CheckpointTarget): void {
+  for (const path of [target.modelPath, target.metadataPath]) {
+    if (fs.existsSync(path)) fs.rmSync(path, { force: true });
+  }
 }
 
 export function registerGeometryCompletionTools(): void {
@@ -177,6 +217,7 @@ export function registerGeometryCompletionTools(): void {
         const statePath = joinPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
+        const previousState = structuredClone(state);
 
         if (state.asset?.id !== asset_id) {
           throw new Error(
@@ -205,9 +246,17 @@ export function registerGeometryCompletionTools(): void {
           );
         }
 
-        // Re-run the authoritative validator during approval so a stale report can
-        // never authorize the transition. The same MCP context is forwarded to
-        // preserve write-lease ownership and session identity.
+        const stageRecord = state.workflow?.stage_records?.GEOMETRY;
+        const textureRecord = state.workflow?.stage_records?.TEXTURE;
+        if (!stageRecord) {
+          throw new Error("STATE_STAGE_RECORD_MISSING: GEOMETRY");
+        }
+        if (!textureRecord) {
+          throw new Error("STATE_STAGE_RECORD_MISSING: TEXTURE");
+        }
+
+        // The validator already runs verify_geometry_review_ready internally.
+        // Reusing its embedded gate avoids a second identical five-view pass.
         const validationResult = await executeRegisteredTool(
           "validate_geometry_contract",
           {
@@ -219,86 +268,72 @@ export function registerGeometryCompletionTools(): void {
           context
         );
         const geometryReport = assertValidationPass(validationResult);
+        const reviewGate = geometryReport.review_gate as Record<string, any>;
+        const rotationAudit =
+          geometryReport.rotation_audit ??
+          auditProjectRotations(DEFAULT_ROTATION_POLICY);
 
-        const gateResult = await executeRegisteredTool(
-          "verify_geometry_review_ready",
-          {
-            session_root,
-            expected_project_uuid,
-            require_standard_views: true,
-          },
-          context
-        );
-        const reviewGate = assertReviewGatePass(gateResult);
-
-        const rotationAudit = auditProjectRotations(DEFAULT_ROTATION_POLICY);
         if (rotationAudit.status === "REVISION_REQUIRED") {
           throw new Error(
-            `GEOMETRY_ROTATION_NOT_SAFE: ${rotationAudit.issues
-              .map((issue) => issue.message)
+            `GEOMETRY_ROTATION_NOT_SAFE: ${(rotationAudit.issues ?? [])
+              .map((issue: any) => issue.message)
               .join(" ")}`
           );
         }
 
-        const checkpointPath = joinPath(
-          session_root,
-          "checkpoints/20_geometry_approved.bbmodel"
-        );
-        const checkpointResult = await executeRegisteredTool(
-          "save_project_checkpoint",
-          {
-            asset_id,
-            path: checkpointPath,
-            session_root,
-            checkpoint_name: "20_geometry_approved",
-            stage: "GEOMETRY",
-            state: "GEOMETRY_APPROVED",
-            expected_project_uuid,
-            approved: true,
-            approval_ref,
-            source_state_revision: expected_state_revision,
-            accepted_areas,
-            open_issues: [],
-          },
-          context
-        );
-
-        const stageRecord = state.workflow?.stage_records?.GEOMETRY;
-        if (!stageRecord) {
-          throw new Error("STATE_STAGE_RECORD_MISSING: GEOMETRY");
-        }
-        if (!state.workflow?.stage_records?.TEXTURE) {
-          throw new Error("STATE_STAGE_RECORD_MISSING: TEXTURE");
-        }
-
-        const approvedAt = new Date().toISOString();
-        stageRecord.status = "APPROVED";
-        stageRecord.decision = "APPROVED";
-        stageRecord.approved_at = approvedAt;
-        stageRecord.approved_checkpoint = checkpointPath;
-        stageRecord.accepted_areas = accepted_areas;
-        stageRecord.open_issues = [];
-        stageRecord.revision = null;
-
-        state.checkpoints = state.checkpoints ?? {};
-        state.checkpoints.geometry_approved = checkpointPath;
-        state.preservation = state.preservation ?? {};
-        state.preservation.approved_stage_areas =
-          state.preservation.approved_stage_areas ?? {};
-        state.preservation.approved_stage_areas.GEOMETRY = accepted_areas;
-        state.preservation.globally_protected_areas = Array.from(
-          new Set([
-            ...(state.preservation.globally_protected_areas ?? []),
-            ...accepted_areas,
-          ])
-        );
-        state.workflow.last_completed_stage = "GEOMETRY";
-        state.workflow.last_safe_checkpoint = checkpointPath;
-        state.workflow.stage_records.TEXTURE.status = "IN_PROGRESS";
-
+        const checkpoint = nextApprovedCheckpoint(fs, session_root);
+        let checkpointResult: any = null;
+        let activationChanged = false;
         const previousProfile = getToolProfileSnapshot(false).profile_id;
-        const activation = activateToolProfile("BEDROCK_CUBOID_TEXTURE");
+
         try {
+          checkpointResult = await executeRegisteredTool(
+            "save_project_checkpoint",
+            {
+              asset_id,
+              path: checkpoint.modelPath,
+              metadata_path: checkpoint.metadataPath,
+              session_root,
+              checkpoint_name: checkpoint.checkpointName,
+              stage: "GEOMETRY",
+              state: "GEOMETRY_APPROVED",
+              expected_project_uuid,
+              approved: true,
+              approval_ref,
+              source_state_revision: expected_state_revision,
+              accepted_areas,
+              open_issues: [],
+            },
+            context
+          );
+
+          const approvedAt = new Date().toISOString();
+          stageRecord.status = "APPROVED";
+          stageRecord.decision = "APPROVED";
+          stageRecord.approved_at = approvedAt;
+          stageRecord.approved_checkpoint = checkpoint.modelPath;
+          stageRecord.accepted_areas = accepted_areas;
+          stageRecord.open_issues = [];
+          stageRecord.revision = null;
+
+          state.checkpoints = state.checkpoints ?? {};
+          state.checkpoints.geometry_approved = checkpoint.modelPath;
+          state.preservation = state.preservation ?? {};
+          state.preservation.approved_stage_areas =
+            state.preservation.approved_stage_areas ?? {};
+          state.preservation.approved_stage_areas.GEOMETRY = accepted_areas;
+          state.preservation.globally_protected_areas = Array.from(
+            new Set([
+              ...(state.preservation.globally_protected_areas ?? []),
+              ...accepted_areas,
+            ])
+          );
+          state.workflow.last_completed_stage = "GEOMETRY";
+          state.workflow.last_safe_checkpoint = checkpoint.modelPath;
+          textureRecord.status = "IN_PROGRESS";
+
+          const activation = activateToolProfile("BEDROCK_CUBOID_TEXTURE");
+          activationChanged = activation.changed;
           const profile = activation.snapshot;
           state.workflow.state = "TEXTURE_IN_PROGRESS";
           state.workflow.active_stage = "TEXTURE";
@@ -316,36 +351,49 @@ export function registerGeometryCompletionTools(): void {
           state.updated_at = approvedAt;
           state.updated_by = "complete_geometry_stage";
           writeJsonAtomically(fs, statePath, state);
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Geometry approved through fresh structural and visual validation. Saved ${checkpoint.checkpointName} and transitioned to Texture.`,
+              },
+            ],
+            structuredContent: {
+              status: "PASS",
+              completed_stage: "GEOMETRY",
+              checkpoint: checkpoint.modelPath,
+              checkpoint_metadata: checkpoint.metadataPath,
+              checkpoint_result:
+                checkpointResult?.structuredContent ?? null,
+              geometry_report: geometryReport,
+              review_gate: reviewGate,
+              rotation_audit: rotationAudit,
+              state_revision: expected_state_revision + 1,
+              next_state: "TEXTURE_IN_PROGRESS",
+              next_stage: "TEXTURE",
+              next_profile: "BEDROCK_CUBOID_TEXTURE",
+              reconnect_required: activation.changed,
+              next_action: activation.changed
+                ? "Reconnect the canonical blockbench MCP entry once, call get_runtime_status, then reacquire the Texture lease."
+                : "START_TEXTURE",
+            },
+          };
         } catch (error) {
-          if (activation.changed) activateToolProfile(previousProfile);
+          if (activationChanged) {
+            activateToolProfile(previousProfile);
+          }
+          removeCheckpoint(fs, checkpoint);
+          try {
+            writeJsonAtomically(fs, statePath, previousState);
+          } catch (rollbackError) {
+            console.error(
+              "[MCP] Geometry completion state rollback failed:",
+              rollbackError
+            );
+          }
           throw error;
         }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Geometry approved through fresh structural, visual, evidence, and rotation validation. Saved 20_geometry_approved and transitioned to Texture.",
-            },
-          ],
-          structuredContent: {
-            status: "PASS",
-            completed_stage: "GEOMETRY",
-            checkpoint: checkpointPath,
-            checkpoint_result: checkpointResult?.structuredContent ?? null,
-            geometry_report: geometryReport,
-            review_gate: reviewGate,
-            rotation_audit: rotationAudit,
-            state_revision: expected_state_revision + 1,
-            next_state: "TEXTURE_IN_PROGRESS",
-            next_stage: "TEXTURE",
-            next_profile: "BEDROCK_CUBOID_TEXTURE",
-            reconnect_required: activation.changed,
-            next_action: activation.changed
-              ? "Reconnect the existing canonical blockbench MCP entry once, call get_runtime_status, then reacquire the write lease from the new state."
-              : "START_TEXTURE",
-          },
-        };
       },
     },
     geometryCompletionToolDocs[0].status
