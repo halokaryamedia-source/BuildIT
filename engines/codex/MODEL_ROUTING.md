@@ -68,6 +68,8 @@ or isolated worker is materially safer
 
 Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently. The Blockbench write lease remains the final runtime authority.
 
+Multiple read-only MCP sessions are allowed. Session ambiguity must not block `get_runtime_status`, `get_tool_profile`, `get_stage_context`, visual inspection, or other read-only calls. A mutation still requires explicit caller identity or ownership of the active write lease.
+
 ## Roles
 
 ### Parent/controller
@@ -147,7 +149,7 @@ BuildIT enforces active-asset safety through:
 
 ### Startup and identity
 
-The parent handles `get_runtime_status`, `get_stage_context`, and metadata-only identity synchronization. No Sol call is needed.
+The parent handles `get_runtime_status`, `get_stage_context`, and metadata-only identity synchronization. No Sol call is needed. Use the returned `canonical_session_root` for all later calls.
 
 ### Reference direction
 
