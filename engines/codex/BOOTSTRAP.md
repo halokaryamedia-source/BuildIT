@@ -43,7 +43,7 @@ workspace/active/<asset>/
 3. Open the canonical model in one Blockbench window.
 4. Connect the canonical `blockbench` MCP entry.
 5. Call `get_stage_context` and follow `next_safe_operation`.
-6. Do not ask the user to edit workspace JSON or manually select a Geometry revision profile.
+6. Do not ask the user to edit workspace JSON, choose checkpoint filenames, or manually select a Geometry revision profile.
 
 ## Geometry startup
 
@@ -67,9 +67,11 @@ get_stage_context
 → final five-view evidence
 → record_geometry_visual_decision
 → validate_geometry_contract
-→ verify_geometry_review_ready
+→ submit_geometry_for_review
 → user review
 ```
+
+`submit_geometry_for_review` runs the final readiness gate, saves the next unused non-approved Geometry checkpoint, updates state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW` in the same profile and session.
 
 Identity synchronization occurs before lease acquisition and does not modify the model. It does not require BOOTSTRAP, profile switching, or reconnecting.
 
@@ -78,6 +80,8 @@ Identity synchronization occurs before lease acquisition and does not modify the
 `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user approval gates. Two non-improving checks set an attention flag rather than forcing a new profile.
 
 Codex must inspect image payloads and modify only diagnosed parts. Free-rescaling and unrelated trial-and-error edits are forbidden.
+
+Generic Geometry validation routes back to `BEDROCK_CUBOID_GEOMETRY`; Codex classifies the internal scope with `analyze_geometry_views`.
 
 ## Stage orchestration
 
@@ -90,7 +94,7 @@ Codex must inspect image payloads and modify only diagnosed parts. Free-rescalin
 
 Maximum loaded production skills: `2`. Do not load Animation when skipped.
 
-Profile changes occur only when the user-approved workflow moves to another stage, never for local or major Geometry revision.
+Profile changes occur only when the user-approved workflow moves to another stage, never for local or major Geometry revision or Geometry review submission.
 
 ## Completion and reopen
 
