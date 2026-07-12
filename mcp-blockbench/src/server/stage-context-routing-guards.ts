@@ -25,6 +25,12 @@ interface RoutingPolicy {
 }
 
 const policies: Record<string, RoutingPolicy> = {
+  GEOMETRY: {
+    workingState: "GEOMETRY_IN_PROGRESS",
+    reviewState: "GEOMETRY_REVIEW",
+    awaitAction: "AWAIT_GEOMETRY_REVIEW",
+    profileId: "BEDROCK_CUBOID_GEOMETRY",
+  },
   TEXTURE: {
     workingState: "TEXTURE_IN_PROGRESS",
     reviewState: "TEXTURE_REVIEW",
@@ -70,7 +76,7 @@ function reportResult(report: Record<string, any>): string | null {
 function routeStageContext(args: Record<string, unknown>, result: any): void {
   const structured = result?.structuredContent;
   const context = structured?.context;
-  if (!structured || !context || context.stage === "GEOMETRY") return;
+  if (!structured || !context) return;
 
   const stage = String(context.stage ?? "");
   const policy = policies[stage];
@@ -83,7 +89,6 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   const state = readJsonFile<Record<string, any>>(fs, statePath);
   const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
   const stateRevision = Number(state.state_revision ?? -1);
-
   const workflowState = String(context.workflow?.state ?? "");
   const runtimeUuid = context.project?.runtime_uuid ?? null;
   const identityReady = context.project?.identity_ready === true;
@@ -96,7 +101,7 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
       context.lease?.profile_id === policy.profileId
   );
 
-  let next = "CONTINUE_STAGE";
+  let next = String(structured.next_safe_operation ?? "CONTINUE_STAGE");
   let ready = false;
   let reportError: string | null = null;
   let projectContentSignature: string | null = null;
@@ -114,21 +119,26 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   } else if (!leaseCurrent) {
     next = "manage_project_write_lease:acquire";
   } else if (workflowState === policy.workingState) {
-    try {
-      const current = assertCurrentStageReport({
-        fs,
-        root,
-        stage: stage as EvidenceStage,
-        projectUuid: String(runtimeUuid ?? ""),
-        stageRecord,
-      });
-      ready = reportResult(current.report) === "PASS";
-      projectContentSignature = current.current.projectContentSignature;
-    } catch (error) {
-      reportError = error instanceof Error ? error.message : String(error);
-      ready = false;
+    if (stage === "GEOMETRY") {
+      ready = context.geometry?.runtime?.phase === "FINAL_REVIEW_READY";
+      if (ready) next = "submit_geometry_for_review";
+    } else {
+      try {
+        const current = assertCurrentStageReport({
+          fs,
+          root,
+          stage: stage as EvidenceStage,
+          projectUuid: String(runtimeUuid ?? ""),
+          stageRecord,
+        });
+        ready = reportResult(current.report) === "PASS";
+        projectContentSignature = current.current.projectContentSignature;
+      } catch (error) {
+        reportError = error instanceof Error ? error.message : String(error);
+        ready = false;
+      }
+      next = ready ? "submit_stage_for_review" : "CONTINUE_STAGE";
     }
-    next = ready ? "submit_stage_for_review" : "CONTINUE_STAGE";
   }
 
   context.project = context.project ?? {};
@@ -138,9 +148,16 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   structured.next_safe_operation = next;
   context.automation = context.automation ?? {};
   context.automation.exact_next_safe_operation = next;
-  context.automation.review_report_tool = "record_stage_review_report";
-  context.automation.review_submission_tool = "submit_stage_for_review";
-  context.automation.revision_prepare_tool = "prepare_stage_revision";
+  context.automation.review_report_tool =
+    stage === "GEOMETRY" ? null : "record_stage_review_report";
+  context.automation.review_submission_tool =
+    stage === "GEOMETRY"
+      ? "submit_geometry_for_review"
+      : "submit_stage_for_review";
+  context.automation.revision_prepare_tool =
+    stage === "GEOMETRY"
+      ? "prepare_geometry_visual_rebuild"
+      : "prepare_stage_revision";
   context.automation.upstream_reopen_tool = "reopen_stage_for_revision";
   context.automation.stage_review_ready = ready;
   context.automation.stage_report_issue = reportError;
