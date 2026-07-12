@@ -21,7 +21,13 @@ visual_director
 critical_reviewer
 ```
 
-If any are missing, stop with `CODEX_PROJECT_CONFIG_NOT_LOADED`. Ask the user to trust the current project once. Project-local `.codex/` configuration is not active until trust is granted. Do not invent fallback role definitions.
+If any are missing, stop with:
+
+```text
+CODEX_PROJECT_CONFIG_NOT_LOADED
+```
+
+Ask the user to trust the current project once. Project-local `.codex/` configuration is not active until trust is granted. Do not invent fallback role definitions.
 
 ## Model routing
 
@@ -62,21 +68,22 @@ Load only `mcp-blockbench/dist/mcp.js`. Reload is required only after the binary
 ```text
 workspace/active/<asset>/
 ├─ blockbench/   # canonical user-facing files
-└─ mcp/          # state, contracts, checkpoints, evidence, reports
+└─ mcp/          # canonical session root: state, contracts, checkpoints, evidence, reports
 ```
 
 `workspace/workspace.json` is an index. Runtime authority is `workspace/active/<asset>/mcp/state.json`.
 
 ## Asset startup
 
-1. Resolve the selected asset, canonical model, and session root.
-2. Load `blockbench-production` plus exactly one active-stage skill.
-3. Open the canonical model in one Blockbench window.
-4. Use MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
-5. Call `get_runtime_status`, then `get_stage_context`.
-6. Follow `next_safe_operation`.
-7. Select one writer before persistent tool calls.
-8. Do not ask the user to edit JSON, choose checkpoints, select repair profiles, or select worker models.
+1. Resolve the selected asset and canonical model.
+2. Use `workspace/active/<asset>/mcp` as the canonical session root. `get_stage_context` also accepts `workspace/active/<asset>` and returns `canonical_session_root`; reuse that returned root for all later MCP calls.
+3. Load `blockbench-production` plus exactly one active-stage skill.
+4. Open the canonical model in one Blockbench window.
+5. Use MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
+6. Call `get_runtime_status`, then `get_stage_context`.
+7. Follow `next_safe_operation`.
+8. Select one writer before any persistent tool call.
+9. Do not ask the user to edit JSON, choose checkpoints, select repair profiles, or select worker models.
 
 ## Geometry flow
 
@@ -101,31 +108,19 @@ get_stage_context
 
 Use `visual_director` once per unchanged Reference Visual hash, only for ambiguous corrections, and once for final visual acceptance. Repairs with concrete part/direction/magnitude stay with Terra.
 
-Geometry evidence is bound to project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual SHA-256, and current five-view metrics/decision. Hierarchy or group-transform changes require a new capture/analyze pass.
+Geometry evidence is bound to:
+
+- project UUID;
+- compatibility Geometry fingerprint;
+- transformed world-space signature including group transforms;
+- Reference Visual SHA-256;
+- current five-view metrics and visual decision.
+
+Hierarchy/group-transform changes require a new capture/analyze pass.
 
 `submit_geometry_for_review` revalidates, creates the next unused non-approved checkpoint, enters `GEOMETRY_REVIEW`, and releases the writer lease without reconnecting.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles. `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers.
-
-## Texture, Animation, and Final Validation
-
-Each stage remains in one canonical profile:
-
-```text
-get_stage_context
-→ rebind identity when required
-→ selected writer acquires lease
-→ work and canonical evidence
-→ record_stage_review_report
-→ validate_reference_contract
-→ submit_stage_for_review
-→ lease released
-→ user review
-```
-
-Reports are bound to current project serialization and required evidence hashes. Do not author free-form PASS JSON.
-
-After user `APPROVED` or `REVISION`, Codex acquires a fresh stage lease. Approval uses `complete_stage`; same-stage revision uses `prepare_stage_revision`. A later-stage failure affecting an earlier approved stage uses `reopen_stage_for_revision`, preserves approved checkpoints, marks downstream revalidation, activates the canonical target profile, releases the old lease, and performs only the required stage-transition reconnect.
 
 ## Stage routing
 
@@ -136,7 +131,7 @@ After user `APPROVED` or `REVISION`, Codex acquires a fresh stage lease. Approva
 | Animation | `BEDROCK_CUBOID_ANIMATION` | production + Animation | selected Terra writer |
 | Final Validation | `FINAL_VALIDATION_READONLY` | production + Validation | selected Terra writer for required writes |
 
-Do not load Animation when skipped. Profile changes occur only between user-visible stages or when reopening an earlier affected stage.
+Do not load Animation when skipped. Profile changes occur only between user-visible stages.
 
 ## Missing-role fallback
 
