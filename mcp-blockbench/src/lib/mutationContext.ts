@@ -1,6 +1,9 @@
 import { getExecutionProfileState } from "@/lib/executionState";
 import { sessionManager } from "@/lib/sessions";
-import type { MutationExecutionContext } from "@/lib/writeLease";
+import {
+  getProjectWriteLeaseSnapshot,
+  type MutationExecutionContext,
+} from "@/lib/writeLease";
 
 const TRANSIENT_CLIENT_NAMES = new Set([
   "buildit-readiness",
@@ -37,6 +40,18 @@ export function resolveMutationExecutionContext(
   const explicit = explicitIdentity(rawContext);
   let sessionId = explicit.sessionId;
   let clientName = explicit.clientName;
+
+  // Top-level MCP calls always carry explicit request context. Internal nested
+  // tool calls may omit it; in that narrow case the active write lease is the
+  // safest authority and avoids ambiguous inference when read-only agents keep
+  // separate MCP sessions connected.
+  if (!sessionId) {
+    const lease = getProjectWriteLeaseSnapshot();
+    if (lease.status === "ACTIVE" && lease.owner_session_id) {
+      sessionId = lease.owner_session_id;
+      clientName = lease.owner_client;
+    }
+  }
 
   if (!sessionId) {
     const candidates = sessionManager
