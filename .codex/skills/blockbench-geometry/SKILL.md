@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Fixed-scale visual-grounded Geometry skill for approved Minecraft Bedrock cuboid assets. Builds coarse-to-fine form, receives actionable visual diagnosis, uses contract-driven rotations, validates transformed Geometry, and stops for user review."
+description: "Fixed-scale visual-grounded Geometry skill for approved Minecraft Bedrock cuboid assets. Builds coarse-to-fine form, receives actionable visual diagnosis, uses bounded image transport and contract-driven rotations, validates transformed Geometry, and stops for user review."
 ---
 
 # Blockbench Geometry
@@ -13,7 +13,7 @@ Use only when stage is `GEOMETRY`, the current MCP session owns the project writ
 - `GEOMETRY_LOCAL_REPAIR`;
 - `GEOMETRY_VISUAL_REBUILD`.
 
-Call `get_stage_context` first. Use its compact asset lock, part constraints, panel regions, rotation contracts, runtime phase, open issues, and accepted areas. Read long Markdown contracts only when compact data is incomplete or contradictory.
+Call `get_stage_context` first. Use its compact asset lock, part constraints, panel regions, rotation contracts, runtime phase, open issues, accepted areas, and image-transport policy. Read long Markdown contracts only when compact data is incomplete or contradictory.
 
 If another context requires four sheets, three approval moments, or numbered technical images, stop with `LEGACY_SKILL_CONFLICT`.
 
@@ -27,11 +27,28 @@ Geometry needs all three:
 
 Bounds, cube count, hierarchy, or a successful screenshot do not prove visual quality.
 
+## Stable Reference Visual transport
+
+Use only:
+
+```text
+inspect_reference_visual_preview
+```
+
+The tool verifies the original Reference Visual file at full SHA-256 and source dimensions, then returns a bounded ephemeral JPEG/PNG transport preview. The original file remains the sole authority. The transport preview:
+
+- is not stored in the reference package;
+- does not count as an additional generated image;
+- must remain below the declared transport byte budget;
+- must report original and preview metadata separately.
+
+Do not call the legacy `inspect_reference_visual` tool in normal production. It embeds the original multi-megabyte binary in one MCP response and is reserved for diagnostic escalation only.
+
 ## Enforced workflow
 
 ```text
 get_stage_context
-→ inspect_reference_visual
+→ inspect_reference_visual_preview
 → PRIMARY_FORM_PLAN
 → PRIMARY_FORM_BUILD
 → capture_visual_feedback: left + front + top
@@ -184,13 +201,14 @@ A visual rebuild resets runtime to `PRIMARY_FORM` and preserves previous checkpo
 
 ## Convergence and token budget
 
-- Inspect the approved Reference Visual once unless its hash changes.
+- Inspect the approved Reference Visual preview once unless the source hash changes.
 - Use three diagnostic views for primary form.
 - Use only affected views during local correction.
 - Use one final five-view pass.
 - Maximum two non-improving cycles per phase.
 - Prefer one `modify_cubes` call over sequential single-cube calls.
 - Do not reload full contracts after `get_stage_context` resolves the decision.
+- Never request the original Reference Visual binary through MCP when the bounded preview is available.
 
 After two non-improving cycles, MCP records and throws:
 
@@ -232,6 +250,7 @@ Final result is `PASS` only when every required layer is current and passes.
 - animation keyframes;
 - final export;
 - extra reference-image generation;
+- original multi-megabyte Reference Visual payload in normal MCP production;
 - free-rescaling current geometry before comparison;
 - unrelated trial-and-error changes;
 - bypassing primary-form phase;
