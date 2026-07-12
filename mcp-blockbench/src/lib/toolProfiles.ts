@@ -160,14 +160,18 @@ function diagnosisFs(): NativeFsLike {
   return fs as NativeFsLike;
 }
 
+function structuredContent(result: unknown): Record<string, any> | null {
+  if (!result || typeof result !== "object") return null;
+  const structured = (result as Record<string, any>).structuredContent;
+  return structured && typeof structured === "object" ? structured : null;
+}
+
 function normalizeGeometryDiagnosisResult(
   result: unknown,
   args: Record<string, unknown>
 ): void {
-  if (!result || typeof result !== "object") return;
-  const response = result as Record<string, any>;
-  const structured = response.structuredContent;
-  if (!structured || typeof structured !== "object") return;
+  const structured = structuredContent(result);
+  if (!structured) return;
 
   structured.revision_mode = structured.recommended_scope ?? null;
   structured.active_profile = "BEDROCK_CUBOID_GEOMETRY";
@@ -191,6 +195,65 @@ function normalizeGeometryDiagnosisResult(
   report.profile_switch_required = false;
   report.reconnect_required = false;
   writeJsonAtomically(fs, reportPath, report);
+}
+
+export function normalizeGeometryValidationResult(result: unknown): void {
+  const structured = structuredContent(result);
+  if (!structured || structured.stage !== "GEOMETRY") return;
+  if (structured.result !== "REVISION_REQUIRED") return;
+
+  structured.next_profile = "BEDROCK_CUBOID_GEOMETRY";
+  structured.revision_route = {
+    profile: "BEDROCK_CUBOID_GEOMETRY",
+    scope: "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS",
+    profile_switch_required: false,
+    reconnect_required: false,
+  };
+
+  if (Array.isArray(structured.issues)) {
+    for (const issue of structured.issues) {
+      if (
+        issue &&
+        typeof issue === "object" &&
+        issue.severity === "REVISION_REQUIRED"
+      ) {
+        issue.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
+        issue.recommended_scope = "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS";
+      }
+    }
+  }
+}
+
+export function normalizeGeometryStageContextResult(result: unknown): void {
+  const structured = structuredContent(result);
+  const context = structured?.context;
+  if (!structured || !context || context.stage !== "GEOMETRY") return;
+
+  context.visual_grounding = context.visual_grounding ?? {};
+  context.visual_grounding.review_submission_tool =
+    "submit_geometry_for_review";
+
+  const workflowState = context.workflow?.state;
+  const runtimePhase = context.geometry?.runtime?.phase;
+  const identityReady = context.project?.identity_ready === true;
+  const leaseReady =
+    context.lease?.status === "ACTIVE" &&
+    context.lease?.project_uuid === context.project?.runtime_uuid;
+
+  let next = structured.next_safe_operation;
+  if (workflowState === "GEOMETRY_REVIEW") {
+    next = "AWAIT_GEOMETRY_REVIEW";
+  } else if (
+    runtimePhase === "FINAL_REVIEW_READY" &&
+    identityReady &&
+    leaseReady
+  ) {
+    next = "submit_geometry_for_review";
+  }
+
+  structured.next_safe_operation = next;
+  context.automation = context.automation ?? {};
+  context.automation.exact_next_safe_operation = next;
 }
 
 function assertArguments(toolName: string, args: Record<string, unknown>): void {
@@ -284,6 +347,12 @@ function installGuards(): void {
       const result = await execute(args, context);
       if (name === "analyze_geometry_views") {
         normalizeGeometryDiagnosisResult(result, args);
+      }
+      if (name === "validate_reference_contract") {
+        normalizeGeometryValidationResult(result);
+      }
+      if (name === "get_stage_context") {
+        normalizeGeometryStageContextResult(result);
       }
       if (name === "record_geometry_visual_decision") {
         recordGeometryVisualRuntimeResult(args, result);
