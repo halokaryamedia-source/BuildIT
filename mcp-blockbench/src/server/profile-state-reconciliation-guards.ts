@@ -38,15 +38,25 @@ function nativeFs(): NativeFsLike {
   return fs as NativeFsLike;
 }
 
-function reconcile(root: string, toolName: string): void {
+function reconcileIfNeeded(root: string, toolName: string): boolean {
   const fs = nativeFs();
   const statePath = joinPath(root, "state.json");
   assertInsideRoot(statePath, root);
-  if (!fs.existsSync(statePath)) return;
+  if (!fs.existsSync(statePath)) return false;
 
   const state = readJsonFile<Record<string, any>>(fs, statePath);
   const profile = getToolProfileSnapshot(false);
-  state.mcp = state.mcp ?? {};
+  const metadata = state.mcp ?? {};
+  const mismatch =
+    metadata.active_tool_profile !== profile.profile_id ||
+    metadata.tool_profile_revision !== profile.profile_revision ||
+    metadata.tool_profile_hash !== profile.tool_profile_hash ||
+    metadata.exposed_tool_count !== profile.exposed_tool_count ||
+    metadata.total_library_tool_count !== profile.total_library_tool_count;
+
+  if (!mismatch) return false;
+
+  state.mcp = metadata;
   state.mcp.active_tool_profile = profile.profile_id;
   state.mcp.tool_profile_revision = profile.profile_revision;
   state.mcp.tool_profile_hash = profile.tool_profile_hash;
@@ -57,6 +67,7 @@ function reconcile(root: string, toolName: string): void {
   state.updated_by = `${toolName}_profile_reconciliation`;
   writeJsonAtomically(fs, statePath, state);
   clearProjectWriteLease();
+  return true;
 }
 
 export function installProfileStateReconciliationGuards(): void {
@@ -75,7 +86,7 @@ export function installProfileStateReconciliationGuards(): void {
           typeof args.session_root === "string" ? args.session_root : null;
         if (root) {
           try {
-            reconcile(root, name);
+            reconcileIfNeeded(root, name);
           } catch (reconcileError) {
             console.error(
               `[MCP] ${name} profile/state reconciliation failed:`,
