@@ -42,7 +42,7 @@ get_stage_context
 → analyze affected views
 → final five-view capture
 → final five-view analyze_geometry_views
-→ record_geometry_visual_result
+→ record_geometry_visual_decision
 → validate_geometry_contract
 → verify_geometry_review_ready
 → review checkpoint
@@ -207,7 +207,7 @@ Before review:
 1. Capture all five standard views with clean current-model image payloads.
 2. Run `analyze_geometry_views` for all five views to canonical evidence paths.
 3. Inspect current images and the diagnostic diff.
-4. Record multimodal result using all five `compared_views`.
+4. Record multimodal result with `record_geometry_visual_decision` using all five `compared_views`.
 5. Run `validate_geometry_contract` with visual evidence required.
 6. Run `verify_geometry_review_ready`.
 7. Save a new non-approved checkpoint; never overwrite earlier checkpoints.
@@ -238,29 +238,3 @@ Final result is `PASS` only when every required layer is current and passes.
 - direct non-zero rotation through generic cube tools;
 - approval based on structural metrics alone;
 - continuing after stale evidence or convergence failure.
-
-## Review output
-
-Preserve all checkpoints and store:
-
-```text
-geometry_front.png
-geometry_left.png
-geometry_back.png
-geometry_top.png
-geometry_front_left_3_4.png
-geometry_visual_metrics.json
-geometry_visual_diff.png
-geometry_visual_report.json
-geometry_runtime.json
-geometry_report.json
-```
-
-Stop at:
-
-```text
-GEOMETRY_REVIEW
-AWAITING_USER_REVIEW
-```
-
-After explicit approval use `complete_geometry_stage`. Never enter Texture before approval.
