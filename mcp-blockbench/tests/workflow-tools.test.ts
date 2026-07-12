@@ -20,19 +20,17 @@ describe("compact workflow tools", () => {
 
   test("profiles expose guarded Geometry completion and generic completion only where appropriate", () => {
     const config = readJson("../engines/shared/profiles/tool-profiles.json");
-    expect(config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools).toContain(
-      "complete_geometry_stage"
-    );
-    expect(config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools).not.toContain(
-      "complete_stage"
-    );
+    const geometry = config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools;
+    expect(geometry).toContain("complete_geometry_stage");
+    expect(geometry).not.toContain("complete_stage");
+    expect(geometry).toContain("rebind_active_project_identity");
+    expect(geometry).toContain("prepare_geometry_visual_rebuild");
+    expect(config.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
+    expect(config.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
     expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain(
       "save_texture_evidence"
     );
     expect(config.profiles.BEDROCK_CUBOID_TEXTURE.allowed_tools).toContain(
-      "complete_stage"
-    );
-    expect(config.profiles.GEOMETRY_LOCAL_REPAIR.allowed_tools).not.toContain(
       "complete_stage"
     );
   });
