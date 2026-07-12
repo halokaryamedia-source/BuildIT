@@ -48,13 +48,58 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Verify synchronized skills
-        run: bun run skills:check
+        id: skills
+        continue-on-error: true
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/verification-logs"
+          set -o pipefail
+          bun run skills:check 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/skills-check.log"
 
       - name: Typecheck
-        run: bun run typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/verification-logs"
+          set -o pipefail
+          bun run typecheck 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/typecheck.log"
 
       - name: Test
-        run: bun test
+        id: test
+        continue-on-error: true
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/verification-logs"
+          set -o pipefail
+          bun test 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/test.log"
 
       - name: Build
-        run: bun run build
+        id: build
+        continue-on-error: true
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/verification-logs"
+          set -o pipefail
+          bun run build 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/build.log"
+
+      - name: Upload verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-verification-logs
+          path: verification-logs/
+          retention-days: 7
+
+      - name: Enforce verification result
+        if: always()
+        env:
+          SKILLS_OUTCOME: ${{ steps.skills.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+        run: |
+          printf 'skills=%s\ntypecheck=%s\ntest=%s\nbuild=%s\n' \
+            "$SKILLS_OUTCOME" "$TYPECHECK_OUTCOME" "$TEST_OUTCOME" "$BUILD_OUTCOME"
+          if [[ "$SKILLS_OUTCOME" != "success" || \
+                "$TYPECHECK_OUTCOME" != "success" || \
+                "$TEST_OUTCOME" != "success" || \
+                "$BUILD_OUTCOME" != "success" ]]; then
+            exit 1
+          fi
