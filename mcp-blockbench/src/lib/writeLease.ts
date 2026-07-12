@@ -307,6 +307,7 @@ function requiresLease(
   readOnlyHint: boolean | undefined
 ): boolean {
   if (toolName === "manage_project_write_lease") return false;
+  if (toolName === "rebind_active_project_identity") return false;
   if (toolName === "create_project" && !currentProjectUuid()) return false;
   if (readOnlyHint === true) return pathValues(args).length > 0;
   return true;
