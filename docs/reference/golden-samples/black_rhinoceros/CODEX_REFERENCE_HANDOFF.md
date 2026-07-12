@@ -35,22 +35,28 @@ get_stage_context
 → edit only diagnosed parts
 → final five-view capture and diagnosis
 → record_geometry_visual_decision
-→ validate_geometry_contract
 → submit_geometry_for_review
 → GEOMETRY_REVIEW / AWAITING_USER_REVIEW
 ```
 
-`submit_geometry_for_review` runs `verify_geometry_review_ready`, creates the next unused non-approved Geometry review checkpoint, and atomically updates workflow state. Codex must not ask the user to choose a filename or edit state files.
+`submit_geometry_for_review` runs fresh Geometry contract validation with its embedded readiness gate, creates the next unused non-approved Geometry review checkpoint, and atomically updates workflow state. Codex must not ask the user to choose a filename or edit state files.
 
 Codex must follow `next_safe_operation` from compact context. Do not ask the user to edit workspace JSON, switch Geometry profiles, close the model, or reconnect between Geometry revision scopes.
 
-## Revision scope
+## Revision scope and review feedback
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes, not MCP profiles or separate stages.
 
-When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. The tool preserves project identity, primary masses, and all checkpoints. Existing structural detail is retained by default and may be removed only when explicitly requested from a fresh diagnosis.
+`prepare_geometry_visual_rebuild` is the compatibility name for preparing either scope. After the user returns revision feedback from `GEOMETRY_REVIEW`:
 
-Generic Geometry validation must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal scope; never activate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD`.
+1. capture and diagnose the affected views;
+2. verify the fresh Geometry fingerprint and Reference Visual hash;
+3. call `prepare_geometry_visual_rebuild`;
+4. continue after the tool returns state to `GEOMETRY_IN_PROGRESS`.
+
+The tool preserves project identity, primary masses, and all checkpoints. Existing structural detail is retained by default. Structural-detail removal is allowed only for an explicit `MAJOR_FORM_REVISION`; `LOCAL_REPAIR` cannot remove broad detail.
+
+Generic Geometry validation—including Geometry issues discovered during Final Validation—must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal scope; never activate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD`.
 
 ## Visual diagnosis
 
@@ -130,7 +136,7 @@ geometry_report.json
 
 `geometry_report.json` must report PASS for structural, visual, deterministic visual, evidence, and final result. Rotation may be PASS or a non-blocking warning.
 
-`submit_geometry_for_review` accepts the submission only when `verify_geometry_review_ready` confirms all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer output, current evidence, and safe rotations.
+`submit_geometry_for_review` accepts the submission only when current structural validation and its embedded review gate confirm all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer output, current evidence, and safe rotations.
 
 ## Forbidden
 
