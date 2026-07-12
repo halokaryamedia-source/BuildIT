@@ -3,15 +3,14 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL } from "@/lib/constants";
+import { writeJsonAtomically } from "@/lib/atomicFiles";
 import {
-  assertInsideRoot,
-  writeJsonAtomically,
-  type NativeFsLike,
-} from "@/lib/atomicFiles";
-import { computeProjectContentSignature } from "@/lib/projectFreshness";
+  currentStageEvidence,
+  type EvidenceStage,
+  type ExtendedFs,
+} from "@/lib/stageEvidence";
 
 const reportStage = z.enum(["TEXTURE", "ANIMATION", "FINAL_VALIDATION"]);
-type ReportStage = z.infer<typeof reportStage>;
 
 const parameters = z
   .object({
@@ -55,53 +54,6 @@ export const stageReportToolDocs: ToolSpec[] = [
   },
 ];
 
-interface ExtendedFs extends NativeFsLike {
-  statSync(path: string): { isDirectory(): boolean };
-}
-
-interface StagePolicy {
-  reportRelative: string;
-  evidenceRelative: string[];
-}
-
-const policies: Record<ReportStage, StagePolicy> = {
-  TEXTURE: {
-    reportRelative: "evidence/texture/texture_report.json",
-    evidenceRelative: [
-      "evidence/texture/texture_atlas.png",
-      "evidence/texture/texture_front.png",
-      "evidence/texture/texture_left.png",
-      "evidence/texture/texture_back.png",
-      "evidence/texture/texture_front_left_3_4.png",
-    ],
-  },
-  ANIMATION: {
-    reportRelative: "evidence/animation/animation_report.json",
-    evidenceRelative: [
-      "evidence/animation/animation_neutral_pose.png",
-      "evidence/animation/animation_hierarchy.json",
-      "evidence/animation/animation_pivots.json",
-    ],
-  },
-  FINAL_VALIDATION: {
-    reportRelative: "evidence/final/validation_report.json",
-    evidenceRelative: [
-      "evidence/final/final_front.png",
-      "evidence/final/final_left.png",
-      "evidence/final/final_back.png",
-      "evidence/final/final_top.png",
-      "evidence/final/final_front_left_3_4.png",
-      "evidence/final/final_texture_atlas.png",
-      "evidence/final/completed_VALIDATION.md",
-    ],
-  },
-};
-
-function joinPath(root: string, relative: string): string {
-  const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
-  return `${root.replace(/[\\/]$/, "")}${separator}${relative.replace(/^[\\/]/, "")}`;
-}
-
 function nativeFs(): ExtendedFs {
   // @ts-ignore Blockbench runtime permission API.
   const fs = requireNativeModule("fs", {
@@ -110,57 +62,6 @@ function nativeFs(): ExtendedFs {
   });
   if (!fs) throw new Error("Filesystem access was denied.");
   return fs as ExtendedFs;
-}
-
-function cryptoModule() {
-  // @ts-ignore Blockbench runtime permission API.
-  const crypto = requireNativeModule("crypto", {
-    message: "Stage report integrity needs SHA-256 hashing.",
-    optional: false,
-  }) as {
-    createHash(name: string): {
-      update(value: string | Buffer): { digest(encoding: string): string };
-    };
-  };
-  if (!crypto) throw new Error("Crypto access was denied.");
-  return crypto;
-}
-
-function sha256(value: string | Buffer): string {
-  return cryptoModule().createHash("sha256").update(value).digest("hex");
-}
-
-function hashPath(fs: ExtendedFs, root: string, path: string): string {
-  assertInsideRoot(path, root);
-  if (!fs.existsSync(path)) throw new Error(`STAGE_EVIDENCE_MISSING: ${path}`);
-  if (!fs.statSync(path).isDirectory()) return sha256(fs.readFileSync(path));
-
-  const entries = (fs.readdirSync?.(path) ?? []).sort();
-  const parts: string[] = [];
-  for (const entry of entries) {
-    const child = joinPath(path, entry);
-    parts.push(`${entry}:${hashPath(fs, root, child)}`);
-  }
-  return sha256(parts.join("\n"));
-}
-
-function evidenceFor(
-  fs: ExtendedFs,
-  root: string,
-  stage: ReportStage
-): Record<string, string> {
-  const relative = [...policies[stage].evidenceRelative];
-  if (stage === "FINAL_VALIDATION") {
-    const statePath = joinPath(root, "state.json");
-    const raw = fs.readFileSync(statePath, "utf8");
-    const assetId = String(JSON.parse(String(raw)).asset?.id ?? "");
-    if (!assetId) throw new Error("ASSET_ID_MISSING");
-    relative.push(`final/${assetId}.bbmodel`, "final/textures");
-  }
-
-  return Object.fromEntries(
-    relative.map((item) => [item, hashPath(fs, root, joinPath(root, item))])
-  );
 }
 
 export function registerStageReportTools(): void {
@@ -185,13 +86,12 @@ export function registerStageReportTools(): void {
         }
 
         const fs = nativeFs();
-        const policy = policies[stage];
-        const reportPath = joinPath(session_root, policy.reportRelative);
-        assertInsideRoot(reportPath, session_root);
-        const projectSignature = computeProjectContentSignature();
-        const evidenceHashes = evidenceFor(fs, session_root, stage);
+        const current = currentStageEvidence(
+          fs,
+          session_root,
+          stage as EvidenceStage
+        );
         const createdAt = new Date().toISOString();
-
         const report = {
           schema_version: "2.0",
           stage,
@@ -201,26 +101,26 @@ export function registerStageReportTools(): void {
           details,
           project_uuid: Project.uuid,
           project_name: Project.name,
-          project_content_signature: projectSignature,
-          evidence_hashes: evidenceHashes,
+          project_content_signature: current.projectContentSignature,
+          evidence_hashes: current.evidenceHashes,
           created_at: createdAt,
           generated_by: "record_stage_review_report",
         };
-        writeJsonAtomically(fs, reportPath, report);
+        writeJsonAtomically(fs, current.reportPath, report);
 
         return {
           content: [
             {
               type: "text",
-              text: `${stage} review report recorded as ${result} and bound to the current project plus ${Object.keys(evidenceHashes).length} evidence digest(s).`,
+              text: `${stage} review report recorded as ${result} and bound to the current project plus ${Object.keys(current.evidenceHashes).length} evidence digest(s).`,
             },
           ],
           structuredContent: {
             status: result,
             stage,
-            report_path: reportPath,
-            project_content_signature: projectSignature,
-            evidence_hashes: evidenceHashes,
+            report_path: current.reportPath,
+            project_content_signature: current.projectContentSignature,
+            evidence_hashes: current.evidenceHashes,
             created_at: createdAt,
             report,
           },
