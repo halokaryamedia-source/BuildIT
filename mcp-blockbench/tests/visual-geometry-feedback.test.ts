@@ -32,8 +32,9 @@ describe("visual-grounded Geometry workflow", () => {
       "place_cubes_safe",
       "modify_cubes",
       "rotate_cube_about_attachment",
+      "prepare_geometry_visual_rebuild",
       "validate_geometry_contract",
-      "record_geometry_visual_result",
+      "record_geometry_visual_decision",
       "verify_geometry_review_ready",
       "complete_geometry_stage",
     ]) {
@@ -55,6 +56,7 @@ describe("visual-grounded Geometry workflow", () => {
         "capture_visual_feedback",
         "analyze_geometry_views",
         "validate_geometry_contract",
+        "record_geometry_visual_decision",
         "verify_geometry_review_ready",
       ]) {
         expect(allowed.has(name), `${profileId}: ${name}`).toBe(true);
@@ -64,6 +66,9 @@ describe("visual-grounded Geometry workflow", () => {
       expect(allowed.has("validate_reference_contract"), profileId).toBe(false);
       expect(allowed.has("compare_reference_views"), profileId).toBe(false);
     }
+    expect(
+      profiles.profiles.GEOMETRY_VISUAL_REBUILD.allowed_tools
+    ).toContain("prepare_geometry_visual_rebuild");
   });
 
   test("Geometry completion cannot bypass fixed-scale, multimodal, structural, or rotation gates", () => {
@@ -75,6 +80,9 @@ describe("visual-grounded Geometry workflow", () => {
     expect(stages.profiles.GEOMETRY.diagnostic_visual_tool).toBe(
       "analyze_geometry_views"
     );
+    expect(stages.profiles.GEOMETRY.visual_decision_tool).toBe(
+      "record_geometry_visual_decision"
+    );
     expect(stages.profiles.GEOMETRY.compact_validation_tool).toBe(
       "validate_geometry_contract"
     );
@@ -83,6 +91,9 @@ describe("visual-grounded Geometry workflow", () => {
     );
     expect(stages.profiles.GEOMETRY.review_readiness_tool).toBe(
       "verify_geometry_review_ready"
+    );
+    expect(stages.geometry_visual_policy.record_tool).toBe(
+      "record_geometry_visual_decision"
     );
     expect(stages.geometry_visual_policy.fixed_scale_required).toBe(true);
     expect(stages.geometry_visual_policy.free_rescale_forbidden).toBe(true);
@@ -196,6 +207,10 @@ describe("source-level safety contracts", () => {
       "src/server/tools/geometry-analyzer.ts",
       "utf8"
     );
+    const decision = readFileSync(
+      "src/server/tools/geometry-decision.ts",
+      "utf8"
+    );
     const rotation = readFileSync(
       "src/server/tools/geometry-rotation.ts",
       "utf8"
@@ -218,6 +233,8 @@ describe("source-level safety contracts", () => {
     expect(analyzer).toContain("free_rescale_used: false");
     expect(analyzer).toContain("actionable_issues");
     expect(analyzer).toContain("geometry_projection_region_v2");
+    expect(decision).toContain("GEOMETRY_DIAGNOSIS_NOT_PASS");
+    expect(decision).toContain("GEOMETRY_VISUAL_METRICS_STALE");
     expect(rotation).toContain("ROTATION_VISUAL_REGRESSION");
     expect(rotation).toContain("ROTATION_DIRECTION_REJECTED");
     expect(rotation).toContain("ROTATION_CONNECTION_REJECTED");
