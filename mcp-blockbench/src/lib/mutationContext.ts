@@ -41,9 +41,9 @@ export function resolveMutationExecutionContext(
   let sessionId = explicit.sessionId;
   let clientName = explicit.clientName;
 
-  // Top-level MCP calls always carry explicit request context. Internal nested
-  // tool calls may omit it; in that narrow case the active write lease is the
-  // safest authority and avoids ambiguous inference when read-only agents keep
+  // Top-level MCP calls normally carry explicit request context. Internal nested
+  // mutation calls may omit it; in that narrow case the active write lease is the
+  // safest authority and avoids ambiguous inference while read-only agents keep
   // separate MCP sessions connected.
   if (!sessionId) {
     const lease = getProjectWriteLeaseSnapshot();
@@ -63,11 +63,11 @@ export function resolveMutationExecutionContext(
     if (candidates.length === 1) {
       sessionId = candidates[0].id;
       clientName = candidates[0].clientName ?? null;
-    } else if (candidates.length > 1) {
-      throw new Error(
-        `WRITE_LEASE_SESSION_AMBIGUOUS: ${candidates.length} non-transient MCP sessions are active.`
-      );
     }
+    // Multiple connected sessions are valid for read-only inspection. Leave the
+    // identity unresolved here; a tool that truly requires mutation will fail at
+    // the write-lease boundary with WRITE_LEASE_SESSION_REQUIRED unless it carries
+    // explicit request context or owns the active lease.
   }
 
   const profile = getExecutionProfileState();
