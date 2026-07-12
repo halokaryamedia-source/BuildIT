@@ -201,7 +201,7 @@ export function registerGeometryDecisionTools(): void {
             : []
         );
         const missingViews = compared_views.filter(
-          (view) => !measuredViews.has(view)
+          (view: string) => !measuredViews.has(view)
         );
         if (missingViews.length > 0) {
           throw new Error(
