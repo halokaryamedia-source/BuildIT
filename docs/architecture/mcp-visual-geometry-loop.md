@@ -17,9 +17,7 @@ All Geometry work uses:
 BEDROCK_CUBOID_GEOMETRY
 ```
 
-There is no separate Geometry rework profile. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes only.
-
-A major revision is not a new stage. It means the current Geometry needs broader correction than a local edit. Codex remains in the same MCP session and profile.
+There is no separate Geometry rework profile. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes only. Codex remains in the same MCP session and profile for both.
 
 ## Practical flow
 
@@ -34,12 +32,11 @@ get_stage_context
 → repeat affected-view checks as needed
 → final five-view capture and diagnosis
 → record_geometry_visual_decision
-→ validate_geometry_contract
 → submit_geometry_for_review
 → user review
 ```
 
-`submit_geometry_for_review` runs the review-readiness gate, creates the next unused non-approved Geometry review checkpoint, atomically updates state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW`.
+`submit_geometry_for_review` runs fresh Geometry contract validation, uses its embedded review-readiness result, creates the next unused non-approved Geometry review checkpoint, atomically updates state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW`.
 
 Codex follows `next_safe_operation` from compact stage context. The user is not asked to edit JSON, choose checkpoint filenames, switch profiles, or reconnect between revision scopes.
 
@@ -56,25 +53,29 @@ This metadata synchronization:
 
 After synchronization, Codex acquires the normal Geometry write lease.
 
-## Major revision preparation
+## Revision preparation
 
 When a fresh diagnosis returns:
 
 ```text
 REVISION_REQUIRED
-MAJOR_FORM_REVISION
+LOCAL_REPAIR or MAJOR_FORM_REVISION
 ```
 
-Codex may call `prepare_geometry_visual_rebuild` in the current Geometry profile. Despite its compatibility name, this tool is only an internal preparation operation. It:
+Codex calls `prepare_geometry_visual_rebuild` in the current Geometry profile. Despite its compatibility name, this tool prepares either revision scope. It:
 
-- preserves project identity and all checkpoints;
-- preserves primary masses;
+- accepts Geometry currently in progress or awaiting user review;
+- returns review-state Geometry to `GEOMETRY_IN_PROGRESS` before mutation;
+- preserves project identity, primary masses, and all checkpoints;
 - keeps structural detail by default;
-- optionally removes only structural-detail cubes identified by the machine-readable profile when explicitly requested;
-- returns workflow state to `GEOMETRY_IN_PROGRESS`;
-- records `revision_mode = MAJOR_FORM_REVISION`;
+- rejects structural-detail removal for `LOCAL_REPAIR`;
+- optionally removes only machine-classified structural detail for an explicit major revision;
+- records the diagnosed revision scope;
+- advances the write lease and state revision together;
 - continues with `CONTINUE_GEOMETRY`;
 - requires no profile switch or reconnect.
+
+After the user gives targeted revision feedback, Codex first captures and diagnoses the affected views, then calls the preparation tool. It does not edit the model while the main workflow still says `GEOMETRY_REVIEW`.
 
 ## Internal progress markers
 
@@ -102,7 +103,7 @@ A high average score cannot override a blocking semantic, extent, or ground fail
 
 The analyzer returns a revision scope, not a required profile transition.
 
-Generic Geometry contract validation is normalized to `BEDROCK_CUBOID_GEOMETRY`; Codex then uses `analyze_geometry_views` to classify the internal revision scope.
+Generic Geometry contract validation—including Geometry issues found during Final Validation—is normalized to `BEDROCK_CUBOID_GEOMETRY`; Codex then uses `analyze_geometry_views` to classify the internal revision scope.
 
 ## Image transport
 
@@ -122,7 +123,7 @@ Direct rotation through generic cube tools is blocked. Contract-driven rotation 
 
 ## Review readiness and submission
 
-`verify_geometry_review_ready` requires:
+`validate_geometry_contract` includes the current review-readiness result and requires:
 
 - all five canonical views;
 - current fixed-scale metrics;
@@ -134,7 +135,7 @@ Direct rotation through generic cube tools is blocked. Contract-driven rotation 
 
 A structural pass alone is not a visual pass.
 
-Codex does not manually save a review checkpoint and then separately edit workflow state. `submit_geometry_for_review` performs the guarded checkpoint and state transition as one operation, advances the lease revision, and rolls back the newly created checkpoint if the coordinated transition fails.
+Codex does not manually save a review checkpoint and then separately edit workflow state. `submit_geometry_for_review` validates, performs the guarded checkpoint and state transition as one operation, advances the lease revision, and removes the newly created checkpoint if the coordinated transition fails.
 
 ## User-facing gates
 
@@ -158,4 +159,4 @@ bun test
 bun run build
 ```
 
-Regression coverage verifies one-profile Geometry exposure, lease-exempt guarded identity synchronization, lease-required model mutation, current major-revision diagnosis, fixed-scale visual rejection, automatic Geometry review submission, strict final review, adapter synchronization, and bounded tool counts.
+Regression coverage verifies one-profile Geometry exposure, lease-exempt guarded identity synchronization, lease-required model mutation, local and major revision preparation, fixed-scale visual rejection, automatic Geometry review submission, Final Validation repair normalization, strict final review, adapter synchronization, and bounded tool counts.
