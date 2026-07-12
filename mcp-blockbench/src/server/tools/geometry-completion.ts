@@ -19,7 +19,10 @@ import {
   activateToolProfile,
   getToolProfileSnapshot,
 } from "@/lib/toolProfiles";
-import { auditProjectRotations, DEFAULT_ROTATION_POLICY } from "@/lib/worldBounds";
+import {
+  auditProjectRotations,
+  DEFAULT_ROTATION_POLICY,
+} from "@/lib/worldBounds";
 
 const completeGeometryStageParameters = z.object({
   asset_id: z.string().regex(/^[a-z0-9_]+$/),
@@ -34,7 +37,7 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
   {
     name: "complete_geometry_stage",
     description:
-      "Completes Geometry only after the unified five-view deterministic, multimodal, reference-integrity, evidence-freshness, and rotation gates pass. Saves the approved checkpoint and performs the atomic Geometry-to-Texture transition without exposing generic completion to the Geometry profile.",
+      "Completes Geometry only after fresh structural validation, five-view deterministic and multimodal evidence, Reference Visual integrity, evidence fingerprint freshness, and rotation safety all pass. Saves the approved checkpoint and transitions atomically to Texture without exposing generic completion to Geometry profiles.",
     annotations: {
       title: "Complete Geometry Stage",
       destructiveHint: true,
@@ -44,6 +47,13 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
     status: STATUS_EXPERIMENTAL,
   },
 ];
+
+interface RegisteredTool {
+  execute?: (
+    args: Record<string, unknown>,
+    context?: ToolContext
+  ) => Promise<any>;
+}
 
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
@@ -57,19 +67,20 @@ function nativeFs(message: string): NativeFsLike {
   return fs as NativeFsLike;
 }
 
-function requireGeometryReportPass(
-  fs: NativeFsLike,
-  sessionRoot: string
-): Record<string, any> {
-  const reportPath = joinPath(
-    sessionRoot,
-    "evidence/geometry/geometry_report.json"
-  );
-  assertInsideRoot(reportPath, sessionRoot);
-  if (!fs.existsSync(reportPath)) {
-    throw new Error(`GEOMETRY_REPORT_MISSING: ${reportPath}`);
-  }
-  const report = readJsonFile<Record<string, any>>(fs, reportPath);
+async function executeRegisteredTool(
+  name: string,
+  args: Record<string, unknown>,
+  context?: ToolContext
+): Promise<any> {
+  const tool = getAllToolDefinitions()[name] as unknown as RegisteredTool;
+  if (!tool?.execute) throw new Error(`${name} is unavailable.`);
+  return tool.execute(args, context);
+}
+
+function assertValidationPass(validationResult: any): Record<string, any> {
+  const report = validationResult?.structuredContent as Record<string, any> | undefined;
+  if (!report) throw new Error("GEOMETRY_VALIDATION_RESULT_MISSING");
+
   const required = [
     "structural_status",
     "visual_status",
@@ -83,11 +94,19 @@ function requireGeometryReportPass(
       throw new Error(`GEOMETRY_REPORT_FIELD_MISSING: ${field}`);
     }
   }
+
   if (String(report.result).toUpperCase() !== "PASS") {
+    const codes = Array.isArray(report.issues)
+      ? report.issues
+          .map((issue: any) => issue?.code)
+          .filter(Boolean)
+          .join(", ")
+      : "unknown";
     throw new Error(
-      `GEOMETRY_REPORT_NOT_PASS: ${reportPath} reports ${report.result}.`
+      `GEOMETRY_VALIDATION_NOT_PASS: ${report.result}; ${codes}`
     );
   }
+
   for (const field of [
     "structural_status",
     "visual_status",
@@ -98,14 +117,34 @@ function requireGeometryReportPass(
       throw new Error(`GEOMETRY_REPORT_GATE_NOT_PASS: ${field}=${report[field]}`);
     }
   }
+
   if (
-    !["PASS", "WARNING"].includes(String(report.rotation_status).toUpperCase())
+    !["PASS", "WARNING"].includes(
+      String(report.rotation_status).toUpperCase()
+    )
   ) {
     throw new Error(
       `GEOMETRY_REPORT_GATE_NOT_PASS: rotation_status=${report.rotation_status}`
     );
   }
+
   return report;
+}
+
+function assertReviewGatePass(gateResult: any): Record<string, any> {
+  const gate = gateResult?.structuredContent as Record<string, any> | undefined;
+  if (!gate || gate.result !== "PASS") {
+    const codes = Array.isArray(gate?.issues)
+      ? gate.issues
+          .map((issue: any) => issue?.code)
+          .filter(Boolean)
+          .join(", ")
+      : "unknown";
+    throw new Error(
+      `GEOMETRY_REVIEW_GATE_NOT_PASS: ${gate?.result ?? "UNKNOWN"}; ${codes}`
+    );
+  }
+  return gate;
 }
 
 export function registerGeometryCompletionTools(): void {
@@ -124,25 +163,30 @@ export function registerGeometryCompletionTools(): void {
         },
         context?: ToolContext
       ) {
-        if (!Project) throw new Error("No Blockbench project is open.");
-        if (Project.uuid !== expected_project_uuid) {
+        const activeProject = Project;
+        if (!activeProject) throw new Error("No Blockbench project is open.");
+        if (activeProject.uuid !== expected_project_uuid) {
           throw new Error(
-            `PROJECT_UUID_MISMATCH: active ${Project.uuid}, expected ${expected_project_uuid}.`
+            `PROJECT_UUID_MISMATCH: active ${activeProject.uuid}, expected ${expected_project_uuid}.`
           );
         }
 
         const fs = nativeFs(
-          "MCP guarded Geometry completion needs state, visual evidence, and checkpoint write access."
+          "MCP guarded Geometry completion needs state, validation, visual evidence, and checkpoint write access."
         );
         const statePath = joinPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
+
         if (state.asset?.id !== asset_id) {
           throw new Error(
             `ASSET_ID_MISMATCH: state has ${state.asset?.id ?? "unknown"}, expected ${asset_id}.`
           );
         }
-        if (state.project?.uuid && state.project.uuid !== expected_project_uuid) {
+        if (
+          state.project?.uuid &&
+          state.project.uuid !== expected_project_uuid
+        ) {
           throw new Error(
             `STATE_PROJECT_UUID_MISMATCH: state has ${state.project.uuid}, expected ${expected_project_uuid}.`
           );
@@ -161,18 +205,23 @@ export function registerGeometryCompletionTools(): void {
           );
         }
 
-        const reviewGate = getAllToolDefinitions()[
-          "verify_geometry_review_ready"
-        ] as unknown as {
-          execute?: (
-            args: Record<string, unknown>,
-            context?: ToolContext
-          ) => Promise<any>;
-        };
-        if (!reviewGate?.execute) {
-          throw new Error("verify_geometry_review_ready is unavailable.");
-        }
-        const gateResult = await reviewGate.execute(
+        // Re-run the authoritative validator during approval so a stale report can
+        // never authorize the transition. The same MCP context is forwarded to
+        // preserve write-lease ownership and session identity.
+        const validationResult = await executeRegisteredTool(
+          "validate_geometry_contract",
+          {
+            session_root,
+            expected_project_uuid,
+            dimension_tolerance_units: 1,
+            require_visual_evidence: true,
+          },
+          context
+        );
+        const geometryReport = assertValidationPass(validationResult);
+
+        const gateResult = await executeRegisteredTool(
+          "verify_geometry_review_ready",
           {
             session_root,
             expected_project_uuid,
@@ -180,19 +229,8 @@ export function registerGeometryCompletionTools(): void {
           },
           context
         );
-        if (gateResult?.structuredContent?.result !== "PASS") {
-          const codes = Array.isArray(gateResult?.structuredContent?.issues)
-            ? gateResult.structuredContent.issues
-                .map((issue: any) => issue?.code)
-                .filter(Boolean)
-                .join(", ")
-            : "unknown";
-          throw new Error(
-            `GEOMETRY_REVIEW_GATE_NOT_PASS: ${gateResult?.structuredContent?.result ?? "UNKNOWN"}; ${codes}`
-          );
-        }
+        const reviewGate = assertReviewGatePass(gateResult);
 
-        const geometryReport = requireGeometryReportPass(fs, session_root);
         const rotationAudit = auditProjectRotations(DEFAULT_ROTATION_POLICY);
         if (rotationAudit.status === "REVISION_REQUIRED") {
           throw new Error(
@@ -206,18 +244,8 @@ export function registerGeometryCompletionTools(): void {
           session_root,
           "checkpoints/20_geometry_approved.bbmodel"
         );
-        const checkpointTool = getAllToolDefinitions()[
-          "save_project_checkpoint"
-        ] as unknown as {
-          execute?: (
-            args: Record<string, unknown>,
-            context?: ToolContext
-          ) => Promise<any>;
-        };
-        if (!checkpointTool?.execute) {
-          throw new Error("save_project_checkpoint is unavailable.");
-        }
-        const checkpointResult = await checkpointTool.execute(
+        const checkpointResult = await executeRegisteredTool(
+          "save_project_checkpoint",
           {
             asset_id,
             path: checkpointPath,
@@ -239,6 +267,10 @@ export function registerGeometryCompletionTools(): void {
         if (!stageRecord) {
           throw new Error("STATE_STAGE_RECORD_MISSING: GEOMETRY");
         }
+        if (!state.workflow?.stage_records?.TEXTURE) {
+          throw new Error("STATE_STAGE_RECORD_MISSING: TEXTURE");
+        }
+
         const approvedAt = new Date().toISOString();
         stageRecord.status = "APPROVED";
         stageRecord.decision = "APPROVED";
@@ -247,6 +279,7 @@ export function registerGeometryCompletionTools(): void {
         stageRecord.accepted_areas = accepted_areas;
         stageRecord.open_issues = [];
         stageRecord.revision = null;
+
         state.checkpoints = state.checkpoints ?? {};
         state.checkpoints.geometry_approved = checkpointPath;
         state.preservation = state.preservation ?? {};
@@ -276,7 +309,8 @@ export function registerGeometryCompletionTools(): void {
           state.mcp.tool_profile_revision = profile.profile_revision;
           state.mcp.tool_profile_hash = profile.tool_profile_hash;
           state.mcp.exposed_tool_count = profile.exposed_tool_count;
-          state.mcp.total_library_tool_count = profile.total_library_tool_count;
+          state.mcp.total_library_tool_count =
+            profile.total_library_tool_count;
           state.mcp.profile_reconnect_required = activation.changed;
           state.state_revision = expected_state_revision + 1;
           state.updated_at = approvedAt;
@@ -291,7 +325,7 @@ export function registerGeometryCompletionTools(): void {
           content: [
             {
               type: "text",
-              text: "Geometry approved through the unified visual and rotation gate. Saved 20_geometry_approved and transitioned to Texture.",
+              text: "Geometry approved through fresh structural, visual, evidence, and rotation validation. Saved 20_geometry_approved and transitioned to Texture.",
             },
           ],
           structuredContent: {
@@ -300,7 +334,7 @@ export function registerGeometryCompletionTools(): void {
             checkpoint: checkpointPath,
             checkpoint_result: checkpointResult?.structuredContent ?? null,
             geometry_report: geometryReport,
-            review_gate: gateResult?.structuredContent ?? null,
+            review_gate: reviewGate,
             rotation_audit: rotationAudit,
             state_revision: expected_state_revision + 1,
             next_state: "TEXTURE_IN_PROGRESS",
