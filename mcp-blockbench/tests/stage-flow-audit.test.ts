@@ -82,7 +82,7 @@ describe("audited multi-stage MCP flow", () => {
     }
     expect(lease).toContain("submit_geometry_for_review");
     expect(lease).toContain("submit_stage_for_review");
-    expect(lease).toContain("releaseProjectWriteLease");
+    expect(lease).toContain("clearProjectWriteLease");
     expect(lease).toContain('lease_status = "UNCLAIMED"');
   });
 
