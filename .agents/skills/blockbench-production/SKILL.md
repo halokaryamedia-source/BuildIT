@@ -1,6 +1,6 @@
 ---
 name: blockbench-production
-description: "Dispatcher for approved Blockbench asset production. Keeps Geometry in one MCP profile and session, handles project identity synchronization through Codex, and stops only at meaningful user review gates."
+description: "Dispatcher for approved Blockbench asset production. Keeps Geometry in one MCP profile and session, handles project identity synchronization and review submission through Codex, and stops only at meaningful user review gates."
 ---
 
 # Blockbench Production
@@ -29,6 +29,7 @@ Codex owns normal setup and recovery. Do not ask the user to:
 
 - edit `state.json` or `project.json`;
 - switch Geometry profiles;
+- choose checkpoint filenames;
 - close and reopen the model;
 - reconnect MCP between Geometry revision modes;
 - run separate readiness prompts for operations Codex can perform directly.
@@ -43,7 +44,7 @@ A restart is justified only after loading a newly built plugin or when the MCP e
 4. During Geometry, remain on `BEDROCK_CUBOID_GEOMETRY`.
 5. Let Codex synchronize a changed runtime UUID with `rebind_active_project_identity` when required.
 6. Acquire the write lease only before model mutation.
-7. Complete the current stage and stop at the user review gate.
+7. Submit the completed stage through its MCP review transition and stop at the user review gate.
 
 ## Geometry flow
 
@@ -59,14 +60,17 @@ get_stage_context
 → final five-view evidence
 → record_geometry_visual_decision
 → validate_geometry_contract
-→ verify_geometry_review_ready
-→ review checkpoint
+→ submit_geometry_for_review
 → user review
 ```
 
+`submit_geometry_for_review` re-runs the Geometry readiness gate, creates the next unused non-approved review checkpoint, atomically changes state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW`. It does not switch profile or reconnect MCP.
+
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes. They are not tool profiles and do not require reconnecting.
 
-When a fresh diagnosis recommends `MAJOR_FORM_REVISION`, Codex may call `prepare_geometry_visual_rebuild` in the same Geometry profile. The tool preserves checkpoints and primary masses, clears only classified structural detail when requested, and returns to normal Geometry work.
+When a fresh diagnosis recommends `MAJOR_FORM_REVISION`, Codex may call `prepare_geometry_visual_rebuild` in the same Geometry profile. The tool preserves checkpoints and primary masses, keeps existing detail by default, clears only classified structural detail when explicitly requested, and returns to normal Geometry work.
+
+Generic Geometry validation must route revision work back to `BEDROCK_CUBOID_GEOMETRY`. Codex uses `analyze_geometry_views` to classify the internal scope rather than activating a removed repair profile.
 
 ## Visual grounding
 
@@ -90,7 +94,7 @@ Use:
 
 Prefer one bounded edit batch per diagnosed issue. Do not make unrelated trial-and-error changes.
 
-Geometry runtime markers such as `PRIMARY_FORM` and `STRUCTURAL_DETAIL` are internal progress hints, not user-facing approval gates. Codex may continue working in the same profile. Editing after `FINAL_REVIEW_READY` automatically makes the old evidence stale and returns Geometry to working state.
+Geometry runtime markers such as `PRIMARY_FORM` and `STRUCTURAL_DETAIL` are internal progress hints, not user-facing approval gates. Codex may continue working in the same profile. Editing after `FINAL_REVIEW_READY` automatically makes old evidence stale and returns Geometry to working state.
 
 ## Efficiency
 
