@@ -25,20 +25,24 @@
 - Ponytail selects the smallest safe work required now.
 - User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
 - Stop after each stage preview for approval or targeted revision.
-- Geometry uses enforced internal phases: `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY`.
+- Geometry uses one profile: `BEDROCK_CUBOID_GEOMETRY`.
+- `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not separate user gates or profiles.
+- `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes and never require Geometry profile switching or reconnecting.
 - Geometry decisions require Codex visual inspection, fixed-scale `analyze_geometry_views` diagnosis, and `validate_geometry_contract`.
 - Geometry corrections must use ranked failing views, semantic regions, affected parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
 - Non-zero cube rotation must use `rotate_cube_about_attachment`; generic Geometry cube tools are for unrotated placement/modification.
+- When runtime UUID differs from stored metadata, Codex uses `rebind_active_project_identity` before acquiring the write lease. Do not ask the user to edit JSON files.
 - Preserve approved areas and manual edits unless a stage is explicitly reopened.
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 - Do not scan ports, create alternate MCP keys, or bypass tool profiles.
-- Acquire `manage_project_write_lease` before asset mutations or evidence/checkpoint/final writes.
-- Never bypass `WRITE_LEASE_*` errors; realign project, state, stage, profile, and owner session instead.
-- A successful stage/profile transition releases the old lease; reacquire it after the one allowed reconnect.
+- Acquire `manage_project_write_lease` before model mutations or evidence/checkpoint/final writes. Metadata-only identity synchronization is the narrow exception.
+- Never bypass `WRITE_LEASE_*` errors; realign project, state, stage, profile, and owner session through MCP tools.
+- A successful stage transition releases the old lease. Geometry revision scopes do not transition profiles or release the lease.
 - Asset production loads `blockbench-production` plus exactly one active-stage skill; maximum loaded production skills is `2`.
 - Repository development must not load production skills.
-- Skill changes do not require MCP reconnects; tool-profile changes may reconnect the canonical entry once.
+- Skill changes do not require MCP reconnects. Geometry identity sync and revision preparation do not require reconnects.
+- Reload the plugin only after the plugin binary changes or when the canonical endpoint is actually unavailable.
 - Keep user-facing model files only in `workspace/*/<asset>/blockbench/`.
 - Keep MCP state, contracts, checkpoints, evidence, and reports only in `workspace/*/<asset>/mcp/`.
 - Completed baselines remain immutable while a reopened revision is active.
