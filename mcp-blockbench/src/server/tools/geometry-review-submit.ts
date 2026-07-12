@@ -30,7 +30,7 @@ export const geometryReviewSubmitToolDocs: ToolSpec[] = [
   {
     name: "submit_geometry_for_review",
     description:
-      "Runs the current Geometry review-readiness gate, saves the next unused non-approved Geometry review checkpoint, and atomically moves the workflow to GEOMETRY_REVIEW. It stays in the existing Geometry profile and MCP session.",
+      "Runs fresh structural validation and the current Geometry review-readiness gate, saves the next unused non-approved Geometry review checkpoint, and atomically moves the workflow to GEOMETRY_REVIEW. It stays in the existing Geometry profile and MCP session.",
     annotations: {
       title: "Submit Geometry for User Review",
       destructiveHint: true,
@@ -68,6 +68,44 @@ async function executeRegisteredTool(
   const tool = getAllToolDefinitions()[name] as unknown as RegisteredTool;
   if (!tool?.execute) throw new Error(`${name} is unavailable.`);
   return tool.execute(args, context);
+}
+
+function assertValidationPass(result: any): Record<string, any> {
+  const report = result?.structuredContent as Record<string, any> | undefined;
+  if (!report) throw new Error("GEOMETRY_VALIDATION_RESULT_MISSING");
+  if (String(report.result ?? "").toUpperCase() !== "PASS") {
+    const codes = Array.isArray(report.issues)
+      ? report.issues
+          .map((issue: any) => issue?.code)
+          .filter(Boolean)
+          .join(", ")
+      : "unknown";
+    throw new Error(
+      `GEOMETRY_VALIDATION_NOT_PASS: ${report.result ?? "UNKNOWN"}; ${codes}`
+    );
+  }
+  for (const field of [
+    "structural_status",
+    "visual_status",
+    "deterministic_visual_status",
+    "evidence_status",
+  ]) {
+    if (String(report[field] ?? "").toUpperCase() !== "PASS") {
+      throw new Error(
+        `GEOMETRY_REPORT_GATE_NOT_PASS: ${field}=${report[field] ?? "MISSING"}`
+      );
+    }
+  }
+  if (
+    !["PASS", "WARNING"].includes(
+      String(report.rotation_status ?? "").toUpperCase()
+    )
+  ) {
+    throw new Error(
+      `GEOMETRY_REPORT_GATE_NOT_PASS: rotation_status=${report.rotation_status ?? "MISSING"}`
+    );
+  }
+  return report;
 }
 
 function nextReviewCheckpoint(
@@ -172,6 +210,18 @@ export function registerGeometryReviewSubmitTools(): void {
         ) {
           throw new Error("GEOMETRY_REVIEW_WRITE_LEASE_REQUIRED");
         }
+
+        const validationResult = await executeRegisteredTool(
+          "validate_geometry_contract",
+          {
+            session_root,
+            expected_project_uuid,
+            dimension_tolerance_units: 1,
+            require_visual_evidence: true,
+          },
+          context
+        );
+        const geometryReport = assertValidationPass(validationResult);
 
         const gateResult = await executeRegisteredTool(
           "verify_geometry_review_ready",
@@ -294,6 +344,7 @@ export function registerGeometryReviewSubmitTools(): void {
             active_profile: "BEDROCK_CUBOID_GEOMETRY",
             reconnect_required: false,
             profile_switch_required: false,
+            geometry_report: geometryReport,
             review_gate: gate,
           },
         };
