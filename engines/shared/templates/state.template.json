@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.2",
+  "schema_version": "2.3",
   "state_revision": 0,
   "asset": {
     "id": "<asset_id>",
@@ -47,6 +47,9 @@
     "exposed_tool_count": null,
     "total_library_tool_count": null,
     "profile_reconnect_required": false,
+    "stable_tool_surface": true,
+    "registered_tool_surface": "STABLE_FULL_LIBRARY",
+    "execution_surface": "ACTIVE_PROFILE_GUARDED",
     "connection_report": "workspace/active/<asset_id>/mcp/reports/connection.json",
     "preflight": {
       "status": "NOT_RUN",
@@ -59,7 +62,7 @@
     "state": "REFERENCE_READY",
     "status": "READY",
     "active_stage": "GEOMETRY",
-    "next_action": "RUN_CONNECTION_SYNC_THEN_ACQUIRE_WRITE_LEASE",
+    "next_action": "CREATE_PROJECT_THEN_SYNC_IDENTITY",
     "animation_required": false,
     "last_completed_stage": null,
     "last_safe_checkpoint": null,
