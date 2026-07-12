@@ -22,6 +22,7 @@ import { runtimeToolDocs } from "../src/server/tools/runtime";
 import { workflowToolDocs } from "../src/server/tools/workflow";
 import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
+import { referenceVisualPreviewToolDocs } from "../src/server/tools/reference-visual-preview";
 import { geometryAnalyzerToolDocs } from "../src/server/tools/geometry-analyzer";
 import { geometryDecisionToolDocs } from "../src/server/tools/geometry-decision";
 import { geometryRotationToolDocs } from "../src/server/tools/geometry-rotation";
@@ -41,6 +42,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
   { category: "Compact Stage Context", tools: stageContextToolDocs },
+  { category: "Reference Visual Transport", tools: referenceVisualPreviewToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },
   { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
@@ -148,7 +150,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "nodes://{id}",
     title: "Blockbench Nodes",
     description:
-      "Returns the current 3D nodes in the editor. List URIs use the slugified project name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
+      "Returns the current 3D nodes in the editor. List URIs use slugified project name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
   },
   {
     name: "textures",
