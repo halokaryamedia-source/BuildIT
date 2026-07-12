@@ -2,7 +2,9 @@
 
 ## Goal
 
-Make local MCP Blockbench production precise, visually grounded, stage-gated, recoverable, easy to hand off, and token-efficient without merging into `V1` before explicit approval.
+Make local MCP Blockbench production precise, visually grounded, recoverable, easy to hand off, and token-efficient without merging into `V1` before explicit approval.
+
+The workflow must remain practical: Codex performs normal identity synchronization, diagnosis, revision, and validation through MCP. The user is not asked to edit state files, select Geometry repair profiles, or repeatedly close and reopen Blockbench.
 
 ## Canonical architecture
 
@@ -30,18 +32,21 @@ mcp/          state, contracts, checkpoints, evidence, reports
 3. Animation review when required
 4. Final Validation review
 
+Internal Geometry correction is not a separate stage or approval moment.
+
 ## Approved Geometry quality scope
 
-The user explicitly reopened and approved Geometry-quality implementation before the next local test. Included now:
+Included now:
 
-- single approved Reference Visual ingestion as an actual MCP image payload;
+- one approved Reference Visual verified at source integrity and delivered through bounded preview transport;
 - transformed world-space bounds;
-- fixed approved-scale cuboid projection for deterministic comparison;
-- no free-rescaling of current Geometry to fit the reference;
+- fixed approved-scale cuboid projection with no current-model free-rescaling;
 - semantic per-view regions with actionable part-level diagnosis;
-- primary-form and structural-detail runtime phases;
-- automatic convergence limits;
-- major-form versus local-repair routing;
+- blocking edge, ground, and critical-region failures;
+- one `BEDROCK_CUBOID_GEOMETRY` profile and MCP session;
+- safe metadata-only project identity synchronization before lease acquisition;
+- `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` as internal diagnosis scopes;
+- advisory Geometry progress markers rather than user-facing sub-gates;
 - machine-readable part constraints;
 - contract-driven cube rotation with pivot, direction, connection, before/after visual scoring, and rollback;
 - unified five-view review readiness gate;
@@ -55,7 +60,7 @@ The system must tell Codex which view, region, direction, magnitude, and parts a
 
 - deterministic `blockbench` MCP connection;
 - one runtime state authority;
-- exact stage and repair tool profiles;
+- one Geometry tool profile, plus stage profiles for Texture, Animation, and Final Validation;
 - maximum two loaded production skills;
 - persistent checkpoints and stable evidence;
 - direct texture evidence writes;
