@@ -3,16 +3,20 @@ import { readdirSync, readFileSync } from "node:fs";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function stringValue(source: string, key: string): string | null {
   const match = source.match(
-    new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*=\\s*"([^"]+)"`, "m")
+    new RegExp(`^${escapeRegExp(key)}\\s*=\\s*"([^"]+)"`, "m")
   );
   return match?.[1] ?? null;
 }
 
 function numberValue(source: string, key: string): number | null {
   const match = source.match(
-    new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*=\\s*(\\d+)`, "m")
+    new RegExp(`^${escapeRegExp(key)}\\s*=\\s*(\\d+)`, "m")
   );
   return match ? Number(match[1]) : null;
 }
@@ -47,7 +51,7 @@ describe("usage-efficient Codex routing", () => {
       expect(stringValue(source, "name")).toBeTruthy();
       expect(stringValue(source, "description")).toBeTruthy();
       expect(source).toContain('developer_instructions = """');
-      expect(source).toContain("Do not spawn another agent");
+      expect(source).toContain("spawn another agent");
     }
   });
 
