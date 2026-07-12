@@ -35,9 +35,12 @@ describe("workspace lifecycle", () => {
     expect(existsSync("../workspace/archive")).toBe(false);
   });
 
-  test("provides one compact lifecycle command", () => {
+  test("provides compact lifecycle and Golden Sample initialization commands", () => {
     const packageJson = json("package.json");
     expect(packageJson.scripts.workspace).toContain("manage-workspace.ts");
+    expect(packageJson.scripts["workspace:sample"]).toContain(
+      "init-golden-sample.ts"
+    );
     const source = read("../engines/shared/workspace/manage-workspace.ts");
     for (const command of [
       'command === "init"',
@@ -49,6 +52,12 @@ describe("workspace lifecycle", () => {
     ]) {
       expect(source).toContain(command);
     }
+
+    const sample = read("scripts/init-golden-sample.ts");
+    expect(sample).toContain("GOLDEN_SAMPLE_MODEL_LEAK");
+    expect(sample).toContain("prebuilt_model_copied: false");
+    expect(sample).toContain("CREATE_PROJECT_THEN_SYNC_IDENTITY");
+    expect(sample).toContain("docs/reference/golden-samples");
   });
 
   test("completion promotes validated staging into the Blockbench package", () => {
