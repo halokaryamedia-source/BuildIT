@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.9",
+  "schema_version": "3.0",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -9,17 +9,13 @@
     "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
     "skill_profile_contract": "engines/shared/skills/skill-profiles.json",
     "max_loaded_production_skills": 2,
-    "initial_build_mode": "fixed_scale_visual_grounded_coarse_to_fine",
-    "revision_mode": "classify_local_or_major_before_mutation",
+    "geometry_profile_policy": "single_profile_one_session",
+    "profile_transition_policy": "stage_transition_only",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
-    "profile_transition_policy": "guarded_completion_then_reconnect_once",
     "visual_feedback_budget": {
       "reference_inspections": 1,
-      "primary_form_checks": 2,
-      "structural_detail_checks": 2,
-      "diagnostic_comparisons": 3,
-      "final_review_checks": 1,
-      "maximum_unsuccessful_cycles": 2
+      "targeted_diagnostic_checks": 3,
+      "final_review_checks": 1
     },
     "image_transport_policy": {
       "reference_source_authority_preserved": true,
@@ -52,7 +48,7 @@
     "fixed_scale_required": true,
     "free_rescale_forbidden": true,
     "required_final_visual_result": "PASS",
-    "primary_form_views": ["left_side", "front", "top_footprint"],
+    "targeted_views": ["left_side", "front", "top_footprint"],
     "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
   },
   "geometry_rotation_policy": {
@@ -74,29 +70,24 @@
   "profiles": {
     "GEOMETRY": {
       "tool_profile_id": "BEDROCK_CUBOID_GEOMETRY",
-      "repair_tool_profile_id": "GEOMETRY_LOCAL_REPAIR",
-      "major_repair_tool_profile_id": "GEOMETRY_VISUAL_REBUILD",
       "skill_profile_id": "GEOMETRY",
       "working_state": "GEOMETRY_IN_PROGRESS",
       "review_state": "GEOMETRY_REVIEW",
       "approved_state": "GEOMETRY_APPROVED",
-      "internal_runtime_phases": [
+      "identity_sync_tool": "rebind_active_project_identity",
+      "major_revision_prepare_tool": "prepare_geometry_visual_rebuild",
+      "revision_scope": {
+        "values": ["LOCAL_REPAIR", "MAJOR_FORM_REVISION"],
+        "role": "internal_codex_decision",
+        "requires_profile_switch": false,
+        "requires_reconnect": false
+      },
+      "internal_progress_markers": [
         "PRIMARY_FORM",
         "STRUCTURAL_DETAIL",
-        "FINAL_REVIEW_READY",
-        "VISUAL_CONVERGENCE_FAILED"
+        "FINAL_REVIEW_READY"
       ],
-      "internal_passes": [
-        "REFERENCE_VISUAL_LOAD",
-        "PRIMARY_FORM_BUILD",
-        "PRIMARY_FORM_MULTIMODAL_CHECK",
-        "PRIMARY_FORM_FIXED_SCALE_DIAGNOSIS",
-        "STRUCTURAL_DETAIL_BUILD",
-        "AFFECTED_VIEW_MULTIMODAL_CHECK",
-        "AFFECTED_VIEW_FIXED_SCALE_DIAGNOSIS",
-        "FULL_FIVE_VIEW_DIAGNOSIS",
-        "FULL_REVIEW_READINESS_GATE"
-      ],
+      "internal_progress_markers_are_user_gates": false,
       "compact_context_tool": "get_stage_context",
       "reference_preview_tool": "inspect_reference_visual_preview",
       "compact_validation_tool": "validate_geometry_contract",
