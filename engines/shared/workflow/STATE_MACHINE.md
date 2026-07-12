@@ -28,7 +28,7 @@ All Geometry work uses:
 BEDROCK_CUBOID_GEOMETRY
 ```
 
-The profile covers project identity synchronization, diagnosis, local correction, major revision preparation, editing, validation, automatic review submission, and approval.
+The profile covers project identity synchronization, diagnosis, local or major revision preparation, editing, validation, automatic review submission, and approval.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal revision scopes. They are not profiles or workflow states and do not require reconnecting.
 
@@ -67,27 +67,32 @@ Codex may repair diagnosed related parts in the same profile. Two non-improving 
 
 Any model mutation after `FINAL_REVIEW_READY` invalidates old review readiness and returns Geometry to working state.
 
-## Major revision preparation
+## Geometry revision preparation
 
-When current fixed-scale diagnosis returns:
+When a fresh fixed-scale diagnosis returns:
 
 ```text
 result = REVISION_REQUIRED
-recommended_scope = MAJOR_FORM_REVISION
+recommended_scope = LOCAL_REPAIR or MAJOR_FORM_REVISION
 ```
 
-Codex may call `prepare_geometry_visual_rebuild` in the current Geometry profile. The compatibility name does not represent a separate stage or profile.
+Codex calls `prepare_geometry_visual_rebuild` in the current Geometry profile. The compatibility name does not represent a separate stage or profile.
 
 The operation:
 
+- accepts workflow state `GEOMETRY_IN_PROGRESS` or `GEOMETRY_REVIEW`;
 - requires the current Geometry write lease;
 - requires current project UUID, state revision, Geometry fingerprint, Reference Visual hash, and diagnosis;
 - preserves all checkpoints and primary masses;
 - keeps structural detail by default;
-- may remove only machine-classified structural detail when explicitly requested;
-- records `revision_mode = MAJOR_FORM_REVISION`;
+- permits structural-detail removal only for an explicit `MAJOR_FORM_REVISION`;
+- rejects broad detail removal for `LOCAL_REPAIR`;
+- records the diagnosed revision scope;
+- advances state and lease revision together;
 - keeps the active profile unchanged;
 - returns workflow state to `GEOMETRY_IN_PROGRESS` with next action `CONTINUE_GEOMETRY`.
+
+This is also the guarded route after the user responds with revision feedback during `GEOMETRY_REVIEW`. Codex captures and diagnoses the affected views before calling the preparation tool; it does not mutate while the main workflow remains in review state.
 
 ## Geometry evidence lifecycle
 
@@ -129,7 +134,8 @@ submit_geometry_for_review
 The tool performs one guarded transition:
 
 ```text
-verify_geometry_review_ready
+validate_geometry_contract
+→ embedded verify_geometry_review_ready result must PASS
 → save next unused non-approved Geometry review checkpoint
 → update state_revision once
 → workflow.state = GEOMETRY_REVIEW
@@ -149,7 +155,7 @@ The user responds only with approval or targeted revision feedback.
 
 ## Geometry revision routing
 
-Any Geometry revision result routes to:
+Any Geometry revision issue—including one discovered during Final Validation—routes to:
 
 ```text
 BEDROCK_CUBOID_GEOMETRY
@@ -163,7 +169,7 @@ or
 MAJOR_FORM_REVISION
 ```
 
-Removed repair-profile names must never be activated.
+Removed repair-profile names must never be activated or returned as the effective next profile.
 
 ## Authority conflicts
 
