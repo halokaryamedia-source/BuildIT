@@ -23,6 +23,7 @@ import { workflowToolDocs } from "../src/server/tools/workflow";
 import { leaseToolDocs } from "../src/server/tools/lease";
 import { geometryFeedbackToolDocs } from "../src/server/tools/geometry-feedback";
 import { geometryAnalyzerToolDocs } from "../src/server/tools/geometry-analyzer";
+import { geometryDecisionToolDocs } from "../src/server/tools/geometry-decision";
 import { geometryRotationToolDocs } from "../src/server/tools/geometry-rotation";
 import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validator";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
@@ -41,6 +42,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Geometry Visual Feedback", tools: geometryFeedbackToolDocs },
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },
+  { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
@@ -144,7 +146,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "nodes://{id}",
     title: "Blockbench Nodes",
     description:
-      "Returns the current 3D nodes in the editor. List URIs use slugified names when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
+      "Returns the current 3D nodes in the editor. List URIs use the slugified project name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, or slug.",
   },
   {
     name: "textures",
