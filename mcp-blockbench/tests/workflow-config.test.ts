@@ -5,12 +5,17 @@ const readJson = (path: string) =>
   JSON.parse(readFileSync(path, "utf8")) as Record<string, any>;
 
 describe("workflow configuration", () => {
-  test("state starts reference-ready with separated canonical paths", () => {
+  test("state starts reference-ready for project creation in one session", () => {
     const state = readJson("../engines/shared/templates/state.template.json");
+    expect(state.schema_version).toBe("2.3");
     expect(state.workflow.state).toBe("REFERENCE_READY");
     expect(state.workflow.active_stage).toBe("GEOMETRY");
-    expect(state.workflow.next_action).toContain("ACQUIRE_WRITE_LEASE");
+    expect(state.workflow.next_action).toBe("CREATE_PROJECT_THEN_SYNC_IDENTITY");
     expect(state.mcp.active_tool_profile).toBe("BEDROCK_CUBOID_GEOMETRY");
+    expect(state.mcp.profile_reconnect_required).toBe(false);
+    expect(state.mcp.stable_tool_surface).toBe(true);
+    expect(state.mcp.registered_tool_surface).toBe("STABLE_FULL_LIBRARY");
+    expect(state.mcp.execution_surface).toBe("ACTIVE_PROFILE_GUARDED");
     expect(state.reference.path).toContain("workspace/active/<asset_id>/mcp/");
     expect(state.project.save_path).toBe(
       "workspace/active/<asset_id>/blockbench/<asset_id>.bbmodel"
@@ -31,10 +36,11 @@ describe("workflow configuration", () => {
     expect(profile.workspace.mcp_files).toContain("/mcp/");
   });
 
-  test("four user-visible stage profiles remain singular", () => {
+  test("four user-visible stage profiles remain singular and one-session", () => {
     const config = readJson(
       "../engines/shared/profiles/stage-profiles.json"
     );
+    expect(config.schema_version).toBe("3.5");
     expect(Object.keys(config.profiles).sort()).toEqual(
       ["ANIMATION", "FINAL_VALIDATION", "GEOMETRY", "TEXTURE"].sort()
     );
@@ -42,6 +48,14 @@ describe("workflow configuration", () => {
       "engines/shared/skills/skill-profiles.json"
     );
     expect(config.global.max_loaded_production_skills).toBe(2);
+    expect(config.global.registered_tool_surface_policy).toBe(
+      "stable_full_library_profile_guarded"
+    );
+    expect(config.global.profile_transition_policy).toBe(
+      "stage_transition_same_session"
+    );
+    expect(config.global.stage_transition_reconnect_required).toBe(false);
+    expect(config.global.codex_session_restart_required).toBe(false);
     for (const stage of Object.keys(config.profiles)) {
       expect(config.profiles[stage].skill_profile_id).toBe(stage);
     }
