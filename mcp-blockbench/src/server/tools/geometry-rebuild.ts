@@ -28,7 +28,7 @@ export const geometryRebuildToolDocs: ToolSpec[] = [
   {
     name: "prepare_geometry_visual_rebuild",
     description:
-      "Resumes a fresh diagnosed LOCAL_REPAIR or MAJOR_FORM_REVISION inside the current Geometry profile and MCP session. It returns review-state Geometry to normal work, preserves checkpoints and primary masses, keeps detail by default, and only permits explicit structural-detail cleanup for a major revision.",
+      "Resumes a current LOCAL_REPAIR or MAJOR_FORM_REVISION inside the existing Geometry profile and MCP session. Revision authority may come from current fixed-scale metrics or a current Codex/user visual decision, while identity, fingerprint, reference, lease, and freshness checks remain mandatory.",
     annotations: {
       title: "Prepare Geometry Revision",
       destructiveHint: true,
@@ -40,6 +40,15 @@ export const geometryRebuildToolDocs: ToolSpec[] = [
 ];
 
 type RevisionScope = "LOCAL_REPAIR" | "MAJOR_FORM_REVISION";
+type RevisionSource = "DETERMINISTIC_METRICS" | "MULTIMODAL_DECISION";
+
+interface RevisionEvidence {
+  source: RevisionSource;
+  path: string;
+  record: Record<string, any>;
+  scope: RevisionScope;
+  issues: unknown[];
+}
 
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
@@ -119,9 +128,95 @@ function restoreRuntime(
   if (fs.existsSync(runtimePath)) fs.rmSync(runtimePath, { force: true });
 }
 
-function revisionScope(value: unknown): RevisionScope {
-  if (value === "LOCAL_REPAIR" || value === "MAJOR_FORM_REVISION") {
-    return value;
+function revisionScope(value: unknown): RevisionScope | null {
+  return value === "LOCAL_REPAIR" || value === "MAJOR_FORM_REVISION"
+    ? value
+    : null;
+}
+
+function freshTimestamp(value: unknown): boolean {
+  const timestamp = Date.parse(String(value ?? ""));
+  return (
+    Number.isFinite(timestamp) &&
+    timestamp <= Date.now() + 60_000 &&
+    Date.now() - timestamp <= 30 * 60 * 1000
+  );
+}
+
+function referenceHash(record: Record<string, any>): string {
+  return String(record.reference_visual?.sha256 ?? "").toLowerCase();
+}
+
+function revisionCandidate(input: {
+  source: RevisionSource;
+  path: string;
+  record: Record<string, any> | null;
+  projectUuid: string;
+  geometryFingerprint: string;
+  referenceSha256: string;
+}): RevisionEvidence | null {
+  const { source, path, record } = input;
+  if (!record || record.result !== "REVISION_REQUIRED") return null;
+  const scope = revisionScope(
+    source === "DETERMINISTIC_METRICS"
+      ? record.recommended_scope
+      : record.scope
+  );
+  if (!scope) return null;
+  if (record.project?.uuid !== input.projectUuid) return null;
+  if (record.geometry_fingerprint !== input.geometryFingerprint) return null;
+  if (referenceHash(record) !== input.referenceSha256) return null;
+  if (!freshTimestamp(record.created_at)) return null;
+  return {
+    source,
+    path,
+    record,
+    scope,
+    issues:
+      source === "DETERMINISTIC_METRICS"
+        ? Array.isArray(record.actionable_issues)
+          ? record.actionable_issues
+          : []
+        : Array.isArray(record.issues)
+          ? record.issues
+          : [],
+  };
+}
+
+function selectRevisionEvidence(input: {
+  metricsPath: string;
+  metrics: Record<string, any>;
+  visualReportPath: string;
+  visualReport: Record<string, any> | null;
+  projectUuid: string;
+  geometryFingerprint: string;
+  referenceSha256: string;
+}): RevisionEvidence {
+  const visual = revisionCandidate({
+    source: "MULTIMODAL_DECISION",
+    path: input.visualReportPath,
+    record: input.visualReport,
+    projectUuid: input.projectUuid,
+    geometryFingerprint: input.geometryFingerprint,
+    referenceSha256: input.referenceSha256,
+  });
+  if (visual) return visual;
+
+  const deterministic = revisionCandidate({
+    source: "DETERMINISTIC_METRICS",
+    path: input.metricsPath,
+    record: input.metrics,
+    projectUuid: input.projectUuid,
+    geometryFingerprint: input.geometryFingerprint,
+    referenceSha256: input.referenceSha256,
+  });
+  if (deterministic) return deterministic;
+
+  const hasRevisionRequest =
+    input.metrics.result === "REVISION_REQUIRED" ||
+    input.visualReport?.result === "REVISION_REQUIRED";
+  if (hasRevisionRequest) {
+    throw new Error("GEOMETRY_REVISION_EVIDENCE_STALE");
   }
   throw new Error("GEOMETRY_REVISION_DIAGNOSIS_REQUIRED");
 }
@@ -147,7 +242,7 @@ export function registerGeometryRebuildTools(): void {
         }
 
         const fs = nativeFs(
-          "Geometry revision preparation needs reference, state, and runtime write access."
+          "Geometry revision preparation needs reference, state, runtime, and current revision evidence access."
         );
         const manifestPath = joinPath(
           session_root,
@@ -158,15 +253,20 @@ export function registerGeometryRebuildTools(): void {
           session_root,
           "evidence/geometry/geometry_runtime.json"
         );
-        const diagnosisPath = joinPath(
+        const metricsPath = joinPath(
           session_root,
           "evidence/geometry/geometry_visual_metrics.json"
+        );
+        const visualReportPath = joinPath(
+          session_root,
+          "evidence/geometry/geometry_visual_report.json"
         );
         for (const path of [
           manifestPath,
           statePath,
           runtimePath,
-          diagnosisPath,
+          metricsPath,
+          visualReportPath,
         ]) {
           assertInsideRoot(path, session_root);
         }
@@ -204,23 +304,16 @@ export function registerGeometryRebuildTools(): void {
           throw new Error("GEOMETRY_REVISION_WRITE_LEASE_REQUIRED");
         }
 
-        const diagnosis = readJsonFile<Record<string, any>>(fs, diagnosisPath);
-        if (diagnosis.result !== "REVISION_REQUIRED") {
-          throw new Error("GEOMETRY_REVISION_DIAGNOSIS_REQUIRED");
+        if (!fs.existsSync(metricsPath)) {
+          throw new Error("GEOMETRY_VISUAL_METRICS_MISSING");
         }
-        const scope = revisionScope(diagnosis.recommended_scope);
-        const major = scope === "MAJOR_FORM_REVISION";
-        if (remove_structural_detail && !major) {
-          throw new Error(
-            "GEOMETRY_LOCAL_REPAIR_CANNOT_REMOVE_STRUCTURAL_DETAIL"
-          );
-        }
+        const metrics = readJsonFile<Record<string, any>>(fs, metricsPath);
+        const visualReport = fs.existsSync(visualReportPath)
+          ? readJsonFile<Record<string, any>>(fs, visualReportPath)
+          : null;
 
         const currentFingerprint = geometryFingerprint();
-        if (
-          currentFingerprint !== expected_geometry_fingerprint.toLowerCase() ||
-          diagnosis.geometry_fingerprint !== currentFingerprint
-        ) {
+        if (currentFingerprint !== expected_geometry_fingerprint.toLowerCase()) {
           throw new Error("GEOMETRY_DIAGNOSIS_STALE");
         }
 
@@ -230,22 +323,30 @@ export function registerGeometryRebuildTools(): void {
           `references/${referenceFilename}`
         );
         assertInsideRoot(referencePath, session_root);
-        const referenceHash = sha256(fs.readFileSync(referencePath));
+        const currentReferenceHash = sha256(fs.readFileSync(referencePath));
         if (
-          referenceHash !== expected_reference_sha256.toLowerCase() ||
-          referenceHash !==
-            String(manifest.reference_visual_lock?.sha256 ?? "").toLowerCase() ||
-          diagnosis.reference_visual?.sha256 !== referenceHash
+          currentReferenceHash !== expected_reference_sha256.toLowerCase() ||
+          currentReferenceHash !==
+            String(manifest.reference_visual_lock?.sha256 ?? "").toLowerCase()
         ) {
           throw new Error("GEOMETRY_REFERENCE_MISMATCH");
         }
 
-        const diagnosisTime = Date.parse(String(diagnosis.created_at ?? ""));
-        if (
-          !Number.isFinite(diagnosisTime) ||
-          Date.now() - diagnosisTime > 30 * 60 * 1000
-        ) {
-          throw new Error("GEOMETRY_DIAGNOSIS_STALE");
+        const revision = selectRevisionEvidence({
+          metricsPath,
+          metrics,
+          visualReportPath,
+          visualReport,
+          projectUuid: Project.uuid,
+          geometryFingerprint: currentFingerprint,
+          referenceSha256: currentReferenceHash,
+        });
+        const scope = revision.scope;
+        const major = scope === "MAJOR_FORM_REVISION";
+        if (remove_structural_detail && !major) {
+          throw new Error(
+            "GEOMETRY_LOCAL_REPAIR_CANNOT_REMOVE_STRUCTURAL_DETAIL"
+          );
         }
 
         let detailPatterns: string[] = [];
@@ -268,23 +369,21 @@ export function registerGeometryRebuildTools(): void {
           ? readJsonFile<Record<string, any>>(fs, runtimePath)
           : null;
         const nextRevision = expected_state_revision + 1;
-        const actionableIssues = Array.isArray(diagnosis.actionable_issues)
-          ? diagnosis.actionable_issues
-          : [];
         const phase = major ? "PRIMARY_FORM" : "STRUCTURAL_DETAIL";
 
         const runtime = {
-          schema_version: "1.2",
+          schema_version: "1.3",
           phase,
           primary_form: emptyIteration(),
           structural_detail: emptyIteration(),
           final_review: emptyIteration(),
           revision_mode: scope,
+          revision_source: revision.source,
           rebuild_mode: major,
           recommended_scope: scope,
           recommended_profile: null,
           last_compared_views: [],
-          last_issues: actionableIssues,
+          last_issues: revision.issues,
           attention_required: false,
           blocker: null,
           rebuild_preparation: {
@@ -305,12 +404,19 @@ export function registerGeometryRebuildTools(): void {
         }
         geometryRecord.status = "IN_PROGRESS";
         geometryRecord.decision = "REVISION_REQUIRED";
+        geometryRecord.previous_review_checkpoint =
+          geometryRecord.review_checkpoint ??
+          state.checkpoints?.geometry_review ??
+          null;
+        geometryRecord.review_checkpoint = null;
+        geometryRecord.review_submitted_at = null;
         geometryRecord.revision = {
           mode: scope,
-          diagnosis_report: diagnosisPath,
+          source: revision.source,
+          evidence_path: revision.path,
           geometry_fingerprint: currentFingerprint,
-          reference_visual_sha256: referenceHash,
-          actionable_issues: actionableIssues,
+          reference_visual_sha256: currentReferenceHash,
+          actionable_issues: revision.issues,
           prepared_at: new Date().toISOString(),
         };
 
@@ -374,13 +480,15 @@ export function registerGeometryRebuildTools(): void {
           content: [
             {
               type: "text",
-              text: `${scope} prepared inside the current Geometry session. Removed ${removed.length} structural-detail cube(s), preserved checkpoints, and returned workflow state to GEOMETRY_IN_PROGRESS.`,
+              text: `${scope} prepared from ${revision.source} inside the current Geometry session. Removed ${removed.length} structural-detail cube(s), preserved checkpoints, and returned workflow state to GEOMETRY_IN_PROGRESS.`,
             },
           ],
           structuredContent: {
             status: "PASS",
             phase,
             revision_mode: scope,
+            revision_source: revision.source,
+            revision_evidence_path: revision.path,
             rebuild_mode: major,
             structural_detail_removed: remove_structural_detail,
             removed_structural_detail: removed,
