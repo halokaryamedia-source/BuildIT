@@ -4,6 +4,9 @@ import { transformedCubeCorners, type Vec3 } from "@/lib/worldBounds";
 
 interface ParentLike {
   uuid?: string;
+  origin?: number[];
+  rotation?: number[];
+  parent?: ParentLike | "root" | null;
 }
 
 interface CubeLike {
@@ -15,16 +18,12 @@ interface CubeLike {
   rotation?: number[];
   inflate?: number;
   visibility?: boolean;
-  parent?: ParentLike | "root" | string | null;
+  parent?: ParentLike | "root" | null;
 }
 
-interface GroupLike {
-  uuid?: string;
+interface GroupLike extends ParentLike {
   name?: string;
-  origin?: number[];
-  rotation?: number[];
   visibility?: boolean;
-  parent?: ParentLike | "root" | string | null;
 }
 
 interface MeshLike extends GroupLike {
@@ -38,9 +37,8 @@ export interface GeometryFreshnessInput {
   meshes?: MeshLike[];
 }
 
-function parentId(parent: CubeLike["parent"]): string {
+function parentId(parent: ParentLike | "root" | null | undefined): string {
   if (!parent || parent === "root") return "root";
-  if (typeof parent === "string") return parent;
   return String(parent.uuid ?? "root");
 }
 
