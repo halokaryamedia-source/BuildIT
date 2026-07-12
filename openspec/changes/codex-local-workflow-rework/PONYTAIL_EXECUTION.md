@@ -2,12 +2,17 @@
 
 ## Active goal
 
-Finish a practical Geometry-quality workflow before the next local production test. MCP must see the current model, identify actionable visual mismatches, let Codex correct them in one Geometry profile/session, and stop only for real safety or user-review conditions.
+Finish a practical, usage-efficient Geometry-quality workflow before the next local production test. MCP must see the current model, identify actionable visual mismatches, let Codex correct them in one Geometry profile/session, route each task to the cheapest eligible locked model role, and stop only for real safety or user-review conditions.
 
 ## Required now
 
 ```text
-single Reference Visual authority
+project default Luna Medium
+→ deterministic role routing with no router model call
+→ one Terra MCP writer
+→ Sol Medium only for necessary visual judgment
+→ Sol High only for one coded critical decision
+→ single Reference Visual authority
 → compact stage context with one next action
 → automatic project identity synchronization when required
 → one Geometry write lease
@@ -32,7 +37,21 @@ single Reference Visual authority
 - existing Reference Visual and technical contracts;
 - existing profile and skill synchronization.
 
-Do not add a separate Geometry repair or rebuild profile.
+Do not add a separate Geometry repair or rebuild profile, a model-selection service, persistent routing telemetry, recursive agents, or parallel MCP writers.
+
+## Model routing rule
+
+`engines/codex/MODEL_ROUTING.md` is the routing authority.
+
+- Project parent default: `gpt-5.6-luna`, medium.
+- Mechanical read-only work: `routine_auditor`, 5.4 Mini Low.
+- Standard implementation and all active-asset mutation: `mcp_builder`, Terra Medium.
+- Visual interpretation and acceptance: `visual_director`, Sol Medium, read-only.
+- Critical review: `critical_reviewer`, Sol High, read-only, at most once per unresolved coded decision.
+- High is the maximum. xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel writers are forbidden.
+- `agents.max_threads` remains `2`; `agents.max_depth` remains `1`.
+- If deterministic validation can answer the question, do not call a larger model.
+- Explicit user model selection affects the parent only. The user is not asked to select worker models.
 
 ## Geometry diagnosis rule
 
@@ -74,8 +93,12 @@ Every non-zero cube rotation uses a machine-readable attachment contract. The ro
 - one final five-view pass;
 - bounded atomic cube batches;
 - compact stage context instead of repeated long-document reads;
+- deterministic routing before model delegation;
+- Sol receives a compact decision packet, not the repository or raw logs;
+- heavy judgment de-escalates immediately to Terra implementation and Mini audit;
+- no subagent for a micro-task when direct work is cheaper;
 - non-improving cycles set an attention flag rather than creating a new gate/profile;
-- no manual JSON edits, checkpoint naming, Geometry profile switches, or reconnects requested from the user.
+- no manual JSON edits, checkpoint naming, worker-model selection, Geometry profile switches, or reconnects requested from the user.
 
 ## Workspace separation
 
@@ -103,13 +126,18 @@ Implementation is complete only when:
 10. review submission automatically validates, checkpoints, and transitions to `GEOMETRY_REVIEW`;
 11. Geometry approval preserves lease/session correctness and cannot use generic bypass;
 12. negative fixtures reject the failed Black Rhinoceros model;
-13. skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
+13. project Codex config defines Luna Medium, two threads, and depth one;
+14. custom agents lock Mini Low, Terra Medium, Sol Medium, and rare Sol High roles;
+15. only `mcp_builder` may mutate an active asset;
+16. no configured effort exceeds High;
+17. routing, skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
 
 ## Deferred not required
 
 - merge into `V1`;
 - release/deployment;
 - persistent live MCP sessions;
+- persistent routing telemetry or a learned router;
 - unrelated mesh, PBR, Hytale, or armature modelling expansion;
 - multiple selected projects;
 - duplicate packages, models, or versioned output names.
