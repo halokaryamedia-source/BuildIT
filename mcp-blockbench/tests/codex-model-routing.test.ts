@@ -173,7 +173,9 @@ describe("usage-efficient Codex routing", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     expect(policy).toContain("default Terra parent");
     expect(policy).toContain("mcp_builder becomes the only writer");
-    expect(policy).toContain("never both");
+    expect(policy).toContain(
+      "Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently"
+    );
     expect(agents["mcp-builder.toml"]).toContain("fallback single MCP writer");
   });
 
@@ -189,7 +191,7 @@ describe("usage-efficient Codex routing", () => {
       "a model call whose only purpose is choosing another model",
       "Sol decision",
       "selected Terra writer",
-      "High is the ceiling",
+      "effort never rises above High",
     ]) {
       expect(policy).toContain(marker);
     }
