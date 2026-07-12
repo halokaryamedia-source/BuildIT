@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, local or major revision, validation, and review."
+description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, local or major revision, automatic review submission, validation, and approval."
 ---
 
 # Blockbench Geometry
@@ -30,10 +30,11 @@ get_stage_context
 → final five-view review
 → record_geometry_visual_decision
 → validate_geometry_contract
-→ verify_geometry_review_ready
-→ review checkpoint
+→ submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
+
+`submit_geometry_for_review` runs the final readiness gate internally, saves the next unused non-approved Geometry review checkpoint, and updates workflow state. Codex must not ask the user to edit state files or choose a checkpoint name.
 
 Do not ask the user to edit workspace JSON, switch profiles, close the model, or reconnect between Geometry revision scopes. Codex performs the available operation directly.
 
@@ -76,9 +77,12 @@ When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_vis
 
 - preserves all checkpoints;
 - preserves primary masses and project identity;
-- optionally removes only machine-classified structural detail;
+- keeps structural detail by default;
+- optionally removes only machine-classified structural detail when explicitly requested;
 - returns workflow state to `GEOMETRY_IN_PROGRESS`;
 - continues normal Geometry work without profile switching or reconnecting.
+
+Generic validation may report that Geometry needs revision, but it must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal repair scope; never activate a removed repair profile.
 
 ## Internal progress markers
 
@@ -115,8 +119,9 @@ Before user review:
 3. run `analyze_geometry_views` for all five views;
 4. record the multimodal decision;
 5. run `validate_geometry_contract`;
-6. run `verify_geometry_review_ready`;
-7. save a new non-approved review checkpoint.
+6. call `submit_geometry_for_review`.
+
+The submission tool re-runs `verify_geometry_review_ready`, creates a new unique non-approved checkpoint, changes state to `GEOMETRY_REVIEW`, keeps the Geometry lease current, and returns `AWAIT_GEOMETRY_REVIEW` without reconnecting.
 
 Final Geometry passes only when current visual evidence, fixed-scale metrics, structural validation, Reference Visual identity, Geometry fingerprint, standard views, and rotation audit all pass.
 
