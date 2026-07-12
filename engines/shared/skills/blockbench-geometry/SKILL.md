@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, local or major revision, automatic review submission, validation, and approval."
+description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, user-directed local or major revision, automatic review submission, validation, and approval."
 ---
 
 # Blockbench Geometry
@@ -11,7 +11,7 @@ Use only for stage `GEOMETRY` with profile:
 BEDROCK_CUBOID_GEOMETRY
 ```
 
-There are no separate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD` profiles. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes handled by Codex in the current session.
+There are no separate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD` profiles. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal revision scopes handled by Codex in the current session.
 
 ## Start
 
@@ -58,7 +58,7 @@ Geometry quality requires all three:
 2. fixed-scale diagnosis from `analyze_geometry_views`;
 3. structural validation from `validate_geometry_contract`.
 
-A structural pass alone is not a visual pass.
+A structural pass alone is not a visual pass. Deterministic metrics are a guardrail, not a replacement for explicit user review.
 
 ## Diagnosis and revision
 
@@ -72,16 +72,32 @@ A structural pass alone is not a visual pass.
 
 Modify only the implicated parts. Do not compensate for one incorrect mass by changing unrelated detail.
 
-`prepare_geometry_visual_rebuild` is the compatibility name for preparing any diagnosed Geometry revision. It accepts a fresh `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` diagnosis in the current profile and:
+`prepare_geometry_visual_rebuild` is the compatibility name for preparing any current Geometry revision. It accepts either:
 
-- returns `GEOMETRY_REVIEW` to `GEOMETRY_IN_PROGRESS` when the user requests revision;
+- fixed-scale metrics with `REVISION_REQUIRED`; or
+- a current `record_geometry_visual_decision` with `REVISION_REQUIRED` based on Codex/user visual review.
+
+Both routes must match the active project UUID, Geometry fingerprint, Reference Visual SHA-256, and freshness window.
+
+The preparation tool:
+
+- returns `GEOMETRY_REVIEW` to `GEOMETRY_IN_PROGRESS` before mutation;
 - preserves all checkpoints, primary masses, and project identity;
 - keeps structural detail by default;
 - allows structural-detail removal only for an explicit major revision;
 - advances the current lease and state revision together;
 - continues normal Geometry work without profile switching or reconnecting.
 
-For revision feedback received during `GEOMETRY_REVIEW`, capture and diagnose the affected views first, then call `prepare_geometry_visual_rebuild` with the fresh fingerprint and Reference Visual hash. Do not mutate while leaving the main workflow in review state.
+For revision feedback received during `GEOMETRY_REVIEW`:
+
+1. capture and inspect the affected views;
+2. run `analyze_geometry_views` on those views;
+3. when the analyzer reports revision, use that current deterministic evidence;
+4. when the analyzer passes but the user still requests a visual change, call `record_geometry_visual_decision` with `REVISION_REQUIRED`, the user-visible issue, affected views, and the appropriate scope;
+5. call `prepare_geometry_visual_rebuild` with the current fingerprint and Reference Visual hash;
+6. mutate only after the tool returns `GEOMETRY_IN_PROGRESS`.
+
+User feedback cannot be cancelled merely because the deterministic score passes. It must instead be recorded as current multimodal revision evidence.
 
 Generic validation may report that Geometry needs revision, but it must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal repair scope; never activate a removed repair profile.
 
