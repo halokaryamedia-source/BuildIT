@@ -3,6 +3,7 @@ import {
   assertInsideRoot,
   readJsonFile,
 } from "@/lib/atomicFiles";
+import { computeGeometryWorldSignature } from "@/lib/geometryFreshness";
 import {
   assertCurrentStageReport,
   joinSessionPath,
@@ -105,6 +106,10 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   let ready = false;
   let reportError: string | null = null;
   let projectContentSignature: string | null = null;
+  const geometryWorldSignature =
+    stage === "GEOMETRY" || stage === "FINAL_VALIDATION"
+      ? computeGeometryWorldSignature()
+      : null;
 
   if (rebindRequired) {
     next = leaseActive
@@ -145,6 +150,17 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   if (projectContentSignature) {
     context.project.current_content_signature = projectContentSignature;
   }
+  if (geometryWorldSignature) {
+    context.project.current_geometry_world_signature = geometryWorldSignature;
+    if (context.geometry?.latest_diagnosis) {
+      context.geometry.latest_diagnosis.geometry_world_signature =
+        context.geometry.latest_diagnosis.geometry_world_signature ?? null;
+      context.geometry.latest_diagnosis.world_signature_current =
+        context.geometry.latest_diagnosis.geometry_world_signature ===
+        geometryWorldSignature;
+    }
+  }
+
   structured.next_safe_operation = next;
   context.automation = context.automation ?? {};
   context.automation.exact_next_safe_operation = next;
