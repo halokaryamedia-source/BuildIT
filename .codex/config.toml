@@ -1,9 +1,21 @@
 # BuildIT project defaults. Explicit user model selections may override the parent
-# thread, but AGENTS.md routes substantive work to the locked custom agents below.
-model = "gpt-5.6-luna"
+# thread, but AGENTS.md routes specialized work to the locked custom agents below.
+# Terra is the default because most BuildIT work is implementation/tool use; this
+# avoids paying for a separate Luna controller plus a Terra worker on normal tasks.
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
-model_reasoning_summary = "concise"
+model_reasoning_summary = "none"
 model_verbosity = "low"
+sandbox_mode = "workspace-write"
+
+# Canonical Blockbench MCP entry. It is optional during repository-only work and
+# becomes available automatically when the Blockbench plugin is running.
+[mcp_servers.blockbench]
+url = "http://localhost:3000/bb-mcp"
+enabled = true
+required = false
+startup_timeout_sec = 5
+tool_timeout_sec = 180
 
 [agents]
 # One root/controller plus at most one active specialist. Avoid broad fan-out.
