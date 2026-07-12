@@ -53,6 +53,12 @@ interface ManifestLike {
   geometry?: Record<string, any>;
 }
 
+interface TransformParent {
+  origin?: number[];
+  rotation?: number[];
+  parent?: TransformParent | "root";
+}
+
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
   return `${root.replace(/[\\/]$/, "")}${separator}${relative.replace(/^[\\/]/, "")}`;
@@ -92,7 +98,7 @@ function transformPointForCube(point: Vec3, cube: Cube): Vec3 {
     cube.origin as Vec3,
     cube.rotation as Vec3
   );
-  let parent = cube.parent;
+  let parent = cube.parent as unknown as TransformParent | "root";
   const visited = new Set<unknown>();
   while (parent && parent !== "root" && !visited.has(parent)) {
     visited.add(parent);
@@ -103,7 +109,7 @@ function transformPointForCube(point: Vec3, cube: Cube): Vec3 {
       ? (parent.rotation as Vec3)
       : ([0, 0, 0] as Vec3);
     transformed = rotatePointAroundOrigin(transformed, origin, rotation);
-    parent = parent.parent;
+    parent = parent.parent ?? "root";
   }
   return transformed;
 }
