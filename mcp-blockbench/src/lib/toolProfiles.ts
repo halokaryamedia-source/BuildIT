@@ -152,6 +152,13 @@ function assertArguments(toolName: string, args: Record<string, unknown>): void 
   if (activeProfileId === "DIAGNOSTIC_ESCALATION") return;
   if (geometryProfiles.has(activeProfileId)) {
     assertGeometryMutationPhase(toolName, args, activeProfileId);
+
+    if (toolName === "capture_visual_feedback" && args.include_reference === true) {
+      throw new Error(
+        "REFERENCE_VISUAL_TRANSPORT_BLOCKED: capture_visual_feedback cannot embed the original Reference Visual in a normal Geometry response. Call inspect_reference_visual_preview once, then capture current model views with include_reference=false."
+      );
+    }
+
     if (toolName === "place_cube") {
       if (hasArg(args, "texture")) {
         throw new Error(
