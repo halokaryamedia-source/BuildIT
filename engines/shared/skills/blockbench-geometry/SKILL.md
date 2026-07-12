@@ -1,23 +1,15 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Minecraft Bedrock cuboid Geometry skill. Uses one Geometry profile and one MCP session for identity sync, diagnosis, user-directed local or major revision, automatic review submission, validation, and approval."
+description: "Visual-grounded Bedrock cuboid Geometry in one MCP profile and session, including identity sync, diagnosis, user-directed revision, automatic review submission, and approval."
 ---
 
 # Blockbench Geometry
 
-Use only for stage `GEOMETRY` with profile:
+Use only for stage `GEOMETRY` with profile `BEDROCK_CUBOID_GEOMETRY`.
 
-```text
-BEDROCK_CUBOID_GEOMETRY
-```
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles or user-facing stages.
 
-There are no separate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD` profiles. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal revision scopes handled by Codex in the current session.
-
-## Start
-
-Call `get_stage_context` and follow `next_safe_operation`.
-
-The normal sequence is:
+## Normal flow
 
 ```text
 get_stage_context
@@ -27,125 +19,70 @@ get_stage_context
 → capture_visual_feedback
 → analyze_geometry_views
 → edit diagnosed parts
-→ final five-view review
+→ final five-view capture and diagnosis
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
 
-`submit_geometry_for_review` runs fresh Geometry contract validation with its embedded review-readiness gate, saves the next unused non-approved Geometry review checkpoint, and updates workflow state. Codex must not ask the user to edit state files or choose a checkpoint name.
+Follow `next_safe_operation`. Do not ask the user to edit workspace JSON, choose checkpoint names, switch Geometry profiles, close the model, or reconnect between Geometry revisions.
 
-Do not ask the user to edit workspace JSON, switch profiles, close the model, or reconnect between Geometry revision scopes. Codex performs the available operation directly.
+## Identity
 
-## Identity synchronization
+When runtime UUID differs from stored metadata, call `rebind_active_project_identity` before acquiring the lease. Use the current UUID, state revision, Geometry fingerprint, and Reference Visual SHA-256. The tool updates metadata only and stays in the same session.
 
-A reopened Blockbench project may have a new runtime UUID. When compact context reports `rebind_required`:
+## Visual authority
 
-1. call `rebind_active_project_identity` before acquiring a lease;
-2. use the exact runtime UUID, stored UUID, state revision, Geometry fingerprint, and Reference Visual SHA-256;
-3. continue in the same profile and session;
-4. acquire the lease using the new revision and UUID.
+Use `inspect_reference_visual_preview`; never request the original multi-megabyte image in normal production.
 
-The rebind tool may update only `state.json` and `project.json`. It must not change Geometry.
+Geometry quality requires:
 
-## Visual grounding
+1. Codex inspection of actual image payloads;
+2. fixed-scale `analyze_geometry_views` diagnosis;
+3. `validate_geometry_contract` structural validation.
 
-Use `inspect_reference_visual_preview`. It verifies the original Reference Visual SHA-256 and dimensions while returning a bounded ephemeral preview. Never request the original multi-megabyte image through normal MCP production.
+Free-rescaling is forbidden. A structural pass alone is not a visual pass.
 
-Geometry quality requires all three:
+## Revision flow
 
-1. Codex visual inspection of actual Reference and current-model image payloads;
-2. fixed-scale diagnosis from `analyze_geometry_views`;
-3. structural validation from `validate_geometry_contract`.
+`prepare_geometry_visual_rebuild` is the compatibility name for preparing either `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` in the current Geometry profile.
 
-A structural pass alone is not a visual pass. Deterministic metrics are a guardrail, not a replacement for explicit user review.
-
-## Diagnosis and revision
-
-`analyze_geometry_views` must identify:
-
-- failing views and semantic regions;
-- missing or excessive silhouette;
-- affected parts;
-- correction direction and approximate magnitude;
-- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
-
-Modify only the implicated parts. Do not compensate for one incorrect mass by changing unrelated detail.
-
-`prepare_geometry_visual_rebuild` is the compatibility name for preparing any current Geometry revision. It accepts either:
+It accepts current revision authority from either:
 
 - fixed-scale metrics with `REVISION_REQUIRED`; or
-- a current `record_geometry_visual_decision` with `REVISION_REQUIRED` based on Codex/user visual review.
+- `record_geometry_visual_decision` with `REVISION_REQUIRED`, including explicit user feedback.
 
-Both routes must match the active project UUID, Geometry fingerprint, Reference Visual SHA-256, and freshness window.
+Both must match the current project UUID, Geometry fingerprint, Reference Visual SHA-256, and freshness checks.
 
-The preparation tool:
+For feedback received during `GEOMETRY_REVIEW`:
 
-- returns `GEOMETRY_REVIEW` to `GEOMETRY_IN_PROGRESS` before mutation;
-- preserves all checkpoints, primary masses, and project identity;
-- keeps structural detail by default;
-- allows structural-detail removal only for an explicit major revision;
-- advances the current lease and state revision together;
-- continues normal Geometry work without profile switching or reconnecting.
+1. capture and inspect affected views;
+2. run `analyze_geometry_views`;
+3. when metrics fail, use that diagnosis;
+4. when metrics pass but the user still requests a change, record a current multimodal `REVISION_REQUIRED` decision with issue, views, and scope;
+5. call `prepare_geometry_visual_rebuild`;
+6. edit only after it returns `GEOMETRY_IN_PROGRESS`.
 
-For revision feedback received during `GEOMETRY_REVIEW`:
+The preparation tool preserves checkpoints and primary masses, keeps detail by default, and permits broad detail removal only for an explicit major revision. No profile switch or reconnect is required.
 
-1. capture and inspect the affected views;
-2. run `analyze_geometry_views` on those views;
-3. when the analyzer reports revision, use that current deterministic evidence;
-4. when the analyzer passes but the user still requests a visual change, call `record_geometry_visual_decision` with `REVISION_REQUIRED`, the user-visible issue, affected views, and the appropriate scope;
-5. call `prepare_geometry_visual_rebuild` with the current fingerprint and Reference Visual hash;
-6. mutate only after the tool returns `GEOMETRY_IN_PROGRESS`.
+Generic validation, including Geometry issues found during Final Validation, must route to `BEDROCK_CUBOID_GEOMETRY`; use the analyzer to classify the internal scope.
 
-User feedback cannot be cancelled merely because the deterministic score passes. It must instead be recorded as current multimodal revision evidence.
-
-Generic validation may report that Geometry needs revision, but it must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal repair scope; never activate a removed repair profile.
-
-## Internal progress markers
-
-`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user approval gates.
-
-Use coarse-to-fine work as a practical order:
-
-1. body, shoulder, rear taper, neck, head, muzzle, legs, and ground relationship;
-2. horns, ears, feet, tail, hierarchy, and connection cleanup;
-3. final evidence.
-
-Codex may repair related parts in the same profile. Two non-improving checks set an attention flag but do not lock the model or require a new profile.
-
-Any mutation after `FINAL_REVIEW_READY` automatically invalidates old review readiness and returns Geometry to working state.
-
-## Mutation tools
+## Mutation
 
 Use:
 
-- `place_cubes_safe` for unrotated new cubes;
-- `modify_cubes` for unrotated changes;
+- `place_cubes_safe` for unrotated placement;
+- `modify_cubes` for unrotated edits;
 - `rotate_cube_about_attachment` for every non-zero rotation.
 
-Direct non-zero rotation through generic cube tools is forbidden. Rotation must validate pivot, axis, direction, connection, and affected-view score.
+Rotation must validate pivot, axis, direction, connection, and affected-view score. Modify only diagnosed parts.
 
-Prefer one bounded atomic edit for one diagnosed issue. Use only affected views during correction.
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are progress markers, not user gates.
 
-## Final review
+## Submit for review
 
-Before user review:
+After current five-view evidence and multimodal decision are ready, call `submit_geometry_for_review`.
 
-1. capture Front, Left, Back, Top, and Front-left 3/4;
-2. inspect all image payloads;
-3. run `analyze_geometry_views` for all five views;
-4. record the multimodal decision;
-5. call `submit_geometry_for_review`.
+The tool runs fresh Geometry validation with its embedded readiness gate, creates the next unused non-approved review checkpoint, advances state and lease revision together, and changes workflow state to `GEOMETRY_REVIEW` without reconnecting.
 
-The submission tool runs fresh structural and visual validation, creates a new unique non-approved checkpoint, changes state to `GEOMETRY_REVIEW`, keeps the Geometry lease current, and returns `AWAIT_GEOMETRY_REVIEW` without reconnecting.
-
-Final Geometry passes only when current visual evidence, fixed-scale metrics, structural validation, Reference Visual identity, Geometry fingerprint, standard views, and rotation audit all pass.
-
-## Efficiency and UX
-
-- Inspect the Reference Visual preview once unless its hash changes.
-- Reuse compact context and fresh diagnosis.
-- Do not reload long contracts without a real conflict.
-- Do not create extra reference images.
-- Do not ask for manual file edits or repeated restarts.
-- Stop only for a real authority conflict, unavailable MCP endpoint, unsafe mutation, stale evidence that cannot be regenerated, failed final review, or required user approval.
+Final Geometry requires current five-view evidence, matching fingerprint and Reference Visual hash, fixed-scale PASS, structural PASS, and safe rotations.
