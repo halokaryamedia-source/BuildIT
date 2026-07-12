@@ -1,6 +1,6 @@
 ---
 name: blockbench-production
-description: "Mandatory dispatcher for approved Blockbench asset production. Resolves one active workspace, rejects legacy context, acquires the write lease, loads exactly one stage skill, enforces the exact tool profile, and stops at each user review gate."
+description: "Mandatory dispatcher for approved Blockbench asset production. Resolves one active workspace, rejects legacy context, acquires the write lease, loads exactly one stage skill, enforces bounded image transport and the exact tool profile, and stops at each user review gate."
 ---
 
 # Blockbench Production
@@ -55,6 +55,18 @@ The Reference Visual is the sole visual authority. Markdown and JSON convert it 
 9. Execute the smallest complete stage batch.
 10. Stop at the required user review gate.
 
+## Bounded image transport
+
+Normal production must use:
+
+```text
+inspect_reference_visual_preview
+```
+
+This tool verifies the original Reference Visual at its locked SHA-256 and dimensions, but sends only an ephemeral bounded JPEG/PNG preview through MCP. The preview does not replace the original authority and does not count as a generated reference image.
+
+Do not call legacy `inspect_reference_visual` in a normal profile. It embeds the original multi-megabyte binary in one JSON response and is available only through explicit diagnostic escalation.
+
 ## Geometry quality contract
 
 Geometry is not allowed to guess broadly from text. It must use both:
@@ -66,7 +78,7 @@ Required route:
 
 ```text
 get_stage_context
-→ inspect_reference_visual
+→ inspect_reference_visual_preview
 → build PRIMARY_FORM only
 → capture_visual_feedback: left + front + top
 → analyze_geometry_views: left + front + top
@@ -144,17 +156,18 @@ Use stepped cuboids rather than rotating large torso masses to fake taper.
 - `REFERENCE_REOPEN`: approved design itself must change.
 - `REFERENCE_CONFLICT`: authorities disagree; stop.
 
-Use `GEOMETRY_LOCAL_REPAIR` only for local scope. Use `GEOMETRY_VISUAL_REBUILD` for broad body/head/footprint reconstruction. Both receive identical Geometry, phase, validation, and rotation guards.
+Use `GEOMETRY_LOCAL_REPAIR` only for local scope. Use `GEOMETRY_VISUAL_REBUILD` for broad body/head/footprint reconstruction. Both receive identical Geometry, phase, validation, image-transport, and rotation guards.
 
 ## Efficiency rules
 
 - Do not rescan known workspace paths.
 - Reuse fresh readiness and connection reports.
-- Inspect the Reference Visual once unless its hash changes.
+- Inspect the bounded Reference Visual preview once unless its source hash changes.
 - Load no more than two production skills.
 - Prefer one bounded `modify_cubes` transaction over many single-cube calls.
 - Use three diagnostic views for primary form, then only affected views, then one final five-view pass.
 - Return image payloads only when Codex must inspect them; archive full-resolution evidence to disk.
+- Never embed a multi-megabyte source image in a normal MCP response.
 - Maximum automatic correction cycles per internal pass: `2`.
 - Do not load mesh, PBR, Hytale, armature, UI automation, eval, or unrelated tools in normal Bedrock cuboid production.
 
@@ -179,4 +192,4 @@ FINAL_VALIDATION → blockbench-validation
 
 ## Stop conditions
 
-Stop on `LEGACY_SKILL_CONFLICT`, `REFERENCE_CONFLICT`, missing reference profile, failed primary-form gate, failed fixed-scale diagnosis, stale visual evidence, unsafe rotation, visual convergence failure, lease/state/profile mismatch, or required user review.
+Stop on `LEGACY_SKILL_CONFLICT`, `REFERENCE_CONFLICT`, missing reference profile, failed primary-form gate, failed fixed-scale diagnosis, stale visual evidence, unsafe rotation, visual convergence failure, image-transport failure, lease/state/profile mismatch, or required user review.
