@@ -230,7 +230,7 @@ function installGuards(): void {
 
       const profileBefore = getExecutionProfileState();
       const result = await execute(args, context);
-      if (name === "record_geometry_visual_result") {
+      if (name === "record_geometry_visual_decision") {
         recordGeometryVisualRuntimeResult(args, result);
       }
       const profileChanged =
