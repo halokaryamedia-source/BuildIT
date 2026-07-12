@@ -14,7 +14,7 @@ interface RegisteredTool {
   ) => Promise<any>;
 }
 
-const normalizedTools = new Set([
+export const SESSION_CONTINUITY_TOOLS = [
   "get_runtime_status",
   "get_tool_profile",
   "get_stage_context",
@@ -22,7 +22,7 @@ const normalizedTools = new Set([
   "complete_geometry_stage",
   "complete_stage",
   "reopen_stage_for_revision",
-]);
+] as const;
 
 const transitionTools = new Set([
   "complete_geometry_stage",
@@ -47,7 +47,7 @@ function nativeFs(): NativeFsLike {
   return fs as NativeFsLike;
 }
 
-function normalizeProfileSnapshot(value: unknown): void {
+export function normalizeContinuityProfileSnapshot(value: unknown): void {
   if (!value || typeof value !== "object") return;
   const snapshot = value as Record<string, any>;
   snapshot.reconnect_required_after_change = false;
@@ -80,23 +80,18 @@ function reconcileStateContinuity(root: string): Record<string, any> | null {
   return state;
 }
 
-function normalizeResult(
+export function normalizeSessionContinuityPayload(
   name: string,
-  args: Record<string, unknown>,
-  result: any
+  structured: Record<string, any>,
+  stateNextAction: string | null = null
 ): void {
-  enforceStableToolSurface();
-
-  const structured = result?.structuredContent;
-  if (!structured || typeof structured !== "object") return;
-
   if (name === "get_runtime_status") {
-    normalizeProfileSnapshot(structured.tool_profile);
+    normalizeContinuityProfileSnapshot(structured.tool_profile);
     structured.contract = structured.contract ?? {};
     structured.contract.stable_tool_surface = true;
     structured.contract.profile_changes_require_reconnect = false;
   } else if (name === "get_tool_profile") {
-    normalizeProfileSnapshot(structured);
+    normalizeContinuityProfileSnapshot(structured);
   }
 
   if (name === "get_stage_context") {
@@ -111,7 +106,7 @@ function normalizeResult(
   }
 
   if (name === "activate_tool_profile") {
-    normalizeProfileSnapshot(structured.snapshot);
+    normalizeContinuityProfileSnapshot(structured.snapshot);
     structured.reconnect_required = false;
     structured.current_session_continues = true;
     structured.stable_tool_surface = true;
@@ -119,45 +114,85 @@ function normalizeResult(
     structured.next_action = structured.changed
       ? "Call get_stage_context in the current MCP session, then acquire the fresh current-stage write lease."
       : "Continue with the active stage in the current MCP session.";
+  }
+
+  if (transitionTools.has(name)) {
+    structured.reconnect_required = false;
+    structured.current_session_continues = true;
+    structured.stable_tool_surface = true;
+    structured.next_action =
+      stateNextAction ?? structured.next_action ?? "CALL_GET_STAGE_CONTEXT";
+  }
+}
+
+function normalizeResult(
+  name: string,
+  args: Record<string, unknown>,
+  result: any
+): void {
+  enforceStableToolSurface();
+
+  const structured = result?.structuredContent;
+  if (!structured || typeof structured !== "object") return;
+
+  let stateNextAction: string | null = null;
+  if (transitionTools.has(name)) {
+    const root = typeof args.session_root === "string" ? args.session_root : null;
+    const state = root ? reconcileStateContinuity(root) : null;
+    stateNextAction =
+      typeof state?.workflow?.next_action === "string"
+        ? state.workflow.next_action
+        : null;
+  }
+
+  normalizeSessionContinuityPayload(name, structured, stateNextAction);
+
+  if (name === "activate_tool_profile") {
     normalizeText(
       result,
       structured.changed
         ? `Tool profile changed to ${structured.active_profile}. Continue in the current MCP session and acquire a fresh current-stage write lease.`
         : `Tool profile ${structured.active_profile} is already active; continue in the current MCP session.`
     );
+  } else if (transitionTools.has(name)) {
+    normalizeText(
+      result,
+      `${structured.completed_stage ?? structured.reopened_stage ?? "Stage"} transition completed. Continue in the current MCP session.`
+    );
   }
-
-  if (!transitionTools.has(name)) return;
-
-  const root = typeof args.session_root === "string" ? args.session_root : null;
-  const state = root ? reconcileStateContinuity(root) : null;
-  const stateNextAction = state?.workflow?.next_action;
-
-  structured.reconnect_required = false;
-  structured.current_session_continues = true;
-  structured.stable_tool_surface = true;
-  structured.next_action =
-    typeof stateNextAction === "string"
-      ? stateNextAction
-      : structured.next_action ?? "CALL_GET_STAGE_CONTEXT";
-  normalizeText(
-    result,
-    `${structured.completed_stage ?? structured.reopened_stage ?? "Stage"} transition completed. Continue in the current MCP session.`
-  );
 }
 
 export function installSessionContinuityGuards(): void {
   if (installed) return;
   const definitions = getAllToolDefinitions() as Record<string, RegisteredTool>;
 
-  for (const name of normalizedTools) {
+  for (const name of SESSION_CONTINUITY_TOOLS) {
     const definition = definitions[name];
     if (!definition?.execute) continue;
     const execute = definition.execute;
     definition.execute = async (args, context) => {
-      const result = await execute(args, context);
-      normalizeResult(name, args, result);
-      return result;
+      try {
+        const result = await execute(args, context);
+        normalizeResult(name, args, result);
+        return result;
+      } catch (error) {
+        enforceStableToolSurface();
+        if (transitionTools.has(name)) {
+          const root =
+            typeof args.session_root === "string" ? args.session_root : null;
+          if (root) {
+            try {
+              reconcileStateContinuity(root);
+            } catch (continuityError) {
+              console.error(
+                `[MCP] ${name} continuity reconciliation failed:`,
+                continuityError
+              );
+            }
+          }
+        }
+        throw error;
+      }
     };
   }
 
