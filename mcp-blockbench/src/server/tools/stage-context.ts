@@ -74,6 +74,7 @@ function geometryNextOperation(input: {
   diagnosisResult: string | null;
   diagnosisScope: string | null;
   runtimePhase: string | null;
+  rebuildMode: boolean;
 }): string {
   if (input.rebindRequired && input.leaseStatus !== "ACTIVE") {
     return "rebind_active_project_identity";
@@ -85,6 +86,7 @@ function geometryNextOperation(input: {
   ) {
     return "manage_project_write_lease:acquire";
   }
+  if (input.rebuildMode) return "CONTINUE_GEOMETRY";
   if (!input.diagnosisResult) return "inspect_reference_visual_preview";
   if (
     input.diagnosisResult === "REVISION_REQUIRED" &&
@@ -123,7 +125,10 @@ export function registerStageContextTools(): void {
 
         const manifest = readJsonFile<Record<string, any>>(fs, manifestPath);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
-        const projectMetadata = readJsonFile<Record<string, any>>(fs, projectPath);
+        const projectMetadata = readJsonFile<Record<string, any>>(
+          fs,
+          projectPath
+        );
         const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
         const geometryProfile = mergeGeometryReferenceProfile({
           referenceSha256: manifest.reference_visual_lock?.sha256,
@@ -172,11 +177,12 @@ export function registerStageContextTools(): void {
                 diagnosisResult,
                 diagnosisScope,
                 runtimePhase: geometryRuntime?.phase ?? null,
+                rebuildMode: geometryRuntime?.rebuild_mode === true,
               })
             : "CONTINUE_STAGE";
 
         const context = {
-          schema_version: "2.0",
+          schema_version: "2.1",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
@@ -323,6 +329,10 @@ export function registerStageContextTools(): void {
           visual_grounding: {
             ...(manifest.visual_grounding ?? {}),
             required: stage === "GEOMETRY",
+            geometry_profile: "BEDROCK_CUBOID_GEOMETRY",
+            revision_scopes_are_profiles: false,
+            profile_switch_required_inside_geometry: false,
+            reconnect_required_inside_geometry: false,
             reference_tool: "inspect_reference_visual_preview",
             feedback_tool: "capture_visual_feedback",
             diagnosis_tool: "analyze_geometry_views",
