@@ -33,10 +33,13 @@ geometry_report.json
 - row and column profile errors;
 - fixed-scale bounding-box score;
 - semantic-region scores and critical-region failures;
+- blocking edge and ground diagnostics;
 - failing view, region, direction, magnitude, affected parts, and recommendation;
-- local or major repair route.
+- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
 
-Final canonical metrics must include all five standard views. Partial primary/detail comparisons may use the same canonical file during work, but cannot authorize review.
+Revision scope is an internal decision inside `BEDROCK_CUBOID_GEOMETRY`; it is not a profile transition.
+
+Final canonical metrics must include all five standard views. Partial comparisons may use the same canonical file during work, but cannot authorize review.
 
 ### Diff evidence
 
@@ -67,18 +70,18 @@ Reference and current masks share fixed approved scale. The current mask must no
 
 Final report must include all five standard views.
 
-### Runtime phase and convergence
+### Runtime progress
 
 `geometry_runtime.json` records:
 
-- `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, `FINAL_REVIEW_READY`, or `VISUAL_CONVERGENCE_FAILED`;
-- attempt and score history per phase;
-- non-improving cycles;
-- last views and issues;
-- recommended repair scope/profile;
-- blocker when present.
+- advisory progress marker: `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, or `FINAL_REVIEW_READY`;
+- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` mode when active;
+- attempt and score history;
+- non-improving cycles and `attention_required`;
+- last compared views and issues;
+- major revision preparation details when used.
 
-`FINAL_REVIEW_READY` is required for user review. Any Geometry mutation invalidates previous canonical visual evidence.
+These markers do not create extra user gates or require profile switching. `FINAL_REVIEW_READY` is required for user review. Any Geometry mutation invalidates previous canonical visual evidence and returns runtime to working state.
 
 ### Structural report
 
@@ -129,4 +132,4 @@ Five standard views, final atlas, `validation_report.json`, and `completed_VALID
 
 ## Focused revisions
 
-Recapture only affected views plus one collateral-drift view. Major-form revisions require Left, Front, Top / Footprint, then final full five-view evidence. Earlier checkpoints remain immutable.
+Recapture only affected views plus one collateral-drift view. Major-form revisions use Left, Front, and Top / Footprint during correction, then one final full five-view evidence pass. Earlier checkpoints remain immutable.
