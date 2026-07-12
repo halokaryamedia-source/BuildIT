@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "3.1",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -42,6 +42,7 @@
     "diagnosis_tool": "analyze_geometry_views",
     "record_tool": "record_geometry_visual_decision",
     "gate_tool": "verify_geometry_review_ready",
+    "review_submission_tool": "submit_geometry_for_review",
     "structural_pass_is_visual_pass": false,
     "multimodal_review_required": true,
     "diagnostic_guard_required": true,
@@ -82,11 +83,7 @@
         "requires_profile_switch": false,
         "requires_reconnect": false
       },
-      "internal_progress_markers": [
-        "PRIMARY_FORM",
-        "STRUCTURAL_DETAIL",
-        "FINAL_REVIEW_READY"
-      ],
+      "internal_progress_markers": ["PRIMARY_FORM", "STRUCTURAL_DETAIL", "FINAL_REVIEW_READY"],
       "internal_progress_markers_are_user_gates": false,
       "compact_context_tool": "get_stage_context",
       "reference_preview_tool": "inspect_reference_visual_preview",
@@ -95,8 +92,9 @@
       "visual_decision_tool": "record_geometry_visual_decision",
       "safe_rotation_tool": "rotate_cube_about_attachment",
       "review_readiness_tool": "verify_geometry_review_ready",
+      "review_submission_tool": "submit_geometry_for_review",
       "approval_transition_tool": "complete_geometry_stage",
-      "review_checkpoint": "checkpoints/10_geometry_review.bbmodel",
+      "review_checkpoint_policy": "next_unused_non_approved_geometry_checkpoint",
       "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
       "required_evidence": {
         "front": "evidence/geometry/geometry_front.png",
