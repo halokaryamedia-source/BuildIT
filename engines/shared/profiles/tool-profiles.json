@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.1",
+  "schema_version": "2.2",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "stage_transition_only",
   "core_tools": [
@@ -24,7 +24,7 @@
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and one MCP session, including safe identity synchronization, diagnosis, local or major revision, validation, and review.",
+      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and one MCP session, including safe identity synchronization, diagnosis, local or major revision, automatic review submission, validation, and approval.",
       "allowed_tools": [
         "rebind_active_project_identity",
         "prepare_geometry_visual_rebuild",
@@ -46,6 +46,7 @@
         "validate_geometry_contract",
         "record_geometry_visual_decision",
         "verify_geometry_review_ready",
+        "submit_geometry_for_review",
         "save_project_checkpoint",
         "capture_standard_views",
         "complete_geometry_stage"
