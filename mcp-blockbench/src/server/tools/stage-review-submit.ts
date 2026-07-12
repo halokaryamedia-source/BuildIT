@@ -34,7 +34,7 @@ export const stageReviewSubmitToolDocs: ToolSpec[] = [
   {
     name: "submit_stage_for_review",
     description:
-      "Validates the current Texture, Animation, or Final Validation evidence/report, saves the next unused non-approved review checkpoint, and atomically moves workflow state to the corresponding user-review gate without changing profile.",
+      "Validates current Texture, Animation, or Final Validation evidence/report, saves the next unused non-approved review checkpoint, and atomically moves workflow state to the corresponding user-review gate without changing profile.",
     annotations: {
       title: "Submit Stage for User Review",
       destructiveHint: true,
@@ -57,7 +57,7 @@ interface StagePolicy {
   reviewState: string;
   reviewStatus: string;
   nextAction: string;
-  profileId: string;
+  profileIds: string[];
   checkpointBase: number;
   checkpointStem: string;
   checkpointStateKey: string;
@@ -71,7 +71,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "TEXTURE_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_TEXTURE_REVIEW",
-    profileId: "BEDROCK_CUBOID_TEXTURE",
+    profileIds: ["BEDROCK_CUBOID_TEXTURE", "TEXTURE_LOCAL_REPAIR"],
     checkpointBase: 30,
     checkpointStem: "texture_review",
     checkpointStateKey: "texture_review",
@@ -90,7 +90,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "ANIMATION_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_ANIMATION_REVIEW",
-    profileId: "BEDROCK_CUBOID_ANIMATION",
+    profileIds: ["BEDROCK_CUBOID_ANIMATION", "ANIMATION_LOCAL_REPAIR"],
     checkpointBase: 50,
     checkpointStem: "animation_review",
     checkpointStateKey: "animation_review",
@@ -107,7 +107,7 @@ const policies: Record<ReviewStage, StagePolicy> = {
     reviewState: "FINAL_REVIEW",
     reviewStatus: "AWAITING_USER_REVIEW",
     nextAction: "AWAIT_FINAL_REVIEW",
-    profileId: "FINAL_VALIDATION_READONLY",
+    profileIds: ["FINAL_VALIDATION_READONLY"],
     checkpointBase: 70,
     checkpointStem: "final_candidate",
     checkpointStateKey: "final_candidate",
@@ -262,7 +262,7 @@ export function registerStageReviewSubmitTools(): void {
           lease.project_uuid !== expected_project_uuid ||
           lease.state_revision !== expected_state_revision ||
           lease.stage !== stage ||
-          lease.profile_id !== policy.profileId
+          !policy.profileIds.includes(String(lease.profile_id ?? ""))
         ) {
           throw new Error("STAGE_REVIEW_WRITE_LEASE_REQUIRED");
         }
@@ -398,7 +398,7 @@ export function registerStageReviewSubmitTools(): void {
             checkpoint: checkpoint.modelPath,
             checkpoint_metadata: checkpoint.metadataPath,
             state_revision: nextRevision,
-            active_profile: policy.profileId,
+            active_profile: lease.profile_id,
             profile_switch_required: false,
             reconnect_required: false,
             validation: validation?.structuredContent ?? null,
