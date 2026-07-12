@@ -1,13 +1,11 @@
 ---
 name: blockbench-animation
-description: "Optional Bedrock Animation workflow with identity recovery, one selected Terra writer, automatic review submission, and same-profile revision."
+description: "Optional Bedrock Animation workflow with identity recovery, one Terra writer, project-bound evidence, automatic review, and same-profile revision."
 ---
 
 # Blockbench Animation
 
-Load only when the approved package requires Animation. Otherwise skip it during the Texture approval transition.
-
-Use only for stage `ANIMATION` with profile `BEDROCK_CUBOID_ANIMATION`.
+Load only when the approved package requires Animation. Otherwise keep Animation skipped and continue to Final Validation. Use only profile `BEDROCK_CUBOID_ANIMATION`.
 
 ## Entry
 
@@ -18,19 +16,27 @@ Use only for stage `ANIMATION` with profile `BEDROCK_CUBOID_ANIMATION`.
 
 ## Work
 
-- Verify required groups, hierarchy, neutral pose, and pivots.
-- Create only required rigid cuboid clips.
-- Check inherited motion, ground contact, clipping, and neutral-pose recovery.
-- Save hierarchy, pivot, neutral-pose, and required-clip evidence.
-- Write `animation_report.json` with a current `created_at` and explicit result.
-- Run `validate_reference_contract`.
-- Call `submit_stage_for_review` to enter `ANIMATION_REVIEW`.
+```text
+verify hierarchy and pivots
+→ create only required clips
+→ check neutral pose, inherited motion, ground contact, and clipping
+→ write hierarchy/pivot/neutral evidence
+→ record_stage_review_report
+→ validate_reference_contract
+→ submit_stage_for_review
+→ lease released
+→ ANIMATION_REVIEW
+```
 
-No mesh armatures, vertex weights, new Geometry, Texture redesign, optional clips, unapproved motion ranges, or final export.
+Use rigid cuboid group/bone motion. Do not add mesh armatures, vertex weights, optional clips, new Geometry, Texture redesign, or final export.
+
+`record_stage_review_report` creates the canonical `animation_report.json` and binds it to current project serialization plus hashes of hierarchy, pivot, and neutral-pose evidence. Do not write a free-form PASS report manually.
+
+`submit_stage_for_review` verifies current report/evidence, validates the Animation contract, creates the next unused review checkpoint, enters `ANIMATION_REVIEW`, then releases the writer lease without profile switch or reconnect.
 
 ## User decision
 
-- `APPROVED`: ensure the current session owns the Animation lease, then call `complete_stage` for `ANIMATION`.
-- `REVISION`: call `prepare_stage_revision` with targeted feedback before mutation. It returns to `ANIMATION_IN_PROGRESS` in the same profile. Regenerate affected evidence and create a newer report before submitting again.
+- `APPROVED`: Codex acquires a fresh Animation lease, then calls `complete_stage` for `ANIMATION`.
+- `REVISION`: Codex acquires a fresh Animation lease, then calls `prepare_stage_revision` before mutation. It returns to `ANIMATION_IN_PROGRESS` in the same profile. Regenerate affected evidence and record a new bound report before submitting again.
 
-Do not activate an Animation repair profile or ask the user to edit state/checkpoint files.
+Do not create an Animation repair profile or ask the user to edit state/checkpoint files.
