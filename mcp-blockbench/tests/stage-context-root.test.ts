@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { resolveCanonicalStageSessionRoot } from "../src/server/stage-context-root-guards";
 
 function fakeFs(existing: string[]) {
-  const normalized = new Set(existing.map((value) => value.replace(/\\/g, "/")));
+  const normalized = new Set(
+    existing.map((value) => value.replace(/\\/g, "/"))
+  );
   return {
     existsSync(path: string) {
       return normalized.has(path.replace(/\\/g, "/"));
@@ -26,9 +28,13 @@ describe("compact stage context session-root recovery", () => {
   });
 
   test("normalizes a Windows asset root without requiring user path knowledge", () => {
-    const assetRoot = "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros";
+    const assetRoot =
+      "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros";
     const canonical = `${assetRoot}\\mcp`;
-    const fs = fakeFs([`${canonical}\\state.json`, `${canonical}\\project.json`]);
+    const fs = fakeFs([
+      `${canonical}\\state.json`,
+      `${canonical}\\project.json`,
+    ]);
     expect(resolveCanonicalStageSessionRoot(fs, assetRoot)).toBe(canonical);
   });
 
@@ -40,7 +46,9 @@ describe("compact stage context session-root recovery", () => {
   test("does not reject multiple connected sessions before a write is requested", () => {
     const source = readFileSync("src/lib/mutationContext.ts", "utf8");
     expect(source).not.toContain("WRITE_LEASE_SESSION_AMBIGUOUS");
-    expect(source).toContain("Multiple connected sessions are valid for read-only inspection");
+    expect(source).toContain(
+      "Multiple connected sessions are valid for read-only inspection"
+    );
     expect(source).toContain("WRITE_LEASE_SESSION_REQUIRED");
   });
 
