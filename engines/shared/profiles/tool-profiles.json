@@ -1,19 +1,19 @@
 {
-  "schema_version": "2.3",
+  "schema_version": "2.4",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "stage_transition_only",
   "core_tools": [
     "get_runtime_status",
     "get_project_info",
     "get_tool_profile",
-    "activate_tool_profile",
     "manage_project_write_lease",
     "get_stage_context"
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Initial project setup and readiness only. Normal Geometry work does not switch back to this profile.",
+      "description": "Initial project setup and readiness only. Normal stage work does not switch back to this profile.",
       "allowed_tools": [
+        "activate_tool_profile",
         "create_project",
         "rebind_active_project_identity",
         "configure_project",
@@ -53,8 +53,9 @@
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
-      "description": "Classic Bedrock cuboid UV and pixel texture work with automatic review submission; PBR, gradients, and mesh UV are excluded.",
+      "description": "Classic Bedrock cuboid UV and pixel texture work with identity recovery and automatic review submission; PBR, gradients, and mesh UV are excluded.",
       "allowed_tools": [
+        "rebind_active_project_identity",
         "list_outline",
         "find_elements_by_criteria",
         "list_textures",
@@ -82,8 +83,9 @@
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
-      "description": "Bedrock group/bone rigging and required animation clips with automatic review submission, without mesh armatures or vertex weights.",
+      "description": "Bedrock group/bone rigging and required animation clips with identity recovery and automatic review submission, without mesh armatures or vertex weights.",
       "allowed_tools": [
+        "rebind_active_project_identity",
         "list_outline",
         "find_elements_by_criteria",
         "bone_rigging",
@@ -102,8 +104,9 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation with current Geometry readiness, final evidence/export, automatic review submission, checkpointing, and guarded completion.",
+      "description": "Read-mostly final validation with identity recovery, current Geometry readiness, final evidence/export, automatic review submission, checkpointing, and guarded completion.",
       "allowed_tools": [
+        "rebind_active_project_identity",
         "list_outline",
         "find_elements_by_criteria",
         "list_textures",
@@ -121,8 +124,9 @@
       ]
     },
     "TEXTURE_LOCAL_REPAIR": {
-      "description": "Small Classic Bedrock UV or pixel texture correction scope with validation, review resubmission, and approval completion.",
+      "description": "Small Classic Bedrock UV or pixel texture correction scope with identity recovery, validation, review resubmission, and approval completion.",
       "allowed_tools": [
+        "rebind_active_project_identity",
         "list_textures",
         "get_texture",
         "apply_texture",
@@ -145,8 +149,9 @@
       ]
     },
     "ANIMATION_LOCAL_REPAIR": {
-      "description": "Small motion, keyframe, pivot, or clipping correction scope with validation, review resubmission, and approval completion.",
+      "description": "Small motion, keyframe, pivot, or clipping correction scope with identity recovery, validation, review resubmission, and approval completion.",
       "allowed_tools": [
+        "rebind_active_project_identity",
         "list_outline",
         "bone_rigging",
         "manage_keyframes",
