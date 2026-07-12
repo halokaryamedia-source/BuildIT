@@ -37,14 +37,14 @@ The Geometry gate must confirm:
 - current evidence files;
 - safe rotations and pivots.
 
-If it fails, route to the earliest affected Geometry repair profile. Do not silently fix Geometry during Final Validation.
+If Geometry fails, route back to `BEDROCK_CUBOID_GEOMETRY`. Do not activate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD`; those profiles do not exist. After returning to Geometry, use `analyze_geometry_views` to classify `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` internally. Do not silently fix Geometry during Final Validation.
 
 ## Work rules
 
 - Keep this stage read-mostly.
 - Use canonical non-versioned output names.
 - Preserve approved areas.
-- Route each failure to the smallest valid repair profile and earliest affected stage.
+- Route each failure to the earliest affected stage and its current canonical profile.
 - Allow no more than the configured automatic local-fix limit.
 - Treat `mcp/final/` as temporary validated staging only.
 
