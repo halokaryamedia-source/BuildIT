@@ -47,11 +47,7 @@ export const TOOL_PROFILE_CHANGED_EVENT = "mcp-tool-profile-changed";
 
 const config = profileConfigJson as ToolProfileConfig;
 const wrapped = new Set<string>();
-const geometryProfiles = new Set([
-  "BEDROCK_CUBOID_GEOMETRY",
-  "GEOMETRY_LOCAL_REPAIR",
-  "GEOMETRY_VISUAL_REBUILD",
-]);
+const geometryProfiles = new Set(["BEDROCK_CUBOID_GEOMETRY"]);
 const textureProfiles = new Set([
   "BEDROCK_CUBOID_TEXTURE",
   "TEXTURE_LOCAL_REPAIR",
