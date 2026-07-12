@@ -25,6 +25,13 @@ describe("compact stage context session-root recovery", () => {
     expect(resolveCanonicalStageSessionRoot(fs, assetRoot)).toBe(canonical);
   });
 
+  test("normalizes a Windows asset root without requiring user path knowledge", () => {
+    const assetRoot = "D:\\Work\\AI Stuff\\BuildIT\\workspace\\active\\black_rhinoceros";
+    const canonical = `${assetRoot}\\mcp`;
+    const fs = fakeFs([`${canonical}\\state.json`, `${canonical}\\project.json`]);
+    expect(resolveCanonicalStageSessionRoot(fs, assetRoot)).toBe(canonical);
+  });
+
   test("preserves an unresolved path so the canonical tool reports the missing authority", () => {
     const root = "workspace/active/missing_asset";
     expect(resolveCanonicalStageSessionRoot(fakeFs([]), root)).toBe(root);
