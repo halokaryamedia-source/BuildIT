@@ -193,7 +193,8 @@ export function registerStageReviewSubmitTools(): void {
           );
         }
 
-        const policy = policies[stage];
+        const selectedStage = stage as ReviewStage;
+        const policy = policies[selectedStage];
         const fs = nativeFs();
         const statePath = joinSessionPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
@@ -213,9 +214,9 @@ export function registerStageReviewSubmitTools(): void {
             `STATE_REVISION_MISMATCH: state is ${state.state_revision ?? "unknown"}, expected ${expected_state_revision}.`
           );
         }
-        if (state.workflow?.active_stage !== stage) {
+        if (state.workflow?.active_stage !== selectedStage) {
           throw new Error(
-            `STAGE_STATE_MISMATCH: active stage is ${state.workflow?.active_stage ?? "unknown"}, expected ${stage}.`
+            `STAGE_STATE_MISMATCH: active stage is ${state.workflow?.active_stage ?? "unknown"}, expected ${selectedStage}.`
           );
         }
         if (state.workflow?.state === policy.reviewState) {
@@ -232,21 +233,21 @@ export function registerStageReviewSubmitTools(): void {
           lease.status !== "ACTIVE" ||
           lease.project_uuid !== expected_project_uuid ||
           lease.state_revision !== expected_state_revision ||
-          lease.stage !== stage ||
+          lease.stage !== selectedStage ||
           lease.profile_id !== policy.profileId
         ) {
           throw new Error("STAGE_REVIEW_WRITE_LEASE_REQUIRED");
         }
 
-        const stageRecord = state.workflow?.stage_records?.[stage];
+        const stageRecord = state.workflow?.stage_records?.[selectedStage];
         if (!stageRecord) {
-          throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
+          throw new Error(`STATE_STAGE_RECORD_MISSING: ${selectedStage}`);
         }
 
         const { report, current } = assertCurrentStageReport({
           fs,
           root: session_root,
-          stage: stage as EvidenceStage,
+          stage: selectedStage as EvidenceStage,
           projectUuid: expected_project_uuid,
           stageRecord,
         });
@@ -262,7 +263,7 @@ export function registerStageReviewSubmitTools(): void {
           {
             session_root,
             expected_project_uuid,
-            stage,
+            stage: selectedStage,
             dimension_tolerance_units: 1,
             require_evidence: true,
           },
@@ -289,7 +290,7 @@ export function registerStageReviewSubmitTools(): void {
             metadata_path: checkpoint.metadataPath,
             session_root,
             checkpoint_name: checkpoint.checkpointName,
-            stage,
+            stage: selectedStage,
             state: policy.reviewState,
             expected_project_uuid,
             approved: false,
@@ -321,7 +322,7 @@ export function registerStageReviewSubmitTools(): void {
         let leaseAdvanced = false;
         try {
           updateProjectWriteLeaseWorkflow(lease.owner_session_id, {
-            stage,
+            stage: selectedStage,
             stateRevision: nextRevision,
             profileId: lease.profile_id!,
             profileRevision: lease.profile_revision!,
@@ -332,7 +333,7 @@ export function registerStageReviewSubmitTools(): void {
         } catch (error) {
           if (leaseAdvanced) {
             updateProjectWriteLeaseWorkflow(lease.owner_session_id, {
-              stage,
+              stage: selectedStage,
               stateRevision: expected_state_revision,
               profileId: lease.profile_id!,
               profileRevision: lease.profile_revision!,
@@ -348,12 +349,12 @@ export function registerStageReviewSubmitTools(): void {
           content: [
             {
               type: "text",
-              text: `${stage} submitted for user review. Saved ${checkpoint.checkpointName} and moved workflow state to ${policy.reviewState}.`,
+              text: `${selectedStage} submitted for user review. Saved ${checkpoint.checkpointName} and moved workflow state to ${policy.reviewState}.`,
             },
           ],
           structuredContent: {
             status: "PASS",
-            stage,
+            stage: selectedStage,
             workflow_state: policy.reviewState,
             workflow_status: policy.reviewStatus,
             next_action: policy.nextAction,
