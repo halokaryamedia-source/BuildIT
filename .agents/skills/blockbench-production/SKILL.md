@@ -1,15 +1,15 @@
 ---
 name: blockbench-production
-description: "Mandatory dispatcher for approved Blockbench asset production. Resolves one active workspace, rejects legacy context, acquires the write lease, loads exactly one stage skill, enforces bounded image transport and the exact tool profile, and stops at each user review gate."
+description: "Dispatcher for approved Blockbench asset production. Keeps Geometry in one MCP profile and session, handles project identity synchronization through Codex, and stops only at meaningful user review gates."
 ---
 
 # Blockbench Production
 
-Use only for production from an approved single-Reference-Visual package.
+Use for production from an approved single-Reference-Visual package.
 
-## Authority and legacy-context boundary
+## Authority
 
-Runtime authority is the current repository plus the selected asset session:
+Runtime authority is:
 
 ```text
 AGENTS.md
@@ -19,177 +19,95 @@ workspace/active/<asset>/mcp/state.json
 workspace/active/<asset>/mcp/references/
 ```
 
-Do not load an external project-context ZIP, copied chat context, or stale instruction set as production authority. Stop with `LEGACY_SKILL_CONFLICT` if any active instruction requires:
+Reject legacy instructions that require four technical sheets, three approval moments, numbered `01_*`–`04_*` images, or any extra technical reference image. Stop with `LEGACY_SKILL_CONFLICT`.
 
-- four mandatory technical sheets;
-- three approval moments;
-- `01_*`, `02_*`, `03_*`, or `04_*` reference images;
-- a technical image beyond the single approved Reference Visual.
+The approved Reference Visual is the sole visual authority. Markdown and JSON are implementation constraints, not substitutes for image inspection.
 
-A valid package contains:
+## User experience rule
 
-```text
-source/original_reference.*
-PRODUCTION_CONTEXT.md
-<asset_id>_reference_visual.png
-GEOMETRY.md
-TEXTURING.md
-ANIMATION.md
-VALIDATION.md
-reference_manifest.json
-CODEX_REFERENCE_HANDOFF.md
-```
+Codex owns normal setup and recovery. Do not ask the user to:
 
-The Reference Visual is the sole visual authority. Markdown and JSON convert it into implementation constraints; they do not replace visual inspection.
+- edit `state.json` or `project.json`;
+- switch Geometry profiles;
+- close and reopen the model;
+- reconnect MCP between Geometry revision modes;
+- run separate readiness prompts for operations Codex can perform directly.
+
+A restart is justified only after loading a newly built plugin or when the MCP endpoint is actually unavailable.
 
 ## Dispatch
 
-1. Resolve `selected_asset_id` from `workspace/workspace.json`.
-2. Read exact paths from `mcp/project.json` and runtime authority from `mcp/state.json`.
-3. Call `get_stage_context`; use its compact result for ordinary decisions.
-4. Open full contracts only for a missing field, unresolved conflict, or explicit authority audit.
-5. Resolve the stage profile from `engines/shared/profiles/stage-profiles.json`.
-6. Verify the active tool profile exactly matches the stage or classified repair route.
-7. Acquire `manage_project_write_lease` with exact asset, session root, project UUID, state revision, and active stage.
-8. Load this dispatcher plus exactly one stage skill.
-9. Execute the smallest complete stage batch.
-10. Stop at the required user review gate.
+1. Resolve the selected asset and session root.
+2. Load this skill plus exactly one stage skill.
+3. Call `get_stage_context` and follow `next_safe_operation`.
+4. During Geometry, remain on `BEDROCK_CUBOID_GEOMETRY`.
+5. Let Codex synchronize a changed runtime UUID with `rebind_active_project_identity` when required.
+6. Acquire the write lease only before model mutation.
+7. Complete the current stage and stop at the user review gate.
 
-## Bounded image transport
+## Geometry flow
 
-Normal production must use:
-
-```text
-inspect_reference_visual_preview
-```
-
-This tool verifies the original Reference Visual at its locked SHA-256 and dimensions, but sends only an ephemeral bounded JPEG/PNG preview through MCP. The preview does not replace the original authority and does not count as a generated reference image.
-
-Do not call legacy `inspect_reference_visual` in a normal profile. It embeds the original multi-megabyte binary in one JSON response and is available only through explicit diagnostic escalation.
-
-## Geometry quality contract
-
-Geometry is not allowed to guess broadly from text. It must use both:
-
-1. actual image payload inspection by Codex;
-2. fixed-scale machine diagnosis from transformed cuboids.
-
-Required route:
+Normal Geometry uses one profile and one MCP session:
 
 ```text
 get_stage_context
+→ rebind_active_project_identity when required
+→ manage_project_write_lease acquire
 → inspect_reference_visual_preview
-→ build PRIMARY_FORM only
-→ capture_visual_feedback: left + front + top
-→ analyze_geometry_views: left + front + top
-→ repair only ranked affected parts
-→ build STRUCTURAL_DETAIL
-→ capture affected views
-→ analyze affected views
-→ final five-view capture
-→ final five-view analyze_geometry_views
+→ capture/analyze current Geometry
+→ edit only diagnosed parts
+→ final five-view evidence
 → record_geometry_visual_decision
 → validate_geometry_contract
 → verify_geometry_review_ready
-→ checkpoint
+→ review checkpoint
 → user review
 ```
 
-`analyze_geometry_views` is the normal deterministic authority. It must report:
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes. They are not tool profiles and do not require reconnecting.
 
-- failing view and semantic region;
-- missing versus excess silhouette;
-- direction and approximate magnitude in Blockbench units;
-- affected part/group candidates;
-- recommended repair scope and profile.
+When a fresh diagnosis recommends `MAJOR_FORM_REVISION`, Codex may call `prepare_geometry_visual_rebuild` in the same Geometry profile. The tool preserves checkpoints and primary masses, clears only classified structural detail when requested, and returns to normal Geometry work.
 
-Codex must modify those named parts or stop with a conflict. It must not make unrelated trial-and-error changes.
+## Visual grounding
 
-The analyzer uses the approved coordinate envelope, center axis, and ground line. Free-rescaling the current model to fit the reference is forbidden.
+Use `inspect_reference_visual_preview`, not the legacy original-image transport. It verifies the original SHA-256 and dimensions while returning a bounded ephemeral preview.
 
-## Geometry runtime phases
+Geometry requires:
 
-The MCP runtime enforces:
+1. Codex inspection of actual image payloads;
+2. fixed-scale diagnosis from `analyze_geometry_views`;
+3. structural validation from `validate_geometry_contract`.
 
-```text
-PRIMARY_FORM
-→ STRUCTURAL_DETAIL
-→ FINAL_REVIEW_READY
-```
+A structural pass alone is not a visual pass. Free-rescaling the current model before comparison is forbidden.
 
-During `PRIMARY_FORM`, horns, ears, final feet, tail, micro-detail, and unrelated segmentation are blocked. Detail unlocks only after Left, Front, and Top fixed-scale diagnosis plus multimodal inspection pass.
-
-Two consecutive non-improving cycles produce:
-
-```text
-VISUAL_CONVERGENCE_FAILED
-```
-
-Stop instead of spending more calls on random alternatives.
-
-## Rotation contract
-
-Do not pass a non-zero `rotation` through generic cube placement or modification.
+## Mutation rules
 
 Use:
 
-```text
-rotate_cube_about_attachment
-```
+- `place_cubes_safe` for unrotated new cubes;
+- `modify_cubes` for unrotated edits;
+- `rotate_cube_about_attachment` for every non-zero cube rotation.
 
-The tool must:
+Prefer one bounded edit batch per diagnosed issue. Do not make unrelated trial-and-error changes.
 
-- resolve a machine-readable part contract;
-- derive the intended attachment pivot;
-- enforce allowed axis, sign, and range;
-- verify expected world-space direction;
-- verify declared segment connection;
-- run affected-view diagnosis before and after;
-- automatically roll back a visual regression.
+Geometry runtime markers such as `PRIMARY_FORM` and `STRUCTURAL_DETAIL` are internal progress hints, not user-facing approval gates. Codex may continue working in the same profile. Editing after `FINAL_REVIEW_READY` automatically makes the old evidence stale and returns Geometry to working state.
 
-Use stepped cuboids rather than rotating large torso masses to fake taper.
+## Efficiency
 
-## Revision classification
-
-- `LOCAL_REPAIR`: one part or tightly related pair; primary form remains acceptable.
-- `MAJOR_FORM_REVISION`: multiple primary masses or multiple views fail, or local repair does not converge.
-- `REFERENCE_REOPEN`: approved design itself must change.
-- `REFERENCE_CONFLICT`: authorities disagree; stop.
-
-Use `GEOMETRY_LOCAL_REPAIR` only for local scope. Use `GEOMETRY_VISUAL_REBUILD` for broad body/head/footprint reconstruction. Both receive identical Geometry, phase, validation, image-transport, and rotation guards.
-
-## Efficiency rules
-
-- Do not rescan known workspace paths.
-- Reuse fresh readiness and connection reports.
-- Inspect the bounded Reference Visual preview once unless its source hash changes.
-- Load no more than two production skills.
-- Prefer one bounded `modify_cubes` transaction over many single-cube calls.
-- Use three diagnostic views for primary form, then only affected views, then one final five-view pass.
-- Return image payloads only when Codex must inspect them; archive full-resolution evidence to disk.
-- Never embed a multi-megabyte source image in a normal MCP response.
-- Maximum automatic correction cycles per internal pass: `2`.
-- Do not load mesh, PBR, Hytale, armature, UI automation, eval, or unrelated tools in normal Bedrock cuboid production.
-
-## Workspace boundary
-
-```text
-workspace/active/<asset>/
-├─ blockbench/   # canonical model, textures, references, approved previews
-└─ mcp/          # state, contracts, checkpoints, evidence, reports
-```
-
-Never mix the two areas.
+- Inspect the Reference Visual preview once unless its source hash changes.
+- Use only affected views during correction.
+- Use one final five-view pass.
+- Reuse compact context and current evidence.
+- Do not reload long contracts without a concrete conflict.
+- Do not request user intervention for operations exposed through the current MCP profile.
 
 ## Stage routing
 
 ```text
 GEOMETRY         → blockbench-geometry
 TEXTURE          → blockbench-texture
-ANIMATION        → blockbench-animation only when required
+ANIMATION        → blockbench-animation when required
 FINAL_VALIDATION → blockbench-validation
 ```
 
-## Stop conditions
-
-Stop on `LEGACY_SKILL_CONFLICT`, `REFERENCE_CONFLICT`, missing reference profile, failed primary-form gate, failed fixed-scale diagnosis, stale visual evidence, unsafe rotation, visual convergence failure, image-transport failure, lease/state/profile mismatch, or required user review.
+Stop only for a real authority conflict, unavailable MCP runtime, unsafe mutation, stale or invalid evidence, failed final review gate, or required user approval.
