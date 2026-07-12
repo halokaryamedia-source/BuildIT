@@ -32,16 +32,17 @@
 - Geometry corrections must use ranked failing views, semantic regions, affected parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
 - Non-zero cube rotation must use `rotate_cube_about_attachment`; generic Geometry cube tools are for unrotated placement/modification.
 - When runtime UUID differs from stored metadata, Codex uses `rebind_active_project_identity` before acquiring the write lease. Do not ask the user to edit JSON files.
+- When Geometry evidence is final and current, Codex uses `submit_geometry_for_review`; this tool creates the next unused review checkpoint and moves state to `GEOMETRY_REVIEW` without user file edits or checkpoint naming.
 - Preserve approved areas and manual edits unless a stage is explicitly reopened.
 - Reject unrelated work as `DEFERRED_NOT_REQUIRED`.
 - Use only the canonical MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 - Do not scan ports, create alternate MCP keys, or bypass tool profiles.
 - Acquire `manage_project_write_lease` before model mutations or evidence/checkpoint/final writes. Metadata-only identity synchronization is the narrow exception.
 - Never bypass `WRITE_LEASE_*` errors; realign project, state, stage, profile, and owner session through MCP tools.
-- A successful stage transition releases the old lease. Geometry revision scopes do not transition profiles or release the lease.
+- A successful stage transition releases the old lease. Geometry revision scopes and review submission do not transition profiles or require reconnecting.
 - Asset production loads `blockbench-production` plus exactly one active-stage skill; maximum loaded production skills is `2`.
 - Repository development must not load production skills.
-- Skill changes do not require MCP reconnects. Geometry identity sync and revision preparation do not require reconnects.
+- Skill changes do not require MCP reconnects. Geometry identity sync, revision preparation, and review submission do not require reconnects.
 - Reload the plugin only after the plugin binary changes or when the canonical endpoint is actually unavailable.
 - Keep user-facing model files only in `workspace/*/<asset>/blockbench/`.
 - Keep MCP state, contracts, checkpoints, evidence, and reports only in `workspace/*/<asset>/mcp/`.
