@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.7",
+  "schema_version": "2.8",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -36,7 +36,7 @@
     "reference_tool": "inspect_reference_visual",
     "feedback_tool": "capture_visual_feedback",
     "diagnosis_tool": "analyze_geometry_views",
-    "record_tool": "record_geometry_visual_result",
+    "record_tool": "record_geometry_visual_decision",
     "gate_tool": "verify_geometry_review_ready",
     "structural_pass_is_visual_pass": false,
     "multimodal_review_required": true,
@@ -92,6 +92,7 @@
       "compact_context_tool": "get_stage_context",
       "compact_validation_tool": "validate_geometry_contract",
       "diagnostic_visual_tool": "analyze_geometry_views",
+      "visual_decision_tool": "record_geometry_visual_decision",
       "safe_rotation_tool": "rotate_cube_about_attachment",
       "review_readiness_tool": "verify_geometry_review_ready",
       "approval_transition_tool": "complete_geometry_stage",
