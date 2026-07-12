@@ -99,7 +99,7 @@ describe("single-session Geometry workflow", () => {
     );
   });
 
-  test("major revision remains inside the normal Geometry profile", () => {
+  test("major revision remains inside the normal Geometry profile and is non-destructive by default", () => {
     const source = read("src/server/tools/geometry-rebuild.ts");
     for (const marker of [
       "GEOMETRY_MAJOR_DIAGNOSIS_REQUIRED",
@@ -111,6 +111,7 @@ describe("single-session Geometry workflow", () => {
       "reconnect_required: false",
       "writeJsonFilesAtomically",
       "updateProjectWriteLeaseWorkflow",
+      "remove_structural_detail: z.boolean().optional().default(false)",
     ]) {
       expect(source).toContain(marker);
     }
