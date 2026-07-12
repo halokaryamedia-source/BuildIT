@@ -21,7 +21,8 @@ PBR, Hytale, mesh UV, armature/vertex weights, UI automation, eval, and other un
 complete or reopen stage
 → activate logical profile in memory
 → release previous write lease
-→ continue in the same MCP and Codex session
+→ continue in the same MCP session
+→ continue in the same Codex session
 → call get_stage_context
 → acquire a fresh current-stage write lease
 ```
