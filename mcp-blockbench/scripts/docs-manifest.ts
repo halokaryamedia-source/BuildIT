@@ -123,7 +123,7 @@ export const promptDocs: PromptSpec[] = [
         .enum(["walk", "idle", "attack", "general"])
         .describe("Type of animation to focus on.")
         .optional()
-        .default("both" as never),
+        .default("general"),
     }),
     status: "experimental",
   },
@@ -163,7 +163,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Returns information about textures. List URIs use the slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
   },
   {
     name: "reference_models",
