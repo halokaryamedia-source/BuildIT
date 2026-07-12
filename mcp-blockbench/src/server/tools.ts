@@ -8,6 +8,7 @@ import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installReviewSubmissionLeaseGuards } from "./review-submission-lease-guards";
 import { installStageCompletionFreshnessGuards } from "./stage-completion-freshness-guards";
+import { installStageContextRootGuards } from "./stage-context-root-guards";
 import { installStageContextRoutingGuards } from "./stage-context-routing-guards";
 import { installStageReviewMutationGuards } from "./stage-review-mutation-guards";
 import { installStageValidationRoutingGuards } from "./stage-validation-routing-guards";
@@ -105,6 +106,11 @@ const optionalRegistrationFunctions = [
 
 for (const register of registrationFunctions) register();
 for (const register of optionalRegistrationFunctions) register();
+
+// Normalize asset roots before the profile wrapper reads arguments. The wrapper
+// mutates the same args object so outer compact-context routing sees the canonical
+// workspace/active/<asset>/mcp root as well.
+installStageContextRootGuards();
 
 // Install mutation/evidence/transition guards before the profile wrapper so the
 // profile and lease checks remain the final mutation boundary.
