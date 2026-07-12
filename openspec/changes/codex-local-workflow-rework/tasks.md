@@ -77,7 +77,7 @@
 - [x] Add positive synthetic projection test.
 - [x] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
 - [x] Add review-flow tests for tool exposure, bounded profile size, automatic review routing, review-to-revision state restoration, and Final Validation Geometry routing.
-- [ ] Add model-routing tests for config, locked agent models/efforts, one writer, forbidden effort levels, and adapter policy.
+- [x] Add model-routing tests for config, locked agent models/efforts, one writer, forbidden effort levels, and adapter policy.
 - [x] Confirm existing skill adapters are byte-identical to canonical skills.
 
 ## Final local verification — after GitHub implementation is complete
