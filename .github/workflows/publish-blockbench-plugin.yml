@@ -44,10 +44,10 @@ jobs:
         working-directory: mcp-blockbench
         run: bun run build
 
-      - name: Verify plugin identity and runtime imports
+      - name: Verify plugin identity and one-session runtime
         working-directory: mcp-blockbench
         run: |
-          bun -e 'const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of ["BuildIT MCP Server", "MIVUBI", "1.6.3", "min_version", "5.0.0", "/bb-mcp"]) { if (!text.includes(required)) throw new Error(`Missing plugin identity marker: ${required}`); } if (/(?:require|requireNativeModule)\(\s*["\x27]three["\x27]\s*\)/.test(text)) throw new Error("Unsupported runtime load for three remains in dist/mcp.js");'
+          bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, "BuildIT MCP Server", "MIVUBI", `version:\"${pkg.version}\"`, "min_version", "5.0.0", "/bb-mcp", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing final plugin marker: ${required}`); } if (/(?:require|requireNativeModule)\(\s*["\x27]three["\x27]\s*\)/.test(text)) throw new Error("Unsupported runtime load for three remains in dist/mcp.js");'
 
       - name: Publish canonical bundle to Rework
         shell: bash
