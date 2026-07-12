@@ -23,10 +23,11 @@ const stages = JSON.parse(
 ) as Record<string, any>;
 
 describe("visual-grounded Geometry workflow", () => {
-  test("registers diagnosis, guarded mutation, rotation, validation, review, and approval tools", () => {
+  test("registers the complete one-session Geometry toolset", () => {
     for (const name of [
       "get_stage_context",
-      "inspect_reference_visual",
+      "rebind_active_project_identity",
+      "inspect_reference_visual_preview",
       "capture_visual_feedback",
       "analyze_geometry_views",
       "place_cubes_safe",
@@ -42,41 +43,43 @@ describe("visual-grounded Geometry workflow", () => {
     }
   });
 
-  test("every Geometry profile exposes the same guarded quality tools", () => {
-    for (const profileId of [
-      "BEDROCK_CUBOID_GEOMETRY",
-      "GEOMETRY_LOCAL_REPAIR",
-      "GEOMETRY_VISUAL_REBUILD",
+  test("one Geometry profile exposes setup, diagnosis, revision, and review", () => {
+    const allowed = new Set(
+      profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
+    );
+    for (const name of [
+      "rebind_active_project_identity",
+      "prepare_geometry_visual_rebuild",
+      "place_cubes_safe",
+      "modify_cubes",
+      "rotate_cube_about_attachment",
+      "capture_visual_feedback",
+      "analyze_geometry_views",
+      "validate_geometry_contract",
+      "record_geometry_visual_decision",
+      "verify_geometry_review_ready",
     ]) {
-      const allowed = new Set(profiles.profiles[profileId].allowed_tools);
-      for (const name of [
-        "place_cubes_safe",
-        "modify_cubes",
-        "rotate_cube_about_attachment",
-        "capture_visual_feedback",
-        "analyze_geometry_views",
-        "validate_geometry_contract",
-        "record_geometry_visual_decision",
-        "verify_geometry_review_ready",
-      ]) {
-        expect(allowed.has(name), `${profileId}: ${name}`).toBe(true);
-      }
-      expect(allowed.has("place_cube"), profileId).toBe(false);
-      expect(allowed.has("modify_cube"), profileId).toBe(false);
-      expect(allowed.has("validate_reference_contract"), profileId).toBe(false);
-      expect(allowed.has("compare_reference_views"), profileId).toBe(false);
+      expect(allowed.has(name), name).toBe(true);
     }
-    expect(
-      profiles.profiles.GEOMETRY_VISUAL_REBUILD.allowed_tools
-    ).toContain("prepare_geometry_visual_rebuild");
+    expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
+    expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
+    expect(allowed.has("place_cube")).toBe(false);
+    expect(allowed.has("modify_cube")).toBe(false);
+    expect(allowed.has("validate_reference_contract")).toBe(false);
+    expect(allowed.has("compare_reference_views")).toBe(false);
   });
 
-  test("Geometry completion cannot bypass fixed-scale, multimodal, structural, or rotation gates", () => {
+  test("Geometry completion keeps strict visual and structural gates", () => {
     const allowed = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     );
     expect(allowed.has("complete_geometry_stage")).toBe(true);
     expect(allowed.has("complete_stage")).toBe(false);
+    expect(stages.profiles.GEOMETRY.tool_profile_id).toBe(
+      "BEDROCK_CUBOID_GEOMETRY"
+    );
+    expect(stages.profiles.GEOMETRY.repair_tool_profile_id).toBeUndefined();
+    expect(stages.profiles.GEOMETRY.major_repair_tool_profile_id).toBeUndefined();
     expect(stages.profiles.GEOMETRY.diagnostic_visual_tool).toBe(
       "analyze_geometry_views"
     );
@@ -92,14 +95,15 @@ describe("visual-grounded Geometry workflow", () => {
     expect(stages.profiles.GEOMETRY.review_readiness_tool).toBe(
       "verify_geometry_review_ready"
     );
-    expect(stages.geometry_visual_policy.record_tool).toBe(
-      "record_geometry_visual_decision"
+    expect(stages.profiles.GEOMETRY.revision_scope.requires_profile_switch).toBe(
+      false
     );
+    expect(stages.profiles.GEOMETRY.revision_scope.requires_reconnect).toBe(false);
     expect(stages.geometry_visual_policy.fixed_scale_required).toBe(true);
     expect(stages.geometry_visual_policy.free_rescale_forbidden).toBe(true);
-    expect(stages.geometry_rotation_policy.automatic_visual_regression_rollback).toBe(
-      true
-    );
+    expect(
+      stages.geometry_rotation_policy.automatic_visual_regression_rollback
+    ).toBe(true);
   });
 
   test("compact stage context is core and normal profiles remain bounded", () => {
@@ -201,7 +205,7 @@ describe("fixed approved projection frame", () => {
 });
 
 describe("source-level safety contracts", () => {
-  test("enforces phases, actionable diagnosis, contract rotation, and non-nested completion", () => {
+  test("keeps strict diagnosis, rotation, validation, and completion without repair-profile gates", () => {
     const runtime = readFileSync("src/lib/geometryRuntime.ts", "utf8");
     const analyzer = readFileSync(
       "src/server/tools/geometry-analyzer.ts",
@@ -227,8 +231,9 @@ describe("source-level safety contracts", () => {
       "src/server/tools/geometry-completion.ts",
       "utf8"
     );
-    expect(runtime).toContain("GEOMETRY_PRIMARY_FORM_GATE");
-    expect(runtime).toContain("VISUAL_CONVERGENCE_FAILED");
+    expect(runtime).not.toContain("GEOMETRY_PRIMARY_FORM_GATE");
+    expect(runtime).not.toContain("GEOMETRY_EVIDENCE_LOCKED");
+    expect(runtime).toContain("attention_required");
     expect(runtime).toContain("ROTATION_CONTRACT_TOOL_REQUIRED");
     expect(analyzer).toContain("free_rescale_used: false");
     expect(analyzer).toContain("actionable_issues");
