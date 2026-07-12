@@ -2,8 +2,13 @@ import { getAllToolDefinitions, type ToolContext } from "@/lib/factories";
 import {
   assertInsideRoot,
   readJsonFile,
-  type NativeFsLike,
 } from "@/lib/atomicFiles";
+import {
+  assertCurrentStageReport,
+  joinSessionPath,
+  type EvidenceStage,
+  type ExtendedFs,
+} from "@/lib/stageEvidence";
 
 interface RegisteredTool {
   execute?: (
@@ -17,8 +22,6 @@ interface RoutingPolicy {
   reviewState: string;
   awaitAction: string;
   profileId: string;
-  reportRelative: string;
-  requiredEvidence: string[];
 }
 
 const policies: Record<string, RoutingPolicy> = {
@@ -27,63 +30,31 @@ const policies: Record<string, RoutingPolicy> = {
     reviewState: "TEXTURE_REVIEW",
     awaitAction: "AWAIT_TEXTURE_REVIEW",
     profileId: "BEDROCK_CUBOID_TEXTURE",
-    reportRelative: "evidence/texture/texture_report.json",
-    requiredEvidence: [
-      "evidence/texture/texture_atlas.png",
-      "evidence/texture/texture_front.png",
-      "evidence/texture/texture_left.png",
-      "evidence/texture/texture_back.png",
-      "evidence/texture/texture_front_left_3_4.png",
-      "evidence/texture/texture_report.json",
-    ],
   },
   ANIMATION: {
     workingState: "ANIMATION_IN_PROGRESS",
     reviewState: "ANIMATION_REVIEW",
     awaitAction: "AWAIT_ANIMATION_REVIEW",
     profileId: "BEDROCK_CUBOID_ANIMATION",
-    reportRelative: "evidence/animation/animation_report.json",
-    requiredEvidence: [
-      "evidence/animation/animation_neutral_pose.png",
-      "evidence/animation/animation_hierarchy.json",
-      "evidence/animation/animation_pivots.json",
-      "evidence/animation/animation_report.json",
-    ],
   },
   FINAL_VALIDATION: {
     workingState: "FINAL_VALIDATION",
     reviewState: "FINAL_REVIEW",
     awaitAction: "AWAIT_FINAL_REVIEW",
     profileId: "FINAL_VALIDATION_READONLY",
-    reportRelative: "evidence/final/validation_report.json",
-    requiredEvidence: [
-      "evidence/final/final_front.png",
-      "evidence/final/final_left.png",
-      "evidence/final/final_back.png",
-      "evidence/final/final_top.png",
-      "evidence/final/final_front_left_3_4.png",
-      "evidence/final/final_texture_atlas.png",
-      "evidence/final/validation_report.json",
-      "evidence/final/completed_VALIDATION.md",
-    ],
   },
 };
 
 let installed = false;
 
-function joinPath(root: string, relative: string): string {
-  const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
-  return `${root.replace(/[\\/]$/, "")}${separator}${relative.replace(/^[\\/]/, "")}`;
-}
-
-function nativeFs(): NativeFsLike {
+function nativeFs(): ExtendedFs {
   // @ts-ignore Blockbench runtime permission API.
   const fs = requireNativeModule("fs", {
     message: "Compact stage routing needs current state and evidence read access.",
     optional: false,
   });
   if (!fs) throw new Error("Filesystem access was denied.");
-  return fs as NativeFsLike;
+  return fs as ExtendedFs;
 }
 
 function reportResult(report: Record<string, any>): string | null {
@@ -94,43 +65,6 @@ function reportResult(report: Record<string, any>): string | null {
     report.validation?.status ??
     report.summary?.result;
   return typeof value === "string" ? value.toUpperCase() : null;
-}
-
-function timestamp(value: unknown): number | null {
-  const parsed = Date.parse(String(value ?? ""));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function reviewReady(
-  fs: NativeFsLike,
-  root: string,
-  assetId: string | null,
-  stage: string,
-  policy: RoutingPolicy,
-  stageRecord: Record<string, any>
-): boolean {
-  const required = [...policy.requiredEvidence];
-  if (stage === "FINAL_VALIDATION" && assetId) {
-    required.push(`final/${assetId}.bbmodel`, "final/textures");
-  }
-
-  for (const relative of required) {
-    const path = joinPath(root, relative);
-    assertInsideRoot(path, root);
-    if (!fs.existsSync(path)) return false;
-  }
-
-  const reportPath = joinPath(root, policy.reportRelative);
-  assertInsideRoot(reportPath, root);
-  const report = readJsonFile<Record<string, any>>(fs, reportPath);
-  if (reportResult(report) !== "PASS") return false;
-
-  const boundary = timestamp(
-    stageRecord.revision?.evidence_after ?? stageRecord.revision?.prepared_at
-  );
-  if (boundary === null) return true;
-  const reportTime = timestamp(report.created_at ?? report.updated_at);
-  return reportTime !== null && reportTime > boundary;
 }
 
 function routeStageContext(args: Record<string, unknown>, result: any): void {
@@ -144,7 +78,7 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   if (!policy || !root) return;
 
   const fs = nativeFs();
-  const statePath = joinPath(root, "state.json");
+  const statePath = joinSessionPath(root, "state.json");
   assertInsideRoot(statePath, root);
   const state = readJsonFile<Record<string, any>>(fs, statePath);
   const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
@@ -164,6 +98,8 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
 
   let next = "CONTINUE_STAGE";
   let ready = false;
+  let reportError: string | null = null;
+  let projectContentSignature: string | null = null;
 
   if (rebindRequired) {
     next = leaseActive
@@ -178,23 +114,36 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   } else if (!leaseCurrent) {
     next = "manage_project_write_lease:acquire";
   } else if (workflowState === policy.workingState) {
-    ready = reviewReady(
-      fs,
-      root,
-      context.asset?.id ? String(context.asset.id) : null,
-      stage,
-      policy,
-      stageRecord
-    );
+    try {
+      const current = assertCurrentStageReport({
+        fs,
+        root,
+        stage: stage as EvidenceStage,
+        projectUuid: String(runtimeUuid ?? ""),
+        stageRecord,
+      });
+      ready = reportResult(current.report) === "PASS";
+      projectContentSignature = current.current.projectContentSignature;
+    } catch (error) {
+      reportError = error instanceof Error ? error.message : String(error);
+      ready = false;
+    }
     next = ready ? "submit_stage_for_review" : "CONTINUE_STAGE";
   }
 
+  context.project = context.project ?? {};
+  if (projectContentSignature) {
+    context.project.current_content_signature = projectContentSignature;
+  }
   structured.next_safe_operation = next;
   context.automation = context.automation ?? {};
   context.automation.exact_next_safe_operation = next;
+  context.automation.review_report_tool = "record_stage_review_report";
   context.automation.review_submission_tool = "submit_stage_for_review";
   context.automation.revision_prepare_tool = "prepare_stage_revision";
+  context.automation.upstream_reopen_tool = "reopen_stage_for_revision";
   context.automation.stage_review_ready = ready;
+  context.automation.stage_report_issue = reportError;
   context.automation.lease_current = leaseCurrent;
   context.automation.approval_requires_lease =
     workflowState === policy.reviewState && !leaseCurrent;
