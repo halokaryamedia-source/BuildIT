@@ -1,6 +1,6 @@
 # Final User Acceptance Test
 
-This document is not a component-test checklist. Repository maintainers must finish and automate all internal verification before asking the user to perform this test.
+This is the one final end-to-end test. It is not a component-test checklist. Repository maintainers must finish and automate all internal verification before asking the user to perform it.
 
 ## Readiness Rule
 
