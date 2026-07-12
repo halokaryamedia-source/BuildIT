@@ -2,16 +2,35 @@
 
 ## Objective
 
-Reduce Codex usage without lowering production quality. Routing is deterministic first: use the cheapest eligible role, validate the result, and escalate only when evidence shows that deeper judgment is required.
+Reduce usage without lowering production quality. Route deterministically, use the cheapest eligible execution path, validate with tools, and escalate only when evidence requires judgment.
 
-The user does not choose workers manually. An explicit model selected in the composer affects the parent thread only; the parent remains a thin controller and routes substantive work to the locked custom agents.
+The composer model affects the parent thread only. The user never selects worker models manually.
 
-## Defaults and hard limits
+## One-time preflight
+
+Project-local routing works only when Codex loads the trusted project `.codex/` layer. At the start of a new local project session, confirm that these agents are visible:
 
 ```text
-parent default          gpt-5.6-luna / medium
+routine_auditor
+mcp_builder
+visual_director
+critical_reviewer
+```
+
+If they are missing, stop once with:
+
+```text
+CODEX_PROJECT_CONFIG_NOT_LOADED
+```
+
+Ask the user to trust the current BuildIT project once. Do not continue with an invented routing configuration and do not repeat this request after the agents are visible.
+
+## Defaults and limits
+
+```text
+parent default          gpt-5.6-terra / medium
 routine auditor         gpt-5.4-mini / low
-standard builder        gpt-5.6-terra / medium
+fallback builder        gpt-5.6-terra / medium
 visual director         gpt-5.6-sol / medium
 critical reviewer       gpt-5.6-sol / high
 maximum effort          high
@@ -21,61 +40,76 @@ max agent depth         1
 
 Forbidden automatic routes:
 
-- `xhigh`, Extra High, Max, or Ultra;
-- Fast mode or priority-speed escalation;
-- recursive agents;
-- parallel Blockbench writers;
-- automatic use of GPT-5.5, GPT-5.4, or Spark;
+- Extra High, Max, Ultra, Fast, or priority-speed escalation;
+- recursive agents or broad parallel fan-out;
+- parallel active-asset writers;
+- automatic GPT-5.5, GPT-5.4, or Spark;
 - a model call whose only purpose is choosing another model.
+
+Reasoning summaries are disabled for Terra and Mini. Sol uses only concise reasoning summaries. Output verbosity stays low except for visual/critical decisions.
+
+## Why Terra is the parent
+
+Most BuildIT work is implementation, tool use, and MCP production. Terra handles this work directly. A Luna parent that delegates normal work to a Terra child reads and transfers context twice; use Luna only when selected explicitly by the user, not as the project default.
+
+## Active writer selection
+
+Exactly one writer is selected per task:
+
+```text
+default Terra parent
+→ parent performs standard implementation and active-asset writes directly
+
+parent explicitly changed to another model
+or isolated worker is materially safer
+→ parent remains controller
+→ mcp_builder becomes the only writer
+```
+
+Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently. The Blockbench write lease remains the final runtime authority.
 
 ## Roles
 
 ### Parent/controller
 
-The parent reads the user request, loads compact authority, classifies the work, delegates only when delegation is cheaper or safer, and consolidates the result. It does not keep doing expensive work merely because the user selected a large model.
-
-The parent may directly perform a micro-task or a deterministic command that must create generated repository output, when spawning a worker would cost more. It must not mutate an active Blockbench asset.
+Classify the request using this file, load compact authority, and consolidate results. Directly handle micro work and normal implementation when the parent is Terra Medium. Do not spawn agents when delegation costs more than the task.
 
 ### `routine_auditor`
 
-Use for mechanical, read-only work:
+Use only for sizeable mechanical read-only work:
 
-- targeted repository search;
-- file, hash, profile, adapter, evidence, and checkpoint checks;
-- existing test/build result inspection and compact failure summaries;
-- read-only schema/list consistency checks;
-- read-only comparison and reporting.
+- targeted repository mapping;
+- file/hash/profile/adapter checks;
+- existing test/build result summaries;
+- evidence and checkpoint inventory.
 
-Do not use for generated-output writes, visual judgment, architecture, implementation, or MCP mutation.
+Blockbench MCP is disabled. It cannot write generated output or make visual decisions.
 
 ### `mcp_builder`
 
-Use for normal implementation after the desired result is clear:
+Fallback Terra writer for:
 
-- ordinary BuildIT source changes;
-- MCP tool implementation from an approved plan;
-- commands that create or replace generated repository output when parent-direct work is not appropriate;
-- Geometry, Texture, or Animation mutation;
-- deterministic repair;
-- evidence, checkpoint, and stage operations.
+- standard implementation when the parent is not the approved Terra writer;
+- source changes from an approved plan;
+- commands that create generated output;
+- Geometry, Texture, Animation, evidence, checkpoint, and stage writes.
 
-During asset production, this is the only role allowed to hold the project write lease or mutate Blockbench.
+It may hold the Blockbench lease only after writer ownership is delegated to it.
 
 ### `visual_director`
 
-Use for read-only visual judgment:
+Read-only Sol Medium for:
 
 - Reference Visual interpretation;
-- initial form and silhouette direction;
 - ambiguous cross-view trade-offs;
 - subjective user feedback;
 - final visual acceptance.
 
-Return a compact direction packet. Do not implement or mutate.
+Its Blockbench MCP surface is allowlisted to inspection tools. It never calls persistent diagnosis, evidence-write, lease, mutation, checkpoint, profile, or completion tools.
 
 ### `critical_reviewer`
 
-Use at most once for one unresolved critical decision and only with one reason code:
+Packet-only Sol High, at most once for one decision, with exactly one reason code:
 
 ```text
 CRITICAL_VISUAL_ACCEPTANCE
@@ -86,75 +120,59 @@ CROSS_SYSTEM_ARCHITECTURE
 SOL_MEDIUM_VALIDATION_FAILED
 ```
 
-High is the ceiling. If this role cannot clear the decision, report a blocker instead of increasing effort.
+Blockbench MCP is disabled. Failure returns a blocker; effort never rises above High.
+
+## Full-access caveat
+
+Codex can reapply the parent turn's live permission mode to children. Therefore `sandbox_mode = "read-only"` is defense-in-depth, not the active-asset write boundary.
+
+BuildIT enforces active-asset safety through:
+
+1. custom-agent MCP allowlists/disablement;
+2. one selected writer;
+3. the project UUID/state/profile-aware Blockbench write lease;
+4. current evidence and world-space freshness guards.
 
 ## Deterministic classification
 
 | Class | Conditions | Route |
 | --- | --- | --- |
-| `MICRO` | One obvious low-risk change, no visual judgment, no active-asset mutation, little exploration | Parent directly, maximum medium |
-| `ROUTINE` | Mechanical/read-only, result fully verifiable | `routine_auditor` |
-| `STANDARD_BUILD` | Requirements clear, implementation or workspace write needed | `mcp_builder` |
-| `COMPLEX_VISUAL` | Species, style, silhouette, cross-view, or subjective judgment | `visual_director`, then `mcp_builder` |
-| `CRITICAL` | Valid critical reason code and medium route is insufficient | `critical_reviewer`, then `mcp_builder` |
-
-A micro-task should not spawn an agent when delegation overhead would exceed the work. Active-asset mutation is never a micro-task for the parent: route it to `mcp_builder`.
-
-## Parent model mismatch
-
-### Parent is more expensive than needed
-
-Keep the parent to classification and consolidation. Delegate routine or implementation work to the cheaper eligible role. For a genuinely tiny task, finish directly rather than paying subagent overhead.
-
-### Parent is less capable than needed
-
-Do not perform risky mutation or guess. Build a compact packet and delegate to `mcp_builder`, `visual_director`, or `critical_reviewer` according to the table. Do not ask the user to change the composer model unless the required custom agent is unavailable.
-
-### Parent has no visual capability
-
-Never evaluate Reference Visuals. Route visual work to `visual_director`.
+| `MICRO` | Obvious low-risk change, little exploration, no visual judgment or active-asset mutation | Parent directly |
+| `ROUTINE` | Sizeable mechanical read-only work | `routine_auditor` |
+| `STANDARD_BUILD` | Requirements clear; implementation or workspace write required | Terra parent, or `mcp_builder` fallback |
+| `COMPLEX_VISUAL` | Species, style, silhouette, cross-view, or subjective judgment | `visual_director` → selected writer |
+| `CRITICAL` | Valid reason code and Medium route did not resolve it | `critical_reviewer` once → selected writer |
 
 ## MCP production routing
 
-### Startup, identity, and orchestration
+### Startup and identity
 
-The parent normally handles compact status and routing. Metadata-only identity synchronization may be performed directly when `get_stage_context` requests it. No large model is needed.
+The parent handles `get_runtime_status`, `get_stage_context`, and metadata-only identity synchronization. No Sol call is needed.
 
-### Reference interpretation
+### Reference direction
 
-Use `visual_director` once per unchanged Reference Visual hash. Return primary masses, silhouette priorities, preserved areas, and build order.
+Use `visual_director` once per unchanged Reference Visual hash. Return only primary masses, silhouette priorities, preserved areas, and build order.
 
-### Geometry, Texture, and Animation implementation
+### Implementation
 
-Use `mcp_builder` as the single writer. It follows the active stage skill, obtains the lease, performs bounded mutation batches, validates deterministically, and returns the next safe operation.
+The selected writer obtains the lease, performs bounded mutations, and validates deterministically. When analyzer output already names part, direction, and magnitude, do not call Sol.
 
-### Geometry correction
+### Visual escalation
 
-When analyzer output already names the part, direction, and magnitude, use `mcp_builder` directly. Use `visual_director` only when views conflict, the root visual cause is unclear, the analyzer passes but the user still requests a visual change, or the result needs artistic judgment.
+Use `visual_director` only when:
 
-### Final visual acceptance
+- affected views conflict;
+- the visual root cause is unclear;
+- deterministic metrics pass but the user requests a visual change;
+- final artistic acceptance is required.
 
-Use `visual_director` with only the Reference Visual, current final views, analyzer summary, fingerprint, and last-change summary. Do not send the whole repository or raw logs.
+Provide only the Reference Visual, affected/current views, analyzer summary, fingerprint/signature, constraints, and last-change summary.
 
-### Final deterministic checks
+### Deterministic validation
 
-Use `routine_auditor` for hashes, files, profile size, adapter equality, and existing test/build result summaries. The parent or `mcp_builder` runs commands that must write generated outputs. Deterministic checks must not trigger Sol review.
+Do not call Sol for typecheck, tests, profile validation, hashes, state revision, fixed-scale metrics, review readiness, or export integrity. Commands that write generated output run on the Terra parent or `mcp_builder`; Mini may inspect the result afterward only when useful.
 
-## One-writer rule
-
-```text
-parent/controller  orchestration only for active assets
-routine_auditor    read-only
-visual_director    read-only
-critical_reviewer  read-only
-mcp_builder        only MCP writer
-```
-
-Never run two asset mutations in parallel. The builder must stop and return a decision request before visual escalation; it must not hold an ambiguous mutation open while another role edits.
-
-## Compact decision packet
-
-Before using Sol, provide only:
+## Compact Sol packet
 
 ```yaml
 task:
@@ -166,6 +184,7 @@ current_state:
   profile:
   state_revision:
   geometry_fingerprint:
+  geometry_world_signature:
 evidence:
   relevant_views:
   analyzer_summary:
@@ -177,42 +196,42 @@ question:
   one_specific_decision:
 ```
 
-Prefer no more than eight relevant files, one compact test summary, and one compact visual summary. Exclude raw logs and unrelated conversation history.
+Exclude raw logs, unrelated history, and broad repository dumps.
 
 ## Escalation and de-escalation
 
 ```text
-routine_auditor low
-→ mcp_builder medium
-→ visual_director medium
-→ critical_reviewer high once
+deterministic/direct Terra work
+→ visual_director Medium only when required
+→ critical_reviewer High once only when justified
 → blocker
 ```
 
-Escalate only when validation shows a reasoning or judgment failure. One mechanical correction may remain at the same tier.
-
-After a heavy decision, immediately de-escalate:
+After judgment, immediately de-escalate:
 
 ```text
-Sol decision packet
-→ Terra implementation
-→ Mini deterministic audit
+Sol decision
+→ selected Terra writer
+→ deterministic validation
 ```
 
-Sol must not stay active for searches, formatting, command execution, evidence writing, checkpointing, or log summaries.
+## Missing-role fallback
 
-## Validation rule
+- Mini unavailable: parent performs the read-only audit directly.
+- `mcp_builder` unavailable: default Terra parent may write; a non-Terra parent delegates only if another approved Terra writer exists.
+- Sol Medium unavailable: continue deterministic repairs only; stop with `MODEL_ROUTE_UNAVAILABLE` when visual judgment is mandatory.
+- Sol High unavailable: report the critical blocker; never substitute a weaker model silently.
 
-When a deterministic gate can answer the question, do not call a larger model. Required examples include typecheck, tests, profile validation, hash comparison, state revision checks, fixed-scale analyzer results, review-readiness gates, and export integrity.
+Ask the user to change a model only for a mandatory unavailable visual/critical capability.
 
 ## Reporting
 
-The parent reports only:
+Return only:
 
-- route used;
-- reason for any Sol or High invocation;
+- route and active writer;
+- reason for Sol or High, if used;
 - implementation result;
 - validation result;
 - blocker or next safe operation.
 
-Do not create persistent per-task routing telemetry until real benchmark data shows it is necessary.
+Do not add persistent routing telemetry before local benchmark data shows that it is useful.
