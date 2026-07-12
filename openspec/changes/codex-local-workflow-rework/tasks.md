@@ -40,6 +40,20 @@
 - [x] Require final validation to re-check current Geometry readiness.
 - [x] Add repository-level legacy-context rejection.
 
+## Adaptive model routing
+
+- [x] Add project Codex defaults for Luna Medium with concise output.
+- [x] Lock subagent concurrency to two threads and depth one.
+- [x] Add `routine_auditor` on 5.4 Mini Low for read-only mechanical work.
+- [x] Add `mcp_builder` on Terra Medium for standard implementation and sole active-asset mutation.
+- [x] Add `visual_director` on Sol Medium for read-only visual judgment.
+- [x] Add rare `critical_reviewer` on Sol High with explicit reason codes.
+- [x] Set High as the maximum configured effort; forbid xhigh, Extra High, Max, Ultra, and recursive delegation.
+- [x] Add deterministic task classification, parent-model mismatch handling, compact Sol decision packets, escalation, and de-escalation rules.
+- [x] Require one Blockbench writer and prohibit parallel model mutations.
+- [x] Route deterministic checks away from Sol.
+- [x] Avoid persistent routing telemetry until benchmark data proves it is needed.
+
 ## Documentation and package alignment
 
 - [x] Update canonical Production and Geometry skills.
@@ -50,7 +64,7 @@
 - [x] Register Geometry diagnosis, identity, rotation, validation, review submission, and completion tools in runtime and docs manifests.
 - [x] Update Reference Studio manifest template with non-zero crops, weighted regions, part constraints, rotation contracts, bounded image transport, and one Geometry profile.
 - [x] Update Black Rhinoceros handoff and Geometry architecture documentation.
-- [x] Update OpenSpec/Ponytail to reject separate Geometry rework profiles and unnecessary reconnects.
+- [x] Update OpenSpec/Ponytail to reject separate Geometry rework profiles, unnecessary reconnects, and wasteful model routing.
 
 ## Regression coverage before local testing
 
@@ -63,7 +77,8 @@
 - [x] Add positive synthetic projection test.
 - [x] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
 - [x] Add review-flow tests for tool exposure, bounded profile size, automatic review routing, review-to-revision state restoration, and Final Validation Geometry routing.
-- [x] Confirm skill adapters are byte-identical to canonical skills.
+- [ ] Add model-routing tests for config, locked agent models/efforts, one writer, forbidden effort levels, and adapter policy.
+- [x] Confirm existing skill adapters are byte-identical to canonical skills.
 
 ## Final local verification — after GitHub implementation is complete
 
@@ -73,8 +88,14 @@
 - [ ] Run full `bun run typecheck`.
 - [ ] Run all `bun test` tests.
 - [ ] Run `bun run build` and confirm `dist/mcp.js` exists.
+- [ ] Confirm `.codex/config.toml` is accepted by the installed Codex version.
+- [ ] Confirm all four custom agents are discovered with the intended models and efforts.
 - [ ] Load the new plugin binary once.
 - [ ] Run one controlled Black Rhinoceros Geometry production flow through Codex.
+- [ ] Confirm parent model mismatch is handled without asking the user to select worker models.
+- [ ] Confirm only `mcp_builder` acquires the active Blockbench write lease.
+- [ ] Confirm routine checks use Mini, standard mutations use Terra, and Sol is limited to visual judgment.
+- [ ] Confirm Sol High is not invoked during the normal successful flow.
 - [ ] Confirm Codex synchronizes project identity without user JSON edits or profile switching.
 - [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts.
 - [ ] Confirm local and major corrections stay in `BEDROCK_CUBOID_GEOMETRY` without reconnecting.
@@ -88,5 +109,6 @@
 - [ ] Merge into `V1`.
 - [ ] Release or deployment.
 - [ ] Persistent live MCP sessions.
+- [ ] Persistent model-routing telemetry or learned routing service.
 - [ ] Unrelated modelling capability expansion.
 - [ ] Duplicate or versioned workflow authorities and outputs.
