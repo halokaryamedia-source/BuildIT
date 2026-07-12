@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.8",
+  "schema_version": "2.9",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -20,6 +20,14 @@
       "diagnostic_comparisons": 3,
       "final_review_checks": 1,
       "maximum_unsuccessful_cycles": 2
+    },
+    "image_transport_policy": {
+      "reference_source_authority_preserved": true,
+      "runtime_preview_only": true,
+      "default_format": "jpeg",
+      "default_max_dimension": 1400,
+      "default_max_transport_bytes": 786432,
+      "original_binary_in_tool_response_forbidden": true
     }
   },
   "camera": {
@@ -33,7 +41,7 @@
     "fixed_approved_envelope_for_diagnosis": true
   },
   "geometry_visual_policy": {
-    "reference_tool": "inspect_reference_visual",
+    "reference_tool": "inspect_reference_visual_preview",
     "feedback_tool": "capture_visual_feedback",
     "diagnosis_tool": "analyze_geometry_views",
     "record_tool": "record_geometry_visual_decision",
@@ -90,6 +98,7 @@
         "FULL_REVIEW_READINESS_GATE"
       ],
       "compact_context_tool": "get_stage_context",
+      "reference_preview_tool": "inspect_reference_visual_preview",
       "compact_validation_tool": "validate_geometry_contract",
       "diagnostic_visual_tool": "analyze_geometry_views",
       "visual_decision_tool": "record_geometry_visual_decision",
