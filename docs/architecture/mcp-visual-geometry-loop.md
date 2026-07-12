@@ -1,25 +1,23 @@
 # MCP Visual-Grounded Geometry Loop
 
-## Purpose
+## Goal
 
-Geometry must match the approved Reference Visual, not merely satisfy cube count, bounds, or hierarchy checks. The workflow therefore combines:
+Geometry must match the approved Reference Visual, not merely pass cube-count, bounds, or hierarchy checks.
 
-1. Codex inspection of real image payloads;
+The production loop combines:
+
+1. actual image inspection by Codex;
 2. fixed-scale transformed-cuboid diagnosis;
 3. structural and rotation validation;
-4. explicit user review before Texture.
+4. explicit user review.
 
-## One Geometry profile
+## One profile and session
 
-All Geometry work uses:
+All Geometry work uses `BEDROCK_CUBOID_GEOMETRY`.
 
-```text
-BEDROCK_CUBOID_GEOMETRY
-```
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. They do not create additional profiles, user gates, or reconnects.
 
-There is no separate Geometry rework profile. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes only. Codex remains in the same MCP session and profile for both.
-
-## Practical flow
+## Normal flow
 
 ```text
 get_stage_context
@@ -29,87 +27,67 @@ get_stage_context
 → capture_visual_feedback
 → analyze_geometry_views
 → edit diagnosed parts
-→ repeat affected-view checks as needed
-→ final five-view capture and diagnosis
+→ final five-view evidence
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → user review
 ```
 
-`submit_geometry_for_review` runs fresh Geometry contract validation, uses its embedded review-readiness result, creates the next unused non-approved Geometry review checkpoint, atomically updates state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW`.
+The user is not asked to edit JSON, choose checkpoint names, switch Geometry profiles, or repeatedly reopen Blockbench.
 
-Codex follows `next_safe_operation` from compact stage context. The user is not asked to edit JSON, choose checkpoint filenames, switch profiles, or reconnect between revision scopes.
+## Identity synchronization
 
-## Project identity
+When Blockbench runtime UUID differs from stored metadata, `rebind_active_project_identity` verifies asset, path, format, fingerprint, Reference Visual hash, state revision, and lease status before updating `state.json` and `project.json` atomically.
 
-Blockbench may assign a new runtime UUID after reopening a project. When this happens, `rebind_active_project_identity` verifies the asset, path, format, Geometry fingerprint, Reference Visual hash, state revision, and absence of an active lease before atomically updating `state.json` and `project.json`.
+The operation is metadata-only and does not require a lease, profile switch, or reconnect.
 
-This metadata synchronization:
+## Revision authority
 
-- does not modify the model;
-- does not need a write lease;
-- does not require a profile switch;
-- does not require reconnecting.
+Geometry revision may be authorized by either current evidence:
 
-After synchronization, Codex acquires the normal Geometry write lease.
+- deterministic fixed-scale metrics with `REVISION_REQUIRED`; or
+- a current multimodal `record_geometry_visual_decision` with `REVISION_REQUIRED`, including explicit user feedback.
+
+Both must match current project UUID, Geometry fingerprint, Reference Visual SHA-256, and freshness checks.
+
+This prevents deterministic scores from silently cancelling a user-requested visual change while still blocking stale or unrelated edits.
 
 ## Revision preparation
 
-When a fresh diagnosis returns:
+`prepare_geometry_visual_rebuild` is a compatibility name for preparing either internal scope.
 
-```text
-REVISION_REQUIRED
-LOCAL_REPAIR or MAJOR_FORM_REVISION
-```
+It:
 
-Codex calls `prepare_geometry_visual_rebuild` in the current Geometry profile. Despite its compatibility name, this tool prepares either revision scope. It:
-
-- accepts Geometry currently in progress or awaiting user review;
+- accepts `GEOMETRY_IN_PROGRESS` or `GEOMETRY_REVIEW`;
 - returns review-state Geometry to `GEOMETRY_IN_PROGRESS` before mutation;
-- preserves project identity, primary masses, and all checkpoints;
-- keeps structural detail by default;
-- rejects structural-detail removal for `LOCAL_REPAIR`;
-- optionally removes only machine-classified structural detail for an explicit major revision;
-- records the diagnosed revision scope;
-- advances the write lease and state revision together;
-- continues with `CONTINUE_GEOMETRY`;
+- preserves checkpoints, primary masses, and project identity;
+- keeps detail by default;
+- rejects broad detail removal for `LOCAL_REPAIR`;
+- permits classified detail cleanup only for an explicit major revision;
+- advances state and lease revision together;
+- records deterministic or multimodal revision source;
 - requires no profile switch or reconnect.
 
-After the user gives targeted revision feedback, Codex first captures and diagnoses the affected views, then calls the preparation tool. It does not edit the model while the main workflow still says `GEOMETRY_REVIEW`.
+After user feedback:
 
-## Internal progress markers
+1. capture and inspect affected views;
+2. run fixed-scale diagnosis;
+3. use deterministic revision evidence when it fails;
+4. when metrics pass but the user still requests a change, record a multimodal revision decision;
+5. prepare the revision;
+6. mutate only after state returns to `GEOMETRY_IN_PROGRESS`.
 
-`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are progress markers, not separate user gates.
+## Diagnosis
 
-They help Codex work coarse-to-fine, but do not require a new MCP profile. Two non-improving comparisons set an attention flag; they do not permanently lock Geometry.
+`analyze_geometry_views` uses transformed cuboids, approved coordinate envelope, fixed scale, center axis, ground line, silhouette/profile metrics, semantic regions, and blocking extent/ground diagnostics.
 
-Any mutation after `FINAL_REVIEW_READY` makes the old evidence stale and automatically returns the runtime to working state.
+Free-rescaling current Geometry is forbidden. A high average score cannot override a blocking region, extent, or ground failure.
 
-## Visual diagnosis
-
-`analyze_geometry_views` uses:
-
-- transformed cuboid projection;
-- the approved coordinate envelope;
-- a fixed center axis and ground line;
-- no free rescaling of the current model;
-- silhouette IoU;
-- row and column profile comparison;
-- fixed-scale bounds and edge displacement;
-- weighted semantic regions;
-- blocking ground and extent diagnostics.
-
-A high average score cannot override a blocking semantic, extent, or ground failure.
-
-The analyzer returns a revision scope, not a required profile transition.
-
-Generic Geometry contract validation—including Geometry issues found during Final Validation—is normalized to `BEDROCK_CUBOID_GEOMETRY`; Codex then uses `analyze_geometry_views` to classify the internal revision scope.
+Generic Geometry issues, including those discovered during Final Validation, are normalized to `BEDROCK_CUBOID_GEOMETRY`. Codex classifies the internal scope with the analyzer.
 
 ## Image transport
 
-Use `inspect_reference_visual_preview`. It verifies the original Reference Visual SHA-256 and dimensions, then returns a bounded ephemeral JPEG or PNG preview.
-
-The original file remains the authority. The legacy multi-megabyte original-image response is not exposed in normal production.
+`inspect_reference_visual_preview` verifies original Reference Visual SHA-256 and dimensions while returning a bounded ephemeral preview. The original multi-megabyte binary is not exposed in normal production.
 
 ## Mutation and rotation
 
@@ -117,29 +95,21 @@ Use:
 
 - `place_cubes_safe` for unrotated placement;
 - `modify_cubes` for unrotated edits;
-- `rotate_cube_about_attachment` for every non-zero rotation.
+- `rotate_cube_about_attachment` for non-zero rotation.
 
-Direct rotation through generic cube tools is blocked. Contract-driven rotation validates axis, angle, pivot, direction, declared connection, and affected-view score, with rollback on regression.
+Rotation validates pivot, axis, direction, connection, and affected-view score with rollback on regression.
 
-## Review readiness and submission
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are progress markers, not user approval gates.
 
-`validate_geometry_contract` includes the current review-readiness result and requires:
+## Automatic review submission
 
-- all five canonical views;
-- current fixed-scale metrics;
-- current Codex multimodal review;
-- matching project UUID and Geometry fingerprint;
-- the actual approved Reference Visual hash;
-- safe rotations and pivots;
-- no stale evidence after model mutation.
+`submit_geometry_for_review` runs fresh `validate_geometry_contract`, requires its embedded review-readiness PASS, creates the next unused non-approved review checkpoint, advances lease and state revision together, and moves workflow state to `GEOMETRY_REVIEW`.
 
-A structural pass alone is not a visual pass.
-
-Codex does not manually save a review checkpoint and then separately edit workflow state. `submit_geometry_for_review` validates, performs the guarded checkpoint and state transition as one operation, advances the lease revision, and removes the newly created checkpoint if the coordinated transition fails.
+The transition is automatic and does not require reconnecting.
 
 ## User-facing gates
 
-Only meaningful review gates are user-facing:
+Only these are user-facing:
 
 ```text
 GEOMETRY_REVIEW
@@ -147,8 +117,6 @@ TEXTURE_REVIEW
 ANIMATION_REVIEW when required
 FINAL_REVIEW
 ```
-
-Internal Geometry corrections do not create additional user approval moments.
 
 ## Verification
 
@@ -159,4 +127,4 @@ bun test
 bun run build
 ```
 
-Regression coverage verifies one-profile Geometry exposure, lease-exempt guarded identity synchronization, lease-required model mutation, local and major revision preparation, fixed-scale visual rejection, automatic Geometry review submission, Final Validation repair normalization, strict final review, adapter synchronization, and bounded tool counts.
+Regression coverage includes one-profile exposure, identity sync, deterministic and multimodal revision authority, review-to-work transition, automatic review submission, Final Validation routing, fixed-scale rejection, rotation safety, adapter synchronization, and bounded tool count.
