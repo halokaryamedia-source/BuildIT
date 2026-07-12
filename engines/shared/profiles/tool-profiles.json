@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.9",
+  "schema_version": "2.0",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "activate_then_reconnect_once",
   "core_tools": [
@@ -12,12 +12,12 @@
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Readiness, project setup, compact reference validation, visual grounding, write-lease acquisition, and profile selection only.",
+      "description": "Readiness, project setup, compact reference validation, bounded visual grounding, write-lease acquisition, and profile selection only.",
       "allowed_tools": [
         "create_project",
         "configure_project",
         "validate_reference_contract",
-        "inspect_reference_visual",
+        "inspect_reference_visual_preview",
         "save_project_checkpoint",
         "capture_standard_views"
       ]
@@ -28,7 +28,7 @@
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
-        "inspect_reference_visual",
+        "inspect_reference_visual_preview",
         "capture_visual_feedback",
         "analyze_geometry_views",
         "place_cubes_safe",
@@ -118,7 +118,7 @@
       "allowed_tools": [
         "list_outline",
         "find_elements_by_criteria",
-        "inspect_reference_visual",
+        "inspect_reference_visual_preview",
         "capture_visual_feedback",
         "analyze_geometry_views",
         "place_cubes_safe",
@@ -137,13 +137,13 @@
       ]
     },
     "GEOMETRY_VISUAL_REBUILD": {
-      "description": "Major primary-form rebuild when multiple masses or views fail. Preserves project identity and checkpoints while enforcing the same phase, diagnosis, validation, and rotation guards as normal Geometry.",
+      "description": "Major primary-form rebuild when multiple masses or views fail. Preserves project identity and checkpoints while enforcing the same phase, diagnosis, validation, bounded visual transport, and rotation guards as normal Geometry.",
       "allowed_tools": [
         "prepare_geometry_visual_rebuild",
         "add_group",
         "list_outline",
         "find_elements_by_criteria",
-        "inspect_reference_visual",
+        "inspect_reference_visual_preview",
         "capture_visual_feedback",
         "analyze_geometry_views",
         "place_cubes_safe",
@@ -209,6 +209,7 @@
     "FINAL_VALIDATION": "FINAL_VALIDATION_READONLY"
   },
   "forbidden_in_normal_profiles": [
+    "inspect_reference_visual",
     "risky_eval",
     "trigger_action",
     "emulate_clicks",
