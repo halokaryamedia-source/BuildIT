@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Bedrock cuboid Geometry in one MCP profile and session, including identity sync, diagnosis, user-directed revision, automatic review submission, and approval."
+description: "Visual-grounded Bedrock cuboid Geometry in one MCP profile and session, routed through a single Terra writer with Sol used only for necessary visual judgment."
 ---
 
 # Blockbench Geometry
@@ -9,23 +9,33 @@ Use only for stage `GEOMETRY` with profile `BEDROCK_CUBOID_GEOMETRY`.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles or user-facing stages.
 
+## Agent roles
+
+- `mcp_builder` / Terra Medium is the only Geometry writer and lease owner.
+- `visual_director` / Sol Medium is read-only and is used for initial Reference interpretation, ambiguous cross-view decisions, subjective feedback, and final visual acceptance.
+- `routine_auditor` / 5.4 Mini Low handles deterministic evidence, hash, profile, test, and checkpoint checks.
+- `critical_reviewer` / Sol High is read-only, rare, and requires a valid critical reason code.
+
+Do not use Sol for a repair already expressed as a concrete part, direction, and magnitude. Never run parallel Geometry writers or effort above High.
+
 ## Normal flow
 
 ```text
 get_stage_context
 → rebind_active_project_identity when required
-→ manage_project_write_lease acquire
+→ mcp_builder acquires manage_project_write_lease
 → inspect_reference_visual_preview
 → capture_visual_feedback
 → analyze_geometry_views
-→ edit diagnosed parts
+→ mcp_builder edits diagnosed parts
 → final five-view capture and diagnosis
+→ visual_director performs final visual acceptance
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
 
-Follow `next_safe_operation`. Do not ask the user to edit workspace JSON, choose checkpoint names, switch Geometry profiles, close the model, or reconnect between Geometry revisions.
+Follow `next_safe_operation`. Do not ask the user to edit workspace JSON, choose checkpoint names, switch Geometry profiles, close the model, reconnect between Geometry revisions, or choose a worker model.
 
 ## Identity
 
@@ -37,7 +47,7 @@ Use `inspect_reference_visual_preview`; never request the original multi-megabyt
 
 Geometry quality requires:
 
-1. Codex inspection of actual image payloads;
+1. visual inspection of actual image payloads;
 2. fixed-scale `analyze_geometry_views` diagnosis;
 3. `validate_geometry_contract` structural validation.
 
@@ -58,8 +68,8 @@ For feedback received during `GEOMETRY_REVIEW`:
 
 1. capture and inspect affected views;
 2. run `analyze_geometry_views`;
-3. when metrics fail, use that diagnosis;
-4. when metrics pass but the user still requests a change, record a current multimodal `REVISION_REQUIRED` decision with issue, views, and scope;
+3. when metrics fail and the repair is concrete, route directly to `mcp_builder`;
+4. when metrics pass but the user still requests a change, use `visual_director` to produce a current multimodal `REVISION_REQUIRED` packet with issue, views, and scope;
 5. call `prepare_geometry_visual_rebuild`;
 6. edit only after it returns `GEOMETRY_IN_PROGRESS`.
 
@@ -85,4 +95,4 @@ After current five-view evidence and multimodal decision are ready, call `submit
 
 The tool runs fresh Geometry validation with its embedded readiness gate, creates the next unused non-approved review checkpoint, advances state and lease revision together, and changes workflow state to `GEOMETRY_REVIEW` without reconnecting.
 
-Final Geometry requires current five-view evidence, matching fingerprint and Reference Visual hash, fixed-scale PASS, structural PASS, and safe rotations.
+Final Geometry requires current five-view evidence, matching fingerprint and Reference Visual hash, fixed-scale PASS, structural PASS, safe rotations, and read-only visual acceptance.
