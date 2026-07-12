@@ -106,10 +106,26 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   let ready = false;
   let reportError: string | null = null;
   let projectContentSignature: string | null = null;
+  let diagnosisWorldSignature: string | null = null;
   const geometryWorldSignature =
     stage === "GEOMETRY" || stage === "FINAL_VALIDATION"
       ? computeGeometryWorldSignature()
       : null;
+
+  if (geometryWorldSignature) {
+    const metricsPath = joinSessionPath(
+      root,
+      "evidence/geometry/geometry_visual_metrics.json"
+    );
+    assertInsideRoot(metricsPath, root);
+    if (fs.existsSync(metricsPath)) {
+      const metrics = readJsonFile<Record<string, any>>(fs, metricsPath);
+      const value = String(metrics.geometry_world_signature ?? "");
+      diagnosisWorldSignature = /^[a-f0-9]{64}$/i.test(value)
+        ? value.toLowerCase()
+        : null;
+    }
+  }
 
   if (rebindRequired) {
     next = leaseActive
@@ -125,7 +141,9 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
     next = "manage_project_write_lease:acquire";
   } else if (workflowState === policy.workingState) {
     if (stage === "GEOMETRY") {
-      ready = context.geometry?.runtime?.phase === "FINAL_REVIEW_READY";
+      ready =
+        context.geometry?.runtime?.phase === "FINAL_REVIEW_READY" &&
+        diagnosisWorldSignature === geometryWorldSignature;
       if (ready) next = "submit_geometry_for_review";
     } else {
       try {
@@ -154,10 +172,9 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
     context.project.current_geometry_world_signature = geometryWorldSignature;
     if (context.geometry?.latest_diagnosis) {
       context.geometry.latest_diagnosis.geometry_world_signature =
-        context.geometry.latest_diagnosis.geometry_world_signature ?? null;
+        diagnosisWorldSignature;
       context.geometry.latest_diagnosis.world_signature_current =
-        context.geometry.latest_diagnosis.geometry_world_signature ===
-        geometryWorldSignature;
+        diagnosisWorldSignature === geometryWorldSignature;
     }
   }
 
