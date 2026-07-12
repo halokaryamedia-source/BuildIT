@@ -53,6 +53,7 @@ export function installStageCompletionFreshnessGuards(): void {
   if (!completion?.execute || !validation?.execute) return;
 
   const execute = completion.execute;
+  const executeValidation = validation.execute;
   completion.execute = async (args, context) => {
     const stage = String(args.stage ?? "") as EvidenceStage;
     if (!supportedStages.has(stage)) return execute(args, context);
@@ -86,7 +87,7 @@ export function installStageCompletionFreshnessGuards(): void {
       );
     }
 
-    const validationResult = await validation.execute(
+    const validationResult = await executeValidation(
       {
         session_root: root,
         expected_project_uuid: expectedUuid,
