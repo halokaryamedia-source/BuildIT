@@ -10,6 +10,7 @@ import {
 } from "@/lib/atomicFiles";
 import { mergeGeometryReferenceProfile } from "@/lib/geometryReferenceProfiles";
 import { readGeometryRuntimeContext } from "@/lib/geometryRuntime";
+import { getProjectWriteLeaseSnapshot } from "@/lib/writeLease";
 
 const getStageContextParameters = z.object({
   session_root: z.string().min(1),
@@ -23,7 +24,7 @@ export const stageContextToolDocs: ToolSpec[] = [
   {
     name: "get_stage_context",
     description:
-      "Returns the compact active-stage decision lock, Geometry blueprint, runtime phase and iteration budget, open issues, accepted areas, bounded visual transport, visual diagnosis tools, and rotation contracts without loading full Markdown contracts into Codex context.",
+      "Returns the compact active-stage authority and one exact next safe operation. Geometry identity synchronization, lease acquisition, diagnosis, major revision preparation, editing, and review all remain in the same Geometry profile and MCP session.",
     annotations: {
       title: "Get Compact Stage Context",
       readOnlyHint: true,
@@ -60,6 +61,43 @@ function sha256(data: string): string {
   return cryptoModule.createHash("sha256").update(data).digest("hex");
 }
 
+function currentRuntimeUuid(): string | null {
+  return typeof Project !== "undefined" && Project ? Project.uuid : null;
+}
+
+function geometryNextOperation(input: {
+  rebindRequired: boolean;
+  identityReady: boolean;
+  leaseStatus: string;
+  leaseProjectUuid: string | null;
+  runtimeUuid: string | null;
+  diagnosisResult: string | null;
+  diagnosisScope: string | null;
+  runtimePhase: string | null;
+}): string {
+  if (input.rebindRequired && input.leaseStatus !== "ACTIVE") {
+    return "rebind_active_project_identity";
+  }
+  if (!input.identityReady) return "STOP_PROJECT_IDENTITY_MISMATCH";
+  if (
+    input.leaseStatus !== "ACTIVE" ||
+    input.leaseProjectUuid !== input.runtimeUuid
+  ) {
+    return "manage_project_write_lease:acquire";
+  }
+  if (!input.diagnosisResult) return "inspect_reference_visual_preview";
+  if (
+    input.diagnosisResult === "REVISION_REQUIRED" &&
+    input.diagnosisScope === "MAJOR_FORM_REVISION"
+  ) {
+    return "prepare_geometry_visual_rebuild";
+  }
+  if (input.runtimePhase === "FINAL_REVIEW_READY") {
+    return "verify_geometry_review_ready";
+  }
+  return "CONTINUE_GEOMETRY";
+}
+
 export function registerStageContextTools(): void {
   createTool(
     stageContextToolDocs[0].name,
@@ -74,10 +112,18 @@ export function registerStageContextTools(): void {
           "references/reference_manifest.json"
         );
         const statePath = joinPath(session_root, "state.json");
-        assertInsideRoot(manifestPath, session_root);
-        assertInsideRoot(statePath, session_root);
+        const projectPath = joinPath(session_root, "project.json");
+        const diagnosisPath = joinPath(
+          session_root,
+          "evidence/geometry/geometry_visual_metrics.json"
+        );
+        for (const path of [manifestPath, statePath, projectPath]) {
+          assertInsideRoot(path, session_root);
+        }
+
         const manifest = readJsonFile<Record<string, any>>(fs, manifestPath);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
+        const projectMetadata = readJsonFile<Record<string, any>>(fs, projectPath);
         const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
         const geometryProfile = mergeGeometryReferenceProfile({
           referenceSha256: manifest.reference_visual_lock?.sha256,
@@ -88,16 +134,67 @@ export function registerStageContextTools(): void {
           stage === "GEOMETRY" || stage === "FINAL_VALIDATION"
             ? readGeometryRuntimeContext(session_root)
             : null;
+        const lease = getProjectWriteLeaseSnapshot();
+        const runtimeUuid = currentRuntimeUuid();
+        const stateUuid = state.project?.uuid ?? null;
+        const projectFileUuid = projectMetadata.project?.uuid ?? null;
+        const rebindRequired = Boolean(
+          runtimeUuid &&
+            (runtimeUuid !== stateUuid || runtimeUuid !== projectFileUuid)
+        );
+        const identityReady = Boolean(
+          runtimeUuid &&
+            runtimeUuid === stateUuid &&
+            runtimeUuid === projectFileUuid
+        );
+        const diagnosis = fs.existsSync(diagnosisPath)
+          ? readJsonFile<Record<string, any>>(fs, diagnosisPath)
+          : null;
+        const diagnosisResult = diagnosis?.result
+          ? String(diagnosis.result)
+          : null;
+        const diagnosisScope = diagnosis?.recommended_scope
+          ? String(diagnosis.recommended_scope)
+          : null;
+        const workflowRuntimeConsistent =
+          stage !== "GEOMETRY" ||
+          (state.workflow?.active_stage === "GEOMETRY" &&
+            (state.workflow?.state !== "GEOMETRY_REVIEW" ||
+              geometryRuntime?.phase === "FINAL_REVIEW_READY"));
+        const nextSafeOperation =
+          stage === "GEOMETRY"
+            ? geometryNextOperation({
+                rebindRequired,
+                identityReady,
+                leaseStatus: lease.status,
+                leaseProjectUuid: lease.project_uuid,
+                runtimeUuid,
+                diagnosisResult,
+                diagnosisScope,
+                runtimePhase: geometryRuntime?.phase ?? null,
+              })
+            : "CONTINUE_STAGE";
 
         const context = {
-          schema_version: "1.4",
+          schema_version: "2.0",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
             name: state.project?.name ?? null,
-            uuid: state.project?.uuid ?? null,
+            runtime_uuid: runtimeUuid,
+            state_uuid: stateUuid,
+            project_file_uuid: projectFileUuid,
             format: state.project?.format ?? null,
             save_path: state.project?.save_path ?? null,
+            rebind_required: rebindRequired,
+            identity_ready: identityReady,
+          },
+          lease: {
+            status: lease.status,
+            project_uuid: lease.project_uuid,
+            owner_session_id: lease.owner_session_id,
+            state_revision: lease.state_revision,
+            profile_id: lease.profile_id,
           },
           workflow: {
             state: state.workflow?.state ?? null,
@@ -106,8 +203,18 @@ export function registerStageContextTools(): void {
             next_action: state.workflow?.next_action ?? null,
             stage_status: stageRecord.status ?? null,
             decision: stageRecord.decision ?? null,
+            revision: stageRecord.revision ?? null,
             accepted_areas: stageRecord.accepted_areas ?? [],
             open_issues: stageRecord.open_issues ?? [],
+            runtime_consistent: workflowRuntimeConsistent,
+          },
+          automation: {
+            one_geometry_profile: true,
+            profile_switch_required: false,
+            reconnect_required: false,
+            exact_next_safe_operation: nextSafeOperation,
+            user_file_edits_required: false,
+            user_restart_required: false,
           },
           legacy_context_policy: {
             repository_authority_only: true,
@@ -128,7 +235,8 @@ export function registerStageContextTools(): void {
                 sha256: manifest.reference_visual_lock.sha256,
                 width_px: manifest.reference_visual_lock.width_px,
                 height_px: manifest.reference_visual_lock.height_px,
-                required_panels: manifest.reference_visual_lock.required_panels,
+                required_panels:
+                  manifest.reference_visual_lock.required_panels,
               }
             : null,
           main_format: manifest.main_format ?? null,
@@ -173,6 +281,17 @@ export function registerStageContextTools(): void {
                       )
                     : {},
                   runtime: geometryRuntime,
+                  latest_diagnosis: diagnosis
+                    ? {
+                        result: diagnosisResult,
+                        scope: diagnosisScope,
+                        geometry_fingerprint:
+                          diagnosis.geometry_fingerprint ?? null,
+                        reference_sha256:
+                          diagnosis.reference_visual?.sha256 ?? null,
+                        created_at: diagnosis.created_at ?? null,
+                      }
+                    : null,
                 }
               : null,
           texturing:
@@ -205,14 +324,6 @@ export function registerStageContextTools(): void {
             ...(manifest.visual_grounding ?? {}),
             required: stage === "GEOMETRY",
             reference_tool: "inspect_reference_visual_preview",
-            reference_transport: {
-              original_binary_in_response_forbidden: true,
-              default_format: "jpeg",
-              default_max_dimension: 1400,
-              default_max_transport_bytes: 768 * 1024,
-              original_hash_remains_authority: true,
-              preview_is_ephemeral: true,
-            },
             feedback_tool: "capture_visual_feedback",
             diagnosis_tool: "analyze_geometry_views",
             record_tool: "record_geometry_visual_decision",
@@ -224,7 +335,6 @@ export function registerStageContextTools(): void {
             deterministic_guard_required: true,
             fixed_scale_required: true,
             free_rescale_forbidden: true,
-            maximum_correction_cycles_per_pass: 2,
           },
         };
         const contextHash = sha256(JSON.stringify(context));
@@ -232,15 +342,13 @@ export function registerStageContextTools(): void {
           content: [
             {
               type: "text",
-              text: `Compact ${stage} context ready (${contextHash.slice(
-                0,
-                12
-              )}). Geometry phase: ${geometryRuntime?.phase ?? "n/a"}.`,
+              text: `Compact ${stage} context ready (${contextHash.slice(0, 12)}). Next safe operation: ${nextSafeOperation}.`,
             },
           ],
           structuredContent: {
             status: "PASS",
             context_hash: contextHash,
+            next_safe_operation: nextSafeOperation,
             context,
           },
         };
