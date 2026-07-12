@@ -30,7 +30,7 @@ export const geometryReviewSubmitToolDocs: ToolSpec[] = [
   {
     name: "submit_geometry_for_review",
     description:
-      "Runs fresh structural validation and the current Geometry review-readiness gate, saves the next unused non-approved Geometry review checkpoint, and atomically moves the workflow to GEOMETRY_REVIEW. It stays in the existing Geometry profile and MCP session.",
+      "Runs fresh Geometry contract validation, uses its embedded review-readiness result, saves the next unused non-approved Geometry review checkpoint, and atomically moves the workflow to GEOMETRY_REVIEW. It stays in the existing Geometry profile and MCP session.",
     annotations: {
       title: "Submit Geometry for User Review",
       destructiveHint: true,
@@ -103,6 +103,18 @@ function assertValidationPass(result: any): Record<string, any> {
   ) {
     throw new Error(
       `GEOMETRY_REPORT_GATE_NOT_PASS: rotation_status=${report.rotation_status ?? "MISSING"}`
+    );
+  }
+  const reviewGate = report.review_gate as Record<string, any> | undefined;
+  if (!reviewGate || reviewGate.result !== "PASS") {
+    const codes = Array.isArray(reviewGate?.issues)
+      ? reviewGate.issues
+          .map((issue: any) => issue?.code)
+          .filter(Boolean)
+          .join(", ")
+      : "unknown";
+    throw new Error(
+      `GEOMETRY_REVIEW_GATE_NOT_PASS: ${reviewGate?.result ?? "UNKNOWN"}; ${codes}`
     );
   }
   return report;
@@ -222,30 +234,7 @@ export function registerGeometryReviewSubmitTools(): void {
           context
         );
         const geometryReport = assertValidationPass(validationResult);
-
-        const gateResult = await executeRegisteredTool(
-          "verify_geometry_review_ready",
-          {
-            session_root,
-            expected_project_uuid,
-            require_standard_views: true,
-          },
-          context
-        );
-        const gate = gateResult?.structuredContent as
-          | Record<string, any>
-          | undefined;
-        if (!gate || gate.result !== "PASS") {
-          const codes = Array.isArray(gate?.issues)
-            ? gate.issues
-                .map((issue: any) => issue?.code)
-                .filter(Boolean)
-                .join(", ")
-            : "unknown";
-          throw new Error(
-            `GEOMETRY_REVIEW_GATE_NOT_PASS: ${gate?.result ?? "UNKNOWN"}; ${codes}`
-          );
-        }
+        const reviewGate = geometryReport.review_gate as Record<string, any>;
 
         const checkpoint = nextReviewCheckpoint(fs, session_root);
         await executeRegisteredTool(
@@ -345,7 +334,7 @@ export function registerGeometryReviewSubmitTools(): void {
             reconnect_required: false,
             profile_switch_required: false,
             geometry_report: geometryReport,
-            review_gate: gate,
+            review_gate: reviewGate,
           },
         };
       },
