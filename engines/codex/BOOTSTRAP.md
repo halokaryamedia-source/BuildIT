@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build only what the approved package requires with the fewest safe reads, image payloads, model calls, and correction cycles while preserving visual accuracy.
+Build only what the approved package requires with the fewest safe reads, image payloads, model calls, and correction cycles while preserving visual accuracy. Production remains in one Codex session and one MCP session from project creation through final validation.
 
 ## Authority
 
@@ -10,9 +10,9 @@ Use the current repository and selected asset session. Reject downloaded context
 
 Read `engines/codex/MODEL_ROUTING.md` before delegation.
 
-## One-time routing preflight
+## Routing preflight without user interruption
 
-At the start of a new local BuildIT project session, confirm that Codex exposes:
+Inspect whether these optional custom roles are available:
 
 ```text
 routine_auditor
@@ -21,22 +21,23 @@ visual_director
 critical_reviewer
 ```
 
-If any are missing, stop with:
+When one is missing, record `CODEX_PROJECT_CONFIG_NOT_LOADED` as a routing warning and continue in the current session whenever safe:
 
-```text
-CODEX_PROJECT_CONFIG_NOT_LOADED
-```
+- Terra parent performs mechanical audit directly;
+- Terra parent remains the sole writer;
+- parent performs bounded Reference Visual comparison;
+- only a truly critical unresolved decision may stop for a missing critical capability.
 
-Ask the user to trust the current project once. Project-local `.codex/` configuration is not active until trust is granted. Do not invent fallback role definitions.
+Do not ask the user to create another Codex session during active production.
 
 ## Model routing
 
 ```text
 normal implementation      → Terra Medium parent directly
-large read-only audit      → routine_auditor / 5.4 Mini Low
-fallback isolated writer   → mcp_builder / Terra Medium
-visual judgment            → visual_director / Sol Medium
-critical decision          → critical_reviewer / Sol High once
+large read-only audit      → routine_auditor / 5.4 Mini Low when available
+fallback isolated writer   → mcp_builder / Terra Medium when available
+visual judgment            → visual_director / Sol Medium when available
+critical decision          → critical_reviewer / Sol High once when mandatory
 ```
 
 - High is the maximum and remains rare.
@@ -44,24 +45,29 @@ critical decision          → critical_reviewer / Sol High once
 - Keep at most two open agent threads and depth one.
 - Do not spawn a child for micro work.
 - Exactly one active writer exists: Terra parent or `mcp_builder`, never both.
-- Parent Full access may broaden child sandbox permissions; active-asset safety relies on agent MCP allowlists plus the Blockbench write lease.
-- Deterministic gates replace Sol whenever they can answer the question.
+- Agent MCP allowlists plus the Blockbench write lease are the active-asset boundary.
+- Deterministic gates replace model review whenever they can answer the question.
 
-## One-time plugin build
+## Release preparation versus user testing
 
-After repository source changes:
+Repository maintainers run install, skills check, typecheck, all tests, build, bundle verification, session continuity tests, and Golden Sample initialization tests before declaring readiness.
 
-```powershell
-cd mcp-blockbench
-bun install --frozen-lockfile
-bun run skills:check
-bun run typecheck
-bun test
-bun run build
-cd ..
+The user MUST NOT be asked to run those internal checks. The user loads only the final built `mcp-blockbench/dist/mcp.js` once for the final acceptance test.
+
+## Stable MCP session
+
+The loaded plugin registers one stable full tool surface. Logical profiles remain execution guards, so stage-inappropriate calls still fail. Profile changes do not alter the connected client's tool list.
+
+```text
+stage/profile transition
+→ release old lease
+→ continue same MCP session
+→ continue same Codex session
+→ get_stage_context
+→ acquire fresh current-stage lease
 ```
 
-Load only `mcp-blockbench/dist/mcp.js`. Reload is required only after the binary changes or the canonical endpoint is genuinely unavailable.
+No stage transition, review, revision, or approval may require plugin reload, MCP reconnect, or Codex restart.
 
 ## Workspace
 
@@ -73,52 +79,60 @@ workspace/active/<asset>/
 
 `workspace/workspace.json` is an index. Runtime authority is `workspace/active/<asset>/mcp/state.json`.
 
-## Asset startup
+The tracked Golden Sample authority for acceptance is:
 
-1. Resolve the selected asset and canonical model.
-2. Use `workspace/active/<asset>/mcp` as the canonical session root. `get_stage_context` also accepts `workspace/active/<asset>` and returns `canonical_session_root`; reuse that returned root for all later MCP calls.
-3. Load `blockbench-production` plus exactly one active-stage skill.
-4. Open the canonical model in one Blockbench window.
-5. Use MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
-6. Call `get_runtime_status`, then `get_stage_context`.
-7. Follow `next_safe_operation`.
-8. Select one writer before any persistent tool call.
-9. Do not ask the user to edit JSON, choose checkpoints, select repair profiles, or select worker models.
+```text
+docs/reference/golden-samples/black_rhinoceros
+```
+
+A clean acceptance workspace is initialized internally with:
+
+```text
+bun run workspace:sample -- black_rhinoceros --asset-id <fresh_asset_id> --display-name "Black Rhinoceros"
+```
+
+This copies only approved references and contracts. It MUST NOT copy any `.bbmodel`, checkpoint, evidence, previous runtime identity, or prior state.
+
+## Zero-start asset startup
+
+1. Initialize a fresh workspace from the Golden Sample when requested.
+2. Confirm the canonical model path does not yet exist.
+3. Use `workspace/active/<asset>/mcp` as the canonical session root.
+4. Load `blockbench-production` plus the Geometry skill.
+5. Use only MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
+6. When no project is open, create the Bedrock project through `create_project` and save it to the canonical model path.
+7. Call `get_runtime_status` and `get_stage_context`.
+8. Rebind identity automatically when required.
+9. Select one writer and acquire the Geometry lease.
+10. Do not ask the user to edit JSON, choose checkpoints, select profiles, select workers, reconnect, reload, or restart.
 
 ## Geometry flow
 
 All Geometry work uses `BEDROCK_CUBOID_GEOMETRY`:
 
 ```text
-get_stage_context
+create project from zero when absent
+→ get_stage_context
 → rebind_active_project_identity when required
 → selected writer acquires manage_project_write_lease
 → inspect_reference_visual_preview
 → capture_visual_feedback
 → analyze_geometry_views
-→ bounded Geometry correction
+→ bounded Geometry construction/correction
 → final five-view capture/analyze
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → lease released
-→ user review
+→ user reviews one Geometry result
 ```
 
-`analyze_geometry_views` persists canonical metrics/diff and therefore requires the current Geometry write lease. `capture_visual_feedback` may be used ephemerally without `output_dir` by `visual_director`; persistent captures remain writer operations.
+`analyze_geometry_views` persists canonical metrics/diff and requires the Geometry write lease. Ephemeral visual inspection does not persist evidence.
 
-Use `visual_director` once per unchanged Reference Visual hash, only for ambiguous corrections, and once for final visual acceptance. Repairs with concrete part/direction/magnitude stay with Terra.
+Use `visual_director` only when available and useful. Parent fallback performs the same compact comparison when it is unavailable; this does not require a new session.
 
-Geometry evidence is bound to:
+Geometry evidence is bound to project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual SHA-256, current five-view metrics, and visual decision. Hierarchy/group-transform changes require a new capture/analyze pass.
 
-- project UUID;
-- compatibility Geometry fingerprint;
-- transformed world-space signature including group transforms;
-- Reference Visual SHA-256;
-- current five-view metrics and visual decision.
-
-Hierarchy/group-transform changes require a new capture/analyze pass.
-
-`submit_geometry_for_review` revalidates, creates the next unused non-approved checkpoint, enters `GEOMETRY_REVIEW`, and releases the writer lease without reconnecting.
+`submit_geometry_for_review` revalidates, creates the next unused review checkpoint, enters `GEOMETRY_REVIEW`, releases the writer lease, and remains in the same session.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles. `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers.
 
@@ -131,19 +145,12 @@ Hierarchy/group-transform changes require a new capture/analyze pass.
 | Animation | `BEDROCK_CUBOID_ANIMATION` | production + Animation | selected Terra writer |
 | Final Validation | `FINAL_VALIDATION_READONLY` | production + Validation | selected Terra writer for required writes |
 
-Do not load Animation when skipped. Profile changes occur only between user-visible stages.
-
-## Missing-role fallback
-
-- Mini missing: Terra parent performs the audit.
-- `mcp_builder` missing: Terra parent may write; non-Terra parent stops before mutation unless an approved Terra writer exists.
-- Sol Medium missing: continue deterministic work, then stop with `MODEL_ROUTE_UNAVAILABLE` only when visual judgment is mandatory.
-- Sol High missing: return the critical blocker.
+Do not load Animation when skipped. Every transition stays in the same connected session.
 
 ## Completion and stop conditions
 
 After final approval, promote the validated workspace through the workspace command. Completed baselines remain immutable while revisions are active.
 
-Stop only for a real authority conflict, unavailable mandatory runtime/capability, unsafe mutation, stale evidence that cannot be regenerated, failed review gate, lease conflict, or required user approval.
+Stop only for a real authority conflict, unavailable mandatory runtime, unsafe mutation, stale evidence that cannot be regenerated, failed review gate, lease conflict, or required user approval.
 
-Do not scan ports, create alternate MCP keys, mix workspace areas, load deprecated skills, create duplicate/versioned outputs, or ask the user to optimize model selection manually.
+Do not scan ports, create alternate MCP keys, mix workspace areas, load deprecated skills, create duplicate/versioned outputs, or ask the user to test internal components.
