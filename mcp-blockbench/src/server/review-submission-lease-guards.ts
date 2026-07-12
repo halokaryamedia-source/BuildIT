@@ -1,6 +1,5 @@
 import { getAllToolDefinitions, type ToolContext } from "@/lib/factories";
-import { resolveMutationExecutionContext } from "@/lib/mutationContext";
-import { releaseProjectWriteLease } from "@/lib/writeLease";
+import { clearProjectWriteLease } from "@/lib/writeLease";
 
 interface RegisteredTool {
   execute?: (
@@ -18,8 +17,9 @@ let installed = false;
 
 /**
  * Review waits must not retain a writer lease. A successful submission has
- * already persisted its checkpoint and review-state revision, so the next
- * APPROVED/REVISION action should acquire a fresh lease from current context.
+ * already validated ownership and persisted its checkpoint/review-state
+ * revision, so clearing the in-memory lease is safe and cannot fail because a
+ * second read-only MCP session remains connected.
  */
 export function installReviewSubmissionLeaseGuards(): void {
   if (installed) return;
@@ -31,7 +31,7 @@ export function installReviewSubmissionLeaseGuards(): void {
     const execute = definition.execute;
     definition.execute = async (args, context) => {
       const result = await execute(args, context);
-      releaseProjectWriteLease(resolveMutationExecutionContext(context));
+      clearProjectWriteLease();
       if (result?.structuredContent && typeof result.structuredContent === "object") {
         result.structuredContent.lease_status = "UNCLAIMED";
         result.structuredContent.lease_acquisition_required_after_review = true;
