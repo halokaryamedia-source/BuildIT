@@ -4,6 +4,7 @@
 import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
+import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installStageCompletionFreshnessGuards } from "./stage-completion-freshness-guards";
 import { installStageContextRoutingGuards } from "./stage-context-routing-guards";
 import { installStageReviewMutationGuards } from "./stage-review-mutation-guards";
@@ -104,13 +105,15 @@ for (const register of registrationFunctions) register();
 for (const register of optionalRegistrationFunctions) register();
 
 // Guard order matters: evidence and review-state checks are installed before
-// completion rollback and before the final profile/write-lease wrapper.
+// completion rollback, and profile/state reconciliation is the outermost
+// transition guard before the final profile/write-lease wrapper.
 installGeometryFreshnessGuards();
 installStageContextRoutingGuards();
 installStageValidationRoutingGuards();
 installStageReviewMutationGuards();
 installStageCompletionFreshnessGuards();
 installStageTransitionGuards();
+installProfileStateReconciliationGuards();
 
 initializeToolProfiles();
 
