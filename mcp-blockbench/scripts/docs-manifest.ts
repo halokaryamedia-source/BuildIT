@@ -50,7 +50,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
-  { category: "Geometry Visual Rebuild", tools: geometryRebuildToolDocs },
+  { category: "Geometry Major Revision", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
