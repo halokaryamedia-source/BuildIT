@@ -2,18 +2,19 @@
 
 ## Active goal
 
-Finish the Geometry-quality system before the next local production test so MCP can see the current model, identify the exact visual mismatch, prescribe the smallest relevant repair, and stop non-converging or unsafe work.
+Finish a practical Geometry-quality workflow before the next local production test. MCP must see the current model, identify actionable visual mismatches, let Codex correct them in one Geometry profile/session, and stop only for real safety or user-review conditions.
 
 ## Required now
 
 ```text
 single Reference Visual authority
-→ compact stage context
-→ PRIMARY_FORM enforcement
+→ compact stage context with one next action
+→ automatic project identity synchronization when required
+→ one Geometry write lease
 → current-model image feedback
 → fixed-scale transformed-cuboid diagnosis
 → ranked view/region/part repair instructions
-→ STRUCTURAL_DETAIL enforcement
+→ local or major revision as an internal scope
 → contract-driven rotations
 → five-view readiness gate
 → transformed Geometry validation
@@ -31,19 +32,23 @@ single Reference Visual authority
 - existing Reference Visual and technical contracts;
 - existing profile and skill synchronization.
 
+Do not add a separate Geometry repair or rebuild profile.
+
 ## Geometry diagnosis rule
 
-MCP must not say only that a view “does not match.” It must return, when measurable:
+MCP must return, when measurable:
 
 - failing standard view;
 - semantic region;
 - missing versus excess silhouette;
-- direction of correction;
+- correction direction;
 - approximate magnitude in Blockbench units;
 - affected parts/groups;
-- recommended local or major repair route.
+- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
 
-Current Geometry is projected from transformed cuboids at the approved coordinate scale. Free-rescaling current Geometry to fit the reference is forbidden.
+Revision scope is an internal Codex decision inside `BEDROCK_CUBOID_GEOMETRY`. It does not require reconnecting.
+
+Current Geometry is projected from transformed cuboids at approved scale. Free-rescaling current Geometry to fit the reference is forbidden.
 
 ## Rotation rule
 
@@ -51,14 +56,13 @@ Every non-zero cube rotation uses a machine-readable attachment contract. The ro
 
 ## Efficiency boundary
 
-- one Reference Visual inspection per unchanged hash;
-- three primary-form views;
-- only affected views during repair;
+- one Reference Visual preview inspection per unchanged hash;
+- only affected views during correction;
 - one final five-view pass;
 - bounded atomic cube batches;
-- no more than two non-improving cycles per phase;
 - compact stage context instead of repeated long-document reads;
-- stop `VISUAL_CONVERGENCE_FAILED` rather than generating random alternatives.
+- non-improving cycles set an attention flag rather than creating a new gate/profile;
+- no manual JSON edits, Geometry profile switches, or reconnects requested from the user.
 
 ## Workspace separation
 
@@ -75,17 +79,17 @@ mcp/
 Implementation is complete only when:
 
 1. old four-sheet/three-approval context is rejected;
-2. primary-form detail cannot be bypassed;
-3. `GEOMETRY_VISUAL_REBUILD` receives all Geometry guards;
-4. fixed-scale diagnosis reports actionable regions/parts;
+2. Geometry uses one normal profile and one MCP session;
+3. project identity mismatch is safely synchronized before lease acquisition;
+4. fixed-scale diagnosis reports actionable regions/parts and blocking edge/ground failures;
 5. current Geometry is not free-rescaled;
 6. contract rotations verify direction/connection and rollback regression;
-7. two non-improving cycles stop automatically;
-8. five current views, current Reference Visual hash, current fingerprint, and current analyzer are mandatory;
+7. internal progress markers do not create user-facing gates;
+8. five current views, Reference Visual hash, fingerprint, and analyzer are mandatory for review;
 9. Geometry uses transformed world bounds and true ground contacts;
-10. Geometry completion preserves lease/session correctness and cannot use generic bypass;
+10. completion preserves lease/session correctness and cannot use generic bypass;
 11. negative fixtures reject the failed Black Rhinoceros model;
-12. skills, profiles, typecheck, tests, build, and generated plugin output pass at the final test step.
+12. skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
 
 ## Deferred not required
 
