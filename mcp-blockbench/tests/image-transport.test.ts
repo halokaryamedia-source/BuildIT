@@ -32,16 +32,13 @@ describe("bounded Reference Visual transport", () => {
 
   test("normal production exposes only the compact preview tool", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
-    for (const profileId of [
-      "BOOTSTRAP",
-      "BEDROCK_CUBOID_GEOMETRY",
-      "GEOMETRY_LOCAL_REPAIR",
-      "GEOMETRY_VISUAL_REBUILD",
-    ]) {
+    for (const profileId of ["BOOTSTRAP", "BEDROCK_CUBOID_GEOMETRY"]) {
       const tools = new Set<string>(profiles.profiles[profileId].allowed_tools);
       expect(tools.has("inspect_reference_visual_preview"), profileId).toBe(true);
       expect(tools.has("inspect_reference_visual"), profileId).toBe(false);
     }
+    expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
+    expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
     expect(profiles.forbidden_in_normal_profiles).toContain(
       "inspect_reference_visual"
     );
