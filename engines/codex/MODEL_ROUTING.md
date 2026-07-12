@@ -6,9 +6,9 @@ Reduce usage without lowering production quality. Route deterministically, use t
 
 The composer model affects the parent thread only. The user never selects worker models manually.
 
-## One-time preflight
+## Preflight without restart
 
-Project-local routing works only when Codex loads the trusted project `.codex/` layer. At the start of a new local project session, confirm that these agents are visible:
+Inspect whether these project roles are visible:
 
 ```text
 routine_auditor
@@ -17,13 +17,14 @@ visual_director
 critical_reviewer
 ```
 
-If they are missing, stop once with:
+When roles are missing, record `CODEX_PROJECT_CONFIG_NOT_LOADED` as a routing warning. Do not stop normal production and do not ask the user to start another Codex session.
 
-```text
-CODEX_PROJECT_CONFIG_NOT_LOADED
-```
+Current-session fallback:
 
-Ask the user to trust the current BuildIT project once. Do not continue with an invented routing configuration and do not repeat this request after the agents are visible.
+- missing Mini → parent performs the audit;
+- missing `mcp_builder` → Terra parent is the selected Terra writer;
+- missing Sol Medium → parent performs bounded visual comparison from the same Reference Visual and current views;
+- missing Sol High → stop only for a genuinely critical unresolved decision.
 
 ## Defaults and limits
 
@@ -46,11 +47,11 @@ Forbidden automatic routes:
 - automatic GPT-5.5, GPT-5.4, or Spark;
 - a model call whose only purpose is choosing another model.
 
-Reasoning summaries are disabled for Terra and Mini. Sol uses only concise reasoning summaries. Output verbosity stays low except for visual/critical decisions.
+Reasoning summaries are disabled for Terra and Mini. Sol uses concise summaries only. Output verbosity stays low except for visual/critical decisions.
 
 ## Why Terra is the parent
 
-Most BuildIT work is implementation, tool use, and MCP production. Terra handles this work directly. A Luna parent that delegates normal work to a Terra child reads and transfers context twice; use Luna only when selected explicitly by the user, not as the project default.
+Most BuildIT work is implementation, tool use, and MCP production. Terra handles it directly. A separate controller plus Terra child duplicates context and usage.
 
 ## Active writer selection
 
@@ -66,48 +67,42 @@ or isolated worker is materially safer
 → mcp_builder becomes the only writer
 ```
 
-Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently. The Blockbench write lease remains the final runtime authority.
+Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently. The Blockbench write lease is the final runtime authority.
 
-Multiple read-only MCP sessions are allowed. Session ambiguity must not block `get_runtime_status`, `get_tool_profile`, `get_stage_context`, visual inspection, or other read-only calls. A mutation still requires explicit caller identity or ownership of the active write lease.
+Multiple read-only MCP sessions are allowed. A mutation requires explicit caller identity or ownership of the active write lease.
+
+## One-session continuity
+
+The plugin registers one stable protocol-level tool surface. The active logical profile still blocks stage-inappropriate calls.
+
+```text
+profile or stage changes
+→ old lease released
+→ same MCP session
+→ same Codex session
+→ get_stage_context
+→ fresh stage lease
+```
+
+Never create a new Codex session, reconnect MCP, or reload the plugin for a normal profile change, approval, revision, or stage transition.
 
 ## Roles
 
 ### Parent/controller
 
-Classify the request using this file, load compact authority, and consolidate results. Directly handle micro work and normal implementation when the parent is Terra Medium. Do not spawn agents when delegation costs more than the task.
+Classify the request, load compact authority, and consolidate results. Handle micro work and normal implementation directly when the parent is Terra Medium.
 
 ### `routine_auditor`
 
-Use only for sizeable mechanical read-only work:
-
-- targeted repository mapping;
-- file/hash/profile/adapter checks;
-- existing test/build result summaries;
-- evidence and checkpoint inventory.
-
-Blockbench MCP is disabled. It cannot write generated output or make visual decisions.
+Use only for sizeable mechanical read-only work: targeted repository mapping, file/hash/profile checks, existing test/build summaries, and evidence inventory. Blockbench MCP is disabled.
 
 ### `mcp_builder`
 
-Fallback Terra writer for:
-
-- standard implementation when the parent is not the approved Terra writer;
-- source changes from an approved plan;
-- commands that create generated output;
-- Geometry, Texture, Animation, evidence, checkpoint, and stage writes.
-
-It may hold the Blockbench lease only after writer ownership is delegated to it.
+Fallback Terra writer for approved standard implementation and active-asset writes. It may hold the Blockbench lease only after writer ownership is delegated to it.
 
 ### `visual_director`
 
-Read-only Sol Medium for:
-
-- Reference Visual interpretation;
-- ambiguous cross-view trade-offs;
-- subjective user feedback;
-- final visual acceptance.
-
-Its Blockbench MCP surface is allowlisted to inspection tools. It never calls persistent diagnosis, evidence-write, lease, mutation, checkpoint, profile, or completion tools.
+Read-only Sol Medium for Reference Visual interpretation, ambiguous cross-view trade-offs, subjective user feedback, and final visual acceptance. Its Blockbench MCP surface is inspection-only.
 
 ### `critical_reviewer`
 
@@ -126,34 +121,44 @@ Blockbench MCP is disabled. Failure returns a blocker; effort never rises above 
 
 ## Full-access caveat
 
-Codex can reapply the parent turn's live permission mode to children. Therefore `sandbox_mode = "read-only"` is defense-in-depth, not the active-asset write boundary.
+Codex can reapply the parent turn's live permission mode to children. `sandbox_mode = "read-only"` is defense-in-depth, not the active-asset write boundary.
 
 BuildIT enforces active-asset safety through:
 
 1. custom-agent MCP allowlists/disablement;
 2. one selected writer;
-3. the project UUID/state/profile-aware Blockbench write lease;
+3. project UUID/state/profile-aware write lease;
 4. current evidence and world-space freshness guards.
 
 ## Deterministic classification
 
 | Class | Conditions | Route |
 | --- | --- | --- |
-| `MICRO` | Obvious low-risk change, little exploration, no visual judgment or active-asset mutation | Parent directly |
-| `ROUTINE` | Sizeable mechanical read-only work | `routine_auditor` |
-| `STANDARD_BUILD` | Requirements clear; implementation or workspace write required | Terra parent, or `mcp_builder` fallback |
-| `COMPLEX_VISUAL` | Species, style, silhouette, cross-view, or subjective judgment | `visual_director` → selected writer |
-| `CRITICAL` | Valid reason code and Medium route did not resolve it | `critical_reviewer` once → selected writer |
+| `MICRO` | Obvious low-risk change, no visual judgment or mutation | Parent directly |
+| `ROUTINE` | Sizeable mechanical read-only work | `routine_auditor`, else parent |
+| `STANDARD_BUILD` | Clear implementation or workspace write | Terra parent, or `mcp_builder` |
+| `COMPLEX_VISUAL` | Species, silhouette, cross-view, subjective judgment | `visual_director`, else parent fallback |
+| `CRITICAL` | Valid reason code and Medium route failed | `critical_reviewer` once |
 
 ## MCP production routing
 
 ### Startup and identity
 
-The parent handles `get_runtime_status`, `get_stage_context`, and metadata-only identity synchronization. No Sol call is needed. Use the returned `canonical_session_root` for all later calls.
+The parent handles workspace initialization, project creation, `get_runtime_status`, `get_stage_context`, and metadata-only identity synchronization. Use the returned `canonical_session_root` for all later calls.
+
+### Golden Sample zero-start
+
+For final Black Rhinoceros acceptance, initialize a fresh workspace from:
+
+```text
+docs/reference/golden-samples/black_rhinoceros
+```
+
+Use `workspace:sample`. Confirm no `.bbmodel`, checkpoint, evidence, or previous state was copied. Create the project through MCP and build Geometry from zero.
 
 ### Reference direction
 
-Use `visual_director` once per unchanged Reference Visual hash. Return only primary masses, silhouette priorities, preserved areas, and build order.
+Use `visual_director` once per unchanged Reference Visual hash when available. Otherwise the parent performs the same compact comparison without asking for a new session.
 
 ### Implementation
 
@@ -161,18 +166,13 @@ The selected writer obtains the lease, performs bounded mutations, and validates
 
 ### Visual escalation
 
-Use `visual_director` only when:
+Use visual judgment only when affected views conflict, root cause is unclear, deterministic metrics pass but the user requests change, or final artistic acceptance is required.
 
-- affected views conflict;
-- the visual root cause is unclear;
-- deterministic metrics pass but the user requests a visual change;
-- final artistic acceptance is required.
-
-Provide only the Reference Visual, affected/current views, analyzer summary, fingerprint/signature, constraints, and last-change summary.
+Provide only the Reference Visual, affected/current views, analyzer summary, signatures, constraints, and last-change summary.
 
 ### Deterministic validation
 
-Do not call Sol for typecheck, tests, profile validation, hashes, state revision, fixed-scale metrics, review readiness, or export integrity. Commands that write generated output run on the Terra parent or `mcp_builder`; Mini may inspect the result afterward only when useful.
+Do not call Sol for typecheck, tests, profile validation, hashes, state revision, fixed-scale metrics, review readiness, or export integrity. Generated-output writes run on the selected Terra writer.
 
 ## Compact Sol packet
 
@@ -204,7 +204,7 @@ Exclude raw logs, unrelated history, and broad repository dumps.
 
 ```text
 deterministic/direct Terra work
-→ visual_director Medium only when required
+→ visual_director Medium only when required and available
 → critical_reviewer High once only when justified
 → blocker
 ```
@@ -217,23 +217,8 @@ Sol decision
 → deterministic validation
 ```
 
-## Missing-role fallback
-
-- Mini unavailable: parent performs the read-only audit directly.
-- `mcp_builder` unavailable: default Terra parent may write; a non-Terra parent delegates only if another approved Terra writer exists.
-- Sol Medium unavailable: continue deterministic repairs only; stop with `MODEL_ROUTE_UNAVAILABLE` when visual judgment is mandatory.
-- Sol High unavailable: report the critical blocker; never substitute a weaker model silently.
-
-Ask the user to change a model only for a mandatory unavailable visual/critical capability.
-
 ## Reporting
 
-Return only:
+Return only route/active writer, justified escalation, implementation result, validation result, and blocker or next safe operation.
 
-- route and active writer;
-- reason for Sol or High, if used;
-- implementation result;
-- validation result;
-- blocker or next safe operation.
-
-Do not add persistent routing telemetry before local benchmark data shows that it is useful.
+Do not ask the user to test internal components. Do not report readiness until automated checks pass and the only remaining action is the one zero-start Golden Sample acceptance test.
