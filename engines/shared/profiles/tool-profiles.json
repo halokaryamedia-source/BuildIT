@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.5",
+  "schema_version": "2.6",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "stage_transition_only",
   "core_tools": [
@@ -53,10 +53,11 @@
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
-      "description": "Classic Bedrock cuboid UV and pixel texture work, same-profile revision, identity recovery, review submission, and approval. PBR, gradients, and mesh UV are excluded.",
+      "description": "Classic Bedrock cuboid UV and pixel texture work, same-profile revision, guarded upstream reopen, identity recovery, review submission, and approval. PBR, gradients, and mesh UV are excluded.",
       "allowed_tools": [
         "rebind_active_project_identity",
         "prepare_stage_revision",
+        "reopen_stage_for_revision",
         "list_outline",
         "find_elements_by_criteria",
         "list_textures",
@@ -71,7 +72,6 @@
         "draw_shape_tool",
         "paint_with_brush",
         "eraser_tool",
-        "color_picker_tool",
         "undo",
         "redo",
         "validate_reference_contract",
@@ -83,10 +83,11 @@
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
-      "description": "Bedrock group/bone rigging and required clips with same-profile revision, identity recovery, review submission, and approval, without mesh armatures or vertex weights.",
+      "description": "Bedrock group/bone rigging and required clips with same-profile revision, guarded upstream reopen, identity recovery, review submission, and approval, without mesh armatures or vertex weights.",
       "allowed_tools": [
         "rebind_active_project_identity",
         "prepare_stage_revision",
+        "reopen_stage_for_revision",
         "list_outline",
         "find_elements_by_criteria",
         "bone_rigging",
@@ -105,10 +106,11 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation with same-profile final-package revision, identity recovery, current Geometry readiness, evidence/export, review submission, and guarded completion.",
+      "description": "Read-mostly final validation with same-profile final-package revision, guarded upstream reopen, identity recovery, current Geometry readiness, evidence/export, review submission, and completion.",
       "allowed_tools": [
         "rebind_active_project_identity",
         "prepare_stage_revision",
+        "reopen_stage_for_revision",
         "list_outline",
         "find_elements_by_criteria",
         "list_textures",
