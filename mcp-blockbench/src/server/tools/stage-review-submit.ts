@@ -12,8 +12,13 @@ import {
   assertInsideRoot,
   readJsonFile,
   writeJsonAtomically,
-  type NativeFsLike,
 } from "@/lib/atomicFiles";
+import {
+  assertCurrentStageReport,
+  joinSessionPath,
+  type EvidenceStage,
+  type ExtendedFs,
+} from "@/lib/stageEvidence";
 import {
   getProjectWriteLeaseSnapshot,
   updateProjectWriteLeaseWorkflow,
@@ -34,7 +39,7 @@ export const stageReviewSubmitToolDocs: ToolSpec[] = [
   {
     name: "submit_stage_for_review",
     description:
-      "Validates current Texture, Animation, or Final Validation evidence/report, rejects reports older than the latest prepared revision, saves the next unused non-approved review checkpoint, and atomically enters the user-review state without changing profile.",
+      "Verifies the current project-bound Texture, Animation, or Final Validation report and evidence hashes, runs fresh contract validation, saves the next unused non-approved review checkpoint, and atomically enters the user-review state without changing profile.",
     annotations: {
       title: "Submit Stage for User Review",
       destructiveHint: true,
@@ -61,8 +66,6 @@ interface StagePolicy {
   checkpointBase: number;
   checkpointStem: string;
   checkpointStateKey: string;
-  reportRelative: string;
-  requiredEvidence: string[];
 }
 
 const policies: Record<ReviewStage, StagePolicy> = {
@@ -75,15 +78,6 @@ const policies: Record<ReviewStage, StagePolicy> = {
     checkpointBase: 30,
     checkpointStem: "texture_review",
     checkpointStateKey: "texture_review",
-    reportRelative: "evidence/texture/texture_report.json",
-    requiredEvidence: [
-      "evidence/texture/texture_atlas.png",
-      "evidence/texture/texture_front.png",
-      "evidence/texture/texture_left.png",
-      "evidence/texture/texture_back.png",
-      "evidence/texture/texture_front_left_3_4.png",
-      "evidence/texture/texture_report.json",
-    ],
   },
   ANIMATION: {
     workingState: "ANIMATION_IN_PROGRESS",
@@ -94,13 +88,6 @@ const policies: Record<ReviewStage, StagePolicy> = {
     checkpointBase: 50,
     checkpointStem: "animation_review",
     checkpointStateKey: "animation_review",
-    reportRelative: "evidence/animation/animation_report.json",
-    requiredEvidence: [
-      "evidence/animation/animation_neutral_pose.png",
-      "evidence/animation/animation_hierarchy.json",
-      "evidence/animation/animation_pivots.json",
-      "evidence/animation/animation_report.json",
-    ],
   },
   FINAL_VALIDATION: {
     workingState: "FINAL_VALIDATION",
@@ -111,33 +98,17 @@ const policies: Record<ReviewStage, StagePolicy> = {
     checkpointBase: 70,
     checkpointStem: "final_candidate",
     checkpointStateKey: "final_candidate",
-    reportRelative: "evidence/final/validation_report.json",
-    requiredEvidence: [
-      "evidence/final/final_front.png",
-      "evidence/final/final_left.png",
-      "evidence/final/final_back.png",
-      "evidence/final/final_top.png",
-      "evidence/final/final_front_left_3_4.png",
-      "evidence/final/final_texture_atlas.png",
-      "evidence/final/validation_report.json",
-      "evidence/final/completed_VALIDATION.md",
-    ],
   },
 };
 
-function joinPath(root: string, relative: string): string {
-  const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
-  return `${root.replace(/[\\/]$/, "")}${separator}${relative.replace(/^[\\/]/, "")}`;
-}
-
-function nativeFs(): NativeFsLike {
+function nativeFs(): ExtendedFs {
   // @ts-ignore Blockbench runtime permission API.
   const fs = requireNativeModule("fs", {
     message: "Stage review submission needs state, evidence, and checkpoint access.",
     optional: false,
   });
   if (!fs) throw new Error("Filesystem access was denied.");
-  return fs as NativeFsLike;
+  return fs as ExtendedFs;
 }
 
 async function executeRegisteredTool(
@@ -160,34 +131,12 @@ function reportResult(report: Record<string, any>): string | null {
   return typeof value === "string" ? value.toUpperCase() : null;
 }
 
-function timestamp(value: unknown): number | null {
-  const parsed = Date.parse(String(value ?? ""));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function assertReportFresh(
-  report: Record<string, any>,
-  stageRecord: Record<string, any>
-): void {
-  const boundary = timestamp(
-    stageRecord.revision?.evidence_after ?? stageRecord.revision?.prepared_at
-  );
-  if (boundary === null) return;
-
-  const reportTime = timestamp(report.created_at ?? report.updated_at);
-  if (reportTime === null || reportTime <= boundary) {
-    throw new Error(
-      "STAGE_REPORT_STALE: create fresh evidence and a new PASS report after prepare_stage_revision before submitting for review."
-    );
-  }
-}
-
 function nextCheckpoint(
-  fs: NativeFsLike,
+  fs: ExtendedFs,
   sessionRoot: string,
   policy: StagePolicy
 ): { modelPath: string; metadataPath: string; checkpointName: string } {
-  const directory = joinPath(sessionRoot, "checkpoints");
+  const directory = joinSessionPath(sessionRoot, "checkpoints");
   assertInsideRoot(directory, sessionRoot);
   fs.mkdirSync(directory, { recursive: true });
 
@@ -202,8 +151,8 @@ function nextCheckpoint(
   while (number < 10000) {
     const prefix = String(number).padStart(2, "0");
     const checkpointName = `${prefix}_${policy.checkpointStem}`;
-    const modelPath = joinPath(directory, `${checkpointName}.bbmodel`);
-    const metadataPath = joinPath(directory, `${checkpointName}.json`);
+    const modelPath = joinSessionPath(directory, `${checkpointName}.bbmodel`);
+    const metadataPath = joinSessionPath(directory, `${checkpointName}.json`);
     if (!fs.existsSync(modelPath) && !fs.existsSync(metadataPath)) {
       return { modelPath, metadataPath, checkpointName };
     }
@@ -214,7 +163,7 @@ function nextCheckpoint(
 }
 
 function removeCheckpoint(
-  fs: NativeFsLike,
+  fs: ExtendedFs,
   checkpoint: { modelPath: string; metadataPath: string }
 ): void {
   for (const path of [checkpoint.modelPath, checkpoint.metadataPath]) {
@@ -246,7 +195,7 @@ export function registerStageReviewSubmitTools(): void {
 
         const policy = policies[stage];
         const fs = nativeFs();
-        const statePath = joinPath(session_root, "state.json");
+        const statePath = joinSessionPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
         const state = readJsonFile<Record<string, any>>(fs, statePath);
         const previousState = structuredClone(state);
@@ -294,28 +243,17 @@ export function registerStageReviewSubmitTools(): void {
           throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
         }
 
-        const requiredEvidence = [...policy.requiredEvidence];
-        if (stage === "FINAL_VALIDATION") {
-          requiredEvidence.push(`final/${asset_id}.bbmodel`, "final/textures");
-        }
-        const missing = requiredEvidence
-          .map((relative) => joinPath(session_root, relative))
-          .filter((path) => {
-            assertInsideRoot(path, session_root);
-            return !fs.existsSync(path);
-          });
-        if (missing.length > 0) {
-          throw new Error(`STAGE_EVIDENCE_MISSING: ${missing.join(", ")}`);
-        }
-
-        const reportPath = joinPath(session_root, policy.reportRelative);
-        assertInsideRoot(reportPath, session_root);
-        const report = readJsonFile<Record<string, any>>(fs, reportPath);
-        assertReportFresh(report, stageRecord);
+        const { report, current } = assertCurrentStageReport({
+          fs,
+          root: session_root,
+          stage: stage as EvidenceStage,
+          projectUuid: expected_project_uuid,
+          stageRecord,
+        });
         const currentReportResult = reportResult(report);
         if (currentReportResult !== "PASS") {
           throw new Error(
-            `STAGE_REPORT_NOT_PASS: ${reportPath} reports ${currentReportResult ?? "MISSING"}.`
+            `STAGE_REPORT_NOT_PASS: ${current.reportPath} reports ${currentReportResult ?? "MISSING"}.`
           );
         }
 
@@ -426,7 +364,9 @@ export function registerStageReviewSubmitTools(): void {
             profile_switch_required: false,
             reconnect_required: false,
             validation: validation?.structuredContent ?? null,
-            report_path: reportPath,
+            report_path: current.reportPath,
+            project_content_signature: current.projectContentSignature,
+            evidence_hashes: current.evidenceHashes,
           },
         };
       },
