@@ -30,7 +30,7 @@ describe("single-session production contract", () => {
   });
 
   test("normalizes runtime and profile snapshots to no-reconnect semantics", () => {
-    const profile = {
+    const profile: Record<string, any> = {
       reconnect_required_after_change: true,
     };
     normalizeContinuityProfileSnapshot(profile);
@@ -40,7 +40,7 @@ describe("single-session production contract", () => {
       execution_surface: "ACTIVE_PROFILE_GUARDED",
     });
 
-    const runtime = {
+    const runtime: Record<string, any> = {
       tool_profile: { reconnect_required_after_change: true },
       contract: {},
     };
