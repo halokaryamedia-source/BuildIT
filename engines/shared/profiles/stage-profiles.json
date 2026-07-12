@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.2",
+  "schema_version": "3.3",
   "global": {
     "runtime_authority": "workspace/active/<asset>/mcp/state.json",
     "governance": "engines/shared/workflow/GOVERNANCE.md",
@@ -12,6 +12,9 @@
     "geometry_profile_policy": "single_profile_one_session",
     "profile_transition_policy": "stage_transition_only",
     "accepted_area_policy": "immutable_unless_explicitly_reopened",
+    "identity_recovery_policy": "available_in_every_active_stage_before_lease",
+    "review_submission_policy": "automatic_guarded_transition",
+    "checkpoint_policy": "next_unused_for_review_and_approval",
     "visual_feedback_budget": {
       "reference_inspections": 1,
       "targeted_diagnostic_checks": 3,
@@ -48,6 +51,7 @@
     "diagnostic_guard_required": true,
     "fixed_scale_required": true,
     "free_rescale_forbidden": true,
+    "world_signature_required": true,
     "required_final_visual_result": "PASS",
     "targeted_views": ["left_side", "front", "top_footprint"],
     "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
@@ -96,7 +100,7 @@
       "review_submission_tool": "submit_geometry_for_review",
       "approval_transition_tool": "complete_geometry_stage",
       "review_checkpoint_policy": "next_unused_non_approved_geometry_checkpoint",
-      "approved_checkpoint": "checkpoints/20_geometry_approved.bbmodel",
+      "approved_checkpoint_policy": "next_unused_approved_geometry_checkpoint",
       "required_evidence": {
         "front": "evidence/geometry/geometry_front.png",
         "left_side": "evidence/geometry/geometry_left.png",
@@ -117,12 +121,14 @@
       "working_state": "TEXTURE_IN_PROGRESS",
       "review_state": "TEXTURE_REVIEW",
       "approved_state": "TEXTURE_APPROVED",
+      "identity_sync_tool": "rebind_active_project_identity",
       "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
       "compact_validation_tool": "validate_reference_contract",
       "atlas_evidence_tool": "save_texture_evidence",
+      "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
-      "review_checkpoint": "checkpoints/30_texture_review.bbmodel",
-      "approved_checkpoint": "checkpoints/40_texture_approved.bbmodel",
+      "review_checkpoint_policy": "next_unused_texture_review_checkpoint",
+      "approved_checkpoint_policy": "next_unused_texture_approved_checkpoint",
       "required_evidence": {
         "atlas": "evidence/texture/texture_atlas.png",
         "front": "evidence/texture/texture_front.png",
@@ -141,11 +147,12 @@
       "approved_state": "ANIMATION_APPROVED",
       "skipped_state": "ANIMATION_SKIPPED",
       "optional": true,
+      "identity_sync_tool": "rebind_active_project_identity",
       "compact_validation_tool": "validate_reference_contract",
+      "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
-      "review_checkpoint": "checkpoints/50_animation_review.bbmodel",
-      "approved_checkpoint": "checkpoints/60_animation_approved.bbmodel",
-      "skipped_checkpoint": "checkpoints/60_animation_skipped.bbmodel"
+      "review_checkpoint_policy": "next_unused_animation_review_checkpoint",
+      "approved_checkpoint_policy": "next_unused_animation_approved_or_skipped_checkpoint"
     },
     "FINAL_VALIDATION": {
       "tool_profile_id": "FINAL_VALIDATION_READONLY",
@@ -154,12 +161,14 @@
       "review_state": "FINAL_REVIEW",
       "approved_state": "DONE",
       "automatic_local_fix_limit": 2,
+      "identity_sync_tool": "rebind_active_project_identity",
       "compact_validation_tool": "validate_reference_contract",
       "geometry_review_readiness_tool": "verify_geometry_review_ready",
       "atlas_evidence_tool": "save_texture_evidence",
+      "review_submission_tool": "submit_stage_for_review",
       "approval_transition_tool": "complete_stage",
-      "candidate_checkpoint": "checkpoints/70_final_candidate.bbmodel",
-      "pass_checkpoint": "checkpoints/80_validation_pass.bbmodel"
+      "candidate_checkpoint_policy": "next_unused_final_candidate_checkpoint",
+      "pass_checkpoint_policy": "next_unused_validation_pass_checkpoint"
     }
   }
 }
