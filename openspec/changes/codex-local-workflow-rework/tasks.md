@@ -7,25 +7,26 @@
 - [x] Use one runtime state authority and one workspace selection index.
 - [x] Separate user-facing `blockbench/` from internal `mcp/` data.
 - [x] Use Geometry, Texture, optional Animation, and Final Validation review stages.
-- [x] Add exact stage/repair tool profiles and synchronized production skills.
 - [x] Add persistent checkpoints, stable evidence, direct texture evidence, atomic stage completion, and write-lease protection.
 - [x] Add active/completed workspace lifecycle and immutable completed baselines.
 - [x] Replace the old four-sheet package with one Reference Visual plus Markdown/JSON contracts.
 
 ## Geometry quality implementation
 
-- [x] Return the approved Reference Visual as an MCP image payload.
+- [x] Return the approved Reference Visual through bounded MCP preview transport while preserving source hash authority.
 - [x] Return clean current-model visual feedback images.
 - [x] Add transformed cube/group world-space bounds.
 - [x] Add fixed approved-scale cuboid projection with no current-model free rescale.
-- [x] Add global silhouette, profile, bounding-box, and semantic-region metrics.
+- [x] Add global silhouette, profile, bounding-box, semantic-region, edge, and ground metrics.
 - [x] Add actionable view/region/direction/magnitude/part recommendations.
 - [x] Add Black Rhinoceros built-in compatibility profile keyed by approved Reference Visual hash.
 - [x] Add manifest-extensible panel, region, part, and rotation contracts.
-- [x] Add enforced `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` runtime phases.
-- [x] Block horns, ears, final feet, tail, and detail during `PRIMARY_FORM`.
-- [x] Add two-cycle convergence tracking and `VISUAL_CONVERGENCE_FAILED`.
-- [x] Apply Geometry guards to `GEOMETRY_VISUAL_REBUILD`.
+- [x] Use one `BEDROCK_CUBOID_GEOMETRY` profile for setup, diagnosis, revision, validation, and review.
+- [x] Make `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` advisory progress markers rather than user-facing gates.
+- [x] Treat `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` as internal diagnosis scopes.
+- [x] Add safe project identity synchronization before write-lease acquisition.
+- [x] Keep major revision preparation inside the current Geometry profile/session.
+- [x] Replace convergence hard-locking with an attention flag.
 - [x] Add `rotate_cube_about_attachment` with pivot, axis/range, direction, connection, before/after score, and rollback.
 - [x] Reject direct non-zero rotation through generic Geometry cube tools.
 - [x] Add strict five-view/current-hash/current-fingerprint review readiness.
@@ -41,35 +42,37 @@
 - [x] Update Validation skill and adapters.
 - [x] Update Codex bootstrap and repository agent rules.
 - [x] Update tool and stage profiles.
-- [x] Register Geometry diagnosis, rotation, validation, review, and completion tools in runtime and docs manifests.
-- [ ] Update Reference Studio manifest template with mandatory non-zero crops, weighted regions, part constraints, and rotation contracts.
-- [ ] Update Black Rhinoceros handoff and Geometry contract to name the final analyzer/rotation/validator flow.
+- [x] Register Geometry diagnosis, identity, rotation, validation, review, and completion tools in runtime and docs manifests.
+- [x] Update Reference Studio manifest template with non-zero crops, weighted regions, part constraints, rotation contracts, bounded image transport, and one Geometry profile.
+- [x] Update Black Rhinoceros handoff and Geometry architecture documentation.
+- [x] Update OpenSpec/Ponytail to reject separate Geometry rework profiles and unnecessary reconnects.
 
-## Regression coverage before testing
+## Regression coverage before local testing
 
-- [ ] Add pure projection tests proving fixed scale and ground alignment.
-- [ ] Add profile tests proving Geometry profiles expose only guarded tools.
-- [ ] Add phase tests proving detail is blocked during primary form.
-- [ ] Add rotation-contract tests for axis, direction, connection, and rollback markers.
-- [ ] Add negative fixture test proving the failed Black Rhinoceros checkpoint cannot pass Geometry quality gates.
-- [ ] Add positive synthetic projection test.
-- [ ] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
-- [ ] Confirm skill adapters are byte-identical to canonical skills.
+- [x] Add pure projection tests proving fixed scale and ground alignment.
+- [x] Add profile tests proving one Geometry profile exposes only guarded tools.
+- [x] Add identity tests proving metadata synchronization is lease-exempt but model mutation is not.
+- [x] Add tests proving internal progress markers do not hard-lock Geometry.
+- [x] Add rotation-contract tests for axis, direction, connection, and rollback markers.
+- [x] Add negative fixture test proving the failed Black Rhinoceros checkpoint cannot pass Geometry quality gates.
+- [x] Add positive synthetic projection test.
+- [x] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
+- [x] Confirm skill adapters are byte-identical to canonical skills.
 
-## Final test step — do only after implementation is complete
+## Final local verification — after GitHub implementation is complete
 
+- [ ] Pull `Rework` once on the local workstation.
 - [ ] Run `bun install --frozen-lockfile`.
 - [ ] Run `bun run skills:check`.
 - [ ] Run full `bun run typecheck`.
 - [ ] Run all `bun test` tests.
 - [ ] Run `bun run build` and confirm `dist/mcp.js` exists.
-- [ ] Inspect the `MCP Verify` workflow result for the final branch head.
-- [ ] Fix every failure and repeat until all static gates pass.
-- [ ] Reload `dist/mcp.js` locally.
-- [ ] Run one controlled Black Rhinoceros Geometry dry run.
-- [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts instead of generic mismatch text.
+- [ ] Load the new plugin binary once.
+- [ ] Run one controlled Black Rhinoceros Geometry production flow through Codex.
+- [ ] Confirm Codex synchronizes project identity without user JSON edits or profile switching.
+- [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts.
+- [ ] Confirm local and major corrections stay in `BEDROCK_CUBOID_GEOMETRY` without reconnecting.
 - [ ] Confirm unsafe rotation is rejected or rolled back.
-- [ ] Confirm non-improving cycles stop.
 - [ ] Confirm Geometry cannot reach review or approval without all current evidence.
 
 ## Deferred until explicit integration approval
