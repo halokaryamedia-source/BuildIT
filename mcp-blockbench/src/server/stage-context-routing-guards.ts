@@ -16,6 +16,7 @@ interface RoutingPolicy {
   workingState: string;
   reviewState: string;
   awaitAction: string;
+  profileId: string;
   reportRelative: string;
   requiredEvidence: string[];
 }
@@ -25,6 +26,7 @@ const policies: Record<string, RoutingPolicy> = {
     workingState: "TEXTURE_IN_PROGRESS",
     reviewState: "TEXTURE_REVIEW",
     awaitAction: "AWAIT_TEXTURE_REVIEW",
+    profileId: "BEDROCK_CUBOID_TEXTURE",
     reportRelative: "evidence/texture/texture_report.json",
     requiredEvidence: [
       "evidence/texture/texture_atlas.png",
@@ -39,6 +41,7 @@ const policies: Record<string, RoutingPolicy> = {
     workingState: "ANIMATION_IN_PROGRESS",
     reviewState: "ANIMATION_REVIEW",
     awaitAction: "AWAIT_ANIMATION_REVIEW",
+    profileId: "BEDROCK_CUBOID_ANIMATION",
     reportRelative: "evidence/animation/animation_report.json",
     requiredEvidence: [
       "evidence/animation/animation_neutral_pose.png",
@@ -51,6 +54,7 @@ const policies: Record<string, RoutingPolicy> = {
     workingState: "FINAL_VALIDATION",
     reviewState: "FINAL_REVIEW",
     awaitAction: "AWAIT_FINAL_REVIEW",
+    profileId: "FINAL_VALIDATION_READONLY",
     reportRelative: "evidence/final/validation_report.json",
     requiredEvidence: [
       "evidence/final/final_front.png",
@@ -75,7 +79,7 @@ function joinPath(root: string, relative: string): string {
 function nativeFs(): NativeFsLike {
   // @ts-ignore Blockbench runtime permission API.
   const fs = requireNativeModule("fs", {
-    message: "Compact stage routing needs current evidence read access.",
+    message: "Compact stage routing needs current state and evidence read access.",
     optional: false,
   });
   if (!fs) throw new Error("Filesystem access was denied.");
@@ -92,12 +96,18 @@ function reportResult(report: Record<string, any>): string | null {
   return typeof value === "string" ? value.toUpperCase() : null;
 }
 
+function timestamp(value: unknown): number | null {
+  const parsed = Date.parse(String(value ?? ""));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function reviewReady(
   fs: NativeFsLike,
   root: string,
   assetId: string | null,
   stage: string,
-  policy: RoutingPolicy
+  policy: RoutingPolicy,
+  stageRecord: Record<string, any>
 ): boolean {
   const required = [...policy.requiredEvidence];
   if (stage === "FINAL_VALIDATION" && assetId) {
@@ -113,7 +123,14 @@ function reviewReady(
   const reportPath = joinPath(root, policy.reportRelative);
   assertInsideRoot(reportPath, root);
   const report = readJsonFile<Record<string, any>>(fs, reportPath);
-  return reportResult(report) === "PASS";
+  if (reportResult(report) !== "PASS") return false;
+
+  const boundary = timestamp(
+    stageRecord.revision?.evidence_after ?? stageRecord.revision?.prepared_at
+  );
+  if (boundary === null) return true;
+  const reportTime = timestamp(report.created_at ?? report.updated_at);
+  return reportTime !== null && reportTime > boundary;
 }
 
 function routeStageContext(args: Record<string, unknown>, result: any): void {
@@ -126,34 +143,48 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   const root = typeof args.session_root === "string" ? args.session_root : null;
   if (!policy || !root) return;
 
+  const fs = nativeFs();
+  const statePath = joinPath(root, "state.json");
+  assertInsideRoot(statePath, root);
+  const state = readJsonFile<Record<string, any>>(fs, statePath);
+  const stageRecord = state.workflow?.stage_records?.[stage] ?? {};
+  const stateRevision = Number(state.state_revision ?? -1);
+
   const workflowState = String(context.workflow?.state ?? "");
   const runtimeUuid = context.project?.runtime_uuid ?? null;
   const identityReady = context.project?.identity_ready === true;
   const rebindRequired = context.project?.rebind_required === true;
   const leaseActive = context.lease?.status === "ACTIVE";
-  const leaseMatchesProject =
-    leaseActive && context.lease?.project_uuid === runtimeUuid;
+  const leaseCurrent = Boolean(
+    leaseActive &&
+      context.lease?.project_uuid === runtimeUuid &&
+      Number(context.lease?.state_revision ?? -2) === stateRevision &&
+      context.lease?.profile_id === policy.profileId
+  );
 
   let next = "CONTINUE_STAGE";
   let ready = false;
 
-  if (workflowState === policy.reviewState) {
-    next = policy.awaitAction;
-  } else if (rebindRequired) {
+  if (rebindRequired) {
     next = leaseActive
       ? "manage_project_write_lease:release"
       : "rebind_active_project_identity";
   } else if (!identityReady) {
     next = "BLOCKER:PROJECT_IDENTITY_NOT_READY";
-  } else if (!leaseMatchesProject) {
+  } else if (workflowState === policy.reviewState) {
+    next = policy.awaitAction;
+  } else if (leaseActive && !leaseCurrent) {
+    next = "manage_project_write_lease:release";
+  } else if (!leaseCurrent) {
     next = "manage_project_write_lease:acquire";
   } else if (workflowState === policy.workingState) {
     ready = reviewReady(
-      nativeFs(),
+      fs,
       root,
       context.asset?.id ? String(context.asset.id) : null,
       stage,
-      policy
+      policy,
+      stageRecord
     );
     next = ready ? "submit_stage_for_review" : "CONTINUE_STAGE";
   }
@@ -162,7 +193,11 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
   context.automation = context.automation ?? {};
   context.automation.exact_next_safe_operation = next;
   context.automation.review_submission_tool = "submit_stage_for_review";
+  context.automation.revision_prepare_tool = "prepare_stage_revision";
   context.automation.stage_review_ready = ready;
+  context.automation.lease_current = leaseCurrent;
+  context.automation.approval_requires_lease =
+    workflowState === policy.reviewState && !leaseCurrent;
   context.automation.user_file_edits_required = false;
   context.automation.user_restart_required = false;
 }
