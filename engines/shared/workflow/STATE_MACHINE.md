@@ -28,7 +28,7 @@ All Geometry work uses:
 BEDROCK_CUBOID_GEOMETRY
 ```
 
-The profile covers project identity synchronization, diagnosis, local correction, major revision preparation, editing, validation, and review.
+The profile covers project identity synchronization, diagnosis, local correction, major revision preparation, editing, validation, automatic review submission, and approval.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal revision scopes. They are not profiles or workflow states and do not require reconnecting.
 
@@ -83,7 +83,8 @@ The operation:
 - requires the current Geometry write lease;
 - requires current project UUID, state revision, Geometry fingerprint, Reference Visual hash, and diagnosis;
 - preserves all checkpoints and primary masses;
-- may remove only machine-classified structural detail;
+- keeps structural detail by default;
+- may remove only machine-classified structural detail when explicitly requested;
 - records `revision_mode = MAJOR_FORM_REVISION`;
 - keeps the active profile unchanged;
 - returns workflow state to `GEOMETRY_IN_PROGRESS` with next action `CONTINUE_GEOMETRY`.
@@ -116,6 +117,53 @@ Review evidence must be bound to the current:
 - fixed approved scale with free-rescale disabled.
 
 A structural PASS alone must never transition to `GEOMETRY_REVIEW` or `GEOMETRY_APPROVED`.
+
+## Automatic Geometry review submission
+
+When Geometry is `FINAL_REVIEW_READY`, Codex calls:
+
+```text
+submit_geometry_for_review
+```
+
+The tool performs one guarded transition:
+
+```text
+verify_geometry_review_ready
+→ save next unused non-approved Geometry review checkpoint
+→ update state_revision once
+→ workflow.state = GEOMETRY_REVIEW
+→ workflow.status = AWAITING_USER_REVIEW
+→ workflow.next_action = AWAIT_GEOMETRY_REVIEW
+```
+
+The submission remains in `BEDROCK_CUBOID_GEOMETRY`, keeps the current lease aligned to the new revision, and does not require reconnecting. The user does not edit `state.json`, choose a checkpoint name, or manually change workflow state.
+
+After submission, `get_stage_context` returns:
+
+```text
+AWAIT_GEOMETRY_REVIEW
+```
+
+The user responds only with approval or targeted revision feedback.
+
+## Geometry revision routing
+
+Any Geometry revision result routes to:
+
+```text
+BEDROCK_CUBOID_GEOMETRY
+```
+
+Codex then uses `analyze_geometry_views` to classify:
+
+```text
+LOCAL_REPAIR
+or
+MAJOR_FORM_REVISION
+```
+
+Removed repair-profile names must never be activated.
 
 ## Authority conflicts
 
