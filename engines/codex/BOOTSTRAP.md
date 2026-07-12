@@ -2,17 +2,15 @@
 
 ## Goal
 
-Build only what the approved package requires using the fewest safe reads, skills, tools, calls, images, and repair cycles while preserving visual accuracy.
+Build only what the approved package requires using the fewest safe reads, tools, image payloads, and correction cycles while preserving visual accuracy.
 
-## Authority lock
+## Authority
 
-Use only the current repository and selected asset session. Do not load downloaded project-context ZIPs, copied chat context, or stale prompt packs as workflow authority.
+Use the current repository and selected asset session. Reject downloaded project-context ZIPs, stale prompt packs, four-sheet workflows, three approval moments, and numbered `01_*`–`04_*` reference images with `LEGACY_SKILL_CONFLICT`.
 
-Stop with `LEGACY_SKILL_CONFLICT` if another instruction requires four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
+## One-time plugin build
 
-## One-time local build
-
-Run from repository root:
+After repository source changes, build once:
 
 ```powershell
 cd mcp-blockbench
@@ -24,65 +22,64 @@ bun run build
 cd ..
 ```
 
-Load or reload exactly:
+Load `mcp-blockbench/dist/mcp.js`. Do not search for alternate outputs.
 
-```text
-mcp-blockbench/dist/mcp.js
-```
+This reload is required only when the plugin binary changes. Normal Geometry revision does not require closing the model, switching profiles, or reconnecting.
 
-Do not search for another plugin output.
-
-## Workspace selection
+## Workspace
 
 ```text
 workspace/active/<asset>/
-├─ blockbench/   # user-facing model, textures, references, previews
+├─ blockbench/   # canonical model, textures, references, previews
 └─ mcp/          # state, contracts, checkpoints, evidence, reports
 ```
 
-Activate one project from `mcp-blockbench/`:
-
-```powershell
-bun run workspace -- activate <asset_id>
-```
-
-`workspace/workspace.json` is only an index. Runtime authority remains `workspace/active/<asset>/mcp/state.json`.
+`workspace/workspace.json` is an index. Runtime authority is `workspace/active/<asset>/mcp/state.json`.
 
 ## Asset startup
 
-1. Read `AGENTS.md`, governance, and active OpenSpec summary.
-2. Resolve the selected asset from `workspace/workspace.json`.
-3. Read exact model/session paths from `mcp/project.json` and stage state from `mcp/state.json`.
-4. Load `blockbench-production` plus exactly one active-stage skill.
-5. Open one Blockbench window and the exact canonical model.
-6. Run `engines/codex/scripts/sync-local-stack.ps1` using the selected workspace.
-7. Continue only when connection report is `PASS` and `dist/mcp.js` exists.
-8. Call `get_stage_context` before long contract reads.
-9. Verify the exact tool profile.
-10. Acquire the write lease using asset ID, absolute session root, project UUID, state revision, and active stage.
-11. Begin mutations only after lease acquisition passes.
+1. Resolve the selected asset and exact model/session paths.
+2. Load `blockbench-production` plus the active-stage skill.
+3. Open the canonical model in one Blockbench window.
+4. Connect the canonical `blockbench` MCP entry.
+5. Call `get_stage_context` and follow `next_safe_operation`.
+6. Do not ask the user to edit workspace JSON or manually select a Geometry revision profile.
 
 ## Geometry startup
 
-Geometry must use:
+All Geometry work uses:
+
+```text
+BEDROCK_CUBOID_GEOMETRY
+```
+
+Normal one-session flow:
 
 ```text
 get_stage_context
-inspect_reference_visual
-capture_visual_feedback
-analyze_geometry_views
-place_cubes_safe / modify_cubes
-rotate_cube_about_attachment
-record_geometry_visual_result
-validate_geometry_contract
-verify_geometry_review_ready
+→ rebind_active_project_identity when required
+→ manage_project_write_lease acquire
+→ inspect_reference_visual_preview
+→ capture_visual_feedback
+→ analyze_geometry_views
+→ place_cubes_safe / modify_cubes
+→ rotate_cube_about_attachment when rotation is required
+→ final five-view evidence
+→ record_geometry_visual_decision
+→ validate_geometry_contract
+→ verify_geometry_review_ready
+→ user review
 ```
 
-Do not use `compare_reference_views` as the normal Geometry analyzer. Do not use generic non-zero cube rotations. Do not enter detail while runtime phase is `PRIMARY_FORM`.
+Identity synchronization occurs before lease acquisition and does not modify the model. It does not require BOOTSTRAP, profile switching, or reconnecting.
 
-Codex must inspect image payloads, then use `analyze_geometry_views` to receive exact failing views, semantic regions, affected parts, direction, magnitude, and recommended repair profile. Change only those parts or stop.
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are diagnosis scopes, not profiles. A current major diagnosis may call `prepare_geometry_visual_rebuild` in the same Geometry profile and continue with `CONTINUE_GEOMETRY`.
 
-## Exact stage orchestration
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user approval gates. Two non-improving checks set an attention flag rather than forcing a new profile.
+
+Codex must inspect image payloads and modify only diagnosed parts. Free-rescaling and unrelated trial-and-error edits are forbidden.
+
+## Stage orchestration
 
 | Stage | MCP tool profile | Loaded skills |
 | --- | --- | --- |
@@ -93,25 +90,14 @@ Codex must inspect image payloads, then use `analyze_geometry_views` to receive 
 
 Maximum loaded production skills: `2`. Do not load Animation when skipped.
 
-A successful stage/profile transition releases the previous lease. Reconnect the existing `blockbench` entry once, call `get_runtime_status`, then reacquire the lease from the new state.
+Profile changes occur only when the user-approved workflow moves to another stage, never for local or major Geometry revision.
 
 ## Completion and reopen
 
-After final approval:
-
-```powershell
-cd mcp-blockbench
-bun run workspace -- complete <asset_id> --approval-ref "<user approval>"
-```
-
-To revise later:
-
-```powershell
-bun run workspace -- reopen <asset_id> --stage <STAGE> --reason "<reason>"
-```
-
-The completed baseline remains immutable while revision is active.
+After final approval, promote the completed workspace through the workspace command. To revise a completed asset later, reopen the earliest affected stage. The completed baseline remains immutable while a revision is active.
 
 ## Stop conditions
 
-Stop on legacy context, reference conflict, missing visual profile, failed fixed-scale diagnosis, unsafe contract rotation, stale evidence, convergence failure, lease/state/profile mismatch, or user review gate. Do not scan ports, create alternate MCP keys, mix workspace areas, load deprecated skills, create duplicate roots, or create versioned outputs.
+Stop only for a real legacy-authority conflict, reference conflict, unavailable MCP endpoint, unsafe mutation, stale evidence that cannot be regenerated, failed final review gate, lease ownership conflict, or required user approval.
+
+Do not scan ports, create alternate MCP keys, mix workspace areas, load deprecated skills, create duplicate roots, or create versioned outputs.
