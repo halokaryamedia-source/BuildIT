@@ -88,7 +88,7 @@ describe("automatic Geometry review submission", () => {
 });
 
 describe("single-profile Geometry repair routing", () => {
-  test("normalizes generic Geometry revision output to the main Geometry profile", () => {
+  test("normalizes direct Geometry revision output to the main Geometry profile", () => {
     const result: Record<string, any> = {
       structuredContent: {
         result: "REVISION_REQUIRED",
@@ -96,6 +96,7 @@ describe("single-profile Geometry repair routing", () => {
         next_profile: "GEOMETRY_LOCAL_REPAIR",
         issues: [
           {
+            stage: "GEOMETRY",
             severity: "REVISION_REQUIRED",
             recommended_profile: "GEOMETRY_LOCAL_REPAIR",
           },
@@ -117,5 +118,37 @@ describe("single-profile Geometry repair routing", () => {
     expect(result.structuredContent.issues[0].recommended_profile).toBe(
       "BEDROCK_CUBOID_GEOMETRY"
     );
+  });
+
+  test("normalizes Geometry issues discovered during Final Validation", () => {
+    const result: Record<string, any> = {
+      structuredContent: {
+        result: "REVISION_REQUIRED",
+        stage: "FINAL_VALIDATION",
+        next_profile: "GEOMETRY_LOCAL_REPAIR",
+        issues: [
+          {
+            stage: "GEOMETRY",
+            severity: "REVISION_REQUIRED",
+            recommended_profile: "GEOMETRY_LOCAL_REPAIR",
+          },
+        ],
+      },
+    };
+
+    normalizeGeometryValidationResult(result);
+
+    expect(result.structuredContent.next_profile).toBe(
+      "BEDROCK_CUBOID_GEOMETRY"
+    );
+    expect(result.structuredContent.geometry_revision_route.profile).toBe(
+      "BEDROCK_CUBOID_GEOMETRY"
+    );
+    expect(result.structuredContent.issues[0]).toMatchObject({
+      recommended_profile: "BEDROCK_CUBOID_GEOMETRY",
+      recommended_scope: "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS",
+      profile_switch_required: false,
+      reconnect_required: false,
+    });
   });
 });
