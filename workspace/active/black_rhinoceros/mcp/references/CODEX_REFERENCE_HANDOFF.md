@@ -36,10 +36,11 @@ get_stage_context
 → final five-view capture and diagnosis
 → record_geometry_visual_decision
 → validate_geometry_contract
-→ verify_geometry_review_ready
-→ non-approved review checkpoint
+→ submit_geometry_for_review
 → GEOMETRY_REVIEW / AWAITING_USER_REVIEW
 ```
+
+`submit_geometry_for_review` runs `verify_geometry_review_ready`, creates the next unused non-approved Geometry review checkpoint, and atomically updates workflow state. Codex must not ask the user to choose a filename or edit state files.
 
 Codex must follow `next_safe_operation` from compact context. Do not ask the user to edit workspace JSON, switch Geometry profiles, close the model, or reconnect between Geometry revision scopes.
 
@@ -47,7 +48,9 @@ Codex must follow `next_safe_operation` from compact context. Do not ask the use
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes, not MCP profiles or separate stages.
 
-When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. The tool preserves project identity, primary masses, and all checkpoints; it may remove only machine-classified structural detail and then continues normal Geometry work.
+When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. The tool preserves project identity, primary masses, and all checkpoints. Existing structural detail is retained by default and may be removed only when explicitly requested from a fresh diagnosis.
+
+Generic Geometry validation must route back to `BEDROCK_CUBOID_GEOMETRY`. Use `analyze_geometry_views` to classify the internal scope; never activate `GEOMETRY_LOCAL_REPAIR` or `GEOMETRY_VISUAL_REBUILD`.
 
 ## Visual diagnosis
 
@@ -127,7 +130,7 @@ geometry_report.json
 
 `geometry_report.json` must report PASS for structural, visual, deterministic visual, evidence, and final result. Rotation may be PASS or a non-blocking warning.
 
-`verify_geometry_review_ready` must confirm all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer output, current evidence, and safe rotations.
+`submit_geometry_for_review` accepts the submission only when `verify_geometry_review_ready` confirms all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer output, current evidence, and safe rotations.
 
 ## Forbidden
 
