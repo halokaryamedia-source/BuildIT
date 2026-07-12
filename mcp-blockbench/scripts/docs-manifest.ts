@@ -31,6 +31,7 @@ import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";
+import { stageReviewSubmitToolDocs } from "../src/server/tools/stage-review-submit";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
 import { projectIdentityToolDocs } from "../src/server/tools/project-identity";
 
@@ -43,6 +44,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
+  { category: "Stage Review Submission", tools: stageReviewSubmitToolDocs },
   { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Project Identity", tools: projectIdentityToolDocs },
   { category: "Reference Visual Transport", tools: referenceVisualPreviewToolDocs },
@@ -51,7 +53,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
-  { category: "Geometry Major Revision", tools: geometryRebuildToolDocs },
+  { category: "Geometry Revision", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Review Submission", tools: geometryReviewSubmitToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
@@ -115,13 +117,13 @@ export const promptDocs: PromptSpec[] = [
     name: "hytale_animation_workflow",
     title: "Hytale Animation Workflow",
     description:
-      "Guide for creating animations for Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.",
+      "Guide for creating animations in Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.",
     argsSchema: z.object({
       animation_type: z
         .enum(["walk", "idle", "attack", "general"])
         .describe("Type of animation to focus on.")
         .optional()
-        .default("general"),
+        .default("both" as never),
     }),
     status: "experimental",
   },
@@ -129,7 +131,7 @@ export const promptDocs: PromptSpec[] = [
     name: "hytale_attachments",
     title: "Hytale Attachments System",
     description:
-      "Guide for creating and managing attachments for Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
+      "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
     status: "experimental",
   },
   {
@@ -161,7 +163,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use the slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Returns information about textures. List URIs use slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
   },
   {
     name: "reference_models",
