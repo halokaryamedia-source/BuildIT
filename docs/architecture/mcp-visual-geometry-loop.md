@@ -1,157 +1,149 @@
 # MCP Visual-Grounded Geometry Loop
 
-## Problem addressed
+## Purpose
 
-The previous Geometry workflow could produce a structurally valid `.bbmodel` while remaining visually far from the approved Reference Visual. Screenshot tools wrote evidence files, but Codex was commonly given only paths rather than actual image payloads. Structural validation checked bounds, group names, cube counts, and evidence existence; it did not prove visual similarity. Raw bounds also ignored cube and parent rotations.
+Geometry must match the approved Reference Visual, not merely satisfy cube count, bounds, or hierarchy checks. The workflow therefore combines:
 
-## Required Geometry pipeline
+1. Codex inspection of real image payloads;
+2. fixed-scale transformed-cuboid diagnosis;
+3. structural and rotation validation;
+4. explicit user review before Texture.
+
+## One Geometry profile
+
+All Geometry work uses:
+
+```text
+BEDROCK_CUBOID_GEOMETRY
+```
+
+There is no separate Geometry rework profile. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes only.
+
+A major revision is not a new stage. It means the current Geometry needs broader correction than a local edit. Codex remains in the same MCP session and profile.
+
+## Practical flow
 
 ```text
 get_stage_context
-→ inspect_reference_visual
-→ build coarse primary form
+→ rebind_active_project_identity when required
+→ manage_project_write_lease acquire
+→ inspect_reference_visual_preview
 → capture_visual_feedback
-→ compare_reference_views
-→ targeted primary-form repair
-→ structural detail
-→ affected-view feedback and comparison
-→ final five-view multimodal review
-→ final five-view deterministic comparison
-→ record_geometry_visual_result
-→ validate_reference_contract
+→ analyze_geometry_views
+→ edit diagnosed parts
+→ repeat affected-view checks as needed
+→ final five-view capture and diagnosis
+→ record_geometry_visual_decision
+→ validate_geometry_contract
 → verify_geometry_review_ready
-→ non-approved checkpoint
+→ review checkpoint
 → user review
 ```
 
-Texture must remain locked until the user explicitly approves Geometry.
+Codex follows `next_safe_operation` from compact stage context. The user is not asked to edit JSON, switch profiles, or reconnect between revision scopes.
 
-## Dual visual validation
+## Project identity
 
-Geometry uses two complementary layers:
+Blockbench may assign a new runtime UUID after reopening a project. When this happens, `rebind_active_project_identity` verifies the asset, path, format, Geometry fingerprint, Reference Visual hash, state revision, and absence of an active lease before atomically updating `state.json` and `project.json`.
 
-1. **Codex multimodal review**
-   - Codex receives the approved Reference Visual and current model captures as MCP image payloads.
-   - Codex judges identity, mass relationships, silhouette, part direction, and cross-view consistency.
+This metadata synchronization:
 
-2. **Deterministic silhouette guardrail**
-   - `compare_reference_views` extracts Reference Visual panels and clean current captures.
-   - It calculates silhouette IoU, row-profile error, column-profile error, and aspect-ratio error.
-   - It writes `geometry_visual_metrics.json` and one compact `geometry_visual_diff.png` contact sheet.
-   - Green means overlap, red means missing target silhouette, and blue means excess current silhouette.
+- does not modify the model;
+- does not need a write lease;
+- does not require a profile switch;
+- does not require reconnecting.
 
-Neither layer replaces user review. Both layers must pass before Geometry can enter approval.
+After synchronization, Codex acquires the normal Geometry write lease.
 
-## Review readiness gate
+## Major revision preparation
+
+When a fresh diagnosis returns:
+
+```text
+REVISION_REQUIRED
+MAJOR_FORM_REVISION
+```
+
+Codex may call `prepare_geometry_visual_rebuild` in the current Geometry profile. Despite its compatibility name, this tool is only an internal preparation operation. It:
+
+- preserves project identity and all checkpoints;
+- preserves primary masses;
+- optionally removes only structural-detail cubes identified by the machine-readable profile;
+- returns workflow state to `GEOMETRY_IN_PROGRESS`;
+- records `revision_mode = MAJOR_FORM_REVISION`;
+- continues with `CONTINUE_GEOMETRY`;
+- requires no profile switch or reconnect.
+
+## Internal progress markers
+
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are progress markers, not separate user gates.
+
+They help Codex work coarse-to-fine, but do not require a new MCP profile. Two non-improving comparisons set an attention flag; they do not permanently lock Geometry.
+
+Any mutation after `FINAL_REVIEW_READY` makes the old evidence stale and automatically returns the runtime to working state.
+
+## Visual diagnosis
+
+`analyze_geometry_views` uses:
+
+- transformed cuboid projection;
+- the approved coordinate envelope;
+- a fixed center axis and ground line;
+- no free rescaling of the current model;
+- silhouette IoU;
+- row and column profile comparison;
+- fixed-scale bounds and edge displacement;
+- weighted semantic regions;
+- blocking ground and extent diagnostics.
+
+A high average score cannot override a blocking semantic, extent, or ground failure.
+
+The analyzer returns a revision scope, not a required profile transition.
+
+## Image transport
+
+Use `inspect_reference_visual_preview`. It verifies the original Reference Visual SHA-256 and dimensions, then returns a bounded ephemeral JPEG or PNG preview.
+
+The original file remains the authority. The legacy multi-megabyte original-image response is not exposed in normal production.
+
+## Mutation and rotation
+
+Use:
+
+- `place_cubes_safe` for unrotated placement;
+- `modify_cubes` for unrotated edits;
+- `rotate_cube_about_attachment` for every non-zero rotation.
+
+Direct rotation through generic cube tools is blocked. Contract-driven rotation validates axis, angle, pivot, direction, declared connection, and affected-view score, with rollback on regression.
+
+## Review readiness
 
 `verify_geometry_review_ready` requires:
 
 - all five canonical views;
-- current deterministic metrics;
-- current Codex multimodal report;
-- current Geometry fingerprint;
+- current fixed-scale metrics;
+- current Codex multimodal review;
+- matching project UUID and Geometry fingerprint;
 - the actual approved Reference Visual hash;
-- complete compared-view coverage;
-- safe cube rotations and pivots;
-- no stale evidence after Geometry mutation.
+- safe rotations and pivots;
+- no stale evidence after model mutation.
 
-`complete_geometry_stage` is the only Geometry approval transition exposed in the normal Geometry profile. It calls the unified review-readiness gate before delegating to the atomic workflow transition. Generic `complete_stage` is not exposed to Geometry production.
+A structural pass alone is not a visual pass.
 
-## Geometry result model
+## User-facing gates
 
-A structural PASS is not a visual PASS. Geometry reporting separates:
-
-```text
-structural_status
-visual_status
-deterministic_visual_status
-rotation_status
-evidence_status
-result
-```
-
-`result = PASS` only when every required status passes.
-
-## Rotation and pivot safety
-
-Normal Geometry mutation uses:
-
-- `place_cubes_safe`
-- `modify_cubes`
-
-Rules:
-
-- rotated cubes require an explicit attachment pivot;
-- one local rotation axis is preferred and enforced by default;
-- compound cube rotation is rejected unless explicitly allowed;
-- default maximum absolute cube rotation is 45 degrees;
-- large body masses should use stepped cuboid sizing rather than rotation to fake taper;
-- rotated batches require affected-view inspection;
-- world bounds include cube rotation and parent transforms;
-- Geometry mutation invalidates prior visual reports and deterministic metrics.
-
-The rotation audit reports non-finite rotations, excessive angles, compound rotation, degenerate cubes, and pivots positioned too far outside their cubes.
-
-## Clean and rotation-aware captures
-
-`capture_standard_views` delegates to the visual-feedback engine:
-
-- Front, Left, Back, and Top use orthographic projection.
-- Front-left 3/4 uses perspective.
-- captures use transformed world bounds;
-- gizmos and active selections are removed from review evidence where supported;
-- evidence filenames remain stable and stage-specific.
-
-## Revision routing
+Only meaningful review gates are user-facing:
 
 ```text
-LOCAL_REPAIR
-→ GEOMETRY_LOCAL_REPAIR
-
-MAJOR_FORM_REVISION
-→ GEOMETRY_VISUAL_REBUILD
-
-REFERENCE_REOPEN
-→ approved reference workflow
-
-REFERENCE_CONFLICT
-→ stop
+GEOMETRY_REVIEW
+TEXTURE_REVIEW
+ANIMATION_REVIEW when required
+FINAL_REVIEW
 ```
 
-Use major rebuild when multiple primary masses or multiple views fail. Previous checkpoints remain immutable.
-
-## Token and tool-call controls
-
-- use `get_stage_context` instead of repeatedly loading long contracts;
-- inspect the Reference Visual once unless its hash changes;
-- use Left, Front, and Top for primary-form checks;
-- capture only affected views during local corrections;
-- use bounded atomic cube batches;
-- stop after two unsuccessful correction cycles with `VISUAL_CONVERGENCE_FAILED`;
-- write full-resolution evidence to disk but return only image payloads required by the current decision;
-- normal profiles expose fewer than 30 tools including core tools.
-
-## Main implementation files
-
-```text
-mcp-blockbench/src/lib/worldBounds.ts
-mcp-blockbench/src/server/tools/geometry-feedback.ts
-mcp-blockbench/src/server/tools/visual-compare.ts
-mcp-blockbench/src/server/tools/geometry-review-gate.ts
-mcp-blockbench/src/server/tools/geometry-completion.ts
-mcp-blockbench/src/server/tools/stage-context.ts
-mcp-blockbench/src/server/tools/camera.ts
-engines/shared/profiles/tool-profiles.json
-engines/shared/profiles/stage-profiles.json
-engines/shared/skills/blockbench-production/SKILL.md
-engines/shared/skills/blockbench-geometry/SKILL.md
-engines/shared/workflow/EVIDENCE_CONTRACT.md
-engines/shared/workflow/STATE_MACHINE.md
-```
+Internal Geometry corrections do not create additional user approval moments.
 
 ## Verification
-
-Repository verification is defined by `.github/workflows/mcp-verify.yml` and the local `verify:quick` script:
 
 ```text
 bun run skills:check
@@ -160,4 +152,4 @@ bun test
 bun run build
 ```
 
-Regression coverage includes visual tool registration, profile restrictions, guarded Geometry completion, rotation-aware bounds, explicit pivot requirements, deterministic visual evidence, stale-evidence rejection, and bounded profile size.
+Regression coverage verifies one-profile Geometry exposure, lease-exempt guarded identity synchronization, lease-required model mutation, current major-revision diagnosis, fixed-scale visual rejection, strict final review, adapter synchronization, and bounded tool counts.
