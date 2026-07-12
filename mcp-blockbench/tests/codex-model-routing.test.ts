@@ -129,8 +129,8 @@ describe("usage-efficient Codex routing", () => {
   test("makes routing policy deterministic and de-escalates expensive judgment", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     for (const marker of [
-      "Do not spend a model call only to choose another model",
-      "one MCP writer",
+      "a model call whose only purpose is choosing another model",
+      "only MCP writer",
       "Sol decision packet",
       "Terra implementation",
       "Mini deterministic audit",
