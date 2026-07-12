@@ -104,7 +104,10 @@ describe("single-session Geometry workflow", () => {
     for (const marker of [
       "LOCAL_REPAIR",
       "MAJOR_FORM_REVISION",
+      "DETERMINISTIC_METRICS",
+      "MULTIMODAL_DECISION",
       "GEOMETRY_REVISION_DIAGNOSIS_REQUIRED",
+      "GEOMETRY_REVISION_EVIDENCE_STALE",
       "GEOMETRY_DIAGNOSIS_STALE",
       "GEOMETRY_IN_PROGRESS",
       "GEOMETRY_REVIEW",
