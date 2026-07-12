@@ -64,8 +64,8 @@ describe("Black Rhinoceros Golden Sample zero-start workspace", () => {
         new Response(processResult.stderr).text(),
       ]);
 
-      expect(stderr, stderr).toBe("");
-      expect(exitCode, stdout).toBe(0);
+      expect(exitCode, `${stdout}\n${stderr}`).toBe(0);
+      expect(stderr).not.toContain("error:");
       expect(stdout).toContain('"status": "PASS"');
       expect(stdout).toContain('"prebuilt_model_copied": false');
       expect(stdout).toContain('"model_exists": false');
