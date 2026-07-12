@@ -28,7 +28,6 @@ import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validato
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
-import { visualCompareToolDocs } from "../src/server/tools/visual-compare";
 
 export interface CategoryGroup {
   category: string;
@@ -44,7 +43,6 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
-  { category: "Legacy Geometry Visual Comparison", tools: visualCompareToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
