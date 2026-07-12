@@ -18,35 +18,81 @@ REFERENCE_READY
 → DONE
 ```
 
-## Geometry internal runtime
+These are the user-facing workflow states. Internal Geometry corrections do not create extra user approval gates.
 
-Inside `GEOMETRY_IN_PROGRESS`, MCP enforces:
+## Geometry profile and session
+
+All Geometry work uses:
+
+```text
+BEDROCK_CUBOID_GEOMETRY
+```
+
+The profile covers project identity synchronization, diagnosis, local correction, major revision preparation, editing, validation, and review.
+
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal revision scopes. They are not profiles or workflow states and do not require reconnecting.
+
+## Geometry identity readiness
+
+Before model mutation:
+
+```text
+runtime UUID differs from stored UUID
+→ rebind_active_project_identity
+→ UUID metadata aligned
+→ manage_project_write_lease acquire
+```
+
+Identity synchronization is metadata-only, strictly verified, lease-exempt, and available in the current Geometry profile. It does not modify the `.bbmodel` and does not require a profile switch or reconnect.
+
+## Geometry internal progress
+
+Inside `GEOMETRY_IN_PROGRESS`, the runtime may report:
 
 ```text
 PRIMARY_FORM
-→ STRUCTURAL_DETAIL
-→ FINAL_REVIEW_READY
+STRUCTURAL_DETAIL
+FINAL_REVIEW_READY
 ```
 
-Alternative terminal/internal routes:
+These are advisory progress markers, not user-facing gates.
+
+Recommended order:
+
+1. primary body, head, leg, footprint, and ground relationships;
+2. silhouette-critical detail, hierarchy, connections, and safe rotations;
+3. final five-view evidence.
+
+Codex may repair diagnosed related parts in the same profile. Two non-improving checks set `attention_required`; they do not permanently lock the model.
+
+Any model mutation after `FINAL_REVIEW_READY` invalidates old review readiness and returns Geometry to working state.
+
+## Major revision preparation
+
+When current fixed-scale diagnosis returns:
 
 ```text
-PRIMARY_FORM or STRUCTURAL_DETAIL
-→ two non-improving diagnosis cycles
-→ VISUAL_CONVERGENCE_FAILED
-
-multiple primary masses or views fail
-→ GEOMETRY_VISUAL_REBUILD
-→ PRIMARY_FORM
-
-one part or related pair fails after review
-→ GEOMETRY_LOCAL_REPAIR
-→ STRUCTURAL_DETAIL
+result = REVISION_REQUIRED
+recommended_scope = MAJOR_FORM_REVISION
 ```
 
-`PRIMARY_FORM` allows body masses, neck/head/muzzle, provisional legs, and ground relationship only. Horns, ears, final feet, tail, and detail remain locked until Left, Front, and Top multimodal inspection plus fixed-scale diagnosis pass.
+Codex may call `prepare_geometry_visual_rebuild` in the current Geometry profile. The compatibility name does not represent a separate stage or profile.
 
-Every Geometry mutation invalidates earlier fixed-scale metrics, multimodal report, and review readiness. Every non-zero cube rotation must use its machine-readable attachment contract and affected-view before/after score.
+The operation:
+
+- requires the current Geometry write lease;
+- requires current project UUID, state revision, Geometry fingerprint, Reference Visual hash, and diagnosis;
+- preserves all checkpoints and primary masses;
+- may remove only machine-classified structural detail;
+- records `revision_mode = MAJOR_FORM_REVISION`;
+- keeps the active profile unchanged;
+- returns workflow state to `GEOMETRY_IN_PROGRESS` with next action `CONTINUE_GEOMETRY`.
+
+## Geometry evidence lifecycle
+
+Every Geometry mutation makes earlier visual metrics, multimodal decisions, and review readiness stale.
+
+Every non-zero cube rotation must use `rotate_cube_about_attachment` with its machine-readable contract and affected-view before/after score.
 
 ## Geometry review requirements
 
@@ -71,15 +117,9 @@ Review evidence must be bound to the current:
 
 A structural PASS alone must never transition to `GEOMETRY_REVIEW` or `GEOMETRY_APPROVED`.
 
-## Geometry revision routing
+## Authority conflicts
 
 ```text
-LOCAL_REPAIR
-→ GEOMETRY_LOCAL_REPAIR
-
-MAJOR_FORM_REVISION
-→ GEOMETRY_VISUAL_REBUILD
-
 REFERENCE_REOPEN
 → return to approved reference workflow
 
@@ -90,7 +130,7 @@ LEGACY_SKILL_CONFLICT
 → stop
 ```
 
-Use `MAJOR_FORM_REVISION` when multiple primary masses or standard views fail, or a local repair does not converge. Previous checkpoints remain immutable.
+Use `REFERENCE_CONFLICT` only when approved authorities cannot be reconciled, not for ordinary Geometry revision.
 
 ## Workspace lifecycle
 
@@ -112,4 +152,4 @@ or
 
 The completed baseline remains immutable while a reopened revision is active.
 
-Every write checks project UUID, active profile, workflow state, state revision, owner session, and MCP session root. `mcp/state.json` overrides Markdown summaries. `workspace.json` is only an index.
+Every model write checks project UUID, active profile, workflow state, state revision, owner session, and MCP session root. `mcp/state.json` overrides Markdown summaries. `workspace.json` is only an index.
