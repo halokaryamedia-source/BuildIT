@@ -217,10 +217,14 @@ function project(view: StandardGeometryView): SampleProfile {
   );
 }
 
-function diagnosticSummary(
+function assertDiagnostic(
+  condition: boolean,
+  message: string,
   diagnostics: Record<StandardGeometryView, ProfileDiagnostics>
-): string {
-  return JSON.stringify(diagnostics, null, 2);
+): void {
+  if (!condition) {
+    throw new Error(`${message}\n${JSON.stringify(diagnostics, null, 2)}`);
+  }
 }
 
 describe("failed Black Rhinoceros visual regression fixture", () => {
@@ -244,27 +248,46 @@ describe("failed Black Rhinoceros visual regression fixture", () => {
     ) as Record<StandardGeometryView, ProfileDiagnostics>;
 
     const failedViews = views.filter((view) => diagnostics[view].rejected);
-    const summary = diagnosticSummary(diagnostics);
+    assertDiagnostic(
+      failedViews.length >= 3,
+      `Expected at least three rejected views; got ${failedViews.join(", ") || "none"}.`,
+      diagnostics
+    );
+    assertDiagnostic(
+      diagnostics.left_side.rejected,
+      "Expected left_side to be rejected.",
+      diagnostics
+    );
+    assertDiagnostic(
+      diagnostics.top_footprint.rejected,
+      "Expected top_footprint to be rejected.",
+      diagnostics
+    );
+    assertDiagnostic(
+      diagnostics.front_left_3_4.rejected,
+      "Expected front_left_3_4 to be rejected.",
+      diagnostics
+    );
 
-    expect(failedViews.length, summary).toBeGreaterThanOrEqual(3);
-    expect(diagnostics.left_side.rejected, summary).toBe(true);
-    expect(diagnostics.top_footprint.rejected, summary).toBe(true);
-    expect(diagnostics.front_left_3_4.rejected, summary).toBe(true);
-
-    // The test intentionally checks the strongest component as well as the
-    // aggregate. Localized horn, head, shoulder, rear-taper, or footprint drift
-    // must not be diluted by otherwise overlapping body pixels.
-    expect(
-      diagnostics.left_side.critical_component_error,
-      summary
-    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
-    expect(
-      diagnostics.top_footprint.critical_component_error,
-      summary
-    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
-    expect(
-      diagnostics.front_left_3_4.critical_component_error,
-      summary
-    ).toBeGreaterThan(CRITICAL_COMPONENT_THRESHOLD);
+    // Localized horn, head, shoulder, rear-taper, or footprint drift must not
+    // be diluted by otherwise overlapping body pixels.
+    assertDiagnostic(
+      diagnostics.left_side.critical_component_error >
+        CRITICAL_COMPONENT_THRESHOLD,
+      "Expected a critical left-side component mismatch.",
+      diagnostics
+    );
+    assertDiagnostic(
+      diagnostics.top_footprint.critical_component_error >
+        CRITICAL_COMPONENT_THRESHOLD,
+      "Expected a critical top-footprint component mismatch.",
+      diagnostics
+    );
+    assertDiagnostic(
+      diagnostics.front_left_3_4.critical_component_error >
+        CRITICAL_COMPONENT_THRESHOLD,
+      "Expected a critical front-left 3/4 component mismatch.",
+      diagnostics
+    );
   });
 });
