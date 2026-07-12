@@ -31,6 +31,7 @@ import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";
+import { stageReportToolDocs } from "../src/server/tools/stage-report";
 import { stageReviewSubmitToolDocs } from "../src/server/tools/stage-review-submit";
 import { stageRevisionToolDocs } from "../src/server/tools/stage-revision";
 import { stageReopenToolDocs } from "../src/server/tools/stage-reopen";
@@ -46,6 +47,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Runtime", tools: runtimeToolDocs },
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
+  { category: "Stage Review Report", tools: stageReportToolDocs },
   { category: "Stage Revision", tools: stageRevisionToolDocs },
   { category: "Upstream Stage Reopen", tools: stageReopenToolDocs },
   { category: "Stage Review Submission", tools: stageReviewSubmitToolDocs },
@@ -167,7 +169,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use the slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Returns information about textures. List URIs use slugified texture name when unique, with ~<uuid-prefix> on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
   },
   {
     name: "reference_models",
