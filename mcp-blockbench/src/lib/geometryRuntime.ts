@@ -10,7 +10,8 @@ import { getProjectWriteLeaseSnapshot } from "@/lib/writeLease";
 export type GeometryRuntimePhase =
   | "PRIMARY_FORM"
   | "STRUCTURAL_DETAIL"
-  | "FINAL_REVIEW_READY";
+  | "FINAL_REVIEW_READY"
+  | "VISUAL_CONVERGENCE_FAILED";
 
 interface GeometryIterationState {
   attempts: number;
