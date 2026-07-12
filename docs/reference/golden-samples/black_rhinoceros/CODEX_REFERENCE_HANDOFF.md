@@ -15,101 +15,81 @@
 - Ground: `Y = 0`
 - Envelope: `27.2u W × 40u H × 52.8u D`, tolerance `±1u`
 
-## Authority and context lock
+## Authority
 
-1. Call `get_stage_context` for `GEOMETRY`.
-2. Call `inspect_reference_visual` and inspect the returned image.
-3. Open full package documents only when compact context is insufficient or conflicting.
+Use the current repository and this approved package. Reject old project-context ZIPs or instructions requiring four technical sheets, three approval moments, or numbered `01_*`–`04_*` images with `LEGACY_SKILL_CONFLICT`.
 
-The current repository and this package override downloaded project-context ZIPs or old prompt packs. Stop `LEGACY_SKILL_CONFLICT` if another instruction requires four sheets, three approval moments, or numbered technical images.
+Do not generate additional reference images.
 
-Do not generate or substitute loose angles, technical sheets, or replacement images.
+## One-session Geometry workflow
 
-## Required Geometry workflow
+Use only the `BEDROCK_CUBOID_GEOMETRY` profile for all Geometry work.
 
 ```text
 get_stage_context
-→ inspect_reference_visual
-→ PRIMARY_FORM only
-→ capture_visual_feedback: left_side + front + top_footprint
-→ analyze_geometry_views: left_side + front + top_footprint
-→ repair only ranked affected masses
-→ STRUCTURAL_DETAIL
-→ capture and analyze affected views
-→ final five-view capture_visual_feedback
-→ final five-view analyze_geometry_views
-→ record_geometry_visual_result
+→ rebind_active_project_identity when required
+→ manage_project_write_lease acquire
+→ inspect_reference_visual_preview
+→ capture_visual_feedback
+→ analyze_geometry_views
+→ edit only diagnosed parts
+→ final five-view capture and diagnosis
+→ record_geometry_visual_decision
 → validate_geometry_contract
 → verify_geometry_review_ready
-→ non-approved checkpoint
+→ non-approved review checkpoint
 → GEOMETRY_REVIEW / AWAITING_USER_REVIEW
 ```
 
-Codex must inspect actual image payloads. Paths or successful screenshot writes are not visual evidence.
+Codex must follow `next_safe_operation` from compact context. Do not ask the user to edit workspace JSON, switch Geometry profiles, close the model, or reconnect between Geometry revision scopes.
 
-`analyze_geometry_views` is the deterministic diagnosis authority. It projects transformed cuboids at the approved coordinate scale and must report:
+## Revision scope
 
-- failing view;
-- semantic region;
-- missing/excess direction;
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes, not MCP profiles or separate stages.
+
+When a fresh diagnosis returns `MAJOR_FORM_REVISION`, call `prepare_geometry_visual_rebuild` in the current Geometry profile. The tool preserves project identity, primary masses, and all checkpoints; it may remove only machine-classified structural detail and then continues normal Geometry work.
+
+## Visual diagnosis
+
+Codex must inspect actual image payloads. Paths or successful screenshot writes alone are not visual evidence.
+
+`analyze_geometry_views` must report:
+
+- failing view and semantic region;
+- missing or excessive silhouette;
 - approximate magnitude in Blockbench units;
 - affected parts;
-- specific recommendation;
-- local or major repair route.
+- a concrete repair recommendation;
+- local or major revision scope.
 
 Do not make unrelated trial-and-error changes. Free-rescaling the current model to fit the Reference Visual is forbidden.
 
-## Enforced phases
+## Internal progress
 
-```text
-PRIMARY_FORM
-→ STRUCTURAL_DETAIL
-→ FINAL_REVIEW_READY
-```
+`PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user approval gates.
 
-During `PRIMARY_FORM`, do not add horns, ears, final feet, tail, or minor detail. First establish:
+Use this practical order:
 
-- long deep torso;
-- high heavy shoulder;
-- lower narrowing rear;
-- thick short neck;
-- low broad head;
-- broad muzzle;
-- four short thick provisional legs;
-- correct ground relationship.
+1. long deep torso, high shoulder, lower rear taper, short thick neck, low broad head, broad muzzle, four short thick legs, and ground relationship;
+2. exactly two horns, compact ears, feet, short two-part tail, hierarchy, and connection cleanup;
+3. final evidence.
 
-Left, Front, and Top diagnosis plus Codex visual inspection must pass before detail unlocks.
+Two non-improving checks require attention and a better repair decision, but do not require a new profile or reconnect.
 
-Two consecutive non-improving cycles stop as `VISUAL_CONVERGENCE_FAILED`.
+## Rotation and pivot
 
-## Rotation and pivot lock
+Use `place_cubes_safe` and `modify_cubes` only for unrotated placement or modification.
 
-Use `place_cubes_safe` and `modify_cubes` only for unrotated placement/modification.
+Every non-zero rotation must use `rotate_cube_about_attachment`, which validates axis, angle, attachment pivot, expected direction, declared connection, and affected-view score with automatic rollback on regression.
 
-Every non-zero cube rotation must use:
+Black Rhinoceros intent:
 
-```text
-rotate_cube_about_attachment
-```
-
-The tool derives the attachment pivot and verifies axis, angle range, expected direction, declared connection, and affected-view score before keeping the rotation. Visual regression or broken connection rolls back automatically.
-
-Black Rhinoceros rotation intent:
-
-- neck/head/muzzle move down and forward;
-- front horn rises up and slightly forward;
-- rear horn rises up and remains smaller;
+- neck, head, and muzzle move down and forward;
+- dominant front horn rises up and slightly forward;
+- smaller rear horn rises upward;
 - ears angle outward without crossing centerline;
-- tail stays short and close to the rear;
-- large torso masses use stepped sizes, not rotation-based fake taper.
-
-## Revision routing
-
-Use `GEOMETRY_LOCAL_REPAIR` only when one part or tightly related pair fails.
-
-Use `GEOMETRY_VISUAL_REBUILD` when multiple primary masses or views fail, body/head/footprint requires broad reconstruction, or local repair does not converge.
-
-Preserve previous checkpoints.
+- tail remains short and close to the rear;
+- torso taper uses stepped cuboid sizes rather than rotating large masses.
 
 ## Identity lock
 
@@ -119,16 +99,16 @@ Preserve:
 - long deep body with rear taper;
 - broad low head and rectangular muzzle;
 - exactly two horns;
-- dominant three-segment front horn;
-- smaller two-segment rear horn;
+- three-segment front horn;
+- two-segment rear horn;
 - compact upright ears;
 - four thick leg/foot chains;
 - short two-part tail;
-- total cuboid count `22–32` unless a real conflict is reported.
+- total cuboid count `22–32` unless a real reference conflict exists.
 
-Texture-only details include eyes, nostrils, mouth, wrinkles, scars, folds, muscle shading, and hoof separation.
+Eyes, nostrils, mouth, wrinkles, scars, folds, muscle shading, and hoof separation are Texture details.
 
-## Final Geometry evidence
+## Final evidence
 
 Before user review, store current:
 
@@ -145,34 +125,22 @@ geometry_runtime.json
 geometry_report.json
 ```
 
-`geometry_report.json` must state:
+`geometry_report.json` must report PASS for structural, visual, deterministic visual, evidence, and final result. Rotation may be PASS or a non-blocking warning.
 
-```text
-structural_status = PASS
-visual_status = PASS
-deterministic_visual_status = PASS
-rotation_status = PASS or non-blocking WARNING
-evidence_status = PASS
-result = PASS
-```
-
-`verify_geometry_review_ready` must confirm all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer, current evidence, and safe rotations.
+`verify_geometry_review_ready` must confirm all five views, current Reference Visual hash, current Geometry fingerprint, current analyzer output, current evidence, and safe rotations.
 
 ## Forbidden
 
 - mesh, subdivision, vertex editing, or armature skinning;
 - PBR or Vibrant Visuals;
-- Texture/UV work before Geometry approval;
+- Texture or UV work before Geometry approval;
 - animation clips;
 - extra reference images;
-- free-rescaling current Geometry during comparison;
-- broad guessing outside ranked diagnostic parts;
+- free-rescaling during comparison;
+- broad guessing outside diagnosed parts;
 - direct non-zero rotation through generic cube tools;
-- approval from bounds, hierarchy, cube count, or Blockbench warnings alone;
-- silent authority repair.
+- approval based only on bounds, hierarchy, cube count, or Blockbench warnings.
 
-Stop `REFERENCE_CONFLICT` when package authorities cannot be reconciled.
+Stop with `REFERENCE_CONFLICT` only when approved authorities cannot be reconciled.
 
-## Stage approval
-
-After explicit user approval, use `complete_geometry_stage`. It must reject missing, stale, incomplete, deterministically failed, multimodally failed, reference-mismatched, structurally invalid, or rotation-unsafe Geometry evidence.
+After explicit user approval, use `complete_geometry_stage`.
