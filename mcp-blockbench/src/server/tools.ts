@@ -5,6 +5,7 @@ import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
 import { installStageContextRoutingGuards } from "./stage-context-routing-guards";
+import { installStageValidationRoutingGuards } from "./stage-validation-routing-guards";
 import { installStageTransitionGuards } from "./stage-transition-guards";
 
 // Import tool registration functions
@@ -107,6 +108,7 @@ for (const register of optionalRegistrationFunctions) {
 // Install additive correctness and routing guards before profile/write-lease wrappers.
 installGeometryFreshnessGuards();
 installStageContextRoutingGuards();
+installStageValidationRoutingGuards();
 installStageTransitionGuards();
 
 // Then expose only the exact default profile to future MCP sessions and install
