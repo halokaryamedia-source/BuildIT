@@ -90,7 +90,7 @@ export function registerStageContextTools(): void {
             : null;
 
         const context = {
-          schema_version: "1.2",
+          schema_version: "1.3",
           stage,
           asset: manifest.asset ?? state.asset ?? null,
           project: {
@@ -207,7 +207,7 @@ export function registerStageContextTools(): void {
             reference_tool: "inspect_reference_visual",
             feedback_tool: "capture_visual_feedback",
             diagnosis_tool: "analyze_geometry_views",
-            record_tool: "record_geometry_visual_result",
+            record_tool: "record_geometry_visual_decision",
             gate_tool: "verify_geometry_review_ready",
             approval_tool: "complete_geometry_stage",
             safe_rotation_tool: "rotate_cube_about_attachment",
