@@ -25,15 +25,17 @@
 - [x] Make `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` advisory progress markers rather than user-facing gates.
 - [x] Treat `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` as internal diagnosis scopes.
 - [x] Add safe project identity synchronization before write-lease acquisition.
-- [x] Keep major revision preparation inside the current Geometry profile/session.
-- [x] Keep existing structural detail by default during major revision preparation.
+- [x] Keep local and major revision preparation inside the current Geometry profile/session.
+- [x] Return user-requested Geometry revisions from `GEOMETRY_REVIEW` to `GEOMETRY_IN_PROGRESS` before mutation.
+- [x] Keep existing structural detail by default and permit broad detail removal only for explicit major revision.
+- [x] Advance revision state and write lease together with rollback handling.
 - [x] Replace convergence hard-locking with an attention flag.
 - [x] Add `rotate_cube_about_attachment` with pivot, axis/range, direction, connection, before/after score, and rollback.
 - [x] Reject direct non-zero rotation through generic Geometry cube tools.
 - [x] Add strict five-view/current-hash/current-fingerprint review readiness.
 - [x] Add transformed Geometry contract validation and strict `geometry_report.json` statuses.
 - [x] Add `submit_geometry_for_review` to validate, create the next unused review checkpoint, update the lease revision, and atomically enter `GEOMETRY_REVIEW`.
-- [x] Normalize generic Geometry revision results back to `BEDROCK_CUBOID_GEOMETRY` with internal scope classification.
+- [x] Normalize generic Geometry revision results—including Geometry issues found during Final Validation—back to `BEDROCK_CUBOID_GEOMETRY` with internal scope classification.
 - [x] Remove generic Geometry completion bypass and preserve lease/session transition behavior.
 - [x] Require final validation to re-check current Geometry readiness.
 - [x] Add repository-level legacy-context rejection.
@@ -60,7 +62,7 @@
 - [x] Add negative fixture test proving the failed Black Rhinoceros checkpoint cannot pass Geometry quality gates.
 - [x] Add positive synthetic projection test.
 - [x] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
-- [x] Add review-flow tests for tool exposure, bounded profile size, automatic review routing, and single-profile revision normalization.
+- [x] Add review-flow tests for tool exposure, bounded profile size, automatic review routing, review-to-revision state restoration, and Final Validation Geometry routing.
 - [x] Confirm skill adapters are byte-identical to canonical skills.
 
 ## Final local verification — after GitHub implementation is complete
@@ -76,6 +78,7 @@
 - [ ] Confirm Codex synchronizes project identity without user JSON edits or profile switching.
 - [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts.
 - [ ] Confirm local and major corrections stay in `BEDROCK_CUBOID_GEOMETRY` without reconnecting.
+- [ ] Confirm review feedback returns to `GEOMETRY_IN_PROGRESS` before any model mutation.
 - [ ] Confirm `submit_geometry_for_review` creates a unique review checkpoint and enters `GEOMETRY_REVIEW` without user file edits.
 - [ ] Confirm unsafe rotation is rejected or rolled back.
 - [ ] Confirm Geometry cannot reach review or approval without all current evidence.
