@@ -108,7 +108,6 @@ for (const register of optionalRegistrationFunctions) register();
 // Install mutation/evidence/transition guards before the profile wrapper so the
 // profile and lease checks remain the final mutation boundary.
 installGeometryFreshnessGuards();
-installStageValidationRoutingGuards();
 installStageReviewMutationGuards();
 installStageCompletionFreshnessGuards();
 installReviewSubmissionLeaseGuards();
@@ -117,9 +116,10 @@ installProfileStateReconciliationGuards();
 
 initializeToolProfiles();
 
-// Compact context routing must be outermost: first let the profile wrapper
-// normalize the tool result, then compute one final next-safe operation from
-// current identity, lease, workflow, report, and evidence authority.
+// Result-routing guards must be outermost: first let compatibility/profile
+// normalization run, then calculate canonical upstream revision routing and one
+// final next-safe operation from current identity, lease, workflow, and evidence.
+installStageValidationRoutingGuards();
 installStageContextRoutingGuards();
 
 export function getToolCount(): number {
