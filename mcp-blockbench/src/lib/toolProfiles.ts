@@ -3,6 +3,12 @@ import { getAllToolDefinitions, tools } from "@/lib/factories";
 import { setExecutionProfileState, getExecutionProfileState } from "@/lib/executionState";
 import { resolveMutationExecutionContext } from "@/lib/mutationContext";
 import {
+  assertInsideRoot,
+  readJsonFile,
+  writeJsonAtomically,
+  type NativeFsLike,
+} from "@/lib/atomicFiles";
+import {
   assertToolMutationAllowed,
   releaseProjectWriteLease,
 } from "@/lib/writeLease";
@@ -144,16 +150,47 @@ function hasArg(args: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(args, key) && args[key] !== undefined;
 }
 
-function normalizeGeometryDiagnosisResult(result: unknown): void {
+function diagnosisFs(): NativeFsLike {
+  // @ts-ignore - Blockbench runtime permission API.
+  const fs = requireNativeModule("fs", {
+    message: "Geometry diagnosis routing needs evidence write access.",
+    optional: false,
+  });
+  if (!fs) throw new Error("Filesystem access was denied.");
+  return fs as NativeFsLike;
+}
+
+function normalizeGeometryDiagnosisResult(
+  result: unknown,
+  args: Record<string, unknown>
+): void {
   if (!result || typeof result !== "object") return;
   const response = result as Record<string, any>;
   const structured = response.structuredContent;
   if (!structured || typeof structured !== "object") return;
+
   structured.revision_mode = structured.recommended_scope ?? null;
   structured.active_profile = "BEDROCK_CUBOID_GEOMETRY";
   structured.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
   structured.profile_switch_required = false;
   structured.reconnect_required = false;
+
+  const sessionRoot =
+    typeof args.session_root === "string" ? args.session_root : null;
+  const reportPath =
+    typeof structured.report_path === "string" ? structured.report_path : null;
+  if (!sessionRoot || !reportPath) return;
+
+  assertInsideRoot(reportPath, sessionRoot);
+  const fs = diagnosisFs();
+  if (!fs.existsSync(reportPath)) return;
+  const report = readJsonFile<Record<string, any>>(fs, reportPath);
+  report.revision_mode = report.recommended_scope ?? null;
+  report.active_profile = "BEDROCK_CUBOID_GEOMETRY";
+  report.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
+  report.profile_switch_required = false;
+  report.reconnect_required = false;
+  writeJsonAtomically(fs, reportPath, report);
 }
 
 function assertArguments(toolName: string, args: Record<string, unknown>): void {
@@ -246,7 +283,7 @@ function installGuards(): void {
       const profileBefore = getExecutionProfileState();
       const result = await execute(args, context);
       if (name === "analyze_geometry_views") {
-        normalizeGeometryDiagnosisResult(result);
+        normalizeGeometryDiagnosisResult(result, args);
       }
       if (name === "record_geometry_visual_decision") {
         recordGeometryVisualRuntimeResult(args, result);
