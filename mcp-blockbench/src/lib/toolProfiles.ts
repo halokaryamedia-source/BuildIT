@@ -62,6 +62,10 @@ const stageCompletionTools = new Set([
   "complete_stage",
   "complete_geometry_stage",
 ]);
+const removedGeometryProfiles = new Set([
+  "GEOMETRY_LOCAL_REPAIR",
+  "GEOMETRY_VISUAL_REBUILD",
+]);
 let activeProfileId = config.default_profile;
 let profileRevision = 1;
 let initialized = false;
@@ -199,28 +203,43 @@ function normalizeGeometryDiagnosisResult(
 
 export function normalizeGeometryValidationResult(result: unknown): void {
   const structured = structuredContent(result);
-  if (!structured || structured.stage !== "GEOMETRY") return;
-  if (structured.result !== "REVISION_REQUIRED") return;
+  if (!structured || !Array.isArray(structured.issues)) return;
 
-  structured.next_profile = "BEDROCK_CUBOID_GEOMETRY";
-  structured.revision_route = {
+  let hasGeometryRevision = false;
+  for (const issue of structured.issues) {
+    if (!issue || typeof issue !== "object") continue;
+    const isGeometryRevision =
+      issue.stage === "GEOMETRY" && issue.severity === "REVISION_REQUIRED";
+    if (!isGeometryRevision) continue;
+
+    hasGeometryRevision = true;
+    issue.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
+    issue.recommended_scope = "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS";
+    issue.profile_switch_required = false;
+    issue.reconnect_required = false;
+  }
+
+  const topLevelGeometryRevision =
+    structured.stage === "GEOMETRY" &&
+    structured.result === "REVISION_REQUIRED";
+  const removedProfileSelected = removedGeometryProfiles.has(
+    String(structured.next_profile ?? "")
+  );
+  if (!topLevelGeometryRevision && !removedProfileSelected && !hasGeometryRevision) {
+    return;
+  }
+
+  if (topLevelGeometryRevision || removedProfileSelected) {
+    structured.next_profile = "BEDROCK_CUBOID_GEOMETRY";
+  }
+  structured.geometry_revision_route = {
     profile: "BEDROCK_CUBOID_GEOMETRY",
     scope: "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS",
     profile_switch_required: false,
     reconnect_required: false,
   };
-
-  if (Array.isArray(structured.issues)) {
-    for (const issue of structured.issues) {
-      if (
-        issue &&
-        typeof issue === "object" &&
-        issue.severity === "REVISION_REQUIRED"
-      ) {
-        issue.recommended_profile = "BEDROCK_CUBOID_GEOMETRY";
-        issue.recommended_scope = "CLASSIFY_WITH_ANALYZE_GEOMETRY_VIEWS";
-      }
-    }
+  if (topLevelGeometryRevision) {
+    structured.revision_route = structured.geometry_revision_route;
   }
 }
 
