@@ -33,6 +33,7 @@ import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-
 import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";
 import { stageReviewSubmitToolDocs } from "../src/server/tools/stage-review-submit";
 import { stageRevisionToolDocs } from "../src/server/tools/stage-revision";
+import { stageReopenToolDocs } from "../src/server/tools/stage-reopen";
 import { stageContextToolDocs } from "../src/server/tools/stage-context";
 import { projectIdentityToolDocs } from "../src/server/tools/project-identity";
 
@@ -46,6 +47,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Write Ownership", tools: leaseToolDocs },
   { category: "Workflow", tools: workflowToolDocs },
   { category: "Stage Revision", tools: stageRevisionToolDocs },
+  { category: "Upstream Stage Reopen", tools: stageReopenToolDocs },
   { category: "Stage Review Submission", tools: stageReviewSubmitToolDocs },
   { category: "Compact Stage Context", tools: stageContextToolDocs },
   { category: "Project Identity", tools: projectIdentityToolDocs },
