@@ -74,4 +74,18 @@ describe("Ponytail-scoped MCP reliability guards", () => {
     expect(source).toContain("30 * 60 * 1000");
     expect(source).toContain("write lease has its own expiry");
   });
+
+  test("allows concurrent inspection sessions while the lease remains the sole writer authority", () => {
+    const runtime = read("src/server/tools/runtime.ts");
+    const lease = read("src/lib/writeLease.ts");
+    const identity = read("src/server/tools/project-identity.ts");
+
+    expect(runtime).toContain("single_writer_enforced_by_lease: true");
+    expect(runtime).toContain("inspection_or_idle");
+    expect(runtime).not.toContain("MULTIPLE_MCP_WRITE_SESSIONS");
+    expect(lease).toContain("WRITE_LEASE_OWNED");
+    expect(lease).toContain("WRITE_LEASE_OWNER_MISMATCH");
+    expect(identity).toContain("PROJECT_IDENTITY_LEASE_ACTIVE");
+    expect(identity).toContain("writeJsonFilesAtomically");
+  });
 });

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE, VERSION } from "@/lib/constants";
 import { serverState } from "@/lib/serverState";
-import { sessionManager } from "@/lib/sessions";
+import { sessionManager, type Session } from "@/lib/sessions";
 import {
   activateToolProfile,
   getToolProfileIds,
@@ -55,6 +55,21 @@ const READINESS_CLIENT_NAMES = new Set([
   "buildit-readiness-smoke",
 ]);
 
+export function summarizeRuntimeSessions(
+  sessions: Session[],
+  writeLease: ReturnType<typeof getProjectWriteLeaseSnapshot>
+) {
+  const readiness = sessions.filter(
+    (session) => session.clientName && READINESS_CLIENT_NAMES.has(session.clientName)
+  ).length;
+  return {
+    total: sessions.length,
+    readiness,
+    inspection_or_idle: sessions.length - readiness,
+    active_write_owner_session: writeLease.owner_session_id,
+  };
+}
+
 function normalizeLocalUrl(value: string | undefined): string | null {
   if (!value) return null;
   try {
@@ -76,9 +91,6 @@ export function registerRuntimeTools(): void {
         serverState.refreshProject();
         const server = serverState.get();
         const sessions = sessionManager.getAll();
-        const writeSessions = sessions.filter(
-          (session) => !session.clientName || !READINESS_CLIENT_NAMES.has(session.clientName)
-        );
         const configuredAutoPort = Settings.get("mcp_auto_port") !== false;
         const configuredPort = Number(Settings.get("mcp_port") ?? 3000);
         const configuredEndpoint = String(Settings.get("mcp_endpoint") ?? "/bb-mcp");
@@ -86,6 +98,7 @@ export function registerRuntimeTools(): void {
         const heartbeat = Number(Settings.get("mcp_sse_heartbeat") ?? 15);
         const toolProfile = getToolProfileSnapshot(false);
         const writeLease = getProjectWriteLeaseSnapshot();
+        const sessionSummary = summarizeRuntimeSessions(sessions, writeLease);
 
         const format =
           typeof Format !== "undefined"
@@ -145,12 +158,6 @@ export function registerRuntimeTools(): void {
         if (!project) {
           blockers.push({ code: "NO_ACTIVE_PROJECT", message: "No Blockbench project is open." });
         }
-        if (writeSessions.length > 1) {
-          blockers.push({
-            code: "MULTIPLE_MCP_WRITE_SESSIONS",
-            message: `${writeSessions.length} non-readiness MCP sessions are active; one write owner is required.`,
-          });
-        }
         if (toolProfile.validation_errors.length > 0) {
           blockers.push({ code: "TOOL_PROFILE_INVALID", message: toolProfile.validation_errors[0] });
         }
@@ -204,7 +211,7 @@ export function registerRuntimeTools(): void {
               server_key: CANONICAL_SERVER_KEY,
               canonical_url: CANONICAL_URL,
               one_active_project: Boolean(project),
-              one_or_zero_write_sessions: writeSessions.length <= 1,
+              single_writer_enforced_by_lease: true,
             },
             tool_profile: toolProfile,
             write_lease: writeLease,
@@ -228,11 +235,7 @@ export function registerRuntimeTools(): void {
               sse_heartbeat_seconds: heartbeat,
             },
             project,
-            session_summary: {
-              total: sessions.length,
-              readiness: sessions.length - writeSessions.length,
-              write_or_other: writeSessions.length,
-            },
+            session_summary: sessionSummary,
             sessions: sessions.map((session) => ({
               id: session.id,
               client_name: session.clientName ?? null,
