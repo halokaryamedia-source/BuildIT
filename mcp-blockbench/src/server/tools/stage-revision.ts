@@ -102,7 +102,8 @@ export function registerStageRevisionTools(): void {
           );
         }
 
-        const policy = policies[stage];
+        const selectedStage = stage as RevisionStage;
+        const policy = policies[selectedStage];
         const fs = nativeFs();
         const statePath = joinPath(session_root, "state.json");
         assertInsideRoot(statePath, session_root);
@@ -123,11 +124,11 @@ export function registerStageRevisionTools(): void {
           );
         }
         if (
-          state.workflow?.active_stage !== stage ||
+          state.workflow?.active_stage !== selectedStage ||
           state.workflow?.state !== policy.reviewState
         ) {
           throw new Error(
-            `STAGE_REVISION_STATE_MISMATCH: found ${state.workflow?.active_stage}/${state.workflow?.state}; expected ${stage}/${policy.reviewState}.`
+            `STAGE_REVISION_STATE_MISMATCH: found ${state.workflow?.active_stage}/${state.workflow?.state}; expected ${selectedStage}/${policy.reviewState}.`
           );
         }
 
@@ -136,15 +137,15 @@ export function registerStageRevisionTools(): void {
           lease.status !== "ACTIVE" ||
           lease.project_uuid !== expected_project_uuid ||
           lease.state_revision !== expected_state_revision ||
-          lease.stage !== stage ||
+          lease.stage !== selectedStage ||
           lease.profile_id !== policy.profileId
         ) {
           throw new Error("STAGE_REVISION_WRITE_LEASE_REQUIRED");
         }
 
-        const stageRecord = state.workflow?.stage_records?.[stage];
+        const stageRecord = state.workflow?.stage_records?.[selectedStage];
         if (!stageRecord) {
-          throw new Error(`STATE_STAGE_RECORD_MISSING: ${stage}`);
+          throw new Error(`STATE_STAGE_RECORD_MISSING: ${selectedStage}`);
         }
 
         const preparedAt = new Date().toISOString();
@@ -171,7 +172,7 @@ export function registerStageRevisionTools(): void {
         let leaseAdvanced = false;
         try {
           updateProjectWriteLeaseWorkflow(lease.owner_session_id, {
-            stage,
+            stage: selectedStage,
             stateRevision: nextRevision,
             profileId: lease.profile_id!,
             profileRevision: lease.profile_revision!,
@@ -182,7 +183,7 @@ export function registerStageRevisionTools(): void {
         } catch (error) {
           if (leaseAdvanced) {
             updateProjectWriteLeaseWorkflow(lease.owner_session_id, {
-              stage,
+              stage: selectedStage,
               stateRevision: expected_state_revision,
               profileId: lease.profile_id!,
               profileRevision: lease.profile_revision!,
@@ -197,12 +198,12 @@ export function registerStageRevisionTools(): void {
           content: [
             {
               type: "text",
-              text: `${stage} revision prepared inside the current profile. Workflow returned to ${policy.workingState}.`,
+              text: `${selectedStage} revision prepared inside the current profile. Workflow returned to ${policy.workingState}.`,
             },
           ],
           structuredContent: {
             status: "PASS",
-            stage,
+            stage: selectedStage,
             workflow_state: policy.workingState,
             next_action: "CONTINUE_STAGE",
             revision_source: "USER_REVIEW",
