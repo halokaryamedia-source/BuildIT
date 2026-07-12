@@ -1,21 +1,18 @@
 ---
 name: blockbench-texture
-description: "Texture-stage skill for Classic Minecraft Bedrock cuboid assets. Performs only approved per-face UV and pixel-art texturing, saves atlas evidence, validates Texture, and stops for review."
+description: "Classic Bedrock Texture workflow with identity recovery, one selected Terra writer, automatic review submission, and same-profile revision."
 ---
 
 # Blockbench Texture
 
+Use only for stage `TEXTURE` with profile `BEDROCK_CUBOID_TEXTURE`.
+
 ## Entry
 
-Use only when the active stage is `TEXTURE` with tool profile `BEDROCK_CUBOID_TEXTURE` or `TEXTURE_LOCAL_REPAIR` and the current MCP session owns the project write lease.
-
-Read:
-
-1. `PRODUCTION_CONTEXT.md`
-2. the approved Reference Visual
-3. `GEOMETRY.md`
-4. `TEXTURING.md`
-5. the current session state
+1. Call `get_stage_context`.
+2. Rebind identity before lease acquisition when requested.
+3. Use the selected Terra writer; acquire the Texture lease before persistent work.
+4. Preserve approved Geometry.
 
 ## Work
 
@@ -23,34 +20,21 @@ Read:
 UV
 → BASE_TEXTURE
 → DETAIL_TEXTURE
-→ texture evidence
-→ checkpoint
-→ preview views
-→ compact validation
+→ save_texture_evidence
+→ capture_standard_views
+→ texture_report.json with current created_at and PASS/REVISION_REQUIRED
+→ validate_reference_contract
+→ submit_stage_for_review
 → TEXTURE_REVIEW
 ```
 
-- Use Classic Bedrock materials only.
-- Use the approved atlas dimensions and Per-face UV unless the reference package explicitly states otherwise.
-- Keep pixels sharp and use the approved palette/material zones.
-- Mirror only approved regions; keep directional details unique.
-- Preserve approved Geometry.
+Use Classic Bedrock, approved atlas dimensions, Per-face UV when required, sharp pixels, and approved material zones. No PBR, MER, normal map, gradients, mesh UV, Geometry redesign, Animation, or final export.
 
-## Forbidden
+`submit_stage_for_review` validates current evidence/report, saves the next unused Texture review checkpoint, advances state/lease revision, and enters `TEXTURE_REVIEW` without profile switch or reconnect.
 
-- PBR, MER, normal maps, or Vibrant Visuals;
-- mesh UV tools;
-- gradients or soft anti-aliased shading for pixel-art assets;
-- geometry redesign;
-- animation work;
-- final export.
+## User decision
 
-## Review Output
+- `APPROVED`: ensure the current session owns the Texture lease, then call `complete_stage` for `TEXTURE`.
+- `REVISION`: call `prepare_stage_revision` with the targeted feedback before any mutation. It returns to `TEXTURE_IN_PROGRESS` in the same profile. Regenerate affected evidence and create a report newer than the revision boundary before submitting again.
 
-1. Use `save_texture_evidence` to write the atlas directly inside the active session; do not return texture base64 through the agent.
-2. Save the Texture review checkpoint.
-3. Call `capture_standard_views` with the active project UUID, absolute session root, Texture evidence directory, and `return_images: false`.
-4. Run `validate_reference_contract` for Texture.
-5. Write `texture_report.json` and stop for `APPROVED` or `REVISION: ...`.
-
-Regenerate only affected evidence during a targeted revision.
+Do not activate a Texture repair profile or ask the user to edit state/checkpoint files.
