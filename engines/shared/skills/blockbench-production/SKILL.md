@@ -1,133 +1,88 @@
 ---
 name: blockbench-production
-description: "Dispatcher for approved Blockbench asset production. Keeps Geometry in one MCP profile/session and routes work to usage-efficient locked Codex agents while preserving visual quality and single-writer safety."
+description: "Production dispatcher using one selected Terra writer, bounded Sol visual judgment, automatic MCP recovery, and current evidence guards."
 ---
 
 # Blockbench Production
 
-Use for production from an approved single-Reference-Visual package.
+Use for an approved single-Reference-Visual package.
 
-## Authority
+## Preflight
 
-Runtime authority is:
+Read `AGENTS.md`, `engines/codex/MODEL_ROUTING.md`, the selected asset state, and its reference package.
 
-```text
-AGENTS.md
-engines/codex/MODEL_ROUTING.md
-engines/shared/
-workspace/workspace.json
-workspace/active/<asset>/mcp/state.json
-workspace/active/<asset>/mcp/references/
-```
-
-Reject legacy instructions that require four technical sheets, three approval moments, numbered `01_*`–`04_*` images, or any extra technical reference image. Stop with `LEGACY_SKILL_CONFLICT`.
-
-The approved Reference Visual is the sole visual authority. Markdown and JSON are implementation constraints, not substitutes for image inspection.
-
-## User experience rule
-
-Codex owns normal setup, model routing, and recovery. Do not ask the user to:
-
-- edit `state.json` or `project.json`;
-- switch Geometry profiles;
-- choose checkpoint filenames;
-- choose a worker model;
-- close and reopen the model;
-- reconnect MCP between Geometry revision modes;
-- run separate readiness prompts for operations Codex can perform directly.
-
-A restart is justified only after loading a newly built plugin or when the MCP endpoint is actually unavailable.
-
-## Engine routing
-
-The parent is a thin controller. Use deterministic routing from `MODEL_ROUTING.md`:
+Confirm these project agents are visible:
 
 ```text
-routine_auditor   5.4 Mini Low   read-only mechanical verification
-mcp_builder       Terra Medium   standard implementation and sole MCP writer
-visual_director   Sol Medium     read-only visual direction and acceptance
-critical_reviewer Sol High       rare read-only critical decision
+routine_auditor
+mcp_builder
+visual_director
+critical_reviewer
 ```
 
-- High is the maximum effort and is used only with an approved critical reason code.
-- Never use xhigh, Extra High, Max, Ultra, Fast mode, recursive agents, or parallel MCP writers.
-- Do not call Sol for deterministic checks or known part/direction/magnitude repairs.
-- Use `visual_director` for initial Reference interpretation, ambiguous visual trade-offs, subjective feedback, and final visual acceptance.
-- `mcp_builder` is the only role allowed to acquire the Blockbench write lease or mutate the active asset.
-- If the user selected an overqualified or underqualified parent model, route automatically; request a model change only when the required custom agent is unavailable.
+When missing, stop once with `CODEX_PROJECT_CONFIG_NOT_LOADED`; project trust/config is not active.
+
+Reject legacy four-sheet, numbered-image, or three-approval workflows with `LEGACY_SKILL_CONFLICT`.
+
+## Routing
+
+```text
+normal implementation  → Terra Medium parent directly
+large read-only audit  → routine_auditor / Mini Low
+fallback writer        → mcp_builder / Terra Medium
+visual judgment        → visual_director / Sol Medium
+critical decision      → critical_reviewer / Sol High once
+```
+
+Select exactly one writer: Terra parent or `mcp_builder`, never both. Mini and critical review have Blockbench MCP disabled. Visual direction has inspection-only MCP tools. High is the ceiling.
+
+Do not call Sol for deterministic checks or a repair whose part, direction, and magnitude are already known.
+
+## User experience
+
+Codex owns identity synchronization, lease handling, routing, evidence, checkpoint naming, and review transitions. Do not ask the user to edit JSON, select repair profiles, select workers, reconnect within Geometry, or repeatedly reopen Blockbench.
 
 ## Dispatch
 
-1. Resolve the selected asset and session root.
-2. Load this skill plus exactly one stage skill.
-3. Call `get_stage_context` and follow `next_safe_operation`.
-4. During Geometry, remain on `BEDROCK_CUBOID_GEOMETRY`.
-5. Let Codex synchronize a changed runtime UUID with `rebind_active_project_identity` when required.
-6. Route all active-asset mutation through `mcp_builder`; acquire the write lease only before mutation.
-7. Use the cheapest eligible read-only role for preparation and validation.
-8. Submit the completed stage through its MCP review transition and stop at the user review gate.
+1. Resolve asset, canonical model, and session root.
+2. Load this skill plus exactly one active-stage skill.
+3. Call `get_runtime_status`, then `get_stage_context`.
+4. Rebind identity before lease acquisition when required.
+5. Select one writer and acquire the lease before persistent writes.
+6. Follow `next_safe_operation`.
+7. Submit the stage through its MCP review transition and stop for user review.
 
-## Geometry flow
+## Geometry
 
-Normal Geometry uses one profile and one MCP session:
+Geometry stays in `BEDROCK_CUBOID_GEOMETRY`:
 
 ```text
 get_stage_context
-→ rebind_active_project_identity when required
-→ manage_project_write_lease acquire by mcp_builder
+→ rebind identity when required
+→ selected writer acquires lease
 → inspect_reference_visual_preview
-→ capture/analyze current Geometry
-→ edit only diagnosed parts
-→ final five-view evidence
+→ capture_visual_feedback
+→ analyze_geometry_views
+→ bounded diagnosed edits
+→ final five-view capture/analyze
 → record_geometry_visual_decision
-→ validate_geometry_contract
 → submit_geometry_for_review
 → user review
 ```
 
-`submit_geometry_for_review` re-runs the Geometry readiness gate, creates the next unused non-approved review checkpoint, atomically changes state to `GEOMETRY_REVIEW`, and returns `AWAIT_GEOMETRY_REVIEW`. It does not switch profile or reconnect MCP.
+`analyze_geometry_views` persists metrics and diff, so it requires the Geometry lease. `visual_director` may capture ephemeral views without `output_dir`; it never persists evidence.
 
-`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal diagnosis scopes. They are not tool profiles and do not require reconnecting.
+Current Geometry evidence must match project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual hash, five views, analyzer, visual decision, and rotation audit. Hierarchy or group-transform changes require fresh capture/analyze.
 
-When current revision evidence recommends a repair, Codex may call `prepare_geometry_visual_rebuild` in the same Geometry profile. The tool preserves checkpoints and primary masses, keeps existing detail by default, clears only classified structural detail when explicitly requested for a major revision, and returns to normal Geometry work.
+`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. `prepare_geometry_visual_rebuild` handles either in the same profile/session and preserves checkpoints/detail by default.
 
-Generic Geometry validation must route revision work back to `BEDROCK_CUBOID_GEOMETRY`. Codex uses `analyze_geometry_views` to classify the internal scope rather than activating a removed repair profile.
+Use `place_cubes_safe` and `modify_cubes` for unrotated work. Every non-zero rotation uses `rotate_cube_about_attachment`.
 
-## Visual grounding
+## Sol boundary
 
-Use `inspect_reference_visual_preview`, not the legacy original-image transport. It verifies the original SHA-256 and dimensions while returning a bounded ephemeral preview.
+Use `visual_director` only for initial Reference direction, ambiguous cross-view/root-cause decisions, subjective user feedback, and final visual acceptance. Return immediately to the selected Terra writer and deterministic validation.
 
-Geometry requires:
-
-1. Codex inspection of actual image payloads;
-2. fixed-scale diagnosis from `analyze_geometry_views`;
-3. structural validation from `validate_geometry_contract`.
-
-A structural pass alone is not a visual pass. Free-rescaling the current model before comparison is forbidden.
-
-## Mutation rules
-
-Use:
-
-- `place_cubes_safe` for unrotated new cubes;
-- `modify_cubes` for unrotated edits;
-- `rotate_cube_about_attachment` for every non-zero cube rotation.
-
-Prefer one bounded edit batch per diagnosed issue. Do not make unrelated trial-and-error changes.
-
-Geometry runtime markers such as `PRIMARY_FORM` and `STRUCTURAL_DETAIL` are internal progress hints, not user-facing approval gates. Codex may continue working in the same profile. Editing after `FINAL_REVIEW_READY` automatically makes old evidence stale and returns Geometry to working state.
-
-## Efficiency
-
-- Inspect the Reference Visual preview once unless its source hash changes.
-- Use only affected views during correction.
-- Use one final five-view pass.
-- Reuse compact context and current evidence.
-- De-escalate from Sol direction to Terra implementation and Mini deterministic audit.
-- Do not reload long contracts without a concrete conflict.
-- Do not request user intervention for operations exposed through the current MCP profile or custom agents.
-
-## Stage routing
+## Stages
 
 ```text
 GEOMETRY         → blockbench-geometry
@@ -136,4 +91,4 @@ ANIMATION        → blockbench-animation when required
 FINAL_VALIDATION → blockbench-validation
 ```
 
-Stop only for a real authority conflict, unavailable MCP runtime or required custom agent, unsafe mutation, stale or invalid evidence, failed final review gate, or required user approval.
+Stop only for a real authority conflict, unavailable mandatory runtime/capability, unsafe mutation, unrecoverable stale evidence, failed review gate, lease conflict, or user approval.
