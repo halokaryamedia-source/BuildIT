@@ -67,15 +67,15 @@ jobs:
         run: |
           bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["SNAP_RESIZE_ROTATE", "attachment_fit.json", "ROTATION_NOT_VISIBLE", "PRIMARY_ROTATION_PIVOT_NOT_APPLIED", "automatic_angle_solver"]) { if (!text.includes(marker)) throw new Error(`Missing smart rotation marker: ${marker}`); }'
 
-      - name: Commit verified fix
+      - name: Commit verified source fix
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add mcp-blockbench/src/server/tools/geometry-rotation.ts
-          git add -f mcp-blockbench/dist/mcp.js
           if git diff --cached --quiet; then
             echo "Smart rotation type fix already applied."
             exit 0
           fi
           git commit -m "fix: finalize smart pivot and attachment rotation runtime"
+          git pull --rebase origin Rework
           git push origin HEAD:Rework
