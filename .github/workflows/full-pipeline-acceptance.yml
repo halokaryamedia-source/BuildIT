@@ -9,13 +9,20 @@ on:
       - ".github/workflows/full-pipeline-acceptance.yml"
       - "mcp-blockbench/src/lib/pipelineAcceptance.ts"
       - "mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_full_pipeline_acceptance.py"
+      - ".github/workflows/full-pipeline-acceptance.yml"
+      - "mcp-blockbench/src/lib/pipelineAcceptance.ts"
+      - "mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: full-pipeline-acceptance
+  group: full-pipeline-acceptance-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -68,6 +75,7 @@ jobs:
           bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["rootMotionAllowedFromPolicy", "ATLAS_DOWNGRADE_FORBIDDEN", "ANIMATION_SCALE_KEYFRAMES_FORBIDDEN", "ANIMATION_LOOP_MODE_MISMATCH", "in_place_zero_root_translation", "SNAP_RESIZE_ROTATE"]) { if (!text.includes(marker)) throw new Error(`Missing full-pipeline marker: ${marker}`); }'
 
       - name: Commit verified runtime integration
+        if: github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
