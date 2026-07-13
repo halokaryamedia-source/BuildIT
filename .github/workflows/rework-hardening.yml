@@ -7,6 +7,11 @@ on:
     paths:
       - ".github/scripts/apply_rework_hardening.py"
       - ".github/workflows/rework-hardening.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_rework_hardening.py"
+      - ".github/workflows/rework-hardening.yml"
   workflow_dispatch:
 
 permissions:
@@ -25,6 +30,7 @@ jobs:
       - name: Checkout Rework
         uses: actions/checkout@v4
         with:
+          ref: Rework
           fetch-depth: 0
 
       - name: Apply hardening patch
