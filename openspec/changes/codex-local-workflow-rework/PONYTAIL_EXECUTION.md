@@ -2,18 +2,20 @@
 
 ## Active goal
 
-Run one clear path from ChatGPT reference creation to the final Blockbench package with the fewest safe questions, reads, model calls, image payloads, validations, and correction cycles. Quality gates remain strict; duplicated work and speculative polish are removed.
+Run one clear path from ChatGPT reference creation to the final Blockbench package with the fewest safe questions, reads, model calls, image payloads, validations, and correction cycles. Quality gates remain strict; duplicated work, alternate styles, and speculative polish are removed.
 
 ## Canonical upstream-to-downstream path
 
 ```text
 CHATGPT REFERENCE STUDIO
 source intake
-→ one batched clarification turn only when a low-confidence decision has high production impact
+→ apply fixed Minecraft / Blockbench cuboid interpretation
+→ one batched clarification turn only when a low-confidence subject decision has high production impact
 → Production Context approval
-→ one Golden-Sample-guided Reference Visual
-→ blocking QA; maximum one targeted edit only when required
-→ Reference Visual approval
+→ one Golden-Sample-locked Minecraft cuboid Reference Visual
+→ hidden blocking QA
+→ maximum one targeted correction of the same visual only when required
+→ only a QA-passing visual reaches Reference Visual approval
 → automatic technical package + audit + candidate ZIP
 
 CODEX + MCP-BLOCKBENCH
@@ -30,17 +32,86 @@ one runtime preflight
 
 Routine ChatGPT production has exactly two approval moments: Production Context and Reference Visual. Technical document generation, package audit, and ZIP delivery are automatic. Golden Sample promotion is a separate repository action, not a third routine approval.
 
+## Minecraft-only upstream lock
+
+The Reference Studio has one visual style only: actual Minecraft Bedrock / Blockbench cuboid pixel art.
+
+The source image supplies identity, proportions, features, markings, and attachments. The Golden Sample supplies construction language, panel layout, camera, facing direction, spacing, and technical presentation.
+
+The generated model must use:
+
+- planned primary and secondary cuboid masses;
+- deliberate variation in cuboid width, height, and depth;
+- stepped forms for controlled taper;
+- limited purposeful one-axis rotations for approved angled features;
+- stable major masses, readable hierarchy, and separable moving parts;
+- crisp Minecraft pixel texture.
+
+The following are blocking and are corrected internally before review:
+
+```text
+NON_MINECRAFT_GEOMETRY
+REALISTIC_ORGANIC_RENDER
+PIXEL_TEXTURE_ONLY
+GENERIC_VOXEL_FILTER
+UNPLANNED_CUBE_STACKING
+INSUFFICIENT_CUBOID_VARIATION
+MISSING_REQUIRED_ANGLED_FORM
+EXCESSIVE_ROTATION_NOISE
+NON_BLOCKBENCH_BUILDABLE_FORM
+GOLDEN_SAMPLE_CONSTRUCTION_DRIFT
+GOLDEN_SAMPLE_LAYOUT_DRIFT
+CAMERA_POSITION_DRIFT
+TOP_VIEW_NOT_FOOTPRINT
+CROSS_VIEW_MODEL_DRIFT
+```
+
+Do not ask the user to choose realistic versus Minecraft, a stylization level, or whether cuboids should be used. Those are not unresolved decisions.
+
+## Reference Visual execution budget
+
+- source inspection: once per supplied source set;
+- visual-style classification question: zero;
+- subject clarification: `0–4` high-impact questions in one turn;
+- Production Context approval: one;
+- normal Reference Visual generation: one;
+- blocking QA pass: one;
+- targeted correction: zero or one edit of the same image;
+- optional polish iteration: zero;
+- alternate-style generation: zero;
+- failed draft shown to user: zero;
+- Reference Visual approval: one;
+- post-approval image generation: zero.
+
+When the first image fails, use the one correction only for the named blockers. When the correction still fails, stop with the exact codes. Do not generate another board, return to source intake, ask broad questions, or offer alternate styles.
+
+## Golden Sample position budget
+
+For bilateral assets use exactly:
+
+```text
+UPPER: LEFT SIDE | FRONT | BACK
+LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
+```
+
+- Left Side: strict profile facing left.
+- Front and Back: centered, upright, same height and ground line.
+- Top / Footprint: true top-down, front/head pointing left.
+- Front-left 3/4: subject faces left and exposes front plus left planes.
+
+Do not spend a generation exploring another panel arrangement.
+
 ## Single-source rule
 
-- `PRODUCTION_CONTEXT.md` owns user intent, scale, assumptions, and forbidden redesigns.
-- The approved Reference Visual owns visible identity, silhouette, proportions, pose, and appearance.
+- `PRODUCTION_CONTEXT.md` owns user intent, scale, assumptions, mandatory Minecraft interpretation, and forbidden redesigns.
+- The approved Reference Visual owns visible identity, cuboid construction appearance, silhouette, proportions, pose, and texture.
 - `reference_manifest.json` owns executable numeric crops, regions, part constraints, symmetry/asymmetry, rotations, Texture limits, Animation limits, and required evidence.
 - Stage Markdown files provide concise human-readable build and review procedure; they do not duplicate large executable arrays.
 - `CODEX_REFERENCE_HANDOFF.md` owns only authority order, route, stage mapping, and non-negotiable boundaries.
 
 When authorities conflict, stop with `REFERENCE_CONFLICT`; do not resolve the conflict by rereading every document repeatedly.
 
-## Call and context budget
+## Codex call and context budget
 
 - `get_runtime_status`: once at startup; repeat only after a real runtime error, plugin reload, project replacement, or connection warning.
 - `get_stage_context`: once at stage entry and once after approval, revision, or upstream reopen; do not poll it after every MCP call.
@@ -131,7 +202,12 @@ Exactly one Terra writer may mutate the active asset. Deterministic validation a
 
 Forbidden:
 
+- asking which visual style the user wants;
+- realistic, semi-realistic-render, cinematic, generic-voxel, or alternate-style output;
 - repeated user questions for visible or already approved facts;
+- showing a known-invalid Reference Visual for approval;
+- a second normal Reference Visual generation;
+- optional polish after a valid visual exists;
 - a third routine ChatGPT approval;
 - analyzing empty Geometry;
 - mandatory Sol calls for deterministic work;
@@ -144,17 +220,22 @@ Forbidden:
 
 ## Stop conditions
 
-Stop only for an unresolved authority conflict, missing mandatory runtime, unsafe mutation, write-lease conflict, evidence that cannot be regenerated, failed gate with no safe repair route, or a required user review.
+Stop only for an unresolved authority conflict, a Reference Visual that remains non-Minecraft or inconsistent after the one allowed correction, missing mandatory runtime, unsafe mutation, write-lease conflict, evidence that cannot be regenerated, failed gate with no safe repair route, or a required user review.
+
+## Reproducible P0 correction
+
+The giraffe simulation produced a realistic animal render with pixelated texture and Golden Sample position drift. That is a reproducible upstream P0, not a request for a new feature. This correction removes the invalid style branch while preserving all existing Geometry, rotation, manifest, Codex, and MCP rules.
 
 ## Deferred
 
 - merge into `V1`;
 - production release;
 - learned routing or persistent routing telemetry;
-- unrelated mesh, PBR, Hytale, armature, or multi-project expansion.
+- unrelated mesh, PBR, Hytale, armature, or multi-project expansion;
+- any additional Reference Studio style, sheet, approval, or regeneration mode.
 
 ## Pre-local optimization freeze
 
-After manifest-only authority and compact-context cleanup, do not add or merge another runtime tool, model role, profile, review gate, evidence type, or checkpoint class before the local acceptance run unless it fixes a reproducible P0 blocker or removes a proven duplicate authority.
+After the Minecraft-only upstream correction, manifest-only authority, and compact-context cleanup, do not add or merge another runtime tool, model role, profile, review gate, evidence type, checkpoint class, image style, prompt variant, or approval stage before the local acceptance run unless it fixes a reproducible P0 blocker or removes a proven duplicate authority.
 
 Further optimization requires measured local acceptance evidence: actual MCP call count, stage-context response bytes, model-route usage, correction cycles, image payload bytes, checkpoint sizes, and elapsed stage time. A theoretical micro-optimization without those measurements is `DEFERRED_NOT_REQUIRED`.
