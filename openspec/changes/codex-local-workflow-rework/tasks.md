@@ -102,7 +102,6 @@
 - [x] Make unrelated extended capabilities opt-in and suppress routine diff image payloads.
 - [x] Return deterministic model-route guidance from existing stage context without an extra routing call.
 
-
 ## Final flow-efficiency audit
 
 - [x] Replace Geometry-centric Ponytail scope with one upstream-to-downstream minimum-sufficient path.
@@ -118,11 +117,25 @@
 - [x] Require asymmetric Right Side before Geometry runtime reaches final-ready status.
 - [x] Expand the final acceptance contract from Geometry-only to ChatGPT package through final workspace completion.
 - [x] Add permanent regression tests for authority, call budgets, zero-start branching, validation ownership, and full stage routing.
-
 - [x] Remove the built-in Black Rhinoceros runtime fallback so the imported manifest is the only executable Geometry authority.
 - [x] Compact stage context by removing duplicated visual-grounding payloads and static legacy marker lists.
 - [x] Make optional model-role discovery lazy and non-blocking.
 - [x] Freeze speculative pre-local expansion until measured local evidence exists.
+
+## Minecraft-only Reference Studio P0 correction
+
+- [x] Classify the failed giraffe simulation as a reproducible upstream P0 rather than a Geometry-system redesign.
+- [x] Lock the source image to subject identity only and the Golden Sample to Minecraft cuboid construction/presentation.
+- [x] Remove realistic, semi-realistic-render, cinematic, generic-voxel, and alternate-style branches.
+- [x] Forbid visual-style and stylization-level questions during intake.
+- [x] Require varied cuboid dimensions, planned masses, stepped transitions, and limited purposeful one-axis rotations.
+- [x] Reject pixel-texture-only realistic subjects, smooth organic forms, uniform cube stacking, and arbitrary rotation noise.
+- [x] Lock bilateral panel positions and facing directions to the Golden Sample.
+- [x] Add hidden Minecraft-style QA before the Reference Visual is shown to the user.
+- [x] Permit at most one blocking correction of the same image and prohibit a regenerate loop.
+- [x] Preserve the existing Geometry, rotation-contract, manifest, Codex, and MCP implementation unchanged.
+- [x] Add permanent regression coverage for the Minecraft-only prompt, QA codes, camera positions, no-style-question rule, and single linear flow.
+- [x] Reapply the pre-local expansion freeze after this P0 correction.
 
 ## Final local Blockbench acceptance — remaining on the workstation
 
@@ -151,3 +164,4 @@
 - [ ] Persistent model-routing telemetry or learned routing service.
 - [ ] Unrelated modelling capability expansion.
 - [ ] Duplicate or versioned workflow authorities and outputs.
+- [ ] Any additional Reference Studio style, sheet, approval, prompt variant, or regeneration mode.
