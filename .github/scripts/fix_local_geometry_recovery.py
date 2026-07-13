@@ -62,13 +62,40 @@ profile_path.write_text(json.dumps(profiles, indent=2) + "\\n", encoding="utf-8"
 )
 
 replace_once(
+    '''for profile_id in [
+    "BEDROCK_CUBOID_GEOMETRY",
+    "BEDROCK_CUBOID_TEXTURE",
+    "BEDROCK_CUBOID_ANIMATION",
+    "FINAL_VALIDATION_READONLY",
+]:
+    tools = profiles["profiles"][profile_id]["allowed_tools"]
+    if "save_canonical_project" not in tools:
+        tools.append("save_canonical_project")
+profile_path.write_text(json.dumps(profiles, indent=2) + "\\n", encoding="utf-8")''',
+    '''for profile_id in [
+    "BEDROCK_CUBOID_GEOMETRY",
+    "BEDROCK_CUBOID_TEXTURE",
+    "BEDROCK_CUBOID_ANIMATION",
+    "FINAL_VALIDATION_READONLY",
+]:
+    tools = profiles["profiles"][profile_id]["allowed_tools"]
+    if "save_canonical_project" not in tools:
+        tools.append("save_canonical_project")
+texture_tools = profiles["profiles"]["BEDROCK_CUBOID_TEXTURE"]["allowed_tools"]
+if "save_project_checkpoint" in texture_tools:
+    texture_tools.remove("save_project_checkpoint")
+profile_path.write_text(json.dumps(profiles, indent=2) + "\\n", encoding="utf-8")''',
+    "Texture tool budget",
+)
+
+replace_once(
     '''All final views, project UUID, fingerprints, transformed world signature,
 Reference Visual hash, analyzer, primary-form gate, visual decision, and rotation
 audit must be current. Submission owns fresh validation, checkpoint, transition,
 and lease release.
 
 After user approval, reacquire a fresh Geometry lease and call''',
-    '''All final views, project UUID, fingerprints, transformed world signature,
+    '''All final views, project UUID, fingerprints, transformed world-space signature,
 Reference Visual hash, analyzer, primary-form gate, visual decision, and rotation
 audit must be current. Submission owns fresh validation, checkpoint, transition,
 and lease release.
@@ -79,7 +106,7 @@ and lease release.
 - `analyze_geometry_views` persists canonical metrics and therefore remains a lease-owned write.
 - The final required-view capture/analyze is the canonical final evidence pass.
 - The selected Terra writer performs normal repairs directly.
-- `visual_director` only when deterministic evidence cannot close a genuine visual decision.
+- visual_director only when deterministic evidence cannot close a genuine visual decision.
 - High remains the maximum and is reserved for one coded critical decision.
 
 After user approval, reacquire a fresh Geometry lease and call''',
@@ -110,4 +137,4 @@ write(production_path, production)
 )
 
 path.write_text(source, encoding="utf-8")
-print("Patched canonical guards, profile budget, and compatibility invariants.")
+print("Patched canonical guards, tool budgets, and compatibility invariants.")
