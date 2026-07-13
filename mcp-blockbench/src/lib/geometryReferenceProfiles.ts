@@ -8,6 +8,7 @@ export type StandardGeometryView =
 
 export type NormalizedRect = [number, number, number, number];
 export type Vec3 = [number, number, number];
+export type GeometryAxis = "x" | "y" | "z";
 
 export interface GeometryViewRegion {
   id: string;
@@ -33,7 +34,7 @@ export type AnchorSelector = "min" | "center" | "max";
 export interface GeometryRotationContract {
   id: string;
   cube_patterns: string[];
-  allowed_axis: "x" | "y" | "z";
+  allowed_axis: GeometryAxis;
   minimum_degrees: number;
   maximum_degrees: number;
   pivot_anchor: [AnchorSelector, AnchorSelector, AnchorSelector];
@@ -44,6 +45,17 @@ export interface GeometryRotationContract {
   connect_to_patterns?: string[];
   connect_to_anchor?: [AnchorSelector, AnchorSelector, AnchorSelector];
   affected_views: StandardGeometryView[];
+
+  /**
+   * Smart fitting is the default. ROTATE_ONLY remains available only for
+   * explicitly approved legacy contracts.
+   */
+  fit_mode?: "SNAP_RESIZE_ROTATE" | "ROTATE_ONLY";
+  long_axis?: GeometryAxis;
+  centerline_anchors?: boolean;
+  size_strategy?: "CONSTRAINT_MIDPOINT" | "PRESERVE_WITHIN_CONSTRAINT";
+  snap_to_connection?: boolean;
+  minimum_visible_rotation_degrees?: number;
 }
 
 export interface GeometryPartConstraint {
