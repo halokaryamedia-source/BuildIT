@@ -84,7 +84,7 @@ jobs:
         working-directory: mcp-blockbench
         run: |
           set -o pipefail
-          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["right_side", "geometry_right.png", "ASYMMETRIC", "requiredGeometryViews"]) { if (!text.includes(marker)) throw new Error(`Missing asymmetric runtime marker: ${marker}`); }' 2>&1 | tee "$GITHUB_WORKSPACE/asymmetry-bundle.log"
+          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["right_side", "geometry_right.png", "ASYMMETRIC", "symmetry_policy"]) { if (!text.includes(marker)) throw new Error(`Missing asymmetric runtime marker: ${marker}`); }' 2>&1 | tee "$GITHUB_WORKSPACE/asymmetry-bundle.log"
 
       - name: Capture diagnostics
         if: always()
