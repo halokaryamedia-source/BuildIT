@@ -13,6 +13,17 @@ import {
   type BlueprintElement,
 } from "@/lib/geometryBlueprint";
 import { markPrimaryFormReady } from "@/lib/geometryRuntime";
+import {
+  mergeGeometryReferenceProfile,
+  type GeometryAxis,
+  type GeometryPartConstraint,
+  type GeometryRotationContract,
+  type Vec3,
+} from "@/lib/geometryReferenceProfiles";
+import {
+  evaluateAttachmentFit,
+  inferLongAxisFromSize,
+} from "./geometry-rotation";
 import { transformedCubeCorners } from "@/lib/worldBounds";
 
 const parameters = z.object({
@@ -24,7 +35,7 @@ export const geometryPrimaryGateToolDocs: ToolSpec[] = [
   {
     name: "verify_primary_form_ready",
     description:
-      "Verifies that manifest PRIMARY_MASS and PROVISIONAL_SUPPORT geometry, required primary rotations, ground contacts, cube budget, and left/front/top fixed-scale scores are ready before structural detail is allowed. This is an internal phase gate, not a user review.",
+      "Verifies that manifest PRIMARY_MASS and PROVISIONAL_SUPPORT geometry, smart-fit attachment rotations with explicit pivots and evidence, ground contacts, cube budget, and left/front/top fixed-scale scores are ready before structural detail is allowed. This is an internal phase gate, not a user review.",
     annotations: {
       title: "Verify Primary Form Ready",
       readOnlyHint: false,
@@ -55,8 +66,10 @@ function normalized(value: unknown): string {
 }
 
 function matches(name: string, patterns: unknown): boolean {
-  return Array.isArray(patterns) &&
-    patterns.some((pattern) => normalized(name).includes(normalized(pattern)));
+  return (
+    Array.isArray(patterns) &&
+    patterns.some((pattern) => normalized(name).includes(normalized(pattern)))
+  );
 }
 
 function parentName(cube: Cube): string | null {
@@ -74,22 +87,199 @@ function currentElements(): BlueprintElement[] {
   }));
 }
 
-function cubeHasContractRotation(cube: Cube, contract: Record<string, any>): boolean {
-  if (!matches(cube.name, contract.cube_patterns)) return false;
-  const axis = String(contract.allowed_axis ?? "x");
-  const index = axis === "y" ? 1 : axis === "z" ? 2 : 0;
-  const angle = Number(cube.rotation?.[index] ?? 0);
-  const otherAxes = [0, 1, 2].filter((candidate) => candidate !== index);
+function cubeMinimumY(cube: Cube): number {
+  return Math.min(...transformedCubeCorners(cube as any).map((point) => point[1]));
+}
+
+function sizeOfCube(cube: Cube): Vec3 {
+  return [
+    Math.abs(Number(cube.to[0]) - Number(cube.from[0])),
+    Math.abs(Number(cube.to[1]) - Number(cube.from[1])),
+    Math.abs(Number(cube.to[2]) - Number(cube.from[2])),
+  ];
+}
+
+function matchingConstraint(
+  constraints: GeometryPartConstraint[],
+  cube: Cube,
+  contract: GeometryRotationContract
+): GeometryPartConstraint | null {
+  const candidates = constraints.filter((constraint) =>
+    constraint.name_patterns.some((pattern) =>
+      cube.name.toLowerCase().includes(pattern.toLowerCase())
+    )
+  );
   return (
-    Number.isFinite(angle) &&
-    angle >= Number(contract.minimum_degrees) &&
-    angle <= Number(contract.maximum_degrees) &&
-    otherAxes.every((candidate) => Math.abs(Number(cube.rotation?.[candidate] ?? 0)) <= 1e-6)
+    candidates.find((constraint) => constraint.rotation_contract === contract.id) ??
+    candidates[0] ??
+    null
   );
 }
 
-function cubeMinimumY(cube: Cube): number {
-  return Math.min(...transformedCubeCorners(cube as any).map((point) => point[1]));
+function midpointConstraintSize(
+  constraint: GeometryPartConstraint | null,
+  cube: Cube
+): Vec3 {
+  if (!constraint?.size_range_units) return sizeOfCube(cube);
+  return constraint.size_range_units.min.map(
+    (minimum, index) =>
+      (Number(minimum) + Number(constraint.size_range_units!.max[index])) / 2
+  ) as Vec3;
+}
+
+function sanitized(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function resolveRotationCube(
+  contract: GeometryRotationContract
+): Cube | null {
+  return (
+    (Cube.all ?? []).find((cube) => matches(cube.name, contract.cube_patterns)) ??
+    null
+  );
+}
+
+function resolveConnectionTarget(
+  cube: Cube,
+  contract: GeometryRotationContract
+): Cube | null {
+  if (!contract.connect_to_patterns?.length) return null;
+  return (
+    (Cube.all ?? []).find(
+      (candidate) =>
+        candidate.uuid !== cube.uuid &&
+        matches(candidate.name, contract.connect_to_patterns)
+    ) ?? null
+  );
+}
+
+function evidenceMatchesCurrentCube(
+  report: Record<string, any>,
+  cube: Cube,
+  contract: GeometryRotationContract
+): boolean {
+  const after = report.after ?? {};
+  const numbersEqual = (a: unknown, b: unknown): boolean =>
+    Number.isFinite(Number(a)) &&
+    Number.isFinite(Number(b)) &&
+    Math.abs(Number(a) - Number(b)) <= 1e-5;
+  const vectorsEqual = (a: unknown, b: unknown): boolean =>
+    Array.isArray(a) &&
+    Array.isArray(b) &&
+    a.length >= 3 &&
+    b.length >= 3 &&
+    [0, 1, 2].every((index) => numbersEqual(a[index], b[index]));
+  return (
+    report.status === "PASS" &&
+    report.project_uuid === Project?.uuid &&
+    report.cube?.uuid === cube.uuid &&
+    report.contract === contract.id &&
+    report.fit_mode === "SNAP_RESIZE_ROTATE" &&
+    vectorsEqual(after.from, cube.from) &&
+    vectorsEqual(after.to, cube.to) &&
+    vectorsEqual(after.origin, cube.origin) &&
+    vectorsEqual(after.rotation, cube.rotation)
+  );
+}
+
+function evaluateRequiredRotation(input: {
+  fs: NativeFsLike;
+  sessionRoot: string;
+  contract: GeometryRotationContract;
+  constraints: GeometryPartConstraint[];
+  profile: NonNullable<ReturnType<typeof mergeGeometryReferenceProfile>>;
+}): Array<Record<string, unknown>> {
+  const issues: Array<Record<string, unknown>> = [];
+  const cube = resolveRotationCube(input.contract);
+  if (!cube) {
+    return [{ code: "PRIMARY_ROTATION_NOT_APPLIED", contract: input.contract.id }];
+  }
+  const constraint = matchingConstraint(input.constraints, cube, input.contract);
+  const longAxis = inferLongAxisFromSize(
+    midpointConstraintSize(constraint, cube),
+    input.contract.long_axis as GeometryAxis | undefined
+  );
+  const target = resolveConnectionTarget(cube, input.contract);
+  if (input.contract.connect_to_patterns?.length && !target) {
+    issues.push({
+      code: "PRIMARY_ROTATION_CONNECTION_TARGET_MISSING",
+      contract: input.contract.id,
+      cube: cube.name,
+    });
+  }
+  const fit = evaluateAttachmentFit({
+    cube,
+    target,
+    contract: input.contract,
+    profile: input.profile,
+    longAxis,
+  });
+  if (!fit.angle_in_range || !fit.compound_rotation_free) {
+    issues.push({
+      code: "PRIMARY_ROTATION_NOT_APPLIED",
+      contract: input.contract.id,
+      cube: cube.name,
+      fit,
+    });
+  }
+  if (fit.pivot_error_units > 1e-4) {
+    issues.push({
+      code: "PRIMARY_ROTATION_PIVOT_NOT_APPLIED",
+      contract: input.contract.id,
+      cube: cube.name,
+      pivot_error_units: fit.pivot_error_units,
+    });
+  }
+  if (fit.direction_alignment < input.contract.minimum_direction_dot) {
+    issues.push({
+      code: "PRIMARY_ROTATION_DIRECTION_FAILED",
+      contract: input.contract.id,
+      cube: cube.name,
+      direction_alignment: fit.direction_alignment,
+      minimum_direction_dot: input.contract.minimum_direction_dot,
+    });
+  }
+  if (
+    fit.connection_gap_units !== null &&
+    fit.connection_gap_units > input.contract.connection_tolerance_units
+  ) {
+    issues.push({
+      code: "PRIMARY_ROTATION_CONNECTION_FAILED",
+      contract: input.contract.id,
+      cube: cube.name,
+      connection_gap_units: fit.connection_gap_units,
+      tolerance_units: input.contract.connection_tolerance_units,
+    });
+  }
+
+  const evidencePath = joinPath(
+    input.sessionRoot,
+    `evidence/geometry/rotation_checks/${sanitized(cube.name)}/attachment_fit.json`
+  );
+  assertInsideRoot(evidencePath, input.sessionRoot);
+  if (!input.fs.existsSync(evidencePath)) {
+    issues.push({
+      code: "PRIMARY_ROTATION_EVIDENCE_MISSING",
+      contract: input.contract.id,
+      cube: cube.name,
+      path: evidencePath,
+    });
+  } else {
+    const evidence = readJsonFile<Record<string, any>>(input.fs, evidencePath);
+    if (!evidenceMatchesCurrentCube(evidence, cube, input.contract)) {
+      issues.push({
+        code: "PRIMARY_ROTATION_EVIDENCE_STALE",
+        contract: input.contract.id,
+        cube: cube.name,
+        path: evidencePath,
+      });
+    }
+  }
+  return issues;
 }
 
 export function registerGeometryPrimaryGateTools(): void {
@@ -125,11 +315,19 @@ export function registerGeometryPrimaryGateTools(): void {
 
         const manifest = readJsonFile<Record<string, any>>(fs, manifestPath);
         const metrics = readJsonFile<Record<string, any>>(fs, metricsPath);
+        const profile = mergeGeometryReferenceProfile({
+          referenceSha256: manifest.reference_visual_lock?.sha256,
+          visualGrounding: manifest.visual_grounding,
+          geometry: manifest.geometry,
+        });
+        if (!profile) throw new Error("GEOMETRY_REFERENCE_PROFILE_MISSING");
         const gate = manifest.geometry?.primary_form_gate ?? {};
-        const allConstraints = Array.isArray(manifest.geometry?.part_constraints)
+        const allConstraints: GeometryPartConstraint[] = Array.isArray(
+          manifest.geometry?.part_constraints
+        )
           ? manifest.geometry.part_constraints
           : [];
-        const primaryConstraints = allConstraints.filter((constraint: any) =>
+        const primaryConstraints = allConstraints.filter((constraint) =>
           ["PRIMARY_MASS", "PROVISIONAL_SUPPORT"].includes(
             String(constraint?.role ?? "")
           )
@@ -210,31 +408,41 @@ export function registerGeometryPrimaryGateTools(): void {
           ? gate.required_rotation_contracts.map(String)
           : [];
         const inferredRequired = primaryConstraints
-          .map((constraint: any) => String(constraint.rotation_contract ?? ""))
+          .map((constraint) => String(constraint.rotation_contract ?? ""))
           .filter(Boolean)
-          .filter((id: string) => {
+          .filter((id) => {
             const contract = contracts[id];
             return (
               contract &&
-              !(Number(contract.minimum_degrees) <= 0 &&
-                Number(contract.maximum_degrees) >= 0)
+              !(
+                Number(contract.minimum_degrees) <= 0 &&
+                Number(contract.maximum_degrees) >= 0
+              )
             );
           });
         const requiredContracts = Array.from(
           new Set([...explicitRequired, ...inferredRequired])
         );
         for (const id of requiredContracts) {
-          const contract = contracts[id];
+          const contract = contracts[id] as GeometryRotationContract | undefined;
           if (!contract) {
             issues.push({ code: "PRIMARY_ROTATION_CONTRACT_MISSING", contract: id });
             continue;
           }
-          if (!(Cube.all ?? []).some((cube) => cubeHasContractRotation(cube, contract))) {
-            issues.push({ code: "PRIMARY_ROTATION_NOT_APPLIED", contract: id });
-          }
+          issues.push(
+            ...evaluateRequiredRotation({
+              fs,
+              sessionRoot: session_root,
+              contract,
+              constraints: allConstraints,
+              profile,
+            })
+          );
         }
 
-        const groundTolerance = Number.isFinite(Number(gate.ground_tolerance_units))
+        const groundTolerance = Number.isFinite(
+          Number(gate.ground_tolerance_units)
+        )
           ? Number(gate.ground_tolerance_units)
           : 0.25;
         for (const name of manifest.geometry?.ground_contacts ?? []) {
@@ -263,6 +471,7 @@ export function registerGeometryPrimaryGateTools(): void {
                 minimum_view_score: minimumScore,
                 required_rotation_contracts: requiredContracts,
                 cube_count: Cube.all.length,
+                attachment_fit_evidence_required: true,
               })
             : null;
 
@@ -272,7 +481,7 @@ export function registerGeometryPrimaryGateTools(): void {
               type: "text",
               text:
                 result === "PASS"
-                  ? "Primary form passed. Structural detail is now allowed."
+                  ? "Primary form passed with smart pivots, attachment fits, and visible rotations. Structural detail is now allowed."
                   : `Primary form needs revision: ${issues
                       .map((issue) => issue.code)
                       .join(", ")}.`,
@@ -285,12 +494,13 @@ export function registerGeometryPrimaryGateTools(): void {
             required_views: requiredViews,
             minimum_view_score: minimumScore,
             required_rotation_contracts: requiredContracts,
+            attachment_fit_evidence_required: true,
             issues,
             runtime,
             next_action:
               result === "PASS"
                 ? "BUILD_STRUCTURAL_DETAIL"
-                : "REPAIR_PRIMARY_FORM_ONLY",
+                : "REPAIR_PRIMARY_FORM_AND_SMART_FITS_ONLY",
           },
         };
       },
