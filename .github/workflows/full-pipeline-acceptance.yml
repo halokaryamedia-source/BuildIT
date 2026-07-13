@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: full-pipeline-acceptance-${{ github.event_name }}
@@ -93,19 +93,14 @@ jobs:
         run: |
           bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["ATLAS_DOWNGRADE_FORBIDDEN", "EYE_UV_BUDGET_INSUFFICIENT", "ANIMATION_SCALE_KEYFRAMES_FORBIDDEN", "ANIMATION_ROOT_MOTION_FORBIDDEN", "ANIMATION_LOOP_MODE_MISMATCH", "SNAP_RESIZE_ROTATE"]) { if (!text.includes(marker)) throw new Error(`Missing full-pipeline marker: ${marker}`); }'
 
-      - name: Commit verified runtime integration
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mcp-blockbench/src/server/tools/workflow.ts
-          git add mcp-blockbench/src/lib/pipelineAcceptance.ts
-          git add mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts
-          git add .agents/skills .codex/skills
-          if git diff --cached --quiet; then
-            echo "Full-pipeline acceptance already integrated."
-            exit 0
-          fi
-          git commit -m "test: enforce smooth giraffe geometry texture animation pipeline"
-          git restore mcp-blockbench/dist/mcp.js
-          git pull --rebase origin Rework
-          git push origin HEAD:Rework
+      - name: Upload verified runtime source
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-pipeline-verified-source
+          path: |
+            mcp-blockbench/src/server/tools/workflow.ts
+            mcp-blockbench/src/lib/pipelineAcceptance.ts
+            mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts
+            mcp-blockbench/dist/mcp.js
+          retention-days: 2
+          if-no-files-found: error
