@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Temporary verified migration for the smart attachment runtime.
 path = Path("mcp-blockbench/src/server/tools/geometry-rotation.ts")
 text = path.read_text(encoding="utf-8")
 
