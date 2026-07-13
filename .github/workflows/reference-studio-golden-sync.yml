@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: reference-studio-golden-sync
+  group: reference-studio-golden-sync-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
