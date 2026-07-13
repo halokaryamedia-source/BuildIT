@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "chatgpt_skill",
+  "display_name": "MCP-Blockbench Reference Studio 3.3 — GitHub Live",
+  "filename": "MCP-Blockbench-Reference-Studio-3.3-Unified-GitHub-Live-Final.zip",
+  "sha256": "09ba22e44c2f75b47832a9f0c3c8bc4c3b41050564061d51d4369d00282ed013",
+  "size_bytes": 4339,
+  "repository": "halokaryamedia-source/BuildIT",
+  "branch": "Rework",
+  "packaging_source_commit": "2e8527857f9ce2df28e7c4a04cea752eda933f06",
+  "canonical_source": "engines/chatgpt/skills/blockbench-reference-studio",
+  "purpose": "ChatGPT Skill bootstrap for GitHub-synchronized Blockbench workflow data",
+  "offline_cache_included": false,
+  "sync_required": true
+}
