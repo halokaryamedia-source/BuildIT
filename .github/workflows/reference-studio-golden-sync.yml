@@ -1,6 +1,12 @@
 name: Reference Studio Golden Sample Sync
 
 on:
+  push:
+    branches:
+      - Rework
+    paths:
+      - ".github/scripts/apply_reference_studio_golden_sync.py"
+      - ".github/workflows/reference-studio-golden-sync.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
