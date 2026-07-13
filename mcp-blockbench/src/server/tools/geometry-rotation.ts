@@ -211,8 +211,10 @@ function transformPointForCube(point: Vec3, cube: Cube): Vec3 {
     vec(cube.rotation)
   );
   for (const parent of parentChain(cube)) {
-    const origin = Array.isArray(parent.origin) ? vec(parent.origin) : [0, 0, 0];
-    const rotation = Array.isArray(parent.rotation)
+    const origin: Vec3 = Array.isArray(parent.origin)
+      ? vec(parent.origin)
+      : [0, 0, 0];
+    const rotation: Vec3 = Array.isArray(parent.rotation)
       ? vec(parent.rotation)
       : [0, 0, 0];
     transformed = rotatePointAroundOrigin(transformed, origin, rotation);
@@ -223,7 +225,7 @@ function transformPointForCube(point: Vec3, cube: Cube): Vec3 {
 function transformVectorForParents(vector: Vec3, cube: Cube): Vec3 {
   let transformed = vector;
   for (const parent of parentChain(cube)) {
-    const rotation = Array.isArray(parent.rotation)
+    const rotation: Vec3 = Array.isArray(parent.rotation)
       ? vec(parent.rotation)
       : [0, 0, 0];
     transformed = rotatePointAroundOrigin(transformed, [0, 0, 0], rotation);
@@ -235,7 +237,7 @@ function worldVectorToParentLocal(vector: Vec3, cube: Cube): Vec3 {
   let transformed = vector;
   const parents = parentChain(cube);
   for (let index = parents.length - 1; index >= 0; index -= 1) {
-    const rotation = Array.isArray(parents[index].rotation)
+    const rotation: Vec3 = Array.isArray(parents[index].rotation)
       ? vec(parents[index].rotation as number[])
       : [0, 0, 0];
     transformed = rotatePointAroundOrigin(
