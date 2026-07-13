@@ -34,7 +34,21 @@ jobs:
           fetch-depth: 0
 
       - name: Apply final flow efficiency hardening
-        run: python .github/scripts/apply_final_flow_efficiency.py
+        run: |
+          set +e
+          python .github/scripts/apply_final_flow_efficiency.py > patch.log 2>&1
+          code=$?
+          cat patch.log
+          exit $code
+
+      - name: Upload patch diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-flow-patch-diagnostics
+          path: patch.log
+          retention-days: 1
+          if-no-files-found: ignore
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
