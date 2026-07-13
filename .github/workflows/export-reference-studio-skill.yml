@@ -1,0 +1,35 @@
+name: Export Reference Studio Skill
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/export-reference-studio-skill.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          ref: Rework
+
+      - name: Build export tree
+        run: |
+          set -euo pipefail
+          mkdir -p export/canonical_skill export/golden_sample
+          cp -a engines/chatgpt/skills/blockbench-reference-studio/. export/canonical_skill/
+          cp -a docs/reference/golden-samples/black_rhinoceros/. export/golden_sample/
+          printf '%s\n' "9952c6d87d57fbdf391616030852aa443aabdc9e" > export/REWORK_HEAD.txt
+
+      - name: Upload current authority
+        uses: actions/upload-artifact@v4
+        with:
+          name: reference-studio-current-authority
+          path: export
+          retention-days: 1
