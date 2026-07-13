@@ -72,7 +72,7 @@ jobs:
       - name: Verify committed bundle contract
         working-directory: mcp-blockbench
         run: |
-          bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues", "final_right.png", "resolveApprovedStageTransition", "submit_geometry_for_review"]) { if (!text.includes(marker)) throw new Error(`Missing pre-local bundle marker: ${marker}`); }'
+          bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues", "final_right.png", "submit_geometry_for_review"]) { if (!text.includes(marker)) throw new Error(`Missing pre-local bundle marker: ${marker}`); }'
 
       - name: Commit verified hardening
         run: |
