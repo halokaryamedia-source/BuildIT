@@ -9,9 +9,12 @@ on:
       - "engines/shared/**"
       - "engines/codex/**"
       - "engines/chatgpt/skills/blockbench-reference-studio/**"
+      - "openspec/config.yaml"
+      - "openspec/changes/codex-local-workflow-rework/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
       - "AGENTS.md"
+      - ".github/workflows/deploy.yml"
       - ".github/workflows/mcp-verify.yml"
       - ".github/workflows/publish-blockbench-plugin.yml"
   pull_request:
@@ -20,9 +23,13 @@ on:
       - "engines/shared/**"
       - "engines/codex/**"
       - "engines/chatgpt/skills/blockbench-reference-studio/**"
+      - "openspec/config.yaml"
+      - "openspec/changes/codex-local-workflow-rework/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
       - "AGENTS.md"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/mcp-verify.yml"
       - ".github/workflows/publish-blockbench-plugin.yml"
   workflow_dispatch:
 
