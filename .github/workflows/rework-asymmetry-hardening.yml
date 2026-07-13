@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_asymmetry_hardening.py"
+      - ".github/scripts/fix_asymmetry_hardening.py"
       - ".github/workflows/rework-asymmetry-hardening.yml"
   workflow_dispatch:
 
@@ -28,7 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply asymmetric asset hardening
-        run: python .github/scripts/apply_asymmetry_hardening.py
+        run: |
+          python .github/scripts/apply_asymmetry_hardening.py
+          python .github/scripts/fix_asymmetry_hardening.py
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -81,7 +84,7 @@ jobs:
         working-directory: mcp-blockbench
         run: |
           set -o pipefail
-          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["right_side", "geometry_right.png", "ASYMMETRIC", "conditional_final_views"]) { if (!text.includes(marker)) throw new Error(`Missing asymmetric runtime marker: ${marker}`); }' 2>&1 | tee "$GITHUB_WORKSPACE/asymmetry-bundle.log"
+          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["right_side", "geometry_right.png", "ASYMMETRIC", "requiredGeometryViews"]) { if (!text.includes(marker)) throw new Error(`Missing asymmetric runtime marker: ${marker}`); }' 2>&1 | tee "$GITHUB_WORKSPACE/asymmetry-bundle.log"
 
       - name: Capture diagnostics
         if: always()
