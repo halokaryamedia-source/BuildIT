@@ -16,7 +16,7 @@ append_once(
     "Project parent default: `gpt-5.6-terra`, medium.",
     '''## Routing identity lock
 
-Project parent default: `gpt-5.6-terra`, medium. The parent default       Terra Medium route performs standard work directly without a controller hop.''',
+Project parent default: `gpt-5.6-terra`, medium. The parent default       Terra Medium route performs standard work directly without a controller hop. `mcp_builder` remains the fallback sole MCP writer when isolation is required.''',
 )
 
 append_once(
@@ -51,7 +51,7 @@ append_once(
     '''## Routing and ownership invariants
 
 - The default Terra parent performs standard implementation directly.
-- When isolation is needed, `mcp_builder` becomes the only writer.
+- When isolation is needed, mcp_builder becomes the only writer.
 - Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently.
 - Multiple read-only MCP sessions are allowed. A mutation still requires explicit caller identity and the active write lease.
 - Missing optional roles produce `CODEX_PROJECT_CONFIG_NOT_LOADED`; they do not force restart.
@@ -66,7 +66,7 @@ append_once(
     "all manifest-required views",
     '''## Audited routing invariants
 
-The selected Terra writer handles normal mutations. `visual_director` is conditional and inspection-only; High is reserved for one coded critical decision. Final Geometry and Final Validation must include all manifest-required views.''',
+The selected Terra writer handles normal mutations. `visual_director` is conditional and inspection-only; High is reserved for one coded critical decision. Geometry uses `BEDROCK_CUBOID_GEOMETRY`, `analyze_geometry_views`, `rotate_cube_about_attachment`, and `submit_geometry_for_review`. Final Geometry and Final Validation must include all manifest-required views.''',
 )
 
 append_once(
@@ -74,7 +74,7 @@ append_once(
     "analyze_geometry_views` persists canonical metrics",
     '''## Evidence and routing invariants
 
-`analyze_geometry_views` persists canonical metrics and therefore requires the active Geometry lease. The final required-view capture/analyze uses all manifest-required views. The selected Terra writer performs repairs; `visual_director` is conditional, and High is reserved for one coded critical decision only.''',
+`analyze_geometry_views` persists canonical metrics and therefore requires the active Geometry lease. Freshness is bound to the transformed world-space signature as well as project UUID, local fingerprint, hierarchy, visibility, mesh structure, and Reference Visual hash. The final required-view capture/analyze uses all manifest-required views. The selected Terra writer performs repairs; `visual_director` is conditional, and High is reserved for one coded critical decision only.''',
 )
 
 append_once(
