@@ -17,7 +17,7 @@ const parameters = z.object({
   asset_id: z.string().regex(/^[a-z0-9_]+$/),
   session_root: z.string().min(1),
   expected_state_revision: z.number().int().nonnegative(),
-  expected_previous_project_uuid: z.string().min(1),
+  expected_previous_project_uuid: z.string().min(1).nullable(),
   expected_runtime_project_uuid: z.string().min(1),
   expected_geometry_fingerprint: hash,
   expected_reference_sha256: hash,
@@ -94,7 +94,7 @@ export function registerProjectIdentityTools(): void {
         if (Project.uuid !== input.expected_runtime_project_uuid) {
           throw new Error("PROJECT_IDENTITY_RUNTIME_MISMATCH");
         }
-        if (Project.uuid === input.expected_previous_project_uuid) {
+        if (input.expected_previous_project_uuid && Project.uuid === input.expected_previous_project_uuid) {
           throw new Error("PROJECT_IDENTITY_ALREADY_CURRENT");
         }
 
@@ -127,7 +127,7 @@ export function registerProjectIdentityTools(): void {
           throw new Error("PROJECT_IDENTITY_STATE_MISMATCH");
         }
         if (
-          Project.name !== state.project?.name ||
+          (state.project?.name !== null && Project.name !== state.project?.name) ||
           Project.name !== metadata.asset_id
         ) {
           throw new Error("PROJECT_IDENTITY_STATE_MISMATCH");
@@ -192,6 +192,7 @@ export function registerProjectIdentityTools(): void {
         };
 
         state.project.uuid = Project.uuid;
+        state.project.name = Project.name;
         state.state_revision = nextRevision;
         state.project_identity_audit = [
           ...(state.project_identity_audit ?? []),

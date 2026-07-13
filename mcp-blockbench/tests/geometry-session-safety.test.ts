@@ -74,12 +74,14 @@ describe("single-session Geometry workflow", () => {
     );
     expect(geometry.has("rebind_active_project_identity")).toBe(true);
     expect(geometry.has("prepare_geometry_visual_rebuild")).toBe(true);
+    expect(geometry.has("create_project")).toBe(true);
     expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
     expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
   });
 
   test("identity synchronization is lease-exempt but strictly guarded", () => {
     const identity = read("src/server/tools/project-identity.ts");
+    const project = read("src/server/tools/project.ts");
     const lease = read("src/lib/writeLease.ts");
     for (const marker of [
       "PROJECT_IDENTITY_RUNTIME_MISMATCH",
@@ -94,6 +96,8 @@ describe("single-session Geometry workflow", () => {
       expect(identity).toContain(marker);
     }
     expect(identity).not.toContain("PROJECT_IDENTITY_BOOTSTRAP_REQUIRED");
+    expect(identity).toContain("expected_previous_project_uuid: z.string().min(1).nullable()");
+    expect(project).toContain("save_path: z.string().min(1).optional()");
     expect(lease).toContain(
       'if (toolName === "rebind_active_project_identity") return false;'
     );

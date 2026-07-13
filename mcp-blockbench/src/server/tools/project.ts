@@ -18,6 +18,7 @@ export const createProjectParameters = z.object({
     ),
   texture_width: z.number().int().min(1).max(4096).optional(),
   texture_height: z.number().int().min(1).max(4096).optional(),
+  save_path: z.string().min(1).optional(),
 });
 
 export const configureProjectParameters = z.object({
@@ -124,7 +125,7 @@ export function registerProjectTools() {
     projectToolDocs[0].name,
     {
       ...projectToolDocs[0],
-      async execute({ name, format, box_uv, texture_width, texture_height }) {
+      async execute({ name, format, box_uv, texture_width, texture_height, save_path }) {
         const formatDef = Formats[format];
         if (!formatDef) {
           throw new Error(`Unknown format "${format}". Use a valid Blockbench format ID.`);
@@ -141,6 +142,7 @@ export function registerProjectTools() {
         }
         if (texture_width !== undefined) Project!.texture_width = texture_width;
         if (texture_height !== undefined) Project!.texture_height = texture_height;
+        if (save_path !== undefined) (Project as { save_path?: string }).save_path = save_path;
 
         const snapshot = projectSnapshot();
         return {

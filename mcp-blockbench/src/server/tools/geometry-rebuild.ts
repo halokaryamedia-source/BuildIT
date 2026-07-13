@@ -283,10 +283,16 @@ export function registerGeometryRebuildTools(): void {
         if (state.workflow?.active_stage !== "GEOMETRY") {
           throw new Error("GEOMETRY_STAGE_NOT_ACTIVE");
         }
+        // A zero-start project can already have a current fixed-scale
+        // diagnosis before its first workflow-state write. Treat that
+        // narrow, evidence-backed case as the start of Geometry revision;
+        // the atomic state update below records GEOMETRY_IN_PROGRESS.
         if (
-          !["GEOMETRY_IN_PROGRESS", "GEOMETRY_REVIEW"].includes(
-            String(state.workflow?.state ?? "")
-          )
+          ![
+            "REFERENCE_READY",
+            "GEOMETRY_IN_PROGRESS",
+            "GEOMETRY_REVIEW",
+          ].includes(String(state.workflow?.state ?? ""))
         ) {
           throw new Error(
             `GEOMETRY_REVISION_STATE_MISMATCH: ${state.workflow?.state ?? "unknown"}.`

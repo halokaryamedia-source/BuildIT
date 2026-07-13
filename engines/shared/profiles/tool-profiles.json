@@ -26,6 +26,7 @@
     "BEDROCK_CUBOID_GEOMETRY": {
       "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and session, including identity synchronization, diagnosis, revision, review submission, validation, and approval.",
       "allowed_tools": [
+        "create_project",
         "rebind_active_project_identity",
         "prepare_geometry_visual_rebuild",
         "add_group",
