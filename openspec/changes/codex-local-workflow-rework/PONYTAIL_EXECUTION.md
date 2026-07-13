@@ -134,9 +134,12 @@ When authorities conflict, stop with `REFERENCE_CONFLICT`; do not resolve the co
 stage entry
 → identity/lease
 → inspect Reference Visual once per hash
-→ zero-start: build primary form first
-   existing/revision: capture affected views first
-→ fixed-scale diagnosis
+→ zero-start: primary/support cuboids only
+→ smart-fit required attachments
+→ primary left/front/top diagnosis
+→ verify_primary_form_ready
+→ structural detail
+→ smart-fit approved angled detail
 → bounded targeted edits
 → final required-view diagnosis
 → conditional visual judgment
@@ -144,6 +147,24 @@ stage entry
 → submit_geometry_for_review
 → user review
 ```
+
+Smart-fit means:
+
+```text
+place one zero-rotation provisional cuboid
+→ call rotate_cube_about_attachment without angle_degrees
+→ auto size + long axis + legal angle
+→ end-face centerline pivot
+→ snap to attachment target
+→ move from/to/origin together
+→ validate direction and gap
+→ attachment_fit.json
+```
+
+Do not spend calls manually guessing rotation angles or repeatedly moving a
+cuboid after rotation. An explicit angle is allowed only for one diagnosed
+repair. An axis-aligned stair-step substitute does not satisfy a required
+rotation contract.
 
 `submit_geometry_for_review` owns fresh Geometry validation, review readiness, checkpoint creation, state transition, and lease release. No duplicate validation call is added immediately before it.
 
@@ -210,6 +231,8 @@ Forbidden:
 - optional polish after a valid visual exists;
 - a third routine ChatGPT approval;
 - analyzing empty Geometry;
+- manually guessing normal construction angles when the smart solver exists;
+- using axis-aligned stacked cuboids for a required rotated chain;
 - mandatory Sol calls for deterministic work;
 - `get_runtime_status` on every stage;
 - `get_stage_context` polling after every tool call;
@@ -244,17 +267,20 @@ Further optimization requires measured local acceptance evidence: actual MCP cal
 
 Measured local evidence showed that the documented primary-form concept was
 advisory, so a full hierarchy and detail set could be built before silhouette
-convergence. The minimum corrective scope is:
+convergence. It also showed that required pivots and rotations were never
+visible; Codex substituted axis-aligned stacked cubes.
+
+The minimum corrective scope is:
 
 - one internal `PRIMARY_FORM` mutation boundary;
 - one `verify_primary_form_ready` tool;
+- smart resize / rotation / pivot / snap inside the existing rotation tool;
+- current `attachment_fit.json` evidence;
 - adaptive reference segmentation;
-- structural rotation fallback without bypassing rotation contracts;
 - canonical project persistence;
 - connection readiness retry and stable-session wording;
 - manifest-derived Animation requirement.
 
-This does not add a user approval, profile, style, or alternate workflow. Do not
-add further Geometry tools until the corrected giraffe primary form has been
-retested. The failed 39-cube giraffe is a diagnostic fixture, not a baseline to
+This adds no user approval, profile, style, alternate workflow, or extra normal
+tool call. The failed giraffe is a diagnostic fixture, not a baseline to
 continue polishing.
