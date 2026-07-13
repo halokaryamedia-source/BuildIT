@@ -62,9 +62,9 @@ The system must tell Codex which view, region, direction, magnitude, and parts a
 ## Approved adaptive model routing
 
 ```text
-parent default       Luna Medium
+parent default       Terra Medium, direct normal implementation
 routine_auditor      5.4 Mini Low, read-only
-mcp_builder          Terra Medium, standard implementation and sole MCP writer
+mcp_builder          Terra Medium, fallback sole MCP writer
 visual_director      Sol Medium, read-only visual judgment
 critical_reviewer    Sol High, rare read-only critical review
 ```
@@ -72,10 +72,11 @@ critical_reviewer    Sol High, rare read-only critical review
 - High is the maximum configured reasoning effort.
 - xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel MCP writers are excluded.
 - The parent uses deterministic task classification; no model call is spent only to select another model.
-- Explicit user model selection affects only the parent thread. Workers remain locked to their roles.
+- The Terra parent handles normal implementation directly, avoiding a duplicate controller-to-builder context hop.
+- Explicit user model selection affects only the parent thread. When the parent is not Terra or isolation is materially safer, `mcp_builder` becomes the only writer.
 - Deterministic gates replace expensive review when they can answer the question.
-- Heavy judgment de-escalates immediately to Terra implementation and Mini audit.
-- The user changes models only if a required custom agent is unavailable.
+- Heavy judgment de-escalates immediately to the selected Terra writer and Mini audit.
+- Missing optional roles use the documented current-session fallback. The user is not asked to select worker models or restart Codex merely to load them.
 
 ## Included workflow infrastructure
 
@@ -85,7 +86,7 @@ critical_reviewer    Sol High, rare read-only critical review
 - maximum two loaded production skills;
 - project Codex defaults with maximum two agent threads and depth one;
 - four narrow custom agents with locked models, efforts, and sandbox roles;
-- one active Blockbench writer;
+- one selected active Blockbench writer;
 - persistent checkpoints and stable evidence;
 - direct texture evidence writes;
 - atomic stage completion;
