@@ -7,13 +7,18 @@ on:
     paths:
       - ".github/scripts/apply_local_geometry_recovery.py"
       - ".github/workflows/local-geometry-recovery.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_local_geometry_recovery.py"
+      - ".github/workflows/local-geometry-recovery.yml"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: local-geometry-recovery
+  group: local-geometry-recovery-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
