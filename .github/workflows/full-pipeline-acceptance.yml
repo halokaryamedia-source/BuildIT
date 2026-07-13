@@ -101,11 +101,11 @@ jobs:
           git add mcp-blockbench/src/lib/pipelineAcceptance.ts
           git add mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts
           git add .agents/skills .codex/skills
-          git add -f mcp-blockbench/dist/mcp.js
           if git diff --cached --quiet; then
             echo "Full-pipeline acceptance already integrated."
             exit 0
           fi
           git commit -m "test: enforce smooth giraffe geometry texture animation pipeline"
+          git restore mcp-blockbench/dist/mcp.js
           git pull --rebase origin Rework
           git push origin HEAD:Rework
