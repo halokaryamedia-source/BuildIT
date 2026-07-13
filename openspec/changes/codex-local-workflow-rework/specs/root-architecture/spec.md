@@ -4,20 +4,19 @@
 
 The repository SHALL use exactly one canonical root path for each concern:
 
-- `src/` for MCP Blockbench implementation;
+- `mcp-blockbench/` for the complete MCP Blockbench package, including `src/`, `scripts/`, `prompts/`, `tests/`, package files, and generated `dist/` output;
 - `engines/` for shared and engine-specific orchestration;
-- `workspace/` for mutable runtime asset data;
-- `docs/` for human and generated documentation;
-- `openspec/` for scope and decision contracts;
-- `build/` for build tooling.
+- `workspace/` for active and completed runtime asset data;
+- `docs/` for authored documentation and generated API output;
+- `openspec/` for scope and decision contracts.
 
-`Engine/`, `SavedData/`, and `SourceDocument/` SHALL NOT exist after migration.
+Root-level `src/`, `build/`, `prompts/`, `tests/`, package files, `Engine/`, `SavedData/`, and `SourceDocument/` SHALL NOT exist after migration.
 
 ### Scenario: Agent starts work
 
 - Given the repository is opened
 - When the agent reads root navigation
-- Then it can identify implementation, engine integration, runtime state, documentation, and OpenSpec without searching duplicate roots
+- Then it can identify the canonical MCP package, engine integration, runtime state, documentation, and OpenSpec without searching duplicate roots
 
 ## Requirement: No Versioned Duplicate Authorities
 
@@ -29,4 +28,13 @@ The system SHALL NOT create parallel folders or files using names such as `v2`, 
 
 ## Requirement: Runtime Data Isolation
 
-New asset sessions SHALL live under `workspace/sessions/<asset>/` and SHALL be ignored by Git by default. `workspace/active-session.json` SHALL be the only repository-level active-session pointer.
+`workspace/workspace.json` SHALL be the only repository-level selected-project index and SHALL NOT be runtime authority.
+
+Editable assets SHALL live under `workspace/active/<asset>/`; completed assets SHALL live under `workspace/completed/<asset>/`. Each asset SHALL separate:
+
+```text
+blockbench/  canonical model, textures, reference images, approved previews
+mcp/         project metadata, state, contracts, checkpoints, evidence, reports
+```
+
+`workspace/active/<asset>/mcp/state.json` SHALL be runtime authority and `workspace/active/<asset>/mcp/project.json` SHALL provide canonical identity/path metadata. Completed baselines SHALL remain immutable while a reopened revision is active.
