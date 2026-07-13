@@ -6,11 +6,13 @@ on:
       - Rework
     paths:
       - ".github/scripts/apply_final_flow_efficiency.py"
+      - ".github/scripts/fix_final_flow_patch_anchor.py"
       - ".github/workflows/final-flow-efficiency.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_final_flow_efficiency.py"
+      - ".github/scripts/fix_final_flow_patch_anchor.py"
       - ".github/workflows/final-flow-efficiency.yml"
   workflow_dispatch:
 
@@ -36,8 +38,12 @@ jobs:
       - name: Apply final flow efficiency hardening
         run: |
           set +e
-          python .github/scripts/apply_final_flow_efficiency.py > patch.log 2>&1
+          python .github/scripts/fix_final_flow_patch_anchor.py > patch.log 2>&1
           code=$?
+          if [ "$code" -eq 0 ]; then
+            python .github/scripts/apply_final_flow_efficiency.py >> patch.log 2>&1
+            code=$?
+          fi
           cat patch.log
           exit $code
 
