@@ -1,6 +1,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# Update the obsolete primary-form regression.
 path = ROOT / "mcp-blockbench/tests/geometry-session-safety.test.ts"
 source = path.read_text(encoding="utf-8")
 
@@ -29,4 +31,30 @@ count = source.count(old)
 if count != 1:
     raise RuntimeError(f"Expected one obsolete primary-form regression, found {count}")
 path.write_text(source.replace(old, new, 1), encoding="utf-8")
-print("Updated primary-form regression contract.")
+
+# Register the two recovery tool docs in the single documentation/tool manifest.
+manifest_path = ROOT / "mcp-blockbench/scripts/docs-manifest.ts"
+manifest = manifest_path.read_text(encoding="utf-8")
+
+import_anchor = 'import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";\n'
+import_addition = (
+    import_anchor
+    + 'import { geometryPrimaryGateToolDocs } from "../src/server/tools/geometry-primary-gate";\n'
+    + 'import { canonicalProjectSaveToolDocs } from "../src/server/tools/project-save";\n'
+)
+if manifest.count(import_anchor) != 1:
+    raise RuntimeError("docs-manifest import anchor missing")
+manifest = manifest.replace(import_anchor, import_addition, 1)
+
+category_anchor = '  { category: "Geometry Review Submission", tools: geometryReviewSubmitToolDocs },\n'
+category_addition = (
+    category_anchor
+    + '  { category: "Geometry Primary Form Gate", tools: geometryPrimaryGateToolDocs },\n'
+    + '  { category: "Canonical Project Save", tools: canonicalProjectSaveToolDocs },\n'
+)
+if manifest.count(category_anchor) != 1:
+    raise RuntimeError("docs-manifest category anchor missing")
+manifest = manifest.replace(category_anchor, category_addition, 1)
+manifest_path.write_text(manifest, encoding="utf-8")
+
+print("Updated primary-form regression and registered recovery tool docs.")
