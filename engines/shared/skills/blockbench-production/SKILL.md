@@ -1,6 +1,6 @@
 ---
 name: blockbench-production
-description: "Minimum-sufficient one-session dispatcher for approved Reference Visual packages, one selected Terra writer, bounded judgment, guarded reviews, and final workspace completion."
+description: "Minimum-sufficient one-session dispatcher for approved Reference Visual packages, one selected Terra writer, smart attachment fitting, bounded judgment, guarded reviews, and final workspace completion."
 ---
 
 # Blockbench Production
@@ -32,11 +32,13 @@ Do not repeat runtime status unless a real runtime event invalidates it. Do not 
 ```text
 inspect Reference Visual once per hash
 → zero-start: PRIMARY_MASS + PROVISIONAL_SUPPORT only
-→ apply required primary rotations
+→ place zero-rotation provisional angled parts
+→ smart-fit required attachment contracts
 → left/front/top fixed-scale diagnosis
 → verify_primary_form_ready
 → save_canonical_project
 → structural detail only after primary PASS
+→ smart-fit each approved angled detail
 → affected-view diagnosis and bounded edits
 → final manifest-required view pass
 → conditional visual judgment
@@ -44,6 +46,15 @@ inspect Reference Visual once per hash
 → submit_geometry_for_review
 → user review
 ```
+
+For each required angled part, call `rotate_cube_about_attachment` without
+`angle_degrees` during normal construction. The tool owns constraint sizing,
+long-axis inference, automatic one-axis angle solving, explicit end-face
+centerline pivot placement, attachment snapping, joint translation of
+`from/to/origin`, connection validation, and `attachment_fit.json` evidence.
+
+Do not replace a required rotated chain with axis-aligned stepped cubes. Pass an
+explicit angle only for one diagnosed correction.
 
 Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`. Canonical `.bbmodel` persistence is refreshed with `save_canonical_project` at primary-form and review boundaries.
 
@@ -85,6 +96,7 @@ The selected Terra writer handles normal mutations. `visual_director` is conditi
 
 - zero-start: build primary form before first capture/analyze;
 - `verify_primary_form_ready` passes before structural detail;
+- smart-fit pivot/rotation evidence is required for every required attachment contract;
 - final required-view capture/analyze remains mandatory;
 - no duplicate happy-path validation is added;
 - visual judgment stays conditional rather than mandatory.
