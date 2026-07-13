@@ -91,7 +91,7 @@ jobs:
       - name: Verify full-pipeline bundle markers
         working-directory: mcp-blockbench
         run: |
-          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["rootMotionAllowedFromPolicy", "ATLAS_DOWNGRADE_FORBIDDEN", "ANIMATION_SCALE_KEYFRAMES_FORBIDDEN", "ANIMATION_LOOP_MODE_MISMATCH", "in_place_zero_root_translation", "SNAP_RESIZE_ROTATE"]) { if (!text.includes(marker)) throw new Error(`Missing full-pipeline marker: ${marker}`); }'
+          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["ATLAS_DOWNGRADE_FORBIDDEN", "EYE_UV_BUDGET_INSUFFICIENT", "ANIMATION_SCALE_KEYFRAMES_FORBIDDEN", "ANIMATION_ROOT_MOTION_FORBIDDEN", "ANIMATION_LOOP_MODE_MISMATCH", "SNAP_RESIZE_ROTATE"]) { if (!text.includes(marker)) throw new Error(`Missing full-pipeline marker: ${marker}`); }'
 
       - name: Commit verified runtime integration
         if: github.event_name == 'push'
