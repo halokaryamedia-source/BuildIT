@@ -7,14 +7,18 @@ old = '''replace_once(
     "            reconnect_required: activation.changed,",
     "            reconnect_required: false,",
 )'''
-new = '''replace_once(
-    stage_reopen,
-    ''' + "'''" + '''            profile_switch_required: true,
-            reconnect_required: activation.changed,''''' + "'" + ''',
-    ''' + "'''" + '''            profile_switch_required: true,
-            reconnect_required: false,''''' + "'" + ''',
-)'''
+new = (
+    "replace_once(\n"
+    "    stage_reopen,\n"
+    "    '''            profile_switch_required: true,\n"
+    "            reconnect_required: activation.changed,''',\n"
+    "    '''            profile_switch_required: true,\n"
+    "            reconnect_required: false,''',\n"
+    ")"
+)
 if source.count(old) != 1:
-    raise RuntimeError(f"Expected one ambiguous stage-reopen patch block, found {source.count(old)}")
+    raise RuntimeError(
+        f"Expected one ambiguous stage-reopen patch block, found {source.count(old)}"
+    )
 path.write_text(source.replace(old, new, 1), encoding="utf-8")
 print("Narrowed stage-reopen patch anchor.")
