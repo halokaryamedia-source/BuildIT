@@ -1,27 +1,31 @@
 # Workflow Efficiency Tool Specification
 
-## Compact Validation
+## Compact context
 
-`validate_reference_contract` SHALL provide one stage-aware structured check for reference files, project identity, format, dimensions, UV/texture rules, hierarchy, required animations, evidence, final outputs, and Blockbench validator status.
+`get_runtime_status` SHALL be a startup/runtime-recovery check, not a per-stage polling tool. `get_stage_context` SHALL return one stage-specific next operation at entry/transition/revision. Reference preview SHALL return the next operation after inspection so Codex does not poll context between inspection and first diagnosis.
 
-## Direct Texture Evidence
+## Geometry startup
 
-`save_texture_evidence` SHALL write an explicit project texture directly to an approved PNG path under `workspace/active/<asset>/mcp/evidence/` and return compact metadata instead of transporting PNG base64 through the model context.
+Reference preview SHALL distinguish zero-start from existing Geometry. Zero-start SHALL return `BUILD_PRIMARY_FORM_FROM_MANIFEST`; existing Geometry SHALL return `capture_visual_feedback`. Blank Geometry SHALL NOT be analyzed.
 
-## Atomic Stage Completion
+## Compact validation
 
-After explicit user approval, the stage-specific guarded completion tool SHALL verify review state, report PASS, required evidence, project UUID, state revision, and current lease ownership; save the approved checkpoint; protect accepted areas; update state atomically; release the old lease; and activate the next logical profile without reconnecting.
+`validate_reference_contract` SHALL provide structured stage-aware diagnostics. Texture and Animation happy paths SHALL rely on the fresh validation inside `submit_stage_for_review`; a standalone validation call SHALL be used only after submission failure for detailed repair routing.
 
-Geometry SHALL use `complete_geometry_stage`. Texture, optional Animation, and Final Validation SHALL use their matching guarded workflow tools rather than a generic bypass.
+Final Validation SHALL allow one `require_evidence=false` preflight before final outputs. Final submission SHALL require all current evidence and outputs.
 
-## Structured Inspection
+## Direct evidence
 
-High-volume inspection tools used by normal profiles SHALL return concise text plus `structuredContent`. Agents SHALL NOT parse JSON embedded in prose when structured results are available.
+Texture and final atlas evidence SHALL be written directly to approved paths instead of being transported through model context. Geometry corrections SHALL return metrics by default and suppress routine diff image payloads.
 
-## File Safety
+## Atomic submission and completion
 
-Workflow state and evidence writes SHALL remain inside `workspace/active/<asset>/mcp/`, user-facing model assets SHALL remain inside `workspace/active/<asset>/blockbench/`, temporary files SHALL be used before replacement, and the previous file SHALL be restored after a failed replacement.
+Submission SHALL verify bound report/evidence, run fresh validation, save the next checkpoint, transition atomically, and release the lease. Completion SHALL verify review state, PASS report, evidence, UUID, state revision, and lease before approving and moving to the next stage without reconnect.
 
-## Context and Image Efficiency
+## Context and image budget
 
-Reference Visual transport SHALL be bounded and hash-authoritative. Current-model visual capture SHALL include only the required affected views during correction and one final five-view pass. Fresh deterministic evidence SHALL be reused until its project identity, source hash, fingerprint, or transformed world-space signature becomes stale.
+Reference Visual transport SHALL be bounded and hash-authoritative. Only affected views SHALL be used during correction. One final manifest-required pass SHALL be used; asymmetric assets additionally require Right Side. Fresh evidence SHALL be reused until project identity, source hash, fingerprint, transformed world signature, or evidence hash changes.
+
+## Structured outputs and safety
+
+Agents SHALL consume `structuredContent` rather than parse JSON from prose. All writes SHALL remain inside the canonical active asset roots and use atomic replacement/rollback.

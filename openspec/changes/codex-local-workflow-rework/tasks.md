@@ -102,6 +102,23 @@
 - [x] Make unrelated extended capabilities opt-in and suppress routine diff image payloads.
 - [x] Return deterministic model-route guidance from existing stage context without an extra routing call.
 
+
+## Final flow-efficiency audit
+
+- [x] Replace Geometry-centric Ponytail scope with one upstream-to-downstream minimum-sufficient path.
+- [x] Lock exactly two routine ChatGPT approval moments and automatic technical package delivery.
+- [x] Make the Golden Sample a mandatory visual/technical template without copying its subject identity.
+- [x] Remove active four-sheet and multi-approval instructions from the Reference Studio skill folder.
+- [x] Make manifest executable data authoritative over duplicated Markdown arrays.
+- [x] Run runtime status once and stage context only at entry/transition/revision.
+- [x] Prevent first-pass analysis of blank Geometry and return the next operation from Reference Visual inspection.
+- [x] Make Sol visual judgment conditional instead of mandatory.
+- [x] Remove duplicate happy-path validation before stage submission.
+- [x] Use one evidence-free Final Validation preflight before final outputs and one evidence-aware validation inside submission.
+- [x] Require asymmetric Right Side before Geometry runtime reaches final-ready status.
+- [x] Expand the final acceptance contract from Geometry-only to ChatGPT package through final workspace completion.
+- [x] Add permanent regression tests for authority, call budgets, zero-start branching, validation ownership, and full stage routing.
+
 ## Final local Blockbench acceptance — remaining on the workstation
 
 - [ ] Pull the final `Rework` head once on the local workstation.

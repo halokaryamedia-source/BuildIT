@@ -2,106 +2,93 @@
 
 ## Goal
 
-Make local MCP Blockbench production precise, visually grounded, recoverable, easy to hand off, and token-efficient without merging into `V1` before explicit approval.
+Create one precise, visually grounded, recoverable, and token-efficient pipeline from ChatGPT Reference Studio through final Blockbench completion. Keep all work isolated on `Rework` until explicit integration approval.
 
-The workflow must remain practical: Codex performs normal identity synchronization, model routing, diagnosis, revision, and validation through MCP. The user is not asked to edit state files, select Geometry repair profiles or worker models, or repeatedly close and reopen Blockbench.
-
-Token efficiency must not reduce production quality. Codex uses deterministic routing, the cheapest eligible locked role, deterministic validation, and evidence-based escalation. Sol is reserved for visual or critical judgment rather than mechanical work.
+The workflow must not ask the user to edit runtime files, choose worker models/profiles, run internal tests, reconnect MCP, reload the plugin, or restart Codex during normal production.
 
 ## Canonical architecture
 
 ```text
 mcp-blockbench/  complete MCP Blockbench package
-engines/         shared and engine-specific orchestration
+engines/         ChatGPT, Codex, and shared orchestration authority
 workspace/       active and completed Blockbench projects
-docs/            authored documentation and generated API output
-openspec/        approved scope and decisions
+docs/            authored docs and generated API output
+openspec/        approved scope, decisions, and flow constraints
 ```
 
-Inside `mcp-blockbench/`, source, scripts, prompts, tests, and generated output have one package root. No parallel or versioned roots are allowed.
-
-Each workspace project separates:
+Each active asset separates:
 
 ```text
-blockbench/   canonical model, textures, reference images, approved previews
-mcp/          state, contracts, checkpoints, evidence, reports
+blockbench/   canonical model, textures, references, approved previews
+mcp/          state, contracts, checkpoints, evidence, reports, final staging
 ```
 
-## User-visible stages
+## Upstream ChatGPT contract
 
-1. Geometry review
-2. Texture review
-3. Animation review when required
-4. Final Validation review
+A new sample begins as `reference_candidate`. ChatGPT performs one batched high-impact clarification turn when necessary, then uses exactly two routine approvals:
 
-Internal Geometry correction and model routing are not separate stages or approval moments.
+1. Production Context;
+2. one Golden-Sample-guided Reference Visual.
 
-## Approved Geometry quality scope
+Technical Markdown, schema-3.3 manifest, Codex handoff, package audit, and candidate ZIP are generated automatically after visual approval. The tracked Black Rhinoceros Golden Sample is the mandatory design-system and technical-completeness benchmark, while its subject-specific anatomy and palette are never copied into another asset.
 
-Included now:
+## User-visible production stages
 
-- one approved Reference Visual verified at source integrity and delivered through bounded preview transport;
-- transformed world-space bounds;
-- fixed approved-scale cuboid projection with no current-model free-rescaling;
-- semantic per-view regions with actionable part-level diagnosis;
-- blocking edge, ground, and critical-region failures;
-- one `BEDROCK_CUBOID_GEOMETRY` profile and MCP session;
-- safe metadata-only project identity synchronization before lease acquisition;
-- `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` as internal diagnosis scopes;
-- advisory Geometry progress markers rather than user-facing sub-gates;
-- machine-readable part constraints;
-- contract-driven cube rotation with pivot, direction, connection, before/after visual scoring, and rollback;
-- unified five-view review readiness gate;
-- strict Geometry report with structural, multimodal, deterministic, rotation, evidence, and final statuses;
-- automatic guarded review checkpoint and transition to `GEOMETRY_REVIEW`;
-- guarded Geometry completion without generic-stage bypass;
-- negative visual regression fixtures based on the failed Black Rhinoceros build.
+1. Geometry review;
+2. Texture review;
+3. Animation review only when required;
+4. Final Validation review.
 
-The system must tell Codex which view, region, direction, magnitude, and parts are wrong. Broad visual guessing is not acceptable.
+Internal passes, diagnosis scopes, routing, preflight, checkpoints, and evidence generation are not additional user gates.
 
-## Approved adaptive model routing
+## Minimum-sufficient execution
+
+- one runtime preflight at startup;
+- compact stage context only at stage entry/transition/revision;
+- one Reference Visual inspection per unchanged hash;
+- zero-start Geometry builds primary form before first analysis;
+- affected-view diagnosis during correction;
+- one final manifest-required view pass;
+- submission tools own fresh validation/checkpoint/state transition;
+- no duplicate happy-path validation;
+- Final Validation uses one evidence-free preflight before final evidence/export;
+- deterministic checks replace model judgment whenever possible;
+- Sol Medium is conditional, not mandatory;
+- one selected Terra writer performs all active-asset mutations.
+
+## Adaptive model routing
 
 ```text
 parent default       Terra Medium, direct normal implementation
-routine_auditor      5.4 Mini Low, read-only
-mcp_builder          Terra Medium, fallback sole MCP writer
-visual_director      Sol Medium, read-only visual judgment
-critical_reviewer    Sol High, rare read-only critical review
+routine_auditor      5.4 Mini Low, read-only mechanical work
+mcp_builder          Terra Medium, fallback sole writer
+visual_director      Sol Medium, conditional read-only visual judgment
+critical_reviewer    Sol High, one coded critical decision only
 ```
 
-- High is the maximum configured reasoning effort.
-- xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel MCP writers are excluded.
-- The parent uses deterministic task classification; no model call is spent only to select another model.
-- The Terra parent handles normal implementation directly, avoiding a duplicate controller-to-builder context hop.
-- Explicit user model selection affects only the parent thread. When the parent is not Terra or isolation is materially safer, `mcp_builder` becomes the only writer.
-- Deterministic gates replace expensive review when they can answer the question.
-- Heavy judgment de-escalates immediately to the selected Terra writer and Mini audit.
-- Missing optional roles use the documented current-session fallback. The user is not asked to select worker models or restart Codex merely to load them.
+High is the maximum. Extra High, Max, Ultra, Fast, recursive delegation, broad fan-out, and parallel writers are excluded.
 
-## Included workflow infrastructure
+## Included quality and recovery
 
-- deterministic `blockbench` MCP connection;
-- one runtime state authority;
-- one Geometry tool profile, plus stage profiles for Texture, Animation, and Final Validation;
-- maximum two loaded production skills;
-- project Codex defaults with maximum two agent threads and depth one;
-- four narrow custom agents with locked models, efforts, and sandbox roles;
-- one selected active Blockbench writer;
-- persistent checkpoints and stable evidence;
-- direct texture evidence writes;
-- atomic stage completion;
-- project write lease and stale-call protection;
-- active/completed workspace lifecycle;
-- immutable completed baseline while revision is active;
-- one selected-project index;
-- single Reference Visual package and legacy-context rejection;
-- synchronized canonical, `.agents`, and `.codex` skills.
+- one Reference Visual plus concise stage documents and executable manifest;
+- fixed-scale transformed Geometry analysis;
+- semantic view/region/part diagnosis;
+- part, count, parent, symmetry/asymmetry, rotation, Texture, and Animation contracts;
+- conditional Right Side evidence for asymmetric assets in Geometry and Final Validation;
+- project identity synchronization before lease acquisition;
+- one stable MCP tool surface and one Codex/MCP session;
+- atomic reports, checkpoints, transitions, revision preparation, upstream reopen, and final promotion;
+- active/completed workspace lifecycle with immutable completed baseline;
+- automated typecheck, tests, build, bundle, and flow-efficiency regression coverage.
 
-## Excluded until explicit integration approval
+## Excluded until explicit approval
 
 - merge into `V1`;
-- production release or deployment;
-- persistent live MCP sessions;
-- persistent model-routing telemetry or a learned routing service;
-- duplicate workflow authorities, models, or versioned folders;
-- unrelated modelling capabilities outside the approved Bedrock cuboid workflow.
+- release/deployment;
+- learned routing or persistent routing telemetry;
+- duplicate/versioned authorities or outputs;
+- unrelated modelling capabilities outside approved Bedrock cuboid production.
+
+## Routing identity lock
+
+Project parent default: `gpt-5.6-terra`, medium. The parent default       Terra Medium route performs standard work directly without a controller hop. `mcp_builder` remains the fallback sole MCP writer when isolation is required.

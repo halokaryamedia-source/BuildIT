@@ -40,13 +40,21 @@ interface GeometryRuntimeState {
 }
 
 const PRIMARY_VIEWS = new Set(["left_side", "front", "top_footprint"]);
-const FINAL_VIEWS = new Set([
+const BASE_FINAL_VIEWS = [
   "front",
   "left_side",
   "back",
   "top_footprint",
   "front_left_3_4",
-]);
+] as const;
+
+export function requiredGeometryFinalViews(symmetryPolicy: unknown): string[] {
+  const views: string[] = [...BASE_FINAL_VIEWS];
+  if (String(symmetryPolicy ?? "").toUpperCase() === "ASYMMETRIC") {
+    views.splice(2, 0, "right_side");
+  }
+  return views;
+}
 const MUTATION_TOOLS = new Set([
   "place_cubes_safe",
   "modify_cubes",
@@ -278,7 +286,15 @@ export function recordGeometryVisualRuntimeResult(
     ? args.compared_views.map(String)
     : [];
   const viewSet = new Set(comparedViews);
-  const isFinal = [...FINAL_VIEWS].every((view) => viewSet.has(view));
+  const manifestPath = joinPath(
+    sessionRoot,
+    "references/reference_manifest.json"
+  );
+  const symmetryPolicy = fs.existsSync(manifestPath)
+    ? readJsonFile<Record<string, any>>(fs, manifestPath).geometry?.symmetry_policy
+    : null;
+  const requiredFinalViews = requiredGeometryFinalViews(symmetryPolicy);
+  const isFinal = requiredFinalViews.every((view) => viewSet.has(view));
   const isPrimary =
     !isFinal && [...PRIMARY_VIEWS].every((view) => viewSet.has(view));
   const structured =

@@ -1,88 +1,54 @@
 ---
 name: blockbench-geometry
-description: "Visual-grounded Bedrock Geometry using one selected Terra writer, inspection-only Sol judgment, and transformed-world evidence freshness."
+description: "Fixed-scale Bedrock Geometry with a zero-start primary-form branch, affected-view diagnosis, one selected Terra writer, conditional visual judgment, and guarded review submission."
 ---
 
 # Blockbench Geometry
 
-Use only for stage `GEOMETRY` with profile `BEDROCK_CUBOID_GEOMETRY`. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes, not profiles or user gates.
+Use only for `GEOMETRY` with `BEDROCK_CUBOID_GEOMETRY`. `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes.
 
-## Writer and advisors
+## Entry
 
-Select exactly one writer:
+Call stage context, rebind identity if needed, select one Terra writer, and acquire the Geometry lease. Inspect the Reference Visual once per unchanged hash.
 
-- default Terra Medium parent writes directly; or
-- `mcp_builder` becomes fallback writer when the parent differs or isolation is safer.
-
-Never use both concurrently. `visual_director` is Sol Medium with inspection-only MCP tools. Mini and Sol High have no Blockbench MCP access. High is rare and is the maximum effort.
-
-## Flow
+## Zero-start versus revision
 
 ```text
-get_stage_context
-→ rebind_active_project_identity when required
-→ selected writer acquires manage_project_write_lease
-→ inspect_reference_visual_preview
-→ capture_visual_feedback
-→ analyze_geometry_views with return_diff_image=false during normal correction
-→ bounded edits of diagnosed parts
-→ final required-view capture/analyze with write_diff_image=true
-→ visual_director final acceptance
+zero-start / no cubes
+→ BUILD_PRIMARY_FORM_FROM_MANIFEST
+→ capture primary views
+→ analyze
+
+existing or revision
+→ capture only affected views
+→ analyze
+```
+
+Never analyze an empty project. Do not call stage context again between Reference Visual inspection and the first diagnosis; follow the preview's `next_safe_operation`.
+
+## Correction
+
+Analyzer output must name view, region, missing/excess silhouette, direction, magnitude when measurable, parts, and scope. Terra handles concrete corrections directly. Use at most two non-improving bounded cycles before setting attention and asking one focused question or using conditional visual judgment.
+
+Use `place_cubes_safe`/`modify_cubes` for unrotated work and `rotate_cube_about_attachment` for every non-zero rotation. Modify only diagnosed parts.
+
+## Final review
+
+```text
+final manifest-required capture/analyze with write_diff_image=true
+→ visual_director only when a genuine visual decision remains unresolved
+→ otherwise selected Terra writer records the bounded visual decision
 → record_geometry_visual_decision
 → submit_geometry_for_review
-→ lease released
 → GEOMETRY_REVIEW
 ```
 
-Do not ask the user to edit JSON, choose checkpoints/workers/profiles, reopen the model, or reconnect inside Geometry.
+Final views are five base views plus `right_side` for asymmetric assets. Evidence must match project UUID, fingerprint, transformed world signature, Reference Visual hash, required views, analyzer, visual decision, and rotation audit.
 
-## Visual authority and freshness
+Submission performs fresh validation/readiness, creates the review checkpoint, transitions atomically, and releases the lease. Do not duplicate validation immediately before submission.
 
-Use `inspect_reference_visual_preview`; never return the original multi-megabyte image. Geometry quality requires actual image inspection, fixed-scale analyzer output, and structural validation. Free-rescaling is forbidden.
+After user approval, acquire a fresh Geometry lease and call `complete_geometry_stage`. Revision acquires a fresh lease, captures/analyzes affected views, calls `prepare_geometry_visual_rebuild`, then mutates only after `GEOMETRY_IN_PROGRESS` returns.
 
-`analyze_geometry_views` persists canonical metrics and requires the active Geometry lease. It does not return the diff image by default; the final five-view pass writes the canonical diff, while rotation checks suppress redundant diff files. Ephemeral visual capture without `output_dir` may be used by `visual_director`.
+## Evidence and routing invariants
 
-Evidence is current only when all match:
-
-- project UUID;
-- compatibility cube-local fingerprint;
-- transformed world-space signature, including group transforms/hierarchy and mesh structure;
-- Reference Visual SHA-256;
-- current views, analyzer, visual decision, and rotation audit.
-
-After cube, hierarchy, group-transform, visibility, or mesh changes, rerun capture/analyze before decision, revision preparation, review, or approval.
-
-## Diagnosis and revision
-
-Analyzer output must identify failing view/region, parts, direction, magnitude when measurable, and revision scope. When a repair is concrete, Terra handles it directly. Use Sol only for conflicting views, unclear visual root cause, subjective user feedback, or final acceptance.
-
-`prepare_geometry_visual_rebuild` prepares either internal revision scope in the same profile/session. It accepts current deterministic revision metrics or a current multimodal `REVISION_REQUIRED` decision. Both must match fingerprint, world signature, Reference Visual hash, and freshness checks.
-
-For revision during `GEOMETRY_REVIEW`:
-
-1. Codex acquires a fresh Geometry lease.
-2. Capture affected views and run analyzer.
-3. Record a multimodal revision only when user/visual judgment remains necessary.
-4. Call `prepare_geometry_visual_rebuild`.
-5. Mutate only after `GEOMETRY_IN_PROGRESS` returns.
-
-The tool preserves checkpoints and primary masses, keeps detail by default, and permits classified detail removal only for an explicit major revision.
-
-## Mutation
-
-- `place_cubes_safe`: unrotated placement;
-- `modify_cubes`: unrotated edits;
-- `rotate_cube_about_attachment`: every non-zero rotation.
-
-Modify only diagnosed parts. `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are progress markers only.
-
-## Review and approval
-
-After current final evidence and Sol acceptance, the selected writer records the decision and calls `submit_geometry_for_review`.
-
-Submission revalidates, creates the next unused non-approved checkpoint, enters `GEOMETRY_REVIEW`, then releases the writer lease without reconnecting. Wait for the user.
-
-- `APPROVED`: Codex acquires a fresh Geometry lease and calls `complete_geometry_stage`.
-- `REVISION`: Codex acquires a fresh Geometry lease and follows the revision flow above.
-
-Final Geometry requires the five base views plus conditional `right_side` evidence for asymmetric assets, fixed-scale PASS, structural PASS, matching fingerprint/world signature/reference hash, safe rotations, and current visual acceptance.
+`analyze_geometry_views` persists canonical metrics and therefore requires the active Geometry lease. Freshness is bound to the transformed world-space signature as well as project UUID, local fingerprint, hierarchy, visibility, mesh structure, and Reference Visual hash. The final required-view capture/analyze uses all manifest-required views. The selected Terra writer performs repairs; `visual_director` is conditional, and High is reserved for one coded critical decision only.

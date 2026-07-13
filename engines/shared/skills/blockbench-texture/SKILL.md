@@ -1,43 +1,28 @@
 ---
 name: blockbench-texture
-description: "Classic Bedrock Texture workflow with identity recovery, one selected Terra writer, project-bound evidence, automatic review, and same-profile revision."
+description: "Classic Bedrock Texture workflow with one selected Terra writer, direct evidence, one bound report, validation-owned submission, and same-profile revision."
 ---
 
 # Blockbench Texture
 
-Use only for stage `TEXTURE` with profile `BEDROCK_CUBOID_TEXTURE`.
-
-## Entry
-
-1. Call `get_stage_context`.
-2. Rebind identity before lease acquisition when requested.
-3. Use the selected Terra writer and acquire the Texture lease before persistent work.
-4. Preserve approved Geometry.
-
-## Work
+Use only for `TEXTURE` with `BEDROCK_CUBOID_TEXTURE`. Preserve approved Geometry.
 
 ```text
-UV
-→ BASE_TEXTURE
-→ DETAIL_TEXTURE
-→ save_texture_evidence
-→ capture_standard_views
+get_stage_context
+→ identity/lease
+→ UV
+→ base texture
+→ detail texture
+→ save atlas and required view evidence
 → record_stage_review_report
-→ validate_reference_contract
 → submit_stage_for_review
-→ lease released
 → TEXTURE_REVIEW
 ```
 
-Use Classic Bedrock, approved atlas dimensions, Per-face UV when required, sharp pixels, and approved material zones. No PBR, MER, normal map, gradients, mesh UV, Geometry redesign, Animation, or final export.
+Submission verifies the bound report/evidence and runs fresh contract validation. Do not call `validate_reference_contract` immediately before a normal submission.
 
-`record_stage_review_report` creates the canonical `texture_report.json` and binds it to the current project serialization plus hashes of the atlas and review views. Fresh `validate_reference_contract` also enforces atlas bounds, visible-pixel coverage, partial-alpha policy, color budget, and palette drift before submission. Do not write a free-form PASS report manually.
+If submission returns `STAGE_VALIDATION_NOT_PASS`, call validation once for structured diagnostics, repair only named issues, regenerate affected evidence/report, and resubmit.
 
-`submit_stage_for_review` verifies the bound report and current evidence, runs fresh contract validation, saves the next unused Texture review checkpoint, enters `TEXTURE_REVIEW`, then releases the writer lease without profile switch or reconnect.
+Use Classic Bedrock, approved atlas, sharp pixels, approved UV/material/palette/alpha rules. No PBR, gradients, Geometry redesign, Animation, or final export.
 
-## User decision
-
-- `APPROVED`: Codex acquires a fresh Texture lease, then calls `complete_stage` for `TEXTURE`.
-- `REVISION`: Codex acquires a fresh Texture lease, then calls `prepare_stage_revision` with targeted feedback before mutation. It returns to `TEXTURE_IN_PROGRESS` in the same profile. Regenerate affected evidence and call `record_stage_review_report` again before submitting.
-
-Do not activate a Texture repair profile or ask the user to edit state/checkpoint files.
+`APPROVED`: fresh Texture lease → `complete_stage(TEXTURE)`. `REVISION`: fresh lease → `prepare_stage_revision` → targeted repair in the same profile.

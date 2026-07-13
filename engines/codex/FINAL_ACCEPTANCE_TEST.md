@@ -1,61 +1,57 @@
-# Final User Acceptance Test
+# Final End-to-End User Acceptance Test
 
-This is the one final end-to-end test. It is not a component-test checklist. Repository maintainers must finish and automate all internal verification before asking the user to perform it.
+This is one integrated flow test, not an internal component checklist. Repository maintainers complete typecheck/tests/build/bundle verification first.
 
-## Readiness Rule
+## Part A — ChatGPT Website
 
-Do not report `READY TO TEST` unless all of the following are true on the exact `Rework` head and generated `mcp-blockbench/dist/mcp.js`:
+1. Upload the final Reference Studio Skill ZIP.
+2. Start a new chat with a controlled source asset.
+3. Create a new `reference_candidate`.
+4. Confirm one batched clarification turn at most, Production Context approval, one Golden-Sample-guided Reference Visual, visual approval, then automatic technical package/audit/ZIP.
+5. Confirm there is no third routine approval and no additional generated technical image.
 
-- synchronized skills pass;
-- TypeScript passes;
-- all automated tests pass;
-- plugin build passes;
-- stable tool-surface/session-continuity tests pass;
-- write-lease ownership tests pass;
-- identity synchronization tests pass;
-- Golden Sample zero-start initialization test passes;
-- the final bundle contains the matching release version;
-- no production workspace payload was committed by verification.
+Part A passes when the ZIP contains the nine canonical package files, schema `3.3`, executable contracts, exact visual hash, and current Codex handoff.
 
-## User Actions
+## Part B — Codex + Blockbench
 
-The user performs only these setup actions once:
+The user performs setup only once:
 
-1. Pull the final `Rework` head.
-2. Load the final `mcp-blockbench/dist/mcp.js` once in Blockbench.
-3. Start one Codex session from the BuildIT repository root.
-4. Send the production request below.
+1. pull the final `Rework` head;
+2. load `mcp-blockbench/dist/mcp.js` once;
+3. start one Codex session from repository root;
+4. import/initialize the approved candidate package into a fresh workspace;
+5. ask Codex to build the model from zero through final completion.
 
-The user must not be asked to run build commands, test internal tools, inspect UUIDs/sessions/profiles, reconnect MCP, reload the plugin, or start another Codex session during this acceptance run.
+The user only reviews Geometry, Texture, optional Animation when required, and Final Validation. The user is never asked to run internal tests, inspect UUID/profile/session state, edit files, reconnect, reload, restart, choose workers, or choose profiles.
 
-## Production Request
+## Required production behavior
 
-```text
-Create a new Black Rhinoceros model from zero using the tracked Golden Sample.
+- runtime status runs once at startup;
+- stage context runs at entry/transition/revision, not after every call;
+- one selected Terra writer holds the active lease;
+- zero-start Geometry builds primary form before first analysis;
+- affected views are used during corrections;
+- Sol is used only with a stated visual reason;
+- submission tools own fresh validation and review transition;
+- Texture/Animation do not duplicate happy-path validation;
+- Final Validation uses one evidence-free preflight, then final evidence/export/report/submission;
+- Animation-skipped flow proceeds directly to Final Validation;
+- the same Codex and MCP sessions remain active;
+- final approval reaches `DONE` and workspace completion.
 
-Use a fresh workspace. Do not continue or copy the previously debugged black_rhinoceros model, checkpoints, evidence, state, project identity, textures, or geometry.
+## Acceptance result
 
-Initialize from docs/reference/golden-samples/black_rhinoceros using the canonical workspace:sample flow. Create the Bedrock project through Blockbench MCP, then build Geometry from the approved Reference Visual.
+Pass only when the final canonical `.bbmodel`, textures, evidence, PASS reports, approved checkpoints, and completed workspace exist; all stage reviews were user-visible; no reconnect/reload/restart occurred; and no duplicate/versioned output or prebuilt model was used.
 
-Keep the same Codex session and MCP session for the entire run. Do not ask me to reconnect MCP, reload the plugin, edit files, choose agents, choose profiles, or perform technical smoke tests.
+A separate automated branch test covers the Animation-required transition even when the first local acceptance asset skips Animation.
 
-Stop only when the newly built Geometry has been submitted to GEOMETRY_REVIEW and is ready for my visual approval. Show me the final five-view result and a concise summary of the silhouette/proportion decisions.
-```
+## Compatibility acceptance wording
 
-## Acceptance Result
+This remains one final end-to-end test.
 
-The run passes only when:
+- Load the final `mcp-blockbench/dist/mcp.js` once.
+- Start one Codex session.
+- Create a new Black Rhinoceros model from zero for the controlled Golden Sample acceptance path.
+- Confirm `prebuilt_model_copied: false` before MCP project creation.
 
-- a fresh asset workspace was created from the tracked Golden Sample;
-- the initializer reports `prebuilt_model_copied: false` and `model_exists: false` before MCP project creation;
-- the Rhino project and Geometry were created from zero;
-- no data from `workspace/active/black_rhinoceros` was used as model output or revision baseline;
-- one Codex session remained active;
-- one plugin load was sufficient;
-- no MCP reconnect occurred across profile/workflow operations;
-- no user-facing internal component test was requested;
-- Geometry reaches `GEOMETRY_REVIEW / AWAITING_USER_REVIEW`;
-- write lease is `UNCLAIMED` while waiting for the user;
-- the user can judge the five-view visual match against the approved Reference Visual.
-
-The user may then answer only `APPROVED` or provide visual revision feedback.
+The complete acceptance still continues beyond Geometry through Texture, optional Animation, Final Validation, `DONE`, and workspace completion.

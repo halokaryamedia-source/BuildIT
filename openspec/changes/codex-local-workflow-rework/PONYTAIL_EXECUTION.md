@@ -1,144 +1,154 @@
-# Ponytail Execution Scope
+# Ponytail Minimum-Sufficient Execution
 
 ## Active goal
 
-Finish a practical, usage-efficient Geometry-quality workflow before the next local production test. MCP must see the current model, identify actionable visual mismatches, let Codex correct them in one Geometry profile/session, route each task to the cheapest eligible locked model role, and stop only for real safety or user-review conditions.
+Run one clear path from ChatGPT reference creation to the final Blockbench package with the fewest safe questions, reads, model calls, image payloads, validations, and correction cycles. Quality gates remain strict; duplicated work and speculative polish are removed.
 
-## Required now
-
-```text
-project default Terra Medium
-→ deterministic role routing with no router model call
-→ Terra parent performs normal implementation directly
-→ mcp_builder becomes the fallback sole MCP writer only when required
-→ Sol Medium only for necessary visual judgment
-→ Sol High only for one coded critical decision
-→ single Reference Visual authority
-→ compact stage context with one next action
-→ automatic project identity synchronization when required
-→ one Geometry write lease
-→ current-model image feedback
-→ fixed-scale transformed-cuboid diagnosis
-→ ranked view/region/part repair instructions
-→ local or major revision as an internal scope
-→ contract-driven rotations
-→ final structural and five-view validation
-→ automatic review checkpoint and GEOMETRY_REVIEW transition
-→ guarded approval completion
-→ final static and runtime proof
-```
-
-## Reuse
-
-- existing workspace, state, and project metadata;
-- existing canonical MCP connection;
-- existing write lease and stale-call guard;
-- existing Geometry/Texture/Animation/Validation stages;
-- existing checkpoints and evidence directories;
-- existing Reference Visual and technical contracts;
-- existing profile and skill synchronization.
-
-Do not add a separate Geometry repair or rebuild profile, a model-selection service, persistent routing telemetry, recursive agents, or parallel MCP writers.
-
-## Model routing rule
-
-`engines/codex/MODEL_ROUTING.md` is the routing authority.
-
-- Project parent default: `gpt-5.6-terra`, medium.
-- Mechanical read-only work: `routine_auditor`, 5.4 Mini Low.
-- Standard implementation and active-asset mutation: one selected Terra writer; the Terra parent is default and `mcp_builder` is the fallback when the parent differs or isolation is materially safer.
-- Visual interpretation and acceptance: `visual_director`, Sol Medium, read-only.
-- Critical review: `critical_reviewer`, Sol High, read-only, at most once per unresolved coded decision.
-- High is the maximum. xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel writers are forbidden.
-- `agents.max_threads` remains `2`; `agents.max_depth` remains `1`.
-- If deterministic validation can answer the question, do not call a larger model.
-- Explicit user model selection affects the parent only. The user is not asked to select worker models or restart Codex merely to load optional roles.
-
-## Geometry diagnosis rule
-
-MCP must return, when measurable:
-
-- failing standard view;
-- semantic region;
-- missing versus excess silhouette;
-- correction direction;
-- approximate magnitude in Blockbench units;
-- affected parts/groups;
-- `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
-
-Revision scope is an internal Codex decision inside `BEDROCK_CUBOID_GEOMETRY`. It does not require reconnecting.
-
-Current Geometry is projected from transformed cuboids at approved scale. Free-rescaling current Geometry to fit the reference is forbidden.
-
-## Geometry review submission rule
-
-When final Geometry is current, Codex calls `submit_geometry_for_review`. The tool must:
-
-- run fresh `validate_geometry_contract`, including its embedded review-readiness gate;
-- save the next unused non-approved Geometry review checkpoint;
-- atomically move state to `GEOMETRY_REVIEW` / `AWAITING_USER_REVIEW`;
-- advance the existing Geometry lease to the new state revision;
-- remain in `BEDROCK_CUBOID_GEOMETRY` without reconnecting;
-- require no user JSON edits or checkpoint naming.
-
-Generic Geometry revision output must route to `BEDROCK_CUBOID_GEOMETRY`, then use `analyze_geometry_views` to classify the internal scope.
-
-## Rotation rule
-
-Every non-zero cube rotation uses a machine-readable attachment contract. The rotation tool derives the pivot, checks axis/sign/range, expected direction, declared connection, and affected-view score. Visual regression or broken connection rolls back automatically.
-
-## Efficiency boundary
-
-- one Reference Visual preview inspection per unchanged hash;
-- only affected views during correction;
-- one final five-view pass;
-- bounded atomic cube batches;
-- compact stage context instead of repeated long-document reads;
-- deterministic routing before model delegation;
-- Sol receives a compact decision packet, not the repository or raw logs;
-- heavy judgment de-escalates immediately to Terra implementation and Mini audit;
-- no subagent for a micro-task when direct work is cheaper;
-- non-improving cycles set an attention flag rather than creating a new gate/profile;
-- no manual JSON edits, checkpoint naming, worker-model selection, Geometry profile switches, or reconnects requested from the user.
-
-## Workspace separation
+## Canonical upstream-to-downstream path
 
 ```text
-blockbench/
-= canonical model, textures, reference images, approved previews
+CHATGPT REFERENCE STUDIO
+source intake
+→ one batched clarification turn only when a low-confidence decision has high production impact
+→ Production Context approval
+→ one Golden-Sample-guided Reference Visual
+→ blocking QA; maximum one targeted edit only when required
+→ Reference Visual approval
+→ automatic technical package + audit + candidate ZIP
 
-mcp/
-= state, contracts, checkpoints, evidence, diagnostics, reports
+CODEX + MCP-BLOCKBENCH
+one runtime preflight
+→ create/open canonical Bedrock project
+→ stage context + identity sync + one selected Terra writer lease
+→ Geometry review
+→ Texture review
+→ optional Animation review only when required
+→ Final Validation review
+→ final approval
+→ workspace completion
 ```
 
-## Stop condition for implementation
+Routine ChatGPT production has exactly two approval moments: Production Context and Reference Visual. Technical document generation, package audit, and ZIP delivery are automatic. Golden Sample promotion is a separate repository action, not a third routine approval.
 
-Implementation is complete only when:
+## Single-source rule
 
-1. old four-sheet/three-approval context is rejected;
-2. Geometry uses one normal profile and one MCP session;
-3. project identity mismatch is safely synchronized before lease acquisition;
-4. fixed-scale diagnosis reports actionable regions/parts and blocking edge/ground failures;
-5. current Geometry is not free-rescaled;
-6. contract rotations verify direction/connection and rollback regression;
-7. internal progress markers do not create user-facing gates;
-8. five current views, Reference Visual hash, fingerprint, and analyzer are mandatory for review;
-9. Geometry uses transformed world bounds and true ground contacts;
-10. review submission automatically validates, checkpoints, and transitions to `GEOMETRY_REVIEW`;
-11. Geometry approval preserves lease/session correctness and cannot use generic bypass;
-12. negative fixtures reject the failed Black Rhinoceros model;
-13. project Codex config defines Terra Medium, two threads, and depth one;
-14. custom agents lock Mini Low, Terra Medium, Sol Medium, and rare Sol High roles;
-15. exactly one selected Terra writer mutates the active asset; `mcp_builder` is fallback rather than a mandatory controller hop;
-16. no configured effort exceeds High;
-17. routing, skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
+- `PRODUCTION_CONTEXT.md` owns user intent, scale, assumptions, and forbidden redesigns.
+- The approved Reference Visual owns visible identity, silhouette, proportions, pose, and appearance.
+- `reference_manifest.json` owns executable numeric crops, regions, part constraints, symmetry/asymmetry, rotations, Texture limits, Animation limits, and required evidence.
+- Stage Markdown files provide concise human-readable build and review procedure; they do not duplicate large executable arrays.
+- `CODEX_REFERENCE_HANDOFF.md` owns only authority order, route, stage mapping, and non-negotiable boundaries.
 
-## Deferred not required
+When authorities conflict, stop with `REFERENCE_CONFLICT`; do not resolve the conflict by rereading every document repeatedly.
+
+## Call and context budget
+
+- `get_runtime_status`: once at startup; repeat only after a real runtime error, plugin reload, project replacement, or connection warning.
+- `get_stage_context`: once at stage entry and once after approval, revision, or upstream reopen; do not poll it after every MCP call.
+- Reference Visual preview: once per unchanged SHA-256.
+- Zero-start Geometry: inspect the reference, build primary masses from the manifest, then capture/analyze. Never analyze a blank project.
+- Existing/revision Geometry: capture only affected views first, then diagnose.
+- Geometry correction: maximum two bounded non-improving cycles before setting an attention flag and asking one focused question or escalating.
+- Final Geometry: one manifest-required view pass; add `right_side` only for `ASYMMETRIC` assets.
+- Texture/Animation happy path: record the bound report, then submit. Submission already runs fresh validation; do not call the same validation immediately beforehand.
+- Final Validation: one `require_evidence=false` preflight before final capture/export, then report and submit; submission performs the final evidence-aware validation.
+- Sol Medium: no mandatory startup call. Use only for unresolved cross-view judgment, subjective feedback after deterministic evidence, or a final artistic decision that Terra cannot close safely.
+- Sol High: at most once for one coded critical decision after Medium failed.
+- Mini: only for sizeable mechanical read-only work; no subagent for micro work.
+
+## Stage path
+
+### Geometry
+
+```text
+stage entry
+→ identity/lease
+→ inspect Reference Visual once per hash
+→ zero-start: build primary form first
+   existing/revision: capture affected views first
+→ fixed-scale diagnosis
+→ bounded targeted edits
+→ final required-view diagnosis
+→ conditional visual judgment
+→ record visual decision
+→ submit_geometry_for_review
+→ user review
+```
+
+`submit_geometry_for_review` owns fresh Geometry validation, review readiness, checkpoint creation, state transition, and lease release. No duplicate validation call is added immediately before it.
+
+### Texture
+
+```text
+UV + base + detail
+→ atlas and required view evidence
+→ record_stage_review_report
+→ submit_stage_for_review
+→ user review
+```
+
+If submission reports `STAGE_VALIDATION_NOT_PASS`, call `validate_reference_contract` once for structured diagnostics, repair only named issues, regenerate affected evidence/report, and resubmit.
+
+### Animation
+
+Run only when required by the approved manifest:
+
+```text
+required clips only
+→ hierarchy/pivot/neutral evidence
+→ record_stage_review_report
+→ submit_stage_for_review
+→ user review
+```
+
+### Final Validation
+
+```text
+verify current Geometry readiness
+→ validate_reference_contract(require_evidence=false) once
+→ final atlas and required-view evidence
+→ complete VALIDATION.md
+→ export canonical final model/textures
+→ record_stage_review_report
+→ submit_stage_for_review
+→ final user review
+→ complete_stage(FINAL_VALIDATION)
+→ workspace completion
+```
+
+## Model routing
+
+```text
+normal implementation  → Terra Medium parent directly
+large read-only audit  → routine_auditor / Mini Low when worthwhile
+fallback sole writer   → mcp_builder / Terra Medium only when needed
+visual judgment        → visual_director / Sol Medium only with a reason
+critical decision      → critical_reviewer / Sol High once
+```
+
+Exactly one Terra writer may mutate the active asset. Deterministic validation always wins over unnecessary model review.
+
+## Loop prevention
+
+Forbidden:
+
+- repeated user questions for visible or already approved facts;
+- a third routine ChatGPT approval;
+- analyzing empty Geometry;
+- mandatory Sol calls for deterministic work;
+- `get_runtime_status` on every stage;
+- `get_stage_context` polling after every tool call;
+- duplicate validation immediately before a submission tool that validates internally;
+- rereading all package documents when compact stage context is current;
+- parallel writers, recursive delegation, reconnects, plugin reloads, or new Codex sessions;
+- new output versions, duplicate packages, or speculative features.
+
+## Stop conditions
+
+Stop only for an unresolved authority conflict, missing mandatory runtime, unsafe mutation, write-lease conflict, evidence that cannot be regenerated, failed gate with no safe repair route, or a required user review.
+
+## Deferred
 
 - merge into `V1`;
-- release/deployment;
-- persistent live MCP sessions;
-- persistent routing telemetry or a learned router;
-- unrelated mesh, PBR, Hytale, or armature modelling expansion;
-- multiple selected projects;
-- duplicate packages, models, or versioned output names.
+- production release;
+- learned routing or persistent routing telemetry;
+- unrelated mesh, PBR, Hytale, armature, or multi-project expansion.

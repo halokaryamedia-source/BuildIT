@@ -75,7 +75,11 @@ function geometryNextOperation(input: {
   diagnosisScope: string | null;
   runtimePhase: string | null;
   rebuildMode: boolean;
+  workflowState: string | null;
 }): string {
+  if (input.workflowState === "GEOMETRY_REVIEW") {
+    return "AWAIT_GEOMETRY_REVIEW";
+  }
   if (input.rebindRequired && input.leaseStatus !== "ACTIVE") {
     return "rebind_active_project_identity";
   }
@@ -98,6 +102,47 @@ function geometryNextOperation(input: {
     return "verify_geometry_review_ready";
   }
   return "CONTINUE_GEOMETRY";
+}
+
+export function genericStageNextOperation(input: {
+  stage: "TEXTURE" | "ANIMATION" | "FINAL_VALIDATION";
+  rebindRequired: boolean;
+  identityReady: boolean;
+  leaseStatus: string;
+  leaseProjectUuid: string | null;
+  runtimeUuid: string | null;
+  workflowState: string | null;
+}): string {
+  const reviewStates: Record<typeof input.stage, string> = {
+    TEXTURE: "TEXTURE_REVIEW",
+    ANIMATION: "ANIMATION_REVIEW",
+    FINAL_VALIDATION: "FINAL_REVIEW",
+  };
+  const reviewActions: Record<typeof input.stage, string> = {
+    TEXTURE: "AWAIT_TEXTURE_REVIEW",
+    ANIMATION: "AWAIT_ANIMATION_REVIEW",
+    FINAL_VALIDATION: "AWAIT_FINAL_REVIEW",
+  };
+  if (input.workflowState === "DONE") return "WORKSPACE_COMPLETE";
+  if (input.workflowState === reviewStates[input.stage]) {
+    return reviewActions[input.stage];
+  }
+  if (input.rebindRequired && input.leaseStatus !== "ACTIVE") {
+    return "rebind_active_project_identity";
+  }
+  if (!input.identityReady) return "STOP_PROJECT_IDENTITY_MISMATCH";
+  if (
+    input.leaseStatus !== "ACTIVE" ||
+    input.leaseProjectUuid !== input.runtimeUuid
+  ) {
+    return "manage_project_write_lease:acquire";
+  }
+  const workActions: Record<typeof input.stage, string> = {
+    TEXTURE: "CONTINUE_TEXTURE_WORK",
+    ANIMATION: "CONTINUE_ANIMATION_WORK",
+    FINAL_VALIDATION: "RUN_FINAL_VALIDATION_PREFLIGHT",
+  };
+  return workActions[input.stage];
 }
 
 export function registerStageContextTools(): void {
@@ -178,8 +223,17 @@ export function registerStageContextTools(): void {
                 diagnosisScope,
                 runtimePhase: geometryRuntime?.phase ?? null,
                 rebuildMode: geometryRuntime?.rebuild_mode === true,
+                workflowState: state.workflow?.state ?? null,
               })
-            : "CONTINUE_STAGE";
+            : genericStageNextOperation({
+                stage,
+                rebindRequired,
+                identityReady,
+                leaseStatus: lease.status,
+                leaseProjectUuid: lease.project_uuid,
+                runtimeUuid,
+                workflowState: state.workflow?.state ?? null,
+              });
 
         const context = {
           schema_version: "2.1",

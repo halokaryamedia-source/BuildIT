@@ -2,36 +2,29 @@
 
 ## Governance
 
-OpenSpec SHALL preserve approved scope and decisions. Ponytail SHALL select the smallest safe action required by the active stage.
+OpenSpec SHALL preserve approved scope and authority. Ponytail SHALL select the smallest safe operation required by the active stage.
 
-Normal context recovery SHALL read only:
+Normal recovery SHALL read only governance, the active OpenSpec/Ponytail summary, selected workspace index, current project/state files, the reference core, and the active-stage contract. It SHALL NOT scan unrelated assets, copied chat context, legacy prompt packs, or old session folders.
 
-1. `engines/shared/workflow/GOVERNANCE.md`;
-2. the active OpenSpec summary and `PONYTAIL_EXECUTION.md`;
-3. `workspace/workspace.json` to resolve the selected asset;
-4. `workspace/active/<asset>/mcp/project.json` for canonical project paths and identity;
-5. `workspace/active/<asset>/mcp/state.json` for runtime state;
-6. the required reference core and active-stage contract.
+## Upstream reference intake
 
-The agent SHALL NOT scan unrelated active/completed assets or restore authority from copied chat context, legacy prompt packs, or old session folders.
+The approved package SHALL contain Production Context, one Reference Visual, Geometry, Texturing, Animation, Validation, schema-3.3 manifest, and Codex handoff. The Golden Sample SHALL be the mandatory layout/quality benchmark. Legacy numbered sheets and additional routine approval moments SHALL NOT be required.
 
-## Reference Intake
+Routine ChatGPT generation SHALL have exactly two approval moments. Technical package generation and audit SHALL be automatic.
 
-The approved package SHALL contain Production Context, one Reference Visual, Geometry, Texturing, Animation, Validation, manifest, and Codex handoff. Legacy numbered sheets SHALL NOT be required.
+## Authority order
 
-## Runtime State
+1. Production Context for intent and decisions;
+2. approved Reference Visual for visible design;
+3. manifest for executable numeric contracts;
+4. stage Markdown for concise human procedure;
+5. Codex handoff for route and boundaries.
 
-`workspace/active/<asset>/mcp/state.json` SHALL be the runtime authority. `workspace/workspace.json` SHALL only select the active asset. Markdown summaries SHALL NOT override either file.
+## Runtime state
 
-User-facing `.bbmodel`, textures, reference images, and approved previews SHALL remain under `workspace/active/<asset>/blockbench/`. Checkpoints, evidence, reports, contracts, project metadata, and state SHALL remain under `workspace/active/<asset>/mcp/`.
+`workspace/active/<asset>/mcp/state.json` SHALL be runtime authority. `workspace/workspace.json` SHALL only select the active asset. User-facing files SHALL remain under `blockbench/`; internal state/evidence/checkpoints/reports SHALL remain under `mcp/`.
 
-## Model Routing
-
-Normal implementation SHALL use the Terra Medium parent directly. When the parent is explicitly changed or isolated mutation is materially safer, `mcp_builder` SHALL become the only Terra writer. `routine_auditor` SHALL be read-only Mini Low, `visual_director` SHALL be read-only Sol Medium, and `critical_reviewer` SHALL be read-only Sol High for one coded critical decision.
-
-Routing SHALL be deterministic, SHALL NOT spend a model call only to select another model, SHALL NOT exceed High effort, and SHALL NOT allow parallel active-asset writers.
-
-## State Sequence
+## State sequence
 
 ```text
 REFERENCE_READY
@@ -42,32 +35,45 @@ REFERENCE_READY
 → TEXTURE_REVIEW
 → TEXTURE_APPROVED
 → ANIMATION_IN_PROGRESS or ANIMATION_SKIPPED
-→ ANIMATION_REVIEW when required
-→ ANIMATION_APPROVED when required
+→ ANIMATION_REVIEW / ANIMATION_APPROVED when required
 → FINAL_VALIDATION
 → FINAL_REVIEW
 → DONE
 ```
 
-Broad feedback SHALL reopen the earliest affected stage. Accepted areas SHALL remain protected by default.
+Broad feedback SHALL reopen the earliest affected stage while preserving accepted areas.
 
-## One-Time Preflight
+## One-time preflight and context budget
 
-Before the first persistent write, Codex SHALL verify the canonical connection, selected project identity, format, UV mode, texture dimensions, active logical profile, reference package, manual edits, and checkpoint readiness. A project UUID mismatch SHALL be synchronized through the metadata-only identity tool before lease acquisition. Fresh checks SHALL NOT be repeated.
+`get_runtime_status` SHALL run once at startup and repeat only after a real runtime/connection/project replacement event. `get_stage_context` SHALL run at stage entry and after approval, revision, or upstream reopen. It SHALL NOT be polled after every MCP call.
 
-## One-Session Execution
+Fresh identity, preflight, reference hash, analyzer, and evidence results SHALL be reused until their explicit freshness keys change.
 
-Geometry, Texture, optional Animation, Final Validation, approval, and revision SHALL remain in the same Codex session and MCP session. A stage/profile transition SHALL release the old lease, return `current_session_continues = true`, call `get_stage_context`, and require a fresh current-stage lease. It SHALL NOT request a reconnect, plugin reload, or user-managed profile switch.
+## Geometry branch
 
-## Stage Reviews
+After Reference Visual inspection:
 
-- Geometry SHALL end with a guarded checkpoint, five current standard views, fixed-scale analysis, structural validation, current visual acceptance, and user review.
-- Texture SHALL end with a guarded checkpoint, atlas, model views, compact validation, and user review.
-- Animation SHALL run only when required and end with hierarchy/pivot/clip evidence and user review.
-- Final Validation SHALL execute `VALIDATION.md`, re-check current Geometry readiness, export final outputs, and wait for final approval.
+- zero-start project: build primary masses from manifest before first capture/analyze;
+- existing/revision project: capture affected views and diagnose before mutation.
 
-Internal passes SHALL NOT add approval gates. Initial work MAY use bounded batches; revision work SHALL target one named issue or tightly related pair.
+The first analysis of a blank model is forbidden. Corrections SHALL use affected views and bounded cycles. Final review SHALL use all manifest-required views, including Right Side only for asymmetric assets.
 
-## Efficiency
+## Review submission
 
-Codex SHALL use the active exact tool profile, structured outputs, direct evidence writes, atomic checkpoints, bounded image transport, deterministic validation, and the stage-specific guarded completion tool. Unrelated work SHALL be rejected as `DEFERRED_NOT_REQUIRED`.
+`submit_geometry_for_review` SHALL own fresh Geometry validation, review readiness, checkpoint, state transition, and lease release.
+
+For Texture and Animation, normal flow SHALL be evidence → bound report → `submit_stage_for_review`. The submission tool SHALL own fresh validation. A separate validation call SHALL occur only after a failed submission when structured diagnostics are needed.
+
+Final Validation SHALL run one `require_evidence=false` preflight before final evidence/export, then create final evidence, export, record the bound report, and submit. Submission SHALL run the final evidence-aware validation.
+
+## Model routing
+
+Normal implementation SHALL use the Terra Medium parent. `mcp_builder` SHALL be fallback sole writer only when necessary. Mini SHALL handle sizeable mechanical read-only work. Sol Medium SHALL be conditional on unresolved visual judgment; it SHALL NOT be called solely because a stage started. Sol High SHALL be used at most once for one coded critical decision.
+
+## One-session execution
+
+All stages, approvals, revisions, and upstream reopen SHALL remain in one Codex session and one MCP session. Transitions SHALL release the old lease, call stage context, and acquire a fresh lease without reconnect, reload, or restart.
+
+## Efficiency and stop conditions
+
+The agent SHALL use structured outputs, direct evidence writes, atomic checkpoints, bounded image transport, deterministic validation, and stage-specific guarded completion. It SHALL stop only for a real authority conflict, mandatory runtime failure, unsafe mutation, lease conflict, unrecoverable evidence failure, failed gate without a repair route, or user review. Unrelated work SHALL be `DEFERRED_NOT_REQUIRED`.

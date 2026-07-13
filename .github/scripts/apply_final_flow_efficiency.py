@@ -1866,9 +1866,9 @@ replace_once(
 
 replace_once(
     reference_preview,
-    '''               `${Math.round(reduction * 100)}% smaller than source).`,''',
-    '''               `${Math.round(reduction * 100)}% smaller than source). ` +
-               `Next safe operation: ${nextSafeOperation}.`,''',
+    '''              `${Math.round(reduction * 100)}% smaller than source).`,''',
+    '''              `${Math.round(reduction * 100)}% smaller than source). ` +
+              `Next safe operation: ${nextSafeOperation}.`,''',
 )
 
 replace_once(
@@ -1902,7 +1902,7 @@ replace_once(
 ] as const;
 
 export function requiredGeometryFinalViews(symmetryPolicy: unknown): string[] {
-  const views = [...BASE_FINAL_VIEWS];
+  const views: string[] = [...BASE_FINAL_VIEWS];
   if (String(symmetryPolicy ?? "").toUpperCase() === "ASYMMETRIC") {
     views.splice(2, 0, "right_side");
   }

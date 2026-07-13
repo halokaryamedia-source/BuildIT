@@ -1,132 +1,79 @@
 ---
 name: blockbench-production
-description: "One-session production dispatcher with Golden Sample initialization, one selected Terra writer, bounded visual judgment, and guarded MCP stage continuity."
+description: "Minimum-sufficient one-session dispatcher for approved Reference Visual packages, one selected Terra writer, bounded judgment, guarded reviews, and final workspace completion."
 ---
 
 # Blockbench Production
 
-Use for an approved single-Reference-Visual package.
+## User contract
 
-## User-facing contract
+The user provides the approved package and reviews stage results. Codex owns workspace/project setup, identity, lease, routing, evidence, reports, checkpoints, transitions, recovery, export, and completion.
 
-The user supplies the production request and reviews stage results. Codex owns workspace initialization, project creation, identity synchronization, lease handling, routing, evidence, reports, checkpoints, transitions, and recovery.
-
-Never ask the user to:
-
-- test typecheck, unit tests, build, session count, profile exposure, or UUID synchronization;
-- edit JSON;
-- select a worker or repair profile;
-- reconnect MCP;
-- reload the plugin during production;
-- start a new Codex session after a profile/stage change.
+Never ask the user to run internal checks, edit JSON, choose workers/profiles/checkpoints, reconnect MCP, reload the plugin, or restart Codex.
 
 ## Routing
 
-```text
-normal implementation  → Terra Medium parent directly
-large read-only audit  → routine_auditor / Mini Low when available
-fallback writer        → mcp_builder / Terra Medium when available
-visual judgment        → visual_director / Sol Medium when available
-critical decision      → critical_reviewer / Sol High once when mandatory
-```
+Terra parent performs normal implementation directly. Mini is for sizeable read-only audit. `mcp_builder` is fallback sole writer. Sol Medium is conditional visual judgment. Sol High is one rare coded critical decision. Exactly one Terra writer mutates the asset.
 
-Select exactly one writer: Terra parent or `mcp_builder`, never both. When custom roles are missing, record `CODEX_PROJECT_CONFIG_NOT_LOADED` as a routing warning and continue through safe parent fallbacks in the current session.
+## Startup and context budget
 
-## Stable session
-
-The plugin registers one stable tool surface. Logical profiles still enforce `TOOL_PROFILE_BLOCKED`, cross-stage argument guards, and the one write lease.
-
-Every stage transition follows:
-
-```text
-activate next logical profile
-→ release previous lease
-→ continue same MCP session
-→ continue same Codex session
-→ get_stage_context
-→ acquire fresh current-stage lease
-```
-
-No normal stage, review, revision, approval, or recovery operation requires reconnect or plugin reload.
-
-## Golden Sample zero-start
-
-When the user requests a new Black Rhinoceros from the tracked sample:
-
-1. Initialize a fresh asset with `workspace:sample` from `docs/reference/golden-samples/black_rhinoceros`.
-2. Use a fresh asset ID.
-3. Confirm the canonical model path is absent.
-4. Confirm no `.bbmodel`, checkpoint, evidence, runtime identity, or prior state was copied.
-5. Create the Bedrock project through MCP and save it to the canonical model path.
-6. Continue normal Geometry production from zero.
-
-The previously debugged `workspace/active/black_rhinoceros` model is not an acceptance baseline.
-
-## Dispatch
-
-1. Resolve or initialize the asset and canonical session root.
+1. Resolve/init asset and session root.
 2. Load this skill plus exactly one active-stage skill.
-3. Create the project through MCP when the canonical model does not exist.
-4. Call `get_runtime_status`, then `get_stage_context`.
-5. Rebind identity before lease acquisition when required.
-6. Select one writer and acquire the lease before persistent writes.
-7. Follow `next_safe_operation` until a stage review result is ready.
-8. Submit through the canonical MCP review transition and stop only for user review.
+3. Create the project through MCP when absent.
+4. Call `get_runtime_status` once at startup.
+5. Call `get_stage_context` at stage entry.
+6. Rebind identity when requested.
+7. Acquire the current-stage lease.
 
-A successful review submission releases the writer lease. After `APPROVED` or `REVISION`, Codex acquires a fresh current-stage lease automatically in the same session.
+Do not repeat runtime status unless a real runtime event invalidates it. Do not poll stage context after every MCP call; call it after stage transition, approval, revision, or upstream reopen.
 
 ## Geometry
 
-Geometry stays in `BEDROCK_CUBOID_GEOMETRY`:
-
 ```text
-create project when absent
-→ get_stage_context
-→ rebind identity when required
-→ selected writer acquires lease
-→ inspect_reference_visual_preview
-→ capture_visual_feedback
-→ analyze_geometry_views
-→ bounded diagnosed construction/correction
-→ final required-view capture/analyze (five base views plus conditional `right_side`)
+inspect Reference Visual once per hash
+→ zero-start: build primary form before first capture/analyze
+   existing/revision: capture affected views first
+→ fixed-scale diagnosis
+→ bounded targeted edits
+→ final manifest-required view pass
+→ conditional visual judgment
 → record_geometry_visual_decision
 → submit_geometry_for_review
-→ lease released
-→ user reviews one result
-```
-
-`analyze_geometry_views` persists metrics and diff, so it requires the Geometry lease. Ephemeral visual inspection does not persist evidence.
-
-Current Geometry evidence must match project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual hash, all manifest-required views, analyzer, visual decision, and rotation audit. Hierarchy/group-transform changes require fresh capture/analyze.
-
-`LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. Use `place_cubes_safe` and `modify_cubes` for unrotated work. Every non-zero rotation uses `rotate_cube_about_attachment`.
-
-## Other stages
-
-Texture, Animation, and Final Validation use:
-
-```text
-work and evidence
-→ record_stage_review_report
-→ validate_reference_contract
-→ submit_stage_for_review
-→ lease released
 → user review
 ```
 
-User revision returns to the same stage profile through `prepare_stage_revision`. Upstream reopen preserves approved checkpoints, marks downstream revalidation, activates the target logical profile, releases the old lease, and continues in the current session.
+Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`.
 
-## Visual boundary
-
-Use `visual_director` only for initial Reference direction, ambiguous cross-view/root-cause decisions, subjective user feedback, and final visual acceptance. When unavailable, the parent performs the same bounded visual comparison without restarting the session.
-
-## Stages
+## Texture and Animation
 
 ```text
-GEOMETRY         → blockbench-geometry
-TEXTURE          → blockbench-texture
-ANIMATION        → blockbench-animation when required
-FINAL_VALIDATION → blockbench-validation
+work/evidence
+→ record_stage_review_report
+→ submit_stage_for_review
+→ user review
 ```
 
-Stop only for a real authority conflict, unavailable mandatory runtime, unsafe mutation, unrecoverable stale evidence, failed review gate, lease conflict, or user approval.
+Do not call duplicate happy-path validation. If submission fails contract validation, call `validate_reference_contract` once for diagnostics, repair only named issues, refresh evidence/report, and resubmit. Do not load Animation when skipped.
+
+## Final Validation
+
+```text
+verify Geometry readiness
+→ validate_reference_contract(require_evidence=false) once
+→ final evidence + completed VALIDATION.md + canonical export
+→ record_stage_review_report
+→ submit_stage_for_review
+→ final review
+→ complete_stage(FINAL_VALIDATION)
+→ workspace completion
+```
+
+## Transition
+
+A transition releases the prior lease, stays in the same MCP/Codex session, calls stage context, and acquires a fresh lease. Upstream reopen preserves approved checkpoints and accepted areas.
+
+Stop only for a real authority conflict, mandatory runtime failure, unsafe mutation, unrecoverable evidence, failed gate, lease conflict, or user review.
+
+## Audited routing invariants
+
+The selected Terra writer handles normal mutations. `visual_director` is conditional and inspection-only; High is reserved for one coded critical decision. Geometry uses `BEDROCK_CUBOID_GEOMETRY`, `analyze_geometry_views`, `rotate_cube_about_attachment`, and `submit_geometry_for_review`. Final Geometry and Final Validation must include all manifest-required views.

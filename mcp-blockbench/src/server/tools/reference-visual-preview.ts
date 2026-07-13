@@ -181,6 +181,11 @@ export function registerReferenceVisualPreviewTools(): void {
           source.byteLength > 0
             ? 1 - preview.transportBytes / source.byteLength
             : 0;
+        const cubeCount = typeof Cube !== "undefined" ? Cube.all.length : 0;
+        const nextSafeOperation =
+          cubeCount === 0
+            ? "BUILD_PRIMARY_FORM_FROM_MANIFEST"
+            : "capture_visual_feedback";
         const content: Array<
           | { type: "text"; text: string }
           | { type: "image"; data: string; mimeType: string }
@@ -192,7 +197,8 @@ export function registerReferenceVisualPreviewTools(): void {
               `(${preview.sourceWidth}×${preview.sourceHeight}, SHA-256 ${actualHash}). ` +
               `Returned bounded ${preview.mimeType} transport preview ` +
               `(${preview.width}×${preview.height}, ${preview.transportBytes} bytes; ` +
-              `${Math.round(reduction * 100)}% smaller than source).`,
+              `${Math.round(reduction * 100)}% smaller than source). ` +
+              `Next safe operation: ${nextSafeOperation}.`,
           },
         ];
         if (include_image) {
@@ -217,6 +223,10 @@ export function registerReferenceVisualPreviewTools(): void {
               bytes: source.byteLength,
               authority: "single_visual_source_of_truth",
             },
+            next_safe_operation: nextSafeOperation,
+            zero_start_geometry: cubeCount === 0,
+            current_cube_count: cubeCount,
+            reference_cache_key: actualHash,
             transport_preview: {
               returned_image: include_image,
               mime_type: preview.mimeType,
