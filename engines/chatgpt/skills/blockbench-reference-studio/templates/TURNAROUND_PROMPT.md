@@ -76,6 +76,8 @@ LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 - TOP / FOOTPRINT: true top-down orthographic; head/front points left, rear/tail points right.
 - FRONT-LEFT 3/4: controlled three-quarter view; subject faces left; both front and left planes are visible.
 
+The Top / Footprint panel is a measurable true top-down footprint, not an artistic camera view.
+
 ### Asymmetric
 
 Add RIGHT SIDE and use the controlled six-panel layout without changing construction style or subject scale.
