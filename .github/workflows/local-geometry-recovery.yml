@@ -36,7 +36,21 @@ jobs:
           fetch-depth: 0
 
       - name: Patch recovery script
-        run: python .github/scripts/fix_local_geometry_recovery.py
+        run: |
+          set +e
+          python .github/scripts/fix_local_geometry_recovery.py > geometry-recovery-patch.log 2>&1
+          code=$?
+          cat geometry-recovery-patch.log
+          exit $code
+
+      - name: Upload patch diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geometry-recovery-patch
+          path: geometry-recovery-patch.log
+          retention-days: 1
+          if-no-files-found: ignore
 
       - name: Apply Geometry P0 recovery
         run: python .github/scripts/apply_local_geometry_recovery.py
