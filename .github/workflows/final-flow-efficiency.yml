@@ -1,0 +1,133 @@
+name: Final Flow Efficiency
+
+on:
+  push:
+    branches:
+      - Rework
+    paths:
+      - ".github/scripts/apply_final_flow_efficiency.py"
+      - ".github/workflows/final-flow-efficiency.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_final_flow_efficiency.py"
+      - ".github/workflows/final-flow-efficiency.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: final-flow-efficiency-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  optimize-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          ref: Rework
+          fetch-depth: 0
+
+      - name: Apply final flow efficiency hardening
+        run: python .github/scripts/apply_final_flow_efficiency.py
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: mcp-blockbench
+        run: bun install --frozen-lockfile
+
+      - name: Synchronize production skill adapters
+        working-directory: mcp-blockbench
+        run: bun run skills:sync
+
+      - name: Verify synchronized skills
+        working-directory: mcp-blockbench
+        run: bun run skills:check
+
+      - name: Reject active legacy or looping authority
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path("engines/chatgpt/skills/blockbench-reference-studio")
+          active = "\n".join(
+              p.read_text(encoding="utf-8")
+              for p in sorted(root.rglob("*.md"))
+          )
+          forbidden = [
+              "Sheet 01",
+              "Sheets 02–04",
+              "four approved sheets",
+              "TECHNICAL_SHEETS_REVIEW",
+              "STAGE_CONTRACTS_REVIEW",
+              "No Sheets 02–04",
+          ]
+          for marker in forbidden:
+              if marker in active:
+                  raise SystemExit(f"Active Reference Studio still contains stale marker: {marker}")
+
+          required = [
+              "exactly two approval moments",
+              "Mandatory Golden Sample design system",
+              "BUILD_PRIMARY_FORM_FROM_MANIFEST",
+              "require_evidence=false",
+              "Reference inspection is not an automatic Sol call",
+          ]
+          combined = active + "\n" + Path("engines/codex/MODEL_ROUTING.md").read_text(encoding="utf-8") + "\n" + Path("engines/shared/skills/blockbench-validation/SKILL.md").read_text(encoding="utf-8")
+          for marker in required:
+              if marker not in combined:
+                  raise SystemExit(f"Missing final flow marker: {marker}")
+          PY
+
+      - name: Typecheck
+        working-directory: mcp-blockbench
+        run: bun run typecheck
+
+      - name: Run full test suite
+        working-directory: mcp-blockbench
+        run: bun test
+
+      - name: Build canonical plugin
+        working-directory: mcp-blockbench
+        run: bun run build
+
+      - name: Verify bundle identity and efficiency markers
+        working-directory: mcp-blockbench
+        run: |
+          bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "BUILD_PRIMARY_FORM_FROM_MANIFEST", "RUN_FINAL_VALIDATION_PREFLIGHT", "right_side", "submit_stage_for_review", "submit_geometry_for_review"]) { if (!text.includes(marker)) throw new Error(`Missing final-flow bundle marker: ${marker}`); }'
+
+      - name: Export final ChatGPT authority
+        run: |
+          mkdir -p export/canonical_skill export/golden_sample
+          cp -a engines/chatgpt/skills/blockbench-reference-studio/. export/canonical_skill/
+          cp -a docs/reference/golden-samples/black_rhinoceros/. export/golden_sample/
+          git rev-parse HEAD > export/PRE_PATCH_HEAD.txt
+
+      - name: Upload final ChatGPT authority
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-reference-studio-authority
+          path: export
+          retention-days: 1
+
+      - name: Commit verified flow optimization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git add -f mcp-blockbench/dist/mcp.js
+          if git diff --cached --quiet; then
+            echo "Final flow efficiency changes are already applied."
+            exit 0
+          fi
+          git commit -m "refactor: streamline full ChatGPT to Codex production flow"
+          git push origin HEAD:Rework
