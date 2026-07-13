@@ -6,11 +6,13 @@ on:
       - Rework
     paths:
       - ".github/scripts/apply_reference_studio_golden_sync.py"
+      - ".github/scripts/fix_reference_sync_test_typing.py"
       - ".github/workflows/reference-studio-golden-sync.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_reference_studio_golden_sync.py"
+      - ".github/scripts/fix_reference_sync_test_typing.py"
       - ".github/workflows/reference-studio-golden-sync.yml"
   workflow_dispatch:
 
@@ -34,7 +36,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply synchronization patch
-        run: python .github/scripts/apply_reference_studio_golden_sync.py
+        run: |
+          python .github/scripts/apply_reference_studio_golden_sync.py
+          python .github/scripts/fix_reference_sync_test_typing.py
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
