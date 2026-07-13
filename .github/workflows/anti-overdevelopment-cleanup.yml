@@ -1,0 +1,95 @@
+name: Anti Overdevelopment Cleanup
+
+on:
+  push:
+    branches:
+      - Rework
+    paths:
+      - ".github/scripts/apply_anti_overdevelopment_cleanup.py"
+      - ".github/workflows/anti-overdevelopment-cleanup.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_anti_overdevelopment_cleanup.py"
+      - ".github/workflows/anti-overdevelopment-cleanup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: anti-overdevelopment-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  cleanup-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          ref: Rework
+          fetch-depth: 0
+
+      - name: Apply cleanup
+        run: python .github/scripts/apply_anti_overdevelopment_cleanup.py
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: mcp-blockbench
+        run: bun install --frozen-lockfile
+
+      - name: Synchronize production skill adapters
+        working-directory: mcp-blockbench
+        run: bun run skills:sync
+
+      - name: Verify synchronized skills
+        working-directory: mcp-blockbench
+        run: bun run skills:check
+
+      - name: Verify duplicate authority removal
+        run: |
+          if rg -n "BLACK_RHINO_PROFILE|GOLDEN_SAMPLE_SHA|builtInGeometryProfile" mcp-blockbench/src mcp-blockbench/tests; then
+            echo "Asset-specific runtime fallback remains."
+            exit 1
+          fi
+          if rg -n -F '...(manifest.visual_grounding ?? {})' mcp-blockbench/src/server/tools/stage-context.ts; then
+            echo "Stage context still duplicates the full visual manifest."
+            exit 1
+          fi
+
+      - name: Typecheck
+        working-directory: mcp-blockbench
+        run: bun run typecheck
+
+      - name: Run full test suite
+        working-directory: mcp-blockbench
+        run: bun test
+
+      - name: Build canonical plugin
+        working-directory: mcp-blockbench
+        run: bun run build
+
+      - name: Verify committed bundle
+        working-directory: mcp-blockbench
+        run: |
+          bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "submit_geometry_for_review", "submit_stage_for_review"]) { if (!text.includes(marker)) throw new Error(`Missing bundle marker: ${marker}`); }'
+
+      - name: Commit verified cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git add -f mcp-blockbench/dist/mcp.js
+          if git diff --cached --quiet; then
+            echo "Anti-overdevelopment cleanup is already applied."
+            exit 0
+          fi
+          git commit -m "refactor: remove duplicate runtime authority and freeze prelocal scope"
+          git push origin HEAD:Rework
