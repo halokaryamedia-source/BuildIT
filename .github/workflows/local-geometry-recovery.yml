@@ -1,0 +1,79 @@
+name: Local Geometry Recovery
+
+on:
+  push:
+    branches:
+      - Rework
+    paths:
+      - ".github/scripts/apply_local_geometry_recovery.py"
+      - ".github/workflows/local-geometry-recovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: local-geometry-recovery
+  cancel-in-progress: true
+
+jobs:
+  apply-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          ref: Rework
+          fetch-depth: 0
+
+      - name: Apply Geometry P0 recovery
+        run: python .github/scripts/apply_local_geometry_recovery.py
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: mcp-blockbench
+        run: bun install --frozen-lockfile
+
+      - name: Synchronize production skill adapters
+        working-directory: mcp-blockbench
+        run: bun run skills:sync
+
+      - name: Verify synchronized skills
+        working-directory: mcp-blockbench
+        run: bun run skills:check
+
+      - name: Typecheck
+        working-directory: mcp-blockbench
+        run: bun run typecheck
+
+      - name: Run full test suite
+        working-directory: mcp-blockbench
+        run: bun test
+
+      - name: Build canonical plugin
+        working-directory: mcp-blockbench
+        run: bun run build
+
+      - name: Verify final bundle
+        working-directory: mcp-blockbench
+        run: |
+          bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "verify_primary_form_ready", "save_canonical_project", "GEOMETRY_PRIMARY_FORM_NOT_READY", "UNAVAILABLE_STRUCTURAL_FALLBACK", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED"]) { if (!text.includes(marker)) throw new Error(`Missing Geometry recovery bundle marker: ${marker}`); }'
+
+      - name: Commit verified recovery
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git add -f mcp-blockbench/dist/mcp.js
+          if git diff --cached --quiet; then
+            echo "Geometry recovery already applied."
+            exit 0
+          fi
+          git commit -m "fix: enforce primary form and recover local Blockbench workflow"
+          git push origin HEAD:Rework
