@@ -183,6 +183,19 @@ function averageScore(result: any): number | null {
     scores.length;
 }
 
+function recoverableVisualAnalysisError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return [
+    "REFERENCE_FOREGROUND_NOT_FOUND",
+    "REFERENCE_FOREGROUND_RATIO_INVALID",
+    "REFERENCE_FOREGROUND_ADAPTIVE_FAILED",
+    "VISUAL_ANALYSIS_IMAGE_API_UNAVAILABLE",
+    "VISUAL_ANALYSIS_IMAGE_LOAD_FAILED",
+    "VISUAL_ANALYSIS_CANVAS_UNAVAILABLE",
+    "VISUAL_ANALYSIS_CONTEXT_UNAVAILABLE",
+  ].some((code) => message.includes(code));
+}
+
 function sanitized(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "");
 }
@@ -249,18 +262,30 @@ export function registerGeometryRotationTools(): void {
           session_root,
           `evidence/geometry/rotation_checks/${sanitized(cube.name)}`
         );
-        const beforeResult = await analyzer.execute(
-          {
-            session_root,
-            expected_project_uuid: Project.uuid,
-            views: contract.affected_views,
-            output_dir: joinPath(scratchRoot, "before"),
-            return_diff_image: false,
-            write_diff_image: false,
-          },
-          context
-        );
-        const beforeScore = averageScore(beforeResult);
+        let beforeResult: any = null;
+        let beforeScore: number | null = null;
+        const visualWarnings: string[] = [];
+        try {
+          beforeResult = await analyzer.execute(
+            {
+              session_root,
+              expected_project_uuid: Project.uuid,
+              views: contract.affected_views,
+              output_dir: joinPath(scratchRoot, "before"),
+              return_diff_image: false,
+              write_diff_image: false,
+            },
+            context
+          );
+          beforeScore = averageScore(beforeResult);
+        } catch (error) {
+          if (!recoverableVisualAnalysisError(error)) throw error;
+          visualWarnings.push(
+            `ROTATION_VISUAL_PRECHECK_UNAVAILABLE: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+        }
 
         const pivot = anchorPoint(cube, contract.pivot_anchor);
         const tip = anchorPoint(cube, contract.tip_anchor);
@@ -318,18 +343,29 @@ export function registerGeometryRotationTools(): void {
             }
           }
 
-          const afterResult = await analyzer.execute(
-            {
-              session_root,
-              expected_project_uuid: Project.uuid,
-              views: contract.affected_views,
-              output_dir: joinPath(scratchRoot, "after"),
-              return_diff_image: false,
-              write_diff_image: false,
-            },
-            context
-          );
-          const afterScore = averageScore(afterResult);
+          let afterResult: any = null;
+          let afterScore: number | null = null;
+          try {
+            afterResult = await analyzer.execute(
+              {
+                session_root,
+                expected_project_uuid: Project.uuid,
+                views: contract.affected_views,
+                output_dir: joinPath(scratchRoot, "after"),
+                return_diff_image: false,
+                write_diff_image: false,
+              },
+              context
+            );
+            afterScore = averageScore(afterResult);
+          } catch (error) {
+            if (!recoverableVisualAnalysisError(error)) throw error;
+            visualWarnings.push(
+              `ROTATION_VISUAL_POSTCHECK_UNAVAILABLE: ${
+                error instanceof Error ? error.message : String(error)
+              }`
+            );
+          }
           if (
             reject_visual_regression &&
             beforeScore !== null &&
@@ -348,7 +384,10 @@ export function registerGeometryRotationTools(): void {
             content: [
               {
                 type: "text",
-                text: `Rotated ${cube.name} by ${angle_degrees}° around ${contract.allowed_axis.toUpperCase()} using ${contract.id}. Direction, connection, and affected-view score passed.`,
+                text:
+                  visualWarnings.length === 0
+                    ? `Rotated ${cube.name} by ${angle_degrees}° around ${contract.allowed_axis.toUpperCase()} using ${contract.id}. Direction, connection, and affected-view score passed.`
+                    : `Rotated ${cube.name} by ${angle_degrees}° using ${contract.id}. Direction and connection passed; visual score was unavailable and must be regenerated before primary-form approval.`,
               },
             ],
             structuredContent: {
@@ -365,6 +404,11 @@ export function registerGeometryRotationTools(): void {
               after_score: afterScore,
               before_report: beforeResult?.structuredContent?.report_path ?? null,
               after_report: afterResult?.structuredContent?.report_path ?? null,
+              visual_score_status:
+                visualWarnings.length === 0
+                  ? "PASS"
+                  : "UNAVAILABLE_STRUCTURAL_FALLBACK",
+              warnings: visualWarnings,
             },
           };
         } catch (error) {

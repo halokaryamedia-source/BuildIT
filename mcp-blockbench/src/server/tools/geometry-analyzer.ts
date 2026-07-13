@@ -377,6 +377,30 @@ export function segmentReferencePixels(
   return retainRelevantForeground({ width: image.width, height: image.height, data });
 }
 
+export function segmentReferencePixelsAdaptive(
+  image: ImageData,
+  preferredThreshold: number
+): { mask: BinaryMask; threshold: number; attempts: number[] } {
+  const attempts = Array.from(
+    new Set([preferredThreshold, 24, 34, 48, 64, 80])
+  ).filter((threshold) => threshold >= 8 && threshold <= 120);
+  const errors: string[] = [];
+  for (const threshold of attempts) {
+    try {
+      return {
+        mask: segmentReferencePixels(image, threshold),
+        threshold,
+        attempts,
+      };
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+  throw new Error(
+    `REFERENCE_FOREGROUND_ADAPTIVE_FAILED: thresholds ${attempts.join(",")}; ${errors.join(" | ")}`
+  );
+}
+
 function referenceMaskOnFixedFrame(input: {
   source: BinaryMask;
   frame: ProjectionFrame;
@@ -984,12 +1008,12 @@ export function registerGeometryAnalyzerTools(): void {
             height: profile.canvas_size,
             margin: profile.margin_pixels,
           });
-          const segmented = segmentReferencePixels(
+          const segmented = segmentReferencePixelsAdaptive(
             imageDataFor(referenceImage, panel.crop_normalized),
             segmentation_threshold
           );
           const reference = referenceMaskOnFixedFrame({
-            source: segmented,
+            source: segmented.mask,
             frame: current.frame,
             view,
             panel,

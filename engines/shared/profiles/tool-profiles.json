@@ -35,6 +35,7 @@
         "inspect_reference_visual_preview",
         "capture_visual_feedback",
         "analyze_geometry_views",
+        "verify_primary_form_ready",
         "place_cubes_safe",
         "modify_cubes",
         "rotate_cube_about_attachment",
@@ -42,15 +43,14 @@
         "rename_element",
         "remove_element",
         "undo",
-        "redo",
-        "get_undo_stack",
         "validate_geometry_contract",
         "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "submit_geometry_for_review",
         "save_project_checkpoint",
         "capture_standard_views",
-        "complete_geometry_stage"
+        "complete_geometry_stage",
+        "save_canonical_project"
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
@@ -76,11 +76,11 @@
         "undo",
         "validate_reference_contract",
         "save_texture_evidence",
-        "save_project_checkpoint",
         "capture_standard_views",
         "record_stage_review_report",
         "submit_stage_for_review",
-        "complete_stage"
+        "complete_stage",
+        "save_canonical_project"
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
@@ -104,7 +104,8 @@
         "capture_screenshot",
         "record_stage_review_report",
         "submit_stage_for_review",
-        "complete_stage"
+        "complete_stage",
+        "save_canonical_project"
       ]
     },
     "FINAL_VALIDATION_READONLY": {
@@ -127,7 +128,8 @@
         "save_project_checkpoint",
         "record_stage_review_report",
         "submit_stage_for_review",
-        "complete_stage"
+        "complete_stage",
+        "save_canonical_project"
       ]
     },
     "DIAGNOSTIC_ESCALATION": {

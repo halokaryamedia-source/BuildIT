@@ -239,3 +239,22 @@ The giraffe simulation produced a realistic animal render with pixelated texture
 After the Minecraft-only upstream correction, manifest-only authority, and compact-context cleanup, do not add or merge another runtime tool, model role, profile, review gate, evidence type, checkpoint class, image style, prompt variant, or approval stage before the local acceptance run unless it fixes a reproducible P0 blocker or removes a proven duplicate authority.
 
 Further optimization requires measured local acceptance evidence: actual MCP call count, stage-context response bytes, model-route usage, correction cycles, image payload bytes, checkpoint sizes, and elapsed stage time. A theoretical micro-optimization without those measurements is `DEFERRED_NOT_REQUIRED`.
+
+## Local Geometry P0 recovery
+
+Measured local evidence showed that the documented primary-form concept was
+advisory, so a full hierarchy and detail set could be built before silhouette
+convergence. The minimum corrective scope is:
+
+- one internal `PRIMARY_FORM` mutation boundary;
+- one `verify_primary_form_ready` tool;
+- adaptive reference segmentation;
+- structural rotation fallback without bypassing rotation contracts;
+- canonical project persistence;
+- connection readiness retry and stable-session wording;
+- manifest-derived Animation requirement.
+
+This does not add a user approval, profile, style, or alternate workflow. Do not
+add further Geometry tools until the corrected giraffe primary form has been
+retested. The failed 39-cube giraffe is a diagnostic fixture, not a baseline to
+continue polishing.

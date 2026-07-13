@@ -32,6 +32,6 @@ Reload exactly `mcp-blockbench/dist/mcp.js`, grant local network permission, ope
 powershell -ExecutionPolicy Bypass -File engines/codex/scripts/sync-local-stack.ps1 -Asset <asset>
 ```
 
-After readiness `PASS`, acquire `manage_project_write_lease` from the active Codex session before any mutation. The lease binds that session to the project UUID, asset session, stage, state revision, and active tool profile. A stage/profile transition releases it; reacquire after the single required reconnect.
+After readiness `PASS`, acquire `manage_project_write_lease` from the active Codex session before any mutation. The lease binds that session to the project UUID, asset session, stage, state revision, and active tool profile. A stage/profile transition releases only the lease; continue in the same Codex and MCP session and reacquire the fresh stage lease. If the readiness script installs a missing Codex config before production begins, restart Codex once, then keep the production session stable.
 
 Do not load a second plugin copy, create another MCP key, bypass ownership, or use a versioned output filename.

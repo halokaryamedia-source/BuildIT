@@ -31,6 +31,8 @@ import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
 import { geometryReviewGateToolDocs } from "../src/server/tools/geometry-review-gate";
 import { geometryReviewSubmitToolDocs } from "../src/server/tools/geometry-review-submit";
+import { geometryPrimaryGateToolDocs } from "../src/server/tools/geometry-primary-gate";
+import { canonicalProjectSaveToolDocs } from "../src/server/tools/project-save";
 import { stageReportToolDocs } from "../src/server/tools/stage-report";
 import { stageReviewSubmitToolDocs } from "../src/server/tools/stage-review-submit";
 import { stageRevisionToolDocs } from "../src/server/tools/stage-revision";
@@ -62,6 +64,8 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Revision", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },
   { category: "Geometry Review Submission", tools: geometryReviewSubmitToolDocs },
+  { category: "Geometry Primary Form Gate", tools: geometryPrimaryGateToolDocs },
+  { category: "Canonical Project Save", tools: canonicalProjectSaveToolDocs },
   { category: "Geometry Completion", tools: geometryCompletionToolDocs },
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },

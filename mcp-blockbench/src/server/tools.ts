@@ -25,6 +25,7 @@ import { registerImportTools } from "./tools/import";
 import { registerMeshTools } from "./tools/mesh";
 import { registerPaintTools } from "./tools/paint";
 import { registerProjectTools } from "./tools/project";
+import { registerCanonicalProjectSaveTools } from "./tools/project-save";
 import { registerTextureTools } from "./tools/texture";
 import { registerUITools } from "./tools/ui";
 import { registerUVTools } from "./tools/uv";
@@ -46,6 +47,7 @@ import { registerGeometryRebuildTools } from "./tools/geometry-rebuild";
 import { registerGeometryCompletionTools } from "./tools/geometry-completion";
 import { registerGeometryReviewGateTools } from "./tools/geometry-review-gate";
 import { registerGeometryReviewSubmitTools } from "./tools/geometry-review-submit";
+import { registerGeometryPrimaryGateTools } from "./tools/geometry-primary-gate";
 import { registerStageReviewSubmitTools } from "./tools/stage-review-submit";
 import { registerStageReportTools } from "./tools/stage-report";
 import { registerStageRevisionTools } from "./tools/stage-revision";
@@ -78,6 +80,7 @@ const registrationFunctions = [
   registerGeometryCompletionTools,
   registerGeometryReviewGateTools,
   registerGeometryReviewSubmitTools,
+  registerGeometryPrimaryGateTools,
   registerStageReviewSubmitTools,
   registerStageReportTools,
   registerStageRevisionTools,
@@ -91,6 +94,7 @@ const registrationFunctions = [
   registerMeshTools,
   registerPaintTools,
   registerProjectTools,
+  registerCanonicalProjectSaveTools,
   registerRuntimeTools,
   registerTextureTools,
   registerUITools,

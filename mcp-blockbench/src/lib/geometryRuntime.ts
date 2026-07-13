@@ -167,6 +167,97 @@ function hasNonZeroRotation(value: unknown): boolean {
   );
 }
 
+export type GeometryManifestRole =
+  | "PRIMARY_MASS"
+  | "PROVISIONAL_SUPPORT"
+  | "STRUCTURAL_DETAIL";
+
+interface GeometryRoleConstraint {
+  id?: string;
+  role?: GeometryManifestRole;
+  name_patterns?: string[];
+}
+
+export function classifyGeometryManifestRole(
+  name: string,
+  constraints: GeometryRoleConstraint[]
+): GeometryManifestRole | null {
+  const normalized = name.toLowerCase();
+  for (const constraint of constraints) {
+    const patterns = Array.isArray(constraint.name_patterns)
+      ? constraint.name_patterns
+      : [];
+    if (
+      constraint.role &&
+      patterns.some((pattern) => normalized.includes(String(pattern).toLowerCase()))
+    ) {
+      return constraint.role;
+    }
+  }
+  return null;
+}
+
+function requestedMutationNames(
+  toolName: string,
+  args: Record<string, unknown>
+): string[] {
+  if (toolName === "place_cubes_safe" && Array.isArray(args.elements)) {
+    return args.elements
+      .map((element) =>
+        element && typeof element === "object"
+          ? String((element as Record<string, unknown>).name ?? "")
+          : ""
+      )
+      .filter(Boolean);
+  }
+  if (toolName === "modify_cubes" && Array.isArray(args.changes)) {
+    return args.changes
+      .map((change) =>
+        change && typeof change === "object"
+          ? String((change as Record<string, unknown>).name ?? "")
+          : ""
+      )
+      .filter(Boolean);
+  }
+  if (toolName === "rename_element") {
+    return typeof args.new_name === "string" ? [args.new_name] : [];
+  }
+  if (toolName === "duplicate_element") {
+    if (typeof args.newName === "string" && args.newName.length > 0) {
+      return [args.newName];
+    }
+    const id = String(args.id ?? "");
+    const source = (Cube.all ?? []).find(
+      (cube) => cube.uuid === id || cube.name === id
+    );
+    return source ? [source.name] : [];
+  }
+  return [];
+}
+
+function primaryFormManifest(fs: NativeFsLike, sessionRoot: string): {
+  constraints: GeometryRoleConstraint[];
+  maximumCubes: number;
+  allowUnclassified: boolean;
+} {
+  const path = joinPath(sessionRoot, "references/reference_manifest.json");
+  if (!fs.existsSync(path)) {
+    return { constraints: [], maximumCubes: 28, allowUnclassified: false };
+  }
+  const manifest = readJsonFile<Record<string, any>>(fs, path);
+  const gate = manifest.geometry?.primary_form_gate ?? {};
+  return {
+    constraints: Array.isArray(manifest.geometry?.part_constraints)
+      ? manifest.geometry.part_constraints
+      : [],
+    maximumCubes:
+      Number.isFinite(Number(gate.maximum_cubes)) && Number(gate.maximum_cubes) > 0
+        ? Number(gate.maximum_cubes)
+        : 28,
+    allowUnclassified: gate.allow_unclassified_parts === true,
+  };
+}
+
 function mutationContainsRotation(
   toolName: string,
   args: Record<string, unknown>
@@ -192,10 +283,12 @@ function mutationContainsRotation(
 }
 
 /**
- * Geometry phases are internal progress markers, not user-facing gates.
- * The only hard mutation guard here is contract-driven rotation safety.
- * Any edit after FINAL_REVIEW_READY automatically makes review evidence stale
- * and returns the runtime to normal working mode.
+ * Geometry phases remain internal and do not add a user approval or profile.
+ * PRIMARY_FORM is nevertheless a deterministic mutation boundary: only
+ * manifest-classified PRIMARY_MASS and PROVISIONAL_SUPPORT cuboids may be
+ * created until verify_primary_form_ready passes. This prevents detail-first
+ * builds from hiding a broken silhouette. Rotation safety remains mandatory.
+ * Any edit after FINAL_REVIEW_READY makes review evidence stale.
  */
 export function assertGeometryMutationPhase(
   toolName: string,
@@ -213,6 +306,33 @@ export function assertGeometryMutationPhase(
     throw new Error(
       "ROTATION_CONTRACT_TOOL_REQUIRED: place or modify cubes without rotation, then use rotate_cube_about_attachment so pivot, direction, connection, and before/after visual score are verified."
     );
+  }
+
+  if (runtime.phase === "PRIMARY_FORM") {
+    const manifest = primaryFormManifest(fs, sessionRoot);
+    const requestedNames = requestedMutationNames(toolName, args);
+    for (const name of requestedNames) {
+      const role = classifyGeometryManifestRole(name, manifest.constraints);
+      if (role === "STRUCTURAL_DETAIL") {
+        throw new Error(
+          `GEOMETRY_PRIMARY_FORM_NOT_READY: ${name} is STRUCTURAL_DETAIL. Correct body, neck, head, and leg support; apply required primary rotations; then call verify_primary_form_ready before adding detail.`
+        );
+      }
+      if (!role && !manifest.allowUnclassified) {
+        throw new Error(
+          `GEOMETRY_PRIMARY_FORM_UNCLASSIFIED_PART: ${name} does not match a PRIMARY_MASS or PROVISIONAL_SUPPORT manifest constraint.`
+        );
+      }
+    }
+
+    if (toolName === "place_cubes_safe") {
+      const requested = Array.isArray(args.elements) ? args.elements.length : 0;
+      if (Cube.all.length + requested > manifest.maximumCubes) {
+        throw new Error(
+          `GEOMETRY_PRIMARY_FORM_CUBE_BUDGET_EXCEEDED: ${Cube.all.length + requested} exceeds ${manifest.maximumCubes}. Refine existing primary cuboids instead of adding detail.`
+        );
+      }
+    }
   }
 
   if (runtime.phase === "FINAL_REVIEW_READY") {
@@ -360,6 +480,26 @@ export function recordGeometryVisualRuntimeResult(
     !passed && convergenceTarget.non_improving_cycles >= 2;
 
   writeRuntime(fs, sessionRoot, runtime);
+}
+
+export function markPrimaryFormReady(
+  sessionRoot: string,
+  details: Record<string, unknown>
+): GeometryRuntimeState {
+  const fs = nativeFs();
+  const runtime = readRuntime(fs, sessionRoot);
+  runtime.phase = "STRUCTURAL_DETAIL";
+  runtime.revision_mode = null;
+  runtime.rebuild_mode = false;
+  runtime.recommended_scope = null;
+  runtime.attention_required = false;
+  runtime.last_issues = [];
+  runtime.rebuild_preparation = {
+    ...(runtime.rebuild_preparation ?? {}),
+    primary_form_gate: details,
+  };
+  writeRuntime(fs, sessionRoot, runtime);
+  return runtime;
 }
 
 export function readGeometryRuntimeContext(

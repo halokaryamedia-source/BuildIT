@@ -567,6 +567,9 @@ geometry_tools = profiles["profiles"]["BEDROCK_CUBOID_GEOMETRY"]["allowed_tools"
 if "verify_primary_form_ready" not in geometry_tools:
     index = geometry_tools.index("analyze_geometry_views") + 1
     geometry_tools.insert(index, "verify_primary_form_ready")
+for redundant_tool in ["redo", "get_undo_stack"]:
+    if redundant_tool in geometry_tools:
+        geometry_tools.remove(redundant_tool)
 profile_path.write_text(json.dumps(profiles, indent=2) + "\n", encoding="utf-8")
 
 # ---------------------------------------------------------------------------
@@ -823,6 +826,9 @@ function normalizePath(value: string): string {
 
 function canonicalProjectPath(sessionRoot: string, assetId: string): string {
   const activeRoot = parentDirectory(sessionRoot);
+  if (!activeRoot) {
+    throw new Error(`CANONICAL_SESSION_ROOT_INVALID: ${sessionRoot}`);
+  }
   const separator = sessionRoot.includes("\\") && !sessionRoot.includes("/") ? "\\" : "/";
   return `${activeRoot}${separator}blockbench${separator}${assetId}.bbmodel`;
 }
@@ -1037,6 +1043,9 @@ export function registerCanonicalProjectSaveTools(): void {
           );
         }
         const activeRoot = parentDirectory(session_root);
+        if (!activeRoot) {
+          throw new Error(`CANONICAL_SESSION_ROOT_INVALID: ${session_root}`);
+        }
         const canonicalPath = joinPath(
           activeRoot,
           `blockbench/${asset_id}.bbmodel`
@@ -1116,6 +1125,9 @@ for profile_id in [
     tools = profiles["profiles"][profile_id]["allowed_tools"]
     if "save_canonical_project" not in tools:
         tools.append("save_canonical_project")
+texture_tools = profiles["profiles"]["BEDROCK_CUBOID_TEXTURE"]["allowed_tools"]
+if "save_project_checkpoint" in texture_tools:
+    texture_tools.remove("save_project_checkpoint")
 profile_path.write_text(json.dumps(profiles, indent=2) + "\n", encoding="utf-8")
 
 # ---------------------------------------------------------------------------
@@ -1279,10 +1291,19 @@ final manifest-required capture/analyze with write_diff_image=true
 → GEOMETRY_REVIEW
 ```
 
-All final views, project UUID, fingerprints, transformed world signature,
+All final views, project UUID, fingerprints, transformed world-space signature,
 Reference Visual hash, analyzer, primary-form gate, visual decision, and rotation
 audit must be current. Submission owns fresh validation, checkpoint, transition,
 and lease release.
+
+## Compatibility and evidence invariants
+
+- Never analyze an empty project.
+- `analyze_geometry_views` persists canonical metrics and therefore remains a lease-owned write.
+- The final required-view capture/analyze is the canonical final evidence pass.
+- The selected Terra writer performs normal repairs directly.
+- visual_director only when deterministic evidence cannot close a genuine visual decision.
+- High remains the maximum and is reserved for one coded critical decision.
 
 After user approval, reacquire a fresh Geometry lease and call
 `complete_geometry_stage`. Revision reacquires the Geometry lease, diagnoses
@@ -1314,6 +1335,17 @@ production = production.replace(
     "Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`.",
     "Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`. Canonical `.bbmodel` persistence is refreshed with `save_canonical_project` at primary-form and review boundaries.",
 )
+if "## Geometry recovery compatibility invariants" not in production:
+    production = production.rstrip() + """
+
+## Geometry recovery compatibility invariants
+
+- zero-start: build primary form before first capture/analyze;
+- `verify_primary_form_ready` passes before structural detail;
+- final required-view capture/analyze remains mandatory;
+- no duplicate happy-path validation is added;
+- visual judgment stays conditional rather than mandatory.
+"""
 write(production_path, production)
 
 # ---------------------------------------------------------------------------

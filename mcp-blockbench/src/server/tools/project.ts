@@ -3,6 +3,12 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
+import {
+  parentDirectory,
+  readJsonFile,
+  writeFileAtomically,
+  type NativeFsLike,
+} from "@/lib/atomicFiles";
 
 export const createProjectParameters = z.object({
   name: z.string(),
@@ -19,6 +25,9 @@ export const createProjectParameters = z.object({
   texture_width: z.number().int().min(1).max(4096).optional(),
   texture_height: z.number().int().min(1).max(4096).optional(),
   save_path: z.string().min(1).optional(),
+  session_root: z.string().min(1).optional(),
+  asset_id: z.string().regex(/^[a-z0-9_]+$/).optional(),
+  persist_immediately: z.boolean().optional().default(true),
 });
 
 export const configureProjectParameters = z.object({
@@ -32,6 +41,79 @@ export const configureProjectParameters = z.object({
 });
 
 export const getProjectInfoParameters = z.object({});
+
+function nativeFs(message: string): NativeFsLike {
+  // @ts-ignore Blockbench runtime permission API.
+  const fs = requireNativeModule("fs", { message, optional: false });
+  if (!fs) throw new Error("Filesystem access was denied.");
+  return fs as NativeFsLike;
+}
+
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, "/").replace(/\/+$/, "").toLowerCase();
+}
+
+function canonicalProjectPath(sessionRoot: string, assetId: string): string {
+  const activeRoot = parentDirectory(sessionRoot);
+  if (!activeRoot) {
+    throw new Error(`CANONICAL_SESSION_ROOT_INVALID: ${sessionRoot}`);
+  }
+  const separator = sessionRoot.includes("\\") && !sessionRoot.includes("/") ? "\\" : "/";
+  return `${activeRoot}${separator}blockbench${separator}${assetId}.bbmodel`;
+}
+
+function projectCodecOutput(): string | Buffer {
+  // @ts-ignore Blockbench runtime codec registry.
+  const codec = Codecs.project as { compile?: (options?: unknown) => unknown; getExportOptions?: () => unknown };
+  if (!codec || typeof codec.compile !== "function") {
+    throw new Error('Blockbench project codec "project" is unavailable.');
+  }
+  const value = codec.compile(
+    typeof codec.getExportOptions === "function" ? codec.getExportOptions() : undefined
+  );
+  if (value instanceof ArrayBuffer) return Buffer.from(value);
+  if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+    return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+  }
+  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+function persistCanonicalProject(input: {
+  savePath: string;
+  sessionRoot: string;
+  assetId: string;
+}): { path: string; byte_length: number } {
+  const fs = nativeFs(
+    `MCP create_project needs canonical model write access to ${input.savePath}`
+  );
+  const statePath = `${input.sessionRoot.replace(/[\\/]$/, "")}/state.json`;
+  const state = readJsonFile<Record<string, any>>(fs, statePath);
+  if (state.asset?.id !== input.assetId) {
+    throw new Error(
+      `ASSET_ID_MISMATCH: state has ${state.asset?.id ?? "unknown"}, expected ${input.assetId}.`
+    );
+  }
+  const expected = canonicalProjectPath(input.sessionRoot, input.assetId);
+  if (normalizePath(input.savePath) !== normalizePath(expected)) {
+    throw new Error(
+      `CANONICAL_MODEL_PATH_MISMATCH: requested ${input.savePath}; expected ${expected}.`
+    );
+  }
+  const recorded = String(state.project?.save_path ?? "");
+  if (recorded && !normalizePath(expected).endsWith(normalizePath(recorded))) {
+    throw new Error(
+      `CANONICAL_MODEL_STATE_PATH_MISMATCH: state has ${recorded}; expected ${expected}.`
+    );
+  }
+  const output = projectCodecOutput();
+  writeFileAtomically(fs, expected, output);
+  return {
+    path: expected,
+    byte_length: Buffer.isBuffer(output)
+      ? output.byteLength
+      : Buffer.byteLength(output, "utf8"),
+  };
+}
 
 function getUvInfo() {
   const format = Format as { box_uv?: boolean } | undefined;
@@ -125,7 +207,17 @@ export function registerProjectTools() {
     projectToolDocs[0].name,
     {
       ...projectToolDocs[0],
-      async execute({ name, format, box_uv, texture_width, texture_height, save_path }) {
+      async execute({
+        name,
+        format,
+        box_uv,
+        texture_width,
+        texture_height,
+        save_path,
+        session_root,
+        asset_id,
+        persist_immediately,
+      }) {
         const formatDef = Formats[format];
         if (!formatDef) {
           throw new Error(`Unknown format "${format}". Use a valid Blockbench format ID.`);
@@ -144,13 +236,33 @@ export function registerProjectTools() {
         if (texture_height !== undefined) Project!.texture_height = texture_height;
         if (save_path !== undefined) (Project as { save_path?: string }).save_path = save_path;
 
+        let canonicalSave: { path: string; byte_length: number } | null = null;
+        if (save_path && persist_immediately) {
+          if (!session_root || !asset_id) {
+            throw new Error(
+              "CANONICAL_PROJECT_PERSISTENCE_ARGUMENTS_REQUIRED: save_path needs session_root and asset_id."
+            );
+          }
+          canonicalSave = persistCanonicalProject({
+            savePath: save_path,
+            sessionRoot: session_root,
+            assetId: asset_id,
+          });
+        }
+
         const snapshot = projectSnapshot();
         return {
           content: [{
             type: "text" as const,
-            text: `Created project ${snapshot.project.name} (${snapshot.project.uuid}) using ${snapshot.format.id} and ${snapshot.uv.mode} UV.`,
+            text: canonicalSave
+              ? `Created and persisted project ${snapshot.project.name} (${snapshot.project.uuid}) to ${canonicalSave.path}.`
+              : `Created project ${snapshot.project.name} (${snapshot.project.uuid}) using ${snapshot.format.id} and ${snapshot.uv.mode} UV.`,
           }],
-          structuredContent: { status: "PASS", ...snapshot },
+          structuredContent: {
+            status: "PASS",
+            ...snapshot,
+            canonical_save: canonicalSave,
+          },
         };
       },
     },

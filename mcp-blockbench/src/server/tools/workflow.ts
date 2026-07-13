@@ -935,9 +935,15 @@ export function registerWorkflowTools() {
         state.workflow.last_completed_stage = stage;
         state.workflow.last_safe_checkpoint = checkpointPath;
 
+        const manifestAnimationRequired =
+          String((manifest as any).animation?.status ?? "").toUpperCase() ===
+            "ANIMATION_REQUIRED" ||
+          (Array.isArray((manifest as any).animation?.required_clips) &&
+            (manifest as any).animation.required_clips.length > 0);
+        state.workflow.animation_required = manifestAnimationRequired;
         const transition = resolveApprovedStageTransition(
           stage,
-          state.workflow.animation_required === true
+          manifestAnimationRequired
         );
         const { nextProfile, nextState, nextStage, nextAction } = transition;
         if (transition.startedStage) {

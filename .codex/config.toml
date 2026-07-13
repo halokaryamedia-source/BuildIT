@@ -14,8 +14,8 @@ sandbox_mode = "workspace-write"
 url = "http://localhost:3000/bb-mcp"
 enabled = true
 required = false
-startup_timeout_sec = 5
-tool_timeout_sec = 180
+startup_timeout_sec = 30
+tool_timeout_sec = 300
 
 [agents]
 # One root/controller plus at most one active specialist. Avoid broad fan-out.

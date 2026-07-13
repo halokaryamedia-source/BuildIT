@@ -42,14 +42,14 @@ function EnsureCodexConfig([string]$Path) {
   New-Item -ItemType Directory -Path $dir -Force | Out-Null
   $content = if (Test-Path $Path) { Get-Content -Raw $Path } else { "" }
   $content = [regex]::Replace($content, '(?ms)^\[mcp_servers\.blockbench[^\]]*\]\s*.*?(?=^\[|\z)', '')
-  $section = "[mcp_servers.$key]`nurl = `"$url`""
+  $section = "[mcp_servers.$key]`nurl = `"$url`"`nenabled = true`nrequired = false`nstartup_timeout_sec = 30`ntool_timeout_sec = 300"
   Set-Content -Path $Path -Value (($content.TrimEnd() + "`n`n" + $section).Trim() + "`n") -Encoding utf8
 }
 
 function McpPost([hashtable]$Body, [string]$SessionId) {
   $headers = @{ Accept = "application/json, text/event-stream"; "Content-Type" = "application/json" }
   if ($SessionId) { $headers["mcp-session-id"] = $SessionId }
-  return Invoke-WebRequest -Uri $url -Method Post -Headers $headers -Body ($Body | ConvertTo-Json -Depth 30 -Compress) -TimeoutSec 10 -UseBasicParsing
+  return Invoke-WebRequest -Uri $url -Method Post -Headers $headers -Body ($Body | ConvertTo-Json -Depth 30 -Compress) -TimeoutSec 20 -UseBasicParsing
 }
 
 if (-not (Test-Path $pluginOutput)) {
@@ -77,7 +77,18 @@ $sessionId = $null
 $toolNames = @()
 $runtime = $null
 try {
-  $init = McpPost @{ jsonrpc = "2.0"; id = 1; method = "initialize"; params = @{ protocolVersion = "2024-11-05"; capabilities = @{}; clientInfo = @{ name = "buildit-readiness"; version = "1" } } } $null
+  $init = $null
+  $lastInitError = $null
+  for ($attempt = 1; $attempt -le 3; $attempt++) {
+    try {
+      $init = McpPost @{ jsonrpc = "2.0"; id = 1; method = "initialize"; params = @{ protocolVersion = "2024-11-05"; capabilities = @{}; clientInfo = @{ name = "buildit-readiness"; version = "1" } } } $null
+      break
+    } catch {
+      $lastInitError = $_.Exception.Message
+      if ($attempt -lt 3) { Start-Sleep -Seconds 2 }
+    }
+  }
+  if (-not $init) { throw "MCP initialize failed after 3 attempts: $lastInitError" }
   $sessionId = [string]$init.Headers["mcp-session-id"]
   if (-not $sessionId) { throw "MCP initialize returned no session ID." }
   $null = McpPost @{ jsonrpc = "2.0"; method = "notifications/initialized"; params = @{} } $sessionId

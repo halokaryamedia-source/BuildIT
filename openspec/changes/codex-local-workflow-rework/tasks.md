@@ -137,6 +137,19 @@
 - [x] Add permanent regression coverage for the Minecraft-only prompt, QA codes, camera positions, no-style-question rule, and single linear flow.
 - [x] Reapply the pre-local expansion freeze after this P0 correction.
 
+## Local feedback recovery — Geometry P0
+
+- [x] Convert PRIMARY_FORM from wording-only guidance into an internal mutation boundary.
+- [x] Block structural-detail and unclassified cuboids before primary-form readiness.
+- [x] Add deterministic `verify_primary_form_ready` for primary parts, rotations, views, extents, ground contacts, and cube budget.
+- [x] Add adaptive Reference Visual foreground segmentation.
+- [x] Permit rotation structural fallback when visual segmentation is temporarily unavailable, while still requiring fresh analysis before readiness.
+- [x] Persist the canonical `.bbmodel` at creation and phase boundaries.
+- [x] Increase Codex MCP startup/tool timeouts and add bounded readiness retries.
+- [x] Remove stale stage-transition reconnect wording.
+- [x] Reconcile Animation requirement from the imported manifest.
+- [ ] Retest the giraffe from a clean primary-form rebuild; do not continue the failed 39-cube geometry as the quality baseline.
+
 ## Final local Blockbench acceptance — remaining on the workstation
 
 - [ ] Pull the final `Rework` head once on the local workstation.

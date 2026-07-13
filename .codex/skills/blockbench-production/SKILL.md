@@ -31,10 +31,13 @@ Do not repeat runtime status unless a real runtime event invalidates it. Do not 
 
 ```text
 inspect Reference Visual once per hash
-→ zero-start: build primary form before first capture/analyze
-   existing/revision: capture affected views first
-→ fixed-scale diagnosis
-→ bounded targeted edits
+→ zero-start: PRIMARY_MASS + PROVISIONAL_SUPPORT only
+→ apply required primary rotations
+→ left/front/top fixed-scale diagnosis
+→ verify_primary_form_ready
+→ save_canonical_project
+→ structural detail only after primary PASS
+→ affected-view diagnosis and bounded edits
 → final manifest-required view pass
 → conditional visual judgment
 → record_geometry_visual_decision
@@ -42,7 +45,7 @@ inspect Reference Visual once per hash
 → user review
 ```
 
-Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`.
+Submission owns fresh validation, checkpoint, state transition, and lease release. Every non-zero rotation uses `rotate_cube_about_attachment`. Canonical `.bbmodel` persistence is refreshed with `save_canonical_project` at primary-form and review boundaries.
 
 ## Texture and Animation
 
@@ -77,3 +80,11 @@ Stop only for a real authority conflict, mandatory runtime failure, unsafe mutat
 ## Audited routing invariants
 
 The selected Terra writer handles normal mutations. `visual_director` is conditional and inspection-only; High is reserved for one coded critical decision. Geometry uses `BEDROCK_CUBOID_GEOMETRY`, `analyze_geometry_views`, `rotate_cube_about_attachment`, and `submit_geometry_for_review`. Final Geometry and Final Validation must include all manifest-required views.
+
+## Geometry recovery compatibility invariants
+
+- zero-start: build primary form before first capture/analyze;
+- `verify_primary_form_ready` passes before structural detail;
+- final required-view capture/analyze remains mandatory;
+- no duplicate happy-path validation is added;
+- visual judgment stays conditional rather than mandatory.
