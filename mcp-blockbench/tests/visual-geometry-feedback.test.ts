@@ -238,6 +238,9 @@ describe("source-level safety contracts", () => {
     expect(analyzer).toContain("free_rescale_used: false");
     expect(analyzer).toContain("actionable_issues");
     expect(analyzer).toContain("geometry_projection_region_v2");
+    expect(analyzer).toContain('recommended_profile: "BEDROCK_CUBOID_GEOMETRY"');
+    expect(analyzer).toContain("write_diff_image");
+    expect(analyzer).not.toContain('recommendedScope === "MAJOR_FORM_REVISION"');
     expect(decision).toContain("GEOMETRY_DIAGNOSIS_NOT_PASS");
     expect(decision).toContain("GEOMETRY_VISUAL_METRICS_STALE");
     expect(rotation).toContain("ROTATION_VISUAL_REGRESSION");

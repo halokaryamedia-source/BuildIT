@@ -70,6 +70,9 @@ describe("compact workflow tools", () => {
     expect(source).toContain("writeJsonAtomically(fs, statePath, state)");
     expect(source).toContain("STATE_REVISION_MISMATCH");
     expect(source).toContain("STAGE_EVIDENCE_MISSING");
+    expect(source).toContain("analyzeTexturePixels");
+    expect(source).toContain("evaluateAnimationQuality");
+    expect(source).not.toContain('GEOMETRY: "GEOMETRY_LOCAL_REPAIR"');
   });
 
   test("path authorization collapses traversal", () => {

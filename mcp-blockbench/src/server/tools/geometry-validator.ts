@@ -23,6 +23,7 @@ import {
 } from "@/lib/worldBounds";
 import { mergeGeometryReferenceProfile } from "@/lib/geometryReferenceProfiles";
 import { evaluateGeometryBlueprint } from "@/lib/geometryBlueprint";
+import { evaluateGeometrySymmetry } from "@/lib/stageQuality";
 
 const validateGeometryContractParameters = z.object({
   session_root: z.string().min(1),
@@ -217,22 +218,63 @@ export function registerGeometryValidatorTools(): void {
           visualGrounding: manifest.visual_grounding,
           geometry: manifest.geometry,
         });
+        const geometryElements = (Cube.all ?? []).map((cube) => {
+          const corners = transformedCubeCorners(cube);
+          const minimum = [0, 1, 2].map((axis) =>
+            Math.min(...corners.map((point) => point[axis]))
+          ) as [number, number, number];
+          const maximum = [0, 1, 2].map((axis) =>
+            Math.max(...corners.map((point) => point[axis]))
+          ) as [number, number, number];
+          const parentName =
+            typeof cube.parent === "string"
+              ? cube.parent
+              : (cube.parent as unknown as { name?: string })?.name ?? null;
+          return {
+            name: cube.name,
+            from: [...cube.from],
+            to: [...cube.to],
+            visibility: cube.visibility,
+            export: (cube as unknown as { export?: boolean }).export,
+            parent_name: parentName,
+            world_corners: corners,
+            center: [
+              (minimum[0] + maximum[0]) / 2,
+              (minimum[1] + maximum[1]) / 2,
+              (minimum[2] + maximum[2]) / 2,
+            ] as [number, number, number],
+            size: [
+              maximum[0] - minimum[0],
+              maximum[1] - minimum[1],
+              maximum[2] - minimum[2],
+            ] as [number, number, number],
+          };
+        });
         const blueprint = profile
-          ? evaluateGeometryBlueprint(
-              (Cube.all ?? []).map((cube) => ({
-                name: cube.name,
-                from: [...cube.from],
-                to: [...cube.to],
-                visibility: cube.visibility,
-                export: (cube as unknown as { export?: boolean }).export,
-              })),
-              profile.part_constraints
-            )
+          ? evaluateGeometryBlueprint(geometryElements, profile.part_constraints)
           : null;
         for (const issue of blueprint?.issues ?? []) {
           issues.push({
             code: issue.code,
             severity: "REVISION_REQUIRED",
+            message: issue.message,
+          });
+        }
+        const symmetry = evaluateGeometrySymmetry({
+          policy: manifest.geometry?.symmetry_policy,
+          toleranceUnits: numeric(manifest.geometry?.symmetry_tolerance_units) ?? 0.35,
+          pairs: manifest.geometry?.symmetry_pairs ?? [],
+          asymmetryContracts: manifest.geometry?.asymmetry_contracts ?? [],
+          elements: geometryElements.map((element) => ({
+            name: element.name,
+            center: element.center,
+            size: element.size,
+          })),
+        });
+        for (const issue of symmetry.issues) {
+          issues.push({
+            code: issue.code,
+            severity: issue.severity,
             message: issue.message,
           });
         }
@@ -376,6 +418,7 @@ export function registerGeometryValidatorTools(): void {
             animations,
           },
           blueprint,
+          symmetry,
           ground_contacts: groundContacts,
           rotation_audit: rotationAudit,
           review_gate: reviewGate?.structuredContent ?? null,

@@ -63,12 +63,43 @@ describe("Black Rhinoceros Geometry blueprint", () => {
     ];
     const result = evaluateGeometryBlueprint(
       elements,
-      profile().part_constraints
+      profile().part_constraints.filter(
+        (constraint) =>
+          Boolean(constraint.center_range_units || constraint.size_range_units)
+      )
     );
 
     expect(result.result).toBe("PASS");
     expect(result.failed_parts).toBe(0);
     expect(result.evaluated_parts).toBeGreaterThanOrEqual(3);
+  });
+
+  test("validates transformed bounds, required counts, and parent contracts", () => {
+    const result = evaluateGeometryBlueprint(
+      [
+        {
+          name: "horn_front_base",
+          parent_name: "head",
+          world_corners: [
+            [-1, 20, -4],
+            [1, 24, 0],
+          ],
+        },
+      ],
+      [
+        {
+          id: "front_horn",
+          role: "STRUCTURAL_DETAIL",
+          name_patterns: ["horn_front"],
+          parent: "head",
+          minimum_elements: 2,
+          maximum_elements: 3,
+          visual_views: ["left_side"],
+        },
+      ]
+    );
+    expect(result.result).toBe("REVISION_REQUIRED");
+    expect(result.issues[0]?.code).toContain("CONTRACT_MISMATCH");
   });
 
   test("built-in profile has five non-zero crops, critical regions, and rotation contracts", () => {

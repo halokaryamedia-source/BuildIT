@@ -31,7 +31,7 @@ UV
 
 Use Classic Bedrock, approved atlas dimensions, Per-face UV when required, sharp pixels, and approved material zones. No PBR, MER, normal map, gradients, mesh UV, Geometry redesign, Animation, or final export.
 
-`record_stage_review_report` creates the canonical `texture_report.json` and binds it to the current project serialization plus hashes of the atlas and review views. Do not write a free-form PASS report manually.
+`record_stage_review_report` creates the canonical `texture_report.json` and binds it to the current project serialization plus hashes of the atlas and review views. Fresh `validate_reference_contract` also enforces atlas bounds, visible-pixel coverage, partial-alpha policy, color budget, and palette drift before submission. Do not write a free-form PASS report manually.
 
 `submit_stage_for_review` verifies the bound report and current evidence, runs fresh contract validation, saves the next unused Texture review checkpoint, enters `TEXTURE_REVIEW`, then releases the writer lease without profile switch or reconnect.
 

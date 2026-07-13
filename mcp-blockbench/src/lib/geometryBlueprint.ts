@@ -9,6 +9,8 @@ export interface BlueprintElement {
   to?: number[];
   visibility?: boolean;
   export?: boolean;
+  parent_name?: string | null;
+  world_corners?: Vec3[];
 }
 
 export interface BlueprintPartResult {
@@ -21,10 +23,15 @@ export interface BlueprintPartResult {
     size: Vec3 | null;
     min: Vec3 | null;
     max: Vec3 | null;
+    element_count: number;
+    parent_names: string[];
   };
   expected: {
     center_range_units?: GeometryPartConstraint["center_range_units"];
     size_range_units?: GeometryPartConstraint["size_range_units"];
+    parent?: string;
+    minimum_elements?: number;
+    maximum_elements?: number;
   };
   deltas: Array<{
     code: string;
@@ -34,6 +41,7 @@ export interface BlueprintPartResult {
     maximum: number;
     nearest_correction: number;
   }>;
+  contract_issues: string[];
   visual_views: string[];
   recommendation: string | null;
 }
@@ -66,6 +74,17 @@ function matches(name: string, patterns: string[]): boolean {
   return patterns.some((pattern) => normalized.includes(pattern.toLowerCase()));
 }
 
+function elementPoints(element: BlueprintElement): Vec3[] {
+  if (Array.isArray(element.world_corners) && element.world_corners.length > 0) {
+    return element.world_corners.filter(
+      (point): point is Vec3 => Boolean(finiteVec3(point))
+    );
+  }
+  const from = finiteVec3(element.from);
+  const to = finiteVec3(element.to);
+  return from && to ? [from, to] : [];
+}
+
 function aggregate(elements: BlueprintElement[]): {
   min: Vec3;
   max: Vec3;
@@ -77,12 +96,13 @@ function aggregate(elements: BlueprintElement[]): {
   let count = 0;
   for (const element of elements) {
     if (element.visibility === false || element.export === false) continue;
-    const from = finiteVec3(element.from);
-    const to = finiteVec3(element.to);
-    if (!from || !to) continue;
-    for (let axis = 0; axis < 3; axis += 1) {
-      mins[axis] = Math.min(mins[axis], from[axis], to[axis]);
-      maxs[axis] = Math.max(maxs[axis], from[axis], to[axis]);
+    const points = elementPoints(element);
+    if (!points.length) continue;
+    for (const point of points) {
+      for (let axis = 0; axis < 3; axis += 1) {
+        mins[axis] = Math.min(mins[axis], point[axis]);
+        maxs[axis] = Math.max(maxs[axis], point[axis]);
+      }
     }
     count += 1;
   }
@@ -128,18 +148,24 @@ function rangeDeltas(
 
 function recommendation(
   constraint: GeometryPartConstraint,
-  deltas: BlueprintPartResult["deltas"]
+  deltas: BlueprintPartResult["deltas"],
+  contractIssues: string[]
 ): string | null {
-  if (!deltas.length) return null;
   const changes = deltas.map((delta) => {
-    const direction = delta.nearest_correction > 0 ? "increase/shift positive" : "decrease/shift negative";
+    const direction =
+      delta.nearest_correction > 0
+        ? "increase/shift positive"
+        : "decrease/shift negative";
     return `${delta.code.toLowerCase()}: ${direction} ${delta.axis.toUpperCase()} by about ${Math.abs(
       delta.nearest_correction
     ).toFixed(2)}u`;
   });
-  return `Adjust ${constraint.id} only (${changes.join("; ")}) and re-run the affected views: ${constraint.visual_views.join(
-    ", "
-  )}.`;
+  if (contractIssues.length) changes.push(...contractIssues);
+  return changes.length
+    ? `Adjust ${constraint.id} only (${changes.join("; ")}) and re-run the affected views: ${constraint.visual_views.join(
+        ", "
+      )}.`
+    : null;
 }
 
 export function evaluateGeometryBlueprint(
@@ -168,12 +194,39 @@ export function evaluateGeometryBlueprint(
           ),
         ]
       : [];
+    const contractIssues: string[] = [];
+    const minimumElements = constraint.minimum_elements ?? 1;
+    const maximumElements = constraint.maximum_elements ?? Number.POSITIVE_INFINITY;
+    if (matched.length < minimumElements || matched.length > maximumElements) {
+      contractIssues.push(
+        `element count ${matched.length} is outside ${minimumElements}..${
+          Number.isFinite(maximumElements) ? maximumElements : "∞"
+        }`
+      );
+    }
+    const knownParents = Array.from(
+      new Set(
+        matched
+          .map((element) => element.parent_name)
+          .filter((value): value is string => typeof value === "string" && value.length > 0)
+      )
+    );
+    if (
+      constraint.parent &&
+      knownParents.length > 0 &&
+      knownParents.some((parent) => parent !== constraint.parent)
+    ) {
+      contractIssues.push(
+        `parent must be ${constraint.parent}; found ${knownParents.join(", ")}`
+      );
+    }
     const hasNumericContract = Boolean(
       constraint.center_range_units || constraint.size_range_units
     );
-    const result: BlueprintPartResult["result"] = !hasNumericContract
+    const evaluated = hasNumericContract || constraint.required !== false;
+    const result: BlueprintPartResult["result"] = !evaluated
       ? "NOT_EVALUATED"
-      : !bounds || deltas.length > 0
+      : !bounds || deltas.length > 0 || contractIssues.length > 0
         ? "REVISION_REQUIRED"
         : "PASS";
     const part: BlueprintPartResult = {
@@ -186,16 +239,24 @@ export function evaluateGeometryBlueprint(
         size: bounds?.size ?? null,
         min: bounds?.min ?? null,
         max: bounds?.max ?? null,
+        element_count: matched.length,
+        parent_names: knownParents,
       },
       expected: {
         center_range_units: constraint.center_range_units,
         size_range_units: constraint.size_range_units,
+        parent: constraint.parent,
+        minimum_elements: minimumElements,
+        maximum_elements: Number.isFinite(maximumElements)
+          ? maximumElements
+          : undefined,
       },
       deltas,
+      contract_issues: contractIssues,
       visual_views: constraint.visual_views,
-      recommendation: !bounds && hasNumericContract
+      recommendation: !bounds
         ? `Build the missing ${constraint.id} part before visual comparison.`
-        : recommendation(constraint, deltas),
+        : recommendation(constraint, deltas, contractIssues),
     };
     parts.push(part);
 
@@ -224,6 +285,16 @@ export function evaluateGeometryBlueprint(
             2
           )}u; nearest correction ${delta.nearest_correction.toFixed(2)}u.`,
           nearest_correction_units: delta.nearest_correction,
+        });
+      }
+      for (const contractIssue of contractIssues) {
+        issues.push({
+          code: `${constraint.id.toUpperCase()}_CONTRACT_MISMATCH`,
+          part: constraint.id,
+          role: constraint.role,
+          views: constraint.visual_views,
+          message: `${constraint.id}: ${contractIssue}.`,
+          nearest_correction_units: 0,
         });
       }
     }

@@ -45,7 +45,8 @@ const analyzeGeometryViewsParameters = z.object({
     .optional()
     .default(["front", "left_side", "back", "top_footprint", "front_left_3_4"]),
   output_dir: z.string().optional(),
-  return_diff_image: z.boolean().optional().default(true),
+  return_diff_image: z.boolean().optional().default(false),
+  write_diff_image: z.boolean().optional().default(true),
   segmentation_threshold: z.number().min(8).max(120).optional().default(34),
 });
 
@@ -56,7 +57,7 @@ export const geometryAnalyzerToolDocs: ToolSpec[] = [
       "Diagnoses Geometry against the approved Reference Visual using fixed approved scale, transformed cuboid projection, global silhouette/profile metrics, weighted semantic regions, and actionable part-level corrections. It does not free-rescale the current model and returns one compact diff sheet.",
     annotations: {
       title: "Analyze Geometry Views",
-      readOnlyHint: true,
+      readOnlyHint: false,
       openWorldHint: true,
     },
     parameters: analyzeGeometryViewsParameters,
@@ -264,23 +265,39 @@ function cornerSamples(image: ImageData): Array<[number, number, number]> {
   });
 }
 
-function largestComponent(mask: BinaryMask): BinaryMask {
+interface ForegroundComponent {
+  pixels: number[];
+  min_x: number;
+  min_y: number;
+  max_x: number;
+  max_y: number;
+}
+
+function foregroundComponents(mask: BinaryMask): ForegroundComponent[] {
   const total = mask.width * mask.height;
   const visited = new Uint8Array(total);
   const queue = new Int32Array(total);
-  let best: number[] = [];
+  const components: ForegroundComponent[] = [];
   for (let start = 0; start < total; start += 1) {
     if (!mask.data[start] || visited[start]) continue;
     let head = 0;
     let tail = 0;
     queue[tail++] = start;
     visited[start] = 1;
-    const component: number[] = [];
+    const pixels: number[] = [];
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
     while (head < tail) {
       const index = queue[head++];
-      component.push(index);
+      pixels.push(index);
       const x = index % mask.width;
       const y = Math.floor(index / mask.width);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
       const neighbors = [
         x > 0 ? index - 1 : -1,
         x + 1 < mask.width ? index + 1 : -1,
@@ -294,15 +311,55 @@ function largestComponent(mask: BinaryMask): BinaryMask {
         }
       }
     }
-    if (component.length > best.length) best = component;
+    components.push({
+      pixels,
+      min_x: minX,
+      min_y: minY,
+      max_x: maxX,
+      max_y: maxY,
+    });
   }
-  if (!best.length) throw new Error("REFERENCE_FOREGROUND_NOT_FOUND");
-  const data = new Uint8Array(total);
-  for (const index of best) data[index] = 1;
+  return components.sort((a, b) => b.pixels.length - a.pixels.length);
+}
+
+function componentGap(a: ForegroundComponent, b: ForegroundComponent): number {
+  const dx = Math.max(0, a.min_x - b.max_x - 1, b.min_x - a.max_x - 1);
+  const dy = Math.max(0, a.min_y - b.max_y - 1, b.min_y - a.max_y - 1);
+  return Math.hypot(dx, dy);
+}
+
+export function retainRelevantForeground(mask: BinaryMask): BinaryMask {
+  const components = foregroundComponents(mask);
+  const main = components[0];
+  if (!main) throw new Error("REFERENCE_FOREGROUND_NOT_FOUND");
+  const minimumDetachedArea = Math.max(4, Math.ceil(main.pixels.length * 0.0125));
+  const proximity = Math.max(mask.width, mask.height) * 0.12;
+  const selected = components.filter(
+    (component, index) =>
+      index === 0 ||
+      component.pixels.length >= main.pixels.length * 0.08 ||
+      (component.pixels.length >= minimumDetachedArea &&
+        componentGap(main, component) <= proximity)
+  );
+  const data = new Uint8Array(mask.width * mask.height);
+  let foreground = 0;
+  for (const component of selected) {
+    for (const index of component.pixels) {
+      if (!data[index]) foreground += 1;
+      data[index] = 1;
+    }
+  }
+  const ratio = foreground / Math.max(1, data.length);
+  if (ratio < 0.002 || ratio > 0.92) {
+    throw new Error(`REFERENCE_FOREGROUND_RATIO_INVALID: ${ratio.toFixed(4)}`);
+  }
   return { width: mask.width, height: mask.height, data };
 }
 
-function segmentReference(image: ImageData, threshold: number): BinaryMask {
+export function segmentReferencePixels(
+  image: ImageData,
+  threshold: number
+): BinaryMask {
   const backgrounds = cornerSamples(image);
   const data = new Uint8Array(image.width * image.height);
   for (let pixel = 0; pixel < data.length; pixel += 1) {
@@ -316,7 +373,7 @@ function segmentReference(image: ImageData, threshold: number): BinaryMask {
     );
     if (minimum > threshold) data[pixel] = 1;
   }
-  return largestComponent({ width: image.width, height: image.height, data });
+  return retainRelevantForeground({ width: image.width, height: image.height, data });
 }
 
 function referenceMaskOnFixedFrame(input: {
@@ -837,6 +894,7 @@ export function registerGeometryAnalyzerTools(): void {
         views,
         output_dir,
         return_diff_image,
+        write_diff_image,
         segmentation_threshold,
       }) {
         if (!Project) throw new Error("No Blockbench project is open.");
@@ -920,7 +978,7 @@ export function registerGeometryAnalyzerTools(): void {
             height: profile.canvas_size,
             margin: profile.margin_pixels,
           });
-          const segmented = segmentReference(
+          const segmented = segmentReferencePixels(
             imageDataFor(referenceImage, panel.crop_normalized),
             segmentation_threshold
           );
@@ -983,10 +1041,7 @@ export function registerGeometryAnalyzerTools(): void {
           failing_views: failingViews,
           actionable_issues: uniqueIssues(metrics),
           recommended_scope: recommendedScope,
-          recommended_profile:
-            recommendedScope === "MAJOR_FORM_REVISION"
-              ? "GEOMETRY_VISUAL_REBUILD"
-              : "GEOMETRY_LOCAL_REPAIR",
+          recommended_profile: "BEDROCK_CUBOID_GEOMETRY",
           created_at: new Date().toISOString(),
           analyzer: "geometry_projection_region_v2",
           note:
@@ -1000,14 +1055,18 @@ export function registerGeometryAnalyzerTools(): void {
           "geometry_visual_metrics.json"
         );
         writeJsonAtomically(fs, reportPath, report);
-        const diff = contactSheet(
-          views as StandardGeometryView[],
-          referenceMasks,
-          currentMasks,
-          metrics
-        );
-        const diffPath = joinPath(evidenceRoot, "geometry_visual_diff.png");
-        writeFileAtomically(fs, diffPath, diff);
+        const diff = write_diff_image || return_diff_image
+          ? contactSheet(
+              views as StandardGeometryView[],
+              referenceMasks,
+              currentMasks,
+              metrics
+            )
+          : null;
+        const diffPath = write_diff_image
+          ? joinPath(evidenceRoot, "geometry_visual_diff.png")
+          : null;
+        if (diff && diffPath) writeFileAtomically(fs, diffPath, diff);
 
         const content: Array<
           | { type: "text"; text: string }
@@ -1020,7 +1079,7 @@ export function registerGeometryAnalyzerTools(): void {
             }. Recommended route: ${recommendedScope}. The report contains ranked affected regions, parts, direction, and magnitude; do not guess unrelated changes.`,
           },
         ];
-        if (return_diff_image) {
+        if (return_diff_image && diff) {
           content.push({
             type: "image",
             data: diff.toString("base64"),
@@ -1038,8 +1097,14 @@ export function registerGeometryAnalyzerTools(): void {
             metrics,
             actionable_issues: report.actionable_issues,
             recommended_scope: recommendedScope,
-            recommended_profile: report.recommended_profile,
+            recommended_profile: "BEDROCK_CUBOID_GEOMETRY",
             returned_diff_image: return_diff_image,
+            wrote_diff_image: Boolean(diffPath),
+            usage: {
+              analyzed_views: views.length,
+              image_payloads_returned: return_diff_image && diff ? 1 : 0,
+              persistent_diff_images_written: diffPath ? 1 : 0,
+            },
           },
         };
       },

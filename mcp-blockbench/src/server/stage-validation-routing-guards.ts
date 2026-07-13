@@ -77,7 +77,8 @@ function normalize(result: any): void {
           ? "prepare_geometry_visual_rebuild"
           : "prepare_stage_revision";
       issue.profile_switch_required = upstream;
-      issue.reconnect_required = upstream;
+      issue.reconnect_required = false;
+      issue.current_session_continues = true;
     }
   }
 
@@ -111,7 +112,8 @@ function normalize(result: any): void {
         ? "prepare_geometry_visual_rebuild"
         : "prepare_stage_revision",
     profile_switch_required: upstream,
-    reconnect_required: upstream,
+    reconnect_required: false,
+    current_session_continues: true,
     preserve_approved_checkpoints: upstream,
     downstream_revalidation_required: upstream,
   };

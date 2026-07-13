@@ -64,6 +64,38 @@ function nativeFs(): ExtendedFs {
   return fs as ExtendedFs;
 }
 
+function recommendedModelRoute(next: string, stage: string) {
+  if (next.startsWith("AWAIT_")) {
+    return { route: "NO_MODEL_WORK", reason: "Waiting for the user review decision." };
+  }
+  if (
+    next.includes("rebind_active_project_identity") ||
+    next.includes("manage_project_write_lease")
+  ) {
+    return {
+      route: "TERRA_PARENT_DIRECT",
+      reason: "Identity and lease operations are deterministic controller work.",
+    };
+  }
+  if (stage === "GEOMETRY" && next === "CONTINUE_STAGE") {
+    return {
+      route: "SELECTED_TERRA_WRITER",
+      reason:
+        "Run deterministic diagnosis and bounded mutations; escalate to Sol Medium only for an unresolved visual conflict or final artistic acceptance.",
+    };
+  }
+  if (next.includes("submit_") || next.includes("complete_")) {
+    return {
+      route: "SELECTED_TERRA_WRITER",
+      reason: "Guarded validation and transition do not require a visual model call.",
+    };
+  }
+  return {
+    route: "TERRA_PARENT_DIRECT",
+    reason: "Use the cheapest deterministic route until visual judgment is explicitly required.",
+  };
+}
+
 function reportResult(report: Record<string, any>): string | null {
   const value =
     report.result ??
@@ -199,6 +231,18 @@ function routeStageContext(args: Record<string, unknown>, result: any): void {
     workflowState === policy.reviewState && !leaseCurrent;
   context.automation.user_file_edits_required = false;
   context.automation.user_restart_required = false;
+  context.automation.model_route = recommendedModelRoute(next, stage);
+  context.automation.visual_escalation = {
+    route: "visual_director",
+    model: "gpt-5.6-sol",
+    effort: "medium",
+    only_when: [
+      "cross_view_conflict",
+      "unclear_visual_root_cause",
+      "subjective_user_feedback_after_deterministic_pass",
+      "final_visual_acceptance",
+    ],
+  };
 }
 
 export function installStageContextRoutingGuards(): void {

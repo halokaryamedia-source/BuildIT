@@ -30,7 +30,7 @@ verify hierarchy and pivots
 
 Use rigid cuboid group/bone motion. Do not add mesh armatures, vertex weights, optional clips, new Geometry, Texture redesign, or final export.
 
-`record_stage_review_report` creates the canonical `animation_report.json` and binds it to current project serialization plus hashes of hierarchy, pivot, and neutral-pose evidence. Do not write a free-form PASS report manually.
+`record_stage_review_report` creates the canonical `animation_report.json` and binds it to current project serialization plus hashes of hierarchy, pivot, and neutral-pose evidence. Fresh `validate_reference_contract` also checks required clips, duration, animator/keyframe presence, referenced groups, and forbidden root motion before submission. Do not write a free-form PASS report manually.
 
 `submit_stage_for_review` verifies current report/evidence, validates the Animation contract, creates the next unused review checkpoint, enters `ANIMATION_REVIEW`, then releases the writer lease without profile switch or reconnect.
 

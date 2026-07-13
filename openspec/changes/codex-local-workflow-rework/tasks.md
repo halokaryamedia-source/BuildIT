@@ -90,6 +90,16 @@
 - [x] Run `bun run build` and confirm `dist/mcp.js` exists.
 - [x] Verify the committed `dist/mcp.js` matches the exact source/package version and one-session runtime markers.
 
+## Pre-acceptance hardening P0–P2
+
+- [x] Remove legacy Reference Studio tool names and numbered-sheet handoff authority.
+- [x] Keep upstream revisions in the same MCP/Codex session with no reconnect.
+- [x] Return only the canonical Geometry profile plus internal revision scope.
+- [x] Strengthen transformed part, count, parent, symmetry, Texture, and Animation quality enforcement.
+- [x] Retain meaningful detached reference details during foreground segmentation.
+- [x] Make unrelated extended capabilities opt-in and suppress routine diff image payloads.
+- [x] Return deterministic model-route guidance from existing stage context without an extra routing call.
+
 ## Final local Blockbench acceptance — remaining on the workstation
 
 - [ ] Pull the final `Rework` head once on the local workstation.

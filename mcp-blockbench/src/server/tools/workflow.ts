@@ -13,6 +13,10 @@ import {
   writeJsonAtomically,
   type NativeFsLike,
 } from "@/lib/atomicFiles";
+import {
+  analyzeTexturePixels,
+  evaluateAnimationQuality,
+} from "@/lib/stageQuality";
 
 const workflowStageEnum = z.enum([
   "GEOMETRY",
@@ -25,7 +29,7 @@ type WorkflowStage = z.infer<typeof workflowStageEnum>;
 type Vec3 = [number, number, number];
 
 export const validateReferenceContractParameters = z.object({
-  session_root: z.string().min(1).describe("Absolute SavedData/sessions/<asset> directory."),
+  session_root: z.string().min(1).describe("Canonical workspace/active/<asset>/mcp directory."),
   manifest_path: z.string().optional(),
   expected_project_uuid: z.string().optional(),
   stage: workflowStageEnum.optional().default("FINAL_VALIDATION"),
@@ -96,12 +100,34 @@ interface ReferenceManifest {
     blockbench_units_per_block?: number;
   };
   geometry?: { hierarchy?: Record<string, unknown> };
-  texturing?: { atlas?: string; pipeline?: string; pbr?: boolean };
+  texturing?: {
+    atlas?: string;
+    pipeline?: string;
+    pbr?: boolean;
+    anti_aliasing?: boolean;
+    base_palette?: Record<string, string>;
+    quality_contract?: {
+      maximum_partial_alpha_ratio?: number;
+      minimum_opaque_ratio?: number;
+      maximum_unique_colors?: number;
+      maximum_palette_distance?: number;
+      maximum_palette_outlier_ratio?: number;
+    };
+  };
   animation?: {
     animation_ready?: boolean;
     required_clips?: string[];
     required_animations?: string[];
     animations?: string[];
+    moving_groups?: string[];
+    static_groups?: string[];
+    root_motion_policy?: string;
+    quality_contract?: {
+      minimum_clip_length?: number;
+      maximum_clip_length?: number;
+      require_animators?: boolean;
+      require_keyframes?: boolean;
+    };
   };
 }
 
@@ -157,19 +183,14 @@ function parseAtlas(value: unknown): [number, number] | null {
   return match ? [Number(match[1]), Number(match[2])] : null;
 }
 
-function profileForStage(stage: WorkflowStage, repair = false): string {
-  const normal: Record<WorkflowStage, string> = {
+function profileForStage(stage: WorkflowStage): string {
+  const profiles: Record<WorkflowStage, string> = {
     GEOMETRY: "BEDROCK_CUBOID_GEOMETRY",
     TEXTURE: "BEDROCK_CUBOID_TEXTURE",
     ANIMATION: "BEDROCK_CUBOID_ANIMATION",
     FINAL_VALIDATION: "FINAL_VALIDATION_READONLY",
   };
-  const repairs: Partial<Record<WorkflowStage, string>> = {
-    GEOMETRY: "GEOMETRY_LOCAL_REPAIR",
-    TEXTURE: "TEXTURE_LOCAL_REPAIR",
-    ANIMATION: "ANIMATION_LOCAL_REPAIR",
-  };
-  return repair ? (repairs[stage] ?? normal[stage]) : normal[stage];
+  return profiles[stage];
 }
 
 function canonicalEvidence(sessionRoot: string, stage: WorkflowStage): string[] {
@@ -325,7 +346,7 @@ export function registerWorkflowTools() {
             severity,
             message,
             recommended_profile:
-              severity === "REVISION_REQUIRED" ? profileForStage(issueStage, true) : null,
+              severity === "REVISION_REQUIRED" ? profileForStage(issueStage) : null,
           });
 
         for (const file of requiredReferenceFiles(manifest)) {
@@ -427,6 +448,7 @@ export function registerWorkflowTools() {
           }
         }
 
+        const textureQuality: Array<Record<string, any>> = [];
         if (validateTexture) {
           const pbrTextures = Texture.all.filter((texture) =>
             Boolean((texture as unknown as { pbr_channel?: string }).pbr_channel)
@@ -442,6 +464,59 @@ export function registerWorkflowTools() {
           if (Texture.all.length === 0) {
             add("TEXTURE_MISSING", "TEXTURE", "REVISION_REQUIRED", "No project texture exists.");
           }
+          const qualityContract = manifest.texturing?.quality_contract ?? {};
+          const paletteHex = Object.values(manifest.texturing?.base_palette ?? {});
+          for (const texture of Texture.all) {
+            try {
+              const { ctx } = texture.getActiveCanvas();
+              const pixels = ctx.getImageData(0, 0, texture.width, texture.height).data;
+              const quality = analyzeTexturePixels({
+                width: texture.width,
+                height: texture.height,
+                data: pixels,
+                contract: {
+                  anti_aliasing_allowed: manifest.texturing?.anti_aliasing !== false,
+                  palette_hex: paletteHex,
+                  ...qualityContract,
+                },
+              });
+              textureQuality.push({ texture: texture.name, ...quality });
+              for (const issue of quality.issues) {
+                add(issue.code, "TEXTURE", issue.severity, `${texture.name}: ${issue.message}`);
+              }
+            } catch (error) {
+              add(
+                "TEXTURE_PIXEL_READ_FAILED",
+                "TEXTURE",
+                "REVISION_REQUIRED",
+                `${texture.name}: ${error instanceof Error ? error.message : String(error)}`
+              );
+            }
+          }
+          const textureWidth = Project.texture_width;
+          const textureHeight = Project.texture_height;
+          let uvOutOfBounds = 0;
+          for (const cube of Cube.all) {
+            for (const face of Object.values(cube.faces ?? {})) {
+              const uv = (face as unknown as { uv?: number[] }).uv;
+              if (!Array.isArray(uv)) continue;
+              if (
+                uv.some((value, index) =>
+                  value < 0 || value > (index % 2 === 0 ? textureWidth : textureHeight)
+                )
+              ) {
+                uvOutOfBounds += 1;
+              }
+            }
+          }
+          if (uvOutOfBounds > 0) {
+            add(
+              "TEXTURE_UV_OUT_OF_BOUNDS",
+              "TEXTURE",
+              "REVISION_REQUIRED",
+              `${uvOutOfBounds} cube face UV rectangle(s) exceed the atlas bounds.`
+            );
+          }
         }
 
         const animationNames = new Set(
@@ -449,21 +524,55 @@ export function registerWorkflowTools() {
             Animation?: { all?: Array<{ name: string }> };
           }).Animation?.all) ?? []).map((animation) => animation.name)
         );
+        let animationQuality: Record<string, any> | null = null;
         if (validateAnimation) {
           const requiredAnimations =
             manifest.animation?.required_clips ??
             manifest.animation?.required_animations ??
             manifest.animation?.animations ??
             [];
-          for (const animation of requiredAnimations) {
-            if (!animationNames.has(animation)) {
-              add(
-                "REQUIRED_ANIMATION_MISSING",
-                "ANIMATION",
-                "REVISION_REQUIRED",
-                `Required animation is missing: ${animation}`
-              );
+          const animations =
+            ((globalThis as unknown as { Animation?: { all?: any[] } }).Animation?.all) ?? [];
+          const snapshots = animations.map((animation) => {
+            const animators = Object.values(animation.animators ?? {}) as any[];
+            let keyframeCount = 0;
+            let rootPositionChannels = 0;
+            for (const animator of animators) {
+              for (const [channel, keyframes] of Object.entries(animator ?? {})) {
+                if (Array.isArray(keyframes)) keyframeCount += keyframes.length;
+                if (
+                  String(channel).toLowerCase().includes("position") &&
+                  String(animator?.name ?? animator?.group?.name ?? "").toLowerCase().includes("root")
+                ) {
+                  rootPositionChannels += Array.isArray(keyframes) ? keyframes.length : 1;
+                }
+              }
             }
+            return {
+              name: String(animation.name ?? ""),
+              length: Number(animation.length ?? 0),
+              animator_count: animators.length,
+              keyframe_count: keyframeCount,
+              root_position_channels: rootPositionChannels,
+            };
+          });
+          const animationContract = manifest.animation?.quality_contract ?? {};
+          animationQuality = evaluateAnimationQuality({
+            snapshots,
+            requiredClips: requiredAnimations,
+            existingGroups: Group.all.map((group) => group.name),
+            movingGroups: manifest.animation?.moving_groups ?? [],
+            staticGroups: manifest.animation?.static_groups ?? [],
+            rootMotionAllowed: !String(manifest.animation?.root_motion_policy ?? "")
+              .toLowerCase()
+              .startsWith("none"),
+            minimumClipLength: animationContract.minimum_clip_length,
+            maximumClipLength: animationContract.maximum_clip_length,
+            requireAnimators: animationContract.require_animators,
+            requireKeyframes: animationContract.require_keyframes,
+          });
+          for (const issue of animationQuality.issues) {
+            add(issue.code, "ANIMATION", issue.severity, issue.message);
           }
         }
 
@@ -537,6 +646,10 @@ export function registerWorkflowTools() {
             blockbench_validator: {
               errors: validatorErrors,
               warnings: validatorWarnings,
+            },
+            deterministic_quality: {
+              texture: textureQuality,
+              animation: animationQuality,
             },
             issues,
             next_profile:

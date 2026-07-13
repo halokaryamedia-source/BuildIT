@@ -26,6 +26,11 @@ const unclaimedLease = {
 };
 
 describe("runtime session readiness", () => {
+  test("keeps unrelated extended capabilities opt-in", () => {
+    const source = require("node:fs").readFileSync("src/server/tools.ts", "utf8");
+    expect(source).toContain('Settings.get("mcp_extended_capabilities") === true');
+    expect(source).toContain("if (extendedCapabilitiesEnabled)");
+  });
   test("keeps several inspection sessions blocker-free until a lease is acquired", () => {
     expect(summarizeRuntimeSessions([session("one"), session("two")], unclaimedLease)).toEqual({
       total: 2,

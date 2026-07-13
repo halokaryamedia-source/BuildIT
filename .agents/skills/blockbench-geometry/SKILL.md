@@ -24,9 +24,9 @@ get_stage_context
 → selected writer acquires manage_project_write_lease
 → inspect_reference_visual_preview
 → capture_visual_feedback
-→ analyze_geometry_views
+→ analyze_geometry_views with return_diff_image=false during normal correction
 → bounded edits of diagnosed parts
-→ final five-view capture/analyze
+→ final five-view capture/analyze with write_diff_image=true
 → visual_director final acceptance
 → record_geometry_visual_decision
 → submit_geometry_for_review
@@ -40,7 +40,7 @@ Do not ask the user to edit JSON, choose checkpoints/workers/profiles, reopen th
 
 Use `inspect_reference_visual_preview`; never return the original multi-megabyte image. Geometry quality requires actual image inspection, fixed-scale analyzer output, and structural validation. Free-rescaling is forbidden.
 
-`analyze_geometry_views` persists canonical metrics and diff; it requires the active Geometry lease. Ephemeral visual capture without `output_dir` may be used by `visual_director`.
+`analyze_geometry_views` persists canonical metrics and requires the active Geometry lease. It does not return the diff image by default; the final five-view pass writes the canonical diff, while rotation checks suppress redundant diff files. Ephemeral visual capture without `output_dir` may be used by `visual_director`.
 
 Evidence is current only when all match:
 

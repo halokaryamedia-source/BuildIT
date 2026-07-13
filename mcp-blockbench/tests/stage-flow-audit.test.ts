@@ -118,6 +118,8 @@ describe("audited multi-stage MCP flow", () => {
     expect(reopen).toContain("clearProjectWriteLease");
     expect(routing).toContain('"reopen_stage_for_revision"');
     expect(routing).toContain("earlierThan");
+    expect(routing).toContain("reconnect_required: false");
+    expect(routing).not.toContain("reconnect_required: upstream");
   });
 
   test("preserves checkpoint history and reconciles failed transitions without reconnect", () => {

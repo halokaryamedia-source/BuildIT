@@ -53,6 +53,9 @@ export interface GeometryPartConstraint {
   center_range_units?: { min: Vec3; max: Vec3 };
   size_range_units?: { min: Vec3; max: Vec3 };
   rotation_contract?: string;
+  required?: boolean;
+  minimum_elements?: number;
+  maximum_elements?: number;
   visual_views: StandardGeometryView[];
 }
 
@@ -471,6 +474,8 @@ const BLACK_RHINO_PROFILE: GeometryReferenceProfile = {
     {
       id: "front_horn",
       role: "STRUCTURAL_DETAIL",
+      minimum_elements: 3,
+      maximum_elements: 3,
       name_patterns: ["horn_front"],
       parent: "head",
       rotation_contract: "horn_front_up",
@@ -479,6 +484,8 @@ const BLACK_RHINO_PROFILE: GeometryReferenceProfile = {
     {
       id: "rear_horn",
       role: "STRUCTURAL_DETAIL",
+      minimum_elements: 2,
+      maximum_elements: 2,
       name_patterns: ["horn_rear"],
       parent: "head",
       rotation_contract: "horn_rear_up",
@@ -487,6 +494,8 @@ const BLACK_RHINO_PROFILE: GeometryReferenceProfile = {
     {
       id: "ears",
       role: "STRUCTURAL_DETAIL",
+      minimum_elements: 2,
+      maximum_elements: 4,
       name_patterns: ["ear_left", "ear_right"],
       parent: "head",
       visual_views: ["front", "front_left_3_4"],
@@ -500,6 +509,8 @@ const BLACK_RHINO_PROFILE: GeometryReferenceProfile = {
     {
       id: "tail",
       role: "STRUCTURAL_DETAIL",
+      minimum_elements: 2,
+      maximum_elements: 2,
       name_patterns: ["tail_base", "tail_tip"],
       parent: "body",
       rotation_contract: "tail_down",

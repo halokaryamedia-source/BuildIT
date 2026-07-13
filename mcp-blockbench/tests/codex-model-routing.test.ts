@@ -207,6 +207,10 @@ describe("usage-efficient Codex routing", () => {
     }
     expect(policy).toContain("Full-access caveat");
     expect(policy).toContain("MCP allowlists");
+    const contextRouting = read("src/server/stage-context-routing-guards.ts");
+    expect(contextRouting).toContain("recommendedModelRoute");
+    expect(contextRouting).toContain("SELECTED_TERRA_WRITER");
+    expect(contextRouting).toContain("visual_escalation");
   });
 
   test("production and Geometry adapters match canonical audited skills", () => {

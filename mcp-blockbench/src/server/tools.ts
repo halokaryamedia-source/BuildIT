@@ -107,7 +107,12 @@ const optionalRegistrationFunctions = [
 ];
 
 for (const register of registrationFunctions) register();
-for (const register of optionalRegistrationFunctions) register();
+const extendedCapabilitiesEnabled =
+  typeof Settings !== "undefined" &&
+  Settings.get("mcp_extended_capabilities") === true;
+if (extendedCapabilitiesEnabled) {
+  for (const register of optionalRegistrationFunctions) register();
+}
 
 // Normalize asset roots before the profile wrapper reads arguments. The wrapper
 // mutates the same args object so outer compact-context routing sees the canonical

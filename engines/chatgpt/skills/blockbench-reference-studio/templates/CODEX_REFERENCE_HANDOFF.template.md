@@ -7,91 +7,88 @@ Status: `APPROVED`
 - Asset ID: `<asset_id>`
 - Display Name: `<display_name>`
 - Target Format: `bedrock_entity`
-- Primary Visual: `01_<asset_id>_form_scale_reference.png`
-- Standardized Visual Alias: `<asset_id>_reference_visual.png`
+- Reference Visual: `<asset_id>_reference_visual.png`
 - Reference Manifest: `reference_manifest.json`
+- Canonical Model: `<asset_id>.bbmodel`
 
 ## Source authority order
 
 1. `PRODUCTION_CONTEXT.md`
-2. `reference_manifest.json`
-3. Sheet 01 for form, scale, identity, and neutral pose
-4. Sheet 02 for construction, hierarchy, and attachments
-5. Sheet 03 for texture, palette, atlas, and UV
-6. Sheet 04 for motion, pivots, and clipping risks
-7. Stage contract for the active production stage
+2. `<asset_id>_reference_visual.png` as the sole visual authority
+3. `reference_manifest.json` executable panel, region, part, symmetry, rotation, Texture, and Animation contracts
+4. `GEOMETRY.md`
+5. `TEXTURING.md`
+6. `ANIMATION.md`
+7. `VALIDATION.md`
+8. `CODEX_REFERENCE_HANDOFF.md`
 
-When files conflict, stop with `REFERENCE_CONFLICT`. Do not choose an interpretation silently.
-
-## Scale lock
-
-- `1 Minecraft block = 16u`
-- `Player reference = 28.8u = 1.8 blocks`
-- Asset envelope: `<width>u W × <depth>u D × <height>u H`
-- Ground plane: `<ground_plane>`
-- Collision, visible bounds, and rider seat are not finalized unless explicitly listed in Production Context.
+When files conflict, stop with `REFERENCE_CONFLICT`. Reject numbered-sheet, four-sheet, or three-approval packages with `LEGACY_SKILL_CONFLICT`.
 
 ## Project lock
 
+- `1 Minecraft block = 16u`
+- Asset envelope: `<width>u W × <depth>u D × <height>u H`
+- Ground plane: `<ground_plane>`
 - UV Mode: `<uv_mode>`
 - Texture Atlas: `<width>x<height>`
 - Pixel Style: `<16x_or_32x>`
 - Front Direction: `<front_direction>`
+- Symmetry Policy: `<BILATERAL_or_ASYMMETRIC>`
 - Classic Bedrock: required
-- PBR: forbidden
-- Vibrant Visuals: forbidden
+- PBR and Vibrant Visuals: forbidden
+
+## Canonical Geometry route
+
+```text
+get_stage_context
+→ rebind_active_project_identity when required
+→ selected Terra writer acquires manage_project_write_lease
+→ inspect_reference_visual_preview
+→ capture_visual_feedback
+→ analyze_geometry_views
+→ bounded diagnosed edits
+→ final five-view diagnosis with write_diff_image=true
+→ visual_director final acceptance only when needed
+→ record_geometry_visual_decision
+→ submit_geometry_for_review
+→ lease released
+→ GEOMETRY_REVIEW
+```
+
+`submit_geometry_for_review` performs fresh `validate_geometry_contract`, verifies embedded review readiness, creates the next unused review checkpoint, and enters `GEOMETRY_REVIEW`. Do not run duplicate validation steps immediately before submission.
 
 ## Stage routing
 
 ```text
-GEOMETRY
-→ blockbench-production + blockbench-geometry
-→ BEDROCK_CUBOID_GEOMETRY
-→ read GEOMETRY.md
-
-TEXTURE
-→ blockbench-production + blockbench-texture
-→ BEDROCK_CUBOID_TEXTURE
-→ read TEXTURING.md
-
-ANIMATION when required
-→ blockbench-production + blockbench-animation
-→ BEDROCK_CUBOID_ANIMATION
-→ read ANIMATION.md
-
-FINAL_VALIDATION
-→ blockbench-production + blockbench-validation
-→ FINAL_VALIDATION_READONLY
-→ read VALIDATION.md
+GEOMETRY         → blockbench-production + blockbench-geometry → BEDROCK_CUBOID_GEOMETRY
+TEXTURE          → blockbench-production + blockbench-texture → BEDROCK_CUBOID_TEXTURE
+ANIMATION        → blockbench-production + blockbench-animation → BEDROCK_CUBOID_ANIMATION
+FINAL_VALIDATION → blockbench-production + blockbench-validation → FINAL_VALIDATION_READONLY
 ```
 
-Maximum loaded production skills: `2`.
+Maximum loaded production skills: `2`. All stage changes continue in the same Codex session and MCP session.
 
 ## Import
 
-Import technical files into:
+Technical files:
 
 ```text
 workspace/active/<asset_id>/mcp/references/
 ```
 
-Import visual files into:
+Visual files:
 
 ```text
 workspace/active/<asset_id>/blockbench/references/
 ```
 
-Use only the canonical model filename:
-
-```text
-<asset_id>.bbmodel
-```
-
 ## Non-negotiable rules
 
-- Do not redesign the approved reference.
-- Do not invent new parts, materials, clips, or proportions.
+- Do not redesign the approved Reference Visual.
+- Do not invent parts, materials, clips, or proportions.
+- Do not use removed repair profiles; Geometry revision uses internal `LOCAL_REPAIR` or `MAJOR_FORM_REVISION` scope.
 - Do not continue through a user review gate automatically.
+- Do not reconnect MCP, reload the plugin, or start another Codex session for a normal stage transition.
 - Do not load all production skills together.
 - Do not use PBR, Hytale, mesh, armature, vertex-weight, UI automation, or risky evaluation in the normal cuboid workflow.
-- Use the exact stage tool profile and write lease.
+- Every non-zero cube rotation must use `rotate_cube_about_attachment`.

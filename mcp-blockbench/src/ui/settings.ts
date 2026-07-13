@@ -38,6 +38,15 @@ export function settingsSetup() {
       category,
       icon: "webhook",
     }),
+    new Setting("mcp_extended_capabilities", {
+      name: "Extended MCP capabilities",
+      description:
+        "Register unrelated Hytale and extended tools. Keep disabled for the compact Bedrock production surface.",
+      type: "toggle",
+      value: false,
+      category,
+      icon: "extension_off",
+    }),
     new Setting("mcp_prompt_cdn_enabled", {
       name: tl("mcp.settings.prompt_cdn_name"),
       description: tl("mcp.settings.prompt_cdn_desc"),

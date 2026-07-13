@@ -211,21 +211,24 @@ Require this Geometry route:
 
 ```text
 get_stage_context
-→ inspect_reference_visual
+→ rebind_active_project_identity when required
+→ selected Terra writer acquires manage_project_write_lease
+→ inspect_reference_visual_preview
 → PRIMARY_FORM
 → capture_visual_feedback
 → analyze_geometry_views
 → targeted repair from ranked diagnostics
 → STRUCTURAL_DETAIL
 → affected-view diagnosis
-→ final five-view diagnosis
-→ record_geometry_visual_result
-→ validate_geometry_contract
-→ verify_geometry_review_ready
+→ final five-view diagnosis with write_diff_image=true
+→ visual_director final acceptance only when needed
+→ record_geometry_visual_decision
+→ submit_geometry_for_review
+→ GEOMETRY_REVIEW
 → user review
 ```
 
-Require `rotate_cube_about_attachment` for every non-zero cube rotation. Require `complete_geometry_stage` after explicit approval. Forbid free-rescaling, unrelated trial-and-error changes, and Texture before Geometry approval.
+Require `rotate_cube_about_attachment` for every non-zero cube rotation. `submit_geometry_for_review` performs fresh Geometry validation and its embedded readiness gate, so the handoff must not add duplicate validation calls. Require `complete_geometry_stage` only after explicit approval. Forbid free-rescaling, unrelated trial-and-error changes, removed repair profiles, and Texture before Geometry approval.
 
 ## Stop conditions
 

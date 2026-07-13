@@ -214,7 +214,39 @@
           "front_left_3_4"
         ]
       }
-    }
+    },
+    "symmetry_policy": "BILATERAL",
+    "symmetry_tolerance_units": 0.35,
+    "symmetry_pairs": [
+      {
+        "id": "ears",
+        "left_patterns": [
+          "ear_left"
+        ],
+        "right_patterns": [
+          "ear_right"
+        ]
+      },
+      {
+        "id": "front_legs",
+        "left_patterns": [
+          "front_left"
+        ],
+        "right_patterns": [
+          "front_right"
+        ]
+      },
+      {
+        "id": "rear_legs",
+        "left_patterns": [
+          "rear_left"
+        ],
+        "right_patterns": [
+          "rear_right"
+        ]
+      }
+    ],
+    "asymmetry_contracts": []
   },
   "texturing": {
     "style": "16x",
@@ -228,7 +260,14 @@
     "critical_pixel_details": [],
     "alpha_test_zones": [],
     "alpha_blend_zones": [],
-    "emissive_zones": []
+    "emissive_zones": [],
+    "quality_contract": {
+      "maximum_partial_alpha_ratio": 0,
+      "minimum_opaque_ratio": 0.005,
+      "maximum_unique_colors": 96,
+      "maximum_palette_distance": 72,
+      "maximum_palette_outlier_ratio": 0.2
+    }
   },
   "animation": {
     "animation_included_in_reference_stage": false,
@@ -237,7 +276,13 @@
     "required_clips": [],
     "moving_groups": [],
     "static_groups": [],
-    "pivot_requirements": []
+    "pivot_requirements": [],
+    "quality_contract": {
+      "minimum_clip_length": 0.05,
+      "maximum_clip_length": 30,
+      "require_animators": true,
+      "require_keyframes": true
+    }
   },
   "visual_grounding": {
     "required": true,

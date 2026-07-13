@@ -256,6 +256,7 @@ export function registerGeometryRotationTools(): void {
             views: contract.affected_views,
             output_dir: joinPath(scratchRoot, "before"),
             return_diff_image: false,
+            write_diff_image: false,
           },
           context
         );
@@ -324,6 +325,7 @@ export function registerGeometryRotationTools(): void {
               views: contract.affected_views,
               output_dir: joinPath(scratchRoot, "after"),
               return_diff_image: false,
+              write_diff_image: false,
             },
             context
           );
