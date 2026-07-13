@@ -37,7 +37,7 @@ export const geometryCompletionToolDocs: ToolSpec[] = [
   {
     name: "complete_geometry_stage",
     description:
-      "Completes Geometry only after fresh structural validation and its embedded five-view review-readiness gate pass. Saves the next unused approved checkpoint and rolls back the new checkpoint/profile/state if the coordinated Texture transition fails.",
+      "Completes Geometry only after fresh structural validation and its embedded required-view review-readiness gate pass. Saves the next unused approved checkpoint and rolls back the new checkpoint/profile/state if the coordinated Texture transition fails.",
     annotations: {
       title: "Complete Geometry Stage",
       destructiveHint: true,
@@ -346,7 +346,10 @@ export function registerGeometryCompletionTools(): void {
           state.mcp.exposed_tool_count = profile.exposed_tool_count;
           state.mcp.total_library_tool_count =
             profile.total_library_tool_count;
-          state.mcp.profile_reconnect_required = activation.changed;
+          state.mcp.profile_reconnect_required = false;
+          state.mcp.stable_tool_surface = true;
+          state.mcp.registered_tool_surface = "STABLE_FULL_LIBRARY";
+          state.mcp.execution_surface = "ACTIVE_PROFILE_GUARDED";
           state.state_revision = expected_state_revision + 1;
           state.updated_at = approvedAt;
           state.updated_by = "complete_geometry_stage";
@@ -373,10 +376,12 @@ export function registerGeometryCompletionTools(): void {
               next_state: "TEXTURE_IN_PROGRESS",
               next_stage: "TEXTURE",
               next_profile: "BEDROCK_CUBOID_TEXTURE",
-              reconnect_required: activation.changed,
-              next_action: activation.changed
-                ? "Reconnect the canonical blockbench MCP entry once, call get_runtime_status, then reacquire the Texture lease."
-                : "START_TEXTURE",
+              reconnect_required: false,
+              current_session_continues: true,
+              stable_tool_surface: true,
+              write_lease_reacquire_required: activation.changed,
+              next_action:
+                "Call get_stage_context in the current MCP session, then acquire the fresh Texture lease.",
             },
           };
         } catch (error) {

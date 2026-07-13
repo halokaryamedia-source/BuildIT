@@ -25,7 +25,7 @@ const workflowStageEnum = z.enum([
   "FINAL_VALIDATION",
 ]);
 
-type WorkflowStage = z.infer<typeof workflowStageEnum>;
+export type WorkflowStage = z.infer<typeof workflowStageEnum>;
 type Vec3 = [number, number, number];
 
 export const validateReferenceContractParameters = z.object({
@@ -99,7 +99,10 @@ interface ReferenceManifest {
     depth_blocks?: number;
     blockbench_units_per_block?: number;
   };
-  geometry?: { hierarchy?: Record<string, unknown> };
+  geometry?: {
+    hierarchy?: Record<string, unknown>;
+    symmetry_policy?: string;
+  };
   texturing?: {
     atlas?: string;
     pipeline?: string;
@@ -193,7 +196,11 @@ function profileForStage(stage: WorkflowStage): string {
   return profiles[stage];
 }
 
-function canonicalEvidence(sessionRoot: string, stage: WorkflowStage): string[] {
+export function canonicalEvidence(
+  sessionRoot: string,
+  stage: WorkflowStage,
+  manifest?: ReferenceManifest
+): string[] {
   const relative: Record<WorkflowStage, string[]> = {
     GEOMETRY: [
       "evidence/geometry/geometry_front.png",
@@ -228,7 +235,18 @@ function canonicalEvidence(sessionRoot: string, stage: WorkflowStage): string[] 
       "evidence/final/completed_VALIDATION.md",
     ],
   };
-  return relative[stage].map((path) => joinPath(sessionRoot, path));
+
+  const required = [...relative[stage]];
+  const asymmetric =
+    String(manifest?.geometry?.symmetry_policy ?? "").toUpperCase() ===
+    "ASYMMETRIC";
+  if (asymmetric && stage === "GEOMETRY") {
+    required.splice(2, 0, "evidence/geometry/geometry_right.png");
+  }
+  if (asymmetric && stage === "FINAL_VALIDATION") {
+    required.splice(2, 0, "evidence/final/final_right.png");
+  }
+  return required.map((path) => joinPath(sessionRoot, path));
 }
 
 function stageReportPath(sessionRoot: string, stage: WorkflowStage): string {
@@ -296,6 +314,69 @@ function expectedReviewState(stage: WorkflowStage): string {
     FINAL_VALIDATION: "FINAL_REVIEW",
   };
   return states[stage];
+}
+
+export interface ApprovedStageTransition {
+  nextProfile: string;
+  nextState: string;
+  nextStage: WorkflowStage;
+  nextAction: string;
+  startedStage: WorkflowStage | null;
+  skippedAnimation: boolean;
+}
+
+export function resolveApprovedStageTransition(
+  stage: WorkflowStage,
+  animationRequired: boolean
+): ApprovedStageTransition {
+  if (stage === "GEOMETRY") {
+    return {
+      nextProfile: "BEDROCK_CUBOID_TEXTURE",
+      nextState: "TEXTURE_IN_PROGRESS",
+      nextStage: "TEXTURE",
+      nextAction: "START_TEXTURE",
+      startedStage: "TEXTURE",
+      skippedAnimation: false,
+    };
+  }
+  if (stage === "TEXTURE" && animationRequired) {
+    return {
+      nextProfile: "BEDROCK_CUBOID_ANIMATION",
+      nextState: "ANIMATION_IN_PROGRESS",
+      nextStage: "ANIMATION",
+      nextAction: "START_ANIMATION",
+      startedStage: "ANIMATION",
+      skippedAnimation: false,
+    };
+  }
+  if (stage === "TEXTURE") {
+    return {
+      nextProfile: "FINAL_VALIDATION_READONLY",
+      nextState: "FINAL_VALIDATION",
+      nextStage: "FINAL_VALIDATION",
+      nextAction: "RUN_FINAL_VALIDATION",
+      startedStage: "FINAL_VALIDATION",
+      skippedAnimation: true,
+    };
+  }
+  if (stage === "ANIMATION") {
+    return {
+      nextProfile: "FINAL_VALIDATION_READONLY",
+      nextState: "FINAL_VALIDATION",
+      nextStage: "FINAL_VALIDATION",
+      nextAction: "RUN_FINAL_VALIDATION",
+      startedStage: "FINAL_VALIDATION",
+      skippedAnimation: false,
+    };
+  }
+  return {
+    nextProfile: "FINAL_VALIDATION_READONLY",
+    nextState: "DONE",
+    nextStage: "FINAL_VALIDATION",
+    nextAction: "WAIT_FOR_FINAL_HANDOFF",
+    startedStage: null,
+    skippedAnimation: false,
+  };
 }
 
 function reportResult(report: Record<string, any>): string | null {
@@ -577,7 +658,7 @@ export function registerWorkflowTools() {
         }
 
         if (require_evidence) {
-          for (const path of canonicalEvidence(session_root, stage)) {
+          for (const path of canonicalEvidence(session_root, stage, manifest)) {
             assertInsideRoot(path, session_root);
             if (!fs.existsSync(path)) {
               add("EVIDENCE_MISSING", stage, "BLOCKER", `Missing stage evidence: ${path}`);
@@ -778,7 +859,13 @@ export function registerWorkflowTools() {
           );
         }
 
-        const requiredEvidence = canonicalEvidence(session_root, stage);
+        const manifestPath = joinPath(
+          session_root,
+          "references/reference_manifest.json"
+        );
+        assertInsideRoot(manifestPath, session_root);
+        const manifest = readJsonFile<ReferenceManifest>(fs, manifestPath);
+        const requiredEvidence = canonicalEvidence(session_root, stage, manifest);
         if (stage === "FINAL_VALIDATION") {
           requiredEvidence.push(joinPath(session_root, `final/${asset_id}.bbmodel`));
           requiredEvidence.push(joinPath(session_root, "final/textures"));
@@ -848,41 +935,20 @@ export function registerWorkflowTools() {
         state.workflow.last_completed_stage = stage;
         state.workflow.last_safe_checkpoint = checkpointPath;
 
-        let nextProfile = profileForStage(stage);
-        let nextState = "DONE";
-        let nextStage: WorkflowStage = "FINAL_VALIDATION";
-        let nextAction = "WAIT_FOR_FINAL_HANDOFF";
-
-        if (stage === "GEOMETRY") {
-          nextProfile = "BEDROCK_CUBOID_TEXTURE";
-          nextState = "TEXTURE_IN_PROGRESS";
-          nextStage = "TEXTURE";
-          nextAction = "START_TEXTURE";
-          state.workflow.stage_records.TEXTURE.status = "IN_PROGRESS";
-        } else if (stage === "TEXTURE") {
-          if (state.workflow.animation_required) {
-            nextProfile = "BEDROCK_CUBOID_ANIMATION";
-            nextState = "ANIMATION_IN_PROGRESS";
-            nextStage = "ANIMATION";
-            nextAction = "START_ANIMATION";
-            state.workflow.stage_records.ANIMATION.status = "IN_PROGRESS";
-          } else {
-            nextProfile = "FINAL_VALIDATION_READONLY";
-            nextState = "FINAL_VALIDATION";
-            nextStage = "FINAL_VALIDATION";
-            nextAction = "RUN_FINAL_VALIDATION";
-            state.workflow.stage_records.ANIMATION.status = "SKIPPED";
-            state.workflow.stage_records.ANIMATION.decision = "SKIPPED";
-            state.workflow.stage_records.ANIMATION.skip_reason =
-              "Not required by approved reference package.";
-            state.workflow.stage_records.FINAL_VALIDATION.status = "IN_PROGRESS";
-          }
-        } else if (stage === "ANIMATION") {
-          nextProfile = "FINAL_VALIDATION_READONLY";
-          nextState = "FINAL_VALIDATION";
-          nextStage = "FINAL_VALIDATION";
-          nextAction = "RUN_FINAL_VALIDATION";
-          state.workflow.stage_records.FINAL_VALIDATION.status = "IN_PROGRESS";
+        const transition = resolveApprovedStageTransition(
+          stage,
+          state.workflow.animation_required === true
+        );
+        const { nextProfile, nextState, nextStage, nextAction } = transition;
+        if (transition.startedStage) {
+          state.workflow.stage_records[transition.startedStage].status =
+            "IN_PROGRESS";
+        }
+        if (transition.skippedAnimation) {
+          state.workflow.stage_records.ANIMATION.status = "SKIPPED";
+          state.workflow.stage_records.ANIMATION.decision = "SKIPPED";
+          state.workflow.stage_records.ANIMATION.skip_reason =
+            "Not required by approved reference package.";
         }
 
         const previousProfile = getToolProfileSnapshot(false).profile_id;
@@ -898,7 +964,10 @@ export function registerWorkflowTools() {
           state.mcp.tool_profile_hash = profile.tool_profile_hash;
           state.mcp.exposed_tool_count = profile.exposed_tool_count;
           state.mcp.total_library_tool_count = profile.total_library_tool_count;
-          state.mcp.profile_reconnect_required = activation.changed;
+          state.mcp.profile_reconnect_required = false;
+          state.mcp.stable_tool_surface = true;
+          state.mcp.registered_tool_surface = "STABLE_FULL_LIBRARY";
+          state.mcp.execution_surface = "ACTIVE_PROFILE_GUARDED";
           state.state_revision = expected_state_revision + 1;
           state.updated_at = approvedAt;
           state.updated_by = "complete_stage";
@@ -923,10 +992,12 @@ export function registerWorkflowTools() {
             next_state: nextState,
             next_stage: nextStage,
             next_profile: nextProfile,
-            reconnect_required: activation.changed,
-            next_action: activation.changed
-              ? "Reconnect the existing canonical blockbench MCP entry once, then call get_runtime_status."
-              : nextAction,
+            reconnect_required: false,
+            current_session_continues: true,
+            stable_tool_surface: true,
+            write_lease_reacquire_required:
+              activation.changed && nextState !== "DONE",
+            next_action: nextAction,
           },
         };
       },

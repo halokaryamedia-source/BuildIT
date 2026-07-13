@@ -43,7 +43,7 @@ export const stageReopenToolDocs: ToolSpec[] = [
   {
     name: "reopen_stage_for_revision",
     description:
-      "Atomically reopens the earliest affected approved stage from a later stage after explicit validation failure or user review feedback, preserves approved checkpoints as rollback baselines, invalidates downstream stage status, activates the canonical target profile, and releases the old lease for one canonical MCP reconnect.",
+      "Atomically reopens the earliest affected approved stage from a later stage after explicit validation failure or user review feedback, preserves approved checkpoints as rollback baselines, invalidates downstream stage status, activates the canonical target profile, releases the old lease, and continues in the same MCP session.",
     annotations: {
       title: "Reopen Affected Stage for Revision",
       destructiveHint: true,
@@ -117,7 +117,7 @@ function earlierApprovedAreas(
 function applyProfileMetadata(
   state: Record<string, any>,
   profile: ToolProfileSnapshot,
-  reconnectRequired: boolean
+  _reconnectRequired: boolean
 ): void {
   state.mcp = state.mcp ?? {};
   state.mcp.active_tool_profile = profile.profile_id;
@@ -125,7 +125,10 @@ function applyProfileMetadata(
   state.mcp.tool_profile_hash = profile.tool_profile_hash;
   state.mcp.exposed_tool_count = profile.exposed_tool_count;
   state.mcp.total_library_tool_count = profile.total_library_tool_count;
-  state.mcp.profile_reconnect_required = reconnectRequired;
+  state.mcp.profile_reconnect_required = false;
+  state.mcp.stable_tool_surface = true;
+  state.mcp.registered_tool_surface = "STABLE_FULL_LIBRARY";
+  state.mcp.execution_surface = "ACTIVE_PROFILE_GUARDED";
 }
 
 export function registerStageReopenTools(): void {
@@ -230,7 +233,7 @@ export function registerStageReopenTools(): void {
             reopened_from_stage: current,
             prepared_at: reopenedAt,
             profile_switch_required: true,
-            reconnect_required: activation.changed,
+            reconnect_required: false,
           };
 
           for (const downstream of order.slice(stageIndex(target) + 1)) {
@@ -274,17 +277,19 @@ export function registerStageReopenTools(): void {
               state_revision: nextRevision,
               active_profile: activation.snapshot.profile_id,
               profile_switch_required: activation.changed,
-              reconnect_required: activation.changed,
+              reconnect_required: false,
+              current_session_continues: true,
+              stable_tool_surface: true,
+              write_lease_reacquire_required: true,
               lease_status: "UNCLAIMED",
               preserved_approved_checkpoints: true,
               downstream_revalidation_required: order.slice(
                 stageIndex(target) + 1
               ),
-              next_action: activation.changed
-                ? "Reconnect the canonical blockbench MCP entry once, call get_stage_context, then acquire the target-stage lease."
-                : target === "GEOMETRY"
-                  ? "CONTINUE_GEOMETRY"
-                  : "CONTINUE_STAGE",
+              next_action:
+                target === "GEOMETRY"
+                  ? "Call get_stage_context in the current MCP session, acquire the fresh Geometry lease, then continue Geometry."
+                  : "Call get_stage_context in the current MCP session, acquire the fresh target-stage lease, then continue the stage.",
             },
           };
         } catch (error) {

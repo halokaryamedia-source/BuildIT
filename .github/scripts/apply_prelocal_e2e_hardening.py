@@ -388,8 +388,10 @@ replace_once(
 )
 replace_once(
     stage_reopen,
-    "            reconnect_required: activation.changed,",
-    "            reconnect_required: false,",
+    '''            profile_switch_required: true,
+            reconnect_required: activation.changed,''',
+    '''            profile_switch_required: true,
+            reconnect_required: false,''',
 )
 replace_once(
     stage_reopen,

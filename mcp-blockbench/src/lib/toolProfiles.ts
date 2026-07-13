@@ -444,7 +444,7 @@ export function getToolProfileSnapshot(
     exposed_tool_count: exposed.length,
     total_library_tool_count: Object.keys(getAllToolDefinitions()).length,
     tool_profile_hash: hash(`${activeProfileId}:${exposed.join(",")}`),
-    reconnect_required_after_change: true,
+    reconnect_required_after_change: false,
     validation_errors: [...validationErrors],
     ...(includeTools ? { exposed_tools: exposed } : {}),
   };

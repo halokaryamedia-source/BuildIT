@@ -40,7 +40,7 @@ export const runtimeToolDocs: ToolSpec[] = [
   {
     name: "activate_tool_profile",
     description:
-      "Activates one exact stage or repair tool profile. Reconnect once after a change, then reacquire the project write lease.",
+      "Activates one exact stage tool profile on the stable tool surface. Continue in the same MCP session and reacquire the current-stage write lease after a change.",
     annotations: { title: "Activate Tool Profile", destructiveHint: false },
     parameters: activateToolProfileParameters,
     status: STATUS_STABLE,
@@ -290,8 +290,8 @@ export function registerRuntimeTools(): void {
             {
               type: "text" as const,
               text: result.changed
-                ? `Tool profile changed from ${result.previous_profile} to ${result.snapshot.profile_id}. Reconnect once, then reacquire the project write lease.`
-                : `Tool profile ${result.snapshot.profile_id} is already active.`,
+                ? `Tool profile changed from ${result.previous_profile} to ${result.snapshot.profile_id}. Continue in the current MCP session and reacquire the current-stage write lease.`
+                : `Tool profile ${result.snapshot.profile_id} is already active; continue in the current MCP session.`,
             },
           ],
           structuredContent: {
@@ -302,11 +302,13 @@ export function registerRuntimeTools(): void {
             exposed_tool_count: result.snapshot.exposed_tool_count,
             total_library_tool_count: result.snapshot.total_library_tool_count,
             tool_profile_hash: result.snapshot.tool_profile_hash,
-            reconnect_required: result.changed,
+            reconnect_required: false,
+            current_session_continues: true,
+            stable_tool_surface: true,
             write_lease_reacquire_required: result.changed,
             next_action: result.changed
-              ? "Reconnect the existing canonical blockbench MCP entry once, call get_runtime_status once, then reacquire manage_project_write_lease."
-              : "Continue with the active stage.",
+              ? "Call get_stage_context in the current MCP session, then reacquire manage_project_write_lease for the active stage."
+              : "Continue with the active stage in the current MCP session.",
           },
         };
       },
