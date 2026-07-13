@@ -6,6 +6,7 @@ on:
       - Rework
     paths:
       - ".github/scripts/apply_full_pipeline_acceptance.py"
+      - ".github/scripts/fix_full_pipeline_simulation_test.py"
       - ".github/workflows/full-pipeline-acceptance.yml"
       - "mcp-blockbench/src/lib/pipelineAcceptance.ts"
       - "mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts"
@@ -13,6 +14,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_full_pipeline_acceptance.py"
+      - ".github/scripts/fix_full_pipeline_simulation_test.py"
       - ".github/workflows/full-pipeline-acceptance.yml"
       - "mcp-blockbench/src/lib/pipelineAcceptance.ts"
       - "mcp-blockbench/tests/giraffe-full-pipeline-simulation.test.ts"
@@ -39,6 +41,9 @@ jobs:
 
       - name: Integrate runtime acceptance validators
         run: python .github/scripts/apply_full_pipeline_acceptance.py
+
+      - name: Fix simulation assertion
+        run: python .github/scripts/fix_full_pipeline_simulation_test.py
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
