@@ -58,6 +58,41 @@ After Reference Visual inspection:
 
 The first analysis of a blank model is forbidden. Corrections SHALL use affected views and bounded cycles. Final review SHALL use all manifest-required views, including Right Side only for asymmetric assets.
 
+### Smart attachment and rotation execution
+
+A required angled cuboid SHALL NOT be represented by an axis-aligned stacked
+substitute.
+
+Normal attachment execution SHALL be:
+
+```text
+zero-rotation provisional cuboid
+→ rotate_cube_about_attachment without angle_degrees
+→ constraint-sized cuboid
+→ inferred longitudinal axis
+→ automatic legal one-axis angle
+→ explicit connected end-face centerline pivot
+→ snap pivot to target attachment
+→ translate from/to/origin together
+→ direction, gap, and affected-view validation
+→ attachment_fit.json
+```
+
+An explicit angle SHALL be used only for one diagnosed repair. When a contract
+range excludes zero, the final rotation SHALL be visibly non-zero.
+
+`verify_primary_form_ready` SHALL reject:
+
+- missing or default pivot;
+- connection gap outside tolerance;
+- direction mismatch;
+- absent or stale attachment-fit evidence;
+- current transforms that differ from evidence;
+- axis-aligned substitutes for required rotated parts.
+
+This requirement SHALL use the existing Geometry profile and tool. It SHALL NOT
+add a profile, stage, user approval, or regenerate loop.
+
 ## Review submission
 
 `submit_geometry_for_review` SHALL own fresh Geometry validation, review readiness, checkpoint, state transition, and lease release.
