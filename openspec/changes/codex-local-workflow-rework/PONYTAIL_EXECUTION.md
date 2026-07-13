@@ -7,9 +7,10 @@ Finish a practical, usage-efficient Geometry-quality workflow before the next lo
 ## Required now
 
 ```text
-project default Luna Medium
+project default Terra Medium
 → deterministic role routing with no router model call
-→ one Terra MCP writer
+→ Terra parent performs normal implementation directly
+→ mcp_builder becomes the fallback sole MCP writer only when required
 → Sol Medium only for necessary visual judgment
 → Sol High only for one coded critical decision
 → single Reference Visual authority
@@ -43,15 +44,15 @@ Do not add a separate Geometry repair or rebuild profile, a model-selection serv
 
 `engines/codex/MODEL_ROUTING.md` is the routing authority.
 
-- Project parent default: `gpt-5.6-luna`, medium.
+- Project parent default: `gpt-5.6-terra`, medium.
 - Mechanical read-only work: `routine_auditor`, 5.4 Mini Low.
-- Standard implementation and all active-asset mutation: `mcp_builder`, Terra Medium.
+- Standard implementation and active-asset mutation: one selected Terra writer; the Terra parent is default and `mcp_builder` is the fallback when the parent differs or isolation is materially safer.
 - Visual interpretation and acceptance: `visual_director`, Sol Medium, read-only.
 - Critical review: `critical_reviewer`, Sol High, read-only, at most once per unresolved coded decision.
 - High is the maximum. xhigh, Extra High, Max, Ultra, Fast mode, recursive delegation, and parallel writers are forbidden.
 - `agents.max_threads` remains `2`; `agents.max_depth` remains `1`.
 - If deterministic validation can answer the question, do not call a larger model.
-- Explicit user model selection affects the parent only. The user is not asked to select worker models.
+- Explicit user model selection affects the parent only. The user is not asked to select worker models or restart Codex merely to load optional roles.
 
 ## Geometry diagnosis rule
 
@@ -126,9 +127,9 @@ Implementation is complete only when:
 10. review submission automatically validates, checkpoints, and transitions to `GEOMETRY_REVIEW`;
 11. Geometry approval preserves lease/session correctness and cannot use generic bypass;
 12. negative fixtures reject the failed Black Rhinoceros model;
-13. project Codex config defines Luna Medium, two threads, and depth one;
+13. project Codex config defines Terra Medium, two threads, and depth one;
 14. custom agents lock Mini Low, Terra Medium, Sol Medium, and rare Sol High roles;
-15. only `mcp_builder` may mutate an active asset;
+15. exactly one selected Terra writer mutates the active asset; `mcp_builder` is fallback rather than a mandatory controller hop;
 16. no configured effort exceeds High;
 17. routing, skills, profiles, typecheck, tests, build, and generated plugin output pass at the final local test step.
 
