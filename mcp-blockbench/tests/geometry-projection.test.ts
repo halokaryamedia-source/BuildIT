@@ -131,4 +131,15 @@ describe("fixed-scale Geometry projection", () => {
     );
     expect(rotated.frame.scale).toBeCloseTo(unrotated.frame.scale, 8);
   });
+  test("right-side projection uses the same fixed scale", () => {
+    const elements = [{
+      name: "asymmetric", uuid: "asymmetric", from: [-7, 0, -5], to: [4, 18, 7],
+      origin: [0, 0, 0], rotation: [0, 0, 0], parent: "root",
+    }];
+    const left = projectElementsGeometry(elements, input);
+    const right = projectElementsGeometry(elements, { ...input, view: "right_side" });
+    expect(right.frame.scale).toBeCloseTo(left.frame.scale, 8);
+    expect(Array.from(right.mask.data)).not.toEqual(Array.from(left.mask.data));
+  });
+
 });

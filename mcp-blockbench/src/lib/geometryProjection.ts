@@ -157,6 +157,14 @@ function cameraBasis(
       perspective: false,
     };
   }
+  if (view === "right_side") {
+    return {
+      right: front,
+      up: worldUp,
+      camera_direction: right,
+      perspective: false,
+    };
+  }
   if (view === "top_footprint") {
     return {
       right: scaleVector(front, -1),

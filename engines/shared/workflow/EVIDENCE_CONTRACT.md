@@ -7,6 +7,7 @@ Use stable canonical filenames. Revision-only and rotation-check files may use s
 ```text
 geometry_front.png
 geometry_left.png
+geometry_right.png  # required only when symmetry_policy = ASYMMETRIC
 geometry_back.png
 geometry_top.png
 geometry_front_left_3_4.png
@@ -39,7 +40,7 @@ geometry_report.json
 
 Revision scope is an internal decision inside `BEDROCK_CUBOID_GEOMETRY`; it is not a profile transition.
 
-Final canonical metrics must include all five standard views. Partial comparisons may use the same canonical file during work, but cannot authorize review.
+Final canonical metrics must include all five base views. When `symmetry_policy` is `ASYMMETRIC`, `right_side` metrics, visual inspection, and `geometry_right.png` are additionally required. Partial comparisons may use the same canonical file during work, but cannot authorize review.
 
 ### Diff evidence
 

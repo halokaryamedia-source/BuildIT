@@ -80,6 +80,7 @@ Inside them record identity, intended use, approved scale, front direction, grou
 Generate one board containing:
 
 - Left Side;
+- Right Side when `symmetry_policy` is `ASYMMETRIC`;
 - Front;
 - Back;
 - Top / Footprint;
@@ -110,7 +111,7 @@ The manifest must include data that allows MCP to diagnose errors rather than gu
 
 #### Panel crops
 
-For all five views record normalized `[x, y, width, height]` values in full-image `0..1` space. Every crop must:
+For the five base views—and `right_side` whenever `symmetry_policy` is `ASYMMETRIC`—record normalized `[x, y, width, height]` values in full-image `0..1` space. Every required crop must:
 
 - have positive width and height;
 - stay inside the image;
@@ -188,9 +189,10 @@ Verify:
 7. semantic regions cover identity-critical silhouette areas;
 8. part constraints cover primary masses and critical details;
 9. all authorized rotations have contracts;
-10. `VALIDATION.md` starts `PENDING_BUILD`;
-11. handoff names the final MCP tools;
-12. final ZIP contains only approved package files.
+10. asymmetric assets include a measurable Right Side panel and crop;
+11. `VALIDATION.md` starts `PENDING_BUILD`;
+12. handoff names the final MCP tools;
+13. final ZIP contains only approved package files.
 
 ## Authority order
 

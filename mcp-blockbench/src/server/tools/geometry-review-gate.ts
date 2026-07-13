@@ -22,7 +22,7 @@ export const geometryReviewGateToolDocs: ToolSpec[] = [
   {
     name: "verify_geometry_review_ready",
     description:
-      "Verifies final Geometry runtime phase, complete five-view fixed-scale metrics, Codex multimodal review, evidence freshness, actual Reference Visual identity, standard views, and cube-rotation safety before user review or approval.",
+      "Verifies final Geometry runtime phase, complete symmetry-aware fixed-scale metrics, Codex multimodal review, evidence freshness, actual Reference Visual identity, standard views, and cube-rotation safety before user review or approval.",
     annotations: {
       title: "Verify Geometry Review Ready",
       readOnlyHint: true,
@@ -33,13 +33,28 @@ export const geometryReviewGateToolDocs: ToolSpec[] = [
   },
 ];
 
-const REQUIRED_VIEWS = [
+const BASE_REQUIRED_VIEWS = [
   "front",
   "left_side",
   "back",
   "top_footprint",
   "front_left_3_4",
 ] as const;
+
+function requiredGeometryViews(manifest: Record<string, any> | null): string[] {
+  const views: string[] = [...BASE_REQUIRED_VIEWS];
+  if (String(manifest?.geometry?.symmetry_policy ?? "").toUpperCase() === "ASYMMETRIC") {
+    views.splice(2, 0, "right_side");
+  }
+  return views;
+}
+
+function evidenceFilename(view: string): string {
+  if (view === "left_side") return "geometry_left.png";
+  if (view === "right_side") return "geometry_right.png";
+  if (view === "top_footprint") return "geometry_top.png";
+  return `geometry_${view}.png`;
+}
 
 function joinPath(root: string, relative: string): string {
   const separator = root.includes("\\") && !root.includes("/") ? "\\" : "/";
@@ -119,15 +134,6 @@ export function registerGeometryReviewGateTools(): void {
           session_root,
           "evidence/geometry/geometry_visual_diff.png"
         );
-        const requiredViewPaths = [
-          "geometry_front.png",
-          "geometry_left.png",
-          "geometry_back.png",
-          "geometry_top.png",
-          "geometry_front_left_3_4.png",
-        ].map((filename) =>
-          joinPath(session_root, `evidence/geometry/${filename}`)
-        );
 
         const issues: Array<{
           code: string;
@@ -148,19 +154,6 @@ export function registerGeometryReviewGateTools(): void {
             });
           }
         }
-        if (require_standard_views) {
-          for (const path of requiredViewPaths) {
-            assertInsideRoot(path, session_root);
-            if (!fs.existsSync(path)) {
-              issues.push({
-                code: "GEOMETRY_STANDARD_VIEW_MISSING",
-                severity: "BLOCKER",
-                message: `Missing required standard view: ${path}`,
-              });
-            }
-          }
-        }
-
         const runtime = readGeometryRuntimeContext(session_root);
         if (runtime.phase !== "FINAL_REVIEW_READY") {
           issues.push({
@@ -179,6 +172,22 @@ export function registerGeometryReviewGateTools(): void {
         const manifest = fs.existsSync(manifestPath)
           ? readJsonFile<Record<string, any>>(fs, manifestPath)
           : null;
+        const requiredViews = requiredGeometryViews(manifest);
+        const requiredViewPaths = requiredViews.map((view) =>
+          joinPath(session_root, `evidence/geometry/${evidenceFilename(view)}`)
+        );
+        if (require_standard_views) {
+          for (const path of requiredViewPaths) {
+            assertInsideRoot(path, session_root);
+            if (!fs.existsSync(path)) {
+              issues.push({
+                code: "GEOMETRY_STANDARD_VIEW_MISSING",
+                severity: "BLOCKER",
+                message: `Missing required standard view: ${path}`,
+              });
+            }
+          }
+        }
         const visualReport = fs.existsSync(visualReportPath)
           ? readJsonFile<Record<string, any>>(fs, visualReportPath)
           : null;
@@ -260,7 +269,7 @@ export function registerGeometryReviewGateTools(): void {
               ? visualReport.compared_views.map(String)
               : []
           );
-          const missing = REQUIRED_VIEWS.filter((view) => !compared.has(view));
+          const missing = requiredViews.filter((view) => !compared.has(view));
           if (missing.length > 0) {
             issues.push({
               code: "GEOMETRY_MULTIMODAL_VIEWS_INCOMPLETE",
@@ -306,7 +315,7 @@ export function registerGeometryReviewGateTools(): void {
               ? metrics.views.map((view: any) => [String(view?.view ?? ""), view])
               : []
           );
-          const missing = REQUIRED_VIEWS.filter((view) => !measured.has(view));
+          const missing = requiredViews.filter((view) => !measured.has(view));
           if (missing.length > 0) {
             issues.push({
               code: "GEOMETRY_DETERMINISTIC_VIEWS_INCOMPLETE",
@@ -314,7 +323,7 @@ export function registerGeometryReviewGateTools(): void {
               message: `Fixed-scale diagnosis did not include all final views: ${missing.join(", ")}.`,
             });
           }
-          for (const view of REQUIRED_VIEWS) {
+          for (const view of requiredViews) {
             const metric = measured.get(view);
             if (metric && metric.result !== "PASS") {
               issues.push({

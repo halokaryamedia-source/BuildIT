@@ -97,6 +97,7 @@
 - [x] Return only the canonical Geometry profile plus internal revision scope.
 - [x] Strengthen transformed part, count, parent, symmetry, Texture, and Animation quality enforcement.
 - [x] Retain meaningful detached reference details during foreground segmentation.
+- [x] Require conditional Right Side visual evidence for explicitly asymmetric assets and cover multiple positive archetypes.
 - [x] Make unrelated extended capabilities opt-in and suppress routine diff image payloads.
 - [x] Return deterministic model-route guidance from existing stage context without an extra routing call.
 

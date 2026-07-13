@@ -30,6 +30,7 @@ import {
 const standardViewEnum = z.enum([
   "front",
   "left_side",
+  "right_side",
   "back",
   "top_footprint",
   "front_left_3_4",
@@ -41,7 +42,7 @@ const analyzeGeometryViewsParameters = z.object({
   views: z
     .array(standardViewEnum)
     .min(1)
-    .max(5)
+    .max(6)
     .optional()
     .default(["front", "left_side", "back", "top_footprint", "front_left_3_4"]),
   output_dir: z.string().optional(),
@@ -970,6 +971,11 @@ export function registerGeometryAnalyzerTools(): void {
 
         for (const view of views as StandardGeometryView[]) {
           const panel = profile.panels[view];
+          if (!panel) {
+            throw new Error(
+              `REFERENCE_PANEL_CROP_MISSING: ${view}. A non-zero approved crop is required.`
+            );
+          }
           const current = projectCurrentGeometry({
             view,
             envelope,

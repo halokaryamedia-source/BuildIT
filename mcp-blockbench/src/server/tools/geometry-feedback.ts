@@ -21,6 +21,7 @@ import {
 const standardViewEnum = z.enum([
   "front",
   "left_side",
+  "right_side",
   "back",
   "top_footprint",
   "front_left_3_4",
@@ -52,7 +53,7 @@ const captureVisualFeedbackParameters = z.object({
   views: z
     .array(standardViewEnum)
     .min(1)
-    .max(5)
+    .max(6)
     .optional()
     .default(["left_side", "front", "top_footprint"]),
   front_axis: frontAxisEnum.optional().default("-z"),
@@ -321,6 +322,7 @@ function viewDirection(view: StandardView, axis: FrontAxis): Vec3 {
   const left = scale(normalize(cross(front, up)), -1);
   if (view === "front") return front;
   if (view === "left_side") return left;
+  if (view === "right_side") return scale(left, -1);
   if (view === "back") return scale(front, -1);
   if (view === "top_footprint") return up;
   return normalize(add(add(front, left), scale(up, 0.2)));

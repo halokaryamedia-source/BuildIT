@@ -113,6 +113,8 @@ describe("Black Rhinoceros Geometry blueprint", () => {
     ] as const;
     for (const view of views) {
       const panel = value.panels[view];
+      expect(panel).toBeDefined();
+      if (!panel) throw new Error(`Missing built-in panel: ${view}`);
       expect(panel.crop_normalized[2]).toBeGreaterThan(0);
       expect(panel.crop_normalized[3]).toBeGreaterThan(0);
       expect(panel.regions.length).toBeGreaterThan(0);

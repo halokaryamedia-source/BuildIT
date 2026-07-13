@@ -1,6 +1,7 @@
 export type StandardGeometryView =
   | "front"
   | "left_side"
+  | "right_side"
   | "back"
   | "top_footprint"
   | "front_left_3_4";
@@ -64,7 +65,7 @@ export interface GeometryReferenceProfile {
   canvas_size: number;
   margin_pixels: number;
   front_axis: "-z" | "+z" | "-x" | "+x";
-  panels: Record<StandardGeometryView, GeometryPanelProfile>;
+  panels: Partial<Record<StandardGeometryView, GeometryPanelProfile>>;
   rotation_contracts: Record<string, GeometryRotationContract>;
   part_constraints: GeometryPartConstraint[];
 }
@@ -542,18 +543,19 @@ export function mergeGeometryReferenceProfile(input: {
     canvas_size: input.visualGrounding?.camera_lock?.canvas_size ?? 256,
     margin_pixels: input.visualGrounding?.camera_lock?.margin_pixels ?? 18,
     front_axis: input.visualGrounding?.camera_lock?.front_axis ?? "-z",
-    panels: {} as Record<StandardGeometryView, GeometryPanelProfile>,
+    panels: {} as Partial<Record<StandardGeometryView, GeometryPanelProfile>>,
     rotation_contracts: {},
     part_constraints: [],
   };
 
-  const panels = { ...fallback.panels } as Record<
+  const panels = { ...fallback.panels } as Partial<Record<
     StandardGeometryView,
     GeometryPanelProfile
-  >;
+  >>;
   for (const view of [
     "front",
     "left_side",
+    "right_side",
     "back",
     "top_footprint",
     "front_left_3_4",

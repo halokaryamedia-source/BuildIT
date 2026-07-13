@@ -35,9 +35,24 @@
   },
   "camera": {
     "front_axis_default": "-z",
-    "orthographic_views": ["front", "left_side", "back", "top_footprint"],
-    "perspective_views": ["front_left_3_4"],
-    "views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"],
+    "orthographic_views": [
+      "front",
+      "left_side",
+      "right_side",
+      "back",
+      "top_footprint"
+    ],
+    "perspective_views": [
+      "front_left_3_4"
+    ],
+    "views": [
+      "front",
+      "left_side",
+      "right_side",
+      "back",
+      "top_footprint",
+      "front_left_3_4"
+    ],
     "frame_margin_ratio": 1.25,
     "clean_capture": true,
     "world_bounds_required": true,
@@ -57,8 +72,23 @@
     "free_rescale_forbidden": true,
     "world_signature_required": true,
     "required_final_visual_result": "PASS",
-    "targeted_views": ["left_side", "front", "top_footprint"],
-    "final_views": ["front", "left_side", "back", "top_footprint", "front_left_3_4"]
+    "targeted_views": [
+      "left_side",
+      "front",
+      "top_footprint"
+    ],
+    "final_views": [
+      "front",
+      "left_side",
+      "back",
+      "top_footprint",
+      "front_left_3_4"
+    ],
+    "conditional_final_views": {
+      "ASYMMETRIC": [
+        "right_side"
+      ]
+    }
   },
   "geometry_rotation_policy": {
     "placement_tool": "place_cubes_safe",
@@ -86,13 +116,20 @@
       "identity_sync_tool": "rebind_active_project_identity",
       "revision_prepare_tool": "prepare_geometry_visual_rebuild",
       "revision_scope": {
-        "values": ["LOCAL_REPAIR", "MAJOR_FORM_REVISION"],
+        "values": [
+          "LOCAL_REPAIR",
+          "MAJOR_FORM_REVISION"
+        ],
         "role": "internal_codex_decision",
         "requires_profile_switch": false,
         "requires_reconnect": false,
         "review_state_returns_to_working_state": true
       },
-      "internal_progress_markers": ["PRIMARY_FORM", "STRUCTURAL_DETAIL", "FINAL_REVIEW_READY"],
+      "internal_progress_markers": [
+        "PRIMARY_FORM",
+        "STRUCTURAL_DETAIL",
+        "FINAL_REVIEW_READY"
+      ],
       "internal_progress_markers_are_user_gates": false,
       "compact_context_tool": "get_stage_context",
       "reference_preview_tool": "inspect_reference_visual_preview",
@@ -116,6 +153,11 @@
         "visual_report": "evidence/geometry/geometry_visual_report.json",
         "runtime": "evidence/geometry/geometry_runtime.json",
         "report": "evidence/geometry/geometry_report.json"
+      },
+      "conditional_required_evidence": {
+        "ASYMMETRIC": {
+          "right_side": "evidence/geometry/geometry_right.png"
+        }
       }
     },
     "TEXTURE": {
@@ -127,7 +169,11 @@
       "identity_sync_tool": "rebind_active_project_identity",
       "revision_prepare_tool": "prepare_stage_revision",
       "revision_requires_profile_switch": false,
-      "internal_passes": ["UV", "BASE_TEXTURE", "DETAIL_TEXTURE"],
+      "internal_passes": [
+        "UV",
+        "BASE_TEXTURE",
+        "DETAIL_TEXTURE"
+      ],
       "compact_validation_tool": "validate_reference_contract",
       "atlas_evidence_tool": "save_texture_evidence",
       "review_submission_tool": "submit_stage_for_review",

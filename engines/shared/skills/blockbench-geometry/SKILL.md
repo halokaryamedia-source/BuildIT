@@ -85,4 +85,4 @@ Submission revalidates, creates the next unused non-approved checkpoint, enters 
 - `APPROVED`: Codex acquires a fresh Geometry lease and calls `complete_geometry_stage`.
 - `REVISION`: Codex acquires a fresh Geometry lease and follows the revision flow above.
 
-Final Geometry requires five current views, fixed-scale PASS, structural PASS, matching fingerprint/world signature/reference hash, safe rotations, and current visual acceptance.
+Final Geometry requires the five base views plus conditional `right_side` evidence for asymmetric assets, fixed-scale PASS, structural PASS, matching fingerprint/world signature/reference hash, safe rotations, and current visual acceptance.

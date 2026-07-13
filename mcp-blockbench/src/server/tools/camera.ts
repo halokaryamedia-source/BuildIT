@@ -33,6 +33,7 @@ export const setCameraAngleParameters = z.object({
 const standardViewEnum = z.enum([
   "front",
   "left_side",
+  "right_side",
   "back",
   "top_footprint",
   "front_left_3_4",
@@ -51,7 +52,7 @@ export const captureStandardViewsParameters = z
     views: z
       .array(standardViewEnum)
       .min(1)
-      .max(5)
+      .max(6)
       .optional()
       .default([
         "front",
@@ -109,7 +110,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_standard_views",
     description:
-      "Captures clean rotation-aware standard views through the visual-feedback engine and writes canonical evidence names: <prefix>_front, _left, _back, _top, and _front_left_3_4.",
+      "Captures clean rotation-aware standard views through the visual-feedback engine and writes canonical evidence names. Asymmetric assets may add the conditional right-side view.",
     annotations: {
       title: "Capture Standard Views",
       readOnlyHint: true,
@@ -132,6 +133,7 @@ function prefixFor(
 
 function canonicalViewName(view: StandardView): string {
   if (view === "left_side") return "left";
+  if (view === "right_side") return "right";
   if (view === "top_footprint") return "top";
   return view;
 }
@@ -332,6 +334,7 @@ export function registerCameraTools(): void {
             projection_policy: {
               front: "orthographic",
               left_side: "orthographic",
+              right_side: "orthographic",
               back: "orthographic",
               top_footprint: "orthographic",
               front_left_3_4: "perspective",

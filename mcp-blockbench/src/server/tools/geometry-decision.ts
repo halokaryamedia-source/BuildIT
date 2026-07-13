@@ -14,6 +14,7 @@ import { auditProjectRotations, DEFAULT_ROTATION_POLICY } from "@/lib/worldBound
 const standardViewEnum = z.enum([
   "front",
   "left_side",
+  "right_side",
   "back",
   "top_footprint",
   "front_left_3_4",
@@ -22,7 +23,7 @@ const standardViewEnum = z.enum([
 const visualIssueSchema = z.object({
   code: z.string().regex(/^[A-Z0-9_]+$/),
   message: z.string().min(1),
-  views: z.array(standardViewEnum).min(1).max(5),
+  views: z.array(standardViewEnum).min(1).max(6),
   parts: z.array(z.string().min(1)).max(16).optional().default([]),
 });
 
@@ -31,7 +32,7 @@ const recordGeometryVisualDecisionParameters = z.object({
   result: z.enum(["PASS", "REVISION_REQUIRED"]),
   scope: z.enum(["LOCAL_REPAIR", "MAJOR_FORM_REVISION"]),
   summary: z.string().min(1),
-  compared_views: z.array(standardViewEnum).min(1).max(5),
+  compared_views: z.array(standardViewEnum).min(1).max(6),
   issues: z.array(visualIssueSchema).max(12).optional().default([]),
   reference_sha256: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
 });

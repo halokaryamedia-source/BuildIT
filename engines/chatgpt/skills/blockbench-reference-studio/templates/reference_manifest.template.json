@@ -81,7 +81,12 @@
       "top_footprint",
       "front_left_3_4"
     ],
-    "scale_marker": "<scale_marker>"
+    "scale_marker": "<scale_marker>",
+    "conditional_required_panels": {
+      "ASYMMETRIC": [
+        "right_side"
+      ]
+    }
   },
   "main_format": {
     "height_blocks": "<positive_number>",
@@ -387,6 +392,18 @@
         "min_score": 0.62,
         "scale_basis": "height",
         "regions": []
+      },
+      "right_side": {
+        "crop_normalized": [
+          "<x>",
+          "<y>",
+          "<width_positive>",
+          "<height_positive>"
+        ],
+        "projection": "orthographic",
+        "min_score": 0.7,
+        "scale_basis": "height",
+        "regions": []
       }
     },
     "region_template": {
@@ -405,6 +422,11 @@
         "<part_or_group>"
       ],
       "recommendation": "<specific_repair_instruction>"
+    },
+    "conditional_final_views": {
+      "ASYMMETRIC": [
+        "right_side"
+      ]
     }
   },
   "validation": {
