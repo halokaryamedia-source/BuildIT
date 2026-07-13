@@ -6,11 +6,13 @@ on:
       - Rework
     paths:
       - ".github/scripts/apply_rework_hardening.py"
+      - ".github/scripts/fix_rework_hardening.py"
       - ".github/workflows/rework-hardening.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_rework_hardening.py"
+      - ".github/scripts/fix_rework_hardening.py"
       - ".github/workflows/rework-hardening.yml"
   workflow_dispatch:
 
@@ -34,7 +36,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply hardening patch
-        run: python .github/scripts/apply_rework_hardening.py
+        run: |
+          python .github/scripts/apply_rework_hardening.py
+          python .github/scripts/fix_rework_hardening.py
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -86,6 +90,7 @@ jobs:
         continue-on-error: true
         working-directory: mcp-blockbench
         run: |
+          set -o pipefail
           bun -e 'const pkg = await Bun.file("package.json").json(); const text = await Bun.file("dist/mcp.js").text(); for (const marker of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues", "SYMMETRY_POLICY_MISSING", "TEXTURE_PALETTE_DRIFT", "ANIMATION_HAS_NO_KEYFRAMES"]) { if (!text.includes(marker)) throw new Error(`Missing hardened bundle marker: ${marker}`); }' 2>&1 | tee "$GITHUB_WORKSPACE/hardening-bundle.log"
 
       - name: Capture patched source and diagnostics
