@@ -1,0 +1,74 @@
+name: Rework Asymmetric Asset Hardening
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_asymmetry_hardening.py"
+      - ".github/workflows/rework-asymmetry-hardening.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rework-asymmetry-hardening
+  cancel-in-progress: true
+
+jobs:
+  verify-and-commit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Rework
+        uses: actions/checkout@v4
+        with:
+          ref: Rework
+          fetch-depth: 0
+
+      - name: Apply asymmetric asset hardening
+        run: python .github/scripts/apply_asymmetry_hardening.py
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: mcp-blockbench
+        run: bun install --frozen-lockfile
+
+      - name: Synchronize production skills
+        working-directory: mcp-blockbench
+        run: bun run skills:sync
+
+      - name: Verify synchronized skills
+        working-directory: mcp-blockbench
+        run: bun run skills:check
+
+      - name: Typecheck
+        working-directory: mcp-blockbench
+        run: bun run typecheck
+
+      - name: Test
+        working-directory: mcp-blockbench
+        run: bun test
+
+      - name: Build canonical plugin
+        working-directory: mcp-blockbench
+        run: bun run build
+
+      - name: Verify asymmetric runtime markers
+        working-directory: mcp-blockbench
+        run: |
+          bun -e 'const text = await Bun.file("dist/mcp.js").text(); for (const marker of ["right_side", "geometry_right.png", "ASYMMETRIC", "conditional_final_views"]) { if (!text.includes(marker)) throw new Error(`Missing asymmetric runtime marker: ${marker}`); }'
+
+      - name: Commit verified asymmetric hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git add -f mcp-blockbench/dist/mcp.js
+          git commit -m "feat: validate asymmetric assets with right-side evidence"
+          git push origin HEAD:Rework
