@@ -42,15 +42,15 @@
 
 ## Adaptive model routing
 
-- [x] Add project Codex defaults for Luna Medium with concise output.
+- [x] Add project Codex defaults for Terra Medium with concise output and no controller hop for normal implementation.
 - [x] Lock subagent concurrency to two threads and depth one.
 - [x] Add `routine_auditor` on 5.4 Mini Low for read-only mechanical work.
-- [x] Add `mcp_builder` on Terra Medium for standard implementation and sole active-asset mutation.
+- [x] Add `mcp_builder` on Terra Medium as the fallback sole writer when the parent is not the selected Terra writer or isolation is materially safer.
 - [x] Add `visual_director` on Sol Medium for read-only visual judgment.
 - [x] Add rare `critical_reviewer` on Sol High with explicit reason codes.
 - [x] Set High as the maximum configured effort; forbid xhigh, Extra High, Max, Ultra, and recursive delegation.
 - [x] Add deterministic task classification, parent-model mismatch handling, compact Sol decision packets, escalation, and de-escalation rules.
-- [x] Require one Blockbench writer and prohibit parallel model mutations.
+- [x] Require one selected Blockbench writer and prohibit parallel model mutations.
 - [x] Route deterministic checks away from Sol.
 - [x] Avoid persistent routing telemetry until benchmark data proves it is needed.
 
@@ -64,7 +64,7 @@
 - [x] Register Geometry diagnosis, identity, rotation, validation, review submission, and completion tools in runtime and docs manifests.
 - [x] Update Reference Studio manifest template with non-zero crops, weighted regions, part constraints, rotation contracts, bounded image transport, and one Geometry profile.
 - [x] Update Black Rhinoceros handoff and Geometry architecture documentation.
-- [x] Update OpenSpec/Ponytail to reject separate Geometry rework profiles, unnecessary reconnects, and wasteful model routing.
+- [x] Update OpenSpec/Ponytail to reject separate Geometry rework profiles, unnecessary reconnects, stale workspace/package paths, and wasteful model routing.
 
 ## Regression coverage before local testing
 
@@ -78,23 +78,28 @@
 - [x] Add gate tests for missing views, stale fingerprints, wrong Reference Visual hash, and legacy analyzer output.
 - [x] Add review-flow tests for tool exposure, bounded profile size, automatic review routing, review-to-revision state restoration, and Final Validation Geometry routing.
 - [x] Add model-routing tests for config, locked agent models/efforts, one writer, forbidden effort levels, and adapter policy.
+- [x] Add authority-alignment tests for OpenSpec, package version, canonical workspace/package roots, and deployment workflow paths.
 - [x] Confirm existing skill adapters are byte-identical to canonical skills.
 
-## Final local verification — after GitHub implementation is complete
+## Automated repository verification — complete on GitHub
 
-- [ ] Pull `Rework` once on the local workstation.
-- [ ] Run `bun install --frozen-lockfile`.
-- [ ] Run `bun run skills:check`.
-- [ ] Run full `bun run typecheck`.
-- [ ] Run all `bun test` tests.
-- [ ] Run `bun run build` and confirm `dist/mcp.js` exists.
+- [x] Install dependencies with `bun install --frozen-lockfile`.
+- [x] Run `bun run skills:check`.
+- [x] Run full `bun run typecheck`.
+- [x] Run all `bun test` tests.
+- [x] Run `bun run build` and confirm `dist/mcp.js` exists.
+- [x] Verify the committed `dist/mcp.js` matches the exact source/package version and one-session runtime markers.
+
+## Final local Blockbench acceptance — remaining on the workstation
+
+- [ ] Pull the final `Rework` head once on the local workstation.
 - [ ] Confirm `.codex/config.toml` is accepted by the installed Codex version.
 - [ ] Confirm all four custom agents are discovered with the intended models and efforts.
 - [ ] Load the new plugin binary once.
 - [ ] Run one controlled Black Rhinoceros Geometry production flow through Codex.
 - [ ] Confirm parent model mismatch is handled without asking the user to select worker models.
-- [ ] Confirm only `mcp_builder` acquires the active Blockbench write lease.
-- [ ] Confirm routine checks use Mini, standard mutations use Terra, and Sol is limited to visual judgment.
+- [ ] Confirm exactly one selected Terra writer acquires the active Blockbench write lease.
+- [ ] Confirm routine checks use Mini, normal implementation uses the Terra parent or fallback `mcp_builder`, and Sol is limited to visual judgment.
 - [ ] Confirm Sol High is not invoked during the normal successful flow.
 - [ ] Confirm Codex synchronizes project identity without user JSON edits or profile switching.
 - [ ] Confirm bad Geometry is diagnosed with specific failing views/regions/parts.
