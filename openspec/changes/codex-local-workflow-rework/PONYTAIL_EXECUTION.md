@@ -152,3 +152,9 @@ Stop only for an unresolved authority conflict, missing mandatory runtime, unsaf
 - production release;
 - learned routing or persistent routing telemetry;
 - unrelated mesh, PBR, Hytale, armature, or multi-project expansion.
+
+## Pre-local optimization freeze
+
+After manifest-only authority and compact-context cleanup, do not add or merge another runtime tool, model role, profile, review gate, evidence type, or checkpoint class before the local acceptance run unless it fixes a reproducible P0 blocker or removes a proven duplicate authority.
+
+Further optimization requires measured local acceptance evidence: actual MCP call count, stage-context response bytes, model-route usage, correction cycles, image payload bytes, checkpoint sizes, and elapsed stage time. A theoretical micro-optimization without those measurements is `DEFERRED_NOT_REQUIRED`.

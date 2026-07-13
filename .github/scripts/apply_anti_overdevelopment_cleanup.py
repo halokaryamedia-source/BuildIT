@@ -80,7 +80,16 @@ export function mergeGeometryReferenceProfile(input: {
 write(profile_path, prefix + manifest_only)
 
 # Replace the one Golden Sample fallback synchronization test with a manifest-only test.
-test_path = "mcp-blockbench/tests/reference-studio-sync.test.ts"
+test_candidates = []
+for candidate in (ROOT / "mcp-blockbench/tests").glob("*.test.ts"):
+    candidate_source = candidate.read_text(encoding="utf-8")
+    if "matches the manifest visual profile to the runtime Golden Sample fallback" in candidate_source:
+        test_candidates.append(candidate)
+if len(test_candidates) != 1:
+    raise RuntimeError(
+        f"Expected one Golden Sample fallback test file, found {len(test_candidates)}: {test_candidates}"
+    )
+test_path = str(test_candidates[0].relative_to(ROOT))
 test_source = read(test_path)
 test_source = test_source.replace(
     'import { builtInGeometryProfile } from "../src/lib/geometryReferenceProfiles";',

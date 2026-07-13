@@ -1,14 +1,22 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { evaluateGeometryBlueprint } from "../src/lib/geometryBlueprint";
-import { builtInGeometryProfile } from "../src/lib/geometryReferenceProfiles";
+import { mergeGeometryReferenceProfile } from "../src/lib/geometryReferenceProfiles";
 
-const GOLDEN_SAMPLE_SHA =
-  "fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f";
+const goldenManifest = JSON.parse(
+  readFileSync(
+    "../docs/reference/golden-samples/black_rhinoceros/reference_manifest.json",
+    "utf8"
+  )
+) as Record<string, any>;
 
 function profile() {
-  const value = builtInGeometryProfile(GOLDEN_SAMPLE_SHA);
-  if (!value) throw new Error("Black Rhinoceros built-in profile is missing.");
+  const value = mergeGeometryReferenceProfile({
+    referenceSha256: goldenManifest.reference_visual_lock.sha256,
+    visualGrounding: goldenManifest.visual_grounding,
+    geometry: goldenManifest.geometry,
+  });
+  if (!value) throw new Error("Black Rhinoceros manifest profile is missing.");
   return value;
 }
 
@@ -102,7 +110,7 @@ describe("Black Rhinoceros Geometry blueprint", () => {
     expect(result.issues[0]?.code).toContain("CONTRACT_MISMATCH");
   });
 
-  test("built-in profile has five non-zero crops, critical regions, and rotation contracts", () => {
+  test("manifest profile has five non-zero crops, critical regions, and rotation contracts", () => {
     const value = profile();
     const views = [
       "front",
@@ -114,7 +122,7 @@ describe("Black Rhinoceros Geometry blueprint", () => {
     for (const view of views) {
       const panel = value.panels[view];
       expect(panel).toBeDefined();
-      if (!panel) throw new Error(`Missing built-in panel: ${view}`);
+      if (!panel) throw new Error(`Missing manifest panel: ${view}`);
       expect(panel.crop_normalized[2]).toBeGreaterThan(0);
       expect(panel.crop_normalized[3]).toBeGreaterThan(0);
       expect(panel.regions.length).toBeGreaterThan(0);

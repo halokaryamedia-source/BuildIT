@@ -1,11 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { builtInGeometryProfile } from "../src/lib/geometryReferenceProfiles";
+import { mergeGeometryReferenceProfile } from "../src/lib/geometryReferenceProfiles";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const json = (path: string) => JSON.parse(read(path)) as Record<string, any>;
-const GOLDEN_SHA =
-  "fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f";
 
 const baseViews = [
   "front",
@@ -95,31 +93,28 @@ describe("Reference Studio and Golden Sample synchronization", () => {
     expect(manifest.validation.base_required_views).toEqual(baseViews);
   });
 
-  test("matches the manifest visual profile to the runtime Golden Sample fallback", () => {
+  test("uses the manifest as the only executable Golden Sample geometry authority", () => {
     const manifest = json(
       "../docs/reference/golden-samples/black_rhinoceros/reference_manifest.json"
     );
-    const fallback = builtInGeometryProfile(GOLDEN_SHA);
-    expect(fallback).not.toBeNull();
-    for (const view of baseViews) {
-      const actual = manifest.visual_grounding.panels[view];
-      const expected = fallback!.panels[view];
-      expect(actual.projection).toBe(expected!.projection);
-      expect(actual.min_score).toBe(expected!.minimum_score);
-      expect(actual.scale_basis).toBe(expected!.scale_basis);
-      actual.crop_normalized.forEach((value: number, index: number) =>
-        expect(value).toBeCloseTo(expected!.crop_normalized[index], 10)
-      );
-      expect(actual.regions.map((region: any) => region.id)).toEqual(
-        expected!.regions.map((region) => region.id)
-      );
-    }
-    expect(Object.keys(manifest.geometry.rotation_contracts).sort()).toEqual(
-      Object.keys(fallback!.rotation_contracts).sort()
+    const profile = mergeGeometryReferenceProfile({
+      referenceSha256: manifest.reference_visual_lock.sha256,
+      visualGrounding: manifest.visual_grounding,
+      geometry: manifest.geometry,
+    });
+    expect(profile).not.toBeNull();
+    expect(Object.keys(profile!.panels).sort()).toEqual(baseViews.slice().sort());
+    expect(Object.keys(profile!.rotation_contracts).sort()).toEqual(
+      Object.keys(manifest.geometry.rotation_contracts).sort()
     );
-    expect(manifest.geometry.part_constraints.map((part: any) => part.id)).toEqual(
-      fallback!.part_constraints.map((part) => part.id)
+    expect(profile!.part_constraints.map((part) => part.id)).toEqual(
+      manifest.geometry.part_constraints.map((part: any) => part.id)
     );
+
+    const source = read("src/lib/geometryReferenceProfiles.ts");
+    expect(source).not.toContain("BLACK_RHINO_PROFILE");
+    expect(source).not.toContain("GOLDEN_SAMPLE_SHA");
+    expect(source).not.toContain("builtInGeometryProfile");
   });
 
   test("removes the final stale reconnect instruction from production skills", () => {

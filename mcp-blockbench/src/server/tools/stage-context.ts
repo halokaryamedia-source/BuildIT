@@ -277,17 +277,8 @@ export function registerStageContextTools(): void {
             user_restart_required: false,
           },
           legacy_context_policy: {
-            repository_authority_only: true,
-            reject_external_four_sheet_workflow: true,
             conflict_code: "LEGACY_SKILL_CONFLICT",
-            forbidden_markers: [
-              "four mandatory sheets",
-              "three approval moments",
-              "01_<asset_id>_form_scale_reference.png",
-              "02_<asset_id>_construction_reference.png",
-              "03_<asset_id>_texture_material_reference.png",
-              "04_<asset_id>_motion_pivot_reference.png",
-            ],
+            active_conflict: false,
           },
           reference_visual: manifest.reference_visual_lock
             ? {
@@ -381,24 +372,22 @@ export function registerStageContextTools(): void {
                 }
               : null,
           visual_grounding: {
-            ...(manifest.visual_grounding ?? {}),
             required: stage === "GEOMETRY",
             geometry_profile: "BEDROCK_CUBOID_GEOMETRY",
-            revision_scopes_are_profiles: false,
-            profile_switch_required_inside_geometry: false,
-            reconnect_required_inside_geometry: false,
-            reference_tool: "inspect_reference_visual_preview",
-            feedback_tool: "capture_visual_feedback",
-            diagnosis_tool: "analyze_geometry_views",
-            record_tool: "record_geometry_visual_decision",
-            gate_tool: "verify_geometry_review_ready",
-            approval_tool: "complete_geometry_stage",
-            safe_rotation_tool: "rotate_cube_about_attachment",
-            structural_pass_is_visual_pass: false,
-            multimodal_review_required: true,
-            deterministic_guard_required: true,
+            symmetry_policy: manifest.geometry?.symmetry_policy ?? null,
+            base_required_views:
+              manifest.validation?.base_required_views ??
+              manifest.visual_grounding?.final_views ??
+              [],
+            conditional_required_views:
+              manifest.validation?.conditional_required_views ??
+              manifest.visual_grounding?.conditional_final_views ??
+              {},
+            reference_sha256: manifest.reference_visual_lock?.sha256 ?? null,
             fixed_scale_required: true,
             free_rescale_forbidden: true,
+            deterministic_guard_required: true,
+            contract_source: "references/reference_manifest.json",
           },
         };
         const contextHash = sha256(JSON.stringify(context));

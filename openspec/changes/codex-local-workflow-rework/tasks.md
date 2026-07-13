@@ -119,11 +119,16 @@
 - [x] Expand the final acceptance contract from Geometry-only to ChatGPT package through final workspace completion.
 - [x] Add permanent regression tests for authority, call budgets, zero-start branching, validation ownership, and full stage routing.
 
+- [x] Remove the built-in Black Rhinoceros runtime fallback so the imported manifest is the only executable Geometry authority.
+- [x] Compact stage context by removing duplicated visual-grounding payloads and static legacy marker lists.
+- [x] Make optional model-role discovery lazy and non-blocking.
+- [x] Freeze speculative pre-local expansion until measured local evidence exists.
+
 ## Final local Blockbench acceptance — remaining on the workstation
 
 - [ ] Pull the final `Rework` head once on the local workstation.
 - [ ] Confirm `.codex/config.toml` is accepted by the installed Codex version.
-- [ ] Confirm all four custom agents are discovered with the intended models and efforts.
+- [ ] Optional role discovery is non-blocking; record which roles are available, but do not fail acceptance when the documented parent fallback works.
 - [ ] Load the new plugin binary once.
 - [ ] Run one controlled Black Rhinoceros Geometry production flow through Codex.
 - [ ] Confirm parent model mismatch is handled without asking the user to select worker models.
