@@ -7,13 +7,18 @@ on:
     paths:
       - ".github/scripts/apply_prelocal_e2e_hardening.py"
       - ".github/workflows/prelocal-e2e-hardening.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/apply_prelocal_e2e_hardening.py"
+      - ".github/workflows/prelocal-e2e-hardening.yml"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: prelocal-e2e-hardening
+  group: prelocal-e2e-hardening-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
