@@ -30,7 +30,47 @@ A new sample begins as `reference_candidate`. ChatGPT performs one batched high-
 1. Production Context;
 2. one Golden-Sample-guided Reference Visual.
 
-Technical Markdown, schema-3.3 manifest, Codex handoff, package audit, and candidate ZIP are generated automatically after visual approval. The tracked Black Rhinoceros Golden Sample is the mandatory design-system and technical-completeness benchmark, while its subject-specific anatomy and palette are never copied into another asset.
+Technical Markdown, schema-3.3 manifest, Codex handoff, package audit, and candidate ZIP are generated automatically after visual approval.
+
+The tracked Black Rhinoceros Golden Sample is mandatory for both:
+
+- visual-board layout, camera, facing direction, scale, spacing, and technical hierarchy;
+- Minecraft / Blockbench cuboid construction language and quality.
+
+The source asset controls subject identity. It never creates a realistic or alternate-style rendering branch.
+
+## Minecraft-only upstream invariant
+
+Every Reference Visual SHALL depict an actual Minecraft Bedrock / Blockbench cuboid model, not a realistic subject with pixelated material treatment.
+
+The construction SHALL use:
+
+- planned primary and secondary rectangular masses;
+- meaningful cuboid size variation;
+- stepped transitions for taper and silhouette control;
+- limited purposeful one-axis rotations for approved angled features;
+- stable major masses and separable parts;
+- crisp Minecraft pixel-art texture.
+
+The flow SHALL reject realistic organic renders, smooth mesh-like anatomy, generic voxel filters, PBR/cinematic presentation, uniform cube stacking, micro-cube clutter, and arbitrary rotation noise before user review.
+
+The user SHALL NOT be asked to select realistic versus Minecraft style, a stylization level, or whether cuboid modelling should be used. Those decisions are fixed by the specialized skill.
+
+## Upstream review and correction contract
+
+```text
+source intake
+→ fixed Minecraft interpretation
+→ optional one-batch subject clarification
+→ Production Context approval
+→ one Minecraft cuboid Reference Visual
+→ internal blocking QA
+→ at most one targeted correction of the same visual
+→ Reference Visual approval
+→ automatic technical package and candidate ZIP
+```
+
+A failed visual draft SHALL NOT be presented as approval-ready. If the one allowed correction still fails, the flow SHALL stop with exact blocker codes rather than regenerate repeatedly or offer alternate styles.
 
 ## User-visible production stages
 
@@ -39,11 +79,17 @@ Technical Markdown, schema-3.3 manifest, Codex handoff, package audit, and candi
 3. Animation review only when required;
 4. Final Validation review.
 
-Internal passes, diagnosis scopes, routing, preflight, checkpoints, and evidence generation are not additional user gates.
+Internal passes, diagnosis scopes, routing, preflight, checkpoints, evidence generation, and Reference Visual QA are not additional user gates.
 
 ## Minimum-sufficient execution
 
-- one runtime preflight at startup;
+- no visual-style clarification call;
+- one batched subject clarification turn only when required;
+- exactly one normal Reference Visual generation;
+- at most one blocking correction of the same image;
+- no failed draft shown to the user;
+- no optional style exploration or visual polish loop;
+- one runtime preflight at Codex startup;
 - compact stage context only at stage entry/transition/revision;
 - one Reference Visual inspection per unchanged hash;
 - zero-start Geometry builds primary form before first analysis;
@@ -70,7 +116,8 @@ High is the maximum. Extra High, Max, Ultra, Fast, recursive delegation, broad f
 
 ## Included quality and recovery
 
-- one Reference Visual plus concise stage documents and executable manifest;
+- one Minecraft-only Reference Visual plus concise stage documents and executable manifest;
+- Golden Sample construction, panel-position, camera, and presentation locks;
 - fixed-scale transformed Geometry analysis;
 - semantic view/region/part diagnosis;
 - part, count, parent, symmetry/asymmetry, rotation, Texture, and Animation contracts;
@@ -79,7 +126,13 @@ High is the maximum. Extra High, Max, Ultra, Fast, recursive delegation, broad f
 - one stable MCP tool surface and one Codex/MCP session;
 - atomic reports, checkpoints, transitions, revision preparation, upstream reopen, and final promotion;
 - active/completed workspace lifecycle with immutable completed baseline;
-- automated typecheck, tests, build, bundle, and flow-efficiency regression coverage.
+- automated typecheck, tests, build, bundle, Minecraft-style, and flow-efficiency regression coverage.
+
+## P0 correction boundary
+
+The failed giraffe simulation proved a reproducible upstream P0: the previous prompt could produce a realistic subject with pixel texture and incorrect Golden Sample positioning. Correcting this upstream contract is permitted under the pre-local freeze because it removes an observed invalid branch without changing Geometry/Codex/MCP architecture.
+
+After this correction, no additional Reference Studio style mode, prompt variant, image sheet, approval gate, or regeneration path may be added before measured local acceptance evidence exists.
 
 ## Excluded until explicit approval
 
@@ -87,8 +140,9 @@ High is the maximum. Extra High, Max, Ultra, Fast, recursive delegation, broad f
 - release/deployment;
 - learned routing or persistent routing telemetry;
 - duplicate/versioned authorities or outputs;
+- realistic, semi-realistic-render, cinematic, generic-voxel, or alternate visual style modes;
 - unrelated modelling capabilities outside approved Bedrock cuboid production.
 
 ## Routing identity lock
 
-Project parent default: `gpt-5.6-terra`, medium. The parent default       Terra Medium route performs standard work directly without a controller hop. `mcp_builder` remains the fallback sole MCP writer when isolation is required.
+Project parent default: `gpt-5.6-terra`, medium. The Terra Medium parent performs standard work directly without a controller hop. `mcp_builder` remains the fallback sole MCP writer when isolation is required.
