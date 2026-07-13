@@ -7,13 +7,19 @@ on:
     paths:
       - ".github/scripts/fix_smart_rotation_types.py"
       - ".github/workflows/smart-rotation-fix.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/scripts/fix_smart_rotation_types.py"
+      - ".github/workflows/smart-rotation-fix.yml"
+      - "mcp-blockbench/src/server/tools/geometry-rotation.ts"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: smart-rotation-fix
+  group: smart-rotation-fix-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
