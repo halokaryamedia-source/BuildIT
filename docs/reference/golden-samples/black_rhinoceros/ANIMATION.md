@@ -396,3 +396,14 @@ Movable-ready does not mean an animation clip must be created. It requires only 
   - critical clipping at head, shoulder, belly, tail, or ground;
   - any authored clip included without approved scope;
   - mesh, armature, vertex-weight, or scaling deformation introduced.
+
+
+## Deterministic Animation Quality Contract
+
+This Golden Sample keeps `ANIMATION_SKIPPED`, so no clip may be inferred or generated. The manifest still records the current reusable quality contract for future animated candidates:
+
+- clip length must remain within `0.05–30` seconds;
+- required clips must have animators and keyframes;
+- referenced moving/static groups must exist;
+- root position motion is forbidden unless the package explicitly authorizes it;
+- neutral-pose hierarchy and pivot evidence remain required even when clip production is skipped.

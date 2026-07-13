@@ -98,6 +98,7 @@
 - [x] Strengthen transformed part, count, parent, symmetry, Texture, and Animation quality enforcement.
 - [x] Retain meaningful detached reference details during foreground segmentation.
 - [x] Require conditional Right Side visual evidence for explicitly asymmetric assets and cover multiple positive archetypes.
+- [x] Synchronize the ChatGPT Reference Studio candidate flow, schema 3.3 templates, and the complete manifest-backed Black Rhinoceros Golden Sample.
 - [x] Make unrelated extended capabilities opt-in and suppress routine diff image payloads.
 - [x] Return deterministic model-route guidance from existing stage context without an extra routing call.
 

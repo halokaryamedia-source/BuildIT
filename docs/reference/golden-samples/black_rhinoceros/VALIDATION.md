@@ -38,7 +38,7 @@ This is the mandatory post-build test contract. The completed Blockbench asset m
 | No numbered technical images | Files such as `01_*`, `02_*`, `03_*`, `04_*`, geometry sheets, texture sheets, motion sheets, or extra viewpoint PNGs are absent | PENDING | |
 | Source-copy distinction | `source/original_reference.png` is treated as input evidence and is not counted as a generated Reference Visual | PENDING | |
 | Naming | All filenames and Asset ID values match `black_rhinoceros` | PENDING | |
-| Manifest JSON | Parses successfully and uses schema `3.0` | PENDING | |
+| Manifest JSON | Parses successfully and uses schema `3.3` | PENDING | |
 | Manifest consistency | Manifest values match all Markdown contracts and implementation output | PENDING | |
 | Approval state | Production Context and Reference Visual are recorded as approved; validation remains `PENDING_BUILD` until executed | PENDING | |
 | Image budget | `normal_image_generations = 1`, `targeted_edit_max = 1`, and `post_visual_image_generations = 0` | PENDING | |
@@ -146,7 +146,7 @@ This is the mandatory post-build test contract. The completed Blockbench asset m
 
 ### PASS
 
-Use only when all mandatory tests pass with direct evidence. A PASS must include the final `.bbmodel`, texture atlas, five comparison views, hierarchy/pivot report, export/error log, and completed result table.
+Use only when all mandatory tests pass with direct evidence. A PASS must include the final `.bbmodel`, texture atlas, all manifest-required comparison views, hierarchy/pivot report, export/error log, and completed result table. This bilateral sample requires the five base views; an asymmetric candidate would additionally require `right_side`.
 
 ### REVISION_REQUIRED
 
@@ -178,3 +178,13 @@ REFERENCE_CONFLICT
 ```
 
 Do not guess, silently redesign, rescale, recolor, add a technical image, or repair a conflicting authority inside validation. Report the conflict and identify the earliest authority that must be reopened.
+
+
+## 10. Current Runtime Synchronization
+
+- Reference Studio schema is `3.3`; package type is `golden_sample`.
+- Five base Geometry views are required for this bilateral sample. `right_side` is conditional on `symmetry_policy = ASYMMETRIC`.
+- Geometry review requires current fixed-scale metrics, semantic-region results, multimodal decision, part/parent/count constraints, symmetry result, rotation audit, and evidence freshness.
+- Texture review additionally requires deterministic atlas coverage, alpha, color-budget, palette, UV, and PBR checks.
+- Animation review, when enabled by another candidate, requires duration, animator, keyframe, group-reference, and root-motion checks.
+- Every normal stage transition and upstream reopen continues in the same Codex and MCP session. A fresh stage lease is required; reconnect is forbidden.

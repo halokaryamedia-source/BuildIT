@@ -9,6 +9,12 @@
 - Reference Visual: `black_rhinoceros_reference_visual.png`
 - Reference SHA-256: `fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f`
 - Canonical Model: `black_rhinoceros.bbmodel`
+
+- Manifest Schema: `3.3`
+- Sample Type: `golden_sample`
+- Promotion Status: `PROMOTED`
+- Symmetry Policy: `BILATERAL`
+- Local MCP Acceptance: `PENDING`
 - Animation: `ANIMATION_SKIPPED`
 - Geometry: cuboid-only
 - Front: `-Z`
@@ -27,15 +33,17 @@ get_stage_context
 → manage_project_write_lease acquire
 → inspect_reference_visual_preview
 → capture_visual_feedback
-→ analyze_geometry_views
+→ analyze_geometry_views with return_diff_image=false during correction
 → edit diagnosed parts
-→ final five-view evidence
+→ final required-view evidence with write_diff_image=true
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
 
 `submit_geometry_for_review` runs current Geometry validation, uses its embedded readiness result, creates the next unused non-approved review checkpoint, and atomically changes state to `GEOMETRY_REVIEW` without reconnecting.
+
+All later stage transitions and any upstream reopen also remain in the same Codex and MCP session. Release the old lease and acquire a fresh target-stage lease; never reconnect for normal recovery.
 
 Do not ask the user to edit JSON, select a profile, choose a checkpoint name, or repeatedly reopen Blockbench.
 
@@ -81,7 +89,7 @@ Free-rescaling, unrelated trial-and-error changes, mesh work, PBR, Texture befor
 
 ## Final evidence
 
-Current review evidence must include:
+Current review evidence must include the five base files below. Add `geometry_right.png` only when a future package declares `ASYMMETRIC`:
 
 ```text
 geometry_front.png
@@ -96,6 +104,6 @@ geometry_runtime.json
 geometry_report.json
 ```
 
-Final Geometry requires current five-view visual and deterministic PASS, matching fingerprint and Reference Visual hash, structural PASS, and safe rotations.
+Final Geometry requires all manifest-required visual and deterministic views to PASS, matching fingerprint/world signature/Reference Visual hash, structural and symmetry PASS, current evidence, and safe rotations.
 
 After explicit user approval, call `complete_geometry_stage`.

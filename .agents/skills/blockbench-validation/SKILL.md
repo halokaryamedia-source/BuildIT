@@ -19,7 +19,7 @@ Use only when stage is `FINAL_VALIDATION` with profile `FINAL_VALIDATION_READONL
 ```text
 verify_geometry_review_ready
 → final texture atlas evidence
-→ clean five-view final capture
+→ clean final required-view capture
 → validate_reference_contract: FINAL_VALIDATION
 → complete VALIDATION.md
 → export canonical final model/textures to mcp/final
@@ -40,7 +40,7 @@ verify_geometry_review_ready
 - Final-package-only issue: remain in `FINAL_VALIDATION`; after user feedback, acquire a fresh Final Validation lease and call `prepare_stage_revision`.
 - Geometry, Texture, or Animation issue: do not repair silently in Final Validation. Acquire a current Final Validation lease and call `reopen_stage_for_revision` for the earliest affected approved stage.
 
-Upstream reopen preserves approved checkpoints as rollback baselines, marks downstream stages `REVALIDATION_REQUIRED`, activates the canonical target-stage profile, releases the old lease, and requires one canonical stage-transition reconnect. Do not activate removed repair profiles.
+Upstream reopen preserves approved checkpoints as rollback baselines, marks downstream stages `REVALIDATION_REQUIRED`, activates the canonical target-stage profile, releases the old lease, and continues in the same Codex and MCP session. Acquire a fresh target-stage lease; do not reconnect or activate removed repair profiles.
 
 ## User decision
 

@@ -11,6 +11,10 @@ Status: `APPROVED`
 - Reference Manifest: `reference_manifest.json`
 - Canonical Model: `<asset_id>.bbmodel`
 
+- Manifest Schema: `3.3`
+- Sample Type: `<reference_candidate_or_golden_sample>`
+- Promotion Status: `<candidate_not_promoted_or_promoted_golden_sample>`
+
 ## Source authority order
 
 1. `PRODUCTION_CONTEXT.md`
@@ -47,7 +51,7 @@ get_stage_context
 → capture_visual_feedback
 → analyze_geometry_views
 → bounded diagnosed edits
-→ final five-view diagnosis with write_diff_image=true
+→ final required-view diagnosis with write_diff_image=true
 → visual_director final acceptance only when needed
 → record_geometry_visual_decision
 → submit_geometry_for_review
@@ -56,6 +60,10 @@ get_stage_context
 ```
 
 `submit_geometry_for_review` performs fresh `validate_geometry_contract`, verifies embedded review readiness, creates the next unused review checkpoint, and enters `GEOMETRY_REVIEW`. Do not run duplicate validation steps immediately before submission.
+
+Final required views are `front`, `left_side`, `back`, `top_footprint`, and `front_left_3_4`. Add `right_side` only when `symmetry_policy = ASYMMETRIC`.
+
+Normal implementation uses the selected Terra Medium writer. Sol Medium is inspection-only and is used only for unresolved cross-view judgment, subjective feedback after deterministic PASS, or final visual acceptance. No separate model-routing call is required.
 
 ## Stage routing
 
@@ -67,6 +75,8 @@ FINAL_VALIDATION → blockbench-production + blockbench-validation → FINAL_VAL
 ```
 
 Maximum loaded production skills: `2`. All stage changes continue in the same Codex session and MCP session.
+
+Upstream reopen also continues in the same Codex and MCP session; it releases the prior lease and requires a fresh target-stage lease, not a reconnect.
 
 ## Import
 

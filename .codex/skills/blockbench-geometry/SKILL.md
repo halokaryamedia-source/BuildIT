@@ -26,7 +26,7 @@ get_stage_context
 → capture_visual_feedback
 → analyze_geometry_views with return_diff_image=false during normal correction
 → bounded edits of diagnosed parts
-→ final five-view capture/analyze with write_diff_image=true
+→ final required-view capture/analyze with write_diff_image=true
 → visual_director final acceptance
 → record_geometry_visual_decision
 → submit_geometry_for_review

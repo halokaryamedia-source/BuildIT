@@ -1,6 +1,6 @@
 ---
 name: blockbench-reference-studio
-description: "Create a complete approved Minecraft Bedrock / Blockbench package in ChatGPT using one generated Reference Visual, then produce machine-readable Geometry diagnosis, rotation, texture, animation, validation, and Codex handoff contracts."
+description: "Create a complete approved Minecraft Bedrock / Blockbench reference candidate or Golden Sample package in ChatGPT using one generated Reference Visual, then produce synchronized machine-readable Geometry, Texture, Animation, Validation, and Codex handoff contracts."
 ---
 
 # Blockbench Reference Studio
@@ -32,6 +32,26 @@ approved package
 ```
 
 Do not connect to MCP, edit `.bbmodel`, acquire a lease, or simulate production from this skill.
+
+## Contract version and sample modes
+
+This skill emits Reference Studio contract `3.3`, compatible with MCP-Blockbench `1.7.0+` and the one-session Codex workflow.
+
+Choose exactly one package mode before writing files:
+
+- `reference_candidate`: a fresh sample package awaiting promotion. Use this for every newly created sample reference.
+- `golden_sample`: a repository-tracked baseline that has already passed package audit, automated repository verification, and explicit promotion approval.
+
+When the user asks to create a new sample reference:
+
+1. use a fresh `asset_id` and set `sample_type` to `reference_candidate`;
+2. never copy an existing `.bbmodel`, checkpoint, evidence, runtime identity, or Golden Sample manifest;
+3. complete the normal Production Context and Reference Visual approvals;
+4. generate the full package and ZIP with `promotion_status = candidate_not_promoted`;
+5. stop after package audit and user approval—the candidate must not silently replace a tracked Golden Sample;
+6. promote only through a repository update that changes `sample_type` to `golden_sample`, records the exact visual hash, preserves the candidate files byte-for-byte, and leaves local MCP production acceptance explicitly pending until tested.
+
+A Golden Sample is a promoted reference package, not a prebuilt Blockbench model.
 
 ## Final package
 
@@ -109,6 +129,33 @@ These files may add technical precision but may not introduce a new visible desi
 
 The manifest must include data that allows MCP to diagnose errors rather than guess.
 
+#### Package identity and compatibility
+
+`reference_manifest.json` must declare:
+
+```json
+{
+  "schema_version": "3.3",
+  "sample_type": "reference_candidate",
+  "contract": {
+    "reference_studio": "3.3",
+    "mcp_blockbench_minimum": "1.7.0",
+    "workflow": "single_reference_visual_one_session"
+  }
+}
+```
+
+For a promoted repository baseline, use `sample_type = golden_sample` and `promotion_status = promoted_golden_sample`. Do not change the approved Reference Visual or its SHA-256 during promotion.
+
+Every package must also declare:
+
+- `geometry.symmetry_policy` as `BILATERAL` or `ASYMMETRIC`;
+- bilateral pairs or explicit asymmetry contracts;
+- executable part-count, parent, size, center, and rotation contracts where reliable;
+- Texture quality limits for alpha, visible coverage, color budget, and palette drift;
+- Animation quality limits for required clips, duration, animator/keyframe presence, group references, and root-motion policy;
+- five base final views, plus conditional `right_side` when `ASYMMETRIC`.
+
 #### Panel crops
 
 For the five base views—and `right_side` whenever `symmetry_policy` is `ASYMMETRIC`—record normalized `[x, y, width, height]` values in full-image `0..1` space. Every required crop must:
@@ -185,7 +232,7 @@ Verify:
 3. numbered/technical PNGs are absent;
 4. manifest and Markdown decisions agree;
 5. Reference Visual hash and dimensions match;
-6. all five crops are non-zero and valid;
+6. all five base crops are non-zero and valid, plus a non-zero `right_side` crop when `symmetry_policy` is `ASYMMETRIC`;
 7. semantic regions cover identity-critical silhouette areas;
 8. part constraints cover primary masses and critical details;
 9. all authorized rotations have contracts;
@@ -222,7 +269,7 @@ get_stage_context
 → targeted repair from ranked diagnostics
 → STRUCTURAL_DETAIL
 → affected-view diagnosis
-→ final five-view diagnosis with write_diff_image=true
+→ final required-view diagnosis with write_diff_image=true (five base views plus `right_side` when `ASYMMETRIC`)
 → visual_director final acceptance only when needed
 → record_geometry_visual_decision
 → submit_geometry_for_review

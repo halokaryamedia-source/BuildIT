@@ -337,3 +337,17 @@ Use Box UV to preserve stable texel density and simplify mirrored paired parts. 
   - blurred or anti-aliased output;
   - unapproved alpha, emissive, PBR, or Vibrant Visuals content;
   - texture work changes or compensates for incorrect geometry instead of reporting the geometry issue.
+
+
+## Deterministic Texture Quality Contract
+
+The manifest enforces the current Texture quality policy before review:
+
+- anti-aliasing is forbidden;
+- partial alpha ratio must remain `0`;
+- visible atlas coverage must be at least `0.5%`;
+- unique colors must not exceed `96`;
+- visible pixels are compared against the approved palette with maximum color distance `72` and maximum outlier ratio `20%`;
+- atlas dimensions, UV bounds, PBR absence, and current evidence hashes are mandatory.
+
+`record_stage_review_report` cannot replace these checks; `validate_reference_contract` must pass before `submit_stage_for_review`.

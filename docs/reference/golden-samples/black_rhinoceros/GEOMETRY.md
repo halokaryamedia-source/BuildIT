@@ -471,3 +471,13 @@ Hierarchy names are canonical. Additional organizational groups may be introduce
   - mesh or forbidden micro-cube usage;
   - visible z-fighting, floating major parts, or incorrect ground contact;
   - Top / Footprint inconsistent with side/front/back construction.
+
+
+## Machine-Readable Enforcement and Review Route
+
+- Manifest schema: `3.3`.
+- Symmetry policy: `BILATERAL`, with executable ear, front-leg, and rear-leg pair contracts. `right_side` is therefore not a required final panel for this sample.
+- The manifest contains numeric primary-mass center/size ranges, exact segment-count limits for horns/tail/limbs, parent contracts, and eight rotation contracts.
+- Normal correction runs `analyze_geometry_views` without returning the diff image. The final required-view pass writes the canonical diff.
+- Review submission uses `submit_geometry_for_review`, which performs fresh structural and visual readiness validation, creates the next unused checkpoint, releases the lease, and enters `GEOMETRY_REVIEW`.
+- Revision remains inside `BEDROCK_CUBOID_GEOMETRY` using `LOCAL_REPAIR` or `MAJOR_FORM_REVISION`; no reconnect or removed repair profile is allowed.

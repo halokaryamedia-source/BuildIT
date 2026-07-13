@@ -22,7 +22,8 @@
     "post_visual_image_generations": 0,
     "hidden_per_angle_generation_allowed": false,
     "additional_technical_images_allowed": false,
-    "final_state": "reference_package_complete_validation_pending_build"
+    "final_state": "reference_package_complete_validation_pending_build",
+    "promotion_status": "<candidate_not_promoted_or_promoted_golden_sample>"
   },
   "package": {
     "root_name": "<asset_id>_blockbench_reference",
@@ -220,7 +221,7 @@
         ]
       }
     },
-    "symmetry_policy": "BILATERAL",
+    "symmetry_policy": "<BILATERAL_or_ASYMMETRIC>",
     "symmetry_tolerance_units": 0.35,
     "symmetry_pairs": [
       {
@@ -271,7 +272,9 @@
       "minimum_opaque_ratio": 0.005,
       "maximum_unique_colors": 96,
       "maximum_palette_distance": 72,
-      "maximum_palette_outlier_ratio": 0.2
+      "maximum_palette_outlier_ratio": 0.2,
+      "anti_aliasing_allowed": false,
+      "palette_hex": []
     }
   },
   "animation": {
@@ -427,7 +430,8 @@
       "ASYMMETRIC": [
         "right_side"
       ]
-    }
+    },
+    "review_submission_tool": "submit_geometry_for_review"
   },
   "validation": {
     "execution_status": "PENDING_BUILD",
@@ -443,7 +447,19 @@
       "PASS",
       "REVISION_REQUIRED",
       "BLOCKER"
-    ]
+    ],
+    "base_required_views": [
+      "front",
+      "left_side",
+      "back",
+      "top_footprint",
+      "front_left_3_4"
+    ],
+    "conditional_required_views": {
+      "ASYMMETRIC": [
+        "right_side"
+      ]
+    }
   },
   "approvals": {
     "production_context": {
@@ -457,5 +473,11 @@
   },
   "resolved_decisions": [],
   "unresolved_blockers": [],
-  "files": []
+  "files": [],
+  "sample_type": "<reference_candidate_or_golden_sample>",
+  "contract": {
+    "reference_studio": "3.3",
+    "mcp_blockbench_minimum": "1.7.0",
+    "workflow": "single_reference_visual_one_session"
+  }
 }

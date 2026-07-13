@@ -88,7 +88,7 @@ create project when absent
 → capture_visual_feedback
 → analyze_geometry_views
 → bounded diagnosed construction/correction
-→ final five-view capture/analyze
+→ final required-view capture/analyze (five base views plus conditional `right_side`)
 → record_geometry_visual_decision
 → submit_geometry_for_review
 → lease released
@@ -97,7 +97,7 @@ create project when absent
 
 `analyze_geometry_views` persists metrics and diff, so it requires the Geometry lease. Ephemeral visual inspection does not persist evidence.
 
-Current Geometry evidence must match project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual hash, five views, analyzer, visual decision, and rotation audit. Hierarchy/group-transform changes require fresh capture/analyze.
+Current Geometry evidence must match project UUID, compatibility fingerprint, transformed world-space signature, Reference Visual hash, all manifest-required views, analyzer, visual decision, and rotation audit. Hierarchy/group-transform changes require fresh capture/analyze.
 
 `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes. Use `place_cubes_safe` and `modify_cubes` for unrotated work. Every non-zero rotation uses `rotate_cube_about_attachment`.
 

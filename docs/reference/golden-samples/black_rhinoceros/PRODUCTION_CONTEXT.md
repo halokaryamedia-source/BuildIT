@@ -1,5 +1,10 @@
 # Black Rhinoceros — PRODUCTION CONTEXT
 
+**Reference Studio Contract:** `3.3`  
+**Sample Type:** `golden_sample`  
+**Promotion Status:** `PROMOTED`  
+**Local MCP Acceptance:** `PENDING`
+
 ## 1. MAIN FORMAT
 
 ### Context Decision Core
@@ -103,7 +108,7 @@
 - Reference Visual Status: `APPROVED`
 - Technical Package Policy: Auto-generated after visual approval; no additional routine approval required
 - Approval Basis: Existing user-approved Black Rhinoceros Golden Sample and current instruction to complete the `.md` and `.json` package according to the one-image skill flow
-- Documentation Revision Date: `2026-07-12`
+- Documentation Revision Date: `2026-07-13`
 
 ## 2. GEOMETRY
 
@@ -269,3 +274,13 @@
 - Ground-Contact Behavior: Neutral pose must return all four feet to `Y = 0`. No permanent foot sliding, floating, or body-height drift.
 - Clipping Risks: Front horn into muzzle, head into shoulder, legs into belly, rear legs into tail, ear bases into head, and feet below the ground plane
 - Validation-Critical Motions: Pivot placement, parent-child inheritance, neutral pose recovery, rigid-cuboid preservation, and clipping clearance only; no clip timing or performance validation is required.
+
+
+## Golden Sample Synchronization Lock
+
+- The tracked package is a promoted `golden_sample` using manifest schema `3.3`.
+- The Reference Visual remains byte-locked to SHA-256 `fc46201d38fa1b357d285dd0450becfef1f88c65f39b179dfa41ea27ba182d5f`.
+- The asset is explicitly `BILATERAL`; the five base panels are sufficient. A Right Side panel is required only for future candidates declared `ASYMMETRIC`.
+- `reference_manifest.json` now carries the same panel crops, semantic regions, part constraints, rotation contracts, symmetry rules, Texture limits, and Animation limits used by MCP-Blockbench.
+- The package contains no prebuilt model. Local zero-start MCP production acceptance remains pending and must create a fresh `.bbmodel` through MCP.
+- A future sample must first be produced as `reference_candidate`; repository promotion must preserve the approved candidate files and exact Reference Visual hash.
