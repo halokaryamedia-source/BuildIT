@@ -110,7 +110,21 @@ jobs:
 
       - name: Typecheck
         working-directory: mcp-blockbench
-        run: bun run typecheck
+        run: |
+          set +e
+          bun run typecheck > ../typecheck.log 2>&1
+          code=$?
+          cat ../typecheck.log
+          exit $code
+
+      - name: Upload typecheck diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-flow-typecheck-diagnostics
+          path: typecheck.log
+          retention-days: 1
+          if-no-files-found: ignore
 
       - name: Run full test suite
         working-directory: mcp-blockbench
