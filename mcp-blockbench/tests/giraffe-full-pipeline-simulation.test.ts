@@ -255,11 +255,13 @@ describe("reticulated giraffe MCP full-pipeline simulation", () => {
     expect(trace.at(-1)?.done).toBe(true);
     expect(trace.every((entry, index) => entry.revision === index)).toBe(true);
 
-    expect(resolveApprovedStageTransition("GEOMETRY", true)).toMatchObject({
+    const geometryTransition = resolveApprovedStageTransition("GEOMETRY", true);
+    expect(geometryTransition).toMatchObject({
       nextState: "TEXTURE_IN_PROGRESS",
       nextStage: "TEXTURE",
-      reconnect_required: undefined,
+      nextProfile: "BEDROCK_CUBOID_TEXTURE",
     });
+    expect("reconnect_required" in geometryTransition).toBe(false);
     expect(resolveApprovedStageTransition("TEXTURE", true)).toMatchObject({
       nextState: "ANIMATION_IN_PROGRESS",
       nextStage: "ANIMATION",
