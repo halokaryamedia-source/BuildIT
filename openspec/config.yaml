@@ -17,7 +17,7 @@ context: |
   Workspace lifecycle authority: engines/shared/workspace/WORKSPACE_CONTRACT.md.
   Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
   Default and only normal MCP endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
-  Current source facts: package version 1.6.0; runtime tool counts must be verified rather than assumed.
+  Current source facts: package version 1.7.0; runtime tool counts must be verified rather than assumed.
   Guardrails: do not create a second MCP server, parallel source root, versioned folder, duplicate canonical model, or unrelated agent framework.
   Active workflow change: openspec/changes/codex-local-workflow-rework/.
   OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
