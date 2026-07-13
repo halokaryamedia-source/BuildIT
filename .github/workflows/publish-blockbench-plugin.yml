@@ -17,12 +17,17 @@ jobs:
   build-and-publish:
     if: github.ref == 'refs/heads/Rework' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Rework
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Apply pending Rework hardening
+        if: hashFiles('.github/scripts/apply_rework_hardening.py') != ''
+        run: python .github/scripts/apply_rework_hardening.py
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -32,6 +37,10 @@ jobs:
       - name: Install dependencies
         working-directory: mcp-blockbench
         run: bun install --frozen-lockfile
+
+      - name: Synchronize production skills
+        working-directory: mcp-blockbench
+        run: bun run skills:sync
 
       - name: Verify source
         working-directory: mcp-blockbench
@@ -44,20 +53,21 @@ jobs:
         working-directory: mcp-blockbench
         run: bun run build
 
-      - name: Verify plugin identity and one-session runtime
+      - name: Verify plugin identity and hardened runtime
         working-directory: mcp-blockbench
         run: |
-          bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, "BuildIT MCP Server", "MIVUBI", `version:\"${pkg.version}\"`, "min_version", "5.0.0", "/bb-mcp", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing final plugin marker: ${required}`); } if (/(?:require|requireNativeModule)\(\s*["\x27]three["\x27]\s*\)/.test(text)) throw new Error("Unsupported runtime load for three remains in dist/mcp.js");'
+          bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js was not generated"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, "BuildIT MCP Server", "MIVUBI", `version:\"${pkg.version}\"`, "min_version", "5.0.0", "/bb-mcp", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues", "SYMMETRY_POLICY_MISSING", "TEXTURE_PALETTE_DRIFT", "ANIMATION_HAS_NO_KEYFRAMES"]) { if (!text.includes(required)) throw new Error(`Missing hardened plugin marker: ${required}`); } if (/(?:require|requireNativeModule)\(\s*["\x27]three["\x27]\s*\)/.test(text)) throw new Error("Unsupported runtime load for three remains in dist/mcp.js");'
 
-      - name: Publish canonical bundle to Rework
+      - name: Publish verified hardening to Rework
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
           git add -f mcp-blockbench/dist/mcp.js
           if git diff --cached --quiet; then
-            echo "Canonical plugin bundle is already current."
+            echo "Canonical source and plugin bundle are already current."
             exit 0
           fi
-          git commit -m "build: refresh Blockbench plugin bundle"
+          git commit -m "refactor: harden MCP quality routing and usage"
           git push origin HEAD:Rework
