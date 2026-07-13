@@ -78,7 +78,21 @@ jobs:
 
       - name: Run full test suite
         working-directory: mcp-blockbench
-        run: bun test
+        run: |
+          set +e
+          bun test > ../geometry-recovery-test.log 2>&1
+          code=$?
+          cat ../geometry-recovery-test.log
+          exit $code
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geometry-recovery-test
+          path: geometry-recovery-test.log
+          retention-days: 1
+          if-no-files-found: ignore
 
       - name: Build canonical plugin
         working-directory: mcp-blockbench
