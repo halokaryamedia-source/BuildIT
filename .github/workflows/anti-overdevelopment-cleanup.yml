@@ -6,11 +6,13 @@ on:
       - Rework
     paths:
       - ".github/scripts/apply_anti_overdevelopment_cleanup.py"
+      - ".github/scripts/fix_anti_overdevelopment_patch.py"
       - ".github/workflows/anti-overdevelopment-cleanup.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - ".github/scripts/apply_anti_overdevelopment_cleanup.py"
+      - ".github/scripts/fix_anti_overdevelopment_patch.py"
       - ".github/workflows/anti-overdevelopment-cleanup.yml"
   workflow_dispatch:
 
@@ -36,8 +38,12 @@ jobs:
       - name: Apply cleanup
         run: |
           set +e
-          python .github/scripts/apply_anti_overdevelopment_cleanup.py > patch.log 2>&1
+          python .github/scripts/fix_anti_overdevelopment_patch.py > patch.log 2>&1
           code=$?
+          if [ "$code" -eq 0 ]; then
+            python .github/scripts/apply_anti_overdevelopment_cleanup.py >> patch.log 2>&1
+            code=$?
+          fi
           cat patch.log
           exit $code
 
