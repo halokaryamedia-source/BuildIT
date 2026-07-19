@@ -92,15 +92,24 @@ jobs:
           set -o pipefail
           bun run build 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/build.log"
 
-      - name: Verify committed final bundle
+      - name: Verify generated plugin bundle
         id: bundle
         continue-on-error: true
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
         run: |
           mkdir -p "$GITHUB_WORKSPACE/verification-logs"
           set -o pipefail
           {
-            git diff --exit-code -- dist/mcp.js
-            bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js is missing"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "BuildIT MCP Server", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing committed bundle marker: ${required}`); } if (text.includes("version:\"1.6.3\"")) throw new Error("Legacy plugin metadata remains in dist/mcp.js"); console.log(`Committed plugin bundle PASS: v${pkg.version}`);'
+            bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js is missing"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "BuildIT MCP Server", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing generated bundle marker: ${required}`); } if (text.includes("version:\"1.6.3\"")) throw new Error("Legacy plugin metadata remains in dist/mcp.js"); console.log(`Generated plugin bundle PASS: v${pkg.version}`);'
+
+            if [[ "$EVENT_NAME" == "push" && "$ACTOR" == "github-actions[bot]" ]]; then
+              git diff --exit-code -- dist/mcp.js
+              echo "Canonical Rework bundle is synchronized."
+            else
+              echo "Canonical bundle synchronization is deferred to Publish Blockbench Plugin Bundle on Rework."
+            fi
           } 2>&1 | tee "$GITHUB_WORKSPACE/verification-logs/bundle.log"
 
       - name: Upload verification logs
