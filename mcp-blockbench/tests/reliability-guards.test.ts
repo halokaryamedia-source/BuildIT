@@ -6,14 +6,17 @@ const json = (path: string) =>
   JSON.parse(read(path)) as Record<string, any>;
 
 describe("Ponytail-scoped MCP reliability guards", () => {
-  test("uses one composite write-lease capability in every exact profile", () => {
+  test("keeps manual lease management available as one advanced recovery capability", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
+    const tool = read("src/server/tools/lease.ts");
     expect(profiles.core_tools).toContain("manage_project_write_lease");
     expect(
       profiles.forbidden_in_normal_profiles.includes(
         "manage_project_write_lease"
       )
     ).toBe(false);
+    expect(tool).toContain("Advanced lease inspection and conflict recovery");
+    expect(tool).toContain("normal_workflow_auto_managed: true");
   });
 
   test("passes the transport session identity into tool execution", () => {
@@ -23,16 +26,19 @@ describe("Ponytail-scoped MCP reliability guards", () => {
     expect(source).toContain("sessionManager.get(sessionId)");
   });
 
-  test("binds mutations to owner, project, stage, state, profile, and session root", () => {
+  test("keeps exclusive writer and path protection while auto-refreshing the same session", () => {
     const source = read("src/lib/writeLease.ts");
     for (const marker of [
+      "WRITE_LEASE_OWNED",
       "WRITE_LEASE_OWNER_MISMATCH",
       "WRITE_LEASE_PROJECT_CHANGED",
-      "WRITE_LEASE_STATE_STALE",
-      "WRITE_LEASE_STAGE_STALE",
-      "WRITE_LEASE_PROFILE_STALE",
       "WRITE_LEASE_ROOT_MISMATCH",
       "assertInsideRoot(path, lease.sessionRoot)",
+      "ensureProjectWriteLease",
+      "lease.stateRevision = stateRevision(state)",
+      "lease.stage = stateStage(state)",
+      "lease.profileRevision = context.profileRevision",
+      "if (readOnlyHint === true) return false",
     ]) {
       expect(source).toContain(marker);
     }
