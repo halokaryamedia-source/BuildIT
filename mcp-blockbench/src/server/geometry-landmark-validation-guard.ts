@@ -17,14 +17,16 @@ interface ToolDefinitionLike {
   execute: (args: Record<string, unknown>, context?: ToolContext) => Promise<unknown>;
 }
 
+type Anchor3 = [AnchorSelector, AnchorSelector, AnchorSelector];
+
 interface LandmarkContract {
   id?: string;
   cube_patterns?: string[];
-  anchor?: AnchorSelector;
+  anchor?: Anchor3;
   expected_world_point?: Vec3;
   expected_world_range?: { min?: Vec3; max?: Vec3 };
   target_patterns?: string[];
-  target_anchor?: AnchorSelector;
+  target_anchor?: Anchor3;
   maximum_distance_units?: number;
   required?: boolean;
   severity?: "WARNING" | "REVISION_REQUIRED";
@@ -121,16 +123,16 @@ function outsideRange(
   return Math.sqrt(squared);
 }
 
-function anchor(value: unknown): AnchorSelector {
+function anchor(value: unknown): Anchor3 {
   if (
     Array.isArray(value) &&
     value.length >= 3 &&
     value.every((item) => ["min", "center", "max"].includes(String(item)))
   ) {
     return [
-      String(value[0]) as AnchorSelector[0],
-      String(value[1]) as AnchorSelector[1],
-      String(value[2]) as AnchorSelector[2],
+      String(value[0]) as AnchorSelector,
+      String(value[1]) as AnchorSelector,
+      String(value[2]) as AnchorSelector,
     ];
   }
   return ["center", "center", "center"];
