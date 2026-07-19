@@ -157,11 +157,14 @@ describe("audited multi-stage MCP flow", () => {
       expect(profiles.profiles[removed]).toBeUndefined();
     }
     expect(stages.global.profile_transition_policy).toBe(
-      "stage_transition_same_session"
+      "automatic_stage_transition_same_session"
     );
     expect(stages.global.stage_transition_reconnect_required).toBe(false);
     for (const stage of ["TEXTURE", "ANIMATION", "FINAL_VALIDATION"]) {
-      expect(stages.profiles[stage].identity_sync_tool).toBe(
+      expect(stages.profiles[stage].identity_reconciliation).toBe(
+        "AUTOMATIC_ON_NEXT_MUTATION"
+      );
+      expect(stages.profiles[stage].diagnostic_identity_tool).toBe(
         "rebind_active_project_identity"
       );
       expect(stages.profiles[stage].review_submission_tool).toBe(
