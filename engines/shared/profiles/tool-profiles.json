@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.7",
+  "schema_version": "2.8",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
   "profile_change_policy": "stage_transition_only",
   "core_tools": [
@@ -24,7 +24,7 @@
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and session, including identity synchronization, diagnosis, revision, review submission, validation, and approval.",
+      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and session, including automatic setup, reference-driven direct transforms, attachment fitting, diagnosis, revision, review submission, validation, and approval.",
       "allowed_tools": [
         "create_project",
         "rebind_active_project_identity",
@@ -39,6 +39,7 @@
         "place_cubes_safe",
         "modify_cubes",
         "rotate_cube_about_attachment",
+        "apply_cube_transforms",
         "duplicate_element",
         "rename_element",
         "remove_element",
