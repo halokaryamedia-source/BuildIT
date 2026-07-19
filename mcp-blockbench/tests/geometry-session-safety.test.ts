@@ -67,7 +67,7 @@ describe("Geometry diagnostic authority", () => {
 });
 
 describe("single-session Geometry workflow", () => {
-  test("normal Geometry exposes identity sync and revision preparation", () => {
+  test("normal Geometry exposes identity recovery and revision preparation", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     const geometry = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
@@ -79,7 +79,7 @@ describe("single-session Geometry workflow", () => {
     expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
   });
 
-  test("identity synchronization is lease-exempt but strictly guarded", () => {
+  test("canonical creation auto-synchronizes identity while recovery remains strictly guarded", () => {
     const identity = read("src/server/tools/project-identity.ts");
     const project = read("src/server/tools/project.ts");
     const lease = read("src/lib/writeLease.ts");
@@ -97,7 +97,11 @@ describe("single-session Geometry workflow", () => {
     }
     expect(identity).not.toContain("PROJECT_IDENTITY_BOOTSTRAP_REQUIRED");
     expect(identity).toContain("expected_previous_project_uuid: z.string().min(1).nullable()");
-    expect(project).toContain("save_path: z.string().min(1).optional()");
+    expect(project).toContain("canonicalProjectPath(session_root, asset_id)");
+    expect(project).toContain('operation: "create_project_auto_sync"');
+    expect(project).toContain("manual_identity_sync_required: false");
+    expect(project).toContain("manual_write_lease_required: false");
+    expect(project).toContain("ensureProjectWriteLease");
     expect(lease).toContain(
       'if (toolName === "rebind_active_project_identity") return false;'
     );
