@@ -8,11 +8,18 @@ import {
   type NativeFsLike,
 } from "@/lib/atomicFiles";
 
-interface FinalizationFs extends NativeFsLike {
-  cpSync(source: string, target: string, options: { recursive: true; force?: boolean }): void;
+type FinalizationFs = NativeFsLike & {
+  cpSync(
+    source: string,
+    target: string,
+    options: { recursive: true; force?: boolean }
+  ): void;
   copyFileSync(source: string, target: string): void;
-  rmSync(path: string, options?: { force?: boolean; recursive?: boolean }): void;
-}
+  rmSync(
+    path: string,
+    options?: { force?: boolean; recursive?: boolean }
+  ): void;
+};
 
 interface PathModuleLike {
   resolve(...paths: string[]): string;
@@ -29,11 +36,20 @@ let installed = false;
 function nativeFs(): FinalizationFs {
   // @ts-ignore Blockbench runtime permission API.
   const value = requireNativeModule("fs", {
-    message: "Final approval needs access to promote validated files and complete the workspace.",
+    message:
+      "Final approval needs access to promote validated files and complete the workspace.",
     optional: false,
   });
   if (!value) throw new Error("Filesystem access was denied.");
-  return value as FinalizationFs;
+  const fs = value as unknown as FinalizationFs;
+  if (
+    typeof fs.cpSync !== "function" ||
+    typeof fs.copyFileSync !== "function" ||
+    typeof fs.rmSync !== "function"
+  ) {
+    throw new Error("WORKSPACE_FINALIZATION_FILESYSTEM_CAPABILITY_MISSING");
+  }
+  return fs;
 }
 
 function pathModule(): PathModuleLike {
@@ -43,7 +59,7 @@ function pathModule(): PathModuleLike {
     optional: false,
   });
   if (!value) throw new Error("Path access was denied.");
-  return value as PathModuleLike;
+  return value as unknown as PathModuleLike;
 }
 
 function slash(value: string): string {
@@ -52,10 +68,15 @@ function slash(value: string): string {
 
 function rewriteStrings(value: unknown, from: string, to: string): unknown {
   if (typeof value === "string") return value.replaceAll(from, to);
-  if (Array.isArray(value)) return value.map((item) => rewriteStrings(item, from, to));
+  if (Array.isArray(value)) {
+    return value.map((item) => rewriteStrings(item, from, to));
+  }
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, rewriteStrings(item, from, to)])
+      Object.entries(value).map(([key, item]) => [
+        key,
+        rewriteStrings(item, from, to),
+      ])
     );
   }
   return value;
@@ -103,14 +124,18 @@ export function finalizeApprovedWorkspace(input: {
 
   for (const required of [stagedModel, stagedTextures, statePath, projectPath]) {
     if (!fs.existsSync(required)) {
-      throw new Error(`WORKSPACE_FINALIZATION_REQUIRED_FILE_MISSING: ${required}`);
+      throw new Error(
+        `WORKSPACE_FINALIZATION_REQUIRED_FILE_MISSING: ${required}`
+      );
     }
   }
 
   const state = readJsonFile<Record<string, any>>(fs, statePath);
   const metadata = readJsonFile<Record<string, any>>(fs, projectPath);
   if (state.workflow?.state !== "DONE") {
-    throw new Error(`WORKSPACE_FINALIZATION_STATE_MISMATCH: ${state.workflow?.state ?? "unknown"}`);
+    throw new Error(
+      `WORKSPACE_FINALIZATION_STATE_MISMATCH: ${state.workflow?.state ?? "unknown"}`
+    );
   }
   if (state.asset?.id !== input.assetId || metadata.asset_id !== input.assetId) {
     throw new Error("WORKSPACE_FINALIZATION_ASSET_MISMATCH");
@@ -141,7 +166,11 @@ export function finalizeApprovedWorkspace(input: {
   const activePrefix = slash(activeRoot);
   const completedPrefix = slash(completedRoot);
   const timestamp = new Date().toISOString();
-  const completedState = rewriteStrings(state, activePrefix, completedPrefix) as Record<string, any>;
+  const completedState = rewriteStrings(
+    state,
+    activePrefix,
+    completedPrefix
+  ) as Record<string, any>;
   completedState.lifecycle = {
     ...(completedState.lifecycle ?? {}),
     status: "COMPLETED",
@@ -149,7 +178,11 @@ export function finalizeApprovedWorkspace(input: {
   completedState.updated_at = timestamp;
   completedState.updated_by = "automatic-workspace-finalization";
 
-  const completedMetadata = rewriteStrings(metadata, activePrefix, completedPrefix) as Record<string, any>;
+  const completedMetadata = rewriteStrings(
+    metadata,
+    activePrefix,
+    completedPrefix
+  ) as Record<string, any>;
   completedMetadata.lifecycle = {
     ...(completedMetadata.lifecycle ?? {}),
     status: "COMPLETED",
@@ -212,7 +245,11 @@ export function finalizeApprovedWorkspace(input: {
     asset_id: input.assetId,
     completed_root: completedRoot,
     user_output_root: path.join(completedRoot, "blockbench"),
-    model_path: path.join(completedRoot, "blockbench", `${input.assetId}.bbmodel`),
+    model_path: path.join(
+      completedRoot,
+      "blockbench",
+      `${input.assetId}.bbmodel`
+    ),
     approval_ref: input.approvalRef,
     completed_at: timestamp,
     manual_workspace_completion_required: false,
