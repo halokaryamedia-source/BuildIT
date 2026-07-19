@@ -6,17 +6,20 @@ const json = (path: string) =>
   JSON.parse(read(path)) as Record<string, any>;
 
 describe("Ponytail-scoped MCP reliability guards", () => {
-  test("keeps manual lease management available as one advanced recovery capability", () => {
+  test("keeps manual lease management registered but diagnostic-only", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     const tool = read("src/server/tools/lease.ts");
-    expect(profiles.core_tools).toContain("manage_project_write_lease");
+    const stable = read("src/server/stable-tool-surface.ts");
+    expect(profiles.core_tools).not.toContain("manage_project_write_lease");
     expect(
       profiles.forbidden_in_normal_profiles.includes(
         "manage_project_write_lease"
       )
-    ).toBe(false);
+    ).toBe(true);
+    expect(profiles.profiles.DIAGNOSTIC_ESCALATION.include_all).toBe(true);
     expect(tool).toContain("Advanced lease inspection and conflict recovery");
     expect(tool).toContain("normal_workflow_auto_managed: true");
+    expect(stable).toContain('"manage_project_write_lease"');
   });
 
   test("passes the transport session identity into tool execution", () => {
