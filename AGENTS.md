@@ -72,7 +72,7 @@ Never ask the user to restart Codex merely to load optional roles during an acti
 - `get_stage_context` and other correctly annotated read-only inspection tools never require a write lease.
 - Mutating tools carrying `session_root` automatically acquire, refresh, and renew the same-session lease when state, stage, or profile revisions advance.
 - `rebind_active_project_identity` and `manage_project_write_lease` are diagnostic recovery tools only. Never call them in the normal single-user path; use them only for unrecoverable metadata corruption or a real concurrent-writer conflict.
-- `analyze_geometry_views` persists canonical evidence and therefore remains a Geometry mutation even though it primarily diagnoses the model.
+- `analyze_geometry_views` persists canonical evidence and therefore requires the Geometry write lease internally; the lease is prepared automatically for the current Codex writer.
 - Current Geometry evidence is bound to compatibility fingerprint and transformed world-space signature.
 - Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision, enters `GEOMETRY_REVIEW`, and releases the lease.
 - After user approval or revision, Codex continues in the same session; the next safe mutating operation prepares current-stage ownership automatically.
