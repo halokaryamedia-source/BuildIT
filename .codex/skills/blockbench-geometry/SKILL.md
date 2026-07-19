@@ -137,10 +137,10 @@ final required-view capture/analyze with write_diff_image=true
 → GEOMETRY_REVIEW
 ```
 
-All final views, project identity, fingerprints, transformed world-space
-signature, Reference Visual hash, analyzer result, primary gate, visual decision,
-and applicable attachment evidence must be current. Direct transforms do not
-remove the final absolute visual requirement.
+All final views, project identity, fingerprints, transformed world-space signature,
+Reference Visual hash, analyzer result, primary gate, visual decision, and
+applicable attachment evidence must be current. Direct transforms do not remove
+the final absolute visual requirement.
 
 ## Compatibility and efficiency invariants
 
