@@ -5,6 +5,7 @@ import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
 import { installAutomaticProjectIdentityGuards } from "./automatic-project-identity-guard";
 import { installAutomaticStageContextRouting } from "./automatic-stage-context-routing";
+import { installAutomaticWorkspaceFinalization } from "./automatic-workspace-finalization";
 import { installFinalValidationGeometryGuards } from "./final-validation-geometry-guards";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
@@ -142,6 +143,10 @@ initializeToolProfiles();
 // Reconcile a reopened canonical project's runtime UUID before the profile/lease
 // mutation boundary runs. This keeps manual identity tools diagnostic-only.
 installAutomaticProjectIdentityGuards();
+
+// Final approval promotes validated output and completes the workspace without a
+// separate CLI command or extra public MCP tool.
+installAutomaticWorkspaceFinalization();
 
 // Keep one registered tool surface for the lifetime of the plugin. Logical
 // profiles still guard every execution, but profile changes no longer invalidate
