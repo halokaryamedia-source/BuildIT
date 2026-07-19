@@ -16,8 +16,8 @@ import {
 } from "@/lib/worldBounds";
 import { assertGeometryMutationPhase } from "@/lib/geometryRuntime";
 
-const number = z.number().finite();
-const vec3 = z.tuple([number, number, number]);
+const finiteNumber = z.number().finite();
+const vec3 = z.tuple([finiteNumber, finiteNumber, finiteNumber]);
 const anchorValue = z.enum(["min", "center", "max"]);
 const anchor3 = z.tuple([anchorValue, anchorValue, anchorValue]);
 const standardView = z.enum([
@@ -50,6 +50,28 @@ const parameters = z.object({
   require_render_mesh: z.boolean().optional().default(false),
 });
 
+type Anchor = z.infer<typeof anchorValue>;
+type TransformItem = z.output<typeof transformSpec>;
+type DirectTransformInput = z.output<typeof parameters>;
+
+interface TransformNodeLike {
+  origin?: number[];
+  rotation?: number[];
+  parent?: TransformNodeLike | "root" | null;
+}
+
+interface RenderedGeometry {
+  corners: Vec3[];
+  pivot: Vec3;
+  source: "render_mesh" | "manual_transform";
+}
+
+interface ResolvedTransform {
+  item: TransformItem;
+  cube: Cube;
+  target: Cube | null;
+}
+
 export const geometryDirectTransformToolDocs: ToolSpec[] = [
   {
     name: "apply_cube_transforms",
@@ -64,20 +86,6 @@ export const geometryDirectTransformToolDocs: ToolSpec[] = [
     status: STATUS_STABLE,
   },
 ];
-
-type Anchor = "min" | "center" | "max";
-
-interface TransformNodeLike {
-  origin?: number[];
-  rotation?: number[];
-  parent?: TransformNodeLike | "root" | null;
-}
-
-interface RenderedGeometry {
-  corners: Vec3[];
-  pivot: Vec3;
-  source: "render_mesh" | "manual_transform";
-}
 
 function finiteVec3(value: unknown, fallback: Vec3 = [0, 0, 0]): Vec3 {
   if (!Array.isArray(value) || value.length < 3) return [...fallback];
@@ -120,7 +128,9 @@ export function anchorPointFromBounds(
 }
 
 function boundsFromCorners(corners: Vec3[]): { min: Vec3; max: Vec3 } {
-  if (!corners.length) throw new Error("DIRECT_TRANSFORM_RENDERED_CORNERS_MISSING");
+  if (!corners.length) {
+    throw new Error("DIRECT_TRANSFORM_RENDERED_CORNERS_MISSING");
+  }
   const min: Vec3 = [Infinity, Infinity, Infinity];
   const max: Vec3 = [-Infinity, -Infinity, -Infinity];
   for (const corner of corners) {
@@ -143,16 +153,14 @@ function canvasMesh(cube: Cube): any | null {
 }
 
 function vectorTemplate(mesh: any): any | null {
-  const candidates = [
+  for (const candidate of [
     mesh?.position,
     mesh?.geometry?.boundingBox?.min,
     mesh?.geometry?.boundingBox?.max,
-  ];
-  for (const candidate of candidates) {
-    if (candidate?.clone) {
-      const value = candidate.clone();
-      if (value?.set) return value;
-    }
+  ]) {
+    if (!candidate?.clone) continue;
+    const value = candidate.clone();
+    if (value?.set) return value;
   }
   return null;
 }
@@ -167,13 +175,15 @@ function renderedCorners(cube: Cube): Vec3[] | null {
     geometry.computeBoundingBox?.();
     const box = geometry.boundingBox;
     if (!box?.min || !box?.max) return null;
-    const xs = [Number(box.min.x), Number(box.max.x)];
-    const ys = [Number(box.min.y), Number(box.max.y)];
-    const zs = [Number(box.min.z), Number(box.max.z)];
+    const axes = [
+      [Number(box.min.x), Number(box.max.x)],
+      [Number(box.min.y), Number(box.max.y)],
+      [Number(box.min.z), Number(box.max.z)],
+    ];
     const points: Vec3[] = [];
-    for (const x of xs) {
-      for (const y of ys) {
-        for (const zValue of zs) {
+    for (const x of axes[0]) {
+      for (const y of axes[1]) {
+        for (const zValue of axes[2]) {
           const point = vectorTemplate(mesh);
           if (!point?.applyMatrix4) return null;
           point.set(x, y, zValue);
@@ -263,10 +273,7 @@ export function inverseParentRotationVector(
   return result;
 }
 
-function worldVectorToParentLocal(cube: Cube, vector: Vec3): {
-  vector: Vec3;
-  source: "render_mesh" | "manual_transform";
-} {
+function worldVectorToParentLocal(cube: Cube, vector: Vec3): Vec3 {
   const mesh = canvasMesh(cube);
   const parent = mesh?.parent;
   if (parent?.worldToLocal) {
@@ -284,45 +291,90 @@ function worldVectorToParentLocal(cube: Cube, vector: Vec3): {
           Number(end.y) - Number(start.y),
           Number(end.z) - Number(start.z),
         ];
-        if (result.every(Number.isFinite)) {
-          return { vector: result, source: "render_mesh" };
-        }
+        if (result.every(Number.isFinite)) return result;
       }
     } catch {
-      // Fall through to deterministic parent-rotation inversion.
+      // Deterministic fallback below.
     }
   }
-
-  const rotations = parentChain(cube).map((node) => finiteVec3(node.rotation));
-  return {
-    vector: inverseParentRotationVector(vector, rotations),
-    source: "manual_transform",
-  };
+  return inverseParentRotationVector(
+    vector,
+    parentChain(cube).map((node) => finiteVec3(node.rotation))
+  );
 }
 
 function findCube(reference: string): Cube {
   const cube = (Cube.all ?? []).find(
-    (candidate) => candidate.uuid === reference || candidate.name === reference
+    (candidate: Cube) =>
+      candidate.uuid === reference || candidate.name === reference
   );
   if (!cube) throw new Error(`DIRECT_TRANSFORM_CUBE_MISSING: ${reference}`);
   return cube;
 }
 
-function maxCornerDisplacement(before: Vec3[], after: Vec3[]): number {
-  if (before.length !== after.length) return Number.POSITIVE_INFINITY;
-  return Math.max(...before.map((point, index) => distance(point, after[index])));
+function resolveTransforms(transforms: TransformItem[]): ResolvedTransform[] {
+  return transforms.map(
+    (item: TransformItem): ResolvedTransform => ({
+      item,
+      cube: findCube(item.cube),
+      target: item.connection_target
+        ? findCube(item.connection_target)
+        : null,
+    })
+  );
 }
 
-function targetPoint(input: {
-  target: Cube | null;
-  targetWorldPoint?: Vec3;
-  targetAnchor: [Anchor, Anchor, Anchor];
-}): Vec3 | null {
-  if (input.targetWorldPoint) return input.targetWorldPoint;
-  if (!input.target) return null;
-  const geometry = renderedGeometry(input.target);
-  const bounds = boundsFromCorners(geometry.corners);
-  return anchorPointFromBounds(bounds.min, bounds.max, input.targetAnchor);
+function targetPoint(item: TransformItem, target: Cube | null): Vec3 | null {
+  if (item.target_world_point) return finiteVec3(item.target_world_point);
+  if (!target) return null;
+  const bounds = boundsFromCorners(renderedGeometry(target).corners);
+  return anchorPointFromBounds(bounds.min, bounds.max, item.target_anchor);
+}
+
+function maxCornerDisplacement(before: Vec3[], after: Vec3[]): number {
+  if (before.length !== after.length) return Number.POSITIVE_INFINITY;
+  return Math.max(
+    ...before.map((point: Vec3, index: number) => distance(point, after[index]))
+  );
+}
+
+async function runAffectedViewAnalysis(
+  sessionRoot: string,
+  views: DirectTransformInput["analysis_views"],
+  context?: ToolContext
+): Promise<{ result: any; warning: string | null }> {
+  if (views.length === 0) return { result: null, warning: null };
+  const analyzer = getAllToolDefinitions()["analyze_geometry_views"] as unknown as {
+    execute?: (
+      args: Record<string, unknown>,
+      context?: ToolContext
+    ) => Promise<any>;
+  };
+  if (!analyzer?.execute) {
+    return { result: null, warning: "DIRECT_TRANSFORM_ANALYZER_UNAVAILABLE" };
+  }
+  try {
+    return {
+      result: await analyzer.execute(
+        {
+          session_root: sessionRoot,
+          expected_project_uuid: Project!.uuid,
+          views,
+          return_diff_image: false,
+          write_diff_image: true,
+        },
+        context
+      ),
+      warning: null,
+    };
+  } catch (error) {
+    return {
+      result: null,
+      warning: `DIRECT_TRANSFORM_ANALYSIS_FAILED: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    };
+  }
 }
 
 export function registerGeometryDirectTransformTools(): void {
@@ -330,133 +382,122 @@ export function registerGeometryDirectTransformTools(): void {
     geometryDirectTransformToolDocs[0].name,
     {
       ...geometryDirectTransformToolDocs[0],
-      async execute(
-        { session_root, transforms, analysis_views, require_render_mesh },
-        context?: ToolContext
-      ) {
+      async execute(input: DirectTransformInput, context?: ToolContext) {
         if (!Project) throw new Error("No Blockbench project is open.");
+        const { session_root, transforms, analysis_views, require_render_mesh } =
+          input;
 
         // Reuse the existing Geometry mutation boundary so final review evidence
-        // is invalidated without introducing another workflow phase or profile.
+        // becomes stale without adding another workflow phase or profile.
         assertGeometryMutationPhase(
           "rotate_cube_about_attachment",
           {},
           "BEDROCK_CUBOID_GEOMETRY"
         );
 
-        const resolved = transforms.map((item) => ({
-          item,
-          cube: findCube(item.cube),
-          target: item.connection_target
-            ? findCube(item.connection_target)
-            : null,
-        }));
-        const unique = new Set(resolved.map(({ cube }) => cube.uuid));
-        if (unique.size !== resolved.length) {
+        const resolved = resolveTransforms(transforms);
+        if (new Set(resolved.map(({ cube }: ResolvedTransform) => cube.uuid)).size !== resolved.length) {
           throw new Error("DIRECT_TRANSFORM_DUPLICATE_CUBE_IN_BATCH");
         }
-
-        const before = new Map(
-          resolved.map(({ cube }) => [cube.uuid, renderedGeometry(cube)])
+        const before = new Map<string, RenderedGeometry>(
+          resolved.map(({ cube }: ResolvedTransform) => [
+            cube.uuid,
+            renderedGeometry(cube),
+          ])
         );
 
         Undo.initEdit({
-          elements: resolved.map(({ cube }) => cube),
+          elements: resolved.map(({ cube }: ResolvedTransform) => cube),
           outliner: true,
           collections: [],
         });
 
-        let results: Array<Record<string, unknown>> = [];
+        let output: Array<Record<string, unknown>>;
         try {
           for (const { item, cube } of resolved) {
             const from = item.from ? finiteVec3(item.from) : finiteVec3(cube.from);
             const to = item.to ? finiteVec3(item.to) : finiteVec3(cube.to);
-            const origin = item.origin
-              ? finiteVec3(item.origin)
-              : anchorPointFromBounds(from, to, item.pivot_anchor);
             cube.extend({
               from,
               to,
-              origin,
+              origin: item.origin
+                ? finiteVec3(item.origin)
+                : anchorPointFromBounds(from, to, item.pivot_anchor),
               rotation: finiteVec3(item.rotation),
             });
           }
           Canvas.updateAll();
 
           for (const { item, cube, target } of resolved) {
+            const destination = targetPoint(item, target);
             const shouldSnap =
-              item.snap_to_target ?? Boolean(target || item.target_world_point);
+              item.snap_to_target ?? Boolean(destination);
             if (!shouldSnap) continue;
-            const destination = targetPoint({
-              target,
-              targetWorldPoint: item.target_world_point
-                ? finiteVec3(item.target_world_point)
-                : undefined,
-              targetAnchor: item.target_anchor,
-            });
             if (!destination) {
               throw new Error(
                 `DIRECT_TRANSFORM_TARGET_REQUIRED: ${cube.name} requested snapping without a target.`
               );
             }
-            const current = renderedGeometry(cube);
-            const translationWorld = subtract(destination, current.pivot);
-            const translation = worldVectorToParentLocal(cube, translationWorld);
+            const translation = worldVectorToParentLocal(
+              cube,
+              subtract(destination, renderedGeometry(cube).pivot)
+            );
             cube.extend({
-              from: add(finiteVec3(cube.from), translation.vector),
-              to: add(finiteVec3(cube.to), translation.vector),
-              origin: add(finiteVec3(cube.origin), translation.vector),
+              from: add(finiteVec3(cube.from), translation),
+              to: add(finiteVec3(cube.to), translation),
+              origin: add(finiteVec3(cube.origin), translation),
               rotation: finiteVec3(cube.rotation),
             });
           }
           Canvas.updateAll();
 
-          results = resolved.map(({ item, cube, target }) => {
-            const previous = before.get(cube.uuid)!;
-            const current = renderedGeometry(cube);
-            if (require_render_mesh && current.source !== "render_mesh") {
-              throw new Error(
-                `DIRECT_TRANSFORM_RENDER_MESH_REQUIRED: ${cube.name} used deterministic fallback.`
-              );
+          output = resolved.map(
+            ({ item, cube, target }: ResolvedTransform): Record<string, unknown> => {
+              const current = renderedGeometry(cube);
+              if (require_render_mesh && current.source !== "render_mesh") {
+                throw new Error(
+                  `DIRECT_TRANSFORM_RENDER_MESH_REQUIRED: ${cube.name} used deterministic fallback.`
+                );
+              }
+              const destination = targetPoint(item, target);
+              const gap = destination
+                ? distance(current.pivot, destination)
+                : null;
+              if (
+                gap !== null &&
+                (item.snap_to_target ?? true) &&
+                gap > item.maximum_connection_gap
+              ) {
+                throw new Error(
+                  `DIRECT_TRANSFORM_CONNECTION_REJECTED: ${cube.name} pivot gap ${gap.toFixed(
+                    4
+                  )}u exceeds ${item.maximum_connection_gap}u.`
+                );
+              }
+              const previous = before.get(cube.uuid);
+              if (!previous) {
+                throw new Error("DIRECT_TRANSFORM_BEFORE_STATE_MISSING");
+              }
+              return {
+                cube: { name: cube.name, uuid: cube.uuid },
+                target: target
+                  ? { name: target.name, uuid: target.uuid }
+                  : null,
+                from: [...cube.from],
+                to: [...cube.to],
+                origin: [...cube.origin],
+                rotation: [...cube.rotation],
+                rendered_pivot_world: current.pivot,
+                rendered_transform_source: current.source,
+                connection_gap_units: gap,
+                maximum_connection_gap: item.maximum_connection_gap,
+                maximum_rendered_corner_displacement: maxCornerDisplacement(
+                  previous.corners,
+                  current.corners
+                ),
+              };
             }
-            const destination = targetPoint({
-              target,
-              targetWorldPoint: item.target_world_point
-                ? finiteVec3(item.target_world_point)
-                : undefined,
-              targetAnchor: item.target_anchor,
-            });
-            const gap = destination ? distance(current.pivot, destination) : null;
-            if (
-              gap !== null &&
-              (item.snap_to_target ?? true) &&
-              gap > item.maximum_connection_gap
-            ) {
-              throw new Error(
-                `DIRECT_TRANSFORM_CONNECTION_REJECTED: ${cube.name} pivot gap ${gap.toFixed(
-                  4
-                )}u exceeds ${item.maximum_connection_gap}u.`
-              );
-            }
-            return {
-              cube: { name: cube.name, uuid: cube.uuid },
-              target: target
-                ? { name: target.name, uuid: target.uuid }
-                : null,
-              from: [...cube.from],
-              to: [...cube.to],
-              origin: [...cube.origin],
-              rotation: [...cube.rotation],
-              rendered_pivot_world: current.pivot,
-              rendered_transform_source: current.source,
-              connection_gap_units: gap,
-              maximum_connection_gap: item.maximum_connection_gap,
-              maximum_rendered_corner_displacement: maxCornerDisplacement(
-                previous.corners,
-                current.corners
-              ),
-            };
-          });
+          );
 
           Undo.finishEdit(
             `Apply ${resolved.length} reference-driven cube transform(s)`
@@ -467,49 +508,22 @@ export function registerGeometryDirectTransformTools(): void {
           throw error;
         }
 
-        let visualAnalysis: any = null;
-        let visualWarning: string | null = null;
-        if (analysis_views.length > 0) {
-          const analyzer = getAllToolDefinitions()[
-            "analyze_geometry_views"
-          ] as unknown as {
-            execute?: (
-              args: Record<string, unknown>,
-              context?: ToolContext
-            ) => Promise<any>;
-          };
-          if (!analyzer?.execute) {
-            visualWarning = "DIRECT_TRANSFORM_ANALYZER_UNAVAILABLE";
-          } else {
-            try {
-              visualAnalysis = await analyzer.execute(
-                {
-                  session_root,
-                  expected_project_uuid: Project.uuid,
-                  views: analysis_views,
-                  return_diff_image: false,
-                  write_diff_image: true,
-                },
-                context
-              );
-            } catch (error) {
-              visualWarning = `DIRECT_TRANSFORM_ANALYSIS_FAILED: ${
-                error instanceof Error ? error.message : String(error)
-              }`;
-            }
-          }
-        }
-
+        const analysis = await runAffectedViewAnalysis(
+          session_root,
+          analysis_views,
+          context
+        );
         const visualResult =
-          visualAnalysis?.structuredContent?.result ??
-          visualAnalysis?.structuredContent?.status ??
+          analysis.result?.structuredContent?.result ??
+          analysis.result?.structuredContent?.status ??
           null;
+
         return {
           content: [
             {
               type: "text" as const,
               text:
-                `Applied ${results.length} reference-driven transform(s). ` +
+                `Applied ${output.length} reference-driven transform(s). ` +
                 (visualResult
                   ? `Affected-view analysis: ${visualResult}.`
                   : "Run affected-view analysis before Geometry review."),
@@ -517,13 +531,13 @@ export function registerGeometryDirectTransformTools(): void {
           ],
           structuredContent: {
             status: "PASS",
-            transform_count: results.length,
-            transforms: results,
+            transform_count: output.length,
+            transforms: output,
             analysis_views,
             visual_result: visualResult,
             visual_report_path:
-              visualAnalysis?.structuredContent?.report_path ?? null,
-            visual_warning: visualWarning,
+              analysis.result?.structuredContent?.report_path ?? null,
+            visual_warning: analysis.warning,
             visual_analysis_required_before_review: visualResult !== "PASS",
             manifest_rotation_contract_required: false,
             next_action:
