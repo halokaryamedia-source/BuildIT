@@ -1,6 +1,6 @@
 ---
 name: blockbench-geometry
-description: "Deterministic two-phase Bedrock Geometry with an enforced primary-form boundary, smart attachment fitting, explicit pivots, visible contract rotations, fixed-scale diagnosis, one Terra writer, and guarded review submission."
+description: "Efficient Bedrock cuboid Geometry with automatic project ownership, primary-form discipline, contract smart fitting, reference-driven direct transforms, rendered pivot checks, targeted analysis, and guarded review submission."
 ---
 
 # Blockbench Geometry
@@ -12,121 +12,149 @@ they are not extra user reviews or profiles.
 ## Entry
 
 ```text
-get_stage_context
-→ create_project when absent, with canonical save_path + session_root + asset_id
-→ save_canonical_project
-→ rebind identity when required
-→ one selected Terra writer acquires the Geometry lease
+get_stage_context once
+→ create_project(session_root, asset_id) when absent
+→ MCP derives path, saves, synchronizes identity/profile, and prepares write ownership
 → inspect_reference_visual_preview once per unchanged hash
+→ begin Geometry directly
 ```
+
+Do not calculate `save_path`, rebind UUID, activate a profile, or manage a lease
+in the normal single-user path.
 
 ## Enforced zero-start route
 
 ```text
 PRIMARY_FORM
-→ build only manifest PRIMARY_MASS and PROVISIONAL_SUPPORT cuboids
-→ use mid-range dimensions/centers, not arbitrary range extremes
-→ no ears, ossicones, mane, tail, decorative transitions, or micro detail
-→ smart-fit every required primary attachment contract
-→ capture/analyze left_side + front + top_footprint
+→ build only PRIMARY_MASS and PROVISIONAL_SUPPORT cuboids
+→ use reference/manifest proportions without arbitrary range extremes
+→ apply required primary rotations through the routing rules below
+→ capture/analyze left_side + front + top_footprint once
 → verify_primary_form_ready
-→ save_canonical_project
 → STRUCTURAL_DETAIL
 ```
 
-`verify_primary_form_ready` must pass before structural detail is allowed. A
-failed gate means repair existing primary cuboids; do not add more cubes to hide
-the silhouette error.
+`verify_primary_form_ready` must pass before structural detail. Repair existing
+primary cuboids instead of adding detail to hide a broken silhouette.
 
 During PRIMARY_FORM:
 
-- keep within `geometry.primary_form_gate.maximum_cubes`;
-- body, neck, head/muzzle, and four support chains must match manifest numeric
-  constraints;
-- required neck/head rotations must be applied with
-  `rotate_cube_about_attachment` in its default smart-fit mode;
-- all required hooves remain at `Y=0`;
-- primary left/front/top scores and extents must pass the internal gate.
+- remain inside the primary cube budget;
+- match body, neck, head/muzzle, and support-chain proportions;
+- keep required ground contacts at `Y=0`;
+- use an actual pivoted transform for visibly angled forms;
+- pass primary left/front/top scores and extents.
 
-## Smart attachment fitting
+## Rotation and pivot routing
 
-Do not place an angled cuboid at an arbitrary final location and then try to
-rotate it in place.
+The approved Reference Visual is the visible authority. The manifest is an
+execution aid, not a reason to preserve a visibly incorrect transform.
 
-For every rotation contract:
+Use `rotate_cube_about_attachment` when a current rotation contract accurately
+describes the part, axis, direction, connection target, and size range.
+
+Use `apply_cube_transforms` when:
+
+- no rotation contract exists;
+- the contract is ambiguous or visibly inaccurate;
+- the user requests an explicit reference-driven correction;
+- several related cubes should be transformed in one bounded batch;
+- a precise `from`, `to`, `origin`, and `rotation` is already known.
+
+Never replace a required angled neck, head, limb, ear, horn, or tail with
+axis-aligned stacking merely to satisfy a contract.
+
+## Contract smart fitting
+
+For a reliable attachment contract:
 
 ```text
-place a zero-rotation provisional cuboid
-→ call rotate_cube_about_attachment without angle_degrees
-→ tool resolves constraint-midpoint size
-→ tool infers the longitudinal axis
-→ tool solves the best contract angle from expected_direction
-→ tool places an explicit end-face centerline pivot
-→ tool snaps pivot to the connection target
-→ tool translates from/to/origin together
-→ tool validates direction, attachment gap, and affected views
-→ tool writes attachment_fit.json
+place zero-rotation provisional cuboid
+→ rotate_cube_about_attachment without angle_degrees
+→ resolve size and long axis
+→ solve legal angle
+→ place end-face centerline pivot
+→ snap to connection target
+→ validate direction and gap
 ```
 
-Normal calls should omit `angle_degrees`; the automatic solver owns the angle.
-Pass an explicit angle only for one diagnosed correction.
+Use an explicit angle only for one diagnosed correction. If the contract result
+still disagrees with the approved visual, stop re-running the same solver and use
+`apply_cube_transforms` for the named part.
 
-The smart-fit result must visibly contain:
+## Reference-driven direct transforms
 
-- a non-zero rotation when the contract range excludes zero;
-- an explicit `origin` on the connected end-face centerline;
-- a connection gap within contract tolerance;
-- current `attachment_fit.json` evidence matching from/to/origin/rotation.
+`apply_cube_transforms` updates related cubes in one Undo transaction. For each
+cube provide the explicit rotation and either an explicit origin or a local
+`pivot_anchor`. It can snap the pivot to a target cube or explicit world point.
 
-An axis-aligned stepped replacement is not an acceptable substitute for a
-required rotated neck, limb, ear, horn, tail, or attachment chain.
+The tool:
+
+- changes `from`, `to`, `origin`, and `rotation` together;
+- reads the actual Blockbench render mesh `matrixWorld` when available;
+- converts snap translation through the rendered parent transform;
+- validates the rendered world pivot and target gap;
+- falls back to deterministic parent rotation only when render data is absent;
+- optionally runs one `analysis_views` pass after the complete batch;
+- does not require a manifest rotation contract.
+
+Prefer one transform batch plus one affected-view analysis over repeated
+single-cube mutations and repeated full-view captures. Set `require_render_mesh`
+only for a diagnosed runtime verification; normal production may continue with a
+reported deterministic fallback and must still complete final visual analysis.
 
 ## Structural detail
 
-Only after the primary gate passes, add the approved ears, ossicones, mane,
+Only after the primary gate passes, add approved ears, horns/ossicones, mane,
 tail, hoof refinement, and other `STRUCTURAL_DETAIL` parts. Keep cube count
-inside the manifest budget. Use stepped cuboids where taper is sufficient and
-smart attachment fitting where the approved form is genuinely angled.
+inside the manifest budget. Use stepped cuboids for controlled taper and an
+actual pivoted transform for genuinely angled features.
 
 ## Correction
 
-Capture only affected views first. `analyze_geometry_views` must name view,
-region, missing/excess silhouette, direction, magnitude when measurable, parts,
-and scope. Modify only diagnosed parts. Use no more than two non-improving
-bounded cycles before setting attention and using one focused visual decision.
+Capture only affected views first. `analyze_geometry_views` must identify the
+view, region, missing/excess silhouette, direction, magnitude when measurable,
+and affected parts. Modify only those parts.
 
-Use `place_cubes_safe`/`modify_cubes` for zero-rotation work and
-`rotate_cube_about_attachment` for every non-zero cube rotation. If rotation
-visual scoring is temporarily unavailable, the smart fit may pass only through
-size/axis/pivot/direction/connection structural checks; fresh visual analysis is
-still mandatory before primary-form or final review readiness.
+```text
+zero-rotation size/position repair → place_cubes_safe / modify_cubes
+valid contract attachment         → rotate_cube_about_attachment
+explicit visual pivot/rotation    → apply_cube_transforms
+```
+
+Use no more than two non-improving bounded cycles before one focused visual
+judgment. A transform call may include `analysis_views` so the whole correction
+batch requires only one follow-up diagnosis.
 
 ## Final review
 
 ```text
-final manifest-required capture/analyze with write_diff_image=true
-→ conditional visual_director only for a genuinely unresolved visual judgment
+final required-view capture/analyze with write_diff_image=true
+→ conditional visual_director only for unresolved visual judgment
 → record_geometry_visual_decision
 → save_canonical_project
 → submit_geometry_for_review
 → GEOMETRY_REVIEW
 ```
 
-All final views, project UUID, fingerprints, transformed world-space signature,
-Reference Visual hash, analyzer, primary-form gate, visual decision, attachment
-fit evidence, and rotation audit must be current. Submission owns fresh
-validation, checkpoint, transition, and lease release.
+All final views, project identity, fingerprints, transformed world-space signature,
+Reference Visual hash, analyzer result, primary gate, visual decision, and
+applicable attachment evidence must be current. Direct transforms do not remove
+the final absolute visual requirement.
 
-## Compatibility and evidence invariants
+## Compatibility and efficiency invariants
 
 - Never analyze an empty project.
 - `analyze_geometry_views` persists canonical metrics and therefore remains a lease-owned write.
-- The final required-view capture/analyze is the canonical final evidence pass.
+- Read-only inspection requires no lease; persistent analysis prepares ownership automatically.
+- Do not call manual identity/profile/lease tools on the normal path.
+- Use rendered Blockbench transforms for runtime pivot and connection verification when available.
+- Do not require a rotation contract when an explicit reference-driven transform is safer and clearer.
+- The final required-view analysis is the canonical visual evidence pass.
 - The selected Terra writer performs normal repairs directly.
-- visual_director only when deterministic evidence cannot close a genuine visual decision.
-- High remains the maximum and is reserved for one coded critical decision.
+- Use visual_director only when deterministic evidence cannot close a genuine decision.
+- High remains the maximum reasoning effort and is reserved for one coded critical decision.
 
-After user approval, reacquire a fresh Geometry lease and call
-`complete_geometry_stage`. Revision reacquires the Geometry lease, diagnoses
-affected views, calls `prepare_geometry_visual_rebuild`, and mutates only after
-`GEOMETRY_IN_PROGRESS` returns. No reconnect is required.
+After approval, call `complete_geometry_stage` in the same session. Revision
+returns to the same Geometry profile and the next mutation prepares current-stage
+ownership automatically; no reconnect is required.

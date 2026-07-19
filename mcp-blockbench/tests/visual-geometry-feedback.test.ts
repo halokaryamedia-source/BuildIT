@@ -23,7 +23,7 @@ const stages = JSON.parse(
 ) as Record<string, any>;
 
 describe("visual-grounded Geometry workflow", () => {
-  test("registers the complete one-session Geometry toolset", () => {
+  test("registers production Geometry tools plus diagnostic identity recovery", () => {
     for (const name of [
       "get_stage_context",
       "rebind_active_project_identity",
@@ -43,16 +43,17 @@ describe("visual-grounded Geometry workflow", () => {
     }
   });
 
-  test("one Geometry profile exposes setup, diagnosis, revision, and review", () => {
+  test("one Geometry profile exposes automatic setup, diagnosis, revision, and review", () => {
     const allowed = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     );
     for (const name of [
-      "rebind_active_project_identity",
+      "create_project",
       "prepare_geometry_visual_rebuild",
       "place_cubes_safe",
       "modify_cubes",
       "rotate_cube_about_attachment",
+      "apply_cube_transforms",
       "capture_visual_feedback",
       "analyze_geometry_views",
       "validate_geometry_contract",
@@ -61,6 +62,11 @@ describe("visual-grounded Geometry workflow", () => {
     ]) {
       expect(allowed.has(name), name).toBe(true);
     }
+    expect(allowed.has("rebind_active_project_identity")).toBe(false);
+    expect(profiles.forbidden_in_normal_profiles).toContain(
+      "rebind_active_project_identity"
+    );
+    expect(profiles.profiles.DIAGNOSTIC_ESCALATION.include_all).toBe(true);
     expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
     expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
     expect(allowed.has("place_cube")).toBe(false);

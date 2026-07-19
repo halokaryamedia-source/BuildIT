@@ -67,21 +67,26 @@ describe("Geometry diagnostic authority", () => {
 });
 
 describe("single-session Geometry workflow", () => {
-  test("normal Geometry exposes identity sync and revision preparation", () => {
+  test("normal Geometry uses automatic identity and keeps revision preparation", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     const geometry = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     );
-    expect(geometry.has("rebind_active_project_identity")).toBe(true);
+    expect(geometry.has("rebind_active_project_identity")).toBe(false);
     expect(geometry.has("prepare_geometry_visual_rebuild")).toBe(true);
     expect(geometry.has("create_project")).toBe(true);
+    expect(profiles.forbidden_in_normal_profiles).toContain(
+      "rebind_active_project_identity"
+    );
+    expect(profiles.profiles.DIAGNOSTIC_ESCALATION.include_all).toBe(true);
     expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
     expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
   });
 
-  test("identity synchronization is lease-exempt but strictly guarded", () => {
+  test("canonical creation bootstraps workspace and auto-synchronizes identity", () => {
     const identity = read("src/server/tools/project-identity.ts");
     const project = read("src/server/tools/project.ts");
+    const bootstrap = read("src/lib/workspaceBootstrap.ts");
     const lease = read("src/lib/writeLease.ts");
     for (const marker of [
       "PROJECT_IDENTITY_RUNTIME_MISMATCH",
@@ -97,7 +102,14 @@ describe("single-session Geometry workflow", () => {
     }
     expect(identity).not.toContain("PROJECT_IDENTITY_BOOTSTRAP_REQUIRED");
     expect(identity).toContain("expected_previous_project_uuid: z.string().min(1).nullable()");
-    expect(project).toContain("save_path: z.string().min(1).optional()");
+    expect(project).toContain("canonicalProjectPath(resolvedSessionRoot, resolvedAssetId)");
+    expect(project).toContain('operation: "create_project_auto_sync"');
+    expect(project).toContain("prepareWorkspaceFromReferencePackage");
+    expect(project).toContain("manual_workspace_setup_required: false");
+    expect(project).toContain("manual_identity_sync_required: false");
+    expect(project).toContain("manual_write_lease_required: false");
+    expect(project).toContain("ensureProjectWriteLease");
+    expect(bootstrap).toContain("CHATGPT_REFERENCE_PACKAGE");
     expect(lease).toContain(
       'if (toolName === "rebind_active_project_identity") return false;'
     );

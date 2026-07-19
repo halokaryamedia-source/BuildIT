@@ -26,6 +26,7 @@ import { referenceVisualPreviewToolDocs } from "../src/server/tools/reference-vi
 import { geometryAnalyzerToolDocs } from "../src/server/tools/geometry-analyzer";
 import { geometryDecisionToolDocs } from "../src/server/tools/geometry-decision";
 import { geometryRotationToolDocs } from "../src/server/tools/geometry-rotation";
+import { geometryDirectTransformToolDocs } from "../src/server/tools/geometry-direct-transform";
 import { geometryValidatorToolDocs } from "../src/server/tools/geometry-validator";
 import { geometryRebuildToolDocs } from "../src/server/tools/geometry-rebuild";
 import { geometryCompletionToolDocs } from "../src/server/tools/geometry-completion";
@@ -60,6 +61,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Geometry Visual Diagnosis", tools: geometryAnalyzerToolDocs },
   { category: "Geometry Visual Decision", tools: geometryDecisionToolDocs },
   { category: "Geometry Contract Rotation", tools: geometryRotationToolDocs },
+  { category: "Geometry Direct Transform", tools: geometryDirectTransformToolDocs },
   { category: "Geometry Contract Validation", tools: geometryValidatorToolDocs },
   { category: "Geometry Revision", tools: geometryRebuildToolDocs },
   { category: "Geometry Review Gate", tools: geometryReviewGateToolDocs },

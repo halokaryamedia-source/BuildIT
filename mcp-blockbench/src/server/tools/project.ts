@@ -1,17 +1,36 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
-import { createTool, type ToolSpec } from "@/lib/factories";
+import { createTool, type ToolContext, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
 import {
+  assertInsideRoot,
   parentDirectory,
   readJsonFile,
   writeFileAtomically,
+  writeJsonFilesAtomically,
   type NativeFsLike,
 } from "@/lib/atomicFiles";
+import { resolveMutationExecutionContext } from "@/lib/mutationContext";
+import {
+  ensureProjectWriteLease,
+  type EnsureProjectWriteLeaseResult,
+} from "@/lib/writeLease";
+import {
+  activateToolProfile,
+  getToolProfileSnapshot,
+} from "@/lib/toolProfiles";
+import {
+  prepareWorkspaceFromReferencePackage,
+  type WorkspaceBootstrapResult,
+} from "@/lib/workspaceBootstrap";
 
 export const createProjectParameters = z.object({
-  name: z.string(),
+  name: z
+    .string()
+    .min(1)
+    .optional()
+    .describe("Optional Blockbench project name. Defaults to asset_id for canonical workspace projects."),
   format: z
     .string()
     .default("bedrock_block")
@@ -24,9 +43,27 @@ export const createProjectParameters = z.object({
     ),
   texture_width: z.number().int().min(1).max(4096).optional(),
   texture_height: z.number().int().min(1).max(4096).optional(),
-  save_path: z.string().min(1).optional(),
+  save_path: z
+    .string()
+    .min(1)
+    .optional()
+    .describe("Optional explicit path. When session_root and asset_id are provided, the canonical path is derived automatically."),
   session_root: z.string().min(1).optional(),
   asset_id: z.string().regex(/^[a-z0-9_]+$/).optional(),
+  reference_package_root: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional extracted ChatGPT Reference Studio package directory. When provided, MCP creates the canonical workspace, state, metadata, reference copies, and project automatically."
+    ),
+  workspace_root: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional production workspace directory. Defaults to <process cwd>/workspace when bootstrapping from a ChatGPT package."
+    ),
   persist_immediately: z.boolean().optional().default(true),
 });
 
@@ -78,21 +115,50 @@ function projectCodecOutput(): string | Buffer {
   return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 }
 
+interface CanonicalProjectSave {
+  path: string;
+  byte_length: number;
+  state_revision: number;
+  stage: string | null;
+  profile_id: string | null;
+  identity_synced: true;
+}
+
+function currentFormatId(): string | null {
+  const projectFormat = Project?.format as { id?: string } | undefined;
+  const activeFormat = Format as { id?: string } | undefined;
+  return projectFormat?.id ?? activeFormat?.id ?? null;
+}
+
 function persistCanonicalProject(input: {
   savePath: string;
   sessionRoot: string;
   assetId: string;
-}): { path: string; byte_length: number } {
+}): CanonicalProjectSave {
   const fs = nativeFs(
     `MCP create_project needs canonical model write access to ${input.savePath}`
   );
-  const statePath = `${input.sessionRoot.replace(/[\\/]$/, "")}/state.json`;
+  const root = input.sessionRoot.replace(/[\\/]$/, "");
+  const statePath = `${root}/state.json`;
+  const projectPath = `${root}/project.json`;
+  for (const path of [statePath, projectPath]) assertInsideRoot(path, input.sessionRoot);
+
   const state = readJsonFile<Record<string, any>>(fs, statePath);
   if (state.asset?.id !== input.assetId) {
     throw new Error(
       `ASSET_ID_MISMATCH: state has ${state.asset?.id ?? "unknown"}, expected ${input.assetId}.`
     );
   }
+  if (!fs.existsSync(projectPath)) {
+    throw new Error(`PROJECT_METADATA_MISSING: ${projectPath}`);
+  }
+  const metadata = readJsonFile<Record<string, any>>(fs, projectPath);
+  if (metadata.asset_id !== input.assetId) {
+    throw new Error(
+      `PROJECT_METADATA_ASSET_MISMATCH: project has ${metadata.asset_id ?? "unknown"}, expected ${input.assetId}.`
+    );
+  }
+
   const expected = canonicalProjectPath(input.sessionRoot, input.assetId);
   if (normalizePath(input.savePath) !== normalizePath(expected)) {
     throw new Error(
@@ -100,18 +166,83 @@ function persistCanonicalProject(input: {
     );
   }
   const recorded = String(state.project?.save_path ?? "");
-  if (recorded && !normalizePath(expected).endsWith(normalizePath(recorded))) {
+  if (recorded && normalizePath(expected) !== normalizePath(recorded) && !normalizePath(expected).endsWith(normalizePath(recorded))) {
     throw new Error(
       `CANONICAL_MODEL_STATE_PATH_MISMATCH: state has ${recorded}; expected ${expected}.`
     );
   }
+
   const output = projectCodecOutput();
   writeFileAtomically(fs, expected, output);
+
+  const previousRevision = Number(state.state_revision ?? 0);
+  if (!Number.isInteger(previousRevision) || previousRevision < 0) {
+    throw new Error("PROJECT_STATE_REVISION_INVALID");
+  }
+  const nextRevision = previousRevision + 1;
+  const format = currentFormatId();
+  const audit = {
+    operation: "create_project_auto_sync",
+    previous_uuid: state.project?.uuid ?? null,
+    new_uuid: Project!.uuid,
+    state_revision_before: previousRevision,
+    state_revision_after: nextRevision,
+    canonical_model_path: expected,
+    timestamp: new Date().toISOString(),
+  };
+
+  state.project = {
+    ...(state.project ?? {}),
+    uuid: Project!.uuid,
+    name: Project!.name,
+    format,
+  };
+  state.state_revision = nextRevision;
+  state.project_identity_audit = [
+    ...(state.project_identity_audit ?? []),
+    audit,
+  ];
+  state.workflow.state = "GEOMETRY_IN_PROGRESS";
+  state.workflow.status = "IN_PROGRESS";
+  state.workflow.next_action = "INSPECT_REFERENCE_THEN_BUILD_GEOMETRY";
+  if (state.workflow?.stage_records?.GEOMETRY) {
+    state.workflow.stage_records.GEOMETRY.status = "IN_PROGRESS";
+  }
+  state.updated_at = audit.timestamp;
+  state.updated_by = "create_project";
+
+  metadata.project = {
+    ...(metadata.project ?? {}),
+    uuid: Project!.uuid,
+    name: Project!.name,
+    format,
+  };
+  metadata.project_identity_audit = [
+    ...(metadata.project_identity_audit ?? []),
+    audit,
+  ];
+  metadata.updated_at = audit.timestamp;
+
+  writeJsonFilesAtomically(fs, [
+    { path: statePath, value: state },
+    { path: projectPath, value: metadata },
+  ]);
+
   return {
     path: expected,
     byte_length: Buffer.isBuffer(output)
       ? output.byteLength
       : Buffer.byteLength(output, "utf8"),
+    state_revision: nextRevision,
+    stage:
+      typeof state.workflow?.active_stage === "string"
+        ? state.workflow.active_stage
+        : null,
+    profile_id:
+      typeof state.mcp?.active_tool_profile === "string"
+        ? state.mcp.active_tool_profile
+        : null,
+    identity_synced: true,
   };
 }
 
@@ -180,8 +311,8 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new project with the given name and project type. For custom texture atlases, set box_uv to false and specify texture dimensions.",
-    annotations: { title: "Create Project", destructiveHint: true, openWorldHint: true },
+      "Creates a fresh Blockbench project. It can consume an extracted ChatGPT Reference Studio package, create the canonical workspace/state/reference layout, derive the model path, persist the project, synchronize identity/profile, and prepare current-session write ownership in one call.",
+    annotations: { title: "Create Asset Workspace And Project", destructiveHint: true, openWorldHint: true },
     parameters: createProjectParameters,
     status: STATUS_STABLE,
   },
@@ -207,17 +338,39 @@ export function registerProjectTools() {
     projectToolDocs[0].name,
     {
       ...projectToolDocs[0],
-      async execute({
-        name,
-        format,
-        box_uv,
-        texture_width,
-        texture_height,
-        save_path,
-        session_root,
-        asset_id,
-        persist_immediately,
-      }) {
+      async execute(
+        {
+          name,
+          format,
+          box_uv,
+          texture_width,
+          texture_height,
+          save_path,
+          session_root,
+          asset_id,
+          reference_package_root,
+          workspace_root,
+          persist_immediately,
+        },
+        rawContext?: ToolContext
+      ) {
+        let workspaceBootstrap: WorkspaceBootstrapResult | null = null;
+        let resolvedSessionRoot = session_root;
+        let resolvedAssetId = asset_id;
+        let resolvedName = name;
+
+        if (reference_package_root) {
+          workspaceBootstrap = prepareWorkspaceFromReferencePackage({
+            referencePackageRoot: reference_package_root,
+            workspaceRoot: workspace_root,
+            assetId: asset_id,
+            displayName: name,
+          });
+          resolvedSessionRoot = workspaceBootstrap.session_root;
+          resolvedAssetId = workspaceBootstrap.asset_id;
+          resolvedName = workspaceBootstrap.display_name;
+        }
+
         const formatDef = Formats[format];
         if (!formatDef) {
           throw new Error(`Unknown format "${format}". Use a valid Blockbench format ID.`);
@@ -225,7 +378,7 @@ export function registerProjectTools() {
         const created = newProject(formatDef);
         if (!created) throw new Error("Failed to create project.");
 
-        Project!.name = name;
+        Project!.name = resolvedAssetId ?? resolvedName ?? "untitled_model";
         if (box_uv !== undefined) {
           if (box_uv && !formatDef.box_uv) {
             throw new Error(`Format "${format}" does not support box UV mode.`);
@@ -234,20 +387,47 @@ export function registerProjectTools() {
         }
         if (texture_width !== undefined) Project!.texture_width = texture_width;
         if (texture_height !== undefined) Project!.texture_height = texture_height;
-        if (save_path !== undefined) (Project as { save_path?: string }).save_path = save_path;
 
-        let canonicalSave: { path: string; byte_length: number } | null = null;
-        if (save_path && persist_immediately) {
-          if (!session_root || !asset_id) {
+        const resolvedSavePath =
+          save_path ??
+          (resolvedSessionRoot && resolvedAssetId
+            ? canonicalProjectPath(resolvedSessionRoot, resolvedAssetId)
+            : undefined);
+        if (resolvedSavePath !== undefined) {
+          (Project as { save_path?: string }).save_path = resolvedSavePath;
+        }
+
+        let canonicalSave: CanonicalProjectSave | null = null;
+        let sessionPreparation: EnsureProjectWriteLeaseResult | null = null;
+        if (resolvedSavePath && persist_immediately) {
+          if (!resolvedSessionRoot || !resolvedAssetId) {
             throw new Error(
-              "CANONICAL_PROJECT_PERSISTENCE_ARGUMENTS_REQUIRED: save_path needs session_root and asset_id."
+              "CANONICAL_PROJECT_PERSISTENCE_ARGUMENTS_REQUIRED: canonical persistence needs session_root and asset_id, or reference_package_root for automatic workspace bootstrap."
             );
           }
           canonicalSave = persistCanonicalProject({
-            savePath: save_path,
-            sessionRoot: session_root,
-            assetId: asset_id,
+            savePath: resolvedSavePath,
+            sessionRoot: resolvedSessionRoot,
+            assetId: resolvedAssetId,
           });
+
+          if (
+            canonicalSave.profile_id &&
+            getToolProfileSnapshot(false).profile_id !== canonicalSave.profile_id
+          ) {
+            activateToolProfile(canonicalSave.profile_id);
+          }
+          if (canonicalSave.stage) {
+            sessionPreparation = ensureProjectWriteLease(
+              {
+                sessionRoot: resolvedSessionRoot,
+                assetId: resolvedAssetId,
+                expectedProjectUuid: Project!.uuid,
+                expectedStage: canonicalSave.stage,
+              },
+              resolveMutationExecutionContext(rawContext)
+            );
+          }
         }
 
         const snapshot = projectSnapshot();
@@ -255,13 +435,24 @@ export function registerProjectTools() {
           content: [{
             type: "text" as const,
             text: canonicalSave
-              ? `Created and persisted project ${snapshot.project.name} (${snapshot.project.uuid}) to ${canonicalSave.path}.`
+              ? `Created and prepared project ${snapshot.project.name} (${snapshot.project.uuid}) at ${canonicalSave.path}; workspace, references, identity, profile, and write access are ready.`
               : `Created project ${snapshot.project.name} (${snapshot.project.uuid}) using ${snapshot.format.id} and ${snapshot.uv.mode} UV.`,
           }],
           structuredContent: {
             status: "PASS",
             ...snapshot,
+            asset_id: resolvedAssetId ?? null,
+            session_root: resolvedSessionRoot ?? null,
+            workspace_bootstrap: workspaceBootstrap,
             canonical_save: canonicalSave,
+            session_preparation: sessionPreparation,
+            next_safe_operation: canonicalSave
+              ? "inspect_reference_visual_preview"
+              : "configure_project",
+            manual_workspace_setup_required: false,
+            manual_identity_sync_required: false,
+            manual_profile_selection_required: false,
+            manual_write_lease_required: false,
           },
         };
       },

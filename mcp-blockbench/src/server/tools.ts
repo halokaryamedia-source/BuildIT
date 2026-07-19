@@ -3,8 +3,12 @@
 
 import { tools, prompts } from "@/lib/factories";
 import { initializeToolProfiles } from "@/lib/toolProfiles";
+import { installAutomaticProjectIdentityGuards } from "./automatic-project-identity-guard";
+import { installAutomaticStageContextRouting } from "./automatic-stage-context-routing";
+import { installAutomaticWorkspaceFinalization } from "./automatic-workspace-finalization";
 import { installFinalValidationGeometryGuards } from "./final-validation-geometry-guards";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
+import { installGeometryLandmarkValidationGuard } from "./geometry-landmark-validation-guard";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installReviewSubmissionLeaseGuards } from "./review-submission-lease-guards";
 import { installSessionContinuityGuards } from "./session-continuity-guards";
@@ -42,6 +46,7 @@ import { registerReferenceVisualPreviewTools } from "./tools/reference-visual-pr
 import { registerGeometryAnalyzerTools } from "./tools/geometry-analyzer";
 import { registerGeometryDecisionTools } from "./tools/geometry-decision";
 import { registerGeometryRotationTools } from "./tools/geometry-rotation";
+import { registerGeometryDirectTransformTools } from "./tools/geometry-direct-transform";
 import { registerGeometryValidatorTools } from "./tools/geometry-validator";
 import { registerGeometryRebuildTools } from "./tools/geometry-rebuild";
 import { registerGeometryCompletionTools } from "./tools/geometry-completion";
@@ -75,6 +80,7 @@ const registrationFunctions = [
   registerGeometryAnalyzerTools,
   registerGeometryDecisionTools,
   registerGeometryRotationTools,
+  registerGeometryDirectTransformTools,
   registerGeometryValidatorTools,
   registerGeometryRebuildTools,
   registerGeometryCompletionTools,
@@ -135,6 +141,18 @@ installProfileStateReconciliationGuards();
 
 initializeToolProfiles();
 
+// Reconcile a reopened canonical project's runtime UUID before the profile/lease
+// mutation boundary runs. This keeps manual identity tools diagnostic-only.
+installAutomaticProjectIdentityGuards();
+
+// Add package-defined semantic landmarks to the existing Geometry validator.
+// This does not add another public tool or stage.
+installGeometryLandmarkValidationGuard();
+
+// Final approval promotes validated output and completes the workspace without a
+// separate CLI command or extra public MCP tool.
+installAutomaticWorkspaceFinalization();
+
 // Keep one registered tool surface for the lifetime of the plugin. Logical
 // profiles still guard every execution, but profile changes no longer invalidate
 // the connected client's tool list.
@@ -147,8 +165,12 @@ installStageValidationRoutingGuards();
 installStageContextRoutingGuards();
 
 // Final user-facing normalization: stage/profile transitions remain in the same
-// MCP and Codex session. A fresh lease is still required after a profile change.
+// MCP and Codex session. Write ownership is prepared automatically after change.
 installSessionContinuityGuards();
+
+// Override legacy context suggestions last so Codex never receives manual
+// rebind/profile/lease operations as the normal next action.
+installAutomaticStageContextRouting();
 
 export function getToolCount(): number {
   return Object.keys(tools).length;

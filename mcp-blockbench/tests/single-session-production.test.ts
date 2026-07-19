@@ -11,22 +11,24 @@ import { enforceStableToolSurface } from "../src/server/stable-tool-surface";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("single-session production contract", () => {
-  test("keeps the registered tool surface stable while profiles remain logical guards", () => {
+  test("keeps a stable production union while profiles remain logical guards", () => {
     tools.__continuity_fixture = {
       name: "__continuity_fixture",
       description: "fixture",
-      enabled: false,
+      enabled: true,
       status: "stable",
     };
     enforceStableToolSurface();
-    expect(tools.__continuity_fixture.enabled).toBe(true);
+    expect(tools.__continuity_fixture.enabled).toBe(false);
     delete tools.__continuity_fixture;
 
     const stable = read("src/server/stable-tool-surface.ts");
     const profiles = read("src/lib/toolProfiles.ts");
-    expect(stable).toContain("TOOL_PROFILE_BLOCKED");
-    expect(stable).toContain("transitions do not require a client reconnect");
+    expect(stable).toContain("STABLE_PRODUCTION_UNION");
+    expect(stable).toContain("stableProductionToolNames");
+    expect(stable).toContain("metadata.enabled = publicTools.has(name)");
     expect(profiles).toContain("isToolAllowed(name)");
+    expect(profiles).toContain("TOOL_PROFILE_BLOCKED");
   });
 
   test("normalizes runtime and profile snapshots to no-reconnect semantics", () => {

@@ -1,33 +1,27 @@
 {
-  "schema_version": "2.7",
+  "schema_version": "2.9",
   "default_profile": "BEDROCK_CUBOID_GEOMETRY",
-  "profile_change_policy": "stage_transition_only",
+  "profile_change_policy": "automatic_stage_transition",
   "core_tools": [
     "get_runtime_status",
     "get_project_info",
-    "get_tool_profile",
-    "manage_project_write_lease",
     "get_stage_context"
   ],
   "profiles": {
     "BOOTSTRAP": {
-      "description": "Initial project setup and readiness only. Normal stage work does not switch back to this profile.",
+      "description": "Initial package/workspace/project setup. Identity, profile, and write ownership are automatic.",
       "allowed_tools": [
-        "activate_tool_profile",
         "create_project",
-        "rebind_active_project_identity",
         "configure_project",
         "validate_reference_contract",
         "inspect_reference_visual_preview",
-        "save_project_checkpoint",
         "capture_standard_views"
       ]
     },
     "BEDROCK_CUBOID_GEOMETRY": {
-      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and session, including identity synchronization, diagnosis, revision, review submission, validation, and approval.",
+      "description": "Complete Minecraft Bedrock cuboid Geometry workflow in one profile and session, including automatic setup, reference-driven direct transforms, attachment fitting, diagnosis, revision, review submission, validation, and approval.",
       "allowed_tools": [
         "create_project",
-        "rebind_active_project_identity",
         "prepare_geometry_visual_rebuild",
         "add_group",
         "list_outline",
@@ -39,6 +33,7 @@
         "place_cubes_safe",
         "modify_cubes",
         "rotate_cube_about_attachment",
+        "apply_cube_transforms",
         "duplicate_element",
         "rename_element",
         "remove_element",
@@ -47,16 +42,14 @@
         "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "submit_geometry_for_review",
-        "save_project_checkpoint",
         "capture_standard_views",
         "complete_geometry_stage",
         "save_canonical_project"
       ]
     },
     "BEDROCK_CUBOID_TEXTURE": {
-      "description": "Classic Bedrock cuboid UV and pixel texture work, project-bound report recording, same-profile revision, guarded upstream reopen, identity recovery, review submission, and approval.",
+      "description": "Classic Bedrock cuboid UV and pixel texture work with automatic session ownership, same-profile revision, guarded upstream reopen, review submission, and approval.",
       "allowed_tools": [
-        "rebind_active_project_identity",
         "prepare_stage_revision",
         "reopen_stage_for_revision",
         "list_outline",
@@ -84,9 +77,8 @@
       ]
     },
     "BEDROCK_CUBOID_ANIMATION": {
-      "description": "Bedrock group/bone rigging and required clips with project-bound report recording, same-profile revision, guarded upstream reopen, identity recovery, review submission, and approval.",
+      "description": "Required Bedrock group/bone clips with automatic session ownership, same-profile revision, guarded upstream reopen, review submission, and approval.",
       "allowed_tools": [
-        "rebind_active_project_identity",
         "prepare_stage_revision",
         "reopen_stage_for_revision",
         "list_outline",
@@ -109,9 +101,8 @@
       ]
     },
     "FINAL_VALIDATION_READONLY": {
-      "description": "Read-mostly final validation with project-bound report recording, same-profile package revision, guarded upstream reopen, identity recovery, current Geometry readiness, evidence/export, review submission, and completion.",
+      "description": "Read-mostly final validation with automatic session ownership, current Geometry readiness, evidence/export, review submission, approval, and automatic workspace completion.",
       "allowed_tools": [
-        "rebind_active_project_identity",
         "prepare_stage_revision",
         "reopen_stage_for_revision",
         "list_outline",
@@ -133,7 +124,7 @@
       ]
     },
     "DIAGNOSTIC_ESCALATION": {
-      "description": "All tools for a recorded blocker only. Never activate for normal stage work.",
+      "description": "All tools, including manual identity/profile/lease recovery, for a recorded blocker only. Never activate for normal stage work.",
       "include_all": true
     }
   },
@@ -144,6 +135,10 @@
     "FINAL_VALIDATION": "FINAL_VALIDATION_READONLY"
   },
   "forbidden_in_normal_profiles": [
+    "activate_tool_profile",
+    "manage_project_write_lease",
+    "rebind_active_project_identity",
+    "get_tool_profile",
     "inspect_reference_visual",
     "risky_eval",
     "trigger_action",

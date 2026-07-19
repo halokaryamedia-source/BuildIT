@@ -23,7 +23,7 @@ describe("compact workflow tools", () => {
     const geometry = config.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools;
     expect(geometry).toContain("complete_geometry_stage");
     expect(geometry).not.toContain("complete_stage");
-    expect(geometry).toContain("rebind_active_project_identity");
+    expect(geometry).not.toContain("rebind_active_project_identity");
     expect(geometry).toContain("prepare_geometry_visual_rebuild");
     expect(geometry).toContain("submit_geometry_for_review");
 
@@ -33,13 +33,24 @@ describe("compact workflow tools", () => {
       "FINAL_VALIDATION_READONLY",
     ]) {
       const allowed = config.profiles[profileId].allowed_tools;
-      expect(allowed, profileId).toContain("rebind_active_project_identity");
+      expect(allowed, profileId).not.toContain("rebind_active_project_identity");
       expect(allowed, profileId).toContain("prepare_stage_revision");
       expect(allowed, profileId).toContain("reopen_stage_for_revision");
       expect(allowed, profileId).toContain("record_stage_review_report");
       expect(allowed, profileId).toContain("submit_stage_for_review");
       expect(allowed, profileId).toContain("complete_stage");
     }
+
+    for (const manual of [
+      "activate_tool_profile",
+      "manage_project_write_lease",
+      "rebind_active_project_identity",
+      "get_tool_profile",
+    ]) {
+      expect(config.core_tools).not.toContain(manual);
+      expect(config.forbidden_in_normal_profiles).toContain(manual);
+    }
+    expect(config.profiles.DIAGNOSTIC_ESCALATION.include_all).toBe(true);
 
     for (const removed of [
       "GEOMETRY_LOCAL_REPAIR",

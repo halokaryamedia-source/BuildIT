@@ -1,11 +1,21 @@
+export interface NativeDirentLike {
+  name: string;
+  isDirectory(): boolean;
+  isFile(): boolean;
+}
+
 export interface NativeFsLike {
   existsSync(path: string): boolean;
   mkdirSync(path: string, options?: { recursive?: boolean }): void;
   readFileSync(path: string, encoding?: string): string | Buffer;
   readdirSync?(path: string): string[];
+  readdirSync?(
+    path: string,
+    options: { withFileTypes: true }
+  ): NativeDirentLike[];
   writeFileSync(path: string, data: string | Buffer): void;
   renameSync(from: string, to: string): void;
-  rmSync(path: string, options?: { force?: boolean }): void;
+  rmSync(path: string, options?: { force?: boolean; recursive?: boolean }): void;
 }
 
 export function normalizePathForCompare(path: string): string {

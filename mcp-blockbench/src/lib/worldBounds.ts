@@ -58,9 +58,8 @@ function radians(degrees: number): number {
 }
 
 /**
- * Blockbench cube rotations are evaluated as local XYZ Euler rotations around
- * the cube pivot. Parent group rotations are then applied from child to root.
- * This pure helper is also used by regression tests.
+ * Deterministic fallback for non-rendered environments. Blockbench runtime
+ * geometry prefers the actual scene matrix through renderedCubeWorldCorners.
  */
 export function rotatePointAroundOrigin(
   point: Vec3,
@@ -105,7 +104,11 @@ export function rotatePointAroundOrigin(
   return [x + origin[0], y + origin[1], z + origin[2]];
 }
 
-export function cubeCorners(fromValue: Vec3, toValue: Vec3, inflate = 0): Vec3[] {
+export function cubeCorners(
+  fromValue: Vec3,
+  toValue: Vec3,
+  inflate = 0
+): Vec3[] {
   const min: Vec3 = [
     Math.min(fromValue[0], toValue[0]) - inflate,
     Math.min(fromValue[1], toValue[1]) - inflate,
@@ -141,6 +144,7 @@ interface CubeLike extends TransformNodeLike {
   from?: number[];
   to?: number[];
   inflate?: number;
+  mesh?: unknown;
 }
 
 function applyNodeRotation(points: Vec3[], node: TransformNodeLike): Vec3[] {
@@ -150,7 +154,69 @@ function applyNodeRotation(points: Vec3[], node: TransformNodeLike): Vec3[] {
   return points.map((point) => rotatePointAroundOrigin(point, origin, rotation));
 }
 
-export function transformedCubeCorners(cube: CubeLike): Vec3[] {
+function vectorTemplate(mesh: any): any | null {
+  for (const candidate of [
+    mesh?.position,
+    mesh?.geometry?.boundingBox?.min,
+    mesh?.geometry?.boundingBox?.max,
+  ]) {
+    if (!candidate?.clone) continue;
+    const vector = candidate.clone();
+    if (vector?.set) return vector;
+  }
+  return null;
+}
+
+/**
+ * Returns the actual eight rendered cube corners from Blockbench's scene graph.
+ * This is the runtime authority for projection, bounds, ground contact, and
+ * freshness. It returns null in pure tests or before the render mesh exists.
+ */
+export function renderedCubeWorldCorners(cube: CubeLike): Vec3[] | null {
+  const runtime = globalThis as unknown as {
+    Canvas?: { meshes?: Record<string, any> };
+  };
+  const mesh =
+    runtime.Canvas?.meshes?.[String(cube.uuid ?? "")] ??
+    (cube as { mesh?: unknown }).mesh;
+  const geometry = (mesh as any)?.geometry;
+  if (!mesh || !geometry || !(mesh as any).matrixWorld) return null;
+
+  try {
+    (mesh as any).updateMatrixWorld?.(true);
+    geometry.computeBoundingBox?.();
+    const box = geometry.boundingBox;
+    if (!box?.min || !box?.max) return null;
+    const axes = [
+      [Number(box.min.x), Number(box.max.x)],
+      [Number(box.min.y), Number(box.max.y)],
+      [Number(box.min.z), Number(box.max.z)],
+    ];
+    const points: Vec3[] = [];
+    for (const x of axes[0]) {
+      for (const y of axes[1]) {
+        for (const z of axes[2]) {
+          const vector = vectorTemplate(mesh);
+          if (!vector?.applyMatrix4) return null;
+          vector.set(x, y, z);
+          vector.applyMatrix4((mesh as any).matrixWorld);
+          const point: Vec3 = [
+            Number(vector.x),
+            Number(vector.y),
+            Number(vector.z),
+          ];
+          if (!point.every(Number.isFinite)) return null;
+          points.push(point);
+        }
+      }
+    }
+    return points.length === 8 ? points : null;
+  } catch {
+    return null;
+  }
+}
+
+function manuallyTransformedCubeCorners(cube: CubeLike): Vec3[] {
   const from = finiteVector(cube.from);
   const to = finiteVector(cube.to, [1, 1, 1]);
   let points = cubeCorners(from, to, Number(cube.inflate ?? 0));
@@ -166,32 +232,18 @@ export function transformedCubeCorners(cube: CubeLike): Vec3[] {
   return points;
 }
 
-function meshWorldBounds(cube: CubeLike): { min: Vec3; max: Vec3 } | null {
-  const runtime = globalThis as unknown as {
-    Canvas?: { meshes?: Record<string, any> };
-  };
-  const mesh = runtime.Canvas?.meshes?.[String(cube.uuid ?? "")] ?? (cube as any).mesh;
-  const geometry = mesh?.geometry;
-  if (!mesh || !geometry || !mesh.matrixWorld) return null;
-
-  try {
-    mesh.updateMatrixWorld?.(true);
-    geometry.computeBoundingBox?.();
-    const localBox = geometry.boundingBox;
-    if (!localBox?.clone) return null;
-    const worldBox = localBox.clone();
-    worldBox.applyMatrix4(mesh.matrixWorld);
-    const min: Vec3 = [worldBox.min.x, worldBox.min.y, worldBox.min.z];
-    const max: Vec3 = [worldBox.max.x, worldBox.max.y, worldBox.max.z];
-    if (![...min, ...max].every(Number.isFinite)) return null;
-    return { min, max };
-  } catch {
-    return null;
-  }
+/**
+ * Runtime callers receive actual Blockbench rendered world corners. Pure tests,
+ * unopened meshes, and recovery paths use the deterministic Euler fallback.
+ */
+export function transformedCubeCorners(cube: CubeLike): Vec3[] {
+  return renderedCubeWorldCorners(cube) ?? manuallyTransformedCubeCorners(cube);
 }
 
 function aggregateBounds(points: Vec3[], source: Bounds3["source"]): Bounds3 {
-  if (!points.length) throw new Error("No cube geometry exists to calculate world bounds.");
+  if (!points.length) {
+    throw new Error("No cube geometry exists to calculate world bounds.");
+  }
   const min: Vec3 = [Infinity, Infinity, Infinity];
   const max: Vec3 = [-Infinity, -Infinity, -Infinity];
   for (const point of points) {
@@ -200,36 +252,48 @@ function aggregateBounds(points: Vec3[], source: Bounds3["source"]): Bounds3 {
       max[axis] = Math.max(max[axis], point[axis]);
     }
   }
-  const size: Vec3 = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+  const size: Vec3 = [
+    max[0] - min[0],
+    max[1] - min[1],
+    max[2] - min[2],
+  ];
   const center: Vec3 = [
     (min[0] + max[0]) / 2,
     (min[1] + max[1]) / 2,
     (min[2] + max[2]) / 2,
   ];
-  return { min, max, center, size, maxExtent: Math.max(...size, 1), source };
+  return {
+    min,
+    max,
+    center,
+    size,
+    maxExtent: Math.max(...size, 1),
+    source,
+  };
 }
 
 export function computeProjectWorldBounds(): Bounds3 {
-  const runtimeCubes = (globalThis as unknown as { Cube?: { all?: CubeLike[] } }).Cube?.all ?? [];
+  const runtimeCubes =
+    (globalThis as unknown as { Cube?: { all?: CubeLike[] } }).Cube?.all ?? [];
   const points: Vec3[] = [];
-  let meshCount = 0;
+  let renderedCount = 0;
   let manualCount = 0;
 
   for (const cube of runtimeCubes) {
-    const rendered = meshWorldBounds(cube);
+    const rendered = renderedCubeWorldCorners(cube);
     if (rendered) {
-      meshCount += 1;
-      points.push(...cubeCorners(rendered.min, rendered.max));
+      renderedCount += 1;
+      points.push(...rendered);
     } else {
       manualCount += 1;
-      points.push(...transformedCubeCorners(cube));
+      points.push(...manuallyTransformedCubeCorners(cube));
     }
   }
 
   const source: Bounds3["source"] =
-    meshCount > 0 && manualCount === 0
+    renderedCount > 0 && manualCount === 0
       ? "render_mesh"
-      : meshCount > 0
+      : renderedCount > 0
         ? "mixed"
         : "manual_transform";
   return aggregateBounds(points, source);
@@ -240,7 +304,12 @@ function distanceOutsideAabb(point: Vec3, from: Vec3, to: Vec3): number {
   for (let axis = 0; axis < 3; axis += 1) {
     const min = Math.min(from[axis], to[axis]);
     const max = Math.max(from[axis], to[axis]);
-    const delta = point[axis] < min ? min - point[axis] : point[axis] > max ? point[axis] - max : 0;
+    const delta =
+      point[axis] < min
+        ? min - point[axis]
+        : point[axis] > max
+          ? point[axis] - max
+          : 0;
     squared += delta * delta;
   }
   return Math.sqrt(squared);
@@ -249,14 +318,22 @@ function distanceOutsideAabb(point: Vec3, from: Vec3, to: Vec3): number {
 export function auditProjectRotations(
   policy: RotationPolicy = DEFAULT_ROTATION_POLICY
 ): RotationAudit {
-  const runtimeCubes = (globalThis as unknown as { Cube?: { all?: CubeLike[] } }).Cube?.all ?? [];
+  const runtimeCubes =
+    (globalThis as unknown as { Cube?: { all?: CubeLike[] } }).Cube?.all ?? [];
   const issues: RotationIssue[] = [];
   let rotatedCubes = 0;
   let compoundRotations = 0;
 
   for (const cube of runtimeCubes) {
-    const cubeRef = { name: String(cube.name ?? "unnamed"), uuid: String(cube.uuid ?? "") };
-    const rotation = finiteVector(cube.rotation, [Number.NaN, Number.NaN, Number.NaN]);
+    const cubeRef = {
+      name: String(cube.name ?? "unnamed"),
+      uuid: String(cube.uuid ?? ""),
+    };
+    const rotation = finiteVector(cube.rotation, [
+      Number.NaN,
+      Number.NaN,
+      Number.NaN,
+    ]);
     const from = finiteVector(cube.from);
     const to = finiteVector(cube.to, [1, 1, 1]);
     const origin = finiteVector(cube.origin);
@@ -285,7 +362,9 @@ export function auditProjectRotations(
       });
     }
 
-    const nonZeroAxes = rotation.filter((value) => Math.abs(value) > EPSILON).length;
+    const nonZeroAxes = rotation.filter(
+      (value) => Math.abs(value) > EPSILON
+    ).length;
     if (nonZeroAxes === 0) continue;
     rotatedCubes += 1;
 
@@ -293,7 +372,8 @@ export function auditProjectRotations(
       compoundRotations += 1;
       issues.push({
         code: "COMPOUND_CUBE_ROTATION",
-        severity: nonZeroAxes > policy.maximumAxisCount ? "REVISION_REQUIRED" : "WARNING",
+        severity:
+          nonZeroAxes > policy.maximumAxisCount ? "REVISION_REQUIRED" : "WARNING",
         cube: cubeRef,
         message: `${cubeRef.name} rotates on ${nonZeroAxes} axes; geometry production prefers one local axis per cube.`,
       });
@@ -316,12 +396,16 @@ export function auditProjectRotations(
         code: "ROTATION_PIVOT_TOO_FAR",
         severity: "REVISION_REQUIRED",
         cube: cubeRef,
-        message: `${cubeRef.name} pivot is ${pivotDistance.toFixed(2)}u outside its cube bounds; verify the intended attachment pivot before rotating.`,
+        message: `${cubeRef.name} pivot is ${pivotDistance.toFixed(
+          2
+        )}u outside its cube bounds; verify the intended attachment pivot before rotating.`,
       });
     }
   }
 
-  const status = issues.some((issue) => issue.severity === "REVISION_REQUIRED")
+  const status = issues.some(
+    (issue) => issue.severity === "REVISION_REQUIRED"
+  )
     ? "REVISION_REQUIRED"
     : issues.length > 0
       ? "WARNING"

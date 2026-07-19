@@ -1,15 +1,14 @@
 ---
 name: blockbench-texture
-description: "Classic Bedrock Texture workflow with one selected Terra writer, direct evidence, one bound report, validation-owned submission, and same-profile revision."
+description: "Classic Bedrock Texture workflow with automatic session ownership, direct evidence, one bound report, validation-owned submission, and same-profile revision."
 ---
 
 # Blockbench Texture
 
-Use only for `TEXTURE` with `BEDROCK_CUBOID_TEXTURE`. Preserve approved Geometry.
+Use only for `TEXTURE` with `BEDROCK_CUBOID_TEXTURE`. Preserve approved Geometry. Project identity, profile activation, and write ownership are automatic.
 
 ```text
-get_stage_context
-→ identity/lease
+get_stage_context once
 → UV
 → base texture
 → detail texture
@@ -25,4 +24,4 @@ If submission returns `STAGE_VALIDATION_NOT_PASS`, call validation once for stru
 
 Use Classic Bedrock, approved atlas, sharp pixels, approved UV/material/palette/alpha rules. No PBR, gradients, Geometry redesign, Animation, or final export.
 
-`APPROVED`: fresh Texture lease → `complete_stage(TEXTURE)`. `REVISION`: fresh lease → `prepare_stage_revision` → targeted repair in the same profile.
+`APPROVED`: call `complete_stage(TEXTURE)` and continue in the same session. `REVISION`: call `prepare_stage_revision`, then perform targeted repair in the same profile. Never call identity, profile, or lease management during the normal path.
