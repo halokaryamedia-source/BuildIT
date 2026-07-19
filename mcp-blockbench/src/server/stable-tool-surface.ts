@@ -1,4 +1,4 @@
-import profileConfigJson from "../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
+import profileConfigJson from "../../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import {
   getAllToolDefinitions,
   tools,
@@ -27,6 +27,7 @@ const INTERNAL_OR_MANUAL_TOOLS = new Set([
   "activate_tool_profile",
   "manage_project_write_lease",
   "rebind_active_project_identity",
+  "get_tool_profile",
 ]);
 
 function stableProductionToolNames(): Set<string> {
