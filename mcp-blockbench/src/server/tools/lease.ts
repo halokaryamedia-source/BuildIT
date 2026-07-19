@@ -47,9 +47,9 @@ export const leaseToolDocs: ToolSpec[] = [
   {
     name: "manage_project_write_lease",
     description:
-      "Acquires, renews, releases, or inspects the single project write lease used to block concurrent and stale Blockbench mutations.",
+      "Advanced lease inspection and conflict recovery. Normal Codex production does not call this tool: canonical create_project and mutating tools automatically acquire, refresh, and renew the current-session lease. Use status for diagnostics or manual actions only when resolving a real concurrent-writer conflict.",
     annotations: {
-      title: "Manage Project Write Lease",
+      title: "Inspect Or Override Write Lease (Advanced)",
       destructiveHint: false,
       openWorldHint: true,
     },
@@ -97,6 +97,7 @@ export function registerLeaseTools(): void {
             status: "PASS",
             action: value.action,
             lease,
+            normal_workflow_auto_managed: true,
           },
         };
       },
