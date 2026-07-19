@@ -22,25 +22,27 @@ No child for micro work, no parallel writers, no effort above High, no user work
 
 1. Resolve or initialize the selected asset and canonical `workspace/active/<asset>/mcp` root.
 2. Load `blockbench-production` plus the active-stage skill.
-3. Create the Bedrock project through MCP when absent and save to the canonical model path.
-4. Call `get_runtime_status` once.
-5. Call `get_stage_context` for the active stage.
-6. Rebind identity before lease acquisition when required.
-7. Select one Terra writer and acquire the current-stage lease.
+3. Call `get_runtime_status` once.
+4. Call `get_stage_context` for the active stage. Read-only context inspection never requires a write lease.
+5. When no project exists, call `create_project` with `session_root` and `asset_id`. Omit `save_path` unless overriding a non-canonical developer fixture.
+6. Canonical `create_project` automatically derives the model path, saves the project, synchronizes runtime UUID/state metadata, activates the recorded stage profile, and acquires the current-session write lease.
+7. Continue directly with the active-stage work. Do not call `rebind_active_project_identity` or `manage_project_write_lease` during the normal single-user path.
+
+Mutating tools that receive `session_root` automatically acquire or refresh the same-session lease when required. Manual identity and lease tools are diagnostic recovery only and remain reserved for a real concurrent-writer conflict or corrupted metadata that cannot be reconciled automatically.
 
 Repeat runtime status only after a real runtime error, plugin reload, project replacement, or connection warning. Call stage context again only after approval, revision, upstream reopen, or stage transition.
 
 ## Stable session transition
 
 ```text
-release old lease
+stage transition
 → continue same MCP session
 → continue same Codex session
-→ get_stage_context
-→ acquire fresh current-stage lease
+→ get_stage_context once
+→ next mutating call automatically refreshes current-stage write ownership
 ```
 
-No reconnect, reload, restart, user JSON edit, checkpoint naming, profile selection, or internal smoke test.
+No reconnect, reload, restart, user JSON edit, checkpoint naming, profile selection, UUID synchronization, or manual lease call.
 
 ## Geometry
 
@@ -79,7 +81,7 @@ verify current Geometry readiness
 
 ## Stop
 
-Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, lease conflict, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
+Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, a real concurrent-writer conflict, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not stop for an expired same-session lease, stale in-memory lease revision, or initial project UUID creation; those are automatically reconciled. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
 
 ## Compatibility rejection invariant
 
