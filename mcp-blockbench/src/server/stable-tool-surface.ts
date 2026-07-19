@@ -1,3 +1,4 @@
+import profileConfigJson from "../../engines/shared/profiles/tool-profiles.json" assert { type: "json" };
 import {
   getAllToolDefinitions,
   tools,
@@ -11,17 +12,46 @@ interface MutableToolDefinition {
   description?: string;
 }
 
+interface ProfileConfig {
+  core_tools: string[];
+  profiles: Record<
+    string,
+    {
+      allowed_tools?: string[];
+      include_all?: boolean;
+    }
+  >;
+}
+
+const INTERNAL_OR_MANUAL_TOOLS = new Set([
+  "activate_tool_profile",
+  "manage_project_write_lease",
+  "rebind_active_project_identity",
+]);
+
+function stableProductionToolNames(): Set<string> {
+  const config = profileConfigJson as ProfileConfig;
+  const names = new Set<string>(config.core_tools);
+  for (const profile of Object.values(config.profiles)) {
+    if (profile.include_all) continue;
+    for (const name of profile.allowed_tools ?? []) names.add(name);
+  }
+  for (const name of INTERNAL_OR_MANUAL_TOOLS) names.delete(name);
+  return names;
+}
+
 /**
- * Every MCP session receives one stable registered tool surface. The active
- * profile remains the execution authority: disallowed tools still fail inside
- * the profile guard with TOOL_PROFILE_BLOCKED.
+ * Every MCP session receives one stable production tool union. Stage changes do
+ * not require reconnecting, while diagnostic-only, unsafe, unrelated, and manual
+ * coordination tools stay out of Codex's normal schema.
  *
- * Keeping registration stable means Geometry → Texture → Animation → Final
- * transitions do not require a client reconnect or a new Codex session.
+ * `STABLE_FULL_LIBRARY` remains a legacy compatibility marker for older state
+ * files; the active public surface is `STABLE_PRODUCTION_UNION`.
  */
 export function enforceStableToolSurface(): void {
-  for (const metadata of Object.values(tools)) {
-    metadata.enabled = true;
+  const publicTools = stableProductionToolNames();
+  for (const [name, metadata] of Object.entries(tools)) {
+    metadata.enabled = publicTools.has(name);
   }
 }
 
@@ -50,7 +80,7 @@ function normalizeProfileToolMetadata(): void {
     definitions,
     "activate_tool_profile",
     "Activate Tool Profile In Current Session",
-    "Activates the exact stage profile inside the current MCP session. The registered tool surface stays stable; execution remains profile-guarded and the next stage must acquire a fresh write lease."
+    "Advanced diagnostic recovery only. Normal stage transitions activate the required profile automatically and continue in the same MCP session."
   );
   updateDefinition(
     definitions,
@@ -79,9 +109,8 @@ export function installStableToolSurface(): void {
 
   if (typeof document !== "undefined") {
     document.addEventListener(TOOL_PROFILE_CHANGED_EVENT, () => {
-      // activateToolProfile applies its logical allowlist first. Restore the
-      // registered surface immediately afterward; execute guards still enforce
-      // the logical allowlist for every call.
+      // Restore the same production union after logical profile changes. Execute
+      // guards continue to enforce the currently active stage allowlist.
       enforceStableToolSurface();
     });
   }
