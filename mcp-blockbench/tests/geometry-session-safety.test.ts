@@ -67,14 +67,18 @@ describe("Geometry diagnostic authority", () => {
 });
 
 describe("single-session Geometry workflow", () => {
-  test("normal Geometry exposes identity recovery and revision preparation", () => {
+  test("normal Geometry uses automatic identity and keeps revision preparation", () => {
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     const geometry = new Set(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     );
-    expect(geometry.has("rebind_active_project_identity")).toBe(true);
+    expect(geometry.has("rebind_active_project_identity")).toBe(false);
     expect(geometry.has("prepare_geometry_visual_rebuild")).toBe(true);
     expect(geometry.has("create_project")).toBe(true);
+    expect(profiles.forbidden_in_normal_profiles).toContain(
+      "rebind_active_project_identity"
+    );
+    expect(profiles.profiles.DIAGNOSTIC_ESCALATION.include_all).toBe(true);
     expect(profiles.profiles.GEOMETRY_LOCAL_REPAIR).toBeUndefined();
     expect(profiles.profiles.GEOMETRY_VISUAL_REBUILD).toBeUndefined();
   });
