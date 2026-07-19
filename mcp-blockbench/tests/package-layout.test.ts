@@ -9,8 +9,10 @@ describe("canonical MCP package layout", () => {
       "package.json",
       "src/index.ts",
       "src/runtime.ts",
+      "src/lib/workspaceBootstrap.ts",
       "src/lib/renderedGeometry.ts",
       "src/server/tools/geometry-direct-transform.ts",
+      "src/server/automatic-workspace-finalization.ts",
       "dist/mcp.js",
     ]) {
       expect(existsSync(path), path).toBe(true);
@@ -19,9 +21,11 @@ describe("canonical MCP package layout", () => {
 
   test("documents the zero-setup rendered-world production path", () => {
     const readme = read("README.md");
-    expect(readme).toContain("create_project(session_root, asset_id)");
+    expect(readme).toContain("ChatGPT Reference Studio");
+    expect(readme).toContain("create_project(reference_package_root)");
     expect(readme).toContain("apply_cube_transforms");
     expect(readme).toContain("matrixWorld");
-    expect(readme).toContain("Normal production must not require");
+    expect(readme).toContain("Final Validation approval automatically");
+    expect(readme).toContain("stable union of normal production tools");
   });
 });
