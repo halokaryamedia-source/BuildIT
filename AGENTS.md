@@ -66,13 +66,15 @@ Never ask the user to restart Codex merely to load optional roles during an acti
 - `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user gates.
 - Geometry decisions require actual image inspection, fixed-scale `analyze_geometry_views`, and `validate_geometry_contract`.
 - Geometry corrections use ranked views, regions, parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
-- Every non-zero cube rotation uses `rotate_cube_about_attachment`.
+- Use `rotate_cube_about_attachment` when the current manifest contract accurately describes the visible attachment.
+- Use `apply_cube_transforms` for explicit reference-driven `from/to/origin/rotation`, missing or inaccurate contracts, or one bounded related-part transform batch. A manifest contract is not required for this route.
+- `apply_cube_transforms` must validate the actual rendered pivot and connection through Blockbench `matrixWorld` when available, and may run one affected-view analysis after the batch.
 - The canonical MCP session root is `workspace/active/<asset>/mcp`. `get_stage_context` accepts either the asset root or canonical root and returns `canonical_session_root`.
 - Canonical `create_project(session_root, asset_id)` derives the model path, persists the file, synchronizes the runtime UUID with state/project metadata, activates the recorded stage profile, and acquires the current-session lease automatically.
 - `get_stage_context` and other correctly annotated read-only inspection tools never require a write lease.
 - Mutating tools carrying `session_root` automatically acquire, refresh, and renew the same-session lease when state, stage, or profile revisions advance.
 - `rebind_active_project_identity` and `manage_project_write_lease` are diagnostic recovery tools only. Never call them in the normal single-user path; use them only for unrecoverable metadata corruption or a real concurrent-writer conflict.
-- `analyze_geometry_views` persists canonical evidence and therefore requires the Geometry write lease internally; the lease is prepared automatically for the current Codex writer.
+- `analyze_geometry_views` persists canonical evidence and therefore remains a Geometry mutation even though it primarily diagnoses the model.
 - Current Geometry evidence is bound to compatibility fingerprint and transformed world-space signature.
 - Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision, enters `GEOMETRY_REVIEW`, and releases the lease.
 - After user approval or revision, Codex continues in the same session; the next safe mutating operation prepares current-stage ownership automatically.
@@ -86,7 +88,7 @@ Never ask the user to restart Codex merely to load optional roles during an acti
 
 ## User Acceptance Boundary
 
-The user does not test internal components. Before reporting readiness, GitHub verification must cover build, skills, typecheck, all tests, session continuity, automatic lease ownership, automatic identity synchronization, profile transitions, and zero-start workspace initialization.
+The user does not test internal components. Before reporting readiness, GitHub verification must cover build, skills, typecheck, all tests, session continuity, automatic lease ownership, automatic identity synchronization, profile transitions, rendered pivot/direct-transform behavior, and zero-start workspace initialization.
 
 The only user acceptance test is:
 
@@ -96,6 +98,7 @@ tracked Black Rhinoceros Golden Sample
 → no copied .bbmodel, checkpoint, evidence, or prior state
 → create the Blockbench project through MCP without explicit save_path, identity rebind, profile selection, or lease call
 → build the Rhino Geometry from zero
+→ correct at least one visibly angled part through contract fitting or apply_cube_transforms
 → submit one Geometry preview for user review
 ```
 
