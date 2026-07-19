@@ -38,6 +38,11 @@ export interface ProjectWriteLeaseSnapshot {
   expires_at: string | null;
 }
 
+export interface EnsureProjectWriteLeaseResult {
+  action: "ACQUIRED" | "REFRESHED";
+  lease: ProjectWriteLeaseSnapshot;
+}
+
 interface ProjectWriteLease {
   projectUuid: string;
   assetId: string;
@@ -57,11 +62,13 @@ interface ProjectWriteLease {
 interface WorkflowStateFile {
   state_revision?: number;
   asset?: { id?: string };
+  project?: { uuid?: string | null };
   workflow?: { active_stage?: string; state?: string };
   mcp?: { active_tool_profile?: string; tool_profile_revision?: number | null };
 }
 
 let activeLease: ProjectWriteLease | null = null;
+let lastLeaseExpired = false;
 
 function nativeFs(): NativeFsLike {
   // @ts-ignore - Blockbench runtime permission API.
@@ -85,6 +92,7 @@ function activeOrNull(now = Date.now()): ProjectWriteLease | null {
   if (!activeLease) return null;
   if (activeLease.expiresAtMs <= now) {
     activeLease = null;
+    lastLeaseExpired = true;
     return null;
   }
   return activeLease;
@@ -108,6 +116,119 @@ function assertCaller(context: MutationExecutionContext): string {
     throw new Error("WRITE_LEASE_READINESS_FORBIDDEN: transient readiness sessions cannot own project writes.");
   }
   return context.sessionId;
+}
+
+function stateRevision(state: WorkflowStateFile): number {
+  const revision = Number(state.state_revision);
+  if (!Number.isInteger(revision) || revision < 0) {
+    throw new Error("WRITE_LEASE_STATE_INVALID: state_revision is missing or invalid.");
+  }
+  return revision;
+}
+
+function stateStage(state: WorkflowStateFile): string {
+  const stage = state.workflow?.active_stage;
+  if (!stage) {
+    throw new Error("WRITE_LEASE_STAGE_INVALID: active workflow stage is missing.");
+  }
+  return stage;
+}
+
+function assertProfileState(
+  state: WorkflowStateFile,
+  context: MutationExecutionContext
+): void {
+  if (
+    state.mcp?.active_tool_profile &&
+    state.mcp.active_tool_profile !== context.profileId
+  ) {
+    throw new Error(
+      `WRITE_LEASE_PROFILE_MISMATCH: state expects ${state.mcp.active_tool_profile}, runtime is ${context.profileId}.`
+    );
+  }
+}
+
+/**
+ * Automatically acquires or refreshes the current-session write lease from the
+ * authoritative workspace state. Normal Codex production should rely on this
+ * path instead of manually calling manage_project_write_lease.
+ */
+export function ensureProjectWriteLease(
+  input: {
+    sessionRoot: string;
+    assetId?: string;
+    expectedProjectUuid?: string;
+    expectedStage?: string;
+    ttlMinutes?: number;
+  },
+  context: MutationExecutionContext
+): EnsureProjectWriteLeaseResult {
+  const ownerSessionId = assertCaller(context);
+  const projectUuid = currentProjectUuid();
+  if (!projectUuid) throw new Error("WRITE_LEASE_NO_PROJECT: no Blockbench project is open.");
+  if (input.expectedProjectUuid && projectUuid !== input.expectedProjectUuid) {
+    throw new Error(
+      `WRITE_LEASE_PROJECT_MISMATCH: active ${projectUuid}, expected ${input.expectedProjectUuid}.`
+    );
+  }
+
+  const root = normalizePathForCompare(input.sessionRoot);
+  if (!root) throw new Error("WRITE_LEASE_ROOT_INVALID: session root is empty.");
+  const state = readState(input.sessionRoot);
+  const assetId = input.assetId ?? state.asset?.id;
+  if (!assetId) {
+    throw new Error("WRITE_LEASE_ASSET_INVALID: active state has no asset id.");
+  }
+  if (state.asset?.id !== assetId) {
+    throw new Error(
+      `WRITE_LEASE_ASSET_MISMATCH: state has ${state.asset?.id ?? "unknown"}, expected ${assetId}.`
+    );
+  }
+
+  const revision = stateRevision(state);
+  const stage = stateStage(state);
+  if (input.expectedStage && stage !== input.expectedStage) {
+    throw new Error(
+      `WRITE_LEASE_STAGE_MISMATCH: state is ${stage}, expected ${input.expectedStage}.`
+    );
+  }
+  assertProfileState(state, context);
+
+  const existing = activeOrNull();
+  if (existing && existing.ownerSessionId !== ownerSessionId) {
+    throw new Error(
+      `WRITE_LEASE_OWNED: project ${existing.projectUuid} is owned by ${existing.ownerClient ?? existing.ownerSessionId}.`
+    );
+  }
+
+  const sameLease = Boolean(
+    existing &&
+      existing.ownerSessionId === ownerSessionId &&
+      existing.projectUuid === projectUuid &&
+      existing.sessionRoot === root
+  );
+  const now = Date.now();
+  const ttlMinutes = Math.min(Math.max(input.ttlMinutes ?? 30, 5), 120);
+  activeLease = {
+    projectUuid,
+    assetId,
+    ownerSessionId,
+    ownerClient: context.clientName,
+    sessionRoot: root,
+    stage,
+    stateRevision: revision,
+    profileId: context.profileId,
+    profileRevision: context.profileRevision,
+    profileHash: context.profileHash,
+    acquiredAtMs: sameLease && existing ? existing.acquiredAtMs : now,
+    renewedAtMs: now,
+    expiresAtMs: now + ttlMinutes * 60 * 1000,
+  };
+  lastLeaseExpired = false;
+  return {
+    action: sameLease ? "REFRESHED" : "ACQUIRED",
+    lease: getProjectWriteLeaseSnapshot(),
+  };
 }
 
 export function acquireProjectWriteLease(
@@ -148,14 +269,7 @@ export function acquireProjectWriteLease(
       `WRITE_LEASE_STAGE_MISMATCH: state is ${state.workflow?.active_stage ?? "unknown"}, expected ${input.expectedStage}.`
     );
   }
-  if (
-    state.mcp?.active_tool_profile &&
-    state.mcp.active_tool_profile !== context.profileId
-  ) {
-    throw new Error(
-      `WRITE_LEASE_PROFILE_MISMATCH: state expects ${state.mcp.active_tool_profile}, runtime is ${context.profileId}.`
-    );
-  }
+  assertProfileState(state, context);
 
   const existing = activeOrNull();
   if (existing && existing.ownerSessionId !== ownerSessionId) {
@@ -186,6 +300,7 @@ export function acquireProjectWriteLease(
     renewedAtMs: now,
     expiresAtMs: now + ttlMinutes * 60 * 1000,
   };
+  lastLeaseExpired = false;
   return getProjectWriteLeaseSnapshot();
 }
 
@@ -202,6 +317,7 @@ export function renewProjectWriteLease(
   const now = Date.now();
   lease.renewedAtMs = now;
   lease.expiresAtMs = now + Math.min(Math.max(ttlMinutes, 5), 120) * 60 * 1000;
+  lastLeaseExpired = false;
   return getProjectWriteLeaseSnapshot();
 }
 
@@ -218,6 +334,7 @@ export function releaseProjectWriteLease(
     }
   }
   activeLease = null;
+  lastLeaseExpired = false;
   return getProjectWriteLeaseSnapshot();
 }
 
@@ -227,6 +344,7 @@ export function releaseProjectWriteLeaseForSession(sessionId: string): void {
 
 export function clearProjectWriteLease(): void {
   activeLease = null;
+  lastLeaseExpired = false;
 }
 
 export function updateProjectWriteLeaseWorkflow(
@@ -251,6 +369,7 @@ export function updateProjectWriteLeaseWorkflow(
   lease.profileHash = update.profileHash;
   lease.renewedAtMs = Date.now();
   lease.expiresAtMs = lease.renewedAtMs + DEFAULT_LEASE_TTL_MS;
+  lastLeaseExpired = false;
 }
 
 export function getProjectWriteLeaseSnapshot(): ProjectWriteLeaseSnapshot {
@@ -258,7 +377,7 @@ export function getProjectWriteLeaseSnapshot(): ProjectWriteLeaseSnapshot {
   const lease = activeOrNull(now);
   if (!lease) {
     return {
-      status: activeLease ? "EXPIRED" : "UNCLAIMED",
+      status: lastLeaseExpired ? "EXPIRED" : "UNCLAIMED",
       project_uuid: null,
       asset_id: null,
       owner_session_id: null,
@@ -303,13 +422,15 @@ function pathValues(args: Record<string, unknown>): string[] {
 
 function requiresLease(
   toolName: string,
-  args: Record<string, unknown>,
+  _args: Record<string, unknown>,
   readOnlyHint: boolean | undefined
 ): boolean {
   if (toolName === "manage_project_write_lease") return false;
   if (toolName === "rebind_active_project_identity") return false;
   if (toolName === "create_project" && !currentProjectUuid()) return false;
-  if (readOnlyHint === true) return pathValues(args).length > 0;
+  // Read-only tools may inspect workspace paths without owning project writes.
+  // Tools that persist evidence must declare readOnlyHint=false.
+  if (readOnlyHint === true) return false;
   return true;
 }
 
@@ -321,59 +442,79 @@ export function assertToolMutationAllowed(
 ): void {
   if (!requiresLease(toolName, args, readOnlyHint)) return;
   const ownerSessionId = assertCaller(context);
-  const lease = activeOrNull();
+  const declaredRoot =
+    typeof args.session_root === "string" && args.session_root.length > 0
+      ? args.session_root
+      : null;
+
+  let lease = activeOrNull();
+  if (!lease && declaredRoot) {
+    ensureProjectWriteLease(
+      {
+        sessionRoot: declaredRoot,
+        assetId: typeof args.asset_id === "string" ? args.asset_id : undefined,
+        expectedProjectUuid:
+          typeof args.expected_project_uuid === "string"
+            ? args.expected_project_uuid
+            : undefined,
+        expectedStage:
+          typeof args.stage === "string" ? args.stage : undefined,
+      },
+      context
+    );
+    lease = activeOrNull();
+  }
+
   if (!lease) {
     throw new Error(
-      `WRITE_LEASE_REQUIRED: acquire the project write lease before calling ${toolName}.`
+      `WRITE_LEASE_REQUIRED: ${toolName} has no session_root for automatic preparation. Call get_stage_context once for the active asset, then retry.`
     );
   }
   if (lease.ownerSessionId !== ownerSessionId) {
     throw new Error(`WRITE_LEASE_OWNER_MISMATCH: ${toolName} was called by a non-owner session.`);
   }
+
   if (currentProjectUuid() !== lease.projectUuid) {
-    throw new Error(
-      `WRITE_LEASE_PROJECT_CHANGED: active project ${currentProjectUuid() ?? "none"} differs from leased project ${lease.projectUuid}.`
-    );
-  }
-  if (
-    context.profileId !== lease.profileId ||
-    context.profileRevision !== lease.profileRevision ||
-    context.profileHash !== lease.profileHash
-  ) {
-    throw new Error(
-      `WRITE_LEASE_PROFILE_STALE: lease ${lease.profileId}#${lease.profileRevision} differs from runtime ${context.profileId}#${context.profileRevision}.`
-    );
+    if (declaredRoot) {
+      ensureProjectWriteLease(
+        {
+          sessionRoot: declaredRoot,
+          assetId: typeof args.asset_id === "string" ? args.asset_id : undefined,
+          expectedProjectUuid:
+            typeof args.expected_project_uuid === "string"
+              ? args.expected_project_uuid
+              : undefined,
+          expectedStage:
+            typeof args.stage === "string" ? args.stage : undefined,
+        },
+        context
+      );
+      lease = activeOrNull();
+    }
+    if (!lease || currentProjectUuid() !== lease.projectUuid) {
+      throw new Error(
+        `WRITE_LEASE_PROJECT_CHANGED: active project ${currentProjectUuid() ?? "none"} differs from leased project ${lease?.projectUuid ?? "none"}.`
+      );
+    }
   }
 
   const state = readState(lease.sessionRoot);
-  if (state.state_revision !== lease.stateRevision) {
-    throw new Error(
-      `WRITE_LEASE_STATE_STALE: lease revision ${lease.stateRevision}, state revision ${state.state_revision ?? "unknown"}.`
-    );
-  }
-  if (state.workflow?.active_stage !== lease.stage) {
-    throw new Error(
-      `WRITE_LEASE_STAGE_STALE: lease stage ${lease.stage}, state stage ${state.workflow?.active_stage ?? "unknown"}.`
-    );
-  }
-  if (
-    state.mcp?.active_tool_profile &&
-    state.mcp.active_tool_profile !== context.profileId
-  ) {
-    throw new Error(
-      `WRITE_LEASE_PROFILE_STATE_MISMATCH: state expects ${state.mcp.active_tool_profile}, runtime is ${context.profileId}.`
-    );
-  }
+  assertProfileState(state, context);
 
-  const declaredRoot = args.session_root;
-  if (
-    typeof declaredRoot === "string" &&
-    normalizePathForCompare(declaredRoot) !== lease.sessionRoot
-  ) {
+  // State/profile revisions commonly change during an automatic stage transition.
+  // Refresh the same owner's in-memory lease instead of blocking the next safe call.
+  lease.stateRevision = stateRevision(state);
+  lease.stage = stateStage(state);
+  lease.profileId = context.profileId;
+  lease.profileRevision = context.profileRevision;
+  lease.profileHash = context.profileHash;
+
+  if (declaredRoot && normalizePathForCompare(declaredRoot) !== lease.sessionRoot) {
     throw new Error("WRITE_LEASE_ROOT_MISMATCH: tool session_root differs from the leased session root.");
   }
   for (const path of pathValues(args)) assertInsideRoot(path, lease.sessionRoot);
 
   lease.renewedAtMs = Date.now();
   lease.expiresAtMs = lease.renewedAtMs + DEFAULT_LEASE_TTL_MS;
+  lastLeaseExpired = false;
 }
