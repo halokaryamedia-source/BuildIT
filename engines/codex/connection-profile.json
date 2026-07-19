@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "connection_id": "blockbench",
   "transport": "streamable_http",
   "canonical_url": "http://localhost:3000/bb-mcp",
@@ -17,7 +17,7 @@
     "plugin_id": "mcp",
     "package_root": "mcp-blockbench",
     "plugin_output": "mcp-blockbench/dist/mcp.js",
-    "source_package_version": "1.6.0",
+    "source_package_version": "1.7.0",
     "required_settings": {
       "mcp_port": 3000,
       "mcp_auto_port": false,
@@ -32,23 +32,53 @@
     "index": "workspace/workspace.json",
     "active_project": "workspace/active/<asset>/",
     "blockbench_files": "workspace/active/<asset>/blockbench/",
-    "mcp_files": "workspace/active/<asset>/mcp/"
+    "mcp_files": "workspace/active/<asset>/mcp/",
+    "bootstrap_source": "approved ChatGPT Reference Studio package",
+    "bootstrap_tool": "create_project"
+  },
+  "normal_workflow": {
+    "manual_workspace_setup_required": false,
+    "manual_identity_sync_required": false,
+    "manual_profile_activation_required": false,
+    "manual_write_lease_required": false,
+    "reconnect_required_after_stage_change": false,
+    "registered_surface": "STABLE_PRODUCTION_UNION"
   },
   "required_common_tools": [
     "get_runtime_status",
     "get_project_info",
-    "get_tool_profile",
-    "activate_tool_profile",
-    "manage_project_write_lease",
-    "save_project_checkpoint",
-    "capture_standard_views"
+    "get_stage_context",
+    "create_project"
   ],
   "profile_specific_tools": {
-    "BEDROCK_CUBOID_GEOMETRY": ["validate_reference_contract", "complete_stage"],
-    "BEDROCK_CUBOID_TEXTURE": ["validate_reference_contract", "save_texture_evidence", "complete_stage"],
-    "BEDROCK_CUBOID_ANIMATION": ["validate_reference_contract", "complete_stage"],
-    "FINAL_VALIDATION_READONLY": ["validate_reference_contract", "save_texture_evidence", "complete_stage"]
+    "BEDROCK_CUBOID_GEOMETRY": [
+      "inspect_reference_visual_preview",
+      "analyze_geometry_views",
+      "apply_cube_transforms",
+      "submit_geometry_for_review"
+    ],
+    "BEDROCK_CUBOID_TEXTURE": [
+      "create_texture",
+      "save_texture_evidence",
+      "submit_stage_for_review"
+    ],
+    "BEDROCK_CUBOID_ANIMATION": [
+      "create_animation",
+      "manage_keyframes",
+      "submit_stage_for_review"
+    ],
+    "FINAL_VALIDATION_READONLY": [
+      "validate_reference_contract",
+      "export_model",
+      "submit_stage_for_review",
+      "complete_stage"
+    ]
   },
+  "diagnostic_only_tools": [
+    "activate_tool_profile",
+    "manage_project_write_lease",
+    "rebind_active_project_identity"
+  ],
   "tool_profile_contract": "engines/shared/profiles/tool-profiles.json",
   "default_tool_profile": "BEDROCK_CUBOID_GEOMETRY",
   "readiness_report": "workspace/active/<asset>/mcp/reports/connection.json"
