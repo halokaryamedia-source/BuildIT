@@ -1,5 +1,6 @@
 /// <reference types="blockbench-types" />
 
+import { resolveCubeWorldGeometry } from "@/lib/renderedGeometry";
 import { transformedCubeCorners, type Vec3 } from "@/lib/worldBounds";
 
 interface ParentLike {
@@ -19,6 +20,8 @@ interface CubeLike {
   inflate?: number;
   visibility?: boolean;
   parent?: ParentLike | "root" | null;
+  world_corners?: Vec3[];
+  world_transform_source?: "render_mesh" | "manual_transform";
 }
 
 interface GroupLike extends ParentLike {
@@ -44,7 +47,9 @@ function parentId(parent: ParentLike | "root" | null | undefined): string {
 
 function finite(value: unknown): number {
   const number = Number(value);
-  return Number.isFinite(number) ? Math.round(number * 1_000_000) / 1_000_000 : 0;
+  return Number.isFinite(number)
+    ? Math.round(number * 1_000_000) / 1_000_000
+    : 0;
 }
 
 function vector(value: unknown): Vec3 {
@@ -73,10 +78,12 @@ function meshFaces(mesh: MeshLike): Array<{ id: string; vertices: string[] }> {
 
 /**
  * Pure canonical payload used by runtime hashing and regression tests.
- * Unlike the compatibility Geometry fingerprint, this payload includes parent
- * group transforms and transformed world-space cube corners.
+ * Runtime callers provide actual rendered world-space corners when Blockbench
+ * exposes them. Pure fixtures continue through deterministic parent transforms.
  */
-export function geometryFreshnessPayload(input: GeometryFreshnessInput): Record<string, unknown> {
+export function geometryFreshnessPayload(
+  input: GeometryFreshnessInput
+): Record<string, unknown> {
   const cubes = [...(input.cubes ?? [])]
     .map((cube) => ({
       uuid: String(cube.uuid ?? ""),
@@ -88,7 +95,11 @@ export function geometryFreshnessPayload(input: GeometryFreshnessInput): Record<
       rotation: vector(cube.rotation),
       inflate: finite(cube.inflate),
       visibility: cube.visibility !== false,
-      transformed_corners: points(transformedCubeCorners(cube)),
+      world_transform_source:
+        cube.world_transform_source ?? "manual_transform",
+      transformed_corners: points(
+        cube.world_corners ?? transformedCubeCorners(cube)
+      ),
     }))
     .sort((a, b) => a.uuid.localeCompare(b.uuid));
 
@@ -117,7 +128,7 @@ export function geometryFreshnessPayload(input: GeometryFreshnessInput): Record<
     .sort((a, b) => a.uuid.localeCompare(b.uuid));
 
   return {
-    schema_version: "1.0",
+    schema_version: "1.1",
     cubes,
     groups,
     meshes,
@@ -131,7 +142,14 @@ function runtimeInput(): GeometryFreshnessInput {
     Mesh?: { all?: MeshLike[] };
   };
   return {
-    cubes: runtime.Cube?.all ?? [],
+    cubes: (runtime.Cube?.all ?? []).map((cube) => {
+      const resolved = resolveCubeWorldGeometry(cube);
+      return {
+        ...cube,
+        world_corners: resolved.corners,
+        world_transform_source: resolved.source,
+      };
+    }),
     groups: runtime.Group?.all ?? [],
     meshes: runtime.Mesh?.all ?? [],
   };
