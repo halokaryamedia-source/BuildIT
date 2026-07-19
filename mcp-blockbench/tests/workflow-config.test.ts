@@ -22,12 +22,30 @@ describe("workflow configuration", () => {
     );
   });
 
-  test("connection uses one fixed endpoint and selected workspace project", () => {
+  test("connection keeps the fixed endpoint while setup and coordination are automatic", () => {
     const profile = readJson("../engines/codex/connection-profile.json");
     expect(profile.canonical_url).toBe("http://localhost:3000/bb-mcp");
     expect(profile.allow_port_scan).toBe(false);
     expect(profile.codex.server_key).toBe("blockbench");
-    expect(profile.required_common_tools).toContain("manage_project_write_lease");
+    expect(profile.required_common_tools).toEqual([
+      "get_runtime_status",
+      "get_project_info",
+      "get_stage_context",
+      "create_project",
+    ]);
+    expect(profile.diagnostic_only_tools).toContain(
+      "manage_project_write_lease"
+    );
+    expect(profile.normal_workflow).toMatchObject({
+      manual_workspace_setup_required: false,
+      manual_identity_sync_required: false,
+      manual_profile_activation_required: false,
+      manual_write_lease_required: false,
+      registered_surface: "STABLE_PRODUCTION_UNION",
+    });
+    expect(profile.workspace.bootstrap_source).toContain(
+      "ChatGPT Reference Studio"
+    );
     expect(profile.tool_profile_contract).toBe(
       "engines/shared/profiles/tool-profiles.json"
     );
