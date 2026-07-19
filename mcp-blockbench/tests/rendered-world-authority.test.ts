@@ -51,7 +51,7 @@ function installRenderedCube() {
     to: [101, 101, 101],
     origin: [0, 0, 0],
     rotation: [0, 0, 0],
-    parent: "root",
+    parent: "root" as const,
   };
   const mesh = {
     position: new FakeVector(),
