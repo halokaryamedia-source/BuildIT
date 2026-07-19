@@ -8,6 +8,7 @@ import { installAutomaticStageContextRouting } from "./automatic-stage-context-r
 import { installAutomaticWorkspaceFinalization } from "./automatic-workspace-finalization";
 import { installFinalValidationGeometryGuards } from "./final-validation-geometry-guards";
 import { installGeometryFreshnessGuards } from "./geometry-freshness-guards";
+import { installGeometryLandmarkValidationGuard } from "./geometry-landmark-validation-guard";
 import { installProfileStateReconciliationGuards } from "./profile-state-reconciliation-guards";
 import { installReviewSubmissionLeaseGuards } from "./review-submission-lease-guards";
 import { installSessionContinuityGuards } from "./session-continuity-guards";
@@ -143,6 +144,10 @@ initializeToolProfiles();
 // Reconcile a reopened canonical project's runtime UUID before the profile/lease
 // mutation boundary runs. This keeps manual identity tools diagnostic-only.
 installAutomaticProjectIdentityGuards();
+
+// Add package-defined semantic landmarks to the existing Geometry validator.
+// This does not add another public tool or stage.
+installGeometryLandmarkValidationGuard();
 
 // Final approval promotes validated output and completes the workspace without a
 // separate CLI command or extra public MCP tool.
