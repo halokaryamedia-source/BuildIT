@@ -145,6 +145,7 @@ remove the final absolute visual requirement.
 ## Compatibility and efficiency invariants
 
 - Never analyze an empty project.
+- `analyze_geometry_views` persists canonical metrics and therefore remains a lease-owned write.
 - Read-only inspection requires no lease; persistent analysis prepares ownership automatically.
 - Do not call manual identity/profile/lease tools on the normal path.
 - Use rendered Blockbench transforms for runtime pivot and connection verification when available.
@@ -152,6 +153,7 @@ remove the final absolute visual requirement.
 - The final required-view analysis is the canonical visual evidence pass.
 - The selected Terra writer performs normal repairs directly.
 - Use visual_director only when deterministic evidence cannot close a genuine decision.
+- High remains the maximum reasoning effort and is reserved for one coded critical decision.
 
 After approval, call `complete_geometry_stage` in the same session. Revision
 returns to the same Geometry profile and the next mutation prepares current-stage
