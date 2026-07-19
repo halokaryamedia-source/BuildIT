@@ -20,6 +20,10 @@ import {
   activateToolProfile,
   getToolProfileSnapshot,
 } from "@/lib/toolProfiles";
+import {
+  prepareWorkspaceFromReferencePackage,
+  type WorkspaceBootstrapResult,
+} from "@/lib/workspaceBootstrap";
 
 export const createProjectParameters = z.object({
   name: z
@@ -46,6 +50,20 @@ export const createProjectParameters = z.object({
     .describe("Optional explicit path. When session_root and asset_id are provided, the canonical path is derived automatically."),
   session_root: z.string().min(1).optional(),
   asset_id: z.string().regex(/^[a-z0-9_]+$/).optional(),
+  reference_package_root: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional extracted ChatGPT Reference Studio package directory. When provided, MCP creates the canonical workspace, state, metadata, reference copies, and project automatically."
+    ),
+  workspace_root: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional production workspace directory. Defaults to <process cwd>/workspace when bootstrapping from a ChatGPT package."
+    ),
   persist_immediately: z.boolean().optional().default(true),
 });
 
@@ -148,7 +166,7 @@ function persistCanonicalProject(input: {
     );
   }
   const recorded = String(state.project?.save_path ?? "");
-  if (recorded && !normalizePath(expected).endsWith(normalizePath(recorded))) {
+  if (recorded && normalizePath(expected) !== normalizePath(recorded) && !normalizePath(expected).endsWith(normalizePath(recorded))) {
     throw new Error(
       `CANONICAL_MODEL_STATE_PATH_MISMATCH: state has ${recorded}; expected ${expected}.`
     );
@@ -184,6 +202,14 @@ function persistCanonicalProject(input: {
     ...(state.project_identity_audit ?? []),
     audit,
   ];
+  state.workflow.state = "GEOMETRY_IN_PROGRESS";
+  state.workflow.status = "IN_PROGRESS";
+  state.workflow.next_action = "INSPECT_REFERENCE_THEN_BUILD_GEOMETRY";
+  if (state.workflow?.stage_records?.GEOMETRY) {
+    state.workflow.stage_records.GEOMETRY.status = "IN_PROGRESS";
+  }
+  state.updated_at = audit.timestamp;
+  state.updated_by = "create_project";
 
   metadata.project = {
     ...(metadata.project ?? {}),
@@ -195,6 +221,7 @@ function persistCanonicalProject(input: {
     ...(metadata.project_identity_audit ?? []),
     audit,
   ];
+  metadata.updated_at = audit.timestamp;
 
   writeJsonFilesAtomically(fs, [
     { path: statePath, value: state },
@@ -284,8 +311,8 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new Blockbench project and, for canonical workspace calls, automatically derives the model path, persists the file, synchronizes project identity, activates the recorded stage profile, and acquires the current Codex write lease.",
-    annotations: { title: "Create And Prepare Project", destructiveHint: true, openWorldHint: true },
+      "Creates a fresh Blockbench project. It can consume an extracted ChatGPT Reference Studio package, create the canonical workspace/state/reference layout, derive the model path, persist the project, synchronize identity/profile, and prepare current-session write ownership in one call.",
+    annotations: { title: "Create Asset Workspace And Project", destructiveHint: true, openWorldHint: true },
     parameters: createProjectParameters,
     status: STATUS_STABLE,
   },
@@ -321,10 +348,29 @@ export function registerProjectTools() {
           save_path,
           session_root,
           asset_id,
+          reference_package_root,
+          workspace_root,
           persist_immediately,
         },
         rawContext?: ToolContext
       ) {
+        let workspaceBootstrap: WorkspaceBootstrapResult | null = null;
+        let resolvedSessionRoot = session_root;
+        let resolvedAssetId = asset_id;
+        let resolvedName = name;
+
+        if (reference_package_root) {
+          workspaceBootstrap = prepareWorkspaceFromReferencePackage({
+            referencePackageRoot: reference_package_root,
+            workspaceRoot: workspace_root,
+            assetId: asset_id,
+            displayName: name,
+          });
+          resolvedSessionRoot = workspaceBootstrap.session_root;
+          resolvedAssetId = workspaceBootstrap.asset_id;
+          resolvedName = workspaceBootstrap.display_name;
+        }
+
         const formatDef = Formats[format];
         if (!formatDef) {
           throw new Error(`Unknown format "${format}". Use a valid Blockbench format ID.`);
@@ -332,7 +378,7 @@ export function registerProjectTools() {
         const created = newProject(formatDef);
         if (!created) throw new Error("Failed to create project.");
 
-        Project!.name = asset_id ?? name ?? "untitled_model";
+        Project!.name = resolvedAssetId ?? resolvedName ?? "untitled_model";
         if (box_uv !== undefined) {
           if (box_uv && !formatDef.box_uv) {
             throw new Error(`Format "${format}" does not support box UV mode.`);
@@ -344,8 +390,8 @@ export function registerProjectTools() {
 
         const resolvedSavePath =
           save_path ??
-          (session_root && asset_id
-            ? canonicalProjectPath(session_root, asset_id)
+          (resolvedSessionRoot && resolvedAssetId
+            ? canonicalProjectPath(resolvedSessionRoot, resolvedAssetId)
             : undefined);
         if (resolvedSavePath !== undefined) {
           (Project as { save_path?: string }).save_path = resolvedSavePath;
@@ -354,15 +400,15 @@ export function registerProjectTools() {
         let canonicalSave: CanonicalProjectSave | null = null;
         let sessionPreparation: EnsureProjectWriteLeaseResult | null = null;
         if (resolvedSavePath && persist_immediately) {
-          if (!session_root || !asset_id) {
+          if (!resolvedSessionRoot || !resolvedAssetId) {
             throw new Error(
-              "CANONICAL_PROJECT_PERSISTENCE_ARGUMENTS_REQUIRED: save_path needs session_root and asset_id."
+              "CANONICAL_PROJECT_PERSISTENCE_ARGUMENTS_REQUIRED: canonical persistence needs session_root and asset_id, or reference_package_root for automatic workspace bootstrap."
             );
           }
           canonicalSave = persistCanonicalProject({
             savePath: resolvedSavePath,
-            sessionRoot: session_root,
-            assetId: asset_id,
+            sessionRoot: resolvedSessionRoot,
+            assetId: resolvedAssetId,
           });
 
           if (
@@ -374,8 +420,8 @@ export function registerProjectTools() {
           if (canonicalSave.stage) {
             sessionPreparation = ensureProjectWriteLease(
               {
-                sessionRoot: session_root,
-                assetId: asset_id,
+                sessionRoot: resolvedSessionRoot,
+                assetId: resolvedAssetId,
                 expectedProjectUuid: Project!.uuid,
                 expectedStage: canonicalSave.stage,
               },
@@ -389,15 +435,23 @@ export function registerProjectTools() {
           content: [{
             type: "text" as const,
             text: canonicalSave
-              ? `Created and prepared project ${snapshot.project.name} (${snapshot.project.uuid}) at ${canonicalSave.path}; identity and write access are ready.`
+              ? `Created and prepared project ${snapshot.project.name} (${snapshot.project.uuid}) at ${canonicalSave.path}; workspace, references, identity, profile, and write access are ready.`
               : `Created project ${snapshot.project.name} (${snapshot.project.uuid}) using ${snapshot.format.id} and ${snapshot.uv.mode} UV.`,
           }],
           structuredContent: {
             status: "PASS",
             ...snapshot,
+            asset_id: resolvedAssetId ?? null,
+            session_root: resolvedSessionRoot ?? null,
+            workspace_bootstrap: workspaceBootstrap,
             canonical_save: canonicalSave,
             session_preparation: sessionPreparation,
+            next_safe_operation: canonicalSave
+              ? "inspect_reference_visual_preview"
+              : "configure_project",
+            manual_workspace_setup_required: false,
             manual_identity_sync_required: false,
+            manual_profile_selection_required: false,
             manual_write_lease_required: false,
           },
         };
