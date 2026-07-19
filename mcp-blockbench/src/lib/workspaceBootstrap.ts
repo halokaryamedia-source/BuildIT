@@ -3,27 +3,23 @@
 import {
   writeFileAtomically,
   writeJsonAtomically,
+  type NativeDirentLike,
   type NativeFsLike,
 } from "@/lib/atomicFiles";
 
-interface DirentLike {
-  name: string;
-  isDirectory(): boolean;
-  isFile(): boolean;
-}
-
-interface BootstrapFs extends NativeFsLike {
+type BootstrapFs = NativeFsLike & {
+  readdirSync(path: string): string[];
   readdirSync(
     path: string,
     options: { withFileTypes: true }
-  ): DirentLike[];
+  ): NativeDirentLike[];
   cpSync(
     source: string,
     target: string,
     options: { recursive: true; force?: boolean }
   ): void;
   copyFileSync(source: string, target: string): void;
-}
+};
 
 interface PathModuleLike {
   resolve(...paths: string[]): string;
@@ -54,7 +50,15 @@ function nativeFs(): BootstrapFs {
     optional: false,
   });
   if (!value) throw new Error("Filesystem access was denied.");
-  return value as BootstrapFs;
+  const fs = value as unknown as BootstrapFs;
+  if (
+    typeof fs.readdirSync !== "function" ||
+    typeof fs.cpSync !== "function" ||
+    typeof fs.copyFileSync !== "function"
+  ) {
+    throw new Error("WORKSPACE_BOOTSTRAP_FILESYSTEM_CAPABILITY_MISSING");
+  }
+  return fs;
 }
 
 function pathModule(): PathModuleLike {
@@ -64,10 +68,10 @@ function pathModule(): PathModuleLike {
     optional: false,
   });
   if (!value) throw new Error("Path access was denied.");
-  return value as PathModuleLike;
+  return value as unknown as PathModuleLike;
 }
 
-function readJson(fs: BootstrapFs, path: string): Record<string, any> {
+function readJson(fs: NativeFsLike, path: string): Record<string, any> {
   if (!fs.existsSync(path)) throw new Error(`Required JSON file not found: ${path}`);
   return JSON.parse(String(fs.readFileSync(path, "utf8"))) as Record<string, any>;
 }
@@ -77,14 +81,12 @@ function findManifest(
   path: PathModuleLike,
   packageRoot: string
 ): string {
-  const direct = [
+  for (const candidate of [
     path.join(packageRoot, "reference_manifest.json"),
     path.join(packageRoot, "references", "reference_manifest.json"),
-  ];
-  for (const candidate of direct) {
+  ]) {
     if (fs.existsSync(candidate)) return candidate;
   }
-
   for (const entry of fs.readdirSync(packageRoot, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const candidate = path.join(packageRoot, entry.name, "reference_manifest.json");
@@ -107,10 +109,12 @@ function collectReferenceImages(
     const source = path.join(root, entry.name);
     if (entry.isDirectory()) {
       images.push(...collectReferenceImages(fs, path, source, depth + 1));
-      continue;
-    }
-    if (!entry.isFile()) continue;
-    if ([".png", ".jpg", ".jpeg", ".webp"].includes(path.extname(entry.name).toLowerCase())) {
+    } else if (
+      entry.isFile() &&
+      [".png", ".jpg", ".jpeg", ".webp"].includes(
+        path.extname(entry.name).toLowerCase()
+      )
+    ) {
       images.push(source);
     }
   }
@@ -121,6 +125,15 @@ function slash(value: string): string {
   return value.replace(/\\/g, "/");
 }
 
+function animationRequired(manifest: Record<string, any>): boolean {
+  return (
+    String(manifest.animation?.status ?? "").toUpperCase() ===
+      "ANIMATION_REQUIRED" ||
+    (Array.isArray(manifest.animation?.required_clips) &&
+      manifest.animation.required_clips.length > 0)
+  );
+}
+
 function stateTemplate(input: {
   assetId: string;
   displayName: string;
@@ -128,11 +141,7 @@ function stateTemplate(input: {
   modelPath: string;
   manifest: Record<string, any>;
 }): Record<string, any> {
-  const animationRequired =
-    String(input.manifest.animation?.status ?? "").toUpperCase() ===
-      "ANIMATION_REQUIRED" ||
-    (Array.isArray(input.manifest.animation?.required_clips) &&
-      input.manifest.animation.required_clips.length > 0);
+  const requiresAnimation = animationRequired(input.manifest);
   const now = new Date().toISOString();
   return {
     schema_version: "2.4",
@@ -204,7 +213,7 @@ function stateTemplate(input: {
       status: "READY",
       active_stage: "GEOMETRY",
       next_action: "CREATE_PROJECT",
-      animation_required: animationRequired,
+      animation_required: requiresAnimation,
       last_completed_stage: null,
       last_safe_checkpoint: null,
       stage_records: {
@@ -221,8 +230,8 @@ function stateTemplate(input: {
           open_issues: [],
         },
         ANIMATION: {
-          status: animationRequired ? "LOCKED" : "SKIPPED",
-          decision: animationRequired ? null : "SKIPPED",
+          status: requiresAnimation ? "LOCKED" : "SKIPPED",
+          decision: requiresAnimation ? null : "SKIPPED",
           accepted_areas: [],
           open_issues: [],
         },
@@ -324,6 +333,12 @@ function projectTemplate(input: {
   };
 }
 
+function ensureDirectories(fs: NativeFsLike, directories: string[]): void {
+  for (const directory of directories) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+}
+
 export function prepareWorkspaceFromReferencePackage(input: {
   referencePackageRoot: string;
   workspaceRoot?: string;
@@ -336,6 +351,7 @@ export function prepareWorkspaceFromReferencePackage(input: {
   if (!fs.existsSync(packageRoot)) {
     throw new Error(`REFERENCE_PACKAGE_ROOT_MISSING: ${packageRoot}`);
   }
+
   const manifestSource = findManifest(fs, path, packageRoot);
   const referenceRoot = path.dirname(manifestSource);
   const manifest = readJson(fs, manifestSource);
@@ -349,6 +365,7 @@ export function prepareWorkspaceFromReferencePackage(input: {
       `REFERENCE_PACKAGE_ASSET_ID_MISMATCH: manifest ${manifestAssetId}; requested ${assetId}.`
     );
   }
+
   const displayName =
     input.displayName ??
     manifest.asset?.display_name ??
@@ -364,6 +381,11 @@ export function prepareWorkspaceFromReferencePackage(input: {
   const modelPath = path.join(blockbenchRoot, `${assetId}.bbmodel`);
   const statePath = path.join(sessionRoot, "state.json");
   const projectPath = path.join(sessionRoot, "project.json");
+  const manifestPath = path.join(
+    sessionRoot,
+    "references",
+    "reference_manifest.json"
+  );
 
   if (fs.existsSync(completedRoot)) {
     throw new Error(`WORKSPACE_COMPLETED_ASSET_EXISTS: ${assetId}`);
@@ -378,12 +400,12 @@ export function prepareWorkspaceFromReferencePackage(input: {
       blockbench_root: blockbenchRoot,
       session_root: sessionRoot,
       model_path: modelPath,
-      manifest_path: path.join(sessionRoot, "references", "reference_manifest.json"),
+      manifest_path: manifestPath,
       copied_reference_images: [],
     };
   }
 
-  for (const directory of [
+  ensureDirectories(fs, [
     path.join(blockbenchRoot, "textures"),
     path.join(blockbenchRoot, "references"),
     path.join(blockbenchRoot, "previews"),
@@ -395,9 +417,7 @@ export function prepareWorkspaceFromReferencePackage(input: {
     path.join(sessionRoot, "evidence", "animation"),
     path.join(sessionRoot, "evidence", "final"),
     path.join(sessionRoot, "final", "textures"),
-  ]) {
-    fs.mkdirSync(directory, { recursive: true });
-  }
+  ]);
 
   fs.cpSync(referenceRoot, path.join(sessionRoot, "references"), {
     recursive: true,
@@ -468,7 +488,7 @@ export function prepareWorkspaceFromReferencePackage(input: {
     blockbench_root: blockbenchRoot,
     session_root: sessionRoot,
     model_path: modelPath,
-    manifest_path: path.join(sessionRoot, "references", "reference_manifest.json"),
+    manifest_path: manifestPath,
     copied_reference_images: copiedImages,
   };
 }
