@@ -42,6 +42,7 @@ import { registerReferenceVisualPreviewTools } from "./tools/reference-visual-pr
 import { registerGeometryAnalyzerTools } from "./tools/geometry-analyzer";
 import { registerGeometryDecisionTools } from "./tools/geometry-decision";
 import { registerGeometryRotationTools } from "./tools/geometry-rotation";
+import { registerGeometryDirectTransformTools } from "./tools/geometry-direct-transform";
 import { registerGeometryValidatorTools } from "./tools/geometry-validator";
 import { registerGeometryRebuildTools } from "./tools/geometry-rebuild";
 import { registerGeometryCompletionTools } from "./tools/geometry-completion";
@@ -75,6 +76,7 @@ const registrationFunctions = [
   registerGeometryAnalyzerTools,
   registerGeometryDecisionTools,
   registerGeometryRotationTools,
+  registerGeometryDirectTransformTools,
   registerGeometryValidatorTools,
   registerGeometryRebuildTools,
   registerGeometryCompletionTools,
