@@ -2,26 +2,62 @@
 
 The Blockbench MCP plugin used by BuildIT.
 
-## Intended User Experience
-
-The user provides an instruction and reference. Codex owns the technical workflow from a fresh Blockbench project through Geometry, Texture, optional Animation, validation, save, and export.
-
-Normal production must not require the user or Codex to manually calculate a model path, edit workspace JSON, synchronize a project UUID, activate a tool profile, manage a write lease, reconnect MCP, or restart Codex.
+## Fixed production architecture
 
 ```text
-get_runtime_status once
-→ get_stage_context once
-→ create_project(session_root, asset_id)
+ChatGPT Reference Studio
+→ approved reference package
+→ Codex + MCP Blockbench
 → Geometry
 → Texture
 → optional Animation
 → Final Validation
-→ export
+→ completed Blockbench package
 ```
 
-`create_project(session_root, asset_id)` derives the canonical model path, persists the project, synchronizes runtime identity and workspace metadata, activates the recorded stage profile, and prepares current-session write ownership automatically.
+ChatGPT Reference Studio remains the reference-package authority. Codex owns technical production after receiving that package.
 
-For Geometry rotation and pivot work:
+## Intended user experience
+
+Normal project production requires one package intake call:
+
+```text
+get_runtime_status once
+→ create_project(reference_package_root)
+→ inspect_reference_visual_preview once
+→ Geometry
+→ Texture
+→ optional Animation
+→ Final Validation
+→ complete_stage(FINAL_VALIDATION)
+→ WORKSPACE_COMPLETE
+```
+
+`create_project(reference_package_root)` automatically:
+
+- reads `reference_manifest.json` from the extracted ChatGPT package;
+- derives the canonical asset ID and display name;
+- creates `workspace/active/<asset>/blockbench/` and `mcp/`;
+- copies technical references and user-facing reference images;
+- writes `state.json`, `project.json`, and `workspace.json`;
+- creates and saves the Blockbench project;
+- synchronizes runtime identity and stage profile;
+- prepares current-session write ownership.
+
+Optional `workspace_root`, `asset_id`, and project name are override inputs. The user and Codex do not calculate a save path, create workspace folders, edit JSON, synchronize UUIDs, activate profiles, or manage write leases during normal production.
+
+Final Validation approval automatically promotes the validated model, textures, references, and previews to `workspace/completed/<asset>/blockbench/`, freezes MCP metadata, updates integrity data, removes temporary final staging, and returns the final output path.
+
+## Codex efficiency
+
+- The MCP schema is a stable union of normal production tools, not the entire internal library.
+- Manual identity, profile, lease, and full tool inspection are diagnostic-only.
+- `get_stage_context` returns compact state, active issues, runtime phase, diagnosis, and contract summaries rather than repeating the full manifest.
+- Full authority remains in the approved ChatGPT package and local workspace files.
+
+## Geometry quality
+
+For rotation and pivot work:
 
 - use `rotate_cube_about_attachment` when the approved manifest contract accurately describes the visible attachment;
 - use `apply_cube_transforms` for explicit reference-driven transforms, missing or inaccurate contracts, or one bounded related-part batch;
@@ -29,7 +65,9 @@ For Geometry rotation and pivot work:
 - deterministic Euler transforms remain only as a fallback before render data exists;
 - affected-view and final required-view analysis remain mandatory before review.
 
-## Plugin Identity
+The existing Geometry validator also supports optional package-defined semantic landmarks. These can validate rendered anchor points and connections such as nose tips, horn tips, neck/head joints, foot contacts, and tail roots independently of the global silhouette score.
+
+## Plugin identity
 
 | Field | Value |
 | --- | --- |
@@ -63,19 +101,22 @@ Blockbench remembers the remote source and downloads the canonical validated bun
 5. Grant process and network permissions.
 6. Confirm the plugin reports `BuildIT MCP ready at http://localhost:3000/bb-mcp`.
 
-## Package Map
+## Package map
 
 | Path | Purpose |
 | --- | --- |
 | `src/index.ts` | Dependency-free plugin registration bootstrap. |
 | `src/runtime.ts` | MCP server, UI, sessions, prompts, and shutdown runtime. |
+| `src/lib/workspaceBootstrap.ts` | ChatGPT package intake and canonical workspace creation. |
 | `src/lib/renderedGeometry.ts` | Shared rendered pivot, anchor, and parent-space transform authority. |
 | `src/server/tools/geometry-direct-transform.ts` | Batched reference-driven cube transforms. |
+| `src/server/geometry-landmark-validation-guard.ts` | Optional semantic landmark and connection validation. |
+| `src/server/automatic-workspace-finalization.ts` | Final approval output promotion and workspace completion. |
 | `scripts/` | Build, manifest, documentation, and maintenance tooling. |
 | `tests/` | Workflow, transform, profile, skill, and workspace verification. |
 | `dist/mcp.js` | Canonical downloadable plugin bundle. |
 
-## Development Commands
+## Development commands
 
 Run from this directory:
 
@@ -87,7 +128,7 @@ bun test
 bun run build
 ```
 
-## Bundle Publication
+## Bundle publication
 
 Pull requests validate the freshly generated plugin bundle. After approved source changes reach `Rework`, `.github/workflows/publish-blockbench-plugin.yml` rebuilds and commits only:
 
@@ -97,7 +138,7 @@ mcp-blockbench/dist/mcp.js
 
 Source code remains authoritative.
 
-## Workspace Maintenance
+## Developer workspace utilities
 
 ```powershell
 bun run workspace -- init <asset_id> --display-name "Display Name"
@@ -108,7 +149,7 @@ bun run workspace -- complete <asset_id> --approval-ref "<user approval>"
 bun run workspace -- reopen <asset_id> --stage TEXTURE --reason "<reason>"
 ```
 
-These commands are developer maintenance utilities. Normal production should be initialized and advanced by Codex through MCP.
+These are developer recovery and maintenance utilities. Normal package intake and completion run through MCP automatically.
 
 User files live in `workspace/*/<asset>/blockbench/`. MCP state and recovery data live in the sibling `mcp/` folder.
 
