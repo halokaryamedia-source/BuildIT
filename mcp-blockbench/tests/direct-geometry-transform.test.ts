@@ -4,6 +4,7 @@ import {
   anchorPointFromBounds,
   inverseParentRotationVector,
 } from "../src/server/tools/geometry-direct-transform";
+import { resolveCubeWorldGeometry } from "../src/lib/renderedGeometry";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const json = (path: string) => JSON.parse(read(path)) as Record<string, any>;
@@ -34,20 +35,43 @@ describe("Reference-driven direct cuboid transforms", () => {
     expectVecClose(local, [2, 0, 0]);
   });
 
-  test("registers one batch tool in the Geometry profile", () => {
+  test("provides a deterministic world-transform fallback outside Blockbench", () => {
+    const resolved = resolveCubeWorldGeometry({
+      uuid: "cube",
+      from: [0, 0, 0],
+      to: [2, 4, 2],
+      origin: [0, 0, 0],
+      rotation: [0, 0, 0],
+      parent: "root",
+    });
+    expect(resolved.source).toBe("manual_transform");
+    expect(resolved.corners).toHaveLength(8);
+    expect(resolved.pivot).toEqual([0, 0, 0]);
+  });
+
+  test("registers one batch tool in the Geometry profile and docs manifest", () => {
     const tools = read("src/server/tools.ts");
+    const docs = read("scripts/docs-manifest.ts");
     const profiles = json("../engines/shared/profiles/tool-profiles.json");
     expect(tools).toContain("registerGeometryDirectTransformTools");
+    expect(docs).toContain("geometryDirectTransformToolDocs");
     expect(
       profiles.profiles.BEDROCK_CUBOID_GEOMETRY.allowed_tools
     ).toContain("apply_cube_transforms");
   });
 
-  test("uses rendered Blockbench matrices and one optional analysis pass", () => {
+  test("uses one rendered transform authority and one optional analysis pass", () => {
     const source = read("src/server/tools/geometry-direct-transform.ts");
+    const rendered = read("src/lib/renderedGeometry.ts");
     for (const marker of [
       "mesh.matrixWorld",
       "parent.worldToLocal",
+      "resolveCubeWorldAnchor",
+      "resolveCubeWorldGeometry",
+    ]) {
+      expect(rendered).toContain(marker);
+    }
+    for (const marker of [
       "rendered_pivot_world",
       "DIRECT_TRANSFORM_CONNECTION_REJECTED",
       "analyze_geometry_views",
