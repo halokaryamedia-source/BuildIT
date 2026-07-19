@@ -2,11 +2,26 @@
 
 ## Goal
 
-Build the approved Blockbench asset from a fresh workspace with the fewest safe reads, MCP calls, image payloads, and correction cycles. Keep one Codex session and one MCP session through workspace completion. Internal project identity, profile, and write ownership are automatic.
+Build the asset defined by the approved ChatGPT Reference Studio package with the fewest safe reads, MCP calls, image payloads, and correction cycles. Keep one Codex session and one MCP session through workspace completion. Workspace setup, project identity, profile activation, write ownership, and final workspace promotion are automatic.
+
+## Fixed architecture
+
+```text
+ChatGPT Reference Studio
+→ approved reference package
+→ Codex + MCP Blockbench
+→ Geometry
+→ Texture
+→ optional Animation
+→ Final Validation
+→ completed Blockbench package
+```
+
+This architecture is authoritative. Do not replace the ChatGPT Reference Studio package with a separate reference-generation workflow inside Codex.
 
 ## Authority
 
-Use repository OpenSpec/Ponytail, the selected workspace/state, the approved Reference Visual package, and `MODEL_ROUTING.md`. Reject stale prompt packs, numbered-sheet flows, extra routine approvals, and copied session history with `LEGACY_SKILL_CONFLICT`.
+Use repository OpenSpec/Ponytail, the approved ChatGPT Reference Studio package, active workspace/state, and `MODEL_ROUTING.md`. Reject stale prompt packs, numbered-sheet legacy flows, extra routine approvals, and copied session history with `LEGACY_SKILL_CONFLICT`.
 
 ## Routing
 
@@ -20,25 +35,25 @@ No child for micro work, no parallel writers, no effort above High, no user work
 
 ## One-time startup
 
-1. Resolve or initialize the selected asset and canonical `workspace/active/<asset>/mcp` root.
-2. Load `blockbench-production` plus the active-stage skill.
+1. Receive the extracted approved ChatGPT Reference Studio package directory.
+2. Load `blockbench-production` plus the Geometry skill.
 3. Call `get_runtime_status` once.
-4. Call `get_stage_context` once for the active stage.
-5. When no project exists, call `create_project(session_root, asset_id)`; MCP derives the canonical path, persists the file, synchronizes identity/profile, and prepares current-session ownership.
-6. Begin stage work directly.
+4. Call `create_project(reference_package_root)`.
+5. MCP reads the package manifest, creates `workspace/active/<asset>/`, copies references, writes state/project metadata, creates and saves the Blockbench project, synchronizes identity/profile, and prepares current-session ownership.
+6. Call `inspect_reference_visual_preview` once, then begin Geometry.
 
-Do not calculate `save_path`, call `rebind_active_project_identity`, activate a profile, or call `manage_project_write_lease` on the normal single-user path.
+Optional `workspace_root`, `asset_id`, or display name may be supplied only when deliberately overriding package defaults. Do not calculate `save_path`, create workspace folders, edit JSON, call `rebind_active_project_identity`, activate a profile, or call `manage_project_write_lease` during normal production.
 
-Repeat runtime status only after a real runtime error, plugin reload, project replacement, or connection warning. Call stage context again only after approval, revision, upstream reopen, or stage transition.
+## Stable session and tool surface
 
-## Stable session transition
+The registered MCP schema is the stable union of normal production tools, not the entire internal library. Manual identity, profile, and lease tools are diagnostic-only.
 
 ```text
 complete or reopen stage
 → continue same MCP session
 → continue same Codex session
 → get_stage_context once
-→ next mutating call prepares current-stage ownership automatically
+→ perform returned stage work
 ```
 
 No reconnect, reload, restart, user JSON edit, checkpoint naming, profile selection, or manual lease operation.
@@ -81,9 +96,31 @@ Then perform bounded targeted edits, one final required-view pass, conditional v
 
 ## Texture and Animation
 
-Normal flow is work/evidence → bound report → submission. Submission runs fresh validation. Call standalone validation only after a failed submission to retrieve detailed diagnostics. Do not load Animation when skipped.
+Project identity and write ownership remain automatic.
 
-## Final Validation
+Texture:
+
+```text
+get_stage_context once
+→ UV
+→ base and detail texture
+→ evidence/report
+→ submit_stage_for_review
+```
+
+Animation is loaded only when required by the approved package:
+
+```text
+get_stage_context once
+→ verify hierarchy/pivots
+→ create required clips only
+→ evidence/report
+→ submit_stage_for_review
+```
+
+Submission runs fresh validation. Call standalone validation only after a failed submission to retrieve structured diagnostics.
+
+## Final Validation and completion
 
 ```text
 verify current Geometry readiness
@@ -91,14 +128,17 @@ verify current Geometry readiness
 → final atlas/views/document/export
 → record bound report
 → submit for final review
-→ final approval
-→ workspace completion
+→ complete_stage(FINAL_VALIDATION)
+→ automatic promotion to workspace/completed/<asset>/
+→ WORKSPACE_COMPLETE
 ```
+
+Final approval automatically promotes the validated model, textures, references, and previews into the user-facing `blockbench/` folder, freezes MCP metadata, updates integrity data, cleans temporary final staging, and updates the workspace index. Do not call the workspace CLI during normal production.
 
 ## Stop
 
-Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, a real concurrent-writer conflict, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
+Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, a real concurrent-writer conflict, unrecoverable package corruption, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
 
 ## Compatibility rejection invariant
 
-`LEGACY_SKILL_CONFLICT` rejects any four-sheet workflow and three approval routine. If optional project roles are not loaded, report `CODEX_PROJECT_CONFIG_NOT_LOADED` and continue with the safe current-session fallback; do not restart.
+`LEGACY_SKILL_CONFLICT` rejects any four-sheet legacy workflow and three-approval routine. If optional project roles are not loaded, report `CODEX_PROJECT_CONFIG_NOT_LOADED` and continue with the safe current-session fallback; do not restart.
