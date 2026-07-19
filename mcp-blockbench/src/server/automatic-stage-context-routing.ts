@@ -47,6 +47,144 @@ export function automaticStageNextOperation(context: Record<string, any>): strin
   return "CONTINUE_CURRENT_STAGE";
 }
 
+function compactProject(project: Record<string, any> | null | undefined) {
+  if (!project) return null;
+  return {
+    name: project.name ?? null,
+    runtime_uuid: project.runtime_uuid ?? null,
+    format: project.format ?? null,
+    save_path: project.save_path ?? null,
+    identity_ready: project.identity_ready === true,
+    rebind_required: false,
+    identity_reconciliation_mode: "AUTOMATIC_ON_NEXT_MUTATION",
+  };
+}
+
+function compactWorkflow(workflow: Record<string, any> | null | undefined) {
+  if (!workflow) return null;
+  return {
+    state: workflow.state ?? null,
+    status: workflow.status ?? null,
+    active_stage: workflow.active_stage ?? null,
+    stage_status: workflow.stage_status ?? null,
+    decision: workflow.decision ?? null,
+    open_issues: Array.isArray(workflow.open_issues)
+      ? workflow.open_issues
+      : [],
+    runtime_consistent: workflow.runtime_consistent !== false,
+  };
+}
+
+function compactGeometry(geometry: Record<string, any> | null | undefined) {
+  if (!geometry) return null;
+  const constraints = Array.isArray(geometry.part_constraints)
+    ? geometry.part_constraints
+    : [];
+  const contracts = geometry.rotation_contracts ?? {};
+  const panels = geometry.panel_regions ?? {};
+  const runtime = geometry.runtime ?? {};
+  const diagnosis = geometry.latest_diagnosis ?? null;
+  return {
+    strategy: geometry.strategy ?? null,
+    geometry_type: geometry.geometry_type ?? null,
+    expected_cube_count: geometry.expected_cube_count ?? null,
+    runtime: {
+      phase: runtime.phase ?? null,
+      rebuild_mode: runtime.rebuild_mode === true,
+      attention_required: runtime.attention_required === true,
+    },
+    latest_diagnosis: diagnosis
+      ? {
+          result: diagnosis.result ?? null,
+          scope: diagnosis.scope ?? null,
+          created_at: diagnosis.created_at ?? null,
+        }
+      : null,
+    contract_summary: {
+      part_constraint_count: constraints.length,
+      rotation_contract_ids: Object.keys(contracts),
+      required_views: Object.keys(panels),
+      ground_contact_count: Array.isArray(geometry.ground_contacts)
+        ? geometry.ground_contacts.length
+        : 0,
+    },
+  };
+}
+
+function compactTexturing(texturing: Record<string, any> | null | undefined) {
+  if (!texturing) return null;
+  return {
+    style: texturing.style ?? null,
+    atlas: texturing.atlas ?? null,
+    uv_strategy: texturing.uv_strategy ?? null,
+    pipeline: texturing.pipeline ?? null,
+    pbr: texturing.pbr ?? false,
+    material_family_count: Array.isArray(texturing.material_families)
+      ? texturing.material_families.length
+      : 0,
+    critical_detail_count: Array.isArray(texturing.critical_pixel_details)
+      ? texturing.critical_pixel_details.length
+      : 0,
+  };
+}
+
+function compactAnimation(animation: Record<string, any> | null | undefined) {
+  if (!animation) return null;
+  return {
+    status: animation.status ?? null,
+    animation_ready: animation.animation_ready === true,
+    required_clips: Array.isArray(animation.required_clips)
+      ? animation.required_clips
+      : [],
+    root_motion_policy: animation.root_motion_policy ?? null,
+  };
+}
+
+export function compactStageContext(
+  context: Record<string, any>,
+  next: string
+): Record<string, any> {
+  return {
+    schema_version: "3.0-compact",
+    stage: context.stage ?? null,
+    asset: context.asset
+      ? {
+          id: context.asset.id ?? null,
+          display_name: context.asset.display_name ?? context.asset.name ?? null,
+          target: context.asset.target ?? null,
+        }
+      : null,
+    project: compactProject(context.project),
+    workflow: compactWorkflow(context.workflow),
+    reference_visual: context.reference_visual
+      ? {
+          filename: context.reference_visual.filename ?? null,
+          sha256: context.reference_visual.sha256 ?? null,
+          required_panels: context.reference_visual.required_panels ?? [],
+        }
+      : null,
+    geometry: compactGeometry(context.geometry),
+    texturing: compactTexturing(context.texturing),
+    animation: compactAnimation(context.animation),
+    automation: {
+      exact_next_safe_operation: next,
+      automatic_identity_reconciliation: true,
+      automatic_write_ownership: true,
+      manual_identity_sync_required: false,
+      manual_write_lease_required: false,
+      profile_switch_required: false,
+      reconnect_required: false,
+      user_file_edits_required: false,
+      user_restart_required: false,
+    },
+    context_policy: {
+      mode: "COMPACT_ON_DEMAND",
+      full_manifest_omitted: true,
+      authority_remains_in_reference_package: true,
+    },
+  };
+}
+
 function normalizeResult(result: unknown): void {
   const structured = structuredContent(result);
   const context = structured?.context;
@@ -54,27 +192,9 @@ function normalizeResult(result: unknown): void {
 
   const next = automaticStageNextOperation(context);
   structured.next_safe_operation = next;
-  context.automation = {
-    ...(context.automation ?? {}),
-    exact_next_safe_operation: next,
-    automatic_identity_reconciliation: true,
-    automatic_write_ownership: true,
-    manual_identity_sync_required: false,
-    manual_write_lease_required: false,
-    profile_switch_required: false,
-    reconnect_required: false,
-    user_file_edits_required: false,
-    user_restart_required: false,
-  };
-
-  if (context.project) {
-    context.project.rebind_required = false;
-    context.project.identity_reconciliation_mode = "AUTOMATIC_ON_NEXT_MUTATION";
-  }
-  if (context.lease) {
-    context.lease.manual_action_required = false;
-    context.lease.ownership_mode = "AUTOMATIC_CURRENT_SESSION";
-  }
+  structured.context = compactStageContext(context, next);
+  structured.context_compacted = true;
+  structured.full_context_omitted = true;
 
   if (Array.isArray((result as Record<string, any>).content)) {
     const hash = String(structured.context_hash ?? "").slice(0, 12);
