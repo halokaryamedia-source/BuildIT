@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build only what the approved package requires with the fewest safe reads, calls, image payloads, and correction cycles. Keep one Codex session and one MCP session through workspace completion.
+Build the approved Blockbench asset from a fresh workspace with the fewest safe reads, MCP calls, image payloads, and correction cycles. Keep one Codex session and one MCP session through workspace completion. Internal project identity, profile, and write ownership are automatic.
 
 ## Authority
 
@@ -23,45 +23,61 @@ No child for micro work, no parallel writers, no effort above High, no user work
 1. Resolve or initialize the selected asset and canonical `workspace/active/<asset>/mcp` root.
 2. Load `blockbench-production` plus the active-stage skill.
 3. Call `get_runtime_status` once.
-4. Call `get_stage_context` for the active stage. Read-only context inspection never requires a write lease.
-5. When no project exists, call `create_project` with `session_root` and `asset_id`. Omit `save_path` unless overriding a non-canonical developer fixture.
-6. Canonical `create_project` automatically derives the model path, saves the project, synchronizes runtime UUID/state metadata, activates the recorded stage profile, and acquires the current-session write lease.
-7. Continue directly with the active-stage work. Do not call `rebind_active_project_identity` or `manage_project_write_lease` during the normal single-user path.
+4. Call `get_stage_context` once for the active stage.
+5. When no project exists, call `create_project(session_root, asset_id)`; MCP derives the canonical path, persists the file, synchronizes identity/profile, and prepares current-session ownership.
+6. Begin stage work directly.
 
-Mutating tools that receive `session_root` automatically acquire or refresh the same-session lease when required. Manual identity and lease tools are diagnostic recovery only and remain reserved for a real concurrent-writer conflict or corrupted metadata that cannot be reconciled automatically.
+Do not calculate `save_path`, call `rebind_active_project_identity`, activate a profile, or call `manage_project_write_lease` on the normal single-user path.
 
 Repeat runtime status only after a real runtime error, plugin reload, project replacement, or connection warning. Call stage context again only after approval, revision, upstream reopen, or stage transition.
 
 ## Stable session transition
 
 ```text
-stage transition
+complete or reopen stage
 → continue same MCP session
 → continue same Codex session
 → get_stage_context once
-→ next mutating call automatically refreshes current-stage write ownership
+→ next mutating call prepares current-stage ownership automatically
 ```
 
-No reconnect, reload, restart, user JSON edit, checkpoint naming, profile selection, UUID synchronization, or manual lease call.
+No reconnect, reload, restart, user JSON edit, checkpoint naming, profile selection, or manual lease operation.
 
 ## Geometry
 
-Inspect the Reference Visual once per unchanged hash. The preview returns the next operation.
+Inspect the Reference Visual once per unchanged hash. Never analyze a blank project.
 
 ```text
 zero-start
-inspect reference
-→ BUILD_PRIMARY_FORM_FROM_MANIFEST
-→ capture primary views
-→ fixed-scale diagnosis
+→ inspect reference
+→ build primary/support cuboids
+→ apply required angled forms
+→ capture/analyze left + front + top once
+→ verify_primary_form_ready
+→ structural detail
 
 existing/revision
-inspect reference only when hash changed
+→ inspect reference only when hash changed
 → capture affected views
-→ fixed-scale diagnosis
+→ targeted correction
 ```
 
-Then perform bounded targeted edits, one final manifest-required view pass, conditional visual judgment, record the visual decision, and call `submit_geometry_for_review`. Never analyze a blank model. Submission owns fresh validation and review transition.
+### Rotation and pivot routing
+
+Use `rotate_cube_about_attachment` when the manifest contract accurately describes the visible part, axis, direction, and connection.
+
+Use `apply_cube_transforms` when the contract is absent, ambiguous, or visibly inaccurate, or when one related-part batch is more efficient. Supply explicit `from/to/origin/rotation` or a local pivot anchor. The tool:
+
+- uses Blockbench rendered `matrixWorld` corners and pivot when available;
+- snaps to a rendered target anchor or explicit world point;
+- converts world translation through the rendered parent transform;
+- validates connection gap;
+- optionally runs one affected-view analysis after the complete batch;
+- does not require a manifest rotation contract.
+
+Do not repeatedly retry a contract that disagrees with the approved Reference Visual. Use one direct transform batch instead. Do not substitute axis-aligned stacking for a visibly angled form.
+
+Then perform bounded targeted edits, one final required-view pass, conditional visual judgment, record the visual decision, and call `submit_geometry_for_review`. Submission owns fresh validation and review transition.
 
 ## Texture and Animation
 
@@ -81,7 +97,7 @@ verify current Geometry readiness
 
 ## Stop
 
-Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, a real concurrent-writer conflict, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not stop for an expired same-session lease, stale in-memory lease revision, or initial project UUID creation; those are automatically reconciled. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
+Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation, a real concurrent-writer conflict, unrecoverable stale evidence, failed gate without a safe repair route, or user review. Do not scan ports, create alternate MCP keys, load deprecated skills, or create duplicate/versioned outputs.
 
 ## Compatibility rejection invariant
 
