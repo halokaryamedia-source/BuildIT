@@ -48,7 +48,6 @@
         "record_geometry_visual_decision",
         "verify_geometry_review_ready",
         "submit_geometry_for_review",
-        "save_project_checkpoint",
         "capture_standard_views",
         "complete_geometry_stage",
         "save_canonical_project"
