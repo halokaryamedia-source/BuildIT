@@ -1,17 +1,25 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { automaticStageNextOperation } from "../src/server/automatic-stage-context-routing";
+import {
+  automaticStageNextOperation,
+  compactStageContext,
+} from "../src/server/automatic-stage-context-routing";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
 function context(overrides: Record<string, any> = {}) {
   return {
     stage: "GEOMETRY",
-    project: { runtime_uuid: "runtime-uuid" },
-    workflow: { state: "GEOMETRY_IN_PROGRESS" },
+    asset: { id: "rhino", display_name: "Rhino" },
+    project: { runtime_uuid: "runtime-uuid", identity_ready: true },
+    workflow: { state: "GEOMETRY_IN_PROGRESS", open_issues: [] },
     geometry: {
       runtime: { phase: "STRUCTURAL_DETAIL", rebuild_mode: false },
       latest_diagnosis: { result: "PASS", scope: null },
+      part_constraints: [{ id: "body" }, { id: "head" }],
+      rotation_contracts: { neck: {}, head: {} },
+      panel_regions: { front: {}, left_side: {}, top_footprint: {} },
+      ground_contacts: ["front_left", "front_right"],
     },
     ...overrides,
   };
@@ -49,6 +57,25 @@ describe("automatic Codex workflow routing", () => {
         context({ geometry: { runtime: { phase: "FINAL_REVIEW_READY" } } })
       )
     ).toBe("submit_geometry_for_review");
+  });
+
+  test("returns summary counts instead of repeating full manifest contracts", () => {
+    const compact = compactStageContext(context(), "CONTINUE_GEOMETRY");
+    expect(compact.schema_version).toBe("3.0-compact");
+    expect(compact.geometry.contract_summary).toEqual({
+      part_constraint_count: 2,
+      rotation_contract_ids: ["neck", "head"],
+      required_views: ["front", "left_side", "top_footprint"],
+      ground_contact_count: 2,
+    });
+    expect(compact.geometry.part_constraints).toBeUndefined();
+    expect(compact.geometry.rotation_contracts).toBeUndefined();
+    expect(compact.geometry.panel_regions).toBeUndefined();
+    expect(compact.context_policy).toMatchObject({
+      mode: "COMPACT_ON_DEMAND",
+      full_manifest_omitted: true,
+      authority_remains_in_reference_package: true,
+    });
   });
 
   test("keeps manual identity and lease tools out of normalized stage routing", () => {
