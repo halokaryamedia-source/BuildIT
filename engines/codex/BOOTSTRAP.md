@@ -21,7 +21,7 @@ This architecture is authoritative. Do not replace the ChatGPT Reference Studio 
 
 ## Authority
 
-Use repository OpenSpec/Ponytail, the approved ChatGPT Reference Studio package, active workspace/state, and `MODEL_ROUTING.md`. Reject stale prompt packs, numbered-sheet legacy flows, extra routine approvals, and copied session history with `LEGACY_SKILL_CONFLICT`.
+Use repository OpenSpec/Ponytail, the approved ChatGPT Reference Studio package, active workspace/state, and `MODEL_ROUTING.md`. Reject stale prompt packs, numbered-sheet flows, extra routine approvals, and copied session history with `LEGACY_SKILL_CONFLICT`.
 
 ## Routing
 
@@ -141,4 +141,4 @@ Stop only for authority conflict, unavailable mandatory runtime, unsafe mutation
 
 ## Compatibility rejection invariant
 
-`LEGACY_SKILL_CONFLICT` rejects any four-sheet legacy workflow and three-approval routine. If optional project roles are not loaded, report `CODEX_PROJECT_CONFIG_NOT_LOADED` and continue with the safe current-session fallback; do not restart.
+`LEGACY_SKILL_CONFLICT` rejects any four-sheet legacy workflow and three approval routine. If optional project roles are not loaded, report `CODEX_PROJECT_CONFIG_NOT_LOADED` and continue with the safe current-session fallback; do not restart.
