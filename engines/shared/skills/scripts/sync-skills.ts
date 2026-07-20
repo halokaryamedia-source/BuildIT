@@ -14,6 +14,8 @@ const skillNames = [
   "blockbench-texture",
   "blockbench-animation",
   "blockbench-validation",
+  "engineering-discipline",
+  "code-review-graph",
 ];
 const deprecated = [
   "blockbench-use",
