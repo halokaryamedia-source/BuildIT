@@ -9,9 +9,10 @@
 5. Use `workspace/workspace.json` only as the selected-project index.
 6. Use `workspace/active/<asset>/mcp/state.json` as runtime authority.
 7. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
-8. Use `engines/shared/skills/skill-profiles.json` as production-skill authority.
+8. Use `engines/shared/skills/skill-profiles.json` as production and repository-development skill authority.
 9. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
 10. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
+11. For repository development, load `engineering-discipline`; use `code-review-graph` only as an optional local context and blast-radius layer.
 
 ## Project Config Preflight
 
@@ -48,6 +49,26 @@ Never ask the user to restart Codex merely to load optional roles during an acti
 - Subagent sandbox defaults are not the final active-asset boundary. Enforce MCP allowlists, one writer, and the Blockbench write lease.
 - Deterministic validation replaces expensive model review whenever it can answer the question.
 
+## Repository Development Stack
+
+Use this stack only when changing BuildIT source, tests, documentation, workflow, or repository infrastructure:
+
+```text
+OpenSpec
+→ Ponytail minimum-sufficient execution
+→ engineering-discipline
+→ code-review-graph when installed and current
+→ direct source inspection and deterministic verification
+```
+
+- OpenSpec remains the only durable requirement and acceptance authority.
+- Ponytail remains the only scope-selection and smallest-safe-work authority.
+- `engineering-discipline` governs TDD, debugging feedback loops, architecture care, and two-axis Standards/Spec review. It must not create another PRD, ticket state machine, approval stage, or planning hierarchy.
+- `code-review-graph` is optional navigation evidence. Start with `get_minimal_context`, use minimal detail, then read the exact source and diff. Its risk scores and graph edges never replace source, tests, or OpenSpec.
+- If Code Review Graph is unavailable, stale, or incomplete, continue with direct repository search; do not block development.
+- Repository development may use MCP key `code-review-graph`. Normal Blockbench asset production must not use it.
+- Repository development loads at most `engineering-discipline` plus `code-review-graph`; production Blockbench skills remain forbidden during repository work.
+
 ## One-Session Production Contract
 
 - The plugin exposes one stable registered tool surface for its entire loaded lifetime.
@@ -78,7 +99,7 @@ Never ask the user to restart Codex merely to load optional roles during an acti
 - Current Geometry evidence is bound to compatibility fingerprint and transformed world-space signature.
 - Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision, enters `GEOMETRY_REVIEW`, and releases the lease.
 - After user approval or revision, Codex continues in the same session; the next safe mutating operation prepares current-stage ownership automatically.
-- Use only MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
+- Normal Blockbench production uses only MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
 - Never bypass a lease owned by another session. Automatic recovery applies only to the same Codex writer and current canonical asset.
 - Production loads `blockbench-production` plus exactly one active-stage skill; maximum `2`.
 - Repository development must not load production skills.
