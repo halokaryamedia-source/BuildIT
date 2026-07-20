@@ -16,18 +16,23 @@ context: |
   Skill-profile authority: engines/shared/skills/skill-profiles.json.
   Workspace lifecycle authority: engines/shared/workspace/WORKSPACE_CONTRACT.md.
   Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
-  Default and only normal MCP endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
+  Default and only normal Blockbench endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
   Current source facts: package version 1.7.0; runtime tool counts must be verified rather than assumed.
-  Guardrails: do not create a second MCP server, parallel source root, versioned folder, duplicate canonical model, or unrelated agent framework.
+  Guardrails: do not create a second Blockbench MCP server, parallel source root, versioned folder, duplicate canonical model, or unrelated agent framework.
   Active workflow change: openspec/changes/codex-local-workflow-rework/.
   OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
   Ponytail responsibility: select the smallest safe action required now, reuse existing work, limit tools/evidence, preserve accepted areas, and stop when the active requirement is met.
+  Engineering Discipline responsibility: govern repository implementation quality through public-seam TDD, reproducible debugging, architecture care, and separate Standards/Spec review; it must not create a second planning or approval authority.
+  Code Review Graph responsibility: provide optional local minimal-context navigation, dependency/blast-radius analysis, and affected-test discovery for repository development; graph output is evidence for selecting files, never specification or correctness authority.
+  Repository development authority order: OpenSpec -> Ponytail -> engineering-discipline -> code-review-graph when available -> direct source and deterministic verification.
+  Repository development fallback: when code-review-graph is unavailable, stale, or incomplete, continue with direct repository search and source inspection.
   Reference package: PRODUCTION_CONTEXT.md, one Reference Visual, GEOMETRY.md, TEXTURING.md, ANIMATION.md, VALIDATION.md, reference_manifest.json, and CODEX_REFERENCE_HANDOFF.md.
   User-visible production stages: Geometry, Texture, optional Animation, and Final Validation.
   Internal passes do not require separate routine approval.
   Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
   Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
   Production skill context: load blockbench-production plus exactly one active-stage skill; maximum loaded production skills is 2.
+  Repository development skill context: load engineering-discipline and optionally code-review-graph; maximum support skills is 2 and production skills remain forbidden.
   Repository development must not load production skills.
   Mandatory local procedure: engines/codex/BOOTSTRAP.md and the active-stage contract under engines/shared/.
   Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
