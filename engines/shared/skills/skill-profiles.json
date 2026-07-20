@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "canonical_root": "engines/shared/skills",
   "host_adapters": [
     ".agents/skills",
@@ -12,6 +12,10 @@
     "blockbench-texture",
     "blockbench-animation",
     "blockbench-validation"
+  ],
+  "repository_development_skills": [
+    "engineering-discipline",
+    "code-review-graph"
   ],
   "profiles": {
     "BOOTSTRAP": {
@@ -93,6 +97,21 @@
     }
   },
   "repository_development": {
+    "authority_order": [
+      "openspec",
+      "ponytail",
+      "engineering-discipline",
+      "code-review-graph",
+      "repository-tools"
+    ],
+    "required_support_skills": [
+      "engineering-discipline"
+    ],
+    "optional_context_skills": [
+      "code-review-graph"
+    ],
+    "max_support_skills_loaded": 2,
+    "graph_unavailable_policy": "continue_with_direct_repository_search",
     "forbidden_production_skills": [
       "blockbench-production",
       "blockbench-geometry",
@@ -104,7 +123,9 @@
       "mcp-builder",
       "typescript-expert",
       "zod",
-      "openspec-*"
+      "openspec-*",
+      "engineering-discipline",
+      "code-review-graph"
     ]
   },
   "deprecated_skill_names": [
