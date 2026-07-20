@@ -5,6 +5,9 @@ const repoRoot = resolve(import.meta.dir, "../..");
 const argumentsSet = new Set(Bun.argv.slice(2));
 const checkOnly = argumentsSet.has("--check");
 const skipBuild = argumentsSet.has("--skip-build");
+const maintenanceCommand = ["build", "update", "status"].find((command) =>
+  argumentsSet.has(`--${command}`)
+);
 
 interface Runner {
   command: string;
@@ -90,6 +93,11 @@ function runGraph(runner: Runner, args: string[]): void {
 }
 
 const runner = resolveRunner();
+
+if (maintenanceCommand) {
+  runGraph(runner, [maintenanceCommand]);
+  process.exit(0);
+}
 
 if (checkOnly) {
   runGraph(runner, ["status"]);
