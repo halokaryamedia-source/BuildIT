@@ -1,53 +1,64 @@
 # Ponytail Minimum-Sufficient Execution
 
+## Domain role
+
+Ponytail owns the **smallest sufficient execution slice, resource budget, preservation boundary, and stop point** for the existing Reference Studio → Codex + MCP Blockbench production flow.
+
+Ponytail does not own product requirements, engineering method, context truth, model permissions, Runtime State, or correctness evidence. BuildIT has no single linear authority hierarchy.
+
+New foundation decisions live in `openspec/changes/buildit-system-foundation/`. This file remains the minimum-execution contract for the current production flow.
+
 ## Active goal
 
-Run one clear path from ChatGPT reference creation to the final Blockbench package with the fewest safe questions, reads, model calls, image payloads, validations, and correction cycles. Quality gates remain strict; duplicated work, alternate styles, and speculative polish are removed.
+Produce one reviewed final Blockbench package with the fewest safe questions, reads, model calls, image payloads, validations, and correction cycles while preserving strict quality and recovery.
 
-## Canonical upstream-to-downstream path
+## Product path
 
 ```text
 CHATGPT REFERENCE STUDIO
 source intake
-→ apply fixed Minecraft / Blockbench cuboid interpretation
-→ one batched clarification turn only when a low-confidence subject decision has high production impact
+→ fixed Minecraft/Blockbench cuboid interpretation
+→ one batched high-impact clarification turn only when required
 → Production Context approval
-→ one Golden-Sample-locked Minecraft cuboid Reference Visual
-→ hidden blocking QA
-→ maximum one targeted correction of the same visual only when required
-→ only a QA-passing visual reaches Reference Visual approval
-→ automatic technical package + audit + candidate ZIP
+→ one Golden-Sample-guided Reference Visual
+→ internal blocking QA
+→ zero or one targeted correction of the same visual
+→ Reference Visual approval
+→ automatic Reference Package
 
-CODEX + MCP-BLOCKBENCH
+CODEX + MCP BLOCKBENCH
 one runtime preflight
-→ create/open canonical Bedrock project
-→ stage context + identity sync + one selected Terra writer lease
+→ automatic workspace/project preparation
 → Geometry review
 → Texture review
-→ optional Animation review only when required
+→ optional Animation review when required
 → Final Validation review
 → final approval
-→ workspace completion
+→ automatic workspace completion
 ```
 
-Routine ChatGPT production has exactly two approval moments: Production Context and Reference Visual. Technical document generation, package audit, and ZIP delivery are automatic. Golden Sample promotion is a separate repository action, not a third routine approval.
+Routine upstream production has exactly two approval moments: Production Context and Reference Visual. Internal QA, technical documents, manifest generation, package audit, and delivery are automatic.
 
-## Minecraft-only upstream lock
+## Reference Design budget
 
-The Reference Studio has one visual style only: actual Minecraft Bedrock / Blockbench cuboid pixel art.
+- source inspection: once per supplied source set;
+- visual-style question: zero;
+- subject clarification: `0–4` high-impact questions in one turn;
+- Production Context approval: one;
+- normal Reference Visual generation: one;
+- blocking QA: one;
+- targeted correction: zero or one edit of the same image;
+- alternate style generation: zero;
+- optional polish: zero;
+- failed draft shown as approval-ready: zero;
+- Reference Visual approval: one;
+- post-approval image generation: zero unless Reference Design is explicitly reopened.
 
-The source image supplies identity, proportions, features, markings, and attachments. The Golden Sample supplies construction language, panel layout, camera, facing direction, spacing, and technical presentation.
+The source subject owns identity and mandatory visible features. The Golden Sample owns presentation, camera, layout, orientation, and quality language. It does not donate subject identity.
 
-The generated model must use:
+The Reference Visual must depict an actual Minecraft Bedrock/Blockbench cuboid model with planned masses, meaningful cuboid variation, stepped taper, limited purposeful rotations, stable hierarchy, and crisp pixel texture.
 
-- planned primary and secondary cuboid masses;
-- deliberate variation in cuboid width, height, and depth;
-- stepped forms for controlled taper;
-- limited purposeful one-axis rotations for approved angled features;
-- stable major masses, readable hierarchy, and separable moving parts;
-- crisp Minecraft pixel texture.
-
-The following are blocking and are corrected internally before review:
+Reject before review:
 
 ```text
 NON_MINECRAFT_GEOMETRY
@@ -66,107 +77,77 @@ TOP_VIEW_NOT_FOOTPRINT
 CROSS_VIEW_MODEL_DRIFT
 ```
 
-Do not ask the user to choose realistic versus Minecraft, a stylization level, or whether cuboids should be used. Those are not unresolved decisions.
+If the one targeted correction still fails, stop with exact blockers. Do not silently generate a new style or package.
 
-## Reference Visual execution budget
+## Reference authority and reading budget
 
-- source inspection: once per supplied source set;
-- visual-style classification question: zero;
-- subject clarification: `0–4` high-impact questions in one turn;
-- Production Context approval: one;
-- normal Reference Visual generation: one;
-- blocking QA pass: one;
-- targeted correction: zero or one edit of the same image;
-- optional polish iteration: zero;
-- alternate-style generation: zero;
-- failed draft shown to user: zero;
-- Reference Visual approval: one;
-- post-approval image generation: zero.
+- `PRODUCTION_CONTEXT.md` owns intended identity, scale, assumptions, mandatory interpretation, and forbidden redesigns.
+- The approved Reference Visual owns visible silhouette, proportions, pose, markings, and construction appearance.
+- `reference_manifest.json` owns executable crops, regions, constraints, symmetry, rotations, texture/animation limits, landmarks, and evidence requirements.
+- Stage Markdown summarizes procedure; it does not duplicate executable arrays.
+- `CODEX_REFERENCE_HANDOFF.md` summarizes route and non-negotiable boundaries.
 
-When the first image fails, use the one correction only for the named blockers. When the correction still fails, stop with the exact codes. Do not generate another board, return to source intake, ask broad questions, or offer alternate styles.
+When approved artifacts conflict, stop with `REFERENCE_CONFLICT`. Do not repeatedly reread every document hoping to infer a resolution.
 
-## Golden Sample position budget
+## Codex context and call budget
 
-For bilateral assets use exactly:
+- `get_runtime_status`: once at startup; repeat only after a real runtime, plugin, project, or connection change.
+- `get_stage_context`: once at Stage entry and after approval, revision, or upstream reopen; never poll after every tool.
+- Reference Visual preview: once per unchanged SHA-256.
+- Zero-start Geometry: build primary/support masses before the first analysis.
+- Revision Geometry: inspect and analyze affected views first.
+- Geometry correction: maximum two non-improving bounded cycles before one focused question or justified escalation.
+- Final Geometry: one manifest-required view pass, plus `right_side` only when required.
+- Texture/Animation happy path: evidence/report then submission; do not duplicate submission-owned validation.
+- Final Validation: one evidence-free preflight, then final evidence/export/report/submission.
+- Deterministic checks precede model judgment.
+
+## Automatic coordination
+
+Normal production never includes manual path calculation, identity rebind, profile activation, lease acquisition, checkpoint naming, reconnect, or user JSON editing.
 
 ```text
-UPPER: LEFT SIDE | FRONT | BACK
-LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
+create/open canonical project
+→ automatic identity/profile/current-session ownership preparation
+→ execute current Stage
 ```
 
-- Left Side: strict profile facing left.
-- Front and Back: centered, upright, same height and ground line.
-- Top / Footprint: true top-down, front/head pointing left.
-- Front-left 3/4: subject faces left and exposes front plus left planes.
+Manual identity and lease tools remain diagnostic-only. A real lease owned by another Writer is a blocker and is never bypassed.
 
-Do not spend a generation exploring another panel arrangement.
-
-## Single-source rule
-
-- `PRODUCTION_CONTEXT.md` owns user intent, scale, assumptions, mandatory Minecraft interpretation, and forbidden redesigns.
-- The approved Reference Visual owns visible identity, cuboid construction appearance, silhouette, proportions, pose, and texture.
-- `reference_manifest.json` owns executable numeric crops, regions, part constraints, symmetry/asymmetry, rotations, Texture limits, Animation limits, and required evidence.
-- Stage Markdown files provide concise human-readable build and review procedure; they do not duplicate large executable arrays.
-- `CODEX_REFERENCE_HANDOFF.md` owns only authority order, route, stage mapping, and non-negotiable boundaries.
-
-When authorities conflict, stop with `REFERENCE_CONFLICT`; do not resolve the conflict by rereading every document repeatedly.
-
-## Codex call and context budget
-
-- `get_runtime_status`: once at startup; repeat only after a real runtime error, plugin reload, project replacement, or connection warning.
-- `get_stage_context`: once at stage entry and once after approval, revision, or upstream reopen; do not poll it after every MCP call.
-- Reference Visual preview: once per unchanged SHA-256.
-- Zero-start Geometry: inspect the reference, build primary masses from the manifest, then capture/analyze. Never analyze a blank project.
-- Existing/revision Geometry: capture only affected views first, then diagnose.
-- Geometry correction: maximum two bounded non-improving cycles before setting an attention flag and asking one focused question or escalating.
-- Final Geometry: one manifest-required view pass; add `right_side` only for `ASYMMETRIC` assets.
-- Texture/Animation happy path: record the bound report, then submit. Submission already runs fresh validation; do not call the same validation immediately beforehand.
-- Final Validation: one `require_evidence=false` preflight before final capture/export, then report and submit; submission performs the final evidence-aware validation.
-- Sol Medium: no mandatory startup call. Use only for unresolved cross-view judgment, subjective feedback after deterministic evidence, or a final artistic decision that Terra cannot close safely.
-- Sol High: at most once for one coded critical decision after Medium failed.
-- Mini: only for sizeable mechanical read-only work; no subagent for micro work.
-
-## Stage path
+## Stage routes
 
 ### Geometry
 
 ```text
-stage entry
-→ identity/lease
+Stage entry
 → inspect Reference Visual once per hash
-→ zero-start: primary/support cuboids only
-→ smart-fit required attachments
+→ zero-start primary/support cuboids
+→ guarded required rotations/attachments
 → primary left/front/top diagnosis
 → verify_primary_form_ready
 → structural detail
-→ smart-fit approved angled detail
-→ bounded targeted edits
+→ guarded angled details
+→ bounded targeted corrections
 → final required-view diagnosis
-→ conditional visual judgment
+→ conditional visual judgment only when deterministic evidence is insufficient
 → record visual decision
 → submit_geometry_for_review
 → user review
 ```
 
-Smart-fit means:
+Rotation routes:
 
 ```text
-place one zero-rotation provisional cuboid
-→ call rotate_cube_about_attachment without angle_degrees
-→ auto size + long axis + legal angle
-→ end-face centerline pivot
-→ snap to attachment target
-→ move from/to/origin together
-→ validate direction and gap
-→ attachment_fit.json
+accurate manifest attachment contract
+→ rotate_cube_about_attachment
+
+missing, ambiguous, or visibly inaccurate contract
+→ apply_cube_transforms
 ```
 
-Do not spend calls manually guessing rotation angles or repeatedly moving a
-cuboid after rotation. An explicit angle is allowed only for one diagnosed
-repair. An axis-aligned stair-step substitute does not satisfy a required
-rotation contract.
+Both routes validate rendered pivot and connection when `matrixWorld` data is available and invalidate affected evidence. Do not substitute axis-aligned stacks for a visibly rotated form.
 
-`submit_geometry_for_review` owns fresh Geometry validation, review readiness, checkpoint creation, state transition, and lease release. No duplicate validation call is added immediately before it.
+`submit_geometry_for_review` owns fresh validation, readiness, checkpointing, Runtime State transition, and writer release.
 
 ### Texture
 
@@ -178,11 +159,11 @@ UV + base + detail
 → user review
 ```
 
-If submission reports `STAGE_VALIDATION_NOT_PASS`, call `validate_reference_contract` once for structured diagnostics, repair only named issues, regenerate affected evidence/report, and resubmit.
+On `STAGE_VALIDATION_NOT_PASS`, fetch structured diagnostics once, repair only named issues, regenerate affected evidence/report, and resubmit.
 
 ### Animation
 
-Run only when required by the approved manifest:
+Run only when the approved manifest requires it:
 
 ```text
 required clips only
@@ -196,91 +177,86 @@ required clips only
 
 ```text
 verify current Geometry readiness
-→ validate_reference_contract(require_evidence=false) once
-→ final atlas and required-view evidence
-→ complete VALIDATION.md
-→ export canonical final model/textures
+→ evidence-free contract preflight once
+→ final atlas/views/document/export
 → record_stage_review_report
 → submit_stage_for_review
 → final user review
 → complete_stage(FINAL_VALIDATION)
-→ workspace completion
+→ automatic workspace completion
 ```
 
-## Model routing
+## Model execution budget
+
+Model execution is defined in `engines/codex/MODEL_ROUTING.md`:
 
 ```text
-normal implementation  → Terra Medium parent directly
-large read-only audit  → routine_auditor / Mini Low when worthwhile
-fallback sole writer   → mcp_builder / Terra Medium only when needed
-visual judgment        → visual_director / Sol Medium only with a reason
-critical decision      → critical_reviewer / Sol High once
+Capability Gate
+→ Candidate Pool
+→ Model Selector
+→ fixed permissions
 ```
 
-Exactly one Terra writer may mutate the active asset. Deterministic validation always wins over unnecessary model review.
+The current deterministic selector remains the runtime baseline. RouteLLM is evaluation-only until the foundation change records successful provider integration, calibration, and quality acceptance.
+
+- no model call exists only to choose another model;
+- one Writer performs all active Asset mutations;
+- read-only mechanical work may use a lower-cost eligible route;
+- visual judgment is conditional;
+- critical review requires an eligible reason and remains rare;
+- deterministic validation wins over unnecessary advisory calls.
 
 ## Loop prevention
 
 Forbidden:
 
-- asking which visual style the user wants;
-- realistic, semi-realistic-render, cinematic, generic-voxel, or alternate-style output;
-- repeated user questions for visible or already approved facts;
-- showing a known-invalid Reference Visual for approval;
-- a second normal Reference Visual generation;
-- optional polish after a valid visual exists;
-- a third routine ChatGPT approval;
+- asking the user to choose the fixed Minecraft/cuboid style;
+- realistic, cinematic, generic-voxel, or alternate-style output;
+- repeated questions for approved or visible facts;
+- presenting a known-invalid Reference Candidate;
+- optional polish after a valid approved visual exists;
+- a third routine upstream approval;
 - analyzing empty Geometry;
-- manually guessing normal construction angles when the smart solver exists;
-- using axis-aligned stacked cuboids for a required rotated chain;
-- mandatory Sol calls for deterministic work;
-- `get_runtime_status` on every stage;
-- `get_stage_context` polling after every tool call;
-- duplicate validation immediately before a submission tool that validates internally;
-- rereading all package documents when compact stage context is current;
-- parallel writers, recursive delegation, reconnects, plugin reloads, or new Codex sessions;
-- new output versions, duplicate packages, or speculative features.
+- repeated manual guessing when a guarded transform route exists;
+- mandatory visual-advisor calls for deterministic work;
+- duplicate validation before a submission that validates internally;
+- rereading all package documents when current Stage context is sufficient;
+- parallel Writers, recursive delegation, reconnect loops, or duplicate output versions;
+- runtime RouteLLM adoption without the accepted evaluation boundary.
 
 ## Stop conditions
 
-Stop only for an unresolved authority conflict, a Reference Visual that remains non-Minecraft or inconsistent after the one allowed correction, missing mandatory runtime, unsafe mutation, write-lease conflict, evidence that cannot be regenerated, failed gate with no safe repair route, or a required user review.
+Stop only for:
 
-## Reproducible P0 correction
+- unresolved Reference Conflict or reopened product decision;
+- a Reference Candidate that remains invalid after the allowed correction;
+- missing mandatory runtime;
+- unsafe mutation;
+- Writer conflict;
+- evidence that cannot be regenerated;
+- failed gate with no valid recovery route;
+- required user Review Gate.
 
-The giraffe simulation produced a realistic animal render with pixelated texture and Golden Sample position drift. That is a reproducible upstream P0, not a request for a new feature. This correction removes the invalid style branch while preserving all existing Geometry, rotation, manifest, Codex, and MCP rules.
+## Measurement freeze
 
-## Deferred
+Do not add another runtime tool, role, profile, review gate, evidence class, checkpoint class, prompt variant, or style before current acceptance evidence proves a need.
 
-- merge into `V1`;
-- production release;
-- learned routing or persistent routing telemetry;
-- unrelated mesh, PBR, Hytale, armature, or multi-project expansion;
-- any additional Reference Studio style, sheet, approval, or regeneration mode.
+Measure before further optimization:
 
-## Pre-local optimization freeze
+```text
+MCP calls
+Stage-context bytes
+model routes and tokens
+correction cycles
+image payload bytes
+checkpoint sizes
+elapsed Stage time
+validation failures
+user revision count
+```
 
-After the Minecraft-only upstream correction, manifest-only authority, and compact-context cleanup, do not add or merge another runtime tool, model role, profile, review gate, evidence type, checkpoint class, image style, prompt variant, or approval stage before the local acceptance run unless it fixes a reproducible P0 blocker or removes a proven duplicate authority.
+A theoretical micro-optimization without measured evidence is `DEFERRED_NOT_REQUIRED`.
 
-Further optimization requires measured local acceptance evidence: actual MCP call count, stage-context response bytes, model-route usage, correction cycles, image payload bytes, checkpoint sizes, and elapsed stage time. A theoretical micro-optimization without those measurements is `DEFERRED_NOT_REQUIRED`.
+## Historical implementation notes
 
-## Local Geometry P0 recovery
-
-Measured local evidence showed that the documented primary-form concept was
-advisory, so a full hierarchy and detail set could be built before silhouette
-convergence. It also showed that required pivots and rotations were never
-visible; Codex substituted axis-aligned stacked cubes.
-
-The minimum corrective scope is:
-
-- one internal `PRIMARY_FORM` mutation boundary;
-- one `verify_primary_form_ready` tool;
-- smart resize / rotation / pivot / snap inside the existing rotation tool;
-- current `attachment_fit.json` evidence;
-- adaptive reference segmentation;
-- canonical project persistence;
-- connection readiness retry and stable-session wording;
-- manifest-derived Animation requirement.
-
-This adds no user approval, profile, style, alternate workflow, or extra normal
-tool call. The failed giraffe is a diagnostic fixture, not a baseline to
-continue polishing.
+The detailed Rhino/giraffe incidents, completed implementation tasks, and compatibility history remain in the existing proposal/tasks and Git history. They do not belong in the active minimum-execution path.
