@@ -80,7 +80,7 @@ describe("repository development skill stack", () => {
       'detail_level="minimal"',
       "five graph calls",
       "800 response tokens",
-      "Graph results are navigation evidence, not proof",
+      "A graph risk score is a prioritisation signal, not a merge decision",
       "continue with direct repository search",
       "tirth8205/code-review-graph",
     ]) {
