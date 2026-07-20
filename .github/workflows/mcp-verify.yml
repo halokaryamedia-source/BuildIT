@@ -13,6 +13,12 @@ on:
       - "openspec/changes/codex-local-workflow-rework/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
+      - ".agents/skills/engineering-discipline/**"
+      - ".agents/skills/code-review-graph/**"
+      - ".codex/skills/engineering-discipline/**"
+      - ".codex/skills/code-review-graph/**"
+      - ".code-review-graphignore"
+      - "docs/integrations/DEVELOPMENT_SKILLS.md"
       - "AGENTS.md"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/mcp-verify.yml"
@@ -27,6 +33,12 @@ on:
       - "openspec/changes/codex-local-workflow-rework/**"
       - ".agents/skills/blockbench-*/**"
       - ".codex/skills/blockbench-*/**"
+      - ".agents/skills/engineering-discipline/**"
+      - ".agents/skills/code-review-graph/**"
+      - ".codex/skills/engineering-discipline/**"
+      - ".codex/skills/code-review-graph/**"
+      - ".code-review-graphignore"
+      - "docs/integrations/DEVELOPMENT_SKILLS.md"
       - "AGENTS.md"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/mcp-verify.yml"
@@ -102,7 +114,7 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/verification-logs"
           set -o pipefail
           {
-            bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js is missing"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, `version:\"${pkg.version}\"`, "BuildIT MCP Server", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing generated bundle marker: ${required}`); } if (text.includes("version:\"1.6.3\"")) throw new Error("Legacy plugin metadata remains in dist/mcp.js"); console.log(`Generated plugin bundle PASS: v${pkg.version}`);'
+            bun -e 'const pkg = await Bun.file("package.json").json(); const file = Bun.file("dist/mcp.js"); if (!(await file.exists())) throw new Error("dist/mcp.js is missing"); const text = await file.text(); for (const required of [`/* v${pkg.version} */`, `version:"${pkg.version}"`, "BuildIT MCP Server", "STABLE_FULL_LIBRARY", "ACTIVE_PROFILE_GUARDED", "current_session_continues"]) { if (!text.includes(required)) throw new Error(`Missing generated bundle marker: ${required}`); } if (text.includes("version:\"1.6.3\"")) throw new Error("Legacy plugin metadata remains in dist/mcp.js"); console.log(`Generated plugin bundle PASS: v${pkg.version}`);'
 
             if [[ "$EVENT_NAME" == "push" && "$ACTOR" == "github-actions[bot]" ]]; then
               git diff --exit-code -- dist/mcp.js
