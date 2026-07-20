@@ -103,16 +103,21 @@ describe("single-session production contract", () => {
     }
   });
 
-  test("documents one plugin load, one Codex session, and one user acceptance test", () => {
+  test("documents one loaded plugin and continuous MCP/Codex sessions", () => {
     const agents = read("../AGENTS.md");
     const bootstrap = read("../engines/codex/BOOTSTRAP.md");
     const contract = read("../engines/shared/workflow/TOOL_PROFILE_CONTRACT.md");
     const acceptance = read("../engines/codex/FINAL_ACCEPTANCE_TEST.md");
 
-    for (const source of [agents, bootstrap, contract]) {
+    expect(agents).toContain("same MCP and Codex session");
+    for (const source of [bootstrap, contract]) {
       expect(source).toContain("same MCP session");
       expect(source).toContain("same Codex session");
     }
+    expect(contract).toContain("stable **production union**");
+    expect(contract).toContain(
+      "next mutating call prepares current-Stage ownership automatically"
+    );
     expect(acceptance).toContain("one final end-to-end test");
     expect(acceptance).toContain("Load the final `mcp-blockbench/dist/mcp.js` once");
     expect(acceptance).toContain("Start one Codex session");
