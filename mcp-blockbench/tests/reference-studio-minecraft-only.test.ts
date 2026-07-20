@@ -23,7 +23,7 @@ describe("Minecraft-only Reference Studio", () => {
     expect(skill).toContain("Do not ask the user to choose a visual style");
     expect(flow).toContain("There is no style-selection branch");
     expect(proposal).toContain("The user SHALL NOT be asked to select realistic versus Minecraft style");
-    expect(ponytail).toContain("visual-style classification question: zero");
+    expect(ponytail).toContain("visual-style question: zero");
   });
 
   test("requires actual Blockbench construction rather than pixel texture or naive cube stacking", () => {
@@ -85,12 +85,12 @@ describe("Minecraft-only Reference Studio", () => {
     expect(skill).toContain("Never show a failed draft to the user for approval");
     expect(flow).toContain("A failed draft is never shown to the user as approval-ready");
     expect(qa).toContain("Only a QA-passing visual may be labeled approval-ready");
-    expect(ponytail).toContain("failed draft shown to user: zero");
-    expect(ponytail).toContain("alternate-style generation: zero");
-    expect(ponytail).toContain("optional polish iteration: zero");
+    expect(ponytail).toContain("failed draft shown as approval-ready: zero");
+    expect(ponytail).toContain("alternate style generation: zero");
+    expect(ponytail).toContain("optional polish: zero");
   });
 
-  test("records the observed giraffe failure as a P0 correction without changing downstream Geometry", () => {
+  test("keeps the observed giraffe P0 in implementation history without expanding active execution", () => {
     const proposal = read("../openspec/changes/codex-local-workflow-rework/proposal.md");
     const ponytail = read(
       "../openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md"
@@ -99,8 +99,9 @@ describe("Minecraft-only Reference Studio", () => {
 
     expect(proposal).toContain("failed giraffe simulation");
     expect(proposal).toContain("reproducible upstream P0");
-    expect(ponytail).toContain("preserving all existing Geometry, rotation, manifest, Codex, and MCP rules");
     expect(tasks).toContain("Minecraft-only Reference Studio P0 correction");
     expect(tasks).toContain("Preserve the existing Geometry, rotation-contract, manifest, Codex, and MCP implementation unchanged");
+    expect(ponytail).toContain("Historical implementation notes");
+    expect(ponytail).not.toContain("## Reproducible P0 correction");
   });
 });
