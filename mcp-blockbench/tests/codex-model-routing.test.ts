@@ -190,7 +190,8 @@ describe("usage-efficient Codex routing", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     const mutationContext = read("src/lib/mutationContext.ts");
     expect(policy).toContain("read-only versus Writer eligibility");
-    expect(policy).toContain("fixed permissions and writer identity");
+    expect(policy).toContain("read_only or writer");
+    expect(policy).toContain("allowed_tools");
     expect(policy).toContain("Writer already owned by another session");
     expect(mutationContext).not.toContain("WRITE_LEASE_SESSION_AMBIGUOUS");
     expect(mutationContext).toContain("WRITE_LEASE_SESSION_REQUIRED");
