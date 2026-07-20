@@ -7,7 +7,7 @@ BuildIT contains one MCP Blockbench application package, shared AI-engine orches
 | Path | Purpose |
 | --- | --- |
 | `mcp-blockbench/` | Complete MCP Blockbench package: source, scripts, prompts, tests, and generated plugin output. |
-| `engines/shared/` | Engine-neutral production workflow, profiles, templates, and runtime production skills. |
+| `engines/shared/` | Engine-neutral production workflow, profiles, templates, and canonical skills. |
 | `engines/chatgpt/` | ChatGPT-only reference studio that creates the approved per-asset package before Codex/MCP production. |
 | `engines/codex/`, `engines/claude/`, `engines/ollama/` | Host-specific production and integration boundaries. |
 | `workspace/` | Active and completed Blockbench projects with user assets separated from MCP internals. |
@@ -22,6 +22,8 @@ BuildIT contains one MCP Blockbench application package, shared AI-engine orches
 - ChatGPT reference skill: `engines/chatgpt/skills/blockbench-reference-studio/SKILL.md`
 - Shared workflow: `engines/shared/README.md`
 - Codex production: `engines/codex/BOOTSTRAP.md`
+- Codex repository development: `engines/codex/DEVELOPMENT_BOOTSTRAP.md`
+- Development skill integration: `docs/integrations/DEVELOPMENT_SKILLS.md`
 - Workspace lifecycle: `workspace/README.md`
 - Workspace index example: `workspace/workspace.example.json`
 - Documentation: `docs/README.md`
@@ -35,7 +37,7 @@ A real `workspace/workspace.json` is created locally and is intentionally not co
 ChatGPT Reference Studio
 source image
 → Production Context
-→ four approved sheets
+→ one approved Reference Visual
 → stage contracts
 → reference manifest
 → Codex handoff
@@ -50,6 +52,28 @@ approved ZIP
 ```
 
 The ChatGPT skill does not use MCP directly and is not synchronized into `.codex/skills/` or `.agents/skills/`. Runtime production continues to use only the shared stage skills registered in `engines/shared/skills/skill-profiles.json`.
+
+## Repository Development Stack
+
+```text
+OpenSpec
+→ Ponytail
+→ Engineering Discipline
+→ Code Review Graph when available
+→ direct source and deterministic verification
+```
+
+OpenSpec and Ponytail remain the planning and scope authorities. `engineering-discipline` adds TDD, debugging, architecture, and two-axis review. `code-review-graph` is an optional local MCP context layer that narrows source and affected-test reads.
+
+From `mcp-blockbench/`:
+
+```text
+bun run engineering:setup
+bun run graph:update
+bun run graph:status
+```
+
+Normal Blockbench production uses only the `blockbench` MCP server. Repository development may additionally use `code-review-graph`.
 
 ## Workspace Separation
 
