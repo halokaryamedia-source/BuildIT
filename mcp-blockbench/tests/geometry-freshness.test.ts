@@ -123,13 +123,14 @@ describe("Geometry transformed-world freshness", () => {
     expect(profiles).toBeGreaterThan(freshness);
   });
 
-  test("documents that canonical analyzer output is a persistent lease-owned write", () => {
+  test("documents analyzer persistence and automatic writer ownership", () => {
     const skill = read("../engines/shared/skills/blockbench-geometry/SKILL.md");
-    const agents = read("../AGENTS.md");
+    const stateMachine = read("../engines/shared/workflow/STATE_MACHINE.md");
+    const profiles = read("src/lib/toolProfiles.ts");
+
     expect(skill).toContain("analyze_geometry_views` persists canonical metrics");
     expect(skill).toContain("transformed world-space signature");
-    expect(agents).toContain(
-      "`analyze_geometry_views` persists canonical evidence and therefore requires"
-    );
+    expect(stateMachine).toContain("Automatic project and writer readiness");
+    expect(profiles).toContain("assertToolMutationAllowed");
   });
 });
