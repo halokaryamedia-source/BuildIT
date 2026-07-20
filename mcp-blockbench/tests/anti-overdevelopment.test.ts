@@ -36,15 +36,16 @@ describe("anti-overdevelopment invariants", () => {
     expect(source).not.toContain("01_<asset_id>_form_scale_reference.png");
   });
 
-  test("freezes speculative pre-local expansion until measured runtime evidence exists", () => {
+  test("freezes speculative expansion until measured runtime evidence exists", () => {
     const ponytail = read(
       "../openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md"
     );
     const tasks = read(
       "../openspec/changes/codex-local-workflow-rework/tasks.md"
     );
-    expect(ponytail).toContain("Pre-local optimization freeze");
-    expect(ponytail).toContain("measured local acceptance evidence");
+    expect(ponytail).toContain("Measurement freeze");
+    expect(ponytail).toContain("Measure before further optimization");
+    expect(ponytail).toContain("DEFERRED_NOT_REQUIRED");
     expect(tasks).toContain("Optional role discovery is non-blocking");
   });
 });
