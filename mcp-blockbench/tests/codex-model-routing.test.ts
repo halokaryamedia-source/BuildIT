@@ -163,7 +163,7 @@ describe("usage-efficient Codex routing", () => {
     );
   });
 
-  test("selects one active writer instead of spawning one for every task", () => {
+  test("separates capability eligibility from model selection and keeps one writer", () => {
     const workspaceWriters = Object.entries(agents)
       .filter(
         ([, source]) => stringValue(source, "sandbox_mode") === "workspace-write"
@@ -172,41 +172,48 @@ describe("usage-efficient Codex routing", () => {
     expect(workspaceWriters).toEqual(["mcp-builder.toml"]);
 
     const policy = read("../engines/codex/MODEL_ROUTING.md");
-    expect(policy).toContain("default Terra parent");
-    expect(policy).toContain("mcp_builder becomes the only writer");
-    expect(policy).toContain(
-      "Never let the Terra parent and `mcp_builder` mutate the same active asset concurrently"
-    );
+    for (const marker of [
+      "deterministic Capability Gate",
+      "Candidate Pool",
+      "Model Selector",
+      "A Model Selector cannot add candidates",
+      "exactly one eligible Terra Writer",
+      "One active Writer exists",
+      "single-candidate pool does not call a Model Selector",
+    ]) {
+      expect(policy).toContain(marker);
+    }
     expect(agents["mcp-builder.toml"]).toContain("fallback single MCP writer");
   });
 
-  test("permits multiple read-only sessions without weakening mutation ownership", () => {
+  test("permits read-only routes without weakening mutation ownership", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     const mutationContext = read("src/lib/mutationContext.ts");
-    expect(policy).toContain("Multiple read-only MCP sessions are allowed");
-    expect(policy).toContain("A mutation still requires explicit caller identity");
+    expect(policy).toContain("read-only versus Writer eligibility");
+    expect(policy).toContain("fixed permissions and writer identity");
+    expect(policy).toContain("Writer already owned by another session");
     expect(mutationContext).not.toContain("WRITE_LEASE_SESSION_AMBIGUOUS");
     expect(mutationContext).toContain("WRITE_LEASE_SESSION_REQUIRED");
   });
 
-  test("requires trusted project config and deterministic de-escalation", () => {
+  test("uses deterministic fallback and de-escalates advisory routes", () => {
     const policy = read("../engines/codex/MODEL_ROUTING.md");
     const agentsRules = read("../AGENTS.md");
     const bootstrap = read("../engines/codex/BOOTSTRAP.md");
 
-    for (const source of [policy, agentsRules, bootstrap]) {
-      expect(source).toContain("CODEX_PROJECT_CONFIG_NOT_LOADED");
-    }
+    expect(agentsRules).toContain("CODEX_PROJECT_CONFIG_NOT_LOADED");
+    expect(bootstrap).toContain("CODEX_PROJECT_CONFIG_NOT_LOADED");
     for (const marker of [
-      "a model call whose only purpose is choosing another model",
-      "Sol decision",
-      "selected Terra writer",
-      "effort never rises above High",
+      "Never spend a model call only to choose another model",
+      "Model Selector unavailable",
+      "DeterministicBaselineSelector",
+      "returns immediately to the Writer and deterministic evidence",
+      "reasoning effort at or below High",
+      "A Model Selector never grants permission",
     ]) {
       expect(policy).toContain(marker);
     }
-    expect(policy).toContain("Full-access caveat");
-    expect(policy).toContain("MCP allowlists");
+    expect(policy).toContain("EVALUATION_ONLY");
     const contextRouting = read("src/server/stage-context-routing-guards.ts");
     expect(contextRouting).toContain("recommendedModelRoute");
     expect(contextRouting).toContain("SELECTED_TERRA_WRITER");
