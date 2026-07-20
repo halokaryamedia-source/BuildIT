@@ -1,101 +1,111 @@
 # BuildIT — MCP Blockbench
 
-BuildIT contains one MCP Blockbench application package, shared AI-engine orchestration, a ChatGPT reference-generation boundary, a local production workspace, documentation, and the OpenSpec work contract.
+BuildIT is a local reference-to-production system for creating reviewed Minecraft Bedrock/Blockbench assets through ChatGPT Reference Studio, Codex, and an MCP-enabled Blockbench plugin.
 
-## Repository Map
-
-| Path | Purpose |
-| --- | --- |
-| `mcp-blockbench/` | Complete MCP Blockbench package: source, scripts, prompts, tests, and generated plugin output. |
-| `engines/shared/` | Engine-neutral production workflow, profiles, templates, and canonical skills. |
-| `engines/chatgpt/` | ChatGPT-only reference studio that creates the approved per-asset package before Codex/MCP production. |
-| `engines/codex/`, `engines/claude/`, `engines/ollama/` | Host-specific production and integration boundaries. |
-| `workspace/` | Active and completed Blockbench projects with user assets separated from MCP internals. |
-| `docs/` | Product, workflow, architecture, integration, reference, and generated API documentation. |
-| `openspec/` | Approved scope, decisions, tasks, and anti-overdevelopment contract. |
-| `.agents/`, `.codex/`, `.github/`, `.vscode/` | Tool-native adapter and discovery paths. |
-
-## Start Here
-
-- MCP application: `mcp-blockbench/README.md`
-- ChatGPT reference generation: `engines/chatgpt/README.md`
-- ChatGPT reference skill: `engines/chatgpt/skills/blockbench-reference-studio/SKILL.md`
-- Shared workflow: `engines/shared/README.md`
-- Codex production: `engines/codex/BOOTSTRAP.md`
-- Codex repository development: `engines/codex/DEVELOPMENT_BOOTSTRAP.md`
-- Development skill integration: `docs/integrations/DEVELOPMENT_SKILLS.md`
-- Workspace lifecycle: `workspace/README.md`
-- Workspace index example: `workspace/workspace.example.json`
-- Documentation: `docs/README.md`
-- Current agreement: `openspec/changes/codex-local-workflow-rework/`
-
-A real `workspace/workspace.json` is created locally and is intentionally not committed.
-
-## Reference-to-Production Boundary
+## Product path
 
 ```text
 ChatGPT Reference Studio
-source image
-→ Production Context
+source subject
+→ Production Context approval
 → one approved Reference Visual
-→ stage contracts
-→ reference manifest
-→ Codex handoff
-→ <asset_id>_blockbench_reference.zip
+→ executable Reference Package
 
-Codex + MCP-Blockbench
-approved ZIP
-→ Geometry
-→ Texture
-→ Animation when required
-→ Final Validation
+Codex + MCP Blockbench
+Reference Package
+→ Geometry review
+→ Texture review
+→ optional Animation review
+→ Final Validation review
+→ completed Blockbench package
 ```
 
-The ChatGPT skill does not use MCP directly and is not synchronized into `.codex/skills/` or `.agents/skills/`. Runtime production continues to use only the shared stage skills registered in `engines/shared/skills/skill-profiles.json`.
+The product architecture above is fixed. Current foundation work improves the logic, interfaces, evidence, routing, testing, and developer maintainability around it.
 
-## Repository Development Stack
+## Repository map
+
+| Path | Purpose |
+| --- | --- |
+| `CONTEXT-MAP.md` | Bounded contexts and canonical domain ownership. |
+| `mcp-blockbench/` | MCP Blockbench application package, scripts, tests, and plugin output. |
+| `engines/chatgpt/` | Reference Design context and ChatGPT Reference Studio. |
+| `engines/codex/` | Agent Orchestration and Codex entry points. |
+| `engines/shared/` | Workflow Governance, profiles, contracts, and canonical skills. |
+| `workspace/` | Active and completed Asset workspaces. |
+| `docs/architecture/` | System foundation, audits, and architecture guidance. |
+| `docs/adr/` | Hard-to-reverse architectural decisions. |
+| `openspec/changes/` | Bounded change contracts and decision maps. |
+| `.agents/`, `.codex/`, `.github/`, `.vscode/` | Host adapters, CI, and discovery. |
+
+## Start here
+
+- Domain map: `CONTEXT-MAP.md`
+- System foundation: `docs/architecture/SYSTEM_FOUNDATION.md`
+- Foundation audit: `docs/architecture/FOUNDATION_AUDIT.md`
+- Current foundation change: `openspec/changes/buildit-system-foundation/`
+- Current production-flow history: `openspec/changes/codex-local-workflow-rework/`
+- Codex asset production: `engines/codex/BOOTSTRAP.md`
+- Codex repository development: `engines/codex/DEVELOPMENT_BOOTSTRAP.md`
+- MCP application: `mcp-blockbench/README.md`
+- Workspace lifecycle: `engines/shared/workspace/WORKSPACE_CONTRACT.md`
+
+A real `workspace/workspace.json` is local and intentionally not committed.
+
+## Development domains
+
+BuildIT does not use one global skill hierarchy.
+
+| Domain | Role |
+| --- | --- |
+| Requirements | explicit user instruction and active OpenSpec |
+| Scope and efficiency | Ponytail |
+| Engineering method | Engineering Discipline |
+| Context intelligence | Code Review Graph confirmed by current source |
+| Model execution | Capability Gate and Model Selector |
+| Technical proof | source, tests, typecheck, build, runtime, and evidence |
+
+Repository development may use `engineering-discipline` plus optional `code-review-graph`. Normal Blockbench production uses the production skill profile and the `blockbench` MCP server only.
+
+## Model routing foundation
 
 ```text
-OpenSpec
-→ Ponytail
-→ Engineering Discipline
-→ Code Review Graph when available
-→ direct source and deterministic verification
+Task
+→ deterministic Capability Gate
+→ eligible Candidate Pool
+→ replaceable Model Selector
+→ fixed permissions
+→ execution
+→ deterministic evidence
 ```
 
-OpenSpec and Ponytail remain the planning and scope authorities. `engineering-discipline` adds TDD, debugging, architecture, and two-axis review. `code-review-graph` is an optional local MCP context layer that narrows source and affected-test reads.
+The current deterministic selector is the runtime baseline. RouteLLM is a candidate evaluation adapter and is not yet a live production router.
 
-From `mcp-blockbench/`:
-
-```text
-bun run engineering:setup
-bun run graph:update
-bun run graph:status
-```
-
-Normal Blockbench production uses only the `blockbench` MCP server. Repository development may additionally use `code-review-graph`.
-
-## Workspace Separation
+## Workspace separation
 
 ```text
 workspace/active/<asset>/ or workspace/completed/<asset>/
-├─ blockbench/   # .bbmodel, textures, reference PNGs, approved previews
-└─ mcp/          # state, technical contracts, checkpoints, evidence, reports
+├─ blockbench/   # canonical .bbmodel, textures, references, approved previews
+└─ mcp/          # state, contracts, checkpoints, evidence, reports
 ```
 
-Users may copy the `blockbench/` folder alone. The `mcp/` folder is retained for future revisions and recovery.
+The user may copy `blockbench/` alone. The retained `mcp/` directory supports recovery and targeted reopening.
 
-## Production Stages
+## Readiness
 
-```text
-Geometry
-→ Texture
-→ Animation when required
-→ Final Validation
-```
+Current source and CI represent a sophisticated internal alpha. They do not yet prove general repeatable production.
 
-Each stage has one preview/review gate. Internal passes do not add routine approvals.
+Required before broader readiness:
 
-## Naming Rule
+- real Windows-first Blockbench end-to-end acceptance;
+- full save/close/reopen/export/finalization proof;
+- filesystem fault and recovery tests;
+- multi-archetype visual acceptance corpus;
+- behavior tests for critical claims currently protected only by source markers;
+- measured route, token, correction, time, and cost data;
+- RouteLLM provider-seam and calibration evidence before runtime adoption.
 
-Use one canonical path and filename for every concern. Do not create `v2`, `new`, `latest`, `backup`, or parallel authority names. Git history stores revisions.
+See `docs/architecture/FOUNDATION_AUDIT.md` for the complete assessment.
+
+## Naming rule
+
+Use one canonical path and filename for every concern. Do not create `v2`, `new`, `latest`, `backup`, or parallel authority names. Git history, bounded OpenSpec changes, and approved checkpoints store revisions.
