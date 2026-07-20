@@ -9,8 +9,9 @@ describe("single-Reference-Visual authority", () => {
     for (const path of ["../AGENTS.md", "../engines/codex/BOOTSTRAP.md"]) {
       const source = read(path);
       expect(source).toContain("LEGACY_SKILL_CONFLICT");
-      expect(source).toContain("four");
-      expect(source).toContain("three approval");
+      expect(source.toLowerCase()).toContain("four");
+      expect(source.toLowerCase()).toContain("approval");
+      expect(source).toContain("one Reference Visual");
     }
   });
 
