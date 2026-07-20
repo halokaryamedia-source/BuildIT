@@ -10,6 +10,9 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Local code-review-graph database and generated visualization.
+.code-review-graph/
+
 # Local workspace index and project payloads.
 workspace/workspace.json
 workspace/active/*
