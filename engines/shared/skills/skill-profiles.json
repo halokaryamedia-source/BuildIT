@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "canonical_root": "engines/shared/skills",
   "host_adapters": [
     ".agents/skills",
@@ -97,13 +97,61 @@
     }
   },
   "repository_development": {
-    "authority_order": [
-      "openspec",
-      "ponytail",
-      "engineering-discipline",
-      "code-review-graph",
-      "repository-tools"
-    ],
+    "foundation_change": "openspec/changes/buildit-system-foundation",
+    "domain_ownership": {
+      "requirements": [
+        "explicit-user-instruction",
+        "active-openspec-change"
+      ],
+      "scope_efficiency": [
+        "ponytail"
+      ],
+      "engineering_method": [
+        "engineering-discipline"
+      ],
+      "context_intelligence": [
+        "code-review-graph",
+        "current-source"
+      ],
+      "model_execution": [
+        "capability-gate",
+        "model-selector"
+      ],
+      "technical_evidence": [
+        "current-source",
+        "git-diff",
+        "tests",
+        "typecheck",
+        "build",
+        "runtime-evidence"
+      ]
+    },
+    "task_router": {
+      "REQUIREMENT_CHANGE": {
+        "primary_domain": "requirements",
+        "support_domains": ["scope_efficiency", "engineering_method"]
+      },
+      "FEATURE": {
+        "primary_domain": "requirements",
+        "support_domains": ["scope_efficiency", "engineering_method", "context_intelligence"]
+      },
+      "BUG_OR_PERFORMANCE": {
+        "primary_domain": "engineering_method",
+        "support_domains": ["context_intelligence", "scope_efficiency", "requirements"]
+      },
+      "REFACTOR": {
+        "primary_domain": "engineering_method",
+        "support_domains": ["context_intelligence", "scope_efficiency"]
+      },
+      "ARCHITECTURE": {
+        "primary_domain": "engineering_method",
+        "support_domains": ["requirements", "scope_efficiency", "context_intelligence"]
+      },
+      "CODE_REVIEW": {
+        "primary_domain": "engineering_method",
+        "support_domains": ["context_intelligence", "requirements"]
+      }
+    },
     "required_support_skills": [
       "engineering-discipline"
     ],
