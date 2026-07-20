@@ -1,0 +1,21 @@
+# Local runtime and user assets
+workspace/**
+
+# Generated output
+mcp-blockbench/dist/**
+docs/api/**
+
+# Generated skill adapters; canonical skills live under engines/shared/skills
+.agents/skills/**
+.codex/skills/**
+
+# Binary/reference artifacts
+**/*.bbmodel
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.webp
+**/*.zip
+
+# Verification artifacts
+verification-logs/**
