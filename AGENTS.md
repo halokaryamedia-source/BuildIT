@@ -1,140 +1,159 @@
 # Repository Agent Rules
 
-## Required Authorities
+## Start by context
 
-1. Read `openspec/config.yaml` and the active OpenSpec change before workflow development.
-2. Read `engines/shared/workflow/GOVERNANCE.md` after context loss.
-3. For local Codex production, start at `engines/codex/BOOTSTRAP.md`.
-4. Use `engines/codex/MODEL_ROUTING.md` as the model, effort, delegation, permission, and active-writer authority.
-5. Use `workspace/workspace.json` only as the selected-project index.
-6. Use `workspace/active/<asset>/mcp/state.json` as runtime authority.
-7. Use `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` as stage/tool authority.
-8. Use `engines/shared/skills/skill-profiles.json` as production and repository-development skill authority.
-9. Use `engines/shared/workspace/WORKSPACE_CONTRACT.md` as workspace lifecycle authority.
-10. Use `openspec/changes/codex-local-workflow-rework/PONYTAIL_EXECUTION.md` as the current implementation boundary.
-11. For repository development, load `engineering-discipline`; use `code-review-graph` only as an optional local context and blast-radius layer.
+1. Read `CONTEXT-MAP.md` and the glossary for the bounded context being changed.
+2. Read `docs/architecture/SYSTEM_FOUNDATION.md` for system modules, seams, and invariants.
+3. Read the active bounded OpenSpec change for required outcomes.
+4. For new foundation work, use `openspec/changes/buildit-system-foundation/`.
+5. Treat `openspec/changes/codex-local-workflow-rework/` as implementation history and current production-flow compatibility authority; do not add unrelated foundation scope to it.
+6. For local asset production, start at `engines/codex/BOOTSTRAP.md`.
+7. For repository development, start at `engines/codex/DEVELOPMENT_BOOTSTRAP.md`.
 
-## Project Config Preflight
+## Domain ownership
 
-At the beginning of production, inspect whether `routine_auditor`, `mcp_builder`, `visual_director`, and `critical_reviewer` are available.
+BuildIT has no single linear authority hierarchy.
 
-`CODEX_PROJECT_CONFIG_NOT_LOADED` is a routing warning, not a reason to interrupt the user or demand another Codex session. Continue safely in the current session:
+| Question | Owner |
+| --- | --- |
+| What outcome is required? | explicit user instruction and active OpenSpec |
+| What is the smallest sufficient slice now? | Ponytail |
+| How should repository work be designed and proved? | Engineering Discipline |
+| Which source and dependents are relevant? | Code Review Graph, confirmed by current source |
+| Which capabilities and models are eligible? | Agent Orchestration Capability Gate and Model Selector |
+| What is the active production state? | `workspace/active/<asset>/mcp/state.json` |
+| Did the implementation work? | current source, tests, typecheck, build, runtime, and evidence |
 
-- Terra parent performs routine audit directly when Mini is unavailable;
-- Terra parent remains the sole writer when `mcp_builder` is unavailable;
-- the parent performs bounded visual comparison when `visual_director` is unavailable;
-- critical escalation may stop only when a genuinely critical unresolved decision requires the missing capability.
+No owner may silently take another owner's decision. A scope optimization cannot waive required evidence. A graph result cannot override source. A model selector cannot grant permission.
 
-Never ask the user to restart Codex merely to load optional roles during an active production flow.
+## Production contracts
 
-## Legacy Context Rejection
+- `workspace/workspace.json` selects an Asset; it is not Runtime State.
+- `workspace/active/<asset>/mcp/state.json` owns active Runtime State.
+- `workspace/active/<asset>/mcp/project.json` owns project identity and canonical paths.
+- `engines/shared/profiles/stage-profiles.json` and `tool-profiles.json` own stage/tool execution policy.
+- `engines/shared/skills/skill-profiles.json` owns skill loading policy.
+- `engines/shared/workspace/WORKSPACE_CONTRACT.md` owns workspace lifecycle.
+- The approved Reference Package owns asset intent and visual/technical constraints.
 
-- Current repository authorities override copied chat context, downloaded project-context ZIPs, old prompt packs, and stale skill snapshots.
-- Reject workflows requiring four technical sheets, three approval moments, or numbered `01_*` through `04_*` reference images.
-- The approved package uses one Reference Visual plus Markdown and JSON contracts.
-- Stop conflicts with `LEGACY_SKILL_CONFLICT` and report the source.
+## Project config preflight
 
-## Adaptive Model Routing
+At the beginning of production, inspect whether optional roles are available. Missing roles produce `CODEX_PROJECT_CONFIG_NOT_LOADED` and use the documented current-session fallback. They do not require a restart during active production.
 
-- Project default is `gpt-5.6-terra` with medium reasoning. Terra performs normal implementation directly.
-- A user-selected composer model affects the parent only. Follow `MODEL_ROUTING.md` when the parent is over- or under-qualified.
-- Use deterministic classification; never spend a model call only to choose another model.
-- `routine_auditor`: 5.4 Mini Low, sizeable mechanical read-only work, Blockbench MCP disabled.
-- `mcp_builder`: Terra Medium fallback writer when the parent is not the selected Terra writer or isolation is materially safer.
-- `visual_director`: Sol Medium, read-only visual judgment with an inspection-only Blockbench MCP allowlist.
-- `critical_reviewer`: packet-only Sol High, Blockbench MCP disabled, at most once for one approved reason code.
-- Exactly one active writer exists: the Terra parent or `mcp_builder`, never both concurrently.
-- High is the ceiling. Never route to Extra High, Max, Ultra, Fast, recursive agents, or parallel writers.
-- Keep `agents.max_threads = 2` and `agents.max_depth = 1`.
-- Subagent sandbox defaults are not the final active-asset boundary. Enforce MCP allowlists, one writer, and the Blockbench write lease.
-- Deterministic validation replaces expensive model review whenever it can answer the question.
+- The parent performs routine read-only work when a smaller optional route is unavailable.
+- The selected Terra route remains the sole writer when `mcp_builder` is unavailable.
+- The parent performs bounded visual comparison when `visual_director` is unavailable.
+- Critical escalation may stop only when a genuinely critical unresolved decision requires the missing capability.
 
-## Repository Development Stack
+## Model execution
 
-Use this stack only when changing BuildIT source, tests, documentation, workflow, or repository infrastructure:
+Follow `engines/codex/MODEL_ROUTING.md`.
 
 ```text
-OpenSpec
-→ Ponytail minimum-sufficient execution
-→ engineering-discipline
-→ code-review-graph when installed and current
-→ direct source inspection and deterministic verification
+Task
+→ deterministic Capability Gate
+→ Candidate Pool
+→ Model Selector
+→ fixed permissions and writer identity
+→ execution
+→ deterministic evidence
 ```
 
-- OpenSpec remains the only durable requirement and acceptance authority.
-- Ponytail remains the only scope-selection and smallest-safe-work authority.
-- `engineering-discipline` governs TDD, debugging feedback loops, architecture care, and two-axis Standards/Spec review. It must not create another PRD, ticket state machine, approval stage, or planning hierarchy.
-- `code-review-graph` is optional navigation evidence. Start with `get_minimal_context`, use minimal detail, then read the exact source and diff. Its risk scores and graph edges never replace source, tests, or OpenSpec.
-- If Code Review Graph is unavailable, stale, or incomplete, continue with direct repository search; do not block development.
-- Repository development may use MCP key `code-review-graph`. Normal Blockbench asset production must not use it.
-- Repository development loads at most `engineering-discipline` plus `code-review-graph`; production Blockbench skills remain forbidden during repository work.
+- The current deterministic selector is the runtime baseline.
+- RouteLLM is evaluation-only until ADR 0002 acceptance requirements are met.
+- A model selector never grants Blockbench mutation, writer ownership, stage access, or critical eligibility.
+- Exactly one active writer exists.
+- Keep `agents.max_threads = 2` and `agents.max_depth = 1` until a measured change justifies revision.
+- Deterministic validation replaces model judgment whenever it can answer the question.
 
-## One-Session Production Contract
+## Repository development
 
-- The plugin exposes one stable registered tool surface for its entire loaded lifetime.
-- Logical profiles remain execution guards; a stable tool list does not grant cross-stage permission.
-- Geometry → Texture → optional Animation → Final Validation stays in the same MCP session and same Codex session.
-- Stage/profile transitions release the old lease and the next mutating call automatically prepares fresh current-stage ownership; no manual lease call is part of the normal path.
-- `reconnect_required`, `profile_reconnect_required`, and `user_restart_required` remain false.
-- Plugin reload is allowed only once after installing a newly built final binary. Normal production, review, revision, approval, and stage transition never reload the plugin.
+Use only when changing BuildIT source, tests, documentation, workflow, architecture, or infrastructure.
 
-## Execution Guardrails
+- Load `engineering-discipline` for engineering method.
+- Load `code-review-graph` only as optional context intelligence.
+- Classify the Task Kind before selecting the primary domain.
+- Use domain modeling when terminology or ownership is unclear.
+- For a major interface, design at least two materially different options and compare depth, locality, seam placement, error modes, and testability.
+- Prefer the highest stable public seam for tests.
+- Source-marker tests do not prove runtime behavior except for generated identity, explicit compatibility markers, or static declarations.
+- Keep Standards and Spec review findings separate.
+- Repository development may use MCP key `code-review-graph`; normal Blockbench asset production must not use it.
+- Repository development loads at most `engineering-discipline` plus `code-review-graph`; production skills remain forbidden.
 
-- OpenSpec preserves scope; Ponytail selects the smallest safe work.
-- User-visible stages are Geometry, Texture, optional Animation, and Final Validation.
-- Stop after each stage preview only for the user's visual decision.
-- Geometry uses only `BEDROCK_CUBOID_GEOMETRY`; `LOCAL_REPAIR` and `MAJOR_FORM_REVISION` are internal scopes.
-- `PRIMARY_FORM`, `STRUCTURAL_DETAIL`, and `FINAL_REVIEW_READY` are internal progress markers, not user gates.
-- Geometry decisions require actual image inspection, fixed-scale `analyze_geometry_views`, and `validate_geometry_contract`.
-- Geometry corrections use ranked views, regions, parts, direction, and magnitude. Unrelated trial-and-error changes are forbidden.
-- Use `rotate_cube_about_attachment` when the current manifest contract accurately describes the visible attachment.
-- Use `apply_cube_transforms` for explicit reference-driven `from/to/origin/rotation`, missing or inaccurate contracts, or one bounded related-part transform batch. A manifest contract is not required for this route.
-- `apply_cube_transforms` must validate the actual rendered pivot and connection through Blockbench `matrixWorld` when available, and may run one affected-view analysis after the batch.
-- The canonical MCP session root is `workspace/active/<asset>/mcp`. `get_stage_context` accepts either the asset root or canonical root and returns `canonical_session_root`.
-- Canonical `create_project(session_root, asset_id)` derives the model path, persists the file, synchronizes the runtime UUID with state/project metadata, activates the recorded stage profile, and acquires the current-session lease automatically.
-- `get_stage_context` and other correctly annotated read-only inspection tools never require a write lease.
-- Mutating tools carrying `session_root` automatically acquire, refresh, and renew the same-session lease when state, stage, or profile revisions advance.
-- `rebind_active_project_identity` and `manage_project_write_lease` are diagnostic recovery tools only. Never call them in the normal single-user path; use them only for unrecoverable metadata corruption or a real concurrent-writer conflict.
-- `analyze_geometry_views` persists canonical evidence and therefore requires the Geometry write lease internally; same-session ownership is prepared automatically.
-- Current Geometry evidence is bound to compatibility fingerprint and transformed world-space signature.
-- Submit final Geometry with `submit_geometry_for_review`; it validates, checkpoints, advances revision, enters `GEOMETRY_REVIEW`, and releases the lease.
-- After user approval or revision, Codex continues in the same session; the next safe mutating operation prepares current-stage ownership automatically.
-- Normal Blockbench production uses only MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
-- Never bypass a lease owned by another session. Automatic recovery applies only to the same Codex writer and current canonical asset.
-- Production loads `blockbench-production` plus exactly one active-stage skill; maximum `2`.
-- Repository development must not load production skills.
-- Keep user files under `workspace/*/<asset>/blockbench/` and MCP internals under `workspace/*/<asset>/mcp/`.
-- Completed baselines remain immutable during reopened revisions.
-- Keep active work on `Rework` until explicit integration approval.
+## Legacy context rejection
 
-## User Acceptance Boundary
+- Current bounded contracts override copied chat context, old prompt packs, downloaded project-context ZIPs, and stale skill snapshots.
+- Reject workflows requiring four technical sheets, three routine upstream approvals, or numbered `01_*` through `04_*` reference images.
+- The approved package uses one Reference Visual plus concise Markdown and executable JSON contracts.
+- Stop conflicts with `LEGACY_SKILL_CONFLICT` and identify the stale source.
 
-The user does not test internal components. Before reporting readiness, GitHub verification must cover build, skills, typecheck, all tests, session continuity, automatic lease ownership, automatic identity synchronization, profile transitions, rendered pivot/direct-transform behavior, and zero-start workspace initialization.
+## One-session production contract
 
-The only user acceptance test is:
+- Geometry → Texture → optional Animation → Final Validation stays in the same MCP and Codex session.
+- The next mutating call automatically prepares current-stage ownership; manual lease and identity operations are diagnostic-only.
+- `reconnect_required`, `profile_reconnect_required`, and `user_restart_required` remain false during normal stage work.
+- Plugin reload is allowed only after installing a newly built binary, not during review, revision, approval, or transition.
+
+## Asset production guardrails
+
+- User-visible Stages are Geometry, Texture, optional Animation, and Final Validation.
+- Internal passes and revision scopes are not user gates.
+- Stop at each Review Gate for the user's visible decision.
+- Geometry uses `BEDROCK_CUBOID_GEOMETRY` for normal work and revisions.
+- Geometry decisions require actual image inspection, fixed-scale analysis, and current contract validation.
+- Corrections use ranked views, regions, parts, direction, and magnitude; unrelated trial-and-error is forbidden.
+- Use `rotate_cube_about_attachment` when the manifest contract accurately describes the attachment.
+- Use `apply_cube_transforms` for explicit reference-driven transforms, a missing/ambiguous contract, or one bounded related-part batch.
+- Rendered `matrixWorld` geometry is the runtime transform authority when available.
+- The canonical session root is `workspace/active/<asset>/mcp`.
+- Canonical project creation derives the path, persists the model, synchronizes identity, activates the recorded profile, and prepares current-session ownership.
+- Correctly annotated read-only inspection never requires a write lease.
+- `rebind_active_project_identity` and `manage_project_write_lease` are diagnostic recovery tools only.
+- Current evidence is bound to the active identity, state revision, reference hash, and transformed world-space signature.
+- Submission tools own fresh validation, checkpointing, state transition, and lease release.
+- Normal production uses MCP key `blockbench` at `http://localhost:3000/bb-mcp`.
+- Never bypass a lease owned by another session.
+- Production loads `blockbench-production` plus exactly one active-stage skill; maximum two.
+- Keep user assets under `workspace/*/<asset>/blockbench/` and MCP internals under the sibling `mcp/` directory.
+- Completed Baselines remain immutable during reopened revisions.
+
+## Acceptance boundaries
+
+### Internal source readiness
+
+Before reporting source readiness, CI-equivalent verification must cover skill synchronization, typecheck, all tests, build, bundle, session continuity, automatic identity/ownership, profile transitions, rendered transforms, and workspace initialization.
+
+### First workstation alpha acceptance
 
 ```text
-tracked Black Rhinoceros Golden Sample
-→ fresh workspace with references only
-→ no copied .bbmodel, checkpoint, evidence, or prior state
-→ create the Blockbench project through MCP without explicit save_path, identity rebind, profile selection, or lease call
-→ build the Rhino Geometry from zero
-→ correct at least one visibly angled part through contract fitting or apply_cube_transforms
-→ submit one Geometry preview for user review
+tracked Black Rhinoceros Reference Package
+→ fresh workspace with no copied model, checkpoint, evidence, or prior state
+→ create through MCP without manual path/identity/profile/lease work
+→ build Geometry from zero
+→ correct a visible angled part
+→ save, close, reopen, and continue
+→ submit Geometry review
 ```
 
-Do not ask the user to continue the previously debugged Rhino workspace. Do not report `READY TO TEST` before this acceptance flow is the only remaining step.
+This proves the first local alpha seam only. It does not prove general visual quality or repeatable production readiness.
 
-## Root Boundaries
+### Repeatable production readiness
 
-- `mcp-blockbench/`: MCP package source, prompts, scripts, tests, and generated output.
-- `engines/`: shared and engine-specific orchestration.
-- `workspace/active/`: current editable projects.
-- `workspace/completed/`: approved projects.
-- `docs/`: authored documentation; generated API output belongs in `docs/api/`.
-- `openspec/`: durable work agreement.
-- `.agents/`, `.codex/`, `.github/`, `.vscode/`: tool-native adapters and discovery.
+Requires a multi-archetype corpus, full stage/finalization runs, Windows filesystem fault tests, and measured success/correction/cost data as defined in `docs/architecture/FOUNDATION_AUDIT.md` and the foundation tasks.
+
+Do not ask the user to test internal components. Do not claim general readiness from a single Rhino or giraffe flow.
+
+## Root boundaries
+
+- `mcp-blockbench/`: MCP package source, scripts, tests, prompts, and generated output.
+- `engines/`: context-specific and shared orchestration.
+- `workspace/active/`: current editable Assets.
+- `workspace/completed/`: approved Completed Baselines.
+- `docs/`: architecture, ADRs, authored guidance, and generated API output.
+- `openspec/`: bounded change contracts and decision maps.
+- `.agents/`, `.codex/`, `.github/`, `.vscode/`: host adapters and discovery.
 
 Run Bun package commands from `mcp-blockbench/`.
 
-Do not recreate deprecated production skills `blockbench-use`, `blockbench-modeling`, or `blockbench-texturing`. Do not recreate root `src/`, `build/`, `prompts/`, `tests/`, `Engine/`, `SavedData/`, or `SourceDocument/`. Do not add versioned, `new`, `latest`, `backup`, or parallel-authority names.
+Do not recreate deprecated production skills `blockbench-use`, `blockbench-modeling`, or `blockbench-texturing`. Do not create duplicate source roots, versioned authorities, `new`, `latest`, or `backup` variants. Git history and approved checkpoints store revisions.
