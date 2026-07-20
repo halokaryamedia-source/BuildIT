@@ -41,9 +41,9 @@ describe("BuildIT system foundation", () => {
     for (const marker of [
       "Domain-owned control plane",
       "Design A — Linear hierarchy",
-      "Decision: rejected",
+      "**Decision:** rejected.",
       "Design B — Domain-owned control plane",
-      "Decision: selected",
+      "**Decision:** selected.",
       "Deep modules and seams",
       "start_asset",
       "continue_asset",
@@ -131,7 +131,7 @@ describe("BuildIT system foundation", () => {
     expect(proposal).toContain("RouteLLM isolated behind a deterministic Capability Gate");
     expect(tasks).toContain("Tasks are tracer bullets through public seams");
     expect(tasks).toContain("Real Blockbench acceptance");
-    expect(oldDecision).toContain("implementation history");
+    expect(oldDecision).toContain("historical change");
     expect(oldDecision).toContain("buildit-system-foundation");
   });
 
