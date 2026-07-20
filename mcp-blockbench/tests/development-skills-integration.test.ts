@@ -7,24 +7,28 @@ const json = (path: string) => JSON.parse(read(path)) as Record<string, any>;
 const canonical = (name: string) =>
   read(`../engines/shared/skills/${name}/SKILL.md`);
 
-describe("repository development skill stack", () => {
-  test("keeps OpenSpec and Ponytail above both support skills", () => {
+describe("repository development system", () => {
+  test("uses domain ownership instead of a linear authority hierarchy", () => {
     const profiles = json("../engines/shared/skills/skill-profiles.json");
-    expect(profiles.schema_version).toBe("1.2");
-    expect(profiles.repository_development.authority_order).toEqual([
-      "openspec",
-      "ponytail",
-      "engineering-discipline",
-      "code-review-graph",
-      "repository-tools",
-    ]);
-    expect(profiles.repository_development.required_support_skills).toEqual([
-      "engineering-discipline",
-    ]);
-    expect(profiles.repository_development.optional_context_skills).toEqual([
-      "code-review-graph",
-    ]);
-    expect(profiles.repository_development.graph_unavailable_policy).toBe(
+    const development = profiles.repository_development;
+
+    expect(profiles.schema_version).toBe("1.3");
+    expect(development.authority_order).toBeUndefined();
+    expect(development.foundation_change).toBe(
+      "openspec/changes/buildit-system-foundation"
+    );
+    expect(development.domain_ownership).toMatchObject({
+      requirements: ["explicit-user-instruction", "active-openspec-change"],
+      scope_efficiency: ["ponytail"],
+      engineering_method: ["engineering-discipline"],
+      context_intelligence: ["code-review-graph", "current-source"],
+      model_execution: ["capability-gate", "model-selector"],
+    });
+    expect(development.task_router.BUG_OR_PERFORMANCE.primary_domain).toBe(
+      "engineering_method"
+    );
+    expect(development.task_router.FEATURE.primary_domain).toBe("requirements");
+    expect(development.graph_unavailable_policy).toBe(
       "continue_with_direct_repository_search"
     );
   });
@@ -57,42 +61,47 @@ describe("repository development skill stack", () => {
     expect(sync).toContain('"code-review-graph"');
   });
 
-  test("adapts engineering practices without introducing another planning authority", () => {
+  test("adapts Matt engineering practices as an engineering-method domain", () => {
     const skill = canonical("engineering-discipline");
     for (const marker of [
-      "OpenSpec owns the approved goal",
-      "Ponytail selects the smallest safe action",
+      "BuildIT has no single linear authority hierarchy",
+      "Domain modeling",
+      "Design It Twice",
+      "deep modules",
       "red → green",
       "tight, agent-runnable pass/fail loop",
       "Standards",
       "Spec",
-      "must not create another state machine",
       "mattpocock/skills",
     ]) {
       expect(skill).toContain(marker);
     }
+    expect(skill).toContain("It does not own:");
   });
 
-  test("enforces minimal graph context and direct-source fallback", () => {
+  test("keeps graph use minimal, optional, and source-confirmed", () => {
     const skill = canonical("code-review-graph");
     for (const marker of [
+      "context-intelligence domain",
       "get_minimal_context",
       'detail_level="minimal"',
       "five graph calls",
       "800 response tokens",
       "A graph risk score is a prioritisation signal, not a merge decision",
       "continue with direct repository search",
+      "Never trust a graph node that disagrees with current source or git diff",
       "tirth8205/code-review-graph",
     ]) {
       expect(skill).toContain(marker);
     }
   });
 
-  test("pins and configures the local Codex graph integration", () => {
+  test("pins and verifies the local Codex graph integration", () => {
     const setup = read("../engines/codex/setup-development-tools.ts");
     const pkg = json("package.json");
-    expect(setup).toContain('CODE_REVIEW_GRAPH_VERSION = "2.3.5"');
-    expect(setup).toContain('["install", "--platform", "codex"]');
+    expect(setup).toContain('CODE_REVIEW_GRAPH_VERSION = "2.3.7"');
+    expect(setup).toContain('runGraph(runner, ["install", "--platform", "codex"])');
+    expect(setup).toContain("assertPinnedVersion");
     expect(setup).toContain('runGraph(runner, ["build"])');
     expect(setup).toContain('runGraph(runner, ["status"])');
     expect(pkg.scripts["engineering:setup"]).toContain(
@@ -116,22 +125,23 @@ describe("repository development skill stack", () => {
     }
   });
 
-  test("documents the production and repository MCP separation", () => {
+  test("documents production and repository MCP separation", () => {
     const agents = read("../AGENTS.md");
     const openspec = read("../openspec/config.yaml");
     const bootstrap = read("../engines/codex/DEVELOPMENT_BOOTSTRAP.md");
-    expect(agents).toContain(
-      "Normal Blockbench asset production must not use it"
-    );
+
     expect(agents).toContain(
       "Repository development may use MCP key `code-review-graph`"
     );
+    expect(agents).toContain(
+      "normal Blockbench asset production must not use it"
+    );
     expect(openspec).toContain(
-      "Engineering Discipline responsibility"
+      "BuildIT has no single linear authority hierarchy"
     );
-    expect(openspec).toContain("Code Review Graph responsibility");
-    expect(bootstrap).toContain(
-      "OpenSpec and Ponytail remain authoritative"
-    );
+    expect(openspec).toContain("RouteLLM status: evaluation-only");
+    expect(bootstrap).toContain("Domain ownership");
+    expect(bootstrap).toContain("Capability Gate");
+    expect(bootstrap).toContain("RouteLLM is evaluation-only");
   });
 });
