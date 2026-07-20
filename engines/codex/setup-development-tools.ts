@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 
-const CODE_REVIEW_GRAPH_VERSION = "2.3.5";
+const CODE_REVIEW_GRAPH_VERSION = "2.3.7";
 const repoRoot = resolve(import.meta.dir, "../..");
 const argumentsSet = new Set(Bun.argv.slice(2));
 const checkOnly = argumentsSet.has("--check");
@@ -15,27 +15,38 @@ interface Runner {
   installPackage?: () => void;
 }
 
-function execute(
-  command: string,
-  args: string[],
-  options: { quiet?: boolean; allowFailure?: boolean } = {}
-): number {
+interface CommandResult {
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+}
+
+function runCommand(command: string, args: string[], quiet = false): CommandResult {
   const result = Bun.spawnSync([command, ...args], {
     cwd: repoRoot,
-    stdout: options.quiet ? "ignore" : "inherit",
-    stderr: options.quiet ? "ignore" : "inherit",
+    stdout: quiet ? "pipe" : "inherit",
+    stderr: quiet ? "pipe" : "inherit",
   });
-  if (!options.allowFailure && result.exitCode !== 0) {
+  const decoder = new TextDecoder();
+  return {
+    exitCode: result.exitCode,
+    stdout: result.stdout ? decoder.decode(result.stdout) : "",
+    stderr: result.stderr ? decoder.decode(result.stderr) : "",
+  };
+}
+
+function execute(command: string, args: string[]): void {
+  const result = runCommand(command, args);
+  if (result.exitCode !== 0) {
     throw new Error(
       `Command failed (${result.exitCode}): ${command} ${args.join(" ")}`
     );
   }
-  return result.exitCode;
 }
 
 function commandAvailable(command: string, args = ["--version"]): boolean {
   try {
-    return execute(command, args, { quiet: true, allowFailure: true }) === 0;
+    return runCommand(command, args, true).exitCode === 0;
   } catch {
     return false;
   }
@@ -88,18 +99,43 @@ function resolveRunner(): Runner {
   );
 }
 
+function graphCommand(runner: Runner, args: string[]): string[] {
+  return [...runner.prefix, ...args];
+}
+
 function runGraph(runner: Runner, args: string[]): void {
-  execute(runner.command, [...runner.prefix, ...args]);
+  execute(runner.command, graphCommand(runner, args));
+}
+
+function assertPinnedVersion(runner: Runner): void {
+  const result = runCommand(
+    runner.command,
+    graphCommand(runner, ["--version"]),
+    true
+  );
+  if (result.exitCode !== 0) {
+    throw new Error(
+      `Unable to read code-review-graph version: ${result.stderr.trim() || "unknown error"}`
+    );
+  }
+  const output = `${result.stdout}\n${result.stderr}`;
+  if (!output.includes(CODE_REVIEW_GRAPH_VERSION)) {
+    throw new Error(
+      `Code Review Graph version mismatch. Expected ${CODE_REVIEW_GRAPH_VERSION}; received ${output.trim() || "no version output"}.`
+    );
+  }
 }
 
 const runner = resolveRunner();
 
 if (maintenanceCommand) {
+  assertPinnedVersion(runner);
   runGraph(runner, [maintenanceCommand]);
   process.exit(0);
 }
 
 if (checkOnly) {
+  assertPinnedVersion(runner);
   runGraph(runner, ["status"]);
   console.log(
     `Engineering development tools PASS. code-review-graph ${CODE_REVIEW_GRAPH_VERSION} is reachable for ${repoRoot}.`
@@ -108,6 +144,7 @@ if (checkOnly) {
 }
 
 runner.installPackage?.();
+assertPinnedVersion(runner);
 runGraph(runner, ["install", "--platform", "codex"]);
 
 if (!skipBuild) {
@@ -120,7 +157,7 @@ console.log(
     "Engineering development tools are ready.",
     `Repository: ${repoRoot}`,
     `code-review-graph: ${CODE_REVIEW_GRAPH_VERSION}`,
-    "Authority: OpenSpec → Ponytail → Engineering Discipline → Code Review Graph.",
+    "Domain role: optional context intelligence confirmed against current source.",
     "Restart Codex once only when the installer adds the MCP server for the first time.",
   ].join("\n")
 );
