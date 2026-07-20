@@ -1,23 +1,25 @@
 ---
 name: code-review-graph
-description: "Optional repository-development context and blast-radius layer backed by the local code-review-graph MCP server. Use for codebase exploration, debugging, refactors, and reviews; never as a specification or correctness authority."
+description: "Optional repository-development context and blast-radius intelligence backed by the local code-review-graph MCP server. Use for exploration, debugging, refactors, and reviews; never as product, scope, routing, or correctness authority."
 ---
 
 # Code Review Graph
 
 Use this skill only for BuildIT repository development. Do not load it for normal Blockbench asset production.
 
-## Role
+## Domain role
 
-`code-review-graph` is a local-first context selector. It maps files, symbols, calls, imports, execution flows, tests, and changed-code impact so Codex reads the smallest relevant set of source files.
+`code-review-graph` belongs to the **context-intelligence domain**. It maps files, symbols, calls, imports, execution flows, tests, and changed-code impact so Codex reads the smallest relevant set of current source.
 
-It does **not** replace:
+It does not own:
 
-- OpenSpec requirements or acceptance criteria;
-- Ponytail scope selection;
-- direct inspection of changed source;
-- automated tests, typechecking, build output, or runtime evidence;
-- security review or user approval.
+- product requirements or acceptance criteria;
+- the current minimum-sufficient scope;
+- engineering design or test decisions;
+- model selection, permissions, or writer identity;
+- correctness verdicts, security approval, or user approval.
+
+BuildIT has no single linear authority hierarchy. Graph output is consumed by the task's owning domain and confirmed against current source.
 
 ## Mandatory query discipline
 
@@ -35,7 +37,7 @@ For exploration, debugging, refactoring, or review:
 
 ```text
 get_minimal_context
-→ get_architecture_overview_tool when structure is still unclear
+→ get_architecture_overview_tool only when structure remains unclear
 → inspect the smallest relevant community or flow
 → read exact source
 ```
@@ -58,7 +60,7 @@ Group findings by severity and include the affected execution flow or untested s
 
 ### Debug a bug
 
-Use the graph only after the Engineering Discipline skill has defined the exact symptom and feedback loop.
+Use the graph after the engineering-method domain has defined the exact symptom and feedback loop.
 
 ```text
 get_minimal_context for the symptom
@@ -72,13 +74,14 @@ Do not replace reproduction with graph speculation.
 
 ### Refactor or architecture work
 
-Use communities, bridge nodes, hub nodes, and impact radius to identify coupling and missing seams. Any proposed change must still be justified by the active OpenSpec scope or a measured architecture problem.
+Use communities, bridge nodes, hub nodes, and impact radius to identify coupling and missing seams. A proposed change still requires a measured architecture problem or an accepted change contract.
 
 ## Freshness and fallback
 
 - Run `code-review-graph status` when graph freshness is uncertain.
 - Update the graph after a completed implementation before final review.
-- If the MCP server is unavailable, stale, unsupported for a file type, or returns incomplete context, continue with direct repository search and source reads. Do not block normal work and do not ask the user to repair the graph unless graph functionality itself is the requested task.
+- If the MCP server is unavailable, stale, unsupported for a file type, or incomplete, continue with direct repository search and source reads.
+- Never ask the user to repair the graph unless graph functionality itself is the requested task.
 - Never trust a graph node that disagrees with current source or git diff.
 
 ## Repository exclusions
@@ -95,8 +98,8 @@ bun run graph:build
 bun run graph:status
 ```
 
-The setup script configures the local Codex MCP entry through the upstream installer and pins BuildIT to the approved stable release.
+The setup script configures the local Codex MCP entry through the upstream installer and pins BuildIT to an explicitly approved release.
 
 ## Upstream attribution
 
-Integration is based on `tirth8205/code-review-graph` (MIT). BuildIT uses it strictly as an optional local context and impact-analysis layer beneath OpenSpec, Ponytail, and Engineering Discipline.
+Integration is based on `tirth8205/code-review-graph` (MIT). BuildIT uses it strictly as optional context and impact intelligence inside the domain-owned development system.
