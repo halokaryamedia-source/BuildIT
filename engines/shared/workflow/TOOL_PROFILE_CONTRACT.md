@@ -16,6 +16,20 @@ The registered production union is not permission authority. The active logical 
 
 PBR, Hytale, mesh UV, armature/vertex weights, UI automation, eval, manual lease/profile coordination, and unrelated capabilities remain unavailable to normal production.
 
+## Compatibility metadata
+
+Some runtime payloads and generated-bundle checks still emit the historical marker `STABLE_FULL_LIBRARY` for client compatibility. That marker describes the plugin's stable registration strategy; it does **not** mean every registered internal tool is exposed or executable in normal production.
+
+Effective caller behavior is:
+
+```text
+stable production union
+→ active profile execution guard
+→ agent-specific allowlist
+```
+
+A future compatibility migration may rename the payload marker only after clients and regression fixtures are updated together.
+
 ## Profile transition
 
 ```text
