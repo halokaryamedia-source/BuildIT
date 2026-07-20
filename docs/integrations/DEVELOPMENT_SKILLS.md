@@ -1,60 +1,65 @@
-# Repository Development Skill Stack
+# Repository Development System
 
-BuildIT repository development uses four composable layers:
+BuildIT repository development uses domain-owned responsibilities coordinated by a deterministic Task router. The system is not a linear stack in which one skill universally outranks another.
+
+## Domain ownership
+
+| Domain | Owner | Question answered |
+| --- | --- | --- |
+| Requirements | explicit user instruction + active bounded OpenSpec change | What outcome is required and what is out of scope? |
+| Scope and efficiency | Ponytail | What is the smallest sufficient slice now? |
+| Engineering method | Engineering Discipline | How is the change modeled, designed, implemented, tested, debugged, and reviewed? |
+| Context intelligence | Code Review Graph + current source | Which files, symbols, flows, and tests are relevant? |
+| Model execution | Capability Gate + Model Selector | Which eligible model route may execute with which fixed permissions? |
+| Technical evidence | source, diff, tests, typecheck, build, runtime | Did the implementation actually work? |
+
+See:
 
 ```text
-OpenSpec
-→ Ponytail
-→ Engineering Discipline
-→ Code Review Graph
+CONTEXT-MAP.md
+docs/architecture/SYSTEM_FOUNDATION.md
+engines/codex/DEVELOPMENT_BOOTSTRAP.md
 ```
-
-This document applies to source-code and repository development. It does not alter the ChatGPT Reference Studio → Codex + MCP Blockbench production architecture.
-
-## Responsibilities
-
-| Layer | Responsibility | Must not do |
-| --- | --- | --- |
-| OpenSpec | Preserve goal, scope, non-goals, decisions, and acceptance criteria. | Select implementation tactics or duplicate runtime state. |
-| Ponytail | Select the smallest safe action required now and stop when sufficient. | Expand scope or create speculative work. |
-| Engineering Discipline | Apply public-seam TDD, reproducible debugging, architecture care, and Standards/Spec review. | Create another PRD, ticket workflow, state machine, or approval hierarchy. |
-| Code Review Graph | Select minimal source context, affected flows, tests, and blast radius. | Replace source inspection, tests, OpenSpec, or human judgment. |
 
 ## Engineering Discipline
 
-The canonical BuildIT skill is:
+Canonical skill:
 
 ```text
 engines/shared/skills/engineering-discipline/SKILL.md
 ```
 
-It adapts selected engineering practices from `mattpocock/skills`:
+It adapts selected practices from `mattpocock/skills`:
 
-- `implement` — regular targeted checks and final review;
-- `tdd` — red/green vertical slices at public seams;
-- `diagnosing-bugs` — feedback loop, minimum repro, hypotheses, instrumentation, regression test;
-- `code-review` — separate Standards and Spec axes;
-- `codebase-design` — deep modules and small interfaces.
+- domain modeling — canonical vocabulary and edge-case scenarios;
+- codebase design — deep modules, small interfaces, clean seams;
+- Design It Twice — compare materially different interfaces before a major design is selected;
+- TDD — red/green vertical slices at public seams;
+- diagnosing bugs — feedback loop, minimum repro, hypotheses, instrumentation, and regression test;
+- implementation — regular targeted checks and one final full verification;
+- code review — separate Standards and Spec axes.
 
-BuildIT intentionally does not install the upstream planning and issue-tracker flows. OpenSpec and Ponytail already own those responsibilities.
+Engineering Discipline owns engineering method. It does not own product intent, current scope, model permission, Runtime State, or source truth.
 
 ## Code Review Graph
 
 BuildIT pins the local integration to:
 
 ```text
-code-review-graph 2.3.5
+code-review-graph 2.3.7
 ```
 
-The tool runs locally, builds a Tree-sitter-backed structural graph, and exposes it to Codex through MCP. It is used for:
+Code Review Graph belongs to the context-intelligence domain. It builds a local Tree-sitter-backed structural graph and may help with:
 
 - minimum-context repository exploration;
-- change and risk detection;
+- changed-code and risk detection;
 - caller/callee and execution-flow tracing;
 - affected-test discovery;
-- impact radius and architecture hot spots.
+- blast radius and architecture hot spots.
 
-The graph database is local and ignored by git. `.code-review-graphignore` removes generated bundles, workspace assets, generated API documentation, and duplicated skill adapters from analysis.
+Graph results are navigation evidence. Every claim and mutation must be confirmed against current source and diff.
+
+The local graph database is ignored by git. `.code-review-graphignore` excludes generated bundles, active/completed workspaces, generated API documentation, and duplicated skill adapters.
 
 ## Setup
 
@@ -64,15 +69,16 @@ From `mcp-blockbench/`:
 bun run engineering:setup
 ```
 
-The script:
+The setup script:
 
 1. prefers `uvx` when available;
-2. otherwise uses Python 3.10+ and installs the pinned package;
-3. runs the upstream `install --platform codex` command;
-4. builds the graph from the BuildIT repository root;
-5. verifies graph status.
+2. otherwise uses Python 3.10+;
+3. pins and verifies the approved Code Review Graph version;
+4. runs the upstream Codex installer;
+5. builds the graph from the BuildIT root;
+6. reports graph status.
 
-The first installation modifies the user's Codex MCP configuration. Restart Codex once after that initial configuration change. Normal graph updates do not require a restart.
+The initial installer write modifies the user's Codex MCP configuration. Restart Codex once after that first configuration change. Ordinary graph updates do not require restart.
 
 Maintenance:
 
@@ -83,7 +89,7 @@ bun run graph:status
 bun run engineering:check
 ```
 
-## Query budget
+## Context budget
 
 For one bounded task:
 
@@ -95,42 +101,92 @@ get_minimal_context first
 → read exact source before claims or edits
 ```
 
-The budget may be exceeded only when the graph proves that several independent communities are involved.
+The budget may be exceeded only when current graph evidence shows that the task crosses several independent communities.
 
-## Review contract
+## Task routing
 
-Code Review Graph narrows the review set. Engineering Discipline performs the review:
+### Requirement or feature
 
-### Standards
+```text
+required user outcome
+→ active bounded OpenSpec
+→ Ponytail slice
+→ Engineering Discipline public seam
+→ context intelligence when useful
+→ behavior verification
+```
 
-- repository rules and safety boundaries;
+### Bug or performance regression
+
+```text
+exact symptom
+→ Engineering Discipline feedback loop
+→ graph-assisted source narrowing when useful
+→ minimum repro
+→ regression test
+→ smallest fix
+→ original repro and full verification
+```
+
+### Refactor or architecture
+
+```text
+measured friction or accepted requirement
+→ graph blast radius when useful
+→ module/interface/seam analysis
+→ Design It Twice for major interfaces
+→ one tracer-bullet implementation
+```
+
+### Review
+
+Code Review Graph narrows the review set. Engineering Discipline performs two independent reviews.
+
+**Standards**
+
+- repository and safety rules;
+- module depth and seam quality;
 - public-interface test quality;
 - typing and error handling;
 - coupling, duplication, shotgun surgery, and speculative generality;
 - affected flows and missing regression coverage.
 
-### Spec
+**Spec**
 
 - missing or partial OpenSpec requirements;
 - behavior that conflicts with acceptance criteria;
-- scope creep and unrequested abstractions;
-- incorrect implementation of apparently completed requirements.
+- non-goal violations;
+- scope creep and unrequested abstraction;
+- apparently completed requirements implemented incorrectly.
 
-Graph risk scores prioritise inspection but never determine merge readiness.
+A graph risk score prioritizes inspection but never determines correctness or merge readiness.
+
+## Model execution separation
+
+Model routing is not owned by either development skill.
+
+```text
+Capability Gate
+→ Candidate Pool
+→ Model Selector
+→ fixed permission set
+```
+
+The deterministic selector remains the current runtime baseline. RouteLLM is an evaluation-only candidate adapter until the provider seam, BuildIT calibration dataset, and shadow acceptance are proven.
 
 ## Failure and fallback
 
-If Code Review Graph is missing, stale, unsupported for a file, or returns incomplete context:
+When Code Review Graph is missing, stale, unsupported, or incomplete:
 
 ```text
 continue with direct repository search
-→ read exact files and diff
+→ read exact source and diff
 → run deterministic verification
 ```
 
-Do not block development or ask the user to repair an optional context tool unless the requested task is specifically about that integration.
+Do not block development or ask the user to repair an optional context tool unless that integration is itself the requested task.
 
-## Upstream and licence
+## Upstream and license
 
-- `mattpocock/skills` — MIT; BuildIT uses an adapted local skill rather than copying the upstream workflow wholesale.
-- `tirth8205/code-review-graph` — MIT; installed as an optional local developer tool and MCP server.
+- `mattpocock/skills` — MIT; BuildIT adapts its engineering disciplines into one local domain-owned skill.
+- `tirth8205/code-review-graph` — MIT; installed as an optional local context-intelligence MCP server.
