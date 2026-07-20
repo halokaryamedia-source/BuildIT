@@ -6,13 +6,17 @@ const json = (path: string) => JSON.parse(read(path)) as Record<string, any>;
 
 describe("single-Reference-Visual authority", () => {
   test("repository and bootstrap reject legacy four-sheet workflow context", () => {
-    for (const path of ["../AGENTS.md", "../engines/codex/BOOTSTRAP.md"]) {
-      const source = read(path);
+    const agents = read("../AGENTS.md");
+    const bootstrap = read("../engines/codex/BOOTSTRAP.md");
+    const combined = `${agents}\n${bootstrap}`;
+
+    for (const source of [agents, bootstrap]) {
       expect(source).toContain("LEGACY_SKILL_CONFLICT");
       expect(source.toLowerCase()).toContain("four");
       expect(source.toLowerCase()).toContain("approval");
-      expect(source).toContain("one Reference Visual");
     }
+    expect(combined).toContain("one Reference Visual");
+    expect(combined).toContain("approved Reference Package");
   });
 
   test("reference template requires compact transport, one Geometry profile, diagnosis, rotation, and strict validation", () => {
