@@ -41,7 +41,7 @@ describe("final upstream-to-downstream flow efficiency", () => {
     }
   });
 
-  test("uses one consistent authority order", () => {
+  test("uses one consistent authority order inside the Reference Package", () => {
     const skill = read(`${chatgptRoot}/SKILL.md`);
     const handoff = read(
       `${chatgptRoot}/templates/CODEX_REFERENCE_HANDOFF.template.md`
@@ -141,7 +141,7 @@ describe("final upstream-to-downstream flow efficiency", () => {
     );
     expect(validation).toContain("require_evidence=false");
     expect(geometry).toContain("visual_director only when");
-    expect(routing).toContain("Reference inspection is not an automatic Sol call");
+    expect(routing).toContain("Reference inspection is not automatically a Sol call");
     expect(routing).not.toContain(
       "Use `visual_director` once per unchanged Reference Visual hash"
     );
@@ -165,7 +165,7 @@ describe("final upstream-to-downstream flow efficiency", () => {
       expect(`${ponytail}\n${spec}`).toContain(stage);
     }
     expect(ponytail).toContain("get_runtime_status`: once at startup");
-    expect(ponytail).toContain("do not poll it after every MCP call");
+    expect(ponytail).toContain("never poll after every tool");
   });
 
   test("defines one integrated final acceptance from ChatGPT to DONE", () => {
