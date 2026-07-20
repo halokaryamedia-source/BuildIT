@@ -1,43 +1,43 @@
 schema: spec-driven
 
 context: |
-  Project: BuildIT contains one MCP Blockbench TypeScript/Bun plugin package plus shared AI-engine orchestration.
-  MCP package root: mcp-blockbench/ contains src/, scripts/, prompts/, tests/, package files, and generated dist/ output.
-  Shared engine workflow: engines/shared/.
-  Codex entry point: engines/codex/BOOTSTRAP.md.
-  Governance: engines/shared/workflow/GOVERNANCE.md.
-  Workspace index: workspace/workspace.json selects one active project and is not runtime authority.
-  Runtime authority: workspace/active/<asset>/mcp/state.json.
-  Project resume metadata: workspace/active/<asset>/mcp/project.json.
-  User-facing Blockbench data: workspace/*/<asset>/blockbench/ contains the canonical .bbmodel, textures, reference PNGs, and approved previews.
-  MCP internal data: workspace/*/<asset>/mcp/ contains state, technical contracts, checkpoints, evidence, and reports.
-  Completed projects: workspace/completed/<asset>/ retains both separated areas so the model can be copied alone or reopened later without rediscovery.
-  Tool-profile authority: engines/shared/profiles/tool-profiles.json.
-  Skill-profile authority: engines/shared/skills/skill-profiles.json.
-  Workspace lifecycle authority: engines/shared/workspace/WORKSPACE_CONTRACT.md.
-  Documentation: authored documentation lives in docs/; generated MCP API output lives only in docs/api/.
-  Default and only normal Blockbench endpoint: http://localhost:3000/bb-mcp with the Codex key blockbench; do not scan or fall back to alternate ports.
-  Current source facts: package version 1.7.0; runtime tool counts must be verified rather than assumed.
-  Guardrails: do not create a second Blockbench MCP server, parallel source root, versioned folder, duplicate canonical model, or unrelated agent framework.
-  Active workflow change: openspec/changes/codex-local-workflow-rework/.
-  OpenSpec responsibility: preserve approved goal, scope, non-goals, stages, decisions, blockers, deferred items, and acceptance criteria so the agent does not forget or overdevelop.
-  Ponytail responsibility: select the smallest safe action required now, reuse existing work, limit tools/evidence, preserve accepted areas, and stop when the active requirement is met.
-  Engineering Discipline responsibility: govern repository implementation quality through public-seam TDD, reproducible debugging, architecture care, and separate Standards/Spec review; it must not create a second planning or approval authority.
-  Code Review Graph responsibility: provide optional local minimal-context navigation, dependency/blast-radius analysis, and affected-test discovery for repository development; graph output is evidence for selecting files, never specification or correctness authority.
-  Repository development authority order: OpenSpec -> Ponytail -> engineering-discipline -> code-review-graph when available -> direct source and deterministic verification.
-  Repository development fallback: when code-review-graph is unavailable, stale, or incomplete, continue with direct repository search and source inspection.
+  Project: BuildIT is a local reference-to-production system containing one MCP Blockbench TypeScript/Bun plugin, ChatGPT Reference Studio, Codex orchestration, shared workflow governance, and local Asset workspaces.
+  Bounded contexts: see CONTEXT-MAP.md and the context-specific CONTEXT.md glossaries.
+  System foundation: docs/architecture/SYSTEM_FOUNDATION.md.
+  Foundation audit: docs/architecture/FOUNDATION_AUDIT.md.
+  Current foundation change: openspec/changes/buildit-system-foundation/.
+  Existing production-flow implementation history: openspec/changes/codex-local-workflow-rework/.
+  MCP package root: mcp-blockbench/ contains source, scripts, prompts, tests, package files, and generated dist output.
+  Shared governance: engines/shared/workflow/GOVERNANCE.md.
+  Asset-production Codex entry point: engines/codex/BOOTSTRAP.md.
+  Repository-development Codex entry point: engines/codex/DEVELOPMENT_BOOTSTRAP.md.
+  Workspace index: workspace/workspace.json selects one Asset and is not Runtime State.
+  Runtime State: workspace/active/<asset>/mcp/state.json.
+  Project identity and canonical paths: workspace/active/<asset>/mcp/project.json.
+  User-facing Blockbench data: workspace/*/<asset>/blockbench/ contains the canonical .bbmodel, textures, reference images, and approved previews.
+  MCP internal data: workspace/*/<asset>/mcp/ contains Runtime State, contracts, checkpoints, Evidence, reports, and temporary final staging.
+  Completed Baselines: workspace/completed/<asset>/ retains the user package and frozen recovery metadata.
+  Tool execution policy: engines/shared/profiles/tool-profiles.json and stage-profiles.json.
+  Skill loading policy: engines/shared/skills/skill-profiles.json.
+  Workspace lifecycle: engines/shared/workspace/WORKSPACE_CONTRACT.md.
+  Normal Blockbench endpoint: http://localhost:3000/bb-mcp with Codex key blockbench; do not scan or create alternate Blockbench MCP keys.
+  Current source facts: package version 1.7.0; runtime tool counts and installed Codex model/provider support must be verified rather than assumed.
+  Product architecture: ChatGPT Reference Studio -> approved Reference Package -> Codex + MCP Blockbench -> completed user-facing package.
+  Requirements domain: explicit user instruction and the active bounded OpenSpec change own requested outcomes, non-goals, and acceptance criteria.
+  Scope/efficiency domain: Ponytail selects the smallest sufficient slice, resource budget, preservation boundary, and stop point.
+  Engineering-method domain: Engineering Discipline owns domain modeling, deep-module design, TDD, reproducible debugging, architecture work, and separate Standards/Spec review.
+  Context-intelligence domain: Code Review Graph may narrow repository source and blast radius, but every claim is confirmed against current source and diff.
+  Model-execution domain: the deterministic Capability Gate determines eligibility and permissions; a replaceable Model Selector chooses only inside the Candidate Pool.
+  Technical proof: current source, tests, typecheck, build, runtime behavior, rendered Evidence, and integrity hashes.
+  BuildIT has no single linear authority hierarchy. Conflicts are resolved by question type and domain ownership.
+  RouteLLM status: evaluation-only candidate Model Selector. Runtime adoption requires a proven Codex/provider seam, BuildIT calibration data, shadow acceptance, and a later explicit decision.
   Reference package: PRODUCTION_CONTEXT.md, one Reference Visual, GEOMETRY.md, TEXTURING.md, ANIMATION.md, VALIDATION.md, reference_manifest.json, and CODEX_REFERENCE_HANDOFF.md.
-  User-visible production stages: Geometry, Texture, optional Animation, and Final Validation.
-  Internal passes do not require separate routine approval.
-  Each completed user-visible stage must produce preview evidence and wait for user approval or targeted revision feedback.
-  Initial construction may use bounded multi-part batches; one-issue-per-cycle applies to revision work.
-  Production skill context: load blockbench-production plus exactly one active-stage skill; maximum loaded production skills is 2.
-  Repository development skill context: load engineering-discipline and optionally code-review-graph; maximum support skills is 2 and production skills remain forbidden.
-  Repository development must not load production skills.
-  Mandatory local procedure: engines/codex/BOOTSTRAP.md and the active-stage contract under engines/shared/.
-  Active modelling category: Bedrock Entity and Bedrock Block unless explicitly overridden.
-  UV default: use Per-face UV for custom Bedrock projects unless the approved reference package explicitly says otherwise.
-  Branch policy: keep all active workflow rework isolated on Rework until the user explicitly approves final integration.
-  CI policy: continuous integration, PR-preview deployment, and release verification are deferred until workflow implementation is stable and the user opens the final verification stage.
+  User-visible production Stages: Geometry, Texture, optional Animation, and Final Validation.
+  Internal passes, coordination, and validation are not additional user Review Gates.
+  Production skill context: load blockbench-production plus exactly one active-stage skill; maximum 2.
+  Repository development skill context: load engineering-discipline and optionally code-review-graph; maximum 2 and production skills are forbidden.
+  Initial construction may use bounded multi-part batches; revision work targets one named issue or tightly related pair.
+  Branch policy: keep active foundation and production-flow work on Rework until explicit integration approval.
+  Verification policy: every bounded change must pass synchronized skills, typecheck, tests, build, bundle verification, Standards review, and Spec review. General production readiness additionally requires real Blockbench E2E and multi-archetype evidence.
 
 # Per-artifact rules may be added under rules when required.
