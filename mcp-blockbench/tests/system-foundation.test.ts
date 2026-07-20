@@ -55,7 +55,7 @@ describe("BuildIT system foundation", () => {
       "DeterministicBaselineSelector",
       "RouteLLMSelector",
       "Source-string marker tests",
-      "Windows-first Blockbench acceptance harness",
+      "real Blockbench end-to-end acceptance harness",
     ]) {
       expect(foundation).toContain(marker);
     }
