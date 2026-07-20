@@ -17,16 +17,16 @@ Tasks are tracer bullets through public seams. A checked documentation task does
 
 ## 2. Authority coherence
 
-- [ ] Replace linear authority order in active skill registry with domain ownership.
-- [ ] Update repository development bootstrap to route by Task Kind.
-- [ ] Update Engineering Discipline skill and host adapters to domain ownership.
-- [ ] Update Code Review Graph skill and host adapters to remove subordinate-hierarchy wording.
-- [ ] Update root README and AGENTS rules.
-- [ ] Update development support decision document.
-- [ ] Update Governance to identify one owner per rule class.
-- [ ] Remove stale manual identity/lease instructions from State Machine and Ponytail.
-- [ ] Mark `codex-local-workflow-rework` as implementation history for new foundation decisions.
-- [ ] Add CI tests that fail on reintroduced stale authority language.
+- [x] Replace linear authority order in active skill registry with domain ownership.
+- [x] Update repository development bootstrap to route by Task Kind.
+- [x] Update Engineering Discipline skill and host adapters to domain ownership.
+- [x] Update Code Review Graph skill and host adapters to remove subordinate-hierarchy wording.
+- [x] Update root README and AGENTS rules.
+- [x] Update development support decision document.
+- [x] Update Governance to identify one owner per rule class.
+- [x] Remove stale manual identity/lease instructions from State Machine and Ponytail.
+- [x] Mark `codex-local-workflow-rework` as implementation history for new foundation decisions.
+- [x] Add CI tests that fail on reintroduced stale authority language.
 
 ## 3. Workspace behavior seam
 
@@ -89,7 +89,7 @@ Tasks are tracer bullets through public seams. A checked documentation task does
 - [ ] Define machine-readable Task and Execution Plan contracts.
 - [ ] Extract current deterministic routing as `DeterministicBaselineSelector` behavior.
 - [ ] Build representative routing fixture dataset.
-- [ ] Define protected and single-candidate Task Kinds.
+- [x] Define protected and single-candidate Task Kinds.
 - [ ] Prototype whether current Codex/provider mode can use a RouteLLM-compatible adapter without losing required features.
 - [ ] Record prototype decision.
 - [ ] Run RouteLLM offline against the fixture dataset.
@@ -109,10 +109,10 @@ Tasks are tracer bullets through public seams. A checked documentation task does
 
 ## 10. Foundation completion
 
-- [ ] Full skill synchronization passes.
-- [ ] Typecheck passes.
-- [ ] All tests pass.
-- [ ] Build and bundle verification pass.
-- [ ] Standards review completes with no unaccepted critical finding.
-- [ ] Spec review confirms all foundation acceptance criteria.
+- [x] Full skill synchronization passes.
+- [x] Typecheck passes.
+- [x] All tests pass.
+- [x] Build and bundle verification pass.
+- [x] Standards review completes with no unaccepted critical finding.
+- [x] Spec review confirms the foundation-design requirements and records incomplete runtime destinations.
 - [ ] User approves the foundation interfaces and next implementation frontier.
