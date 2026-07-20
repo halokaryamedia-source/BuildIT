@@ -22,7 +22,8 @@
     "src/**/*.ts",
     "scripts/**/*.ts",
     "tests/**/*.ts",
-    "../engines/shared/workspace/**/*.ts"
+    "../engines/shared/workspace/**/*.ts",
+    "../engines/codex/setup-development-tools.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
