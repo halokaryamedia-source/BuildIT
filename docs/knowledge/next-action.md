@@ -12,11 +12,10 @@ asking the user to reconstruct prior chats.
 - **Execution now:** ChatGPT → GitHub.
 - **Final runtime environment later:** Codex local from root `BuildIT` with
   Blockbench + MCP.
-- **In scope:** audit one skill at a time for real function, overlap, name, and
-  canonical location; recover only missing useful skills.
+- **In scope:** recover/audit only missing useful skills now that existing nested
+  skill copies have been fully audited.
 - **Out of scope now:** MCP feature changes, model-specific fixes, mass skill
-  migration/rename, full GSD/OpenSpec frameworks, Claude-Mem, speculative
-  architecture.
+  recreation, full GSD/OpenSpec frameworks, Claude-Mem, speculative architecture.
 
 ## Continuation Contract
 
@@ -102,15 +101,23 @@ were removed.
 **Decision:** `DROP`.
 
 No root replacement is created. The nested package was generic skill-authoring
-guidance plus generic initializer/validator/packager scripts and contained no
-BlockIT-specific authoring behavior.
+guidance with no BlockIT-only behavior. Use the available global/user
+`skill-creator` capability only when creating or materially revising a skill.
 
-Use the available global/user `skill-creator` capability only when creating or
-materially revising a skill. BlockIT stores project-specific skills and durable
-routing decisions, not a duplicate generic authoring toolkit.
+### 7. `vue-best-practices` → merged into `blockbench-runtime-development`
 
-The old `mcp/.agents/skills/skill-creator/` package is retired and must not be
-recreated without a proved Local-only requirement.
+**Decision:** `MERGE + DROP`.
+
+The old skill targeted standalone Vue 3 concerns (`vue-tsc`, Volar,
+`defineModel`, Pinia/router, SSR/HMR, SFC patterns) that are not a separate
+BlockIT domain.
+
+The only useful Local behavior now lives in `blockbench-runtime-development`:
+follow existing embedded panel/component patterns, keep reactive state local when
+sufficient, clean subscriptions/listeners through the existing lifecycle, and do
+not introduce Vue application architecture/tooling without an explicit need.
+
+The old `mcp/.agents/skills/vue-best-practices/` package is retired.
 
 ## Current Skill Structure
 
@@ -122,22 +129,23 @@ recreated without a proved Local-only requirement.
 - `.agents/skills/bun-tooling/`
 - `.agents/skills/blockbench-runtime-development/`
 
-### Nested copies pending one-by-one audit
+### Legacy nested locations
 
-- `vue-best-practices` ← **next**
+There are currently **no active skills** under `mcp/.agents/skills/` or
+`mcp/.github/skills/`. Do not repopulate those locations by default.
 
 ### Recovery items
 
-- `blockbench-use`
+- `blockbench-use` ← **next**
 - `reference-generator`
 - `evidence-gate`
 
 ## Skill Audit Method
 
-For each skill record:
+For each recovered skill lineage record:
 
 ```text
-Current name:
+Historical/current name:
 Actual function:
 Trigger:
 Unique value:
@@ -150,26 +158,30 @@ Migration cost / compatibility note:
 
 Rules:
 
-- judge function, not upstream name;
+- recover trusted behavior, not historical naming/layout blindly;
 - prefer fewer skills with clearer responsibility;
 - do not merge distinct expertise merely to reduce count;
 - do not retain content already covered by baseline policy or another owner;
-- preserve upstream lineage in the decision log when renamed/merged/dropped;
-- change one skill at a time.
+- preserve lineage and durable reasoning in the decision log;
+- recover one capability at a time.
 
 ## Remaining Work Sequence
 
-1. **Audit `vue-best-practices`** for actual relevance to the current Blockbench
-   UI implementation, overlap with `blockbench-runtime-development`, and whether
-   a dedicated Vue skill is justified at all.
-2. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
-3. Re-check the final activation matrix for overlap/context cost.
-4. Audit MCP implementation against the cleaned modelling workflow and identify
+1. **Recover/audit `blockbench-use`** from its trusted historical source. Separate
+   modelling judgement from `blockbench-runtime-development`, align it with the
+   current whole-form-first/object-agnostic foundation, choose a contextual name,
+   and keep only modelling behavior that adds real value.
+2. Recover/audit `reference-generator` from proven lineage; do not invent an
+   exact historical package if one cannot be established.
+3. Recover/audit `evidence-gate` and decide whether it remains a distinct
+   conditional capability or is better absorbed into baseline proof rules.
+4. Re-check the final activation matrix for overlap/context cost.
+5. Audit MCP implementation against the cleaned modelling workflow and identify
    only proven runtime gaps.
-5. Implement bounded fixes through ChatGPT → GitHub.
-6. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
+6. Implement bounded fixes through ChatGPT → GitHub.
+7. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
    targeted local proof, and fix only demonstrated failures.
-7. Validate modelling across multiple object archetypes before generic release
+8. Validate modelling across multiple object archetypes before generic release
    claims.
 
 ## Update Rule
@@ -180,6 +192,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Audit **`vue-best-practices`**. Do not keep, merge, move, rename, or delete it
-until its actual relevance to the existing Blockbench UI and overlap with the
-runtime specialist are understood.
+Recover and audit **`blockbench-use`**. First establish the exact trusted
+historical source and compare it with the current foundation/modelling boundary;
+do not copy or rename it blindly.
