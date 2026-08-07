@@ -244,9 +244,11 @@ Use exactly one next step. Do not narrate the full process unless requested.
 Canonical root skills currently approved:
 
 - `.agents/skills/development-brief/` — mandatory Developing workflow;
-- `.agents/skills/mcp-server-development/` — MCP server/protocol specialist.
+- `.agents/skills/mcp-server-development/` — MCP server/protocol specialist;
+- `.agents/skills/typescript-type-safety/` — TypeScript type-system specialist.
 
-The old generic `mcp-builder` skill is retired. Do not route to or recreate it.
+The old generic `mcp-builder` and `typescript-expert` skills are retired. Do not
+route to or recreate them.
 
 The complete current inventory, including nested copies still pending audit, is
 owned by `docs/knowledge/skills/skill-map.md`. Do not duplicate that inventory
