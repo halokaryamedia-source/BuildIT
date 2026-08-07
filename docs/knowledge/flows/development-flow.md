@@ -1,6 +1,6 @@
 # Development Flow
 
-This is the end-to-end path for **Developing** work in the repo.
+This is the end-to-end path for **Developing** work.
 
 ```text
 User request
@@ -8,118 +8,85 @@ User request
 → development needed?
    ├─ no → explain/reuse + verify
    └─ yes
-      → one specialist
+      → one specialist when needed
       → smallest complete implementation
       → engineering proof
-      → downstream acceptance check
-      → review / evidence gate when needed
-      → release and document state
+      → Acceptance POV check
+      → review/evidence handling when needed
+      → release + document state
 ```
 
-## 1. Development Brief
+## Development Brief
 
-`development-brief` is mandatory before specialist implementation.
+`development-brief` is mandatory before implementation. Its detailed procedure
+lives in `mcp/.agents/skills/development-brief/SKILL.md`.
 
-It normalizes a simple or incomplete prompt into a bounded contract:
+At this boundary the agent must have a grounded goal, authoritative input,
+expected output, Build POV, Acceptance POV, scope, acceptance criteria, and proof
+path. The skill also separates a proposed solution or fixture from the actual
+generic requirement.
 
-- real goal, separated from any suggested solution;
-- observed example/fixture separated from the generic requirement;
-- authoritative input/source;
-- expected output;
-- Build POV chosen from the actual problem owner;
-- Acceptance POV chosen from the downstream beneficiary;
-- minimal in-scope and out-of-scope boundary;
-- 2-5 provable acceptance criteria;
-- proof path and unresolved high-impact decisions.
+The user does not need to provide an expert prompt. For trivial, unambiguous,
+low-risk work, use the skill's fast path and keep the visible brief to one short
+line.
 
-Do not make the user write an expert prompt. Inspect discoverable facts first.
+## Development Necessity
 
-### Fast path
+Inspect existing behavior before inventing work. `No change required` is a valid
+Developing result when the requirement is already satisfied.
 
-For a trivial, unambiguous, low-risk change, keep the same internal checks but
-compress the user-facing brief to one short line and continue immediately.
+## Specialist Boundary
 
-## 2. Development Necessity Gate
+Use one specialist only when its domain procedure materially helps the
+implementation. A trivial text change may use `development-brief` alone.
 
-Before creating work, inspect whether the requested capability already exists.
+Do not stack overlapping specialists. If investigation exposes a separate
+boundary, finish or explicitly reframe the current boundary before selecting
+another. If scope becomes a real cross-cutting contract/migration/multi-phase
+change, apply the OpenSpec threshold instead of silently widening the task.
 
-```text
-Requirement already satisfied?
-→ reuse/explain and verify.
+## Implementation
 
-Real change required?
-→ continue to the owning specialist.
-```
+- inspect the owning source, callers, patterns, and proof path;
+- make the smallest complete change;
+- preserve valid behavior outside scope;
+- never turn a fixture or named model into generic runtime policy without an
+  explicit requirement.
 
-`No change required` is a valid Developing result. Do not add code merely
-because the user entered Developing mode.
-
-## 3. Scope And Specialist
-
-Choose exactly one specialist skill for the implementation boundary.
-
-- Choose the specialist from the semantic owner of the change, not from every
-  technology visible nearby.
-- If another independent boundary appears later, finish or explicitly reframe
-  the current boundary before selecting another specialist.
-- If the work becomes a genuinely cross-cutting contract/migration/multi-phase
-  change, stop silent scope growth and apply the OpenSpec threshold.
-
-The minimal/YAGNI and surgical-change baseline is already in `AGENTS.md`; do not
-load Ponytail as a third default Developing skill.
-
-## 4. Implementation
-
-- Inspect the owning source, callers, patterns, and proof path.
-- Make the smallest complete change that satisfies the brief.
-- Preserve already-valid behavior outside the declared boundary.
-- Do not convert a fixture or one model example into product-specific runtime
-  logic unless the user explicitly asked for that behavior.
-
-## 5. Dual Validation
-
-A Developing task has two different completion questions.
+## Dual Validation
 
 ### Engineering Pass
 
-Check the proof appropriate to the implementation:
-
-- source/diff for text-only work;
-- targeted tests for behavior/schema/transform changes;
-- build/typecheck and contract checks for public MCP changes;
-- live runtime or visual proof when the product behavior requires it.
+Use proof appropriate to the change: diff/path inspection, targeted tests,
+build/typecheck, contract checks, runtime checks, or visual proof as required.
 
 ### Acceptance Pass
 
-Check the original Acceptance POV:
+Re-check the original `development-brief`:
 
-- Does the result solve the downstream user's actual need?
-- Is the expected output usable in the way the brief required?
-- Did the implementation remain inside scope?
+- did the result solve the downstream Acceptance POV need?
+- is the expected output usable as intended?
+- did scope remain inside the brief?
 
-A technically correct implementation is not complete if the downstream outcome
-still fails.
+Engineering PASS without Acceptance PASS is not completion.
 
-## 6. Review And Evidence
+## Conditional Review
 
-- Use `code-review` for an implemented change that needs critique.
-- Use `evidence-gate` when proof is missing, disputed, rejected, or the same
-  direction repeatedly fails.
-- Use `grilling` before implementation when a plan/decision needs adversarial
-  challenge; do not use it as code review.
+- `code-review`: implemented change needs critique;
+- `evidence-gate`: proof is missing/disputed/rejected or a direction repeatedly
+  fails;
+- `grilling`: plan/decision needs adversarial challenge before implementation.
 
-These are conditional stages, not mandatory extra skill layers.
+These are conditional, not default stacked skills.
 
-## 7. Documentation And Release
+## Documentation
 
-Do not create a new planning note for each task.
-
-Update existing owners only when state changes:
+Do not create a planning note for each task. Update only the existing owner when
+state changes:
 
 - active goal/status/next step → `docs/knowledge/next-action.md`;
-- durable decision and reason → `docs/knowledge/decision-log.md` or the matching
-  decision owner;
-- stable product policy → `docs/foundation/` only when the policy itself changes.
+- durable decision/reason → `docs/knowledge/decision-log.md` or matching owner;
+- stable product policy → `docs/foundation/` only when the policy changes.
 
 Final user reporting stays simple:
 
@@ -133,15 +100,10 @@ Next step:
 
 ## Stop Rules
 
-Stop or reframe when:
-
-- a material source conflict remains unresolved;
-- a required high-impact decision cannot be established from the repo;
-- investigation shows development is unnecessary;
-- the task crosses its declared boundary;
-- engineering proof fails;
-- the Acceptance POV outcome fails;
-- required evidence is unavailable.
+Stop or reframe when a material authority conflict remains, a required decision
+cannot be established, development is unnecessary, scope crosses its boundary,
+engineering proof fails, Acceptance POV fails, or required evidence is
+unavailable.
 
 ## Parent
 
