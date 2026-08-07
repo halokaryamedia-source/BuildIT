@@ -1,73 +1,78 @@
 # Skill Map
 
-Use this note for skill availability. Use [Activation Matrix](activation-matrix.md)
-for routing.
+Use this note for skill availability/location. Use
+[Activation Matrix](activation-matrix.md) for routing.
 
-## Current Checked-In Workspace Skills
+## Repository-Wide Skill
 
-The skill files actually present in the `Local` branch live under
-`mcp/.agents/skills/`.
+Codex is launched from root `BuildIT`, so project-wide skills belong under
+`.agents/skills/`.
 
-| Skill | Owner |
-|---|---|
-| `development-brief` | mandatory Developing front door: request normalization, Dual POV, input/output contract, acceptance and proof |
-| `mcp-builder` | MCP server and public tool surface |
-| `typescript-expert` | TypeScript types and module structure |
-| `zod` | schema and input validation |
-| `bun-development` | Bun commands, scripts, lockfile, dependencies |
-| `blockbench-plugins` | plugin lifecycle, UI, and runtime API |
+| Skill | Canonical path | Function |
+|---|---|---|
+| `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
+
+## MCP Specialist Copies Pending Audit
+
+These skills currently exist under `mcp/.agents/skills/`. They are usable as
+explicit repository guidance, but their names, overlap, and final root/module
+location have **not** been approved yet.
+
+| Skill | Current function | Status |
+|---|---|---|
+| `mcp-builder` | MCP server and public tool surface | naming/location audit pending |
+| `typescript-expert` | TypeScript types/module structure | overlap audit pending |
+| `zod` | schema/input validation | overlap audit pending |
+| `bun-development` | Bun runtime/scripts/dependencies | overlap audit pending |
+| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | naming/location audit pending |
+
+Do not mass-move or mass-rename these. Audit one at a time.
 
 ## Recovery Items
 
-Current Local policy also names these skills, but their canonical Local copies
-are still being recovered:
+| Skill | Intended function | Status |
+|---|---|---|
+| `blockbench-use` | Blockbench modelling workflow | recover + rename/overlap audit |
+| `reference-generator` | Source Image → modelling-brief package | recover + rename/overlap audit |
+| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | recover + rename/overlap audit |
 
-| Skill | Intended owner |
-|---|---|
-| `blockbench-use` | Blockbench modelling workflow |
-| `reference-generator` | Source Image to modelling-brief package |
-| `evidence-gate` | unsupported claims and repeated failed approaches |
-
-Do not silently simulate a missing skill and do not create
-`mcp/workflow/skills/` merely because older documentation referenced that path.
-The final canonical home remains `Needs Validation` until recovery is complete.
+The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
+match historical notes.
 
 ## Global / User Skills
 
-Global skills such as `ponytail`, `grilling`, `domain-modeling`,
-`codebase-design`, `diagnosing-bugs`, `tdd`, `research`, and `code-review` are
-not copied into this workspace merely to make them available. Use the actual
-installed or verified upstream source when the trigger applies.
+Global/user skills such as `ponytail`, `grilling`, `domain-modeling`,
+`codebase-design`, `diagnosing-bugs`, `tdd`, `research`, `code-review`, and
+`skill-creator` are not copied into BuildIT solely to increase the skill count.
+Use them only when the activation matrix says their distinct function is needed.
 
-Mode defaults stay lean:
+## Skill Audit Rule
 
-- Plan: `ponytail`;
-- Developing: mandatory `development-brief`, plus at most one specialist when it
-  adds real domain value; trivial fast-path work may use `development-brief`
-  alone;
-- Maintenance: `ponytail + the smallest diagnostic/specialist`.
+For each skill, decide one of:
 
-GSD-style discovery, grilling, review, evidence handling, and navigation tools
-are conditional stages, not extra skills to stack by default.
+```text
+KEEP    → clear unique function and name
+RENAME  → function useful, name misleading
+MERGE   → useful behavior overlaps another skill
+MOVE    → function belongs at a different repository scope
+DROP    → no distinct value after baseline rules/other skills
+RECOVER → trusted source exists but canonical Local copy is missing
+```
+
+Judge the skill by its actual trigger/function, not by its upstream name.
+Preserve upstream lineage in the decision record when a rename/merge occurs.
 
 ## External Complements
 
-These are deliberately **not** additional default skills:
+These are not extra default skills:
 
-| Complement | Role | Routing |
-|---|---|---|
-| Karpathy-inspired guidelines | anti-slop behavior: think first, simplicity, surgical changes, verifiable goals | principles are absorbed into root `AGENTS.md`; do not load a duplicate skill |
-| CodeGraph | local cross-file source navigation, call-chain and blast-radius acceleration | optional when broad structural discovery is genuinely needed; source/tests remain authority |
-| GSD Core discussion discipline | recover missing high-impact requirements from an incomplete prompt | use only when needed; no `.planning/` hierarchy in Local |
+| Complement | Role |
+|---|---|
+| Karpathy-inspired guidelines | absorbed into root anti-slop behavior |
+| CodeGraph | optional cross-file navigation accelerator |
+| GSD Core discussion discipline | conditional high-impact requirement discovery |
 
-CodeGraph generated/index state is not project knowledge and must not replace
-`CONTEXT.md`, `next-action.md`, source, tests, or Git history.
-
-## Explicitly Not Adopted
-
-- Claude-Mem is not part of the Local workflow. Persistent model-generated
-  memory would duplicate the repository's explicit continuity system and could
-  preserve stale or false conclusions.
+Claude-Mem is not adopted. Repository-owned continuity remains authoritative.
 
 ## Parent
 
