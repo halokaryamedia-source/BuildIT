@@ -4,6 +4,40 @@ Use this note for the why behind the current direction.
 
 ## Current Decisions
 
+### Developing supports ChatGPT → GitHub and Codex local
+
+- Decision: the same `development-brief` contract applies in both execution
+  channels. The goal, Build POV, Acceptance POV, scope, and acceptance criteria
+  do not change just because the agent surface changes.
+- Decision: `ChatGPT → GitHub` uses repository reads/writes as its available
+  execution environment. It must not pretend to have a local shell, Blockbench
+  runtime, or local test execution. Repo-local skills are invoked through the
+  documented repository boot path; ChatGPT product skill auto-discovery is not
+  assumed for a skill that merely exists in GitHub.
+- Decision: `Codex local` may use local build/test/runtime capabilities when
+  available and relevant, but broader validation is not required merely because
+  Codex can run it.
+- Decision: both channels use a **minimum useful proof** budget: choose the
+  cheapest check that can falsify the likely failure, stop when acceptance has
+  sufficient evidence, and never create tests/CI/fixtures/validation artifacts
+  solely for ceremony.
+- Decision: GitHub-only implementation is not blocked by unavailable local
+  proof when the repository change can be made safely. A material live/runtime
+  claim that cannot be proven in GitHub remains `Perlu pemeriksaan` with one
+  explicit local proof step; static inspection must not be relabelled as live
+  validation.
+- Why: forcing local-style validation into ChatGPT→GitHub creates fake or
+  blocking checks, while running every available test in Codex wastes time and
+  context without necessarily increasing confidence.
+- Tradeoff: some GitHub-developed runtime changes can be implemented before
+  live verification, so the report must distinguish **implemented** from
+  **verified** when that difference matters.
+- Validation: the ChatGPT→GitHub path is being exercised in this session through
+  direct repository inspection/writes. Codex-local execution-channel behavior
+  remains to be exercised when work next moves to a local Codex session.
+- Owner: Codex
+- Date: 2026-08-08
+
 ### Developing uses a mandatory Dual-POV development brief
 
 - Decision: every **Developing** task starts with the checked-in
@@ -39,9 +73,7 @@ Use this note for the why behind the current direction.
   conflicts, object-specific fixtures, trivial edits, scope growth, and
   engineering-pass/acceptance-fail cases. Post-implementation review also
   removed duplicated procedure text from routing docs and added a
-  specialist-free trivial fast path. The checked-in skill still needs a real
-  fresh-session Codex usage trial before claiming runtime trigger behavior is
-  fully proven.
+  specialist-free trivial fast path.
 - Owner: Codex
 - Date: 2026-08-08
 
@@ -86,8 +118,9 @@ Use this note for the why behind the current direction.
   introduced into this repo.
 - Decision: `grilling` is used to stress-test a plan, decision, or idea when the
   user asks for adversarial scrutiny. It is not a replacement for code review.
-- Decision: implemented changes use `code-review`; unsupported or disputed
-  evidence uses `evidence-gate` when that skill is available.
+- Decision: `code-review` is conditional for implemented changes when independent
+  critique materially adds value; unsupported or disputed evidence uses
+  `evidence-gate` when that skill is available.
 - Decision: the lightweight Local Open Spec Guide remains the default decision
   discipline. A full OpenSpec lifecycle is reserved for genuinely cross-cutting
   contract, migration, or multi-phase changes.
