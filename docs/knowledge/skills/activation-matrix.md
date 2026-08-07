@@ -5,29 +5,50 @@ only when its trigger applies.
 
 ## Default Skill Budget
 
-The normal task stack is:
+Use a mode-specific default instead of stacking the same workflow skills on
+every task:
 
-```text
-ponytail
-+
-one specialist skill
-```
+| Mode | Default stack |
+|---|---|
+| Plan | `ponytail` |
+| Developing | `development-brief` + exactly one specialist |
+| Maintenance | `ponytail` + the smallest diagnostic or specialist skill |
 
 Discovery, grilling, review, evidence handling, and optional navigation tools
 are conditional stages. They are not extra always-on layers.
 
-## Modes
+The minimal/YAGNI and surgical-change principles in `AGENTS.md` apply to every
+mode. Developing therefore does **not** add Ponytail as a third skill on top of
+`development-brief + specialist`.
 
-| Mode | Use |
-|---|---|
-| Plan | `ponytail`; use GSD-style requirement discovery first only when high-impact requirements are unresolved; add `domain-modeling` or `codebase-design` only for a real terminology or module-boundary problem |
-| Developing | `ponytail` plus exactly one specialist skill |
-| Maintenance | `ponytail` plus the smallest diagnostic or specialist skill |
+## Developing Front Door
+
+`development-brief` is mandatory for every Developing task, including code,
+documentation, workflow, MCP, Blockbench, and repository changes.
+
+It must:
+
+1. separate the real user goal from any suggested implementation;
+2. inspect authoritative context/source before choosing an implementation path;
+3. distinguish a named example/fixture from the generic requirement;
+4. determine whether development is actually needed;
+5. choose the Build POV after the problem owner is understood;
+6. choose the Acceptance POV from the downstream beneficiary;
+7. define input authority, expected output, scope, 2-5 provable acceptance
+   criteria, and proof;
+8. surface material source conflicts instead of choosing silently;
+9. ask only unresolved high-impact decisions;
+10. hand off to exactly one specialist;
+11. re-check engineering proof, downstream acceptance, and scope before
+    reporting completion.
+
+Use its fast path for trivial, unambiguous, low-risk changes. Mandatory does not
+mean verbose.
 
 ## Requirement Discovery
 
-Use lightweight **GSD-style discovery** when the user's prompt expresses the
-intent but leaves multiple high-impact interpretations open.
+Use lightweight **GSD-style discovery** only when the current mode still has
+multiple unresolved high-impact interpretations after repository inspection.
 
 Before asking the user:
 
@@ -65,15 +86,15 @@ loaded as another skill. The useful principles are:
 - surgical changes only within the declared goal;
 - goal-driven execution with observable success criteria and proof.
 
-These principles strengthen Ponytail but do not add another skill to the task
-stack. If a future guideline duplicates Ponytail or `AGENTS.md`, absorb only the
+If a future guideline duplicates an existing Local guardrail, absorb only the
 missing rule instead of installing another overlapping skill.
 
 ## Specialist Skills
 
 | Task | Skill | Current Local status |
 |---|---|---|
-| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in under `mcp/.agents/skills/` |
+| Developing request normalization, Dual POV, input/output and acceptance contract | `development-brief` | checked in under `mcp/.agents/skills/`; mandatory front door, not the implementation specialist |
+| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in |
 | TypeScript types or module structure | `typescript-expert` | checked in |
 | Zod schemas and boundary validation | `zod` | checked in |
 | Bun runtime, scripts, lockfile, dependencies | `bun-development` | checked in |
@@ -120,8 +141,8 @@ residual context cost before it becomes a standard environment dependency.
 - `codebase-design`: module/interface ownership is genuinely unclear.
 
 Do not combine a narrow specialist with a broader overlapping specialist unless
-one cannot cover the actual task. A Zod task uses `zod`, not both `zod` and
-`typescript-expert` by default.
+one cannot cover the actual task. A Zod task uses `development-brief + zod`, not
+`development-brief + zod + typescript-expert` by default.
 
 ## OpenSpec
 
@@ -139,7 +160,7 @@ change boundary, for example:
 - an architectural tradeoff must remain explicit across many sessions.
 
 For bounded fixes, tool improvements, schema alignment, documentation cleanup,
-or a single modelling-workflow correction, use the existing Context Contract,
+or a single modelling-workflow correction, use the existing contract,
 `next-action.md`, and decision log instead of opening a full OpenSpec change.
 
 If a full OpenSpec change is justified, start with the smallest necessary
@@ -162,17 +183,9 @@ not silently simulate it.
 
 ## Edit Gate
 
-Before editing, state:
-
-```text
-Goal:
-In scope:
-Out of scope:
-Affected area:
-Existing pattern reused:
-Assumptions:
-Validation:
-```
+Before editing, the active mode must have a clear goal, scope, and proof path.
+For Developing, `development-brief` owns that normalization and user-facing
+brief.
 
 Stop with `Needs Validation` when the source of truth, caller, public contract,
 or required proof is unknown.
@@ -194,6 +207,9 @@ graphs are not visual or runtime proof.
 
 - inspect before editing;
 - surface unresolved assumptions instead of choosing silently;
+- separate the user goal from a proposed implementation;
+- do not turn a test fixture into a product-specific rule;
+- allow `no change required` when current behavior already satisfies the goal;
 - fix the proved cause once at its shared owner;
 - keep changes inside declared scope;
 - use the minimum implementation that satisfies observable success criteria;
