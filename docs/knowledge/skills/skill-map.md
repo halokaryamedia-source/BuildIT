@@ -14,6 +14,7 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/public contract: tools/resources/prompts, input schemas/validation, registration, result semantics, annotations, transport/session behavior |
 | `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
 | `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun-specific build/tooling boundary: `Bun.build`, build plugins, Bun APIs used by Local, scripts, bunx, dependencies/lockfile |
+| `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench runtime/plugin boundary: lifecycle, UI/settings, globals/APIs, Undo/Canvas, runtime permissions, mutation mechanics, events/cleanup |
 
 ## Retired / Merged Skills
 
@@ -36,11 +37,33 @@ mechanism, so a separate schema skill would split one semantic owner.
 ### `bun-development`
 
 Replaced by `bun-tooling`. The useful Bun-specific build/tooling knowledge was
-retained while generic project scaffolding, HTTP/WebSocket/SQLite/password APIs,
-Node→Bun migration, and generic performance advice were removed.
+retained while generic project scaffolding, unrelated Bun APIs, Node→Bun
+migration, and generic performance advice were removed.
+
+### `blockbench-plugins`
+
+Replaced by `blockbench-runtime-development`.
+
+The old skill mixed generic plugin tutorials, custom format/codec scaffolding,
+UI examples, model API mechanics, and modelling-adjacent wording. BlockIT only
+needs a focused runtime specialist for the existing MCP plugin.
+
+Both duplicate packages were retired:
+
+- `mcp/.agents/skills/blockbench-plugins/`
+- `mcp/.github/skills/blockbench-plugins/`
+
+Generic plugin templates and copied API/event/element reference packs were not
+moved into the new skill. Local source, installed Blockbench typings, and live
+Blockbench behavior are the stronger authorities.
+
+`blockbench-runtime-development` owns **how Blockbench runtime operations work**.
+It does not own model shape, proportions, cuboid decomposition, reference
+interpretation, texture art direction, or visual approval; those stay with the
+modelling workflow/skill when recovered.
 
 Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
-or `bun-development` skills.
+`bun-development`, or `blockbench-plugins` skills.
 
 ## Nested Copies Pending One-By-One Audit
 
@@ -48,8 +71,7 @@ Current repository inventory under `mcp/.agents/skills/`:
 
 | Skill | Current apparent function | Status |
 |---|---|---|
-| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | **next audit** |
-| `skill-creator` | skill authoring package | pending duplicate/ownership audit |
+| `skill-creator` | skill authoring package | **next audit** |
 | `vue-best-practices` | Vue guidance | pending relevance/overlap audit |
 
 Do not mass-move or mass-rename these. Audit one at a time.
