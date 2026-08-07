@@ -12,8 +12,8 @@ asking the user to reconstruct prior chats.
 - **Execution now:** ChatGPT → GitHub.
 - **Final runtime environment later:** Codex local from root `BuildIT` with
   Blockbench + MCP.
-- **In scope:** audit existing skill function/name/overlap/location one by one,
-  recover only missing useful skills, keep workflow/context concise.
+- **In scope:** audit one skill at a time for real function, overlap, name, and
+  canonical location; recover only missing useful skills.
 - **Out of scope now:** MCP feature changes, model-specific fixes, mass skill
   migration/rename, full GSD/OpenSpec frameworks, Claude-Mem, speculative
   architecture.
@@ -29,38 +29,27 @@ asking the user to reconstruct prior chats.
 
 Do not ask the user to repeat old context before reading these owners.
 
-## Development Channels
+## Development Baseline
 
-- **ChatGPT → GitHub:** design, inspect, edit, and prepare repository work using
-  static evidence; no invented local/Blockbench proof.
-- **Codex local:** final targeted shell/MCP/Blockbench proof only when required
-  by the claim.
-
-Goal, Build POV, Acceptance POV, scope, and acceptance criteria stay the same;
-only available proof changes.
-
-## Developing Baseline
-
-- mandatory front door: `.agents/skills/development-brief/SKILL.md`;
-- at most one specialist when it adds real domain value;
-- trivial fast path may use `development-brief` alone;
-- `no change required` is valid;
-- use minimum useful proof;
-- engineering success without Acceptance POV success is not completion;
+- ChatGPT → GitHub prepares design/source/docs with static evidence only.
+- Codex local performs final targeted shell/MCP/Blockbench proof only when the
+  claim requires it.
+- Developing always starts with `.agents/skills/development-brief/SKILL.md`.
+- Add at most one specialist when it adds real domain value.
+- `no change required` is valid.
+- use minimum useful proof, not validation ceremony.
 - reject/redirect user-suggested methods when evidence shows they are invalid,
   disproven, unnecessarily complex, unsupported, or harmful to output quality.
 
 ## Completed Foundation Hardening
 
 - repository state is explicit project memory across ChatGPT/Codex sessions;
-- mandatory boot path/session handoff is documented;
-- ChatGPT → GitHub vs Codex local proof boundary is explicit;
-- validation uses **minimum useful proof** rather than broad ceremony;
-- independent anti-people-pleasing judgment is baseline policy;
 - foundation modelling/geometry/visual-validation policy is generic,
   object-agnostic, and whole-form-first;
 - historical support-first/section-first/per-cube/Zebra-specific gates were
-  removed from product policy.
+  removed from product policy;
+- ChatGPT → GitHub vs Codex local proof boundaries are explicit;
+- mandatory review/broad validation ceremony was removed.
 
 ## Completed Skill Audits
 
@@ -68,28 +57,46 @@ only available proof changes.
 
 **Decision:** `RENAME + MOVE + SLIM`.
 
-Canonical replacement:
+Canonical:
 
 `.agents/skills/mcp-server-development/SKILL.md`
 
-Function:
+Keeps only the BlockIT MCP server/protocol boundary: tools/resources/prompts,
+registration, request/result semantics, annotations, transport/session, and MCP
+SDK compatibility. Generic Python/FastMCP, API scaffolding, pagination defaults,
+mandatory evaluation suites, and Python/XML evaluation scripts were removed.
 
-- MCP tools/resources/prompts and registration;
-- MCP request/result semantics and annotations;
-- Streamable HTTP transport/session behavior;
-- MCP SDK/protocol compatibility.
+The old `mcp-builder` package is retired.
+
+### 2. `typescript-expert` → `typescript-type-safety`
+
+**Decision:** `RENAME + MOVE + SLIM`.
+
+Canonical:
+
+`.agents/skills/typescript-type-safety/SKILL.md`
+
+Keeps only genuine TypeScript type-system expertise:
+
+- compiler/type compatibility and inference;
+- generics, unions, narrowing, and unsafe assertions;
+- declaration/external-library typing;
+- public TypeScript type contracts;
+- compile-time module typing when TypeScript owns the problem.
 
 Removed from the active skill:
 
-- Python/FastMCP;
-- generic external-API scaffolding/pagination defaults;
-- generic Node project scaffolding;
-- mandatory broad build/test flow;
-- fixed 10-question MCP evaluation workflow;
-- Python/XML evaluation scripts.
+- broad "use for any TypeScript/JavaScript" routing;
+- automatic environment/tooling scans;
+- generic npm validation;
+- monorepo/Nx/Turborepo decisions;
+- Biome/ESLint and JavaScript→TypeScript migration guidance;
+- broad tooling/performance checklists;
+- generic utility/reference bundles;
+- Python TypeScript diagnostic script.
 
-The old `mcp/.agents/skills/mcp-builder/` package is retired and must not be
-recreated or routed to.
+Normal `.ts` implementation does **not** load this specialist. The old
+`typescript-expert` package is retired.
 
 ## Current Skill Structure
 
@@ -97,29 +104,21 @@ recreated or routed to.
 
 - `.agents/skills/development-brief/`
 - `.agents/skills/mcp-server-development/`
+- `.agents/skills/typescript-type-safety/`
 
 ### Nested copies pending one-by-one audit
 
-Repository truth currently shows:
-
-- `typescript-expert` ← **next**
-- `zod`
+- `zod` ← **next**
 - `bun-development`
 - `blockbench-plugins`
-- `skill-creator` — nested copy newly discovered; likely overlap candidate but
-  not yet audited
-- `vue-best-practices` — newly discovered; relevance not yet audited
-
-These remain under `mcp/.agents/skills/` until their individual audit decides
-function, name, overlap, and final location.
+- `skill-creator`
+- `vue-best-practices`
 
 ### Recovery items
 
 - `blockbench-use`
 - `reference-generator`
 - `evidence-gate`
-
-Recover only from trusted source/history, then audit before adoption.
 
 ## Skill Audit Method
 
@@ -142,16 +141,17 @@ Rules:
 - judge function, not upstream name;
 - prefer fewer skills with clearer responsibility;
 - do not merge distinct expertise merely to reduce count;
-- do not retain content already covered by baseline policy;
+- do not retain content already covered by baseline policy or another owner;
 - preserve upstream lineage in the decision log when renamed/merged;
 - change one skill at a time.
 
 ## Remaining Work Sequence
 
-1. **Audit `typescript-expert`** for unique value vs baseline TypeScript/project
-   rules, overlap with Zod/Bun/MCP specialist, clearer name, and root location.
-2. Audit the remaining nested copies one by one, including the newly discovered
-   `skill-creator` and `vue-best-practices` rather than leaving them invisible.
+1. **Audit `zod`** for unique schema/boundary value, overlap with
+   `typescript-type-safety` and `mcp-server-development`, clearer name, and root
+   location.
+2. Audit `bun-development`, `blockbench-plugins`, `skill-creator`, and
+   `vue-best-practices` one by one.
 3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
 4. Re-check the final activation matrix for overlap/context cost.
 5. Audit MCP implementation against the cleaned modelling workflow and identify
@@ -165,10 +165,11 @@ Rules:
 ## Update Rule
 
 Before ending material work, update this file only when active goal, status,
-completed boundary, blocker/proof state, or next step changed. Do not turn it
-into a history log; Git history and the decision log preserve the past.
+completed boundary, blocker/proof state, or next step changed. Git history and
+the decision log preserve the past.
 
 ## Next Step
 
-Audit **`typescript-expert`**. Do not rename, merge, move, or delete it until its
-actual contents and overlap with the current Local architecture are understood.
+Audit **`zod`**. Do not rename, merge, move, or delete it until its actual
+contents, unique schema value, and overlap with the current root specialists are
+understood.
