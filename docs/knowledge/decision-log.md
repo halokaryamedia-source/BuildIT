@@ -5,6 +5,37 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### Nested repository `skill-creator` was dropped
+
+- **Audit decision:** `DROP`.
+- **Old source:** `mcp/.agents/skills/skill-creator/`, a generic skill-authoring
+  package containing creation guidance, generic workflow/output examples,
+  `init_skill.py`, `quick_validate.py`, `package_skill.py`, and its license.
+- **Actual useful function:** generic skill authoring, not a BlockIT-specific
+  project domain.
+- **Canonical owner:** use the available global/user `skill-creator` capability
+  only when a skill itself is being created or materially revised; do not create
+  a root repository copy merely for availability.
+- **Why:** the nested package contained no Local-specific skill schema, routing,
+  validation rule, or authoring behavior that justified a second copy. Keeping
+  it would duplicate capability, increase repository/context surface, and make a
+  generic initializer/validator look like project authority.
+- **Specific risk removed:** its generic initializer automatically scaffolds
+  placeholder `scripts/`, `references/`, and `assets/`, while BlockIT policy says
+  files/resources should exist only when the active skill actually needs them.
+- **Preserved useful ideas:** concise skills, clear trigger descriptions,
+  progressive disclosure, concrete usage examples, and iterative real-use
+  improvement remain valid authoring principles when using `skill-creator`.
+- **Compatibility:** no alias or replacement repository skill is kept.
+  Historical references to the nested copy are lineage only. Reintroduce a
+  project skill-authoring package only if a future requirement proves a
+  BlockIT-only capability unavailable from the global/user skill.
+- **Proof:** audited the nested `SKILL.md`, workflow/output references,
+  initializer, validator, and packager; no BlockIT-specific behavior was found.
+  The package was removed; no MCP runtime source was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `blockbench-plugins` was replaced by focused `blockbench-runtime-development`
 
 - **Audit decision:** `RENAME + MOVE + SLIM + DEDUP`.
@@ -395,6 +426,9 @@ The generic `bun-development` skill is superseded by the focused root
 The duplicate generic `blockbench-plugins` packages are superseded by the
 focused root `blockbench-runtime-development` specialist. Runtime mechanics and
 modelling judgement remain separate owners.
+
+The nested generic `skill-creator` package is retired. Skill authoring uses the
+available global/user capability unless a future BlockIT-only need is proven.
 
 ## Rule
 
