@@ -5,6 +5,51 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### Reference Generator capability stays a foundation workflow, not a root skill
+
+- **Audit decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
+- **Proven lineage:** `Rework/engines/chatgpt/skills/blockbench-reference-studio/SKILL.md`.
+  Repository history shows its first tracked form was added as the ChatGPT
+  Blockbench reference skill on 2026-07-11 and later evolved from a multi-sheet
+  package into a single Reference Visual workflow.
+- **Name evidence:** no repository history was found for
+  `.agents/skills/reference-generator/SKILL.md` or
+  `.agents/skills/blockbench-reference-generator/SKILL.md`; those names are
+  therefore conceptual labels, not recovered historical package identities.
+- **Actual useful function in Local:** Source Image/user intent → one
+  Minecraft/Blockbench five-view Modelling Brief Draft → quality review → user
+  approval → simple handoff to Bedrock modelling.
+- **Canonical owner:** `docs/foundation/04-reference-guide.md`.
+- **Why no root skill is created:** `.agents/skills/` is the project-wide Codex
+  discovery surface. The generation step requires an image-capable ChatGPT /
+  Reference Generator surface, while Codex consumes the approved Modelling Brief
+  through `blockbench-bedrock-modelling`. A root Reference Generator skill would
+  be a discoverable capability that Codex cannot fully execute and would
+  duplicate the foundation workflow.
+- **Preserved from Reference Studio:** Source Image owns target identity; Golden
+  Sample owns construction/presentation language only; generated form must be
+  intentionally buildable Minecraft/Blockbench Cuboid construction rather than
+  smooth realism with pixel skin, generic voxel filtering, or uniform cube
+  stacking; one consistent subject must survive across views; use one Draft plus
+  at most one evidence-driven targeted correction.
+- **Not recovered:** four-sheet/multi-sheet packages, schema/manifest 3.3,
+  hashes/crop/region contracts, writer leases, deterministic diagnosis metadata,
+  three routine approval gates, mandatory ZIP/package ceremony, or any
+  image-derived Cube transform authority.
+- **Boundary:** Reference Generator ends at the approved Modelling Brief.
+  `blockbench-bedrock-modelling` owns actual Cube count/transforms, hierarchy,
+  pivots, UV/texture, required animation, and model visual judgement. Runtime
+  mechanics remain with `blockbench-runtime-development`.
+- **Compatibility:** if a dedicated ChatGPT skill is packaged again later, derive
+  it from `04-reference-guide.md` and keep it specific to that image-capable
+  surface instead of creating a duplicate root Codex skill.
+- **Proof:** audited the current Local reference foundation, current modelling
+  boundary, the present Rework `blockbench-reference-studio`, its earliest
+  tracked version/commit history, and the absent guessed historical paths. No MCP
+  runtime source was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `blockbench-use` capability was recovered as `blockbench-bedrock-modelling`
 
 - **Audit decision:** `RECOVER + RENAME + SLIM`.
@@ -527,6 +572,11 @@ lifecycle/reactivity guidance is owned by `blockbench-runtime-development`.
 The historical `blockbench-use` mandatory orchestrator and broad
 `blockbench-modeling` tool-catalog pattern are superseded by the focused
 `blockbench-bedrock-modelling` specialist plus current repository routing.
+
+The historical heavy `blockbench-reference-studio` package/contracts are not the
+current Local Reference Generator authority. The useful generation capability is
+owned by `docs/foundation/04-reference-guide.md`; root Codex skill discovery does
+not include a Reference Generator skill.
 
 ## Rule
 
