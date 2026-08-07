@@ -20,7 +20,7 @@ in root `AGENTS.md` apply to every mode; do not duplicate them as extra skills.
 ## Developing Front Door
 
 `development-brief` is mandatory for every Developing request in both execution
-channels. Its canonical path is:
+channels. Canonical path:
 
 `/.agents/skills/development-brief/SKILL.md`
 
@@ -30,6 +30,25 @@ criteria, minimum useful proof, and the final contract gate.
 
 A trivial fast path may use `development-brief` alone. `No change required` is
 a valid Developing result.
+
+## Repository-Wide Specialist: MCP Server
+
+Use `mcp-server-development` when the **primary semantic owner is the MCP server
+contract**:
+
+- MCP tools/resources/prompts and registration;
+- MCP request/result semantics and structured output;
+- tool annotations and protocol-facing errors;
+- Streamable HTTP transport/session behavior;
+- MCP SDK/protocol compatibility.
+
+Canonical path:
+
+`/.agents/skills/mcp-server-development/SKILL.md`
+
+Do not load it for a Zod-only, general TypeScript, Bun tooling, Blockbench
+plugin/runtime API, or 3D modelling problem. The old generic `mcp-builder` skill
+is retired and must not be used.
 
 ## Requirement Discovery
 
@@ -49,32 +68,30 @@ hierarchy.
 
 Do not use these merely to make routine work look more rigorous.
 
-## Current MCP Specialist Skills
+## MCP Specialist Copies Pending Audit
 
-These copies still live under `mcp/.agents/skills/` while the one-by-one naming,
-overlap, and location audit is in progress:
+These copies still live under `mcp/.agents/skills/` while their one-by-one
+function/name/overlap/location audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in; pending naming/location audit |
-| TypeScript types/module structure | `typescript-expert` | checked in; pending overlap audit |
-| Zod schemas/boundary validation | `zod` | checked in; pending overlap audit |
-| Bun runtime/scripts/dependencies | `bun-development` | checked in; pending overlap audit |
-| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | checked in; pending naming/location audit |
+| TypeScript types/module structure | `typescript-expert` | next audit |
+| Zod schemas/boundary validation | `zod` | pending overlap audit |
+| Bun runtime/scripts/dependencies | `bun-development` | pending overlap audit |
+| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | pending naming/location audit |
 | Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
 | Source Image → modelling brief | `reference-generator` | recovery item |
 | Unsupported/disputed evidence | `evidence-gate` | recovery item |
 
-Because Codex is launched from root `BuildIT`, do not assume the nested
-`mcp/.agents/skills/` copies are project-wide auto-discovered. Until each one is
-audited/migrated, load the required specialist directly by its documented path
-when needed.
+Because Codex is launched from root `BuildIT`, do not assume the remaining
+nested specialist copies are project-wide auto-discovered. Audit/migrate them
+one at a time.
 
-Do not stack overlapping specialists. Example: a Zod-owned change should not
-also load the general TypeScript skill unless a separate TypeScript boundary is
+Do not stack overlapping specialists. A schema-owned change should not also
+load the general TypeScript skill unless a separate TypeScript boundary is
 actually involved.
 
-Use `skill-creator` only when a skill itself is being created/updated.
+Use `skill-creator` only when a skill itself is being created or updated.
 
 ## Optional Code Navigation
 
@@ -110,14 +127,14 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
 
 ## Skill Location Rule
 
-- `.agents/skills/` = repository-wide/root skills for the whole BuildIT
-  workspace.
-- `mcp/.agents/skills/` = existing MCP specialist copies pending audit/migration.
+- `.agents/skills/` = canonical repository-wide skills discoverable from root
+  `BuildIT`.
+- `mcp/.agents/skills/` = remaining legacy/nested specialist copies pending
+  one-by-one audit.
 - `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
-The final specialist names and locations are deliberately not mass-migrated.
-Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`, or
-`DROP` based on real function and overlap.
+Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`,
+`DROP`, or `RECOVER` based on real function and overlap.
 
 ## Proof Economy
 
