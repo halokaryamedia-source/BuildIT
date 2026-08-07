@@ -12,19 +12,28 @@
   MCP feature development, full GSD installation, full OpenSpec lifecycle,
   Claude-Mem adoption, wholesale Rework/Sample merges, and speculative
   architecture.
-- Status: `DOCUMENTATION_CONSOLIDATION`.
+- Status: `SKILL_ROUTING_CONSOLIDATION`.
 
 ## Current Direction
 
 - `Local` remains the product and development authority.
-- The official modelling flow is generic and whole-form-first; fixtures and
-  Golden Samples are quality/evidence references, not object-specific runtime
-  templates.
+- The official modelling direction is generic and whole-form-first; fixtures
+  and Golden Samples are quality/evidence references, not object-specific
+  runtime templates.
 - Root files stay minimal. Existing documentation owners are reused instead of
   creating parallel planning/state files.
-- The normal skill stack is `ponytail + one specialist skill`.
-- Use GSD-style requirement discovery only when the user intent is clear but
-  high-impact decisions are missing. Do not create a GSD `.planning/` tree.
+- Skill routing is mode-specific:
+  - Plan → `ponytail`;
+  - Developing → mandatory `development-brief + one specialist`;
+  - Maintenance → `ponytail + smallest diagnostic/specialist`.
+- `development-brief` is now checked into `mcp/.agents/skills/` and is the
+  mandatory Developing front door. It separates goal from suggested solution,
+  checks whether development is actually needed, isolates fixtures from generic
+  requirements, chooses Build/Acceptance POVs after owner discovery, defines
+  expected output and proof, and re-checks the contract before completion.
+- Use GSD-style requirement discovery only when high-impact decisions remain
+  unresolved after repository inspection. Do not create a GSD `.planning/`
+  tree.
 - Use `grilling` when the user asks to stress-test a plan, decision, or idea.
   It finds hidden assumptions through a decision-tree interview; it is not the
   code-review stage.
@@ -45,12 +54,41 @@
   for a genuinely cross-cutting public contract, migration, or multi-phase
   change.
 
+## Development Brief Validation
+
+The first mandatory Developing skill was designed with `skill-creator`
+principles and stress-tested through three `grilling` rounds.
+
+Covered adversarial prompt cases:
+
+1. vague problem statement → do not select a solution/POV prematurely;
+2. user suggests a technically plausible but rejected method → preserve the
+   goal and treat the method as a suggestion;
+3. requested feature already exists → allow a verified no-code outcome;
+4. technical MCP output used for modeller benefit → modeller remains Acceptance
+   POV while Codex/MCP consumption is an interface constraint;
+5. docs/source conflict → stop at `Needs Validation` rather than choose silently;
+6. Zebra/Rhino/model example → fixture does not become generic runtime policy;
+7. trivial typo → fast path without ceremony;
+8. investigation expands scope → reframe rather than silently widen;
+9. engineering proof passes but downstream need fails → task is not complete.
+
+Current proof status:
+
+- skill frontmatter/path and routing are checked into Local;
+- routing/docs have been aligned around the same contract;
+- design-level fixture simulations passed the intended decision rules;
+- **Needs Validation:** fresh-session Codex trigger/behavior has not yet been
+  exercised as a real installed skill run, so runtime skill-selection behavior
+  is not claimed as proven yet.
+
 ## Repository Truth
 
 - Workspace skill files actually present in `Local` are under
   `mcp/.agents/skills/`.
-- Checked-in specialists currently include `mcp-builder`,
-  `typescript-expert`, `zod`, `bun-development`, and `blockbench-plugins`.
+- Checked-in workflow/specialist skills now include `development-brief`,
+  `mcp-builder`, `typescript-expert`, `zod`, `bun-development`, and
+  `blockbench-plugins`.
 - `blockbench-use`, `reference-generator`, and `evidence-gate` are named by
   Local policy but their canonical Local copies are still recovery items.
 - Older docs that name `mcp/workflow/skills/` or a Local
@@ -60,7 +98,7 @@
 - Matt Pocock `grilling` has a verified upstream source at
   `mattpocock/skills`.
 - Karpathy-inspired guidelines were verified from
-  `multica-ai/andrej-karpathy-skills`; their useful rules are now absorbed into
+  `multica-ai/andrej-karpathy-skills`; their useful rules are absorbed into
   Local behavior instead of creating another skill dependency.
 - CodeGraph was verified from `colbymchenry/codegraph`; it supports Codex and a
   single default `codegraph_explore` MCP tool, but its own multi-turn benchmark
@@ -89,38 +127,44 @@
 
 ## Work Sequence
 
-1. Finish the docs-vs-repository truth audit and remove stale routing/path
-   claims without creating replacement folders speculatively.
-2. Recover and audit only the missing skills needed by the current product:
-   `blockbench-use`, Reference Generator lineage, and `evidence-gate`.
-3. Decide the final canonical skill/reference ownership only after recovery
-   evidence is complete.
-4. Run a bounded local CodeGraph trial only if broad MCP source discovery is a
+1. Validate `development-brief` in a real fresh-session Codex usage when the
+   Local workspace is next run through Codex; if trigger/brief behavior differs
+   from the contract, fix the skill before expanding it.
+2. Audit existing skill names one by one for clarity and overlap. Rename only
+   when the current name materially obscures its function; preserve upstream
+   lineage/aliases where needed instead of doing a mass rename.
+3. Recover and audit the missing product skills: `blockbench-use`, Reference
+   Generator lineage, and `evidence-gate`.
+4. Decide final canonical skill/reference ownership only after recovery evidence
+   is complete.
+5. Run a bounded local CodeGraph trial only if broad MCP source discovery is a
    real bottleneck; compare discovery calls, useful source coverage, and
    residual context before adopting it as a standard environment tool.
-5. Audit the MCP implementation against the generic modelling flow and identify
+6. Audit the MCP implementation against the generic modelling flow and identify
    the smallest proven runtime gaps.
-6. Implement bounded fixes one cause at a time using `ponytail + one
-   specialist`.
-7. Validate the modelling workflow across multiple object archetypes before
+7. Implement bounded fixes one cause at a time using the mode-specific skill
+   routing.
+8. Validate the modelling workflow across multiple object archetypes before
    claiming general readiness.
 
 ## Verification For This Phase
 
 - Root remains limited to the existing minimal entry files/directories.
-- `AGENTS.md`, `CONTEXT.md`, the activation matrix, decision log, Open Spec
-  Guide, and this task snapshot agree on routing and source ownership.
+- `AGENTS.md`, development flow, activation matrix, skill map, decision log, and
+  this task snapshot agree on mandatory Developing routing.
+- `development-brief` is one concise `SKILL.md`; no prompt engine, persona
+  registry, test framework, or parallel planning tree was added.
 - Karpathy principles strengthen existing guardrails without creating another
   active skill layer.
 - CodeGraph remains optional and uninstalled/uncommitted until a local trial
   proves it improves the specific discovery bottleneck.
-- No new planning framework, memory layer, MCP feature, or model-specific rule
-  is introduced during documentation consolidation.
+- No new memory layer, MCP runtime feature, or model-specific rule is introduced
+  during this consolidation.
 - Missing skills are reported as missing/recoverable instead of being silently
   simulated.
 
 ## Next Step
 
-Finish the repository-truth and recovery map for `blockbench-use`,
-`reference-generator`, and `evidence-gate`; do not change MCP runtime behavior
-until that map is complete.
+Run a final repository diff/path review for the new `development-brief` routing.
+After that, the next design task is the **one-by-one skill naming audit**; do not
+mass-rename skills or change MCP runtime behavior yet.
