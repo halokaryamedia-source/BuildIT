@@ -1,170 +1,148 @@
 # Skill Activation Matrix
 
-Choose the smallest skill set that covers the task. A listed skill is loaded
-only when its trigger applies.
+Choose the smallest skill set that covers the active boundary. A skill is used
+only when its trigger adds real value.
 
 ## Default Skill Budget
 
 | Mode | Default stack |
 |---|---|
 | Plan | `ponytail` |
-| Developing | mandatory `development-brief`; add one specialist only when it adds real domain value |
-| Maintenance | `ponytail` + the smallest diagnostic or specialist skill |
+| Developing | mandatory `development-brief`; add at most one specialist when it adds real domain value |
+| Maintenance | `ponytail` + the smallest diagnostic/specialist that owns the failure |
 
-Discovery, grilling, review, evidence handling, and optional navigation tools
-are conditional stages. They are not extra always-on layers.
+Discovery, grilling, review, evidence handling, OpenSpec, and navigation tools
+are conditional escalations, not always-on layers.
 
-The minimal/YAGNI and surgical-change principles in `AGENTS.md` apply to every
-mode. Developing does not load Ponytail as another skill.
+The simplicity, surgical-change, independent-judgment, and minimum-proof rules
+in root `AGENTS.md` apply to every mode; do not duplicate them as extra skills.
 
 ## Developing Front Door
 
-`development-brief` is mandatory for every Developing request in both supported
-execution channels: **ChatGPT → GitHub** and **Codex local**. Its canonical
-procedure lives in `mcp/.agents/skills/development-brief/SKILL.md`; do not copy
-that procedure into routing notes.
+`development-brief` is mandatory for every Developing request in both execution
+channels. Its canonical path is:
 
-Its job is to make sure implementation starts with the correct goal, authority,
-execution channel, Build/Acceptance POV, input/output boundary, acceptance
-criteria, and minimum useful proof. It also allows `no change required` and a
-specialist-free fast path for trivial work.
+`/.agents/skills/development-brief/SKILL.md`
+
+It owns request normalization, execution-channel detection, Build/Acceptance
+POV, input/output boundary, development-necessity check, 2–5 acceptance
+criteria, minimum useful proof, and the final contract gate.
+
+A trivial fast path may use `development-brief` alone. `No change required` is
+a valid Developing result.
 
 ## Requirement Discovery
 
-Use lightweight **GSD-style discovery** only when high-impact interpretations
+Use lightweight GSD-style discovery only when high-impact interpretations
 remain unresolved after repository inspection. Ask the user for decisions, not
-facts the repository can answer. Do not install the full GSD `.planning/`
-lifecycle or parallel state hierarchy.
+facts the repository can answer. Do not install a parallel `.planning/` state
+hierarchy.
 
-## Grilling
+## Critique And Evidence
 
-Use `grilling` when the user explicitly asks to stress-test, challenge, or find
-holes in a **plan, decision, or idea**. It is a decision-tree interview before
-commitment, not a generic code-review skill.
+- `grilling`: stress-test a plan, decision, or idea before commitment when
+  adversarial scrutiny is requested or materially useful.
+- `code-review`: implemented change where independent critique adds value beyond
+  the normal final contract gate.
+- `evidence-gate`: unsupported/disputed proof or a repeatedly failing direction,
+  once its canonical Local copy is recovered.
 
-Use `code-review` only when an implemented change benefits from independent
-critique beyond the normal final contract gate. Use `evidence-gate` for
-unsupported or disputed proof.
+Do not use these merely to make routine work look more rigorous.
 
-## Behavioral Anti-Slop Complement
+## Current MCP Specialist Skills
 
-Karpathy-inspired coding principles are absorbed into root `AGENTS.md`, not
-loaded as another skill: think first, keep solutions simple, make surgical
-changes, and define verifiable success.
+These copies still live under `mcp/.agents/skills/` while the one-by-one naming,
+overlap, and location audit is in progress:
 
-If a future guideline duplicates an existing Local guardrail, absorb only the
-missing rule instead of installing another overlapping skill.
-
-## Specialist Skills
-
-| Task | Skill | Current Local status |
+| Task | Skill | Status |
 |---|---|---|
-| Developing request normalization and final acceptance gate | `development-brief` | checked in; mandatory workflow skill, not an implementation specialist |
-| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in |
-| TypeScript types or module structure | `typescript-expert` | checked in |
-| Zod schemas and boundary validation | `zod` | checked in |
-| Bun runtime, scripts, lockfile, dependencies | `bun-development` | checked in |
-| Blockbench modelling and `.bbmodel` workflow | `blockbench-use` | canonical Local copy still being recovered |
-| Blockbench plugin lifecycle, UI, runtime API | `blockbench-plugins` | checked in |
-| Source Image to modelling-brief package | `reference-generator` | canonical Local copy still being recovered |
-| Unsupported claim, rejected result, or repeated failure | `evidence-gate` | canonical Local copy still being recovered |
+| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in; pending naming/location audit |
+| TypeScript types/module structure | `typescript-expert` | checked in; pending overlap audit |
+| Zod schemas/boundary validation | `zod` | checked in; pending overlap audit |
+| Bun runtime/scripts/dependencies | `bun-development` | checked in; pending overlap audit |
+| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | checked in; pending naming/location audit |
+| Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
+| Source Image → modelling brief | `reference-generator` | recovery item |
+| Unsupported/disputed evidence | `evidence-gate` | recovery item |
 
-Use `skill-creator` only when a skill itself is being created or updated.
+Because Codex is launched from root `BuildIT`, do not assume the nested
+`mcp/.agents/skills/` copies are project-wide auto-discovered. Until each one is
+audited/migrated, load the required specialist directly by its documented path
+when needed.
 
-Do not stack overlapping specialists. Example: a Zod-owned change normally uses
-`development-brief + zod`, not `development-brief + zod + typescript-expert`.
-A trivial text change may use `development-brief` alone.
+Do not stack overlapping specialists. Example: a Zod-owned change should not
+also load the general TypeScript skill unless a separate TypeScript boundary is
+actually involved.
+
+Use `skill-creator` only when a skill itself is being created/updated.
 
 ## Optional Code Navigation
 
-CodeGraph is an **external navigation accelerator**, not a skill or source of
-truth. Use it only for genuinely broad cross-file ownership, call-chain,
-dependency, or blast-radius discovery when normal targeted reads would require
-repeated broad search.
+CodeGraph is an external navigation accelerator, not a skill or source of truth.
+Use it only for genuinely broad ownership/call-chain/dependency/blast-radius
+questions when targeted source reads would otherwise become repetitive.
 
-When used, start with one focused exploration, then inspect the exact source and
-validate against authoritative source/tests/runtime when available. Do not use
-it for known-file edits, Blockbench visual judgement, reference comparison, or
-runtime proof. Do not auto-install it or commit `.codegraph/` state; standard
-adoption requires a separate local trial because large results can consume
-residual context.
+Start with one focused exploration, then return to authoritative source. Do not
+use it for known-file edits, runtime proof, or visual/model judgement. Do not
+auto-install or commit `.codegraph/` state.
 
-## Diagnostic And Review Skills
+## Other Conditional Specialists
 
 - `diagnosing-bugs`: reproducible runtime failure;
-- `tdd`: meaningful new behavior or regression coverage where test-first work
-  actually reduces risk;
+- `tdd`: meaningful behavior/regression where test-first materially reduces
+  risk;
 - `research`: external primary-source facts;
-- `code-review`: implemented change where independent critique materially helps;
-- `domain-modeling`: terminology/domain ownership is genuinely unclear;
-- `codebase-design`: module/interface ownership is genuinely unclear.
+- `domain-modeling`: terminology/domain ownership genuinely unclear;
+- `codebase-design`: module/interface ownership genuinely unclear.
 
 ## OpenSpec
 
 Keep `docs/knowledge/decisions/open-spec-guide.md` as the lightweight daily
 decision standard.
 
-Use a formal OpenSpec proposal only when a real complexity boundary requires
-it, such as a coordinated multi-subsystem contract, public MCP compatibility
-change, migration, independently executable multi-phase work, or a durable
-architectural tradeoff that the normal decision log cannot represent cleanly.
+Use a formal OpenSpec proposal only for a real complexity boundary: coordinated
+multi-subsystem/public-contract change, migration, independently executable
+multi-phase work, or a durable architectural tradeoff that the normal decision
+log cannot represent cleanly.
 
-Do not use the full lifecycle for bounded fixes, schema alignment,
-documentation cleanup, or one modelling-workflow correction. When justified,
-activate only the smallest OpenSpec stage currently needed.
+Do not use the full lifecycle for bounded fixes, schema alignment, docs cleanup,
+or one modelling-workflow correction. Activate only the smallest stage needed.
 
-## Skill Source Rule
+## Skill Location Rule
 
-Workspace skills actually present in `Local` live under `mcp/.agents/skills/`.
-The old `mcp/workflow/skills/` path is not present and must not be recreated just
-to match stale documentation.
+- `.agents/skills/` = repository-wide/root skills for the whole BuildIT
+  workspace.
+- `mcp/.agents/skills/` = existing MCP specialist copies pending audit/migration.
+- `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
-Global/user skills such as Ponytail and Matt Pocock skills may live outside the
-repo; use their installed or verified upstream source. External tools such as
-CodeGraph remain optional environment capabilities. If a required skill is
-unavailable, state that fact and use only the closest verified Local rule; do
-not silently simulate it.
-
-## Edit Gate
-
-Before editing, the active mode must have a clear goal, scope, and proof path.
-For Developing, `development-brief` owns that normalization and user-facing
-brief.
-
-Stop with `Needs Validation` when the source of truth, caller, public contract,
-or required proof is unknown.
+The final specialist names and locations are deliberately not mass-migrated.
+Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`, or
+`DROP` based on real function and overlap.
 
 ## Proof Economy
 
-Use the **minimum useful proof** available in the active execution channel.
-More checks are not automatically better.
+Use the minimum useful proof available in the active execution channel.
 
 | Change | ChatGPT → GitHub | Codex local |
 |---|---|---|
 | Text/docs/routing | exact diff + relevant paths/links | same; no extra command required |
-| Bounded source change | changed source + affected callers/contracts; existing GitHub checks only when directly relevant | one targeted check/reproduction; add build/typecheck/test only if informative |
-| Public contract change | static implementation may proceed when safe, but unavailable material runtime proof remains `Perlu pemeriksaan` | stronger targeted contract/runtime proof before completion |
-| Blockbench/UI/visual behavior | repository change may be prepared; do not claim live/visual success from static inspection | live runtime/visual proof when required by the claim |
+| Bounded source change | changed source + directly affected callers/contracts; existing checks only when directly relevant | one targeted check/reproduction first; add build/typecheck/test only if informative |
+| Public/destructive contract | safe static implementation may proceed, but unavailable material runtime proof remains `Perlu pemeriksaan` | targeted contract/runtime proof before full completion |
+| Blockbench/UI/visual behavior | prepare repository change; do not claim live/visual success from static inspection | live runtime/visual proof when required by the claim |
 
-Do not create tests, CI, fixtures, screenshots, build steps, or validation
-artifacts solely for ceremony. Do not re-run unchanged checks after they already
-established the required proof.
+Do not create tests, CI, fixtures, screenshots, builds, or validation artifacts
+solely for ceremony. Do not repeat unchanged proof after it already established
+the acceptance criteria.
 
-Tool success, valid files, geometry metrics, remembered context, navigation
-graphs, and static GitHub inspection are not visual/runtime proof when the claim
-itself is visual/runtime.
-
-## Anti-Slop Rules
+## Anti-Slop Routing Rules
 
 - inspect before editing;
-- surface unresolved assumptions instead of choosing silently;
-- separate the user goal from a proposed implementation;
-- do not turn a test fixture into a product-specific rule;
-- allow `no change required` when current behavior already satisfies the goal;
-- fix the proved cause once at its shared owner;
-- keep changes inside declared scope;
-- use the minimum implementation that satisfies observable success criteria;
-- use the minimum proof that can falsify the likely failure;
-- do not add speculative files, tools, dependencies, tests, CI, or fallbacks;
-- stop the same failed approach after two attempts;
-- never claim validation that was not actually available and run.
+- separate goal from user-suggested method;
+- reject a bad method while preserving the valid goal;
+- do not turn a fixture into product policy;
+- fix the proved owner once rather than patching symptoms repeatedly;
+- keep scope bounded;
+- use the smallest skill set and smallest proof set that can produce a reliable
+  result;
+- stop a failed direction after two attempts without new evidence;
+- never claim proof that was unavailable or not run.
