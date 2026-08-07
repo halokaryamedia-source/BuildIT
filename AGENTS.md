@@ -241,25 +241,20 @@ Use exactly one next step. Do not narrate the full process unless requested.
 
 ## Skill Locations During Consolidation
 
-Repository-wide canonical skills discoverable from root `BuildIT`:
+Canonical root skills currently approved:
 
 - `.agents/skills/development-brief/` — mandatory Developing workflow;
 - `.agents/skills/mcp-server-development/` — MCP server/protocol specialist.
 
 The old generic `mcp-builder` skill is retired. Do not route to or recreate it.
 
-Remaining nested specialist copies pending one-by-one audit:
+The complete current inventory, including nested copies still pending audit, is
+owned by `docs/knowledge/skills/skill-map.md`. Do not duplicate that inventory
+here; read the skill map when an audit or specialist selection requires it.
 
-- `mcp/.agents/skills/typescript-expert/`;
-- `mcp/.agents/skills/zod/`;
-- `mcp/.agents/skills/bun-development/`;
-- `mcp/.agents/skills/blockbench-plugins/`.
-
-Because Codex is launched from root `BuildIT`, their final names/locations are
-resolved during each audit rather than by mass migration.
-
-Recovery items remain `blockbench-use`, `reference-generator`, and
-`evidence-gate` until verified.
+Because Codex is launched from root `BuildIT`, nested copies are not considered
+canonical project-wide skills until their individual audit resolves function,
+name, overlap, and location.
 
 ## Source Of Truth
 
@@ -268,5 +263,6 @@ Recovery items remain `blockbench-use`, `reference-generator`, and
 - durable decisions/reasons → `docs/knowledge/decision-log.md`;
 - product/modelling policy → `docs/foundation/`;
 - workflow map → `docs/knowledge/flow.md`;
+- skill inventory → `docs/knowledge/skills/skill-map.md`;
 - skill routing → `docs/knowledge/skills/activation-matrix.md`;
 - actual behavior → affected source + relevant proof.
