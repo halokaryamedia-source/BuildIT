@@ -13,8 +13,8 @@ ponytail
 one specialist skill
 ```
 
-Discovery, grilling, review, and evidence skills are conditional stages. They
-are not extra always-on layers.
+Discovery, grilling, review, evidence handling, and optional navigation tools
+are conditional stages. They are not extra always-on layers.
 
 ## Modes
 
@@ -55,6 +55,20 @@ or when a proposed direction needs adversarial scrutiny.
 Do not use `grilling` as a generic code-review skill. Use `code-review` for an
 implemented change and `evidence-gate` for unsupported or disputed proof.
 
+## Behavioral Anti-Slop Complement
+
+Karpathy-inspired coding guidelines are **absorbed into `AGENTS.md`**, not
+loaded as another skill. The useful principles are:
+
+- think before coding and surface unresolved assumptions;
+- simplicity first, with no speculative flexibility;
+- surgical changes only within the declared goal;
+- goal-driven execution with observable success criteria and proof.
+
+These principles strengthen Ponytail but do not add another skill to the task
+stack. If a future guideline duplicates Ponytail or `AGENTS.md`, absorb only the
+missing rule instead of installing another overlapping skill.
+
 ## Specialist Skills
 
 | Task | Skill | Current Local status |
@@ -69,6 +83,31 @@ implemented change and `evidence-gate` for unsupported or disputed proof.
 | Unsupported claim, rejected result, or repeated failure | `evidence-gate` | canonical Local copy still being recovered |
 
 Use `skill-creator` only when a skill itself is being created or updated.
+
+## Optional Code Navigation
+
+CodeGraph is an **external navigation accelerator**, not a specialist skill and
+not a source of truth.
+
+Use it only when all of these are true:
+
+- the task needs cross-file structural discovery, call-chain tracing,
+  ownership discovery, or blast-radius analysis;
+- normal targeted source reads would otherwise require broad repeated search;
+- CodeGraph is already installed/available for the environment.
+
+When used:
+
+1. start with one focused `codegraph_explore` question;
+2. use the returned paths/symbols to inspect only the exact authoritative
+   source needed;
+3. validate conclusions against source/tests/runtime before changing behavior.
+
+Do **not** use CodeGraph for a known-file edit, small documentation change,
+Blockbench visual judgement, reference comparison, or as proof that runtime
+behavior is correct. Do not auto-install it or commit `.codegraph/` generated
+state. A separate local trial must prove that the navigation gain outweighs its
+residual context cost before it becomes a standard environment dependency.
 
 ## Diagnostic And Review Skills
 
@@ -115,9 +154,11 @@ not currently present and its long-term canonical replacement is `Needs
 Validation` during skill recovery.
 
 Global/user skills such as Ponytail and Matt Pocock skills may live outside the
-repo. Use their actual installed or verified upstream source. If a required
-skill is unavailable, say so and continue only with the closest verified Local
-rule; do not silently simulate it.
+repo. Use their actual installed or verified upstream source. External tools
+such as CodeGraph remain optional environment capabilities and are not copied
+into the workspace merely to make them available. If a required skill is
+unavailable, say so and continue only with the closest verified Local rule; do
+not silently simulate it.
 
 ## Edit Gate
 
@@ -146,14 +187,16 @@ or required proof is unknown.
 | Blockbench lifecycle or UI | build and live runtime check |
 | Visual model quality | fresh screenshots, concrete visual critic findings, and internal release gate |
 
-Tool success, valid files, geometry metrics, and remembered context are not
-visual proof.
+Tool success, valid files, geometry metrics, remembered context, and navigation
+graphs are not visual or runtime proof.
 
 ## Anti-Slop Rules
 
 - inspect before editing;
+- surface unresolved assumptions instead of choosing silently;
 - fix the proved cause once at its shared owner;
 - keep changes inside declared scope;
+- use the minimum implementation that satisfies observable success criteria;
 - do not add speculative files, tools, dependencies, or fallbacks;
 - stop the same failed approach after two attempts;
 - never claim validation that was not run.
