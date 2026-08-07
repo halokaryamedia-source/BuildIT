@@ -14,7 +14,7 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/public contract: tools/resources/prompts, input schemas/validation, registration, result semantics, annotations, transport/session behavior |
 | `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
 | `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun-specific build/tooling boundary: `Bun.build`, build plugins, Bun APIs used by Local, scripts, bunx, dependencies/lockfile |
-| `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench runtime/plugin boundary: lifecycle, UI/settings, globals/APIs, Undo/Canvas, runtime permissions, mutation mechanics, events/cleanup |
+| `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench runtime/plugin boundary: lifecycle, embedded UI/component behavior, settings, globals/APIs, Undo/Canvas, runtime permissions, mutation mechanics, events/cleanup |
 
 ## Retired / Merged Skills
 
@@ -64,37 +64,51 @@ modelling workflow/skill when recovered.
 
 ### Nested `skill-creator`
 
-**Dropped as a repository skill.**
+Dropped as a repository skill. It was a generic authoring toolkit with no
+BlockIT-only behavior. Use the available global/user `skill-creator` capability
+when a skill itself is created or materially revised; do not keep another
+repository copy solely for availability.
 
-The package under `mcp/.agents/skills/skill-creator/` was a generic skill-authoring
-bundle: generic creation guidance, workflow/output examples, initializer,
-validator, packager, and license. It contained no BlockIT-specific authoring
-behavior that justified a second project copy.
+### `vue-best-practices`
 
-Use the available global/user `skill-creator` capability only when a skill itself
-is being created or materially revised. BlockIT stores the resulting project
-skills and repository decisions, not a duplicate generic authoring toolkit.
+**Merged into `blockbench-runtime-development` and retired as a separate skill.**
+
+The package targeted standalone Vue 3 development concerns such as `vue-tsc`,
+Volar, `defineModel`, Pinia, router typing, SSR/HMR, and SFC-oriented patterns.
+Local does not have a standalone Vue application boundary; its reactive UI is
+embedded in Blockbench `Panel`/dialog runtime code.
+
+The small useful subset is now owned by the Blockbench runtime specialist:
+
+- follow the embedded component/lifecycle shape already present in Local;
+- pair subscriptions/listeners with the existing component/plugin cleanup path;
+- keep panel-local state local when sufficient;
+- do not introduce Vue application architecture/tooling without an explicit
+  architecture requirement;
+- establish framework-specific behavior from actual Blockbench runtime/source,
+  not from a generic copied Vue skill.
+
+No replacement Vue skill is created.
 
 Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
-`bun-development`, `blockbench-plugins`, or nested `skill-creator` packages.
+`bun-development`, `blockbench-plugins`, nested `skill-creator`, or
+`vue-best-practices` packages.
 
-## Nested Copies Pending One-By-One Audit
+## Legacy Nested Skill Locations
 
-Current repository inventory under `mcp/.agents/skills/`:
+There are currently **no active skills** under `mcp/.agents/skills/`.
 
-| Skill | Current apparent function | Status |
-|---|---|---|
-| `vue-best-practices` | Vue guidance | **next audit** |
-
-Do not mass-move or mass-rename it. Audit it on its own merits.
+`mcp/.agents/skills/` and `mcp/.github/skills/` are legacy locations, not active
+project-wide skill roots. Do not repopulate them merely to match historical
+layout.
 
 ## Recovery Items
 
-| Skill | Intended function | Status |
+| Skill lineage | Intended function | Status |
 |---|---|---|
-| `blockbench-use` | Blockbench modelling workflow | recover + rename/overlap audit |
-| `reference-generator` | Source Image → modelling-brief package | recover + rename/overlap audit |
-| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | recover + rename/overlap audit |
+| `blockbench-use` | Blockbench modelling workflow | **next recovery + rename/overlap audit** |
+| `reference-generator` | Source Image → modelling-brief package | recovery + rename/overlap audit |
+| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | recovery + rename/overlap audit |
 
 The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
 match historical notes.
