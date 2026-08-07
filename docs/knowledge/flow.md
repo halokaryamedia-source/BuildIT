@@ -1,82 +1,81 @@
 # Flow
 
-Use this note as the single routing map for the agent and the user. Detailed
-procedures remain in the linked foundation, development, maintenance, and
-skill notes.
+Use this note as the single routing map. Detailed procedures remain in the
+linked development, maintenance, foundation, and skill notes.
 
 ## Agent Routing Flow
 
 ```mermaid
 flowchart TD
-    A[User request] --> B[Boot context<br/>AGENTS → CONTEXT → next-action]
+    A[User request] --> B[Boot repository memory<br/>AGENTS → CONTEXT → next-action]
     B --> C{Work mode}
 
-    C -->|Plan| P[Plan with Ponytail<br/>GSD discovery only if high-impact ambiguity remains]
-    C -->|Developing| D[development-brief<br/>goal → authority → Dual POV → input/output → acceptance]
-    C -->|Maintenance| M[Diagnose/review with Ponytail<br/>+ smallest diagnostic/specialist]
+    C -->|Plan| P[Ponytail<br/>GSD only if high-impact ambiguity remains]
+    C -->|Developing| D[development-brief<br/>goal/method → authority → Dual POV → output/proof]
+    C -->|Maintenance| M[Ponytail<br/>+ smallest diagnostic/specialist]
 
-    D --> N{Development actually needed?}
-    N -- No --> NR[Reuse / explain / verify]
-    N -- Yes --> I[Inspect owner, callers,<br/>patterns, and proof path]
-
+    D --> N{Development needed?}
+    N -- No --> NC[Reuse / explain / minimum proof]
+    N -- Yes --> I[Inspect owner + affected boundary]
     P --> I
     M --> I
 
-    I --> J{Cross-file discovery broad?}
-    J -- Yes --> CG[Optional CodeGraph<br/>one focused exploration]
-    J -- No --> K{Cause or scope proven?}
-    CG --> K
+    I --> K{Cause/scope grounded?}
+    K -- No --> X[Needs Validation / Terhenti]
+    K -- Yes --> S{Specialist adds value?}
+    S -- Yes --> SP[One specialist]
+    S -- No --> CH[Smallest complete change]
+    SP --> CH
 
-    K -- No --> L[Terhenti / Perlu pemeriksaan]
-    K -- Yes --> SD{Specialist domain needed?}
-    SD -- Yes --> S[One narrow specialist]
-    SD -- No --> CH[Smallest correct change]
-    S --> CH
-    CH --> V[Engineering proof]
-    V --> ACG{Developing?}
-    ACG -- Yes --> AP[Acceptance POV check<br/>+ original brief scope gate]
-    ACG -- No --> R[Review]
-    AP --> R
-    NR --> R
-    R --> E{Evidence sufficient?}
-    E -- No --> PR[Perlu pemeriksaan]
-    E -- Yes --> OK[Selesai]
-    OK --> U[Update next-action or<br/>decision owner when state changes]
+    CH --> V[Minimum useful proof]
+    NC --> G
+    V --> G{Developing?}
+    G -- Yes --> AP[Acceptance POV + original scope gate]
+    G -- No --> Q{Extra critique/evidence needed?}
+    AP --> Q
+
+    Q -- Yes --> E[Conditional grilling / review / evidence gate]
+    Q -- No --> F{Evidence sufficient?}
+    E --> F
+    F -- No --> PR[Perlu pemeriksaan]
+    F -- Yes --> OK[Selesai]
+    OK --> U[Update next-action / decision owner if state changed]
 ```
 
-## Conditional Stages
+## Conditional Escalations
 
-- **GSD-style discovery**: only when high-impact decisions remain unresolved
-  after repository inspection. It does not create a second planning/state
-  hierarchy in this repo.
-- **Grilling**: when the user asks to stress-test a plan, decision, or idea. It
-  challenges assumptions before commitment; it is not code review.
-- **CodeGraph**: optional source-navigation accelerator for genuinely broad
-  cross-file ownership, call-chain, dependency, or blast-radius questions.
-  Start with one focused exploration, then verify against authoritative source.
-  It is not a specialist skill and is not used for visual/model judgement.
-- **Code review**: after an implementation or existing diff needs critique.
-- **Evidence gate**: when proof is missing, disputed, rejected, or a direction
-  has failed repeatedly.
-- **OpenSpec**: full lifecycle only when the change crosses the threshold in
-  `decisions/open-spec-guide.md`.
+- **GSD-style discovery** — only unresolved high-impact decisions after repo
+  inspection.
+- **Grilling** — adversarial challenge for a plan/decision/idea before
+  commitment when useful.
+- **CodeGraph** — optional broad source-navigation accelerator; never proof.
+- **Code review** — only when independent critique materially adds value after
+  implementation.
+- **Evidence gate** — missing/disputed proof or repeatedly failing direction.
+- **OpenSpec** — genuine cross-cutting contract/migration/multi-phase boundary.
 
-These stages are conditional. Do not stack them into every task.
+None are default ceremony.
 
 ## Mode Outputs
 
-- **Plan**: scope, decisions, acceptance criteria, test strategy, and next action.
-- **Developing**: normalized development brief, bounded change or verified
-  no-change result, at most one owning specialist when needed, engineering proof,
-  downstream acceptance check, and result summary.
-- **Maintenance**: diagnosis, minimal correction, regression proof, and limitations.
+- **Plan:** bounded decisions, acceptance criteria, and next action.
+- **Developing:** grounded development brief, smallest required change or
+  verified no-change result, minimum useful proof, Acceptance POV check, and
+  concise result.
+- **Maintenance:** diagnosis, minimal correction when required, and relevant
+  regression proof.
+
+## Continuity Rule
+
+A new session resumes from `AGENTS.md` → `CONTEXT.md` → `next-action.md`.
+Update `next-action.md` only when active state changed; durable reasons belong in
+the decision log. Chat history is not the task tracker.
 
 ## Rule
 
-- If the routing flow changes, update this note and the activation matrix in the
-  same bounded documentation task.
-- Keep it short enough to read in one pass.
-- This is the only agent-routing diagram; do not create one per skill or folder.
+- Keep this the only routing diagram.
+- If routing changes, update this note and the activation matrix in the same
+  bounded documentation task.
 - This diagram does not replace `AGENTS.md`, `CONTEXT.md`, foundation policy, or
   the activation matrix.
 
