@@ -53,7 +53,7 @@ Before asking the user for more detail:
 
 For **Developing**, `development-brief` is the mandatory front door that performs
 this normalization, chooses the Build and Acceptance POVs, separates the goal
-from a suggested solution, and defines the proof before specialist work begins.
+from a suggested solution, and defines the proof before implementation begins.
 
 Use lightweight GSD-style requirement discovery only when a prompt is missing
 high-impact decisions or the scope has several plausible interpretations. Do
@@ -122,8 +122,8 @@ Apply these principles as baseline agent behavior; do not load a second
   until the relevant proof succeeds.
 
 These guardrails provide the minimal/YAGNI baseline in every mode. Developing
-does not load Ponytail as a third skill on top of `development-brief` and its
-specialist.
+does not load Ponytail as an extra skill on top of `development-brief` and any
+specialist that is actually needed.
 
 ## User-Facing Result
 
@@ -137,9 +137,10 @@ debugging.
 - **Plan:** use `ponytail`. Use GSD-style requirement discovery first only when
   high-impact requirements are genuinely unresolved. Add `domain-modeling` or
   `codebase-design` only for a real terminology or module-boundary problem.
-- **Developing:** use mandatory `development-brief` plus exactly one relevant
-  specialist skill. `development-brief` remains the opening contract and final
-  acceptance gate; it does not perform the specialist implementation itself.
+- **Developing:** always use `development-brief`. Add one relevant specialist
+  only when the implementation has a real specialist domain. The fast path may
+  use `development-brief` alone for trivial changes where another skill adds no
+  value. Never stack overlapping specialists.
 - **Maintenance:** use `ponytail` plus the smallest diagnostic or specialist
   skill; keep fixes minimal and leave regression proof.
 - **Critique / stress-test:** use `grilling` when the user asks to challenge a
