@@ -52,8 +52,9 @@ Before asking the user for more detail:
 6. capture the resolved decision in its existing documentation owner.
 
 For **Developing**, `development-brief` is the mandatory front door that performs
-this normalization, chooses the Build and Acceptance POVs, separates the goal
-from a suggested solution, and defines the proof before implementation begins.
+this normalization, detects the execution channel, chooses the Build and
+Acceptance POVs, separates the goal from a suggested solution, and defines the
+minimum useful proof before implementation begins.
 
 Use lightweight GSD-style requirement discovery only when a prompt is missing
 high-impact decisions or the scope has several plausible interpretations. Do
@@ -146,7 +147,7 @@ debugging.
 - **Critique / stress-test:** use `grilling` when the user asks to challenge a
   plan, decision, or idea. `grilling` is a decision-tree interview that looks
   for hidden assumptions before action; it is not a substitute for code review.
-  Use `code-review` for implemented changes.
+  Use `code-review` for implemented changes when critique adds value.
 
 Discovery, grilling, review, evidence handling, and optional navigation
 accelerators are conditional stages, not always-on layers to stack together.
@@ -155,8 +156,8 @@ accelerators are conditional stages, not always-on layers to stack together.
 
 For Plan and Maintenance, keep the internal contract as small as the task
 requires. For Developing, `development-brief` extends the contract with the
-Build POV, Acceptance POV, input authority, expected output, acceptance criteria,
-and proof.
+Build POV, Acceptance POV, execution channel, input authority, expected output,
+acceptance criteria, and proof budget.
 
 The baseline fields are:
 
@@ -173,6 +174,19 @@ Validation:
 The contract is the edit gate for low-risk, bounded work; manual approval is
 not required when it is complete and no public contract, dependency, or
 destructive operation changes.
+
+## Execution Channels
+
+BlockIT development must support both workflows:
+
+- **ChatGPT → GitHub:** repository inspection and GitHub writes are available.
+  Do not assume a local shell, Blockbench runtime, or local test execution.
+- **Codex local:** local shell/build/test/runtime capabilities may be available.
+  Verify availability before relying on them.
+
+The repository and skill contract stay the same across both channels. Only the
+available proof changes. Never convert an unavailable runtime check into a fake
+GitHub validation step.
 
 ## Develop File Creation Gate
 
@@ -265,19 +279,36 @@ increase the current mode's skill budget.
 - Do not claim validation without running the relevant check.
 - Do not add unrelated fixes, speculative abstractions, cosmetic tests, or
   documentation that duplicates an existing note.
-- Do not add configuration, abstraction, dependency, or fallback merely for
-  future protection.
+- Do not add configuration, abstraction, dependency, fallback, test, CI step,
+  fixture, or validation artifact merely for future protection or ceremony.
 - Stop patch churn after the same approach fails twice; re-diagnose or state
   that the issue is not a small patch.
 
-## Risk-Based Proof
+## Minimum Useful Proof
 
-- Trivial text/config: inspect the diff and check paths/links.
-- Branch, loop, parser, transform, or schema: run a targeted test/check.
-- Public API, tool, or resource: build/typecheck and validate the contract.
-- UI: build and perform visual/manual verification.
-- Bug fix: reproduce before the fix and prove the regression is covered.
-- Cross-module change: validate each boundary, then review the change.
+Validation must be proportional to risk **and** possible in the active execution
+channel. Use the cheapest check that can disprove the likely failure, then stop
+when the acceptance criteria have sufficient evidence.
+
+- **Trivial text/docs/routing:** inspect the exact diff plus relevant paths/links.
+- **Bounded source change through ChatGPT → GitHub:** inspect the changed source,
+  directly affected callers/contracts, and existing GitHub checks only when they
+  are already available and materially relevant. Do not invent local execution.
+- **Bounded source change through Codex local:** start with one targeted check or
+  reproduction. Add build/typecheck/test only when that boundary makes the check
+  informative.
+- **Public contract / serialization / destructive behavior:** require stronger
+  proof before claiming completion; if the active channel cannot produce it,
+  implement only when safe and report the exact remaining proof as
+  `Perlu pemeriksaan`.
+- **UI / Blockbench / visual behavior:** runtime or visual proof is required for
+  a visual/runtime success claim. GitHub-only work may still prepare the change,
+  but must not pretend static inspection proves the live result.
+- **Cross-module change:** verify only the boundaries actually changed; do not
+  run unrelated suites merely because the task spans files.
+
+Do not repeat an unchanged test/build/check after it already established the
+required proof. More validation is not automatically more confidence.
 
 ## Source Of Truth
 
