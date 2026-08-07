@@ -99,6 +99,7 @@ behavior inside the Blockbench runtime**:
 
 - `BBPlugin` lifecycle, startup, teardown, and runtime permissions;
 - Blockbench panels/dialogs/settings/actions and their cleanup;
+- embedded panel/component reactivity and lifecycle behavior already used by Local;
 - Blockbench globals/APIs and element manipulation mechanics;
 - `Undo`, `Canvas`, selection/lookup, events, and runtime state updates;
 - behavior that requires live Blockbench to prove.
@@ -112,12 +113,17 @@ be built**. Shape, proportions, cuboid decomposition, reference interpretation,
 texture art direction, and visual-quality judgement belong to the modelling
 workflow/skill when recovered.
 
+Vue is not a separate active specialist. Local uses embedded Blockbench UI
+components, not a standalone Vue application architecture. Generic Vue 3,
+Vue SFC, Pinia/router, Volar, and `vue-tsc` guidance is retired unless a future
+requirement explicitly changes the UI architecture.
+
 If an MCP tool calls Blockbench APIs, choose by the proved owner: public MCP
 contract → `mcp-server-development`; correct contract but incorrect Blockbench
 operation/lifecycle → `blockbench-runtime-development`.
 
-The old `blockbench-plugins` packages under both `mcp/.agents/skills/` and
-`mcp/.github/skills/` are retired. Do not recreate duplicate authorities.
+The old `blockbench-plugins` and `vue-best-practices` packages are retired. Do
+not recreate duplicate framework/runtime authorities.
 
 ## Requirement Discovery
 
@@ -151,20 +157,18 @@ The retired nested `mcp/.agents/skills/skill-creator/` package must not be
 recreated unless a future requirement proves a Local-only authoring capability
 that the available global/user skill cannot provide.
 
-## Nested Specialist Copies Pending Audit
+## Recovery Items
 
-These copies still live under `mcp/.agents/skills/` while their one-by-one
-audit is in progress:
+These useful capabilities are not yet canonical Local skills:
 
-| Task | Skill | Status |
+| Task | Skill lineage | Status |
 |---|---|---|
-| Vue guidance | `vue-best-practices` | **next audit** |
-| Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
-| Source Image → modelling brief | `reference-generator` | recovery item |
-| Unsupported/disputed evidence | `evidence-gate` | recovery item |
+| Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | **next recovery/audit** |
+| Source Image → modelling brief | `reference-generator` | recovery/audit |
+| Unsupported/disputed evidence | `evidence-gate` | recovery/audit |
 
-Because Codex is launched from root `BuildIT`, do not assume remaining nested
-copies are canonical project-wide skills. Audit/migrate them one at a time.
+Recover one at a time. Do not recreate historical names blindly; audit actual
+function, overlap, and best contextual name before activating the skill.
 
 Do not stack overlapping specialists. Choose the semantic owner. For example,
 a Bun command that only launches an MCP workflow is still MCP-owned unless the
@@ -206,14 +210,14 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
 
 - `.agents/skills/` = canonical repository-wide skills discoverable from root
   `BuildIT`.
-- `mcp/.agents/skills/` = remaining legacy/nested copies pending one-by-one
-  audit.
-- `mcp/.github/skills/` = legacy duplicate skill location; do not maintain a
+- `mcp/.agents/skills/` = retired legacy skill location; there are currently no
+  active skills there. Do not repopulate it by default.
+- `mcp/.github/skills/` = retired duplicate skill location; do not maintain a
   second active copy of a root canonical skill.
 - `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
-Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`,
-`DROP`, or `RECOVER` based on real function and overlap.
+Classify each recovered/new skill `KEEP`, `RENAME`, `MERGE`, `MOVE`, `DROP`, or
+`RECOVER` based on real function and overlap.
 
 ## Proof Economy
 
