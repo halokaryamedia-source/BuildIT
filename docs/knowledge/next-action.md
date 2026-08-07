@@ -6,8 +6,9 @@
   BlockIT workspace before further MCP implementation changes.
 - In scope: keep root guidance clean, align docs with the repository that
   actually exists, preserve validated Local rules, make skill routing lean,
-  recover only necessary missing skills/workflows from trusted sources, and
-  keep one continuation path across chats/sessions.
+  support both ChatGPT → GitHub and Codex local development, recover only
+  necessary missing skills/workflows from trusted sources, and keep one
+  continuation path across chats/sessions.
 - Out of scope: model-specific geometry fixes, Zebra-specific runtime rules,
   MCP feature development, full GSD installation, full OpenSpec lifecycle,
   Claude-Mem adoption, wholesale Rework/Sample merges, and speculative
@@ -28,30 +29,35 @@
     when it adds real domain value; trivial fast-path work may use
     `development-brief` alone;
   - Maintenance → `ponytail + smallest diagnostic/specialist`.
-- `development-brief` is checked into `mcp/.agents/skills/` and is the mandatory
-  Developing front door. It separates goal from suggested solution, checks
-  whether development is actually needed, isolates fixtures from generic
-  requirements, chooses Build/Acceptance POVs after owner discovery, defines
-  expected output and proof, and re-checks the contract before completion.
+- `development-brief` supports both execution channels:
+  - **ChatGPT → GitHub:** repository inspection/writes only; no invented local
+    shell, Blockbench runtime, or local test proof;
+  - **Codex local:** local build/test/runtime proof only when available and
+    materially useful.
+- Both channels use the same goal, Build POV, Acceptance POV, scope, and
+  acceptance criteria. Only the available proof changes.
+- Validation uses a **minimum useful proof** budget. Do not create or run tests,
+  CI, builds, fixtures, screenshots, or review stages merely for ceremony.
+- GitHub-only work may safely prepare a runtime-related change without fake
+  local validation; any material live/runtime claim that remains unproven is
+  reported as `Perlu pemeriksaan` with one exact local proof step.
+- For ChatGPT → GitHub, repo-local skills are invoked through the repository
+  boot path (`README` → `AGENTS` → `CONTEXT` → `next-action` → relevant skill),
+  not by assuming that a GitHub `SKILL.md` is installed as a ChatGPT product
+  Skill.
 - Use GSD-style requirement discovery only when high-impact decisions remain
   unresolved after repository inspection. Do not create a GSD `.planning/`
   tree.
 - Use `grilling` when the user asks to stress-test a plan, decision, or idea.
-  It finds hidden assumptions through a decision-tree interview; it is not the
-  code-review stage.
-- Karpathy-inspired anti-slop principles are absorbed into `AGENTS.md` rather
-  than loaded as another overlapping skill: think before coding, simplicity
-  first, surgical changes, and verifiable goals.
-- CodeGraph is an optional source-navigation accelerator only for broad
-  cross-file ownership, call-chain, dependency, or blast-radius discovery. It
-  is not a skill, source of truth, runtime verifier, or visual-quality judge.
-- CodeGraph is not auto-installed or committed during this phase. A bounded
-  local trial must prove useful navigation gain without unacceptable residual
-  context cost before standard adoption.
+- Karpathy-inspired anti-slop principles remain baseline guardrails rather than
+  another skill layer.
+- CodeGraph remains an optional source-navigation accelerator for broad
+  cross-file discovery only.
 - Claude-Mem is not adopted; repository-owned context remains the continuity
   authority.
-- Use `code-review` for implemented changes. Use `evidence-gate` for disputed
-  or unsupported evidence once its canonical Local copy is recovered.
+- Use `code-review` only when independent critique adds real value beyond the
+  final `development-brief` gate. Use `evidence-gate` for disputed/unsupported
+  proof once its canonical Local copy is recovered.
 - Keep the lightweight Local Open Spec Guide. Use a full OpenSpec proposal only
   for a genuinely cross-cutting public contract, migration, or multi-phase
   change.
@@ -73,30 +79,33 @@ Covered adversarial prompt cases:
 6. Zebra/Rhino/model example → fixture does not become generic runtime policy;
 7. trivial typo → fast path without ceremony or pointless specialist loading;
 8. investigation expands scope → reframe rather than silently widen;
-9. engineering proof passes but downstream need fails → task is not complete.
+9. engineering proof passes but downstream need fails → task is not complete;
+10. GitHub-only execution → do not fabricate local/runtime proof;
+11. Codex local execution → do not run broad checks merely because they exist.
 
-Post-implementation review found and corrected two efficiency issues:
+Post-implementation review corrected these efficiency issues:
 
-- specialist loading is no longer mandatory when a trivial task has no useful
+- specialist loading is not mandatory when a trivial task has no useful
   specialist domain;
-- detailed `development-brief` procedure now lives only in its `SKILL.md`;
-  routing docs describe the boundary instead of duplicating the procedure.
+- detailed `development-brief` procedure lives only in its `SKILL.md`;
+- proof is now execution-channel aware rather than assuming local test access;
+- `code-review` and broad validation are conditional, not automatic stages.
 
 Current proof status:
 
 - skill frontmatter/path and routing are checked into Local;
-- routing/docs agree on the same mandatory Developing boundary;
-- design-level fixture simulations passed the intended decision rules;
-- root structure remains unchanged except for the required skill subfolder;
-- **Needs Validation:** fresh-session Codex trigger/behavior has not yet been
-  exercised as a real installed skill run, so runtime skill-selection behavior
-  is not claimed as proven yet.
+- ChatGPT → GitHub repository flow is being exercised in this session;
+- routing/docs agree on the same mandatory Developing boundary and proof budget;
+- root structure remains minimal;
+- **Needs Validation:** Codex-local skill discovery/execution behavior still
+  needs one normal local usage trial when work next moves to Codex; this does
+  not block the current ChatGPT → GitHub workflow.
 
 ## Repository Truth
 
 - Workspace skill files actually present in `Local` are under
   `mcp/.agents/skills/`.
-- Checked-in workflow/specialist skills now include `development-brief`,
+- Checked-in workflow/specialist skills include `development-brief`,
   `mcp-builder`, `typescript-expert`, `zod`, `bun-development`, and
   `blockbench-plugins`.
 - `blockbench-use`, `reference-generator`, and `evidence-gate` are named by
@@ -110,13 +119,9 @@ Current proof status:
 - Karpathy-inspired guidelines were verified from
   `multica-ai/andrej-karpathy-skills`; their useful rules are absorbed into
   Local behavior instead of creating another skill dependency.
-- CodeGraph was verified from `colbymchenry/codegraph`; it supports Codex and a
-  single default `codegraph_explore` MCP tool, but its own multi-turn benchmark
-  reports higher residual retrieval context, so it remains optional pending a
-  local trial.
+- CodeGraph was verified from `colbymchenry/codegraph`; it remains optional.
 - The old `gsd-build/get-shit-done` repo is archived; the active successor is
-  `open-gsd/gsd-core`. Only the requirement-discovery discipline is being
-  adopted, not its repository lifecycle.
+  `open-gsd/gsd-core`. Only the requirement-discovery discipline is adopted.
 - Rework still contains the Black Rhinoceros Golden Sample and the historical
   `blockbench-reference-studio`; they are recoverable reference material, not
   authority over Local.
@@ -137,9 +142,8 @@ Current proof status:
 
 ## Work Sequence
 
-1. Validate `development-brief` in a real fresh-session Codex usage when the
-   Local workspace is next run through Codex; if trigger/brief behavior differs
-   from the contract, fix the skill before expanding it.
+1. Continue the current **ChatGPT → GitHub** workflow using the channel-aware
+   `development-brief` and minimum useful proof budget.
 2. Audit existing skill names one by one for clarity and overlap. Rename only
    when the current name materially obscures its function; preserve upstream
    lineage/aliases where needed instead of doing a mass rename.
@@ -148,28 +152,26 @@ Current proof status:
 4. Decide final canonical skill/reference ownership only after recovery evidence
    is complete.
 5. Run a bounded local CodeGraph trial only if broad MCP source discovery is a
-   real bottleneck; compare discovery calls, useful source coverage, and
-   residual context before adopting it as a standard environment tool.
+   real bottleneck.
 6. Audit the MCP implementation against the generic modelling flow and identify
    the smallest proven runtime gaps.
-7. Implement bounded fixes one cause at a time using the mode-specific skill
+7. Implement bounded fixes one cause at a time using the mode/channel-specific
    routing.
-8. Validate the modelling workflow across multiple object archetypes before
+8. When development next moves to Codex local, perform one normal usage trial of
+   `development-brief`; do not create a dedicated test harness just for skill
+   discovery unless a real failure appears.
+9. Validate the modelling workflow across multiple object archetypes before
    claiming general readiness.
 
 ## Verification For This Phase
 
 - Root remains limited to the existing minimal entry files/directories.
-- `AGENTS.md`, development flow, activation matrix, skill map, decision log, and
-  this task snapshot agree on mandatory Developing routing.
-- `development-brief` is one concise `SKILL.md`; no prompt engine, persona
-  registry, test framework, or parallel planning tree was added.
-- Specialist loading is conditional on actual domain value, so the mandatory
-  brief does not force a second skill for trivial work.
-- Karpathy principles strengthen existing guardrails without creating another
-  active skill layer.
-- CodeGraph remains optional and uninstalled/uncommitted until a local trial
-  proves it improves the specific discovery bottleneck.
+- `README`, `AGENTS.md`, development flow, activation matrix, decision log, and
+  this task snapshot agree on the two execution channels.
+- `development-brief` remains one concise repo-owned skill; no prompt engine,
+  persona registry, test framework, or parallel planning tree was added.
+- Validation is proportional to risk and channel capability; broad or duplicate
+  checks are explicitly discouraged.
 - No new memory layer, MCP runtime feature, or model-specific rule is introduced
   during this consolidation.
 - Missing skills are reported as missing/recoverable instead of being silently
@@ -177,7 +179,8 @@ Current proof status:
 
 ## Next Step
 
-Start the **one-by-one skill naming audit**. Do not mass-rename skills. Evaluate
-one name at a time against its real trigger/function, upstream lineage, overlap,
-and migration cost before changing it. MCP runtime behavior remains out of scope
-until skill consolidation is complete.
+Start the **one-by-one skill naming audit** through the current ChatGPT → GitHub
+workflow. Do not mass-rename skills. Evaluate one name at a time against its real
+trigger/function, upstream lineage, overlap, and migration cost before changing
+it. MCP runtime behavior remains out of scope until skill consolidation is
+complete.
