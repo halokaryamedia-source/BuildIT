@@ -41,7 +41,7 @@ Inspect only the relevant owner. Typical entry points are:
 - `mcp/types.d.ts` / installed `blockbench-types` when runtime typing matters;
 - existing Local usage of the same Blockbench API before introducing another pattern.
 
-Do not treat generic plugin templates or copied API cheat sheets as runtime authority. Local source, installed typings, and live Blockbench behavior are stronger evidence. If an API is uncertain, verify the specific API rather than importing a broad new reference pack.
+Do not treat generic plugin templates or copied API/framework cheat sheets as runtime authority. Local source, installed typings, and live Blockbench behavior are stronger evidence. If an API is uncertain, verify the specific API rather than importing a broad new reference pack.
 
 ## Runtime Contract
 
@@ -66,9 +66,14 @@ Do not add fallback behavior merely because a runtime API is uncertain. Resolve 
 
 These rules guarantee correct **mechanics**, not good modelling decisions. A technically valid cube mutation can still produce a poor model.
 
-## UI And Lifecycle Rules
+## UI And Embedded Component Rules
 
-- Reuse existing `uiSetup`/`uiTeardown`, settings, dialogs, and status patterns before adding another UI framework.
+- Reuse existing `uiSetup`/`uiTeardown`, settings, dialogs, status, and `Panel` component patterns before adding another UI framework or state layer.
+- Treat the component object embedded in Blockbench UI as part of the **Blockbench runtime integration**, not as a standalone Vue application architecture.
+- Follow the component/lifecycle shape already present in Local source. Keep subscriptions and DOM/runtime listeners paired with the existing component or plugin teardown path.
+- Keep panel-local reactive state local when that is sufficient; do not introduce a store/router/component framework for state already owned by the panel.
+- Do not migrate UI to Vue SFCs, Composition API, Pinia, router tooling, Volar/vue-tsc configuration, or another Vue architecture merely because generic Vue guidance recommends it.
+- Do not assume a framework version from a copied skill. If a framework-specific behavior matters, establish it from the actual Blockbench runtime/source or targeted local proof.
 - Do not create new panels/actions/dialogs when an existing surface can express the same need.
 - Keep lifecycle startup resilient only where Local already requires graceful degradation; do not add speculative recovery layers.
 - Permission-sensitive native modules must follow the existing Blockbench permission path rather than bypassing it.
@@ -101,9 +106,9 @@ Do not automatically run full build + Inspector + every UI path + visual review 
 - Do not load this skill merely because code references `Cube`, `Group`, or another Blockbench global.
 - Do not turn Blockbench API mechanics into modelling policy.
 - Do not infer visual quality from successful `Undo`, `Canvas`, element creation, or saved files.
-- Do not copy generic plugin templates into the existing MCP plugin.
-- Do not preserve duplicate `.agents`/`.github` skill authorities for the same Blockbench responsibility.
-- Do not hard-code generic Blockbench implementation claims into the skill when Local source or current typings can answer the task directly.
+- Do not copy generic plugin or Vue application templates into the existing MCP plugin.
+- Do not preserve duplicate skill authorities for the same Blockbench/UI responsibility.
+- Do not hard-code generic Blockbench or framework implementation claims into the skill when Local source or current typings can answer the task directly.
 - Do not add abstractions around a one-off runtime API unless repeated Local behavior proves a shared owner.
 
 ## Completion
