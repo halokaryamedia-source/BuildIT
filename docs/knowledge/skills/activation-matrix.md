@@ -48,8 +48,7 @@ Canonical path:
 `/.agents/skills/mcp-server-development/SKILL.md`
 
 Zod is an implementation mechanism inside this boundary, not a separate active
-skill. The old generic `zod` skill is retired and must not be routed to or
-recreated.
+skill. The old generic `zod` skill is retired.
 
 Do not load `mcp-server-development` for a TypeScript type-system-only issue,
 Bun tooling issue, Blockbench plugin/runtime API issue, or 3D modelling task
@@ -71,10 +70,27 @@ Canonical path:
 `/.agents/skills/typescript-type-safety/SKILL.md`
 
 Do **not** load it merely because the implementation file ends in `.ts`.
-Normal MCP implementation and MCP/Zod schema semantics stay with
-`mcp-server-development`; Bun tooling stays with the Bun specialist;
-Blockbench runtime/API work stays with the Blockbench specialist. The old broad
-`typescript-expert` skill is retired.
+Normal MCP implementation stays with `mcp-server-development`; Bun-specific
+build/tooling stays with `bun-tooling`; Blockbench runtime/API work stays with
+the Blockbench specialist.
+
+## Repository-Wide Specialist: Bun Tooling
+
+Use `bun-tooling` only when the **problem is specifically Bun-owned**:
+
+- `Bun.build` configuration or build failure;
+- Bun build plugins/loaders/resolvers;
+- `Bun.file`, `Bun.write`, `Bun.argv`, or another Bun API already used by Local;
+- Bun-owned package scripts, `bunx`, dependency resolution, or `bun.lock`;
+- Bun/Blockbench packaging compatibility when Bun is the proved owner.
+
+Canonical path:
+
+`/.agents/skills/bun-tooling/SKILL.md`
+
+Do not load it merely because a command uses `bun run` or the project uses Bun.
+Ordinary MCP/TypeScript/Blockbench work stays with its semantic owner. The old
+broad `bun-development` skill is retired.
 
 ## Requirement Discovery
 
@@ -101,8 +117,7 @@ audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| Bun runtime/scripts/dependencies | `bun-development` | **next audit** |
-| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | pending naming/location audit |
+| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | **next audit** |
 | Skill authoring package | `skill-creator` | pending duplicate/ownership audit |
 | Vue guidance | `vue-best-practices` | pending relevance/overlap audit |
 | Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
@@ -112,10 +127,9 @@ audit is in progress:
 Because Codex is launched from root `BuildIT`, do not assume remaining nested
 copies are canonical project-wide skills. Audit/migrate them one at a time.
 
-Do not stack overlapping specialists. A schema change whose semantic owner is
-the MCP input contract uses `mcp-server-development`; add
-`typescript-type-safety` only when there is a separate, genuine TypeScript
-compiler/type-system problem.
+Do not stack overlapping specialists. Choose the semantic owner. For example,
+a Bun command that only launches an MCP workflow is still MCP-owned unless the
+Bun command/build behavior itself is the problem.
 
 Use `skill-creator` only when a skill itself is being created or updated; the
 nested repository copy is still pending its own audit.
