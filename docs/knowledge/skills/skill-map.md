@@ -12,15 +12,30 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 |---|---|---|
 | `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
 | `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/protocol boundary: tools/resources/prompts, registration, result semantics, annotations, transport/session behavior |
+| `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
 
 ### Retired: `mcp-builder`
 
 `mcp-builder` was audited and retired. Its useful MCP ideas were narrowed into
-`mcp-server-development`; the generic Python/FastMCP, external-API scaffolding,
+`mcp-server-development`; generic Python/FastMCP, external-API scaffolding,
 pagination defaults, mandatory evaluation suite, and evaluation scripts were
-removed because they do not match BlockIT's existing MCP architecture.
+removed.
 
 Do not recreate or route to `mcp-builder`.
+
+### Retired: `typescript-expert`
+
+`typescript-expert` was audited and retired. Its useful TypeScript-specific
+value was narrowed into `typescript-type-safety`.
+
+Removed from the active skill were broad "use for any TypeScript/JavaScript"
+routing, automatic environment scanning, generic npm validation, monorepo/Nx/
+Turborepo decisions, Biome/ESLint migration advice, JavaScript→TypeScript
+migration guidance, broad tooling/performance checklists, generic utility-type
+reference bundles, and the Python diagnostic script.
+
+Normal `.ts` implementation does not require a TypeScript specialist. Use
+`typescript-type-safety` only when the type system itself owns the problem.
 
 ## Nested Copies Pending One-By-One Audit
 
@@ -28,16 +43,11 @@ Current repository inventory under `mcp/.agents/skills/`:
 
 | Skill | Current apparent function | Status |
 |---|---|---|
-| `typescript-expert` | TypeScript types/module structure | **next audit** |
-| `zod` | schema/input validation | pending overlap audit |
+| `zod` | schema/input validation | **next audit** |
 | `bun-development` | Bun runtime/scripts/dependencies | pending overlap audit |
 | `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | pending naming/location audit |
-| `skill-creator` | skill authoring package | discovered nested copy; pending duplicate/ownership audit |
-| `vue-best-practices` | Vue guidance | discovered nested copy; pending relevance/overlap audit |
-
-`skill-creator` and `vue-best-practices` were previously missing from the
-knowledge inventory. Their presence is now recorded, but no KEEP/DROP/MOVE
-judgment is made until their individual audit.
+| `skill-creator` | skill authoring package | pending duplicate/ownership audit |
+| `vue-best-practices` | Vue guidance | pending relevance/overlap audit |
 
 Do not mass-move or mass-rename these. Audit one at a time.
 
