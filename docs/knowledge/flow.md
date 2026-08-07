@@ -28,8 +28,10 @@ flowchart TD
     CG --> K
 
     K -- No --> L[Terhenti / Perlu pemeriksaan]
-    K -- Yes --> S[Select one narrow specialist<br/>for the owning boundary]
-    S --> CH[Smallest correct change]
+    K -- Yes --> SD{Specialist domain needed?}
+    SD -- Yes --> S[One narrow specialist]
+    SD -- No --> CH[Smallest correct change]
+    S --> CH
     CH --> V[Engineering proof]
     V --> ACG{Developing?}
     ACG -- Yes --> AP[Acceptance POV check<br/>+ original brief scope gate]
@@ -64,9 +66,9 @@ These stages are conditional. Do not stack them into every task.
 ## Mode Outputs
 
 - **Plan**: scope, decisions, acceptance criteria, test strategy, and next action.
-- **Developing**: normalized development brief, one owning specialist, bounded
-  change or verified no-change result, engineering proof, downstream acceptance
-  check, and result summary.
+- **Developing**: normalized development brief, bounded change or verified
+  no-change result, at most one owning specialist when needed, engineering proof,
+  downstream acceptance check, and result summary.
 - **Maintenance**: diagnosis, minimal correction, regression proof, and limitations.
 
 ## Rule
@@ -75,7 +77,7 @@ These stages are conditional. Do not stack them into every task.
   same bounded documentation task.
 - Keep it short enough to read in one pass.
 - This is the only agent-routing diagram; do not create one per skill or folder.
-- The diagram does not replace `AGENTS.md`, `CONTEXT.md`, foundation policy, or
+- This diagram does not replace `AGENTS.md`, `CONTEXT.md`, foundation policy, or
   the activation matrix.
 
 ## Related Notes
