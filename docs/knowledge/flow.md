@@ -19,16 +19,19 @@ flowchart TD
     F --> G
     H --> G
     G --> I[Inspect source, callers,<br/>patterns, and proof path]
-    I --> J{Cause or scope proven?}
-    J -- No --> K[Terhenti / Perlu pemeriksaan]
-    J -- Yes --> L[Ponytail + one narrow<br/>specialist skill]
-    L --> M[Smallest correct change]
-    M --> N[Risk-based validation]
-    N --> O[Review]
-    O --> P{Evidence sufficient?}
-    P -- No --> Q[Perlu pemeriksaan]
-    P -- Yes --> R[Selesai]
-    R --> S[Update next-action or<br/>decision note when state changes]
+    I --> J{Cross-file discovery broad?}
+    J -- Yes --> CG[Optional CodeGraph<br/>one focused exploration]
+    J -- No --> K{Cause or scope proven?}
+    CG --> K
+    K -- No --> L[Terhenti / Perlu pemeriksaan]
+    K -- Yes --> M[Ponytail + one narrow<br/>specialist skill]
+    M --> N[Smallest correct change]
+    N --> O[Risk-based validation]
+    O --> P[Review]
+    P --> Q{Evidence sufficient?}
+    Q -- No --> R[Perlu pemeriksaan]
+    Q -- Yes --> S[Selesai]
+    S --> T[Update next-action or<br/>decision note when state changes]
 ```
 
 ## Conditional Stages
@@ -38,6 +41,10 @@ flowchart TD
   hierarchy in this repo.
 - **Grilling**: when the user asks to stress-test a plan, decision, or idea.
   It challenges assumptions before commitment; it is not code review.
+- **CodeGraph**: optional source-navigation accelerator for genuinely broad
+  cross-file ownership, call-chain, dependency, or blast-radius questions.
+  Start with one focused exploration, then verify against authoritative source.
+  It is not a specialist skill and is not used for visual/model judgement.
 - **Code review**: after an implementation or existing diff needs critique.
 - **Evidence gate**: when proof is missing, disputed, rejected, or a direction
   has failed repeatedly.
