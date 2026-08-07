@@ -13,6 +13,7 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
 | `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/public contract: tools/resources/prompts, input schemas/validation, registration, result semantics, annotations, transport/session behavior |
 | `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
+| `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun-specific build/tooling boundary: `Bun.build`, build plugins, Bun APIs used by Local, scripts, bunx, dependencies/lockfile |
 
 ## Retired / Merged Skills
 
@@ -29,20 +30,17 @@ a TypeScript specialist; only genuine type-system problems do.
 
 ### `zod`
 
-**Merged into `mcp-server-development` and retired as a separate skill.**
+Merged into `mcp-server-development`. BlockIT uses Zod as the MCP input-schema
+mechanism, so a separate schema skill would split one semantic owner.
 
-BlockIT uses Zod as the schema mechanism for MCP inputs and generated MCP
-documentation. The useful rules now live at the MCP contract owner: accepted
-values, defaults/optionality/refinements, shared schemas, untrusted input,
-build-time-safe schema construction, and runtime-only checks that require live
-Blockbench state.
+### `bun-development`
 
-Removed from the active skill set were the generic 43-rule Zod pack and its
-form/i18n/performance/Zod-Mini/type-system guidance because those are not
-separate BlockIT domains.
+Replaced by `bun-tooling`. The useful Bun-specific build/tooling knowledge was
+retained while generic project scaffolding, HTTP/WebSocket/SQLite/password APIs,
+Node→Bun migration, and generic performance advice were removed.
 
-Do not recreate or route to retired `mcp-builder`, `typescript-expert`, or `zod`
-skills.
+Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
+or `bun-development` skills.
 
 ## Nested Copies Pending One-By-One Audit
 
@@ -50,8 +48,7 @@ Current repository inventory under `mcp/.agents/skills/`:
 
 | Skill | Current apparent function | Status |
 |---|---|---|
-| `bun-development` | Bun runtime/scripts/dependencies | **next audit** |
-| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | pending naming/location audit |
+| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | **next audit** |
 | `skill-creator` | skill authoring package | pending duplicate/ownership audit |
 | `vue-best-practices` | Vue guidance | pending relevance/overlap audit |
 
