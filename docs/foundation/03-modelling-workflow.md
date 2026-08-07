@@ -1,269 +1,277 @@
 # BlockIT — Operating Model Workflow
 
 **Status:** Draft  
-**Version:** 1.0
+**Version:** 1.1
 
 ## 1. Purpose
 
-This document defines the modelling sequence Codex must follow.
+Define the generic modelling sequence for creating a Minecraft Bedrock model in
+Blockbench through MCP.
 
-It does not repeat detailed geometry or texture rules.
+This workflow is **object-agnostic**. It must not encode Zebra, Rhino, animal,
+prop, or other fixture-specific anatomy/build order into product policy.
 
-Reference image creation is handled in [`04-reference-guide.md`](04-reference-guide.md).
+Reference preparation is handled in [`04-reference-guide.md`](04-reference-guide.md).
+Geometry, texture, and visual-quality details remain in their dedicated
+foundation notes.
 
 ## 2. Workflow
 
 ```text
 Understand request
 ↓
-Review reference
+Review approved Model Reference
 ↓
-Create short plan
+Whole-form interpretation
 ↓
-Prepare copied preset and open project
+Prepare/open Bedrock project
 ↓
-Build base geometry and hierarchy
+Primary Geometry Pass
 ↓
-Capture preview if available
+Primary visual gate
 ↓
-Refine geometry and pivots
+Secondary geometry / hierarchy / pivots
 ↓
-Validate geometry
+Full geometry review
 ↓
-Internal visual critic and release gate
+UV / texture
 ↓
-Plan UV
+Texture visual gate
 ↓
-Create UV
+Animation only when required
 ↓
-Apply base texture
-↓
-Capture preview if available
-↓
-Apply advanced texture
-↓
-Validate texture
-↓
-Internal texture visual gate
-↓
-Add animation if required
-↓
-Capture preview if available
-↓
-Internal animation visual gate if required
+Animation visual gate when required
 ↓
 Final validation
 ↓
-Save project
+Save .bbmodel
 ```
+
+Do not add extra stages merely because a tool or previous experiment used them.
 
 ## 3. Stage Rules
 
 ### 3.1 Understand Request
 
-Goal: understand the object, platform, and expected output.
+Goal: understand the requested asset, platform, intended use, required scope, and
+expected output.
 
-Exit: the request is clear enough to start planning.
+The user is not required to provide modelling or MCP expertise. Use the current
+Developing rules to separate the real goal from any suggested implementation.
 
-### 3.2 Review Reference
+Exit: the request is clear enough to evaluate the reference and define the
+modelling scope.
 
-Goal: understand shape, proportion, silhouette, scale, and style.
+### 3.2 Review Approved Model Reference
 
-Exit: the reference is clear enough to support modelling.
-If the task involves generating that reference image, follow `04-reference-guide.md` first.
+Goal: understand the visible whole form: silhouette, major proportions, major
+masses, contacts/attachments, orientation, style, and declared target
+dimensions.
 
-### 3.3 Create Short Plan
+The Model Reference is a visual modelling brief, not pixel calibration. Do not
+invent exact geometry from ambiguous pixels.
 
-Goal: define the main parts, build order, hierarchy, and required texture or animation work.
+Exit: the reference is sufficiently clear to support a whole-form plan. If the
+reference itself must be created/repaired, use `04-reference-guide.md` first.
 
-This is the request-level plan. It does not replace the per-section Geometry
-Plan required in `3.5 Build Base Geometry and Hierarchy`.
+### 3.3 Whole-Form Interpretation
 
-Exit: the next step is implementation, not more speculation.
+Goal: reason about the object as one coherent 3D composition before optimizing
+individual Cubes.
 
-### 3.4 Prepare Copied Preset and Open Project
+Define only what is needed to make the first pass coherent:
 
-Goal: copy the immutable Bedrock Entity preset on Windows, assign a safe output
-name, and open the copy through Windows file association.
+- primary masses and their relative scale;
+- major attachment/contact relationships;
+- overall orientation and silhouette direction;
+- hierarchy/pivot needs that materially affect construction or animation;
+- the most informative reference views for the primary pass.
 
-Do not create a new project in the normal preset-first workflow.
+Do **not** lock every cube transform, create a per-cube approval plan, or impose
+a universal support-first/section-first construction order. Build order depends
+on the actual object and reference.
 
-Exit: the copied project is open, the path and Bedrock format are verified, and
-the project is ready for geometry.
+Exit: the next action is a bounded primary geometry pass, not more speculative
+planning.
 
-### 3.5 Build Base Geometry and Hierarchy
+### 3.4 Prepare / Open Bedrock Project
 
-Goal: establish the primary shape and major structural parts.
+Goal: work in the established safe Bedrock Entity project workflow and preserve
+recoverability.
 
-Exit: the model is recognizable without texture.
-Register one high-level Geometry Plan before the first cube. It must declare
-semantic sections, dependencies, cube roles, order, parents, attachment intent,
-and the SIDE plus FRONT or BACK view contract. It must not lock exact cube
-transforms before the active section is visually inspected. Codex chooses the
-reviewed transform at `place_cube` or `modify_cube` time. The plan is not
-visual proof and does not require reporting every cube to the user.
+Use the current verified project-opening/preset flow from the implementation and
+module guidance. Do not promote a historical setup detail into policy when its
+runtime behavior is unverified.
 
-Build one semantic section at a time from that single plan.
+Exit: the intended Bedrock project is open and ready for geometry.
 
-Inspect the fresh screenshot returned by each `place_cube` or `modify_cube`
-call. Do not issue an extra capture call after every cube; capture one fresh
-section-boundary view when it adds evidence.
+### 3.5 Primary Geometry Pass
 
-Keep one MCP session for the Geometry task. Execute each planned dependency
-batch continuously and inspect returned images internally; do not ask the user
-to stop after every cube. A user-facing stop is allowed only at the full-plan
-gate, a major dependency checkpoint, a concrete visual defect requiring repair,
-missing visual evidence, or two failed corrections to the same issue.
+Goal: create the minimum set of primary geometry needed for the model to read as
+one coherent object.
 
-#### Mandatory construction dependency order
+Rules:
 
-The modelling order is determined by physical support and attachment, not by
-which part is visually largest:
+- build the **whole primary form**, not a polished local section while the rest
+  of the object is undefined;
+- choose Cubes/rotations from the active reference and modeller reasoning, not
+  from universal anatomy templates;
+- preserve major attachment/contact relationships;
+- use the minimum geometry needed for silhouette, volume, support/attachment,
+  or motion intent;
+- defer small details, texture-driven forms, and cosmetic cleanup;
+- use bounded batches when they reduce tool churn and remain safe/recoverable.
 
-1. **Contact/support anchors** — feet, ground contacts, wheels, or the lowest
-   stable base that is actually supported by the reference.
-2. **Immediate connectors** — lower legs, stems, struts, or other parts that
-   visibly attach to those anchors.
-3. **Parent connectors** — upper legs, hips, branches, or equivalent parts that
-   complete the support chain to the main mass.
-4. **Main mass** — torso, body, chassis, or central volume attached to the
-   completed support chain.
-5. **Elevated attached masses** — neck, head, cabin, or other volumes attached
-   to the main mass.
-6. **Root-to-tip appendages** — tail, ears, horns, handles, or similar chains;
-   build each chain from its root attachment toward its tip.
-7. **Secondary silhouette details** — only after the primary support and mass
-   structure is connected and visually coherent.
+MCP tool success, numeric overlap, valid hierarchy, or a saved project is not
+proof that the primary form looks correct.
 
-If the reference does not show a separate foot or base volume, use the lowest
-part of the visible support as the contact anchor; do not invent a cube just to
-follow the list. Build equivalent supports as a group before moving upward.
-MCP supports this only through an explicit `root_anchor=true` declaration on
-each separate support/contact cube; that declaration is structural metadata,
-not visual proof.
-Every later section must attach to an existing section. A floating torso or
-other free-standing primary mass is not a valid first cube when the reference
-shows a support chain. If the support chain or attachment is not visually
-established, stop as `NEEDS_REVIEW` instead of choosing an order by habit.
+Exit: all important primary masses exist and the object is recognizable enough
+for a global visual check.
 
-Each cube also requires an orientation decision before placement. If the
-primary construction view shows the part's long axis or silhouette direction
-leaving the world-grid-orthogonal directions, the cube must be planned as
-rotated; an axis-aligned substitute is not equivalent. The plan records
-`axis-aligned` or `rotated`, the rotation axis, the modeller-chosen grid angle,
-the evidence view, and the attachment point after rotation. The reference
-determines whether a slope exists; the screenshot checkpoint determines
-whether the chosen angle works. Do not infer an exact angle from image pixels.
+### 3.6 Primary Visual Gate
 
-Rotating a parent invalidates the visual assumption for every attached child.
-After a parent rotation, inspect the affected primary view and revalidate or
-repair each visible child connection before adding another cube. A successful
-numeric transform is not proof that descendants remain connected.
+Goal: determine whether the **whole primary form** is good enough to refine.
 
-Every section uses SIDE plus its declared FRONT or BACK view. TOP or 3/4 is
-optional only for one explicitly unresolved question and is never a score.
+Check at minimum:
 
-### 3.6 Refine Geometry and Pivots
+- recognizable global silhouette;
+- major proportion relationships;
+- orientation;
+- major mass placement;
+- major contacts/attachments visible in the relevant views.
 
-Goal: add only useful secondary detail and place pivots where rotation or animation needs them.
+Use fresh Blockbench visual evidence from the active reference views. Do not
+capture after every cube. Capture only views needed to judge the current whole
+form.
 
-Exit: geometry and pivots support the intended behaviour.
+If the global shape is wrong, repair primary relationships; do not hide the
+problem by adding compensating detail Cubes.
 
-### 3.7 Validate Geometry
+Exit: primary form passes, or the workflow stops/replans with concrete visual
+findings.
 
-Goal: check silhouette, proportion, hierarchy, intersections, and unnecessary parts.
-During construction, start from the active reference's declared
-`model_reference.primary_view`, then use `FRONT`, `TOP / FOOTPRINT`, `BACK`,
-and `FRONT 3/4 PREVIEW` in that order. The first three are construction views;
-`BACK` verifies the rear and `FRONT 3/4 PREVIEW` verifies volume and
-connections. If the primary view is missing or ambiguous, stop as `BLOCKED`.
-After the complete Cube Draft exists, review the same mapped view order. A
-local correction reopens only affected views; do not restart all views
-automatically.
-Dimensions, landmarks, contacts, and tolerances come from the active
-reference; no object-specific dimensions or anatomy are defined by this
-workflow. MCP may use parent-relative positions and group pivots internally,
-but those are implementation details rather than reference requirements.
+### 3.7 Secondary Geometry / Hierarchy / Pivots
 
-Exit: the visual critic has checked the complete mapped view set. If the critic
-is unavailable or finds a major issue, stop as `BLOCKED` or `NEEDS_REVIEW`;
-do not expose the draft or continue to UV work.
+Goal: add only geometry and structure that materially improve silhouette,
+readability, attachment, texture support, or required motion.
 
-### 3.8 Plan UV
+Rules:
 
-Goal: choose the texture style, canvas size, and UV strategy.
+- preserve primary masses that already passed unless a new visual finding proves
+  they are responsible for an issue;
+- add detail from large-to-small visual importance;
+- choose pivots/hierarchy for actual articulation or organization needs;
+- after changing a parent transform, re-check affected child relationships when
+  the change could alter visible attachment;
+- do not add geometry solely to compensate for an unresolved primary-form error.
 
-Exit: the UV approach is clear.
+Exit: geometry/hierarchy/pivots support the intended asset without unnecessary
+parts.
 
-### 3.9 Create UV
+### 3.8 Full Geometry Review
 
-Goal: map important surfaces cleanly and keep them inside the canvas.
+Goal: review the complete geometry against the full declared Model Reference
+view set.
 
-Exit: required surfaces have usable UVs.
+Check:
 
-### 3.10 Apply Base Texture
+- silhouette and major proportions across views;
+- presence/orientation of primary parts;
+- width/depth/footprint where visible;
+- coherent visible contacts and connections;
+- unnecessary/intersecting/inverted geometry;
+- hierarchy/pivots where they affect the intended result.
 
-Goal: establish the main visual identity.
+A correction reopens only affected views/relationships. Do not restart every
+view or rebuild the entire model automatically.
 
-Exit: the model has a complete base texture.
-Base texture is a checkpoint only unless the task explicitly stops at a structural milestone.
+Exit: no unresolved critical/major geometry issue remains, or status is
+`BLOCKED` / `NEEDS_REVIEW` with concrete findings.
 
-### 3.11 Apply Advanced Texture
+### 3.9 UV / Texture
 
-Goal: improve material definition, depth, and controlled variation when required.
+Goal: create usable UVs and texture appropriate to the requested scope.
 
-Exit: texture quality matches the target scope.
-Skip only when the request is explicitly structural-only.
+Follow `06-texture-standard.md`. Do not use texture to conceal incorrect primary
+geometry.
 
-### 3.12 Validate Texture
+Exit: required surfaces are mapped and the requested texture scope is complete.
 
-Goal: check alignment, pixel density, pattern direction, and missing areas.
+### 3.10 Texture Visual Gate
 
-Exit: the texture visual gate has no unresolved issue. Otherwise stop as
-`BLOCKED` or `NEEDS_REVIEW` before animation or final validation.
+Goal: verify texture placement, material/readability, UV orientation, pattern
+direction, and pixel-density consistency where relevant.
 
-### 3.13 Add Animation
+Exit: no unresolved texture issue that materially reduces the requested output.
 
-Goal: create animation only when it is required.
+### 3.11 Animation — Only When Required
 
-Exit: animation works, or it is explicitly not required.
-If animation is required, run the internal animation visual gate and stop as
-`BLOCKED` or `NEEDS_REVIEW` when it is unavailable or fails. If animation is
-not required, skip this gate.
+Goal: add only animations required by the task.
 
-### 3.14 Final Validation
+Do not create animation as default ceremony. When animation is required, verify
+pivots, hierarchy, clipping/detachment, and intended motion in Blockbench.
 
-Goal: verify geometry, hierarchy, pivots, UV, texture, optional animation, and project cleanliness.
+Exit: required animation works, or the task is explicitly blocked for local
+proof/correction.
 
-Exit: the result is `PASS`, `ISSUES_FOUND`, or `BLOCKED`.
+### 3.12 Final Validation
 
-The visual release is invalidated by a model revision change. Export must
-re-check the current revision before writing the model.
+Goal: verify the current model revision against the requested output.
 
-### 3.15 Save Project
+Required proof depends on the claim:
 
-Goal: save the final `.bbmodel` file.
+- structural claims require relevant structural inspection;
+- visual claims require fresh visual evidence;
+- animation claims require live animation evidence;
+- saved-project claims require the project to be saved/reopenable when that can
+  be tested in the active environment.
 
-Exit: the file reopens correctly.
+Do not turn unavailable local proof into a fake static check. ChatGPT → GitHub
+may prepare implementation and hand off one exact local test to Codex.
+
+Exit: `PASS`, `ISSUES_FOUND`, or `BLOCKED`/`NEEDS_REVIEW` with the limitation
+stated accurately.
+
+### 3.13 Save Project
+
+Goal: save the reviewed `.bbmodel` through the current verified save workflow.
+
+Exit: save is complete; reopening is proven only when actually tested.
 
 ## 4. Workflow Rules
 
-- Follow the stage order.
-- Keep one active model per task unless the user explicitly asks for more.
-- Do not skip a stage without a reason.
-- Do not repeat a stage unless there is a clear benefit.
-- Do not change requirements independently.
-- Do not claim visual success without visual evidence.
-- Do not treat base texture as the final state when the task requires advanced texture.
-- Stop when the required scope is complete.
+- Whole-form understanding precedes local polish.
+- The active reference decides object-specific relationships; this document does
+  not define anatomy.
+- Use the smallest useful geometry and the smallest useful proof.
+- Do not require per-cube user approval, per-cube screenshots, universal
+  construction order, numeric similarity scores, or repeated full-review loops.
+- Keep one active model per task unless the task explicitly requires more.
+- Do not repeat a stage without a concrete reason/new evidence.
+- Stop the same unsuccessful correction direction after two attempts without
+  new evidence and replan instead.
+- Do not claim visual completion without visual evidence.
+- Stop when the requested scope and required proof are complete.
 
-## 5. Stop Conditions
+## 5. Anti-Slop Failure Modes
 
-Stop when:
+Reject these patterns:
 
-- the request is understood;
-- the required stages are complete;
-- no known critical issue remains;
-- animation is complete or not required;
-- validation status is accurate;
-- `.bbmodel` is saved.
+- locally plausible Cubes forming a globally wrong object;
+- polishing one section before the whole primary form is coherent;
+- compensating geometry added to hide a primary proportion error;
+- fixture-specific rules promoted to generic product policy;
+- per-cube planning/validation ceremony with no evidence benefit;
+- automatic retries without a new visual finding/hypothesis;
+- structural/tool success reported as resemblance.
+
+## 6. Stop Conditions
+
+Stop or replan when:
+
+- the approved reference cannot support a required modelling decision;
+- the primary form fails the visual gate and no new correction hypothesis exists;
+- a critical/major full-geometry issue remains;
+- required local/visual proof is unavailable;
+- the requested scope is complete and further detail would not materially
+  improve the intended result.
