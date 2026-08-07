@@ -46,9 +46,30 @@ Canonical path:
 
 `/.agents/skills/mcp-server-development/SKILL.md`
 
-Do not load it for a Zod-only, general TypeScript, Bun tooling, Blockbench
+Do not load it for a Zod-only, TypeScript type-system, Bun tooling, Blockbench
 plugin/runtime API, or 3D modelling problem. The old generic `mcp-builder` skill
-is retired and must not be used.
+is retired.
+
+## Repository-Wide Specialist: TypeScript Type Safety
+
+Use `typescript-type-safety` only when the **difficult part of the task is the
+TypeScript type system itself**:
+
+- compiler/type compatibility or inference problems;
+- generics, unions, narrowing, or unsafe assertions;
+- declaration/external-library typing;
+- public TypeScript type contracts;
+- compile-time module typing when TypeScript owns the failure.
+
+Canonical path:
+
+`/.agents/skills/typescript-type-safety/SKILL.md`
+
+Do **not** load it merely because the implementation file ends in `.ts`.
+Normal MCP implementation stays with `mcp-server-development`; Zod schema
+semantics stay with `zod`; Bun tooling stays with the Bun specialist;
+Blockbench runtime/API work stays with the Blockbench specialist. The old broad
+`typescript-expert` skill is retired.
 
 ## Requirement Discovery
 
@@ -68,30 +89,31 @@ hierarchy.
 
 Do not use these merely to make routine work look more rigorous.
 
-## MCP Specialist Copies Pending Audit
+## Nested Specialist Copies Pending Audit
 
 These copies still live under `mcp/.agents/skills/` while their one-by-one
-function/name/overlap/location audit is in progress:
+audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| TypeScript types/module structure | `typescript-expert` | next audit |
-| Zod schemas/boundary validation | `zod` | pending overlap audit |
+| Zod schemas/boundary validation | `zod` | **next audit** |
 | Bun runtime/scripts/dependencies | `bun-development` | pending overlap audit |
 | Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | pending naming/location audit |
+| Skill authoring package | `skill-creator` | pending duplicate/ownership audit |
+| Vue guidance | `vue-best-practices` | pending relevance/overlap audit |
 | Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
 | Source Image → modelling brief | `reference-generator` | recovery item |
 | Unsupported/disputed evidence | `evidence-gate` | recovery item |
 
-Because Codex is launched from root `BuildIT`, do not assume the remaining
-nested specialist copies are project-wide auto-discovered. Audit/migrate them
-one at a time.
+Because Codex is launched from root `BuildIT`, do not assume remaining nested
+copies are canonical project-wide skills. Audit/migrate them one at a time.
 
-Do not stack overlapping specialists. A schema-owned change should not also
-load the general TypeScript skill unless a separate TypeScript boundary is
-actually involved.
+Do not stack overlapping specialists. A schema-owned change should normally use
+`zod`, not `zod + typescript-type-safety`, unless a separate TypeScript type
+problem genuinely exists.
 
-Use `skill-creator` only when a skill itself is being created or updated.
+Use `skill-creator` only when a skill itself is being created or updated; the
+nested repository copy is still pending its own audit.
 
 ## Optional Code Navigation
 
@@ -129,8 +151,8 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
 
 - `.agents/skills/` = canonical repository-wide skills discoverable from root
   `BuildIT`.
-- `mcp/.agents/skills/` = remaining legacy/nested specialist copies pending
-  one-by-one audit.
+- `mcp/.agents/skills/` = remaining legacy/nested copies pending one-by-one
+  audit.
 - `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
 Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`,
