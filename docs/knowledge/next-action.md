@@ -12,8 +12,8 @@ asking the user to reconstruct prior chats.
 - **Execution now:** ChatGPT → GitHub.
 - **Final runtime environment later:** Codex local from root `BuildIT` with
   Blockbench + MCP.
-- **In scope:** recover/audit only missing useful skills now that existing nested
-  skill copies have been fully audited.
+- **In scope:** resolve the last missing capability (`evidence-gate`), then run a
+  final overlap/context-cost pass across the cleaned routing.
 - **Out of scope now:** MCP feature changes, model-specific fixes, mass skill
   recreation, full GSD/OpenSpec frameworks, Claude-Mem, speculative architecture.
 
@@ -23,7 +23,7 @@ asking the user to reconstruct prior chats.
 - `CONTEXT.md` → stable facts/terminology.
 - this file → active goal/status/completed boundary/next step.
 - `decision-log.md` → durable decisions/reasons.
-- `docs/foundation/` → durable product/modelling policy.
+- `docs/foundation/` → durable product/modelling/reference policy.
 - source + relevant proof → runtime truth.
 
 Do not ask the user to repeat old context before reading these owners.
@@ -45,8 +45,10 @@ Do not ask the user to repeat old context before reading these owners.
 - repository state is explicit project memory across ChatGPT/Codex sessions;
 - modelling/geometry/visual-validation policy is generic, object-agnostic, and
   whole-form-first;
-- reference handoff now matches whole-form modelling and no longer contains the
-  stale first-Cube/support/section/overlap rules;
+- reference handoff matches whole-form modelling and no longer contains stale
+  first-Cube/support/section/overlap rules;
+- Reference Generator quality requires buildable Minecraft/Blockbench form, not
+  smooth realism with pixel treatment or generic voxel filtering;
 - ChatGPT → GitHub vs Codex local proof boundaries are explicit;
 - mandatory review/broad validation ceremony was removed.
 
@@ -101,33 +103,65 @@ Standalone Vue 3 application tooling is not a separate Local domain.
 
 Canonical: `.agents/skills/blockbench-bedrock-modelling/SKILL.md`
 
-Trusted historical source was established from repository history. The old
-`blockbench-use` skill was a broad mandatory orchestrator, and the related
-historical `blockbench-modeling` skill mixed Cuboid and freeform/mesh workflows.
-Neither package is restored literally.
+The old mandatory orchestrator and broad mesh/Hytale/PBR/tool-catalog behavior
+were not restored. The recovered specialist owns modeller judgement for the
+Bedrock `.bbmodel`; runtime mechanics remain separate.
 
-Recovered capability:
+### 9. Reference Generator lineage → foundation workflow
 
-- whole-form Bedrock modelling judgement;
-- primary/secondary Cuboid geometry;
-- silhouette/proportion/contact correction;
-- hierarchy/pivots for actual asset needs;
-- geometry-vs-texture decisions;
-- UV/texture scope and required animation;
-- visual/model completion for an editable `.bbmodel`.
+**Decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
 
-Explicitly not recovered:
+Proven lineage:
 
-- multi-skill loading/orchestration;
-- generic Hytale/PBR/mesh routing;
-- mandatory outline/texture pre-flight dumps;
-- fixed mutation-count checkpoints;
-- first-Cube/support/section/overlap construction rules;
-- per-Cube/per-section screenshot ceremony.
+- `Rework/engines/chatgpt/skills/blockbench-reference-studio/SKILL.md`;
+- first tracked version was the ChatGPT Blockbench reference skill;
+- later revisions moved from a multi-sheet package to a single Reference Visual
+  workflow.
 
-`blockbench-bedrock-modelling` owns **what model should be built and whether it
-is visually coherent**. `blockbench-runtime-development` owns **how Blockbench
-runtime operations execute**.
+No tracked `.agents/skills/reference-generator/` or
+`.agents/skills/blockbench-reference-generator/` package was found, so those
+names are not treated as recovered historical skill identities.
+
+Canonical owner:
+
+`docs/foundation/04-reference-guide.md`
+
+Current boundary:
+
+```text
+Image-capable ChatGPT / Reference Generator
+Source Image + request
+→ five-view Modelling Brief Draft
+→ quality gate
+→ user approval
+→ approved Modelling Brief
+
+Codex + blockbench-bedrock-modelling
+approved Modelling Brief
+→ actual Cuboid modelling
+→ .bbmodel
+```
+
+Preserved:
+
+- Golden Sample supplies construction/presentation language, never target anatomy;
+- same buildable subject/construction across all views;
+- actual Minecraft/Blockbench Cuboid visual language rather than smooth realism,
+  pixel-skin-only output, generic voxel filtering, or uniform cube stacking;
+- one Draft plus at most one evidence-driven targeted correction;
+- simple metadata and honest handoff.
+
+Not restored:
+
+- multi-sheet technical package;
+- manifest/schema/hash/crop/region/writer-lease machinery;
+- three routine approval gates;
+- mandatory ZIP;
+- reference-authored Cube transforms or image calibration.
+
+No `.agents/skills/reference-generator/` is created because root skills are the
+Codex discovery surface and Codex consumes the approved reference rather than
+owning image generation.
 
 ## Current Skill Structure
 
@@ -140,19 +174,23 @@ runtime operations execute**.
 - `.agents/skills/blockbench-runtime-development/`
 - `.agents/skills/blockbench-bedrock-modelling/`
 
+### Workflow owner outside skill stack
+
+- `docs/foundation/04-reference-guide.md` — Source Image → approved Modelling
+  Brief on the image-capable Reference Generator surface.
+
 ### Legacy nested locations
 
 There are currently **no active skills** under `mcp/.agents/skills/` or
 `mcp/.github/skills/`. Do not repopulate those locations by default.
 
-### Recovery items
+### Remaining recovery item
 
-- `reference-generator` ← **next**
-- `evidence-gate`
+- `evidence-gate` ← **next**
 
 ## Skill Audit Method
 
-For each recovered skill lineage record:
+For each recovered capability record:
 
 ```text
 Historical/current name:
@@ -160,7 +198,7 @@ Actual function:
 Trigger:
 Unique value:
 Overlap:
-Best name:
+Best owner/name:
 Best location:
 Decision: KEEP | RENAME | MERGE | MOVE | DROP | RECOVER
 Migration cost / compatibility note:
@@ -170,6 +208,8 @@ Rules:
 
 - recover trusted behavior, not historical naming/layout blindly;
 - prefer fewer skills with clearer responsibility;
+- a useful capability may remain a foundation/workflow instead of becoming a
+  skill when that is the smaller correct owner;
 - do not merge distinct expertise merely to reduce count;
 - do not retain content already covered by baseline policy or another owner;
 - preserve lineage and durable reasoning in the decision log;
@@ -177,19 +217,16 @@ Rules:
 
 ## Remaining Work Sequence
 
-1. **Recover/audit `reference-generator`** from proven lineage. Determine whether
-   it deserves a canonical project skill, a clearer contextual name, or should
-   remain a separate Reference Generator surface/workflow. Do not invent an
-   exact historical package if one cannot be established.
-2. Recover/audit `evidence-gate` and decide whether it remains a distinct
-   conditional capability or is better absorbed into baseline proof rules.
-3. Re-check the final activation matrix for overlap/context cost.
-4. Audit MCP implementation against the cleaned modelling workflow and identify
+1. **Recover/audit `evidence-gate`**. Determine whether it has unique conditional
+   behavior beyond root minimum-proof, independent-judgment, root-cause, and
+   failed-direction rules. Prefer merge/drop if a separate skill adds no value.
+2. Re-check the final activation matrix for overlap/context cost.
+3. Audit MCP implementation against the cleaned modelling workflow and identify
    only proven runtime gaps.
-5. Implement bounded fixes through ChatGPT → GitHub.
-6. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
+4. Implement bounded fixes through ChatGPT → GitHub.
+5. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
    targeted local proof, and fix only demonstrated failures.
-7. Validate modelling across multiple object archetypes before generic release
+6. Validate modelling across multiple object archetypes before generic release
    claims.
 
 ## Update Rule
@@ -200,6 +237,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Recover and audit **`reference-generator`**. First establish its proven lineage
-and current workflow boundary; do not assume that an old skill name/package is
-the correct canonical Local form.
+Recover and audit **`evidence-gate`**. First prove its historical source and
+unique behavior; do not create a root skill if the current baseline already owns
+that function.
