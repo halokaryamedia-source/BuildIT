@@ -5,6 +5,39 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### Standalone `zod` skill was merged into `mcp-server-development`
+
+- **Audit decision:** `MERGE + DROP`.
+- **Old name/source:** `zod`, a generic Zod best-practices package under
+  `mcp/.agents/skills/` with a compiled guide plus 43 rule references.
+- **Actual useful function in BlockIT:** MCP input-contract semantics — accepted
+  values, defaults/optionality, refinements, shared schemas, untrusted input,
+  error clarity, and the build-time/runtime validation boundary.
+- **Canonical owner:** `.agents/skills/mcp-server-development/SKILL.md`.
+- **Why it was merged instead of renamed:** Local uses Zod primarily as the
+  schema mechanism for MCP tool/public inputs and generated MCP documentation.
+  Keeping a separate schema skill would split one semantic owner across two
+  specialists and compete for the one-specialist Developing budget.
+- **Removed from the active skill set:** the generic 43-rule pack, form/i18n
+  patterns, Zod-Mini/bundle/performance guidance, branded-type/strict-mode
+  advice already owned elsewhere, and framework patterns with no demonstrated
+  BlockIT need.
+- **Preserved useful rules:** validate untrusted input at the boundary; make
+  optional/default/refinement semantics match execution; reuse shared schemas;
+  avoid duplicate validation; keep schema construction free of Blockbench
+  globals; move live-Blockbench checks into execution; keep errors actionable.
+- **Boundary:** TypeScript compiler/type-system problems still belong to
+  `typescript-type-safety`; Bun tooling and Blockbench runtime remain separate
+  pending their own audits.
+- **Compatibility:** no alias or deprecated Zod skill is kept. Historical `zod`
+  skill references are lineage only; ordinary MCP schema work routes through
+  `mcp-server-development`.
+- **Proof:** compared the old Zod skill/rule pack with `mcp/lib/zodObjects.ts`,
+  `mcp/lib/factories.ts`, `mcp/AGENTS.md`, and the current MCP specialist. The
+  standalone Zod package was removed; no MCP runtime source was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `typescript-expert` was replaced by focused `typescript-type-safety`
 
 - **Audit decision:** `RENAME + MOVE + SLIM`.
@@ -22,9 +55,9 @@ Active task state belongs in `next-action.md`, not here.
   performance checklists, generic tsconfig/utility-type reference bundles, and
   the Python TypeScript diagnostic script.
 - **Boundary:** normal `.ts` implementation uses the domain owner instead of a
-  TypeScript specialist; MCP protocol work belongs to `mcp-server-development`;
-  Zod schema semantics belong to `zod`; Bun tooling belongs to the Bun
-  specialist; Blockbench runtime/API work belongs to the Blockbench specialist.
+  TypeScript specialist; MCP protocol and MCP input-schema semantics belong to
+  `mcp-server-development`; Bun tooling belongs to the Bun specialist;
+  Blockbench runtime/API work belongs to the Blockbench specialist.
 - **Why:** BlockIT is already a strict TypeScript/Bun project. Loading a generic
   "TypeScript expert" for almost every source edit would consume the one
   specialist slot, overlap more specific owners, and encourage unrelated
@@ -36,19 +69,21 @@ Active task state belongs in `next-action.md`, not here.
 - **Compatibility:** no alias skill is kept. Historical `typescript-expert`
   references are lineage only; active routing uses `typescript-type-safety`.
 - **Proof:** audited the old 14 KB skill, reference bundle, diagnostic script,
-  current `mcp/tsconfig.json`, and adjacent MCP/Zod/Bun/Blockbench skill
-  boundaries. No MCP runtime source was changed.
+  current `mcp/tsconfig.json`, and adjacent MCP/Zod/Bun/Blockbench boundaries.
+  No MCP runtime source was changed.
 - **Owner:** workspace agent
 - **Date:** 2026-08-08
 
 ### `mcp-builder` was replaced by focused `mcp-server-development`
 
-- **Audit decision:** `RENAME + MOVE + SLIM`.
+- **Audit decision:** `RENAME + MOVE + SLIM`, later expanded only to absorb the
+  MCP-owned Zod input-contract rules after the Zod audit.
 - **Old name/source:** `mcp-builder`, a generic MCP-server skill package kept
   under `mcp/.agents/skills/`.
-- **Actual useful function:** MCP server/protocol boundary — tools, resources,
-  prompts, registration, request/result semantics, annotations, Streamable HTTP
-  transport/session behavior, and MCP SDK compatibility.
+- **Actual useful function:** MCP server/public-contract boundary — tools,
+  resources, prompts, input schemas, registration, request/result semantics,
+  annotations, Streamable HTTP transport/session behavior, and MCP SDK
+  compatibility.
 - **New canonical name:** `mcp-server-development`.
 - **New canonical location:** `.agents/skills/mcp-server-development/SKILL.md`
   so Codex launched from root `BuildIT` can use it as a project specialist.
@@ -56,18 +91,20 @@ Active task state belongs in `next-action.md`, not here.
   client scaffolding, pagination-by-default rules, generic Node project
   scaffolding, mandatory broad build/test flow, fixed 10-question MCP evaluation
   workflow, and its Python/XML evaluation scripts.
-- **Boundary:** Zod-only issues belong to `zod`; TypeScript type-system issues to
-  `typescript-type-safety`; Bun tooling to the Bun specialist; Blockbench
-  plugin/UI/runtime/model manipulation to the Blockbench plugin specialist.
+- **Boundary:** TypeScript type-system issues belong to
+  `typescript-type-safety`; Bun tooling belongs to the Bun specialist;
+  Blockbench plugin/UI/runtime/model manipulation belongs to the Blockbench
+  plugin specialist. MCP Zod/input-schema semantics now stay inside this MCP
+  contract owner rather than using another specialist.
 - **Why:** the old skill was designed for building arbitrary MCP integrations,
   while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
   architecture. Keeping the generic package would add irrelevant context and
   encourage new scaffolding/evaluations instead of changing the existing owner.
 - **Preserved useful ideas:** official MCP SDK, accurate tool descriptions,
-  protocol annotations, focused result semantics, and protocol-aware transport
-  behavior — now expressed against the actual Local architecture.
+  protocol annotations, focused result semantics, protocol-aware transport, and
+  concise input-contract rules matched to the actual Local architecture.
 - **Compatibility:** do not keep an alias skill. Historical references to
-  `mcp-builder` are lineage only; active routing must use
+  `mcp-builder` are lineage only; active routing uses
   `mcp-server-development`.
 - **Proof:** audited the old skill/package, compared it with `mcp/package.json`,
   `mcp/server/server.ts`, `mcp/server/net.ts`, `mcp/lib/factories.ts`, and
@@ -270,6 +307,9 @@ The generic `mcp-builder` package is superseded by the focused root
 
 The generic `typescript-expert` package is superseded by the focused root
 `typescript-type-safety` specialist.
+
+The standalone generic `zod` skill is superseded by the MCP input-contract rules
+inside `mcp-server-development`.
 
 ## Rule
 
