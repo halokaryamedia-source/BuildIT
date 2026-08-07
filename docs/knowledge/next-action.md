@@ -75,29 +75,32 @@ implementation does not load this specialist.
 
 **Decision:** `MERGE + DROP`.
 
-No replacement Zod/schema skill is created. Zod is an implementation mechanism
-inside the MCP input/public-contract boundary rather than a separate BlockIT
-domain.
+Zod remains the MCP input-schema implementation mechanism, but schema semantics
+are owned by the MCP public-contract specialist instead of a separate skill.
 
-Preserved inside `mcp-server-development`:
+### 4. `bun-development` → `bun-tooling`
 
-- accepted/rejected input semantics;
-- defaults, optionality, coercion/refinement behavior;
-- shared schema reuse;
-- validation of untrusted MCP input;
-- build-time-safe schema construction;
-- runtime-only checks when validation depends on live Blockbench state;
-- clear input errors.
+**Decision:** `RENAME + MOVE + SLIM`.
 
-Removed from the active skill set:
+Canonical: `.agents/skills/bun-tooling/SKILL.md`
 
-- the generic 43-rule Zod pack;
-- form/i18n guidance;
-- Zod-Mini/bundle/performance guidance;
-- duplicate type-system rules already owned elsewhere.
+Keeps only Bun-specific tooling actually used by Local:
 
-The old `mcp/.agents/skills/zod/` package is retired and must not be recreated or
-routed to.
+- `Bun.build` and build plugins;
+- `Bun.file`, `Bun.write`, and `Bun.argv`;
+- Bun-owned package scripts and `bunx`;
+- dependency/lockfile behavior when Bun is the proved owner;
+- Bun/Blockbench packaging compatibility.
+
+Removed from the active skill:
+
+- new Bun project scaffolding;
+- HTTP/WebSocket/SQLite/password API examples;
+- Node→Bun migration guidance;
+- generic performance advice and broad test tutorials.
+
+Normal MCP/TypeScript/Blockbench work does **not** load this specialist merely
+because commands use Bun. The old `bun-development` package is retired.
 
 ## Current Skill Structure
 
@@ -106,11 +109,11 @@ routed to.
 - `.agents/skills/development-brief/`
 - `.agents/skills/mcp-server-development/`
 - `.agents/skills/typescript-type-safety/`
+- `.agents/skills/bun-tooling/`
 
 ### Nested copies pending one-by-one audit
 
-- `bun-development` ← **next**
-- `blockbench-plugins`
+- `blockbench-plugins` ← **next**
 - `skill-creator`
 - `vue-best-practices`
 
@@ -147,11 +150,10 @@ Rules:
 
 ## Remaining Work Sequence
 
-1. **Audit `bun-development`** for unique Bun-specific value versus repository
-   scripts/package rules, overlap with MCP/TypeScript specialists, clearer name,
-   and whether a dedicated skill is needed at all.
-2. Audit `blockbench-plugins`, `skill-creator`, and `vue-best-practices` one by
-   one.
+1. **Audit `blockbench-plugins`** for its real Blockbench runtime/plugin API
+   value, overlap with future modelling skill, duplicated `.github/skills/`
+   copy, clearer name, and canonical location.
+2. Audit `skill-creator` and `vue-best-practices` one by one.
 3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
 4. Re-check the final activation matrix for overlap/context cost.
 5. Audit MCP implementation against the cleaned modelling workflow and identify
@@ -170,6 +172,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Audit **`bun-development`**. Do not rename, merge, move, or delete it until its
-actual Bun-specific value and overlap with current repository scripts/specialists
-are understood.
+Audit **`blockbench-plugins`**. Do not rename, merge, move, or delete it until
+its actual runtime/plugin responsibility, overlap with modelling guidance, and
+duplicate repository copies are understood.
