@@ -31,12 +31,13 @@ criteria, minimum useful proof, and the final contract gate.
 A trivial fast path may use `development-brief` alone. `No change required` is
 a valid Developing result.
 
-## Repository-Wide Specialist: MCP Server
+## Repository-Wide Specialist: MCP Server And Input Contract
 
-Use `mcp-server-development` when the **primary semantic owner is the MCP server
-contract**:
+Use `mcp-server-development` when the **primary semantic owner is the MCP
+server/public contract**:
 
 - MCP tools/resources/prompts and registration;
+- MCP input schemas, validation, defaults, optionality, and refinements;
 - MCP request/result semantics and structured output;
 - tool annotations and protocol-facing errors;
 - Streamable HTTP transport/session behavior;
@@ -46,9 +47,13 @@ Canonical path:
 
 `/.agents/skills/mcp-server-development/SKILL.md`
 
-Do not load it for a Zod-only, TypeScript type-system, Bun tooling, Blockbench
-plugin/runtime API, or 3D modelling problem. The old generic `mcp-builder` skill
-is retired.
+Zod is an implementation mechanism inside this boundary, not a separate active
+skill. The old generic `zod` skill is retired and must not be routed to or
+recreated.
+
+Do not load `mcp-server-development` for a TypeScript type-system-only issue,
+Bun tooling issue, Blockbench plugin/runtime API issue, or 3D modelling task
+unless the MCP/public contract itself is the primary change.
 
 ## Repository-Wide Specialist: TypeScript Type Safety
 
@@ -66,8 +71,8 @@ Canonical path:
 `/.agents/skills/typescript-type-safety/SKILL.md`
 
 Do **not** load it merely because the implementation file ends in `.ts`.
-Normal MCP implementation stays with `mcp-server-development`; Zod schema
-semantics stay with `zod`; Bun tooling stays with the Bun specialist;
+Normal MCP implementation and MCP/Zod schema semantics stay with
+`mcp-server-development`; Bun tooling stays with the Bun specialist;
 Blockbench runtime/API work stays with the Blockbench specialist. The old broad
 `typescript-expert` skill is retired.
 
@@ -96,8 +101,7 @@ audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| Zod schemas/boundary validation | `zod` | **next audit** |
-| Bun runtime/scripts/dependencies | `bun-development` | pending overlap audit |
+| Bun runtime/scripts/dependencies | `bun-development` | **next audit** |
 | Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | pending naming/location audit |
 | Skill authoring package | `skill-creator` | pending duplicate/ownership audit |
 | Vue guidance | `vue-best-practices` | pending relevance/overlap audit |
@@ -108,9 +112,10 @@ audit is in progress:
 Because Codex is launched from root `BuildIT`, do not assume remaining nested
 copies are canonical project-wide skills. Audit/migrate them one at a time.
 
-Do not stack overlapping specialists. A schema-owned change should normally use
-`zod`, not `zod + typescript-type-safety`, unless a separate TypeScript type
-problem genuinely exists.
+Do not stack overlapping specialists. A schema change whose semantic owner is
+the MCP input contract uses `mcp-server-development`; add
+`typescript-type-safety` only when there is a separate, genuine TypeScript
+compiler/type-system problem.
 
 Use `skill-creator` only when a skill itself is being created or updated; the
 nested repository copy is still pending its own audit.
