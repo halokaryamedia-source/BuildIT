@@ -23,20 +23,21 @@ mode is unclear and editing would be risky, use Plan first.
 
 ## Task Authority
 
-The user's prompt is the task source. Normalize it into the Context Contract,
-then use `docs/knowledge/next-action.md` as the single active-task snapshot.
-Update that snapshot only when goal, scope, status, decision, blocker,
-verification, or next step changes. Keep parallel work in the affected
-module's `.tmp/` or the task board; do not turn Obsidian into a second tracker.
+The user's prompt is the task source. It defines intent but does not have to be
+a complete technical specification. Normalize it before editing, then use
+`docs/knowledge/next-action.md` as the single active-task snapshot. Update that
+snapshot only when goal, scope, status, decision, blocker, verification, or next
+step changes. Keep parallel work in the affected module's `.tmp/` or the task
+board; do not turn Obsidian into a second tracker.
 
-`CONTEXT.md` contains stable facts, not task state or skill routing. When
-sources disagree, mark the conflict `Needs Validation` instead of choosing a
-fact silently.
+`CONTEXT.md` contains stable facts, not task state or skill routing. When sources
+disagree, mark the conflict `Needs Validation` instead of choosing a fact
+silently.
 
-An empty snapshot is not a blocker: if the prompt is clear, infer the task,
-write the Context Contract, and update the snapshot after scope stabilizes. If
-the prompt is ambiguous, use Plan and `Needs Validation`. If an old snapshot
-conflicts with the current prompt, the current prompt wins.
+An empty snapshot is not a blocker: if the prompt is clear, infer the task and
+update the snapshot after scope stabilizes. If the prompt is ambiguous, use Plan
+and `Needs Validation`. If an old snapshot conflicts with the current prompt,
+the current prompt wins.
 
 ## Prompt Assistance
 
@@ -49,6 +50,10 @@ Before asking the user for more detail:
 4. use the existing project pattern for low-impact ambiguity;
 5. ask the user only for high-impact decisions, with a recommended default;
 6. capture the resolved decision in its existing documentation owner.
+
+For **Developing**, `development-brief` is the mandatory front door that performs
+this normalization, chooses the Build and Acceptance POVs, separates the goal
+from a suggested solution, and defines the proof before specialist work begins.
 
 Use lightweight GSD-style requirement discovery only when a prompt is missing
 high-impact decisions or the scope has several plausible interpretations. Do
@@ -73,17 +78,20 @@ Resolve conflicts instead of silently editing to match stale context.
 - For an ambiguous request, ask only high-value questions about decisions that
   repository inspection cannot establish. Do not ask the user for facts that
   the repository can answer.
-- Before editing, show this short contract in user language:
+- For **Developing**, let `development-brief` produce the simple pre-work summary:
 
 ```text
 Tujuan:
-Yang akan dikerjakan:
-Yang tidak akan diubah:
-Risiko atau hal yang belum pasti:
-Cara pemeriksaan:
+Cara berpikir:
+Hasil yang dituju:
+Tidak diubah:
+Cara memastikan benar:
 ```
 
-- Keep the detailed internal Context Contract for agent reasoning.
+- For a trivial Developing task, compress that summary to one short line.
+- For Plan or Maintenance, use the smallest equivalent context statement needed
+  for the task; do not force the Developing brief format onto other modes.
+- Keep detailed technical contracts internal unless they affect a user decision.
 - If the request cannot be safely patched, say: `Ini bukan patch kecil karena
   ...` and explain whether the blocker is a requirement, data, platform
   capability, or unverified cause.
@@ -98,8 +106,8 @@ pemeriksaan` or `Terhenti` and state the missing evidence.
 
 ## Behavioral Anti-Slop Guard
 
-Apply these principles as part of normal agent behavior; do not load a second
-"Karpathy" skill on top of Ponytail just to repeat them:
+Apply these principles as baseline agent behavior; do not load a second
+"Karpathy" skill just to repeat them:
 
 - **Think before coding:** surface unresolved assumptions, inconsistencies, and
   meaningful tradeoffs before choosing an interpretation. Inspect discoverable
@@ -113,8 +121,9 @@ Apply these principles as part of normal agent behavior; do not load a second
   before editing non-trivial behavior. A plausible implementation is not done
   until the relevant proof succeeds.
 
-These guardrails complement Ponytail; they do not change the normal skill
-budget.
+These guardrails provide the minimal/YAGNI baseline in every mode. Developing
+does not load Ponytail as a third skill on top of `development-brief` and its
+specialist.
 
 ## User-Facing Result
 
@@ -128,8 +137,9 @@ debugging.
 - **Plan:** use `ponytail`. Use GSD-style requirement discovery first only when
   high-impact requirements are genuinely unresolved. Add `domain-modeling` or
   `codebase-design` only for a real terminology or module-boundary problem.
-- **Developing:** use `ponytail` plus exactly one relevant specialist skill;
-  validate before review.
+- **Developing:** use mandatory `development-brief` plus exactly one relevant
+  specialist skill. `development-brief` remains the opening contract and final
+  acceptance gate; it does not perform the specialist implementation itself.
 - **Maintenance:** use `ponytail` plus the smallest diagnostic or specialist
   skill; keep fixes minimal and leave regression proof.
 - **Critique / stress-test:** use `grilling` when the user asks to challenge a
@@ -137,13 +147,17 @@ debugging.
   for hidden assumptions before action; it is not a substitute for code review.
   Use `code-review` for implemented changes.
 
-The normal task stack is therefore `ponytail + one specialist`. Discovery,
-grilling, review, evidence handling, and optional navigation accelerators are
-conditional stages, not always-on layers to stack together.
+Discovery, grilling, review, evidence handling, and optional navigation
+accelerators are conditional stages, not always-on layers to stack together.
 
 ## Context Contract
 
-Before editing, state:
+For Plan and Maintenance, keep the internal contract as small as the task
+requires. For Developing, `development-brief` extends the contract with the
+Build POV, Acceptance POV, input authority, expected output, acceptance criteria,
+and proof.
+
+The baseline fields are:
 
 ```text
 Goal:
@@ -195,6 +209,7 @@ create a directory merely to satisfy stale documentation.
 
 Currently checked in:
 
+- Developing prompt/task normalization: `development-brief`
 - MCP/server/tools/transports: `mcp-builder`
 - TypeScript: `typescript-expert`
 - Zod schemas: `zod`
@@ -208,9 +223,9 @@ Required workflow skills whose canonical Local copy is still being recovered:
 - Unsupported claims or repeated failure: `evidence-gate`
 
 If a named skill is unavailable, state that fact and use the closest verified
-Local rule; never silently simulate a missing skill. Use global/user skills
-from their actual installed or upstream source when available. Use
-`skill-creator` only when a skill itself is being created or updated.
+Local rule; never silently simulate a missing skill. Use global/user skills from
+their actual installed or upstream source when available. Use `skill-creator`
+only when a skill itself is being created or updated.
 
 Detailed triggers and the OpenSpec threshold live in
 `docs/knowledge/skills/activation-matrix.md`.
@@ -234,7 +249,7 @@ flow, or blast-radius analysis.
   reduce discovery tool calls.
 
 CodeGraph is a tool accelerator, not another specialist skill, so it does not
-increase the normal `ponytail + one specialist` budget.
+increase the current mode's skill budget.
 
 ## Guardrails
 
