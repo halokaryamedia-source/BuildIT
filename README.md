@@ -34,6 +34,15 @@ Key rules:
 - one concrete visual issue gets one targeted correction; if the same direction still fails, replan instead of adding compensating geometry;
 - MCP success or a valid file is not proof of visual quality.
 
+## Development Channels
+
+The same repository rules support both workflows:
+
+- **ChatGPT → GitHub:** ChatGPT reads the repository rules and edits through the connected GitHub repository. Do not assume local shell, Blockbench runtime, or local skill installation.
+- **Codex local:** Codex uses the same repository contract with local build/test/runtime proof only when relevant and available.
+
+The goal, scope, POVs, and acceptance criteria stay the same across both channels. Only the available proof changes. Do not add validation work merely because a tool or test exists.
+
 ## Repository Map
 
 - `mcp/` — active Blockbench MCP plugin source, tools, runtime, UI, build, prompts, and resources.
@@ -46,11 +55,14 @@ Do not invent or depend on repository paths that are not present in the current 
 
 ## Where to Start
 
+This boot order is mandatory for both ChatGPT → GitHub and Codex local work:
+
 1. Read `AGENTS.md`.
 2. Read `CONTEXT.md`.
 3. Read `docs/knowledge/next-action.md`.
 4. Read only the relevant `docs/foundation/` rule and affected source.
-5. Load the narrowest checked-in skill when its trigger applies.
+5. For Developing, read and apply `mcp/.agents/skills/development-brief/SKILL.md`; do not rely on ChatGPT product skill auto-discovery for a repo-local skill.
+6. Load one additional specialist only when it adds real domain value.
 
 ## Branch Roles
 
