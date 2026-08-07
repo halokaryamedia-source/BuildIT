@@ -5,6 +5,40 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `mcp-builder` was replaced by focused `mcp-server-development`
+
+- **Audit decision:** `RENAME + MOVE + SLIM`.
+- **Old name/source:** `mcp-builder`, a generic MCP-server skill package kept
+  under `mcp/.agents/skills/`.
+- **Actual useful function:** MCP server/protocol boundary — tools, resources,
+  prompts, registration, request/result semantics, annotations, Streamable HTTP
+  transport/session behavior, and MCP SDK compatibility.
+- **New canonical name:** `mcp-server-development`.
+- **New canonical location:** `.agents/skills/mcp-server-development/SKILL.md`
+  so Codex launched from root `BuildIT` can use it as a project specialist.
+- **Removed from active skill:** Python/FastMCP guidance, generic external-API
+  client scaffolding, pagination-by-default rules, generic Node project
+  scaffolding, mandatory broad build/test flow, fixed 10-question MCP evaluation
+  workflow, and its Python/XML evaluation scripts.
+- **Boundary:** Zod-only issues belong to `zod`; general TypeScript to the
+  TypeScript specialist; Bun tooling to the Bun specialist; Blockbench
+  plugin/UI/runtime/model manipulation to the Blockbench plugin specialist.
+- **Why:** the old skill was designed for building arbitrary MCP integrations,
+  while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
+  architecture. Keeping the generic package would add irrelevant context and
+  encourage new scaffolding/evaluations instead of changing the existing owner.
+- **Preserved useful ideas:** official MCP SDK, accurate tool descriptions,
+  protocol annotations, focused result semantics, and protocol-aware transport
+  behavior — now expressed against the actual Local architecture.
+- **Compatibility:** do not keep an alias skill. Historical references to
+  `mcp-builder` are lineage only; active routing must use
+  `mcp-server-development`.
+- **Proof:** audited the old skill/package, compared it with `mcp/package.json`,
+  `mcp/server/server.ts`, `mcp/server/net.ts`, `mcp/lib/factories.ts`, and
+  adjacent specialist scopes. No MCP runtime behavior was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### Repository state is the project memory
 
 - **Decision:** new ChatGPT and Codex sessions resume from repository owners,
@@ -92,14 +126,12 @@ Active task state belongs in `next-action.md`, not here.
   skills belong under `.agents/skills/`.
 - **Decision:** `development-brief` is canonical at
   `.agents/skills/development-brief/SKILL.md`.
-- **Decision:** existing `mcp/.agents/skills/` specialists remain temporary
-  module copies pending one-by-one naming, overlap, and location audit; do not
-  mass-migrate them.
-- **Decision:** until each specialist is audited, routing may read its nested
-  `SKILL.md` directly when needed rather than pretending root auto-discovery has
-  already been solved.
-- **Why:** root-scoped workflow guidance must be available when Codex starts at
-  the repository root, while specialist cleanup should not be mixed with an
+- **Decision:** audited specialists that must be available project-wide are
+  moved to root one at a time after their function/name is approved.
+- **Decision:** remaining `mcp/.agents/skills/` specialists stay temporary nested
+  copies pending one-by-one audit; do not mass-migrate them.
+- **Why:** root-scoped guidance must be available when Codex starts at the
+  repository root, while specialist cleanup should not be mixed with an
   unreviewed mass move/rename.
 - **Owner:** workspace agent
 - **Date:** 2026-08-08
@@ -195,7 +227,10 @@ Developing by mandatory `development-brief` with at most one useful specialist.
 
 The earlier assumption that all workspace skills are canonically under
 `mcp/.agents/skills/` is superseded: root-wide skills use `.agents/skills/`,
-while MCP specialists remain pending one-by-one audit.
+while remaining nested specialists are pending one-by-one audit.
+
+The generic `mcp-builder` package is superseded by the focused root
+`mcp-server-development` specialist.
 
 ## Rule
 
