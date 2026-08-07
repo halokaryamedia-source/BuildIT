@@ -92,6 +92,38 @@ Do not load it merely because a command uses `bun run` or the project uses Bun.
 Ordinary MCP/TypeScript/Blockbench work stays with its semantic owner. The old
 broad `bun-development` skill is retired.
 
+## Repository-Wide Specialist: Blockbench Bedrock Modelling
+
+Use `blockbench-bedrock-modelling` when the **primary semantic owner is the
+Bedrock model itself**:
+
+- whole-form interpretation from an approved Model Reference;
+- primary/secondary Cuboid geometry;
+- silhouette, proportion, orientation, width/depth/footprint, and contacts;
+- geometry-vs-texture decisions;
+- asset hierarchy/pivots needed for editing or required motion;
+- UV/texture scope and visual material/readability decisions;
+- required animation from a modelling/rigging standpoint;
+- visual correction and completion of the `.bbmodel`.
+
+Canonical path:
+
+`/.agents/skills/blockbench-bedrock-modelling/SKILL.md`
+
+This specialist owns **what model should be built and whether it is visually
+coherent**. It does not own the Blockbench API/runtime mechanics used to execute
+those decisions.
+
+The historical `blockbench-use` orchestrator is retired as an active pattern.
+Its useful modeller responsibility was recovered here, while multi-skill
+loading, generic mesh/Hytale/PBR routing, mandatory pre-flight dumps,
+checkpoint quotas, and old per-section workflow rules were not recovered.
+
+Do not load this skill for MCP server development or a proved Blockbench runtime
+bug. A modelling task may use working MCP tools normally; if a runtime/API defect
+blocks modelling, stop and treat that defect as a separate runtime-development
+problem rather than stacking specialists.
+
 ## Repository-Wide Specialist: Blockbench Runtime
 
 Use `blockbench-runtime-development` when the **primary semantic owner is
@@ -109,18 +141,21 @@ Canonical path:
 `/.agents/skills/blockbench-runtime-development/SKILL.md`
 
 This specialist owns **how Blockbench is manipulated**, not **what model should
-be built**. Shape, proportions, cuboid decomposition, reference interpretation,
-texture art direction, and visual-quality judgement belong to the modelling
-workflow/skill when recovered.
+be built**. Model shape/proportions/reference interpretation/visual quality stay
+with `blockbench-bedrock-modelling`.
 
 Vue is not a separate active specialist. Local uses embedded Blockbench UI
 components, not a standalone Vue application architecture. Generic Vue 3,
 Vue SFC, Pinia/router, Volar, and `vue-tsc` guidance is retired unless a future
 requirement explicitly changes the UI architecture.
 
-If an MCP tool calls Blockbench APIs, choose by the proved owner: public MCP
-contract → `mcp-server-development`; correct contract but incorrect Blockbench
-operation/lifecycle → `blockbench-runtime-development`.
+If an MCP tool calls Blockbench APIs, choose by the proved owner:
+
+- public MCP contract → `mcp-server-development`;
+- correct contract but incorrect Blockbench operation/lifecycle →
+  `blockbench-runtime-development`;
+- operation works but model shape/quality is wrong →
+  `blockbench-bedrock-modelling`.
 
 The old `blockbench-plugins` and `vue-best-practices` packages are retired. Do
 not recreate duplicate framework/runtime authorities.
@@ -139,7 +174,7 @@ hierarchy.
 - `code-review`: implemented change where independent critique adds value beyond
   the normal final contract gate.
 - `evidence-gate`: unsupported/disputed proof or a repeatedly failing direction,
-  once its canonical Local copy is recovered.
+  once its canonical Local status is resolved.
 
 Do not use these merely to make routine work look more rigorous.
 
@@ -163,16 +198,13 @@ These useful capabilities are not yet canonical Local skills:
 
 | Task | Skill lineage | Status |
 |---|---|---|
-| Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | **next recovery/audit** |
-| Source Image → modelling brief | `reference-generator` | recovery/audit |
+| Source Image → modelling brief | `reference-generator` | **next recovery/audit** |
 | Unsupported/disputed evidence | `evidence-gate` | recovery/audit |
 
 Recover one at a time. Do not recreate historical names blindly; audit actual
 function, overlap, and best contextual name before activating the skill.
 
-Do not stack overlapping specialists. Choose the semantic owner. For example,
-a Bun command that only launches an MCP workflow is still MCP-owned unless the
-Bun command/build behavior itself is the problem.
+Do not stack overlapping specialists. Choose the semantic owner.
 
 ## Optional Code Navigation
 
