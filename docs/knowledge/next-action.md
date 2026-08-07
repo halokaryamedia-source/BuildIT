@@ -93,29 +93,24 @@ runtime migration, unrelated APIs, and performance/tutorial baggage were removed
 
 Canonical: `.agents/skills/blockbench-runtime-development/SKILL.md`
 
-Keeps only the Blockbench runtime/plugin boundary:
+Keeps only the Blockbench runtime/plugin boundary. Runtime mechanics and
+modelling judgement are separate owners. Duplicate `.agents`/`.github` copies
+were removed.
 
-- `BBPlugin` lifecycle, startup/teardown, and permissions;
-- Blockbench UI/settings/runtime APIs;
-- `Undo`, `Canvas`, selection/lookup, events, mutation mechanics, and cleanup;
-- live Blockbench proof when the claim requires it.
+### 6. nested `skill-creator`
 
-Removed from the active skill:
+**Decision:** `DROP`.
 
-- generic plugin starter/template guidance;
-- custom format/codec scaffolding unrelated to current Local needs;
-- copied broad API/event/element reference packs;
-- modelling-adjacent responsibility such as deciding shapes/proportions;
-- duplicate active copies under `mcp/.agents/skills/` and `mcp/.github/skills/`.
+No root replacement is created. The nested package was generic skill-authoring
+guidance plus generic initializer/validator/packager scripts and contained no
+BlockIT-specific authoring behavior.
 
-Important boundary:
+Use the available global/user `skill-creator` capability only when creating or
+materially revising a skill. BlockIT stores project-specific skills and durable
+routing decisions, not a duplicate generic authoring toolkit.
 
-`blockbench-runtime-development` owns **how Blockbench operations execute**.
-The future modelling skill owns **what geometry/model should be built and whether
-it is visually good**.
-
-The old `blockbench-plugins` packages are retired and must not be recreated or
-routed to.
+The old `mcp/.agents/skills/skill-creator/` package is retired and must not be
+recreated without a proved Local-only requirement.
 
 ## Current Skill Structure
 
@@ -129,8 +124,7 @@ routed to.
 
 ### Nested copies pending one-by-one audit
 
-- `skill-creator` ← **next**
-- `vue-best-practices`
+- `vue-best-practices` ← **next**
 
 ### Recovery items
 
@@ -160,23 +154,22 @@ Rules:
 - prefer fewer skills with clearer responsibility;
 - do not merge distinct expertise merely to reduce count;
 - do not retain content already covered by baseline policy or another owner;
-- preserve upstream lineage in the decision log when renamed/merged;
+- preserve upstream lineage in the decision log when renamed/merged/dropped;
 - change one skill at a time.
 
 ## Remaining Work Sequence
 
-1. **Audit `skill-creator`** for duplication with the already available global/
-   user skill and whether any Local-only authoring behavior is worth retaining.
-2. Audit `vue-best-practices` for actual relevance to the current Blockbench UI
-   implementation.
-3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
-4. Re-check the final activation matrix for overlap/context cost.
-5. Audit MCP implementation against the cleaned modelling workflow and identify
+1. **Audit `vue-best-practices`** for actual relevance to the current Blockbench
+   UI implementation, overlap with `blockbench-runtime-development`, and whether
+   a dedicated Vue skill is justified at all.
+2. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
+3. Re-check the final activation matrix for overlap/context cost.
+4. Audit MCP implementation against the cleaned modelling workflow and identify
    only proven runtime gaps.
-6. Implement bounded fixes through ChatGPT → GitHub.
-7. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
+5. Implement bounded fixes through ChatGPT → GitHub.
+6. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
    targeted local proof, and fix only demonstrated failures.
-8. Validate modelling across multiple object archetypes before generic release
+7. Validate modelling across multiple object archetypes before generic release
    claims.
 
 ## Update Rule
@@ -187,6 +180,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Audit **`skill-creator`**. Do not keep, move, merge, or delete the nested copy
-until its actual Local-only value and overlap with the already available global
-skill are understood.
+Audit **`vue-best-practices`**. Do not keep, merge, move, rename, or delete it
+until its actual relevance to the existing Blockbench UI and overlap with the
+runtime specialist are understood.
