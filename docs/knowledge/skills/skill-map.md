@@ -62,8 +62,21 @@ It does not own model shape, proportions, cuboid decomposition, reference
 interpretation, texture art direction, or visual approval; those stay with the
 modelling workflow/skill when recovered.
 
+### Nested `skill-creator`
+
+**Dropped as a repository skill.**
+
+The package under `mcp/.agents/skills/skill-creator/` was a generic skill-authoring
+bundle: generic creation guidance, workflow/output examples, initializer,
+validator, packager, and license. It contained no BlockIT-specific authoring
+behavior that justified a second project copy.
+
+Use the available global/user `skill-creator` capability only when a skill itself
+is being created or materially revised. BlockIT stores the resulting project
+skills and repository decisions, not a duplicate generic authoring toolkit.
+
 Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
-`bun-development`, or `blockbench-plugins` skills.
+`bun-development`, `blockbench-plugins`, or nested `skill-creator` packages.
 
 ## Nested Copies Pending One-By-One Audit
 
@@ -71,10 +84,9 @@ Current repository inventory under `mcp/.agents/skills/`:
 
 | Skill | Current apparent function | Status |
 |---|---|---|
-| `skill-creator` | skill authoring package | **next audit** |
-| `vue-best-practices` | Vue guidance | pending relevance/overlap audit |
+| `vue-best-practices` | Vue guidance | **next audit** |
 
-Do not mass-move or mass-rename these. Audit one at a time.
+Do not mass-move or mass-rename it. Audit it on its own merits.
 
 ## Recovery Items
 
@@ -93,9 +105,6 @@ Global/user skills such as `ponytail`, `grilling`, `domain-modeling`,
 `codebase-design`, `diagnosing-bugs`, `tdd`, `research`, `code-review`, and
 `skill-creator` are not copied into BuildIT solely to increase the skill count.
 Use them only when the activation matrix says their distinct function is needed.
-
-The nested `mcp/.agents/skills/skill-creator/` copy is therefore a likely overlap
-candidate, but that conclusion is not finalized until its own audit.
 
 ## Skill Audit Rule
 
