@@ -1,85 +1,223 @@
 # Workspace Agent Routing
 
-Read only the smallest context needed:
+This repository is the project memory. Chat history is useful context, but it is
+never the authority for project state.
 
-1. `CONTEXT.md`
-2. `docs/knowledge/next-action.md`
-3. the affected module note or `docs/foundation/` rule
-4. `docs/knowledge/skills/activation-matrix.md` when choosing a workflow
+## Mandatory Boot
 
-Use `docs/knowledge/minimal-nav.md` only as the navigation index. Do not read
-the whole vault at startup.
+At the start of every BuildIT session, whether ChatGPT → GitHub or Codex local:
+
+1. read `CONTEXT.md` for stable facts;
+2. read `docs/knowledge/next-action.md` for the single active task/state;
+3. read only the relevant `docs/foundation/` rule or affected source;
+4. read `docs/knowledge/skills/activation-matrix.md` only when selecting a
+   workflow/skill.
+
+Use `docs/knowledge/minimal-nav.md` as the navigation index. Do not broad-scan
+the vault, archives, generated output, dependencies, or old chats by default.
+
+## Session Continuity
+
+A new session must resume from repository state before asking the user to
+reconstruct previous work.
+
+- `CONTEXT.md` owns stable facts and terminology.
+- `docs/knowledge/next-action.md` owns the current goal, status, blockers,
+  completed boundary, and next step.
+- `docs/knowledge/decision-log.md` owns durable decisions and why they were made.
+- `docs/foundation/` owns durable product/modelling policy.
+- source + relevant proof own actual runtime behavior.
+
+Before ending a material task, update `next-action.md` when goal, status,
+blocker, proof state, or next step changed. Record a durable decision only when
+its reason must survive future sessions.
+
+Do not ask the user to repeat old context that can be recovered from these
+owners. If the current user instruction conflicts with stored project state,
+the current instruction wins as task intent, but reconcile the conflict instead
+of silently rewriting history.
 
 ## Mode Selection
 
-Infer the mode from the user's intent:
+Infer mode from intent:
 
-- unclear problem or idea: Plan;
-- request to create or change: Developing;
-- bug, review, cleanup, or upkeep: Maintenance.
+- unclear problem or idea → **Plan**;
+- create/change request → **Developing**;
+- bug/review/cleanup/upkeep → **Maintenance**.
 
-The user can override this with `Plan:`, `Develop:`, or `Maintain:`. If the
-mode is unclear and editing would be risky, use Plan first.
-
-## Task Authority
-
-The user's prompt is the task source. It defines intent but does not have to be
-a complete technical specification. Normalize it before editing, then use
-`docs/knowledge/next-action.md` as the single active-task snapshot. Update that
-snapshot only when goal, scope, status, decision, blocker, verification, or next
-step changes. Keep parallel work in the affected module's `.tmp/` or the task
-board; do not turn Obsidian into a second tracker.
-
-`CONTEXT.md` contains stable facts, not task state or skill routing. When sources
-disagree, mark the conflict `Needs Validation` instead of choosing a fact
-silently.
-
-An empty snapshot is not a blocker: if the prompt is clear, infer the task and
-update the snapshot after scope stabilizes. If the prompt is ambiguous, use Plan
-and `Needs Validation`. If an old snapshot conflicts with the current prompt,
-the current prompt wins.
+The user may explicitly override the mode. If editing would be risky and the
+mode is genuinely unclear, use Plan first.
 
 ## Prompt Assistance
 
-A user prompt defines intent; it does not have to be a complete specification.
+The user's prompt defines intent, not necessarily a complete specification.
 Before asking the user for more detail:
 
-1. inspect the existing docs and source for facts that can be established;
-2. preserve decisions that are already authoritative;
+1. inspect docs/source for discoverable facts;
+2. preserve already-authoritative decisions;
 3. identify only unresolved decisions that materially change the result;
 4. use the existing project pattern for low-impact ambiguity;
-5. ask the user only for high-impact decisions, with a recommended default;
-6. capture the resolved decision in its existing documentation owner.
+5. ask only high-impact decisions, with a recommended default;
+6. capture the resolved decision in its existing owner.
 
-For **Developing**, `development-brief` is the mandatory front door that performs
-this normalization, detects the execution channel, chooses the Build and
-Acceptance POVs, separates the goal from a suggested solution, and defines the
-minimum useful proof before implementation begins.
+Use lightweight GSD-style discovery only when high-impact ambiguity remains
+after inspection. Do not create a second `.planning/` hierarchy or parallel
+state system.
 
-Use lightweight GSD-style requirement discovery only when a prompt is missing
-high-impact decisions or the scope has several plausible interpretations. Do
-not install or create a second GSD planning tree, `.planning/` hierarchy, or
-parallel state system in this repository.
+## Independent Judgment
+
+The user owns the **goal**. The agent is responsible for the quality and safety
+of the **method**.
+
+Do not agree with a proposed method merely because the user requested it. Reject
+or redirect a method when available evidence shows that it is technically
+invalid, contradicts an authoritative decision, repeats a disproven approach,
+adds disproportionate complexity, creates unsupported behavior, or is likely to
+reduce product/output quality.
+
+When rejecting a method:
+
+1. state the concrete reason in plain language;
+2. identify the evidence or project rule behind the objection;
+3. recommend the smallest better path that still serves the user's goal.
+
+Do not be oppositional about harmless preferences or equally valid choices.
+Challenge the method only when doing so materially protects the result.
 
 ## Source Precedence
 
-- Runtime behavior: source code plus test/proof.
+- Current task intent: current user instruction.
+- Runtime behavior: source code + relevant proof.
 - Product/model policy: `docs/foundation/`.
-- Agent behavior: this `AGENTS.md` and the nearest nested guidance.
+- Agent behavior: root/nearest `AGENTS.md`.
 - Skill routing: `docs/knowledge/skills/activation-matrix.md`.
-- Active task: current user prompt, then `next-action.md`.
-- Stable facts: `CONTEXT.md` unless contradicted by the source above.
+- Active task state: `docs/knowledge/next-action.md`.
+- Stable facts: `CONTEXT.md` unless contradicted by a higher authority.
 
-Resolve conflicts instead of silently editing to match stale context.
+Material conflicts are `Needs Validation`; never choose silently.
 
-## User-Facing Workflow
+## Developing Front Door
 
-- Use plain language by default; explain technical terms in one short sentence
-  when they are necessary.
-- For an ambiguous request, ask only high-value questions about decisions that
-  repository inspection cannot establish. Do not ask the user for facts that
-  the repository can answer.
-- For **Developing**, let `development-brief` produce the simple pre-work summary:
+Every Developing task uses `.agents/skills/development-brief/SKILL.md`.
+
+`development-brief` must:
+
+- separate the real goal from a suggested solution;
+- detect ChatGPT → GitHub vs Codex local execution;
+- determine whether development is actually necessary;
+- choose Build POV and Acceptance POV after owner discovery;
+- isolate fixtures/examples from generic requirements;
+- define expected output, minimal scope, 2–5 provable acceptance criteria, and
+  the minimum useful proof;
+- re-check the same contract before completion.
+
+Add at most one specialist when it provides real domain value. A trivial fast
+path may use `development-brief` alone. Never stack overlapping specialists.
+
+## Mode Skill Budget
+
+- **Plan:** `ponytail`; add `domain-modeling` or `codebase-design` only for a
+  real domain/module-boundary problem.
+- **Developing:** mandatory `development-brief`; add at most one relevant
+  specialist when useful.
+- **Maintenance:** `ponytail` + the smallest diagnostic/specialist that owns the
+  failure.
+- **Critique:** `grilling` for a plan/decision/idea when adversarial scrutiny is
+  requested or clearly needed before commitment.
+
+`code-review`, `evidence-gate`, GSD-style discovery, OpenSpec, and CodeGraph are
+conditional escalations, not default layers.
+
+Detailed triggers live in `docs/knowledge/skills/activation-matrix.md`.
+
+## Execution Channels
+
+The same project contract supports both workflows:
+
+### ChatGPT → GitHub
+
+Repository reads/writes are available. Do not assume a local shell, Blockbench
+runtime, local skill installation, or arbitrary local test execution.
+
+Static repository work may prepare a runtime change. If the material claim
+requires live Blockbench/MCP proof, report the exact remaining local proof rather
+than inventing a GitHub substitute.
+
+### Codex local
+
+Local shell/build/test/runtime capabilities may be available. Verify availability
+before relying on them. Run only checks that materially test the changed
+boundary.
+
+The goal, scope, POVs, and acceptance criteria do not change between channels;
+only the available proof changes.
+
+## Root-Cause And Edit Gate
+
+Before changing behavior, establish:
+
+- what actually happens;
+- where the relevant owner/cause is;
+- why the proposed change addresses that cause;
+- what proof can falsify the change.
+
+If a cause/contract is still unknown, do not patch around it. Use `Perlu
+pemeriksaan` or `Terhenti` and state the missing evidence.
+
+Before creating or moving a file:
+
+- search existing owners/helpers/tests/docs first;
+- reuse or extend before creating;
+- create only when the canonical owner is clear and the file is required now;
+- do not create README/index/config/cache/test/fallback/abstraction for a
+  hypothetical future need;
+- keep temporary files in the affected module's `.tmp/` and remove them after
+  use.
+
+## Anti-Slop Baseline
+
+- Think before coding; surface assumptions and tradeoffs.
+- Prefer the minimum complete solution.
+- Every changed line must trace to the declared goal.
+- Do not widen scope because adjacent issues are visible.
+- Do not turn a fixture, Golden Sample, or named object into generic policy.
+- Do not add compatibility/fallback layers without a proved need.
+- Do not produce repeated cosmetic patch churn instead of fixing the owner.
+- Stop the same failed direction after two attempts without new evidence.
+- `No change required` is a valid result.
+- Never claim a check, runtime result, or visual approval that was not actually
+  obtained.
+
+Karpathy-style simplicity/surgical-change principles are baseline behavior; do
+not load another duplicate skill for them.
+
+## Minimum Useful Proof
+
+Validation is evidence, not ceremony. Use the cheapest check that can disprove
+the likely failure, then stop when the acceptance criteria have enough evidence.
+
+- **Text/docs/routing:** exact diff + relevant paths/links.
+- **ChatGPT → GitHub bounded source change:** changed source + directly affected
+  callers/contracts; use existing GitHub checks only when already available and
+  directly relevant.
+- **Codex local bounded source change:** one targeted check/reproduction first;
+  add build/typecheck/test only when that boundary makes the check informative.
+- **Public/destructive contract:** require stronger proof before claiming full
+  completion; unavailable material local proof remains `Perlu pemeriksaan`.
+- **Blockbench/UI/visual behavior:** live/runtime/visual proof is required for a
+  live/visual success claim. Static inspection can prepare but cannot prove it.
+- **Cross-module:** verify only boundaries that actually changed.
+
+Do not create tests, CI, fixtures, screenshots, builds, or validation artifacts
+solely to look rigorous. Do not re-run an unchanged check after it already
+established the required evidence.
+
+## User-Facing Communication
+
+Keep reports simple and decision-oriented. Explain decisions, not internal
+machinery.
+
+For non-trivial Developing work, show:
 
 ```text
 Tujuan:
@@ -89,231 +227,43 @@ Tidak diubah:
 Cara memastikan benar:
 ```
 
-- For a trivial Developing task, compress that summary to one short line.
-- For Plan or Maintenance, use the smallest equivalent context statement needed
-  for the task; do not force the Developing brief format onto other modes.
-- Keep detailed technical contracts internal unless they affect a user decision.
-- If the request cannot be safely patched, say: `Ini bukan patch kecil karena
-  ...` and explain whether the blocker is a requirement, data, platform
-  capability, or unverified cause.
+For trivial work, one short line is enough.
 
-## Root-Cause Gate
-
-Do not patch a symptom without evidence. Before changing code for an issue,
-establish how it occurs, where it is caused, why the proposed change addresses
-that cause, and how the result will be proved. If any part is missing, do not
-guess, add an unverified fallback, or repeat the same patch; use `Perlu
-pemeriksaan` or `Terhenti` and state the missing evidence.
-
-## Behavioral Anti-Slop Guard
-
-Apply these principles as baseline agent behavior; do not load a second
-"Karpathy" skill just to repeat them:
-
-- **Think before coding:** surface unresolved assumptions, inconsistencies, and
-  meaningful tradeoffs before choosing an interpretation. Inspect discoverable
-  facts instead of asking the user or guessing.
-- **Simplicity first:** implement the minimum behavior that solves the proved
-  problem. Do not add speculative flexibility, single-use abstractions, or
-  impossible-case handling.
-- **Surgical changes:** every changed line must trace to the declared goal.
-  Avoid unrelated cleanup, formatting churn, or refactors outside scope.
-- **Goal-driven execution:** define observable success criteria and a proof path
-  before editing non-trivial behavior. A plausible implementation is not done
-  until the relevant proof succeeds.
-
-These guardrails provide the minimal/YAGNI baseline in every mode. Developing
-does not load Ponytail as an extra skill on top of `development-brief` and any
-specialist that is actually needed.
-
-## User-Facing Result
-
-Use `Selesai`, `Perlu pemeriksaan`, or `Terhenti` in the final report. Include
-the result, actual proof, limitations, and exactly one next step. Technical
-details are optional and should appear only when they help a decision or
-debugging.
-
-## Modes And Skill Budget
-
-- **Plan:** use `ponytail`. Use GSD-style requirement discovery first only when
-  high-impact requirements are genuinely unresolved. Add `domain-modeling` or
-  `codebase-design` only for a real terminology or module-boundary problem.
-- **Developing:** always use `development-brief`. Add one relevant specialist
-  only when the implementation has a real specialist domain. The fast path may
-  use `development-brief` alone for trivial changes where another skill adds no
-  value. Never stack overlapping specialists.
-- **Maintenance:** use `ponytail` plus the smallest diagnostic or specialist
-  skill; keep fixes minimal and leave regression proof.
-- **Critique / stress-test:** use `grilling` when the user asks to challenge a
-  plan, decision, or idea. `grilling` is a decision-tree interview that looks
-  for hidden assumptions before action; it is not a substitute for code review.
-  Use `code-review` for implemented changes when critique adds value.
-
-Discovery, grilling, review, evidence handling, and optional navigation
-accelerators are conditional stages, not always-on layers to stack together.
-
-## Context Contract
-
-For Plan and Maintenance, keep the internal contract as small as the task
-requires. For Developing, `development-brief` extends the contract with the
-Build POV, Acceptance POV, execution channel, input authority, expected output,
-acceptance criteria, and proof budget.
-
-The baseline fields are:
+Final report:
 
 ```text
-Goal:
-In scope:
-Out of scope:
-Affected area:
-Existing pattern reused:
-Assumptions:
-Validation:
+Status: Selesai | Perlu pemeriksaan | Terhenti
+Hasil:
+Bukti:
+Batasan:
+Next step:
 ```
 
-The contract is the edit gate for low-risk, bounded work; manual approval is
-not required when it is complete and no public contract, dependency, or
-destructive operation changes.
+Use exactly one next step. Do not narrate the full process unless requested.
 
-## Execution Channels
+## Skill Locations During Consolidation
 
-BlockIT development must support both workflows:
+- `.agents/skills/` = repository-wide skills discoverable from root `BuildIT`.
+  `development-brief` is canonical here.
+- `mcp/.agents/skills/` = existing MCP/module specialist skill copies pending
+  one-by-one naming/overlap/location audit.
 
-- **ChatGPT → GitHub:** repository inspection and GitHub writes are available.
-  Do not assume a local shell, Blockbench runtime, or local test execution.
-- **Codex local:** local shell/build/test/runtime capabilities may be available.
-  Verify availability before relying on them.
+Because Codex is launched from root `BuildIT`, repository-wide skills belong at
+`.agents/skills/`. Until each MCP specialist is audited/migrated, load its
+`mcp/.agents/skills/<skill>/SKILL.md` directly when routing requires it; do not
+pretend nested specialist auto-discovery from root has already been proven.
 
-The repository and skill contract stay the same across both channels. Only the
-available proof changes. Never convert an unavailable runtime check into a fake
-GitHub validation step.
-
-## Develop File Creation Gate
-
-Before creating or moving a file during Develop:
-
-- Search existing helpers, modules, tests, documentation, and canonical folders first.
-- Create a new file only when the existing source cannot satisfy the need, its canonical owner is clear, it is within scope, and the reason is recorded in the Context Contract.
-- Do not create README files, indexes, configs, abstractions, tests, caches, or folders for hypothetical future use.
-- Keep temporary files in the affected module's `.tmp/`; remove them after the
-  task and never create temporary folders at the workspace root.
-- Keep build and generated output in the established output folders.
-
-Use this decision order:
-
-```text
-Existing file/helper works?
-→ reuse it.
-
-Existing file needs a small extension?
-→ extend it.
-
-No suitable owner exists?
-→ define the canonical owner before creating a file.
-
-Only needed during execution?
-→ use the affected module's .tmp/, then remove it.
-```
-
-## Skill Sources And Routing
-
-The workspace skill files that are actually checked into the current `Local`
-branch live under `mcp/.agents/skills/`. Older documentation that named
-`mcp/workflow/skills/` is not proof that the missing directory exists. Do not
-create a directory merely to satisfy stale documentation.
-
-Currently checked in:
-
-- Developing prompt/task normalization: `development-brief`
-- MCP/server/tools/transports: `mcp-builder`
-- TypeScript: `typescript-expert`
-- Zod schemas: `zod`
-- Bun: `bun-development`
-- Blockbench plugin lifecycle/UI/runtime API: `blockbench-plugins`
-
-Required workflow skills whose canonical Local copy is still being recovered:
-
-- Blockbench modelling: `blockbench-use`
-- Source Image to modelling brief: `reference-generator`
-- Unsupported claims or repeated failure: `evidence-gate`
-
-If a named skill is unavailable, state that fact and use the closest verified
-Local rule; never silently simulate a missing skill. Use global/user skills from
-their actual installed or upstream source when available. Use `skill-creator`
-only when a skill itself is being created or updated.
-
-Detailed triggers and the OpenSpec threshold live in
-`docs/knowledge/skills/activation-matrix.md`.
-
-## Optional Code Navigation Accelerator
-
-CodeGraph may be used when it is already available and a task genuinely needs
-cross-file structural discovery: unknown ownership, a call chain, dependency
-flow, or blast-radius analysis.
-
-- Start with one focused exploration question; do not broad-query the whole
-  repository by default.
-- Use normal targeted reads/search for known-file or small bounded changes.
-- Treat graph output as navigation evidence only. Actual source, tests, and
-  runtime proof remain authoritative.
-- Do not use CodeGraph to judge Blockbench visual quality, modelling intent, or
-  reference similarity.
-- Do not install CodeGraph, commit `.codegraph/`, or add it as a project
-  dependency automatically. Adoption requires a separate local trial because
-  large graph responses can reduce remaining context headroom even when they
-  reduce discovery tool calls.
-
-CodeGraph is a tool accelerator, not another specialist skill, so it does not
-increase the current mode's skill budget.
-
-## Guardrails
-
-- Inspect callers, helpers, types, patterns, and tests before changing shared
-  code.
-- Mark missing facts as `Needs Validation`; never turn an unverified guess into
-  a requirement, API, type, or behavior.
-- Do not activate every skill in a category; choose the narrowest match.
-- Do not use TDD unless meaningful behavior or a bug needs a test.
-- Treat `docs/knowledge/` as context and decisions, not the task tracker.
-- Treat the task board as task/spec status; temporary files are not a tracker.
-- Do not claim validation without running the relevant check.
-- Do not add unrelated fixes, speculative abstractions, cosmetic tests, or
-  documentation that duplicates an existing note.
-- Do not add configuration, abstraction, dependency, fallback, test, CI step,
-  fixture, or validation artifact merely for future protection or ceremony.
-- Stop patch churn after the same approach fails twice; re-diagnose or state
-  that the issue is not a small patch.
-
-## Minimum Useful Proof
-
-Validation must be proportional to risk **and** possible in the active execution
-channel. Use the cheapest check that can disprove the likely failure, then stop
-when the acceptance criteria have sufficient evidence.
-
-- **Trivial text/docs/routing:** inspect the exact diff plus relevant paths/links.
-- **Bounded source change through ChatGPT → GitHub:** inspect the changed source,
-  directly affected callers/contracts, and existing GitHub checks only when they
-  are already available and materially relevant. Do not invent local execution.
-- **Bounded source change through Codex local:** start with one targeted check or
-  reproduction. Add build/typecheck/test only when that boundary makes the check
-  informative.
-- **Public contract / serialization / destructive behavior:** require stronger
-  proof before claiming completion; if the active channel cannot produce it,
-  implement only when safe and report the exact remaining proof as
-  `Perlu pemeriksaan`.
-- **UI / Blockbench / visual behavior:** runtime or visual proof is required for
-  a visual/runtime success claim. GitHub-only work may still prepare the change,
-  but must not pretend static inspection proves the live result.
-- **Cross-module change:** verify only the boundaries actually changed; do not
-  run unrelated suites merely because the task spans files.
-
-Do not repeat an unchanged test/build/check after it already established the
-required proof. More validation is not automatically more confidence.
+Current MCP specialists still present there include `mcp-builder`,
+`typescript-expert`, `zod`, `bun-development`, and `blockbench-plugins`.
+Recovery items remain `blockbench-use`, `reference-generator`, and
+`evidence-gate` until verified.
 
 ## Source Of Truth
 
-- Product and operating policy: `docs/foundation/`
-- Working context and decisions: `docs/knowledge/`
-- Runtime implementation: source files under the affected module
-- Skill routing: `docs/knowledge/skills/activation-matrix.md`
-- Current checked-in workspace skills: `mcp/.agents/skills/`
+- stable facts/terminology → `CONTEXT.md`;
+- active continuation state → `docs/knowledge/next-action.md`;
+- durable decisions/reasons → `docs/knowledge/decision-log.md`;
+- product/modelling policy → `docs/foundation/`;
+- workflow map → `docs/knowledge/flow.md`;
+- skill routing → `docs/knowledge/skills/activation-matrix.md`;
+- actual behavior → affected source + relevant proof.
