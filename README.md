@@ -1,36 +1,61 @@
 # BlockIT Workspace
 
-This workspace is split into active areas:
+BlockIT is an AI-assisted Minecraft Bedrock modelling workspace. The user gives a simple request and an approved visual reference; Codex reasons about the model as a modeller, then uses the Blockbench MCP as a focused execution, inspection, and recovery interface.
 
-## MCP
+## Product Goal
 
-- `mcp/` - imported upstream source from `jasonjgardner/blockbench-mcp-plugin` and the active working plugin area.
-- `mcp/workflow/` - Blockbench presets, preparation scripts, and Blockbench-specific skills.
+Produce a clean, editable `.bbmodel` that follows the approved reference with the shortest evidence-backed workflow.
 
-## Project Workspace
+The product is **object-agnostic**. Animals, props, mechanical objects, block assets, and other supported Bedrock models use the same general modelling rules. A test fixture or sample must never become an object-specific runtime rule.
 
-- `workspace/active/` - projects currently being developed.
-- `workspace/saved/` - completed and validated projects.
-- Each project contains its `.bbmodel` file directly, plus `export-data/` and `mcp-data`; references and preview cache live under `mcp-data/`.
+## Official Modelling Flow
 
-## Docs
+```text
+User request
+→ Approved Model Reference
+→ Reference buildability check
+→ Whole-form interpretation
+→ Primary Geometry Pass
+→ Primary visual gate
+→ Secondary geometry / hierarchy / pivots
+→ Full geometry review
+→ UV / texture
+→ Optional animation
+→ Final validation
+→ Save .bbmodel
+```
 
-- `docs/` - BlockIT product docs, workflow, standards, and validation notes.
+Key rules:
 
-## Skills
+- understand the whole form before choosing individual Cubes;
+- plan globally, then execute in the attachment/dependency order appropriate to the object;
+- use the minimum useful geometry needed for silhouette, volume, attachment, or motion;
+- do not add detail before the primary form is recognizable;
+- one concrete visual issue gets one targeted correction; if the same direction still fails, replan instead of adding compensating geometry;
+- MCP success or a valid file is not proof of visual quality.
 
-- `mcp/workflow/skills/` - the single source of workspace-specific skills.
-- Global Codex skills live outside this workspace in
-  `C:\Users\Administrator\.codex\skills`.
+## Repository Map
 
-## Where to start
+- `mcp/` — active Blockbench MCP plugin source, tools, runtime, UI, build, prompts, and resources.
+- `mcp/.agents/skills/` — workspace skills that are actually checked into the current `Local` branch.
+- `workspace/` — active and saved Blockbench project packages and fixtures.
+- `docs/foundation/` — product, modelling, reference, and validation policy.
+- `docs/knowledge/next-action.md` — single active-task snapshot.
 
-1. Read `AGENTS.md` for agent behavior.
-2. Read `CONTEXT.md` for stable workspace facts.
-3. Read `docs/knowledge/next-action.md` for the current task snapshot.
-4. Open the matching area index only after the affected area is known.
-5. If Blockbench is already running, reuse that instance instead of opening a new one.
+Do not invent or depend on repository paths that are not present in the current checkout.
 
-## Sync rule
+## Where to Start
 
-If the task is reference image generation, use `docs/foundation/04-reference-guide.md` for the canonical workflow.
+1. Read `AGENTS.md`.
+2. Read `CONTEXT.md`.
+3. Read `docs/knowledge/next-action.md`.
+4. Read only the relevant `docs/foundation/` rule and affected source.
+5. Load the narrowest checked-in skill when its trigger applies.
+
+## Branch Roles
+
+- `Local` — current product and development authority.
+- `Rework` — historical architecture/reference material only.
+- `Sample` — external implementation/reference material only.
+
+Do not merge behaviour from `Rework` or `Sample` into `Local` just because it is more elaborate. Adopt only a bounded pattern that solves a demonstrated `Local` problem and can be proved.
