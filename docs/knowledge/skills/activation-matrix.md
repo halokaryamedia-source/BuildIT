@@ -51,8 +51,8 @@ Zod is an implementation mechanism inside this boundary, not a separate active
 skill. The old generic `zod` skill is retired.
 
 Do not load `mcp-server-development` for a TypeScript type-system-only issue,
-Bun tooling issue, Blockbench plugin/runtime API issue, or 3D modelling task
-unless the MCP/public contract itself is the primary change.
+Bun tooling issue, Blockbench runtime/API issue, or 3D modelling task unless the
+MCP/public contract itself is the primary change.
 
 ## Repository-Wide Specialist: TypeScript Type Safety
 
@@ -72,7 +72,7 @@ Canonical path:
 Do **not** load it merely because the implementation file ends in `.ts`.
 Normal MCP implementation stays with `mcp-server-development`; Bun-specific
 build/tooling stays with `bun-tooling`; Blockbench runtime/API work stays with
-the Blockbench specialist.
+`blockbench-runtime-development`.
 
 ## Repository-Wide Specialist: Bun Tooling
 
@@ -91,6 +91,33 @@ Canonical path:
 Do not load it merely because a command uses `bun run` or the project uses Bun.
 Ordinary MCP/TypeScript/Blockbench work stays with its semantic owner. The old
 broad `bun-development` skill is retired.
+
+## Repository-Wide Specialist: Blockbench Runtime
+
+Use `blockbench-runtime-development` when the **primary semantic owner is
+behavior inside the Blockbench runtime**:
+
+- `BBPlugin` lifecycle, startup, teardown, and runtime permissions;
+- Blockbench panels/dialogs/settings/actions and their cleanup;
+- Blockbench globals/APIs and element manipulation mechanics;
+- `Undo`, `Canvas`, selection/lookup, events, and runtime state updates;
+- behavior that requires live Blockbench to prove.
+
+Canonical path:
+
+`/.agents/skills/blockbench-runtime-development/SKILL.md`
+
+This specialist owns **how Blockbench is manipulated**, not **what model should
+be built**. Shape, proportions, cuboid decomposition, reference interpretation,
+texture art direction, and visual-quality judgement belong to the modelling
+workflow/skill when recovered.
+
+If an MCP tool calls Blockbench APIs, choose by the proved owner: public MCP
+contract → `mcp-server-development`; correct contract but incorrect Blockbench
+operation/lifecycle → `blockbench-runtime-development`.
+
+The old `blockbench-plugins` packages under both `mcp/.agents/skills/` and
+`mcp/.github/skills/` are retired. Do not recreate duplicate authorities.
 
 ## Requirement Discovery
 
@@ -117,8 +144,7 @@ audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| Blockbench plugin lifecycle/UI/runtime API | `blockbench-plugins` | **next audit** |
-| Skill authoring package | `skill-creator` | pending duplicate/ownership audit |
+| Skill authoring package | `skill-creator` | **next audit** |
 | Vue guidance | `vue-best-practices` | pending relevance/overlap audit |
 | Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
 | Source Image → modelling brief | `reference-generator` | recovery item |
@@ -172,6 +198,8 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
   `BuildIT`.
 - `mcp/.agents/skills/` = remaining legacy/nested copies pending one-by-one
   audit.
+- `mcp/.github/skills/` = legacy duplicate skill location; do not maintain a
+  second active copy of a root canonical skill.
 - `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
 Audit one skill at a time and classify it `KEEP`, `RENAME`, `MERGE`, `MOVE`,
