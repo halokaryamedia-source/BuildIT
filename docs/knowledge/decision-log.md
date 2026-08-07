@@ -5,6 +5,44 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `vue-best-practices` was merged into `blockbench-runtime-development`
+
+- **Audit decision:** `MERGE + DROP`.
+- **Old source:** `mcp/.agents/skills/vue-best-practices/`, a generic Vue 3
+  best-practices package centered on `vue-tsc`, Volar, `defineModel`, Pinia,
+  router typing, SSR/HMR, SFC/script-setup patterns, and other standalone Vue
+  application concerns.
+- **Actual useful function in BlockIT:** the small embedded reactive UI/lifecycle
+  subset used inside Blockbench panels and dialogs.
+- **Canonical owner:** `.agents/skills/blockbench-runtime-development/SKILL.md`.
+- **Why it was merged instead of kept:** Local does not expose a standalone Vue
+  application boundary or Vue-specific build/typecheck toolchain. Its reactive
+  component code is embedded in Blockbench runtime surfaces, so a separate Vue
+  specialist would compete with the real runtime owner and encourage unrelated
+  Vue architecture/tooling changes.
+- **Preserved useful rules:** follow the component/lifecycle shape already used
+  by Local; pair subscriptions/listeners with existing cleanup; keep panel-local
+  state local when sufficient; verify framework-specific behavior from actual
+  Blockbench source/runtime rather than copied version assumptions.
+- **Removed from the active skill set:** Vue 3/SFC migration guidance,
+  Composition API patterns, `vue-tsc`/Volar configuration, Pinia/router advice,
+  SSR/HMR guidance, and other framework features with no demonstrated Local
+  requirement.
+- **Boundary:** embedded Blockbench UI behavior remains part of
+  `blockbench-runtime-development`; TypeScript type-system failures remain with
+  `typescript-type-safety`. No Vue specialist is loaded merely because a
+  `Panel` component has reactive data/computed/methods.
+- **Compatibility:** no alias or replacement Vue skill is kept. Reintroduce a
+  dedicated Vue skill only if a future product decision creates a real Vue
+  application boundary that the Blockbench runtime specialist cannot own
+  cleanly.
+- **Proof:** compared the old Vue skill/rules with `mcp/package.json`, the actual
+  embedded `mcp/ui/index.ts` panel implementation, and the Blockbench runtime
+  specialist. The generic Vue package was removed; no MCP runtime source was
+  changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### Nested repository `skill-creator` was dropped
 
 - **Audit decision:** `DROP`.
@@ -308,13 +346,13 @@ Active task state belongs in `next-action.md`, not here.
   skills belong under `.agents/skills/`.
 - **Decision:** `development-brief` is canonical at
   `.agents/skills/development-brief/SKILL.md`.
-- **Decision:** audited specialists that must be available project-wide are
-  moved to root one at a time after their function/name is approved.
-- **Decision:** remaining `mcp/.agents/skills/` specialists stay temporary nested
-  copies pending one-by-one audit; do not mass-migrate them.
-- **Why:** root-scoped guidance must be available when Codex starts at the
-  repository root, while specialist cleanup should not be mixed with an
-  unreviewed mass move/rename.
+- **Decision:** approved project specialists live at root; recover/migrate them
+  one at a time only after function/name/overlap is approved.
+- **Decision:** `mcp/.agents/skills/` and `mcp/.github/skills/` are now legacy
+  locations with no active skills; do not repopulate them merely to preserve an
+  old layout.
+- **Why:** root-scoped guidance must be available when Codex starts at repository
+  root, while duplicate/nested skill roots create discovery ambiguity and drift.
 - **Owner:** workspace agent
 - **Date:** 2026-08-08
 
@@ -408,8 +446,8 @@ The earlier universal `ponytail + one specialist` stack is superseded for
 Developing by mandatory `development-brief` with at most one useful specialist.
 
 The earlier assumption that all workspace skills are canonically under
-`mcp/.agents/skills/` is superseded: root-wide skills use `.agents/skills/`,
-while remaining nested specialists are pending one-by-one audit.
+`mcp/.agents/skills/` is superseded. Root-wide skills use `.agents/skills/`;
+legacy nested skill locations currently contain no active skills.
 
 The generic `mcp-builder` package is superseded by the focused root
 `mcp-server-development` specialist.
@@ -429,6 +467,9 @@ modelling judgement remain separate owners.
 
 The nested generic `skill-creator` package is retired. Skill authoring uses the
 available global/user capability unless a future BlockIT-only need is proven.
+
+The generic `vue-best-practices` package is retired. Its relevant embedded UI
+lifecycle/reactivity guidance is owned by `blockbench-runtime-development`.
 
 ## Rule
 
