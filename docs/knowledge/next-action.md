@@ -100,10 +100,15 @@ recreated or routed to.
 
 ### Nested copies pending one-by-one audit
 
+Repository truth currently shows:
+
 - `typescript-expert` ← **next**
 - `zod`
 - `bun-development`
 - `blockbench-plugins`
+- `skill-creator` — nested copy newly discovered; likely overlap candidate but
+  not yet audited
+- `vue-best-practices` — newly discovered; relevance not yet audited
 
 These remain under `mcp/.agents/skills/` until their individual audit decides
 function, name, overlap, and final location.
@@ -145,7 +150,8 @@ Rules:
 
 1. **Audit `typescript-expert`** for unique value vs baseline TypeScript/project
    rules, overlap with Zod/Bun/MCP specialist, clearer name, and root location.
-2. Audit `zod`, `bun-development`, and `blockbench-plugins` one by one.
+2. Audit the remaining nested copies one by one, including the newly discovered
+   `skill-creator` and `vue-best-practices` rather than leaving them invisible.
 3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
 4. Re-check the final activation matrix for overlap/context cost.
 5. Audit MCP implementation against the cleaned modelling workflow and identify
