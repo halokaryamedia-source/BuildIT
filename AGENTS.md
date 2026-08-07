@@ -132,8 +132,6 @@ Detailed triggers live in `docs/knowledge/skills/activation-matrix.md`.
 
 ## Execution Channels
 
-The same project contract supports both workflows:
-
 ### ChatGPT → GitHub
 
 Repository reads/writes are available. Do not assume a local shell, Blockbench
@@ -243,18 +241,23 @@ Use exactly one next step. Do not narrate the full process unless requested.
 
 ## Skill Locations During Consolidation
 
-- `.agents/skills/` = repository-wide skills discoverable from root `BuildIT`.
-  `development-brief` is canonical here.
-- `mcp/.agents/skills/` = existing MCP/module specialist skill copies pending
-  one-by-one naming/overlap/location audit.
+Repository-wide canonical skills discoverable from root `BuildIT`:
 
-Because Codex is launched from root `BuildIT`, repository-wide skills belong at
-`.agents/skills/`. Until each MCP specialist is audited/migrated, load its
-`mcp/.agents/skills/<skill>/SKILL.md` directly when routing requires it; do not
-pretend nested specialist auto-discovery from root has already been proven.
+- `.agents/skills/development-brief/` — mandatory Developing workflow;
+- `.agents/skills/mcp-server-development/` — MCP server/protocol specialist.
 
-Current MCP specialists still present there include `mcp-builder`,
-`typescript-expert`, `zod`, `bun-development`, and `blockbench-plugins`.
+The old generic `mcp-builder` skill is retired. Do not route to or recreate it.
+
+Remaining nested specialist copies pending one-by-one audit:
+
+- `mcp/.agents/skills/typescript-expert/`;
+- `mcp/.agents/skills/zod/`;
+- `mcp/.agents/skills/bun-development/`;
+- `mcp/.agents/skills/blockbench-plugins/`.
+
+Because Codex is launched from root `BuildIT`, their final names/locations are
+resolved during each audit rather than by mass migration.
+
 Recovery items remain `blockbench-use`, `reference-generator`, and
 `evidence-gate` until verified.
 
