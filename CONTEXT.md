@@ -22,6 +22,21 @@ Efficiency means one useful primary geometry pass, one structural check, and a
 bounded visual review; it never means accepting guessed geometry, tool success,
 or a valid file as proof of resemblance.
 
+## Development Model
+
+BlockIT is developed through two complementary execution channels:
+
+- **ChatGPT → GitHub:** design, repository inspection, documentation/source
+  changes, and preparation for local proof.
+- **Codex local from repository root `BuildIT`:** final targeted shell/build/MCP/
+  Blockbench proof when the claim requires the local environment.
+
+The task goal, scope, Build POV, Acceptance POV, and acceptance criteria remain
+the same across both channels. Only the available proof changes.
+
+The repository—not chat history—is the project memory. New sessions resume from
+`AGENTS.md`, this file, and `docs/knowledge/next-action.md`.
+
 ## Language
 
 **Requested Dimensions**:
@@ -74,34 +89,39 @@ _Avoid_: requested dimensions, texture size
 
 ## Stable Structure
 
+- `.agents/skills/`: repository-wide skills available from root `BuildIT`.
+  `development-brief` is canonical here.
 - `mcp/`: active Blockbench MCP plugin source, build, UI, server, tools,
   resources, prompts, and generated API documentation.
-- `mcp/.agents/skills/`: workspace skill files actually checked into the
-  current `Local` branch.
-- The long-term canonical home for recovered workspace skills is `Needs
-  Validation`; do not create `mcp/workflow/skills/` merely because older docs
-  referenced it.
+- `mcp/.agents/skills/`: current MCP/module specialist skill copies pending the
+  one-by-one naming, overlap, and location audit. They are not yet the canonical
+  project-wide skill location.
+- The old `mcp/workflow/skills/` path is not current structure and must not be
+  recreated merely to satisfy stale documentation.
 - The Reference Generator policy exists in `docs/foundation/`; its canonical
   Local implementation/skill copy is still being recovered from trusted source
   and repository history.
 - `workspace/`: active and saved Blockbench project packages.
-- `docs/foundation/`: verified product rules, modelling standards, source
-  selection, and validation policy.
-- `docs/knowledge/`: working context, decisions, module ownership, reviews,
-  operations, and the Obsidian vault.
+- `docs/foundation/`: product rules, modelling standards, source selection, and
+  validation policy.
+- `docs/knowledge/`: project continuity, working decisions, maps, reviews,
+  operations, and navigation.
 
 ## Sources Of Truth
 
+- Current task intent: current user instruction.
 - Product and modelling policy: `docs/foundation/README.md` and the relevant
   foundation note.
 - Agent behavior and routing: root `AGENTS.md` and the nearest nested
   `AGENTS.md`.
 - MCP implementation behavior: `mcp/AGENTS.md`, `mcp/README.md`, and the
   relevant source/module code and build/docs manifest.
-- Working decisions: `docs/knowledge/decisions/` and the relevant knowledge
-  note; current task state: `docs/knowledge/next-action.md` only.
+- Active task/continuation state: `docs/knowledge/next-action.md` only.
+- Durable working decisions/reasons: `docs/knowledge/decision-log.md` and the
+  relevant decision owner.
 - Skill routing: `docs/knowledge/skills/activation-matrix.md`.
-- Current checked-in workspace skill guidance: `mcp/.agents/skills/`.
+- Repository-wide skill guidance: `.agents/skills/`.
+- MCP specialist skill copies pending audit: `mcp/.agents/skills/`.
 
 When sources disagree, do not guess. Identify the conflict and mark it
 `Needs Validation`.
@@ -118,24 +138,20 @@ globals. Runtime-only validation belongs inside tool execution.
 
 ## Engineering Invariants
 
-- Inspect existing callers, helpers, types, patterns, and tests before editing;
-  source: `AGENTS.md`, `mcp/AGENTS.md`.
-- Keep the smallest correct diff; avoid speculative abstractions and
-  dependencies; source: `AGENTS.md`.
-- Use Zod at input boundaries and never trust external JSON or MCP input;
-  source: `mcp/AGENTS.md`, `mcp/.agents/skills/zod/`.
-- Keep Blockbench globals out of build-time schema modules; source:
-  `mcp/AGENTS.md`.
-- Keep generated output secondary to its source and regenerate it only through
-  the documented build flow; source: `mcp/AGENTS.md`.
-- Validate changes according to risk and never claim a check was run when it
-  was not; source: `AGENTS.md`, `mcp/AGENTS.md`.
-- If a required fact, caller, contract, or validation path is unknown, stop and
-  mark it `Needs Validation` rather than inventing behavior.
-- Distinguish symptoms, causes, new requirements, incorrect data, and platform
-  limitations before changing behavior; source: `docs/foundation/00-agent-policy.md`.
-- Do not patch without a reproducible or observable cause and a proof path;
-  source: `AGENTS.md`, `docs/foundation/00-agent-policy.md`.
+- Inspect existing callers, helpers, types, patterns, and relevant tests before
+  editing shared behavior.
+- Keep the smallest correct diff; avoid speculative abstractions/dependencies.
+- Use Zod at input boundaries and never trust external JSON or MCP input.
+- Keep Blockbench globals out of build-time schema modules.
+- Keep generated output secondary to source and regenerate only through the
+  documented build flow.
+- Use the minimum useful proof for the risk and execution channel; never claim
+  a check was run when it was not.
+- If a required fact, caller, contract, or proof path is unknown, use `Needs
+  Validation` rather than inventing behavior.
+- Distinguish symptom, cause, requirement, incorrect data, and platform
+  limitation before changing behavior.
+- Do not patch without an observable cause and a proof path.
 
 ## Routing Boundary
 
@@ -149,5 +165,5 @@ skill triggers and mode routing belong in
 - Workspace map: `docs/knowledge/workspace-map.md`.
 - MCP map: `mcp/README.md`.
 - Foundation entrypoint: `docs/foundation/README.md`.
-- Obsidian dashboard: `docs/knowledge/index.md`.
+- Knowledge dashboard: `docs/knowledge/index.md`.
 - Skill routing: `docs/knowledge/skills/activation-matrix.md`.
