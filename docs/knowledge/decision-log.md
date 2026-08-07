@@ -4,6 +4,36 @@ Use this note for the why behind the current direction.
 
 ## Current Decisions
 
+### Anti-slop complements do not expand the default skill stack
+
+- Decision: Karpathy-inspired guidelines are absorbed into root `AGENTS.md` as
+  behavioral guardrails instead of being installed or loaded as a separate
+  skill.
+- Decision: CodeGraph is an optional external navigation accelerator for
+  cross-file structural discovery, call-chain tracing, ownership discovery,
+  and blast-radius analysis. It is not a specialist skill, source of truth,
+  runtime verifier, or visual-quality judge.
+- Decision: CodeGraph is not auto-installed and `.codegraph/` state is not
+  committed during this consolidation phase. A separate local trial must prove
+  that fewer discovery calls outweigh its residual-context cost before it can
+  become a standard environment dependency.
+- Decision: Claude-Mem is not adopted. Repository-owned context and decisions
+  remain the continuity authority.
+- Why: the useful Karpathy rules overlap with Ponytail and Local guardrails, so
+  a second skill would add instruction noise. CodeGraph adds a distinct
+  navigation capability but its own multi-turn measurements show that large
+  graph responses can leave more retrieval context resident even when they
+  reduce tool-call throughput.
+- Tradeoff: cross-module investigation may still use ordinary source search
+  when CodeGraph is unavailable or the task is small; continuity requires
+  maintaining the existing explicit docs instead of relying on automatic
+  memory.
+- Validation: compared Local routing with the upstream Karpathy-inspired
+  guideline repository, CodeGraph MCP/tool documentation and context-occupancy
+  benchmark, and Claude-Mem architecture/configuration.
+- Owner: Codex
+- Date: 2026-08-08
+
 ### Skill routing is deliberately lean
 
 - Decision: the normal task stack is `ponytail + one specialist skill`.
