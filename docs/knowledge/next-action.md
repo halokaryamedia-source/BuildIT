@@ -69,11 +69,21 @@ quality. Explain why and recommend the smallest better path.
 - mandatory code-review/review stage was removed from the routing flow;
 - independent anti-people-pleasing judgment is baseline policy, not another
   skill;
-- `03-modelling-workflow.md` was cleaned to generic **whole-form-first** policy;
-- `07-visual-validation.md` was cleaned of Zebra-specific, section-first,
-  per-cube screenshot/mutation, and unverified runtime-gate assumptions;
+- `docs/foundation/README.md` now uses task-specific loading rather than asking
+  agents to read the entire foundation;
+- `00-agent-policy.md` now contains only BlockIT-specific product constraints;
+  generic working rules remain in root `AGENTS.md`;
+- `02-product-requirements.md` now matches the whole-form-first product flow and
+  simple-user / professional-agent contract;
+- `03-modelling-workflow.md` now uses generic **whole-form-first** modelling and
+  removes universal support-first/section-first/per-cube construction ceremony;
+- `05-geometry-standard.md` now evaluates Cuboids by whole-model purpose and no
+  longer treats historical support order, section review, or exact grid/rotation
+  conventions as universal product law;
+- `07-visual-validation.md` now removes Zebra-specific view rules, section-first
+  cadence, per-cube screenshot/mutation gates, and unverified runtime claims;
 - whole-form visual review now checks global silhouette/proportion first and uses
-  targeted corrections/evidence economy.
+  targeted corrections plus evidence economy.
 
 ## Current Skill Structure
 
