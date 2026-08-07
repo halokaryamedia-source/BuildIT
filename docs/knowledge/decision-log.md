@@ -5,6 +5,58 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `blockbench-use` capability was recovered as `blockbench-bedrock-modelling`
+
+- **Audit decision:** `RECOVER + RENAME + SLIM`.
+- **Trusted lineage:** repository history proves
+  `.agents/skills/blockbench-use/SKILL.md` existed before the Rework production
+  refactor; the related historical `.agents/skills/blockbench-modeling/SKILL.md`
+  was also inspected.
+- **Historical function:** `blockbench-use` was a mandatory Blockbench MCP
+  orchestrator that loaded multiple modelling/texturing/animation/PBR/Hytale
+  skills, ran broad pre-flight checks, applied checkpoint rules, and closed work
+  with screenshot/export stages. `blockbench-modeling` mixed Minecraft Cuboids
+  with generic freeform mesh/sphere/cylinder workflows.
+- **Actual useful function in Local:** professional Minecraft Bedrock modeller
+  judgement — approved reference → coherent whole-form Cuboid model, proportions,
+  silhouette, contacts, hierarchy/pivots, geometry-vs-texture decisions,
+  UV/texture scope, required animation, visual correction, and editable
+  `.bbmodel` completion.
+- **New canonical name:** `blockbench-bedrock-modelling`.
+- **New canonical location:**
+  `.agents/skills/blockbench-bedrock-modelling/SKILL.md`.
+- **Why the old orchestrator was not restored:** request normalization and skill
+  routing are already owned by `development-brief` plus the activation matrix,
+  and Developing intentionally uses at most one useful specialist. Restoring a
+  second mandatory dispatcher would duplicate routing and reintroduce context
+  stacking.
+- **Not recovered:** load-all-relevant-skills behavior, generic Hytale/PBR/mesh
+  routing, mandatory `list_outline + list_textures` pre-flight, fixed
+  mutation-count checkpoints, first-Cube/support/section/overlap construction
+  rules, screenshot quotas, and structural/tool success as visual approval.
+- **Boundary:** `blockbench-bedrock-modelling` owns **what model should be built
+  and whether it is visually/model-wise correct**;
+  `blockbench-runtime-development` owns **how Blockbench operations execute**;
+  `mcp-server-development` owns the MCP public contract. A proved runtime defect
+  interrupts modelling and becomes a separate runtime-development problem rather
+  than a reason to stack specialists.
+- **Foundation reconciliation:** recovery exposed stale section-first,
+  first-Cube-anchor, fixed-overlap, and per-section screenshot rules still buried
+  in `docs/foundation/04-reference-guide.md`. That file was aligned with the
+  current whole-form-first workflow before activating the skill so new sessions
+  do not receive contradictory modelling authority.
+- **Preserved useful ideas:** inspect the approved reference before modelling,
+  keep operations recoverable, use targeted queries/views rather than dumping
+  state, use meaningful visual gates, and finish with the requested editable
+  `.bbmodel`—all under the current minimum-proof policy rather than fixed quotas.
+- **Proof:** historical source was recovered from Git history and compared with
+  current `02-product-requirements.md`, `03-modelling-workflow.md`,
+  `04-reference-guide.md`, `05-geometry-standard.md`, `06-texture-standard.md`,
+  `07-visual-validation.md`, and the runtime specialist. No MCP runtime source
+  was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `vue-best-practices` was merged into `blockbench-runtime-development`
 
 - **Audit decision:** `MERGE + DROP`.
@@ -92,11 +144,10 @@ Active task state belongs in `next-action.md`, not here.
   element cheat sheets, and duplicate `.agents`/`.github` authorities.
 - **Boundary:** this skill owns **how an operation executes inside Blockbench**.
   It does not own model shape, proportions, cuboid decomposition, reference
-  interpretation, texture art direction, or visual-quality judgement; those
-  belong to the modelling workflow/skill when recovered. MCP public contracts
-  stay with `mcp-server-development`; Bun build behavior stays with
-  `bun-tooling`; TypeScript type-system problems stay with
-  `typescript-type-safety`.
+  interpretation, texture art direction, or visual-quality judgement; those are
+  owned by `blockbench-bedrock-modelling`. MCP public contracts stay with
+  `mcp-server-development`; Bun build behavior stays with `bun-tooling`;
+  TypeScript type-system problems stay with `typescript-type-safety`.
 - **Why:** the old skill mixed plugin tutorials, runtime mechanics, and
   modelling-adjacent language. That made it easy for a technically valid API
   operation to be mistaken for a good modelling decision. Two active copies also
@@ -241,8 +292,9 @@ Active task state belongs in `next-action.md`, not here.
 - **Boundary:** TypeScript type-system issues belong to
   `typescript-type-safety`; Bun-specific build/tooling belongs to `bun-tooling`;
   Blockbench runtime/API mechanics belong to `blockbench-runtime-development`.
-  Modelling judgement stays separate. MCP Zod/input-schema semantics stay inside
-  this MCP contract owner rather than using another specialist.
+  Modelling judgement stays with `blockbench-bedrock-modelling`. MCP Zod/input-
+  schema semantics stay inside this MCP contract owner rather than using another
+  specialist.
 - **Why:** the old skill was designed for building arbitrary MCP integrations,
   while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
   architecture. Keeping the generic package would add irrelevant context and
@@ -384,7 +436,7 @@ Active task state belongs in `next-action.md`, not here.
   aspect are not calibration data.
 - **Why:** generated reference sheets are useful visual guides but are not
   guaranteed to be metrically consistent.
-- **Tradeoff:** cube decisions require modeller reasoning and visual review.
+- **Tradeoff:** Cube decisions require modeller reasoning and visual review.
 - **Owner:** Codex
 - **Date:** 2026-07-31
 
@@ -393,7 +445,7 @@ Active task state belongs in `next-action.md`, not here.
 - **Decision:** SF3D/mesh decomposition do not create the geometry path;
   `place_cube` and `modify_cube` remain technical operations.
 - **Why:** a rough mesh cannot decide semantic parts, contacts, pivots, or the
-  intended cuboid decomposition.
+  intended Cuboid decomposition.
 - **Owner:** Codex
 - **Date:** 2026-07-31
 
@@ -411,7 +463,7 @@ Active task state belongs in `next-action.md`, not here.
 ### Package validity is structural only
 
 - **Decision:** package validation is structural/handoff status; it never proves
-  visual correctness or cube accuracy.
+  visual correctness or Cube accuracy.
 - **Owner:** Codex
 - **Date:** 2026-07-31
 
@@ -427,8 +479,9 @@ Active task state belongs in `next-action.md`, not here.
 
 - **Decision:** MCP owns elements, groups, parent-child structure, positions,
   pivots, rotations, bounds, and structural inspection.
-- **Decision:** MCP does not automatically infer anatomy or semantic cube
-  decomposition from an image/mesh.
+- **Decision:** MCP does not automatically infer anatomy or semantic Cuboid
+  decomposition from an image/mesh. Modelling judgement belongs to
+  `blockbench-bedrock-modelling`.
 - **Owner:** Codex
 - **Date:** 2026-07-31
 
@@ -438,9 +491,10 @@ The earlier policy that user approval made the image a metric authority, that
 orthographic overlays/numeric similarity could approve geometry, or that SF3D
 could produce the Cube Draft is superseded.
 
-`PLAN_READY` replay, per-cube locked transforms, IoU approval, calibration
-layers, and the offline Cuboid Blueprint gate were removed after repeated visual
-failure and must not be reintroduced as authority.
+`PLAN_READY` replay, per-Cube locked transforms, IoU approval, calibration
+layers, offline Cuboid Blueprint gates, first-Cube anchors, universal contact
+limits, support-first/section-first construction, and per-section screenshot
+quotas are superseded and must not be reintroduced as modelling authority.
 
 The earlier universal `ponytail + one specialist` stack is superseded for
 Developing by mandatory `development-brief` with at most one useful specialist.
@@ -462,14 +516,17 @@ The generic `bun-development` skill is superseded by the focused root
 `bun-tooling` specialist.
 
 The duplicate generic `blockbench-plugins` packages are superseded by the
-focused root `blockbench-runtime-development` specialist. Runtime mechanics and
-modelling judgement remain separate owners.
+focused root `blockbench-runtime-development` specialist.
 
 The nested generic `skill-creator` package is retired. Skill authoring uses the
 available global/user capability unless a future BlockIT-only need is proven.
 
 The generic `vue-best-practices` package is retired. Its relevant embedded UI
 lifecycle/reactivity guidance is owned by `blockbench-runtime-development`.
+
+The historical `blockbench-use` mandatory orchestrator and broad
+`blockbench-modeling` tool-catalog pattern are superseded by the focused
+`blockbench-bedrock-modelling` specialist plus current repository routing.
 
 ## Rule
 
