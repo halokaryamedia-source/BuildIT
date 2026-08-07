@@ -4,6 +4,43 @@ Use this note for the why behind the current direction.
 
 ## Current Decisions
 
+### Developing uses a mandatory Dual-POV development brief
+
+- Decision: every **Developing** task starts with the checked-in
+  `development-brief` skill and exactly one implementation specialist.
+- Decision: the user is not required to write an expert prompt. The skill must
+  ground the request in repository evidence, separate the real goal from a
+  suggested implementation, and decide whether development is actually needed.
+- Decision: the Build POV is chosen only after the actual problem owner is
+  understood; the Acceptance POV represents the downstream beneficiary. An
+  intermediate MCP/API/agent consumer is recorded as an interface constraint,
+  not another persona.
+- Decision: a named object, fixture, Golden Sample, or bug example is evidence,
+  not a generic runtime requirement unless the user explicitly requests
+  object-specific behavior.
+- Decision: 2-5 provable acceptance criteria and a proof path are defined before
+  non-trivial implementation. The same brief is checked again before `Selesai`
+  so engineering success cannot hide downstream failure or scope drift.
+- Decision: `no change required` is a valid Developing outcome when existing
+  behavior already satisfies the goal. Trivial changes use a fast path rather
+  than a full visible ceremony.
+- Why: incomplete prompts, premature expert-role selection, solution-following,
+  fixture overfitting, and technically-correct-but-useless outputs are recurring
+  ways an AI can distort the development goal even when individual code changes
+  look plausible.
+- Tradeoff: Developing has one mandatory workflow skill before its specialist,
+  but Ponytail is not loaded as a third skill; the minimal/YAGNI guardrails are
+  already baseline in `AGENTS.md`.
+- Validation: the design was stress-tested with `skill-creator` principles and
+  three rounds of `grilling`, including vague prompts, user-suggested wrong
+  methods, already-existing features, technical interface changes, docs/source
+  conflicts, object-specific fixtures, trivial edits, scope growth, and
+  engineering-pass/acceptance-fail cases. The checked-in skill still needs a
+  real fresh-session Codex usage trial before claiming runtime trigger behavior
+  is fully proven.
+- Owner: Codex
+- Date: 2026-08-08
+
 ### Anti-slop complements do not expand the default skill stack
 
 - Decision: Karpathy-inspired guidelines are absorbed into root `AGENTS.md` as
@@ -19,11 +56,11 @@ Use this note for the why behind the current direction.
   become a standard environment dependency.
 - Decision: Claude-Mem is not adopted. Repository-owned context and decisions
   remain the continuity authority.
-- Why: the useful Karpathy rules overlap with Ponytail and Local guardrails, so
-  a second skill would add instruction noise. CodeGraph adds a distinct
-  navigation capability but its own multi-turn measurements show that large
-  graph responses can leave more retrieval context resident even when they
-  reduce tool-call throughput.
+- Why: the useful Karpathy rules overlap with Local guardrails, so a second
+  skill would add instruction noise. CodeGraph adds a distinct navigation
+  capability but its own multi-turn measurements show that large graph
+  responses can leave more retrieval context resident even when they reduce
+  tool-call throughput.
 - Tradeoff: cross-module investigation may still use ordinary source search
   when CodeGraph is unavailable or the task is small; continuity requires
   maintaining the existing explicit docs instead of relying on automatic
@@ -36,7 +73,9 @@ Use this note for the why behind the current direction.
 
 ### Skill routing is deliberately lean
 
-- Decision: the normal task stack is `ponytail + one specialist skill`.
+- Decision: skill routing is mode-specific instead of using one universal stack:
+  Plan uses `ponytail`; Developing uses `development-brief + one specialist`;
+  Maintenance uses `ponytail + the smallest diagnostic/specialist`.
 - Decision: GSD-style discovery is used only when the user's prompt leaves
   unresolved high-impact decisions; the full GSD `.planning/` lifecycle is not
   introduced into this repo.
@@ -56,7 +95,7 @@ Use this note for the why behind the current direction.
   grilling, OpenSpec, or review rather than receiving those layers by default.
 - Validation: routing was compared with the current Local repository, the
   upstream Ponytail source, Matt Pocock `grilling`, active GSD Core discussion
-  workflow, and the existing Local Open Spec Guide.
+  workflow, `skill-creator`, and the existing Local Open Spec Guide.
 - Owner: Codex
 - Date: 2026-08-08
 
@@ -133,6 +172,11 @@ and must not be reintroduced.
 The `PLAN_READY` replay, per-cube locked transforms, IoU approval, calibration
 layer, and offline Cuboid Blueprint gate were removed after repeated visual
 failure. They must not be reintroduced as geometry authority.
+
+The earlier universal default `ponytail + one specialist` is superseded for
+Developing mode by `development-brief + one specialist`. Ponytail remains the
+Plan default and a Maintenance baseline; its minimal/YAGNI principles also
+remain absorbed into root guardrails.
 
 ## Rule
 
