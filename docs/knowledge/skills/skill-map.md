@@ -15,6 +15,39 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
 | `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun-specific build/tooling boundary: `Bun.build`, build plugins, Bun APIs used by Local, scripts, bunx, dependencies/lockfile |
 | `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench runtime/plugin boundary: lifecycle, embedded UI/component behavior, settings, globals/APIs, Undo/Canvas, runtime permissions, mutation mechanics, events/cleanup |
+| `blockbench-bedrock-modelling` | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | Minecraft Bedrock modeller judgement: approved reference → whole-form Cuboid model, proportions/silhouette, hierarchy/pivots, UV/texture scope, required animation, visual completion |
+
+## Recovered Lineage
+
+### `blockbench-use` → `blockbench-bedrock-modelling`
+
+**Decision:** `RECOVER + RENAME + SLIM`.
+
+The exact historical `blockbench-use` source was recovered from repository
+history. It was a mandatory Blockbench MCP orchestrator that routed many
+sub-skills, including modelling, texturing, animation, PBR, Hytale, and plugin
+work, with broad pre-flight/checkpoint behavior.
+
+That orchestration model is not restored. `development-brief` plus this
+activation matrix already own routing, and Developing allows at most one useful
+specialist.
+
+The useful capability is recovered as `blockbench-bedrock-modelling`, focused on
+**what Bedrock model should be built and whether it is visually coherent**.
+
+Historical generic `blockbench-modeling` guidance was also inspected. Mesh,
+sphere/cylinder/freeform workflows and generic tool catalogs were not recovered
+because Local product policy is Minecraft Bedrock Entity + Cuboid-first and
+runtime/tool availability is source/session truth.
+
+The following historical behavior is explicitly not restored:
+
+- load-all-relevant-skills orchestration;
+- generic Hytale/PBR/mesh routing;
+- mandatory `list_outline + list_textures` pre-flight;
+- checkpoint after a fixed mutation count;
+- historical first-Cube/support/contact/section construction rules;
+- screenshot quotas or structural success as visual approval.
 
 ## Retired / Merged Skills
 
@@ -58,9 +91,8 @@ moved into the new skill. Local source, installed Blockbench typings, and live
 Blockbench behavior are the stronger authorities.
 
 `blockbench-runtime-development` owns **how Blockbench runtime operations work**.
-It does not own model shape, proportions, cuboid decomposition, reference
-interpretation, texture art direction, or visual approval; those stay with the
-modelling workflow/skill when recovered.
+`blockbench-bedrock-modelling` owns **what model should be built and whether the
+result is visually/model-wise correct**.
 
 ### Nested `skill-creator`
 
@@ -71,43 +103,27 @@ repository copy solely for availability.
 
 ### `vue-best-practices`
 
-**Merged into `blockbench-runtime-development` and retired as a separate skill.**
-
-The package targeted standalone Vue 3 development concerns such as `vue-tsc`,
-Volar, `defineModel`, Pinia, router typing, SSR/HMR, and SFC-oriented patterns.
-Local does not have a standalone Vue application boundary; its reactive UI is
-embedded in Blockbench `Panel`/dialog runtime code.
-
-The small useful subset is now owned by the Blockbench runtime specialist:
-
-- follow the embedded component/lifecycle shape already present in Local;
-- pair subscriptions/listeners with the existing component/plugin cleanup path;
-- keep panel-local state local when sufficient;
-- do not introduce Vue application architecture/tooling without an explicit
-  architecture requirement;
-- establish framework-specific behavior from actual Blockbench runtime/source,
-  not from a generic copied Vue skill.
-
-No replacement Vue skill is created.
+Merged into `blockbench-runtime-development` and retired as a separate skill.
+Local reactive UI is embedded in Blockbench runtime surfaces, not a standalone
+Vue application domain.
 
 Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
-`bun-development`, `blockbench-plugins`, nested `skill-creator`, or
-`vue-best-practices` packages.
+`bun-development`, `blockbench-plugins`, nested `skill-creator`,
+`vue-best-practices`, or historical `blockbench-use` orchestrator packages.
 
 ## Legacy Nested Skill Locations
 
-There are currently **no active skills** under `mcp/.agents/skills/`.
+There are currently **no active skills** under `mcp/.agents/skills/` or
+`mcp/.github/skills/`.
 
-`mcp/.agents/skills/` and `mcp/.github/skills/` are legacy locations, not active
-project-wide skill roots. Do not repopulate them merely to match historical
-layout.
+Those paths are legacy locations, not active project-wide skill roots. Do not
+repopulate them merely to match historical layout.
 
 ## Recovery Items
 
 | Skill lineage | Intended function | Status |
 |---|---|---|
-| `blockbench-use` | Blockbench modelling workflow | **next recovery + rename/overlap audit** |
-| `reference-generator` | Source Image → modelling-brief package | recovery + rename/overlap audit |
+| `reference-generator` | Source Image → modelling-brief package | **next recovery + rename/overlap audit** |
 | `evidence-gate` | unsupported/disputed evidence and repeated failed directions | recovery + rename/overlap audit |
 
 The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
@@ -134,7 +150,8 @@ RECOVER → trusted source exists but canonical Local copy is missing
 ```
 
 Judge the skill by its actual trigger/function, not by its upstream name.
-Preserve upstream lineage in the decision record when a rename/merge occurs.
+Preserve upstream lineage in the decision record when a rename/merge/recovery
+occurs.
 
 ## External Complements
 
