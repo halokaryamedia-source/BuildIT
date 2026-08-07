@@ -1,14 +1,14 @@
 # BlockIT Workspace
 
-BlockIT is an AI-assisted Minecraft Bedrock modelling workspace. The user gives a simple request and an approved visual reference; Codex reasons about the model as a modeller, then uses the Blockbench MCP as a focused execution, inspection, and recovery interface.
+BlockIT is an AI-assisted Minecraft Bedrock modelling workspace. The user gives a simple request and an approved visual reference; the agent reasons about the model as a modeller, then uses the Blockbench MCP as a focused execution, inspection, and recovery interface.
 
 ## Product Goal
 
 Produce a clean, editable `.bbmodel` that follows the approved reference with the shortest evidence-backed workflow.
 
-The product is **object-agnostic**. Animals, props, mechanical objects, block assets, and other supported Bedrock models use the same general modelling rules. A test fixture or sample must never become an object-specific runtime rule.
+The product is **object-agnostic**. Test fixtures, animals, props, mechanical objects, and Golden Samples may validate the workflow but must never become object-specific runtime rules unless explicitly required.
 
-## Official Modelling Flow
+## Official Modelling Direction
 
 ```text
 User request
@@ -27,42 +27,55 @@ User request
 
 Key rules:
 
-- understand the whole form before choosing individual Cubes;
-- plan globally, then execute in the attachment/dependency order appropriate to the object;
-- use the minimum useful geometry needed for silhouette, volume, attachment, or motion;
+- understand the whole form before optimizing individual Cubes;
+- use the minimum useful geometry for silhouette, volume, attachment, or motion;
 - do not add detail before the primary form is recognizable;
-- one concrete visual issue gets one targeted correction; if the same direction still fails, replan instead of adding compensating geometry;
-- MCP success or a valid file is not proof of visual quality.
+- correct one proved visual problem at its owner; if the same direction fails twice, replan instead of adding compensating geometry;
+- MCP success or a valid file is not visual proof.
+
+## Repository Is Project Memory
+
+Do not rely on a previous chat as the source of truth. A new ChatGPT or Codex session should recover project state from the repository before asking the user to explain the project again.
+
+Canonical continuity owners:
+
+- `AGENTS.md` — how the agent must work;
+- `CONTEXT.md` — stable project facts and terminology;
+- `docs/knowledge/next-action.md` — single active task/state and next step;
+- `docs/knowledge/decision-log.md` — durable decisions and why;
+- `docs/foundation/` — durable product/modelling policy;
+- source + relevant proof — actual implementation behavior.
 
 ## Development Channels
 
-The same repository rules support both workflows:
+The same task contract supports both workflows:
 
-- **ChatGPT → GitHub:** ChatGPT reads the repository rules and edits through the connected GitHub repository. Do not assume local shell, Blockbench runtime, or local skill installation.
-- **Codex local:** Codex uses the same repository contract with local build/test/runtime proof only when relevant and available.
+- **ChatGPT → GitHub:** design, inspect, edit, and prepare the repository for local proof. Do not pretend static GitHub inspection is Blockbench/MCP runtime proof.
+- **Codex local:** perform the final targeted build/runtime/Blockbench proof when the claim actually requires the local environment.
 
-The goal, scope, POVs, and acceptance criteria stay the same across both channels. Only the available proof changes. Do not add validation work merely because a tool or test exists.
+The goal, Build POV, Acceptance POV, scope, and acceptance criteria stay the same. Only the available proof changes. Validation is proportional to risk; more checks are not automatically better.
 
 ## Repository Map
 
+- `.agents/skills/` — repository-wide skills available from root `BuildIT`; `development-brief` is canonical here.
 - `mcp/` — active Blockbench MCP plugin source, tools, runtime, UI, build, prompts, and resources.
-- `mcp/.agents/skills/` — workspace skills that are actually checked into the current `Local` branch.
-- `workspace/` — active and saved Blockbench project packages and fixtures.
+- `mcp/.agents/skills/` — existing MCP specialist skills pending one-by-one naming/overlap/location audit.
+- `workspace/` — active/saved Blockbench project packages and fixtures.
 - `docs/foundation/` — product, modelling, reference, and validation policy.
-- `docs/knowledge/next-action.md` — single active-task snapshot.
+- `docs/knowledge/` — project continuity, decisions, maps, reviews, and workflow knowledge.
 
-Do not invent or depend on repository paths that are not present in the current checkout.
+## Mandatory Session Boot
 
-## Where to Start
+For both ChatGPT → GitHub and Codex local:
 
-This boot order is mandatory for both ChatGPT → GitHub and Codex local work:
+1. read `AGENTS.md`;
+2. read `CONTEXT.md`;
+3. read `docs/knowledge/next-action.md`;
+4. read only the relevant foundation rule/source;
+5. for Developing, apply `.agents/skills/development-brief/SKILL.md`;
+6. load at most one specialist when it materially helps the active boundary.
 
-1. Read `AGENTS.md`.
-2. Read `CONTEXT.md`.
-3. Read `docs/knowledge/next-action.md`.
-4. Read only the relevant `docs/foundation/` rule and affected source.
-5. For Developing, read and apply `mcp/.agents/skills/development-brief/SKILL.md`; do not rely on ChatGPT product skill auto-discovery for a repo-local skill.
-6. Load one additional specialist only when it adds real domain value.
+Do not broad-read the entire vault or ask the user to reconstruct old context before following this boot path.
 
 ## Branch Roles
 
@@ -70,4 +83,4 @@ This boot order is mandatory for both ChatGPT → GitHub and Codex local work:
 - `Rework` — historical architecture/reference material only.
 - `Sample` — external implementation/reference material only.
 
-Do not merge behaviour from `Rework` or `Sample` into `Local` just because it is more elaborate. Adopt only a bounded pattern that solves a demonstrated `Local` problem and can be proved.
+Do not merge behavior from `Rework` or `Sample` merely because it is more elaborate. Adopt only a bounded pattern that solves a demonstrated `Local` problem and can be proved.
