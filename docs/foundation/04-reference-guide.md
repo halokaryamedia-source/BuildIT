@@ -1,7 +1,7 @@
 # BlockIT — Operating Model Reference
 
 **Status:** Draft  
-**Version:** 1.1
+**Version:** 1.2
 
 ## 1. Purpose
 
@@ -241,6 +241,10 @@ requirements.
 
 ## 13. Reference Generator Entry
 
+Reference generation is an **image-capable ChatGPT / Reference Generator
+workflow**, not a Codex root skill. Codex consumes the approved Modelling Brief;
+it does not need to generate the reference before modelling.
+
 For a dedicated Reference Generator conversation, a minimal user input is enough:
 
 ```text
@@ -270,6 +274,10 @@ high-impact decision cannot be recovered safely.
 Pose defaults to neutral unless the user requests otherwise. Do not ask the user
 for bones, pivots, hierarchy, UV settings, or Cube counts.
 
+If the active surface cannot generate or inspect the required image, do not fake
+a completed Modelling Brief. Preserve the inputs and hand the task to the
+image-capable Reference Generator surface.
+
 ## 14. Golden Sample Use
 
 Use a Golden Sample only for:
@@ -281,9 +289,45 @@ Use a Golden Sample only for:
 - Minecraft/Blockbench construction language and visual density.
 
 Never reuse its subject anatomy as the target. The Source Image/user intent owns
-the target identity.
+the target identity, recognizable features, proportions, markings, and required
+attachments.
 
-## 15. Generation Budget
+The rule is:
+
+```text
+COPY THE CONSTRUCTION LANGUAGE AND QUALITY BAR.
+REPLACE THE SUBJECT.
+```
+
+## 15. Generated Draft Quality Bar
+
+A generated reference must depict a form that a Minecraft Bedrock modeller can
+reasonably reconstruct with Blockbench Cuboids. Pixel-art styling alone is not
+enough.
+
+The Draft should show:
+
+- clear primary and secondary rectangular masses;
+- purposeful variation in Cuboid width/height/depth rather than uniform blocks;
+- stepped transitions where they help explain taper or silhouette;
+- limited purposeful rotations only where an angled form clearly needs them;
+- one consistent subject identity and construction across every view;
+- usable orthographic silhouettes plus a distinct 3/4 volume preview;
+- visible contacts/attachments that are coherent enough for modeller judgement.
+
+Reject a Draft when its main form is:
+
+- smooth/realistic organic geometry with only a pixelated surface treatment;
+- a generic voxel filter rather than intentional Blockbench-style construction;
+- uniform cube stacking with no mass/proportion planning;
+- visually inconsistent between views as if each panel shows a different model;
+- cropped, missing a required view, or too ambiguous for whole-form modelling.
+
+Do not turn this quality bar into a Cube blueprint. The Draft communicates a
+**buildable visual target**; the modelling specialist still owns the actual Cube
+count, transforms, hierarchy, pivots, UVs, and implementation choices.
+
+## 16. Generation Budget
 
 Default generated-reference budget:
 
@@ -301,12 +345,17 @@ canvas normalization, and compression when needed.
 
 Current presentation target: `1280 × 720` WebP around quality `85–90`.
 
-## 16. Completion Criteria
+Do not create the old multi-sheet technical package, executable manifest, crop
+contracts, hashes, or mandatory ZIP unless a future requirement proves that
+those artifacts are needed again.
+
+## 17. Completion Criteria
 
 Reference preparation is complete when:
 
 - target identity and style are clear;
 - the required view set is usable;
+- the Draft passes the Minecraft/Blockbench buildability quality bar;
 - requested dimensions are present when needed;
 - animation status is known;
 - no unresolved major cross-view/identity conflict remains;
