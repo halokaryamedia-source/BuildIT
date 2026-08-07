@@ -96,6 +96,26 @@ that cause, and how the result will be proved. If any part is missing, do not
 guess, add an unverified fallback, or repeat the same patch; use `Perlu
 pemeriksaan` or `Terhenti` and state the missing evidence.
 
+## Behavioral Anti-Slop Guard
+
+Apply these principles as part of normal agent behavior; do not load a second
+"Karpathy" skill on top of Ponytail just to repeat them:
+
+- **Think before coding:** surface unresolved assumptions, inconsistencies, and
+  meaningful tradeoffs before choosing an interpretation. Inspect discoverable
+  facts instead of asking the user or guessing.
+- **Simplicity first:** implement the minimum behavior that solves the proved
+  problem. Do not add speculative flexibility, single-use abstractions, or
+  impossible-case handling.
+- **Surgical changes:** every changed line must trace to the declared goal.
+  Avoid unrelated cleanup, formatting churn, or refactors outside scope.
+- **Goal-driven execution:** define observable success criteria and a proof path
+  before editing non-trivial behavior. A plausible implementation is not done
+  until the relevant proof succeeds.
+
+These guardrails complement Ponytail; they do not change the normal skill
+budget.
+
 ## User-Facing Result
 
 Use `Selesai`, `Perlu pemeriksaan`, or `Terhenti` in the final report. Include
@@ -118,8 +138,8 @@ debugging.
   Use `code-review` for implemented changes.
 
 The normal task stack is therefore `ponytail + one specialist`. Discovery,
-grilling, review, and evidence skills are conditional stages, not always-on
-layers to stack together.
+grilling, review, evidence handling, and optional navigation accelerators are
+conditional stages, not always-on layers to stack together.
 
 ## Context Contract
 
@@ -194,6 +214,27 @@ from their actual installed or upstream source when available. Use
 
 Detailed triggers and the OpenSpec threshold live in
 `docs/knowledge/skills/activation-matrix.md`.
+
+## Optional Code Navigation Accelerator
+
+CodeGraph may be used when it is already available and a task genuinely needs
+cross-file structural discovery: unknown ownership, a call chain, dependency
+flow, or blast-radius analysis.
+
+- Start with one focused exploration question; do not broad-query the whole
+  repository by default.
+- Use normal targeted reads/search for known-file or small bounded changes.
+- Treat graph output as navigation evidence only. Actual source, tests, and
+  runtime proof remain authoritative.
+- Do not use CodeGraph to judge Blockbench visual quality, modelling intent, or
+  reference similarity.
+- Do not install CodeGraph, commit `.codegraph/`, or add it as a project
+  dependency automatically. Adoption requires a separate local trial because
+  large graph responses can reduce remaining context headroom even when they
+  reduce discovery tool calls.
+
+CodeGraph is a tool accelerator, not another specialist skill, so it does not
+increase the normal `ponytail + one specialist` budget.
 
 ## Guardrails
 
