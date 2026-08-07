@@ -42,7 +42,9 @@ installed or verified upstream source when the trigger applies.
 Mode defaults stay lean:
 
 - Plan: `ponytail`;
-- Developing: `development-brief + one specialist`;
+- Developing: mandatory `development-brief`, plus at most one specialist when it
+  adds real domain value; trivial fast-path work may use `development-brief`
+  alone;
 - Maintenance: `ponytail + the smallest diagnostic/specialist`.
 
 GSD-style discovery, grilling, review, evidence handling, and navigation tools
