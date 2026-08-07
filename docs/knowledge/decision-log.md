@@ -5,6 +5,48 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `blockbench-plugins` was replaced by focused `blockbench-runtime-development`
+
+- **Audit decision:** `RENAME + MOVE + SLIM + DEDUP`.
+- **Old name/source:** `blockbench-plugins`, duplicated under
+  `mcp/.agents/skills/` and `mcp/.github/skills/` with generic plugin templates
+  and copied Blockbench API/event/element references.
+- **Actual useful function in BlockIT:** Blockbench runtime/plugin integration —
+  `BBPlugin` lifecycle, startup/teardown, UI/settings/actions, runtime globals,
+  permissions, `Undo`/`Canvas`, selection/lookup, element mutation mechanics,
+  events, state refresh, and cleanup.
+- **New canonical name:** `blockbench-runtime-development`.
+- **New canonical location:**
+  `.agents/skills/blockbench-runtime-development/SKILL.md`.
+- **Removed from active skill:** generic plugin starter scaffolding, custom
+  codec/format examples unrelated to current Local needs, broad copied API/event/
+  element cheat sheets, and duplicate `.agents`/`.github` authorities.
+- **Boundary:** this skill owns **how an operation executes inside Blockbench**.
+  It does not own model shape, proportions, cuboid decomposition, reference
+  interpretation, texture art direction, or visual-quality judgement; those
+  belong to the modelling workflow/skill when recovered. MCP public contracts
+  stay with `mcp-server-development`; Bun build behavior stays with
+  `bun-tooling`; TypeScript type-system problems stay with
+  `typescript-type-safety`.
+- **Why:** the old skill mixed plugin tutorials, runtime mechanics, and
+  modelling-adjacent language. That made it easy for a technically valid API
+  operation to be mistaken for a good modelling decision. Two active copies also
+  created avoidable drift risk. Local already contains the real plugin patterns,
+  installed Blockbench typings, and the runtime source that should be inspected
+  first.
+- **Preserved useful rules:** lifecycle cleanup, correct runtime owner, reversible
+  mutations when appropriate, targeted Canvas/state refresh, permission-aware
+  native modules, and live Blockbench proof only when the claim requires it.
+- **Compatibility:** no alias or duplicate copy is kept. Historical
+  `blockbench-plugins` references are lineage only; active routing uses
+  `blockbench-runtime-development`.
+- **Proof:** compared both old skill copies with `mcp/index.ts`, `mcp/ui/index.ts`,
+  `mcp/server/tools/cubes.ts`, installed Blockbench typing usage, and current
+  specialist boundaries. Both old skill packages were removed; no MCP runtime
+  implementation was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `bun-development` was replaced by focused `bun-tooling`
 
 - **Audit decision:** `RENAME + MOVE + SLIM`.
@@ -22,8 +64,8 @@ Active task state belongs in `next-action.md`, not here.
 - **Boundary:** ordinary TypeScript/MCP/Blockbench work does not load this skill
   merely because commands use Bun. MCP/public-contract work stays with
   `mcp-server-development`; TypeScript type-system work stays with
-  `typescript-type-safety`; Blockbench runtime/API work stays with the
-  Blockbench specialist.
+  `typescript-type-safety`; Blockbench runtime/API work stays with
+  `blockbench-runtime-development`.
 - **Why:** Local genuinely depends on Bun-specific build behavior, including
   `Bun.build` and custom Bun build plugins, so dropping Bun knowledge entirely
   would lose useful capability. The old guide was still far too broad and could
@@ -64,7 +106,7 @@ Active task state belongs in `next-action.md`, not here.
   globals; move live-Blockbench checks into execution; keep errors actionable.
 - **Boundary:** TypeScript compiler/type-system problems belong to
   `typescript-type-safety`; Bun-specific build/tooling belongs to `bun-tooling`;
-  Blockbench runtime remains a separate specialist boundary.
+  Blockbench runtime belongs to `blockbench-runtime-development`.
 - **Compatibility:** no alias or deprecated Zod skill is kept. Historical `zod`
   skill references are lineage only; ordinary MCP schema work routes through
   `mcp-server-development`.
@@ -93,7 +135,7 @@ Active task state belongs in `next-action.md`, not here.
 - **Boundary:** normal `.ts` implementation uses the domain owner instead of a
   TypeScript specialist; MCP protocol and MCP input-schema semantics belong to
   `mcp-server-development`; Bun-specific build/tooling belongs to `bun-tooling`;
-  Blockbench runtime/API work belongs to the Blockbench specialist.
+  Blockbench runtime/API work belongs to `blockbench-runtime-development`.
 - **Why:** BlockIT is already a strict TypeScript/Bun project. Loading a generic
   "TypeScript expert" for almost every source edit would consume the one
   specialist slot, overlap more specific owners, and encourage unrelated
@@ -129,9 +171,9 @@ Active task state belongs in `next-action.md`, not here.
   workflow, and its Python/XML evaluation scripts.
 - **Boundary:** TypeScript type-system issues belong to
   `typescript-type-safety`; Bun-specific build/tooling belongs to `bun-tooling`;
-  Blockbench plugin/UI/runtime/model manipulation belongs to the Blockbench
-  plugin specialist. MCP Zod/input-schema semantics stay inside this MCP
-  contract owner rather than using another specialist.
+  Blockbench runtime/API mechanics belong to `blockbench-runtime-development`.
+  Modelling judgement stays separate. MCP Zod/input-schema semantics stay inside
+  this MCP contract owner rather than using another specialist.
 - **Why:** the old skill was designed for building arbitrary MCP integrations,
   while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
   architecture. Keeping the generic package would add irrelevant context and
@@ -349,6 +391,10 @@ inside `mcp-server-development`.
 
 The generic `bun-development` skill is superseded by the focused root
 `bun-tooling` specialist.
+
+The duplicate generic `blockbench-plugins` packages are superseded by the
+focused root `blockbench-runtime-development` specialist. Runtime mechanics and
+modelling judgement remain separate owners.
 
 ## Rule
 
