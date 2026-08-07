@@ -4,20 +4,23 @@ This is the stable context for the BlockIT/MCP-Blockbench workspace. Read this
 before opening detailed project notes. Keep this file factual and under roughly
 1,500 words.
 
-Last verified: 2026-07-31
+Last verified: 2026-08-08
 Stability: stable
 Owner: workspace agent
 
 ## Purpose
 
 This workspace develops a Blockbench MCP plugin and the supporting workflow for
-AI-assisted Blockbench modelling and MCP engineering.
+AI-assisted Minecraft Bedrock modelling and MCP engineering.
 
 The primary product goal is to produce a Blockbench Model that follows the
-Model Reference with the shortest evidence-backed workflow. Efficiency means
-one useful Cube Draft, one structural check, and one five-view visual
-review; it never means accepting guessed geometry, tool success, or a valid
-file as proof of resemblance.
+Model Reference with the shortest evidence-backed workflow. The product is
+object-agnostic: test fixtures and samples may validate the workflow but must
+never become object-specific runtime rules.
+
+Efficiency means one useful primary geometry pass, one structural check, and a
+bounded visual review; it never means accepting guessed geometry, tool success,
+or a valid file as proof of resemblance.
 
 ## Language
 
@@ -73,17 +76,21 @@ _Avoid_: requested dimensions, texture size
 
 - `mcp/`: active Blockbench MCP plugin source, build, UI, server, tools,
   resources, prompts, and generated API documentation.
-- `mcp/workflow/skills/`: canonical workspace skills for MCP, TypeScript, Zod,
-  Bun, Blockbench, Reference Generator, and evidence checking.
-- `mcp/workflow/reference-generator/`: Reference Generator scripts and assets;
-  it is not a skill package.
+- `mcp/.agents/skills/`: workspace skill files actually checked into the
+  current `Local` branch.
+- The long-term canonical home for recovered workspace skills is `Needs
+  Validation`; do not create `mcp/workflow/skills/` merely because older docs
+  referenced it.
+- The Reference Generator policy exists in `docs/foundation/`; its canonical
+  Local implementation/skill copy is still being recovered from trusted source
+  and repository history.
 - `workspace/`: active and saved Blockbench project packages.
 - `docs/foundation/`: verified product rules, modelling standards, source
   selection, and validation policy.
 - `docs/knowledge/`: working context, decisions, module ownership, reviews,
   operations, and the Obsidian vault.
 
-## Sources of Truth
+## Sources Of Truth
 
 - Product and modelling policy: `docs/foundation/README.md` and the relevant
   foundation note.
@@ -93,7 +100,8 @@ _Avoid_: requested dimensions, texture size
   the relevant source/module code and build/docs manifest.
 - Working decisions: `docs/knowledge/decisions/` and the relevant knowledge
   note; current task state: `docs/knowledge/next-action.md` only.
-- Workspace-specific skill guidance: `mcp/workflow/skills/`.
+- Skill routing: `docs/knowledge/skills/activation-matrix.md`.
+- Current checked-in workspace skill guidance: `mcp/.agents/skills/`.
 
 When sources disagree, do not guess. Identify the conflict and mark it
 `Needs Validation`.
@@ -115,7 +123,7 @@ globals. Runtime-only validation belongs inside tool execution.
 - Keep the smallest correct diff; avoid speculative abstractions and
   dependencies; source: `AGENTS.md`.
 - Use Zod at input boundaries and never trust external JSON or MCP input;
-  source: `mcp/AGENTS.md`, `mcp/workflow/skills/zod/`.
+  source: `mcp/AGENTS.md`, `mcp/.agents/skills/zod/`.
 - Keep Blockbench globals out of build-time schema modules; source:
   `mcp/AGENTS.md`.
 - Keep generated output secondary to its source and regenerate it only through

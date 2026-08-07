@@ -38,6 +38,23 @@ write the Context Contract, and update the snapshot after scope stabilizes. If
 the prompt is ambiguous, use Plan and `Needs Validation`. If an old snapshot
 conflicts with the current prompt, the current prompt wins.
 
+## Prompt Assistance
+
+A user prompt defines intent; it does not have to be a complete specification.
+Before asking the user for more detail:
+
+1. inspect the existing docs and source for facts that can be established;
+2. preserve decisions that are already authoritative;
+3. identify only unresolved decisions that materially change the result;
+4. use the existing project pattern for low-impact ambiguity;
+5. ask the user only for high-impact decisions, with a recommended default;
+6. capture the resolved decision in its existing documentation owner.
+
+Use lightweight GSD-style requirement discovery only when a prompt is missing
+high-impact decisions or the scope has several plausible interpretations. Do
+not install or create a second GSD planning tree, `.planning/` hierarchy, or
+parallel state system in this repository.
+
 ## Source Precedence
 
 - Runtime behavior: source code plus test/proof.
@@ -53,9 +70,9 @@ Resolve conflicts instead of silently editing to match stale context.
 
 - Use plain language by default; explain technical terms in one short sentence
   when they are necessary.
-- For an ambiguous request, ask at most three high-value questions about the
-  goal, expected result, and constraints. Do not ask the user for facts that
-  repository inspection can establish.
+- For an ambiguous request, ask only high-value questions about decisions that
+  repository inspection cannot establish. Do not ask the user for facts that
+  the repository can answer.
 - Before editing, show this short contract in user language:
 
 ```text
@@ -86,15 +103,23 @@ the result, actual proof, limitations, and exactly one next step. Technical
 details are optional and should appear only when they help a decision or
 debugging.
 
-## Modes
+## Modes And Skill Budget
 
-- **Plan:** use `ponytail`; use `domain-modeling` or `codebase-design` only
-  when triggered by unstable terminology or an unclear module seam; use
-  `grilling` only when the user explicitly asks to stress-test a decision.
-- **Developing:** use `ponytail` and exactly one relevant workspace skill;
+- **Plan:** use `ponytail`. Use GSD-style requirement discovery first only when
+  high-impact requirements are genuinely unresolved. Add `domain-modeling` or
+  `codebase-design` only for a real terminology or module-boundary problem.
+- **Developing:** use `ponytail` plus exactly one relevant specialist skill;
   validate before review.
-- **Maintenance:** use `ponytail` and the smallest task-specific skill; keep
-  fixes minimal and leave regression proof.
+- **Maintenance:** use `ponytail` plus the smallest diagnostic or specialist
+  skill; keep fixes minimal and leave regression proof.
+- **Critique / stress-test:** use `grilling` when the user asks to challenge a
+  plan, decision, or idea. `grilling` is a decision-tree interview that looks
+  for hidden assumptions before action; it is not a substitute for code review.
+  Use `code-review` for implemented changes.
+
+The normal task stack is therefore `ponytail + one specialist`. Discovery,
+grilling, review, and evidence skills are conditional stages, not always-on
+layers to stack together.
 
 ## Context Contract
 
@@ -141,17 +166,34 @@ Only needed during execution?
 → use the affected module's .tmp/, then remove it.
 ```
 
-## Local Skill Routing
+## Skill Sources And Routing
 
-- MCP/server/tools/transports: `mcp/workflow/skills/mcp-builder`
-- TypeScript: `mcp/workflow/skills/typescript-expert`
-- Zod schemas: `mcp/workflow/skills/zod`
-- Bun: `mcp/workflow/skills/bun-development`
-- Blockbench modelling: `mcp/workflow/skills/blockbench-use`
-- Blockbench plugins: `mcp/workflow/skills/blockbench-plugins`
-- Reference generation: `mcp/workflow/skills/reference-generator`
-- Unsupported claims or repeated failure: `mcp/workflow/skills/evidence-gate`
-- Skill packaging: global `skill-creator`
+The workspace skill files that are actually checked into the current `Local`
+branch live under `mcp/.agents/skills/`. Older documentation that named
+`mcp/workflow/skills/` is not proof that the missing directory exists. Do not
+create a directory merely to satisfy stale documentation.
+
+Currently checked in:
+
+- MCP/server/tools/transports: `mcp-builder`
+- TypeScript: `typescript-expert`
+- Zod schemas: `zod`
+- Bun: `bun-development`
+- Blockbench plugin lifecycle/UI/runtime API: `blockbench-plugins`
+
+Required workflow skills whose canonical Local copy is still being recovered:
+
+- Blockbench modelling: `blockbench-use`
+- Source Image to modelling brief: `reference-generator`
+- Unsupported claims or repeated failure: `evidence-gate`
+
+If a named skill is unavailable, state that fact and use the closest verified
+Local rule; never silently simulate a missing skill. Use global/user skills
+from their actual installed or upstream source when available. Use
+`skill-creator` only when a skill itself is being created or updated.
+
+Detailed triggers and the OpenSpec threshold live in
+`docs/knowledge/skills/activation-matrix.md`.
 
 ## Guardrails
 
@@ -163,8 +205,6 @@ Only needed during execution?
 - Do not use TDD unless meaningful behavior or a bug needs a test.
 - Treat `docs/knowledge/` as context and decisions, not the task tracker.
 - Treat the task board as task/spec status; temporary files are not a tracker.
-- If a named skill is unavailable, say so and continue with the closest local
-  skill; do not simulate that skill silently.
 - Do not claim validation without running the relevant check.
 - Do not add unrelated fixes, speculative abstractions, cosmetic tests, or
   documentation that duplicates an existing note.
@@ -182,9 +222,10 @@ Only needed during execution?
 - Bug fix: reproduce before the fix and prove the regression is covered.
 - Cross-module change: validate each boundary, then review the change.
 
-## Source of Truth
+## Source Of Truth
 
 - Product and operating policy: `docs/foundation/`
 - Working context and decisions: `docs/knowledge/`
 - Runtime implementation: source files under the affected module
-- Workspace-specific skill guidance: `mcp/workflow/skills/`
+- Skill routing: `docs/knowledge/skills/activation-matrix.md`
+- Current checked-in workspace skills: `mcp/.agents/skills/`

@@ -3,46 +3,121 @@
 Choose the smallest skill set that covers the task. A listed skill is loaded
 only when its trigger applies.
 
+## Default Skill Budget
+
+The normal task stack is:
+
+```text
+ponytail
++
+one specialist skill
+```
+
+Discovery, grilling, review, and evidence skills are conditional stages. They
+are not extra always-on layers.
+
 ## Modes
 
 | Mode | Use |
 |---|---|
-| Plan | `ponytail`; add `domain-modeling` or `codebase-design` only for a real terminology or module-boundary problem |
-| Developing | `ponytail` plus exactly one workspace skill |
-| Maintenance | `ponytail` plus the smallest diagnostic or workspace skill |
+| Plan | `ponytail`; use GSD-style requirement discovery first only when high-impact requirements are unresolved; add `domain-modeling` or `codebase-design` only for a real terminology or module-boundary problem |
+| Developing | `ponytail` plus exactly one specialist skill |
+| Maintenance | `ponytail` plus the smallest diagnostic or specialist skill |
 
-Use `grilling` only when the user explicitly asks to stress-test a decision.
+## Requirement Discovery
 
-## Workspace Skills
+Use lightweight **GSD-style discovery** when the user's prompt expresses the
+intent but leaves multiple high-impact interpretations open.
 
-| Task | Skill |
-|---|---|
-| MCP server, tools, prompts, resources, transport | `mcp-builder` |
-| TypeScript types or module structure | `typescript-expert` |
-| Zod schemas and boundary validation | `zod` |
-| Bun runtime, scripts, lockfile, dependencies | `bun-development` |
-| Blockbench modelling and `.bbmodel` workflow | `blockbench-use` |
-| Blockbench plugin lifecycle, UI, runtime API | `blockbench-plugins` |
-| Source Image to modelling-brief package | `reference-generator` |
-| Unsupported claim, rejected result, or repeated failure | `evidence-gate` |
+Before asking the user:
 
-Canonical files live only in `mcp/workflow/skills/`. Use the global
-`skill-creator` when creating or updating a skill.
+1. read existing project context;
+2. inspect the actual code/docs for discoverable facts;
+3. preserve decisions already made;
+4. identify only unresolved high-impact decisions;
+5. recommend a default when evidence supports one;
+6. ask only decisions that materially change the result.
 
-## Selection Rules
+Do not install or reproduce the full GSD project lifecycle, `.planning/`
+structure, roadmap, state hierarchy, or subagent machinery in this repo. The
+resolved task state continues to live in existing Local documentation owners.
 
-- Choose the narrowest skill. A Zod task uses `zod`, not both Zod and the
-  broader TypeScript skill.
-- Blockbench UI uses `blockbench-plugins`; this workspace has no separate Vue
-  application skill.
-- Reference Generator ends at an accepted modelling brief. Blockbench
-  modelling starts with `blockbench-use`.
-- `evidence-gate` is not always-on ceremony or a second implementation skill.
-  Pause the active workflow and apply it when evidence is disputed, missing,
-  visual acceptance is claimed, or an approach has failed twice.
-- Use `diagnosing-bugs` for a reproducible runtime failure, `tdd` for meaningful
-  behavior or regression coverage, `research` for primary-source facts, and
-  `code-review` for an existing change.
+## Grilling
+
+Use `grilling` when the user explicitly asks to stress-test, challenge, or find
+holes in a **plan, decision, or idea**.
+
+The Matt Pocock skill works as a decision tree: it finds hidden assumptions,
+asks the currently unblocked decisions, gives recommendations, and continues
+until the design frontier is empty. It is useful before committing to a design
+or when a proposed direction needs adversarial scrutiny.
+
+Do not use `grilling` as a generic code-review skill. Use `code-review` for an
+implemented change and `evidence-gate` for unsupported or disputed proof.
+
+## Specialist Skills
+
+| Task | Skill | Current Local status |
+|---|---|---|
+| MCP server, tools, prompts, resources, transport | `mcp-builder` | checked in under `mcp/.agents/skills/` |
+| TypeScript types or module structure | `typescript-expert` | checked in |
+| Zod schemas and boundary validation | `zod` | checked in |
+| Bun runtime, scripts, lockfile, dependencies | `bun-development` | checked in |
+| Blockbench modelling and `.bbmodel` workflow | `blockbench-use` | canonical Local copy still being recovered |
+| Blockbench plugin lifecycle, UI, runtime API | `blockbench-plugins` | checked in |
+| Source Image to modelling-brief package | `reference-generator` | canonical Local copy still being recovered |
+| Unsupported claim, rejected result, or repeated failure | `evidence-gate` | canonical Local copy still being recovered |
+
+Use `skill-creator` only when a skill itself is being created or updated.
+
+## Diagnostic And Review Skills
+
+- `diagnosing-bugs`: reproducible runtime failure;
+- `tdd`: meaningful new behavior or regression coverage where test-first work
+  actually reduces risk;
+- `research`: external primary-source facts;
+- `code-review`: implemented change or existing diff;
+- `domain-modeling`: terminology/domain ownership is genuinely unclear;
+- `codebase-design`: module/interface ownership is genuinely unclear.
+
+Do not combine a narrow specialist with a broader overlapping specialist unless
+one cannot cover the actual task. A Zod task uses `zod`, not both `zod` and
+`typescript-expert` by default.
+
+## OpenSpec
+
+Keep `docs/knowledge/decisions/open-spec-guide.md` as the lightweight daily
+decision standard.
+
+Full OpenSpec lifecycle is **not** a default skill stack. Consider an OpenSpec
+proposal only when a change is genuinely large enough to need a durable formal
+change boundary, for example:
+
+- multiple subsystems must change together;
+- a public MCP contract or compatibility promise changes;
+- a migration is required;
+- work spans several independently executable phases or developers;
+- an architectural tradeoff must remain explicit across many sessions.
+
+For bounded fixes, tool improvements, schema alignment, documentation cleanup,
+or a single modelling-workflow correction, use the existing Context Contract,
+`next-action.md`, and decision log instead of opening a full OpenSpec change.
+
+If a full OpenSpec change is justified, start with the smallest necessary
+proposal step. Do not activate explore/propose/apply/sync/archive together just
+because those skills exist.
+
+## Skill Source Rule
+
+The workspace skill files actually present in `Local` are under
+`mcp/.agents/skills/`. The previously documented `mcp/workflow/skills/` path is
+not currently present and its long-term canonical replacement is `Needs
+Validation` during skill recovery.
+
+Global/user skills such as Ponytail and Matt Pocock skills may live outside the
+repo. Use their actual installed or verified upstream source. If a required
+skill is unavailable, say so and continue only with the closest verified Local
+rule; do not silently simulate it.
 
 ## Edit Gate
 

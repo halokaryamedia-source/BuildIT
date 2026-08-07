@@ -4,6 +4,32 @@ Use this note for the why behind the current direction.
 
 ## Current Decisions
 
+### Skill routing is deliberately lean
+
+- Decision: the normal task stack is `ponytail + one specialist skill`.
+- Decision: GSD-style discovery is used only when the user's prompt leaves
+  unresolved high-impact decisions; the full GSD `.planning/` lifecycle is not
+  introduced into this repo.
+- Decision: `grilling` is used to stress-test a plan, decision, or idea when the
+  user asks for adversarial scrutiny. It is not a replacement for code review.
+- Decision: implemented changes use `code-review`; unsupported or disputed
+  evidence uses `evidence-gate` when that skill is available.
+- Decision: the lightweight Local Open Spec Guide remains the default decision
+  discipline. A full OpenSpec lifecycle is reserved for genuinely cross-cutting
+  contract, migration, or multi-phase changes.
+- Decision: current checked-in workspace skills are read from
+  `mcp/.agents/skills/`. The long-term canonical home for recovered skills is
+  `Needs Validation`; no missing directory is created just to match stale docs.
+- Why: more simultaneously loaded skills create overlapping authority, context
+  bloat, and extra ceremony without proving better modelling or MCP behavior.
+- Tradeoff: some large changes may need an explicit escalation to GSD discovery,
+  grilling, OpenSpec, or review rather than receiving those layers by default.
+- Validation: routing was compared with the current Local repository, the
+  upstream Ponytail source, Matt Pocock `grilling`, active GSD Core discussion
+  workflow, and the existing Local Open Spec Guide.
+- Owner: Codex
+- Date: 2026-08-08
+
 ### The reference is a modelling brief
 
 - Decision: the five-view image supplies visual proportions, landmarks,

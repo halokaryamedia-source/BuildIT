@@ -44,11 +44,34 @@ Validation
 Follow-up
 ```
 
+## Full OpenSpec Threshold
+
+The lightweight guide above is the default. Do not open a full OpenSpec change
+for ordinary bounded work.
+
+A formal OpenSpec proposal is justified only when at least one real complexity
+boundary requires it, such as:
+
+- multiple subsystems must change as one coordinated contract;
+- a public MCP API, tool contract, compatibility promise, or migration changes;
+- work spans several independently executable phases or developers;
+- a durable architectural tradeoff cannot be represented clearly by the
+  existing decision log and task snapshot.
+
+Do **not** use the full lifecycle for documentation cleanup, a single tool or
+schema fix, one modelling-workflow correction, or speculative future work.
+
+When full OpenSpec is justified, start with the smallest required proposal.
+Activate later lifecycle steps only after the change actually reaches them; do
+not stack explore, propose, apply, sync, and archive as one default workflow.
+
 ## Review Rules
 
 - Review structure before polishing wording.
 - Use `code-review-graph` concepts for large or cross-cutting changes.
 - Use `ponytail` when a simpler path can remove work.
+- Use `grilling` only when the user asks to stress-test a plan, decision, or
+  idea; it is not the implementation review step.
 
 ## Validation Rules
 
