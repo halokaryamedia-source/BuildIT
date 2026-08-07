@@ -246,11 +246,13 @@ Canonical root skills currently approved:
 - `.agents/skills/development-brief/` — mandatory Developing workflow;
 - `.agents/skills/mcp-server-development/` — MCP server/public-contract specialist;
 - `.agents/skills/typescript-type-safety/` — TypeScript type-system specialist;
-- `.agents/skills/bun-tooling/` — Bun-specific build/tooling specialist.
+- `.agents/skills/bun-tooling/` — Bun-specific build/tooling specialist;
+- `.agents/skills/blockbench-runtime-development/` — Blockbench runtime/plugin/API specialist.
 
-The old generic `mcp-builder`, `typescript-expert`, `zod`, and
-`bun-development` skills are retired or merged. Do not route to or recreate
-them.
+The old generic `mcp-builder`, `typescript-expert`, `zod`, `bun-development`, and
+`blockbench-plugins` skills are retired or merged. Do not route to or recreate
+them. Blockbench runtime mechanics and Blockbench modelling judgement are
+separate responsibilities; do not collapse them into one skill.
 
 The complete current inventory, including nested copies still pending audit, is
 owned by `docs/knowledge/skills/skill-map.md`. Do not duplicate that inventory
