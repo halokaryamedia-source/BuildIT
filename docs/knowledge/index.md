@@ -18,7 +18,7 @@ Keep context short, current, and easy to resume.
 - [Minimal Nav](minimal-nav.md): shortest boot path.
 - [Workspace Map](workspace-map.md): area ownership and boundaries.
 - [Workspace Structure](workspace-structure.md): project folders and lifecycle.
-- [Source Map](sources/source-map.md): external source bridge.
+- [Source Map](sources/source-map.md): external/source bridge.
 - [Glossary](glossary.md): stable terms.
 - [Flow](flow.md): development lifecycle.
 - [Decision Log](decision-log.md): durable decisions.
@@ -42,20 +42,20 @@ Keep context short, current, and easy to resume.
 | Decisions | `decision-log.md` |
 | Ownership | `implementation-map.md` |
 | Active work | `next-action.md` |
-| MCP runtime | `mcp/README-INDEX.md` |
-| Skills | `mcp/workflow/skills/` and `skills/activation-matrix.md` |
-| Reference generation | `docs/foundation/04-reference-guide.md` |
+| MCP runtime | `mcp/README.md` |
+| Skill routing | `docs/knowledge/skills/activation-matrix.md` |
+| Checked-in workspace skills | `mcp/.agents/skills/` |
+| Reference generation policy | `docs/foundation/04-reference-guide.md` |
 | Validation | `docs/foundation/validation-report.md` |
 
 ## Read Order
 
 ```text
-foundation
--> flow
--> skill activation matrix
--> decision log
--> implementation map
--> next action
+AGENTS
+-> CONTEXT
+-> next-action
+-> relevant foundation/source
+-> activation matrix only when skill selection is needed
 ```
 
 ## Rules
@@ -64,3 +64,5 @@ foundation
 - Update only when the task, decision, or owner changes.
 - If a note is not used, remove it.
 - Start from this page; do not maintain a second dashboard for the same vault.
+- If a referenced path does not exist in the current checkout, verify before
+  creating anything.

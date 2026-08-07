@@ -8,10 +8,10 @@ skill notes.
 
 ```mermaid
 flowchart TD
-    A[User request] --> B[Boot context<br/>AGENTS → CONTEXT → next-action → area index]
-    B --> C{Need clear?}
-    C -- No --> D[Plan<br/>Needs Validation / up to 3 questions]
-    C -- Yes --> E{Work mode}
+    A[User request] --> B[Boot context<br/>AGENTS → CONTEXT → next-action]
+    B --> C{High-impact ambiguity remains?}
+    C -- Yes --> D[GSD-style discovery<br/>inspect facts → ask only real decisions]
+    C -- No --> E{Work mode}
     D --> E
     E -->|Plan| F[Scope, decisions,<br/>acceptance criteria, test strategy]
     E -->|Developing| G[Context Contract]
@@ -21,7 +21,7 @@ flowchart TD
     G --> I[Inspect source, callers,<br/>patterns, and proof path]
     I --> J{Cause or scope proven?}
     J -- No --> K[Terhenti / Perlu pemeriksaan]
-    J -- Yes --> L[Select one narrow<br/>technical skill]
+    J -- Yes --> L[Ponytail + one narrow<br/>specialist skill]
     L --> M[Smallest correct change]
     M --> N[Risk-based validation]
     N --> O[Review]
@@ -31,15 +31,31 @@ flowchart TD
     R --> S[Update next-action or<br/>decision note when state changes]
 ```
 
+## Conditional Stages
+
+- **GSD-style discovery**: only before planning when the prompt leaves
+  high-impact decisions unresolved. It does not create a second planning/state
+  hierarchy in this repo.
+- **Grilling**: when the user asks to stress-test a plan, decision, or idea.
+  It challenges assumptions before commitment; it is not code review.
+- **Code review**: after an implementation or existing diff needs critique.
+- **Evidence gate**: when proof is missing, disputed, rejected, or a direction
+  has failed repeatedly.
+- **OpenSpec**: full lifecycle only when the change crosses the threshold in
+  `decisions/open-spec-guide.md`.
+
+These stages are conditional. Do not stack them into every task.
+
 ## Mode Outputs
 
-- **Plan**: scope, decision, acceptance criteria, test strategy, and next action.
+- **Plan**: scope, decisions, acceptance criteria, test strategy, and next action.
 - **Developing**: source or documentation change, validation, review, and result summary.
 - **Maintenance**: diagnosis, minimal correction, regression proof, and limitations.
 
 ## Rule
 
-- If the flow changes, update this note first.
+- If the routing flow changes, update this note and the activation matrix in the
+  same bounded documentation task.
 - Keep it short enough to read in one pass.
 - This is the only agent-routing diagram; do not create one per skill or folder.
 - The diagram does not replace `AGENTS.md`, `CONTEXT.md`, foundation policy, or

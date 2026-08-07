@@ -96,8 +96,8 @@ _Avoid_: requested dimensions, texture size
   foundation note.
 - Agent behavior and routing: root `AGENTS.md` and the nearest nested
   `AGENTS.md`.
-- MCP implementation behavior: `mcp/AGENTS.md`, `mcp/README-INDEX.md`, and
-  the relevant source/module code and build/docs manifest.
+- MCP implementation behavior: `mcp/AGENTS.md`, `mcp/README.md`, and the
+  relevant source/module code and build/docs manifest.
 - Working decisions: `docs/knowledge/decisions/` and the relevant knowledge
   note; current task state: `docs/knowledge/next-action.md` only.
 - Skill routing: `docs/knowledge/skills/activation-matrix.md`.
@@ -147,7 +147,7 @@ skill triggers and mode routing belong in
 
 - Current task: `docs/knowledge/next-action.md`.
 - Workspace map: `docs/knowledge/workspace-map.md`.
-- MCP map: `mcp/README-INDEX.md`.
+- MCP map: `mcp/README.md`.
 - Foundation entrypoint: `docs/foundation/README.md`.
 - Obsidian dashboard: `docs/knowledge/index.md`.
 - Skill routing: `docs/knowledge/skills/activation-matrix.md`.
