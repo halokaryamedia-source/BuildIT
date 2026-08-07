@@ -9,38 +9,46 @@ skill notes.
 ```mermaid
 flowchart TD
     A[User request] --> B[Boot context<br/>AGENTS → CONTEXT → next-action]
-    B --> C{High-impact ambiguity remains?}
-    C -- Yes --> D[GSD-style discovery<br/>inspect facts → ask only real decisions]
-    C -- No --> E{Work mode}
-    D --> E
-    E -->|Plan| F[Scope, decisions,<br/>acceptance criteria, test strategy]
-    E -->|Developing| G[Context Contract]
-    E -->|Maintenance| H[Diagnose or review<br/>without feature creep]
-    F --> G
-    H --> G
-    G --> I[Inspect source, callers,<br/>patterns, and proof path]
+    B --> C{Work mode}
+
+    C -->|Plan| P[Plan with Ponytail<br/>GSD discovery only if high-impact ambiguity remains]
+    C -->|Developing| D[development-brief<br/>goal → authority → Dual POV → input/output → acceptance]
+    C -->|Maintenance| M[Diagnose/review with Ponytail<br/>+ smallest diagnostic/specialist]
+
+    D --> N{Development actually needed?}
+    N -- No --> NR[Reuse / explain / verify]
+    N -- Yes --> I[Inspect owner, callers,<br/>patterns, and proof path]
+
+    P --> I
+    M --> I
+
     I --> J{Cross-file discovery broad?}
     J -- Yes --> CG[Optional CodeGraph<br/>one focused exploration]
     J -- No --> K{Cause or scope proven?}
     CG --> K
+
     K -- No --> L[Terhenti / Perlu pemeriksaan]
-    K -- Yes --> M[Ponytail + one narrow<br/>specialist skill]
-    M --> N[Smallest correct change]
-    N --> O[Risk-based validation]
-    O --> P[Review]
-    P --> Q{Evidence sufficient?}
-    Q -- No --> R[Perlu pemeriksaan]
-    Q -- Yes --> S[Selesai]
-    S --> T[Update next-action or<br/>decision note when state changes]
+    K -- Yes --> S[Select one narrow specialist<br/>for the owning boundary]
+    S --> CH[Smallest correct change]
+    CH --> V[Engineering proof]
+    V --> ACG{Developing?}
+    ACG -- Yes --> AP[Acceptance POV check<br/>+ original brief scope gate]
+    ACG -- No --> R[Review]
+    AP --> R
+    NR --> R
+    R --> E{Evidence sufficient?}
+    E -- No --> PR[Perlu pemeriksaan]
+    E -- Yes --> OK[Selesai]
+    OK --> U[Update next-action or<br/>decision owner when state changes]
 ```
 
 ## Conditional Stages
 
-- **GSD-style discovery**: only before planning when the prompt leaves
-  high-impact decisions unresolved. It does not create a second planning/state
+- **GSD-style discovery**: only when high-impact decisions remain unresolved
+  after repository inspection. It does not create a second planning/state
   hierarchy in this repo.
-- **Grilling**: when the user asks to stress-test a plan, decision, or idea.
-  It challenges assumptions before commitment; it is not code review.
+- **Grilling**: when the user asks to stress-test a plan, decision, or idea. It
+  challenges assumptions before commitment; it is not code review.
 - **CodeGraph**: optional source-navigation accelerator for genuinely broad
   cross-file ownership, call-chain, dependency, or blast-radius questions.
   Start with one focused exploration, then verify against authoritative source.
@@ -56,7 +64,9 @@ These stages are conditional. Do not stack them into every task.
 ## Mode Outputs
 
 - **Plan**: scope, decisions, acceptance criteria, test strategy, and next action.
-- **Developing**: source or documentation change, validation, review, and result summary.
+- **Developing**: normalized development brief, one owning specialist, bounded
+  change or verified no-change result, engineering proof, downstream acceptance
+  check, and result summary.
 - **Maintenance**: diagnosis, minimal correction, regression proof, and limitations.
 
 ## Rule
