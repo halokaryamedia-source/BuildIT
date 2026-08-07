@@ -19,14 +19,15 @@ mode. Developing does not load Ponytail as another skill.
 
 ## Developing Front Door
 
-`development-brief` is mandatory for every Developing request. Its canonical
+`development-brief` is mandatory for every Developing request in both supported
+execution channels: **ChatGPT → GitHub** and **Codex local**. Its canonical
 procedure lives in `mcp/.agents/skills/development-brief/SKILL.md`; do not copy
 that procedure into routing notes.
 
 Its job is to make sure implementation starts with the correct goal, authority,
-Build/Acceptance POV, input/output boundary, acceptance criteria, and proof. It
-also allows `no change required` and a specialist-free fast path for trivial
-work.
+execution channel, Build/Acceptance POV, input/output boundary, acceptance
+criteria, and minimum useful proof. It also allows `no change required` and a
+specialist-free fast path for trivial work.
 
 ## Requirement Discovery
 
@@ -41,8 +42,9 @@ Use `grilling` when the user explicitly asks to stress-test, challenge, or find
 holes in a **plan, decision, or idea**. It is a decision-tree interview before
 commitment, not a generic code-review skill.
 
-Use `code-review` for implemented changes and `evidence-gate` for unsupported or
-disputed proof.
+Use `code-review` only when an implemented change benefits from independent
+critique beyond the normal final contract gate. Use `evidence-gate` for
+unsupported or disputed proof.
 
 ## Behavioral Anti-Slop Complement
 
@@ -81,10 +83,11 @@ dependency, or blast-radius discovery when normal targeted reads would require
 repeated broad search.
 
 When used, start with one focused exploration, then inspect the exact source and
-validate against tests/runtime. Do not use it for known-file edits, Blockbench
-visual judgement, reference comparison, or runtime proof. Do not auto-install
-it or commit `.codegraph/` state; standard adoption requires a separate local
-trial because large results can consume residual context.
+validate against authoritative source/tests/runtime when available. Do not use
+it for known-file edits, Blockbench visual judgement, reference comparison, or
+runtime proof. Do not auto-install it or commit `.codegraph/` state; standard
+adoption requires a separate local trial because large results can consume
+residual context.
 
 ## Diagnostic And Review Skills
 
@@ -92,7 +95,7 @@ trial because large results can consume residual context.
 - `tdd`: meaningful new behavior or regression coverage where test-first work
   actually reduces risk;
 - `research`: external primary-source facts;
-- `code-review`: implemented change or existing diff;
+- `code-review`: implemented change where independent critique materially helps;
 - `domain-modeling`: terminology/domain ownership is genuinely unclear;
 - `codebase-design`: module/interface ownership is genuinely unclear.
 
@@ -131,18 +134,25 @@ brief.
 Stop with `Needs Validation` when the source of truth, caller, public contract,
 or required proof is unknown.
 
-## Proof
+## Proof Economy
 
-| Change | Minimum proof |
-|---|---|
-| Text or routing | inspect links, paths, and diff |
-| Schema, parser, branch, transform | targeted test |
-| Public MCP surface | targeted test, build, generated docs |
-| Blockbench lifecycle or UI | build and live runtime check |
-| Visual model quality | fresh screenshots, concrete visual critic findings, and internal release gate |
+Use the **minimum useful proof** available in the active execution channel.
+More checks are not automatically better.
 
-Tool success, valid files, geometry metrics, remembered context, and navigation
-graphs are not visual or runtime proof.
+| Change | ChatGPT → GitHub | Codex local |
+|---|---|---|
+| Text/docs/routing | exact diff + relevant paths/links | same; no extra command required |
+| Bounded source change | changed source + affected callers/contracts; existing GitHub checks only when directly relevant | one targeted check/reproduction; add build/typecheck/test only if informative |
+| Public contract change | static implementation may proceed when safe, but unavailable material runtime proof remains `Perlu pemeriksaan` | stronger targeted contract/runtime proof before completion |
+| Blockbench/UI/visual behavior | repository change may be prepared; do not claim live/visual success from static inspection | live runtime/visual proof when required by the claim |
+
+Do not create tests, CI, fixtures, screenshots, build steps, or validation
+artifacts solely for ceremony. Do not re-run unchanged checks after they already
+established the required proof.
+
+Tool success, valid files, geometry metrics, remembered context, navigation
+graphs, and static GitHub inspection are not visual/runtime proof when the claim
+itself is visual/runtime.
 
 ## Anti-Slop Rules
 
@@ -154,6 +164,7 @@ graphs are not visual or runtime proof.
 - fix the proved cause once at its shared owner;
 - keep changes inside declared scope;
 - use the minimum implementation that satisfies observable success criteria;
-- do not add speculative files, tools, dependencies, or fallbacks;
+- use the minimum proof that can falsify the likely failure;
+- do not add speculative files, tools, dependencies, tests, CI, or fallbacks;
 - stop the same failed approach after two attempts;
-- never claim validation that was not run.
+- never claim validation that was not actually available and run.
