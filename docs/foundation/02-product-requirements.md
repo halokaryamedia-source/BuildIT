@@ -1,282 +1,277 @@
 # BlockIT — Product Intent Requirements
 
 **Status:** Draft  
-**Version:** 1.0  
-**Primary Output:** Blockbench `.bbmodel` for a Minecraft Bedrock Entity
+**Version:** 1.1  
+**Primary Output:** editable Blockbench `.bbmodel` for a Minecraft Bedrock Entity
 
 ## 1. Product Summary
 
-BlockIT lets a user ask Codex to create or update a Minecraft Bedrock Entity model in Blockbench through MCP.
+BlockIT lets a user give a simple natural-language request and an approved Model
+Reference, then uses an agent + Blockbench MCP to create or update a Minecraft
+Bedrock Entity model.
 
-The user provides:
+The user is not expected to understand MCP, Blockbench internals, or professional
+3D-modelling terminology. The system is responsible for normalizing incomplete
+input without inventing unsupported requirements.
 
-- a natural-language request;
-- a visual reference;
-- an optional brief.
-
-Codex then creates or updates a Blockbench project and saves a `.bbmodel` file.
-
-Reference image generation is defined in [`04-reference-guide.md`](04-reference-guide.md).
+Reference generation/preparation is defined in
+[`04-reference-guide.md`](04-reference-guide.md).
 
 ## 2. Product Objective
 
-Enable non-technical users to produce structured Minecraft Bedrock models through simple input, a visual reference, and Codex-controlled Blockbench editing.
+Enable non-technical users to obtain a structured, clean, editable Bedrock model
+while keeping modeller-quality reasoning, evidence, and runtime claims honest.
 
 ## 3. Target Users
 
-### Primary User
+### Primary
 
-A non-technical user with little or no knowledge of:
+A non-technical user with little or no knowledge of MCP, Blockbench, 3D
+modelling, or Bedrock asset structure.
 
-- MCP;
-- Blockbench;
-- 3D modelling;
-- Minecraft Bedrock asset structure.
+### Downstream / Secondary
 
-### Secondary User
-
-Minecraft Bedrock developers or modelers who want to speed up repetitive modelling work.
+Minecraft Bedrock modellers/developers who need the `.bbmodel` to be
+understandable, editable, and usable after AI-assisted creation.
 
 ## 4. User Input
 
 ### Required
 
-- natural-language request;
-- visual reference.
+- natural-language goal/request;
+- approved Model Reference or the input needed to prepare one first.
 
 ### Optional
 
 - model name;
 - target use;
-- approximate dimensions;
+- approximate/requested dimensions;
 - texture style;
 - animation requirement;
 - design notes;
-- expected output.
+- proposed implementation idea.
+
+A proposed implementation idea is not automatically a requirement. Preserve the
+user's goal while rejecting/redirecting a method that conflicts with verified
+product evidence or would materially reduce quality.
 
 ## 5. Primary User Flow
 
 ```text
 Request
 ↓
-Reference
+Approved Model Reference
 ↓
-Plan
+Whole-form interpretation
 ↓
-Open or create Blockbench project
+Primary Geometry Pass
 ↓
-Build geometry and hierarchy
+Primary visual gate
 ↓
-Create UV and texture
+Secondary geometry / hierarchy / pivots
 ↓
-Add animation if required
+Full geometry review
 ↓
-Validate structure
+UV / texture
+↓
+Optional animation
+↓
+Final validation
 ↓
 Save .bbmodel
 ```
+
+Detailed modelling order lives in `03-modelling-workflow.md`.
 
 ## 6. Product Scope
 
 ### In Scope
 
-- reading requests and references;
-- creating a short plan;
-- creating or opening a project;
-- creating, moving, resizing, rotating, and deleting cuboids;
-- grouping geometry;
-- creating roots, bones, and hierarchy;
-- assigning geometry to bones;
-- configuring pivots;
-- UV mapping;
-- texture creation or editing;
+- understanding simple/incomplete requests;
+- reviewing/preparing Model Reference inputs;
+- whole-form modelling reasoning;
+- creating/opening the correct Bedrock project through the verified workflow;
+- creating, moving, resizing, rotating, and deleting Cuboids;
+- grouping/hierarchy/bones where required;
+- pivots for real edit/animation needs;
+- UV mapping and texture work;
 - optional animation;
 - structural validation;
-- visual review support when available;
+- visual validation from fresh Blockbench evidence;
 - saving `.bbmodel`.
 
 ### Out of Scope
 
-- full resource-pack integration;
-- full behavior-pack integration;
-- entity definitions;
-- render controllers;
-- animation controllers;
+- full resource-pack or behavior-pack integration;
+- entity definitions/render controllers/animation controllers;
 - gameplay scripting;
-- Marketplace publishing;
-- licensing review;
-- sculpting or realistic rendering;
-- modelling for unrelated engines.
+- Marketplace publishing/licensing review;
+- sculpting/realistic rendering;
+- modelling for unrelated engines;
+- automatic mesh/image-to-approved-cuboid reconstruction;
+- numeric similarity scores as modelling authority.
 
 ## 7. Product Principles
 
-- Reference first.
-- Plan before execution.
-- One task produces one model unless the user explicitly asks for more.
-- Geometry before texture.
-- Base texture is a checkpoint, not the final state.
-- Preview at each major checkpoint when preview is available.
-- Use the simplest path that still works.
-- Do not claim visual quality without visual evidence.
-- Stop when requirements are met.
+- User intent may be simple; system reasoning must still be professional.
+- Reference first; whole-form before local detail.
+- One task produces one model unless explicitly requested otherwise.
+- Geometry quality precedes texture polish.
+- Use the minimum useful geometry and minimum useful proof.
+- Preview at **meaningful visual gates**, not after every Cube/tool call.
+- Do not claim visual quality without fresh visual evidence.
+- Do not claim runtime capability without current runtime evidence.
+- Stop when the requested scope and required proof are complete.
 
 ## 8. Core Requirements
 
-### PR-001 — Read Request
+### PR-001 — Understand Request
 
-Codex must understand the object, target platform, and expected `.bbmodel` output.
+The system must identify the intended asset, Bedrock target, expected output, and
+material ambiguity without requiring the user to write an expert prompt.
 
-### PR-002 — Read Reference
+### PR-002 — Use Model Reference
 
-Codex must use the reference for form, proportion, silhouette, and style, and report meaningful ambiguity.
+The system must use the approved reference for visible form, proportion,
+silhouette, contacts/relationships, and style while treating ambiguous detail as
+unknown rather than invented geometry.
 
-### PR-003 — Create Short Plan
+### PR-003 — Interpret Whole Form
 
-Codex must produce a concise modelling plan before execution.
+Before local polish, the system must reason about the primary masses,
+relationships, orientation, and global silhouette needed for one coherent model.
 
-### PR-004 — Open or Create Project
+### PR-004 — Open / Prepare Project
 
-Codex must open or create the correct Blockbench project without overwriting unrelated work.
+Use the current verified Bedrock project workflow without overwriting unrelated
+work.
 
-### PR-005 — Build Base Geometry
+### PR-005 — Build Primary Geometry
 
-The model must become recognizable before texturing.
+The model must become globally recognizable before secondary/detail work
+expands.
 
-### PR-006 — Create Hierarchy
+### PR-006 — Pass Primary Visual Gate
 
-The hierarchy must be functional, understandable, and free of unnecessary empty parts.
+The primary form must be visually reviewed for global silhouette, major
+proportions/masses, orientation, and major visible attachments before detail is
+used to compensate for shape errors.
 
-### PR-007 — Configure Pivots
+### PR-007 — Complete Structure
 
-Pivots must support the intended rotation or animation.
+Hierarchy, pivots, and secondary geometry must be purposeful, understandable,
+and appropriate to required editability/motion.
 
-### PR-008 — Create UV
+### PR-008 — Create UV / Texture
 
-Important surfaces must have usable UVs within the canvas.
+Required surfaces must have usable UVs and texture appropriate to the requested
+scope. Texture must not conceal incorrect primary geometry.
 
-### PR-009 — Apply Texture
+### PR-009 — Animation Only When Required
 
-Texture must establish the base visual identity and remain aligned with the reference.
-If the task requires final delivery, advanced texture must complete the target scope.
+Do not create animation by default. When required, verify intended motion,
+hierarchy, pivots, clipping, and detachment visually.
 
-### PR-010 — Add Animation When Required
+### PR-010 — Validate Structure
 
-Animation must be skipped when it is not required.
+Inspect only structural criteria relevant to the requested output and changed
+boundary.
 
-### PR-011 — Validate Structure
+### PR-011 — Validate Visually
 
-Codex must inspect geometry, hierarchy, pivots, UV, texture links, optional animation, and temporary elements.
+Fresh current-revision Blockbench evidence must support visual claims. Full
+geometry review uses the active Model Reference's declared view set; do not use
+fixture-specific or per-Cube screenshot rules.
 
-### PR-012 — Support Visual Review
+### PR-012 — Save Final File
 
-If preview is available, Codex must use it at geometry, texture, and animation checkpoints.
-If preview or the visual critic is not available, it must keep the result
-`BLOCKED` and must not expose it as a finished model.
-
-### PR-013 — Save Final File
-
-The final file must save correctly, reopen correctly, and preserve the project state.
+Save through the current verified workflow. Claim reopenability only when it was
+actually tested in an environment that can perform that proof.
 
 ## 9. Quality Requirements
 
-### Visual Quality
+### Visual
 
-- recognizable form;
-- alignment with reference;
-- clear silhouette;
-- sensible proportions;
-- readable texture;
-- Minecraft-compatible style.
+- recognizable whole form;
+- coherent silhouette and major proportions;
+- required primary parts/relationships;
+- readable Minecraft-compatible style;
+- texture/animation quality when in scope.
 
-### Structural Quality
+### Structural
 
-- clean hierarchy;
-- clear naming;
-- no unnecessary objects;
-- editable by another person;
-- no hidden undocumented dependency.
+- clean understandable hierarchy/naming;
+- purposeful geometry;
+- editable by another modeller;
+- no hidden undocumented dependency or accidental temporary content.
 
 ### Efficiency
 
-- avoid purposeless tool calls;
-- avoid full reinspection after every small change;
-- avoid rebuilding the entire model for a local issue;
-- avoid endless refinement.
+- no purposeless tool calls;
+- no per-Cube validation ceremony;
+- no repeated full inspection after a local correction unless global form was
+  affected;
+- no rebuilding a correct whole model for a local issue;
+- no endless refinement or broad tests after acceptance is sufficiently proven.
 
 ### Reliability
 
-- detect failed operations;
+- detect/report failed operations;
+- preserve recoverability where possible;
 - do not assume success;
-- preserve the project during failure;
-- report issues clearly.
+- distinguish static implementation from live/runtime/visual proof.
 
-## 10. Output Requirements
-
-Standard output:
+## 10. Standard Output
 
 ```text
 <model-name>.bbmodel
 ```
 
-It should include:
+The delivered project should contain the geometry, hierarchy/pivots, UV,
+texture, optional animation, and clean naming required by the approved scope.
 
-- geometry;
-- hierarchy;
-- pivots;
-- UV;
-- texture;
-- optional animation;
-- clean naming.
+## 11. Status Boundary
 
-## 11. Product Status Labels
+Internal visual/validation states may include `ISSUES_FOUND`, `BLOCKED`, and
+`PASS`.
 
-- `Reference Handoff`
-- `ISSUES_FOUND`
-- `BLOCKED`
-- `PASS`
+A successful tool call/build/save does not automatically produce `PASS`. A
+runtime/visual result remains unverified until the relevant local proof exists.
 
-Geometry, texture, and animation checkpoints are internal. The visual critic
-and release gate replace repeated user approvals; export is blocked unless the
-current model has a current `PASS` visual review.
-
-## 12. MVP Definition
+## 12. MVP Boundary
 
 ### Foundation MVP
 
-- create or open a project;
-- create groups or bones;
-- create cuboids;
-- set dimension, position, and rotation;
-- save and reopen `.bbmodel`.
+- correct Bedrock project workflow;
+- create/organize Cuboids;
+- set transforms/pivots/hierarchy as required;
+- save project through verified operations.
 
 ### Modelling MVP
 
-- reference-driven geometry;
-- hierarchy;
-- pivots;
-- basic UV;
-- basic texture linking;
-- structural validation.
+- approved-reference-driven whole-form geometry;
+- hierarchy/pivots;
+- basic UV/texture;
+- structural + primary/full visual gates.
 
 ### Target Product
 
-- advanced texturing;
-- visual validation;
+- stronger texture quality;
+- robust visual validation;
 - optional animation;
-- development-ready final `.bbmodel`.
+- clean development-ready `.bbmodel`.
 
-## 13. Definition of Done
+## 13. Definition Of Done
 
 A modelling task is done when:
 
-- the request is understood;
-- the reference is used;
-- required geometry is complete;
-- hierarchy and pivots are complete;
-- UV is complete;
-- texture is complete for the target scope, not just base texture;
+- the intended request/scope is understood;
+- the approved Model Reference was used honestly;
+- primary whole form passed visual review;
+- required secondary geometry/hierarchy/pivots are complete;
+- UV/texture are complete for scope;
 - animation is complete or not required;
-- structural validation is complete;
-- visual review has happened when possible;
-- no known critical issue remains;
-- the `.bbmodel` is saved.
+- required structural and visual proof is complete;
+- no unresolved critical/major issue remains;
+- `.bbmodel` is saved when save is part of scope;
+- any remaining local-only proof is reported rather than fabricated.
