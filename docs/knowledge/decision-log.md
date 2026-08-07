@@ -5,6 +5,42 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `typescript-expert` was replaced by focused `typescript-type-safety`
+
+- **Audit decision:** `RENAME + MOVE + SLIM`.
+- **Old name/source:** `typescript-expert`, a broad generic TypeScript/JavaScript
+  expertise package under `mcp/.agents/skills/`.
+- **Actual useful function:** difficult TypeScript type-system work — compiler
+  type compatibility/inference, generics/unions/narrowing, unsafe assertions,
+  declaration/external-library typing, public TypeScript type contracts, and
+  compile-time module typing when TypeScript owns the failure.
+- **New canonical name:** `typescript-type-safety`.
+- **New canonical location:** `.agents/skills/typescript-type-safety/SKILL.md`.
+- **Removed from active skill:** proactive use for every TS/JS task, automatic
+  project/tooling scans, generic npm validation, Nx/Turborepo/monorepo advice,
+  Biome/ESLint migration, JavaScript→TypeScript migration, broad build/type
+  performance checklists, generic tsconfig/utility-type reference bundles, and
+  the Python TypeScript diagnostic script.
+- **Boundary:** normal `.ts` implementation uses the domain owner instead of a
+  TypeScript specialist; MCP protocol work belongs to `mcp-server-development`;
+  Zod schema semantics belong to `zod`; Bun tooling belongs to the Bun
+  specialist; Blockbench runtime/API work belongs to the Blockbench specialist.
+- **Why:** BlockIT is already a strict TypeScript/Bun project. Loading a generic
+  "TypeScript expert" for almost every source edit would consume the one
+  specialist slot, overlap more specific owners, and encourage unrelated
+  tooling/migration work. TypeScript needs a specialist only when the type
+  system itself is the hard part.
+- **Preserved useful ideas:** sound narrowing, readable type contracts, minimal
+  assertions, fix the shared type owner instead of adding repeated casts, and
+  targeted compiler proof when available.
+- **Compatibility:** no alias skill is kept. Historical `typescript-expert`
+  references are lineage only; active routing uses `typescript-type-safety`.
+- **Proof:** audited the old 14 KB skill, reference bundle, diagnostic script,
+  current `mcp/tsconfig.json`, and adjacent MCP/Zod/Bun/Blockbench skill
+  boundaries. No MCP runtime source was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### `mcp-builder` was replaced by focused `mcp-server-development`
 
 - **Audit decision:** `RENAME + MOVE + SLIM`.
@@ -20,8 +56,8 @@ Active task state belongs in `next-action.md`, not here.
   client scaffolding, pagination-by-default rules, generic Node project
   scaffolding, mandatory broad build/test flow, fixed 10-question MCP evaluation
   workflow, and its Python/XML evaluation scripts.
-- **Boundary:** Zod-only issues belong to `zod`; general TypeScript to the
-  TypeScript specialist; Bun tooling to the Bun specialist; Blockbench
+- **Boundary:** Zod-only issues belong to `zod`; TypeScript type-system issues to
+  `typescript-type-safety`; Bun tooling to the Bun specialist; Blockbench
   plugin/UI/runtime/model manipulation to the Blockbench plugin specialist.
 - **Why:** the old skill was designed for building arbitrary MCP integrations,
   while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
@@ -231,6 +267,9 @@ while remaining nested specialists are pending one-by-one audit.
 
 The generic `mcp-builder` package is superseded by the focused root
 `mcp-server-development` specialist.
+
+The generic `typescript-expert` package is superseded by the focused root
+`typescript-type-safety` specialist.
 
 ## Rule
 
