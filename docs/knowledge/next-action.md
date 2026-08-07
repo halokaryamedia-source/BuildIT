@@ -43,14 +43,14 @@ Do not ask the user to repeat old context before reading these owners.
 ## Completed Foundation Hardening
 
 - repository state is explicit project memory across ChatGPT/Codex sessions;
-- foundation modelling/geometry/visual-validation policy is generic,
-  object-agnostic, and whole-form-first;
-- historical support-first/section-first/per-cube/Zebra-specific gates were
-  removed from product policy;
+- modelling/geometry/visual-validation policy is generic, object-agnostic, and
+  whole-form-first;
+- reference handoff now matches whole-form modelling and no longer contains the
+  stale first-Cube/support/section/overlap rules;
 - ChatGPT → GitHub vs Codex local proof boundaries are explicit;
 - mandatory review/broad validation ceremony was removed.
 
-## Completed Skill Audits
+## Completed Skill Audits / Recoveries
 
 ### 1. `mcp-builder` → `mcp-server-development`
 
@@ -58,24 +58,15 @@ Do not ask the user to repeat old context before reading these owners.
 
 Canonical: `.agents/skills/mcp-server-development/SKILL.md`
 
-Keeps the BlockIT MCP server/public-contract boundary and removes generic MCP
-server scaffolding/evaluation baggage.
-
 ### 2. `typescript-expert` → `typescript-type-safety`
 
 **Decision:** `RENAME + MOVE + SLIM`.
 
 Canonical: `.agents/skills/typescript-type-safety/SKILL.md`
 
-Keeps only genuine TypeScript type-system expertise. Normal `.ts`
-implementation does not load this specialist.
-
 ### 3. `zod` → merged into `mcp-server-development`
 
 **Decision:** `MERGE + DROP`.
-
-Zod remains the MCP input-schema implementation mechanism, but schema semantics
-are owned by the MCP public-contract specialist instead of a separate skill.
 
 ### 4. `bun-development` → `bun-tooling`
 
@@ -83,41 +74,60 @@ are owned by the MCP public-contract specialist instead of a separate skill.
 
 Canonical: `.agents/skills/bun-tooling/SKILL.md`
 
-Keeps only Bun-specific build/tooling used by Local. Generic Bun project,
-runtime migration, unrelated APIs, and performance/tutorial baggage were removed.
-
 ### 5. `blockbench-plugins` → `blockbench-runtime-development`
 
 **Decision:** `RENAME + MOVE + SLIM + DEDUP`.
 
 Canonical: `.agents/skills/blockbench-runtime-development/SKILL.md`
 
-Keeps only the Blockbench runtime/plugin boundary. Runtime mechanics and
-modelling judgement are separate owners. Duplicate `.agents`/`.github` copies
-were removed.
+Runtime mechanics and modelling judgement are separate owners.
 
 ### 6. nested `skill-creator`
 
 **Decision:** `DROP`.
 
-No root replacement is created. The nested package was generic skill-authoring
-guidance with no BlockIT-only behavior. Use the available global/user
-`skill-creator` capability only when creating or materially revising a skill.
+Use the available global/user capability only when creating or materially
+revising a skill.
 
 ### 7. `vue-best-practices` → merged into `blockbench-runtime-development`
 
 **Decision:** `MERGE + DROP`.
 
-The old skill targeted standalone Vue 3 concerns (`vue-tsc`, Volar,
-`defineModel`, Pinia/router, SSR/HMR, SFC patterns) that are not a separate
-BlockIT domain.
+Standalone Vue 3 application tooling is not a separate Local domain.
 
-The only useful Local behavior now lives in `blockbench-runtime-development`:
-follow existing embedded panel/component patterns, keep reactive state local when
-sufficient, clean subscriptions/listeners through the existing lifecycle, and do
-not introduce Vue application architecture/tooling without an explicit need.
+### 8. `blockbench-use` lineage → `blockbench-bedrock-modelling`
 
-The old `mcp/.agents/skills/vue-best-practices/` package is retired.
+**Decision:** `RECOVER + RENAME + SLIM`.
+
+Canonical: `.agents/skills/blockbench-bedrock-modelling/SKILL.md`
+
+Trusted historical source was established from repository history. The old
+`blockbench-use` skill was a broad mandatory orchestrator, and the related
+historical `blockbench-modeling` skill mixed Cuboid and freeform/mesh workflows.
+Neither package is restored literally.
+
+Recovered capability:
+
+- whole-form Bedrock modelling judgement;
+- primary/secondary Cuboid geometry;
+- silhouette/proportion/contact correction;
+- hierarchy/pivots for actual asset needs;
+- geometry-vs-texture decisions;
+- UV/texture scope and required animation;
+- visual/model completion for an editable `.bbmodel`.
+
+Explicitly not recovered:
+
+- multi-skill loading/orchestration;
+- generic Hytale/PBR/mesh routing;
+- mandatory outline/texture pre-flight dumps;
+- fixed mutation-count checkpoints;
+- first-Cube/support/section/overlap construction rules;
+- per-Cube/per-section screenshot ceremony.
+
+`blockbench-bedrock-modelling` owns **what model should be built and whether it
+is visually coherent**. `blockbench-runtime-development` owns **how Blockbench
+runtime operations execute**.
 
 ## Current Skill Structure
 
@@ -128,6 +138,7 @@ The old `mcp/.agents/skills/vue-best-practices/` package is retired.
 - `.agents/skills/typescript-type-safety/`
 - `.agents/skills/bun-tooling/`
 - `.agents/skills/blockbench-runtime-development/`
+- `.agents/skills/blockbench-bedrock-modelling/`
 
 ### Legacy nested locations
 
@@ -136,8 +147,7 @@ There are currently **no active skills** under `mcp/.agents/skills/` or
 
 ### Recovery items
 
-- `blockbench-use` ← **next**
-- `reference-generator`
+- `reference-generator` ← **next**
 - `evidence-gate`
 
 ## Skill Audit Method
@@ -167,21 +177,19 @@ Rules:
 
 ## Remaining Work Sequence
 
-1. **Recover/audit `blockbench-use`** from its trusted historical source. Separate
-   modelling judgement from `blockbench-runtime-development`, align it with the
-   current whole-form-first/object-agnostic foundation, choose a contextual name,
-   and keep only modelling behavior that adds real value.
-2. Recover/audit `reference-generator` from proven lineage; do not invent an
+1. **Recover/audit `reference-generator`** from proven lineage. Determine whether
+   it deserves a canonical project skill, a clearer contextual name, or should
+   remain a separate Reference Generator surface/workflow. Do not invent an
    exact historical package if one cannot be established.
-3. Recover/audit `evidence-gate` and decide whether it remains a distinct
+2. Recover/audit `evidence-gate` and decide whether it remains a distinct
    conditional capability or is better absorbed into baseline proof rules.
-4. Re-check the final activation matrix for overlap/context cost.
-5. Audit MCP implementation against the cleaned modelling workflow and identify
+3. Re-check the final activation matrix for overlap/context cost.
+4. Audit MCP implementation against the cleaned modelling workflow and identify
    only proven runtime gaps.
-6. Implement bounded fixes through ChatGPT → GitHub.
-7. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
+5. Implement bounded fixes through ChatGPT → GitHub.
+6. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
    targeted local proof, and fix only demonstrated failures.
-8. Validate modelling across multiple object archetypes before generic release
+7. Validate modelling across multiple object archetypes before generic release
    claims.
 
 ## Update Rule
@@ -192,6 +200,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Recover and audit **`blockbench-use`**. First establish the exact trusted
-historical source and compare it with the current foundation/modelling boundary;
-do not copy or rename it blindly.
+Recover and audit **`reference-generator`**. First establish its proven lineage
+and current workflow boundary; do not assume that an old skill name/package is
+the correct canonical Local form.
