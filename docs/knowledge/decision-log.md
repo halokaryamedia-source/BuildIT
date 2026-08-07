@@ -7,7 +7,9 @@ Use this note for the why behind the current direction.
 ### Developing uses a mandatory Dual-POV development brief
 
 - Decision: every **Developing** task starts with the checked-in
-  `development-brief` skill and exactly one implementation specialist.
+  `development-brief` skill. Add one implementation specialist only when the
+  task has a real specialist domain; trivial fast-path work may use
+  `development-brief` alone.
 - Decision: the user is not required to write an expert prompt. The skill must
   ground the request in repository evidence, separate the real goal from a
   suggested implementation, and decide whether development is actually needed.
@@ -28,16 +30,18 @@ Use this note for the why behind the current direction.
   fixture overfitting, and technically-correct-but-useless outputs are recurring
   ways an AI can distort the development goal even when individual code changes
   look plausible.
-- Tradeoff: Developing has one mandatory workflow skill before its specialist,
-  but Ponytail is not loaded as a third skill; the minimal/YAGNI guardrails are
-  already baseline in `AGENTS.md`.
+- Tradeoff: Developing always pays the small cost of one normalization skill,
+  but it does not load Ponytail as an extra layer and does not load a specialist
+  when that specialist adds no domain value.
 - Validation: the design was stress-tested with `skill-creator` principles and
   three rounds of `grilling`, including vague prompts, user-suggested wrong
   methods, already-existing features, technical interface changes, docs/source
   conflicts, object-specific fixtures, trivial edits, scope growth, and
-  engineering-pass/acceptance-fail cases. The checked-in skill still needs a
-  real fresh-session Codex usage trial before claiming runtime trigger behavior
-  is fully proven.
+  engineering-pass/acceptance-fail cases. Post-implementation review also
+  removed duplicated procedure text from routing docs and added a
+  specialist-free trivial fast path. The checked-in skill still needs a real
+  fresh-session Codex usage trial before claiming runtime trigger behavior is
+  fully proven.
 - Owner: Codex
 - Date: 2026-08-08
 
@@ -74,8 +78,9 @@ Use this note for the why behind the current direction.
 ### Skill routing is deliberately lean
 
 - Decision: skill routing is mode-specific instead of using one universal stack:
-  Plan uses `ponytail`; Developing uses `development-brief + one specialist`;
-  Maintenance uses `ponytail + the smallest diagnostic/specialist`.
+  Plan uses `ponytail`; Developing always uses `development-brief` and at most
+  one specialist when needed; Maintenance uses `ponytail + the smallest
+  diagnostic/specialist`.
 - Decision: GSD-style discovery is used only when the user's prompt leaves
   unresolved high-impact decisions; the full GSD `.planning/` lifecycle is not
   introduced into this repo.
@@ -174,9 +179,9 @@ layer, and offline Cuboid Blueprint gate were removed after repeated visual
 failure. They must not be reintroduced as geometry authority.
 
 The earlier universal default `ponytail + one specialist` is superseded for
-Developing mode by `development-brief + one specialist`. Ponytail remains the
-Plan default and a Maintenance baseline; its minimal/YAGNI principles also
-remain absorbed into root guardrails.
+Developing mode by mandatory `development-brief` with at most one specialist
+when needed. Ponytail remains the Plan default and a Maintenance baseline; its
+minimal/YAGNI principles also remain absorbed into root guardrails.
 
 ## Rule
 
