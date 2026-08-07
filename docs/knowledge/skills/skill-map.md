@@ -10,6 +10,7 @@ The skill files actually present in the `Local` branch live under
 
 | Skill | Owner |
 |---|---|
+| `development-brief` | mandatory Developing front door: request normalization, Dual POV, input/output contract, acceptance and proof |
 | `mcp-builder` | MCP server and public tool surface |
 | `typescript-expert` | TypeScript types and module structure |
 | `zod` | schema and input validation |
@@ -38,9 +39,14 @@ Global skills such as `ponytail`, `grilling`, `domain-modeling`,
 not copied into this workspace merely to make them available. Use the actual
 installed or verified upstream source when the trigger applies.
 
-Normal work uses `ponytail + one specialist`. GSD-style discovery, grilling,
-review, and evidence handling are conditional stages, not skills to stack by
-default.
+Mode defaults stay lean:
+
+- Plan: `ponytail`;
+- Developing: `development-brief + one specialist`;
+- Maintenance: `ponytail + the smallest diagnostic/specialist`.
+
+GSD-style discovery, grilling, review, evidence handling, and navigation tools
+are conditional stages, not extra skills to stack by default.
 
 ## External Complements
 
@@ -50,7 +56,7 @@ These are deliberately **not** additional default skills:
 |---|---|---|
 | Karpathy-inspired guidelines | anti-slop behavior: think first, simplicity, surgical changes, verifiable goals | principles are absorbed into root `AGENTS.md`; do not load a duplicate skill |
 | CodeGraph | local cross-file source navigation, call-chain and blast-radius acceleration | optional when broad structural discovery is genuinely needed; source/tests remain authority |
-| GSD Core discussion discipline | recover missing high-impact requirements from an incomplete prompt | use only before planning when needed; no `.planning/` hierarchy in Local |
+| GSD Core discussion discipline | recover missing high-impact requirements from an incomplete prompt | use only when needed; no `.planning/` hierarchy in Local |
 
 CodeGraph generated/index state is not project knowledge and must not replace
 `CONTEXT.md`, `next-action.md`, source, tests, or Git history.
