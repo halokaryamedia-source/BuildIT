@@ -24,11 +24,13 @@
   creating parallel planning/state files.
 - Skill routing is mode-specific:
   - Plan → `ponytail`;
-  - Developing → mandatory `development-brief + one specialist`;
+  - Developing → mandatory `development-brief`, plus at most one specialist
+    when it adds real domain value; trivial fast-path work may use
+    `development-brief` alone;
   - Maintenance → `ponytail + smallest diagnostic/specialist`.
-- `development-brief` is now checked into `mcp/.agents/skills/` and is the
-  mandatory Developing front door. It separates goal from suggested solution,
-  checks whether development is actually needed, isolates fixtures from generic
+- `development-brief` is checked into `mcp/.agents/skills/` and is the mandatory
+  Developing front door. It separates goal from suggested solution, checks
+  whether development is actually needed, isolates fixtures from generic
   requirements, chooses Build/Acceptance POVs after owner discovery, defines
   expected output and proof, and re-checks the contract before completion.
 - Use GSD-style requirement discovery only when high-impact decisions remain
@@ -69,15 +71,23 @@ Covered adversarial prompt cases:
    POV while Codex/MCP consumption is an interface constraint;
 5. docs/source conflict → stop at `Needs Validation` rather than choose silently;
 6. Zebra/Rhino/model example → fixture does not become generic runtime policy;
-7. trivial typo → fast path without ceremony;
+7. trivial typo → fast path without ceremony or pointless specialist loading;
 8. investigation expands scope → reframe rather than silently widen;
 9. engineering proof passes but downstream need fails → task is not complete.
+
+Post-implementation review found and corrected two efficiency issues:
+
+- specialist loading is no longer mandatory when a trivial task has no useful
+  specialist domain;
+- detailed `development-brief` procedure now lives only in its `SKILL.md`;
+  routing docs describe the boundary instead of duplicating the procedure.
 
 Current proof status:
 
 - skill frontmatter/path and routing are checked into Local;
-- routing/docs have been aligned around the same contract;
+- routing/docs agree on the same mandatory Developing boundary;
 - design-level fixture simulations passed the intended decision rules;
+- root structure remains unchanged except for the required skill subfolder;
 - **Needs Validation:** fresh-session Codex trigger/behavior has not yet been
   exercised as a real installed skill run, so runtime skill-selection behavior
   is not claimed as proven yet.
@@ -154,6 +164,8 @@ Current proof status:
   this task snapshot agree on mandatory Developing routing.
 - `development-brief` is one concise `SKILL.md`; no prompt engine, persona
   registry, test framework, or parallel planning tree was added.
+- Specialist loading is conditional on actual domain value, so the mandatory
+  brief does not force a second skill for trivial work.
 - Karpathy principles strengthen existing guardrails without creating another
   active skill layer.
 - CodeGraph remains optional and uninstalled/uncommitted until a local trial
@@ -165,6 +177,7 @@ Current proof status:
 
 ## Next Step
 
-Run a final repository diff/path review for the new `development-brief` routing.
-After that, the next design task is the **one-by-one skill naming audit**; do not
-mass-rename skills or change MCP runtime behavior yet.
+Start the **one-by-one skill naming audit**. Do not mass-rename skills. Evaluate
+one name at a time against its real trigger/function, upstream lineage, overlap,
+and migration cost before changing it. MCP runtime behavior remains out of scope
+until skill consolidation is complete.
