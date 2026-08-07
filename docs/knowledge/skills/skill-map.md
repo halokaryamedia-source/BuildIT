@@ -3,7 +3,7 @@
 Use this note for skill availability/location. Use
 [Activation Matrix](activation-matrix.md) for routing.
 
-## Repository-Wide Skill
+## Repository-Wide Skills
 
 Codex is launched from root `BuildIT`, so project-wide skills belong under
 `.agents/skills/`.
@@ -11,17 +11,25 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | Skill | Canonical path | Function |
 |---|---|---|
 | `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
+| `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/protocol boundary: tools/resources/prompts, registration, result semantics, annotations, transport/session behavior |
+
+### Retired: `mcp-builder`
+
+`mcp-builder` was audited and retired. Its useful MCP ideas were narrowed into
+`mcp-server-development`; the generic Python/FastMCP, external-API scaffolding,
+pagination defaults, mandatory evaluation suite, and evaluation scripts were
+removed because they do not match BlockIT's existing MCP architecture.
+
+Do not recreate or route to `mcp-builder`.
 
 ## MCP Specialist Copies Pending Audit
 
-These skills currently exist under `mcp/.agents/skills/`. They are usable as
-explicit repository guidance, but their names, overlap, and final root/module
-location have **not** been approved yet.
+These skills still exist under `mcp/.agents/skills/`. Their names, overlap, and
+final root/module location have not been approved yet.
 
 | Skill | Current function | Status |
 |---|---|---|
-| `mcp-builder` | MCP server and public tool surface | naming/location audit pending |
-| `typescript-expert` | TypeScript types/module structure | overlap audit pending |
+| `typescript-expert` | TypeScript types/module structure | **next audit** |
 | `zod` | schema/input validation | overlap audit pending |
 | `bun-development` | Bun runtime/scripts/dependencies | overlap audit pending |
 | `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | naming/location audit pending |
