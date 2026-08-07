@@ -10,7 +10,8 @@
   keep one continuation path across chats/sessions.
 - Out of scope: model-specific geometry fixes, Zebra-specific runtime rules,
   MCP feature development, full GSD installation, full OpenSpec lifecycle,
-  wholesale Rework/Sample merges, and speculative architecture.
+  Claude-Mem adoption, wholesale Rework/Sample merges, and speculative
+  architecture.
 - Status: `DOCUMENTATION_CONSOLIDATION`.
 
 ## Current Direction
@@ -27,6 +28,17 @@
 - Use `grilling` when the user asks to stress-test a plan, decision, or idea.
   It finds hidden assumptions through a decision-tree interview; it is not the
   code-review stage.
+- Karpathy-inspired anti-slop principles are absorbed into `AGENTS.md` rather
+  than loaded as another overlapping skill: think before coding, simplicity
+  first, surgical changes, and verifiable goals.
+- CodeGraph is an optional source-navigation accelerator only for broad
+  cross-file ownership, call-chain, dependency, or blast-radius discovery. It
+  is not a skill, source of truth, runtime verifier, or visual-quality judge.
+- CodeGraph is not auto-installed or committed during this phase. A bounded
+  local trial must prove useful navigation gain without unacceptable residual
+  context cost before standard adoption.
+- Claude-Mem is not adopted; repository-owned context remains the continuity
+  authority.
 - Use `code-review` for implemented changes. Use `evidence-gate` for disputed
   or unsupported evidence once its canonical Local copy is recovered.
 - Keep the lightweight Local Open Spec Guide. Use a full OpenSpec proposal only
@@ -47,6 +59,13 @@
 - Ponytail has a verified upstream source at `DietrichGebert/ponytail`.
 - Matt Pocock `grilling` has a verified upstream source at
   `mattpocock/skills`.
+- Karpathy-inspired guidelines were verified from
+  `multica-ai/andrej-karpathy-skills`; their useful rules are now absorbed into
+  Local behavior instead of creating another skill dependency.
+- CodeGraph was verified from `colbymchenry/codegraph`; it supports Codex and a
+  single default `codegraph_explore` MCP tool, but its own multi-turn benchmark
+  reports higher residual retrieval context, so it remains optional pending a
+  local trial.
 - The old `gsd-build/get-shit-done` repo is archived; the active successor is
   `open-gsd/gsd-core`. Only the requirement-discovery discipline is being
   adopted, not its repository lifecycle.
@@ -76,11 +95,14 @@
    `blockbench-use`, Reference Generator lineage, and `evidence-gate`.
 3. Decide the final canonical skill/reference ownership only after recovery
    evidence is complete.
-4. Audit the MCP implementation against the generic modelling flow and identify
+4. Run a bounded local CodeGraph trial only if broad MCP source discovery is a
+   real bottleneck; compare discovery calls, useful source coverage, and
+   residual context before adopting it as a standard environment tool.
+5. Audit the MCP implementation against the generic modelling flow and identify
    the smallest proven runtime gaps.
-5. Implement bounded fixes one cause at a time using `ponytail + one
+6. Implement bounded fixes one cause at a time using `ponytail + one
    specialist`.
-6. Validate the modelling workflow across multiple object archetypes before
+7. Validate the modelling workflow across multiple object archetypes before
    claiming general readiness.
 
 ## Verification For This Phase
@@ -88,8 +110,12 @@
 - Root remains limited to the existing minimal entry files/directories.
 - `AGENTS.md`, `CONTEXT.md`, the activation matrix, decision log, Open Spec
   Guide, and this task snapshot agree on routing and source ownership.
-- No new planning framework, skill directory, MCP feature, or model-specific
-  rule is introduced during documentation consolidation.
+- Karpathy principles strengthen existing guardrails without creating another
+  active skill layer.
+- CodeGraph remains optional and uninstalled/uncommitted until a local trial
+  proves it improves the specific discovery bottleneck.
+- No new planning framework, memory layer, MCP feature, or model-specific rule
+  is introduced during documentation consolidation.
 - Missing skills are reported as missing/recoverable instead of being silently
   simulated.
 
