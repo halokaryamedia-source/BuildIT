@@ -1,6 +1,6 @@
 ---
 name: development-brief
-description: Mandatory front-door for BlockIT Developing tasks. Use whenever the user asks to create or change code, documentation, workflow, MCP behavior, Blockbench behavior, or another repository artifact. Normalize the request before implementation: separate the real goal from a suggested solution, inspect authoritative context and source, determine whether development is actually needed, isolate examples/fixtures from generic requirements, choose the Build POV and Acceptance POV after the problem owner is understood, define input authority, expected output, minimal scope, 2-5 provable acceptance criteria, and proof, surface material conflicts, ask only unresolved high-impact decisions, then hand off to exactly one specialist skill. Re-check the same brief before reporting completion. Use the fast path for trivial unambiguous changes. Do not use for Plan or Maintenance mode.
+description: Mandatory front door for BlockIT Developing tasks. Use on any create/change request to ground the real goal in repository evidence, separate a suggested method or fixture from the generic requirement, decide whether development is actually needed, choose Build and Acceptance POVs after owner discovery, define input/output/scope/2-5 provable criteria and proof, surface material conflicts, ask only unresolved high-impact decisions, then hand off to one relevant specialist when needed. Re-check the same brief before completion. Use the fast path for trivial unambiguous changes. Do not use for Plan or Maintenance.
 ---
 
 # Development Brief
@@ -11,16 +11,16 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
 
 ## Core Rules
 
-- Treat the user's **goal** and the user's **suggested solution** as different things. A suggested implementation is not automatically a requirement.
+- Treat the user's **goal** and **suggested solution** as different things. A proposed implementation is not automatically a requirement.
 - Treat a sample, fixture, Golden Sample, bug case, or named object as evidence unless the user explicitly requests object-specific behavior.
 - Inspect authoritative docs/source before deciding the Build POV or implementation path.
-- A Developing request may validly end with **no code change** when existing behavior already satisfies the goal.
-- Choose the **Build POV** from the owner of the problem after enough evidence exists; do not select it from prompt keywords alone.
-- Choose the **Acceptance POV** from the person or system that ultimately needs the result. Keep intermediate consumers as interface constraints rather than extra personas.
-- Define only 2-5 acceptance criteria, and make each criterion provable.
+- A Developing request may validly end with **no change required** when existing behavior already satisfies the goal.
+- Choose the **Build POV** from the actual problem owner after enough evidence exists; do not select it from prompt keywords alone.
+- Choose the **Acceptance POV** from the downstream beneficiary. Keep intermediate API/agent/tool consumers as interface constraints rather than extra personas.
+- Define only 2-5 acceptance criteria and make each criterion provable.
 - If material authorities conflict, do not choose silently. Report `Needs Validation` and resolve the conflict before behavior changes.
 - Ask the user only for unresolved high-impact decisions that repository inspection cannot establish.
-- Use exactly one specialist skill for the implementation owner. If a separate boundary is discovered later, finish/reframe the current boundary before selecting another specialist.
+- Use one relevant specialist when the implementation has a real specialist owner. Do not stack overlapping specialists. The fast path may use this skill alone when another skill adds no domain value.
 - Re-check the original brief before `Selesai`; engineering success alone is insufficient when the downstream acceptance need still fails.
 
 ## Workflow
@@ -39,13 +39,13 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
    - If the requirement is already satisfied, do not invent work. Explain/reuse and verify instead.
 
 4. **Set Dual POV**
-   - **Build POV:** the expert responsibility that owns the actual change, chosen after owner discovery.
-   - **Acceptance POV:** the downstream user/consumer whose need determines whether the output is good.
+   - **Build POV:** expert responsibility owning the actual change, chosen after owner discovery.
+   - **Acceptance POV:** downstream user/consumer whose need determines whether the output is good.
    - Record intermediate API/agent/tool consumers as interface constraints when relevant.
 
 5. **Define the contract**
 
-   Use this internal shape; keep it concise and omit irrelevant fields:
+   Keep this internal and omit irrelevant fields:
 
    ```text
    Goal:
@@ -69,9 +69,9 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
    - Use lightweight requirement discovery only for unresolved high-impact decisions.
    - If docs, current request, and implementation materially disagree, stop at `Needs Validation` until the authority is resolved.
 
-7. **Show the user a simple brief**
+7. **Show a simple user brief**
 
-   For non-trivial work, summarize only:
+   For non-trivial work:
 
    ```text
    Tujuan:
@@ -83,8 +83,8 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
 
    Keep technical machinery internal unless it affects a user decision.
 
-8. **Handoff**
-   - Select exactly one specialist skill that owns the implementation boundary.
+8. **Handoff and implement**
+   - Select one specialist only when its domain knowledge/procedure is actually needed.
    - Implement the smallest complete change under the existing Local guardrails.
 
 9. **Final contract gate**
@@ -102,6 +102,7 @@ For a trivial, unambiguous, low-risk change:
 
 - perform the same internal checks quickly;
 - do not invoke discovery or produce a long brief;
+- do not load a specialist when it adds no domain value;
 - show one short line describing the intended change and boundary;
 - make the smallest change and inspect the diff/proof.
 
