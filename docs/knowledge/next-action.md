@@ -57,46 +57,47 @@ Do not ask the user to repeat old context before reading these owners.
 
 **Decision:** `RENAME + MOVE + SLIM`.
 
-Canonical:
+Canonical: `.agents/skills/mcp-server-development/SKILL.md`
 
-`.agents/skills/mcp-server-development/SKILL.md`
-
-Keeps only the BlockIT MCP server/protocol boundary: tools/resources/prompts,
-registration, request/result semantics, annotations, transport/session, and MCP
-SDK compatibility. Generic Python/FastMCP, API scaffolding, pagination defaults,
-mandatory evaluation suites, and Python/XML evaluation scripts were removed.
-
-The old `mcp-builder` package is retired.
+Keeps the BlockIT MCP server/public-contract boundary and removes generic MCP
+server scaffolding/evaluation baggage.
 
 ### 2. `typescript-expert` → `typescript-type-safety`
 
 **Decision:** `RENAME + MOVE + SLIM`.
 
-Canonical:
+Canonical: `.agents/skills/typescript-type-safety/SKILL.md`
 
-`.agents/skills/typescript-type-safety/SKILL.md`
+Keeps only genuine TypeScript type-system expertise. Normal `.ts`
+implementation does not load this specialist.
 
-Keeps only genuine TypeScript type-system expertise:
+### 3. `zod` → merged into `mcp-server-development`
 
-- compiler/type compatibility and inference;
-- generics, unions, narrowing, and unsafe assertions;
-- declaration/external-library typing;
-- public TypeScript type contracts;
-- compile-time module typing when TypeScript owns the problem.
+**Decision:** `MERGE + DROP`.
 
-Removed from the active skill:
+No replacement Zod/schema skill is created. Zod is an implementation mechanism
+inside the MCP input/public-contract boundary rather than a separate BlockIT
+domain.
 
-- broad "use for any TypeScript/JavaScript" routing;
-- automatic environment/tooling scans;
-- generic npm validation;
-- monorepo/Nx/Turborepo decisions;
-- Biome/ESLint and JavaScript→TypeScript migration guidance;
-- broad tooling/performance checklists;
-- generic utility/reference bundles;
-- Python TypeScript diagnostic script.
+Preserved inside `mcp-server-development`:
 
-Normal `.ts` implementation does **not** load this specialist. The old
-`typescript-expert` package is retired.
+- accepted/rejected input semantics;
+- defaults, optionality, coercion/refinement behavior;
+- shared schema reuse;
+- validation of untrusted MCP input;
+- build-time-safe schema construction;
+- runtime-only checks when validation depends on live Blockbench state;
+- clear input errors.
+
+Removed from the active skill set:
+
+- the generic 43-rule Zod pack;
+- form/i18n guidance;
+- Zod-Mini/bundle/performance guidance;
+- duplicate type-system rules already owned elsewhere.
+
+The old `mcp/.agents/skills/zod/` package is retired and must not be recreated or
+routed to.
 
 ## Current Skill Structure
 
@@ -108,8 +109,7 @@ Normal `.ts` implementation does **not** load this specialist. The old
 
 ### Nested copies pending one-by-one audit
 
-- `zod` ← **next**
-- `bun-development`
+- `bun-development` ← **next**
 - `blockbench-plugins`
 - `skill-creator`
 - `vue-best-practices`
@@ -147,11 +147,11 @@ Rules:
 
 ## Remaining Work Sequence
 
-1. **Audit `zod`** for unique schema/boundary value, overlap with
-   `typescript-type-safety` and `mcp-server-development`, clearer name, and root
-   location.
-2. Audit `bun-development`, `blockbench-plugins`, `skill-creator`, and
-   `vue-best-practices` one by one.
+1. **Audit `bun-development`** for unique Bun-specific value versus repository
+   scripts/package rules, overlap with MCP/TypeScript specialists, clearer name,
+   and whether a dedicated skill is needed at all.
+2. Audit `blockbench-plugins`, `skill-creator`, and `vue-best-practices` one by
+   one.
 3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
 4. Re-check the final activation matrix for overlap/context cost.
 5. Audit MCP implementation against the cleaned modelling workflow and identify
@@ -170,6 +170,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Audit **`zod`**. Do not rename, merge, move, or delete it until its actual
-contents, unique schema value, and overlap with the current root specialists are
-understood.
+Audit **`bun-development`**. Do not rename, merge, move, or delete it until its
+actual Bun-specific value and overlap with current repository scripts/specialists
+are understood.
