@@ -137,6 +137,20 @@ hierarchy.
 
 Do not use these merely to make routine work look more rigorous.
 
+## Skill Authoring
+
+Use the available global/user `skill-creator` capability only when a skill itself
+is being created or materially revised.
+
+Do **not** keep a repository copy of generic skill-authoring guidance just to make
+it available locally. BlockIT-specific skill behavior belongs in the actual
+repository skill being authored plus the Knowledge decisions/routing that govern
+it.
+
+The retired nested `mcp/.agents/skills/skill-creator/` package must not be
+recreated unless a future requirement proves a Local-only authoring capability
+that the available global/user skill cannot provide.
+
 ## Nested Specialist Copies Pending Audit
 
 These copies still live under `mcp/.agents/skills/` while their one-by-one
@@ -144,8 +158,7 @@ audit is in progress:
 
 | Task | Skill | Status |
 |---|---|---|
-| Skill authoring package | `skill-creator` | **next audit** |
-| Vue guidance | `vue-best-practices` | pending relevance/overlap audit |
+| Vue guidance | `vue-best-practices` | **next audit** |
 | Blockbench modelling/`.bbmodel` workflow | `blockbench-use` | recovery item |
 | Source Image → modelling brief | `reference-generator` | recovery item |
 | Unsupported/disputed evidence | `evidence-gate` | recovery item |
@@ -156,9 +169,6 @@ copies are canonical project-wide skills. Audit/migrate them one at a time.
 Do not stack overlapping specialists. Choose the semantic owner. For example,
 a Bun command that only launches an MCP workflow is still MCP-owned unless the
 Bun command/build behavior itself is the problem.
-
-Use `skill-creator` only when a skill itself is being created or updated; the
-nested repository copy is still pending its own audit.
 
 ## Optional Code Navigation
 
