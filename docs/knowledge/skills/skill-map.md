@@ -22,17 +22,22 @@ removed because they do not match BlockIT's existing MCP architecture.
 
 Do not recreate or route to `mcp-builder`.
 
-## MCP Specialist Copies Pending Audit
+## Nested Copies Pending One-By-One Audit
 
-These skills still exist under `mcp/.agents/skills/`. Their names, overlap, and
-final root/module location have not been approved yet.
+Current repository inventory under `mcp/.agents/skills/`:
 
-| Skill | Current function | Status |
+| Skill | Current apparent function | Status |
 |---|---|---|
 | `typescript-expert` | TypeScript types/module structure | **next audit** |
-| `zod` | schema/input validation | overlap audit pending |
-| `bun-development` | Bun runtime/scripts/dependencies | overlap audit pending |
-| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | naming/location audit pending |
+| `zod` | schema/input validation | pending overlap audit |
+| `bun-development` | Bun runtime/scripts/dependencies | pending overlap audit |
+| `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | pending naming/location audit |
+| `skill-creator` | skill authoring package | discovered nested copy; pending duplicate/ownership audit |
+| `vue-best-practices` | Vue guidance | discovered nested copy; pending relevance/overlap audit |
+
+`skill-creator` and `vue-best-practices` were previously missing from the
+knowledge inventory. Their presence is now recorded, but no KEEP/DROP/MOVE
+judgment is made until their individual audit.
 
 Do not mass-move or mass-rename these. Audit one at a time.
 
@@ -53,6 +58,9 @@ Global/user skills such as `ponytail`, `grilling`, `domain-modeling`,
 `codebase-design`, `diagnosing-bugs`, `tdd`, `research`, `code-review`, and
 `skill-creator` are not copied into BuildIT solely to increase the skill count.
 Use them only when the activation matrix says their distinct function is needed.
+
+The nested `mcp/.agents/skills/skill-creator/` copy is therefore a likely overlap
+candidate, but that conclusion is not finalized until its own audit.
 
 ## Skill Audit Rule
 
