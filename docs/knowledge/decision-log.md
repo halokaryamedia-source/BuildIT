@@ -1,226 +1,208 @@
 # Decision Log
 
-Use this note for the why behind the current direction.
+Use this note for durable decisions whose **reason** must survive future chats.
+Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### Repository state is the project memory
+
+- **Decision:** new ChatGPT and Codex sessions resume from repository owners,
+  not reconstructed chat history.
+- **Decision:** `AGENTS.md` owns working behavior; `CONTEXT.md` owns stable facts;
+  `docs/knowledge/next-action.md` owns the single active task/state;
+  `decision-log.md` owns durable reasons; `docs/foundation/` owns durable
+  product/modelling policy; source + relevant proof own runtime truth.
+- **Decision:** before asking the user to repeat prior context, the agent must
+  follow the repository boot path and recover what the repo already knows.
+- **Decision:** before ending material work, update `next-action.md` when goal,
+  status, blocker, proof state, or next step changed.
+- **Why:** re-explaining old context from memory can introduce drift, omissions,
+  and new assumptions. Version-controlled project memory is inspectable,
+  correctable, and shared by ChatGPT → GitHub and Codex local.
+- **Tradeoff:** repository notes must stay current and concise; stale docs are a
+  real defect and must be corrected rather than compensated for with chat lore.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
+### Agent judgment is independent from user-suggested methods
+
+- **Decision:** the user owns the desired outcome, but a suggested technical
+  method is not automatically a requirement.
+- **Decision:** the agent must reject or redirect a method when evidence shows it
+  is invalid, contradicts an authoritative decision, repeats a disproven path,
+  creates unsupported behavior, adds disproportionate complexity, or is likely
+  to reduce product/output quality.
+- **Decision:** rejection must include a concrete reason and the smallest better
+  path that still serves the user's goal.
+- **Decision:** harmless preferences and equally valid choices should not be
+  challenged merely to appear critical.
+- **Why:** unconditional agreement is a source of AI slop. Useful agency means
+  protecting the result, not maximizing agreement with every proposed method.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### Developing supports ChatGPT → GitHub and Codex local
 
-- Decision: the same `development-brief` contract applies in both execution
-  channels. The goal, Build POV, Acceptance POV, scope, and acceptance criteria
-  do not change just because the agent surface changes.
-- Decision: `ChatGPT → GitHub` uses repository reads/writes as its available
-  execution environment. It must not pretend to have a local shell, Blockbench
-  runtime, or local test execution. Repo-local skills are invoked through the
-  documented repository boot path; ChatGPT product skill auto-discovery is not
-  assumed for a skill that merely exists in GitHub.
-- Decision: `Codex local` may use local build/test/runtime capabilities when
-  available and relevant, but broader validation is not required merely because
-  Codex can run it.
-- Decision: both channels use a **minimum useful proof** budget: choose the
-  cheapest check that can falsify the likely failure, stop when acceptance has
-  sufficient evidence, and never create tests/CI/fixtures/validation artifacts
-  solely for ceremony.
-- Decision: GitHub-only implementation is not blocked by unavailable local
-  proof when the repository change can be made safely. A material live/runtime
-  claim that cannot be proven in GitHub remains `Perlu pemeriksaan` with one
-  explicit local proof step; static inspection must not be relabelled as live
-  validation.
-- Why: forcing local-style validation into ChatGPT→GitHub creates fake or
-  blocking checks, while running every available test in Codex wastes time and
-  context without necessarily increasing confidence.
-- Tradeoff: some GitHub-developed runtime changes can be implemented before
-  live verification, so the report must distinguish **implemented** from
-  **verified** when that difference matters.
-- Validation: the ChatGPT→GitHub path is being exercised in this session through
-  direct repository inspection/writes. Codex-local execution-channel behavior
-  remains to be exercised when work next moves to a local Codex session.
-- Owner: Codex
-- Date: 2026-08-08
+- **Decision:** the same `development-brief` contract applies in both execution
+  channels. Goal, Build POV, Acceptance POV, scope, and acceptance criteria do
+  not change because the agent surface changes.
+- **Decision:** ChatGPT → GitHub prepares repository work using static evidence;
+  it must not invent local shell, MCP, Blockbench, or visual/runtime proof.
+- **Decision:** Codex local performs final targeted local proof only when the
+  claim actually requires the local environment.
+- **Decision:** both channels use a **minimum useful proof** budget: choose the
+  cheapest check that can falsify the likely failure and stop when acceptance
+  has sufficient evidence.
+- **Decision:** do not create tests, CI, fixtures, screenshots, builds, or review
+  stages solely for ceremony.
+- **Why:** forcing local-style validation into GitHub creates fake/blocking work;
+  running every available check in Codex wastes time/context without guaranteed
+  confidence gain.
+- **Tradeoff:** a runtime-related GitHub change can be implemented before live
+  proof, so reports must distinguish **implemented** from **verified** when it
+  matters.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
 
 ### Developing uses a mandatory Dual-POV development brief
 
-- Decision: every **Developing** task starts with the checked-in
-  `development-brief` skill. Add one implementation specialist only when the
-  task has a real specialist domain; trivial fast-path work may use
-  `development-brief` alone.
-- Decision: the user is not required to write an expert prompt. The skill must
-  ground the request in repository evidence, separate the real goal from a
-  suggested implementation, and decide whether development is actually needed.
-- Decision: the Build POV is chosen only after the actual problem owner is
-  understood; the Acceptance POV represents the downstream beneficiary. An
-  intermediate MCP/API/agent consumer is recorded as an interface constraint,
-  not another persona.
-- Decision: a named object, fixture, Golden Sample, or bug example is evidence,
-  not a generic runtime requirement unless the user explicitly requests
-  object-specific behavior.
-- Decision: 2-5 provable acceptance criteria and a proof path are defined before
-  non-trivial implementation. The same brief is checked again before `Selesai`
-  so engineering success cannot hide downstream failure or scope drift.
-- Decision: `no change required` is a valid Developing outcome when existing
-  behavior already satisfies the goal. Trivial changes use a fast path rather
-  than a full visible ceremony.
-- Why: incomplete prompts, premature expert-role selection, solution-following,
-  fixture overfitting, and technically-correct-but-useless outputs are recurring
-  ways an AI can distort the development goal even when individual code changes
-  look plausible.
-- Tradeoff: Developing always pays the small cost of one normalization skill,
-  but it does not load Ponytail as an extra layer and does not load a specialist
-  when that specialist adds no domain value.
-- Validation: the design was stress-tested with `skill-creator` principles and
-  three rounds of `grilling`, including vague prompts, user-suggested wrong
-  methods, already-existing features, technical interface changes, docs/source
-  conflicts, object-specific fixtures, trivial edits, scope growth, and
-  engineering-pass/acceptance-fail cases. Post-implementation review also
-  removed duplicated procedure text from routing docs and added a
-  specialist-free trivial fast path.
-- Owner: Codex
-- Date: 2026-08-08
+- **Decision:** every Developing task starts with `development-brief`.
+- **Decision:** the user does not need to write an expert prompt. The skill
+  grounds the real goal, separates goal from suggested method, detects execution
+  channel, determines whether development is needed, isolates fixtures from
+  generic requirements, chooses Build/Acceptance POVs after owner discovery,
+  and defines 2–5 provable acceptance criteria plus proof budget.
+- **Decision:** `no change required` is a valid outcome; trivial work uses a fast
+  path without pointless specialist loading.
+- **Decision:** before `Selesai`, the same brief is rechecked so engineering
+  success cannot hide downstream failure or scope drift.
+- **Why:** incomplete prompts, premature role selection, method-following,
+  fixture overfitting, and technically-correct-but-useless output are recurring
+  ways AI can distort a development goal.
+- **Validation:** design was stress-tested with `skill-creator` principles and
+  three `grilling` rounds. ChatGPT → GitHub use is active; local runtime behavior
+  is proven only when Codex performs the relevant local task.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
 
-### Anti-slop complements do not expand the default skill stack
+### Repository-wide workflow skills live at root
 
-- Decision: Karpathy-inspired guidelines are absorbed into root `AGENTS.md` as
-  behavioral guardrails instead of being installed or loaded as a separate
-  skill.
-- Decision: CodeGraph is an optional external navigation accelerator for
-  cross-file structural discovery, call-chain tracing, ownership discovery,
-  and blast-radius analysis. It is not a specialist skill, source of truth,
-  runtime verifier, or visual-quality judge.
-- Decision: CodeGraph is not auto-installed and `.codegraph/` state is not
-  committed during this consolidation phase. A separate local trial must prove
-  that fewer discovery calls outweigh its residual-context cost before it can
-  become a standard environment dependency.
-- Decision: Claude-Mem is not adopted. Repository-owned context and decisions
-  remain the continuity authority.
-- Why: the useful Karpathy rules overlap with Local guardrails, so a second
-  skill would add instruction noise. CodeGraph adds a distinct navigation
-  capability but its own multi-turn measurements show that large graph
-  responses can leave more retrieval context resident even when they reduce
-  tool-call throughput.
-- Tradeoff: cross-module investigation may still use ordinary source search
-  when CodeGraph is unavailable or the task is small; continuity requires
-  maintaining the existing explicit docs instead of relying on automatic
-  memory.
-- Validation: compared Local routing with the upstream Karpathy-inspired
-  guideline repository, CodeGraph MCP/tool documentation and context-occupancy
-  benchmark, and Claude-Mem architecture/configuration.
-- Owner: Codex
-- Date: 2026-08-08
+- **Decision:** because Codex is launched from root `BuildIT`, repository-wide
+  skills belong under `.agents/skills/`.
+- **Decision:** `development-brief` is canonical at
+  `.agents/skills/development-brief/SKILL.md`.
+- **Decision:** existing `mcp/.agents/skills/` specialists remain temporary
+  module copies pending one-by-one naming, overlap, and location audit; do not
+  mass-migrate them.
+- **Decision:** until each specialist is audited, routing may read its nested
+  `SKILL.md` directly when needed rather than pretending root auto-discovery has
+  already been solved.
+- **Why:** root-scoped workflow guidance must be available when Codex starts at
+  the repository root, while specialist cleanup should not be mixed with an
+  unreviewed mass move/rename.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
 
 ### Skill routing is deliberately lean
 
-- Decision: skill routing is mode-specific instead of using one universal stack:
-  Plan uses `ponytail`; Developing always uses `development-brief` and at most
-  one specialist when needed; Maintenance uses `ponytail + the smallest
-  diagnostic/specialist`.
-- Decision: GSD-style discovery is used only when the user's prompt leaves
-  unresolved high-impact decisions; the full GSD `.planning/` lifecycle is not
-  introduced into this repo.
-- Decision: `grilling` is used to stress-test a plan, decision, or idea when the
-  user asks for adversarial scrutiny. It is not a replacement for code review.
-- Decision: `code-review` is conditional for implemented changes when independent
-  critique materially adds value; unsupported or disputed evidence uses
-  `evidence-gate` when that skill is available.
-- Decision: the lightweight Local Open Spec Guide remains the default decision
-  discipline. A full OpenSpec lifecycle is reserved for genuinely cross-cutting
-  contract, migration, or multi-phase changes.
-- Decision: current checked-in workspace skills are read from
-  `mcp/.agents/skills/`. The long-term canonical home for recovered skills is
-  `Needs Validation`; no missing directory is created just to match stale docs.
-- Why: more simultaneously loaded skills create overlapping authority, context
-  bloat, and extra ceremony without proving better modelling or MCP behavior.
-- Tradeoff: some large changes may need an explicit escalation to GSD discovery,
-  grilling, OpenSpec, or review rather than receiving those layers by default.
-- Validation: routing was compared with the current Local repository, the
-  upstream Ponytail source, Matt Pocock `grilling`, active GSD Core discussion
-  workflow, `skill-creator`, and the existing Local Open Spec Guide.
-- Owner: Codex
-- Date: 2026-08-08
+- **Decision:** Plan uses `ponytail`; Developing uses mandatory
+  `development-brief` plus at most one useful specialist; Maintenance uses
+  `ponytail` plus the smallest diagnostic/specialist owning the failure.
+- **Decision:** GSD discovery, `grilling`, `code-review`, `evidence-gate`,
+  CodeGraph, and OpenSpec are conditional escalations, not default layers.
+- **Decision:** skills are audited one at a time and classified `KEEP`, `RENAME`,
+  `MERGE`, `MOVE`, `DROP`, or `RECOVER` based on real trigger/function and
+  overlap—not upstream naming.
+- **Decision:** Karpathy-inspired simplicity/surgical-change principles are
+  baseline `AGENTS.md` behavior rather than another skill.
+- **Decision:** CodeGraph remains an optional navigation accelerator; Claude-Mem
+  is not adopted.
+- **Why:** overlapping skill stacks create authority ambiguity, context bloat,
+  and ceremony without proving better output.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
 
 ### The reference is a modelling brief
 
-- Decision: the five-view image supplies visual proportions, landmarks,
-  silhouette, contacts, and style.
-- Decision: the declared dimensions are the numeric geometry target.
-- Decision: image pixels, dimension-line lengths, subject bounds, and image
+- **Decision:** the five-view image supplies visual proportions, landmarks,
+  silhouette, contacts, and style; declared dimensions supply the numeric
+  geometry target.
+- **Decision:** image pixels, dimension-line lengths, subject bounds, and image
   aspect are not calibration data.
-- Why: generated reference sheets are useful visual guides but are not
+- **Why:** generated reference sheets are useful visual guides but are not
   guaranteed to be metrically consistent.
-- Tradeoff: cube decisions require a modeller plan and visual review.
-- Owner: Codex
-- Date: 2026-07-31
+- **Tradeoff:** cube decisions require modeller reasoning and visual review.
+- **Owner:** Codex
+- **Date:** 2026-07-31
 
 ### No automatic mesh-to-cuboid modelling
 
-- Decision: SF3D and mesh decomposition do not create the geometry path.
-- Decision: `place_cube` and `modify_cube` remain technical operations only.
-- Why: a rough mesh can provide volume but cannot decide semantic parts,
-  contacts, pivots, or the intended cuboid decomposition.
-- Tradeoff: geometry creation is deliberate and cannot be falsely reported as
-  automatic reconstruction.
-- Owner: Codex
-- Date: 2026-07-31
+- **Decision:** SF3D/mesh decomposition do not create the geometry path;
+  `place_cube` and `modify_cube` remain technical operations.
+- **Why:** a rough mesh cannot decide semantic parts, contacts, pivots, or the
+  intended cuboid decomposition.
+- **Owner:** Codex
+- **Date:** 2026-07-31
 
 ### SF3D and similarity scoring are rejected
 
-- Decision: SF3D is not used for geometry, volume fitting, texture guidance,
+- **Decision:** SF3D is not used for geometry, volume fitting, texture guidance,
   or validation.
-- Decision: projection, IoU, silhouette, similarity, and other numeric scores
-  are not used for geometry selection, rejection, approval, or reporting.
-- Why: the available results produced bias and false confidence rather than
-  proof of the intended Blockbench model.
-- Tradeoff: visual review must be performed directly in Blockbench; there is no
-  automatic similarity shortcut.
-- Owner: Codex
-- Date: 2026-07-31
+- **Decision:** projection/IoU/silhouette/similarity scores are not geometry
+  authority, approval, or quality proof.
+- **Why:** prior results produced bias and false confidence rather than evidence
+  of the intended Blockbench model.
+- **Owner:** Codex
+- **Date:** 2026-07-31
 
-### Package status is a handoff label
+### Package validity is structural only
 
-- Decision: package validation is structural only; human acceptance of the
-  brief is a modelling handoff.
-- Decision: package validity never proves visual correctness or cube accuracy.
-- Why: structural package validation cannot judge modelling quality.
-- Owner: Codex
-- Date: 2026-07-31
+- **Decision:** package validation is structural/handoff status; it never proves
+  visual correctness or cube accuracy.
+- **Owner:** Codex
+- **Date:** 2026-07-31
 
 ### Visual and structural evidence stay separate
 
-- Decision: valid coordinates, hierarchy, bounds, contacts, and successful MCP
-  calls do not constitute visual approval.
-- Why: a structurally valid model can still be the wrong shape.
-- Owner: Codex
-- Date: 2026-07-25
+- **Decision:** valid coordinates, hierarchy, bounds, contacts, successful MCP
+  calls, and saved files do not constitute visual approval.
+- **Why:** a structurally valid model can still be the wrong shape.
+- **Owner:** Codex
+- **Date:** 2026-07-25
 
 ### MCP owns technical geometry operations
 
-- Decision: MCP owns elements, groups, parent-child structure, positions,
+- **Decision:** MCP owns elements, groups, parent-child structure, positions,
   pivots, rotations, bounds, and structural inspection.
-- Decision: MCP does not infer object anatomy or semantic cube decomposition
-  from a mesh or image automatically.
-- Owner: Codex
-- Date: 2026-07-31
+- **Decision:** MCP does not automatically infer anatomy or semantic cube
+  decomposition from an image/mesh.
+- **Owner:** Codex
+- **Date:** 2026-07-31
 
 ## Superseded Decisions
 
-The earlier policy that user approval made the image a visual authority, that
-orthographic overlays were the geometry comparison gate, and that SF3D could
-produce a Cube Draft is superseded. Those assumptions created false confidence
-and must not be reintroduced.
+The earlier policy that user approval made the image a metric authority, that
+orthographic overlays/numeric similarity could approve geometry, or that SF3D
+could produce the Cube Draft is superseded.
 
-The `PLAN_READY` replay, per-cube locked transforms, IoU approval, calibration
-layer, and offline Cuboid Blueprint gate were removed after repeated visual
-failure. They must not be reintroduced as geometry authority.
+`PLAN_READY` replay, per-cube locked transforms, IoU approval, calibration
+layers, and the offline Cuboid Blueprint gate were removed after repeated visual
+failure and must not be reintroduced as authority.
 
-The earlier universal default `ponytail + one specialist` is superseded for
-Developing mode by mandatory `development-brief` with at most one specialist
-when needed. Ponytail remains the Plan default and a Maintenance baseline; its
-minimal/YAGNI principles also remain absorbed into root guardrails.
+The earlier universal `ponytail + one specialist` stack is superseded for
+Developing by mandatory `development-brief` with at most one useful specialist.
+
+The earlier assumption that all workspace skills are canonically under
+`mcp/.agents/skills/` is superseded: root-wide skills use `.agents/skills/`,
+while MCP specialists remain pending one-by-one audit.
 
 ## Rule
 
 - Do not turn a diagnostic number into a modelling decision.
 - Do not invent missing geometry from an ambiguous image.
-- Mark unproven runtime behaviour as `Needs Validation`.
+- Do not convert user-suggested methods into requirements without validation.
+- Mark unproven runtime behavior as `Needs Validation`.
 
 ## Parent
 
