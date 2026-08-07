@@ -1,0 +1,76 @@
+{
+  "schema": "minecraft_model_reference",
+  "asset": {
+    "id": "zebra",
+    "name": "Zebra",
+    "category": "CREATURE"
+  },
+  "source_images": [
+    {
+      "id": "zebra_source_image",
+      "file": "source/zebra_source_image.webp",
+      "role": "SOURCE_IMAGE"
+    }
+  ],
+  "model_reference": {
+    "file": "zebra_model_reference.webp",
+    "width_px": 1280,
+    "height_px": 720,
+    "format": "WEBP",
+    "primary_view": "LEFT SIDE",
+    "views": [
+      "LEFT SIDE",
+      "FRONT",
+      "BACK",
+      "TOP / FOOTPRINT",
+      "FRONT 3/4 PREVIEW"
+    ]
+  },
+  "dimensions": {
+    "unit": "blocks",
+    "blockbench_units_per_block": 16,
+    "height_blocks": 2.0,
+    "width_blocks": 0.9,
+    "length_blocks": 2.6,
+    "geometry_units": {
+      "height": 32.0,
+      "width": 14.4,
+      "length": 41.6
+    }
+  },
+  "style": {
+    "texture_style": "32x32",
+    "shape_language": "PRACTICAL_BEDROCK_CUBOIDS",
+    "small_detail_policy": "TEXTURE_FIRST"
+  },
+  "pose": {
+    "mode": "STATIC",
+    "description": "stable four-leg standing pose"
+  },
+  "visual_fit": {
+    "schema": "visual_fit_v1",
+    "coordinates": {
+      "reference_width_px": 1280,
+      "reference_height_px": 720,
+      "blockbench_units_per_block": 16,
+      "axis_convention": {
+        "width": "x",
+        "height": "y",
+        "length": "z",
+        "forward": "-z",
+        "left_side_camera": "x"
+      },
+      "front_three_quarter_side": "LEFT"
+    },
+    "view_crops": {
+      "LEFT SIDE": [146, 96, 468, 306],
+      "FRONT": [614, 96, 246, 306],
+      "BACK": [860, 96, 272, 306],
+      "TOP / FOOTPRINT": [146, 402, 509, 255],
+      "FRONT 3/4 PREVIEW": [655, 402, 477, 255]
+    }
+  },
+  "geometry_priorities": {
+    "texture_first": ["stripes", "eyes", "nostrils", "mouth"]
+  }
+}
