@@ -247,20 +247,23 @@ Canonical root skills currently approved:
 - `.agents/skills/mcp-server-development/` — MCP server/public-contract specialist;
 - `.agents/skills/typescript-type-safety/` — TypeScript type-system specialist;
 - `.agents/skills/bun-tooling/` — Bun-specific build/tooling specialist;
-- `.agents/skills/blockbench-runtime-development/` — Blockbench runtime/plugin/API specialist.
+- `.agents/skills/blockbench-runtime-development/` — Blockbench runtime/plugin/API specialist;
+- `.agents/skills/blockbench-bedrock-modelling/` — Minecraft Bedrock model judgement and visual/model completion specialist.
 
-The old generic `mcp-builder`, `typescript-expert`, `zod`, `bun-development`, and
-`blockbench-plugins` skills are retired or merged. Do not route to or recreate
-them. Blockbench runtime mechanics and Blockbench modelling judgement are
-separate responsibilities; do not collapse them into one skill.
+The old generic `mcp-builder`, `typescript-expert`, `zod`, `bun-development`,
+`blockbench-plugins`, and historical `blockbench-use` orchestrator are retired or
+recovered into clearer owners. Do not route to or recreate them.
 
-The complete current inventory, including nested copies still pending audit, is
-owned by `docs/knowledge/skills/skill-map.md`. Do not duplicate that inventory
-here; read the skill map when an audit or specialist selection requires it.
+Blockbench runtime mechanics and Bedrock modelling judgement are separate
+responsibilities; do not collapse them into one skill.
 
-Because Codex is launched from root `BuildIT`, nested copies are not considered
-canonical project-wide skills until their individual audit resolves function,
-name, overlap, and location.
+The complete current inventory is owned by
+`docs/knowledge/skills/skill-map.md`. Do not duplicate detailed audit history
+here; read the skill map when specialist selection or recovery work requires it.
+
+Because Codex is launched from root `BuildIT`, canonical project skills live
+under root `.agents/skills/`. Legacy nested skill locations must not be
+repopulated by default.
 
 ## Source Of Truth
 
