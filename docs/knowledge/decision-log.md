@@ -5,6 +5,42 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### `bun-development` was replaced by focused `bun-tooling`
+
+- **Audit decision:** `RENAME + MOVE + SLIM`.
+- **Old name/source:** `bun-development`, a broad generic Bun development guide
+  under `mcp/.agents/skills/`.
+- **Actual useful function in BlockIT:** Bun-specific build/tooling behavior —
+  `Bun.build`, build plugins/loaders, `Bun.file`, `Bun.write`, `Bun.argv`, Bun
+  package scripts, `bunx`, dependency resolution, and lockfile behavior when Bun
+  is the proved owner.
+- **New canonical name:** `bun-tooling`.
+- **New canonical location:** `.agents/skills/bun-tooling/SKILL.md`.
+- **Removed from active skill:** new-project scaffolding, Bun HTTP/WebSocket/
+  SQLite/password examples, Node→Bun migration guidance, generic performance
+  advice, broad test-runner tutorials, and unrelated Bun-native API examples.
+- **Boundary:** ordinary TypeScript/MCP/Blockbench work does not load this skill
+  merely because commands use Bun. MCP/public-contract work stays with
+  `mcp-server-development`; TypeScript type-system work stays with
+  `typescript-type-safety`; Blockbench runtime/API work stays with the
+  Blockbench specialist.
+- **Why:** Local genuinely depends on Bun-specific build behavior, including
+  `Bun.build` and custom Bun build plugins, so dropping Bun knowledge entirely
+  would lose useful capability. The old guide was still far too broad and could
+  encourage migrations, new APIs, or performance work unrelated to the actual
+  repository.
+- **Preserved useful rules:** reuse existing package scripts; inspect the actual
+  build/plugin owner; make the smallest Bun-specific change; preserve
+  Blockbench packaging compatibility; run only the smallest relevant Bun check
+  in Codex local.
+- **Compatibility:** no alias skill is kept. Historical `bun-development`
+  references are lineage only; active routing uses `bun-tooling`.
+- **Proof:** compared the old skill with `mcp/package.json`, `mcp/build/index.ts`,
+  `mcp/build/plugins.ts`, and current specialist boundaries. The generic skill
+  was removed; no MCP runtime implementation was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### Standalone `zod` skill was merged into `mcp-server-development`
 
 - **Audit decision:** `MERGE + DROP`.
@@ -26,9 +62,9 @@ Active task state belongs in `next-action.md`, not here.
   optional/default/refinement semantics match execution; reuse shared schemas;
   avoid duplicate validation; keep schema construction free of Blockbench
   globals; move live-Blockbench checks into execution; keep errors actionable.
-- **Boundary:** TypeScript compiler/type-system problems still belong to
-  `typescript-type-safety`; Bun tooling and Blockbench runtime remain separate
-  pending their own audits.
+- **Boundary:** TypeScript compiler/type-system problems belong to
+  `typescript-type-safety`; Bun-specific build/tooling belongs to `bun-tooling`;
+  Blockbench runtime remains a separate specialist boundary.
 - **Compatibility:** no alias or deprecated Zod skill is kept. Historical `zod`
   skill references are lineage only; ordinary MCP schema work routes through
   `mcp-server-development`.
@@ -56,7 +92,7 @@ Active task state belongs in `next-action.md`, not here.
   the Python TypeScript diagnostic script.
 - **Boundary:** normal `.ts` implementation uses the domain owner instead of a
   TypeScript specialist; MCP protocol and MCP input-schema semantics belong to
-  `mcp-server-development`; Bun tooling belongs to the Bun specialist;
+  `mcp-server-development`; Bun-specific build/tooling belongs to `bun-tooling`;
   Blockbench runtime/API work belongs to the Blockbench specialist.
 - **Why:** BlockIT is already a strict TypeScript/Bun project. Loading a generic
   "TypeScript expert" for almost every source edit would consume the one
@@ -92,9 +128,9 @@ Active task state belongs in `next-action.md`, not here.
   scaffolding, mandatory broad build/test flow, fixed 10-question MCP evaluation
   workflow, and its Python/XML evaluation scripts.
 - **Boundary:** TypeScript type-system issues belong to
-  `typescript-type-safety`; Bun tooling belongs to the Bun specialist;
+  `typescript-type-safety`; Bun-specific build/tooling belongs to `bun-tooling`;
   Blockbench plugin/UI/runtime/model manipulation belongs to the Blockbench
-  plugin specialist. MCP Zod/input-schema semantics now stay inside this MCP
+  plugin specialist. MCP Zod/input-schema semantics stay inside this MCP
   contract owner rather than using another specialist.
 - **Why:** the old skill was designed for building arbitrary MCP integrations,
   while BlockIT already has a TypeScript/Bun/official-SDK Blockbench MCP
@@ -310,6 +346,9 @@ The generic `typescript-expert` package is superseded by the focused root
 
 The standalone generic `zod` skill is superseded by the MCP input-contract rules
 inside `mcp-server-development`.
+
+The generic `bun-development` skill is superseded by the focused root
+`bun-tooling` specialist.
 
 ## Rule
 
