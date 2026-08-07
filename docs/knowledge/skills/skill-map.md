@@ -49,6 +49,52 @@ The following historical behavior is explicitly not restored:
 - historical first-Cube/support/contact/section construction rules;
 - screenshot quotas or structural success as visual approval.
 
+### Reference Generator lineage → foundation workflow
+
+**Decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
+
+The proven historical skill is
+`engines/chatgpt/skills/blockbench-reference-studio/SKILL.md` on `Rework`. Its
+history begins with the ChatGPT Blockbench reference skill and later evolves from
+a multi-sheet package into a single Reference Visual workflow. No repository
+history was found for `.agents/skills/reference-generator/` or
+`.agents/skills/blockbench-reference-generator/`, so those names are not treated
+as historical package identities.
+
+The useful capability is Source Image/user intent → one Minecraft/Blockbench
+five-view Modelling Brief → user approval → modelling handoff. Its canonical
+owner is now:
+
+`docs/foundation/04-reference-guide.md`
+
+It is intentionally **not** copied into `.agents/skills/` because the generation
+step belongs to an image-capable ChatGPT/Reference Generator surface, while the
+root skill directory is the project-wide Codex discovery surface. Codex consumes
+the approved brief through `blockbench-bedrock-modelling`.
+
+Preserved from the historical Reference Studio:
+
+- Source Image owns target identity; Golden Sample owns presentation/construction
+  language only;
+- generated subject must read as intentionally buildable Minecraft/Blockbench
+  Cuboid construction, not smooth realism with pixel skin;
+- the same subject/construction must stay coherent across views;
+- one Draft plus at most one evidence-driven targeted correction;
+- generation and modelling remain separate responsibilities.
+
+Not recovered:
+
+- four-sheet/multi-sheet packages;
+- schema/manifest 3.3 contracts, hashes, crop/region contracts, writer leases,
+  deterministic diagnosis metadata, or production-state machinery;
+- three routine approval gates;
+- mandatory ZIP/package ceremony;
+- image-derived Cube transforms or geometry authority.
+
+If a dedicated ChatGPT skill is packaged again in the future, derive it from
+`04-reference-guide.md` and keep it specific to that image-capable surface rather
+than creating a duplicate root Codex skill.
+
 ## Retired / Merged Skills
 
 ### `mcp-builder`
@@ -111,6 +157,10 @@ Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
 `bun-development`, `blockbench-plugins`, nested `skill-creator`,
 `vue-best-practices`, or historical `blockbench-use` orchestrator packages.
 
+Do not create a root `reference-generator` skill unless a future requirement
+proves that Codex itself must own reference generation rather than consume the
+approved Modelling Brief.
+
 ## Legacy Nested Skill Locations
 
 There are currently **no active skills** under `mcp/.agents/skills/` or
@@ -123,8 +173,7 @@ repopulate them merely to match historical layout.
 
 | Skill lineage | Intended function | Status |
 |---|---|---|
-| `reference-generator` | Source Image → modelling-brief package | **next recovery + rename/overlap audit** |
-| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | recovery + rename/overlap audit |
+| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | **next recovery + overlap audit** |
 
 The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
 match historical notes.
@@ -149,7 +198,10 @@ DROP    → no distinct value after baseline rules/other skills
 RECOVER → trusted source exists but canonical Local copy is missing
 ```
 
-Judge the skill by its actual trigger/function, not by its upstream name.
+A recovered capability may remain a foundation/workflow instead of becoming a
+skill when that is the smaller correct owner.
+
+Judge the capability by its actual trigger/function, not by its upstream name.
 Preserve upstream lineage in the decision record when a rename/merge/recovery
 occurs.
 
