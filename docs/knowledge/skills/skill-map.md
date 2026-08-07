@@ -42,6 +42,25 @@ Normal work uses `ponytail + one specialist`. GSD-style discovery, grilling,
 review, and evidence handling are conditional stages, not skills to stack by
 default.
 
+## External Complements
+
+These are deliberately **not** additional default skills:
+
+| Complement | Role | Routing |
+|---|---|---|
+| Karpathy-inspired guidelines | anti-slop behavior: think first, simplicity, surgical changes, verifiable goals | principles are absorbed into root `AGENTS.md`; do not load a duplicate skill |
+| CodeGraph | local cross-file source navigation, call-chain and blast-radius acceleration | optional when broad structural discovery is genuinely needed; source/tests remain authority |
+| GSD Core discussion discipline | recover missing high-impact requirements from an incomplete prompt | use only before planning when needed; no `.planning/` hierarchy in Local |
+
+CodeGraph generated/index state is not project knowledge and must not replace
+`CONTEXT.md`, `next-action.md`, source, tests, or Git history.
+
+## Explicitly Not Adopted
+
+- Claude-Mem is not part of the Local workflow. Persistent model-generated
+  memory would duplicate the repository's explicit continuity system and could
+  preserve stale or false conclusions.
+
 ## Parent
 
 - [Knowledge Dashboard](../index.md)
