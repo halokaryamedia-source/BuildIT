@@ -11,31 +11,38 @@ Codex is launched from root `BuildIT`, so project-wide skills belong under
 | Skill | Canonical path | Function |
 |---|---|---|
 | `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
-| `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/protocol boundary: tools/resources/prompts, registration, result semantics, annotations, transport/session behavior |
+| `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/public contract: tools/resources/prompts, input schemas/validation, registration, result semantics, annotations, transport/session behavior |
 | `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
 
-### Retired: `mcp-builder`
+## Retired / Merged Skills
 
-`mcp-builder` was audited and retired. Its useful MCP ideas were narrowed into
-`mcp-server-development`; generic Python/FastMCP, external-API scaffolding,
-pagination defaults, mandatory evaluation suite, and evaluation scripts were
-removed.
+### `mcp-builder`
 
-Do not recreate or route to `mcp-builder`.
+Replaced by focused `mcp-server-development`. Generic Python/FastMCP,
+external-API scaffolding, pagination defaults, mandatory evaluation suite, and
+evaluation scripts were removed.
 
-### Retired: `typescript-expert`
+### `typescript-expert`
 
-`typescript-expert` was audited and retired. Its useful TypeScript-specific
-value was narrowed into `typescript-type-safety`.
+Replaced by `typescript-type-safety`. Normal `.ts` implementation does not load
+a TypeScript specialist; only genuine type-system problems do.
 
-Removed from the active skill were broad "use for any TypeScript/JavaScript"
-routing, automatic environment scanning, generic npm validation, monorepo/Nx/
-Turborepo decisions, Biome/ESLint migration advice, JavaScript→TypeScript
-migration guidance, broad tooling/performance checklists, generic utility-type
-reference bundles, and the Python diagnostic script.
+### `zod`
 
-Normal `.ts` implementation does not require a TypeScript specialist. Use
-`typescript-type-safety` only when the type system itself owns the problem.
+**Merged into `mcp-server-development` and retired as a separate skill.**
+
+BlockIT uses Zod as the schema mechanism for MCP inputs and generated MCP
+documentation. The useful rules now live at the MCP contract owner: accepted
+values, defaults/optionality/refinements, shared schemas, untrusted input,
+build-time-safe schema construction, and runtime-only checks that require live
+Blockbench state.
+
+Removed from the active skill set were the generic 43-rule Zod pack and its
+form/i18n/performance/Zod-Mini/type-system guidance because those are not
+separate BlockIT domains.
+
+Do not recreate or route to retired `mcp-builder`, `typescript-expert`, or `zod`
+skills.
 
 ## Nested Copies Pending One-By-One Audit
 
@@ -43,8 +50,7 @@ Current repository inventory under `mcp/.agents/skills/`:
 
 | Skill | Current apparent function | Status |
 |---|---|---|
-| `zod` | schema/input validation | **next audit** |
-| `bun-development` | Bun runtime/scripts/dependencies | pending overlap audit |
+| `bun-development` | Bun runtime/scripts/dependencies | **next audit** |
 | `blockbench-plugins` | Blockbench plugin lifecycle/UI/runtime API | pending naming/location audit |
 | `skill-creator` | skill authoring package | pending duplicate/ownership audit |
 | `vue-best-practices` | Vue guidance | pending relevance/overlap audit |
