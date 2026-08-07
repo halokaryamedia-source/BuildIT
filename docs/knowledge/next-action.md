@@ -84,23 +84,38 @@ are owned by the MCP public-contract specialist instead of a separate skill.
 
 Canonical: `.agents/skills/bun-tooling/SKILL.md`
 
-Keeps only Bun-specific tooling actually used by Local:
+Keeps only Bun-specific build/tooling used by Local. Generic Bun project,
+runtime migration, unrelated APIs, and performance/tutorial baggage were removed.
 
-- `Bun.build` and build plugins;
-- `Bun.file`, `Bun.write`, and `Bun.argv`;
-- Bun-owned package scripts and `bunx`;
-- dependency/lockfile behavior when Bun is the proved owner;
-- Bun/Blockbench packaging compatibility.
+### 5. `blockbench-plugins` → `blockbench-runtime-development`
+
+**Decision:** `RENAME + MOVE + SLIM + DEDUP`.
+
+Canonical: `.agents/skills/blockbench-runtime-development/SKILL.md`
+
+Keeps only the Blockbench runtime/plugin boundary:
+
+- `BBPlugin` lifecycle, startup/teardown, and permissions;
+- Blockbench UI/settings/runtime APIs;
+- `Undo`, `Canvas`, selection/lookup, events, mutation mechanics, and cleanup;
+- live Blockbench proof when the claim requires it.
 
 Removed from the active skill:
 
-- new Bun project scaffolding;
-- HTTP/WebSocket/SQLite/password API examples;
-- Node→Bun migration guidance;
-- generic performance advice and broad test tutorials.
+- generic plugin starter/template guidance;
+- custom format/codec scaffolding unrelated to current Local needs;
+- copied broad API/event/element reference packs;
+- modelling-adjacent responsibility such as deciding shapes/proportions;
+- duplicate active copies under `mcp/.agents/skills/` and `mcp/.github/skills/`.
 
-Normal MCP/TypeScript/Blockbench work does **not** load this specialist merely
-because commands use Bun. The old `bun-development` package is retired.
+Important boundary:
+
+`blockbench-runtime-development` owns **how Blockbench operations execute**.
+The future modelling skill owns **what geometry/model should be built and whether
+it is visually good**.
+
+The old `blockbench-plugins` packages are retired and must not be recreated or
+routed to.
 
 ## Current Skill Structure
 
@@ -110,11 +125,11 @@ because commands use Bun. The old `bun-development` package is retired.
 - `.agents/skills/mcp-server-development/`
 - `.agents/skills/typescript-type-safety/`
 - `.agents/skills/bun-tooling/`
+- `.agents/skills/blockbench-runtime-development/`
 
 ### Nested copies pending one-by-one audit
 
-- `blockbench-plugins` ← **next**
-- `skill-creator`
+- `skill-creator` ← **next**
 - `vue-best-practices`
 
 ### Recovery items
@@ -150,10 +165,10 @@ Rules:
 
 ## Remaining Work Sequence
 
-1. **Audit `blockbench-plugins`** for its real Blockbench runtime/plugin API
-   value, overlap with future modelling skill, duplicated `.github/skills/`
-   copy, clearer name, and canonical location.
-2. Audit `skill-creator` and `vue-best-practices` one by one.
+1. **Audit `skill-creator`** for duplication with the already available global/
+   user skill and whether any Local-only authoring behavior is worth retaining.
+2. Audit `vue-best-practices` for actual relevance to the current Blockbench UI
+   implementation.
 3. Recover/audit `blockbench-use`, `reference-generator`, and `evidence-gate`.
 4. Re-check the final activation matrix for overlap/context cost.
 5. Audit MCP implementation against the cleaned modelling workflow and identify
@@ -172,6 +187,6 @@ the decision log preserve the past.
 
 ## Next Step
 
-Audit **`blockbench-plugins`**. Do not rename, merge, move, or delete it until
-its actual runtime/plugin responsibility, overlap with modelling guidance, and
-duplicate repository copies are understood.
+Audit **`skill-creator`**. Do not keep, move, merge, or delete the nested copy
+until its actual Local-only value and overlap with the already available global
+skill are understood.
