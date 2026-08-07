@@ -124,6 +124,34 @@ bug. A modelling task may use working MCP tools normally; if a runtime/API defec
 blocks modelling, stop and treat that defect as a separate runtime-development
 problem rather than stacking specialists.
 
+## Reference Preparation: Workflow, Not Root Skill
+
+Source Image/user intent → five-view Modelling Brief is owned by:
+
+`docs/foundation/04-reference-guide.md`
+
+Use that workflow on an **image-capable ChatGPT / Reference Generator surface**.
+Do not add a root `reference-generator` specialist just to mirror the historical
+ChatGPT skill.
+
+Boundary:
+
+- Reference Generator surface → create/review the Modelling Brief;
+- `blockbench-bedrock-modelling` → consume the approved brief and decide the
+  actual model;
+- `blockbench-runtime-development` → execute Blockbench runtime mechanics when
+  those mechanics are the problem.
+
+If the active surface cannot generate/inspect the required image, preserve the
+inputs and hand the task to the image-capable Reference Generator surface. Do not
+claim the reference was generated or approved.
+
+The proven historical lineage is `blockbench-reference-studio`; the names
+`reference-generator` and `blockbench-reference-generator` are conceptual labels,
+not recovered historical skill packages. Do not recreate the old multi-sheet,
+manifest/hash/crop-contract, writer-lease, three-approval, or mandatory-ZIP
+system without a new proved requirement.
+
 ## Repository-Wide Specialist: Blockbench Runtime
 
 Use `blockbench-runtime-development` when the **primary semantic owner is
@@ -194,15 +222,15 @@ that the available global/user skill cannot provide.
 
 ## Recovery Items
 
-These useful capabilities are not yet canonical Local skills:
+Only one unresolved recovery remains:
 
 | Task | Skill lineage | Status |
 |---|---|---|
-| Source Image → modelling brief | `reference-generator` | **next recovery/audit** |
-| Unsupported/disputed evidence | `evidence-gate` | recovery/audit |
+| Unsupported/disputed evidence | `evidence-gate` | **next recovery/audit** |
 
-Recover one at a time. Do not recreate historical names blindly; audit actual
-function, overlap, and best contextual name before activating the skill.
+Recover it based on unique value and overlap with the existing minimum-proof,
+root-cause, and independent-judgment baseline. Do not create a skill merely
+because the historical name exists.
 
 Do not stack overlapping specialists. Choose the semantic owner.
 
@@ -248,8 +276,10 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
   second active copy of a root canonical skill.
 - `mcp/workflow/skills/` = stale historical path; do not recreate it.
 
-Classify each recovered/new skill `KEEP`, `RENAME`, `MERGE`, `MOVE`, `DROP`, or
-`RECOVER` based on real function and overlap.
+Classify each recovered/new capability `KEEP`, `RENAME`, `MERGE`, `MOVE`, `DROP`,
+or `RECOVER` based on real function and overlap. A recovered capability may stay
+as a foundation/workflow rather than becoming a skill when that is the smaller
+correct owner.
 
 ## Proof Economy
 
