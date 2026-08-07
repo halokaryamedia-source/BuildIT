@@ -1,369 +1,247 @@
 # BlockIT — Operating Model Reference
 
 **Status:** Draft  
-**Version:** 1.0
+**Version:** 1.1
 
 ## 1. Purpose
 
-This document defines how a visual reference should be prepared before modelling begins.
+Define how a visual reference is prepared and handed to Minecraft Bedrock
+modelling in Blockbench.
 
-The reference reduces ambiguity and helps Codex understand form, proportion, silhouette, scale, and style.
-
-This document also governs generated reference packages before they enter the
-project workflow.
+The reference reduces ambiguity about form, proportion, silhouette, scale, and
+style. It does **not** generate or lock Blockbench geometry.
 
 ## 2. Core Principle
 
-The generated five-view image is a visual modelling brief. The user reviews
-whether it shows the intended object, useful proportions, visible landmarks,
-and the requested style. It is not a metrically calibrated drawing and is not
-an automatic source of cube transforms.
+The approved five-view image is a **visual Modelling Brief**.
 
-ImageGen creates one complete five-view brief in a single generation. The
-numeric dimensions supplied by the user are the geometry target. The image
-helps the modeller decide which volumes, slopes, contacts, and details to
-build; it does not override those dimensions.
+It supplies:
 
-Blockbench may display each complete orthographic view as a visual aid. Masks,
-polygons, cuboid drafts, pixel ratios, mesh fitting, and similarity scores must
-not generate or lock geometry transforms.
+- visible silhouette and proportions;
+- major masses and landmarks;
+- visible contacts/attachments;
+- orientation and style;
+- the views needed to reason about the whole object.
 
-## 3. Workflow Boundary
+Declared dimensions supply the numeric geometry target. Image pixels, panel
+sizes, dimension-line lengths, masks, polygons, mesh fitting, and similarity
+scores are not calibration data and must not author Cube transforms.
+
+## 3. Reference Roles
+
+Use these terms consistently:
+
+- **Source Image** — original user image or images used to understand the target.
+  It is provenance/input for reference preparation, not direct geometry data.
+- **Golden Sample** — style/layout/lighting/visual-density example for generated
+  reference sheets. Its subject anatomy is never target authority.
+- **Modelling Brief Draft** — generated five-view reference before user review.
+- **Modelling Brief** — approved visual guide consumed by modelling.
+- **Reference Package** — Modelling Brief plus simple metadata and optional Source
+  Images/supporting references.
+- **Blockbench Model** — reviewed editable `.bbmodel` produced from the approved
+  scope.
+
+Reference preparation owns the Source Image → Modelling Brief handoff. Bedrock
+modelling owns geometry, hierarchy, pivots, UV/texture, optional animation, and
+visual judgement. Blockbench runtime tooling owns only the mechanics of applying
+those decisions.
+
+## 4. Workflow Boundary
 
 ```text
-Reference Generator
-User request
--> one five-view Modelling Brief
--> user approval
--> Modelling Brief Package
-
-MCP
-Modelling Brief Package
--> source-backed construction notes
--> Blockbench Model
--> internal visual critic
--> RELEASED or BLOCKED
+Source Image / user description
+↓
+Reference preparation
+↓
+Five-view Modelling Brief Draft
+↓
+User review
+↓
+Approved Modelling Brief + metadata
+↓
+Bedrock modelling
+↓
+Blockbench Model
 ```
 
-## 4. Required Views
+Approval means the brief is useful enough to model from. It is not certification
+of metric image accuracy and does not approve any Cube transform.
 
-Ideal reference set:
+## 5. Required View Baseline
 
-- front;
+Current generated-reference baseline:
+
 - side;
-- back;
-- top;
-- perspective.
-
-## 5. Current Reference Baseline
-
-The current Reference Generator baseline uses the full five-view set:
-
-- left side;
 - front;
 - back;
 - top / footprint;
-- front 3/4 preview.
+- front 3/4 perspective preview.
 
-The three-view option is not part of the workflow. Do not create or use a
-three-view Golden Sample.
+A single image may be sufficient only when it clearly communicates the required
+shape, proportions, silhouette, scale, and style. The normal generated workflow
+uses the five-view set; do not invent a three-view Golden Sample workflow.
 
-A single image is acceptable only when it clearly contains the shape, proportion, silhouette, scale, and style needed for the task.
-If that information is not present, the reference is not complete enough.
+Perspective helps understand volume and identity. Orthographic views carry the
+main cross-view shape/proportion evidence. The 3/4 preview is not a tracing or
+metric-calibration view.
 
-An underside view is not required for the current geometry workflow. Ordinary
-hidden surfaces are completed from the visible main volumes; no separate
-hidden-geometry specification is created. This is a geometry decision only;
-texture on unseen surfaces is deferred for separate discussion.
+## 6. Dimensions
 
-### Hidden Geometry Distinction
-
-Distinguish an unseen surface from an unseen feature:
-
-- **Hidden surface**: an ordinary face of an existing volume, such as the
-  underside of a body. It may be completed as part of that volume.
-- **Hidden feature**: a distinct protrusion, recess, attachment, or special
-  shape that is not shown. Do not create it automatically without evidence.
-- A hidden feature explicitly described by the user may be created according
-  to that description.
-
-### View Conflict Handling
-
-Keep this handling simple:
-
-- ignore differences caused by lighting or shadows;
-- use another view when a part is merely occluded;
-- use approved numeric dimensions for size;
-- use front, side, back, and top views for relative proportions and landmarks;
-- use perspective only to understand volume, not as a precise measurement;
-- mark an unusable or misleading brief as `Needs Review` and do not let MCP
-  invent geometry to reconcile it.
-
-The Modelling Brief remains under review while a major identity or usability
-problem remains. A cross-view scale mismatch is a warning for the modeller,
-not a reason to invent calibration.
-
-### Hidden Texture Handling
-
-Texture visible in the Model Reference follows the reference. An ordinary
-hidden surface may use a simple continuation of the nearest visible material,
-color, or pattern. Do not create a new motif for an unseen surface. A hidden
-pattern with a visible analogue may be continued simply from that analogue. A
-hidden pattern with no visible analogue is not created; use the nearest base
-material or color if needed. A separate Texture Reference is not required.
-
-## 6. Optional Supporting Images
-
-Optional references may include:
-
-- close-ups;
-- material references;
-- color references;
-- animation poses;
-- prop references;
-- variations.
-
-## 7. Consistency Rules
-
-- All views must represent the same style.
-- Do not mix conflicting styles in one reference set.
-- If views conflict, do not choose arbitrarily.
-
-## 8. Dimension Information
-
-Requested Dimensions are the numeric geometry target supplied by the user.
-The package `dimensions` carries that target to Blockbench.
+Requested dimensions are the numeric geometry target supplied or approved for
+the task.
 
 Example:
 
 ```text
 Height: 2 blocks
-Length: 2.6 blocks
 Width: 1 block
+Length: 2.6 blocks
 ```
 
-Convert these targets with `1 block = 16 Blockbench units` on every axis.
-Do not derive scale from image pixels, dimension-line lengths, or subject
-bounding boxes. Never edit the image to force those targets. Cube dimensions
-are chosen by the modeller from the numeric target and the visual proportions.
-Texture density remains separate from geometry scale.
+Use `1 block = 16 Blockbench units` on each axis when converting an approved
+Bedrock target. Choose individual Cube dimensions through modeller reasoning
+from the numeric target plus visual proportions.
 
-## 9. Texture Information
+Never derive scale from:
 
-The reference or brief should indicate texture style when known.
+- image pixels;
+- subject bounding boxes;
+- dimension-line lengths;
+- panel/canvas size;
+- perspective projection.
 
-## 10. Animation Requirement
+## 7. View Conflict Handling
 
-The brief should state one of:
+Keep conflict handling simple:
 
-- Required;
-- Optional;
-- Not Required.
+- ignore lighting/shadow differences that do not change form;
+- use another view when a part is merely occluded;
+- use approved numeric dimensions for overall size;
+- use front/side/back/top for relative proportions and landmarks;
+- use perspective to understand volume, not exact measurement;
+- if two views materially disagree about identity/form and the conflict cannot be
+  resolved safely, mark the reference `Needs Review` rather than inventing a
+  compromise geometry.
 
-## 11. Model Brief
+Cross-view scale variation is a modeller warning, not a reason to create pixel
+calibration.
 
-A simple brief is enough.
+## 8. Hidden Geometry And Texture
 
-Example:
+Distinguish **hidden surface** from **hidden feature**:
+
+- an ordinary unseen face of an existing visible volume may be completed as part
+  of that volume;
+- a distinct unseen protrusion, recess, attachment, or special feature must not
+  be invented without evidence or explicit user description.
+
+For hidden texture surfaces, continue the nearest visible base material/color or
+a clearly established pattern when appropriate. Do not invent a new motif for an
+unseen surface.
+
+An underside reference is not mandatory for ordinary hidden surfaces.
+
+## 9. Optional Supporting References
+
+Use only when they materially reduce ambiguity:
+
+- close-ups;
+- material/color references;
+- animation poses;
+- prop/accessory references;
+- approved variations.
+
+Do not create supporting references as default ceremony.
+
+## 10. Simple Modelling Brief Metadata
+
+Keep metadata small. Typical fields:
 
 ```text
 Model: Example Object
-Target: Minecraft Bedrock
-Style: Cuboid
-Texture Style: 32×32
-Animation: Not Required
+Target: Minecraft Bedrock Entity
+Dimensions: Height / Width / Length
+Texture Style: 16×16 or 32×32
+Animation: Required / Optional / Not Required
 Output: .bbmodel
+Additional Notes: optional
 ```
 
-## 12. What the Reference Should Show
+The user is not required to provide anatomy, Cube counts, group names, pivots,
+UV layout, bone structure, or MCP instructions. Those are modelling/runtime
+implementation decisions.
 
-The reference should communicate:
+## 11. Reference Quality Gate
 
-- overall shape;
-- proportion;
-- silhouette;
-- main volumes;
-- important features;
-- relation between parts.
+Before modelling begins, the agent should be able to determine:
 
-It does not need to define:
+- what asset is being created;
+- the intended overall form and major masses;
+- the numeric target dimensions when relevant;
+- the intended visual style;
+- whether animation is required;
+- whether any unresolved view conflict would materially change the model.
 
-- hierarchy;
-- UV atlas;
-- technical implementation.
+A reference is ready when it is clear enough for **whole-form interpretation**.
+Do not require per-Cube plans, semantic-section plans, contact-anchor plans, or
+precomputed transforms.
 
-## 13. Reference Quality
+If a missing detail only affects minor implementation, use modeller judgement.
+If it materially changes silhouette, major proportion, identity, or required
+function, stop for clarification/reference correction.
 
-A good reference should be:
+## 12. Reference-To-Modelling Handoff
 
-- clear;
-- complete enough for the model complexity;
-- not blurred;
-- not cropped;
-- consistent across views;
-- readable in shape and proportion.
+The reference provides visual requirements. The modelling specialist authors the
+actual model.
 
-## 14. Review Before Modelling
-
-Codex should be able to answer:
-
-- What is being created?
-- What are the primary shapes?
-- What is the approximate size?
-- What visual style is intended?
-- Is animation required?
-
-If a critical answer is missing, Codex should ask for clarification.
-
-## 15. Completion Criteria
-
-The reference is ready when:
-
-- enough views exist for the model complexity;
-- perspective is available;
-- the brief is available;
-- style is defined;
-- animation status is defined;
-- approximate size is available when relevant;
-- no unresolved major conflict remains.
-
-If the reference is still ambiguous after review, stop and ask for clarification before modelling.
-
-## 16. Reference Roles
-
-Use these terms consistently:
-
-- **Source Image**: the original user image used as input by the Reference
-  Generator. It is not the direct modelling reference.
-- **Source Image**: provenance for the generated brief. It is not a direct
-  geometry source.
-- **Golden Sample**: the generator's style, layout, lighting, and geometry
-  density example. It does not define the target object's anatomy.
-- **Modelling Brief**: the approved visual guide consumed by MCP for silhouette,
-  pose, proportions, views, and visible priorities.
-- **Modelling Brief Draft**: the five-view image before user approval.
-- **Cube Draft**: optional temporary geometry created by a modeller. It is not
-  generated proof and is not visual authority.
-- **Blockbench Model**: the reviewed `.bbmodel` created in Blockbench.
-- **Construction Notes**: optional diagnostic suggestions about visible
-  sections or contacts. They are not executable cube transforms.
-- **Reference Package**: the Modelling Brief, simple metadata, and optional
-  Source Images or diagnostics.
-
-The Reference Generator owns Source Image processing, five-view generation,
-handoff, and package validation. MCP consumes the resulting Modelling Brief
-and owns all cube decisions, technical geometry operations, visual critique,
-and the `.bbmodel`.
-
-## 17. Reference-to-MCP Handoff
-
-The reference provides the requirements for the current object. MCP provides
-the technical operations used to build and inspect it.
-
-| Reference provides | MCP provides |
+| Reference provides | Modelling decides |
 |---|---|
-| numeric dimensions | preview capture and view navigation |
-| visible silhouettes and relative proportions | exact cube placement plus groups and later hierarchy |
-| visible landmarks and expected contacts | oriented contact checks and hierarchy inspection |
-| complete view crops as visual aids | optional native viewport image display and cube editing |
-| style and detail priorities | structural and visual status reporting |
+| numeric target dimensions | Cube dimensions/placement/rotation |
+| silhouettes/proportions | whole-form primary masses |
+| visible landmarks | geometry vs texture representation |
+| visible contacts | hierarchy/pivot/attachment implementation |
+| style/material cues | UV/texture decisions |
+| animation requirement | hierarchy/pivots/motion needed for that requirement |
 
-Reference data must not create object-specific MCP profiles or hard-coded
-geometry rules. Missing reference data means the related check is unavailable,
-not that the model automatically fails.
+No reference package field may create object-specific MCP profiles or hard-coded
+geometry rules.
 
-MCP authors cube coordinates, pivots, rotations, contacts, and hierarchy as a
-modeller using the numeric dimensions and visual proportions. The Reference
-Generator must not guess those transforms as a prerequisite for modelling.
-
-Non-semantic filler cubes, stepped silhouette tracing, mesh fitting, and any
-score-only method must not drive construction. Front 3/4 remains a final visual
-review rather than an orthographic tracing view.
-
-### Geometry Construction Flow
+The modelling handoff is:
 
 ```text
-MODELLING_BRIEF_DRAFT
--> USER_APPROVAL
--> MODELLING_BRIEF
--> WRITE_MODELLER_PLAN
--> BUILD_SEMANTIC_SECTIONS
--> CHECK_DIMENSIONS_AND_PROPORTIONS
--> OPTIONAL_REFERENCE_VIEW_REVIEW
--> GEOMETRY_APPROVAL
+APPROVED MODELLING BRIEF
+↓
+WHOLE-FORM INTERPRETATION
+↓
+PRIMARY GEOMETRY PASS
+↓
+PRIMARY VISUAL GATE
+↓
+SECONDARY GEOMETRY / HIERARCHY / PIVOTS
+↓
+FULL GEOMETRY REVIEW
+↓
+UV / TEXTURE
+↓
+OPTIONAL ANIMATION
+↓
+FINAL VALIDATION
 ```
 
-Package validation is structural only. Human acceptance of the brief is a
-modelling handoff, not a certification of scale, silhouette, image consistency,
-or any cube transform. MCP must not turn package validity into geometry
-approval.
+Detailed construction and visual-review rules belong to
+`03-modelling-workflow.md`, `05-geometry-standard.md`,
+`06-texture-standard.md`, and `07-visual-validation.md`.
 
-The reference package must also state whether `FRONT 3/4 PREVIEW` shows the
-left or right side. MCP uses that declared camera side and never chooses it.
+Do **not** reintroduce historical rules such as first-Cube anchors, mandatory
+support/section-first construction, fixed Cube-to-Cube overlap limits,
+per-section screenshot quotas, or pixel/similarity calibration as reference
+requirements.
 
-The crop is the complete fixed-layout panel, including its view label and
-dimension lines. It is a visual aid only. There are no subject bounds or
-pixel-to-world calibration fields in the package.
+## 13. Reference Generator Entry
 
-During modelling, an optional reference view may be shown as a transparent
-foreground image. It does not prove model scale, origin, or visual alignment.
-
-The first cube is the model anchor. Every later cube identifies an existing
-cube attachment, uses the attachment point as its pivot, and must have a small
-3D overlap of at most `0.5` Blockbench unit. A tool call that creates a gap is
-rejected. These checks prove only grid and contact; they do not prove visual
-resemblance or modeller decisions.
-
-MCP plans and checks one semantic section internally before moving on. A
-section gets at most two screenshot-based adjustments; a repeated failure
-reopens the plan instead of adding compensating geometry. The user reviews only
-the complete five-view result.
-
-### Final MCP Specification
-
-Create the MCP Specification only after the Modelling Brief passes user
-review. The numeric dimensions are authoritative. Never change the image to
-make later geometry appear correct.
-
-The specification contains only:
-
-- object name and supported dimensions;
-- views actually present in the Modelling Brief;
-- neutral pose;
-- silhouette priorities;
-- volumes, separations, or rotations required by the visible shape;
-- details that can remain texture-first;
-- animation status.
-
-The user-facing specification must not expose cube counts, transforms, group
-names, bone/root structures, pivots, UV layout, or export settings. Those
-implementation details remain internal. Non-critical details that are not
-visible are omitted. If missing information affects silhouette or proportion,
-the status is `BLOCKED`.
-
-### Official Flow
-
-```text
-REFERENCE_GENERATOR
-SOURCE_IMAGE
--> ONE_FIVE_VIEW_MODEL_REFERENCE_DRAFT
--> MODEL_REFERENCE_REVIEW
--> MODEL_REFERENCE
--> READY_REFERENCE_PACKAGE
-
-MCP
-READY_REFERENCE_PACKAGE
--> CUBE_DRAFT
--> BLOCKBENCH_MODEL
-```
-
-### Reference Generator Chat Entry
-
-This flow applies only to a new chat in the dedicated Reference Generator
-workspace. It is not an instruction for MCP development chats.
-
-The first assistant response is the basic input template, without a trigger
-phrase or introductory explanation:
+For a dedicated Reference Generator conversation, a minimal user input is enough:
 
 ```text
 Object Name:
@@ -384,33 +262,30 @@ Additional Notes:
 [Optional]
 ```
 
-The user then uploads the Source Image and fills in any known fields. Empty
-fields receive recommendations after the image is analyzed. Pose is always
-neutral and is not asked. Anatomy, bones, roots, pivots, UV settings, cube
-counts, and hierarchy are MCP responsibilities and are not part of this form.
+The user may provide the Source Image and completed fields in the first message.
+Do not repeat the template when enough information is already present. Missing
+low-impact fields may receive a recommended default; ask only when a missing
+high-impact decision cannot be recovered safely.
 
-If the user uploads the image and completed template in the first message,
-the generator processes it directly and does not repeat the template.
+Pose defaults to neutral unless the user requests otherwise. Do not ask the user
+for bones, pivots, hierarchy, UV settings, or Cube counts.
 
-Use the Golden Sample only to inspect style, layout, background, lighting, and
-visual density. Never use its subject pixels as an editable base.
+## 14. Golden Sample Use
 
-### Golden Sample Guidance
+Use a Golden Sample only for:
 
-1. Load the bundled Golden Sample as a style and layout example only.
-2. Load the Source Image as subject authority.
-3. Generate one complete five-view Draft in the Golden Sample layout. Never
-   use the Golden Sample's subject pixels as input anatomy.
-4. Verify subject identity, silhouette, proportions, neutral pose, and
-   consistency across all five panels.
-5. Apply title, labels, and dimensions without cropping the subject.
-6. Stop at the approved visual modelling brief. Do not create a mesh-derived
-   cube draft from this workflow.
+- layout;
+- background;
+- lighting;
+- labeling/presentation;
+- Minecraft/Blockbench construction language and visual density.
 
-If the Source Image or Golden Sample is unavailable, stop. Never substitute
-the Golden Sample's subject or an unrelated object.
+Never reuse its subject anatomy as the target. The Source Image/user intent owns
+the target identity.
 
-### Generation Budget and Output
+## 15. Generation Budget
+
+Default generated-reference budget:
 
 ```text
 five-view Draft = maximum 1
@@ -418,13 +293,24 @@ automatic alternatives = 0
 targeted Draft correction = maximum 1
 ```
 
-Perform Golden Sample parity and texel QA, finalize title/labels/dimensions,
-canvas, and compression locally, then show the Modelling Brief for review.
+Generate another draft only when a concrete reference defect needs correction.
+Do not create alternatives merely to show more work.
 
-Local-only work may handle title, labels, dimensions, footer, border cleanup,
-canvas normalization, and compression.
+Local finishing may handle title, labels, dimensions, footer/border cleanup,
+canvas normalization, and compression when needed.
 
-Output: `1280 x 720` WebP at quality 85-90.
+Current presentation target: `1280 × 720` WebP around quality `85–90`.
 
-No hash, approval-plan lock, resume state, or mandatory ZIP is required for a
-usable Reference Package.
+## 16. Completion Criteria
+
+Reference preparation is complete when:
+
+- target identity and style are clear;
+- the required view set is usable;
+- requested dimensions are present when needed;
+- animation status is known;
+- no unresolved major cross-view/identity conflict remains;
+- the brief is approved for modelling.
+
+Package/file validation proves handoff structure only. It never proves model
+geometry or visual correctness.
