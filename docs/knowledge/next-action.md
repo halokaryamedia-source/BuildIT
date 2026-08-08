@@ -1,222 +1,114 @@
 # Next Action
 
-This is the **single active-task snapshot**. A new ChatGPT or Codex session must
-read this after `AGENTS.md` and `CONTEXT.md` and continue from here instead of
-asking the user to reconstruct prior chats.
+This is the **single active-task snapshot**. A new ChatGPT or Codex session reads
+this after `AGENTS.md` and `CONTEXT.md` and continues from here instead of
+reconstructing prior chats.
 
 ## Active Task
 
-- **Goal:** finish skill consolidation by running one final overlap/context-cost
-  review before MCP implementation audit begins.
-- **Status:** `SKILL_CONSOLIDATION_FINAL_REVIEW`.
+- **Goal:** audit the current `Local` MCP implementation against the cleaned
+  BlockIT modelling workflow and identify only demonstrated implementation gaps.
+- **Status:** `MCP_IMPLEMENTATION_AUDIT`.
 - **Execution now:** ChatGPT → GitHub.
-- **Final runtime environment later:** Codex local from root `BuildIT` with
-  Blockbench + MCP.
-- **In scope now:** verify that the six canonical root skills, Reference Generator
-  workflow, evidence baseline, routing triggers, and skill budget are clear,
-  minimal, and non-overlapping.
-- **Out of scope now:** MCP feature changes, model-specific fixes, new skill
-  recovery, mass framework installation, full GSD/OpenSpec systems, Claude-Mem,
-  speculative architecture.
+- **Final runtime proof later:** Codex local from root `BuildIT` with Blockbench +
+  MCP when a finding actually requires live proof.
 
-## Continuation Contract
+## Completed Boundary
 
-- `AGENTS.md` → working rules, independent judgment, proof/evidence baseline.
-- `CONTEXT.md` → stable facts/terminology.
-- this file → active goal/status/completed boundary/next step.
-- `decision-log.md` → durable decisions/reasons.
-- `docs/foundation/` → durable product/modelling/reference policy.
-- source + relevant proof → runtime truth.
+Skill consolidation is **frozen**.
 
-Do not ask the user to repeat old context before reading these owners.
-
-## Development Baseline
-
-- ChatGPT → GitHub prepares design/source/docs with static evidence only.
-- Codex local performs final targeted shell/MCP/Blockbench proof only when the
-  claim requires it.
-- Developing always starts with `.agents/skills/development-brief/SKILL.md`.
-- Add at most one specialist when it adds real domain value.
-- `no change required` is valid.
-- use minimum useful proof, not validation ceremony.
-- use evidence-status labels only for real uncertainty/dispute, not routine work.
-- reject/redirect user-suggested methods when evidence shows they are invalid,
-  disproven, unnecessarily complex, unsupported, or harmful to output quality.
-
-## Completed Foundation Hardening
-
-- repository state is explicit project memory across ChatGPT/Codex sessions;
-- modelling/geometry/visual-validation policy is generic, object-agnostic, and
-  whole-form-first;
-- reference handoff matches whole-form modelling and no longer contains stale
-  first-Cube/support/section/overlap rules;
-- Reference Generator quality requires buildable Minecraft/Blockbench form, not
-  smooth realism with pixel treatment or generic voxel filtering;
-- ChatGPT → GitHub vs Codex local proof boundaries are explicit;
-- mandatory review/broad validation ceremony was removed.
-
-## Completed Skill Audits / Recoveries
-
-### 1. `mcp-builder` → `mcp-server-development`
-
-**Decision:** `RENAME + MOVE + SLIM`.
-
-Canonical: `.agents/skills/mcp-server-development/SKILL.md`
-
-### 2. `typescript-expert` → `typescript-type-safety`
-
-**Decision:** `RENAME + MOVE + SLIM`.
-
-Canonical: `.agents/skills/typescript-type-safety/SKILL.md`
-
-### 3. `zod` → merged into `mcp-server-development`
-
-**Decision:** `MERGE + DROP`.
-
-### 4. `bun-development` → `bun-tooling`
-
-**Decision:** `RENAME + MOVE + SLIM`.
-
-Canonical: `.agents/skills/bun-tooling/SKILL.md`
-
-### 5. `blockbench-plugins` → `blockbench-runtime-development`
-
-**Decision:** `RENAME + MOVE + SLIM + DEDUP`.
-
-Canonical: `.agents/skills/blockbench-runtime-development/SKILL.md`
-
-Runtime mechanics and modelling judgement are separate owners.
-
-### 6. nested `skill-creator`
-
-**Decision:** `DROP`.
-
-Use the available global/user capability only when creating or materially
-revising a skill.
-
-### 7. `vue-best-practices` → merged into `blockbench-runtime-development`
-
-**Decision:** `MERGE + DROP`.
-
-Standalone Vue 3 application tooling is not a separate Local domain.
-
-### 8. `blockbench-use` lineage → `blockbench-bedrock-modelling`
-
-**Decision:** `RECOVER + RENAME + SLIM`.
-
-Canonical: `.agents/skills/blockbench-bedrock-modelling/SKILL.md`
-
-The old mandatory orchestrator and broad mesh/Hytale/PBR/tool-catalog behavior
-were not restored. The recovered specialist owns modeller judgement for the
-Bedrock `.bbmodel`; runtime mechanics remain separate.
-
-### 9. Reference Generator lineage → foundation workflow
-
-**Decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
-
-Canonical owner: `docs/foundation/04-reference-guide.md`.
-
-The image-capable ChatGPT/Reference Generator surface creates and reviews the
-five-view Modelling Brief. Codex consumes the approved brief through
-`blockbench-bedrock-modelling`. The historical multi-sheet/manifest/hash/lease/
-three-approval/mandatory-ZIP machinery was not restored.
-
-### 10. `evidence-gate` lineage → root evidence baseline
-
-**Decision:** `MERGE + DROP AS SKILL`.
-
-No tracked `.agents/skills/evidence-gate/SKILL.md` package exists in Rework. The
-useful historical behavior came from an evidence-gate section of the prior
-Minecraft Production Reality Core rather than a standalone project skill.
-
-Canonical owner: root `AGENTS.md` → **Evidence Status Escalation**.
-
-Conditional labels retained:
-
-- `CURRENT-PROJECT VERIFIED`;
-- `OFFICIALLY VERIFIED`;
-- `LOCAL PROOF REQUIRED`;
-- `UNSUPPORTED`;
-- `UNKNOWN`.
-
-`LOCAL PROOF REQUIRED` replaces the historical `PROTOTYPE REQUIRED` wording for
-the current ChatGPT→GitHub / Codex-local workflow. Historical `SIMULATION
-REQUIRED` is not kept as another evidence state; Independent Judgment owns the
-case where a literal method is unsupported but the user's goal can be redirected
-to a smaller supported method.
-
-Evidence status is used only when a material claim is uncertain, disputed,
-version-sensitive, or blocking completion. It does not create routine validation
-ceremony and does not consume the specialist slot.
-
-## Current Skill Structure
-
-### Root canonical
-
-- `.agents/skills/development-brief/`
-- `.agents/skills/mcp-server-development/`
-- `.agents/skills/typescript-type-safety/`
-- `.agents/skills/bun-tooling/`
-- `.agents/skills/blockbench-runtime-development/`
-- `.agents/skills/blockbench-bedrock-modelling/`
-
-### Workflow/baseline owners outside skill stack
-
-- `docs/foundation/04-reference-guide.md` — Source Image → approved Modelling
-  Brief on an image-capable Reference Generator surface.
-- root `AGENTS.md` Evidence Status Escalation — disputed/uncertain material
-  evidence claims.
-
-### Legacy nested locations
-
-There are currently **no active skills** under `mcp/.agents/skills/` or
-`mcp/.github/skills/`. Do not repopulate those locations by default.
-
-### Recovery status
-
-The planned recovery queue is **complete**. Do not invent another recovery item
-from historical names without a current proved requirement.
-
-## Final Skill Review Checklist
-
-For each canonical root skill and non-skill workflow owner, check:
+Canonical root skills:
 
 ```text
-Name/owner is contextual and understandable?
-Trigger is narrow enough?
-Unique value remains?
-Overlap with AGENTS/development-brief/another specialist?
-Could the same result use fewer loaded instructions?
-Does it accidentally own runtime + modelling + protocol at once?
-Does it create validation/review ceremony?
-Does Codex launched from root discover only capabilities it can actually use?
+development-brief
+mcp-server-development
+typescript-type-safety
+bun-tooling
+blockbench-runtime-development
+blockbench-bedrock-modelling
 ```
 
-The expected outcome is not a target skill count. Keep six only if all six still
-have distinct value after this final comparison.
+Non-skill owners:
 
-## Remaining Work Sequence
+- Reference Generator → `docs/foundation/04-reference-guide.md` on an
+  image-capable surface.
+- Evidence-status escalation → root `AGENTS.md`.
 
-1. **Run final activation-matrix / context-cost review** across the six canonical
-   root skills plus Reference Generator and evidence baseline owners. Remove or
-   merge only proven overlap; do not reopen completed audits without evidence.
-2. Audit MCP implementation against the cleaned modelling workflow and identify
-   only proven runtime gaps.
-3. Implement bounded fixes through ChatGPT → GitHub.
-4. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
-   targeted local proof, and fix only demonstrated failures.
-5. Validate modelling across multiple object archetypes before generic release
-   claims.
+`mcp/.agents/skills/` and `mcp/.github/skills/` are retired legacy locations.
+Do not reopen historical skill recovery or rename/merge/add skills unless the
+current MCP audit proves a distinct ownership/capability gap.
 
-## Update Rule
+## Audit Contract
 
-Before ending material work, update this file only when active goal, status,
-completed boundary, blocker/proof state, or next step changed. Git history and
-the decision log preserve the past.
+Use `.agents/skills/development-brief/SKILL.md` for any implementation change.
+During the audit itself, inspect before editing.
 
-## Next Step
+Compare current MCP source against only the relevant current authorities:
 
-Run the **final skill routing / overlap / context-cost review**. Evaluate the six
-canonical root skills together with `04-reference-guide.md` and root evidence
-status rules, then freeze the skill architecture before starting the MCP
-implementation audit.
+- `docs/foundation/02-product-requirements.md`;
+- `docs/foundation/03-modelling-workflow.md`;
+- `docs/foundation/05-geometry-standard.md`;
+- `docs/foundation/06-texture-standard.md` when texture behavior is relevant;
+- `docs/foundation/07-visual-validation.md` when camera/evidence behavior is
+  relevant;
+- `mcp/AGENTS.md`, `mcp/README.md`, and affected implementation source.
+
+For each finding record:
+
+```text
+Observed behavior/source:
+Expected current behavior:
+Owner:
+Why it matters:
+Evidence status:
+Smallest correction if required:
+Required proof:
+```
+
+## Audit Priorities
+
+1. Determine whether the current tool/runtime surface supports the cleaned
+   **whole-form-first Bedrock Cuboid workflow** without requiring historical
+   section/support/per-Cube ceremony.
+2. Inspect only implementation areas that materially affect modelling:
+   project/open-save flow, Cuboid/group mutation, hierarchy/pivots, history/undo,
+   camera/screenshot/visual evidence, texture/UV, animation when relevant, and
+   MCP result/error behavior around those operations.
+3. Separate modelling-judgement gaps from MCP contract gaps and Blockbench
+   runtime/API gaps. Do not solve a modeller-reasoning problem by adding a tool.
+4. Treat broad mesh/Hytale/general-purpose capability as existing upstream
+   surface unless it actively conflicts with the Local Bedrock workflow; do not
+   delete breadth merely for aesthetic purity.
+5. Do not add tests, transactions, rollback systems, tools, schemas, abstractions,
+   or docs until a concrete finding proves they are needed.
+
+## Evidence Rule
+
+ChatGPT → GitHub can prove source structure/contracts only. Use root evidence
+status when needed:
+
+- `CURRENT-PROJECT VERIFIED`
+- `OFFICIALLY VERIFIED`
+- `LOCAL PROOF REQUIRED`
+- `UNSUPPORTED`
+- `UNKNOWN`
+
+A live Blockbench/visual/session claim cannot become `CURRENT-PROJECT VERIFIED`
+from static GitHub inspection alone.
+
+## Out Of Scope During Audit
+
+- model-specific Zebra/Rhino fixes;
+- mass MCP rewrite or Sample/Rework merge;
+- new skill architecture;
+- speculative multi-window/host/auto-port behavior;
+- broad test/CI framework creation;
+- full GSD/OpenSpec frameworks;
+- Claude-Mem or unrelated tooling.
+
+## Exact Next Step
+
+Start the MCP implementation audit from the **current modelling-critical surface**:
+read `mcp/AGENTS.md`, `mcp/README.md`, `mcp/package.json`, tool registration, and
+the project/Cuboid/group/history/camera/texture owners needed to trace one normal
+Bedrock modelling path. Produce a bounded gap list before changing runtime code.
