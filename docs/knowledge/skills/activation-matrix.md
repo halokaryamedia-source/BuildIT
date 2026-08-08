@@ -11,8 +11,9 @@ only when its trigger adds real value.
 | Developing | mandatory `development-brief`; add at most one specialist when it adds real domain value |
 | Maintenance | `ponytail` + the smallest diagnostic/specialist that owns the failure |
 
-Discovery, grilling, review, evidence handling, OpenSpec, and navigation tools
-are conditional escalations, not always-on layers.
+Discovery, grilling, review, OpenSpec, and navigation tools are conditional
+escalations, not always-on layers. Evidence-status escalation is baseline
+behavior in root `AGENTS.md`, not another skill.
 
 The simplicity, surgical-change, independent-judgment, and minimum-proof rules
 in root `AGENTS.md` apply to every mode; do not duplicate them as extra skills.
@@ -201,10 +202,13 @@ hierarchy.
   adversarial scrutiny is requested or materially useful.
 - `code-review`: implemented change where independent critique adds value beyond
   the normal final contract gate.
-- `evidence-gate`: unsupported/disputed proof or a repeatedly failing direction,
-  once its canonical Local status is resolved.
+- **Evidence escalation:** when a material support/feasibility/compatibility/
+  runtime claim is uncertain or disputed, apply root `AGENTS.md` evidence status
+  (`CURRENT-PROJECT VERIFIED`, `OFFICIALLY VERIFIED`, `LOCAL PROOF REQUIRED`,
+  `UNSUPPORTED`, or `UNKNOWN`). This does not consume the specialist slot.
 
-Do not use these merely to make routine work look more rigorous.
+Do not use critique or evidence labels merely to make routine work look more
+rigorous.
 
 ## Skill Authoring
 
@@ -220,17 +224,18 @@ The retired nested `mcp/.agents/skills/skill-creator/` package must not be
 recreated unless a future requirement proves a Local-only authoring capability
 that the available global/user skill cannot provide.
 
-## Recovery Items
+## Recovery Status
 
-Only one unresolved recovery remains:
+The planned skill/capability recovery pass is complete:
 
-| Task | Skill lineage | Status |
-|---|---|---|
-| Unsupported/disputed evidence | `evidence-gate` | **next recovery/audit** |
+- `blockbench-use` capability → recovered as `blockbench-bedrock-modelling`;
+- Reference Generator capability → retained as the `04-reference-guide.md`
+  image-capable workflow, not a root Codex skill;
+- `evidence-gate` capability → merged into root proof/evidence baseline, not a
+  standalone skill.
 
-Recover it based on unique value and overlap with the existing minimum-proof,
-root-cause, and independent-judgment baseline. Do not create a skill merely
-because the historical name exists.
+No additional historical skill should be recreated merely because an old name is
+mentioned. New/recovered capabilities require a proved distinct owner and value.
 
 Do not stack overlapping specialists. Choose the semantic owner.
 
@@ -278,8 +283,8 @@ or one modelling-workflow correction. Activate only the smallest stage needed.
 
 Classify each recovered/new capability `KEEP`, `RENAME`, `MERGE`, `MOVE`, `DROP`,
 or `RECOVER` based on real function and overlap. A recovered capability may stay
-as a foundation/workflow rather than becoming a skill when that is the smaller
-correct owner.
+as a baseline/foundation/workflow rather than becoming a skill when that is the
+smaller correct owner.
 
 ## Proof Economy
 
