@@ -11,6 +11,7 @@ const CAPTURE_SIZE = 512;
 const FRAME_PADDING = 0.12;
 const PERSPECTIVE_FOV = 45;
 const CAPTURE_TIMEOUT_MS = 5000;
+const RESTORE_EPSILON = 1e-5;
 
 const modelViewEnum = z.enum([
   "front",
@@ -49,6 +50,7 @@ interface PreviewCameraSnapshot {
     position: Vec3;
     quaternion: [number, number, number, number];
     up: Vec3;
+    zoom: number;
     fov: number;
     aspect: number;
     near: number;
@@ -82,53 +84,45 @@ export const setCameraAngleParameters = z.object({
   zoom: z.number().positive().optional().describe("Orthographic camera zoom."),
 });
 
-const explicitFramingSchema = z.object({
-  mode: z.literal("explicit"),
-  min: z.tuple([z.number(), z.number(), z.number()]),
-  max: z.tuple([z.number(), z.number(), z.number()]),
-});
-
-export const captureModelViewsParameters = z
+const explicitFramingSchema = z
   .object({
-    views: z
-      .array(modelViewEnum)
-      .min(1)
-      .max(5)
-      .describe("One to five unique canonical model views to capture."),
-    front_direction: z
-      .enum(["+z", "-z"])
-      .describe(
-        "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons."
-      ),
-    framing: z
-      .discriminatedUnion("mode", [
-        z.object({ mode: z.literal("model") }),
-        explicitFramingSchema,
-      ])
-      .optional()
-      .default({ mode: "model" }),
+    mode: z.literal("explicit"),
+    min: z.tuple([z.number(), z.number(), z.number()]),
+    max: z.tuple([z.number(), z.number(), z.number()]),
   })
-  .superRefine((value, ctx) => {
-    if (new Set(value.views).size !== value.views.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["views"],
-        message: "views must contain unique canonical view names.",
-      });
+  .refine(
+    (value) => value.max.every((entry, axis) => entry > value.min[axis]),
+    {
+      message: "Each explicit max axis must be greater than min.",
+      path: ["max"],
     }
+  );
 
-    if (value.framing.mode === "explicit") {
-      for (let axis = 0; axis < 3; axis++) {
-        if (!(value.framing.max[axis] > value.framing.min[axis])) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["framing", "max", axis],
-            message: "Each explicit max axis must be greater than min.",
-          });
-        }
-      }
-    }
+const uniqueModelViewsSchema = z
+  .array(modelViewEnum)
+  .min(1)
+  .max(5)
+  .refine((views) => new Set(views).size === views.length, {
+    message: "views must contain unique canonical view names.",
   });
+
+export const captureModelViewsParameters = z.object({
+  views: uniqueModelViewsSchema.describe(
+    "One to five unique canonical model views to capture."
+  ),
+  front_direction: z
+    .enum(["+z", "-z"])
+    .describe(
+      "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons."
+    ),
+  framing: z
+    .union([
+      z.object({ mode: z.literal("model") }),
+      explicitFramingSchema,
+    ])
+    .optional()
+    .default({ mode: "model" }),
+});
 
 export const cameraToolDocs: ToolSpec[] = [
   {
@@ -188,6 +182,7 @@ function snapshotPreviewCamera(preview: Preview): PreviewCameraSnapshot {
       position: asVec3(preview.camPers.position.toArray()),
       quaternion: preview.camPers.quaternion.toArray() as [number, number, number, number],
       up: asVec3(preview.camPers.up.toArray()),
+      zoom: preview.camPers.zoom,
       fov: preview.camPers.fov,
       aspect: preview.camPers.aspect,
       near: preview.camPers.near,
@@ -225,6 +220,7 @@ function restorePreviewCamera(
   preview.camPers.position.fromArray(snapshot.camPers.position);
   preview.camPers.quaternion.fromArray(snapshot.camPers.quaternion);
   preview.camPers.up.fromArray(snapshot.camPers.up);
+  preview.camPers.zoom = snapshot.camPers.zoom;
   preview.camPers.fov = snapshot.camPers.fov;
   preview.camPers.aspect = snapshot.camPers.aspect;
   preview.camPers.near = snapshot.camPers.near;
@@ -245,6 +241,7 @@ function restorePreviewCamera(
 
   preview.controls.target.fromArray(snapshot.target);
   preview.controls.update();
+  preview.render();
 }
 
 function boundsFromExplicit(framing: Extract<FramingInput, { mode: "explicit" }>): RenderedModelBounds {
@@ -516,23 +513,49 @@ function getPoseContext(): {
   };
 }
 
+function closeNumber(a: number, b: number): boolean {
+  return Math.abs(a - b) <= RESTORE_EPSILON;
+}
+
+function closeArray(actual: readonly number[], expected: readonly number[]): boolean {
+  return (
+    actual.length === expected.length &&
+    actual.every((value, index) => closeNumber(value, expected[index] ?? NaN))
+  );
+}
+
 function verifyRestoredPreview(
   preview: Preview,
   snapshot: PreviewCameraSnapshot
 ): void {
-  const epsilon = 1e-5;
-  const actualTarget = preview.controls.target.toArray();
-  const targetMatches = actualTarget.every(
-    (value: number, axis: number) =>
-      Math.abs(value - snapshot.target[axis]) <= epsilon
-  );
-  const sizeMatches =
-    preview.width === snapshot.width && preview.height === snapshot.height;
-  const projectionMatches = preview.isOrtho === snapshot.isOrtho;
+  const checks = [
+    preview.width === snapshot.width,
+    preview.height === snapshot.height,
+    preview.isOrtho === snapshot.isOrtho,
+    closeArray(preview.controls.target.toArray(), snapshot.target),
+    closeArray(preview.camPers.position.toArray(), snapshot.camPers.position),
+    closeArray(preview.camPers.quaternion.toArray(), snapshot.camPers.quaternion),
+    closeArray(preview.camPers.up.toArray(), snapshot.camPers.up),
+    closeNumber(preview.camPers.zoom, snapshot.camPers.zoom),
+    closeNumber(preview.camPers.fov, snapshot.camPers.fov),
+    closeNumber(preview.camPers.aspect, snapshot.camPers.aspect),
+    closeNumber(preview.camPers.near, snapshot.camPers.near),
+    closeNumber(preview.camPers.far, snapshot.camPers.far),
+    closeArray(preview.camOrtho.position.toArray(), snapshot.camOrtho.position),
+    closeArray(preview.camOrtho.quaternion.toArray(), snapshot.camOrtho.quaternion),
+    closeArray(preview.camOrtho.up.toArray(), snapshot.camOrtho.up),
+    closeNumber(preview.camOrtho.zoom, snapshot.camOrtho.zoom),
+    closeNumber(preview.camOrtho.left, snapshot.camOrtho.left),
+    closeNumber(preview.camOrtho.right, snapshot.camOrtho.right),
+    closeNumber(preview.camOrtho.top, snapshot.camOrtho.top),
+    closeNumber(preview.camOrtho.bottom, snapshot.camOrtho.bottom),
+    closeNumber(preview.camOrtho.near, snapshot.camOrtho.near),
+    closeNumber(preview.camOrtho.far, snapshot.camOrtho.far),
+  ];
 
-  if (!targetMatches || !sizeMatches || !projectionMatches) {
+  if (checks.some((check) => !check)) {
     throw new Error(
-      "Offscreen preview state could not be restored after capture_model_views."
+      "Offscreen preview camera/lens state could not be restored exactly after capture_model_views."
     );
   }
 }
@@ -719,7 +742,7 @@ export function registerCameraTools() {
       content.unshift({
         type: "text",
         text:
-          "Canonical model views captured for observation only. Compare each labeled image directly with the corresponding approved reference view; this tool does not judge resemblance.",
+          "Canonical model views captured for observation only. Compare each labeled image directly with the corresponding approved reference view; this tool does not judge resemblance."
       });
 
       return { content, structuredContent };
