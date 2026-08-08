@@ -1,7 +1,7 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 1.3  
+**Version:** 1.4  
 **Updated:** 2026-08-08
 
 ## Purpose
@@ -155,6 +155,39 @@ Reject:
 - syntactically valid rotation treated as proof.
 
 Prefer the simplest rotation that explains the visible form.
+
+### Existing Cube rotation activation
+
+An existing Cube may have neutral origin because it was previously unrotated.
+Therefore a first/renewed transition from zero rotation to non-zero rotation must
+not silently reuse that origin merely because a numeric value exists.
+
+Current Local correction contract is:
+
+```text
+current rotation = [0,0,0]
+requested rotation = non-zero
+origin omitted
+→ reject before mutation
+
+current rotation = [0,0,0]
+requested rotation = non-zero
+origin supplied explicitly
+→ allowed authored rotation/pivot decision
+
+current rotation already non-zero
+requested rotation changes
+origin omitted
+→ allowed; reuse the existing inspected pivot
+```
+
+The explicit origin on activation may equal the current origin if that point is
+actually intended. The requirement is explicit modelling intent, not a forced
+new/different pivot.
+
+Do not infer pivot intent merely because a Cube happens to contain `[0,0,0]` or
+another stored origin. `inspect_element` should establish the current authored
+state before a material local rotation correction.
 
 ## Pivot / Origin
 
