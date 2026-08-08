@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_PLACE_CUBE_TEXTURE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_APPLY_TEXTURE_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -57,8 +57,8 @@ Current Local source already contains:
 - `inspect_model_bounds` + `capture_model_views` observation;
 - `inspect_element` authored-state inspection in
   `mcp/server/tools/element-inspection.ts`;
-- strict explicit Cube extents, hierarchy targets, rotation activation, and Cube
-  pivot semantics;
+- strict explicit Cube extents, hierarchy targets, rotation activation, Cube
+  pivot semantics, and deterministic initial texture targeting;
 - explicit UUID-based single/batch Cube correction routing;
 - safer `add_group` + hardened `bone_rigging` targeting/pivot/rollback behavior;
 - strict destructive element target resolution plus bounded Undo rollback for
@@ -66,52 +66,46 @@ Current Local source already contains:
 - strict optional Group scope and fail-closed regex filtering in element discovery;
 - `filter_by_material(texture=...)` resolves UUID → exact texture ID → exact
   unique name and rejects ambiguous/missing explicit references;
-- `place_cube(texture=...)` now uses the same deterministic precedence for a
-  supplied texture before Undo/Cube creation, while omitted texture preserves
-  `Texture.getDefault()` behavior.
+- `apply_texture(id=..., texture=...)` now requires non-empty explicit targets,
+  resolves element UUID → exact unique name across Cube/Mesh/Group, resolves
+  texture UUID → exact ID → exact unique name, and rejects ambiguity/missing
+  before descendant expansion and Undo.
 
 These are **source implemented**, not live-proven.
 
-## Latest Initial-Placement Finding
+## Latest Texture-Mutation Finding
 
 Before the latest change:
 
 ```text
-place_cube(texture=reference)
-→ getProjectTexture(reference)
-→ first match where texture.id OR texture.name OR texture.uuid matches
+apply_texture(id=elementRef, texture=textureRef)
+→ findElementOrThrow(elementRef)
+→ findTextureOrThrow(textureRef)
+→ first name-compatible match may win
 ```
 
-That meant a duplicate texture name/ID could silently texture a new Cube with the
-wrong asset even though geometry, hierarchy, rotation, and pivot inputs were
-already strict.
-
-Current `mcp/server/tools/cubes.ts` behavior is:
+Current Local behavior is:
 
 ```text
-texture omitted
-→ Texture.getDefault() behavior preserved
+elementRef
+├─ exact UUID → target
+├─ exact unique name across Cube/Mesh/Group → target
+└─ ambiguous / missing / empty → ERROR
 
-supplied exact UUID
-→ target texture
-
-supplied exact texture ID
-→ target texture
-
-supplied exact unique name
-→ target texture
-
-duplicate texture ID / name
-→ ERROR + candidate identifiers
-
-missing supplied texture
-→ ERROR + use list_textures
+textureRef
+├─ exact UUID → target
+├─ exact texture ID → target
+├─ exact unique name → target
+└─ ambiguous / missing / empty → ERROR
 ```
 
-Texture resolution and Group resolution both complete before `Undo.initEdit`.
-The resolver is local to `place_cube`; shared `getProjectTexture()` /
+Both explicit identities are resolved before any Undo/mutation. If the resolved
+element is a Group, existing behavior is preserved: all descendant Cube/Mesh
+targets are collected before texture application.
+
+The strict resolvers are local to `apply_texture`. Shared `findElementOrThrow()` /
 `findTextureOrThrow()` remain unchanged because they still serve unrelated
-texture/paint/PBR callers.
+texture/PBR/activation callers that have not been audited as one contract.
 
 ## Holds
 
@@ -123,45 +117,47 @@ texture/paint/PBR callers.
 
 ## Next Step
 
-Audit **explicit target identity for `apply_texture`** in:
+Audit **`apply_texture` transaction recoverability** in:
 
 ```text
 mcp/server/tools/texture.ts
 ```
 
-Current mutation preflight is:
+Current source now has strict target preflight, then:
 
 ```text
-apply_texture(id=elementRef, texture=textureRef)
-↓
-findElementOrThrow(elementRef)
-findTextureOrThrow(textureRef)
+resolve element + texture
+→ expand Group descendants
+→ save prior selection
+→ Undo.initEdit
+→ try texture select/apply/update
+→ finally restore prior selection
+→ Undo.finishEdit
 ```
 
-Both shared helpers retain first-match name-compatible lookup semantics. This
-means duplicate element names or duplicate texture names/IDs can direct a texture
-mutation to a different target than intended.
+The `finally` protects UI selection restoration, but it is **not** a rollback
+boundary. If texture application, `updateChangesAfterEdit`, selection restoration,
+or `Undo.finishEdit` throws after Undo opens, current source does not call
+`Undo.cancelEdit(true)`.
 
 Audit requirements:
 
-1. treat element identity and texture identity as one mutation preflight contract;
-2. preserve Group behavior: Group target still means all descendant Cube/Mesh
-   targets;
-3. element reference should resolve exact UUID first and exact name only when
-   unique across supported Cube/Mesh/Group targets;
-4. supplied texture should resolve exact UUID first, then exact texture ID, then
-   exact name only when unique;
-5. all explicit target resolution must complete before Undo/mutation;
-6. keep changes local to `apply_texture` unless caller evidence proves shared
-   helper migration safe;
-7. do not change face/application semantics, paint activation, PBR/UV behavior,
-   G3, or create a generic resolver framework.
+1. preserve the new strict element/texture target preflight unchanged;
+2. preserve Group → descendant Cube/Mesh scope and current `applyTo` semantics;
+3. preserve caller selection restoration on both success and failure as far as
+   the runtime allows;
+4. if any operation fails after `Undo.initEdit`, cancel/revert the open edit and
+   rethrow;
+5. keep face-level Canvas refresh on the successful path;
+6. do not change paint activation, PBR/UV behavior, shared helpers, G3, or create
+   a generic transaction framework.
 
-If existing source already provides equivalent strict preflight, `No change
-required` remains valid.
+Prefer the smallest nested `try/finally` + outer rollback boundary that preserves
+selection restoration and moves `finishEdit` inside the recoverable operation.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source lookup/error contracts and static diff only.
-Actual texture application, descendant targeting, and duplicate-name behavior
-remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+ChatGPT→GitHub may establish source transaction structure and static diff only.
+Actual texture application, selection restoration, descendant targeting, and
+rollback after a forced failure remain `LOCAL PROOF REQUIRED` until local
+Blockbench testing resumes.
