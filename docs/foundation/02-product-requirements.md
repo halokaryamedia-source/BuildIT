@@ -1,72 +1,59 @@
-# BlockIT — Product Intent Requirements
+# BlockIT — Product Requirements
 
-**Status:** Draft  
-**Version:** 1.1  
-**Primary Output:** editable Blockbench `.bbmodel` for a Minecraft Bedrock Entity
+**Status:** Active Policy  
+**Version:** 1.2  
+**Updated:** 2026-08-08  
+**Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
-## 1. Product Summary
+## 1. Product Objective
 
-BlockIT lets a user give a simple natural-language request and an approved Model
-Reference, then uses an agent + Blockbench MCP to create or update a Minecraft
-Bedrock Entity model.
+A user can provide a simple natural-language request plus an approved visual
+Modelling Brief, and BlockIT can create/revise a clean Bedrock model without
+requiring the user to specify professional modelling or MCP details.
 
-The user is not expected to understand MCP, Blockbench internals, or professional
-3D-modelling terminology. The system is responsible for normalizing incomplete
-input without inventing unsupported requirements.
+The system must prefer evidence-backed modelling decisions over assumptions.
 
-Reference generation/preparation is defined in
-[`04-reference-guide.md`](04-reference-guide.md).
+## 2. Required Input
 
-## 2. Product Objective
+- user goal/request;
+- approved Modelling Brief, or sufficient input to prepare one first.
 
-Enable non-technical users to obtain a structured, clean, editable Bedrock model
-while keeping modeller-quality reasoning, evidence, and runtime claims honest.
+Optional input:
 
-## 3. Target Users
-
-### Primary
-
-A non-technical user with little or no knowledge of MCP, Blockbench, 3D
-modelling, or Bedrock asset structure.
-
-### Downstream / Secondary
-
-Minecraft Bedrock modellers/developers who need the `.bbmodel` to be
-understandable, editable, and usable after AI-assisted creation.
-
-## 4. User Input
-
-### Required
-
-- natural-language goal/request;
-- approved Model Reference or the input needed to prepare one first.
-
-### Optional
-
-- model name;
+- requested dimensions;
 - target use;
-- approximate/requested dimensions;
 - texture style;
 - animation requirement;
 - design notes;
-- proposed implementation idea.
+- suggested technical method.
 
-A proposed implementation idea is not automatically a requirement. Preserve the
-user's goal while rejecting/redirecting a method that conflicts with verified
-product evidence or would materially reduce quality.
+A suggested method is not automatically a requirement. Preserve the user's goal
+while rejecting a method that conflicts with current evidence or would reduce
+quality.
 
-## 5. Primary User Flow
+## 3. Canonical Product Flow
 
 ```text
 Request
 ↓
-Approved Model Reference
+Approved Modelling Brief
 ↓
-Whole-form interpretation
+Cross-view consistency check
 ↓
-Primary Geometry Pass
+Coordinate frame + target envelope
 ↓
-Primary visual gate
+Primary Form Hypothesis
+↓
+Explicit coarse primary Cube authoring
+↓
+inspect_model_bounds
+↓
+capture_model_views
+↓
+Reference ↔ model visual gate
+↓
+GLOBAL failure? → revise/rebuild hypothesis
+LOCAL failure?  → inspect_element → causal correction
 ↓
 Secondary geometry / hierarchy / pivots
 ↓
@@ -78,200 +65,221 @@ Optional animation
 ↓
 Final validation
 ↓
-Save .bbmodel
+Save `.bbmodel` when in scope
 ```
 
-Detailed modelling order lives in `03-modelling-workflow.md`.
+Detailed procedure: [03-modelling-workflow.md](03-modelling-workflow.md).
 
-## 6. Product Scope
+## 4. Core Requirements
 
-### In Scope
+### PR-001 — Understand Intent
 
-- understanding simple/incomplete requests;
-- reviewing/preparing Model Reference inputs;
-- whole-form modelling reasoning;
-- creating/opening the correct Bedrock project through the verified workflow;
-- creating, moving, resizing, rotating, and deleting Cuboids;
-- grouping/hierarchy/bones where required;
-- pivots for real edit/animation needs;
-- UV mapping and texture work;
+Identify the intended asset, Bedrock Entity target, expected output, required
+scope, and only the material ambiguities that repository/reference evidence
+cannot resolve.
+
+### PR-002 — Use Reference Honestly
+
+Use the approved Modelling Brief for visible silhouette, proportions, masses,
+contacts, orientation, and style.
+
+Do not convert reference pixels/panel size into Cube coordinates or invent hidden
+features from ambiguous evidence.
+
+### PR-003 — Establish Spatial Contract Before Exact Transforms
+
+Before primary Cube authoring:
+
+- check cross-view consistency;
+- establish X/Y/Z interpretation, front direction, and ground relation;
+- establish target envelope when approved dimensions exist;
+- form a temporary Primary Form Hypothesis for the major masses.
+
+### PR-004 — Author Intentional Primary Geometry
+
+Every new primary Cube must represent a known mass/necessary split.
+
+Normal `place_cube` creation requires:
+
+- explicit finite `from`;
+- explicit finite `to`;
+- explicit parent when a specific Group/bone is intended;
+- explicit origin/pivot when initial rotation is non-zero.
+
+Unrotated Cubes do not need pivot ceremony.
+
+These input rules require intentional geometry but do not automatically prove it
+is visually correct.
+
+### PR-005 — Use Rotation/Pivot Causally
+
+Rotation requires a visible form/slope or required-motion reason.
+
+A material pivot requires an intended rotation center, joint, attachment, or
+parent-transform reason. Do not use arbitrary/distant/copy-pasted pivots.
+
+Pivot-only correction and geometry rewrite are different intents:
+
+```text
+Cube origin only
+→ preserve visual position through pivot transfer
+
+Cube origin + from/to/rotation
+→ intentional authored transform rewrite
+```
+
+### PR-006 — Observe Before Approval
+
+Use structural observation to detect global scale/location problems and visual
+observation to judge resemblance.
+
+Current Local source provides:
+
+- `inspect_model_bounds`;
+- `capture_model_views`.
+
+Successful observation calls are not visual `PASS`.
+
+### PR-007 — Reject Bad Primary Scaffolds
+
+If the whole object is unrecognizable or several primary relationships are wrong
+together, revise/rebuild the Primary Form Hypothesis and coarse blockout.
+
+Do not preserve a bad scaffold because many Cubes already exist.
+
+### PR-008 — Correct Local Problems From Exact State
+
+When whole form is sound but one bounded relationship is wrong:
+
+1. locate/confirm exact target UUID;
+2. use `inspect_element` for current authored state;
+3. classify the cause;
+4. apply one coherent correction;
+5. re-observe affected views.
+
+Use the causal vocabulary:
+
+`TRANSLATE`, `RESIZE`, `ROTATE`, `REATTACH`, `SPLIT`, `MERGE/REMOVE`, `ADD MASS`.
+
+Do not default to `ADD MASS`.
+
+For one relationship spanning multiple Cubes, `modify_cubes_batch` may apply
+different exact-UUID patches in one recoverable Undo unit.
+
+### PR-009 — Add Secondary Structure Only After Primary Form Passes
+
+Hierarchy, smaller geometry, pivots, texture support, and optional animation must
+not be used to compensate for unresolved primary-form errors.
+
+### PR-010 — Texture Supports Geometry
+
+UV/texture are applied after geometry is coherent. Texture must not hide wrong
+silhouette/proportion.
+
+### PR-011 — Animation Only When Required
+
+Do not animate by default. Required animation must use meaningful hierarchy and
+pivots and be visually checked for clipping/detachment/motion quality.
+
+### PR-012 — Separate Structural And Visual Proof
+
+The following do not prove visual correctness by themselves:
+
+- tool success;
+- valid coordinates;
+- all Cubes existing;
+- technical attachment/overlap;
+- valid hierarchy;
+- successful bounds check;
+- valid rotation/pivot values;
+- saved/reopenable file;
+- numeric similarity score.
+
+Visual claims require fresh current-revision images compared with the reference.
+
+### PR-013 — Honest Runtime Claims
+
+ChatGPT→GitHub can establish source contracts only. Live Blockbench/MCP behavior,
+visual transport, Undo behavior, persistence, and visual model quality require
+local runtime/visual proof before being reported as verified.
+
+### PR-014 — Save/Editability
+
+When saving is part of scope, produce a clean understandable `.bbmodel` through
+the currently verified workflow. Claim reopen fidelity only when actually tested.
+
+## 5. In Scope
+
+- request normalization;
+- approved-reference-driven Cuboid modelling;
+- project/geometry observation;
+- Cube creation/correction;
+- Group/hierarchy/pivot work when justified;
+- UV/texture;
 - optional animation;
-- structural validation;
-- visual validation from fresh Blockbench evidence;
-- saving `.bbmodel`.
+- structural and visual validation;
+- saving `.bbmodel` when requested/available.
 
-### Out of Scope
+## 6. Out Of Scope
 
-- full resource-pack or behavior-pack integration;
-- entity definitions/render controllers/animation controllers;
+Unless separately requested/proven:
+
+- full behavior/resource-pack integration;
 - gameplay scripting;
-- Marketplace publishing/licensing review;
-- sculpting/realistic rendering;
-- modelling for unrelated engines;
-- automatic mesh/image-to-approved-cuboid reconstruction;
-- numeric similarity scores as modelling authority.
+- Marketplace publishing;
+- realistic sculpt/render pipelines;
+- unrelated engines/Hytale production;
+- automatic image/mesh→Cuboid reconstruction;
+- SF3D geometry authority;
+- IoU/projection/similarity approval;
+- automatic pivot/joint planner;
+- all-in-one model builder that bypasses the fidelity loop.
 
-## 7. Product Principles
-
-- User intent may be simple; system reasoning must still be professional.
-- Reference first; whole-form before local detail.
-- One task produces one model unless explicitly requested otherwise.
-- Geometry quality precedes texture polish.
-- Use the minimum useful geometry and minimum useful proof.
-- Preview at **meaningful visual gates**, not after every Cube/tool call.
-- Do not claim visual quality without fresh visual evidence.
-- Do not claim runtime capability without current runtime evidence.
-- Stop when the requested scope and required proof are complete.
-
-## 8. Core Requirements
-
-### PR-001 — Understand Request
-
-The system must identify the intended asset, Bedrock target, expected output, and
-material ambiguity without requiring the user to write an expert prompt.
-
-### PR-002 — Use Model Reference
-
-The system must use the approved reference for visible form, proportion,
-silhouette, contacts/relationships, and style while treating ambiguous detail as
-unknown rather than invented geometry.
-
-### PR-003 — Interpret Whole Form
-
-Before local polish, the system must reason about the primary masses,
-relationships, orientation, and global silhouette needed for one coherent model.
-
-### PR-004 — Open / Prepare Project
-
-Use the current verified Bedrock project workflow without overwriting unrelated
-work.
-
-### PR-005 — Build Primary Geometry
-
-The model must become globally recognizable before secondary/detail work
-expands.
-
-### PR-006 — Pass Primary Visual Gate
-
-The primary form must be visually reviewed for global silhouette, major
-proportions/masses, orientation, and major visible attachments before detail is
-used to compensate for shape errors.
-
-### PR-007 — Complete Structure
-
-Hierarchy, pivots, and secondary geometry must be purposeful, understandable,
-and appropriate to required editability/motion.
-
-### PR-008 — Create UV / Texture
-
-Required surfaces must have usable UVs and texture appropriate to the requested
-scope. Texture must not conceal incorrect primary geometry.
-
-### PR-009 — Animation Only When Required
-
-Do not create animation by default. When required, verify intended motion,
-hierarchy, pivots, clipping, and detachment visually.
-
-### PR-010 — Validate Structure
-
-Inspect only structural criteria relevant to the requested output and changed
-boundary.
-
-### PR-011 — Validate Visually
-
-Fresh current-revision Blockbench evidence must support visual claims. Full
-geometry review uses the active Model Reference's declared view set; do not use
-fixture-specific or per-Cube screenshot rules.
-
-### PR-012 — Save Final File
-
-Save through the current verified workflow. Claim reopenability only when it was
-actually tested in an environment that can perform that proof.
-
-## 9. Quality Requirements
+## 7. Quality Requirements
 
 ### Visual
 
 - recognizable whole form;
-- coherent silhouette and major proportions;
-- required primary parts/relationships;
-- readable Minecraft-compatible style;
-- texture/animation quality when in scope.
+- coherent silhouette and primary proportions;
+- correct major orientation/contacts;
+- important rotations justified by form/motion;
+- meaningful pivots justified by transform relationships.
 
 ### Structural
 
-- clean understandable hierarchy/naming;
-- purposeful geometry;
-- editable by another modeller;
-- no hidden undocumented dependency or accidental temporary content.
+- explicit/intentional authored transforms;
+- clean hierarchy and semantic naming;
+- exact target identity where mutation matters;
+- recoverable bounded edits where practical;
+- no accidental temporary/compensating geometry.
 
 ### Efficiency
 
-- no purposeless tool calls;
-- no per-Cube validation ceremony;
-- no repeated full inspection after a local correction unless global form was
-  affected;
-- no rebuilding a correct whole model for a local issue;
-- no endless refinement or broad tests after acceptance is sufficiently proven.
+- minimum meaningful Cuboids;
+- minimum useful observation/proof;
+- no per-Cube screenshot/approval ceremony;
+- no repeated full review for genuinely local changes;
+- stop repeated failed correction direction after two attempts without new
+  evidence.
 
-### Reliability
+## 8. Definition Of Done
 
-- detect/report failed operations;
-- preserve recoverability where possible;
-- do not assume success;
-- distinguish static implementation from live/runtime/visual proof.
+A modelling task is complete when:
 
-## 10. Standard Output
-
-```text
-<model-name>.bbmodel
-```
-
-The delivered project should contain the geometry, hierarchy/pivots, UV,
-texture, optional animation, and clean naming required by the approved scope.
-
-## 11. Status Boundary
-
-Internal visual/validation states may include `ISSUES_FOUND`, `BLOCKED`, and
-`PASS`.
-
-A successful tool call/build/save does not automatically produce `PASS`. A
-runtime/visual result remains unverified until the relevant local proof exists.
-
-## 12. MVP Boundary
-
-### Foundation MVP
-
-- correct Bedrock project workflow;
-- create/organize Cuboids;
-- set transforms/pivots/hierarchy as required;
-- save project through verified operations.
-
-### Modelling MVP
-
-- approved-reference-driven whole-form geometry;
-- hierarchy/pivots;
-- basic UV/texture;
-- structural + primary/full visual gates.
-
-### Target Product
-
-- stronger texture quality;
-- robust visual validation;
-- optional animation;
-- clean development-ready `.bbmodel`.
-
-## 13. Definition Of Done
-
-A modelling task is done when:
-
-- the intended request/scope is understood;
-- the approved Model Reference was used honestly;
-- primary whole form passed visual review;
+- request/scope and reference are understood;
+- whole primary form passed the required visual gate;
 - required secondary geometry/hierarchy/pivots are complete;
-- UV/texture are complete for scope;
-- animation is complete or not required;
-- required structural and visual proof is complete;
-- no unresolved critical/major issue remains;
-- `.bbmodel` is saved when save is part of scope;
-- any remaining local-only proof is reported rather than fabricated.
+- texture/animation are complete only when in scope;
+- no unresolved critical/major visual issue remains;
+- required structural and visual evidence exists;
+- save/output is complete when part of scope;
+- unavailable local-only proof is reported rather than inferred.
+
+## 9. Evidence Boundary
+
+Current Local source contains the main Reference Fidelity observation,
+correction, targeting, and pivot/initial-placement safety mechanisms. Their live
+Blockbench/MCP integration is `LOCAL PROOF REQUIRED` until deliberately tested.
+
+See [Validation Report](validation-report.md) and
+[Implementation Map](../knowledge/implementation-map.md).
