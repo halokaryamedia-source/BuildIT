@@ -6,155 +6,180 @@ reconstructing prior chats.
 
 ## Active Task
 
-- **Goal:** curate the Blockbench MCP **tools, resources, and prompts** before
-  continuing G3, so the default surface has clear modelling goals and directly
-  supports the whole-form-first Minecraft Bedrock Entity workflow.
-- **Status:** `MCP_SURFACE_CURATION`.
-- **Execution now:** ChatGPT → GitHub research/review only.
-- **Runtime changes now:** none until the curation decision is complete.
-- **Sources to compare:** current `Local`, historical `Rework`, external/reference
-  `Sample`, and the upstream `jasonjgardner/blockbench-mcp-project` skill surface
-  referenced by the user.
+- **Goal:** review and approve the curated Blockbench MCP surface before any more
+  runtime changes.
+- **Status:** `MCP_SURFACE_CURATION_REVIEW_READY`.
+- **Execution now:** ChatGPT → GitHub.
+- **Runtime changes during curation:** none.
+- **Review owner:** `docs/knowledge/reviews/mcp-surface-curation.md`.
 
-## Review Lenses
+## Main Finding
 
-Use existing project owners rather than inventing another skill:
+The primary current problem is **goal/routing clarity, not lack of mutation
+APIs**.
 
-- `development-brief` → keep goal/scope/acceptance bounded;
-- `blockbench-bedrock-modelling` → judge whether a capability materially helps
-  produce a coherent, editable, visually-correct Bedrock model;
-- `mcp-server-development` → judge whether tools/resources/prompts expose the
-  right MCP contract once the modelling need is proven.
+Local already has enough primitives to create Cuboids, groups, textures,
+animations, screenshots, history, and exports. The normal creation guidance is
+still organized around implementation methods (`ui`, `programmatic`, `import`)
+and promotes UI automation, `risky_eval`, and `.geo.json` import too close to the
+default Bedrock modelling path.
 
-The architecture remains frozen. This review does **not** authorize a new skill,
-framework, production director, state machine, or broad Rework/Sample merge.
-
-## Curation Question
-
-Do not ask "what tools can Blockbench expose?" Ask:
+The recommended normal workflow is instead:
 
 ```text
-What modelling decision/stage does this capability serve?
-Does it reduce churn or improve evidence/recoverability?
-Does it preserve modeller judgement instead of pretending to be vision?
-Is the same goal already served by a smaller existing capability?
-Should it be default, conditional, read-only evidence, or last-resort fallback?
-```
-
-## Target Workflow
-
-Curate against this current Local sequence:
-
-```text
-orient / open project
-→ understand current model state
+orient project
+→ targeted state inspection
 → whole-form primary Cuboid pass
 → primary visual gate
-→ targeted geometry correction
+→ targeted correction
 → secondary hierarchy / pivots
 → full geometry review
-→ UV / texture
+→ Cuboid UV / texture
 → optional animation
 → final structural + visual proof
 → save .bbmodel
 ```
 
-No per-Cube ceremony, section-first orchestration, numeric resemblance authority,
-or generic mesh/Hytale/PBR expansion is required for the default Bedrock path.
+## Curation Result
 
-## Classification
+Full matrix: `docs/knowledge/reviews/mcp-surface-curation.md`.
 
-For every useful capability found in Local/Rework/Sample/upstream, classify:
+### Keep / improve core
+
+- `create_project`, `get_project_info`;
+- `list_outline`, `find_elements_by_criteria`;
+- `place_cube`, `modify_cube`;
+- `add_group` and focused hierarchy operations;
+- `undo`, `redo`, `get_undo_stack`;
+- `capture_screenshot` as low-level visual evidence;
+- core texture create/list/get/apply/activate + only needed paint operations;
+- core animation tools only when animation is required;
+- `export_model` only when export is actually needed;
+- `validator://status` as structural diagnostics, never visual approval.
+
+### Strong additions/recoveries
+
+1. **Targeted authored-element inspector** — exact Cube/group state without
+   `risky_eval` or full dumps.
+2. **Simplified named multi-view capture** — recover the useful core of Sample
+   `capture_bedrock_preview` / Rework `capture_standard_views`: named generic
+   views, auto-frame, batch capture, and state restoration.
+3. **Simple heterogeneous `modify_cubes_batch`** — several explicit corrections
+   in one Undo; do not copy Rework analyzer/anchor/gap machinery.
+4. **Cuboid UV reads/writes** — `get_uv_layout` + `set_cube_face_uv`; consider
+   `fit_cube_face_uv` later only if real texture work benefits.
+5. **Clear hierarchy operations** — group/reparent/update ownership outside
+   animation-only semantics when current `bone_rigging` becomes awkward.
+
+### Hide from normal Bedrock path
+
+Keep available only for explicit/diagnostic work:
 
 ```text
-KEEP        current Local capability is already correctly scoped
-IMPROVE     keep capability but clarify/strengthen its contract
-ADD         genuinely missing capability with distinct modelling value
-MERGE       useful behavior belongs in an existing capability
-HIDE        keep available but remove from normal/default modelling path
-DROP        no current value or actively misdirects the product
-PROOF FIRST existing capability may already solve the need; test before adding
+risky_eval
+trigger_action
+fill_dialog
+emulate_clicks
+capture_app_screenshot
+from_geo_json
+mesh tools
+mesh UV tools
+armature / vertex weights
+PBR / material instances
+Hytale tools/resources/prompts
+advanced animation tools
+advanced paint/preset/layer tools
 ```
 
-Evaluate **tools, resources, and prompts separately**. A workflow problem should
-not automatically become a new mutation tool.
+`HIDE` does not mean delete.
+
+### Do not import
+
+- Rework dynamic profiles/stage state/write leases/review machinery;
+- Sample companion host/multi-window/auto-port architecture;
+- Sample all-in-one `build_bedrock_entity_asset`;
+- Sample full Bedrock verifier as modelling authority;
+- upstream mandatory `blockbench-use` orchestrator/multi-skill stack.
+
+## Source Lessons
+
+### Rework
+
+Keep the principle of a **small production surface** and recover focused mutation
+safety: strict target/group lookup, explicit targets, untextured Geometry support,
+and `Undo.cancelEdit()` on failure. Do not restore its production state machine.
+
+### Sample
+
+Most valuable focused ideas:
+
+- named/restored Bedrock preview capture;
+- simple batch Cube correction;
+- clearer group/reparent operations;
+- Cuboid UV inspection/editing;
+- direct save/open implementation only as reference if current Local save proof
+  fails.
+
+### Upstream `jasonjgardner/blockbench-mcp-project`
+
+Keep:
+
+- filter instead of dumping state;
+- meaningful screenshots rather than per-edit captures;
+- descriptive naming;
+- conceptual separation of modelling/texturing/animation.
+
+Do not restore its mandatory orchestrator, multi-skill stack, generic mesh-first
+breadth, or fixed preflight/checkpoint ceremony.
 
 ## Completed Corrections Before Curation
 
-### G1 — Bedrock Entity default/recommended path
-
-Source implemented; `LOCAL PROOF REQUIRED` later.
-
-### G2 — Local bundled prompt authority
-
-Source implemented; `LOCAL PROOF REQUIRED` later.
-
-Current prompt precedence:
-
-```text
-user override
-→ bundled Local prompt
-→ optional remote/cache fallback for Local-missing names
-→ empty
-```
+- **G1:** Bedrock Entity default/recommended path — source implemented,
+  `LOCAL PROOF REQUIRED` later.
+- **G2:** bundled Local prompt authority — source implemented,
+  `LOCAL PROOF REQUIRED` later.
 
 ## Paused Corrections
 
-### G3 — MCP annotation forwarding
+- **G3 annotation forwarding:** still paused until curated surface direction is
+  accepted.
+- **G4 screenshot restoration:** hold; likely folds naturally into the simplified
+  named multi-view capture work.
+- **G5 bone-rigging Undo preflight:** hold; hierarchy curation may change the
+  normal owner/path first.
 
-Demonstrated source gap, but **paused by current user instruction** until surface
-curation determines which tools should be part of the intended public/default
-surface. Do not implement yet.
+## Recommended First Implementation Slice
 
-### G4 — screenshot project-state restoration
+### Slice A — Goal-oriented prompt + recommended surface routing
 
-Demonstrated source gap; hold until curation completes.
+Do this **before adding a new mutation tool**:
 
-### G5 — bone-rigging preflight before Undo
+- redefine `model_creation_strategy` around the Local modelling stages;
+- stop presenting `ui | programmatic | import` as peer default creation paths;
+- remove `risky_eval`, UI automation, and `.geo.json` import from the normal
+  Bedrock guidance;
+- prefer targeted reads and meaningful visual gates;
+- keep developer/import escape hatches available only for explicit needs.
 
-Demonstrated source gap; hold until curation completes.
+Why first: it tests the strongest demonstrated cause using the smallest change.
+Existing Local primitives are already sufficient to attempt a much better
+whole-form workflow after the guidance is corrected.
 
-## Known Local Surface Baseline
+## Later Order
 
-Current Local already includes, among others:
+After Slice A is proven useful:
 
-- project creation/orientation;
-- Cuboid placement/modification;
-- groups/outline/search/selection;
-- hierarchy/pivot operations through current group/bone surfaces;
-- undo/redo/history/checkpoints;
-- screenshots and camera angle control;
-- texture/paint/UV operations;
-- optional animation;
-- export;
-- validator resources;
-- broad mesh/Hytale/PBR/UI/eval capabilities inherited from upstream.
-
-Do not assume broad availability means those capabilities belong in the default
-Bedrock modelling path.
-
-## Research Boundary
-
-1. Inventory Local by **modelling goal**, not by source filename.
-2. Inspect Rework for capabilities with unique evidence/recovery/inspection value;
-   do not restore its heavy orchestration/state machinery.
-3. Inspect Sample for focused capabilities such as preflight, recovery,
-   transaction safety, targeted inspection, camera/evidence, or save/open behavior;
-   do not import Sample multi-window/host policy without a new requirement.
-4. Inspect the user-provided upstream skill/project surface and retain only ideas
-   that improve the current Bedrock workflow.
-5. Produce one bounded curation matrix and recommended minimal target surface
-   **before changing runtime code**.
-
-## Local-Proof Holds
-
-- save/reopen `.bbmodel` remains `PROOF FIRST`;
-- orthographic/3/4 camera semantics remain `PROOF FIRST`;
-- G1/G2 runtime behavior remains `LOCAL PROOF REQUIRED`.
+```text
+B targeted element inspector
+→ C simplified named multi-view capture
+→ D safer Cuboid mutations + modify_cubes_batch
+→ E Cuboid UV tools
+→ F save/open proof and only then direct tools if needed
+→ resume G3 / remaining proven gaps
+```
 
 ## Next Step
 
-Complete the Local/Rework/Sample/upstream comparison and produce the curated
-**KEEP / IMPROVE / ADD / MERGE / HIDE / DROP / PROOF FIRST** matrix for tools,
-resources, and prompts. Then choose exactly one first implementation slice based
-on modelling impact, not framework convenience.
+Review the curation result with the user. If accepted, implement **Slice A only**
+using `development-brief` + `mcp-server-development`, with no new mutation tool
+in the same change.
