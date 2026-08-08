@@ -1,22 +1,30 @@
 # Workspace Structure
 
-`workspace/` adalah area penyimpanan proyek Blockbench di root repository.
+Updated: 2026-08-08
 
-## Top-Level Areas
+`workspace/` is the root-level storage area for Blockbench model/project
+packages. This note documents the structure that actually exists in Local; it
+does not invent a project-creation script or preset owner.
+
+## Top-Level Layout
 
 ```text
 workspace/
+├─ README.md
 ├─ active/
-│  └─ <project>/
 └─ saved/
-   └─ <project>/
 ```
 
-- `active/` berisi proyek yang sedang dikerjakan.
-- `saved/` berisi proyek yang sudah selesai dan tervalidasi.
-- Satu proyek hanya boleh berada di salah satu area.
+- `active/` — projects currently being worked on.
+- `saved/` — projects intentionally retained as completed/saved packages.
 
-## Project Package
+The folder location is organizational state only. A project in `saved/` is not
+proof that every runtime/visual requirement was verified unless its own evidence
+says so.
+
+## Expected Project Package
+
+A project package may contain:
 
 ```text
 <project>/
@@ -27,26 +35,52 @@ workspace/
    └─ references/
 ```
 
-- `<project>.bbmodel`: file native Blockbench utama, langsung di root proyek.
-- `export-data/`: hasil development Minecraft Bedrock seperti texture,
-  animation, geometry, dan output lain yang siap dipakai.
-- `mcp-data/references/`: reference image, reference package, dan bahan
-  pembanding model.
-- `mcp-data/cache/`: screenshot preview dan cache proses MCP/Codex yang dapat
-  dibuat ulang.
+Use only the directories a real project needs.
 
-## Lifecycle
+- `<project>.bbmodel` — native Blockbench project file.
+- `export-data/` — deliverable Minecraft/Bedrock outputs when the project creates
+  them.
+- `mcp-data/references/` — approved Modelling Brief and project-specific reference
+  material.
+- `mcp-data/cache/` — reproducible temporary MCP/Codex visual/cache data.
 
-1. Script membuat proyek baru di `workspace/active/<project>/` dari preset
-   immutable di `mcp/workflow/presets/`.
-2. Pengerjaan model dan cache tetap berada di area `active/`.
-3. Setelah model dan output tervalidasi, seluruh folder proyek dipindahkan ke
-   `workspace/saved/`.
-4. Jangan menyimpan hasil final Bedrock di `mcp-data/`; folder itu khusus data
-   pendukung MCP dan Codex.
+Do not put final deliverables into `mcp-data/cache/`.
 
-## Boundary
+## Current Lifecycle Rule
 
-- Preset dan script reusable berada di `mcp/workflow/`.
-- Aturan dan kebijakan workflow berada di `docs/`.
-- Data per proyek berada di `workspace/`.
+```text
+model/package is active
+→ keep under workspace/active/
+
+work is intentionally finalized/saved
+→ move/retain under workspace/saved/
+```
+
+How a project is created/opened/saved is runtime implementation truth. Do not
+claim a `mcp/workflow/presets/` or similar creation system: that path is not
+present in current Local.
+
+## Boundaries
+
+- reusable runtime/plugin behavior → `mcp/`;
+- product/modelling policy → `docs/foundation/`;
+- repository/Obsidian memory → `docs/knowledge/`;
+- per-project files/data → `workspace/`.
+
+## Reference Boundary
+
+The generic reference-generation policy belongs to
+`docs/foundation/04-reference-guide.md`. Only project-specific approved reference
+material belongs in a project package.
+
+## Proof Boundary
+
+A `.bbmodel` file existing on disk establishes file presence only. Save/reopen
+fidelity, texture persistence, animation persistence, and visual correctness are
+separate claims and require their relevant proof.
+
+## Related
+
+- [Workspace Map](workspace-map.md)
+- [Implementation Map](implementation-map.md)
+- [Reference Guide](../foundation/04-reference-guide.md)
