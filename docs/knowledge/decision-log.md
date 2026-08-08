@@ -5,6 +5,46 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+### Evidence-gate capability is baseline evidence status, not a standalone skill
+
+- **Audit decision:** `MERGE + DROP AS SKILL`.
+- **Lineage finding:** no tracked `.agents/skills/evidence-gate/SKILL.md` history
+  exists in Rework. The actual useful behavior was recovered from the earlier
+  Minecraft Production Reality Core's embedded Evidence Gate rules rather than a
+  standalone project skill.
+- **Actual useful function:** distinguish the strength of evidence behind a
+  material support, feasibility, compatibility, or runtime claim before the
+  agent treats that claim as established.
+- **Canonical owner:** root `AGENTS.md` under **Evidence Status Escalation**.
+- **Retained conditional statuses:** `CURRENT-PROJECT VERIFIED`, `OFFICIALLY
+  VERIFIED`, `LOCAL PROOF REQUIRED`, `UNSUPPORTED`, and `UNKNOWN`.
+- **Naming change:** historical `PROTOTYPE REQUIRED` becomes `LOCAL PROOF
+  REQUIRED` because the current workflow explicitly separates ChatGPT→GitHub
+  preparation from Codex-local proof.
+- **Not retained:** historical `SIMULATION REQUIRED` as another evidence label.
+  If the literal method is unsupported but the user's valid goal can be achieved
+  differently, root Independent Judgment already owns rejecting/redirecting the
+  method to the smallest supported alternative.
+- **Why no skill:** minimum useful proof, root-cause gating, independent judgment,
+  execution-channel boundaries, final contract gating, and failed-direction stop
+  rules already own the procedure around evidence. A separate specialist would
+  duplicate those controls and compete with the one-specialist budget.
+- **Anti-ceremony rule:** evidence labels are used only when a material claim is
+  uncertain, disputed, version-sensitive, or blocking completion. Routine
+  text/source changes do not receive status labels merely to look rigorous.
+- **Sample rule preserved:** historical samples/old projects/screenshots can
+  provide context but cannot by themselves justify `CURRENT-PROJECT VERIFIED`
+  for another current target.
+- **Compatibility:** references to `evidence-gate` as a future/conditional skill
+  are retired. `development-brief` and the activation matrix now route evidence
+  disputes to root `AGENTS.md` instead.
+- **Proof:** compared the recovered Evidence Gate status taxonomy with current
+  `AGENTS.md`, `development-brief`, activation routing, execution-channel proof
+  rules, and the absence of a standalone Rework skill path. No MCP runtime source
+  was changed.
+- **Owner:** workspace agent
+- **Date:** 2026-08-08
+
 ### Reference Generator capability stays a foundation workflow, not a root skill
 
 - **Audit decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
@@ -458,8 +498,9 @@ Active task state belongs in `next-action.md`, not here.
 - **Decision:** Plan uses `ponytail`; Developing uses mandatory
   `development-brief` plus at most one useful specialist; Maintenance uses
   `ponytail` plus the smallest diagnostic/specialist owning the failure.
-- **Decision:** GSD discovery, `grilling`, `code-review`, `evidence-gate`,
-  CodeGraph, and OpenSpec are conditional escalations, not default layers.
+- **Decision:** GSD discovery, `grilling`, `code-review`, CodeGraph, and OpenSpec
+  are conditional escalations, not default layers. Evidence-status escalation is
+  baseline `AGENTS.md` behavior and does not consume a specialist slot.
 - **Decision:** skills are audited one at a time and classified `KEEP`, `RENAME`,
   `MERGE`, `MOVE`, `DROP`, or `RECOVER` based on real trigger/function and
   overlap—not upstream naming.
@@ -578,12 +619,17 @@ current Local Reference Generator authority. The useful generation capability is
 owned by `docs/foundation/04-reference-guide.md`; root Codex skill discovery does
 not include a Reference Generator skill.
 
+The conceptual `evidence-gate` recovery item is superseded by root `AGENTS.md`
+evidence-status escalation; no standalone evidence specialist is part of the
+canonical skill architecture.
+
 ## Rule
 
 - Do not turn a diagnostic number into a modelling decision.
 - Do not invent missing geometry from an ambiguous image.
 - Do not convert user-suggested methods into requirements without validation.
-- Mark unproven runtime behavior as `Needs Validation`.
+- Mark unproven runtime behavior as `Needs Validation` / `LOCAL PROOF REQUIRED`
+  when that distinction is material.
 
 ## Parent
 
