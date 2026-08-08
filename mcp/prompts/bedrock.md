@@ -5,22 +5,39 @@ Create or revise a Minecraft Bedrock **entity** model as a clean, editable Block
 - Use Blockbench project format ID `bedrock`.
 - This is Bedrock Entity geometry, not `bedrock_block`; do not apply Bedrock Block size limits.
 - Use Cubes as the normal geometry primitive and groups as bones/organization when the asset actually needs them.
-- Treat the user brief and approved visual reference as the modelling authority. Tool success, valid coordinates, or a validator pass are not proof of visual resemblance.
+- Treat the user brief and approved visual reference as the modelling authority. Tool success, valid coordinates, connected Cubes, or a validator pass are not proof of visual resemblance.
 
 ## Normal modelling route
 
-1. **Orient before mutating.** Use `get_project_info`, then `list_outline` or `find_elements_by_criteria` only as needed. Use `create_project` only when a new Bedrock Entity project is actually required.
-2. **Interpret the whole form.** Identify the primary masses, silhouette, major proportions, orientation, and important contacts before polishing individual Cubes.
-3. **Build the primary form.** Use `place_cube` in bounded useful batches and `modify_cube` for targeted corrections. Create only the minimum grouping needed for safe construction; do not build a complete hierarchy first unless the asset or required animation makes it necessary.
-4. **Run a meaningful visual gate.** Use `capture_screenshot` at whole-form checkpoints, not after every Cube. Inspect the few views needed to judge silhouette, major proportions, orientation, mass placement, and visible contacts.
-5. **Correct causes, not symptoms.** If the global form is wrong, modify the responsible primary masses. Do not hide a proportion/contact error by adding decorative Cubes. Use `undo` when a correction direction is wrong.
-6. **Add secondary structure only after the primary form reads correctly.** Add hierarchy, pivots, and smaller geometry only when they improve silhouette, organization, attachment, texture support, or required motion.
-7. **Texture after geometry.** Use texture/UV tools only after the geometry is coherent. Texture must not compensate for incorrect primary form.
-8. **Animate only when requested.** Use the core animation tools only for required motion, then verify pivots, attachment, clipping, and the intended pose/motion visually.
-9. **Finish with structural and visual proof.** Use Blockbench validator information for structural diagnostics when useful, fresh screenshots for visual claims, and the current verified save workflow for the final `.bbmodel`.
+1. **Orient before mutating.** Use `get_project_info`, then targeted outline/search only as needed. Establish a consistent model frame: X=width, Y=height, Z=length/front-back, plus explicit front direction/ground relationship when relevant.
+2. **Check the reference as one 3D object.** Do not average materially conflicting views. Know which view(s) support width, height, length, primary placement, and important slopes.
+3. **Create a temporary Primary Form Hypothesis before exact Cube transforms.** For each primary mass, reason about its relative size, relative center/placement, important orientation, major contact, and supporting reference view(s). This is not a locked Cube plan and is not pixel calibration.
+4. **Build a coarse whole-form blockout.** Every primary Cube must implement a known mass role or necessary split. Never place a Cube merely because it can touch/overlap/attach to another Cube. Derive exact `from/to/origin/rotation` from the spatial hypothesis and reference evidence rather than guessing each Cube independently.
+5. **Use rotation only with evidence.** Prefer axis-aligned Cuboids when they explain the form. Rotate only when a supporting view shows a meaningful slope/orientation or required motion needs it. Do not use arbitrary multi-axis rotation to make a part look more complex or to compensate for wrong size/placement.
+6. **Run structural + visual whole-form checks.** When bounds inspection is available, use it to catch gross scale/ground/orientation errors that camera framing can hide. Then compare fresh model views with corresponding reference views for recognizability, silhouette, major proportions, mass placement, orientation, and visible contacts.
+7. **Reject bad primary scaffolds.** If the intended object is not recognizable or several primary relationships fail together, revise/rebuild the Primary Form Hypothesis and coarse blockout. Do not preserve a bad model merely because many Cubes are already placed.
+8. **Correct causes, not symptoms.** Classify the issue before editing: TRANSLATE, RESIZE, ROTATE, REATTACH, SPLIT, MERGE/REMOVE, or ADD MASS only when a visible volume is genuinely missing. Do not default to adding another Cube.
+9. **Add secondary structure only after the primary form passes.** Add hierarchy, smaller geometry, and pivots only when they improve silhouette, organization, attachment, texture support, or required motion.
+10. **Treat pivots as functional decisions.** A meaningful pivot must correspond to an intended rotation center, joint, attachment, or parent-transform relationship. Do not choose arbitrary/distant pivots or copy pivot values from unrelated parts. An unrotated/non-articulated Cube does not need an invented pivot rationale merely because `origin` exists in the schema.
+11. **Texture after geometry.** Use texture/UV tools only after the geometry is coherent. Texture must not compensate for incorrect primary form.
+12. **Animate only when requested.** Verify pivots, attachment, clipping, transform arcs, and intended motion visually.
+13. **Finish with structural and visual proof.** `PASS` cannot be justified by statements such as "all Cubes are present", "everything is attached", "the tool succeeded", "rotation values are valid", or "the validator has no error". Visual approval requires fresh comparison against the reference.
+
+## Visual review questions
+
+At a primary gate, answer concrete questions rather than writing generic praise:
+
+- Does the whole silhouette read as the intended object?
+- Which primary mass is too large/small/long/short/wide/narrow?
+- Which primary mass is misplaced relative to another?
+- Which important slope/orientation is wrong?
+- Which visible contact/attachment is wrong?
+- Which reference/model view(s) prove the mismatch?
+
+If the whole object is unrecognizable or multiple primary relationships are wrong together, rebuild/revise the primary hypothesis rather than micro-patching.
 
 ## Default boundaries
 
 For normal Bedrock Entity modelling, do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature/PBR tooling, or Hytale tooling as shortcuts. Use those only for an explicit specialized request or a demonstrated blocker that the normal MCP surface cannot solve.
 
-Prefer targeted reads over state dumps, bounded edits over per-Cube ceremony, and meaningful visual checkpoints over screenshot quotas.
+Prefer targeted reads over state dumps, coarse whole-form reasoning over per-Cube improvisation, bounded edits over patch churn, and meaningful reference/model comparisons over screenshot quotas.
