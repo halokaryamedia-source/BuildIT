@@ -51,12 +51,12 @@ recreated merely to satisfy historical documentation.
 | Cube pivot-only semantics | `mcp/server/tools/cubes.ts` | origin-only → `Cube.transferOrigin()`; origin + geometry transform → authored rewrite |
 | Existing-Cube rotation activation | `mcp/server/tools/cubes.ts` | currently unrotated target + requested non-zero rotation requires explicit origin; already-rotated target may reuse existing pivot |
 
-### Destructive Element Targeting
+### Destructive Element Targeting / Duplication
 
 | Capability | Source owner | Current source meaning |
 |---|---|---|
 | `remove_element` | `mcp/server/tools/element.ts` | explicit UUID-first target; exact name accepted only when unique across Cube/Mesh/Group; ambiguity fails before Undo |
-| `duplicate_element` | `mcp/server/tools/element.ts` | same strict destructive target resolution before recursive clone starts |
+| `duplicate_element` | `mcp/server/tools/element.ts` | strict target preflight; recursive Cube/Group/Mesh cloning runs inside one Undo transaction; failure after Undo opens calls `Undo.cancelEdit(true)` before rethrow |
 | `rename_element` | `mcp/server/tools/element.ts` | same strict destructive target resolution before rename Undo |
 | destructive element resolver | `mcp/server/tools/element.ts` | local resolver only; shared `mcp/lib/util.ts::findElementOrThrow` intentionally left unchanged because unrelated callers were not proven safe to migrate |
 
