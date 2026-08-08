@@ -1,6 +1,6 @@
 # MCP Reference Fidelity Root-Cause Review
 
-**Status:** DISCUSSION / ARCHITECTURE REVIEW
+**Status:** ROOT CAUSE CONFIRMED / RULES HARDENED
 **Date:** 2026-08-08
 **Scope:** Why Reference Image / Modelling Brief → Blockbench `.bbmodel` can diverge grossly even when MCP tools execute correctly.
 
@@ -8,210 +8,262 @@
 
 The primary BlockIT issue is not that MCP cannot create Cubes. The issue is that a
 visually understandable reference can become a Blockbench model whose whole form,
-silhouette, proportions, or primary mass relationships are far from the target.
+silhouette, proportions, primary mass relationships, rotations, or pivots are far
+from the target.
 
 This is a **Reference → 3D reasoning → numeric Cuboid → visual feedback** failure.
 
-A technically successful MCP call, valid Cuboid coordinates, valid hierarchy, or
-successful save does not prove reference fidelity.
+A technically successful MCP call, valid Cuboid coordinates, valid hierarchy,
+successful attachment, or successful save does not prove reference fidelity.
+
+## Confirmed Testing Insights
+
+Repeated prior testing has shown two concrete failure patterns:
+
+1. **Placement-by-existence:** the agent tends to place Cubes wherever they can be
+   made to fit/connect, then treats "all Cubes are placed/attached" as progress or
+   approval even when the whole object is visibly wrong.
+2. **Abstract transform authoring:** rotations and pivots can become arbitrary or
+   overcomplicated because values are chosen without a clear reference-visible
+   slope, joint, attachment, or transform purpose.
+
+These are not harmless implementation details. They explain how a model can be
+structurally valid while visually unrecognizable.
 
 ## Central Diagnosis
 
-Current Local has a gap between visual reasoning and exact numeric mutation:
+Current Local historically allowed a direct jump from qualitative visual
+understanding to exact mutation values:
 
 ```text
 Reference / Modelling Brief
 ↓
-qualitative visual understanding
+"I see body / head / handle / support / etc."
 ↓
-MISSING: stable whole-form spatial hypothesis
-↓
-agent invents exact from/to/origin/rotation values
+agent invents exact from/to/origin/rotation
 ↓
 MCP faithfully executes them
 ↓
-current-view screenshot / weak comparison
+Cubes are technically present/attached
 ↓
-agent can rationalize the result instead of correcting global form
+weak/non-standardized review
+↓
+agent can rationalize or micro-patch the wrong whole form
 ```
 
-The old Zebra audit already demonstrated this failure mode: exact Cube transforms
-were chosen without a reference-grounded spatial contract, local contact could
-pass while global shape failed, and free-form visual reporting could accept a
-visibly bad model.
+The missing control layer is not another large planner. It is a small,
+evidence-backed **Reference Fidelity Loop** that prevents exact transforms from
+being authored without a coherent spatial reason and prevents structural success
+from becoming visual approval.
 
-The current foundation correctly rejects structural success as visual success,
-but policy alone does not supply the missing spatial hypothesis or deterministic
-visual feedback surface.
+The old Zebra audit already demonstrated the same architectural failure: exact
+Cube transforms were chosen without a stable reference-grounded spatial contract,
+local contact could pass while global shape failed, and free-form visual reports
+could accept a visibly bad model.
 
 ## Root Causes — Ranked
 
-### R1 — No explicit whole-form spatial hypothesis before numeric Cuboid authoring
+### R1 — No stable coordinate frame + normalized Primary Form Hypothesis before exact transforms
 
-Current guidance says to understand primary masses and the whole form, but the
-runtime input still requires exact numeric `from`, `to`, `origin`, and `rotation`.
-There is no lightweight intermediate representation that stabilizes the agent's
-interpretation before those numbers are chosen.
+The agent needs a bridge between visual understanding and Blockbench numbers.
+Before primary authoring it should establish:
 
-This does **not** justify returning to a locked per-Cube plan. The missing object
-should be a temporary **Primary Form Hypothesis** describing only major masses
-and relationships.
+```text
+X = width / left-right
+Y = height / up-down
+Z = length / front-back
+front direction
+ground relationship
+overall target envelope when supplied
+```
 
-Useful contents:
+Then, for primary masses only:
 
-- overall target dimensions/envelope when supplied;
-- primary masses only;
-- approximate size ratios relative to the whole object;
-- relative center/placement relationships;
-- main orientation/slope where visually important;
-- major contacts/attachments;
-- the few reference views that constrain each relationship.
+```text
+role
+relative size
+relative center/placement
+important orientation/slope
+major contact/attachment
+supporting reference view(s)
+uncertainty when evidence is weak
+```
 
-This hypothesis is modeller reasoning, not reference truth or MCP validation.
-It may be revised after visual feedback.
+This is temporary modeller reasoning, not pixel measurement, not a locked Cube
+plan, and not a machine-authoritative geometry contract.
 
-### R2 — Current visual feedback is not standardized enough for direct comparison
+### R2 — Placement can be justified by attachment instead of visual role
 
-`capture_screenshot` returns the current Blockbench view. `set_camera_angle` can
-set arbitrary transforms, but Local has no simple canonical multi-view capture
-with named view semantics, auto-framing, and guaranteed state restoration.
+A Cube can touch another Cube and still be completely wrong for the reference.
+Every important primary Cuboid must implement a known primary mass/necessary
+split and preserve a reference-backed relationship.
 
-That means model/reference comparison can vary by camera orientation, projection,
-zoom, framing, selected project, and editor state. A bad shape may therefore be
-harder for the agent to compare consistently.
+The following are explicitly invalid approval reasons:
 
-The most valuable idea from Sample is the small core of
-`capture_bedrock_preview`: named generic views, auto-frame, bounded batch capture,
-and restoration. The particle/file-output complexity is not required.
+```text
+Cube exists
+Cube is attached
+AABBs overlap
+hierarchy accepts it
+tool returned success
+```
 
-### R3 — No precise authored-state read for the element responsible for a visual mismatch
+If a Cube's only explanation is "it fits here" or "it connects", the placement is
+not sufficiently reasoned.
 
-`find_elements_by_criteria` is useful for locating elements, but normal results
-primarily identify element name/UUID/type/parent. After the visual critic says
-"the front mass is too high and too short", the agent still needs exact current
-Cuboid bounds/origin/rotation/parent/UV state before making a targeted correction.
+### R3 — Rotation is under-constrained
 
-A small `inspect_element` / authored-element resource would close this gap and
-avoid `risky_eval` or full project dumps.
+Rotation should not be used merely to make the model look more sophisticated.
+A material rotation needs a visible/form/motion reason:
 
-### R4 — Corrections are too easy to make as isolated micro-edits
+- a reference view shows a meaningful slope/orientation;
+- one rotated Cuboid better expresses the silhouette than a stepped stack; or
+- required articulation/motion needs the orientation.
 
-Primary-form errors often involve relationships among several masses. A one-Cube
-correction can preserve the wrong global relationship and trigger patch churn.
+Arbitrary multi-axis rotations, copied fixture angles, and repeated small angle
+patches without new evidence are anti-patterns.
 
-A simple heterogeneous `modify_cubes_batch` would allow one coherent correction
-hypothesis to update several explicit primary masses inside one Undo transaction.
-It should not inherit Rework's analyzer/manifest/gap machinery.
+Rotation must not compensate for wrong size or placement.
 
-### R5 — The reference can itself be an invalid modelling target
+### R4 — Pivot is under-constrained
 
-A generated five-view reference must be internally consistent and intentionally
-Blockbench/Cuboid-buildable. If views disagree materially, show smooth realistic
-geometry with pixel skin, or depict different constructions per view, no MCP
-workflow can reliably reconstruct it.
+A pivot/origin becomes visually dangerous when it is treated as a number that
+must simply be filled.
 
-Reference readiness therefore remains a real gate. But when a human can clearly
-understand the same reference while the generated model is grossly wrong, the
-main failure is downstream spatial reasoning/feedback rather than reference
-preparation.
+A meaningful pivot must correspond to an intended:
 
-### R6 — The normal MCP surface is broader than the Bedrock modelling problem
+- rotation center;
+- joint/articulation;
+- attachment relationship; or
+- parent/group transform.
+
+Random distant pivots, copied pivot values, and pivots chosen without a transform
+purpose are modelling defects even when Blockbench accepts them.
+
+### R5 — Current visual feedback is not standardized enough for direct comparison
+
+`capture_screenshot` returns the current Blockbench view. Local still lacks a
+simple canonical multi-view observation capability with named view semantics,
+controlled projection/framing, and state restoration.
+
+Model/reference comparison can therefore drift because of camera orientation,
+projection, zoom, framing, selection, or active-project state.
+
+### R6 — Auto-framing can hide global scale/ground errors
+
+A perfectly framed screenshot can make an oversized, undersized, displaced, or
+floating model appear compositionally reasonable.
+
+Visual evidence therefore needs a cheap **structural envelope companion**:
+current model bounds, size, center, and ground relation compared with approved
+target dimensions when available.
+
+That evidence catches gross scale/position failure but cannot prove resemblance.
+
+### R7 — No precise authored-state read after a local mismatch is identified
+
+Once the visual critic says "this mass is too high/short/rotated", the agent
+needs exact current authored state before correcting it:
+
+- parent;
+- from/to/size;
+- origin/pivot;
+- rotation;
+- visibility;
+- relevant texture/UV summary when needed.
+
+Without a focused read, the correction itself can become another guess.
+
+### R8 — Corrections are too easy to make as isolated micro-edits
+
+Primary-form errors often involve several masses. Repeated one-Cube patches can
+preserve the wrong whole-form hypothesis.
+
+A simple heterogeneous batch correction is useful only **after** the visible
+problem and responsible relationship are known.
+
+### R9 — The reference can itself be inconsistent
+
+A generated five-view Modelling Brief must describe one compatible object.
+Width, height, length, placement, and important slope decisions should have
+supporting views. Materially conflicting views should stop at reference review;
+they must not be averaged into guessed coordinates.
+
+### R10 — The normal MCP surface is broader than the Bedrock modelling problem
 
 Generic mesh, armature, PBR, Hytale, UI automation, evaluation, and import tools
-increase context/tool-choice surface without improving the normal Cuboid visual
-control loop.
+increase context/tool-choice surface without improving reference fidelity.
+This remains a later curation concern, not the first fix.
 
-Slice A improves prompt routing, but the client may still receive a large public
-tool catalog. A later static/default Bedrock production surface may reduce noise.
-Do not build dynamic Rework profiles/state machines to solve this.
+## Rules Now Hardened
 
-## What Slice A Solves — And Does Not Solve
+The canonical modelling rules now require:
 
-Slice A correctly changes normal guidance from:
+1. cross-view consistency before primary authoring;
+2. explicit coordinate frame/front/ground convention where relevant;
+3. temporary normalized Primary Form Hypothesis before exact Cuboid transforms;
+4. every primary Cube to implement a reasoned mass role;
+5. "placed/attached/valid" never to count as visual approval;
+6. rotation to have a reference/form/motion reason;
+7. meaningful pivots to have a transform/joint/attachment reason;
+8. direct reference↔model comparison for visual gates;
+9. hard rejection/rebuild when the whole primary scaffold is unrecognizable or
+   fails several primary relationships;
+10. causal correction vocabulary rather than default `ADD CUBE` behavior.
 
-```text
-choose ui | programmatic | import
-```
+Canonical owners updated:
 
-to:
+- `docs/foundation/03-modelling-workflow.md`;
+- `docs/foundation/05-geometry-standard.md`;
+- `docs/foundation/07-visual-validation.md`;
+- `.agents/skills/blockbench-bedrock-modelling/SKILL.md`;
+- `mcp/prompts/bedrock.md`.
 
-```text
-orient
-→ whole-form
-→ primary Cuboids
-→ visual gate
-→ correction
-→ secondary structure
-→ texture / optional animation
-```
-
-This is necessary, but not sufficient.
-
-It changes the **order of reasoning**; it does not yet improve:
-
-- how whole-form understanding becomes stable numeric geometry;
-- how model views are normalized for comparison;
-- how an identified visual mismatch maps to exact current model state;
-- how several responsible masses are corrected coherently.
-
-## Recommended Control Architecture
-
-The intended system should behave as a visual closed loop:
+## Reference Fidelity Loop v1
 
 ```text
 APPROVED REFERENCE
 ↓
-REFERENCE READINESS CHECK
+CROSS-VIEW CONSISTENCY
 ↓
-PRIMARY FORM HYPOTHESIS
-  - overall envelope
-  - 3–8 primary masses as needed
-  - relative size/placement/orientation
-  - major contacts
-  - relevant views
+COORDINATE FRAME + TARGET ENVELOPE
 ↓
-BOUNDED PRIMARY BUILD
+NORMALIZED PRIMARY FORM HYPOTHESIS
+↓
+COARSE PRIMARY BLOCKOUT
+↓
+STRUCTURAL ENVELOPE OBSERVATION
 ↓
 CANONICAL MODEL VIEWS
-  front / side / back / top / 3/4 as needed
 ↓
-VISION-BASED COMPARISON
-  silhouette
-  mass ratios
-  placement
-  orientation
-  contacts
+REFERENCE ↔ MODEL COMPARISON
 ↓
-NAME ONE OR FEW MATERIAL MISMATCHES
+CLASSIFY FAILURE
+  │
+  ├─ GLOBAL → invalidate/revise hypothesis + rebuild coarse blockout
+  │
+  └─ LOCAL → inspect authored state → causal correction
 ↓
-TARGETED AUTHORED-STATE INSPECTION
-↓
-COHERENT BATCH CORRECTION
-↓
-FRESH AFFECTED VIEWS
-↺ until primary form passes or hypothesis is abandoned
+FRESH AFFECTED EVIDENCE
+↺ until primary form passes or the hypothesis is abandoned
 ↓
 SECONDARY GEOMETRY / HIERARCHY / TEXTURE / OPTIONAL ANIMATION
 ```
 
-MCP is the actuator and evidence provider. The vision-capable agent remains the
-visual modeller/judge. Do not attempt to make MCP itself infer semantic 3D form
-from pixels.
-
-## Primary Form Hypothesis — Important Boundary
-
-The hypothesis must not recreate the rejected historical Geometry Plan.
+## Primary Form Hypothesis Boundary
 
 ### It MAY contain
 
 ```text
 overall envelope / requested dimensions
-primary mass names
+coordinate/front/ground convention
+primary mass names/roles
 relative size estimates
 relative center/placement estimates
 important orientation/slopes
 major attachment relationships
-view constraints
+supporting view constraints
+explicit uncertainty
 ```
 
 ### It MUST NOT become
@@ -226,136 +278,167 @@ per-Cube approval
 object-specific anatomy law
 ```
 
-Approximate normalized ratios such as a mass occupying roughly 60% of the total
-length may be used as an internal modeller hypothesis. They are not measurements
-from image pixels and are revised by visual evidence.
+Approximate normalized ratios are internal modeller hypotheses. They are not
+measurements from image pixels and must remain revisable by visual evidence.
 
-## Visual Review Contract
+## Evidence-Backed Axis Rule
 
-Free-form "looks good" review is too weak. At each whole-form gate, the agent
-should answer concrete applicable questions:
+For important primary dimensions/placement, identify which view(s) constrain the
+reasoning rather than pretending every view supplies every axis.
 
-1. Does the global silhouette read as the target?
+Typical evidence directions:
+
+```text
+WIDTH  ← front/back + top
+HEIGHT ← front/back + side
+LENGTH ← side + top
+```
+
+Object/view packages can vary; this is not a fixed camera law. The principle is
+that a spatial claim must come from a view that actually shows it.
+
+If an important decision has weak evidence, mark uncertainty and check it early.
+Do not manufacture exact confidence.
+
+## Global Vs Local Failure
+
+### Global failure
+
+Examples:
+
+- object is not recognizable;
+- whole silhouette is wrong;
+- several primary proportions/placements are wrong together;
+- primary orientation/front/ground relation is wrong.
+
+Action:
+
+```text
+invalidate current primary hypothesis
+→ revise/rebuild coarse blockout
+```
+
+Do not protect the blockout because many Cubes already exist.
+
+### Local failure
+
+Examples:
+
+- one otherwise-correct mass is slightly too long/high/wide;
+- one attachment is misplaced;
+- one clear slope/rotation is wrong;
+- one pivot is wrong while the primary form remains sound.
+
+Action:
+
+```text
+inspect exact authored state
+→ choose causal correction
+→ fresh affected views
+```
+
+## Causal Correction Vocabulary
+
+Before mutation, classify the issue:
+
+```text
+TRANSLATE   placement is wrong
+RESIZE      extent/proportion is wrong
+ROTATE      orientation/slope is wrong
+REATTACH    contact/parent relationship is wrong
+SPLIT       one mass genuinely needs separate orientation/volume
+MERGE/REMOVE geometry is unnecessary/compensatory
+ADD MASS    a required visible volume is genuinely missing
+```
+
+`ADD MASS` is not the default response to a mismatch.
+
+## Visual Approval Contract
+
+Free-form "looks good" review is invalid.
+
+At a primary gate, answer concrete applicable questions:
+
+1. Does the whole silhouette read as the intended target?
 2. Which primary mass is too large/small/long/short/wide/narrow?
 3. Which primary mass is misplaced relative to another?
-4. Which major orientation/slope is wrong?
-5. Which required visible contact is detached or merged incorrectly?
-6. Which views prove the mismatch?
+4. Which important orientation/slope is wrong?
+5. Which visible contact is wrong?
+6. Which reference/model view(s) prove the mismatch?
+7. Are any important rotations/pivots unexplained by reference/form/function?
 
-A `PASS` without concrete comparison against these questions is invalid.
+A `PASS` whose main evidence is structural validity is invalid.
 
-The server should not produce a visual `PASS` from structural conditions.
+## Required Observation Capabilities — Next Architectural Work
 
-## Tool Priorities Reconsidered For Fidelity
+The hardened rules expose a small runtime observation gap. Before adding more
+mutation power, define the public read-only contracts for:
 
-Because the active issue is gross visual mismatch, implementation priority should
-change from the previous curation order.
+### `inspect_model_bounds`
 
-### P0 — `capture_model_views`
+Purpose:
 
-Recover only the useful core from Sample:
+- current min/max/size/center;
+- ground relation;
+- orientation/target-envelope metadata when available;
+- no visual score or approval.
 
-- named generic front/back/left/right/top/bottom/3/4 views;
-- orthographic for principal views, perspective for 3/4;
-- auto-frame current geometry or selected scope;
-- batch only requested views;
-- restore camera/project/selection/state in `finally`;
-- return images + simple metadata;
-- no automatic visual score.
+This prevents camera auto-framing from hiding gross scale/position errors.
 
-This is the highest-leverage missing capability because visual correction is
-impossible when the observation surface is unstable.
+### `capture_model_views`
 
-### P1 — `inspect_element`
+Purpose:
 
-Return exact authored state for one explicit Cube/group:
+- named requested model views;
+- principal orthographic views + perspective 3/4 where relevant;
+- stable framing metadata;
+- restore prior project/camera/selection state;
+- return actual image evidence usable by the vision-capable client;
+- no similarity score or automatic PASS.
 
-- UUID/name/type;
-- parent;
-- Cube from/to/size/origin/rotation/visibility;
-- group origin/rotation when applicable;
-- texture/UV summary when useful.
+These are **observation instruments**, not a new modelling brain.
 
-Read only. No selection dependence and no arbitrary JavaScript execution.
+Later, after observation works:
 
-### P2 — `modify_cubes_batch`
-
-Apply heterogeneous explicit updates to several Cube IDs in one Undo transaction.
-Preflight all targets before opening Undo; cancel/rollback on error.
-
-### P3 — safer existing Cuboid mutations
-
-Recover focused Rework safety only:
-
-- provided missing group = error by default;
-- untextured Geometry allowed;
-- explicit target preferred over implicit selection;
-- cancel Undo on mutation error.
-
-### P4 — static/default Bedrock public surface curation
-
-After the visual loop works, reduce normal context noise by hiding generic
-mesh/PBR/Hytale/UI/eval surfaces from the normal Bedrock path while retaining them
-for explicit specialist use. Do not add dynamic profiles or a production state
-machine.
+```text
+inspect_element
+→ modify_cubes_batch
+→ focused mutation safety
+→ static/default Bedrock surface reduction
+```
 
 ## What Not To Build
 
 Do not attempt to solve fidelity by adding:
 
-- more primitive shape/mutation tools without observation/feedback;
+- more mutation primitives before observation/reasoning is fixed;
 - automatic image→Cube conversion;
 - SF3D/mesh decomposition;
 - projection/IoU/similarity scoring as authority;
 - fixed section/anchor/contact rules;
 - all-in-one Bedrock builder;
+- arbitrary rotation/pivot helpers that make unexplained transforms easier;
 - automatic detail generation before primary-form pass;
 - a second large orchestration framework;
-- an external vision verifier before the simpler same-agent visual loop is proven
+- an external vision verifier before the simpler same-agent visual loop is shown
   insufficient.
 
-These either preserve the missing reasoning gap or add false confidence.
+## Hard Dependency To Prove Later
 
-## Failure Classification For Future Examples
+The visual loop only works if the MCP client/agent actually receives captured
+model views as image content that the vision-capable model can inspect. A path,
+base64 string, or tool-success message that is never exposed as usable visual
+input does not satisfy this dependency.
 
-Before changing tools, classify a bad result:
+This is a future runtime proof requirement, not the current ChatGPT→GitHub task.
 
-### A — Reference failure
+## Immediate Direction
 
-Human/agent cannot reconstruct the intended form consistently from the provided
-views. Fix Reference Generator / Modelling Brief.
+Local testing is not the current focus.
 
-### B — Primary synthesis failure
+G3 remains paused.
 
-Reference is clear, but first whole-form Cuboid pass is grossly wrong. Rebuild the
-Primary Form Hypothesis; do not add details.
-
-### C — Observation failure
-
-Model may be closer than reported, but camera/framing/projection makes direct
-comparison unreliable. Fix canonical capture.
-
-### D — Correction failure
-
-Mismatch is visible but current exact model state cannot be inspected or several
-responsible masses cannot be corrected coherently. Improve authored-state read /
-batch correction.
-
-### E — Secondary drift
-
-Primary form was acceptable, but hierarchy/detail/texture/animation later damages
-it. Reopen only the affected relationship/stage.
-
-## Recommended Immediate Direction
-
-Do not make local prompt proof the active project goal.
-
-Do not resume G3 yet.
-
-The next architectural discussion should approve/refine this **Visual Control
-Loop** and especially the Primary Form Hypothesis boundary. Once accepted, the
-first implementation slice should be the minimal canonical `capture_model_views`
-capability plus prompt/skill routing that requires a primary visual gate before
-secondary detail.
-
-No runtime code is changed by this review.
+The next step is to define the **minimal read-only observation contract** for
+`inspect_model_bounds` + `capture_model_views` from these hardened modelling
+rules before implementing either tool. The contracts must expose only evidence
+needed to prevent assumption-driven authoring and false visual approval.
