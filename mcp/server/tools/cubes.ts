@@ -289,8 +289,9 @@ createTool(cubeToolDocs[0].name, {
       collections: [],
     });
 
+    let cubes: Cube[];
     try {
-      const cubes = elements.map((element: Cube) => {
+      cubes = elements.map((element: Cube) => {
         const cube = new Cube({
           autouv: autouv ? 1 : 0,
           name: element.name,
@@ -320,18 +321,18 @@ createTool(cubeToolDocs[0].name, {
       });
 
       Undo.finishEdit("Agent placed cubes", { elements: cubes });
-      Canvas.updateAll();
-
-      return await Promise.resolve(
-        JSON.stringify(
-          cubes.map((cube: Cube) => `Added cube ${cube.name} with ID ${cube.uuid}`)
-        )
-      );
     } catch (error) {
       Undo.cancelEdit(true);
       Canvas.updateAll();
       throw error;
     }
+
+    Canvas.updateAll();
+    return await Promise.resolve(
+      JSON.stringify(
+        cubes.map((cube: Cube) => `Added cube ${cube.name} with ID ${cube.uuid}`)
+      )
+    );
   },
 }, cubeToolDocs[0].status);
 
@@ -395,16 +396,16 @@ createTool(cubeToolDocs[1].name, {
       });
 
       Undo.finishEdit("Agent modified cubes");
-      Canvas.updateAll();
-
-      return `Modified cubes ${cubes
-        .map((cube) => cube.name)
-        .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
     } catch (error) {
       Undo.cancelEdit(true);
       Canvas.updateAll();
       throw error;
     }
+
+    Canvas.updateAll();
+    return `Modified cubes ${cubes
+      .map((cube) => cube.name)
+      .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
   },
 }, cubeToolDocs[1].status);
 
