@@ -17,7 +17,7 @@ mutation decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_SCOPED_GROUP_LOOKUP_HARDENED`
+`REFERENCE_FIDELITY_NAME_PATTERN_FAILURE_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -73,46 +73,53 @@ Current Local source already contains:
 - `duplicate_element` recursive Cube/Group/Mesh cloning is wrapped in one
   recoverable Undo boundary;
 - `find_elements_by_criteria(parent_group=...)` and
-  `select_all_of_type(parent_group=...)` now resolve explicit Group scope
-  UUID-first / exact-unique-name; ambiguous or missing scopes fail before search
-  or selection state changes; omitted/empty scope remains no-scope behavior.
+  `select_all_of_type(parent_group=...)` resolve explicit Group scope UUID-first /
+  exact-unique-name; ambiguous or missing scopes fail before search or selection
+  state changes;
+- explicit invalid/rejected `find_elements_by_criteria(name_pattern=...)` now
+  fails instead of silently continuing without the requested regex filter.
 
 These are **source implemented**, not live-proven.
 
 ## Latest Discovery Finding
 
-Before the latest change, both scoped element operations used:
+Before the latest change, `safeCompileRegex()` treated three explicit failures as
+if no regex filter had been requested:
 
 ```text
-Group.all.find(g => g.uuid === parent_group || g.name === parent_group)
+pattern too long
+or nested-quantifier safety rejection
+or invalid regex syntax
+↓
+console.warn
+↓
+return null
+↓
+search continues without regex
 ```
 
-so duplicate exact Group names could silently scope the operation to the first
-match.
-
-Current source uses a small local `resolveOptionalGroupScope()`:
+Current Local behavior is:
 
 ```text
-parent_group omitted / empty
-→ no scope
+name_pattern omitted / ""
+→ no regex filter
 
-exact UUID
-→ target Group
+explicit valid pattern
+→ compiled RegExp
 
-exact unique name
-→ target Group
-
-duplicate exact name
-→ ERROR + candidate UUIDs
-
-missing explicit scope
+explicit overlong pattern
 → ERROR
+
+explicit nested-quantifier safety rejection
+→ ERROR
+
+explicit invalid regex syntax
+→ ERROR with compile reason
 ```
 
-The resolver intentionally does **not** inherit `add_group`'s special literal
-`root` semantics. An explicit `root` string is treated like an ordinary Group
-reference, preserving the previous discovery/selection contract rather than
-creating a new root-scope feature.
+The existing 512-character and catastrophic-backtracking protections remain in
+place. Only the failure semantics changed from “warn and broaden search” to
+“fail the explicit filter request.”
 
 ## Confirmed Failure Evidence
 
@@ -123,8 +130,8 @@ Prior testing established:
 3. pivots/origins can become abstract/distant without a real transform/joint/
    attachment reason.
 
-Discovery correctness is part of the same no-guess boundary: strict mutation
-identity cannot repair reasoning that started from a silently wrong scope.
+Discovery correctness is part of the same no-guess boundary: an explicit search
+constraint must not disappear silently before candidate UUIDs are chosen.
 
 ## Holds
 
@@ -136,46 +143,41 @@ identity cannot repair reasoning that started from a silently wrong scope.
 
 ## Next Step
 
-Audit **explicit `name_pattern` filter failure semantics** in:
+Audit **single-step destructive Undo recoverability** for:
 
 ```text
-mcp/server/tools/element.ts
+remove_element
+rename_element
 ```
 
-Current source path:
+Current source already resolves each target before Undo, but then executes:
 
 ```text
-name_pattern supplied
-↓
-safeCompileRegex(name_pattern)
-↓
-pattern too long / nested-quantifier safety rejection / invalid regex syntax
-↓
-console.warn(...)
-↓
-return null
-↓
-find_elements_by_criteria continues with no regex filter
+Undo.initEdit
+→ element.remove() / element.extend(...)
+→ Undo.finishEdit
 ```
 
-This can silently broaden an explicitly filtered discovery query and return
-candidate elements the caller did not ask for.
+without the `try/catch + Undo.cancelEdit(true)` failure boundary now used by
+`duplicate_element`, Cube mutation paths, and hardened hierarchy creation.
 
 Audit requirements:
 
-1. preserve omitted/empty `name_pattern` as “no regex filter”;
-2. distinguish an explicit rejected/invalid pattern from an omitted pattern;
-3. explicit invalid/rejected pattern should fail clearly instead of broadening
-   the search;
-4. preserve the existing length and catastrophic-backtracking safety checks;
-5. do not change `name_contains`, type/min/max/selection filters, scoped Group
-   resolver, destructive tools, texture lookup, UV, G3, or add a regex framework.
+1. confirm the exact mutation/finish failure boundary for remove and rename;
+2. preserve existing strict target resolution and operation semantics;
+3. if the existing Local Undo contract applies cleanly, wrap each bounded
+   operation so a runtime failure after Undo opens cancels/reverts the edit;
+4. keep normal Canvas refresh after successful `finishEdit`; refresh after
+   rollback only as needed;
+5. do not change duplicate logic, discovery filters/scopes, hierarchy, UV,
+   texture lookup, G3, or create a generic transaction framework.
 
-Prefer the smallest local contract change: make explicit pattern compilation
-return a usable RegExp or throw an actionable error.
+If source evidence shows a single-step operation cannot leave meaningful partial
+state, `No change required` remains valid; do not add rollback ceremony without a
+real failure boundary.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source/schema/error contracts and static diff only.
-Actual MCP error delivery for invalid patterns remains `LOCAL PROOF REQUIRED`
-until local testing resumes.
+ChatGPT→GitHub may establish source transaction structure and static diff only.
+Actual rollback behavior after a forced remove/rename runtime failure remains
+`LOCAL PROOF REQUIRED` if those paths are changed.
