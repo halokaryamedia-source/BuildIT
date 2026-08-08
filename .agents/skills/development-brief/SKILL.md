@@ -91,6 +91,10 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
    - prefer one targeted runtime reproduction over a broad test suite for a local bug;
    - do not repeatedly re-run unchanged checks after they have already established the required proof.
 
+   When a material support/feasibility/compatibility claim is uncertain or disputed,
+   use the root `AGENTS.md` evidence-status escalation. Do not create or load a
+   separate evidence skill.
+
 8. **Resolve ambiguity and conflicts**
    - Use repository evidence for discoverable facts.
    - Use lightweight requirement discovery only for unresolved high-impact decisions.
@@ -121,7 +125,7 @@ Do not make the user write an expert prompt. Inspect the repository and choose t
    - Did scope remain inside the original brief?
    - Is every material success claim backed by evidence from the active channel?
 
-   If a material claim requires unavailable local/runtime proof, distinguish **implemented** from **verified** instead of fabricating validation.
+   If a material claim requires unavailable local/runtime proof, distinguish **implemented** from **verified** and use `LOCAL PROOF REQUIRED` when that label helps clarify the remaining evidence.
 
 ## Fast Path
 
@@ -140,5 +144,5 @@ Examples: a clear typo, a known-file wording fix, or another change whose meanin
 - **High-impact requirement still unclear:** use the repository's lightweight GSD-style discovery rule.
 - **Plan/decision needs adversarial challenge:** use `grilling` before implementation.
 - **Implemented change needs critique:** use `code-review` only when critique adds value beyond the final contract gate.
-- **Evidence is missing/disputed or the same direction repeatedly fails:** use `evidence-gate` when available.
+- **Evidence is missing/disputed or the same direction repeatedly fails:** apply root `AGENTS.md` evidence-status escalation and root-cause rules; do not load a separate `evidence-gate` skill.
 - **The task expands into a genuinely cross-cutting contract/migration/multi-phase change:** reframe scope and apply the documented OpenSpec threshold instead of silently widening the brief.
