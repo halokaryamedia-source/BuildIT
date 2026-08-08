@@ -35,6 +35,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Rotation needs visual/form/motion reason | Active BlockIT policy | Arbitrary multi-axis rotation rejected. |
 | Material pivot needs transform/joint/attachment reason | Active BlockIT policy | Arbitrary/distant pivots rejected. |
 | Mutation identity must be explicit | Active BlockIT policy | Single-Cube and destructive element mutations must not depend on transient selection or first-name-match behavior. |
+| Explicit discovery scope must be deterministic | Active BlockIT policy | A requested Group scope must not silently resolve to the first duplicate name. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
 Policy does not need to be a universal Blockbench rule; these are BlockIT quality
@@ -58,6 +59,18 @@ Important local proof still missing:
 - named view orientation/framing matches the intended reference semantics in the
   installed Blockbench runtime;
 - rendered bounds remain correct for current animation/group-transform edge cases.
+
+## Element Discovery / Scope Safety
+
+| Capability | Local source | Evidence status | Current claim |
+|---|---|---|---|
+| `find_elements_by_criteria(parent_group=...)` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | omitted/empty scope means no Group scope; explicit scope resolves UUID-first or exact unique name; missing/ambiguous Group fails before search. |
+| `select_all_of_type(parent_group=...)` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict optional Group-scope resolution occurs before selection state changes. |
+| scoped Group resolver | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | discovery/selection uses a local resolver and does not inherit `add_group`'s special `root` parent semantics. |
+
+The current source change prevents a duplicate Group name from silently scoping a
+normal discovery request to the wrong hierarchy branch before `inspect_element`
+and exact-UUID mutation.
 
 ## Cube Creation / Correction Safety
 
@@ -133,17 +146,19 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### Scoped Group lookup in element discovery/selection
+### Explicit `name_pattern` filter failure
 
-`find_elements_by_criteria(parent_group=...)` and
-`select_all_of_type(parent_group=...)` currently resolve the Group with a
-first-match `uuid || name` lookup. A duplicated exact Group name may therefore
-scope discovery/selection to the wrong Group even though later destructive tools
-have strict UUID-first targeting.
+`find_elements_by_criteria` currently compiles `name_pattern` through
+`safeCompileRegex`. Overlong patterns, the nested-quantifier safety heuristic,
+or invalid regex syntax currently produce a warning and `null`; execution then
+continues without the requested regex filter.
 
-Status: **next active source audit**. This is directly relevant to the normal
-`find_elements_by_criteria → inspect_element → mutate UUID` route; keep it
-separate from duplication rollback.
+That can silently broaden an explicitly filtered search and return candidates the
+caller did not ask for.
+
+Status: **next active source audit**. Determine the smallest way for an explicit
+invalid/rejected `name_pattern` to fail clearly instead of becoming “no regex
+filter,” while preserving omitted-pattern behavior.
 
 ## Historical External Premises
 
@@ -169,7 +184,7 @@ Status: `UNSUPPORTED` for BlockIT modelling/approval authority:
 - per-Cube screenshot/approval quotas;
 - arbitrary fallback coordinates/pivots;
 - editor selection as implicit single-Cube mutation identity;
-- first matching duplicate element name as destructive mutation identity;
+- first matching duplicate element/Group name as mutation or discovery identity;
 - historical fixture-specific build rules promoted to generic workflow.
 
 ## What Can Be Claimed Now
@@ -182,9 +197,12 @@ Safe claims:
 - foundation/prompt rules are aligned with the Reference Fidelity architecture;
 - `modify_cube` source schema requires an explicit target and no longer reads
   `Cube.selected` as a fallback;
+- explicit `parent_group` scopes in `find_elements_by_criteria` and
+  `select_all_of_type` now resolve UUID-first / exact-unique-name and reject
+  ambiguity before search/selection;
 - destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
-- `duplicate_element` source now wraps recursive cloning/finish in one rollback
+- `duplicate_element` source wraps recursive cloning/finish in one rollback
   boundary using `Undo.cancelEdit(true)` on failure;
 - shared `findElementOrThrow` was intentionally left unchanged;
 - official Blockbench types/source support the transfer-origin semantics used by
@@ -197,6 +215,8 @@ Unsafe claims without local proof:
 - bounds/camera/Undo behavior works for every live edge case;
 - the MCP client definitely exposes the updated contracts until the current
   plugin is built/loaded and inspected;
+- duplicate-name scoped Group lookup behaves correctly in the installed live
+  runtime;
 - a forced mid-recursive-clone failure definitely leaves zero partial duplicate
   state in the installed Blockbench runtime;
 - the new loop now produces a good reference-matching model in practice;
@@ -209,17 +229,21 @@ future proof queue is:
 
 1. build/load current Local plugin in Blockbench;
 2. verify default Bedrock project + bundled prompt behavior;
-3. inspect live MCP schemas for the current explicit-target contracts;
-4. create duplicate-name Cube/Group fixtures and verify destructive element tools reject ambiguous names before mutation;
-5. force a controlled duplicate failure and verify `duplicate_element` rollback removes any partial clone;
-6. create a small model using strict `place_cube` inputs;
-7. verify `inspect_model_bounds` against visible transformed geometry;
-8. verify canonical `capture_model_views` image delivery/orientation/framing;
-9. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
-10. verify Cube and Group pivot-transfer behavior visually;
-11. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-12. save/reopen `.bbmodel` and inspect persistence;
-13. run one approved-reference → whole-form modelling session and evaluate actual
+3. inspect live MCP schemas for the current explicit-target/scope contracts;
+4. create duplicate-name Groups and verify scoped search/selection reject an
+   ambiguous name but accept exact UUID and unique name;
+5. create duplicate-name Cube/Group fixtures and verify destructive element tools
+   reject ambiguous names before mutation;
+6. force a controlled duplicate failure and verify `duplicate_element` rollback
+   removes any partial clone;
+7. create a small model using strict `place_cube` inputs;
+8. verify `inspect_model_bounds` against visible transformed geometry;
+9. verify canonical `capture_model_views` image delivery/orientation/framing;
+10. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+11. verify Cube and Group pivot-transfer behavior visually;
+12. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
+13. save/reopen `.bbmodel` and inspect persistence;
+14. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
 
 Do not run this queue ceremonially; use the smallest proof required when local
@@ -227,9 +251,9 @@ validation resumes.
 
 ## Bottom Line
 
-The architectural problem is well-defined and the main observation, correction,
-targeting, pivot, initial-placement, rotation-activation, and bounded duplication
-rollback mechanisms are present in Local source.
+The architectural problem is well-defined and the main observation, discovery
+scope, correction, targeting, pivot, initial-placement, rotation-activation, and
+bounded duplication rollback mechanisms are present in Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
 Blockbench/MCP/Codex path observes and corrects models as intended. That remains
