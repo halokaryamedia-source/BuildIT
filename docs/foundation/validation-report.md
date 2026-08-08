@@ -1,6 +1,6 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-08  
+**Updated:** 2026-08-09  
 **Scope:** current Local source, current foundation policy, official Blockbench
 source/types used during implementation review, and known local-proof gaps.
 
@@ -38,7 +38,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Explicit discovery scope must be deterministic | Active BlockIT policy | A requested Group scope must not silently resolve to the first duplicate name. |
 | Explicit discovery filters fail closed | Active BlockIT policy | A supplied invalid/rejected regex must not silently become an unfiltered search. |
 | Explicit texture references must be deterministic where hardened | Active BlockIT policy | Material discovery, initial Cube placement, and `apply_texture` mutation must not silently choose a duplicate texture name/ID match. |
-| Destructive mutation must be recoverable | Active BlockIT policy | Once Undo is open, remove/rename/duplicate failures must cancel/revert rather than leave an open/partial edit. |
+| Mutation with an open Undo must be recoverable where hardened | Active BlockIT policy | remove/rename/duplicate and `apply_texture` must cancel/revert on failure after Undo opens. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
 Policy does not need to be a universal Blockbench rule; these are BlockIT quality
@@ -78,17 +78,19 @@ The current source prevents wrong-hierarchy scope, rejected-regex fallback, and
 ambiguous read-only texture lookup from silently broadening or misdirecting the
 normal discovery path.
 
-## Texture Mutation Target Safety
+## Texture Mutation Target / Transaction Safety
 
 | Capability | Local source | Evidence status | Current claim |
 |---|---|---|---|
 | `apply_texture` element identity | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | `id` is required/non-empty; exact UUID resolves first, otherwise an exact name is accepted only when unique across supported Cube/Mesh/Group targets. |
 | `apply_texture` texture identity | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | texture reference is required/non-empty; exact UUID resolves first, then exact texture ID, then exact name only when unique; ambiguity/missing fails before Undo. |
 | `apply_texture` Group scope | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | a strictly resolved Group keeps the existing behavior of expanding to all descendant Cube/Mesh targets before texture mutation. |
+| `apply_texture` rollback boundary | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | selection restoration stays in an inner `finally`; apply/update, selection restore, and `finishEdit` are covered by an outer try/catch that calls `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows on failure. |
 | shared texture/element helpers | `mcp/lib/util.ts` | unchanged / caller-specific | `findElementOrThrow` / `findTextureOrThrow` remain unchanged because many unrelated texture/PBR/activation callers have not been migrated as one contract. |
 
-This hardening is deliberately local to `apply_texture`; it changes target
-identity, not face/application semantics or paint/PBR behavior.
+This hardening is deliberately local to `apply_texture`. Target identity,
+Group-descendant behavior, `applyTo`, and successful face-level refresh remain
+separate from the rollback mechanism.
 
 ## Cube Creation / Correction Safety
 
@@ -171,26 +173,17 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### `apply_texture` transaction recoverability
+### Explicit `activate_texture` identity
 
-Target identity is now strict and all explicit references plus descendant target
-expansion complete before Undo. The remaining transaction shape is:
+`mcp/server/tools/texture.ts::activate_texture` still resolves its explicit
+texture reference through shared `findTextureOrThrow()`. That helper uses the
+legacy first-match texture ID/name/UUID lookup. If duplicate names/IDs exist, the
+wrong texture can become active and affect later paint operations even though
+`apply_texture` and `place_cube` are now strict.
 
-```text
-save prior selection
-→ Undo.initEdit
-→ try texture selection/apply/update
-→ finally restore prior selection
-→ Undo.finishEdit outside the try/finally
-```
-
-If texture application, change update, selection restoration, or `finishEdit`
-throws after Undo opens, the current path does not call `Undo.cancelEdit(true)`.
-Selection restoration and face-refresh behavior must be preserved while auditing
-this failure boundary.
-
-Status: **next active source audit**. Keep it separate from target identity and do
-not create a generic transaction framework.
+Status: **next active source audit**. Keep the fix local to `activate_texture`:
+require a non-empty reference, resolve exact UUID first, then exact texture ID,
+then exact name only when unique, and fail before changing active selection.
 
 ## Historical External Premises
 
@@ -242,6 +235,9 @@ Safe claims:
 - `apply_texture` requires non-empty element/texture references and preflights
   element UUID → exact unique name plus texture UUID → exact ID → exact unique
   name before descendant expansion and Undo;
+- `apply_texture` source now restores the caller selection in an inner `finally`
+  and covers apply/update/restoration/`finishEdit` with an outer rollback path
+  that calls `Undo.cancelEdit(true)` on failure;
 - destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
 - remove/duplicate/rename each have a bounded failure path that calls
@@ -260,7 +256,8 @@ Unsafe claims without local proof:
   plugin is built/loaded and inspected;
 - duplicate-name texture discovery/placement/application behaves correctly in
   the installed live runtime;
-- `apply_texture` is transactionally recoverable after a mid-apply failure;
+- a forced `apply_texture` failure definitely restores selection and leaves no
+  partial/open texture edit in the installed Blockbench runtime;
 - invalid `name_pattern` errors definitely reach the active MCP client with the
   expected error presentation;
 - forced remove/rename/duplicate failures definitely leave zero partial state in
@@ -281,7 +278,8 @@ future proof queue is:
 5. verify `place_cube` rejects ambiguous/missing supplied texture references,
    resolves exact UUID/ID correctly, and preserves omitted default-texture behavior;
 6. verify `apply_texture` rejects duplicate element/texture names, accepts exact
-   IDs/UUIDs, and preserves Group → descendant Cube/Mesh application scope;
+   IDs/UUIDs, preserves Group → descendant Cube/Mesh application scope, and force
+   one controlled failure after Undo opens to verify selection restoration + rollback;
 7. verify omitted/empty `name_pattern` remains unfiltered while invalid,
    overlong, and rejected nested-quantifier patterns fail rather than broaden the
    query;
@@ -307,8 +305,8 @@ validation resumes.
 ## Bottom Line
 
 The architectural problem is well-defined and the main observation, discovery
-scope/filter/material targeting, initial Cube texture targeting, explicit
-`apply_texture` identity, correction, pivot, initial-placement,
+scope/filter/material targeting, initial Cube texture targeting, explicit and
+recoverable `apply_texture`, correction, pivot, initial-placement,
 rotation-activation, and bounded destructive rollback mechanisms are present in
 Local source.
 
