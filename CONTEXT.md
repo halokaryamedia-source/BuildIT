@@ -1,8 +1,7 @@
 # MCP-Blockbench Workspace Context
 
 This is the stable context for the BlockIT/MCP-Blockbench workspace. Read this
-before opening detailed project notes. Keep this file factual and under roughly
-1,500 words.
+before detailed project notes. Keep it factual and compact.
 
 Last verified: 2026-08-08
 Stability: stable
@@ -10,160 +9,162 @@ Owner: workspace agent
 
 ## Purpose
 
-This workspace develops a Blockbench MCP plugin and the supporting workflow for
-AI-assisted Minecraft Bedrock modelling and MCP engineering.
+BlockIT develops a Blockbench MCP plugin plus the workflow for AI-assisted
+Minecraft Bedrock modelling and MCP engineering.
 
-The primary product goal is to produce a Blockbench Model that follows the
-Model Reference with the shortest evidence-backed workflow. The product is
-object-agnostic: test fixtures and samples may validate the workflow but must
-never become object-specific runtime rules.
+The primary product goal is a clean, editable Blockbench `.bbmodel` that follows
+an approved visual modelling brief through the shortest evidence-backed workflow.
+The product is object-agnostic: fixtures, Golden Samples, animals, props, or
+mechanical objects may validate the workflow but do not become generic runtime
+rules.
 
-Efficiency means one useful primary geometry pass, one structural check, and a
-bounded visual review; it never means accepting guessed geometry, tool success,
-or a valid file as proof of resemblance.
+A valid file, successful tool call, or correct coordinates are not proof of
+visual resemblance.
 
 ## Development Model
 
-BlockIT is developed through two complementary execution channels:
+BlockIT uses two complementary execution channels:
 
 - **ChatGPT → GitHub:** design, repository inspection, documentation/source
   changes, and preparation for local proof.
-- **Codex local from repository root `BuildIT`:** final targeted shell/build/MCP/
-  Blockbench proof when the claim requires the local environment.
+- **Codex local from root `BuildIT`:** targeted shell/build/MCP/Blockbench proof
+  when the claim requires the local environment.
 
-The task goal, scope, Build POV, Acceptance POV, and acceptance criteria remain
-the same across both channels. Only the available proof changes.
+The task goal, scope, Build POV, Acceptance POV, and acceptance criteria stay the
+same across channels. Only available proof changes.
 
-The repository—not chat history—is the project memory. New sessions resume from
+The repository—not chat history—is project memory. New sessions resume from
 `AGENTS.md`, this file, and `docs/knowledge/next-action.md`.
 
-## Language
+## Stable Terms
 
-**Requested Dimensions**:
-Approximate size supplied by the user before the Model Reference is created.
-_Avoid_: final dimensions, geometry units
+**Source Image**  
+Original user image(s) used to understand target identity. It is input/provenance,
+not direct geometry data.
 
-**Source Image**:
-The original image supplied by the user.
-_Avoid_: reference, Model Reference
+**Modelling Brief Draft**  
+Generated five-view visual before user approval.
 
-**Model Reference Draft**:
-The single generated five-view image before user approval.
-_Avoid_: provisional reference, canonical reference
+**Modelling Brief**  
+Approved five-view visual guide used for silhouette, visible proportions,
+landmarks, contacts, orientation, and style. It is not pixel calibration and
+does not define Cube transforms.
 
-**Model Reference**:
-The user-approved five-view image that is the authority for visible shape and
-proportion.
-_Avoid_: Source Image, blueprint
+**Requested Dimensions**  
+User-supplied/approved target height, width, and length. For Bedrock modelling,
+`1 block = 16 Blockbench units` on each axis.
 
-**Cube Draft**:
-The first editable cube geometry created by MCP from a Ready Reference Package.
-_Avoid_: final geometry, automatic approval, cuboid candidate
+**Reference Package**  
+The approved Modelling Brief plus small metadata and optional Source Images or
+supporting references. It is a handoff container, not a geometry blueprint.
 
-**Blockbench Model**:
-The `.bbmodel` project created and reviewed in Blockbench.
-_Avoid_: Cube Draft
+**Blockbench Model**  
+The reviewed editable `.bbmodel` produced in Blockbench.
 
-**Reference Package**:
-The folder containing the Model Reference, metadata, and Source Image.
-_Avoid_: model version, reference variant
+**Reference Generator**  
+Image-capable workflow from Source Image/user intent to an approved Modelling
+Brief. Canonical policy: `docs/foundation/04-reference-guide.md`. It does not
+own Cube authoring.
 
-**Reference Generator**:
-The stage that starts with the Source Image and ends with one Ready Reference
-Package. It owns five-view generation, Model Reference handoff, and package
-validation.
-_Avoid_: cube authoring, Blockbench modelling
-
-**MCP Modelling**:
-The stage that starts from one Ready Reference Package, creates and corrects
-the Cube Draft in Blockbench, and produces the reviewed Blockbench Model.
-_Avoid_: Source Image processing
-
-**Draft**:
-The user-facing status before approval. Internally this is `NEEDS_REVIEW`.
-_Avoid_: provisional, almost ready
-
-**Final Geometry Dimensions**:
-The height, width, and length supplied as the target for Blockbench geometry.
-_Avoid_: requested dimensions, texture size
+**MCP Modelling**  
+Workflow from an approved Modelling Brief to the reviewed Blockbench Model. The
+modelling specialist owns model judgement; MCP/Blockbench runtime code supplies
+execution mechanics.
 
 ## Stable Structure
 
-- `.agents/skills/`: repository-wide skills available from root `BuildIT`.
-  `development-brief` is canonical here.
-- `mcp/`: active Blockbench MCP plugin source, build, UI, server, tools,
+- `.agents/skills/` — canonical repository-wide skills discoverable from root
+  `BuildIT`.
+- `mcp/` — active Blockbench MCP plugin source, build, UI, server, tools,
   resources, prompts, and generated API documentation.
-- `mcp/.agents/skills/`: current MCP/module specialist skill copies pending the
-  one-by-one naming, overlap, and location audit. They are not yet the canonical
-  project-wide skill location.
-- The old `mcp/workflow/skills/` path is not current structure and must not be
-  recreated merely to satisfy stale documentation.
-- The Reference Generator policy exists in `docs/foundation/`; its canonical
-  Local implementation/skill copy is still being recovered from trusted source
-  and repository history.
-- `workspace/`: active and saved Blockbench project packages.
-- `docs/foundation/`: product rules, modelling standards, source selection, and
+- `mcp/.agents/skills/` and `mcp/.github/skills/` — retired legacy skill
+  locations with no active canonical skills; do not repopulate by default.
+- `workspace/` — active/saved Blockbench project packages and fixtures.
+- `docs/foundation/` — durable product, modelling, reference, texture, and
   validation policy.
-- `docs/knowledge/`: project continuity, working decisions, maps, reviews,
-  operations, and navigation.
+- `docs/knowledge/` — continuity, decisions, routing maps, reviews, and
+  navigation.
+
+The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
+match historical documentation.
+
+## Frozen Skill Architecture
+
+Canonical root skills:
+
+```text
+development-brief
+mcp-server-development
+typescript-type-safety
+bun-tooling
+blockbench-runtime-development
+blockbench-bedrock-modelling
+```
+
+Responsibilities:
+
+- `development-brief` → Developing task contract and specialist selection;
+- `mcp-server-development` → MCP public/protocol/input contract;
+- `typescript-type-safety` → TypeScript type-system problems only;
+- `bun-tooling` → Bun-owned build/tooling behavior only;
+- `blockbench-runtime-development` → Blockbench API/lifecycle/UI/mutation
+  mechanics;
+- `blockbench-bedrock-modelling` → what model should be built and whether its
+  visual/model result is coherent.
+
+Reference generation remains a foundation workflow, not a Codex root skill.
+Evidence-status escalation remains root `AGENTS.md` behavior, not another skill.
+
+Do not change this architecture because an old skill name is encountered. A new
+split/merge/skill requires a current demonstrated capability/ownership gap.
 
 ## Sources Of Truth
 
-- Current task intent: current user instruction.
-- Product and modelling policy: `docs/foundation/README.md` and the relevant
-  foundation note.
-- Agent behavior and routing: root `AGENTS.md` and the nearest nested
-  `AGENTS.md`.
-- MCP implementation behavior: `mcp/AGENTS.md`, `mcp/README.md`, and the
-  relevant source/module code and build/docs manifest.
-- Active task/continuation state: `docs/knowledge/next-action.md` only.
-- Durable working decisions/reasons: `docs/knowledge/decision-log.md` and the
-  relevant decision owner.
-- Skill routing: `docs/knowledge/skills/activation-matrix.md`.
-- Repository-wide skill guidance: `.agents/skills/`.
-- MCP specialist skill copies pending audit: `mcp/.agents/skills/`.
+- Current task intent → current user instruction.
+- Agent behavior/proof baseline → root/nearest `AGENTS.md`.
+- Stable project facts/terms → this file.
+- Active task/continuation state → `docs/knowledge/next-action.md`.
+- Durable decisions/reasons → `docs/knowledge/decision-log.md`.
+- Product/modelling/reference policy → relevant `docs/foundation/` note.
+- Skill routing → `docs/knowledge/skills/activation-matrix.md`.
+- Skill inventory/lineage → `docs/knowledge/skills/skill-map.md`.
+- MCP implementation behavior → `mcp/AGENTS.md`, relevant source, and relevant
+  proof.
 
-When sources disagree, do not guess. Identify the conflict and mark it
-`Needs Validation`.
+When material sources conflict, do not guess. Resolve the authority or use
+`Needs Validation` / the root evidence-status rules.
 
 ## MCP Architecture
 
-The plugin entrypoint wires the MCP server, UI, settings, and lifecycle. The
-server exposes tools, resources, and prompts. Tool implementations live under
-`mcp/server/tools/`; shared factories, schemas, runtime state, and transport
-helpers live under `mcp/lib/` and `mcp/server/`. Tool schemas and documentation
-are aggregated through the build docs manifest and generated outside
-Blockbench, so schema construction must not depend on Blockbench runtime
-globals. Runtime-only validation belongs inside tool execution.
+The plugin entrypoint wires MCP server, UI, settings, and lifecycle. The server
+exposes tools, resources, and prompts. Tool implementations live under
+`mcp/server/tools/`; shared factories, schemas, state, and transport helpers live
+under `mcp/lib/` and `mcp/server/`.
+
+Tool schemas/documentation are aggregated by the build docs manifest outside
+Blockbench, so schema construction must not depend on Blockbench globals.
+Runtime-only validation belongs inside tool execution.
 
 ## Engineering Invariants
 
-- Inspect existing callers, helpers, types, patterns, and relevant tests before
-  editing shared behavior.
-- Keep the smallest correct diff; avoid speculative abstractions/dependencies.
-- Use Zod at input boundaries and never trust external JSON or MCP input.
+- Inspect the current owner/callers/pattern before editing shared behavior.
+- Prefer the smallest complete change; avoid speculative abstractions/dependencies.
+- Validate untrusted MCP input at the boundary.
 - Keep Blockbench globals out of build-time schema modules.
-- Keep generated output secondary to source and regenerate only through the
-  documented build flow.
-- Use the minimum useful proof for the risk and execution channel; never claim
-  a check was run when it was not.
-- If a required fact, caller, contract, or proof path is unknown, use `Needs
-  Validation` rather than inventing behavior.
+- Generated output is secondary to source and is regenerated only through the
+  documented flow.
+- Use minimum useful proof for the risk and execution channel.
+- Never claim a check/runtime/visual result that was not actually obtained.
 - Distinguish symptom, cause, requirement, incorrect data, and platform
   limitation before changing behavior.
-- Do not patch without an observable cause and a proof path.
-
-## Routing Boundary
-
-This file contains stable facts only. Agent behavior belongs in `AGENTS.md`;
-skill triggers and mode routing belong in
-`docs/knowledge/skills/activation-matrix.md`.
+- Stop repeated failed correction directions and re-diagnose rather than patching
+  indefinitely.
 
 ## Navigation
 
-- Current task: `docs/knowledge/next-action.md`.
-- Workspace map: `docs/knowledge/workspace-map.md`.
-- MCP map: `mcp/README.md`.
-- Foundation entrypoint: `docs/foundation/README.md`.
-- Knowledge dashboard: `docs/knowledge/index.md`.
-- Skill routing: `docs/knowledge/skills/activation-matrix.md`.
+- Current task: `docs/knowledge/next-action.md`
+- Workspace map: `docs/knowledge/workspace-map.md`
+- MCP map: `mcp/README.md`
+- Foundation entrypoint: `docs/foundation/README.md`
+- Knowledge dashboard: `docs/knowledge/index.md`
+- Skill routing: `docs/knowledge/skills/activation-matrix.md`
