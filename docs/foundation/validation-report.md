@@ -37,7 +37,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Mutation identity must be explicit | Active BlockIT policy | Single-Cube and destructive element mutations must not depend on transient selection or first-name-match behavior. |
 | Explicit discovery scope must be deterministic | Active BlockIT policy | A requested Group scope must not silently resolve to the first duplicate name. |
 | Explicit discovery filters fail closed | Active BlockIT policy | A supplied invalid/rejected regex must not silently become an unfiltered search. |
-| Explicit texture references must be deterministic where hardened | Active BlockIT policy | Material discovery and initial Cube placement must not silently choose a duplicate texture name/ID match. |
+| Explicit texture references must be deterministic where hardened | Active BlockIT policy | Material discovery, initial Cube placement, and `apply_texture` mutation must not silently choose a duplicate texture name/ID match. |
 | Destructive mutation must be recoverable | Active BlockIT policy | Once Undo is open, remove/rename/duplicate failures must cancel/revert rather than leave an open/partial edit. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
@@ -77,6 +77,18 @@ Important local proof still missing:
 The current source prevents wrong-hierarchy scope, rejected-regex fallback, and
 ambiguous read-only texture lookup from silently broadening or misdirecting the
 normal discovery path.
+
+## Texture Mutation Target Safety
+
+| Capability | Local source | Evidence status | Current claim |
+|---|---|---|---|
+| `apply_texture` element identity | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | `id` is required/non-empty; exact UUID resolves first, otherwise an exact name is accepted only when unique across supported Cube/Mesh/Group targets. |
+| `apply_texture` texture identity | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | texture reference is required/non-empty; exact UUID resolves first, then exact texture ID, then exact name only when unique; ambiguity/missing fails before Undo. |
+| `apply_texture` Group scope | `mcp/server/tools/texture.ts` | `LOCAL PROOF REQUIRED` | a strictly resolved Group keeps the existing behavior of expanding to all descendant Cube/Mesh targets before texture mutation. |
+| shared texture/element helpers | `mcp/lib/util.ts` | unchanged / caller-specific | `findElementOrThrow` / `findTextureOrThrow` remain unchanged because many unrelated texture/PBR/activation callers have not been migrated as one contract. |
+
+This hardening is deliberately local to `apply_texture`; it changes target
+identity, not face/application semantics or paint/PBR behavior.
 
 ## Cube Creation / Correction Safety
 
@@ -159,18 +171,26 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### Explicit `apply_texture` target identity
+### `apply_texture` transaction recoverability
 
-`mcp/server/tools/texture.ts::apply_texture` currently resolves its explicit
-`id` through shared `findElementOrThrow()` and its supplied texture through shared
-`findTextureOrThrow()`. Both shared helpers still use first-match name-compatible
-lookup semantics. Duplicate element or texture names can therefore direct a
-texture mutation to a different target than intended even though initial Cube
-placement is now strict.
+Target identity is now strict and all explicit references plus descendant target
+expansion complete before Undo. The remaining transaction shape is:
 
-Status: **next active source audit**. Treat element identity and texture identity
-as one `apply_texture` preflight contract; keep shared helpers unchanged unless
-caller evidence proves a broader migration safe.
+```text
+save prior selection
+→ Undo.initEdit
+→ try texture selection/apply/update
+→ finally restore prior selection
+→ Undo.finishEdit outside the try/finally
+```
+
+If texture application, change update, selection restoration, or `finishEdit`
+throws after Undo opens, the current path does not call `Undo.cancelEdit(true)`.
+Selection restoration and face-refresh behavior must be preserved while auditing
+this failure boundary.
+
+Status: **next active source audit**. Keep it separate from target identity and do
+not create a generic transaction framework.
 
 ## Historical External Premises
 
@@ -219,6 +239,9 @@ Safe claims:
   exact unique name and rejects ambiguous/missing references before discovery;
 - `place_cube` preserves omitted default-texture behavior but preflights a
   supplied texture as UUID → exact texture ID → exact unique name before Undo;
+- `apply_texture` requires non-empty element/texture references and preflights
+  element UUID → exact unique name plus texture UUID → exact ID → exact unique
+  name before descendant expansion and Undo;
 - destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
 - remove/duplicate/rename each have a bounded failure path that calls
@@ -235,8 +258,9 @@ Unsafe claims without local proof:
 - bounds/camera/Undo behavior works for every live edge case;
 - the MCP client definitely exposes the updated contracts until the current
   plugin is built/loaded and inspected;
-- duplicate-name texture discovery/placement behaves correctly in the installed
-  live runtime;
+- duplicate-name texture discovery/placement/application behaves correctly in
+  the installed live runtime;
+- `apply_texture` is transactionally recoverable after a mid-apply failure;
 - invalid `name_pattern` errors definitely reach the active MCP client with the
   expected error presentation;
 - forced remove/rename/duplicate failures definitely leave zero partial state in
@@ -256,23 +280,25 @@ future proof queue is:
    ambiguous name while exact UUID / texture ID resolve the intended texture;
 5. verify `place_cube` rejects ambiguous/missing supplied texture references,
    resolves exact UUID/ID correctly, and preserves omitted default-texture behavior;
-6. verify omitted/empty `name_pattern` remains unfiltered while invalid,
+6. verify `apply_texture` rejects duplicate element/texture names, accepts exact
+   IDs/UUIDs, and preserves Group → descendant Cube/Mesh application scope;
+7. verify omitted/empty `name_pattern` remains unfiltered while invalid,
    overlong, and rejected nested-quantifier patterns fail rather than broaden the
    query;
-7. create duplicate-name Groups and verify scoped search/selection reject an
+8. create duplicate-name Groups and verify scoped search/selection reject an
    ambiguous name but accept exact UUID and unique name;
-8. create duplicate-name Cube/Group fixtures and verify destructive element tools
+9. create duplicate-name Cube/Group fixtures and verify destructive element tools
    reject ambiguous names before mutation;
-9. force controlled remove, rename, and duplicate failures and verify rollback
+10. force controlled remove, rename, and duplicate failures and verify rollback
    leaves no partial/open destructive edit;
-10. create a small model using strict `place_cube` inputs;
-11. verify `inspect_model_bounds` against visible transformed geometry;
-12. verify canonical `capture_model_views` image delivery/orientation/framing;
-13. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
-14. verify Cube and Group pivot-transfer behavior visually;
-15. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-16. save/reopen `.bbmodel` and inspect persistence;
-17. run one approved-reference → whole-form modelling session and evaluate actual
+11. create a small model using strict `place_cube` inputs;
+12. verify `inspect_model_bounds` against visible transformed geometry;
+13. verify canonical `capture_model_views` image delivery/orientation/framing;
+14. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+15. verify Cube and Group pivot-transfer behavior visually;
+16. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
+17. save/reopen `.bbmodel` and inspect persistence;
+18. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
 
 Do not run this queue ceremonially; use the smallest proof required when local
@@ -281,9 +307,10 @@ validation resumes.
 ## Bottom Line
 
 The architectural problem is well-defined and the main observation, discovery
-scope/filter/material targeting, initial Cube texture targeting, correction,
-targeting, pivot, initial-placement, rotation-activation, and bounded destructive
-rollback mechanisms are present in Local source.
+scope/filter/material targeting, initial Cube texture targeting, explicit
+`apply_texture` identity, correction, pivot, initial-placement,
+rotation-activation, and bounded destructive rollback mechanisms are present in
+Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
 Blockbench/MCP/Codex path observes and corrects models as intended. That remains
