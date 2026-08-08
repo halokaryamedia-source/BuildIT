@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_CREATE_PBR_TEXTURE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_CREATE_PBR_ROLLBACK_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -98,80 +98,25 @@ Current Local source already contains:
   reassignment, and `Undo.finishEdit` run inside a rollback boundary that calls
   `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows on failure;
 - `create_pbr_material` keeps all channel texture references optional, but a
-  supplied reference must now be non-empty. Each supplied color/normal/height/MER
+  supplied reference must be non-empty. Each supplied color/normal/height/MER
   reference is resolved exactly once before `Undo.initEdit` by exact UUID → exact
   unique texture ID → exact unique name. Missing or ambiguous supplied references
   fail before Undo/material mutation, and the exact preflighted Texture objects
-  are reused for channel assignment. Uniform `color_value`, `mer_value`, and
-  `subsurface_value` behavior remains unchanged.
+  are reused for channel assignment;
+- after successful `create_pbr_material` channel preflight, the existing Undo
+  capture remains `texture_groups: []` plus the exact `texturesToAdd`. Material
+  config mutation, group add, channel assignment, `updateMaterial`, and
+  `Undo.finishEdit` now run inside a rollback boundary; failure calls
+  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows. Optional channels,
+  uniform `color_value`, `mer_value`, `subsurface_value`, result shape, and
+  success Canvas refresh remain unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest PBR Texture-Targeting Finding
+## Latest PBR Rollback Finding
 
-Before the latest change:
-
-```text
-create_pbr_material(... optional channel texture refs ...)
-→ for each supplied channel
-   → findTextureOrThrow(reference)
-   → getProjectTexture(reference)
-   → first ID/name/UUID match wins
-   → push resolved texture into texturesToAdd
-→ Undo.initEdit({ texture_groups: [], textures: texturesToAdd })
-→ create/add TextureGroup
-→ for each supplied channel
-   → findTextureOrThrow(reference) again
-   → texture.extend({ group: textureGroup.uuid, pbr_channel: channel })
-→ updateMaterial
-→ Undo.finishEdit
-```
-
-A duplicate texture name/ID could bind the wrong texture to a PBR channel. The
-same reference was also resolved a second time after Undo had already opened.
-
-Current Local behavior is:
-
-```text
-create_pbr_material(... optional channel texture refs ...)
-→ each supplied channel schema requires a non-empty reference
-→ before Undo, resolve each supplied reference exactly once
-   ├─ exact UUID → target
-   ├─ exact unique texture ID → target
-   ├─ exact unique name → target
-   └─ ambiguous / missing → ERROR
-→ collect exact preflighted Texture objects into texturesToAdd
-→ Undo.initEdit({ texture_groups: [], textures: texturesToAdd })
-→ create/add TextureGroup
-→ reuse preflighted Texture objects for color/normal/height/MER assignment
-→ updateMaterial
-→ Undo.finishEdit
-```
-
-The tool/schema descriptions now state the strict optional channel-target
-contract. `configure_material`, `assign_texture_channel`, shared
-`findTextureOrThrow()` / `getProjectTexture()`, `add_texture_group`, standalone
-activation, `get_texture`, `apply_texture`, paint tools, PBR uniform values, and
-G3 were not changed.
-
-## Holds
-
-- **G1/G2:** source corrections implemented; local proof deferred.
-- **G3 annotations:** paused.
-- save/reopen proof: later local validation.
-- UV/texture feature additions: only after a concrete workflow proves a gap.
-- broad public-surface reduction: after the core fidelity path is proven.
-
-## Next Step
-
-Audit **`create_pbr_material` mutation/Undo recoverability after successful
-channel-target preflight** in:
-
-```text
-mcp/server/tools/texture.ts
-```
-
-Current post-preflight path is:
+Before the latest change, channel target identity was already preflighted, but the
+post-preflight mutation path was:
 
 ```text
 preflighted optional channel Texture objects
@@ -186,36 +131,107 @@ preflighted optional channel Texture objects
 → Canvas.updateAll()
 ```
 
-The Undo capture scope already includes the new TextureGroup list state and exact
-textures whose group/channel fields may change, but there is no rollback boundary
-after `Undo.initEdit`. A failure during material config mutation, group add,
-channel assignment, `updateMaterial`, or `Undo.finishEdit` can therefore leave an
-open or partially applied edit.
+The Undo capture covered the relevant group-list and texture states, but a failure
+at any point after `Undo.initEdit` had no rollback boundary.
+
+Current Local behavior is:
+
+```text
+preflighted optional channel Texture objects
+→ texturesToAdd
+→ construct unadded TextureGroup
+→ Undo.initEdit({ texture_groups: [], textures: texturesToAdd })
+→ try
+   → mutate material_config values / saved flag
+   → textureGroup.add()
+   → assign preflighted channel textures
+   → textureGroup.updateMaterial()
+   → Undo.finishEdit
+→ catch
+   → Undo.cancelEdit(true)
+   → Canvas.updateAll()
+   → rethrow
+→ Canvas.updateAll()
+→ success result
+```
+
+The strict one-time channel-target preflight remains before all mutation. Existing
+Undo capture was retained because Local TextureGroup mutation patterns already use
+`texture_groups` for group-list state and exact `textures` for texture field
+changes. No PBR uniform-value, result, or success-refresh semantics were changed.
+
+## Holds
+
+- **G1/G2:** source corrections implemented; local proof deferred.
+- **G3 annotations:** paused.
+- save/reopen proof: later local validation.
+- UV/texture feature additions: only after a concrete workflow proves a gap.
+- broad public-surface reduction: after the core fidelity path is proven.
+
+## Next Step
+
+Audit **explicit channel texture identity for `configure_material`** in:
+
+```text
+mcp/server/tools/texture.ts
+```
+
+Current observed path is:
+
+```text
+configure_material(material, optional channel refs / "none", uniform values)
+→ findTextureGroupOrThrow(material)
+→ current textures = textureGroup.getTextures()
+→ Undo.initEdit({ texture_groups: [textureGroup], textures: current textures })
+→ for each channel
+   ├─ omitted → no channel-target change
+   ├─ "none" → remove/reset the existing channel assignment
+   └─ explicit reference
+       → findTextureOrThrow(reference)
+       → getProjectTexture(reference)
+       → first ID/name/UUID match wins
+       → texture.extend({ group: textureGroup.uuid, pbr_channel: channel })
+→ update uniform values / saved flag
+→ textureGroup.updateMaterial()
+→ Undo.finishEdit
+→ Canvas.updateAll()
+```
+
+A duplicate texture name/ID can therefore bind the wrong texture to an existing
+material. Missing references fail only after Undo has opened, and an explicit
+empty string currently behaves like an omitted/falsy field instead of a rejected
+explicit target. A newly assigned texture from outside the material is also not
+necessarily present in the initial `textures` Undo capture.
 
 Audit requirements:
 
-1. preserve the new strict one-time channel-target preflight unchanged and before
-   all mutation;
-2. preserve optional channel behavior and existing uniform `color_value`,
-   `mer_value`, `subsurface_value`, `saved`, channel assignment, result shape,
-   and success Canvas refresh semantics;
-3. confirm the existing `texture_groups: []` + `textures: texturesToAdd` Undo
-   capture is sufficient for this exact mutation boundary using existing Local
-   TextureGroup patterns; change it only if source evidence requires it;
-4. if any operation fails after `Undo.initEdit`, cancel/revert the open edit,
-   refresh Canvas, and rethrow;
-5. keep the change local to `create_pbr_material`; do not change
-   `configure_material`, `assign_texture_channel`, shared texture resolvers,
+1. preserve omitted channel fields and the exact `"none"` sentinel behavior;
+2. for every provided non-`"none"` channel reference, require a non-empty explicit
+   reference and resolve it exactly once before `Undo.initEdit`: exact UUID first,
+   then exact texture ID, then exact name only when unique;
+3. preflight all supplied non-`"none"` channel references before any mutation;
+   ambiguous or missing references must fail before Undo/material changes;
+4. reuse the exact preflighted Texture objects after Undo and audit the texture
+   capture so it contains the current material textures plus any external
+   preflighted assignment targets whose `group`/`pbr_channel` fields can change;
+5. preserve current uniform `color_value`, `mer_value`, `subsurface_value`,
+   `saved`, material update, return, and success Canvas behavior. Keep the
+   existing material target lookup unchanged for this slice;
+6. keep the change local to `configure_material`; do not change
+   `create_pbr_material`, `assign_texture_channel`, shared texture resolvers,
    `add_texture_group`, standalone activation, `get_texture`, `apply_texture`,
-   paint tools, G3, or create a generic transaction framework.
+   paint tools, G3, or create a generic resolver/transaction framework.
 
-Prefer the smallest `try/catch` rollback boundary around the existing mutation
-sequence. Do not broaden this slice into PBR configuration cleanup.
+Prefer the same small local strict-reference semantics already used by the other
+texture boundaries. Keep post-preflight `configure_material` rollback as a
+separate follow-up unless this identity/capture audit proves it cannot be safely
+separated.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish source/schema/error/Undo structure and static diff
 only. Actual live paint targeting, standalone activation, `get_texture` reads,
 forced `apply_texture` rollback, `add_texture_group` target/rollback behavior,
-`create_pbr_material` target selection, and future PBR rollback behavior remain
-`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+`create_pbr_material` target/rollback behavior, and future `configure_material`
+runtime targeting remain `LOCAL PROOF REQUIRED` until local Blockbench testing
+resumes.
