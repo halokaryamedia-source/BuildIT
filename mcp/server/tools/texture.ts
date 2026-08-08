@@ -1091,60 +1091,67 @@ export function registerTextureTools() {
         textures: undoTextures,
       });
 
-      // Handle color channel
-      if (color_texture === "none") {
-        textures
-          .filter((t: Texture) => t.pbr_channel === "color")
-          .forEach((t: Texture) => (t.group = ""));
-      } else if (colorTexture) {
-        textures
-          .filter((t: Texture) => t.pbr_channel === "color")
-          .forEach((t: Texture) => (t.pbr_channel = "color"));
-        colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+      try {
+        // Handle color channel
+        if (color_texture === "none") {
+          textures
+            .filter((t: Texture) => t.pbr_channel === "color")
+            .forEach((t: Texture) => (t.group = ""));
+        } else if (colorTexture) {
+          textures
+            .filter((t: Texture) => t.pbr_channel === "color")
+            .forEach((t: Texture) => (t.pbr_channel = "color"));
+          colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+        }
+
+        // Handle normal channel
+        if (normal_texture === "none") {
+          textures
+            .filter((t: Texture) => t.pbr_channel === "normal")
+            .forEach((t: Texture) => (t.group = ""));
+        } else if (normalTexture) {
+          normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+        }
+
+        // Handle height channel
+        if (height_texture === "none") {
+          textures
+            .filter((t: Texture) => t.pbr_channel === "height")
+            .forEach((t: Texture) => (t.group = ""));
+        } else if (heightTexture) {
+          heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+        }
+
+        // Handle MER channel
+        if (mer_texture === "none") {
+          textures
+            .filter((t: Texture) => t.pbr_channel === "mer")
+            .forEach((t: Texture) => (t.group = ""));
+        } else if (merTexture) {
+          merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+        }
+
+        // Update uniform values
+        if (color_value) {
+          textureGroup.material_config.color_value = color_value;
+        }
+        if (mer_value) {
+          textureGroup.material_config.mer_value = mer_value;
+        }
+        if (subsurface_value !== undefined) {
+          textureGroup.material_config.subsurface_value = subsurface_value;
+        }
+
+        textureGroup.material_config.saved = false;
+        textureGroup.updateMaterial();
+
+        Undo.finishEdit("Agent configured material");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      // Handle normal channel
-      if (normal_texture === "none") {
-        textures
-          .filter((t: Texture) => t.pbr_channel === "normal")
-          .forEach((t: Texture) => (t.group = ""));
-      } else if (normalTexture) {
-        normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
-      }
-
-      // Handle height channel
-      if (height_texture === "none") {
-        textures
-          .filter((t: Texture) => t.pbr_channel === "height")
-          .forEach((t: Texture) => (t.group = ""));
-      } else if (heightTexture) {
-        heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
-      }
-
-      // Handle MER channel
-      if (mer_texture === "none") {
-        textures
-          .filter((t: Texture) => t.pbr_channel === "mer")
-          .forEach((t: Texture) => (t.group = ""));
-      } else if (merTexture) {
-        merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
-      }
-
-      // Update uniform values
-      if (color_value) {
-        textureGroup.material_config.color_value = color_value;
-      }
-      if (mer_value) {
-        textureGroup.material_config.mer_value = mer_value;
-      }
-      if (subsurface_value !== undefined) {
-        textureGroup.material_config.subsurface_value = subsurface_value;
-      }
-
-      textureGroup.material_config.saved = false;
-      textureGroup.updateMaterial();
-
-      Undo.finishEdit("Agent configured material");
       Canvas.updateAll();
 
       return `Configured material "${textureGroup.name}"`;
