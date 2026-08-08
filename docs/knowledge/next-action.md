@@ -9,7 +9,7 @@ reconstructing prior chats.
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
   divergence by making modelling, hierarchy, rotation, and pivot decisions
   evidence-backed instead of assumption-driven.
-- **Status:** `REFERENCE_FIDELITY_GROUP_PIVOT_HARDENED`.
+- **Status:** `REFERENCE_FIDELITY_CUBE_PIVOT_SEMANTICS_HARDENED`.
 - **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
 - **G3 annotations:** paused.
@@ -25,8 +25,8 @@ Prior modelling tests showed:
 3. pivots/origins could become abstract or distant because numeric fields were
    filled without a real joint/attachment/transform purpose.
 
-The active solution is a Reference Fidelity Loop, not additional automatic
-geometry inference.
+The active solution remains a **Reference Fidelity Loop**, not automatic
+image-to-Cube fitting.
 
 ## Reference Fidelity Loop v1
 
@@ -64,106 +64,125 @@ SECONDARY GEOMETRY / HIERARCHY / PIVOTS
 TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Fidelity Instruments Already Implemented In Source
+## Fidelity Instruments Implemented In Source
 
 - `inspect_model_bounds` — raw rendered Cube envelope facts only.
-- `capture_model_views` — canonical labeled 512×512 reference-comparison images.
+- `capture_model_views` — canonical labeled 512×512 comparison images.
 - `inspect_element` — focused authored Cube/Group state by explicit target.
 - `modify_cubes_batch` — heterogeneous exact-UUID Cube correction in one
   recoverable Undo unit.
 - `modify_cube` / `place_cube` — explicit target/group resolution hardened;
   missing/ambiguous targets no longer silently mutate multiple Cubes or fall back
   to root.
+- `add_group` / `bone_rigging` — neutral Group defaults, action-specific preflight,
+  unique targets/names, rollback, and Group pivot transfer semantics.
 
-## Group / Pivot Authoring — Hardened
+## Cube Pivot Mutation Semantics — Hardened
 
-### `add_group`
+Audit compared Local `mcp/server/tools/cubes.ts` with official Blockbench Cube
+API/source.
 
-`mcp/server/tools/element.ts` now treats neutral transforms as the default rather
-than forcing the agent to invent pivot/rotation values:
-
-```text
-origin   optional → [0,0,0]
-rotation optional → [0,0,0]
-parent   optional → intentional root
-```
-
-The neutral default is **not** claimed to be the correct articulated pivot. It
-means an organizational/non-articulated Group does not need a fabricated
-transform story.
-
-When a parent is supplied:
+Official Blockbench documents:
 
 ```text
-exact Group UUID
-→ otherwise exact unique name
-→ duplicate name = error with candidate UUIDs
-→ missing target = error
+Cube.transferOrigin(origin, update?)
 ```
 
-Parent resolution happens before Undo. Group creation/addTo failure cancels the
-opened edit with `Undo.cancelEdit(true)`.
+as transferring the origin to a new position **while updating `from` and `to` to
+keep the same visual position**. The source implementation uses the Cube preview
+mesh quaternion to calculate the compensating shift before setting the new
+origin.
 
-### `bone_rigging`
+Therefore Local now distinguishes two intents without adding a new mode/tool.
 
-`mcp/server/tools/animation.ts` keeps the existing experimental tool but hardens
-it instead of adding a new pivot/rigging framework.
+### Pivot-only Cube correction
 
-All action-specific required targets/inputs are preflighted **before Undo**.
-Existing Group/child targets resolve UUID-first or by exact unique name; missing
-or ambiguous targets fail rather than being ignored.
+Per Cube/update:
 
-Key action rules:
+```text
+origin supplied
+from omitted
+to omitted
+rotation omitted
+```
 
-- `create` — bone name must be unique; omitted origin/rotation remain neutral;
-  parent omitted means intentional root; supplied parent/children/IK target must
-  resolve before mutation; duplicate child references fail.
-- `parent` — exact target + explicit parent are required; use `unparent` for root;
-  self-parenting fails.
-- `rename` — uses explicit `new_name` and keeps Group names unique; it no longer
-  abuses `children[0]` or invents `new_name`.
-- `set_pivot` — exact Group target + explicit origin required. It now calls
-  Blockbench `Group.transferOrigin(origin)` rather than assigning `origin`
-  directly.
-- `set_ik` — enabling IK requires a valid resolved IK target.
-- `mirror` — mirror axis must be explicit; no implicit X-axis assumption.
-- mutation failures cancel/revert the open Undo edit.
+means:
 
-Official Blockbench types document `Group.transferOrigin(origin)` as moving a
-bone origin without visually affecting the position of its contents. This is the
-right runtime primitive for a **pivot-only** change; live behavior in the user's
-installed Blockbench remains `LOCAL PROOF REQUIRED`.
+```text
+PIVOT-ONLY CORRECTION
+→ preflight Cube preview mesh before Undo
+→ Cube.transferOrigin(origin)
+→ preserve visual Cube position
+```
+
+Other non-transform fields such as visibility/name may still be updated in the
+same single-Cube call; they do not change this pivot-only classification.
+
+If a Cube has no preview mesh, the pivot-only operation fails before Undo rather
+than allowing Blockbench `transferOrigin()` to return without proving the
+preserving transform occurred.
+
+### Authored geometry rewrite
+
+If `origin` is supplied together with any of:
+
+```text
+from
+to
+rotation
+```
+
+then Local treats the request as an intentional authored transform rewrite and
+uses the explicit transform fields directly. It does **not** compensate the
+origin by `transferOrigin`, because the caller is explicitly redefining the
+geometry/pivot relationship.
+
+### Single- and multi-Cube paths
+
+The same semantic rule now applies to:
+
+- `modify_cube`;
+- every independent item in `modify_cubes_batch`.
+
+For batch corrections all target UUIDs and all pivot-only preview-mesh
+requirements are preflighted before Undo opens. A later mutation failure still
+uses `Undo.cancelEdit(true)`.
+
+`Canvas.updateAll()` is outside the successful batch Undo transaction, so a
+post-commit refresh problem does not attempt to cancel an already finished edit.
 
 ### Bedrock prompt routing
 
-The normal Bedrock workflow now says:
+The normal Bedrock workflow now tells the agent:
 
-- create organizational Groups with neutral defaults rather than invented
-  pivots/angles;
-- use exact Group UUIDs for intended hierarchy targets;
-- inspect an existing Group before a material pivot change;
-- call `bone_rigging(action="set_pivot")` only when an actual joint/attachment/
-  transform-center reason exists;
-- re-observe affected attachment/orientation after material hierarchy/pivot work;
-- no ambiguous names, implicit parent targets, or implicit mirror axes.
+```text
+Cube geometry visually correct, pivot alone wrong
+→ inspect exact Cube
+→ modify origin without from/to/rotation
+→ pivot-transfer semantics preserve visual position
+
+Cube geometry/rotation and pivot intentionally change together
+→ send the actual origin + from/to/rotation changes together
+→ authored rewrite
+```
+
+A pivot-only correction must never be used as a disguised way to move geometry.
 
 ## Static Evidence
 
-Compare from the pre-pivot state
-`ffe585ffddb333d4cd9d049bc79aeff74fa3c092` showed only the intended owners were
-changed before this continuity update:
+Compare from the pre-Cube-pivot state
+`c971475aef0e7fb222c320f8bbde857104ed3c78` showed only:
 
 ```text
-mcp/server/tools/element.ts
-mcp/server/tools/animation.ts
+mcp/server/tools/cubes.ts
 mcp/prompts/bedrock.md
 ```
 
-No Cube correction implementation, camera/observation implementation, UV,
-save/open, transport, or G3 source changed in this slice.
+changed before this continuity update.
 
-Live Blockbench behavior remains `LOCAL PROOF REQUIRED`; local proof is not the
-current blocker because the user has explicitly deferred local testing.
+Official Blockbench types/source are the authority for the `transferOrigin`
+semantics. Live behavior in the user's installed Blockbench remains
+`LOCAL PROOF REQUIRED`; local testing is not the current blocker.
 
 ## Holds
 
@@ -186,22 +205,32 @@ current blocker because the user has explicitly deferred local testing.
 
 ## Next Step
 
-Audit **Cube origin/pivot mutation semantics only** in
-`mcp/server/tools/cubes.ts` against Blockbench's official Cube API.
+Audit **initial Cube creation rotation/pivot safety** in `place_cube` / shared
+`cubeSchema`.
 
-Current correction paths can set `cube.origin` through `cube.extend(...)`.
-Blockbench also exposes `Cube.transferOrigin(origin, update?)`, which is designed
-to move a Cube's origin while preserving its visual position.
-
-Determine the smallest correct rule for:
+Current shared schema uses neutral defaults:
 
 ```text
-pivot-only Cube correction
-vs
-origin changed together with from/to/rotation as an authored geometry rewrite
+origin   omitted → [0,0,0]
+rotation omitted → [0,0,0]
 ```
 
-Use `transferOrigin` only where its semantics match the modelling intent. Do not
-add a new pivot planner/tool unless the existing Cube mutation surface cannot
-express the required distinction. Do not resume G3 or mix UV/hierarchy work into
-this slice.
+Neutral origin is harmless for an unrotated Cube, but a caller can currently
+supply a non-zero rotation while omitting origin; after schema defaults are
+applied the runtime can no longer tell whether `[0,0,0]` was an intentional pivot
+or an accidental default. This can create exactly the kind of distant/abstract
+rotation seen in prior modelling tests.
+
+Determine the smallest compatibility-safe contract so:
+
+```text
+unrotated Cube
+→ no pivot ceremony required
+
+rotated Cube
+→ pivot/origin must be intentional and evidence-backed
+```
+
+Do not impose a universal center pivot, infer a pivot automatically, or add a
+pivot planner. Prefer a schema/runtime preflight that makes missing intent fail
+clearly. Do not resume G3 or mix UV/hierarchy work into this slice.
