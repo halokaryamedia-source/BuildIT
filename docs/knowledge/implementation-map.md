@@ -1,31 +1,40 @@
 # Implementation Map
 
-Use this note for the active repository areas and ownership boundaries.
+Use this note for active repository areas and ownership boundaries.
 
 ## Areas
 
-- `.agents/skills/` — repository-wide workflow skills available from root
-  `BuildIT`.
-- `docs/foundation/` — durable product/modelling policy.
-- `docs/knowledge/` — continuity, decisions, workflow maps, reviews, and
+- `.agents/skills/` — frozen canonical repository-wide skills available from
+  root `BuildIT`.
+- `docs/foundation/` — durable product/modelling/reference policy.
+- `docs/knowledge/` — continuity, decisions, routing maps, reviews, and
   navigation.
-- `mcp/` — Blockbench MCP runtime/plugin source.
-- `mcp/.agents/skills/` — existing MCP specialist copies pending one-by-one
-  naming/overlap/location audit.
+- `mcp/` — active Blockbench MCP runtime/plugin source.
+- `mcp/.agents/skills/` and `mcp/.github/skills/` — retired legacy skill
+  locations; no active canonical skills live there.
 - `workspace/` — active/saved Blockbench project packages and fixtures.
+
+## Current Ownership
+
+- Developing task contract → `.agents/skills/development-brief/SKILL.md`.
+- MCP public/protocol/input contract → `mcp-server-development`.
+- TypeScript type-system issue → `typescript-type-safety`.
+- Bun-owned build/tooling → `bun-tooling`.
+- Blockbench runtime/API/lifecycle/mutation mechanics →
+  `blockbench-runtime-development`.
+- Bedrock model judgement/visual result → `blockbench-bedrock-modelling`.
+- Source Image → approved Modelling Brief →
+  `docs/foundation/04-reference-guide.md` on an image-capable surface.
+- Evidence-status escalation → root `AGENTS.md`.
 
 ## Current Focus
 
 - Active state lives only in `docs/knowledge/next-action.md`.
-- `development-brief` is canonical at
-  `.agents/skills/development-brief/SKILL.md`.
-- Skill routing lives in `docs/knowledge/skills/activation-matrix.md`.
-- `blockbench-use`, `reference-generator`, and `evidence-gate` remain recovery
-  items until trusted sources are verified.
-- MCP feature/runtime development remains deferred until skill consolidation is
-  complete.
-- Remove stale links/rules instead of creating missing paths or compatibility
-  structure to make historical documentation appear current.
+- Skill architecture is frozen; do not reopen historical skill recovery without
+  a current proved ownership/capability gap.
+- MCP implementation audit is the next engineering phase.
+- Remove stale links/rules instead of recreating historical paths or compatibility
+  structure.
 
 ## Parent
 
