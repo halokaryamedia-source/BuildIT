@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_APPLY_TEXTURE_ROLLBACK_HARDENED`
+`REFERENCE_FIDELITY_ACTIVATE_TEXTURE_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -70,49 +70,48 @@ Current Local source already contains:
   resolves element UUID → exact unique name across Cube/Mesh/Group, resolves
   texture UUID → exact ID → exact unique name, and rejects ambiguity/missing
   before descendant expansion and Undo;
-- `apply_texture` now keeps selection restoration in an inner `finally` while an
+- `apply_texture` keeps selection restoration in an inner `finally` while an
   outer rollback boundary covers texture apply/update, selection restoration,
-  and `Undo.finishEdit`; failure calls `Undo.cancelEdit(true)` and rethrows.
+  and `Undo.finishEdit`; failure calls `Undo.cancelEdit(true)` and rethrows;
+- `activate_texture(texture=...)` now requires a non-empty explicit texture
+  reference, resolves exact UUID → exact unique texture ID → exact unique name,
+  and rejects ambiguous/missing references before active texture selection
+  changes. Shared texture helpers remain unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Texture-Mutation Finding
+## Latest Texture-Activation Finding
 
 Before the latest change:
 
 ```text
-resolve element + texture
-→ expand Group descendants
-→ save prior selection
-→ Undo.initEdit
-→ try texture select/apply/update
-→ finally restore prior selection
-→ Undo.finishEdit
+activate_texture(texture=reference)
+→ findTextureOrThrow(reference)
+→ getProjectTexture(reference)
+→ first ID/name/UUID match wins
+→ target.select()
 ```
 
-The selection was restored, but a failure after Undo opened could leave an open
-or partially applied edit.
+A duplicate texture name or ID could therefore activate a different texture than
+the caller intended and redirect subsequent paint operations.
 
 Current Local behavior is:
 
 ```text
-resolve strict element + texture targets
-→ expand Group descendants
-→ save prior selection
-→ Undo.initEdit
-→ outer try
-   → inner try: select/apply/update texture
-   → inner finally: restore caller selection
-   → Undo.finishEdit
-→ outer catch
-   → Undo.cancelEdit(true)
-   → Canvas.updateAll()
-   → rethrow
+explicit texture reference
+→ schema rejects empty string
+→ local activation resolver
+   ├─ exact UUID → target
+   ├─ exact unique texture ID → target
+   ├─ exact unique name → target
+   └─ ambiguous / missing → ERROR
+→ only then target.select()
 ```
 
-The successful path still performs the existing face-level `Canvas.updateView`
-plus `Canvas.updateAll()` after `finishEdit`. Target identity, `applyTo`, and
-Group descendant semantics were not changed.
+No Undo or generic resolver was introduced. Resolution failure happens before
+`target.select()`, so the existing active texture is not intentionally changed by
+this tool. `apply_texture`, paint tools, PBR/UV behavior, and shared
+`findTextureOrThrow()` / `getProjectTexture()` remain unchanged.
 
 ## Holds
 
@@ -124,42 +123,50 @@ Group descendant semantics were not changed.
 
 ## Next Step
 
-Audit **explicit target identity for `activate_texture`** in:
+Audit **explicit texture identity at the shared paint activation boundary** in:
 
 ```text
-mcp/server/tools/texture.ts
+mcp/lib/util.ts
+mcp/server/tools/paint.ts
 ```
 
-Current source is:
+Current observed paint path is:
 
 ```text
-activate_texture(texture=reference)
-→ findTextureOrThrow(reference)
-→ target.select()
+paint tool(texture_id?)
+→ getAndActivateTexture(texture_id)
+   ├─ omitted → current selected texture or default texture
+   └─ explicit → getProjectTexture(texture_id)
+                 → first ID/name/UUID match wins
+                 → texture.select()
+→ paint-tool Undo / Painter mutation
 ```
 
-Shared `findTextureOrThrow()` still uses the legacy first-match texture lookup.
-A duplicate texture name/ID can therefore activate a different texture than the
-caller intended, which can then misdirect later paint operations.
+Direct paint callers currently invoke `getAndActivateTexture()` before their
+paint mutation boundary. An ambiguous explicit texture reference can therefore
+still select and mutate the wrong texture even though standalone
+`activate_texture` is now strict.
 
 Audit requirements:
 
-1. require a non-empty explicit texture reference;
-2. resolve exact UUID first, then exact texture ID, then exact name only when
-   unique;
-3. ambiguous or missing references must fail before active texture selection
-   changes;
-4. keep the change local to `activate_texture`; do not migrate shared texture
-   helpers without caller proof;
-5. do not change paint tools, PBR/UV behavior, `apply_texture`, G3, or create a
+1. preserve the existing omitted `texture_id` behavior: current selected texture,
+   otherwise default texture;
+2. for an explicit non-empty `texture_id`, audit UUID → exact unique texture ID
+   → exact unique name resolution before selection or paint mutation;
+3. ambiguous or missing explicit references must fail before active texture
+   selection changes and before the caller opens Undo / starts painting;
+4. inspect the direct paint callers first, then harden `getAndActivateTexture`
+   only if that shared boundary is proven safe for those callers;
+5. do not change `getProjectTexture()` globally, standalone `activate_texture`,
+   `apply_texture`, PBR/UV behavior, paint operation semantics, G3, or create a
    generic texture resolver framework.
 
-Prefer reusing the same small local resolution semantics already established for
-strict texture references, but do not introduce a cross-file abstraction merely
-to deduplicate a few lines.
+Prefer the smallest helper-local change if the caller audit proves the helper is
+the correct shared owner.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish source/schema/error contracts and static diff only.
-Actual live activation targeting and forced `apply_texture` rollback remain
-`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+Actual live paint targeting with duplicate names/IDs, standalone activation
+selection, and forced `apply_texture` rollback remain `LOCAL PROOF REQUIRED`
+until local Blockbench testing resumes.
