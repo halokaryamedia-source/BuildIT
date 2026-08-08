@@ -34,7 +34,9 @@ export function settingsSetup() {
       name: tl("mcp.settings.prompt_cdn_name"),
       description: tl("mcp.settings.prompt_cdn_desc"),
       type: "toggle",
-      value: true,
+      // Local bundled prompts are authoritative. CDN content is an optional
+      // fallback for prompt names not provided by the Local build.
+      value: false,
       category,
       icon: "cloud_download",
     }),
