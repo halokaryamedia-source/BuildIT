@@ -1,35 +1,48 @@
 # Context Boot Baseline
 
+Updated routing: 2026-08-08
+
 Manual baseline protocol for checking context efficiency. This note records
-expected routes; unrun scenarios are not verified.
+**expected routes**; unrun scenarios are not verified.
 
 ## Targets
 
-- Read no more than 3–5 initial files for a normal task.
-- Identify the affected area before opening detailed policy or module notes.
-- Use one primary technical skill.
-- Never read the task board during normal boot.
-- Leave validation evidence appropriate to task risk.
+- start from `AGENTS.md` → `CONTEXT.md` → `next-action.md`;
+- identify the affected boundary before opening detailed docs/source;
+- Developing always uses `development-brief`;
+- add at most one useful specialist;
+- never read the task board during normal boot;
+- use proof appropriate to the active channel/risk;
+- avoid broad vault/source scans when the owner is already known.
 
 ## Scenarios
 
-| Scenario | Expected initial route | Primary skill | Status |
+| Scenario | Expected initial route | Expected owner/skill | Status |
 |---|---|---|---|
-| MCP task kecil | `AGENTS.md` → `CONTEXT.md` → `next-action.md` → `mcp/AGENTS.md` → target area | `mcp-builder` | Not run |
-| Bug | boot context → target module → diagnosis | `diagnosing-bugs` + area skill | Not run |
-| Refactor besar | boot context → module map → design → review graph if cross-module | `codebase-design` | Not run |
-| Prompt ambigu | boot context → Plan → `Needs Validation` | planning skill | Not run |
+| Small MCP public-contract task | boot → target MCP source → relevant contract/factory | `development-brief` + `mcp-server-development` when useful | Not run |
+| Blockbench runtime/API defect | boot → affected runtime source → targeted upstream/current API evidence | `development-brief` + `blockbench-runtime-development` | Not run |
+| Bedrock visual/model issue | boot → active reference + modelling policy + current model evidence | `development-brief` + `blockbench-bedrock-modelling` | Not run |
+| Type-system-only failure | boot → affected TS boundary | `development-brief` + `typescript-type-safety` | Not run |
+| Bun build/tooling failure | boot → affected Bun/build source | `development-brief` + `bun-tooling` | Not run |
+| Ambiguous high-impact request | boot → repository evidence → ask only unresolved decision | `development-brief`; discovery escalation only if necessary | Not run |
+| Maintenance/bug diagnosis | boot → reproduction/owner → smallest diagnostic | Maintenance route from `AGENTS.md` | Not run |
 
 ## Measurement Fields
 
-For each real test, record only:
+For a real scenario, record only:
 
-- files read before editing;
-- approximate words read;
+- files read before owner was identified;
+- approximate context size if useful;
 - skills activated;
-- correct area found: yes/no;
+- correct owner found: yes/no;
 - unnecessary broad scan: yes/no;
-- validation outcome clear: yes/no.
+- proof boundary clear: yes/no;
+- unnecessary user clarification: yes/no.
 
 Update this note only after an actual scenario is tested. Do not add telemetry,
-scripts, or runtime instrumentation for this baseline.
+scripts, or runtime instrumentation solely for this baseline.
+
+## Parent
+
+- [Operations](README.md)
+- [Minimal Navigation](../minimal-nav.md)
