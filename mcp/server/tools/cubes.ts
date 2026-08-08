@@ -67,7 +67,9 @@ const cubeCorrectionUpdateSchema = z
       .describe("New authored Cube to coordinates."),
     rotation: finiteVec3Schema
       .optional()
-      .describe("New authored Cube rotation in degrees."),
+      .describe(
+        "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot."
+      ),
     visibility: z
       .boolean()
       .optional()
@@ -159,7 +161,9 @@ export const modifyCubeParameters = z.object({
   rotation: z
     .array(z.number()).length(3)
     .optional()
-    .describe("Rotation of the cube."),
+    .describe(
+      "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot."
+    ),
   autouv: z
     .enum(["0", "1", "2"])
     .optional()
@@ -217,7 +221,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -228,7 +232,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -254,6 +258,25 @@ function isPivotOnlyCorrection(update: CubeTransformIntent): boolean {
     update.from === undefined &&
     update.to === undefined &&
     update.rotation === undefined
+  );
+}
+
+function requireIntentionalRotationActivation(
+  cube: Cube,
+  requestedRotation?: readonly number[],
+  requestedOrigin?: readonly number[]
+): void {
+  if (
+    requestedRotation === undefined ||
+    !hasNonZeroRotation(requestedRotation) ||
+    hasNonZeroRotation(cube.rotation) ||
+    requestedOrigin !== undefined
+  ) {
+    return;
+  }
+
+  throw new Error(
+    `Cube "${cube.name}" (${cube.uuid}) is currently unrotated. Activating a non-zero rotation requires an explicit origin/pivot in the same update. Inspect the Cube and provide the intended origin; do not silently reuse the existing origin ${JSON.stringify(cube.origin)}.`
   );
 }
 
@@ -433,6 +456,10 @@ createTool(cubeToolDocs[1].name, {
       }
     }
 
+    cubes.forEach((cube) =>
+      requireIntentionalRotationActivation(cube, rotation, origin)
+    );
+
     const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
     if (pivotOnly) {
       cubes.forEach(requirePivotTransferMesh);
@@ -510,6 +537,12 @@ createTool(cubeToolDocs[2].name, {
           `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
         );
       }
+
+      requireIntentionalRotationActivation(
+        cube,
+        update.rotation,
+        update.origin
+      );
 
       const pivotOnly = isPivotOnlyCorrection(update);
       if (pivotOnly) {
