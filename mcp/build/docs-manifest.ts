@@ -200,6 +200,6 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "hytale://cubes/{id}",
     title: "Hytale Cubes",
     description:
-      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
   },
 ];
