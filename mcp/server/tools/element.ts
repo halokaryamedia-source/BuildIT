@@ -2,7 +2,6 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { findTextureOrThrow } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import {
   elementIdSchema,
@@ -80,7 +79,9 @@ export const selectAllOfTypeParameters = z.object({
 export const filterByMaterialParameters = z.object({
   texture: z
     .string()
-    .describe("Texture ID, UUID or name to search for."),
+    .describe(
+      "Explicit texture reference for read-only material discovery. UUID is preferred, then exact texture ID, then exact name only when unique. Ambiguous IDs or names are rejected."
+    ),
   include_face_keys: z
     .boolean()
     .optional()
@@ -235,7 +236,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "filter_by_material",
     description:
-      "Returns all elements that reference the given texture. For cubes, includes the list of face keys (e.g., 'north', 'up') that use the texture. For meshes, returns the mesh if any face uses the texture.",
+      "Returns all elements that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. For cubes, includes the matching face keys when requested. This tool is read-only and does not activate, paint, or mutate textures.",
     annotations: {
       title: "Filter Elements by Material",
       readOnlyHint: true,
@@ -362,6 +363,45 @@ function resolveUniqueDestructiveElement(reference: string): OutlinerElement {
 
   throw new Error(
     `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended UUID before retrying the destructive operation.`
+  );
+}
+
+function resolveUniqueTextureForDiscovery(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before retrying material discovery.`
   );
 }
 
@@ -776,7 +816,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[7].name, {
     ...elementToolDocs[7],
     async execute({ texture, include_face_keys }) {
-      const tex = findTextureOrThrow(texture);
+      const tex = resolveUniqueTextureForDiscovery(texture);
       const matches: IFilterByMaterialMatch[] = [];
 
       for (const cube of Cube.all) {
