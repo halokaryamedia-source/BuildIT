@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_MATERIAL_DISCOVERY_TEXTURE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_PLACE_CUBE_TEXTURE_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -64,51 +64,54 @@ Current Local source already contains:
 - strict destructive element target resolution plus bounded Undo rollback for
   remove/duplicate/rename;
 - strict optional Group scope and fail-closed regex filtering in element discovery;
-- `filter_by_material(texture=...)` now resolves exact UUID first, then exact
-  texture ID, then exact name only when unique; ambiguous ID/name and missing
-  references fail before discovery.
+- `filter_by_material(texture=...)` resolves UUID → exact texture ID → exact
+  unique name and rejects ambiguous/missing explicit references;
+- `place_cube(texture=...)` now uses the same deterministic precedence for a
+  supplied texture before Undo/Cube creation, while omitted texture preserves
+  `Texture.getDefault()` behavior.
 
 These are **source implemented**, not live-proven.
 
-## Latest Material-Discovery Finding
+## Latest Initial-Placement Finding
 
 Before the latest change:
 
 ```text
-filter_by_material(texture=reference)
-→ findTextureOrThrow(reference)
+place_cube(texture=reference)
 → getProjectTexture(reference)
-→ first match where id OR name OR uuid matches
+→ first match where texture.id OR texture.name OR texture.uuid matches
 ```
 
-That allowed duplicate texture names to silently choose one texture.
+That meant a duplicate texture name/ID could silently texture a new Cube with the
+wrong asset even though geometry, hierarchy, rotation, and pivot inputs were
+already strict.
 
-Current read-only discovery behavior is:
+Current `mcp/server/tools/cubes.ts` behavior is:
 
 ```text
-exact UUID
-→ target
+texture omitted
+→ Texture.getDefault() behavior preserved
 
-exact texture ID
-→ target
+supplied exact UUID
+→ target texture
 
-exact unique name
-→ target
+supplied exact texture ID
+→ target texture
+
+supplied exact unique name
+→ target texture
 
 duplicate texture ID / name
-→ ERROR + candidate IDs/UUIDs
+→ ERROR + candidate identifiers
 
-missing
+missing supplied texture
 → ERROR + use list_textures
 ```
 
-`list_textures` already exposes texture `name`, `uuid`, and `id`, so callers can
-recover with a stable explicit identifier.
-
-The stricter resolver is intentionally local to `filter_by_material`. Shared
-`getProjectTexture()` / `findTextureOrThrow()` remain unchanged because they also
-serve `apply_texture`, `get_texture`, PBR configuration/channel assignment,
-texture activation, and other mutation/paint paths.
+Texture resolution and Group resolution both complete before `Undo.initEdit`.
+The resolver is local to `place_cube`; shared `getProjectTexture()` /
+`findTextureOrThrow()` remain unchanged because they still serve unrelated
+texture/paint/PBR callers.
 
 ## Holds
 
@@ -120,31 +123,45 @@ texture activation, and other mutation/paint paths.
 
 ## Next Step
 
-Audit **explicit texture targeting during initial Cube placement**:
+Audit **explicit target identity for `apply_texture`** in:
 
 ```text
-place_cube(texture=...)
-→ getProjectTexture(texture)
+mcp/server/tools/texture.ts
 ```
 
-Current source resolves a supplied texture using the shared first-match helper
-across texture `id`, `name`, or `uuid` before opening Undo. Duplicate names can
-therefore select an unintended texture even though Cube geometry, parent target,
-and rotation/pivot inputs are now strict.
+Current mutation preflight is:
+
+```text
+apply_texture(id=elementRef, texture=textureRef)
+↓
+findElementOrThrow(elementRef)
+findTextureOrThrow(textureRef)
+```
+
+Both shared helpers retain first-match name-compatible lookup semantics. This
+means duplicate element names or duplicate texture names/IDs can direct a texture
+mutation to a different target than intended.
 
 Audit requirements:
 
-1. preserve omitted texture behavior (`Texture.getDefault()`);
-2. when texture is supplied, prefer exact UUID, then exact texture ID, then exact
-   name only when unique;
-3. ambiguous or missing explicit texture must fail before Undo/Cube creation;
-4. keep the change local to `place_cube` unless caller evidence proves a shared
-   resolver migration is safe;
-5. do not change Cube geometry, face UV behavior, auto-UV, hierarchy, paint,
-   PBR tools, G3, or add a texture-resolution framework.
+1. treat element identity and texture identity as one mutation preflight contract;
+2. preserve Group behavior: Group target still means all descendant Cube/Mesh
+   targets;
+3. element reference should resolve exact UUID first and exact name only when
+   unique across supported Cube/Mesh/Group targets;
+4. supplied texture should resolve exact UUID first, then exact texture ID, then
+   exact name only when unique;
+5. all explicit target resolution must complete before Undo/mutation;
+6. keep changes local to `apply_texture` unless caller evidence proves shared
+   helper migration safe;
+7. do not change face/application semantics, paint activation, PBR/UV behavior,
+   G3, or create a generic resolver framework.
+
+If existing source already provides equivalent strict preflight, `No change
+required` remains valid.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish source lookup/error contracts and static diff only.
-Actual Blockbench texture application and duplicate-name behavior remain
-`LOCAL PROOF REQUIRED` until local testing resumes.
+Actual texture application, descendant targeting, and duplicate-name behavior
+remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
