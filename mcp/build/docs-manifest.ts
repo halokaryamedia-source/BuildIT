@@ -5,6 +5,7 @@ import type { ToolSpec, PromptSpec, ResourceSpec } from "../lib/factories";
 import { cameraToolDocs } from "../server/tools/camera";
 import { cubeToolDocs } from "../server/tools/cubes";
 import { elementToolDocs } from "../server/tools/element";
+import { elementInspectionToolDocs } from "../server/tools/element-inspection";
 import { importToolDocs } from "../server/tools/import";
 import { meshToolDocs } from "../server/tools/mesh";
 import { paintToolDocs } from "../server/tools/paint";
@@ -29,7 +30,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Camera & Screenshots", tools: cameraToolDocs },
   { category: "Animation", tools: animationToolDocs },
   { category: "Armature", tools: armatureToolDocs },
-  { category: "Elements", tools: elementToolDocs },
+  { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs] },
   { category: "Export", tools: exportToolDocs },
   { category: "History", tools: historyToolDocs },
   { category: "Import/Export", tools: importToolDocs },
