@@ -6,20 +6,22 @@ asking the user to reconstruct prior chats.
 
 ## Active Task
 
-- **Goal:** consolidate BlockIT skills into a small, clear, non-overlapping set
-  before MCP implementation work begins.
-- **Status:** `SKILL_CONSOLIDATION`.
+- **Goal:** finish skill consolidation by running one final overlap/context-cost
+  review before MCP implementation audit begins.
+- **Status:** `SKILL_CONSOLIDATION_FINAL_REVIEW`.
 - **Execution now:** ChatGPT → GitHub.
 - **Final runtime environment later:** Codex local from root `BuildIT` with
   Blockbench + MCP.
-- **In scope:** resolve the last missing capability (`evidence-gate`), then run a
-  final overlap/context-cost pass across the cleaned routing.
-- **Out of scope now:** MCP feature changes, model-specific fixes, mass skill
-  recreation, full GSD/OpenSpec frameworks, Claude-Mem, speculative architecture.
+- **In scope now:** verify that the six canonical root skills, Reference Generator
+  workflow, evidence baseline, routing triggers, and skill budget are clear,
+  minimal, and non-overlapping.
+- **Out of scope now:** MCP feature changes, model-specific fixes, new skill
+  recovery, mass framework installation, full GSD/OpenSpec systems, Claude-Mem,
+  speculative architecture.
 
 ## Continuation Contract
 
-- `AGENTS.md` → working rules and independent judgment.
+- `AGENTS.md` → working rules, independent judgment, proof/evidence baseline.
 - `CONTEXT.md` → stable facts/terminology.
 - this file → active goal/status/completed boundary/next step.
 - `decision-log.md` → durable decisions/reasons.
@@ -37,6 +39,7 @@ Do not ask the user to repeat old context before reading these owners.
 - Add at most one specialist when it adds real domain value.
 - `no change required` is valid.
 - use minimum useful proof, not validation ceremony.
+- use evidence-status labels only for real uncertainty/dispute, not routine work.
 - reject/redirect user-suggested methods when evidence shows they are invalid,
   disproven, unnecessarily complex, unsupported, or harmful to output quality.
 
@@ -111,57 +114,40 @@ Bedrock `.bbmodel`; runtime mechanics remain separate.
 
 **Decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
 
-Proven lineage:
+Canonical owner: `docs/foundation/04-reference-guide.md`.
 
-- `Rework/engines/chatgpt/skills/blockbench-reference-studio/SKILL.md`;
-- first tracked version was the ChatGPT Blockbench reference skill;
-- later revisions moved from a multi-sheet package to a single Reference Visual
-  workflow.
+The image-capable ChatGPT/Reference Generator surface creates and reviews the
+five-view Modelling Brief. Codex consumes the approved brief through
+`blockbench-bedrock-modelling`. The historical multi-sheet/manifest/hash/lease/
+three-approval/mandatory-ZIP machinery was not restored.
 
-No tracked `.agents/skills/reference-generator/` or
-`.agents/skills/blockbench-reference-generator/` package was found, so those
-names are not treated as recovered historical skill identities.
+### 10. `evidence-gate` lineage → root evidence baseline
 
-Canonical owner:
+**Decision:** `MERGE + DROP AS SKILL`.
 
-`docs/foundation/04-reference-guide.md`
+No tracked `.agents/skills/evidence-gate/SKILL.md` package exists in Rework. The
+useful historical behavior came from an evidence-gate section of the prior
+Minecraft Production Reality Core rather than a standalone project skill.
 
-Current boundary:
+Canonical owner: root `AGENTS.md` → **Evidence Status Escalation**.
 
-```text
-Image-capable ChatGPT / Reference Generator
-Source Image + request
-→ five-view Modelling Brief Draft
-→ quality gate
-→ user approval
-→ approved Modelling Brief
+Conditional labels retained:
 
-Codex + blockbench-bedrock-modelling
-approved Modelling Brief
-→ actual Cuboid modelling
-→ .bbmodel
-```
+- `CURRENT-PROJECT VERIFIED`;
+- `OFFICIALLY VERIFIED`;
+- `LOCAL PROOF REQUIRED`;
+- `UNSUPPORTED`;
+- `UNKNOWN`.
 
-Preserved:
+`LOCAL PROOF REQUIRED` replaces the historical `PROTOTYPE REQUIRED` wording for
+the current ChatGPT→GitHub / Codex-local workflow. Historical `SIMULATION
+REQUIRED` is not kept as another evidence state; Independent Judgment owns the
+case where a literal method is unsupported but the user's goal can be redirected
+to a smaller supported method.
 
-- Golden Sample supplies construction/presentation language, never target anatomy;
-- same buildable subject/construction across all views;
-- actual Minecraft/Blockbench Cuboid visual language rather than smooth realism,
-  pixel-skin-only output, generic voxel filtering, or uniform cube stacking;
-- one Draft plus at most one evidence-driven targeted correction;
-- simple metadata and honest handoff.
-
-Not restored:
-
-- multi-sheet technical package;
-- manifest/schema/hash/crop/region/writer-lease machinery;
-- three routine approval gates;
-- mandatory ZIP;
-- reference-authored Cube transforms or image calibration.
-
-No `.agents/skills/reference-generator/` is created because root skills are the
-Codex discovery surface and Codex consumes the approved reference rather than
-owning image generation.
+Evidence status is used only when a material claim is uncertain, disputed,
+version-sensitive, or blocking completion. It does not create routine validation
+ceremony and does not consume the specialist slot.
 
 ## Current Skill Structure
 
@@ -174,59 +160,52 @@ owning image generation.
 - `.agents/skills/blockbench-runtime-development/`
 - `.agents/skills/blockbench-bedrock-modelling/`
 
-### Workflow owner outside skill stack
+### Workflow/baseline owners outside skill stack
 
 - `docs/foundation/04-reference-guide.md` — Source Image → approved Modelling
-  Brief on the image-capable Reference Generator surface.
+  Brief on an image-capable Reference Generator surface.
+- root `AGENTS.md` Evidence Status Escalation — disputed/uncertain material
+  evidence claims.
 
 ### Legacy nested locations
 
 There are currently **no active skills** under `mcp/.agents/skills/` or
 `mcp/.github/skills/`. Do not repopulate those locations by default.
 
-### Remaining recovery item
+### Recovery status
 
-- `evidence-gate` ← **next**
+The planned recovery queue is **complete**. Do not invent another recovery item
+from historical names without a current proved requirement.
 
-## Skill Audit Method
+## Final Skill Review Checklist
 
-For each recovered capability record:
+For each canonical root skill and non-skill workflow owner, check:
 
 ```text
-Historical/current name:
-Actual function:
-Trigger:
-Unique value:
-Overlap:
-Best owner/name:
-Best location:
-Decision: KEEP | RENAME | MERGE | MOVE | DROP | RECOVER
-Migration cost / compatibility note:
+Name/owner is contextual and understandable?
+Trigger is narrow enough?
+Unique value remains?
+Overlap with AGENTS/development-brief/another specialist?
+Could the same result use fewer loaded instructions?
+Does it accidentally own runtime + modelling + protocol at once?
+Does it create validation/review ceremony?
+Does Codex launched from root discover only capabilities it can actually use?
 ```
 
-Rules:
-
-- recover trusted behavior, not historical naming/layout blindly;
-- prefer fewer skills with clearer responsibility;
-- a useful capability may remain a foundation/workflow instead of becoming a
-  skill when that is the smaller correct owner;
-- do not merge distinct expertise merely to reduce count;
-- do not retain content already covered by baseline policy or another owner;
-- preserve lineage and durable reasoning in the decision log;
-- recover one capability at a time.
+The expected outcome is not a target skill count. Keep six only if all six still
+have distinct value after this final comparison.
 
 ## Remaining Work Sequence
 
-1. **Recover/audit `evidence-gate`**. Determine whether it has unique conditional
-   behavior beyond root minimum-proof, independent-judgment, root-cause, and
-   failed-direction rules. Prefer merge/drop if a separate skill adds no value.
-2. Re-check the final activation matrix for overlap/context cost.
-3. Audit MCP implementation against the cleaned modelling workflow and identify
+1. **Run final activation-matrix / context-cost review** across the six canonical
+   root skills plus Reference Generator and evidence baseline owners. Remove or
+   merge only proven overlap; do not reopen completed audits without evidence.
+2. Audit MCP implementation against the cleaned modelling workflow and identify
    only proven runtime gaps.
-4. Implement bounded fixes through ChatGPT → GitHub.
-5. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
+3. Implement bounded fixes through ChatGPT → GitHub.
+4. Final Codex local phase: launch root `BuildIT`, run Blockbench/MCP, perform
    targeted local proof, and fix only demonstrated failures.
-6. Validate modelling across multiple object archetypes before generic release
+5. Validate modelling across multiple object archetypes before generic release
    claims.
 
 ## Update Rule
@@ -237,6 +216,7 @@ the decision log preserve the past.
 
 ## Next Step
 
-Recover and audit **`evidence-gate`**. First prove its historical source and
-unique behavior; do not create a root skill if the current baseline already owns
-that function.
+Run the **final skill routing / overlap / context-cost review**. Evaluate the six
+canonical root skills together with `04-reference-guide.md` and root evidence
+status rules, then freeze the skill architecture before starting the MCP
+implementation audit.
