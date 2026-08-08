@@ -8,7 +8,7 @@ record, not normal boot context.
 ## Audit Goal
 
 Ensure active documentation describes **current Local** rather than earlier skill
-recovery, upstream merge, or pre-Reference-Fidelity states.
+recovery, upstream merge, pre-Reference-Fidelity, or obsolete evidence labels.
 
 ## Current Canonical Structure
 
@@ -28,6 +28,7 @@ docs/
    ├─ reviews/
    ├─ skills/
    ├─ sources/
+   ├─ maintenance/
    └─ operations/
 
 .agents/skills/          six canonical BlockIT skills
@@ -37,7 +38,7 @@ workspace/               project/model data
 
 ## Resolved Stale Claims
 
-The following outdated current-state claims were removed/corrected:
+Corrected/removed current-state claims that referenced:
 
 - `mcp/workflow/skills/` as canonical skill root;
 - `mcp/.agents/skills/` as active skill ownership;
@@ -45,16 +46,17 @@ The following outdated current-state claims were removed/corrected:
   `evidence-gate` skills;
 - `mcp-builder` as current MCP specialist;
 - nonexistent `mcp/workflow/presets/` project creation ownership;
-- generic statement that MCP implementation audit is still the next engineering
-  phase;
-- automatic/default Cube geometry as an acceptable initial modelling path;
-- old validation report that did not include current fidelity instruments;
-- historical upstream source-selection/merge notes presented as current runtime
-  direction.
+- generic “MCP implementation audit” as the next engineering phase;
+- default Cube geometry as acceptable initial modelling progress;
+- unchosen `[0,0,0]` pivot for newly rotated Cubes;
+- old validation status that omitted current fidelity instruments;
+- historical upstream source-selection/merge records presented as current
+  runtime direction;
+- `Needs Validation` as a catch-all status where current root evidence labels
+  (`LOCAL PROOF REQUIRED`, `UNKNOWN`, etc.) are more precise;
+- `code-review-graph` as a current review owner.
 
 ## Current Skill Authority
-
-Current root skills:
 
 ```text
 development-brief
@@ -70,22 +72,23 @@ status belongs to root `AGENTS.md`.
 
 ## Current Fidelity Documentation
 
-The current docs now agree on:
+The active docs now agree on:
 
 - approved Modelling Brief, not pixel calibration;
 - cross-view consistency;
 - coordinate frame + target envelope;
 - Primary Form Hypothesis before exact primary transforms;
-- explicit `from/to` for initial Cube placement;
+- explicit finite `from/to` for initial Cube placement;
 - explicit pivot for new non-zero-rotation Cube;
-- global structural bounds observation;
+- strict Group/element identity targeting;
+- global rendered-bounds observation;
 - canonical model-view observation;
 - reference ↔ model primary visual gate;
-- GLOBAL failure rebuild vs LOCAL failure inspection/correction;
-- exact target UUIDs for normal mutation;
-- coherent multi-Cube correction;
+- GLOBAL failure rebuild vs LOCAL inspect/correct;
+- coherent exact-UUID multi-Cube correction;
 - Cube/Group pivot-transfer semantics;
-- structural evidence separated from visual approval.
+- structural evidence separated from visual approval;
+- local runtime effectiveness still `LOCAL PROOF REQUIRED`.
 
 ## Files Updated In This Refresh
 
@@ -93,6 +96,7 @@ The current docs now agree on:
 
 - `docs/README.md`
 - `docs/foundation/README.md`
+- `docs/foundation/00-agent-policy.md`
 - `docs/foundation/01-project-overview.md`
 - `docs/foundation/02-product-requirements.md`
 - `docs/foundation/03-modelling-workflow.md`
@@ -104,70 +108,85 @@ The current docs now agree on:
 - `docs/foundation/09-merge-map.md`
 - `docs/foundation/validation-report.md`
 
-`00-agent-policy.md` was audited and remains directionally current; root
-`AGENTS.md` continues to own generic agent/proof behavior.
-
 ### Knowledge / Obsidian
 
-- `index.md`
-- `implementation-map.md`
-- `glossary.md`
-- `workspace-structure.md`
-- `modules/module-map.md`
-- `modules/mcp-ownership.md`
-- `modules/skill-ownership.md`
-- `sources/source-map.md`
-- `reviews/review-graph.md`
-- `operations/task-board.md`
-- `operations/roadmap.md`
-- `operations/change-log.md`
-- `operations/documentation-audit.md`
-- `decisions/reference-fidelity-loop.md` added.
+- `knowledge/index.md`
+- `knowledge/next-action.md`
+- `knowledge/flow.md`
+- `knowledge/implementation-map.md`
+- `knowledge/glossary.md`
+- `knowledge/workspace-structure.md`
+- `knowledge/modules/module-map.md`
+- `knowledge/modules/mcp-ownership.md`
+- `knowledge/modules/skill-ownership.md`
+- `knowledge/sources/source-map.md`
+- `knowledge/reviews/review-graph.md`
+- `knowledge/maintenance/maintenance-flow.md`
+- `knowledge/decisions/open-spec-guide.md`
+- `knowledge/decisions/reference-fidelity-loop.md` (new)
+- `knowledge/operations/task-board.md`
+- `knowledge/operations/roadmap.md`
+- `knowledge/operations/change-log.md`
+- `knowledge/operations/context-boot-baseline.md`
+- `knowledge/operations/documentation-audit.md`
 
 ## Audited / Retained Without Semantic Rewrite
 
-These current owners/templates were already aligned and do not need change just
-to appear newer:
+These notes are already aligned or are neutral templates/history and should not
+be rewritten merely to show a newer date:
 
 - `knowledge/minimal-nav.md`;
-- `knowledge/flow.md`;
 - `knowledge/flows/development-flow.md`;
 - `knowledge/workspace-map.md`;
 - `knowledge/skills/skill-map.md`;
 - `knowledge/skills/activation-matrix.md`;
 - `knowledge/operations/README.md`;
 - `knowledge/decisions/obsidian-vault-layout.md`;
-- maintenance/templates unless a future workflow change affects them.
+- neutral decision/module/review/maintenance templates;
+- historical review bodies listed in `reviews/review-graph.md`.
 
 ## Historical Reviews
 
 Historical review bodies are intentionally **not rewritten into present-tense
-claims**. `reviews/review-graph.md` now records their current interpretation:
-implemented, active evidence, historical, or superseded.
+claims**. `reviews/review-graph.md` owns their current classification:
 
-This preserves useful evidence while preventing an old review header from
-becoming current task state.
+- active evidence;
+- implemented in source;
+- historical/reference;
+- superseded;
+- local proof required.
+
+This preserves evidence while preventing an old review header from becoming
+current task state.
+
+## Historical Foundation Records
+
+`08-source-selection.md` and `09-merge-map.md` are explicitly marked historical
+adoption records. Current Local source is runtime authority.
 
 ## Known Remaining Proof Boundary
 
-Documentation/source can now describe the intended architecture consistently,
-but live Blockbench/MCP behavior is still not proven by this docs refresh.
+The docs and source now describe the intended architecture consistently, but this
+documentation refresh does not prove live Blockbench/MCP behavior.
 
-Current source capabilities that depend on runtime remain
-`LOCAL PROOF REQUIRED` until deliberate Codex local testing.
+Source-implemented camera/image transport, bounds, Undo, pivot transfer,
+persistence, and end-to-end reference fidelity remain local-proof claims where
+applicable.
+
+See [Validation Report](../../foundation/validation-report.md).
 
 ## Next Documentation Maintenance Trigger
 
-Run another root-doc audit only when one of these changes materially:
+Run another broad root-doc audit only when one of these changes materially:
 
 - canonical skill architecture/path;
 - Reference Fidelity architecture;
 - major MCP source ownership;
-- local proof upgrades a `LOCAL PROOF REQUIRED` capability;
+- local proof changes a capability evidence status;
 - workspace/package structure;
 - a note/path is removed or renamed.
 
-Do not re-run a full vault rewrite after every small source edit.
+Do not full-rewrite the vault after every small source edit.
 
 ## Parent
 
