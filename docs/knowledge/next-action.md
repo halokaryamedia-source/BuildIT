@@ -9,10 +9,10 @@ reconstructing prior chats.
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
   divergence by making modelling decisions evidence-backed instead of
   assumption-driven.
-- **Status:** `REFERENCE_FIDELITY_LOCAL_INSPECTION_IMPLEMENTED`.
+- **Status:** `REFERENCE_FIDELITY_BATCH_CORRECTION_IMPLEMENTED`.
 - **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
-- **G3:** paused.
+- **G3 annotations:** paused.
 
 ## Confirmed Failure Evidence
 
@@ -52,6 +52,9 @@ GLOBAL OR LOCAL FAILURE?
   ├─ GLOBAL → revise/rebuild primary hypothesis
   │
   └─ LOCAL → inspect_element → causal correction
+                    │
+                    ├─ one Cube → modify_cube by confirmed UUID
+                    └─ one relationship / several Cubes → modify_cubes_batch
 ↓
 FRESH AFFECTED EVIDENCE
 ↺ until primary form passes or hypothesis is abandoned
@@ -59,104 +62,144 @@ FRESH AFFECTED EVIDENCE
 SECONDARY GEOMETRY / HIERARCHY / TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Observation Layer — Source Implemented
+## Implemented Fidelity Instruments
 
 ### `inspect_model_bounds`
 
-Uses shared `mcp/lib/renderedModelBounds.ts` based on Blockbench
-`Cube.getGlobalVertexPositions()` and current world transforms. Reports raw
-whole-Cube envelope facts only; no visual score or correction advice.
+Read-only whole-Cube rendered envelope based on Blockbench
+`Cube.getGlobalVertexPositions()` and active world transforms. Returns raw
+structural facts only; no visual score or correction advice.
 
 ### `capture_model_views`
 
-Uses the same shared bounds basis and Blockbench's official offscreen screenshot
-preview. Provides canonical labeled 512×512 image content with explicit front
-direction and model/explicit-envelope framing. It does not mutate the active
-editor camera/project/model and does not judge resemblance.
-
-## Local Authored-State Inspection — Implemented
-
-Audit findings before implementation:
-
-- `find_elements_by_criteria` was useful for locating a target but returned only
-  `uuid/name/type/parent` metadata;
-- `nodes://{id}` reads runtime `Project.nodes_3d` transform state, not the authored
-  Cube/Group fields needed to plan an exact modelling correction;
-- broadening either surface would mix discovery/runtime-node data with focused
-  authored-state inspection.
+Canonical labeled 512×512 image observation using Blockbench's offscreen preview,
+with explicit front direction and model/explicit-envelope framing. It does not
+judge resemblance or change the active editor camera/project/model.
 
 ### `inspect_element`
 
-New focused read-only tool:
+Focused authored-state read for one explicit Cube/Group. Duplicate names fail;
+UUID is preferred. It exposes Cube from/to/size/origin/rotation/visibility or
+Group origin/rotation/visibility/parent/child count without visual judgement.
+
+## Multi-Cube Correction — Implemented
+
+Audit of existing `modify_cube` showed it could affect multiple Cubes only by
+applying the **same** update to all matching/selected Cubes. A correction such as:
 
 ```text
-inspect_element { id }
+body  → resize
+head  → translate
+front → rotate
 ```
 
-Input:
+therefore required several tool calls and several Undo entries even when those
+changes represented one primary relationship correction.
 
-- exact UUID or exact unique name;
-- UUID is preferred after locating a target with `list_outline` or
-  `find_elements_by_criteria`;
-- duplicate exact names fail with candidate UUIDs rather than silently choosing
-  one element.
+### `modify_cubes_batch`
 
-Cube output:
+Implemented in `mcp/server/tools/cubes.ts`.
+
+Public shape:
 
 ```text
-uuid / name / type
-parent identity or root/null
-from / to / size
-origin (pivot)
-rotation
-visibility
+modify_cubes_batch {
+  updates: [
+    {
+      id: <exact Cube UUID>,
+      from?: [x,y,z],
+      to?: [x,y,z],
+      origin?: [x,y,z],
+      rotation?: [x,y,z],
+      visibility?: boolean
+    }
+  ]
+}
 ```
 
-Group output:
+Contract:
+
+- 1–32 update items;
+- UUID-only targeting; no names and no selection fallback;
+- every UUID must be unique in the batch;
+- every item must change at least one authored field;
+- numeric vectors must be finite;
+- **all targets are resolved before `Undo.initEdit`**;
+- each Cube may receive a different patch;
+- one `Undo.initEdit` / one successful `Undo.finishEdit` for the relationship;
+- mutation failure calls official Blockbench `Undo.cancelEdit(true)` and refreshes
+  Canvas, reverting the opened edit;
+- result returns final authored state for every modified Cube;
+- no UV/color/shade/inflate/reparent/planning/similarity/PASS behavior.
+
+Sample's batch implementation was used only as evidence. Local intentionally does
+not copy its broad UV/appearance surface or first-name-match targeting.
+
+### Prompt routing
+
+`mcp/prompts/bedrock.md` now says:
 
 ```text
-uuid / name / type
-parent identity or root/null
-origin (pivot)
-rotation
-visibility
-children_count
-```
-
-Boundary:
-
-- active project only;
-- no selection dependence or state mutation;
-- generic Mesh target is rejected in v1 because the normal fidelity loop is
-  explicitly Cuboid/Group Bedrock;
-- no claim that a placement, rotation, or pivot is correct;
-- no visual PASS/FAIL or automatic correction.
-
-Implementation is isolated in `mcp/server/tools/element-inspection.ts`, registered
-as a core Elements tool through `mcp/server/tools.ts`, and merged into the
-existing Elements docs category in `mcp/build/docs-manifest.ts`. No duplicate
-`elements://` resource was added.
-
-### Bedrock prompt routing
-
-For a diagnosed **local** mismatch the normal route is now:
-
-```text
-visual mismatch
-→ locate exact target UUID when needed
+one diagnosed Cube correction
 → inspect_element
-→ classify TRANSLATE / RESIZE / ROTATE / REATTACH / SPLIT / MERGE-REMOVE / genuine ADD MASS
-→ derive correction from visual evidence + current authored state
+→ modify_cube using the confirmed exact UUID
+
+one causal relationship spanning several Cube UUIDs
+→ inspect_element as needed
+→ modify_cubes_batch
+→ fresh affected canonical views
 ```
 
-The agent must not guess the existing target transform from memory or screenshot.
+Do not batch unrelated cleanup or speculative changes.
 
-## Evidence Status
+## Static Evidence
 
-Static source/contract proof is available.
+Source proof establishes:
 
-Live behavior remains `LOCAL PROOF REQUIRED` until the user later chooses local
-Blockbench testing. Local proof is not the current blocker.
+1. `modify_cube` did not provide heterogeneous per-Cube updates in one call;
+2. `modify_cubes_batch` preflights all UUID targets before Undo;
+3. its important schema refinements live inside the registered `updates` field,
+   compatible with Local `createTool()` shape extraction;
+4. official Blockbench Undo types expose `cancelEdit(true)` for reverting an
+   unfinished edit;
+5. the batch tool changes only explicit authored geometry/visibility fields;
+6. `cubeToolDocs` already feeds the existing Cubes docs category, so no new docs
+   framework/registration surface was needed.
+
+Live Undo/runtime behavior remains `LOCAL PROOF REQUIRED` until the user later
+chooses local Blockbench testing. It is not the current blocker.
+
+## Current Safety Gap Exposed By The Same Audit
+
+The new batch path is stricter than two older Cube mutation paths.
+
+### `modify_cube`
+
+Current behavior when `id` is provided:
+
+```text
+Cube.all.filter(cube.uuid === id || cube.name === id)
+```
+
+Therefore a duplicated exact name can silently modify several Cubes. If `id` is
+omitted, it falls back to current selection. This is legacy convenience but is
+unsafe as the normal reference-fidelity correction path unless exact targeting is
+made explicit.
+
+### `place_cube`
+
+Current provided group resolution ends with:
+
+```text
+...find(group name/uuid) ?? "root"
+```
+
+So a misspelled/nonexistent requested group silently places new Cubes at root.
+That behavior directly conflicts with the new rule that structural attachment is
+not approval and that authored placement must not be assumption-driven.
+
+Also keep failure/preflight ordering under review so an error that can be known
+before mutation is discovered before opening Undo.
 
 ## Holds
 
@@ -165,7 +208,7 @@ Blockbench testing. Local proof is not the current blocker.
 - **G4 old screenshot project restoration:** canonical fidelity capture avoids
   that path.
 - **G5 bone-rigging Undo preflight:** held until hierarchy runtime work resumes.
-- UV additions, save/open proof, and public-surface reduction remain later.
+- UV additions, save/open proof, and final public-surface reduction remain later.
 
 ## Do Not Reintroduce
 
@@ -181,22 +224,19 @@ Blockbench testing. Local proof is not the current blocker.
 
 ## Next Step
 
-Audit the current **Cube correction mutation surface** before adding a batch tool:
-read `mcp/server/tools/cubes.ts` and its direct helpers to determine whether the
-existing `modify_cube` path can safely express a coherent correction involving
-multiple explicitly identified primary Cubes.
+Harden **existing Cube mutation targeting only** in `mcp/server/tools/cubes.ts`:
 
-Evaluate only demonstrated correction needs:
+1. when `modify_cube.id` is supplied, resolve UUID first and require an exact
+   unique name if name compatibility is retained; never silently mutate multiple
+   same-name Cubes;
+2. keep selection fallback only if preserving existing compatibility requires it,
+   but the Bedrock fidelity prompt must continue to use confirmed UUIDs;
+3. when `place_cube.group` is explicitly supplied, fail if that group does not
+   exist instead of silently falling back to root; omitted group may still mean
+   root;
+4. move resolvable target/group preflight before `Undo.initEdit`;
+5. use the smallest existing Undo cancellation pattern only where a mutation can
+   still fail after Undo starts.
 
-```text
-heterogeneous updates across several Cube UUIDs
-preflight every target before mutation
-one recoverable Undo unit
-explicit authored fields only
-no automatic visual/planning logic
-```
-
-If existing `modify_cube` already satisfies this cleanly, reuse it. If repeated
-single calls inherently fragment one primary relationship correction, implement
-the smallest `modify_cubes_batch` contract. Do not resume G3 or mix hierarchy/UV
-changes into that slice.
+Do not change hierarchy tools, UV behavior, camera, G3, or broaden the Cube API in
+this slice.
