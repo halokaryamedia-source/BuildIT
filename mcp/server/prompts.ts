@@ -29,7 +29,7 @@ createPrompt("blockbench_code_eval_safety", {
 createPrompt("model_creation_strategy", {
   description: "A strategy for creating a new 3D model in Blockbench.",
   argsSchema: z.object({
-    format: z.enum(["java_block", "bedrock"]).optional(),
+    format: z.enum(["java_block", "bedrock", "bedrock_block"]).optional(),
     approach: z.enum(["ui", "programmatic", "import"]).optional(),
   }),
   async generate({ format, approach }) {
@@ -40,6 +40,10 @@ createPrompt("model_creation_strategy", {
     }
 
     if (format === "bedrock") {
+      result.push(getPromptContent("bedrock"));
+    }
+
+    if (format === "bedrock_block") {
       result.push(getPromptContent("bedrock_block"));
     }
 
