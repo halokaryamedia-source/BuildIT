@@ -80,8 +80,16 @@ export const createTextureParameters = z
   );
 
 export const applyTextureParameters = z.object({
-  id: elementIdSchema.describe("ID or name of the element to apply the texture to."),
-  texture: textureIdSchema.describe("ID or name of the texture to apply."),
+  id: elementIdSchema
+    .min(1)
+    .describe(
+      "Required Cube, Mesh, or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported element types."
+    ),
+  texture: textureIdSchema
+    .min(1)
+    .describe(
+      "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
   applyTo: z
     .enum(["all", "blank", "none"])
     .describe("Apply texture to element or group.")
@@ -132,7 +140,7 @@ export const createPbrMaterialParameters = z.object({
     .string()
     .optional()
     .describe(
-      "Texture ID/name for the MER (Metalness/Emissive/Roughness) channel."
+      "Texture ID/name for the MER (Metalness/Emissive/Roughness) map."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
@@ -247,7 +255,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "apply_texture",
     description:
-      "Applies the given texture to the element with the specified ID.",
+      "Applies one explicit texture to one explicit Cube, Mesh, or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Mesh/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets retain the existing behavior of applying to all descendant Cubes/Meshes.",
     annotations: {
       title: "Apply Texture",
       destructiveHint: true,
@@ -379,6 +387,84 @@ export const textureToolDocs: ToolSpec[] = [
   },
 ];
 
+type ApplyTextureElement = Cube | Mesh | Group;
+
+function applyTextureElementType(
+  element: ApplyTextureElement
+): "cube" | "mesh" | "group" {
+  if (element instanceof Cube) return "cube";
+  if (element instanceof Mesh) return "mesh";
+  return "group";
+}
+
+function resolveApplyTextureElement(reference: string): ApplyTextureElement {
+  const candidates: ApplyTextureElement[] = [
+    ...(Cube.all ?? []),
+    ...(Mesh.all ?? []),
+    ...(Group.all ?? []),
+  ];
+
+  const uuidMatch = candidates.find((element) => element.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = candidates.filter((element) => element.name === reference);
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map(
+          (element) =>
+            `${applyTextureElementType(element)} ${element.name} (${element.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended Cube/Mesh/Group UUID before applying a texture.`
+  );
+}
+
+function resolveApplyTextureTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before applying it.`
+  );
+}
+
 // ============================================================================
 // Tool Registration
 // ============================================================================
@@ -464,16 +550,8 @@ export function registerTextureTools() {
   createTool(textureToolDocs[1].name, {
     ...textureToolDocs[1],
     async execute({ applyTo, id, texture }) {
-      const element = findElementOrThrow(id);
-      const projectTexture = texture
-        ? findTextureOrThrow(texture)
-        : Texture.getDefault();
-
-      if (!projectTexture) {
-        throw new Error(
-          "No default texture available. Use the create_texture tool to create one first."
-        );
-      }
+      const element = resolveApplyTextureElement(id);
+      const projectTexture = resolveApplyTextureTexture(texture);
 
       // Resolve `id` to the concrete set of cubes/meshes to texture.
       // - Group → all descendant cubes + meshes
