@@ -12,12 +12,12 @@ implementation notes.
 ## Active Goal
 
 Improve Reference Image / Modelling Brief → Blockbench fidelity by making Cube,
-rotation, pivot, hierarchy, targeting, and correction decisions evidence-backed
-rather than assumption-driven.
+rotation, pivot, hierarchy, targeting, correction, and destructive mutation
+decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_EXPLICIT_SINGLE_CUBE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_DESTRUCTIVE_ELEMENT_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -58,8 +58,8 @@ Current Local source already contains:
 - `capture_model_views` canonical observations;
 - `inspect_element` authored-state inspection;
 - `modify_cubes_batch` exact-UUID heterogeneous correction;
-- `modify_cube.id` is now required; editor selection is no longer an implicit
-  single-Cube mutation target;
+- `modify_cube.id` required; editor selection is not an implicit single-Cube
+  mutation target;
 - strict `place_cube` Group targeting, no silent root fallback;
 - safer `add_group` parent/default behavior;
 - hardened `bone_rigging` preflight/rollback/Group pivot semantics;
@@ -67,23 +67,34 @@ Current Local source already contains:
 - explicit origin requirement for new non-zero-rotation Cubes;
 - explicit finite `from/to` requirement for every new `place_cube` element;
 - zero→non-zero rotation activation on an existing Cube requires explicit
-  `origin` before Undo; already-rotated Cubes may adjust angle while reusing the
-  existing pivot.
+  `origin` before Undo;
+- `remove_element`, `duplicate_element`, and `rename_element` now resolve targets
+  UUID-first and accept an exact name only when unique across Cube/Mesh/Group;
+  duplicate-name ambiguity fails before destructive mutation.
 
 These are **source implemented**, not live-proven.
 
-## Latest Caller/Compatibility Finding
+## Latest Targeting Finding
 
-The removed `modify_cube` selected-Cube fallback had no current Local workflow
-owner/caller that required omitted `id`:
+The shared `mcp/lib/util.ts::findElementOrThrow` still uses first-match name
+resolution, but GitHub code search for all callers is incomplete in this repo.
+Therefore the latest slice deliberately **did not** broaden that shared helper.
 
-- normal Bedrock prompt already required confirmed UUID targeting;
-- modelling workflow already requires inspect-before-correction;
-- docs manifest derives the public tool contract from `cubeToolDocs`;
-- no internal runtime helper depends on `modify_cube` being selection-scoped.
+Instead, the three known destructive element tools use a local resolver inside
+`mcp/server/tools/element.ts`:
 
-The fallback was explicitly described in source as legacy behavior, so retaining
-it would preserve implicit editor state without a proved current need.
+```text
+UUID exact
+→ target
+
+exact name + one match
+→ target
+
+exact name + multiple Cube/Mesh/Group matches
+→ ERROR + candidate UUID/type
+```
+
+This keeps the fix bounded while eliminating the proven destructive ambiguity.
 
 ## Confirmed Failure Evidence
 
@@ -94,8 +105,8 @@ Prior testing established:
 3. pivots/origins can become abstract/distant without a real transform/joint/
    attachment reason.
 
-Target identity is part of the same no-guess boundary: a correct correction
-applied to the wrong element is still a failed model mutation.
+Target identity is part of the same no-guess boundary: a correct operation on the
+wrong element is still a failed model mutation.
 
 ## Holds
 
@@ -107,45 +118,44 @@ applied to the wrong element is still a failed model mutation.
 
 ## Next Step
 
-Audit **shared destructive element target ambiguity** around:
+Audit **`duplicate_element` transaction recoverability** in:
 
 ```text
-mcp/lib/util.ts → findElementOrThrow(id)
+mcp/server/tools/element.ts
 ```
 
-Current source evidence:
+Current source path:
 
 ```text
-remove_element    → findElementOrThrow(id)
-duplicate_element → findElementOrThrow(id)
-rename_element    → findElementOrThrow(id)
+resolve target
+↓
+Undo.initEdit
+↓
+recursive cloneElement(...)
+  ├─ Cube clone
+  ├─ Group clone + recursive children
+  └─ Mesh clone + vertices/faces/material
+↓
+Undo.finishEdit
 ```
 
-`findElementOrThrow` currently resolves:
-
-```text
-el.uuid === id || el.name === id
-```
-
-using the first `.find(...)` match. Therefore duplicate exact names may silently
-resolve to one element instead of failing as ambiguous.
+There is currently no `try/catch + Undo.cancelEdit(true)` around the recursive
+clone after Undo opens. If a child/mesh clone throws after earlier elements were
+already created, partial duplicated state may remain.
 
 Audit requirements:
 
-1. confirm all current callers and whether any depend on first-name-match
-   behavior;
-2. determine whether the shared helper can safely become UUID-first + unique
-   exact-name resolution without affecting unrelated tool semantics;
-3. preflight ambiguity before destructive mutation;
-4. do not mix texture lookup, mesh-only selection fallback, hierarchy, UV, G3,
-   or broad utility refactoring into this slice.
-
-If caller evidence shows the shared helper is too broad to change safely, harden
-only the destructive element tools rather than creating a generic resolver
-framework.
+1. confirm the exact mutation/failure boundary of `duplicate_element`;
+2. preserve all target/clone behavior that is already correct;
+3. if rollback is supported by the existing Blockbench Undo contract, wrap only
+   the duplication transaction so failure reverts created elements;
+4. keep Canvas refresh outside a successfully finished transaction where
+   appropriate;
+5. do not change remove/rename semantics, clone geometry rules, UV/material
+   behavior, hierarchy, G3, or create a generic transaction framework.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish caller/source contracts and static diff only.
-Actual Blockbench removal/duplication/rename behavior remains
-`LOCAL PROOF REQUIRED` if that runtime path changes.
+ChatGPT→GitHub may establish source transaction structure and static diff only.
+Actual partial-clone rollback behavior remains `LOCAL PROOF REQUIRED` until local
+Blockbench testing resumes.
