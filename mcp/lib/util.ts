@@ -128,8 +128,10 @@ export function setBarItemValue(id: string, value: unknown): void {
  * tools, which historically act on `Texture.selected` regardless of their
  * `texture_id` argument, target the intended texture.
  *
- * If `id` is omitted, the currently selected texture is used as-is. Throws an
- * actionable error when the reference cannot be resolved.
+ * If `id` is omitted, the currently selected texture is used as-is. Explicit
+ * references resolve exact UUID first, then exact texture ID, then exact name
+ * only when unique. Ambiguous or missing explicit references fail before the
+ * active texture selection changes.
  */
 export function getAndActivateTexture(id?: string): Texture {
   if (!id) {
@@ -145,19 +147,59 @@ export function getAndActivateTexture(id?: string): Texture {
     return active;
   }
 
-  const texture = getProjectTexture(id);
-  if (!texture) {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === id);
+  if (uuidMatch) {
+    if (Texture.selected?.uuid !== uuidMatch.uuid) {
+      uuidMatch.select();
+    }
+    return uuidMatch;
+  }
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === id);
+  if (idMatches.length > 1) {
     throw new Error(
-      `Texture "${id}" not found. Use the list_textures tool to see available textures.`
+      `Texture ID "${id}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
     );
   }
-  // Blockbench paint tools operate on Texture.selected, so activating the
-  // requested texture is the only reliable way to make texture_id behave like
-  // a real scope argument.
-  if (Texture.selected?.uuid !== texture.uuid) {
-    texture.select();
+
+  if (idMatches.length === 1) {
+    const texture = idMatches[0];
+    if (Texture.selected?.uuid !== texture.uuid) {
+      texture.select();
+    }
+    return texture;
   }
-  return texture;
+
+  const nameMatches = textures.filter((texture: Texture) => texture.name === id);
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${id}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  if (nameMatches.length === 1) {
+    const texture = nameMatches[0];
+    if (Texture.selected?.uuid !== texture.uuid) {
+      texture.select();
+    }
+    return texture;
+  }
+
+  throw new Error(
+    `Texture "${id}" not found. Use the list_textures tool to confirm the intended UUID or texture ID before painting.`
+  );
 }
 
 // ============================================================================
