@@ -1,405 +1,339 @@
-# BlockIT — Operating Model Visual Validation
+# BlockIT — Visual Validation
 
-**Status:** Draft  
-**Version:** 1.2
+**Status:** Active Policy  
+**Version:** 1.3  
+**Updated:** 2026-08-08
 
-## 1. Purpose
+## Purpose
 
-Define the minimum visual evidence required before BlockIT claims that a
-Blockbench model looks correct for the requested scope.
+Define the minimum evidence required before BlockIT claims that a Blockbench
+model visually matches the requested scope.
 
-Reference preparation/QA belongs to [`04-reference-guide.md`](04-reference-guide.md).
-This document validates the Blockbench result, not the source image package.
+Reference preparation belongs to [04-reference-guide.md](04-reference-guide.md).
+This note validates the Blockbench result.
 
-## 2. Core Principle
+## Core Principle
 
-Structural success is not visual success.
+**Structural success is not visual success.**
 
-The following are **not** proof of visual correctness by themselves:
+None of these proves resemblance by itself:
 
-- a successful MCP call;
-- all planned Cubes existing;
-- Cubes touching/overlapping/being parented successfully;
-- valid geometry coordinates/bounds;
-- hierarchy/contact/overlap checks;
-- rotations/pivots being syntactically valid;
-- a saved/reopenable `.bbmodel`;
+- successful MCP/tool call;
+- all Cubes existing;
+- Cubes touching/overlapping;
+- valid `from/to/origin/rotation` values;
+- valid hierarchy/parenting;
+- matching global bounds;
+- saved/reopenable file;
 - linked UV/texture data;
-- a numeric similarity/projection score.
+- numeric similarity/IoU/projection score.
 
-Visual claims require fresh visual evidence from the current model revision.
+Visual `PASS` requires fresh current-revision visual evidence compared directly
+with the active Modelling Brief.
 
-A model must never receive visual `PASS` merely because geometry was placed
-without error or because every part is technically connected.
+## Evidence Types
 
-## 3. Validation States
+### Structural Evidence
 
-### Structurally Validated
+Examples:
 
-The relevant structural requirement has been inspected/proven.
+- element UUIDs;
+- authored transforms;
+- hierarchy/parent state;
+- rendered global envelope;
+- save/runtime state.
 
-### Visually Reviewed
+Structural evidence answers **what state exists**, not whether it looks right.
 
-Fresh Blockbench visual evidence from the required reference views has been
-inspected against concrete criteria.
+### Visual Evidence
 
-### Completed
+Fresh model images from the current revision, in views that correspond to the
+reference question being evaluated.
 
-The requested scope is satisfied, required structural proof is complete,
-required visual review is complete, no unresolved critical/major issue remains,
-and the project is saved when save is part of scope.
+Visual evidence answers **whether the form reads correctly**.
 
-If required live/visual evidence is unavailable, do not substitute static proof.
-Use `BLOCKED`, `NEEDS_REVIEW`, or user-facing `Perlu pemeriksaan` as appropriate.
+### Runtime Evidence
 
-## 4. Reference-To-Model View Pairing
+Live proof of Blockbench/MCP behavior such as camera/render transport, Undo,
+project switching, animation, save/reopen, or persistence.
 
-Use the view set declared by the active Model Reference package. The package may
-define a primary view plus orthographic/preview views; this policy does not
-hardcode Zebra, LEFT SIDE, or any fixture-specific camera order.
+Static GitHub source is not runtime evidence.
 
-Whenever practical, compare like with like:
+## Current Local Observation Instruments
+
+Current Local source includes:
+
+### `inspect_model_bounds`
+
+Returns raw rendered whole-Cube envelope facts such as size/center/ground context.
+
+Use it to detect catastrophic scale/displacement issues that camera framing could
+hide. It is not a visual validator.
+
+### `capture_model_views`
+
+Produces named canonical model images for explicit front direction and stable
+reference ↔ model comparison.
+
+Principal views are orthographic comparison evidence; 3/4 views are volume/
+readability context. Successful capture is not `PASS`.
+
+### `inspect_element`
+
+Returns exact authored Cube/Group state for a diagnosed local target. Use it
+before numeric local correction rather than guessing current transforms from a
+screenshot or memory.
+
+These are source-implemented capabilities. Their live integration/image delivery
+still remains `LOCAL PROOF REQUIRED` until tested locally.
+
+## Reference ↔ Model View Pairing
+
+Compare like with like:
 
 ```text
-REFERENCE SIDE  ↔ MODEL SIDE
 REFERENCE FRONT ↔ MODEL FRONT
+REFERENCE SIDE  ↔ MODEL SIDE
 REFERENCE TOP   ↔ MODEL TOP
-REFERENCE 3/4   ↔ MODEL 3/4
+REFERENCE 3/4   ↔ MODEL matching 3/4
 ```
 
-The comparison does not need pixel alignment or numeric scoring. The purpose is
-to keep view identity explicit so the reviewer cannot silently compare different
-orientations/framing and rationalize a mismatch.
+View identity must be explicit. Do not silently compare mismatched front/back or
+left/right interpretations.
 
-During construction:
+Do not require every view after every mutation. Capture the smallest view set
+that can answer the current modelling question.
 
-- use the primary/most-informative view for the current whole-form question;
-- add one orthogonal or depth/footprint view only when it resolves a real
-  ambiguity;
-- do not treat all reference views as simultaneous per-cube instructions;
-- do not capture every cube/tool call.
+## Structural Envelope Gate
 
-During full geometry review, inspect the complete declared reference view set
-needed to judge silhouette, proportion, volume, major connections, important
-rotations, and meaningful pivots.
+When approved numeric target bounds exist:
 
-## 5. Structural Envelope Evidence
+1. inspect current rendered bounds;
+2. compare width/height/length/center/ground with the target envelope;
+3. use explicit target-envelope framing for visual capture where appropriate.
 
-Camera framing can hide gross scale/position errors. When target dimensions are
-available and runtime inspection supports it, pair visual evidence with a simple
-model-bounds/envelope check.
+This prevents auto-framing from hiding scale/offset failure.
 
-Useful structural questions include:
+Matching bounds remain **structural evidence only**.
 
-- Is overall width/height/length near the approved target envelope?
-- Is the model grounded/displaced as intended?
-- Is the model mirrored or oriented opposite the declared front direction?
-- Is a primary mass far outside the whole envelope?
+## Gate 1 — Primary Whole Form
 
-This evidence catches scale/placement catastrophes. It **cannot** approve
-silhouette, resemblance, rotation quality, or pivot quality by itself.
-
-## 6. Required Visual Gates
-
-### Gate 1 — Primary Geometry / Whole Form
-
-Purpose: catch global mistakes before detail work.
-
-Check:
+Before secondary/detail work, check:
 
 - recognizability;
 - global silhouette;
-- major proportion relationships;
+- major proportions;
 - primary mass placement;
 - important orientation/slopes;
-- major visible contacts/attachments.
+- major visible contacts.
 
-For every material mismatch, name:
+For a material mismatch, identify:
 
 ```text
-criterion that failed
-responsible primary mass/relationship when identifiable
+failed criterion
+responsible mass/relationship when known
 observed mismatch
-reference/model view(s) showing it
+reference/model view(s)
 severity: critical | major | minor
 ```
 
-Generic statements such as "looks good", "all Cubes are attached", "the body is
-complete", or "the coordinates are valid" do not answer the gate and cannot
-produce `PASS`.
+Statements such as “looks good”, “everything is attached”, or “all Cubes are
+present” cannot produce `PASS`.
 
-#### Primary-pass rejection rule
+### Hard Rebuild Threshold
 
-Reject/invalidate the current primary hypothesis when:
+Reject/rebuild the primary scaffold when:
 
-- the whole object is not recognizable as the intended target; or
-- several primary relationships fail together, such as silhouette + proportions
-  + placement/orientation; or
-- the proposed repair depends on adding compensating detail instead of correcting
-  the responsible primary masses.
+- the intended object is not recognizable;
+- several primary relationships fail together;
+- repair would require detail/compensating geometry to hide a wrong whole form.
 
-When this rule triggers, rebuilding/revising the coarse primary form is preferred
-to a chain of local patches.
+Do not micro-patch a globally wrong scaffold because work has already been spent
+on it.
 
-If the whole form is sound and one bounded relationship is wrong, a targeted
-correction is appropriate.
+## Gate 2 — Complete Geometry
 
-### Gate 2 — Complete Geometry
+After secondary geometry/hierarchy/pivots, review applicable criteria:
 
-Purpose: confirm that primary + secondary geometry forms one coherent model.
+- silhouette/proportions across the declared reference views;
+- required major parts and orientation;
+- depth/footprint where reference evidence exists;
+- coherent visible attachments;
+- rotations that correspond to visible form/motion;
+- meaningful pivots corresponding to actual transform/joint/attachment needs;
+- no arbitrary distant pivot;
+- no major unnecessary/intersecting/inverted geometry;
+- hierarchy supporting intended editability/motion.
 
-Check where relevant:
+## Gate 3 — Texture
 
-- all required major parts are present and oriented correctly;
-- silhouette/proportions remain coherent across the full view set;
-- width/depth/footprint are plausible from the reference;
-- visible connections are actually coherent in the image, not merely
-  technically overlapping;
-- rotations correspond to visible slopes/form or required articulation;
-- meaningful pivots correspond to intended joints/attachments/transform centers;
-- no arbitrary/distant pivot causes an implausible transform relationship;
-- no major inverted/intersecting/unnecessary geometry remains;
-- hierarchy/pivots support the intended organization/motion where required.
-
-### Gate 3 — Texture
-
-Only when texture is in scope.
-
-Check where relevant:
+Only when texture is in scope:
 
 - UV orientation/alignment;
-- pixel-density consistency;
-- pattern/material direction;
-- facial/identity placement;
-- missing or visibly broken surfaces.
+- material/pattern direction;
+- pixel-density consistency where applicable;
+- missing/broken surfaces;
+- identity/readability.
 
-### Gate 4 — Animation
+Texture cannot approve or conceal wrong primary geometry.
 
-Only when animation is required.
+## Gate 4 — Animation
 
-Check:
+Only when animation is required:
 
-- pivot behavior;
+- pivot arcs;
+- hierarchy behavior;
 - clipping/detachment;
-- hierarchy integrity;
-- intended motion/readability.
+- intended motion/readability;
+- return/neutral behavior when relevant.
 
-A pivot that only appears acceptable in the static pose but produces an
-implausible rotation arc under intended motion is not approved.
+A static pivot that creates an implausible motion arc is not approved.
 
-### Gate 5 — Final Review
+## Gate 5 — Final Review
 
-Review the current saved/release candidate against the requested output. Do not
-reuse visual evidence from an older model revision after material geometry,
-texture, pivot, hierarchy, or animation changes.
+Use evidence from the **current saved/release candidate**. Do not reuse older
+screenshots after material geometry/pivot/hierarchy/texture/animation changes.
 
-## 7. Visual Repair Loop
+## Visual Repair Loop
 
 ```text
-Fresh paired model/reference view
+Fresh paired reference/model evidence
 ↓
 Name concrete mismatch
 ↓
-Classify GLOBAL or LOCAL
-↓
-GLOBAL → revise/rebuild primary hypothesis
-LOCAL  → inspect responsible authored state
-↓
-Choose causal correction
-↓
-Fresh affected view(s)
-↓
-Confirm improvement or replan
+GLOBAL or LOCAL?
+
+GLOBAL
+→ revise/rebuild Primary Form Hypothesis
+
+LOCAL
+→ locate exact UUID
+→ inspect_element
+→ choose causal correction
+→ mutate bounded relationship
+→ fresh affected view(s)
 ```
 
-### Global failure
+### Causal Correction
 
-Examples:
+Use:
 
-- object is not recognizable;
-- whole silhouette is wrong;
-- several primary mass ratios/placements are wrong together;
-- major front/back/up orientation is wrong.
+`TRANSLATE`, `RESIZE`, `ROTATE`, `REATTACH`, `SPLIT`, `MERGE/REMOVE`, `ADD MASS`.
 
-Do not preserve the current blockout just because many Cubes have already been
-placed.
+Do not default to adding another Cube.
 
-### Local failure
+For one multi-Cube relationship, `modify_cubes_batch` may execute different
+exact-UUID corrections as one recoverable operation. It does not plan or judge
+the correction.
 
-Examples:
+## Rotation Review
 
-- one otherwise-correct mass is slightly too long/high/wide;
-- one attachment is misplaced;
-- one clearly-required slope/rotation is wrong;
-- one pivot is wrong while the underlying primary form remains sound.
+For a material rotation, answer:
 
-Inspect the smallest relevant authored state before modifying it.
-
-Rules:
-
-- this is a repair loop, not a reporting loop;
-- correct relationships, not symptoms;
-- do not default to adding another Cube;
-- use the causal edit vocabulary from `05-geometry-standard.md`;
-- reopen only the affected views/relationships unless the correction changed the
-  global form;
-- if the same correction direction fails twice without new evidence, stop and
-  replan rather than producing patch churn;
-- do not score similarity as a substitute for visual judgement.
-
-## 8. Rotation And Pivot Review
-
-Rotation/pivot quality must be reviewed as modelling decisions, not merely as
-valid numeric fields.
-
-For a material rotation, the reviewer should be able to answer:
-
-- Which reference view shows the intended slope/orientation?
-- Does the rotated mass improve the intended silhouette rather than compensate
+- Which reference/form/motion evidence justifies the angle?
+- Is the rotated mass improving the intended silhouette rather than compensating
   for wrong placement/size?
-- Is the rotation simpler than a stepped Cuboid approximation?
-- Did the rotation damage visible attachment or model bounds?
+- Is the rotation simpler/more coherent than an unnecessary stepped
+  approximation?
+- Did it damage visible contacts/global bounds?
 
-For a meaningful pivot, the reviewer should be able to answer:
+A newly created non-zero-rotation Cube must have an intentional explicit pivot;
+this source-level safety does not itself prove the pivot is visually correct.
 
-- What rotation/joint/attachment/parent-transform purpose does this pivot serve?
-- Is it located near the intended transform relationship rather than at an
-  arbitrary distant point?
-- Does the resulting transform preserve visible attachment/articulation?
+## Pivot Review
 
-If those questions cannot be answered, the rotation/pivot is not approved merely
-because Blockbench accepts it.
+For a meaningful pivot, answer:
 
-## 9. Issue Severity
+- What rotation/joint/attachment/parent-transform purpose does it serve?
+- Is it near the intended transform relation rather than a random distant point?
+- Does its transform preserve visible attachment/articulation?
+
+### Pivot-only Cube correction
+
+If geometry is already correct and only pivot is wrong, Local uses Cube
+pivot-transfer semantics so the pivot can change without intentionally moving the
+visual Cube.
+
+### Group pivot
+
+Group/bone pivot changes use Blockbench transfer-origin semantics in the hardened
+`bone_rigging` path.
+
+Both behaviors are source implemented; live behavior still requires local proof.
+
+## Severity
 
 ### Critical
 
-Makes the model unusable, unrecognizable, or materially inconsistent with the
-requested asset.
+Makes the model unusable, unrecognizable, or materially different from the
+requested target.
 
 ### Major
 
-Strongly reduces reference fidelity, readability, or required function.
+Strongly reduces reference fidelity, readability, attachment, or required
+function.
 
 ### Minor
 
-Small issue that does not block intended use.
+Does not block intended use.
 
-Critical and major issues must be resolved before visual completion.
+Critical/major issues block visual completion.
 
-## 10. Evidence Economy
-
-Capture only when a screenshot/view can answer a concrete question.
+## Evidence Economy
 
 Good reasons to capture:
 
 - primary whole-form gate;
-- full geometry gate;
-- after a targeted correction;
-- texture gate;
-- required animation/final gate.
+- complete-geometry gate;
+- one targeted correction;
+- texture/animation gate;
+- final current-revision gate.
 
-Bad reasons to capture:
+Bad reasons:
 
-- after every cube merely because capture exists;
-- to prove that a Cube was technically placed;
-- to create a larger evidence package without a decision it informs;
-- to repeat an unchanged view after it already established the criterion.
+- after every Cube/tool call;
+- to prove that a Cube was technically created;
+- to create evidence volume without a decision it informs;
+- repeat unchanged views after the criterion is already established.
 
 More screenshots are not automatically more proof.
 
-## 11. Selected-Part Inspection
+## Completion Rule
 
-When a user or critic identifies a specific part, inspect the smallest relevant
-source/runtime state available for that part before modifying it. Do not export
-or rescan the whole project merely to inspect one selected element when a
-narrower verified operation exists.
+Visual `PASS` is valid only when current-revision images were actually inspected
+against the relevant criteria.
 
-For local rotation/pivot corrections, inspect the current parent, bounds, origin,
-rotation, and relevant child/contact relationship before choosing new values.
-
-Exact MCP selection/tool behavior remains implementation/runtime truth and must
-be verified before being treated as guaranteed capability.
-
-## 12. Preview Capability Boundary
-
-Automatic screenshot, camera, reference-display, bounds-inspection, or
-correction capability is usable only when verified in the current
-implementation/session.
-
-If automatic visual evidence is unavailable:
-
-1. complete only the structural/repository work that can be proven safely;
-2. preserve/save the project when that operation is verified and appropriate;
-3. leave one exact visual/runtime proof step for Codex/human review;
-4. do not label the result visually complete.
-
-ChatGPT → GitHub may prepare a visual/runtime change but cannot prove the live
-Blockbench result from static repository inspection.
-
-## 13. Visual Critic Questions
-
-The critic should answer concrete questions, not provide generic praise:
-
-- Does the **whole silhouette** read like the intended reference?
-- Are the major mass proportions/placements plausible?
-- Are required primary parts present and oriented correctly?
-- Are visible contacts/connections coherent?
-- Does every important rotation correspond to a visible slope/form/motion need?
-- Does every meaningful pivot correspond to a real transform/joint/attachment
-  need?
-- Is any major part inverted, floating, or obviously intersecting incorrectly?
-- Does texture placement materially match the intended identity/style?
-- If animation is required, does motion break the model?
-
-Only ask criteria relevant to the current gate/scope.
-
-## 14. Completion Rule
-
-Use visual `PASS` only when fresh evidence from the current revision was
-actually inspected against the relevant gate criteria.
-
-`PASS` is invalid when its main justification is any variation of:
+Invalid approval justifications include:
 
 ```text
 all Cubes are present
 all Cubes are attached
 tool calls succeeded
 coordinates are valid
+bounds match
 hierarchy is valid
 rotation/pivot values exist
 validator has no error
 ```
 
-Do not require:
+## Execution-Channel Boundary
 
-- per-cube screenshot approval;
-- per-cube orientation declarations in product policy;
-- universal SIDE + FRONT/BACK capture after every mutation;
-- numeric resemblance scores;
-- a full-review restart after every local correction;
-- a fixture-specific view order.
+### ChatGPT → GitHub
 
-Those patterns add ceremony or false confidence without proving the whole model.
+May review/change source/docs and establish static contracts. Cannot claim live
+Blockbench visual/runtime success.
 
-## 15. Final Checklist
+### Codex Local
 
-Use only applicable items:
+Blockbench + MCP is the final environment for proof requiring actual image
+transport, camera behavior, model appearance, animation, Undo, or persistence.
 
-- whole silhouette and orientation are acceptable;
-- major proportions/masses are coherent;
-- required parts and visible contacts are present;
-- material rotations have a reference/form/function reason;
-- meaningful pivots have a transform/articulation/attachment reason;
-- no unresolved critical/major geometry issue remains;
-- UV/texture are visually acceptable when required;
-- animation works visually when required;
-- project is clean/saved when required;
-- final status distinguishes structural proof from visual/runtime proof.
+If that proof is unavailable, report `LOCAL PROOF REQUIRED` / user-facing
+`Perlu pemeriksaan` rather than inventing a substitute.
 
-## 16. Known Boundary
+## Related
 
-Any Blockbench/MCP camera, screenshot, selection, bounds, save, undo, or visual-
-helper capability not proven in the current implementation/session is `Needs
-Validation`. Documentation must not convert a historical experiment into a
-permanent runtime guarantee.
+- [Modelling Workflow](03-modelling-workflow.md)
+- [Geometry Standard](05-geometry-standard.md)
+- [Validation Report](validation-report.md)
+- [Reference Fidelity Decision](../knowledge/decisions/reference-fidelity-loop.md)
