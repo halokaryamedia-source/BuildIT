@@ -130,21 +130,31 @@ export const createPbrMaterialParameters = z.object({
   name: z.string().describe("Name of the material."),
   color_texture: z
     .string()
-    .optional()
-    .describe("Texture ID/name for the color (albedo) channel."),
-  normal_texture: z
-    .string()
-    .optional()
-    .describe("Texture ID/name for the normal map channel."),
-  height_texture: z
-    .string()
-    .optional()
-    .describe("Texture ID/name for the height/displacement map channel."),
-  mer_texture: z
-    .string()
+    .min(1)
     .optional()
     .describe(
-      "Texture ID/name for the MER (Metalness/Emissive/Roughness) channel."
+      "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
+  normal_texture: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
+  height_texture: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
+  mer_texture: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
@@ -302,7 +312,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a new PBR material (texture group with is_material=true) and optionally assigns textures to PBR channels. Use this for Minecraft Bedrock resource packs or any format supporting PBR.",
+      "Creates a new PBR material (texture group with is_material=true). Optional channel texture references are resolved exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous supplied references fail before Undo or material creation. Uniform color, MER, and subsurface values remain supported.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -587,6 +597,45 @@ function resolveAddTextureGroupTexture(reference: string): Texture {
   );
 }
 
+function resolveCreatePbrMaterialTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before creating the PBR material.`
+  );
+}
+
 // ============================================================================
 // Tool Registration
 // ============================================================================
@@ -861,25 +910,28 @@ export function registerTextureTools() {
       mer_value,
       subsurface_value,
     }) {
-      const texturesToAdd: Texture[] = [];
-
-      // Find textures to add
-      if (color_texture) {
-        const tex = findTextureOrThrow(color_texture);
-        texturesToAdd.push(tex);
-      }
-      if (normal_texture) {
-        const tex = findTextureOrThrow(normal_texture);
-        texturesToAdd.push(tex);
-      }
-      if (height_texture) {
-        const tex = findTextureOrThrow(height_texture);
-        texturesToAdd.push(tex);
-      }
-      if (mer_texture) {
-        const tex = findTextureOrThrow(mer_texture);
-        texturesToAdd.push(tex);
-      }
+      const colorTexture =
+        color_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(color_texture)
+          : undefined;
+      const normalTexture =
+        normal_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(normal_texture)
+          : undefined;
+      const heightTexture =
+        height_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(height_texture)
+          : undefined;
+      const merTexture =
+        mer_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(mer_texture)
+          : undefined;
+      const texturesToAdd = [
+        colorTexture,
+        normalTexture,
+        heightTexture,
+        merTexture,
+      ].filter((texture): texture is Texture => texture !== undefined);
 
       Undo.initEdit({
         texture_groups: [],
@@ -906,22 +958,18 @@ export function registerTextureTools() {
 
       textureGroup.add();
 
-      // Assign textures to channels
-      if (color_texture) {
-        const tex = findTextureOrThrow(color_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+      // Assign preflighted textures to channels without resolving again.
+      if (colorTexture) {
+        colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
       }
-      if (normal_texture) {
-        const tex = findTextureOrThrow(normal_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+      if (normalTexture) {
+        normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
       }
-      if (height_texture) {
-        const tex = findTextureOrThrow(height_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+      if (heightTexture) {
+        heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
       }
-      if (mer_texture) {
-        const tex = findTextureOrThrow(mer_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+      if (merTexture) {
+        merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
       }
 
       // Update material preview
