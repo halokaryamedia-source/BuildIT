@@ -59,7 +59,9 @@ export const placeCubeParameters = z.object({
   group: z
     .string()
     .optional()
-    .describe("Group/bone to which the cube belongs."),
+    .describe(
+      "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional."
+    ),
   faces: z
     .union([
       z
@@ -96,7 +98,7 @@ export const modifyCubeParameters = z.object({
     .string()
     .optional()
     .describe(
-      "ID or name of the cube to modify. Defaults to selected, which could be more than one."
+      "Exact Cube UUID or exact unique name. UUID is preferred. If omitted, the legacy selected-Cube fallback is used."
     ),
   name: z.string().optional().describe("New name of the cube."),
   origin: z
@@ -161,7 +163,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places a cube of the given size at the specified position. Texture and group are optional.",
+      "Places one or more Cubes. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -172,7 +174,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies the cube with the given ID. Auto UV setting: saved as an integer, where 0 means disabled, 1 means enabled, and 2 means relative auto UV (cube position affects UV)",
+      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -212,6 +214,54 @@ function finalCubeState(cube: Cube) {
   };
 }
 
+function resolveUniqueCube(reference: string): Cube {
+  const uuidMatch = (Cube.all ?? []).find(
+    (cube: Cube) => cube.uuid === reference
+  );
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = (Cube.all ?? []).filter(
+    (cube: Cube) => cube.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Cube name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((cube: Cube) => `${cube.name} (${cube.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Cube "${reference}" not found. Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended UUID.`
+  );
+}
+
+function resolvePlacementGroup(reference?: string): Group | "root" {
+  if (reference === undefined || reference === "root") return "root";
+
+  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Group.all.filter(
+    (group: Group) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: Group) => `${group.name} (${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID. Omit group or pass "root" only when root placement is intentional.`
+  );
+}
+
 export function registerCubesTools() {
 createTool(cubeToolDocs[0].name, {
   ...cubeToolDocs[0],
@@ -224,60 +274,64 @@ createTool(cubeToolDocs[0].name, {
       throw new Error(`No texture found for "${texture}".`);
     }
 
-    Undo.initEdit({
-      elements: [],
-      outliner: true,
-      collections: [],
-    });
-
-    // @ts-expect-error Blockbench global utility available at runtime
-    const groups = getAllGroups();
-    const outlinerGroup = group === "root"
-      ? "root"
-      : groups.find((g: any) => g.name === group || g.uuid === group) ?? "root";
+    // Resolve an explicitly requested hierarchy target before opening Undo.
+    // Omitted group (or explicit "root") is the only intentional root fallback.
+    const outlinerGroup = resolvePlacementGroup(group);
 
     const autouv =
       faces === true ||
       (Array.isArray(faces) &&
         faces.every((face) => typeof face === "string"));
 
-    const cubes = elements.map((element: Cube) => {
-      const cube = new Cube({
-        autouv: autouv ? 1 : 0,
-        name: element.name,
-        from: element.from as [number, number, number],
-        to: element.to as [number, number, number],
-        origin: element.origin as [number, number, number],
-        rotation: element.rotation as [number, number, number],
-      }).init();
-
-      cube.addTo(outlinerGroup);
-
-      if (!autouv && Array.isArray(faces)) {
-        faces.forEach(({ face, uv }) => {
-          cube.faces[face].extend({
-            uv: uv as [number, number, number, number],
-          });
-        });
-      } else if (projectTexture) {
-        cube.applyTexture(
-          projectTexture,
-          faces !== false ? faces : undefined
-        );
-        cube.mapAutoUV();
-      }
-
-      return cube;
+    Undo.initEdit({
+      elements: [],
+      outliner: true,
+      collections: [],
     });
 
-    Undo.finishEdit("Agent placed cubes", { elements: cubes });
-    Canvas.updateAll();
+    try {
+      const cubes = elements.map((element: Cube) => {
+        const cube = new Cube({
+          autouv: autouv ? 1 : 0,
+          name: element.name,
+          from: element.from as [number, number, number],
+          to: element.to as [number, number, number],
+          origin: element.origin as [number, number, number],
+          rotation: element.rotation as [number, number, number],
+        }).init();
 
-    return await Promise.resolve(
-      JSON.stringify(
-        cubes.map((cube: Cube) => `Added cube ${cube.name} with ID ${cube.uuid}`)
-      )
-    );
+        cube.addTo(outlinerGroup);
+
+        if (!autouv && Array.isArray(faces)) {
+          faces.forEach(({ face, uv }) => {
+            cube.faces[face].extend({
+              uv: uv as [number, number, number, number],
+            });
+          });
+        } else if (projectTexture) {
+          cube.applyTexture(
+            projectTexture,
+            faces !== false ? faces : undefined
+          );
+          cube.mapAutoUV();
+        }
+
+        return cube;
+      });
+
+      Undo.finishEdit("Agent placed cubes", { elements: cubes });
+      Canvas.updateAll();
+
+      return await Promise.resolve(
+        JSON.stringify(
+          cubes.map((cube: Cube) => `Added cube ${cube.name} with ID ${cube.uuid}`)
+        )
+      );
+    } catch (error) {
+      Undo.cancelEdit(true);
+      Canvas.updateAll();
+      throw error;
+    }
   },
 }, cubeToolDocs[0].status);
 
@@ -300,52 +354,57 @@ createTool(cubeToolDocs[1].name, {
   }) {
     let cubes: Cube[];
     if (id) {
-      cubes = (Cube.all ?? []).filter((el: Cube) => el.uuid === id || el.name === id);
-      if (!cubes.length) {
-        throw new Error(`Cube with ID "${id}" not found. Use the list_outline tool to see available cubes.`);
-      }
+      // Explicit target means exactly one Cube. UUID wins; exact-name compatibility
+      // is retained only when the name is unique.
+      cubes = [resolveUniqueCube(id)];
     } else {
-      cubes = Cube.selected;
+      cubes = [...Cube.selected];
       if (!cubes.length) {
-        throw new Error("No cube selected and no id provided. Select a cube or provide an id.");
+        throw new Error("No cube selected and no id provided. Select a cube or provide an exact Cube UUID.");
       }
     }
 
     Undo.initEdit({
-      elements: Array.isArray(cubes) ? cubes : [cubes],
+      elements: cubes,
       outliner: true,
       collections: [],
     });
 
-    cubes.forEach((cube) => {
-      const cubeOrigin: [number, number, number] = (origin ?? cube.origin) as [number, number, number];
-      const cubeFrom: [number, number, number] = (from ?? cube.from) as [number, number, number];
-      const cubeTo: [number, number, number] = (to ?? cube.to) as [number, number, number];
-      const cubeRotation: [number, number, number] = (rotation ?? cube.rotation) as [number, number, number];
-      const cubeUVOffset: [number, number] = (uv_offset ?? cube.uv_offset) as [number, number];
+    try {
+      cubes.forEach((cube) => {
+        const cubeOrigin: [number, number, number] = (origin ?? cube.origin) as [number, number, number];
+        const cubeFrom: [number, number, number] = (from ?? cube.from) as [number, number, number];
+        const cubeTo: [number, number, number] = (to ?? cube.to) as [number, number, number];
+        const cubeRotation: [number, number, number] = (rotation ?? cube.rotation) as [number, number, number];
+        const cubeUVOffset: [number, number] = (uv_offset ?? cube.uv_offset) as [number, number];
 
-      cube.extend({
-        name: name ?? cube.name,
-        origin: cubeOrigin,
-        from: cubeFrom,
-        to: cubeTo,
-        rotation: cubeRotation,
-        uv_offset: cubeUVOffset,
-        autouv: autouv ? (Number(autouv) as 0 | 1 | 2) : cube.autouv,
-        mirror_uv: Boolean(mirror_uv ?? cube.mirror_uv),
-        inflate: inflate ?? cube.inflate,
-        color: color ?? cube.color,
-        visibility: visibility ?? cube.visibility,
-        shade: shade ?? cube.shade,
+        cube.extend({
+          name: name ?? cube.name,
+          origin: cubeOrigin,
+          from: cubeFrom,
+          to: cubeTo,
+          rotation: cubeRotation,
+          uv_offset: cubeUVOffset,
+          autouv: autouv ? (Number(autouv) as 0 | 1 | 2) : cube.autouv,
+          mirror_uv: Boolean(mirror_uv ?? cube.mirror_uv),
+          inflate: inflate ?? cube.inflate,
+          color: color ?? cube.color,
+          visibility: visibility ?? cube.visibility,
+          shade: shade ?? cube.shade,
+        });
       });
-    });
 
-    Undo.finishEdit("Agent modified cubes");
-    Canvas.updateAll();
+      Undo.finishEdit("Agent modified cubes");
+      Canvas.updateAll();
 
-    return `Modified cubes ${cubes
-      .map((cube) => cube.name)
-      .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
+      return `Modified cubes ${cubes
+        .map((cube) => cube.name)
+        .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
+    } catch (error) {
+      Undo.cancelEdit(true);
+      Canvas.updateAll();
+      throw error;
+    }
   },
 }, cubeToolDocs[1].status);
 
