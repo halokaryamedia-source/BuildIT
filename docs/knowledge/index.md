@@ -88,6 +88,7 @@ Source already contains the main fidelity instruments and safety boundaries:
 - strict `place_cube` parent targeting;
 - explicit finite `from/to` required for new Cubes;
 - explicit pivot required for a newly placed non-zero-rotation Cube;
+- existing Cube zero→non-zero rotation activation requires explicit origin before mutation, while already-rotated Cubes may reuse their existing pivot;
 - pivot-only Cube correction through `Cube.transferOrigin()`;
 - stricter Group creation and `bone_rigging` targeting/pivot semantics.
 
