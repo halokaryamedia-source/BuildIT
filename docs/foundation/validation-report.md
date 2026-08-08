@@ -34,6 +34,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Global failure can invalidate/rebuild coarse blockout | Active BlockIT policy | Do not micro-patch an unrecognizable primary form. |
 | Rotation needs visual/form/motion reason | Active BlockIT policy | Arbitrary multi-axis rotation rejected. |
 | Material pivot needs transform/joint/attachment reason | Active BlockIT policy | Arbitrary/distant pivots rejected. |
+| Mutation identity must be explicit | Active BlockIT policy | Single-Cube correction must not depend on transient editor selection. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
 Policy does not need to be a universal Blockbench rule; these are BlockIT quality
@@ -66,7 +67,7 @@ Important local proof still missing:
 | Strict parent targeting | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | explicit missing/ambiguous Group fails; no silent fallback to root. |
 | Rotated Cube creation pivot safety | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | any non-zero initial rotation requires explicit origin/pivot. |
 | Existing-Cube rotation activation | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | zero→non-zero rotation through `modify_cube` / `modify_cubes_batch` requires explicit origin before Undo; already-rotated Cubes may reuse the existing pivot. |
-| Single-Cube target safety | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | UUID first; exact name compatibility only when unique when `id` is supplied. Legacy omitted-id selected-Cube fallback still exists and is the next audit target. |
+| Single-Cube target safety | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | `modify_cube.id` is required; UUID resolves first, exact name compatibility is allowed only when unique; editor selection is not an implicit mutation target. |
 | `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `LOCAL PROOF REQUIRED` | exact UUIDs, heterogeneous per-Cube patches, all target/rotation-activation preflight before one recoverable Undo unit. |
 | Cube pivot-only correction | `mcp/server/tools/cubes.ts` | `OFFICIALLY VERIFIED` semantics + `LOCAL PROOF REQUIRED` integration | origin-only uses `Cube.transferOrigin()`; origin + geometry fields remains authored rewrite. |
 
@@ -92,7 +93,7 @@ bone origin without visually affecting its content position.
 |---|---|---|
 | Default project format is Bedrock Entity (`bedrock`) | Source implemented; `LOCAL PROOF REQUIRED` | G1 source correction exists; live `create_project → get_project_info` proof deferred. |
 | Bundled Local prompt is normal authority; CDN disabled by default | Source implemented; `LOCAL PROOF REQUIRED` | G2 source correction exists; live bundle/prompt-loader proof deferred. |
-| Bedrock modelling prompt follows Reference Fidelity Loop | Source implemented | `mcp/prompts/bedrock.md` routes whole-form observation/correction and current creation/rotation/pivot safety. |
+| Bedrock modelling prompt follows Reference Fidelity Loop | Source implemented | `mcp/prompts/bedrock.md` routes whole-form observation/correction and current creation/rotation/pivot/targeting safety. |
 
 ## Known Paused / Later Gaps
 
@@ -118,17 +119,6 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### `modify_cube` implicit selected-Cube fallback
-
-When `modify_cube.id` is omitted, current source retains a legacy fallback to
-`Cube.selected`. This is not the recommended Reference Fidelity path and may
-allow mutation to depend on editor selection state rather than confirmed element
-identity.
-
-Status: **next active contract audit**. Determine whether any current Local caller
-requires this compatibility behavior before deciding whether explicit `id` should
-be mandatory.
-
 ## Historical External Premises
 
 Still supported by first-party Blockbench documentation/source:
@@ -152,6 +142,7 @@ Status: `UNSUPPORTED` for BlockIT modelling/approval authority:
 - successful Cube placement as visual approval;
 - per-Cube screenshot/approval quotas;
 - arbitrary fallback coordinates/pivots;
+- editor selection as implicit single-Cube mutation identity;
 - historical fixture-specific build rules promoted to generic workflow.
 
 ## What Can Be Claimed Now
@@ -162,6 +153,8 @@ Safe claims:
 
 - current Local source contains the listed contracts/implementation paths;
 - foundation/prompt rules are aligned with the Reference Fidelity architecture;
+- `modify_cube` source schema now requires an explicit target and no longer reads
+  `Cube.selected` as a fallback;
 - official Blockbench types/source support the transfer-origin semantics used by
   the code.
 
@@ -170,6 +163,8 @@ Unsafe claims without local proof:
 - `capture_model_views` definitely returns visually correct images in the active
   Blockbench installation;
 - bounds/camera/Undo behavior works for every live edge case;
+- the MCP client definitely exposes the updated required-`id` schema until the
+  current plugin is built/loaded and inspected;
 - the new loop now produces a good reference-matching model in practice;
 - save/reopen persistence is correct.
 
@@ -180,14 +175,15 @@ future proof queue is:
 
 1. build/load current Local plugin in Blockbench;
 2. verify default Bedrock project + bundled prompt behavior;
-3. create a small model using strict `place_cube` inputs;
-4. verify `inspect_model_bounds` against visible transformed geometry;
-5. verify canonical `capture_model_views` image delivery/orientation/framing;
-6. verify `inspect_element` + single/batch correction + Undo behavior;
-7. verify Cube and Group pivot-transfer behavior visually;
-8. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-9. save/reopen `.bbmodel` and inspect persistence;
-10. run one approved-reference → whole-form modelling session and evaluate actual
+3. inspect the live MCP `modify_cube` schema and verify `id` is required;
+4. create a small model using strict `place_cube` inputs;
+5. verify `inspect_model_bounds` against visible transformed geometry;
+6. verify canonical `capture_model_views` image delivery/orientation/framing;
+7. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+8. verify Cube and Group pivot-transfer behavior visually;
+9. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
+10. save/reopen `.bbmodel` and inspect persistence;
+11. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
 
 Do not run this queue ceremonially; use the smallest proof required when local
@@ -195,9 +191,9 @@ validation resumes.
 
 ## Bottom Line
 
-The architectural problem is now well-defined and the main observation,
-correction, targeting, pivot, initial-placement, and rotation-activation safety
-mechanisms are present in Local source.
+The architectural problem is well-defined and the main observation, correction,
+targeting, pivot, initial-placement, and rotation-activation safety mechanisms are
+present in Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
 Blockbench/MCP/Codex path observes and corrects models as intended. That remains
