@@ -1,61 +1,68 @@
-# BlockIT Source Selection
+# BlockIT Source Selection — Historical Adoption Record
 
-This document records which files we will actually use from the two upstream source repos.
+**Status:** Historical Record  
+**Updated classification:** 2026-08-08
 
-## Use From `sigee-min/ashfox`
+## Purpose
 
-Take the runtime flow and safety model from these areas:
+This note records the **earlier upstream selection phase** that helped shape the
+BlockIT Local repository.
 
-- `README.md`
-- `apps/plugin-desktop/src/index.ts`
-- `packages/runtime/src/config.ts`
-- `packages/runtime/src/dispatcher.ts`
-- `packages/runtime/src/logging.ts`
-- `packages/runtime/src/plugin.ts`
-- `packages/runtime/src/server.ts`
-- `packages/runtime/src/session.ts`
-- `packages/runtime/src/types.ts`
-- `packages/backend-core/src/errors.ts`
-- `packages/backend-core/src/locks.ts`
-- `packages/backend-core/src/persistence.ts`
-- `packages/backend-core/src/registry.ts`
-- `packages/backend-core/src/types.ts`
-- `packages/contracts/src/mcpSchemas/*`
-- `packages/contracts/src/types/*`
+It is retained for provenance only. It is **not current runtime authority**.
+Current Local source, root `AGENTS.md`, `CONTEXT.md`, and the current foundation
+policy override any implementation assumption in this record.
 
-## Use From `jasonjgardner/blockbench-mcp-plugin`
+## Historical Sources Considered
 
-Take the Blockbench plugin structure and tooling from these areas:
+### `jasonjgardner/blockbench-mcp-plugin`
 
-- `README.md`
-- `CLAUDE.md`
-- `AGENTS.md`
-- `index.ts`
-- `server/server.ts`
-- `server/tools.ts`
-- `server/resources.ts`
-- `server/prompts.ts`
-- `server/net.ts`
-- `lib/factories.ts`
-- `lib/constants.ts`
-- `lib/util.ts`
-- `lib/zodObjects.ts`
-- `ui/index.ts`
-- `ui/settings.ts`
-- `build/docs-manifest.ts`
-- `build/docs.ts`
-- `prompts/manifest.json`
-- `prompts/*.md`
+Used as the main Blockbench plugin/MCP implementation lineage, including areas
+such as:
 
-## Do Not Use
+- plugin/server structure;
+- MCP tools/resources/prompts;
+- factories/utilities/schemas;
+- UI/settings;
+- build/docs generation.
 
-- `apps/web`
-- `apps/worker`
-- `apps/mcp-gateway`
-- Hytale-specific files
-- generated output that is not source of truth
-- legacy naming that makes the workspace harder to read
+### `sigee-min/ashfox`
 
-## Rule
+Reviewed historically for runtime/safety/contract ideas such as:
 
-If a file does not help with runtime flow, plugin structure, docs, or clarity, do not bring it forward.
+- configuration/session structure;
+- dispatcher/logging/error patterns;
+- persistence/registry/contract concepts.
+
+## Historical Selection Rule
+
+Only adopt an upstream idea when it improves the Blockbench-first Local product
+without creating a second competing architecture.
+
+Do not carry forward:
+
+- unrelated web/worker/gateway applications;
+- Hytale-specific product behavior;
+- generated output as source authority;
+- duplicate runtime/framework layers;
+- legacy names/paths that make current Local harder to understand.
+
+## Current Authority
+
+As of 2026-08-08:
+
+```text
+current runtime behavior → Local mcp/ source + relevant proof
+product/modelling policy → docs/foundation/
+agent behavior           → root AGENTS.md
+active work              → docs/knowledge/next-action.md
+```
+
+Do not return to an upstream implementation merely because this historical note
+mentions it. Re-adoption requires a current demonstrated gap and a new bounded
+decision.
+
+## Related
+
+- [Merge Map](09-merge-map.md)
+- [Implementation Map](../knowledge/implementation-map.md)
+- [Source Map](../knowledge/sources/source-map.md)
