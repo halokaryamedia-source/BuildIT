@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import {
-  getProjectTexture,
   imageContent,
   findElementOrThrow,
   findTextureOrThrow,
@@ -100,9 +99,12 @@ export const applyTextureParameters = z.object({
 export const addTextureGroupParameters = z.object({
   name: z.string(),
   textures: z
-    .array(z.string())
+    .array(z.string().min(1))
+    .min(1)
     .optional()
-    .describe("Array of texture IDs or names to add to the group."),
+    .describe(
+      "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique."
+    ),
   is_material: z
     .boolean()
     .optional()
@@ -267,7 +269,8 @@ export const textureToolDocs: ToolSpec[] = [
   },
   {
     name: "add_texture_group",
-    description: "Adds a new texture group with the given name.",
+    description:
+      "Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.",
     annotations: {
       title: "Add Texture Group",
       destructiveHint: true,
@@ -545,6 +548,45 @@ function resolveGetTextureTexture(reference: string): Texture {
   );
 }
 
+function resolveAddTextureGroupTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before adding the texture group.`
+  );
+}
+
 // ============================================================================
 // Tool Registration
 // ============================================================================
@@ -740,6 +782,8 @@ export function registerTextureTools() {
   createTool(textureToolDocs[2].name, {
     ...textureToolDocs[2],
     async execute({ name, textures, is_material }) {
+      const textureList = textures?.map(resolveAddTextureGroupTexture) ?? [];
+
       Undo.initEdit({
         elements: [],
         outliner: true,
@@ -752,21 +796,11 @@ export function registerTextureTools() {
         is_material,
       }).add();
 
-      if (textures) {
-        const textureList = textures
-          .map((texture) => getProjectTexture(texture))
-          .filter(Boolean);
-
-        if (textureList.length === 0) {
-          throw new Error(`No textures found for "${textures}".`);
-        }
-
-        textureList.forEach((texture) => {
-          texture?.extend({
-            group: textureGroup.uuid,
-          });
+      textureList.forEach((texture) => {
+        texture.extend({
+          group: textureGroup.uuid,
         });
-      }
+      });
 
       Undo.finishEdit("Agent added texture group");
       Canvas.updateAll();
