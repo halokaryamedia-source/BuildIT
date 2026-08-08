@@ -1,81 +1,96 @@
 # Open Spec Guide
 
-This is the lightweight working standard for changes in this repo.
+Updated: 2026-08-08
 
-## SSOT Rules
+This is the lightweight decision/change standard for BlockIT. It does not create
+a second planning/state hierarchy.
 
-- `docs/foundation/` is the source of truth for product rules.
-- `docs/knowledge/` is the source of truth for working decisions and flow.
-- Code and docs must not disagree silently.
+## Source-Of-Truth Rules
+
+- product/modelling policy → `docs/foundation/`;
+- active task → `docs/knowledge/next-action.md`;
+- durable decisions → `docs/knowledge/decision-log.md` or `decisions/`;
+- module/source ownership → `docs/knowledge/modules/` /
+  `implementation-map.md`;
+- runtime behavior → current source + relevant proof.
+
+Code/docs must not disagree silently.
 
 ## When To Write A Decision
 
-- when a choice affects more than one note or module;
-- when a workflow changes in a way another agent must understand later;
-- when the repo needs a stable rule instead of a chat-only agreement;
-- when a tradeoff matters more than the implementation detail.
+Write a durable decision when:
 
-## Change Rules
+- a choice changes architecture/workflow across sessions;
+- several notes/modules depend on the same reason;
+- a tradeoff should survive chat history;
+- an old method is explicitly superseded;
+- future agents need the **why**, not only the implementation diff.
 
-- Make the smallest change that solves the verified problem.
-- Reuse existing skills, docs, and modules before adding anything new.
-- Do not add abstractions without a proven need.
-- Keep unverified items labeled `Needs Validation`.
-- If a shorter note can say the same thing, use the shorter note.
-- Do not turn a temporary workaround into a permanent rule.
+Do not create one decision note for every small edit.
+
+## Default Change Rules
+
+- solve the verified problem with the smallest complete change;
+- reuse existing owners before adding files/skills/abstractions;
+- do not add fallback/compatibility layers without proof they are needed;
+- keep runtime uncertainty under root evidence labels (`LOCAL PROOF REQUIRED`,
+  `UNKNOWN`, etc.);
+- do not turn temporary workaround or fixture behavior into permanent policy;
+- shorter owner notes are preferred over duplicated explanation.
 
 ## Decision Boundaries
 
-- Product policy changes belong in `docs/foundation/` if they are stable enough.
-- Working decisions belong in `docs/knowledge/decisions/`.
-- Module ownership changes belong in `docs/knowledge/modules/`.
-- Review findings belong in `docs/knowledge/reviews/`.
+- stable product policy → `docs/foundation/`;
+- architecture/working decisions → `docs/knowledge/decisions/` or decision log;
+- ownership changes → `docs/knowledge/modules/` / implementation map;
+- evidence/findings → `docs/knowledge/reviews/`;
+- future/non-active work → operations task board.
 
-## Decision Record Format
-
-Use this shape for a new note:
+## Decision Record Shape
 
 ```text
 Context
 Decision
 Why
 Tradeoffs
-Validation
+Evidence / validation boundary
 Follow-up
 ```
 
 ## Full OpenSpec Threshold
 
-The lightweight guide above is the default. Do not open a full OpenSpec change
-for ordinary bounded work.
+Ordinary bounded work does **not** need formal OpenSpec machinery.
 
-A formal OpenSpec proposal is justified only when at least one real complexity
-boundary requires it, such as:
+Escalate only for a genuine cross-cutting boundary such as:
 
-- multiple subsystems must change as one coordinated contract;
-- a public MCP API, tool contract, compatibility promise, or migration changes;
-- work spans several independently executable phases or developers;
-- a durable architectural tradeoff cannot be represented clearly by the
-  existing decision log and task snapshot.
+- several subsystems must change as one coordinated public contract;
+- migration/compatibility promise spans multiple phases;
+- several developers/phases require one durable contract;
+- existing decision/task owners cannot represent the architectural tradeoff
+  clearly.
 
-Do **not** use the full lifecycle for documentation cleanup, a single tool or
-schema fix, one modelling-workflow correction, or speculative future work.
-
-When full OpenSpec is justified, start with the smallest required proposal.
-Activate later lifecycle steps only after the change actually reaches them; do
-not stack explore, propose, apply, sync, and archive as one default workflow.
+Do not use full OpenSpec for documentation cleanup, one MCP tool/schema change,
+one modelling workflow correction, or speculative future work.
 
 ## Review Rules
 
-- Review structure before polishing wording.
-- Use `code-review-graph` concepts for large or cross-cutting changes.
-- Use `ponytail` when a simpler path can remove work.
-- Use `grilling` only when the user asks to stress-test a plan, decision, or
-  idea; it is not the implementation review step.
+- review the actual boundary before wording/style;
+- use [Review Index](../reviews/review-graph.md) for evidence/history;
+- use `code-review` only when independent post-implementation critique adds real
+  value;
+- use `grilling` when a plan/decision benefits from adversarial challenge;
+- use minimal/deletion-first reasoning rather than adding ceremony.
 
 ## Validation Rules
 
-- Verify the change against the relevant docs or tests.
-- If visual or runtime proof is missing, say so plainly.
-- Do not upgrade an assumption into a rule without proof.
-- If a decision has no validation yet, mark it and keep moving.
+- prove the claim at the level it requires;
+- static source proof does not become live Blockbench proof;
+- visual claims need current visual evidence;
+- unavailable runtime proof stays `LOCAL PROOF REQUIRED`;
+- no validation status should be upgraded merely because implementation looks
+  plausible.
+
+## Parent
+
+- [Knowledge Dashboard](../index.md)
+- [Decision Log](../decision-log.md)
