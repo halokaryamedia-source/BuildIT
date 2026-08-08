@@ -1,4 +1,5 @@
 import { VERSION } from "@/lib/constants";
+import bundledPromptManifest from "@/prompts/manifest.json";
 import { z } from "zod";
 
 // ============================================================================
@@ -24,11 +25,24 @@ const STORAGE_KEY_MANIFEST = "bbmcp_prompt_manifest";
 const STORAGE_KEY_VERSION = "bbmcp_prompt_manifest_version";
 const STORAGE_KEY_OVERRIDES = "bbmcp_prompt_overrides";
 
+const promptManifestSchema = z.object({
+  version: z.string(),
+  generatedAt: z.string(),
+  prompts: z.record(z.string(), z.string()),
+});
+
+// The canonical build scripts regenerate this JSON from mcp/prompts/*.md before
+// bundling. Keeping it in the module graph makes Local prompt content available
+// without network or filesystem access at runtime.
+const localManifest: PromptManifest = promptManifestSchema.parse(
+  bundledPromptManifest
+);
+
 // ============================================================================
 // State
 // ============================================================================
 
-let manifest: PromptManifest | null = null;
+let remoteManifest: PromptManifest | null = null;
 let overrides: Record<string, string> = {};
 let initialized = false;
 
@@ -54,7 +68,6 @@ function storageSet(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch (err) {
-    // QuotaExceededError — continue with in-memory only
     console.warn("[MCP] localStorage write failed:", err);
   }
 }
@@ -76,15 +89,9 @@ function getManifestUrl(): string {
   return `${CDN_BASE_URL}@v${VERSION}/${MANIFEST_PATH}`;
 }
 
-const promptManifestSchema = z.object({
-  version: z.string(),
-  generatedAt: z.string(),
-  prompts: z.record(z.string(), z.string()),
-});
-
 async function fetchManifestFromCDN(): Promise<PromptManifest> {
   const url = getManifestUrl();
-  console.log(`[MCP] Fetching prompt manifest from ${url}`);
+  console.log(`[MCP] Fetching optional prompt manifest from ${url}`);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -126,16 +133,14 @@ function loadCachedManifest(): PromptManifest | null {
   if (!raw) return null;
 
   try {
-    const parsed = JSON.parse(raw) as PromptManifest;
-    if (parsed.prompts && typeof parsed.prompts === "object") {
-      return parsed;
-    }
+    const parsed = promptManifestSchema.safeParse(JSON.parse(raw));
+    if (parsed.success) return parsed.data;
   } catch {
-    // Corrupted cache — clear it
-    storageRemove(STORAGE_KEY_MANIFEST);
-    storageRemove(STORAGE_KEY_VERSION);
+    // handled below
   }
 
+  storageRemove(STORAGE_KEY_MANIFEST);
+  storageRemove(STORAGE_KEY_VERSION);
   return null;
 }
 
@@ -168,79 +173,81 @@ function persistOverrides(): void {
   }
 }
 
+function getEffectiveManifest(): PromptManifest {
+  return {
+    version: localManifest.version,
+    generatedAt: localManifest.generatedAt,
+    // Remote content is fallback-only. Repository-owned Local prompt names
+    // always win so a CDN response cannot silently replace Local workflow rules.
+    prompts: {
+      ...(remoteManifest?.prompts ?? {}),
+      ...localManifest.prompts,
+    },
+  };
+}
+
 // ============================================================================
 // Public API
 // ============================================================================
 
 /**
- * Initialize the prompt loader. Loads overrides from localStorage,
- * checks the cache, and fetches from CDN if needed.
+ * Initialize the prompt loader.
  *
- * Call during plugin `onload()` before the server starts accepting requests.
- *
- * @param cdnEnabled - Whether to fetch from CDN (default: true).
- *   When false, only localStorage cache is used.
+ * Local/bundled prompts are always available and authoritative. User overrides
+ * remain highest priority. When CDN support is explicitly enabled, remote/cache
+ * content is loaded only as fallback for prompt names not present in Local.
  */
 export async function initPromptLoader(
-  cdnEnabled: boolean = true
+  cdnEnabled: boolean = false
 ): Promise<void> {
-  // Load user overrides
   overrides = loadOverrides();
+  remoteManifest = null;
 
-  // Check cache version
-  const cachedVersion = storageGet(STORAGE_KEY_VERSION);
-  const cacheHit = cachedVersion === VERSION;
-
-  if (cacheHit) {
-    manifest = loadCachedManifest();
-    if (manifest) {
-      console.log(
-        `[MCP] Prompt manifest loaded from cache (v${VERSION}, ${Object.keys(manifest.prompts).length} prompts)`
-      );
-      initialized = true;
-      return;
-    }
-  }
-
-  // Cache miss or stale — fetch from CDN if enabled
-  if (cdnEnabled) {
-    try {
-      manifest = await fetchManifestFromCDN();
-      cacheManifest(manifest);
-      console.log(
-        `[MCP] Prompt manifest fetched from CDN (v${VERSION}, ${Object.keys(manifest.prompts).length} prompts)`
-      );
-      initialized = true;
-      return;
-    } catch (err) {
-      console.error("[MCP] CDN fetch failed:", err);
-    }
-  }
-
-  // CDN failed or disabled — try stale cache as last resort
-  const staleManifest = loadCachedManifest();
-  if (staleManifest) {
-    manifest = staleManifest;
-    const staleVersion = cachedVersion ?? "unknown";
-    console.warn(
-      `[MCP] Using stale cached manifest (cached: v${staleVersion}, current: v${VERSION})`
-    );
-    initialized = true;
-    return;
-  }
-
-  // Nothing available
-  manifest = null;
-  initialized = true;
-  console.error(
-    "[MCP] No prompt manifest available — prompts will return empty content"
+  console.log(
+    `[MCP] Local prompt manifest loaded (v${localManifest.version}, ${Object.keys(localManifest.prompts).length} prompts)`
   );
+
+  if (cdnEnabled) {
+    const cachedVersion = storageGet(STORAGE_KEY_VERSION);
+    const cacheHit = cachedVersion === VERSION;
+
+    if (cacheHit) {
+      remoteManifest = loadCachedManifest();
+      if (remoteManifest) {
+        console.log(
+          `[MCP] Optional prompt fallback loaded from cache (v${VERSION}, ${Object.keys(remoteManifest.prompts).length} prompts)`
+        );
+      }
+    }
+
+    if (!remoteManifest) {
+      try {
+        remoteManifest = await fetchManifestFromCDN();
+        cacheManifest(remoteManifest);
+        console.log(
+          `[MCP] Optional prompt fallback fetched from CDN (v${VERSION}, ${Object.keys(remoteManifest.prompts).length} prompts)`
+        );
+      } catch (err) {
+        console.warn("[MCP] Optional CDN prompt fallback unavailable:", err);
+
+        const staleManifest = loadCachedManifest();
+        if (staleManifest) {
+          remoteManifest = staleManifest;
+          const staleVersion = cachedVersion ?? "unknown";
+          console.warn(
+            `[MCP] Using stale optional prompt fallback (cached: v${staleVersion}, current: v${VERSION})`
+          );
+        }
+      }
+    }
+  }
+
+  initialized = true;
 }
 
 /**
  * Get prompt content by name.
- * Priority: user override > manifest > empty string.
- * Synchronous — the manifest should already be loaded via `initPromptLoader()`.
+ * Priority: user override > bundled Local > optional remote fallback > empty.
  */
 export function getPromptContent(name: string): string {
   if (!initialized) {
@@ -250,14 +257,17 @@ export function getPromptContent(name: string): string {
     return "";
   }
 
-  // User override takes priority
   const override = overrides[name];
   if (override !== undefined && override !== "") {
     return override;
   }
 
-  // Fall back to manifest
-  return manifest?.prompts[name] ?? "";
+  const local = localManifest.prompts[name];
+  if (local !== undefined) {
+    return local;
+  }
+
+  return remoteManifest?.prompts[name] ?? "";
 }
 
 /**
@@ -269,7 +279,7 @@ export function setPromptOverride(name: string, content: string): void {
 }
 
 /**
- * Remove a user override, reverting to CDN/cached content.
+ * Remove a user override, reverting to the bundled Local prompt first.
  */
 export function clearPromptOverride(name: string): void {
   const { [name]: _, ...rest } = overrides;
@@ -292,30 +302,31 @@ export function getPromptOverrides(): Record<string, string> {
 }
 
 /**
- * Get all available prompt names from the manifest.
+ * Get all available prompt names from Local plus optional remote fallback.
  */
 export function getAvailablePromptNames(): string[] {
-  if (!manifest) return [];
-  return Object.keys(manifest.prompts);
+  return Object.keys(getEffectiveManifest().prompts);
 }
 
 /**
- * Get the loaded manifest (if any). For UI display.
+ * Get the effective prompt manifest for UI display. Local prompt names override
+ * any same-named remote entry.
  */
-export function getManifest(): PromptManifest | null {
-  if (!manifest) return null;
-  return { ...manifest, prompts: { ...manifest.prompts } };
+export function getManifest(): PromptManifest {
+  const effective = getEffectiveManifest();
+  return { ...effective, prompts: { ...effective.prompts } };
 }
 
 /**
- * Force re-fetch from CDN, bypassing cache.
+ * Explicitly refresh optional CDN fallback content. Local prompt names remain
+ * authoritative and cannot be replaced by the fetched manifest.
  */
 export async function refreshFromCDN(): Promise<void> {
   try {
-    manifest = await fetchManifestFromCDN();
-    cacheManifest(manifest);
+    remoteManifest = await fetchManifestFromCDN();
+    cacheManifest(remoteManifest);
     console.log(
-      `[MCP] Prompt manifest refreshed from CDN (v${VERSION}, ${Object.keys(manifest.prompts).length} prompts)`
+      `[MCP] Optional prompt fallback refreshed from CDN (v${VERSION}, ${Object.keys(remoteManifest.prompts).length} prompts)`
     );
   } catch (err) {
     console.error("[MCP] CDN refresh failed:", err);
