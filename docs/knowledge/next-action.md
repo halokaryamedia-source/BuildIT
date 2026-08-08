@@ -9,7 +9,7 @@ reconstructing prior chats.
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
   divergence by making modelling decisions evidence-backed instead of
   assumption-driven.
-- **Status:** `REFERENCE_FIDELITY_BATCH_CORRECTION_IMPLEMENTED`.
+- **Status:** `REFERENCE_FIDELITY_CUBE_TARGETING_HARDENED`.
 - **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
 - **G3 annotations:** paused.
@@ -18,11 +18,11 @@ reconstructing prior chats.
 
 Prior modelling tests showed:
 
-1. Cubes can be placed mainly because they fit/attach, then falsely treated as
-   approval even when the whole object is visibly wrong;
-2. rotations can become arbitrary/overcomplicated without a reference-visible
+1. Cubes could be placed mainly because they fit/attach, then falsely treated as
+   approval even when the whole object was visibly wrong;
+2. rotations could become arbitrary/overcomplicated without a reference-visible
    slope/orientation reason;
-3. pivots/origins can become abstract or distant because numeric fields are
+3. pivots/origins could become abstract or distant because numeric fields were
    filled without a real joint/attachment/transform purpose.
 
 Foundation, modelling skill, and Bedrock prompt rules are hardened against those
@@ -62,144 +62,95 @@ FRESH AFFECTED EVIDENCE
 SECONDARY GEOMETRY / HIERARCHY / TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Implemented Fidelity Instruments
+## Fidelity Instruments Implemented In Source
 
 ### `inspect_model_bounds`
 
-Read-only whole-Cube rendered envelope based on Blockbench
-`Cube.getGlobalVertexPositions()` and active world transforms. Returns raw
-structural facts only; no visual score or correction advice.
+Read-only whole-Cube rendered envelope using Blockbench global Cube vertices and
+active world transforms. Returns raw structural facts only.
 
 ### `capture_model_views`
 
-Canonical labeled 512×512 image observation using Blockbench's offscreen preview,
-with explicit front direction and model/explicit-envelope framing. It does not
-judge resemblance or change the active editor camera/project/model.
+Canonical labeled 512×512 image observation using Blockbench offscreen preview,
+explicit front direction, and model/explicit-envelope framing. It does not judge
+resemblance.
 
 ### `inspect_element`
 
 Focused authored-state read for one explicit Cube/Group. Duplicate names fail;
-UUID is preferred. It exposes Cube from/to/size/origin/rotation/visibility or
-Group origin/rotation/visibility/parent/child count without visual judgement.
-
-## Multi-Cube Correction — Implemented
-
-Audit of existing `modify_cube` showed it could affect multiple Cubes only by
-applying the **same** update to all matching/selected Cubes. A correction such as:
-
-```text
-body  → resize
-head  → translate
-front → rotate
-```
-
-therefore required several tool calls and several Undo entries even when those
-changes represented one primary relationship correction.
+UUID is preferred. Exposes the current authored transforms without deciding
+whether they are correct.
 
 ### `modify_cubes_batch`
 
-Implemented in `mcp/server/tools/cubes.ts`.
+Heterogeneous updates across several exact Cube UUIDs in one recoverable Undo
+unit. All UUIDs are preflighted before mutation and mutation failure reverts the
+opened edit.
 
-Public shape:
+## Cube Mutation Targeting — Hardened
+
+### `modify_cube`
+
+When `id` is supplied:
 
 ```text
-modify_cubes_batch {
-  updates: [
-    {
-      id: <exact Cube UUID>,
-      from?: [x,y,z],
-      to?: [x,y,z],
-      origin?: [x,y,z],
-      rotation?: [x,y,z],
-      visibility?: boolean
-    }
-  ]
-}
+UUID exact match
+→ otherwise exact unique name
+→ duplicate exact name = error with candidate UUIDs
+→ missing target = error
 ```
 
-Contract:
+It no longer silently modifies every Cube sharing the same exact name.
 
-- 1–32 update items;
-- UUID-only targeting; no names and no selection fallback;
-- every UUID must be unique in the batch;
-- every item must change at least one authored field;
-- numeric vectors must be finite;
-- **all targets are resolved before `Undo.initEdit`**;
-- each Cube may receive a different patch;
-- one `Undo.initEdit` / one successful `Undo.finishEdit` for the relationship;
-- mutation failure calls official Blockbench `Undo.cancelEdit(true)` and refreshes
-  Canvas, reverting the opened edit;
-- result returns final authored state for every modified Cube;
-- no UV/color/shade/inflate/reparent/planning/similarity/PASS behavior.
+The no-`id` selected-Cube fallback remains only for legacy compatibility. The
+normal Bedrock fidelity prompt uses confirmed UUIDs and must not rely on
+selection.
 
-Sample's batch implementation was used only as evidence. Local intentionally does
-not copy its broad UV/appearance surface or first-name-match targeting.
+### `place_cube`
+
+Hierarchy target is resolved **before Undo opens**:
+
+```text
+group omitted       → intentional root
+group = "root"      → intentional root
+exact Group UUID     → that Group
+exact unique name    → that Group
+missing name/UUID    → error
+ambiguous exact name → error with candidate UUIDs
+```
+
+The old `find(...) ?? "root"` behavior is removed. A misspelled/assumed group can
+no longer make a Cube appear successfully at root and masquerade as correct
+placement.
+
+Texture and hierarchy target preflight both happen before `Undo.initEdit`.
+`place_cube` and `modify_cube` now cancel/revert the opened edit when mutation
+fails after Undo starts. UI refresh is outside the successful Undo transaction so
+a post-commit Canvas refresh error does not attempt to cancel a completed edit.
 
 ### Prompt routing
 
-`mcp/prompts/bedrock.md` now says:
+`mcp/prompts/bedrock.md` now requires:
 
-```text
-one diagnosed Cube correction
-→ inspect_element
-→ modify_cube using the confirmed exact UUID
-
-one causal relationship spanning several Cube UUIDs
-→ inspect_element as needed
-→ modify_cubes_batch
-→ fresh affected canonical views
-```
-
-Do not batch unrelated cleanup or speculative changes.
+- exact Group UUID when a specific parent/bone is intended;
+- omitted group/explicit `root` only for intentional root placement;
+- exact confirmed Cube UUID for normal `modify_cube` corrections;
+- no reliance on guessed group names, duplicate Cube names, or selection state.
 
 ## Static Evidence
 
 Source proof establishes:
 
-1. `modify_cube` did not provide heterogeneous per-Cube updates in one call;
-2. `modify_cubes_batch` preflights all UUID targets before Undo;
-3. its important schema refinements live inside the registered `updates` field,
-   compatible with Local `createTool()` shape extraction;
-4. official Blockbench Undo types expose `cancelEdit(true)` for reverting an
-   unfinished edit;
-5. the batch tool changes only explicit authored geometry/visibility fields;
-6. `cubeToolDocs` already feeds the existing Cubes docs category, so no new docs
-   framework/registration surface was needed.
+1. legacy `modify_cube` multi-name targeting is replaced by UUID-first / unique-
+   name resolution;
+2. explicit `place_cube.group` can no longer silently fall back to root;
+3. target/group lookup happens before Undo;
+4. public tool descriptions match the stricter behavior;
+5. no camera, observation, UV, hierarchy implementation, or G3 source changed in
+   this targeting slice.
 
-Live Undo/runtime behavior remains `LOCAL PROOF REQUIRED` until the user later
-chooses local Blockbench testing. It is not the current blocker.
-
-## Current Safety Gap Exposed By The Same Audit
-
-The new batch path is stricter than two older Cube mutation paths.
-
-### `modify_cube`
-
-Current behavior when `id` is provided:
-
-```text
-Cube.all.filter(cube.uuid === id || cube.name === id)
-```
-
-Therefore a duplicated exact name can silently modify several Cubes. If `id` is
-omitted, it falls back to current selection. This is legacy convenience but is
-unsafe as the normal reference-fidelity correction path unless exact targeting is
-made explicit.
-
-### `place_cube`
-
-Current provided group resolution ends with:
-
-```text
-...find(group name/uuid) ?? "root"
-```
-
-So a misspelled/nonexistent requested group silently places new Cubes at root.
-That behavior directly conflicts with the new rule that structural attachment is
-not approval and that authored placement must not be assumption-driven.
-
-Also keep failure/preflight ordering under review so an error that can be known
-before mutation is discovered before opening Undo.
+Live Blockbench behavior remains `LOCAL PROOF REQUIRED` until the user later
+chooses runtime testing. Local proof is not the current blocker.
 
 ## Holds
 
@@ -207,7 +158,6 @@ before mutation is discovered before opening Undo.
 - **G3 annotations:** paused.
 - **G4 old screenshot project restoration:** canonical fidelity capture avoids
   that path.
-- **G5 bone-rigging Undo preflight:** held until hierarchy runtime work resumes.
 - UV additions, save/open proof, and final public-surface reduction remain later.
 
 ## Do Not Reintroduce
@@ -224,19 +174,26 @@ before mutation is discovered before opening Undo.
 
 ## Next Step
 
-Harden **existing Cube mutation targeting only** in `mcp/server/tools/cubes.ts`:
+Audit the current **Group / pivot authoring surface** because arbitrary pivots and
+rotations remain a confirmed modelling failure pattern.
 
-1. when `modify_cube.id` is supplied, resolve UUID first and require an exact
-   unique name if name compatibility is retained; never silently mutate multiple
-   same-name Cubes;
-2. keep selection fallback only if preserving existing compatibility requires it,
-   but the Bedrock fidelity prompt must continue to use confirmed UUIDs;
-3. when `place_cube.group` is explicitly supplied, fail if that group does not
-   exist instead of silently falling back to root; omitted group may still mean
-   root;
-4. move resolvable target/group preflight before `Undo.initEdit`;
-5. use the smallest existing Undo cancellation pattern only where a mutation can
-   still fail after Undo starts.
+Inspect only the current owners, primarily:
 
-Do not change hierarchy tools, UV behavior, camera, G3, or broaden the Cube API in
-this slice.
+```text
+mcp/server/tools/element.ts      → add_group inputs / parent resolution
+mcp/server/tools/animation.ts    → bone_rigging pivot/hierarchy actions
+```
+
+Questions to answer before changing anything:
+
+1. does `add_group` force callers to invent rotation/pivot values that should be
+   optional/defaulted instead;
+2. can a requested parent/group target silently fall back or resolve ambiguously;
+3. does `bone_rigging` preflight every action target before `Undo.initEdit`;
+4. can pivot changes be made only against an explicit Group UUID/unique target;
+5. what is the smallest change that makes pivot/hierarchy authoring causal and
+   recoverable without creating a new rigging framework.
+
+If an existing path already satisfies a requirement, keep it. Do not add a new
+pivot planner, automatic joint inference, G3 work, UV changes, or animation
+framework in the same slice.
