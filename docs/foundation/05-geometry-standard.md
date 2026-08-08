@@ -1,7 +1,7 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 1.4  
+**Version:** 1.5  
 **Updated:** 2026-08-08
 
 ## Purpose
@@ -113,6 +113,29 @@ Reject:
 - filling gaps just so everything touches;
 - moving parts until numeric overlap exists and calling that approval;
 - retaining a visibly wrong primary mass because later geometry depends on it.
+
+## Mutation Target Identity
+
+A mutation target must be intentional just like a geometry transform.
+
+For normal single-Cube correction:
+
+```text
+inspect / locate intended Cube
+→ confirm target identity
+→ modify_cube(id=<explicit target>)
+```
+
+Current Local requires `modify_cube.id`. UUID is preferred. Exact unique-name
+compatibility may resolve to one Cube, but ambiguous names fail. Editor selection
+is **not** an implicit mutation target.
+
+For a correction spanning several Cubes, use `modify_cubes_batch` with explicit
+Cube UUIDs rather than relying on a current editor selection set.
+
+Do not treat UI selection as durable model identity. Selection can change for
+navigation/review reasons and is not evidence that the selected element is the
+one diagnosed by the Reference Fidelity Loop.
 
 ## Dimensions / Coordinate Frame
 
