@@ -1,145 +1,156 @@
 # BlockIT — Product Agent Policy
 
-**Status:** Active  
-**Version:** 1.1
+**Status:** Active Policy  
+**Version:** 1.2  
+**Updated:** 2026-08-08
 
-## 1. Purpose
+## Purpose
 
-Define only the **BlockIT-specific** constraints that an agent must preserve.
+Define BlockIT-specific constraints only. Generic working behavior, session
+continuity, skill budget, independent judgment, proof economy, and evidence
+labels live in root `AGENTS.md`.
 
-Generic working behavior, session continuity, skill budget, independent
-judgment, file-creation rules, and proof economy live in root `AGENTS.md` and
-must not be duplicated here.
+## Product Boundary
 
-## 2. Product Boundary
+BlockIT helps an agent create/revise clean editable Minecraft Bedrock Entity
+models in Blockbench through MCP from an approved visual Modelling Brief.
 
-BlockIT exists to help an agent create clean, editable Minecraft Bedrock models
-in Blockbench through MCP from an approved Model Reference.
+The product is object-agnostic. Fixtures/Golden Samples/old experiments provide
+evidence, not universal modelling rules.
 
-The product is object-agnostic. A test fixture, Golden Sample, animal, prop, or
-single successful experiment is evidence, not a universal runtime rule.
-
-## 3. Mandatory Product Rules
+## Mandatory Product Rules
 
 The agent must:
 
-- treat the approved Model Reference as a visual modelling brief, not pixel
-  calibration;
-- use declared target dimensions as the numeric geometry envelope/target only
-  where current policy/source actually defines them;
-- reason about the **whole form** before polishing local geometry;
-- keep MCP responsible for technical operations, not automatic anatomy or
-  semantic cube-decomposition authority;
-- preserve a clean/editable Bedrock project rather than optimizing only for a
-  screenshot;
-- distinguish structural/tool success from visual quality;
-- require fresh visual evidence before claiming visual correctness;
-- require live evidence before claiming Blockbench/MCP runtime behavior;
-- mark unproven capabilities/behavior `Needs Validation` rather than converting
-  them into permanent policy.
+- treat the approved Modelling Brief as visual guidance, not pixel calibration;
+- use approved numeric dimensions as the target envelope when available;
+- reason about whole form before local detail;
+- establish coordinate frame + Primary Form Hypothesis before important primary
+  exact transforms;
+- author new Cubes with intentional explicit extents;
+- use rotation only for visible form/slope or required motion;
+- use meaningful pivots only for real transform/joint/attachment needs;
+- keep MCP responsible for execution/observation, not automatic anatomy or visual
+  approval;
+- distinguish structural/tool success from visual correctness;
+- use fresh visual evidence before claiming resemblance;
+- require live proof before claiming Blockbench/MCP runtime behavior.
 
-## 4. Hard No-Guess Rule
+## Hard No-Guess Rule
 
-For modelling, reference, MCP, and reporting work:
+Do not invent or silently default material modelling decisions merely so an
+operation succeeds.
 
-- an inference or plausible interpretation is not a fact/requirement/result;
-- do not invent cube transforms, pivots, dimensions, anatomy, or attachments
-  that the available reference/evidence cannot support;
-- valid schemas, successful tool calls, saved files, bounds, hierarchy, overlap,
-  projections, or metrics do not prove resemblance;
-- do not hide missing evidence with confidence scores, fallback values,
-  compensating Cubes, or extra compatibility layers;
-- if the needed evidence is unavailable, report the exact unverified boundary.
+In particular:
 
-## 5. Whole-Form Rule
+- no default Cube extent may stand in for an unmade geometry decision;
+- no non-zero new Cube rotation may silently inherit an unchosen pivot;
+- no missing requested Group may silently fall back to root;
+- no ambiguous name may silently target multiple elements;
+- no arbitrary pivot/rotation may be accepted because the schema permits it;
+- no compensating Cubes may hide an unresolved global-form error.
 
-The modelling workflow is whole-form-first:
+Missing evidence remains uncertainty. Use the root evidence labels (`UNKNOWN`,
+`LOCAL PROOF REQUIRED`, etc.) instead of filling gaps with confidence/fallbacks.
+
+## Reference Fidelity Rule
+
+Canonical sequence:
 
 ```text
-approved reference
-→ whole-form interpretation
-→ primary geometry pass
-→ global visual gate
+approved Modelling Brief
+→ cross-view consistency
+→ coordinate frame + target envelope
+→ Primary Form Hypothesis
+→ explicit coarse primary Cubes
+→ structural bounds observation
+→ canonical model views
+→ reference ↔ model visual gate
+→ GLOBAL rebuild or LOCAL inspect/correct
 → secondary geometry / hierarchy / pivots
-→ full geometry review
-→ UV / texture
-→ optional animation
-→ final validation
+→ texture / optional animation / final proof
 ```
 
-Do not reintroduce universal support-first/section-first/per-cube approval rules.
-Object-specific construction order comes from the active reference and actual
-attachment/shape needs.
+Detailed procedure: [03-modelling-workflow.md](03-modelling-workflow.md).
 
-See `03-modelling-workflow.md` for the canonical sequence.
+## Global vs Local Failure
 
-## 6. Visual Rule
+### Global
 
-A model is not visually accepted because it is structurally valid.
+If the intended object is unrecognizable or several primary relationships fail
+together, invalidate/revise the primary scaffold. Do not preserve it because many
+Cubes already exist.
 
-Visual approval requires fresh evidence from the current revision and concrete
-criteria such as global silhouette, major proportions/masses, orientation,
-required parts, and visible connections.
+### Local
 
-Do not require screenshots after every Cube or mutation. Capture only when a
-view answers a concrete visual question or validates a defined gate.
+If whole form is sound and one bounded relationship is wrong, inspect the exact
+authored target and apply a causal correction.
 
-See `07-visual-validation.md` for the canonical visual policy.
+After two unsuccessful corrections in the same direction without new evidence,
+stop patching and revise the hypothesis.
 
-## 7. MCP Capability Rule
+## Visual Rule
 
-Before product behavior depends on an MCP/Blockbench capability, establish the
-capability from current source and, where the claim is runtime-specific, live
-proof.
+Visual `PASS` cannot be based on:
 
-Relevant questions include:
+- all Cubes existing;
+- attachment/overlap;
+- valid coordinates/hierarchy/bounds;
+- tool success;
+- save success;
+- similarity scores.
 
-- does the tool/capability currently exist?
-- what input/output contract does it actually expose?
-- what failure/recovery behavior is implemented?
-- does the change persist/save as expected?
-- is undo/recovery available when the operation can mutate the project?
+See [07-visual-validation.md](07-visual-validation.md).
 
-Historical experiment notes are not runtime guarantees.
+## Runtime Capability Rule
 
-## 8. Execution-Channel Boundary
+Before depending on a Blockbench/MCP capability, inspect current Local source.
+When the claim is live/runtime/visual, require the corresponding local proof.
 
-- **ChatGPT → GitHub** may design, inspect, edit, and prepare repository changes
-  but must not claim local Blockbench/MCP runtime proof.
-- **Codex local** is the intended final proof environment for changes that
-  require Blockbench, MCP, shell/build, or live visual behavior.
+Current source implementation does not automatically upgrade to
+`CURRENT-PROJECT VERIFIED`.
 
-Do not add fake GitHub validation to compensate for local-only proof.
+## Execution Channel
 
-## 9. Anti-Slop Product Failures
+### ChatGPT → GitHub
 
-Reject these product-level patterns:
+May inspect/edit source/docs and prove static contracts. Must not claim live
+Blockbench/MCP/visual success.
 
-- locally plausible Cubes forming a globally wrong model;
-- adding detail before primary form is coherent;
-- compensating geometry that hides a proportion/relationship error;
-- fixture-specific anatomy/build order becoming generic policy;
-- mesh/similarity/numeric diagnostics becoming modelling authority;
-- repeated patch/version churn without a new hypothesis or visible improvement;
-- technically successful output that is unusable for the downstream modeller.
+### Codex Local
 
-## 10. Source Boundary
+Use Blockbench + MCP for live runtime/visual proof when the task reaches that
+boundary.
 
-Claims about Blockbench, Minecraft Bedrock, or MCP must come from current
-verified documentation/source/implementation or reproducible proof.
+Do not create fake GitHub substitutes for local-only proof.
 
-Use the dedicated foundation notes for domain policy:
+## Anti-Slop Product Failures
 
-- `01-project-overview.md` — product purpose;
-- `02-product-requirements.md` — product scope/requirements;
-- `03-modelling-workflow.md` — modelling sequence;
-- `04-reference-guide.md` — Model Reference policy;
-- `05-geometry-standard.md` — geometry standards;
-- `06-texture-standard.md` — texture standards;
-- `07-visual-validation.md` — visual evidence/acceptance;
-- `08-source-selection.md` — source selection;
-- `09-merge-map.md` — source/repository merge boundaries;
-- `validation-report.md` — verified/unverified findings.
+Reject:
 
-Open only the note relevant to the active task. Do not load the entire
-foundation by default.
+- locally plausible Cubes forming a globally wrong object;
+- Cube existence/attachment reported as progress/approval;
+- exact transforms invented before a coherent spatial hypothesis;
+- arbitrary multi-axis rotations;
+- arbitrary/distant pivots;
+- detail before coherent primary form;
+- repeated patch churn without a new diagnosis;
+- fixture-specific rules promoted to generic policy;
+- SF3D/mesh/IoU/similarity authority;
+- technically successful output unusable by a downstream modeller.
+
+## Source Boundary
+
+Use the matching owner:
+
+- [Project Overview](01-project-overview.md)
+- [Product Requirements](02-product-requirements.md)
+- [Modelling Workflow](03-modelling-workflow.md)
+- [Reference Guide](04-reference-guide.md)
+- [Geometry Standard](05-geometry-standard.md)
+- [Texture Standard](06-texture-standard.md)
+- [Visual Validation](07-visual-validation.md)
+- [Validation Report](validation-report.md)
+
+Historical [Source Selection](08-source-selection.md) / [Merge Map](09-merge-map.md)
+remain provenance records, not current runtime authority.
