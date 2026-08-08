@@ -139,9 +139,9 @@ export const placeCubeParameters = z.object({
 export const modifyCubeParameters = z.object({
   id: z
     .string()
-    .optional()
+    .min(1)
     .describe(
-      "Exact Cube UUID or exact unique name. UUID is preferred. If omitted, the legacy selected-Cube fallback is used."
+      "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target."
     ),
   name: z.string().optional().describe("New name of the cube."),
   origin: z
@@ -221,7 +221,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -444,17 +444,7 @@ createTool(cubeToolDocs[1].name, {
     color,
     visibility,
   }) {
-    let cubes: Cube[];
-    if (id) {
-      // Explicit target means exactly one Cube. UUID wins; exact-name compatibility
-      // is retained only when the name is unique.
-      cubes = [resolveUniqueCube(id)];
-    } else {
-      cubes = [...Cube.selected];
-      if (!cubes.length) {
-        throw new Error("No cube selected and no id provided. Select a cube or provide an exact Cube UUID.");
-      }
-    }
+    const cubes = [resolveUniqueCube(id)];
 
     cubes.forEach((cube) =>
       requireIntentionalRotationActivation(cube, rotation, origin)
