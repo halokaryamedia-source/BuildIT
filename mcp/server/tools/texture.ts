@@ -783,26 +783,32 @@ export function registerTextureTools() {
     ...textureToolDocs[2],
     async execute({ name, textures, is_material }) {
       const textureList = textures?.map(resolveAddTextureGroupTexture) ?? [];
-
-      Undo.initEdit({
-        elements: [],
-        outliner: true,
-        collections: [],
-        textures: [],
-      });
-
       const textureGroup = new TextureGroup({
         name,
         is_material,
-      }).add();
-
-      textureList.forEach((texture) => {
-        texture.extend({
-          group: textureGroup.uuid,
-        });
       });
 
-      Undo.finishEdit("Agent added texture group");
+      Undo.initEdit({
+        texture_groups: [],
+        textures: textureList,
+      });
+
+      try {
+        textureGroup.add();
+
+        textureList.forEach((texture) => {
+          texture.extend({
+            group: textureGroup.uuid,
+          });
+        });
+
+        Undo.finishEdit("Agent added texture group");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
       Canvas.updateAll();
 
       return `Added texture group ${textureGroup.name} with ID ${textureGroup.uuid}`;
