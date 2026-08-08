@@ -1,61 +1,62 @@
-# BlockIT Merge Map
+# BlockIT Merge Map — Historical Adoption Record
 
-This document turns source selection into a concrete merge decision.
+**Status:** Historical Record  
+**Updated classification:** 2026-08-08
 
-## Keep From `jasonjgardner/blockbench-mcp-plugin`
+## Purpose
 
-Keep the Blockbench plugin shell and the parts that already match the current workspace goal:
+This note records the earlier merge/adoption principle used while forming the
+current Local BlockIT workspace from upstream references.
 
-- `index.ts`
-- `server/server.ts`
-- `server/tools.ts`
-- `server/resources.ts`
-- `server/net.ts`
-- `lib/factories.ts`
-- `lib/constants.ts`
-- `lib/util.ts`
-- `lib/zodObjects.ts`
-- `ui/index.ts`
-- `ui/settings.ts`
-- `build/docs-manifest.ts`
-- `build/docs.ts`
-- `prompts/manifest.json`
-- `prompts/*.md`
+It no longer describes a pending merge. Current Local source is already the
+implementation authority.
 
-## Borrow From `sigee-min/ashfox`
+## Historical Decision
 
-Borrow only the parts that add safety, structure, or maintainability without changing the Blockbench-first shape:
+The adopted direction was:
 
-- `packages/runtime/src/config.ts`
-- `packages/runtime/src/dispatcher.ts`
-- `packages/runtime/src/logging.ts`
-- `packages/runtime/src/session.ts`
-- `packages/runtime/src/server.ts`
-- `packages/backend-core/src/errors.ts`
-- `packages/backend-core/src/locks.ts`
-- `packages/backend-core/src/persistence.ts`
-- `packages/backend-core/src/registry.ts`
-- `packages/contracts/src/mcpSchemas/*`
-- `packages/contracts/src/types/*`
+- keep the Blockbench-first plugin/MCP shape;
+- borrow only safety/contract ideas that materially improved it;
+- reject unrelated applications/engines and duplicate ways to solve the same
+  problem;
+- keep generated output secondary to source;
+- keep the workspace readable rather than mirroring upstream directory layouts.
 
-## Drop From Both
+## Current Merge Rule
 
-Do not carry these forward unless a later requirement proves they are needed:
+For any future upstream adoption:
 
-- `apps/web`
-- `apps/worker`
-- `apps/mcp-gateway`
-- Hytale-specific helpers and prompts
-- generated output that is not source of truth
-- duplicate path names that make the workspace harder to read
+```text
+current Local gap proved?
+↓
+existing owner cannot solve it cleanly?
+↓
+yes → inspect smallest useful upstream idea
+↓
+adapt into the current owner
+```
 
-## Merge Rule
+Do **not**:
 
-If a source file only adds a second way to do the same thing, do not merge it.
+- copy an upstream subsystem wholesale because it exists;
+- restore stale `mcp/workflow/` or nested skill paths;
+- create a parallel runtime/framework;
+- revive Hytale/generic mesh/PBR scope without a current requirement;
+- import generated docs/output as implementation authority.
 
-If a source file gives us a clearer contract, a safer runtime flow, or a simpler maintenance path, keep it.
+## Current Local Result
 
-## Practical Outcome
+- `mcp/` is the active Blockbench MCP plugin/runtime.
+- `.agents/skills/` is the only canonical repository-wide skill root.
+- `docs/foundation/` is durable product/modelling policy.
+- `docs/knowledge/` is the Obsidian project-memory vault.
+- `workspace/` stores per-model project packages.
 
-- `mcp/` stays the active working plugin.
-- `docs/` records the decision boundary so future updates stay consistent.
+Current Reference Fidelity implementation and ownership are documented in the
+[Implementation Map](../knowledge/implementation-map.md).
+
+## Related
+
+- [Source Selection](08-source-selection.md)
+- [Source Map](../knowledge/sources/source-map.md)
+- [Module Map](../knowledge/modules/module-map.md)
