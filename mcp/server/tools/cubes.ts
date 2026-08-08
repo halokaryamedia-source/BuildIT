@@ -6,6 +6,50 @@ import { cubeSchema } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
 import { getProjectTexture } from "@/lib/util";
 
+const finiteVec3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
+const cubeCorrectionUpdateSchema = z
+  .object({
+    id: z
+      .string()
+      .min(1)
+      .describe(
+        "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element."
+      ),
+    origin: finiteVec3Schema
+      .optional()
+      .describe("New authored Cube pivot/origin."),
+    from: finiteVec3Schema
+      .optional()
+      .describe("New authored Cube from coordinates."),
+    to: finiteVec3Schema
+      .optional()
+      .describe("New authored Cube to coordinates."),
+    rotation: finiteVec3Schema
+      .optional()
+      .describe("New authored Cube rotation in degrees."),
+    visibility: z
+      .boolean()
+      .optional()
+      .describe("New Cube visibility."),
+  })
+  .refine(
+    (update) =>
+      update.origin !== undefined ||
+      update.from !== undefined ||
+      update.to !== undefined ||
+      update.rotation !== undefined ||
+      update.visibility !== undefined,
+    {
+      message:
+        "Each update must change at least one authored field: origin, from, to, rotation, or visibility.",
+    }
+  );
+
 export const placeCubeParameters = z.object({
   elements: z.array(cubeSchema).min(1).describe("Array of cubes to place."),
   texture: z
@@ -97,6 +141,22 @@ export const modifyCubeParameters = z.object({
     .describe("Whether the cube is visible or not."),
 });
 
+export const modifyCubesBatchParameters = z.object({
+  updates: z
+    .array(cubeCorrectionUpdateSchema)
+    .min(1)
+    .max(32)
+    .refine(
+      (updates) => new Set(updates.map((update) => update.id)).size === updates.length,
+      {
+        message: "Each Cube UUID may appear only once in a batch correction.",
+      }
+    )
+    .describe(
+      "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit."
+    ),
+});
+
 export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
@@ -120,7 +180,37 @@ export const cubeToolDocs: ToolSpec[] = [
     parameters: modifyCubeParameters,
     status: STATUS_STABLE,
   },
+  {
+    name: "modify_cubes_batch",
+    description:
+      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+    annotations: {
+      title: "Modify Cubes Batch",
+      destructiveHint: true,
+    },
+    parameters: modifyCubesBatchParameters,
+    status: STATUS_STABLE,
+  },
 ];
+
+type BatchUpdate = z.infer<typeof cubeCorrectionUpdateSchema>;
+
+function finalCubeState(cube: Cube) {
+  return {
+    uuid: cube.uuid,
+    name: cube.name,
+    from: [...cube.from] as [number, number, number],
+    to: [...cube.to] as [number, number, number],
+    size: [
+      cube.to[0] - cube.from[0],
+      cube.to[1] - cube.from[1],
+      cube.to[2] - cube.from[2],
+    ] as [number, number, number],
+    origin: [...cube.origin] as [number, number, number],
+    rotation: [...cube.rotation] as [number, number, number],
+    visibility: cube.visibility !== false,
+  };
+}
 
 export function registerCubesTools() {
 createTool(cubeToolDocs[0].name, {
@@ -258,4 +348,69 @@ createTool(cubeToolDocs[1].name, {
       .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
   },
 }, cubeToolDocs[1].status);
+
+createTool(cubeToolDocs[2].name, {
+  ...cubeToolDocs[2],
+  async execute({ updates }) {
+    if (!Project) {
+      throw new Error(
+        "No project is open. Open or create the intended Bedrock project before modifying Cubes."
+      );
+    }
+
+    const targets: Array<{ cube: Cube; update: BatchUpdate }> = updates.map(
+      (update) => {
+        const cube = (Cube.all ?? []).find(
+          (candidate: Cube) => candidate.uuid === update.id
+        );
+        if (!cube) {
+          throw new Error(
+            `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
+          );
+        }
+        return { cube, update };
+      }
+    );
+
+    Undo.initEdit({
+      elements: targets.map(({ cube }) => cube),
+      outliner: true,
+      collections: [],
+    });
+
+    try {
+      for (const { cube, update } of targets) {
+        cube.extend({
+          origin: (update.origin ?? cube.origin) as [number, number, number],
+          from: (update.from ?? cube.from) as [number, number, number],
+          to: (update.to ?? cube.to) as [number, number, number],
+          rotation: (update.rotation ?? cube.rotation) as [number, number, number],
+          visibility: update.visibility ?? cube.visibility,
+        });
+      }
+
+      Undo.finishEdit("Agent corrected multiple cubes");
+      Canvas.updateAll();
+    } catch (error) {
+      Undo.cancelEdit(true);
+      Canvas.updateAll();
+      throw error;
+    }
+
+    const result = {
+      modified: targets.length,
+      cubes: targets.map(({ cube }) => finalCubeState(cube)),
+    };
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Corrected ${targets.length} Cubes in one Undo unit.`,
+        },
+      ],
+      structuredContent: result,
+    };
+  },
+}, cubeToolDocs[2].status);
 }
