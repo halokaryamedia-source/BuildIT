@@ -125,8 +125,9 @@ path may use `development-brief` alone. Never stack overlapping specialists.
 - **Critique:** `grilling` for a plan/decision/idea when adversarial scrutiny is
   requested or clearly needed before commitment.
 
-`code-review`, `evidence-gate`, GSD-style discovery, OpenSpec, and CodeGraph are
-conditional escalations, not default layers.
+`code-review`, GSD-style discovery, OpenSpec, and CodeGraph are conditional
+escalations, not default layers. Evidence escalation is baseline behavior below,
+not another skill.
 
 Detailed triggers live in `docs/knowledge/skills/activation-matrix.md`.
 
@@ -209,6 +210,36 @@ the likely failure, then stop when the acceptance criteria have enough evidence.
 Do not create tests, CI, fixtures, screenshots, builds, or validation artifacts
 solely to look rigorous. Do not re-run an unchanged check after it already
 established the required evidence.
+
+## Evidence Status Escalation
+
+Do not use a separate `evidence-gate` skill. When a **material** support,
+feasibility, compatibility, or runtime claim is uncertain, disputed,
+version-sensitive, or blocking completion, classify the evidence before acting:
+
+- **CURRENT-PROJECT VERIFIED** — the exact/equivalent claim has sufficient proof
+  in the current target project/environment. A live/runtime/visual claim requires
+  the corresponding live/runtime/visual proof; static inspection alone cannot
+  upgrade it.
+- **OFFICIALLY VERIFIED** — current authoritative upstream documentation supports
+  the exact target context, but current-project integration/runtime success is
+  not yet proven.
+- **LOCAL PROOF REQUIRED** — the claim is plausible and sufficiently supported to
+  proceed to one targeted Codex/local proof, but must not be reported as verified
+  yet.
+- **UNSUPPORTED** — available evidence shows the requested method/capability is
+  not reliably supported for the current target.
+- **UNKNOWN** — evidence is insufficient or materially conflicting; do not guess.
+
+Use these labels only when they help resolve a real evidence problem; routine
+text/source changes do not need ceremonial status tagging.
+
+Historical samples, old projects, screenshots, or previous implementations may
+provide context but cannot by themselves justify `CURRENT-PROJECT VERIFIED` for
+a different current target. If the literal user-suggested method is unsupported
+but the goal can be achieved by a better method, handle that through
+**Independent Judgment**: reject/redirect the method and recommend the smallest
+supported path instead of inventing another evidence status.
 
 ## User-Facing Communication
 
