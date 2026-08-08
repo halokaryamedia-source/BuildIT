@@ -110,14 +110,39 @@ export const boneRiggingParameters = z.object({
     .describe("Action to perform on the bone structure."),
   bone_data: z
     .object({
-      name: z.string().describe("Name of the bone."),
-      parent: z.string().optional().describe("Parent bone name."),
-      origin: vector3Schema.optional().describe("Pivot point of the bone."),
-      rotation: vector3Schema.optional().describe("Initial rotation of the bone."),
+      name: z
+        .string()
+        .min(1)
+        .describe(
+          "For create: new bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
+        ),
+      new_name: z
+        .string()
+        .min(1)
+        .optional()
+        .describe("New bone name required by the rename action."),
+      parent: z
+        .string()
+        .optional()
+        .describe(
+          "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root)."
+        ),
+      origin: vector3Schema
+        .optional()
+        .describe(
+          "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot."
+        ),
+      rotation: vector3Schema
+        .optional()
+        .describe(
+          "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason."
+        ),
       children: z
         .array(z.string())
         .optional()
-        .describe("Names of elements to add to this bone."),
+        .describe(
+          "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation."
+        ),
       ik_enabled: z
         .boolean()
         .optional()
@@ -125,8 +150,10 @@ export const boneRiggingParameters = z.object({
       ik_target: z
         .string()
         .optional()
-        .describe("Target bone for IK chain."),
-      mirror_axis: axisEnum.optional().describe("Axis to mirror the bone across."),
+        .describe("Existing target Group UUID or exact unique name for IK."),
+      mirror_axis: axisEnum
+        .optional()
+        .describe("Axis required by mirror; no implicit mirror axis is assumed."),
     })
     .describe("Bone configuration data."),
 });
@@ -282,7 +309,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates and manipulates the bone structure (rig) of a model for animation.",
+      "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -323,6 +350,50 @@ export const animationToolDocs: ToolSpec[] = [
     status: STATUS_EXPERIMENTAL,
   },
 ];
+
+function resolveRigGroup(reference: string): Group {
+  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Group.all.filter(
+    (group: Group) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: Group) => `${group.name} (${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID.`
+  );
+}
+
+function resolveRigElement(reference: string): OutlinerElement {
+  const uuidMatch = Outliner.elements.find(
+    (element: OutlinerElement) => element.uuid === reference
+  );
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Outliner.elements.filter(
+    (element: OutlinerElement) => element.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Outliner element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((element: OutlinerElement) => `${element.name} (${element.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Outliner element "${reference}" not found. Use list_outline to confirm the intended child UUID.`
+  );
+}
 
 export function registerAnimationTools() {
 createTool(
@@ -627,140 +698,172 @@ createTool(
   {
     ...animationToolDocs[3],
     async execute({ action, bone_data }) {
+      let targetBone: Group | undefined;
+      let parentBone: Group | "root" | undefined;
+      let childElements: OutlinerElement[] = [];
+      let ikTarget: Group | undefined;
+
+      // Action-specific preflight happens before Undo. Nothing below may rely on
+      // first-name matches, missing-target fallbacks, or invented defaults.
+      switch (action) {
+        case "create":
+          parentBone = bone_data.parent
+            ? resolveRigGroup(bone_data.parent)
+            : "root";
+          childElements = (bone_data.children ?? []).map(resolveRigElement);
+          if (bone_data.ik_enabled) {
+            if (!bone_data.ik_target) {
+              throw new Error(
+                "ik_target is required when creating a bone with ik_enabled=true."
+              );
+            }
+            ikTarget = resolveRigGroup(bone_data.ik_target);
+          }
+          break;
+
+        case "parent":
+          targetBone = resolveRigGroup(bone_data.name);
+          if (!bone_data.parent) {
+            throw new Error(
+              "parent is required for the parent action. Use unparent to move a bone to root."
+            );
+          }
+          parentBone = resolveRigGroup(bone_data.parent);
+          if (targetBone === parentBone) {
+            throw new Error("A bone cannot be parented to itself.");
+          }
+          break;
+
+        case "unparent":
+        case "delete":
+          targetBone = resolveRigGroup(bone_data.name);
+          break;
+
+        case "rename":
+          targetBone = resolveRigGroup(bone_data.name);
+          if (!bone_data.new_name) {
+            throw new Error("new_name is required for the rename action.");
+          }
+          break;
+
+        case "set_pivot":
+          targetBone = resolveRigGroup(bone_data.name);
+          if (!bone_data.origin) {
+            throw new Error(
+              "origin is required for set_pivot. Inspect the Group and provide the evidence-backed joint/attachment transform center explicitly."
+            );
+          }
+          break;
+
+        case "set_ik":
+          targetBone = resolveRigGroup(bone_data.name);
+          if (bone_data.ik_target) {
+            ikTarget = resolveRigGroup(bone_data.ik_target);
+          }
+          break;
+
+        case "mirror":
+          targetBone = resolveRigGroup(bone_data.name);
+          if (!bone_data.mirror_axis) {
+            throw new Error(
+              "mirror_axis is required for mirror. No implicit axis is assumed."
+            );
+          }
+          break;
+      }
+
       Undo.initEdit({
         outliner: true,
-        elements: [],
-        groups: [],
+        elements: childElements,
+        groups: targetBone ? [targetBone] : [],
       });
 
       let result = "";
+      try {
+        switch (action) {
+          case "create": {
+            const group = new Group({
+              name: bone_data.name,
+              origin: bone_data.origin ?? [0, 0, 0],
+              rotation: bone_data.rotation ?? [0, 0, 0],
+            }).init();
 
-      switch (action) {
-        case "create": {
-          const group = new Group({
-            name: bone_data.name,
-            origin: bone_data.origin || [0, 0, 0],
-            rotation: bone_data.rotation || [0, 0, 0],
-          }).init();
+            group.addTo(parentBone ?? "root");
+            childElements.forEach((element) => element.addTo(group));
 
-          // Set parent
-          if (bone_data.parent) {
-            const parent = Group.all.find((g) => g.name === bone_data.parent);
-            if (parent) {
-              group.addTo(parent);
+            if (bone_data.ik_enabled && ikTarget) {
+              group.ik_enabled = true;
+              // Keep Blockbench's existing string field while resolving the
+              // target first so a typo/ambiguous name cannot silently survive.
+              group.ik_target = ikTarget.uuid;
             }
+
+            result = `Created bone "${group.name}" with UUID ${group.uuid}`;
+            break;
           }
 
-          // Add children elements
-          if (bone_data.children) {
-            bone_data.children.forEach((childName) => {
-              const element = Outliner.elements.find(
-                (e) => e.name === childName
-              );
-              if (element) {
-                element.addTo(group);
-              }
-            });
+          case "parent": {
+            targetBone!.addTo(parentBone!);
+            result = `Parented "${targetBone!.name}" to "${(parentBone as Group).name}"`;
+            break;
           }
 
-          // Set up IK if requested
-          if (bone_data.ik_enabled && bone_data.ik_target) {
-            // @ts-ignore
-            group.ik_enabled = true;
-            // @ts-ignore
-            group.ik_target = bone_data.ik_target;
+          case "unparent": {
+            targetBone!.addTo("root");
+            result = `Unparented "${targetBone!.name}"`;
+            break;
           }
 
-          result = `Created bone "${group.name}" with UUID ${group.uuid}`;
-          break;
-        }
-
-        case "parent": {
-          const child = findGroupOrThrow(bone_data.name);
-          const parent = bone_data.parent
-            ? Group.all.find((g) => g.name === bone_data.parent)
-            : "root";
-
-          child.addTo(parent);
-          result = `Parented "${bone_data.name}" to "${
-            bone_data.parent || "root"
-          }"`;
-          break;
-        }
-
-        case "unparent": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          bone.addTo("root");
-          result = `Unparented "${bone_data.name}"`;
-          break;
-        }
-
-        case "delete": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          bone.remove();
-          result = `Deleted bone "${bone_data.name}"`;
-          break;
-        }
-
-        case "rename": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          const newName = bone_data.children?.[0] || "new_name";
-          bone.name = newName;
-          result = `Renamed bone to "${newName}"`;
-          break;
-        }
-
-        case "set_pivot": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          if (bone_data.origin) {
-            bone.origin = bone_data.origin;
+          case "delete": {
+            targetBone!.remove();
+            result = `Deleted bone "${targetBone!.name}"`;
+            break;
           }
-          result = `Set pivot point for "${bone_data.name}"`;
-          break;
-        }
 
-        case "set_ik": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          // @ts-ignore
-          bone.ik_enabled = bone_data.ik_enabled || false;
-          if (bone_data.ik_target) {
-            // @ts-ignore
-            bone.ik_target = bone_data.ik_target;
+          case "rename": {
+            targetBone!.name = bone_data.new_name!;
+            result = `Renamed bone to "${bone_data.new_name}"`;
+            break;
           }
-          result = `Updated IK settings for "${bone_data.name}"`;
-          break;
+
+          case "set_pivot": {
+            targetBone!.origin = bone_data.origin!;
+            result = `Set pivot point for "${targetBone!.name}"`;
+            break;
+          }
+
+          case "set_ik": {
+            targetBone!.ik_enabled = bone_data.ik_enabled ?? false;
+            if (ikTarget) {
+              targetBone!.ik_target = ikTarget.uuid;
+            }
+            result = `Updated IK settings for "${targetBone!.name}"`;
+            break;
+          }
+
+          case "mirror": {
+            const axis = bone_data.mirror_axis!;
+            const mirroredBone = targetBone!.duplicate();
+            const axisIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
+            mirroredBone.origin[axisIndex] *= -1;
+            mirroredBone.name = targetBone!.name.includes("left")
+              ? targetBone!.name.replace("left", "right")
+              : targetBone!.name.includes("right")
+              ? targetBone!.name.replace("right", "left")
+              : targetBone!.name + "_mirrored";
+            result = `Mirrored bone "${targetBone!.name}" across ${axis} axis`;
+            break;
+          }
         }
 
-        case "mirror": {
-          const bone = findGroupOrThrow(bone_data.name);
-
-          const axis = bone_data.mirror_axis || "x";
-          const mirroredBone = bone.duplicate();
-
-          // Mirror position
-          const axisIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
-          mirroredBone.origin[axisIndex] *= -1;
-
-          // Update name
-          mirroredBone.name = bone.name.includes("left")
-            ? bone.name.replace("left", "right")
-            : bone.name.includes("right")
-            ? bone.name.replace("right", "left")
-            : bone.name + "_mirrored";
-
-          result = `Mirrored bone "${bone_data.name}" across ${axis} axis`;
-          break;
-        }
+        Undo.finishEdit(`Bone rigging: ${action}`);
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      Undo.finishEdit(`Bone rigging: ${action}`);
       Canvas.updateAll();
-
       return result;
     },
   },
