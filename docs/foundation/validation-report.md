@@ -34,7 +34,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Global failure can invalidate/rebuild coarse blockout | Active BlockIT policy | Do not micro-patch an unrecognizable primary form. |
 | Rotation needs visual/form/motion reason | Active BlockIT policy | Arbitrary multi-axis rotation rejected. |
 | Material pivot needs transform/joint/attachment reason | Active BlockIT policy | Arbitrary/distant pivots rejected. |
-| Mutation identity must be explicit | Active BlockIT policy | Single-Cube correction must not depend on transient editor selection. |
+| Mutation identity must be explicit | Active BlockIT policy | Single-Cube and destructive element mutations must not depend on transient selection or first-name-match behavior. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
 Policy does not need to be a universal Blockbench rule; these are BlockIT quality
@@ -74,6 +74,19 @@ Important local proof still missing:
 Official Blockbench types/source describe `Cube.transferOrigin(origin, update?)` as
 moving the origin while updating Cube geometry so the same visual position is
 preserved. Local integration still needs live proof.
+
+## Destructive Element Target Safety
+
+| Capability | Local source | Evidence status | Current claim |
+|---|---|---|---|
+| `remove_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | UUID resolves first; exact name is accepted only when unique across Cube/Mesh/Group; ambiguity fails before Undo. |
+| `duplicate_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before recursive duplication begins. |
+| `rename_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before rename Undo. |
+| shared `findElementOrThrow` | `mcp/lib/util.ts` | unchanged / caller-specific | intentionally not broadened in this slice because GitHub code search was incomplete and unrelated caller semantics were not proven safe to migrate. |
+
+The Local fix is deliberately scoped to the three destructive element tools. It
+does not claim that every generic element lookup in the repository now has
+unique-name semantics.
 
 ## Group / Bone / Pivot Safety
 
@@ -119,6 +132,15 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
+### `duplicate_element` transaction recoverability
+
+Target ambiguity is now preflighted, but `duplicate_element` still opens Undo and
+runs recursive Cube/Group/Mesh cloning without a `try/catch` rollback boundary.
+If a later child clone throws after earlier children were created, partial state
+may remain until runtime behavior is proven/corrected.
+
+Status: **next active source audit**. Keep it separate from target identity.
+
 ## Historical External Premises
 
 Still supported by first-party Blockbench documentation/source:
@@ -143,6 +165,7 @@ Status: `UNSUPPORTED` for BlockIT modelling/approval authority:
 - per-Cube screenshot/approval quotas;
 - arbitrary fallback coordinates/pivots;
 - editor selection as implicit single-Cube mutation identity;
+- first matching duplicate element name as destructive mutation identity;
 - historical fixture-specific build rules promoted to generic workflow.
 
 ## What Can Be Claimed Now
@@ -153,8 +176,11 @@ Safe claims:
 
 - current Local source contains the listed contracts/implementation paths;
 - foundation/prompt rules are aligned with the Reference Fidelity architecture;
-- `modify_cube` source schema now requires an explicit target and no longer reads
+- `modify_cube` source schema requires an explicit target and no longer reads
   `Cube.selected` as a fallback;
+- destructive remove/duplicate/rename tools now use a local UUID-first /
+  unique-exact-name resolver and preflight ambiguity before Undo;
+- shared `findElementOrThrow` was intentionally left unchanged;
 - official Blockbench types/source support the transfer-origin semantics used by
   the code.
 
@@ -163,8 +189,9 @@ Unsafe claims without local proof:
 - `capture_model_views` definitely returns visually correct images in the active
   Blockbench installation;
 - bounds/camera/Undo behavior works for every live edge case;
-- the MCP client definitely exposes the updated required-`id` schema until the
-  current plugin is built/loaded and inspected;
+- the MCP client definitely exposes the updated contracts until the current
+  plugin is built/loaded and inspected;
+- recursive duplication is fully recoverable after a mid-clone failure;
 - the new loop now produces a good reference-matching model in practice;
 - save/reopen persistence is correct.
 
@@ -175,15 +202,17 @@ future proof queue is:
 
 1. build/load current Local plugin in Blockbench;
 2. verify default Bedrock project + bundled prompt behavior;
-3. inspect the live MCP `modify_cube` schema and verify `id` is required;
-4. create a small model using strict `place_cube` inputs;
-5. verify `inspect_model_bounds` against visible transformed geometry;
-6. verify canonical `capture_model_views` image delivery/orientation/framing;
-7. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
-8. verify Cube and Group pivot-transfer behavior visually;
-9. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-10. save/reopen `.bbmodel` and inspect persistence;
-11. run one approved-reference → whole-form modelling session and evaluate actual
+3. inspect live MCP schemas for the current explicit-target contracts;
+4. create duplicate-name Cube/Group fixtures and verify destructive element tools reject ambiguous names before mutation;
+5. create a small model using strict `place_cube` inputs;
+6. verify `inspect_model_bounds` against visible transformed geometry;
+7. verify canonical `capture_model_views` image delivery/orientation/framing;
+8. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+9. verify Cube and Group pivot-transfer behavior visually;
+10. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
+11. verify duplication rollback/recoverability if that source path is changed;
+12. save/reopen `.bbmodel` and inspect persistence;
+13. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
 
 Do not run this queue ceremonially; use the smallest proof required when local
