@@ -48,6 +48,7 @@ recreated merely to satisfy historical documentation.
 | `find_elements_by_criteria(parent_group=...)` | `mcp/server/tools/element.ts` | omitted/empty scope means no Group scope; explicit Group resolves UUID-first or exact unique name; missing/ambiguous Group fails before search |
 | `select_all_of_type(parent_group=...)` | `mcp/server/tools/element.ts` | same strict optional Group-scope resolution before any selection state changes |
 | scoped Group resolver | `mcp/server/tools/element.ts` | local resolver with no special `root` behavior; discovery/selection semantics are intentionally separate from `add_group` parent resolution |
+| `find_elements_by_criteria(name_pattern=...)` | `mcp/server/tools/element.ts` | omitted/empty pattern means no regex filter; explicit oversized, unsafe nested-quantifier, or invalid regex throws instead of silently broadening discovery |
 
 ### Cube Creation / Correction
 
