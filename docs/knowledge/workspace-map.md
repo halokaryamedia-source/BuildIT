@@ -1,45 +1,46 @@
 # Workspace Map
 
-Use this as the top-level map for the whole repo.
+Use this as the top-level map for the repository.
 
 ## Main Areas
 
-- [Agent Rules](../../AGENTS.md): repository-wide working rules.
-- [Workspace Context](../../CONTEXT.md): stable facts/terminology.
-- [Next Action](next-action.md): single resume point/current task state.
-- [Foundation](../foundation/README.md): durable product/modelling policy.
-- [Knowledge](index.md): project-memory dashboard/navigation.
-- [Flow](flow.md): current work routing.
-- [Decision Log](decision-log.md): durable decisions/reasons.
-- [Implementation Map](implementation-map.md): active areas/ownership.
-- [Skills](skills/skill-map.md): skill availability/location/status.
-- [MCP](../../mcp/README.md): active plugin/runtime workspace.
-- [Project Workspace](../../workspace/): active/saved model packages.
+- [Agent Rules](../../AGENTS.md) — repository-wide working/proof rules and
+  frozen skill architecture.
+- [Workspace Context](../../CONTEXT.md) — stable facts/terminology.
+- [Next Action](next-action.md) — single resume point/current task state.
+- [Foundation](../foundation/README.md) — durable product/modelling/reference
+  policy.
+- [Knowledge](index.md) — project-memory dashboard/navigation.
+- [Flow](flow.md) — current work routing.
+- [Decision Log](decision-log.md) — durable decisions/reasons.
+- [Implementation Map](implementation-map.md) — active areas/ownership.
+- [Skills](skills/skill-map.md) — skill inventory/lineage.
+- [MCP](../../mcp/README.md) — active plugin/runtime workspace.
+- [Project Workspace](../../workspace/) — active/saved model packages.
 
-## Skill Areas
+## Canonical Skill Area
 
-### Repository-wide
+All active project-wide skills live under:
 
-- `../../.agents/skills/development-brief/` — mandatory Developing front door,
-  available from root `BuildIT`.
+`../../.agents/skills/`
 
-### MCP specialists pending audit
+Current set:
 
-- `../../mcp/.agents/skills/` — current specialist copies pending one-by-one
-  naming/overlap/location audit.
+```text
+development-brief
+mcp-server-development
+typescript-type-safety
+bun-tooling
+blockbench-runtime-development
+blockbench-bedrock-modelling
+```
 
-Do not mass-migrate/rename them. Their final scope is decided one skill at a
-time.
+`mcp/.agents/skills/` and `mcp/.github/skills/` are retired legacy locations and
+must not be repopulated merely to match historical layout.
 
-### Recovery
-
-Still missing canonical Local copies:
-
-- `blockbench-use`
-- `reference-generator`
-- `evidence-gate`
-
-Do not invent `mcp/workflow/` or `mcp/workflow/skills/` as replacements.
+Reference generation is not another root skill; its owner is
+`docs/foundation/04-reference-guide.md`. Evidence-status escalation is baseline
+behavior in root `AGENTS.md`.
 
 ## Area Shortcuts
 
@@ -61,7 +62,6 @@ Do not invent `mcp/workflow/` or `mcp/workflow/skills/` as replacements.
 - `mcp/lib/`
 - `mcp/server/`
 - `mcp/ui/`
-- `mcp/.agents/skills/`
 
 ### `workspace/`
 
@@ -71,7 +71,7 @@ Do not invent `mcp/workflow/` or `mcp/workflow/skills/` as replacements.
 ## Fast Rule
 
 - New sessions start from `AGENTS.md` → `CONTEXT.md` → `next-action.md`.
-- Read only the area that matches the active task.
+- Read only the area matching the active task.
 - If a documented path does not exist, verify before creating anything.
 - Do not treat `node_modules/`, `dist/`, generated output, or old chat history as
   primary project knowledge.
