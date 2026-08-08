@@ -63,9 +63,11 @@ export const promptDocs: PromptSpec[] = [
     description: "A strategy for creating a new 3D model in Blockbench.",
     argsSchema: z.object({
       format: z
-        .enum(["java_block", "bedrock"])
+        .enum(["java_block", "bedrock", "bedrock_block"])
         .optional()
-        .describe("Target model format."),
+        .describe(
+          "Target model format. Use `bedrock` for Minecraft Bedrock Entity models and `bedrock_block` only when a Bedrock block model is explicitly requested."
+        ),
       approach: z
         .enum(["ui", "programmatic", "import"])
         .optional()
@@ -194,6 +196,6 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "hytale://cubes/{id}",
     title: "Hytale Cubes",
     description:
-      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision.",
+      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
   },
 ];
