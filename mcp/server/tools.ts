@@ -8,6 +8,7 @@ import { registerCameraTools } from "./tools/camera";
 import { registerAnimationTools } from "./tools/animation";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
+import { registerElementInspectionTools } from "./tools/element-inspection";
 import { registerImportTools } from "./tools/import";
 import { registerMeshTools } from "./tools/mesh";
 import { registerPaintTools } from "./tools/paint";
@@ -35,6 +36,7 @@ const registrationFunctions = [
   registerCameraTools,
   registerCubesTools,
   registerElementTools,
+  registerElementInspectionTools,
   registerExportTools,
   registerHistoryTools,
   registerImportTools,
@@ -62,7 +64,7 @@ for (const register of registrationFunctions) {
 }
 
 // Register optional plugin integrations
-// Each function checks if its plugin is installed before registering
+// Each function checks if their plugin is installed before registering
 for (const register of optionalRegistrationFunctions) {
   register();
 }
