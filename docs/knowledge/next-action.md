@@ -7,9 +7,9 @@ reconstructing prior chats.
 ## Active Task
 
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
-  divergence by making modelling, hierarchy, rotation, and pivot decisions
-  evidence-backed instead of assumption-driven.
-- **Status:** `REFERENCE_FIDELITY_CUBE_PIVOT_SEMANTICS_HARDENED`.
+  divergence by making modelling, hierarchy, rotation, pivot, and placement
+  decisions evidence-backed instead of assumption-driven.
+- **Status:** `REFERENCE_FIDELITY_ROTATED_CUBE_CREATION_HARDENED`.
 - **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
 - **G3 annotations:** paused.
@@ -64,7 +64,7 @@ SECONDARY GEOMETRY / HIERARCHY / PIVOTS
 TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Fidelity Instruments Implemented In Source
+## Fidelity Instruments / Safety Already Implemented In Source
 
 - `inspect_model_bounds` — raw rendered Cube envelope facts only.
 - `capture_model_views` — canonical labeled 512×512 comparison images.
@@ -76,113 +76,117 @@ TEXTURE / OPTIONAL ANIMATION
   to root.
 - `add_group` / `bone_rigging` — neutral Group defaults, action-specific preflight,
   unique targets/names, rollback, and Group pivot transfer semantics.
+- Cube pivot-only correction — `Cube.transferOrigin()` preserves visual position;
+  origin combined with from/to/rotation remains an intentional authored rewrite.
 
-## Cube Pivot Mutation Semantics — Hardened
+## Rotated Cube Creation — Hardened
 
-Audit compared Local `mcp/server/tools/cubes.ts` with official Blockbench Cube
-API/source.
+### Problem proved by the previous contract
 
-Official Blockbench documents:
-
-```text
-Cube.transferOrigin(origin, update?)
-```
-
-as transferring the origin to a new position **while updating `from` and `to` to
-keep the same visual position**. The source implementation uses the Cube preview
-mesh quaternion to calculate the compensating shift before setting the new
-origin.
-
-Therefore Local now distinguishes two intents without adding a new mode/tool.
-
-### Pivot-only Cube correction
-
-Per Cube/update:
+Shared `cubeSchema` historically supplied:
 
 ```text
-origin supplied
-from omitted
-to omitted
-rotation omitted
+origin   omitted → [0,0,0]
+rotation omitted → [0,0,0]
 ```
 
-means:
+That neutral origin is harmless for an unrotated Cube. But when a caller supplied
+non-zero rotation and omitted origin, schema defaulting erased the distinction
+between:
 
 ```text
-PIVOT-ONLY CORRECTION
-→ preflight Cube preview mesh before Undo
-→ Cube.transferOrigin(origin)
-→ preserve visual Cube position
+origin [0,0,0] intentionally chosen
 ```
 
-Other non-transform fields such as visibility/name may still be updated in the
-same single-Cube call; they do not change this pivot-only classification.
-
-If a Cube has no preview mesh, the pivot-only operation fails before Undo rather
-than allowing Blockbench `transferOrigin()` to return without proving the
-preserving transform occurred.
-
-### Authored geometry rewrite
-
-If `origin` is supplied together with any of:
+and:
 
 ```text
-from
-to
-rotation
+origin forgotten by the agent
 ```
 
-then Local treats the request as an intentional authored transform rewrite and
-uses the explicit transform fields directly. It does **not** compensate the
-origin by `transferOrigin`, because the caller is explicitly redefining the
-geometry/pivot relationship.
+For a rotated Cube that ambiguity can create a distant/abstract rotation center.
 
-### Single- and multi-Cube paths
+### Local `place_cube` contract
 
-The same semantic rule now applies to:
+The shared `cubeSchema` was **not changed globally**. `mcp/server/tools/cubes.ts`
+now derives a focused `placeCubeElementSchema` for `place_cube` only.
 
-- `modify_cube`;
-- every independent item in `modify_cubes_batch`.
+Rules:
 
-For batch corrections all target UUIDs and all pivot-only preview-mesh
-requirements are preflighted before Undo opens. A later mutation failure still
-uses `Undo.cancelEdit(true)`.
+```text
+rotation omitted / [0,0,0]
++ origin omitted
+→ valid
+→ runtime uses neutral [0,0,0]
 
-`Canvas.updateAll()` is outside the successful batch Undo transaction, so a
-post-commit refresh problem does not attempt to cancel an already finished edit.
+any non-zero rotation
++ origin omitted
+→ schema error before tool execution / Undo
+
+any non-zero rotation
++ explicit origin
+→ valid
+```
+
+The rule is per Cube inside the `elements` array, so one invalid rotated Cube
+rejects the request rather than allowing that Cube to inherit an accidental
+pivot.
+
+`origin` and `rotation` use finite-vector schemas in this focused creation
+contract.
+
+### Why the refinement is nested
+
+Local `createTool()` extracts the top-level Zod object shape for MCP
+registration. Therefore the cross-field rotation/origin refinement is kept on
+`placeCubeElementSchema`, which remains inside the registered `elements` field,
+rather than relying on a top-level refinement that the factory would unwrap.
+
+### Runtime behavior
+
+For an accepted unrotated Cube whose origin was omitted, creation supplies the
+neutral `[0,0,0]` origin. A rotated Cube cannot reach creation without an explicit
+origin under the focused schema.
+
+No automatic center-pivot calculation, attachment inference, pivot planner, or
+new mode/tool was added.
 
 ### Bedrock prompt routing
 
-The normal Bedrock workflow now tells the agent:
+Normal Bedrock guidance now states:
 
 ```text
-Cube geometry visually correct, pivot alone wrong
-→ inspect exact Cube
-→ modify origin without from/to/rotation
-→ pivot-transfer semantics preserve visual position
+unrotated Cube
+→ no pivot ceremony
+→ neutral origin may be omitted
 
-Cube geometry/rotation and pivot intentionally change together
-→ send the actual origin + from/to/rotation changes together
-→ authored rewrite
+rotated Cube
+→ rotation must already have reference/form/motion evidence
+→ explicit origin required
+→ pivot must have a visible attachment / rotation-center reason
 ```
 
-A pivot-only correction must never be used as a disguised way to move geometry.
+Copied pivots, arbitrary multi-axis rotation, and rotation used to compensate for
+wrong size/placement remain invalid modelling reasoning.
 
 ## Static Evidence
 
-Compare from the pre-Cube-pivot state
-`c971475aef0e7fb222c320f8bbde857104ed3c78` showed only:
+This slice changed only:
 
 ```text
 mcp/server/tools/cubes.ts
 mcp/prompts/bedrock.md
 ```
 
-changed before this continuity update.
+before this continuity update.
 
-Official Blockbench types/source are the authority for the `transferOrigin`
-semantics. Live behavior in the user's installed Blockbench remains
-`LOCAL PROOF REQUIRED`; local testing is not the current blocker.
+`mcp/lib/zodObjects.ts` was intentionally left unchanged, so the compatibility
+meaning of shared `cubeSchema` outside the focused `place_cube` contract did not
+change.
+
+Static source establishes the contract and registration path. Live MCP schema
+behavior and Blockbench creation remain `LOCAL PROOF REQUIRED`; local testing is
+not the current blocker because it is explicitly deferred.
 
 ## Holds
 
@@ -205,32 +209,32 @@ semantics. Live behavior in the user's installed Blockbench remains
 
 ## Next Step
 
-Audit **initial Cube creation rotation/pivot safety** in `place_cube` / shared
-`cubeSchema`.
+Audit **initial Cube geometry extent safety** in `place_cube` only.
 
-Current shared schema uses neutral defaults:
-
-```text
-origin   omitted → [0,0,0]
-rotation omitted → [0,0,0]
-```
-
-Neutral origin is harmless for an unrotated Cube, but a caller can currently
-supply a non-zero rotation while omitting origin; after schema defaults are
-applied the runtime can no longer tell whether `[0,0,0]` was an intentional pivot
-or an accidental default. This can create exactly the kind of distant/abstract
-rotation seen in prior modelling tests.
-
-Determine the smallest compatibility-safe contract so:
+The focused creation schema still inherits shared `cubeSchema` defaults:
 
 ```text
-unrotated Cube
-→ no pivot ceremony required
-
-rotated Cube
-→ pivot/origin must be intentional and evidence-backed
+from omitted → [0,0,0]
+to omitted   → [1,1,1]
 ```
 
-Do not impose a universal center pivot, infer a pivot automatically, or add a
-pivot planner. Prefer a schema/runtime preflight that makes missing intent fail
-clearly. Do not resume G3 or mix UV/hierarchy work into this slice.
+That means a Cube can still be technically created even when the agent never
+made an explicit size/placement decision. This is directly adjacent to the
+confirmed failure pattern: "place a Cube because it can be placed, then treat
+its existence as progress/approval."
+
+Determine the smallest compatibility-safe `place_cube` contract so initial
+modelling requires intentional geometry extents without changing shared
+`cubeSchema` globally.
+
+Preferred question:
+
+```text
+Should place_cube require explicit finite `from` and `to` for every new Cube,
+while retaining neutral defaults only for fields whose omission is genuinely
+non-semantic (for example unrotated origin/rotation)?
+```
+
+Do not add automatic Cube sizing, inferred extents, minimum-size heuristics, or
+reference-to-coordinate automation. Do not resume G3 or mix UV/hierarchy work
+into this slice.
