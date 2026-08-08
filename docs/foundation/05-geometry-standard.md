@@ -1,376 +1,329 @@
-# BlockIT — Operating Model Geometry
+# BlockIT — Geometry Standard
 
-**Status:** Draft  
-**Version:** 1.2
+**Status:** Active Policy  
+**Version:** 1.3  
+**Updated:** 2026-08-08
 
-## 1. Purpose
+## Purpose
 
-Define generic geometry-quality rules for Minecraft Bedrock models created in
-Blockbench through MCP.
+Define object-agnostic geometry-quality rules for Minecraft Bedrock Entity models
+created in Blockbench through MCP.
 
-Object-specific anatomy, proportions, view priorities, and build order come from
-the active Model Reference and current verified project/runtime constraints—not
-from this document.
+The active Modelling Brief owns object-specific shape/proportion/anatomy. This
+standard owns how geometry decisions must be reasoned and validated.
 
-## 2. Core Principle
+## Core Principle
 
-Every Cuboid must have a clear modelling purpose and must contribute to the
-**whole model**, not only look plausible in isolation.
+Every material Cuboid must have a modelling purpose in the **whole form**.
 
-A Cuboid should materially contribute to one or more of:
+A Cube existing, being attached, overlapping, parented, or accepted by a tool is
+structural state only. It does not prove correct size, placement, orientation, or
+pivot.
 
-- primary volume;
-- silhouette;
-- attachment/contact;
-- separate orientation/pivot/hierarchy;
-- required animation/motion;
-- visible detail that texture cannot represent effectively.
-
-If a Cuboid does not improve the intended result, do not add it.
-
-A Cube existing, touching another Cube, overlapping validly, or being assigned to
-a group is **structural state only**. None of those facts prove that its
-placement, size, rotation, or pivot is visually correct.
-
-## 3. Whole-Form Geometry
-
-Reason about major masses and relationships before local detail.
+## Whole-Form Contract
 
 ```text
-Model Reference
+Modelling Brief
 ↓
-coordinate frame + target envelope
+Coordinate frame + target envelope
 ↓
-normalized Primary Form Hypothesis
+Primary Form Hypothesis
 ↓
-coarse primary masses + major relationships
+Intentional coarse Cuboids
 ↓
-structural envelope check
+Global bounds observation
 ↓
-global visual gate
+Global visual gate
 ↓
-secondary geometry / hierarchy / pivots
+Targeted correction or rebuild
 ↓
-full geometry review
+Secondary geometry / hierarchy / pivots
 ```
 
-There is **no universal support-first, section-first, largest-first, or
-per-cube approval order**. Construction order should follow whichever sequence
-best preserves the current object's major relationships and safe editability.
+There is no universal support-first, section-first, largest-first, fixed-Cube
+count, or per-Cube approval order.
 
-Do not finish/polish one local section while the rest of the primary form is
-still undefined.
+## Primary Cube Readiness
 
-## 4. Evidence-Backed Authoring Rule
+Before authoring an important primary Cube, the modeller should know:
 
-Before authoring an important primary Cuboid, the modeller must be able to answer:
+- what mass/role it represents;
+- what view(s) support width/height/length or placement;
+- its relationship to other primary masses;
+- whether rotation is actually required;
+- what pivot/rotation-center reason exists when rotation is material.
+
+This does not become a persisted Cube plan. It is a no-guess reasoning gate.
+
+## Initial Cube Creation
+
+The normal `place_cube` path is intentionally strict.
+
+### Extents
+
+Every new Cube requires explicit finite:
 
 ```text
-What primary mass/role does this Cuboid implement?
-Which reference view(s) support its width/height/length or relative placement?
-What relationship must it preserve with another primary mass?
-Does it actually need rotation?
-If rotation/pivot is used, what visible/form/motion reason requires it?
+from: [x,y,z]
+to:   [x,y,z]
 ```
 
-The answer does **not** need to become a persisted per-Cube form or approval
-artifact. It is a reasoning gate that prevents arbitrary transforms.
+Do not create a default `[0,0,0] → [1,1,1]` Cube merely to have something in the
+scene and decide its geometry later.
 
-If the modeller cannot explain a primary Cube beyond "it fits here", "it touches
-the previous Cube", or "the tool accepted it", the Cube is not ready to author.
+The validator does not decide whether the chosen extents are visually good; it
+requires the decision to be intentional.
 
-Uncertain reference evidence should be marked as uncertainty and tested with the
-smallest informative visual gate rather than converted into false precision.
+### Parent
 
-## 5. Primary And Secondary Geometry
+When a specific Group/bone is intended:
 
-### Primary Geometry
+- use exact Group UUID or an exact unique target;
+- a missing/ambiguous target must fail;
+- root is valid only when root placement is intentional.
 
-Primary masses establish identity, global silhouette, volume, and the main
-attachment relationships.
+### Initial Rotation / Pivot
 
-The first geometry pass should use the minimum set of Cuboids required for the
-object to read as one coherent form.
+```text
+rotation = [0,0,0]
+→ origin may stay neutral / omitted
 
-Each primary mass should remain coarse enough that a wrong hypothesis can be
-revised or rebuilt cheaply. Do not prematurely split a mass into many detail
-Cubes.
+any non-zero rotation
+→ explicit origin/pivot required
+```
 
-Primary geometry must pass a global visual check before detail work expands.
+Do not allow a forgotten pivot to silently become world `[0,0,0]` for a rotated
+Cube.
 
-### Secondary Geometry
+## Placement
 
-Secondary geometry refines silhouette, attachment, motion, or visible detail.
-Add it only after the primary form is coherent.
+Placement is justified by the mass relationship it represents, not by technical
+contact.
 
-Do not add secondary geometry to hide an unresolved primary proportion or
-relationship error.
+Derive primary placement from:
 
-## 6. Dimensions, Coordinate Frame, And Cleanliness
+- target envelope when defined;
+- Primary Form Hypothesis;
+- relevant reference views;
+- visible attachment/contact requirements.
 
-Declared target dimensions are the numeric model target/envelope when the
-active reference/policy provides them. Reference pixels, panel dimensions, and
-visual labels are not calibration data.
+Reject:
 
-Use one explicit coordinate interpretation during a modelling run:
+- sequential Cube placement without whole-silhouette review;
+- filling gaps just so everything touches;
+- moving parts until numeric overlap exists and calling that approval;
+- retaining a visibly wrong primary mass because later geometry depends on it.
+
+## Dimensions / Coordinate Frame
+
+Use one explicit model-space interpretation during a run:
 
 ```text
 X = width / left-right
 Y = height / up-down
 Z = length / front-back
+front direction = explicit
+ground relationship = explicit
 ```
 
-The asset's front direction and ground relationship must be established before
-primary authoring when they materially affect placement.
+Approved dimensions are the numeric target envelope. Reference pixels/panel
+sizes are not geometry calibration.
 
-Use clean, intentional authored values appropriate to the current Bedrock
-project and modelling style. Avoid noisy accidental decimals introduced by
-uncontrolled fitting.
+Do not impose arbitrary universal snapping rules unless the current project
+requires them.
 
-Exact universal snapping rules such as mandatory whole-number Cube sizes,
-mandatory `0.5` transforms, or mandatory `2.5°` rotations must not be treated as
-Bedrock/product law unless the current preset, source, or approved project rule
-actually requires them. When a clean grid convention is useful, apply the
-smallest convention that preserves the intended form.
+## Rotation
 
-Do not sacrifice visible proportion/silhouette merely to satisfy an arbitrary
-historic grid rule.
+Use axis-aligned geometry when it represents the form correctly.
 
-## 7. Placement Rule
+Rotation is justified when:
 
-A Cuboid's placement is justified by the **mass relationship it represents**, not
-by the fact that it can be made to connect.
+- the reference visibly requires an angled orientation/slope;
+- a rotated Cuboid represents the intended silhouette more coherently than a
+  stepped approximation;
+- requested articulation/motion requires it.
 
-For primary geometry, placement should be derived from:
+Before material rotation, identify the evidence and the relationship it should
+improve.
 
-- the target envelope;
-- the Primary Form Hypothesis;
-- supporting reference views;
-- required visible contact/attachment relationships.
+Reject:
 
-Reject these placement patterns:
+- arbitrary multi-axis rotations;
+- rotation used to compensate for wrong size/placement;
+- angles copied from unrelated parts/fixtures;
+- accumulating small angle changes after failed corrections;
+- syntactically valid rotation treated as proof.
 
-- sequentially placing Cubes next to previous Cubes without checking the whole
-  silhouette;
-- filling gaps merely so every part touches;
-- moving a part until coordinates overlap and treating the overlap as approval;
-- preserving a visibly wrong mass because later Cubes were already built around
-  it.
+Prefer the simplest rotation that explains the visible form.
 
-If several primary masses are wrong relative to each other, revise the primary
-hypothesis or correct them as one coherent relationship rather than patching the
-model Cube by Cube.
+## Pivot / Origin
 
-## 8. Orientation And Rotation
+A meaningful pivot serves a real transform relationship:
 
-Use axis-aligned geometry when it correctly represents the form. Rotation is not
-an automatic way to make a model look more complex or organic.
+- rotation center;
+- joint/articulation;
+- attachment;
+- parent/group transform.
 
-A rotation is justified only when at least one of these is true:
+A geometric center is not universally correct. A distant origin is not valid
+merely because Blockbench accepts it.
 
-- the reference visibly shows a primary/secondary mass with an important slope
-  or angled orientation;
-- one rotated Cuboid represents the silhouette more coherently than a stepped
-  stack of axis-aligned Cuboids;
-- the requested articulation/motion requires the authored orientation.
+For an unrotated/non-articulated Cube, origin may remain a neutral implementation
+detail. Do not invent a modelling story for it.
 
-Before applying a material rotation, identify the supporting view(s) and the
-visible relationship the rotation is meant to improve.
+### Pivot-only Cube correction
 
-Do not:
+When the Cube's visual geometry is already correct and only the pivot is wrong:
 
-- use arbitrary multi-axis rotations because an angle "looks plausible";
-- rotate a Cube to compensate for wrong size or placement;
-- copy an angle from another fixture/object;
-- accumulate small rotations after repeated failed visual corrections;
-- treat a syntactically valid rotation as evidence that orientation is correct.
+```text
+origin changes
+from omitted
+to omitted
+rotation omitted
+→ pivot-only correction
+```
 
-Prefer the simplest rotation that explains the visible form. If one principal
-axis captures the slope, do not add extra-axis rotation without evidence.
+Current Local uses `Cube.transferOrigin()` so `from/to` compensate to keep the
+same visual position.
 
-After rotating a primary mass, re-check its silhouette, envelope, and visible
-contacts in the views that motivated the rotation.
+### Authored geometry rewrite
 
-## 9. Pivot Rule
+When the modeller intentionally changes geometry/rotation and pivot together:
 
-A pivot/origin is not decoration and must not be chosen arbitrarily.
+```text
+origin + from/to/rotation
+→ one authored transform rewrite
+```
 
-A material pivot is justified only when it serves a concrete purpose such as:
+Do not use pivot-transfer compensation in that case because the geometry/pivot
+relationship itself is being redefined.
 
-- the center of a visible rotation/slope operation;
-- an attachment/joint relationship that must remain coherent under transform;
-- intended articulation/animation;
-- a parent/group transform that requires a meaningful local origin.
+### Group / bone pivot
 
-Choose the pivot from the intended **rotation center, joint, attachment, or
-transform relationship**. A geometric center is not universally correct, and a
-random distant origin is never acceptable merely because Blockbench permits it.
+Material Group pivot changes should use exact target identity and Blockbench
+`Group.transferOrigin()` semantics after the joint/attachment reason is known.
 
-For an unrotated, non-articulated Cuboid, origin may remain an implementation
-detail, but it must not be presented as a meaningful modelling decision unless a
-real transform/hierarchy need exists.
+## Primary vs Secondary Geometry
 
-Reject pivots that:
+### Primary
 
-- are far from the part with no explained transform reason;
-- make a simple rotation orbit around an unrelated point;
-- are copied from another part/fixture without the same relationship;
-- exist only because the tool/schema requires an origin value;
-- break visible attachment when the parent/group transforms.
+Minimum Cuboids establishing identity, global silhouette, primary volume, and
+main attachment relationships.
 
-After changing a meaningful pivot or parent transform, inspect the affected
-connection/orientation rather than assuming hierarchy validity means visual
-validity.
+Keep the first pass coarse enough to reject/rebuild cheaply.
 
-## 10. Cuboid Efficiency
+### Secondary
+
+Adds silhouette refinement, attachment, motion support, or visible detail only
+after primary form passes.
+
+Do not use secondary geometry to hide a primary proportion error.
+
+## Cuboid Efficiency
 
 Prefer fewer meaningful Cuboids over dense approximations.
 
-Split a rectangular volume only for a demonstrated reason such as:
+Split a mass only for a demonstrated reason:
 
-- different silhouette direction;
-- separate rotation/pivot;
-- separate hierarchy/bone/animation;
-- distinct visible volume;
+- different silhouette/orientation;
+- separate pivot/hierarchy/motion;
+- genuinely separate visible volume;
 - verified technical constraint.
 
-Do not create stepped stacks as a substitute for understanding a smooth/angled
-primary relationship when a simpler rotated or proportioned construction would
-serve the form better.
+Adding another Cube is not the default correction.
 
-Do not add another Cube as the default correction. First classify the error as
-placement, size, orientation, attachment, unnecessary geometry, or a genuinely
-missing visible mass.
-
-## 11. Geometry Versus Texture
-
-Use geometry when the feature changes outer shape, needs real volume, requires
-separate movement/pivot, or remains visually important at intended viewing
-distance.
-
-Use texture when the feature is mainly color, pattern, material, shading, or
-small surface detail that does not need volume/motion.
-
-Texture must not be used to hide incorrect primary geometry.
-
-## 12. Attachment And Intersections
-
-Visible connections must look coherent in the relevant reference views.
-Technical overlap/contact alone is not visual proof.
-
-Avoid:
-
-- detached/floating required parts;
-- accidental penetration;
-- excessive intersection that destroys readability;
-- parts merged only because their coordinates overlap;
-- compensating Cuboids inserted solely to conceal a gap caused by a wrong
-  primary relationship.
-
-Small intentional overlap is acceptable when it supports a clean visible
-connection or required motion.
-
-An attachment must be judged by what it looks like in the relevant views, not by
-whether two AABBs intersect.
-
-## 13. Symmetry
-
-Use mirroring/symmetry only when the reference supports it. Preserve meaningful
-asymmetry when the requested object requires it.
-
-Do not infer hidden-side detail beyond what the approved reference/policy can
-support.
-
-## 14. Hierarchy And Naming
-
-Hierarchy should make editing/animation understandable and preserve real parent-
-child relationships needed by the asset.
-
-Use clear semantic names from the current object/request. Names help humans and
-agents navigate the project but are not proof of identity; use stable element
-IDs/UUIDs where implementation identity matters.
-
-Avoid meaningless names such as `cube1`, `new_cube`, or version-churn labels
-when a clear semantic name is available.
-
-Hierarchy alone must never be used to justify a bad pivot, bad placement, or
-visually incoherent attachment.
-
-## 15. Hidden And Temporary Geometry
-
-Remove geometry that has no current purpose.
-
-Keep hidden/temporary geometry only when a verified animation/state/workflow
-requires it. Temporary geometry must not remain accidentally in the release
-candidate.
-
-## 16. Visual Correction Rule
-
-If the silhouette, proportion, mass relationship, orientation, or visible
-attachment is wrong, fix the responsible geometry relationship.
-
-Use this causal vocabulary before selecting a mutation:
+## Correction Vocabulary
 
 ```text
-TRANSLATE  → placement is wrong
-RESIZE     → proportion/extent is wrong
-ROTATE     → orientation/slope is wrong
-REATTACH   → contact/parent relationship is wrong
-SPLIT      → one mass genuinely needs separate orientations/volumes
-MERGE/REMOVE → geometry is unnecessary or compensatory
-ADD MASS   → a required visible volume is genuinely missing
+TRANSLATE    placement wrong
+RESIZE       extent/proportion wrong
+ROTATE       orientation/slope wrong
+REATTACH     contact/parent wrong
+SPLIT        distinct orientation/volume genuinely needed
+MERGE/REMOVE unnecessary or compensating geometry
+ADD MASS     required visible volume genuinely missing
 ```
 
-Do not:
+Use `ADD MASS` only when evidence shows missing volume.
 
-- approve a bad shape because coordinates are valid;
-- use similarity/IoU/projection scores as geometry authority;
-- average multiple views into guessed coordinates;
-- add more detail to compensate for a global-form error;
-- keep changing rotations/pivots without identifying the visible problem they
-  are meant to solve;
-- restart the whole model for a local issue unless the local finding actually
-  invalidates the primary form.
+## Multi-Cube Correction
 
-If the object is unrecognizable or several primary relationships fail together,
-invalidate/revise the primary hypothesis rather than applying a sequence of local
-patches.
+If one diagnosed relationship spans several Cubes, correction should remain one
+coherent decision. Current Local provides `modify_cubes_batch` for different
+exact-UUID updates in one recoverable Undo unit.
 
-Use fresh visual evidence after a correction. If the same correction direction
-fails twice without new evidence, stop and replan.
+Do not batch unrelated cleanup/speculative edits together.
 
-## 17. Geometry Review
+## Global vs Local Failure
 
-Before UV/texture work, verify only applicable criteria:
+### Global
 
-- whole silhouette is recognizable;
-- major masses/proportions are coherent across the declared reference views;
-- required primary parts are present/oriented correctly;
-- width/depth/footprint are plausible where the reference shows them;
-- visible connections are coherent;
-- every material rotation has a visible/form/motion reason;
-- meaningful pivots correspond to an intended transform/joint/attachment;
-- no obviously arbitrary/distant pivot remains;
-- Cuboid count is purposeful rather than compensatory;
-- hierarchy/pivots support the requested editability/motion;
-- no unresolved critical/major intersection, inversion, or missing-part issue
-  remains;
-- target dimensions are respected when they are defined as a current project
-  requirement.
+If the object is unrecognizable or several primary relationships are wrong:
 
-Exact numeric cleanliness rules should be validated against current project/
-runtime constraints rather than assumed from historical experiments.
+```text
+invalidate current scaffold
+→ revise/rebuild Primary Form Hypothesis
+```
 
-## 18. Completion Criteria
+### Local
 
-Geometry is complete only when:
+If whole form is sound and one bounded relationship is wrong:
 
-- the whole primary form has passed visual review;
-- required secondary geometry/hierarchy/pivots are complete and purposeful;
-- no known critical/major geometry issue remains;
-- no important Cube is justified only by "it is attached/placed";
-- no important rotation/pivot remains without an evidence-backed modelling
-  reason;
-- the result is structurally usable/editable for downstream UV/texture/
-  animation work;
-- claims about visual correctness are backed by fresh visual evidence.
+```text
+inspect_element
+→ causal correction
+→ fresh affected view(s)
+```
+
+After two failed attempts in the same correction direction without new evidence,
+stop patching and reframe the hypothesis.
+
+## Geometry vs Texture
+
+Use geometry for silhouette/real volume/separate motion. Use texture for surface
+information that does not require volume.
+
+Texture must not hide incorrect geometry.
+
+## Attachment / Intersection
+
+Visible connection quality is judged visually. AABB overlap or hierarchy alone
+is not proof.
+
+Avoid floating required parts, accidental penetration, excessive unreadable
+intersection, and compensating Cubes inserted to conceal a wrong mass relation.
+
+## Symmetry
+
+Use symmetry/mirroring only when the reference supports it. Preserve meaningful
+asymmetry.
+
+Do not infer hidden geometry from symmetry when reference evidence does not
+support it.
+
+## Hierarchy / Naming
+
+Hierarchy exists for understandable organization and actual articulation needs.
+Use semantic names, but use stable UUIDs where mutation identity matters.
+
+Hierarchy must never justify bad placement/pivot/attachment.
+
+## Completion Criteria
+
+Geometry is ready for UV/texture only when:
+
+- whole primary form passed visual review;
+- major proportions and contacts are coherent;
+- each material rotation has a form/motion reason;
+- each meaningful pivot has a transform/joint/attachment reason;
+- no important Cube is justified only by “it is placed/attached”;
+- Cuboid count is purposeful;
+- required hierarchy is understandable/editable;
+- no unresolved critical/major geometry issue remains;
+- visual claims use fresh current-revision evidence.
+
+## Related
+
+- [Modelling Workflow](03-modelling-workflow.md)
+- [Visual Validation](07-visual-validation.md)
+- [Reference Fidelity Decision](../knowledge/decisions/reference-fidelity-loop.md)
