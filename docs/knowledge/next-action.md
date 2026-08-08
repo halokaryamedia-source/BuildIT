@@ -12,12 +12,12 @@ implementation notes.
 ## Active Goal
 
 Improve Reference Image / Modelling Brief → Blockbench fidelity by making Cube,
-rotation, pivot, hierarchy, targeting, correction, and destructive mutation
-decisions evidence-backed rather than assumption-driven.
+rotation, pivot, hierarchy, targeting, discovery, correction, and destructive
+mutation decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_DUPLICATE_ROLLBACK_HARDENED`
+`REFERENCE_FIDELITY_SCOPED_GROUP_LOOKUP_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -70,37 +70,49 @@ Current Local source already contains:
   `origin` before Undo;
 - `remove_element`, `duplicate_element`, and `rename_element` use UUID-first /
   exact-unique-name destructive target resolution;
-- `duplicate_element` recursive Cube/Group/Mesh cloning is now wrapped in one
-  rollback boundary: failure after Undo opens calls `Undo.cancelEdit(true)` and
-  rethrows; successful Canvas refresh remains after `finishEdit`.
+- `duplicate_element` recursive Cube/Group/Mesh cloning is wrapped in one
+  recoverable Undo boundary;
+- `find_elements_by_criteria(parent_group=...)` and
+  `select_all_of_type(parent_group=...)` now resolve explicit Group scope
+  UUID-first / exact-unique-name; ambiguous or missing scopes fail before search
+  or selection state changes; omitted/empty scope remains no-scope behavior.
 
 These are **source implemented**, not live-proven.
 
-## Latest Runtime Finding
+## Latest Discovery Finding
 
-Before the latest change, `duplicate_element` opened Undo and recursively created
-Group/Cube/Mesh descendants without a failure rollback boundary. A later child or
-Mesh failure could therefore occur after earlier duplicate elements had already
-been created.
-
-Current source now follows the same bounded Local pattern already used by other
-creation/mutation paths:
+Before the latest change, both scoped element operations used:
 
 ```text
-Undo.initEdit
-↓
-try recursive clone
-↓
-Undo.finishEdit
-
-failure after Undo opens
-→ Undo.cancelEdit(true)
-→ Canvas refresh
-→ rethrow
+Group.all.find(g => g.uuid === parent_group || g.name === parent_group)
 ```
 
-No clone geometry, material, UV, hierarchy, naming, remove, or rename behavior
-was changed in this slice.
+so duplicate exact Group names could silently scope the operation to the first
+match.
+
+Current source uses a small local `resolveOptionalGroupScope()`:
+
+```text
+parent_group omitted / empty
+→ no scope
+
+exact UUID
+→ target Group
+
+exact unique name
+→ target Group
+
+duplicate exact name
+→ ERROR + candidate UUIDs
+
+missing explicit scope
+→ ERROR
+```
+
+The resolver intentionally does **not** inherit `add_group`'s special literal
+`root` semantics. An explicit `root` string is treated like an ordinary Group
+reference, preserving the previous discovery/selection contract rather than
+creating a new root-scope feature.
 
 ## Confirmed Failure Evidence
 
@@ -111,9 +123,8 @@ Prior testing established:
 3. pivots/origins can become abstract/distant without a real transform/joint/
    attachment reason.
 
-Target identity and recoverability are part of the same no-guess boundary: a
-mutation must not silently hit the wrong element or leave partial state after a
-failed operation.
+Discovery correctness is part of the same no-guess boundary: strict mutation
+identity cannot repair reasoning that started from a silently wrong scope.
 
 ## Holds
 
@@ -125,41 +136,46 @@ failed operation.
 
 ## Next Step
 
-Audit **scoped Group lookup ambiguity** in the normal discovery/selection route:
+Audit **explicit `name_pattern` filter failure semantics** in:
 
 ```text
-find_elements_by_criteria(parent_group=...)
-select_all_of_type(parent_group=...)
+mcp/server/tools/element.ts
 ```
 
-Current source resolves those scopes with:
+Current source path:
 
 ```text
-Group.all.find(g => g.uuid === parent_group || g.name === parent_group)
+name_pattern supplied
+↓
+safeCompileRegex(name_pattern)
+↓
+pattern too long / nested-quantifier safety rejection / invalid regex syntax
+↓
+console.warn(...)
+↓
+return null
+↓
+find_elements_by_criteria continues with no regex filter
 ```
 
-so duplicate exact Group names may silently select the first Group. This is
-material because `find_elements_by_criteria` is part of the normal
-`discover → inspect_element → mutate exact UUID` path; a wrong scope can produce
-the wrong candidate UUID before the later strict mutation gates even run.
+This can silently broaden an explicitly filtered discovery query and return
+candidate elements the caller did not ask for.
 
 Audit requirements:
 
-1. confirm both current callers/semantics and whether any other scoped element
-   operations share this first-match pattern;
-2. preserve optional no-scope behavior;
-3. make an explicit scope UUID-first and allow exact name only when unique;
-4. fail ambiguity before search/selection state changes;
-5. preserve current root/no-parent semantics rather than broadening them
-   accidentally;
-6. do not change destructive resolver, duplication logic, texture lookup, mesh
-   selection fallback, UV, G3, or create a generic resolver framework.
+1. preserve omitted/empty `name_pattern` as “no regex filter”;
+2. distinguish an explicit rejected/invalid pattern from an omitted pattern;
+3. explicit invalid/rejected pattern should fail clearly instead of broadening
+   the search;
+4. preserve the existing length and catastrophic-backtracking safety checks;
+5. do not change `name_contains`, type/min/max/selection filters, scoped Group
+   resolver, destructive tools, texture lookup, UV, G3, or add a regex framework.
 
-Prefer a small local Group-scope resolver or reuse an existing strict local
-pattern only when its `root` semantics are compatible.
+Prefer the smallest local contract change: make explicit pattern compilation
+return a usable RegExp or throw an actionable error.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source lookup contracts and static diff only.
-Actual Blockbench scoped-search/selection behavior remains `LOCAL PROOF REQUIRED`
+ChatGPT→GitHub may establish source/schema/error contracts and static diff only.
+Actual MCP error delivery for invalid patterns remains `LOCAL PROOF REQUIRED`
 until local testing resumes.
