@@ -41,6 +41,14 @@ recreated merely to satisfy historical documentation.
 | `capture_model_views` | `mcp/server/tools/camera.ts` | named canonical 512×512 model views with explicit front direction |
 | `inspect_element` | `mcp/server/tools/element.ts` | exact authored Cube/Group state for diagnosed local correction |
 
+### Discovery / Scope Safety
+
+| Capability | Source owner | Current source meaning |
+|---|---|---|
+| `find_elements_by_criteria(parent_group=...)` | `mcp/server/tools/element.ts` | omitted/empty scope means no Group scope; explicit Group resolves UUID-first or exact unique name; missing/ambiguous Group fails before search |
+| `select_all_of_type(parent_group=...)` | `mcp/server/tools/element.ts` | same strict optional Group-scope resolution before any selection state changes |
+| scoped Group resolver | `mcp/server/tools/element.ts` | local resolver with no special `root` behavior; discovery/selection semantics are intentionally separate from `add_group` parent resolution |
+
 ### Cube Creation / Correction
 
 | Capability | Source owner | Current source meaning |
@@ -97,8 +105,8 @@ Blockbench.
 
 Active work is no longer a generic “MCP implementation audit.” The current
 engineering program is specifically **reference-fidelity hardening**: remove
-assumption-driven geometry/rotation/pivot/targeting behavior and close the visual
-feedback loop with the smallest useful observation/correction surface.
+assumption-driven geometry/rotation/pivot/targeting/discovery behavior and close
+the visual feedback loop with the smallest useful observation/correction surface.
 
 The exact current task and next source slice remain in
 [Next Action](next-action.md).
