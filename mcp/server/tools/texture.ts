@@ -1317,21 +1317,28 @@ export function registerTextureTools() {
         textures: undoTextures,
       });
 
-      // Remove any existing texture from this channel in the group
-      resetTextures.forEach((existing: Texture) => {
-        existing.pbr_channel = "color"; // Reset to color
-      });
+      try {
+        // Remove any existing texture from this channel in the group
+        resetTextures.forEach((existing: Texture) => {
+          existing.pbr_channel = "color"; // Reset to color
+        });
 
-      // Assign the texture to the channel
-      tex.extend({
-        group: textureGroup.uuid,
-        pbr_channel: channel,
-      });
+        // Assign the texture to the channel
+        tex.extend({
+          group: textureGroup.uuid,
+          pbr_channel: channel,
+        });
 
-      textureGroup.material_config.saved = false;
-      textureGroup.updateMaterial();
+        textureGroup.material_config.saved = false;
+        textureGroup.updateMaterial();
 
-      Undo.finishEdit("Agent assigned texture channel");
+        Undo.finishEdit("Agent assigned texture channel");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
       Canvas.updateAll();
 
       return `Assigned texture "${tex.name}" to ${channel} channel of material "${textureGroup.name}"`;
