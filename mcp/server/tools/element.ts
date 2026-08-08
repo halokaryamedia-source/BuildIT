@@ -432,11 +432,16 @@ export function registerElementTools() {
         collections: [],
       });
 
-      element.remove();
+      try {
+        element.remove();
+        Undo.finishEdit("Agent removed element");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
 
-      Undo.finishEdit("Agent removed element");
       Canvas.updateAll();
-
       return `Removed element with ID ${id}`;
     },
   }, elementToolDocs[0].status);
@@ -649,8 +654,16 @@ export function registerElementTools() {
     async execute({ id, new_name }) {
       const element = resolveUniqueDestructiveElement(id);
       Undo.initEdit({ elements: [element], outliner: true, collections: [] });
-      element.extend({ name: new_name });
-      Undo.finishEdit("Agent renamed element");
+
+      try {
+        element.extend({ name: new_name });
+        Undo.finishEdit("Agent renamed element");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
       Canvas.updateAll();
       return `Renamed element "${id}" to "${new_name}".`;
     },
