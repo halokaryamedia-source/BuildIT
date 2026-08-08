@@ -9,7 +9,7 @@ reconstructing prior chats.
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
   divergence by making modelling decisions evidence-backed instead of
   assumption-driven.
-- **Status:** `INSPECT_MODEL_BOUNDS_IMPLEMENTED_CAPTURE_NEXT`.
+- **Status:** `REFERENCE_FIDELITY_OBSERVATION_SOURCE_IMPLEMENTED`.
 - **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
 - **G3:** paused.
@@ -20,18 +20,17 @@ reconstructing prior chats.
 
 ## Confirmed Failure Evidence
 
-Prior modelling tests repeatedly showed:
+Prior modelling tests showed:
 
-1. the agent can place Cubes mainly because they can be made to fit/attach, then
-   treat "all Cubes are placed" as approval even when the model is visibly far
-   from the reference;
-2. rotation values can become arbitrary/overcomplicated without a clear visible
+1. Cubes can be placed mainly because they fit/attach, then falsely treated as
+   approval even when the whole object is visibly wrong;
+2. rotations can become arbitrary/overcomplicated without a reference-visible
    slope/orientation reason;
-3. pivot/origin values can become abstract or distant because they are filled as
-   numeric fields instead of being chosen from a real joint/attachment/transform
-   relationship.
+3. pivots/origins can become abstract or distant because numeric fields are
+   filled without a real joint/attachment/transform purpose.
 
-Foundation/modelling rules are already hardened against those behaviors.
+Foundation, modelling skill, and Bedrock prompt rules are already hardened
+against those behaviors.
 
 ## Reference Fidelity Loop v1
 
@@ -64,174 +63,142 @@ FRESH AFFECTED EVIDENCE
 SECONDARY GEOMETRY / HIERARCHY / TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Completed Observation Slice — Shared Bounds + `inspect_model_bounds`
+## Observation Layer — Source Implemented
 
-### Shared owner
+### Shared rendered-bounds authority
 
-New canonical runtime helper:
+`mcp/lib/renderedModelBounds.ts`
 
-```text
-mcp/lib/renderedModelBounds.ts
-```
-
-It is intentionally shared so the later `capture_model_views` framing uses the
-same bounds definition rather than inventing a second envelope algorithm.
-
-### Bounds authority
-
-The implementation uses Blockbench's own:
-
-```text
-Cube.getGlobalVertexPositions()
-```
-
-rather than recomputing rotations/hierarchy from raw Cube values.
-
-Official Blockbench implementation transforms inflated/stretched Cube corners
-through the Cube preview mesh `matrixWorld`, which carries active Cube/group
-transform relationships. Before reading a Cube, Local refreshes the Cube and
-parent world matrices with `updateWorldMatrix(true, false)`.
-
-This is materially safer than Sample's standalone rotation-only bounds helper for
-the contract we now claim.
-
-### Visibility and unsupported geometry
-
-- only effectively visible Cube preview objects contribute to rendered bounds;
-- hidden/non-rendered Cubes are excluded and reported as counts/warnings;
-- empty/fully hidden Cube state returns `bounds=null`, not fabricated dimensions;
-- v1 rejects a project containing Blockbench `Mesh` elements rather than claiming
+- uses official Blockbench `Cube.getGlobalVertexPositions()` after refreshing
+  world matrices;
+- therefore observes Cube preview geometry through active world transforms rather
+  than recomputing raw `from/to` transforms independently;
+- excludes hidden/non-rendered Cubes and reports them;
+- returns `bounds=null` for empty/fully hidden Cube state;
+- rejects projects containing generic `Mesh` elements in v1 rather than claiming
   incomplete Cube-only bounds are the whole rendered model;
-- no fallback center/size such as `[0,8,0]` / `[16,16,16]` exists.
+- no fabricated fallback bounds.
 
-### Public tool
+### `inspect_model_bounds`
 
-`mcp/server/tools/project.ts` now exposes:
+`mcp/server/tools/project.ts`
 
-```text
-inspect_model_bounds {}
-```
-
-Output facts:
+Read-only active-project tool returning raw current-pose facts only:
 
 ```text
 project identity
-has_geometry
-cube_count / rendered_cube_count / hidden_cube_count
-bounds_basis = rendered_current_pose
-coordinate axes X/Y/Z
+Cube/rendered/hidden counts
 min / max / center
-size_xyz
 width / height / length
 XZ footprint
-animation + timeline pose context
+animation + timeline context
 warnings
 ```
 
-It does **not** accept target dimensions and does not return:
+No target input, visual score, PASS/FAIL, correction delta, or automatic reanchor.
+
+### `capture_model_views`
+
+`mcp/server/tools/camera.ts`
+
+Public input:
 
 ```text
-PASS / FAIL
-within_tolerance
-similarity
-recommended_scale
-correction_delta
-reanchor suggestion
-visual quality score
-```
+views: 1–5 unique values from
+  front / back / left / right / top / bottom
+  front_left_3q / front_right_3q
 
-### Registration/docs integration
-
-No extra registration wiring was required:
-
-- `registerProjectTools()` is already part of the core tool registration list;
-- `projectToolDocs` is already imported into the docs manifest;
-- the new empty input schema is build-time safe because the shared bounds helper
-  touches Blockbench globals only inside runtime function bodies;
-- generated docs remain generated and were not hand-edited.
-
-### Bedrock prompt alignment
-
-`mcp/prompts/bedrock.md` now explicitly routes the coarse primary blockout through
-`inspect_model_bounds` before visual approval when scale/ground/envelope facts are
-useful. It states that matching dimensions are structural evidence only and do
-not prove resemblance.
-
-## Static Proof Available
-
-Repository/source proof establishes:
-
-1. one shared runtime bounds owner exists;
-2. the public read-only tool is declared and registered through the existing
-   Project tool path;
-3. tool output contains observation facts only;
-4. no target evaluator/correction behavior was added;
-5. prompt routing uses the tool as an envelope observation rather than approval;
-6. no capture/mutation/G3 implementation changed in this slice.
-
-Runtime claims remain **LOCAL PROOF REQUIRED** until the user later chooses a
-Blockbench test, especially:
-
-- current animated/group transforms produce the expected numeric envelope;
-- effective visibility matches Blockbench rendering in all intended cases.
-
-Those deferred proofs do not block the current architecture/source sequence.
-
-## Frozen `capture_model_views` Contract
-
-Next implementation must follow the frozen observation contract:
-
-```text
-views: 1–5 unique named views
 front_direction: +z | -z
+
 framing:
-  model
-  OR explicit min/max target envelope
+  { mode: model }
+  OR
+  { mode: explicit, min, max }
 ```
 
-Named views:
+Implemented behavior:
+
+- active project only; no project switching;
+- `framing=model` reuses `readRenderedModelBounds()`;
+- `framing=explicit` uses exactly the caller target envelope and does not expand
+  it to hide out-of-envelope geometry;
+- principal views are true axis-aligned orthographic views;
+- `front_direction` has no default;
+- 3/4 views use a fixed 45° front-relative azimuth + modest 30° elevation and a
+  fixed 45° perspective FOV;
+- capture resolution is fixed at 512×512 with fixed 12% framing padding;
+- labeled `VIEW <name>` text is immediately followed by actual MCP image content;
+- no custom camera, file output, particle, texture variant, animation/time,
+  selected-element scope, similarity score, or automatic PASS.
+
+### Offscreen capture improvement
+
+Instead of mutating the user's active editor camera, canonical capture uses
+Blockbench's official `Screencam.NoAAPreview` offscreen preview. Official
+Blockbench advanced screenshot code uses the same offscreen preview pattern for
+custom-resolution capture.
+
+Consequences:
 
 ```text
-front
-back
-left
-right
-top
-bottom
-front_left_3q
-front_right_3q
+active editor camera → untouched
+active project       → untouched
+selection/model      → untouched
+512×512 offscreen camera → temporary canonical capture
 ```
 
-Required behavior:
+The offscreen preview's prior resolution/camera/lens state is snapshotted,
+restored in `finally`, and checked before `restored_camera=true` is returned.
 
-- active project only; no project selector;
-- fixed 512×512 PNG + fixed small padding;
-- principal views true axis-aligned orthographic;
-- no hidden elevation on front/back/left/right;
-- `front_direction` required, no inferred/default front;
-- left/right semantics object-relative to front direction;
-- 3/4 views stable perspective context only;
-- `framing=model` calls the new `readRenderedModelBounds()` helper;
-- `framing=explicit` uses exactly the supplied target envelope and never expands
-  it to hide out-of-envelope geometry;
-- labeled text + actual MCP image content per view;
-- snapshot/restore camera in `finally`;
-- no project/selection/texture/animation/model-state changes;
-- restoration failure means tool failure;
-- no custom camera, file output, particle, texture variant, animation/time,
-  selected scope, reference comparison, similarity score, or automatic PASS.
+### Schema hardening
+
+Local `createTool()` registers extracted Zod field shapes, so top-level
+`.superRefine()` is not a safe place for public MCP cross-field validation.
+`capture_model_views` therefore keeps its important checks inside the field
+schemas themselves:
+
+- `views` field enforces uniqueness;
+- explicit framing field enforces `max > min` on all three axes.
+
+No factory/G3 change was required.
+
+### Bedrock prompt routing
+
+`mcp/prompts/bedrock.md` now explicitly routes whole-form evidence through:
+
+```text
+coarse blockout
+→ inspect_model_bounds
+→ capture_model_views
+→ direct reference ↔ model comparison
+```
+
+When an approved numeric target envelope exists, the prompt uses explicit
+framing so auto-framing cannot hide gross scale/placement drift.
+
+## Evidence Status
+
+**Static source/contract proof is available.**
+
+Live claims remain `LOCAL PROOF REQUIRED` until the user later chooses Blockbench
+runtime testing, including:
+
+- rendered bounds numerically match difficult animated/group-transform cases;
+- named view orientation/framing matches the intended Blockbench result;
+- MCP client exposes inline images to the vision-capable model as intended;
+- offscreen camera restoration behaves correctly in the live installed build.
+
+Local proof is not the current blocker.
 
 ## Holds
 
-- **G1/G2:** source corrections remain implemented; local proof deferred.
-- **Slice A:** goal-oriented prompt source remains implemented; local proof is not
-  the active blocker.
+- **G1/G2:** source corrections implemented; local proof deferred.
 - **G3 annotations:** paused.
-- **G4 screenshot restoration:** do not patch separately; canonical capture owns
-  strict camera restoration and avoids project switching entirely.
+- **G4 old screenshot project restoration:** do not patch separately; canonical
+  fidelity capture avoids project switching and does not use that path.
 - **G5 bone-rigging Undo preflight:** held until hierarchy runtime work resumes.
-- `inspect_element`, `modify_cubes_batch`, mutation safety, UV additions, and
-  public-surface reduction remain later slices.
+- mutation batching, mutation safety, UV additions, save/open proof, and public
+  surface reduction remain later slices.
 
 ## Do Not Reintroduce
 
@@ -247,8 +214,19 @@ Required behavior:
 
 ## Next Step
 
-Implement **only `capture_model_views`** using the frozen contract and the shared
-`readRenderedModelBounds()` basis. Keep the existing low-level screenshot helper
-for current-view/diagnostic compatibility; do not replace it or broaden canonical
-capture into Sample's multi-purpose preview framework. Do not implement
-`inspect_element`, mutation tools, or resume G3 in the same slice.
+Audit the **current authored-element read surface** before adding anything:
+inspect `mcp/server/tools/element.ts` and the relevant current resource/read
+helpers to determine whether one existing operation can already return the exact
+state needed after a visual mismatch:
+
+```text
+explicit element UUID/name
+kind + parent
+Cube from/to/size/origin/rotation/visibility
+Group origin/rotation where applicable
+```
+
+If an existing focused read already satisfies this, reuse/improve it instead of
+adding `inspect_element`. If not, define and implement the smallest read-only
+`inspect_element` contract. Do not add `modify_cubes_batch` or resume G3 in the
+same slice.
