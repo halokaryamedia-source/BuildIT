@@ -140,7 +140,7 @@ export const createPbrMaterialParameters = z.object({
     .string()
     .optional()
     .describe(
-      "Texture ID/name for the MER (Metalness/Emissive/Roughness) map."
+      "Texture ID/name for the MER (Metalness/Emissive/Roughness) channel."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
