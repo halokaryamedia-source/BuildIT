@@ -18,6 +18,12 @@ function hasNonZeroRotation(rotation?: readonly number[]): boolean {
 
 const placeCubeElementSchema = cubeSchema
   .extend({
+    from: finiteVec3Schema.describe(
+      "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+    ),
+    to: finiteVec3Schema.describe(
+      "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+    ),
     origin: finiteVec3Schema
       .optional()
       .describe(
@@ -85,7 +91,7 @@ export const placeCubeParameters = z.object({
     .array(placeCubeElementSchema)
     .min(1)
     .describe(
-      "Array of Cubes to place. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
+      "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
     ),
   texture: z
     .string()
@@ -200,7 +206,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places one or more Cubes. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
+      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
