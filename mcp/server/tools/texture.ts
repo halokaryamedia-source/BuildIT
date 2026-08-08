@@ -184,27 +184,31 @@ export const configureMaterialParameters = z.object({
   material: z.string().describe("Material name or UUID to configure."),
   color_texture: z
     .string()
+    .min(1)
     .optional()
     .describe(
-      "Texture ID/name for the color channel, or 'none' to use uniform color."
+      "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
     ),
   normal_texture: z
     .string()
+    .min(1)
     .optional()
     .describe(
-      "Texture ID/name for the normal map, or 'none' to remove."
+      "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
     ),
   height_texture: z
     .string()
+    .min(1)
     .optional()
     .describe(
-      "Texture ID/name for the height map, or 'none' to remove."
+      "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
     ),
   mer_texture: z
     .string()
+    .min(1)
     .optional()
     .describe(
-      "Texture ID/name for MER channel, or 'none' to use uniform values."
+      "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
@@ -323,7 +327,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures an existing PBR material's properties including channel assignments, uniform values, and subsurface scattering.",
+      "Configures an existing PBR material. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
@@ -633,6 +637,45 @@ function resolveCreatePbrMaterialTexture(reference: string): Texture {
 
   throw new Error(
     `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before creating the PBR material.`
+  );
+}
+
+function resolveConfigureMaterialTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before configuring the material.`
   );
 }
 
@@ -1016,10 +1059,36 @@ export function registerTextureTools() {
     }) {
       const textureGroup = findTextureGroupOrThrow(material);
       const textures = textureGroup.getTextures();
+      const colorTexture =
+        color_texture !== undefined && color_texture !== "none"
+          ? resolveConfigureMaterialTexture(color_texture)
+          : undefined;
+      const normalTexture =
+        normal_texture !== undefined && normal_texture !== "none"
+          ? resolveConfigureMaterialTexture(normal_texture)
+          : undefined;
+      const heightTexture =
+        height_texture !== undefined && height_texture !== "none"
+          ? resolveConfigureMaterialTexture(height_texture)
+          : undefined;
+      const merTexture =
+        mer_texture !== undefined && mer_texture !== "none"
+          ? resolveConfigureMaterialTexture(mer_texture)
+          : undefined;
+      const assignmentTextures = [
+        colorTexture,
+        normalTexture,
+        heightTexture,
+        merTexture,
+      ].filter((texture): texture is Texture => texture !== undefined);
+      const undoTextures = [...textures, ...assignmentTextures].filter(
+        (texture, index, all) =>
+          all.findIndex((candidate) => candidate.uuid === texture.uuid) === index
+      );
 
       Undo.initEdit({
         texture_groups: [textureGroup],
-        textures,
+        textures: undoTextures,
       });
 
       // Handle color channel
@@ -1027,12 +1096,11 @@ export function registerTextureTools() {
         textures
           .filter((t: Texture) => t.pbr_channel === "color")
           .forEach((t: Texture) => (t.group = ""));
-      } else if (color_texture) {
+      } else if (colorTexture) {
         textures
           .filter((t: Texture) => t.pbr_channel === "color")
           .forEach((t: Texture) => (t.pbr_channel = "color"));
-        const tex = findTextureOrThrow(color_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+        colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
       }
 
       // Handle normal channel
@@ -1040,9 +1108,8 @@ export function registerTextureTools() {
         textures
           .filter((t: Texture) => t.pbr_channel === "normal")
           .forEach((t: Texture) => (t.group = ""));
-      } else if (normal_texture) {
-        const tex = findTextureOrThrow(normal_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+      } else if (normalTexture) {
+        normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
       }
 
       // Handle height channel
@@ -1050,9 +1117,8 @@ export function registerTextureTools() {
         textures
           .filter((t: Texture) => t.pbr_channel === "height")
           .forEach((t: Texture) => (t.group = ""));
-      } else if (height_texture) {
-        const tex = findTextureOrThrow(height_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+      } else if (heightTexture) {
+        heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
       }
 
       // Handle MER channel
@@ -1060,9 +1126,8 @@ export function registerTextureTools() {
         textures
           .filter((t: Texture) => t.pbr_channel === "mer")
           .forEach((t: Texture) => (t.group = ""));
-      } else if (mer_texture) {
-        const tex = findTextureOrThrow(mer_texture);
-        tex.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+      } else if (merTexture) {
+        merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
       }
 
       // Update uniform values
