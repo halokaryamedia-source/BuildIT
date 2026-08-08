@@ -31,27 +31,25 @@ flowchart TD
     NC --> G
     V --> G{Developing?}
     G -- Yes --> AP[Acceptance POV + original scope gate]
-    G -- No --> Q{Extra critique/evidence needed?}
+    G -- No --> Q{Material uncertainty or critique needed?}
     AP --> Q
 
-    Q -- Yes --> E[Conditional grilling / review / evidence gate]
+    Q -- Yes --> E[Conditional critique or AGENTS evidence-status escalation]
     Q -- No --> F{Evidence sufficient?}
     E --> F
-    F -- No --> PR[Perlu pemeriksaan]
+    F -- No --> PR[Perlu pemeriksaan / Local proof required]
     F -- Yes --> OK[Selesai]
     OK --> U[Update next-action / decision owner if state changed]
 ```
 
 ## Conditional Escalations
 
-- **GSD-style discovery** — only unresolved high-impact decisions after repo
-  inspection.
-- **Grilling** — adversarial challenge for a plan/decision/idea before
-  commitment when useful.
+- **GSD-style discovery** — unresolved high-impact decisions after repo inspection.
+- **Grilling** — adversarial challenge for a plan/decision/idea when useful.
 - **CodeGraph** — optional broad source-navigation accelerator; never proof.
-- **Code review** — only when independent critique materially adds value after
-  implementation.
-- **Evidence gate** — missing/disputed proof or repeatedly failing direction.
+- **Code review** — independent critique only when it materially adds value.
+- **Evidence status** — root `AGENTS.md` classification for uncertain/disputed
+  material claims; not a skill.
 - **OpenSpec** — genuine cross-cutting contract/migration/multi-phase boundary.
 
 None are default ceremony.
