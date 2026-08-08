@@ -198,7 +198,7 @@ export const configureMaterialParameters = z.object({
     .array(z.number().min(0).max(255))
     .length(4)
     .optional()
-    .describe("Uniform RGBA color [R,G,B,A] when no color texture."),
+    .describe("Uniform RGBA color [R, G, B, A] when no color texture."),
   mer_value: z
     .array(z.number().min(0).max(255))
     .length(3)
@@ -288,7 +288,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "get_texture",
     description:
-      "Returns the image data of the given texture or default texture.",
+      "Returns image data for the default texture when no texture is specified. Explicit texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before image data is returned.",
     annotations: {
       title: "Get Texture",
       readOnlyHint: true,
@@ -503,6 +503,45 @@ function resolveActivateTextureTexture(reference: string): Texture {
 
   throw new Error(
     `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before activating it.`
+  );
+}
+
+function resolveGetTextureTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before reading image data.`
   );
 }
 
@@ -765,7 +804,7 @@ export function registerTextureTools() {
         return imageContent({ url: defaultTexture.getDataURL() });
       }
 
-      const image = findTextureOrThrow(texture);
+      const image = resolveGetTextureTexture(texture);
       return imageContent({ url: image.getDataURL() });
     },
   }, textureToolDocs[4].status);
