@@ -53,14 +53,13 @@ BBPlugin.register("mcp", {
 
     settingsSetup();
 
-    // Load prompt manifest from CDN/cache before server starts.
-    // Must never abort onload — missing prompts should degrade gracefully,
-    // e.g. when a new version is tagged before the CDN asset is published.
+    // Local prompt content is bundled into the plugin and remains the default
+    // authority. Optional CDN content is loaded only as fallback when enabled.
     try {
       const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") !== false;
       await initPromptLoader(cdnEnabled);
     } catch (err) {
-      console.error("[MCP] Prompt loader initialization failed — continuing without prompts:", err);
+      console.error("[MCP] Prompt loader initialization failed:", err);
     }
 
     // Create TCP server to handle HTTP requests
