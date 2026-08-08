@@ -95,6 +95,34 @@ If a dedicated ChatGPT skill is packaged again in the future, derive it from
 `04-reference-guide.md` and keep it specific to that image-capable surface rather
 than creating a duplicate root Codex skill.
 
+### Evidence-gate lineage → root evidence baseline
+
+**Decision:** `MERGE + DROP AS SKILL`.
+
+No tracked `.agents/skills/evidence-gate/SKILL.md` history exists in Rework. The
+actual useful behavior was recovered from the earlier Minecraft Production
+Reality Core's evidence-gate rules, not from a standalone project skill.
+
+The valuable distinction is evidence quality for a material claim:
+
+- `CURRENT-PROJECT VERIFIED`;
+- `OFFICIALLY VERIFIED`;
+- `LOCAL PROOF REQUIRED` (simplified from historical `PROTOTYPE REQUIRED` for the
+  current ChatGPT→GitHub / Codex-local workflow);
+- `UNSUPPORTED`;
+- `UNKNOWN`.
+
+Canonical owner: root `AGENTS.md` under **Evidence Status Escalation**.
+
+No standalone skill is created because the remaining behavior already belongs to
+baseline proof, root-cause, and independent-judgment rules. Historical
+`SIMULATION REQUIRED` is not retained as another status: when the literal method
+is unsupported but the user goal is still achievable, Independent Judgment owns
+rejecting/redirecting the method to the smallest supported alternative.
+
+Evidence labels are conditional. Routine work must not be burdened with status
+ceremony when its proof is already clear.
+
 ## Retired / Merged Skills
 
 ### `mcp-builder`
@@ -155,7 +183,8 @@ Vue application domain.
 
 Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
 `bun-development`, `blockbench-plugins`, nested `skill-creator`,
-`vue-best-practices`, or historical `blockbench-use` orchestrator packages.
+`vue-best-practices`, historical `blockbench-use`, or conceptual
+`evidence-gate` skill packages.
 
 Do not create a root `reference-generator` skill unless a future requirement
 proves that Codex itself must own reference generation rather than consume the
@@ -169,11 +198,14 @@ There are currently **no active skills** under `mcp/.agents/skills/` or
 Those paths are legacy locations, not active project-wide skill roots. Do not
 repopulate them merely to match historical layout.
 
-## Recovery Items
+## Recovery Status
 
-| Skill lineage | Intended function | Status |
-|---|---|---|
-| `evidence-gate` | unsupported/disputed evidence and repeated failed directions | **next recovery + overlap audit** |
+The planned recovery pass is complete. There are no remaining historical skill
+names queued for automatic recovery.
+
+A future capability is added only when current work proves a distinct owner and
+value that is not already covered by baseline policy, a foundation workflow, or
+an existing specialist.
 
 The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
 match historical notes.
@@ -187,19 +219,19 @@ Use them only when the activation matrix says their distinct function is needed.
 
 ## Skill Audit Rule
 
-For each skill, decide one of:
+For each skill/capability, decide one of:
 
 ```text
 KEEP    → clear unique function and name
 RENAME  → function useful, name misleading
-MERGE   → useful behavior overlaps another skill
+MERGE   → useful behavior overlaps another owner
 MOVE    → function belongs at a different repository scope
 DROP    → no distinct value after baseline rules/other skills
-RECOVER → trusted source exists but canonical Local copy is missing
+RECOVER → trusted source exists but canonical Local capability is missing
 ```
 
-A recovered capability may remain a foundation/workflow instead of becoming a
-skill when that is the smaller correct owner.
+A recovered capability may remain a baseline/foundation/workflow instead of
+becoming a skill when that is the smaller correct owner.
 
 Judge the capability by its actual trigger/function, not by its upstream name.
 Preserve upstream lineage in the decision record when a rename/merge/recovery
