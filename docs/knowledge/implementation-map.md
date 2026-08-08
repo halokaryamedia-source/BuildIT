@@ -46,9 +46,10 @@ recreated merely to satisfy historical documentation.
 | Capability | Source owner | Current source meaning |
 |---|---|---|
 | `place_cube` | `mcp/server/tools/cubes.ts` | explicit finite `from/to`; strict parent resolution; non-zero initial rotation requires explicit pivot |
-| `modify_cube` | `mcp/server/tools/cubes.ts` | UUID-first / unique-name single target; pivot-only correction preserves visual position |
-| `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | heterogeneous exact-UUID updates in one recoverable Undo unit |
+| `modify_cube` | `mcp/server/tools/cubes.ts` | UUID-first / unique-name single target; pivot-only correction preserves visual position; zero→non-zero rotation activation requires explicit origin |
+| `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | heterogeneous exact-UUID updates in one recoverable Undo unit; all targets preflight zero→non-zero rotation activation before Undo |
 | Cube pivot-only semantics | `mcp/server/tools/cubes.ts` | origin-only → `Cube.transferOrigin()`; origin + geometry transform → authored rewrite |
+| Existing-Cube rotation activation | `mcp/server/tools/cubes.ts` | currently unrotated target + requested non-zero rotation requires explicit origin; already-rotated target may reuse existing pivot |
 
 ### Hierarchy / Pivot
 
