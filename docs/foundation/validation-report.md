@@ -37,6 +37,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Mutation identity must be explicit | Active BlockIT policy | Single-Cube and destructive element mutations must not depend on transient selection or first-name-match behavior. |
 | Explicit discovery scope must be deterministic | Active BlockIT policy | A requested Group scope must not silently resolve to the first duplicate name. |
 | Explicit discovery filters fail closed | Active BlockIT policy | A supplied invalid/rejected regex must not silently become an unfiltered search. |
+| Explicit material-discovery texture must be deterministic | Active BlockIT policy | Read-only texture discovery must not silently choose a duplicate name/ID match. |
 | Destructive mutation must be recoverable | Active BlockIT policy | Once Undo is open, remove/rename/duplicate failures must cancel/revert rather than leave an open/partial edit. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
@@ -62,7 +63,7 @@ Important local proof still missing:
   installed Blockbench runtime;
 - rendered bounds remain correct for current animation/group-transform edge cases.
 
-## Element Discovery / Scope Safety
+## Element / Material Discovery Safety
 
 | Capability | Local source | Evidence status | Current claim |
 |---|---|---|---|
@@ -70,9 +71,12 @@ Important local proof still missing:
 | `select_all_of_type(parent_group=...)` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict optional Group-scope resolution occurs before selection state changes. |
 | scoped Group resolver | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | discovery/selection uses a local resolver and does not inherit `add_group`'s special `root` parent semantics. |
 | `find_elements_by_criteria(name_pattern=...)` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | omitted/empty pattern remains no regex filter; explicit oversized, nested-quantifier-rejected, or invalid regex now throws instead of continuing without the requested filter. |
+| `filter_by_material(texture=...)` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | exact UUID resolves first, then exact texture ID, then exact name only when unique; duplicate IDs/names and missing references fail before read-only discovery. |
+| material-discovery texture resolver | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | local only; shared `getProjectTexture` / `findTextureOrThrow` are unchanged because they also serve paint, mutation, activation, and PBR paths. |
 
-The current source prevents both wrong-hierarchy scope and rejected-regex fallback
-from silently broadening the normal `discover → inspect → exact mutation` path.
+The current source prevents wrong-hierarchy scope, rejected-regex fallback, and
+ambiguous read-only texture lookup from silently broadening or misdirecting the
+normal discovery path.
 
 ## Cube Creation / Correction Safety
 
@@ -150,18 +154,15 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### Explicit texture-reference ambiguity in `filter_by_material`
+### Explicit texture reference in `place_cube`
 
-`filter_by_material(texture=...)` resolves through
-`findTextureOrThrow() → getProjectTexture()`. Current `getProjectTexture()` uses a
-single first-match lookup across texture `id`, `name`, or `uuid`. If exact texture
-names are duplicated, a read-only material discovery query may therefore inspect
-the wrong texture without reporting ambiguity.
+`place_cube(texture=...)` currently resolves a supplied texture through shared
+`getProjectTexture()`, which uses one first-match lookup across texture ID, name,
+or UUID. A duplicate name can therefore apply a different texture than intended
+during initial Cube creation even though geometry/hierarchy preflight is strict.
 
-Status: **next active source audit**. Determine the smallest way to make the
-explicit `filter_by_material` reference deterministic without broadening shared
-texture helpers used by unrelated paint/mutation paths unless their caller
-semantics are proven compatible.
+Status: **next active source audit**. Keep the fix bounded to initial Cube
+placement unless caller evidence justifies changing the shared texture helper.
 
 ## Historical External Premises
 
@@ -187,7 +188,7 @@ Status: `UNSUPPORTED` for BlockIT modelling/approval authority:
 - per-Cube screenshot/approval quotas;
 - arbitrary fallback coordinates/pivots;
 - editor selection as implicit single-Cube mutation identity;
-- first matching duplicate element/Group name as mutation or discovery identity;
+- first matching duplicate element/Group/texture name as mutation or discovery identity;
 - silently ignoring an explicit invalid/rejected discovery filter;
 - historical fixture-specific build rules promoted to generic workflow.
 
@@ -206,11 +207,15 @@ Safe claims:
   ambiguity before search/selection;
 - explicit invalid/rejected `name_pattern` throws from source instead of becoming
   a missing regex filter;
+- `filter_by_material` now resolves texture UUID first, then exact texture ID,
+  then exact unique name and rejects ambiguous/missing references before
+  discovery;
 - destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
 - remove/duplicate/rename now each have a bounded failure path that calls
   `Undo.cancelEdit(true)` after Undo has opened;
-- shared `findElementOrThrow` was intentionally left unchanged;
+- shared element and texture lookup helpers remain intentionally unchanged where
+  caller compatibility has not been established;
 - official Blockbench types/source support the transfer-origin semantics used by
   the code.
 
@@ -221,10 +226,10 @@ Unsafe claims without local proof:
 - bounds/camera/Undo behavior works for every live edge case;
 - the MCP client definitely exposes the updated contracts until the current
   plugin is built/loaded and inspected;
+- duplicate-name texture discovery behaves correctly in the installed live
+  runtime;
 - invalid `name_pattern` errors definitely reach the active MCP client with the
   expected error presentation;
-- duplicate-name scoped Group lookup behaves correctly in the installed live
-  runtime;
 - forced remove/rename/duplicate failures definitely leave zero partial state in
   the installed Blockbench runtime;
 - the new loop now produces a good reference-matching model in practice;
@@ -238,23 +243,25 @@ future proof queue is:
 1. build/load current Local plugin in Blockbench;
 2. verify default Bedrock project + bundled prompt behavior;
 3. inspect live MCP schemas for the current explicit-target/scope/filter contracts;
-4. verify omitted/empty `name_pattern` remains unfiltered while invalid,
+4. create duplicate-name textures and verify `filter_by_material` rejects the
+   ambiguous name while exact UUID / texture ID resolve the intended texture;
+5. verify omitted/empty `name_pattern` remains unfiltered while invalid,
    overlong, and rejected nested-quantifier patterns fail rather than broaden the
    query;
-5. create duplicate-name Groups and verify scoped search/selection reject an
+6. create duplicate-name Groups and verify scoped search/selection reject an
    ambiguous name but accept exact UUID and unique name;
-6. create duplicate-name Cube/Group fixtures and verify destructive element tools
+7. create duplicate-name Cube/Group fixtures and verify destructive element tools
    reject ambiguous names before mutation;
-7. force controlled remove, rename, and duplicate failures and verify rollback
+8. force controlled remove, rename, and duplicate failures and verify rollback
    leaves no partial/open destructive edit;
-8. create a small model using strict `place_cube` inputs;
-9. verify `inspect_model_bounds` against visible transformed geometry;
-10. verify canonical `capture_model_views` image delivery/orientation/framing;
-11. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
-12. verify Cube and Group pivot-transfer behavior visually;
-13. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-14. save/reopen `.bbmodel` and inspect persistence;
-15. run one approved-reference → whole-form modelling session and evaluate actual
+9. create a small model using strict `place_cube` inputs;
+10. verify `inspect_model_bounds` against visible transformed geometry;
+11. verify canonical `capture_model_views` image delivery/orientation/framing;
+12. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+13. verify Cube and Group pivot-transfer behavior visually;
+14. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
+15. save/reopen `.bbmodel` and inspect persistence;
+16. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
 
 Do not run this queue ceremonially; use the smallest proof required when local
@@ -263,9 +270,9 @@ validation resumes.
 ## Bottom Line
 
 The architectural problem is well-defined and the main observation, discovery
-scope/filter, correction, targeting, pivot, initial-placement,
-rotation-activation, and bounded destructive rollback mechanisms are present in
-Local source.
+scope/filter/material targeting, correction, targeting, pivot,
+initial-placement, rotation-activation, and bounded destructive rollback
+mechanisms are present in Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
 Blockbench/MCP/Codex path observes and corrects models as intended. That remains
