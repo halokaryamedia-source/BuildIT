@@ -42,17 +42,21 @@ Live Blockbench proof remains intentionally deferred and is tracked as
   validation report;
 - reclassified source-selection/merge-map notes as historical adoption records;
 - refreshed Obsidian dashboard, implementation map, module/skill/MCP ownership,
-  workspace/source maps, glossary, review index, roadmap, and task board;
+  workspace/source maps, glossary, review index, roadmap, task board, agent flow,
+  maintenance flow, and decision guide;
 - added the durable `decisions/reference-fidelity-loop.md` record;
+- simplified `next-action.md` back to a real active-task snapshot;
 - removed current routing claims that pointed at nonexistent `mcp/workflow/` or
-  retired skill roots.
+  retired skill roots;
+- changed the tracked Obsidian workspace landing page from the historical
+  anti-slop candidate review to `index.md` and cleaned stale recent-file paths.
 
 ## 2026-07-23 — Vault Creation
 
 - created the repo-local Obsidian vault in `docs/knowledge/`;
 - added dashboard/home notes, glossary, templates, module maps, and operations
   layer;
-- connected Obsidian start page to `index.md`;
+- connected Obsidian start-page concept to `index.md`;
 - added early ownership and roadmap/task-board notes.
 
 Historical entries above retain their original context. Current ownership/status
