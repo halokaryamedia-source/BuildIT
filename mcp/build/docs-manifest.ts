@@ -65,8 +65,9 @@ export const promptDocs: PromptSpec[] = [
       format: z
         .enum(["java_block", "bedrock", "bedrock_block"])
         .optional()
+        .default("bedrock")
         .describe(
-          "Target model format. Use `bedrock` for Minecraft Bedrock Entity models and `bedrock_block` only when a Bedrock block model is explicitly requested."
+          "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use `bedrock_block` only when a Bedrock block model is explicitly requested."
         ),
       approach: z
         .enum(["ui", "programmatic", "import"])
