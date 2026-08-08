@@ -4,7 +4,6 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { cubeSchema } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
-import { getProjectTexture } from "@/lib/util";
 
 const finiteVec3Schema = z.tuple([
   z.number().finite(),
@@ -98,7 +97,9 @@ export const placeCubeParameters = z.object({
   texture: z
     .string()
     .optional()
-    .describe("Texture ID or name to apply to the cube."),
+    .describe(
+      "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation."
+    ),
   group: z
     .string()
     .optional()
@@ -210,7 +211,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
+      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -353,19 +354,54 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
   );
 }
 
+function resolvePlacementTexture(reference?: string): Texture | null {
+  if (reference === undefined) return Texture.getDefault() ?? null;
+
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before placing Cubes.`
+  );
+}
+
 export function registerCubesTools() {
 createTool(cubeToolDocs[0].name, {
   ...cubeToolDocs[0],
   async execute({ elements, texture, faces, group }) {
-    const projectTexture = texture
-      ? getProjectTexture(texture)
-      : Texture.getDefault();
+    // Resolve explicitly requested texture/hierarchy targets before opening Undo.
+    const projectTexture = resolvePlacementTexture(texture);
 
-    if (texture && !projectTexture) {
-      throw new Error(`No texture found for "${texture}".`);
-    }
-
-    // Resolve an explicitly requested hierarchy target before opening Undo.
     // Omitted group (or explicit "root") is the only intentional root fallback.
     const outlinerGroup = resolvePlacementGroup(group);
 
