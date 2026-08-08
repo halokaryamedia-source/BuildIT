@@ -17,7 +17,7 @@ decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_DESTRUCTIVE_ELEMENT_TARGET_HARDENED`
+`REFERENCE_FIDELITY_DUPLICATE_ROLLBACK_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -68,33 +68,39 @@ Current Local source already contains:
 - explicit finite `from/to` requirement for every new `place_cube` element;
 - zero→non-zero rotation activation on an existing Cube requires explicit
   `origin` before Undo;
-- `remove_element`, `duplicate_element`, and `rename_element` now resolve targets
-  UUID-first and accept an exact name only when unique across Cube/Mesh/Group;
-  duplicate-name ambiguity fails before destructive mutation.
+- `remove_element`, `duplicate_element`, and `rename_element` use UUID-first /
+  exact-unique-name destructive target resolution;
+- `duplicate_element` recursive Cube/Group/Mesh cloning is now wrapped in one
+  rollback boundary: failure after Undo opens calls `Undo.cancelEdit(true)` and
+  rethrows; successful Canvas refresh remains after `finishEdit`.
 
 These are **source implemented**, not live-proven.
 
-## Latest Targeting Finding
+## Latest Runtime Finding
 
-The shared `mcp/lib/util.ts::findElementOrThrow` still uses first-match name
-resolution, but GitHub code search for all callers is incomplete in this repo.
-Therefore the latest slice deliberately **did not** broaden that shared helper.
+Before the latest change, `duplicate_element` opened Undo and recursively created
+Group/Cube/Mesh descendants without a failure rollback boundary. A later child or
+Mesh failure could therefore occur after earlier duplicate elements had already
+been created.
 
-Instead, the three known destructive element tools use a local resolver inside
-`mcp/server/tools/element.ts`:
+Current source now follows the same bounded Local pattern already used by other
+creation/mutation paths:
 
 ```text
-UUID exact
-→ target
+Undo.initEdit
+↓
+try recursive clone
+↓
+Undo.finishEdit
 
-exact name + one match
-→ target
-
-exact name + multiple Cube/Mesh/Group matches
-→ ERROR + candidate UUID/type
+failure after Undo opens
+→ Undo.cancelEdit(true)
+→ Canvas refresh
+→ rethrow
 ```
 
-This keeps the fix bounded while eliminating the proven destructive ambiguity.
+No clone geometry, material, UV, hierarchy, naming, remove, or rename behavior
+was changed in this slice.
 
 ## Confirmed Failure Evidence
 
@@ -105,8 +111,9 @@ Prior testing established:
 3. pivots/origins can become abstract/distant without a real transform/joint/
    attachment reason.
 
-Target identity is part of the same no-guess boundary: a correct operation on the
-wrong element is still a failed model mutation.
+Target identity and recoverability are part of the same no-guess boundary: a
+mutation must not silently hit the wrong element or leave partial state after a
+failed operation.
 
 ## Holds
 
@@ -118,44 +125,41 @@ wrong element is still a failed model mutation.
 
 ## Next Step
 
-Audit **`duplicate_element` transaction recoverability** in:
+Audit **scoped Group lookup ambiguity** in the normal discovery/selection route:
 
 ```text
-mcp/server/tools/element.ts
+find_elements_by_criteria(parent_group=...)
+select_all_of_type(parent_group=...)
 ```
 
-Current source path:
+Current source resolves those scopes with:
 
 ```text
-resolve target
-↓
-Undo.initEdit
-↓
-recursive cloneElement(...)
-  ├─ Cube clone
-  ├─ Group clone + recursive children
-  └─ Mesh clone + vertices/faces/material
-↓
-Undo.finishEdit
+Group.all.find(g => g.uuid === parent_group || g.name === parent_group)
 ```
 
-There is currently no `try/catch + Undo.cancelEdit(true)` around the recursive
-clone after Undo opens. If a child/mesh clone throws after earlier elements were
-already created, partial duplicated state may remain.
+so duplicate exact Group names may silently select the first Group. This is
+material because `find_elements_by_criteria` is part of the normal
+`discover → inspect_element → mutate exact UUID` path; a wrong scope can produce
+the wrong candidate UUID before the later strict mutation gates even run.
 
 Audit requirements:
 
-1. confirm the exact mutation/failure boundary of `duplicate_element`;
-2. preserve all target/clone behavior that is already correct;
-3. if rollback is supported by the existing Blockbench Undo contract, wrap only
-   the duplication transaction so failure reverts created elements;
-4. keep Canvas refresh outside a successfully finished transaction where
-   appropriate;
-5. do not change remove/rename semantics, clone geometry rules, UV/material
-   behavior, hierarchy, G3, or create a generic transaction framework.
+1. confirm both current callers/semantics and whether any other scoped element
+   operations share this first-match pattern;
+2. preserve optional no-scope behavior;
+3. make an explicit scope UUID-first and allow exact name only when unique;
+4. fail ambiguity before search/selection state changes;
+5. preserve current root/no-parent semantics rather than broadening them
+   accidentally;
+6. do not change destructive resolver, duplication logic, texture lookup, mesh
+   selection fallback, UV, G3, or create a generic resolver framework.
+
+Prefer a small local Group-scope resolver or reuse an existing strict local
+pattern only when its `root` semantics are compatible.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source transaction structure and static diff only.
-Actual partial-clone rollback behavior remains `LOCAL PROOF REQUIRED` until local
-Blockbench testing resumes.
+ChatGPT→GitHub may establish source lookup contracts and static diff only.
+Actual Blockbench scoped-search/selection behavior remains `LOCAL PROOF REQUIRED`
+until local testing resumes.
