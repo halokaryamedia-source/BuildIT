@@ -1,33 +1,91 @@
 # Skill Ownership
 
-`mcp/workflow/skills/` is the single canonical owner of workspace-specific
-skills.
+Updated: 2026-08-08
 
-It owns only concise `SKILL.md` instructions needed for MCP-Blockbench work.
-Detailed product policy remains in `docs/foundation/`; runtime code remains in
-its owning MCP or Reference Generator module.
+All canonical repository-wide BlockIT skills live at root:
 
-## Canonical Skills
+`/.agents/skills/`
 
-- `mcp-builder`
-- `typescript-expert`
-- `zod`
-- `bun-development`
-- `blockbench-use`
-- `blockbench-plugins`
-- `reference-generator`
-- `evidence-gate`
+Codex is launched from root `BuildIT`, so this is the only active project skill
+root.
 
-## Boundaries
+## Frozen Canonical Set
 
-- Do not copy global Codex skills into the workspace.
-- Do not put runtime environments, generated output, README files, or generic
-  API catalogs inside a skill folder.
-- Do not maintain compatibility mirrors as independent workflows.
-- Use the global `skill-creator` for skill structure and validation.
-- Use `Needs Validation` when a skill claim is not proven in this workspace.
+| Skill | Responsibility |
+|---|---|
+| `development-brief` | mandatory Developing front door: goal/method separation, execution channel, Build/Acceptance POV, scope, acceptance, proof budget |
+| `mcp-server-development` | MCP tools/resources/prompts, public input/result contracts, schema/registration/session semantics |
+| `typescript-type-safety` | TypeScript type-system failures only |
+| `bun-tooling` | Bun-owned build/tooling/scripts/dependency behavior |
+| `blockbench-runtime-development` | Blockbench API/lifecycle/UI/Undo/Canvas/runtime mechanics |
+| `blockbench-bedrock-modelling` | modeller judgement: reference → coherent Bedrock Cuboid form, hierarchy/pivots, texture/animation scope, visual correction |
+
+The architecture is frozen. Do not add/rename/merge/split another skill unless
+current work proves a distinct reusable ownership gap.
+
+## Routing Rule
+
+Developing work uses:
+
+```text
+development-brief
++ at most one specialist when it adds real domain procedure
+```
+
+Do not stack skills because multiple technologies happen to appear in one file.
+Choose the semantic owner of the actual wrong behavior/contract.
+
+Detailed routing lives in [Skill Activation Matrix](../skills/activation-matrix.md).
+
+## Reference Generation
+
+Reference generation is intentionally **not** a root Codex skill.
+
+Source Image → five-view Modelling Brief belongs to:
+
+`docs/foundation/04-reference-guide.md`
+
+on an image-capable surface. Codex consumes the approved Modelling Brief through
+`blockbench-bedrock-modelling`.
+
+## Evidence Status
+
+Evidence classification is also **not** a skill. Root `AGENTS.md` owns:
+
+```text
+CURRENT-PROJECT VERIFIED
+OFFICIALLY VERIFIED
+LOCAL PROOF REQUIRED
+UNSUPPORTED
+UNKNOWN
+```
+
+Do not recreate an `evidence-gate` package.
+
+## Retired / Historical Skill Locations
+
+The following are not active skill roots:
+
+```text
+mcp/.agents/skills/
+mcp/.github/skills/
+mcp/workflow/skills/
+```
+
+Do not repopulate them merely to preserve old structure.
+
+Historical names such as `mcp-builder`, `typescript-expert`, `zod`,
+`bun-development`, `blockbench-plugins`, `blockbench-use`,
+`reference-generator`, or `evidence-gate` are lineage/superseded concepts, not
+current routing targets.
+
+## Canonical Detail
+
+- [Skill Map](../skills/skill-map.md) — full lineage and retired names.
+- [Activation Matrix](../skills/activation-matrix.md) — current routing rules.
+- [Agent Rules](../../../AGENTS.md) — mode/proof/skill-budget baseline.
 
 ## Parent
 
 - [Module Map](module-map.md)
-- [Skill Map](../skills/skill-map.md)
+- [Knowledge Dashboard](../index.md)
