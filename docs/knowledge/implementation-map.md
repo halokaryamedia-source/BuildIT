@@ -39,7 +39,7 @@ recreated merely to satisfy historical documentation.
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | raw rendered whole-Cube envelope facts; no resemblance/PASS |
 | rendered bounds reader | `mcp/lib/renderedModelBounds.ts` | shared rendered-bounds authority used by fidelity observation |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | named canonical 512×512 model views with explicit front direction |
-| `inspect_element` | `mcp/server/tools/element.ts` | exact authored Cube/Group state for diagnosed local correction |
+| `inspect_element` | `mcp/server/tools/element-inspection.ts` | exact authored Cube/Group state for diagnosed local correction |
 
 ### Discovery / Scope Safety
 
@@ -60,13 +60,13 @@ recreated merely to satisfy historical documentation.
 | Cube pivot-only semantics | `mcp/server/tools/cubes.ts` | origin-only → `Cube.transferOrigin()`; origin + geometry transform → authored rewrite |
 | Existing-Cube rotation activation | `mcp/server/tools/cubes.ts` | currently unrotated target + requested non-zero rotation requires explicit origin; already-rotated target may reuse existing pivot |
 
-### Destructive Element Targeting / Duplication
+### Destructive Element Targeting / Transactions
 
 | Capability | Source owner | Current source meaning |
 |---|---|---|
-| `remove_element` | `mcp/server/tools/element.ts` | explicit UUID-first target; exact name accepted only when unique across Cube/Mesh/Group; ambiguity fails before Undo |
+| `remove_element` | `mcp/server/tools/element.ts` | explicit UUID-first target; exact name accepted only when unique across Cube/Mesh/Group; mutation + `finishEdit` are inside one rollback boundary; failure calls `Undo.cancelEdit(true)` before rethrow |
 | `duplicate_element` | `mcp/server/tools/element.ts` | strict target preflight; recursive Cube/Group/Mesh cloning runs inside one Undo transaction; failure after Undo opens calls `Undo.cancelEdit(true)` before rethrow |
-| `rename_element` | `mcp/server/tools/element.ts` | same strict destructive target resolution before rename Undo |
+| `rename_element` | `mcp/server/tools/element.ts` | strict target preflight; rename + `finishEdit` are inside one rollback boundary; failure calls `Undo.cancelEdit(true)` before rethrow |
 | destructive element resolver | `mcp/server/tools/element.ts` | local resolver only; shared `mcp/lib/util.ts::findElementOrThrow` intentionally left unchanged because unrelated callers were not proven safe to migrate |
 
 ### Hierarchy / Pivot
