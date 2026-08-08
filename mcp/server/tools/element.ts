@@ -604,8 +604,16 @@ export function registerElementTools() {
       }
 
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
-      const dup = cloneElement(element, element.parent ?? Outliner);
-      Undo.finishEdit("Agent duplicated element");
+      let dup: Cube | Group | Mesh;
+      try {
+        dup = cloneElement(element, element.parent ?? Outliner);
+        Undo.finishEdit("Agent duplicated element");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
       Canvas.updateAll();
       return `Duplicated "${element.name}" as "${dup.name}" (ID: ${dup.uuid}).`;
     },
