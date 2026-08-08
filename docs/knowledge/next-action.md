@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_GET_TEXTURE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_ADD_TEXTURE_GROUP_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -86,62 +86,19 @@ Current Local source already contains:
 - `get_texture(texture?)` preserves the existing omitted/falsy-reference fallback
   to `Texture.getDefault()`, while explicit non-empty references resolve exact
   UUID → exact unique texture ID → exact unique name and reject ambiguity/missing
-  before image data is returned. Shared texture helpers remain unchanged.
+  before image data is returned. Shared texture helpers remain unchanged;
+- `add_texture_group(name, textures?, is_material)` preserves omitted `textures`
+  as valid empty-group creation. A provided list must now be non-empty and contain
+  non-empty references; every reference is preflighted by exact UUID → exact
+  unique texture ID → exact unique name before `Undo.initEdit`. Any missing or
+  ambiguous entry fails the whole call before group creation or texture
+  reassignment. Shared `getProjectTexture()` remains unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Texture-Read Finding
+## Latest Texture-Group Targeting Finding
 
 Before the latest change:
-
-```text
-get_texture(texture?)
-├─ omitted / falsy → Texture.getDefault()
-└─ explicit → findTextureOrThrow(texture)
-              → getProjectTexture(texture)
-              → first ID/name/UUID match wins
-              → imageContent(target.getDataURL())
-```
-
-A duplicate texture name or ID could therefore return image evidence from a
-different texture than the caller intended.
-
-Current Local behavior is:
-
-```text
-get_texture(texture?)
-├─ omitted / falsy → Texture.getDefault()
-└─ explicit non-empty reference
-    → local read resolver
-       ├─ exact UUID → target
-       ├─ exact unique texture ID → target
-       ├─ exact unique name → target
-       └─ ambiguous / missing → ERROR
-    → imageContent(target.getDataURL())
-```
-
-The tool description now states this target contract. `getTextureParameters`
-semantics, default-texture fallback, `findTextureOrThrow()`, `getProjectTexture()`,
-paint tools, standalone activation, apply behavior, and PBR/UV behavior were not
-changed.
-
-## Holds
-
-- **G1/G2:** source corrections implemented; local proof deferred.
-- **G3 annotations:** paused.
-- save/reopen proof: later local validation.
-- UV/texture feature additions: only after a concrete workflow proves a gap.
-- broad public-surface reduction: after the core fidelity path is proven.
-
-## Next Step
-
-Audit **explicit texture-list identity for `add_texture_group`** in:
-
-```text
-mcp/server/tools/texture.ts
-```
-
-Current observed path is:
 
 ```text
 add_texture_group(name, textures?, is_material)
@@ -156,36 +113,89 @@ add_texture_group(name, textures?, is_material)
 → Undo.finishEdit
 ```
 
-This means a duplicate texture name/ID can attach the wrong texture to the new
-group, and a partially invalid explicit texture list can succeed after silently
-ignoring unresolved references. The all-invalid path also throws only after the
-Undo boundary is open and the group has already been added.
+A duplicate texture name/ID could attach the wrong texture, a partially invalid
+list could silently succeed, and an all-invalid list failed only after mutation
+had already started.
+
+Current Local behavior is:
+
+```text
+add_texture_group(name, textures?, is_material)
+├─ textures omitted → []
+└─ textures provided
+   → schema requires non-empty list of non-empty references
+   → preflight every reference
+      ├─ exact UUID → target
+      ├─ exact unique texture ID → target
+      ├─ exact unique name → target
+      └─ ambiguous / missing → ERROR
+→ only after complete preflight: Undo.initEdit
+→ new TextureGroup(...).add()
+→ resolved textures extend({ group: textureGroup.uuid })
+→ Undo.finishEdit
+```
+
+The public schema/tool description now states the explicit-list contract. The
+shared `getProjectTexture()` helper was not changed; its now-unused import was
+removed only from `texture.ts`. PBR create/configure tools, standalone activation,
+`get_texture`, `apply_texture`, paint tools, and G3 were not changed.
+
+## Holds
+
+- **G1/G2:** source corrections implemented; local proof deferred.
+- **G3 annotations:** paused.
+- save/reopen proof: later local validation.
+- UV/texture feature additions: only after a concrete workflow proves a gap.
+- broad public-surface reduction: after the core fidelity path is proven.
+
+## Next Step
+
+Audit **`add_texture_group` mutation/Undo recoverability after successful target
+preflight** in:
+
+```text
+mcp/server/tools/texture.ts
+```
+
+Current post-preflight path is:
+
+```text
+resolved textureList
+→ Undo.initEdit({ elements: [], outliner: true, collections: [], textures: [] })
+→ new TextureGroup(...).add()
+→ textureList.forEach(texture.extend({ group: textureGroup.uuid }))
+→ Undo.finishEdit
+→ Canvas.updateAll
+```
+
+There is no rollback boundary after `Undo.initEdit`. If group creation, texture
+reassignment, or `Undo.finishEdit` throws, the source currently does not call
+`Undo.cancelEdit(true)`. The current Undo scope also does not explicitly include
+`texture_groups` or the resolved textures even though those are the states being
+mutated, so rollback coverage must be audited rather than assumed.
 
 Audit requirements:
 
-1. preserve the existing omitted `textures` behavior: creating an empty texture
-   group remains valid;
-2. when `textures` is provided, resolve every explicit non-empty reference by
-   exact UUID first, then exact texture ID, then exact name only when unique;
-3. ambiguous or missing provided references must fail as a whole before
-   `Undo.initEdit`, group creation, or texture reassignment; do not silently drop
-   invalid list entries;
-4. preserve current `name`, `is_material`, group creation, and texture assignment
-   semantics after successful preflight;
-5. keep the change local to `add_texture_group`; do not change shared
-   `getProjectTexture()`, PBR create/configure tools, standalone activation,
-   `get_texture`, `apply_texture`, paint tools, G3, or create a generic resolver
-   framework.
+1. preserve the new complete texture-list preflight unchanged and before all
+   mutation;
+2. determine the minimum correct Undo capture scope for creating the texture
+   group and reassigning the already-resolved textures, using existing Local
+   TextureGroup mutation patterns as evidence;
+3. if any operation fails after `Undo.initEdit`, cancel/revert the open edit and
+   rethrow;
+4. preserve omitted-texture empty-group behavior, `name`, `is_material`, texture
+   assignment, success return, and Canvas refresh semantics;
+5. keep the change local to `add_texture_group`; do not change shared texture
+   resolvers, PBR create/configure tools, standalone activation, `get_texture`,
+   `apply_texture`, paint tools, G3, or create a generic transaction framework.
 
-Prefer one complete preflight of the optional texture list before mutation. Do
-not expand this slice into a generic transaction framework; later failure after
-successful preflight remains a separate recoverability question if source review
-proves it material.
+Prefer the smallest bounded Undo scope + try/catch rollback that matches existing
+TextureGroup patterns. Do not expand this into a broad texture transaction
+abstraction.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source/schema/error contracts and static diff only.
-Actual live paint targeting, standalone activation, `get_texture` reads with
-duplicate names/IDs, forced `apply_texture` rollback, and future
-`add_texture_group` runtime behavior remain `LOCAL PROOF REQUIRED` until local
-Blockbench testing resumes.
+ChatGPT→GitHub may establish source/schema/error/Undo structure and static diff
+only. Actual live paint targeting, standalone activation, `get_texture` reads,
+forced `apply_texture` rollback, and `add_texture_group` target/rollback behavior
+remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
