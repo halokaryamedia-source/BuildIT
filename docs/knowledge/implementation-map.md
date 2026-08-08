@@ -52,6 +52,14 @@ recreated merely to satisfy historical documentation.
 | `filter_by_material(texture=...)` | `mcp/server/tools/element.ts` | read-only texture discovery resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous ID/name and missing references fail before discovery |
 | material-discovery texture resolver | `mcp/server/tools/element.ts` | local to `filter_by_material`; shared `getProjectTexture` / `findTextureOrThrow` remain unchanged because they serve paint/mutation/PBR callers with broader semantics |
 
+### Texture Mutation Targeting
+
+| Capability | Source owner | Current source meaning |
+|---|---|---|
+| `apply_texture` target preflight | `mcp/server/tools/texture.ts` | required non-empty element + texture references; element resolves UUID-first / exact unique name across Cube/Mesh/Group; texture resolves UUID → exact ID → exact unique name; ambiguity/missing fails before Undo |
+| `apply_texture` Group scope | `mcp/server/tools/texture.ts` | strict Group identity is resolved first, then existing behavior expands that Group to descendant Cube/Mesh targets before mutation |
+| `apply_texture` local resolvers | `mcp/server/tools/texture.ts` | local to this mutation path; shared `findElementOrThrow` / `findTextureOrThrow` remain unchanged for unrelated callers pending separate audits |
+
 ### Cube Creation / Correction
 
 | Capability | Source owner | Current source meaning |
