@@ -56,7 +56,7 @@ BBPlugin.register("mcp", {
     // Local prompt content is bundled into the plugin and remains the default
     // authority. Optional CDN content is loaded only as fallback when enabled.
     try {
-      const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") !== false;
+      const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") === true;
       await initPromptLoader(cdnEnabled);
     } catch (err) {
       console.error("[MCP] Prompt loader initialization failed:", err);
