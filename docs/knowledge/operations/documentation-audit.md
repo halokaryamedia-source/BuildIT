@@ -8,7 +8,8 @@ record, not normal boot context.
 ## Audit Goal
 
 Ensure active documentation describes **current Local** rather than earlier skill
-recovery, upstream merge, pre-Reference-Fidelity, or obsolete evidence labels.
+recovery, upstream merge, pre-Reference-Fidelity, obsolete evidence labels, or an
+old Obsidian workspace state.
 
 ## Current Canonical Structure
 
@@ -20,6 +21,7 @@ docs/
 ├─ README.md
 ├─ foundation/          durable policy
 └─ knowledge/           Obsidian vault
+   ├─ .obsidian/         vault UI/workspace configuration
    ├─ index.md           dashboard
    ├─ next-action.md     active task
    ├─ decision-log.md
@@ -55,6 +57,31 @@ Corrected/removed current-state claims that referenced:
 - `Needs Validation` as a catch-all status where current root evidence labels
   (`LOCAL PROOF REQUIRED`, `UNKNOWN`, etc.) are more precise;
 - `code-review-graph` as a current review owner.
+
+## Obsidian Workspace Cleanup
+
+The tracked `.obsidian/workspace.json` was also stale even though the Markdown
+vault had a configured dashboard concept.
+
+Before refresh it opened:
+
+`reviews/anti-slop-skill-candidates.md`
+
+and retained several obsolete/non-current history paths such as:
+
+- `rag-index.md`;
+- `vault-overview.md`;
+- `review-notes/`;
+- `graph/`;
+- `Untitled.canvas`.
+
+Current workspace now opens:
+
+`index.md` → **Knowledge Dashboard**
+
+and `lastOpenFiles` contains only current high-value vault notes.
+
+No other Obsidian appearance/plugin preferences were changed.
 
 ## Current Skill Authority
 
@@ -110,6 +137,7 @@ The active docs now agree on:
 
 ### Knowledge / Obsidian
 
+- `knowledge/.obsidian/workspace.json`
 - `knowledge/index.md`
 - `knowledge/next-action.md`
 - `knowledge/flow.md`
@@ -144,6 +172,10 @@ be rewritten merely to show a newer date:
 - `knowledge/decisions/obsidian-vault-layout.md`;
 - neutral decision/module/review/maintenance templates;
 - historical review bodies listed in `reviews/review-graph.md`.
+
+Obsidian `app.json`, `appearance.json`, `core-plugins.json`, and `graph.json` were
+also retained because no product/routing drift was found that required changing
+those UI preferences.
 
 ## Historical Reviews
 
