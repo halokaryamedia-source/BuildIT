@@ -270,31 +270,36 @@ Next step:
 
 Use exactly one next step. Do not narrate the full process unless requested.
 
-## Skill Locations During Consolidation
+## Canonical Skill Architecture
 
-Canonical root skills currently approved:
+The frozen root skill set is:
 
-- `.agents/skills/development-brief/` — mandatory Developing workflow;
-- `.agents/skills/mcp-server-development/` — MCP server/public-contract specialist;
+- `.agents/skills/development-brief/` — mandatory Developing task contract;
+- `.agents/skills/mcp-server-development/` — MCP public/protocol/input contract;
 - `.agents/skills/typescript-type-safety/` — TypeScript type-system specialist;
 - `.agents/skills/bun-tooling/` — Bun-specific build/tooling specialist;
-- `.agents/skills/blockbench-runtime-development/` — Blockbench runtime/plugin/API specialist;
-- `.agents/skills/blockbench-bedrock-modelling/` — Minecraft Bedrock model judgement and visual/model completion specialist.
+- `.agents/skills/blockbench-runtime-development/` — Blockbench execution/runtime specialist;
+- `.agents/skills/blockbench-bedrock-modelling/` — Minecraft Bedrock modeller judgement and visual/model completion.
+
+Reference generation is owned by `docs/foundation/04-reference-guide.md` on an
+image-capable surface. Evidence-status escalation is owned by this file. Neither
+is another root skill.
+
+Do not rename, merge, split, duplicate, or add a skill unless current work proves
+a distinct owner/capability that cannot be represented cleanly by this baseline,
+a foundation workflow, or one existing specialist.
 
 The old generic `mcp-builder`, `typescript-expert`, `zod`, `bun-development`,
-`blockbench-plugins`, and historical `blockbench-use` orchestrator are retired or
-recovered into clearer owners. Do not route to or recreate them.
+`blockbench-plugins`, `vue-best-practices`, nested `skill-creator`, historical
+`blockbench-use` orchestrator, and conceptual `evidence-gate` skill are retired
+or absorbed. Do not route to or recreate them.
 
-Blockbench runtime mechanics and Bedrock modelling judgement are separate
-responsibilities; do not collapse them into one skill.
+Because Codex starts from root `BuildIT`, canonical project skills live only
+under root `.agents/skills/`. `mcp/.agents/skills/` and `mcp/.github/skills/` are
+legacy locations and must not be repopulated by default.
 
-The complete current inventory is owned by
-`docs/knowledge/skills/skill-map.md`. Do not duplicate detailed audit history
-here; read the skill map when specialist selection or recovery work requires it.
-
-Because Codex is launched from root `BuildIT`, canonical project skills live
-under root `.agents/skills/`. Legacy nested skill locations must not be
-repopulated by default.
+Detailed routing lives in `docs/knowledge/skills/activation-matrix.md`; inventory
+and lineage live in `docs/knowledge/skills/skill-map.md`.
 
 ## Source Of Truth
 
