@@ -198,7 +198,7 @@ export const configureMaterialParameters = z.object({
     .array(z.number().min(0).max(255))
     .length(4)
     .optional()
-    .describe("Uniform RGBA color [R, G, B, A] when no color texture."),
+    .describe("Uniform RGBA color [R,G,B,A] when no color texture."),
   mer_value: z
     .array(z.number().min(0).max(255))
     .length(3)
