@@ -114,13 +114,13 @@ export const boneRiggingParameters = z.object({
         .string()
         .min(1)
         .describe(
-          "For create: new bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
+          "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
         ),
       new_name: z
         .string()
         .min(1)
         .optional()
-        .describe("New bone name required by the rename action."),
+        .describe("New unique bone name required by the rename action."),
       parent: z
         .string()
         .optional()
@@ -309,7 +309,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
+      "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and uses Blockbench pivot transfer semantics so the pivot changes without intentionally moving the group's visual contents. mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -634,7 +634,6 @@ createTool(
           case "ease_out":
           case "ease_in_out":
             kf.interpolation = "bezier";
-            // Set bezier handles based on easing type
             const next = keyframes[index + 1];
             if (next) {
               const duration = next.time - kf.time;
@@ -703,14 +702,23 @@ createTool(
       let childElements: OutlinerElement[] = [];
       let ikTarget: Group | undefined;
 
-      // Action-specific preflight happens before Undo. Nothing below may rely on
-      // first-name matches, missing-target fallbacks, or invented defaults.
       switch (action) {
         case "create":
+          if (Group.all.some((group: Group) => group.name === bone_data.name)) {
+            throw new Error(
+              `Bone name "${bone_data.name}" already exists. Use a unique bone name so future animation/rig targets stay unambiguous.`
+            );
+          }
           parentBone = bone_data.parent
             ? resolveRigGroup(bone_data.parent)
             : "root";
           childElements = (bone_data.children ?? []).map(resolveRigElement);
+          if (
+            new Set(childElements.map((element) => element.uuid)).size !==
+            childElements.length
+          ) {
+            throw new Error("children contains the same Outliner element more than once.");
+          }
           if (bone_data.ik_enabled) {
             if (!bone_data.ik_target) {
               throw new Error(
@@ -744,6 +752,16 @@ createTool(
           if (!bone_data.new_name) {
             throw new Error("new_name is required for the rename action.");
           }
+          if (
+            Group.all.some(
+              (group: Group) =>
+                group !== targetBone && group.name === bone_data.new_name
+            )
+          ) {
+            throw new Error(
+              `Bone name "${bone_data.new_name}" already exists. Choose a unique name.`
+            );
+          }
           break;
 
         case "set_pivot":
@@ -757,6 +775,9 @@ createTool(
 
         case "set_ik":
           targetBone = resolveRigGroup(bone_data.name);
+          if (bone_data.ik_enabled === true && !bone_data.ik_target) {
+            throw new Error("ik_target is required when ik_enabled=true.");
+          }
           if (bone_data.ik_target) {
             ikTarget = resolveRigGroup(bone_data.ik_target);
           }
@@ -779,6 +800,7 @@ createTool(
       });
 
       let result = "";
+      let createdGroup: Group | undefined;
       try {
         switch (action) {
           case "create": {
@@ -787,15 +809,14 @@ createTool(
               origin: bone_data.origin ?? [0, 0, 0],
               rotation: bone_data.rotation ?? [0, 0, 0],
             }).init();
+            createdGroup = group;
 
             group.addTo(parentBone ?? "root");
             childElements.forEach((element) => element.addTo(group));
 
             if (bone_data.ik_enabled && ikTarget) {
               group.ik_enabled = true;
-              // Keep Blockbench's existing string field while resolving the
-              // target first so a typo/ambiguous name cannot silently survive.
-              group.ik_target = ikTarget.uuid;
+              (group as Group & { ik_target?: string }).ik_target = ikTarget.uuid;
             }
 
             result = `Created bone "${group.name}" with UUID ${group.uuid}`;
@@ -803,7 +824,7 @@ createTool(
           }
 
           case "parent": {
-            targetBone!.addTo(parentBone!);
+            targetBone!.addTo(parentBone as Group);
             result = `Parented "${targetBone!.name}" to "${(parentBone as Group).name}"`;
             break;
           }
@@ -827,7 +848,7 @@ createTool(
           }
 
           case "set_pivot": {
-            targetBone!.origin = bone_data.origin!;
+            targetBone!.transferOrigin(bone_data.origin!);
             result = `Set pivot point for "${targetBone!.name}"`;
             break;
           }
@@ -835,7 +856,7 @@ createTool(
           case "set_ik": {
             targetBone!.ik_enabled = bone_data.ik_enabled ?? false;
             if (ikTarget) {
-              targetBone!.ik_target = ikTarget.uuid;
+              (targetBone! as Group & { ik_target?: string }).ik_target = ikTarget.uuid;
             }
             result = `Updated IK settings for "${targetBone!.name}"`;
             break;
@@ -844,6 +865,7 @@ createTool(
           case "mirror": {
             const axis = bone_data.mirror_axis!;
             const mirroredBone = targetBone!.duplicate();
+            createdGroup = mirroredBone;
             const axisIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
             mirroredBone.origin[axisIndex] *= -1;
             mirroredBone.name = targetBone!.name.includes("left")
@@ -856,7 +878,12 @@ createTool(
           }
         }
 
-        Undo.finishEdit(`Bone rigging: ${action}`);
+        Undo.finishEdit(
+          `Bone rigging: ${action}`,
+          createdGroup
+            ? { outliner: true, groups: [createdGroup], elements: childElements }
+            : undefined
+        );
       } catch (error) {
         Undo.cancelEdit(true);
         Canvas.updateAll();
@@ -935,7 +962,6 @@ createTool(
               "Range parameter required for select_range action."
             );
           }
-          // Select keyframes in range
           Timeline.keyframes.forEach((kf) => {
             if (kf.time >= range.start && kf.time <= range.end) {
               kf.select();
@@ -964,7 +990,6 @@ createTool(
         throw new Error("No animation selected.");
       }
 
-      // Gather keyframes based on selection type
       let keyframes: any[] = [];
 
       switch (selection) {
@@ -1056,7 +1081,6 @@ createTool(
           break;
 
         case "smooth":
-          // Apply catmullrom interpolation to all keyframes
           keyframes.forEach((kf) => {
             kf.interpolation = "catmullrom";
           });
@@ -1116,7 +1140,6 @@ createTool(
   {
     ...animationToolDocs[6],
     async execute({ action, source, target }) {
-      // Static storage for copied data between copy/paste operations
       // @ts-ignore
       if (!global.animationClipboard) {
         // @ts-ignore
@@ -1147,7 +1170,6 @@ createTool(
             throw new Error(`No animation data for bone "${source.bone}".`);
           }
 
-          // Copy keyframe data
           const copiedData: any = {
             bone_name: source.bone,
             channels: {},
@@ -1245,7 +1267,6 @@ createTool(
               keyframes.forEach((kfData) => {
                 const values = [...kfData.values];
 
-                // Apply mirroring if needed
                 if (
                   mirrorAxis &&
                   (channel === "rotation" || channel === "position")
@@ -1265,7 +1286,6 @@ createTool(
                   false
                 );
 
-                // Copy bezier data if present
                 if (kfData.interpolation === "bezier") {
                   // @ts-ignore
                   if (kfData.bezier_left_time !== undefined)
