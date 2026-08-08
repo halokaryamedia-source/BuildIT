@@ -50,13 +50,14 @@ recreated merely to satisfy historical documentation.
 | scoped Group resolver | `mcp/server/tools/element.ts` | local resolver with no special `root` behavior; discovery/selection semantics are intentionally separate from `add_group` parent resolution |
 | `find_elements_by_criteria(name_pattern=...)` | `mcp/server/tools/element.ts` | omitted/empty pattern means no regex filter; explicit oversized, unsafe nested-quantifier, or invalid regex throws instead of silently broadening discovery |
 | `filter_by_material(texture=...)` | `mcp/server/tools/element.ts` | read-only texture discovery resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous ID/name and missing references fail before discovery |
-| material-discovery texture resolver | `mcp/server/tools/element.ts` | local to `filter_by_material`; shared `getProjectTexture` / `findTextureOrThrow` are intentionally unchanged because they serve paint/mutation/PBR callers with broader semantics |
+| material-discovery texture resolver | `mcp/server/tools/element.ts` | local to `filter_by_material`; shared `getProjectTexture` / `findTextureOrThrow` remain unchanged because they serve paint/mutation/PBR callers with broader semantics |
 
 ### Cube Creation / Correction
 
 | Capability | Source owner | Current source meaning |
 |---|---|---|
-| `place_cube` | `mcp/server/tools/cubes.ts` | explicit finite `from/to`; strict parent resolution; non-zero initial rotation requires explicit pivot |
+| `place_cube` | `mcp/server/tools/cubes.ts` | explicit finite `from/to`; strict parent resolution; non-zero initial rotation requires explicit pivot; omitted texture keeps default behavior while supplied texture resolves UUID → exact ID → exact unique name before Undo |
+| `place_cube` texture resolver | `mcp/server/tools/cubes.ts` | local placement-only resolver; ambiguous texture ID/name and missing supplied references fail before Cube creation; shared texture helpers remain unchanged |
 | `modify_cube` | `mcp/server/tools/cubes.ts` | required explicit `id`; UUID-first / exact unique-name resolution; no implicit editor-selection mutation; pivot-only correction preserves visual position; zero→non-zero rotation activation requires explicit origin |
 | `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | heterogeneous exact-UUID updates in one recoverable Undo unit; all targets preflight zero→non-zero rotation activation before Undo |
 | Cube pivot-only semantics | `mcp/server/tools/cubes.ts` | origin-only → `Cube.transferOrigin()`; origin + geometry transform → authored rewrite |
@@ -69,7 +70,7 @@ recreated merely to satisfy historical documentation.
 | `remove_element` | `mcp/server/tools/element.ts` | explicit UUID-first target; exact name accepted only when unique across Cube/Mesh/Group; mutation + `finishEdit` are inside one rollback boundary; failure calls `Undo.cancelEdit(true)` before rethrow |
 | `duplicate_element` | `mcp/server/tools/element.ts` | strict target preflight; recursive Cube/Group/Mesh cloning runs inside one Undo transaction; failure after Undo opens calls `Undo.cancelEdit(true)` before rethrow |
 | `rename_element` | `mcp/server/tools/element.ts` | strict target preflight; rename + `finishEdit` are inside one rollback boundary; failure calls `Undo.cancelEdit(true)` before rethrow |
-| destructive element resolver | `mcp/server/tools/element.ts` | local resolver only; shared `mcp/lib/util.ts::findElementOrThrow` intentionally left unchanged because unrelated callers were not proven safe to migrate |
+| destructive element resolver | `mcp/server/tools/element.ts` | local resolver only; shared `mcp/lib/util.ts::findElementOrThrow` intentionally remains unchanged because unrelated callers were not proven safe to migrate |
 
 ### Hierarchy / Pivot
 
@@ -98,6 +99,7 @@ Live claims such as:
 - actual Blockbench camera/render behavior;
 - MCP image transport reaching the vision-capable agent;
 - Undo behavior in the installed Blockbench version;
+- live texture application/resolution behavior;
 - save/reopen persistence;
 - visual resemblance of a produced model;
 
@@ -108,8 +110,9 @@ Blockbench.
 
 Active work is no longer a generic “MCP implementation audit.” The current
 engineering program is specifically **reference-fidelity hardening**: remove
-assumption-driven geometry/rotation/pivot/targeting/discovery behavior and close
-the visual feedback loop with the smallest useful observation/correction surface.
+assumption-driven geometry/rotation/pivot/targeting/discovery/material-reference
+behavior and close the visual feedback loop with the smallest useful
+observation/correction surface.
 
 The exact current task and next source slice remain in
 [Next Action](next-action.md).
