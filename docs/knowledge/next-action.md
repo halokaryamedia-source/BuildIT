@@ -6,31 +6,24 @@ reconstructing prior chats.
 
 ## Active Task
 
-- **Goal:** review and approve the curated Blockbench MCP surface before any more
-  runtime changes.
-- **Status:** `MCP_SURFACE_CURATION_REVIEW_READY`.
-- **Execution now:** ChatGPT → GitHub.
-- **Runtime changes during curation:** none.
-- **Review owner:** `docs/knowledge/reviews/mcp-surface-curation.md`.
+- **Goal:** prove the newly implemented goal-oriented Blockbench MCP prompt
+  routing before adding another modelling capability.
+- **Status:** `SLICE_A_IMPLEMENTED_LOCAL_PROOF_REQUIRED`.
+- **Implementation channel:** ChatGPT → GitHub complete for Slice A source.
+- **Required proof channel:** Codex local from root `BuildIT` with the existing
+  Bun/MCP environment.
+- **G3:** still paused.
 
-## Main Finding
+## Accepted Surface Direction
 
-The primary current problem is **goal/routing clarity, not lack of mutation
-APIs**.
-
-Local already has enough primitives to create Cuboids, groups, textures,
-animations, screenshots, history, and exports. The normal creation guidance is
-still organized around implementation methods (`ui`, `programmatic`, `import`)
-and promotes UI automation, `risky_eval`, and `.geo.json` import too close to the
-default Bedrock modelling path.
-
-The recommended normal workflow is instead:
+Normal Bedrock Entity modelling is organized by modelling goals, not by
+implementation method:
 
 ```text
 orient project
 → targeted state inspection
 → whole-form primary Cuboid pass
-→ primary visual gate
+→ meaningful primary visual gate
 → targeted correction
 → secondary hierarchy / pivots
 → full geometry review
@@ -40,40 +33,43 @@ orient project
 → save .bbmodel
 ```
 
-## Curation Result
+UI automation, code evaluation, and `.geo.json` import remain available only as
+explicit specialized fallbacks. They are not peer default creation paths.
 
-Full matrix: `docs/knowledge/reviews/mcp-surface-curation.md`.
+Full curation review:
+`docs/knowledge/reviews/mcp-surface-curation.md`.
 
-### Keep / improve core
+## Slice A — Implemented
 
-- `create_project`, `get_project_info`;
-- `list_outline`, `find_elements_by_criteria`;
-- `place_cube`, `modify_cube`;
-- `add_group` and focused hierarchy operations;
-- `undo`, `redo`, `get_undo_stack`;
-- `capture_screenshot` as low-level visual evidence;
-- core texture create/list/get/apply/activate + only needed paint operations;
-- core animation tools only when animation is required;
-- `export_model` only when export is actually needed;
-- `validator://status` as structural diagnostics, never visual approval.
+### Public prompt contract
 
-### Strong additions/recoveries
+`mcp/server/prompts.ts`
 
-1. **Targeted authored-element inspector** — exact Cube/group state without
-   `risky_eval` or full dumps.
-2. **Simplified named multi-view capture** — recover the useful core of Sample
-   `capture_bedrock_preview` / Rework `capture_standard_views`: named generic
-   views, auto-frame, batch capture, and state restoration.
-3. **Simple heterogeneous `modify_cubes_batch`** — several explicit corrections
-   in one Undo; do not copy Rework analyzer/anchor/gap machinery.
-4. **Cuboid UV reads/writes** — `get_uv_layout` + `set_cube_face_uv`; consider
-   `fit_cube_face_uv` later only if real texture work benefits.
-5. **Clear hierarchy operations** — group/reparent/update ownership outside
-   animation-only semantics when current `bone_rigging` becomes awkward.
+- `model_creation_strategy` is now described as goal-oriented;
+- default `format` remains `bedrock`;
+- existing `approach: ui | programmatic | import` is retained for compatibility,
+  but is documented as **explicit fallback only**;
+- normal callers omit `approach`;
+- prompt sections are separated cleanly when an explicit fallback is appended.
 
-### Hide from normal Bedrock path
+`mcp/build/docs-manifest.ts` mirrors the same public prompt description/schema.
 
-Keep available only for explicit/diagnostic work:
+### Bedrock Entity guidance
+
+`mcp/prompts/bedrock.md` now routes normal modelling through:
+
+- `get_project_info` + targeted outline/search before mutation;
+- whole-form interpretation before local Cube polish;
+- bounded `place_cube` work and targeted `modify_cube` correction;
+- meaningful `capture_screenshot` visual gates rather than per-Cube screenshots;
+- primary-form correction before compensating detail;
+- secondary hierarchy/pivots only when useful;
+- texture after coherent geometry;
+- animation only when requested;
+- structural diagnostics + fresh visual evidence before final completion.
+
+It explicitly keeps these out of the normal Bedrock Entity path unless a
+specialized need/blocker exists:
 
 ```text
 risky_eval
@@ -82,104 +78,105 @@ fill_dialog
 emulate_clicks
 capture_app_screenshot
 from_geo_json
-mesh tools
-mesh UV tools
-armature / vertex weights
-PBR / material instances
-Hytale tools/resources/prompts
-advanced animation tools
-advanced paint/preset/layer tools
+generic mesh / armature / PBR tools
+Hytale tools
 ```
 
-`HIDE` does not mean delete.
+### Explicit fallback prompts
 
-### Do not import
+- `mcp/prompts/model_creation_ui.md` — UI automation is last-resort only.
+- `mcp/prompts/model_creation_programmatic.md` — `risky_eval` is
+  developer/diagnostic fallback only and requires the code-eval safety guidance.
+- `mcp/prompts/model_creation_import.md` — import is for authoritative/provided
+  `.geo.json` or an explicit import request, not the normal modelling method.
 
-- Rework dynamic profiles/stage state/write leases/review machinery;
-- Sample companion host/multi-window/auto-port architecture;
-- Sample all-in-one `build_bedrock_entity_asset`;
-- Sample full Bedrock verifier as modelling authority;
-- upstream mandatory `blockbench-use` orchestrator/multi-skill stack.
+No mutation tool, resource, transport/session behavior, Blockbench runtime
+operation, or G3 annotation behavior was changed in Slice A.
 
-## Source Lessons
+## Why `approach` Was Not Deleted
 
-### Rework
+Deleting the argument would create a breaking MCP prompt-contract change without
+proof that removal is necessary. The smaller solution is to keep the existing
+values but change their semantics/documentation from peer strategies to explicit
+fallbacks.
 
-Keep the principle of a **small production surface** and recover focused mutation
-safety: strict target/group lookup, explicit targets, untextured Geometry support,
-and `Undo.cancelEdit()` on failure. Do not restore its production state machine.
+If later evidence shows the argument itself causes harmful routing despite the
+new description, removal can be considered as a separate contract change.
 
-### Sample
+## Generated Prompt Manifest
 
-Most valuable focused ideas:
+`mcp/prompts/manifest.json` is generated from `mcp/prompts/*.md` by:
 
-- named/restored Bedrock preview capture;
-- simple batch Cube correction;
-- clearer group/reparent operations;
-- Cuboid UV inspection/editing;
-- direct save/open implementation only as reference if current Local save proof
-  fails.
+```text
+bun run prompts:build
+```
 
-### Upstream `jasonjgardner/blockbench-mcp-project`
+ChatGPT → GitHub did **not** hand-edit this generated file. `bun run build`
+already runs `prompts:build` first, so the local proof must regenerate it through
+the canonical build flow.
 
-Keep:
+## Acceptance Criteria
 
-- filter instead of dumping state;
-- meaningful screenshots rather than per-edit captures;
-- descriptive naming;
-- conceptual separation of modelling/texturing/animation.
+1. Calling `model_creation_strategy` with no `approach` and default `format`
+   returns the goal-oriented Bedrock Entity workflow.
+2. The default response does not instruct the agent to use `risky_eval`, UI
+   automation, or `.geo.json` import as normal creation steps.
+3. Passing an explicit fallback `approach` still works and appends only the
+   corresponding bounded fallback guidance.
+4. The docs manifest and runtime prompt schema describe `approach` as an explicit
+   fallback rather than a peer default.
+5. Slice A introduces no new mutation tool and does not change existing tool
+   execution behavior.
 
-Do not restore its mandatory orchestrator, multi-skill stack, generic mesh-first
-breadth, or fixed preflight/checkpoint ceremony.
+## Exact Local Proof Required
 
-## Completed Corrections Before Curation
+From root `BuildIT`, use the existing `mcp/` project:
 
-- **G1:** Bedrock Entity default/recommended path — source implemented,
-  `LOCAL PROOF REQUIRED` later.
-- **G2:** bundled Local prompt authority — source implemented,
-  `LOCAL PROOF REQUIRED` later.
+```text
+cd mcp
+bun run prompts:build
+bun run build
+```
 
-## Paused Corrections
+Then use the existing MCP Inspector/local Blockbench connection to check:
 
-- **G3 annotation forwarding:** still paused until curated surface direction is
-  accepted.
-- **G4 screenshot restoration:** hold; likely folds naturally into the simplified
-  named multi-view capture work.
-- **G5 bone-rigging Undo preflight:** hold; hierarchy curation may change the
-  normal owner/path first.
+```text
+model_creation_strategy {}
+model_creation_strategy { format: "bedrock" }
+model_creation_strategy { format: "bedrock", approach: "ui" }
+model_creation_strategy { format: "bedrock", approach: "programmatic" }
+model_creation_strategy { format: "bedrock", approach: "import" }
+```
 
-## Recommended First Implementation Slice
+Proof should establish the returned prompt content/contract only. Do not turn
+this into a broad Blockbench modelling test yet.
 
-### Slice A — Goal-oriented prompt + recommended surface routing
+## Holds
 
-Do this **before adding a new mutation tool**:
-
-- redefine `model_creation_strategy` around the Local modelling stages;
-- stop presenting `ui | programmatic | import` as peer default creation paths;
-- remove `risky_eval`, UI automation, and `.geo.json` import from the normal
-  Bedrock guidance;
-- prefer targeted reads and meaningful visual gates;
-- keep developer/import escape hatches available only for explicit needs.
-
-Why first: it tests the strongest demonstrated cause using the smallest change.
-Existing Local primitives are already sufficient to attempt a much better
-whole-form workflow after the guidance is corrected.
+- **G1:** source implemented; runtime proof can be covered by the same local
+  prompt check.
+- **G2:** source implemented; bundled Local prompt authority can be observed
+  during the same local check.
+- **G3 annotation forwarding:** paused.
+- **G4 screenshot restoration:** hold for the later named multi-view capture
+  slice.
+- **G5 bone-rigging Undo preflight:** hold until hierarchy-path curation reaches
+  that boundary.
 
 ## Later Order
 
-After Slice A is proven useful:
+After Slice A prompt behavior is locally proven:
 
 ```text
-B targeted element inspector
+B targeted authored-element inspector
 → C simplified named multi-view capture
 → D safer Cuboid mutations + modify_cubes_batch
 → E Cuboid UV tools
-→ F save/open proof and only then direct tools if needed
+→ F save/open proof and direct tools only if needed
 → resume G3 / remaining proven gaps
 ```
 
 ## Next Step
 
-Review the curation result with the user. If accepted, implement **Slice A only**
-using `development-brief` + `mcp-server-development`, with no new mutation tool
-in the same change.
+Run the **Slice A local prompt proof** above. Do not start Slice B until the
+normal/default prompt output and explicit fallback behavior are confirmed.
