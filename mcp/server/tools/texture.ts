@@ -933,49 +933,56 @@ export function registerTextureTools() {
         merTexture,
       ].filter((texture): texture is Texture => texture !== undefined);
 
-      Undo.initEdit({
-        texture_groups: [],
-        textures: texturesToAdd,
-      });
-
       // @ts-ignore - TextureGroup is globally available
       const textureGroup = new TextureGroup({
         name,
         is_material: true,
       });
 
-      // Set material config values
-      if (color_value) {
-        textureGroup.material_config.color_value = color_value;
-      }
-      if (mer_value) {
-        textureGroup.material_config.mer_value = mer_value;
-      }
-      if (subsurface_value !== undefined) {
-        textureGroup.material_config.subsurface_value = subsurface_value;
-      }
-      textureGroup.material_config.saved = false;
+      Undo.initEdit({
+        texture_groups: [],
+        textures: texturesToAdd,
+      });
 
-      textureGroup.add();
+      try {
+        // Set material config values
+        if (color_value) {
+          textureGroup.material_config.color_value = color_value;
+        }
+        if (mer_value) {
+          textureGroup.material_config.mer_value = mer_value;
+        }
+        if (subsurface_value !== undefined) {
+          textureGroup.material_config.subsurface_value = subsurface_value;
+        }
+        textureGroup.material_config.saved = false;
 
-      // Assign preflighted textures to channels without resolving again.
-      if (colorTexture) {
-        colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
-      }
-      if (normalTexture) {
-        normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
-      }
-      if (heightTexture) {
-        heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
-      }
-      if (merTexture) {
-        merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+        textureGroup.add();
+
+        // Assign preflighted textures to channels without resolving again.
+        if (colorTexture) {
+          colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+        }
+        if (normalTexture) {
+          normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+        }
+        if (heightTexture) {
+          heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+        }
+        if (merTexture) {
+          merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+        }
+
+        // Update material preview
+        textureGroup.updateMaterial();
+
+        Undo.finishEdit("Agent created PBR material");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      // Update material preview
-      textureGroup.updateMaterial();
-
-      Undo.finishEdit("Agent created PBR material");
       Canvas.updateAll();
 
       return JSON.stringify({
