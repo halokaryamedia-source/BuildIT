@@ -37,6 +37,7 @@ source-implemented but remain `LOCAL PROOF REQUIRED`.
 | Mutation identity must be explicit | Active BlockIT policy | Single-Cube and destructive element mutations must not depend on transient selection or first-name-match behavior. |
 | Explicit discovery scope must be deterministic | Active BlockIT policy | A requested Group scope must not silently resolve to the first duplicate name. |
 | Explicit discovery filters fail closed | Active BlockIT policy | A supplied invalid/rejected regex must not silently become an unfiltered search. |
+| Destructive mutation must be recoverable | Active BlockIT policy | Once Undo is open, remove/rename/duplicate failures must cancel/revert rather than leave an open/partial edit. |
 | No SF3D/mesh/IoU/similarity authority | Active BlockIT policy | These are not accepted as modelling or approval authority. |
 
 Policy does not need to be a universal Blockbench rule; these are BlockIT quality
@@ -51,7 +52,7 @@ requirements.
 | Rendered whole-Cube bounds reader | `mcp/lib/renderedModelBounds.ts` | `LOCAL PROOF REQUIRED` | Uses current rendered/global Cube vertex transforms as structural envelope source. |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `LOCAL PROOF REQUIRED` | Returns raw global envelope/ground/pose facts; no visual score/PASS. |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `LOCAL PROOF REQUIRED` | Canonical labeled 512×512 offscreen model-view capture with explicit front direction/framing. |
-| `inspect_element` | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | Reads exact authored Cube/Group state; ambiguous names fail. |
+| `inspect_element` | `mcp/server/tools/element-inspection.ts` | `LOCAL PROOF REQUIRED` | Reads exact authored Cube/Group state; ambiguous names fail. |
 
 Important local proof still missing:
 
@@ -94,9 +95,11 @@ preserved. Local integration still needs live proof.
 | Capability | Local source | Evidence status | Current claim |
 |---|---|---|---|
 | `remove_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | UUID resolves first; exact name is accepted only when unique across Cube/Mesh/Group; ambiguity fails before Undo. |
+| `remove_element` rollback boundary | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | remove + `finishEdit` run inside one try/catch; failure after Undo opens calls `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows. |
 | `duplicate_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before recursive duplication begins. |
 | `duplicate_element` rollback boundary | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | recursive Cube/Group/Mesh clone runs after one `Undo.initEdit`; clone/finish failure calls `Undo.cancelEdit(true)` and rethrows; normal Canvas refresh is after successful finish. |
 | `rename_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before rename Undo. |
+| `rename_element` rollback boundary | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | rename + `finishEdit` run inside one try/catch; failure after Undo opens calls `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows. |
 | shared `findElementOrThrow` | `mcp/lib/util.ts` | unchanged / caller-specific | intentionally not broadened because GitHub code search was incomplete and unrelated caller semantics were not proven safe to migrate. |
 
 The Local fixes are deliberately scoped to the proven destructive paths. They do
@@ -147,16 +150,18 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### `remove_element` / `rename_element` rollback boundary
+### Explicit texture-reference ambiguity in `filter_by_material`
 
-Both tools preflight their target before opening Undo, but each currently performs
-its runtime mutation and `Undo.finishEdit` without the `try/catch +
-Undo.cancelEdit(true)` failure boundary already used by `duplicate_element` and
-other hardened mutation paths.
+`filter_by_material(texture=...)` resolves through
+`findTextureOrThrow() → getProjectTexture()`. Current `getProjectTexture()` uses a
+single first-match lookup across texture `id`, `name`, or `uuid`. If exact texture
+names are duplicated, a read-only material discovery query may therefore inspect
+the wrong texture without reporting ambiguity.
 
-Status: **next active source audit**. Determine whether those bounded single-step
-mutations need the same recoverability pattern without changing remove/rename
-semantics or creating a generic transaction framework.
+Status: **next active source audit**. Determine the smallest way to make the
+explicit `filter_by_material` reference deterministic without broadening shared
+texture helpers used by unrelated paint/mutation paths unless their caller
+semantics are proven compatible.
 
 ## Historical External Premises
 
@@ -199,12 +204,12 @@ Safe claims:
 - explicit `parent_group` scopes in `find_elements_by_criteria` and
   `select_all_of_type` resolve UUID-first / exact-unique-name and reject
   ambiguity before search/selection;
-- explicit invalid/rejected `name_pattern` now throws from source instead of
-  becoming a missing regex filter;
+- explicit invalid/rejected `name_pattern` throws from source instead of becoming
+  a missing regex filter;
 - destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
-- `duplicate_element` source wraps recursive cloning/finish in one rollback
-  boundary using `Undo.cancelEdit(true)` on failure;
+- remove/duplicate/rename now each have a bounded failure path that calls
+  `Undo.cancelEdit(true)` after Undo has opened;
 - shared `findElementOrThrow` was intentionally left unchanged;
 - official Blockbench types/source support the transfer-origin semantics used by
   the code.
@@ -220,8 +225,8 @@ Unsafe claims without local proof:
   expected error presentation;
 - duplicate-name scoped Group lookup behaves correctly in the installed live
   runtime;
-- a forced mid-recursive-clone failure definitely leaves zero partial duplicate
-  state in the installed Blockbench runtime;
+- forced remove/rename/duplicate failures definitely leave zero partial state in
+  the installed Blockbench runtime;
 - the new loop now produces a good reference-matching model in practice;
 - save/reopen persistence is correct.
 
@@ -240,8 +245,8 @@ future proof queue is:
    ambiguous name but accept exact UUID and unique name;
 6. create duplicate-name Cube/Group fixtures and verify destructive element tools
    reject ambiguous names before mutation;
-7. force a controlled duplicate failure and verify `duplicate_element` rollback
-   removes any partial clone;
+7. force controlled remove, rename, and duplicate failures and verify rollback
+   leaves no partial/open destructive edit;
 8. create a small model using strict `place_cube` inputs;
 9. verify `inspect_model_bounds` against visible transformed geometry;
 10. verify canonical `capture_model_views` image delivery/orientation/framing;
@@ -259,7 +264,7 @@ validation resumes.
 
 The architectural problem is well-defined and the main observation, discovery
 scope/filter, correction, targeting, pivot, initial-placement,
-rotation-activation, and bounded duplication rollback mechanisms are present in
+rotation-activation, and bounded destructive rollback mechanisms are present in
 Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
