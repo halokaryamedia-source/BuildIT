@@ -1,50 +1,111 @@
 # Module Map
 
-This note maps the repo at a working level.
+Updated: 2026-08-08
+
+This note maps the current Local repository at a working level.
 
 ## Current Areas
 
-- `docs/foundation/`: BlockIT source of truth for policy and workflow.
-- `docs/foundation/04-reference-guide.md`: reference image workflow.
-- `docs/knowledge/`: Obsidian knowledge vault.
-- `mcp/`: active plugin and MCP working area.
-- `mcp/workflow/skills/`: canonical workspace-specific skill bundles.
+```text
+BuildIT/
+├─ .agents/skills/       canonical BlockIT skills
+├─ docs/
+│  ├─ foundation/        durable product/modelling policy
+│  └─ knowledge/         Obsidian project-memory vault
+├─ mcp/                  Blockbench MCP plugin/runtime source
+└─ workspace/            active/saved Blockbench project data
+```
 
 ## Boundary Rules
 
-- Keep product policy in `docs/foundation/`.
-- Keep working knowledge and decision notes in `docs/knowledge/`.
-- Keep code changes in the relevant runtime area.
-- Keep archived material read-only unless a migration is explicitly needed.
+### `.agents/skills/`
 
-## Recommended Module Notes
+The only canonical repository-wide skill root.
 
-- `docs/foundation/` - product policy and workflow SSOT.
-- `docs/knowledge/` - vault workflow, decisions, review, and maintenance.
-- `mcp/` - plugin/runtime and MCP integration.
-- `mcp/workflow/skills/` - local skill instructions only.
+Current frozen set:
 
-## Notes To Maintain
+```text
+development-brief
+mcp-server-development
+typescript-type-safety
+bun-tooling
+blockbench-runtime-development
+blockbench-bedrock-modelling
+```
 
-- `docs` needs the strongest navigation discipline because it is the vault map.
-- `mcp/` needs an ownership note because it is the active runtime area.
-- `mcp/workflow/skills/` uses one ownership note and one activation matrix.
+Do not recreate skills under old nested locations merely for compatibility.
 
-## Boundary Check
+### `docs/foundation/`
 
-Before creating a new note, ask:
+Owns stable product and modelling policy:
 
-1. Does this belong to an existing module note?
-2. Is this stable enough for `docs/foundation/`?
-3. Is this only a temporary working note?
-4. Can this be merged into an existing page instead?
+- product requirements;
+- reference preparation;
+- Reference Fidelity modelling flow;
+- geometry / rotation / pivot standards;
+- texture standards;
+- visual validation and proof boundary.
 
-## Suggested Reading
+It does not own daily implementation status.
 
-- `docs/README.md`
-- `docs/foundation/README.md`
-- `docs/knowledge/index.md`
-- Open only one module note at a time unless you are comparing boundaries.
+### `docs/knowledge/`
+
+Owns repository memory for Obsidian:
+
+- `index.md` — dashboard;
+- `next-action.md` — active task snapshot;
+- `decision-log.md` / `decisions/` — durable reasoning;
+- `implementation-map.md` / `modules/` — ownership;
+- `reviews/` — evidence/history;
+- `operations/` — backlog, roadmap, audit, change history.
+
+### `mcp/`
+
+Owns current plugin/runtime implementation. Important subareas:
+
+- `index.ts` — plugin entry/lifecycle wiring;
+- `server/` — MCP server/tools/resources/prompts;
+- `lib/` — shared runtime/factory/schema helpers;
+- `ui/` — Blockbench settings/panel UI;
+- `build/` — build/docs generation;
+- `prompts/` — bundled prompt source;
+- `docs/` — generated MCP API docs;
+- `dist/` — generated plugin output.
+
+There is **no current `mcp/workflow/` module**.
+
+### `workspace/`
+
+Owns model/project data only:
+
+- `workspace/active/` — current model packages;
+- `workspace/saved/` — completed/saved packages.
+
+See [Workspace Structure](../workspace-structure.md) for the actual current
+layout. Do not invent a preset/script owner that does not exist in Local.
+
+## Historical / Retired Paths
+
+These are not current owners:
+
+```text
+mcp/workflow/
+mcp/workflow/skills/
+mcp/.agents/skills/
+mcp/.github/skills/
+```
+
+Historical notes may mention them as lineage. Current code or documentation must
+not route new work there.
+
+## Before Creating A New Module/Note
+
+Ask:
+
+1. Does an existing owner already cover this responsibility?
+2. Is this stable product policy (`foundation`) or working memory (`knowledge`)?
+3. Is this runtime behavior (`mcp`) or per-project data (`workspace`)?
+4. Is the new file needed now, or would it duplicate an existing note?
 
 ## Parent
 
