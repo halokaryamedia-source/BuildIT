@@ -10,8 +10,6 @@ import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
 const CAPTURE_SIZE = 512;
 const FRAME_PADDING = 0.12;
 const PERSPECTIVE_FOV = 45;
-const CAPTURE_TIMEOUT_MS = 5000;
-const RESTORE_EPSILON = 1e-5;
 
 const modelViewEnum = z.enum([
   "front",
@@ -26,7 +24,6 @@ const modelViewEnum = z.enum([
 
 type ModelView = z.infer<typeof modelViewEnum>;
 type FrontDirection = "+z" | "-z";
-
 type FramingInput =
   | { mode: "model" }
   | { mode: "explicit"; min: Vec3; max: Vec3 };
@@ -39,35 +36,6 @@ interface CameraSpec {
   up: Vec3;
   zoom?: number;
   fov?: number;
-}
-
-interface PreviewCameraSnapshot {
-  width: number;
-  height: number;
-  isOrtho: boolean;
-  target: Vec3;
-  camPers: {
-    position: Vec3;
-    quaternion: [number, number, number, number];
-    up: Vec3;
-    zoom: number;
-    fov: number;
-    aspect: number;
-    near: number;
-    far: number;
-  };
-  camOrtho: {
-    position: Vec3;
-    quaternion: [number, number, number, number];
-    up: Vec3;
-    zoom: number;
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-    near: number;
-    far: number;
-  };
 }
 
 export const captureScreenshotParameters = z.object({
@@ -158,7 +126,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, returns actual MCP image content, and leaves the active editor camera/project/selection/model state unchanged. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.",
+      "Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, and returns actual MCP image content through Blockbench's offscreen screenshot preview so the active editor camera remains untouched. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
@@ -168,41 +136,6 @@ export const cameraToolDocs: ToolSpec[] = [
   },
 ];
 
-function asVec3(value: readonly number[]): Vec3 {
-  return [value[0] ?? 0, value[1] ?? 0, value[2] ?? 0];
-}
-
-function snapshotPreviewCamera(preview: Preview): PreviewCameraSnapshot {
-  return {
-    width: preview.width,
-    height: preview.height,
-    isOrtho: preview.isOrtho,
-    target: asVec3(preview.controls.target.toArray()),
-    camPers: {
-      position: asVec3(preview.camPers.position.toArray()),
-      quaternion: preview.camPers.quaternion.toArray() as [number, number, number, number],
-      up: asVec3(preview.camPers.up.toArray()),
-      zoom: preview.camPers.zoom,
-      fov: preview.camPers.fov,
-      aspect: preview.camPers.aspect,
-      near: preview.camPers.near,
-      far: preview.camPers.far,
-    },
-    camOrtho: {
-      position: asVec3(preview.camOrtho.position.toArray()),
-      quaternion: preview.camOrtho.quaternion.toArray() as [number, number, number, number],
-      up: asVec3(preview.camOrtho.up.toArray()),
-      zoom: preview.camOrtho.zoom,
-      left: preview.camOrtho.left,
-      right: preview.camOrtho.right,
-      top: preview.camOrtho.top,
-      bottom: preview.camOrtho.bottom,
-      near: preview.camOrtho.near,
-      far: preview.camOrtho.far,
-    },
-  };
-}
-
 function resizePreview(preview: Preview, width: number, height: number): void {
   const runtimePreview = preview as Preview & {
     resize: (width: number, height: number) => Preview;
@@ -210,43 +143,10 @@ function resizePreview(preview: Preview, width: number, height: number): void {
   runtimePreview.resize(width, height);
 }
 
-function restorePreviewCamera(
-  preview: Preview,
-  snapshot: PreviewCameraSnapshot
-): void {
-  resizePreview(preview, snapshot.width, snapshot.height);
-  preview.setProjectionMode(snapshot.isOrtho);
-
-  preview.camPers.position.fromArray(snapshot.camPers.position);
-  preview.camPers.quaternion.fromArray(snapshot.camPers.quaternion);
-  preview.camPers.up.fromArray(snapshot.camPers.up);
-  preview.camPers.zoom = snapshot.camPers.zoom;
-  preview.camPers.fov = snapshot.camPers.fov;
-  preview.camPers.aspect = snapshot.camPers.aspect;
-  preview.camPers.near = snapshot.camPers.near;
-  preview.camPers.far = snapshot.camPers.far;
-  preview.camPers.updateProjectionMatrix();
-
-  preview.camOrtho.position.fromArray(snapshot.camOrtho.position);
-  preview.camOrtho.quaternion.fromArray(snapshot.camOrtho.quaternion);
-  preview.camOrtho.up.fromArray(snapshot.camOrtho.up);
-  preview.camOrtho.zoom = snapshot.camOrtho.zoom;
-  preview.camOrtho.left = snapshot.camOrtho.left;
-  preview.camOrtho.right = snapshot.camOrtho.right;
-  preview.camOrtho.top = snapshot.camOrtho.top;
-  preview.camOrtho.bottom = snapshot.camOrtho.bottom;
-  preview.camOrtho.near = snapshot.camOrtho.near;
-  preview.camOrtho.far = snapshot.camOrtho.far;
-  preview.camOrtho.updateProjectionMatrix();
-
-  preview.controls.target.fromArray(snapshot.target);
-  preview.controls.update();
-  preview.render();
-}
-
-function boundsFromExplicit(framing: Extract<FramingInput, { mode: "explicit" }>): RenderedModelBounds {
-  const min = framing.min;
-  const max = framing.max;
+function boundsFromExplicit(
+  framing: Extract<FramingInput, { mode: "explicit" }>
+): RenderedModelBounds {
+  const { min, max } = framing;
   const size: Vec3 = [
     max[0] - min[0],
     max[1] - min[1],
@@ -263,31 +163,24 @@ function boundsFromExplicit(framing: Extract<FramingInput, { mode: "explicit" }>
     max: [...max],
     center,
     size_xyz: size,
-    dimensions: {
-      width: size[0],
-      height: size[1],
-      length: size[2],
-    },
+    dimensions: { width: size[0], height: size[1], length: size[2] },
     footprint: {
       min_xz: [min[0], min[2]],
       max_xz: [max[0], max[2]],
-      size: {
-        width: size[0],
-        length: size[2],
-      },
+      size: { width: size[0], length: size[2] },
     },
   };
 }
 
-function vectorScale(value: Vec3, scalar: number): Vec3 {
+function scale(value: Vec3, scalar: number): Vec3 {
   return [value[0] * scalar, value[1] * scalar, value[2] * scalar];
 }
 
-function vectorAdd(a: Vec3, b: Vec3): Vec3 {
+function add(a: Vec3, b: Vec3): Vec3 {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
-function vectorNormalize(value: Vec3): Vec3 {
+function normalize(value: Vec3): Vec3 {
   const length = Math.hypot(value[0], value[1], value[2]);
   if (!Number.isFinite(length) || length <= 1e-8) {
     throw new Error("Cannot derive a canonical camera direction from a zero vector.");
@@ -295,18 +188,39 @@ function vectorNormalize(value: Vec3): Vec3 {
   return [value[0] / length, value[1] / length, value[2] / length];
 }
 
-function getObjectAxes(frontDirection: FrontDirection): {
+function objectAxes(frontDirection: FrontDirection): {
   front: Vec3;
   right: Vec3;
 } {
   const sign = frontDirection === "+z" ? 1 : -1;
-  return {
-    front: [0, 0, sign],
-    right: [sign, 0, 0],
-  };
+  return { front: [0, 0, sign], right: [sign, 0, 0] };
 }
 
-function getOrthographicSpans(view: ModelView, bounds: RenderedModelBounds): [number, number] {
+function principalDirection(
+  view: Exclude<ModelView, "front_left_3q" | "front_right_3q">,
+  frontDirection: FrontDirection
+): { direction: Vec3; up: Vec3 } {
+  const { front, right } = objectAxes(frontDirection);
+  switch (view) {
+    case "front":
+      return { direction: front, up: [0, 1, 0] };
+    case "back":
+      return { direction: scale(front, -1), up: [0, 1, 0] };
+    case "left":
+      return { direction: scale(right, -1), up: [0, 1, 0] };
+    case "right":
+      return { direction: right, up: [0, 1, 0] };
+    case "top":
+      return { direction: [0, 1, 0], up: scale(front, -1) };
+    case "bottom":
+      return { direction: [0, -1, 0], up: front };
+  }
+}
+
+function principalSpans(
+  view: ModelView,
+  bounds: RenderedModelBounds
+): [number, number] {
   const [width, height, length] = bounds.size_xyz;
   switch (view) {
     case "front":
@@ -323,55 +237,27 @@ function getOrthographicSpans(view: ModelView, bounds: RenderedModelBounds): [nu
   }
 }
 
-function calculateOrthographicZoom(
+function orthographicZoom(
   preview: Preview,
   horizontalSpan: number,
   verticalSpan: number
 ): number {
-  const paddedHorizontal = Math.max(horizontalSpan * (1 + FRAME_PADDING * 2), 1e-4);
-  const paddedVertical = Math.max(verticalSpan * (1 + FRAME_PADDING * 2), 1e-4);
+  const paddedWidth = Math.max(horizontalSpan * (1 + FRAME_PADDING * 2), 1e-4);
+  const paddedHeight = Math.max(verticalSpan * (1 + FRAME_PADDING * 2), 1e-4);
 
-  // Blockbench's Preview.resize() defines the orthographic camera as
-  // left/right = ±width/80 and top/bottom = ±height/80. Therefore the visible
-  // world span at zoom=1 is width/40 by height/40.
-  const baseWidth = preview.width / 40;
-  const baseHeight = preview.height / 40;
+  // Official Preview.resize() uses left/right = ±width/80 and
+  // top/bottom = ±height/80, so the zoom=1 world span is width/40 × height/40.
   const zoom = Math.min(
-    baseWidth / paddedHorizontal,
-    baseHeight / paddedVertical
+    preview.width / 40 / paddedWidth,
+    preview.height / 40 / paddedHeight
   );
-
   if (!Number.isFinite(zoom) || zoom <= 0) {
-    throw new Error("Unable to calculate a trustworthy orthographic framing zoom.");
+    throw new Error("Unable to calculate canonical orthographic framing.");
   }
   return zoom;
 }
 
-function principalDirection(
-  view: Exclude<ModelView, "front_left_3q" | "front_right_3q">,
-  frontDirection: FrontDirection
-): { direction: Vec3; up: Vec3 } {
-  const { front, right } = getObjectAxes(frontDirection);
-
-  switch (view) {
-    case "front":
-      return { direction: front, up: [0, 1, 0] };
-    case "back":
-      return { direction: vectorScale(front, -1), up: [0, 1, 0] };
-    case "left":
-      return { direction: vectorScale(right, -1), up: [0, 1, 0] };
-    case "right":
-      return { direction: right, up: [0, 1, 0] };
-    case "top":
-      // Keep object-relative right on screen-right. This places the object's
-      // front toward the bottom of the top view and avoids an arbitrary top-view roll.
-      return { direction: [0, 1, 0], up: vectorScale(front, -1) };
-    case "bottom":
-      return { direction: [0, -1, 0], up: front };
-  }
-}
-
-function calculateCameraSpec(
+function cameraSpec(
   preview: Preview,
   view: ModelView,
   frontDirection: FrontDirection,
@@ -383,181 +269,116 @@ function calculateCameraSpec(
   if (view !== "front_left_3q" && view !== "front_right_3q") {
     const { direction, up } = principalDirection(view, frontDirection);
     const distance = Math.max(64, maxSpan * 4 + 32);
-    const position = vectorAdd(target, vectorScale(direction, distance));
-    const [horizontalSpan, verticalSpan] = getOrthographicSpans(view, bounds);
-
+    const [horizontalSpan, verticalSpan] = principalSpans(view, bounds);
     return {
       view,
       projection: "orthographic",
-      position,
+      position: add(target, scale(direction, distance)),
       target: [...target],
       up,
-      zoom: calculateOrthographicZoom(preview, horizontalSpan, verticalSpan),
+      zoom: orthographicZoom(preview, horizontalSpan, verticalSpan),
     };
   }
 
-  const { front, right } = getObjectAxes(frontDirection);
-  const side =
-    view === "front_left_3q" ? vectorScale(right, -1) : right;
-  const horizontal = vectorNormalize(vectorAdd(front, side));
-  const elevationRadians = (30 * Math.PI) / 180;
-  const direction = vectorNormalize([
-    horizontal[0] * Math.cos(elevationRadians),
-    Math.sin(elevationRadians),
-    horizontal[2] * Math.cos(elevationRadians),
+  const { front, right } = objectAxes(frontDirection);
+  const side = view === "front_left_3q" ? scale(right, -1) : right;
+  const horizontal = normalize(add(front, side));
+  const elevation = (30 * Math.PI) / 180;
+  const direction = normalize([
+    horizontal[0] * Math.cos(elevation),
+    Math.sin(elevation),
+    horizontal[2] * Math.cos(elevation),
   ]);
-  const radius =
-    0.5 * Math.hypot(...bounds.size_xyz) * (1 + FRAME_PADDING * 2);
-  const halfFov = (PERSPECTIVE_FOV * Math.PI) / 360;
-  const distance = Math.max(16, radius / Math.sin(halfFov));
+  const radius = 0.5 * Math.hypot(...bounds.size_xyz) * (1 + FRAME_PADDING * 2);
+  const distance = Math.max(
+    16,
+    radius / Math.sin((PERSPECTIVE_FOV * Math.PI) / 360)
+  );
 
   return {
     view,
     projection: "perspective",
-    position: vectorAdd(target, vectorScale(direction, distance)),
+    position: add(target, scale(direction, distance)),
     target: [...target],
     up: [0, 1, 0],
     fov: PERSPECTIVE_FOV,
   };
 }
 
-function applyCameraSpec(preview: Preview, spec: CameraSpec): void {
+function prepareOffscreenPreview(preview: Preview): void {
+  resizePreview(preview, CAPTURE_SIZE, CAPTURE_SIZE);
+
+  // Preview.resize() updates the active projection only. Normalize both bases so
+  // switching between principal and 3/4 views stays deterministic.
+  preview.camPers.aspect = 1;
+  preview.camPers.updateProjectionMatrix();
+  preview.camOrtho.left = -CAPTURE_SIZE / 80;
+  preview.camOrtho.right = CAPTURE_SIZE / 80;
+  preview.camOrtho.top = CAPTURE_SIZE / 80;
+  preview.camOrtho.bottom = -CAPTURE_SIZE / 80;
+  preview.camOrtho.updateProjectionMatrix();
+}
+
+function applyCamera(preview: Preview, spec: CameraSpec): void {
   preview.setProjectionMode(spec.projection === "orthographic");
   const camera = preview.camera;
-
   camera.position.fromArray(spec.position);
   camera.up.fromArray(spec.up);
   preview.controls.target.fromArray(spec.target);
   camera.lookAt(preview.controls.target);
 
+  const distance = Math.hypot(
+    spec.position[0] - spec.target[0],
+    spec.position[1] - spec.target[1],
+    spec.position[2] - spec.target[2]
+  );
+
   if (spec.projection === "orthographic") {
     preview.camOrtho.zoom = spec.zoom ?? 1;
-    const distance = Math.hypot(
-      spec.position[0] - spec.target[0],
-      spec.position[1] - spec.target[1],
-      spec.position[2] - spec.target[2]
-    );
     preview.camOrtho.near = -Math.max(200, distance * 2);
     preview.camOrtho.far = Math.max(20_000, distance * 4);
     preview.camOrtho.updateProjectionMatrix();
   } else {
     preview.camPers.fov = spec.fov ?? PERSPECTIVE_FOV;
     preview.camPers.aspect = 1;
-    const distance = Math.hypot(
-      spec.position[0] - spec.target[0],
-      spec.position[1] - spec.target[1],
-      spec.position[2] - spec.target[2]
-    );
     preview.camPers.near = Math.max(0.01, distance / 10_000);
     preview.camPers.far = Math.max(20_000, distance * 4);
     preview.camPers.updateProjectionMatrix();
   }
 
   preview.controls.update();
-  preview.render();
 }
 
-function capturePreviewDataUrl(preview: Preview): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timeout = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        reject(
-          new Error(
-            `Model view capture timed out after ${CAPTURE_TIMEOUT_MS}ms.`
-          )
-        );
-      }
-    }, CAPTURE_TIMEOUT_MS);
-
-    Screencam.screenshotPreview(
-      preview,
-      { crop: false, width: CAPTURE_SIZE, height: CAPTURE_SIZE },
-      (dataUrl: string) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timeout);
-        if (!dataUrl) {
-          reject(new Error("Blockbench returned no image data for model view capture."));
-          return;
-        }
-        resolve(dataUrl);
-      }
-    );
+function captureOffscreenPng(preview: Preview): string {
+  let dataUrl: string | undefined;
+  Canvas.withoutGizmos(() => {
+    preview.render();
+    dataUrl = preview.canvas.toDataURL("image/png");
   });
+  if (!dataUrl) {
+    throw new Error("Blockbench returned no image data for canonical model view capture.");
+  }
+  return dataUrl;
 }
 
-function getPoseContext(): {
+function poseContext(): {
   animation: { uuid: string; name: string } | null;
   timeline_time: number | null;
 } {
-  const selectedAnimation =
+  const animation =
     typeof AnimationItem !== "undefined" ? AnimationItem.selected : null;
-
-  let timelineTime: number | null = null;
-  if (
-    selectedAnimation &&
+  const timelineTime =
+    animation &&
     typeof Timeline !== "undefined" &&
     typeof Timeline.time === "number" &&
     Number.isFinite(Timeline.time)
-  ) {
-    timelineTime = Timeline.time;
-  }
+      ? Timeline.time
+      : null;
 
   return {
-    animation: selectedAnimation
-      ? { uuid: selectedAnimation.uuid, name: selectedAnimation.name }
-      : null,
+    animation: animation ? { uuid: animation.uuid, name: animation.name } : null,
     timeline_time: timelineTime,
   };
-}
-
-function closeNumber(a: number, b: number): boolean {
-  return Math.abs(a - b) <= RESTORE_EPSILON;
-}
-
-function closeArray(actual: readonly number[], expected: readonly number[]): boolean {
-  return (
-    actual.length === expected.length &&
-    actual.every((value, index) => closeNumber(value, expected[index] ?? NaN))
-  );
-}
-
-function verifyRestoredPreview(
-  preview: Preview,
-  snapshot: PreviewCameraSnapshot
-): void {
-  const checks = [
-    preview.width === snapshot.width,
-    preview.height === snapshot.height,
-    preview.isOrtho === snapshot.isOrtho,
-    closeArray(preview.controls.target.toArray(), snapshot.target),
-    closeArray(preview.camPers.position.toArray(), snapshot.camPers.position),
-    closeArray(preview.camPers.quaternion.toArray(), snapshot.camPers.quaternion),
-    closeArray(preview.camPers.up.toArray(), snapshot.camPers.up),
-    closeNumber(preview.camPers.zoom, snapshot.camPers.zoom),
-    closeNumber(preview.camPers.fov, snapshot.camPers.fov),
-    closeNumber(preview.camPers.aspect, snapshot.camPers.aspect),
-    closeNumber(preview.camPers.near, snapshot.camPers.near),
-    closeNumber(preview.camPers.far, snapshot.camPers.far),
-    closeArray(preview.camOrtho.position.toArray(), snapshot.camOrtho.position),
-    closeArray(preview.camOrtho.quaternion.toArray(), snapshot.camOrtho.quaternion),
-    closeArray(preview.camOrtho.up.toArray(), snapshot.camOrtho.up),
-    closeNumber(preview.camOrtho.zoom, snapshot.camOrtho.zoom),
-    closeNumber(preview.camOrtho.left, snapshot.camOrtho.left),
-    closeNumber(preview.camOrtho.right, snapshot.camOrtho.right),
-    closeNumber(preview.camOrtho.top, snapshot.camOrtho.top),
-    closeNumber(preview.camOrtho.bottom, snapshot.camOrtho.bottom),
-    closeNumber(preview.camOrtho.near, snapshot.camOrtho.near),
-    closeNumber(preview.camOrtho.far, snapshot.camOrtho.far),
-  ];
-
-  if (checks.some((check) => !check)) {
-    throw new Error(
-      "Offscreen preview camera/lens state could not be restored exactly after capture_model_views."
-    );
-  }
 }
 
 export function registerCameraTools() {
@@ -579,22 +400,15 @@ export function registerCameraTools() {
     ...cameraToolDocs[2],
     async execute(angle: { position: number[]; target?: number[]; rotation?: number[]; projection: string; zoom?: number }) {
       const preview = Preview.selected;
+      if (!preview) throw new Error("No preview found in the Blockbench editor.");
 
-      if (!preview) {
-        throw new Error("No preview found in the Blockbench editor.");
-      }
-
-      // @ts-expect-error Angle CAN be loaded like this
-      preview.loadAnglePreset({
-        ...angle
-      });
-
+      // @ts-expect-error Blockbench accepts an AnglePreset-like object here.
+      preview.loadAnglePreset({ ...angle });
       if (angle.zoom !== undefined && preview.camera.isOrthographicCamera) {
         preview.camera.zoom = angle.zoom;
         preview.camera.updateProjectionMatrix();
         preview.controls.update();
       }
-
       return captureScreenshot();
     },
   }, cameraToolDocs[2].status);
@@ -613,9 +427,7 @@ export function registerCameraTools() {
 
       const observed = readRenderedModelBounds();
       if (!observed.bounds || observed.rendered_cube_count === 0) {
-        throw new Error(
-          "The active project has no visible Cube geometry to capture."
-        );
+        throw new Error("The active project has no visible Cube geometry to capture.");
       }
 
       const framingInput = framing as FramingInput;
@@ -625,13 +437,13 @@ export function registerCameraTools() {
           : observed.bounds;
 
       const capturePreview = Screencam.NoAAPreview;
-      if (!capturePreview) {
+      if (!capturePreview || capturePreview === Preview.selected) {
         throw new Error(
-          "Blockbench offscreen screenshot preview is unavailable; deterministic 512×512 capture cannot be guaranteed."
+          "Blockbench offscreen screenshot preview is unavailable; canonical capture refuses to mutate the active editor camera."
         );
       }
+      prepareOffscreenPreview(capturePreview);
 
-      const snapshot = snapshotPreviewCamera(capturePreview);
       const content: Array<
         | { type: "text"; text: string }
         | { type: "image"; data: string; mimeType: string }
@@ -649,66 +461,33 @@ export function registerCameraTools() {
           fov?: number;
         };
       }> = [];
-      let primaryError: unknown = null;
 
-      try {
-        resizePreview(capturePreview, CAPTURE_SIZE, CAPTURE_SIZE);
-        // Preview.resize() updates only the currently active projection. Keep
-        // both camera projection bases deterministic for this square capture.
-        capturePreview.camPers.aspect = 1;
-        capturePreview.camPers.updateProjectionMatrix();
-        capturePreview.camOrtho.left = -CAPTURE_SIZE / 80;
-        capturePreview.camOrtho.right = CAPTURE_SIZE / 80;
-        capturePreview.camOrtho.top = CAPTURE_SIZE / 80;
-        capturePreview.camOrtho.bottom = -CAPTURE_SIZE / 80;
-        capturePreview.camOrtho.updateProjectionMatrix();
+      for (const view of views as ModelView[]) {
+        const spec = cameraSpec(
+          capturePreview,
+          view,
+          front_direction as FrontDirection,
+          framingBounds
+        );
+        applyCamera(capturePreview, spec);
+        const image = imageContent(captureOffscreenPng(capturePreview), "image/png")
+          .content[0];
 
-        for (const view of views as ModelView[]) {
-          const spec = calculateCameraSpec(
-            capturePreview,
-            view,
-            front_direction as FrontDirection,
-            framingBounds
-          );
-          applyCameraSpec(capturePreview, spec);
-          const dataUrl = await capturePreviewDataUrl(capturePreview);
-          const image = imageContent(dataUrl, "image/png").content[0];
-
-          content.push({ type: "text", text: `VIEW ${view}` });
-          content.push(image);
-          captures.push({
-            view,
-            projection: spec.projection,
-            width: CAPTURE_SIZE,
-            height: CAPTURE_SIZE,
-            camera: {
-              position: spec.position,
-              target: spec.target,
-              up: spec.up,
-              ...(spec.zoom !== undefined ? { zoom: spec.zoom } : {}),
-              ...(spec.fov !== undefined ? { fov: spec.fov } : {}),
-            },
-          });
-        }
-      } catch (error) {
-        primaryError = error;
-      } finally {
-        try {
-          restorePreviewCamera(capturePreview, snapshot);
-          verifyRestoredPreview(capturePreview, snapshot);
-        } catch (restoreError) {
-          throw new Error(
-            `capture_model_views failed to restore its offscreen camera state: ${
-              restoreError instanceof Error
-                ? restoreError.message
-                : String(restoreError)
-            }`
-          );
-        }
-      }
-
-      if (primaryError) {
-        throw primaryError;
+        content.push({ type: "text", text: `VIEW ${view}` });
+        content.push(image);
+        captures.push({
+          view,
+          projection: spec.projection,
+          width: CAPTURE_SIZE,
+          height: CAPTURE_SIZE,
+          camera: {
+            position: spec.position,
+            target: spec.target,
+            up: spec.up,
+            ...(spec.zoom !== undefined ? { zoom: spec.zoom } : {}),
+            ...(spec.fov !== undefined ? { fov: spec.fov } : {}),
+          },
+        });
       }
 
       const format = Format as { id?: string } | undefined;
@@ -720,21 +499,14 @@ export function registerCameraTools() {
         },
         count: captures.length,
         front_direction,
-        framing:
-          framingInput.mode === "explicit"
-            ? {
-                mode: "explicit" as const,
-                min: framingBounds.min,
-                max: framingBounds.max,
-              }
-            : {
-                mode: "model" as const,
-                min: framingBounds.min,
-                max: framingBounds.max,
-              },
+        framing: {
+          mode: framingInput.mode,
+          min: framingBounds.min,
+          max: framingBounds.max,
+        },
         captures,
-        pose_context: getPoseContext(),
-        restored_camera: true,
+        pose_context: poseContext(),
+        offscreen_capture: true,
         active_editor_camera_untouched: true,
         warnings: observed.warnings,
       };
@@ -742,7 +514,7 @@ export function registerCameraTools() {
       content.unshift({
         type: "text",
         text:
-          "Canonical model views captured for observation only. Compare each labeled image directly with the corresponding approved reference view; this tool does not judge resemblance."
+          "Canonical model views captured for observation only. Compare each labeled image directly with the corresponding approved reference view; this tool does not judge resemblance.",
       });
 
       return { content, structuredContent };
