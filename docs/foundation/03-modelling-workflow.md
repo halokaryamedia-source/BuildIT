@@ -1,416 +1,407 @@
-# BlockIT — Operating Model Workflow
+# BlockIT — Modelling Workflow
 
-**Status:** Draft  
-**Version:** 1.2
+**Status:** Active Policy  
+**Version:** 1.3  
+**Updated:** 2026-08-08
 
-## 1. Purpose
+## Purpose
 
-Define the generic modelling sequence for creating a Minecraft Bedrock model in
-Blockbench through MCP.
+Define the canonical object-agnostic workflow for creating/revising Minecraft
+Bedrock Entity models in Blockbench through MCP.
 
-This workflow is **object-agnostic**. It must not encode Zebra, Rhino, animal,
-prop, or other fixture-specific anatomy/build order into product policy.
+The workflow exists to prevent **locally plausible but globally wrong** models.
+It must not encode fixture-specific anatomy, section order, Cube count, or
+per-Cube approval ceremony.
 
-Reference preparation is handled in [`04-reference-guide.md`](04-reference-guide.md).
-Geometry, texture, and visual-quality details remain in their dedicated
-foundation notes.
+Reference preparation belongs to [04-reference-guide.md](04-reference-guide.md).
 
-## 2. Workflow
+## Canonical Reference Fidelity Loop
 
 ```text
 Understand request
 ↓
-Review approved Model Reference
+Approved Modelling Brief
 ↓
-Check cross-view consistency
+Cross-view consistency
 ↓
-Establish coordinate frame + target envelope
+Coordinate frame + target envelope
 ↓
 Primary Form Hypothesis
 ↓
 Prepare/open Bedrock project
 ↓
-Coarse Primary Geometry Pass
+Explicit coarse primary Cube authoring
 ↓
-Primary structural envelope check
+inspect_model_bounds
 ↓
-Primary visual gate
+capture_model_views
 ↓
-PASS? ── no → revise/rebuild Primary Form Hypothesis
-  │
- yes
-  ↓
+Reference ↔ model primary visual gate
+↓
+GLOBAL failure?
+  ├─ yes → revise/rebuild Primary Form Hypothesis
+  └─ no
+      ↓
+LOCAL failure?
+  ├─ yes → inspect_element → causal correction → fresh affected views
+  └─ no
+      ↓
 Secondary geometry / hierarchy / pivots
 ↓
-Full geometry review
+Complete geometry review
 ↓
 UV / texture
 ↓
-Texture visual gate
+Texture gate when required
 ↓
 Animation only when required
 ↓
-Animation visual gate when required
-↓
 Final validation
 ↓
-Save .bbmodel
+Save `.bbmodel` when in scope
 ```
 
-Do not add extra stages merely because a tool or previous experiment used them.
+## 1. Understand Request
 
-## 3. Stage Rules
+Identify:
 
-### 3.1 Understand Request
+- intended asset;
+- Bedrock Entity target;
+- expected output;
+- requested dimensions when provided;
+- texture/animation scope;
+- only unresolved decisions that materially affect the result.
 
-Goal: understand the requested asset, platform, intended use, required scope, and
-expected output.
+The user does not need to provide Cube counts, exact transforms, hierarchy, or
+professional modelling terminology.
 
-The user is not required to provide modelling or MCP expertise. Use the current
-Developing rules to separate the real goal from any suggested implementation.
+## 2. Review The Approved Modelling Brief
 
-Exit: the request is clear enough to evaluate the reference and define the
-modelling scope.
+Read the reference as one coherent 3D object.
 
-### 3.2 Review Approved Model Reference
+Check:
 
-Goal: understand the visible whole form: silhouette, major proportions, major
-masses, contacts/attachments, orientation, style, and declared target
-dimensions.
+- recognizable target identity;
+- compatible front/side/top/etc. views;
+- primary masses;
+- silhouette/proportion relationships;
+- important visible contacts;
+- important slopes/orientation;
+- declared numeric dimensions when available.
 
-The Model Reference is a visual modelling brief, not pixel calibration. Do not
-invent exact geometry from ambiguous pixels.
+Do not average materially conflicting views into guessed coordinates. If a
+required axis is underdetermined, mark uncertainty.
 
-Before modelling, check that the views are compatible enough to describe one
-coherent object. Use each axis only where one or more views actually provide
-useful evidence:
+Reference pixels are not metric calibration.
 
-- width is normally constrained by front/back and top/footprint evidence;
-- height is normally constrained by front/back and side evidence;
-- length/depth is normally constrained by side and top/footprint evidence;
-- placement/orientation of a mass must cite the view(s) that make that relation
-  visible.
+## 3. Establish Coordinate Frame + Target Envelope
 
-These are **evidence directions**, not image-pixel measurements. If required
-views materially disagree, stop at reference review rather than averaging them
-into guessed geometry.
-
-Exit: the reference is sufficiently clear to support a whole-form spatial
-hypothesis. If the reference itself must be created/repaired, use
-`04-reference-guide.md` first.
-
-### 3.3 Coordinate Frame And Target Envelope
-
-Goal: remove avoidable spatial ambiguity before exact Blockbench coordinates are
-chosen.
-
-Establish a simple model-space convention for the active asset:
+Use one consistent model-space convention, normally:
 
 ```text
 X = width / left-right
 Y = height / up-down
 Z = length / front-back
 +Y = up
-ground plane = declared project ground (normally Y=0 unless the active project says otherwise)
-front direction = explicit for this asset
+front direction = explicit
+project ground = explicit
 ```
 
-Also establish the approved overall width/height/length envelope when dimensions
-are available. The coordinate frame is a reasoning convention, not an object-
-specific anatomy rule.
+When numeric dimensions exist, establish the overall target envelope.
 
-Do not silently mirror the object, swap front/back, or infer a different ground
-plane after geometry begins. If orientation is ambiguous in the reference, mark
-that ambiguity instead of inventing certainty.
+Do not silently swap/mirror front/back after authoring begins.
 
-Exit: the agent can describe where primary masses belong in one consistent 3D
-frame.
+## 4. Form A Primary Form Hypothesis
 
-### 3.4 Primary Form Hypothesis
-
-Goal: bridge visual understanding to numeric Cuboid authoring without jumping
-straight from prose/image interpretation to arbitrary `from/to/origin/rotation`
-values.
-
-Create a **temporary normalized spatial hypothesis** for primary masses only.
-For each important primary mass, record only what materially constrains the
-first pass:
+Before exact Cube numbers, reason about each important primary mass:
 
 ```text
-role / semantic name
-relative size within the whole envelope
-relative center/placement within the whole envelope
-main orientation/slope when visually important
-major contact/attachment relationship
+role
+relative size
+relative center/placement
+orientation/slope when material
+major contact/attachment
 supporting reference view(s)
-uncertainty when evidence is weak
+uncertainty
 ```
 
-Relative values may use approximate percentages or qualitative ranges such as
-"about half the total length", "upper-front", or "narrower than body". They are
-modeller hypotheses, not pixel measurements or locked transforms.
+This may use qualitative/normalized proportions. It is **not**:
 
-Do not create a locked per-Cube blueprint, mandatory Cube count, section plan,
-or exact-transform approval sheet. The purpose is to make the whole-form spatial
-reasoning explicit enough that exact Blockbench coordinates are **derived from a
-coherent hypothesis instead of guessed independently Cube by Cube**.
+- pixel calibration;
+- a locked Cube blueprint;
+- a mandatory Cube count;
+- a section-first/support-first plan;
+- an approval sheet.
 
-Exit: all primary masses have a reasoned relative scale, placement, orientation,
-and relationship supported by the reference.
+Its purpose is to prevent the direct jump:
 
-### 3.5 Prepare / Open Bedrock Project
+```text
+"I see a head/body/handle/etc."
+→ arbitrary exact from/to/origin/rotation
+```
 
-Goal: work in the established safe Bedrock Entity project workflow and preserve
-recoverability.
+## 5. Prepare/Open Bedrock Project
 
-Use the current verified project-opening/preset flow from the implementation and
-module guidance. Do not promote a historical setup detail into policy when its
-runtime behavior is unverified.
+Use the current Local project workflow. Runtime behavior is source + local proof,
+not historical documentation.
 
-Exit: the intended Bedrock project is open and ready for geometry.
+Do not claim save/open/project behavior that has not been verified in the active
+environment.
 
-### 3.6 Coarse Primary Geometry Pass
+## 6. Author The Coarse Primary Form
 
-Goal: create the minimum set of primary geometry needed for the model to read as
-one coherent object.
+Build the **minimum coherent whole form**, not a polished local section.
 
-Rules:
+### Initial Cube requirements
 
-- build the **whole primary form**, not a polished local section while the rest
-  of the object is undefined;
-- every primary Cuboid must implement a declared primary-mass role or a necessary
-  split of that mass; never place a Cube merely because there is empty space or
-  because it can be made to touch another Cube;
-- derive exact `from/to/origin/rotation` from the coordinate frame, target
-  envelope, Primary Form Hypothesis, and relevant reference views;
-- use axis-aligned geometry when it represents the mass correctly; rotation is
-  allowed only when a visible slope/orientation or required motion makes it the
-  better representation;
-- preserve major attachment/contact relationships visually, not merely by
-  coordinate overlap;
-- use the minimum geometry needed for silhouette, volume, attachment, or motion
-  intent;
-- defer small details, texture-driven forms, and cosmetic cleanup;
-- use bounded batches when they reduce tool churn and remain safe/recoverable.
+Normal `place_cube` authoring requires intentional geometry:
 
-A successful `place_cube`, numeric overlap, valid hierarchy, or a Cube that is
-"attached" is **not evidence that the placement is correct**.
+```text
+from → explicit finite [x,y,z]
+to   → explicit finite [x,y,z]
+```
 
-Exit: all important primary masses exist as a coarse blockout that can be judged
-as one object.
+There is no default `[0,0,0] → [1,1,1]` Cube used as modelling progress.
 
-### 3.7 Primary Structural Envelope Check
+For rotation:
 
-Goal: detect gross scale/position failures that camera framing can hide.
+```text
+rotation = [0,0,0]
+→ origin may remain neutral/omitted
 
-When the runtime provides the required inspection capability, compare current
-model bounds with the approved target envelope and ground relationship before
-visual approval.
+non-zero initial rotation
+→ explicit intentional origin/pivot required
+```
 
-This check may establish that the model is too large/small, mirrored, displaced,
-or floating. It **cannot** prove resemblance or visual quality.
+For hierarchy:
 
-If the capability is unavailable, do not fabricate the result; proceed only with
-claims that can actually be observed and keep the missing structural evidence
-explicit.
+- if a specific Group/bone is intended, locate/confirm its exact UUID;
+- root placement must be intentional;
+- a missing/ambiguous requested parent must fail rather than silently falling
+  back.
 
-### 3.8 Primary Visual Gate
+### Geometry rules
 
-Goal: determine whether the **whole primary form** is good enough to refine.
+- every primary Cube implements a known mass or necessary split;
+- derive exact extents from the spatial hypothesis and reference evidence;
+- prefer axis-aligned geometry when it explains the mass;
+- rotate only for a visible slope/orientation or required motion;
+- do not add detail or compensating geometry;
+- do not treat overlap/contact/tool success as approval.
 
-Compare model evidence directly against the corresponding reference view(s).
-Check at minimum:
+## 7. Inspect Global Structural Envelope
 
-- recognizability;
-- global silhouette;
-- major proportion relationships;
-- primary mass placement;
-- important orientation/slopes;
-- major contacts/attachments visible in the relevant views.
+After coarse primary authoring, use:
 
-A valid visual review must name concrete mismatches when present. Generic prose
-such as "looks good", "all parts are attached", or "the Cubes are placed" cannot
-produce `PASS`.
+`inspect_model_bounds`
 
-#### Hard rebuild threshold
+Compare raw rendered bounds/center/ground facts with the approved target envelope
+when one exists.
 
-Reject the current primary pass instead of micro-patching it when:
+This can reveal catastrophic scale/displacement/ground errors. It **cannot**
+prove resemblance.
 
-- the object is not recognizable as the intended target; or
-- the failure spans multiple primary relationships such as silhouette + mass
-  proportion + placement/orientation; or
-- the correction would require compensating detail to hide a wrong whole-form
-  hypothesis.
+The current source implementation uses rendered/global Cube vertex positions;
+live Blockbench behavior remains subject to local proof.
 
-In that case, revise/rebuild the **Primary Form Hypothesis and coarse blockout**.
-Do not keep a bad primary scaffold merely because many Cubes already exist.
+## 8. Run Canonical Primary Visual Gate
 
-If the overall form is sound and only one bounded relationship is wrong, use a
-targeted correction.
+Use:
 
-Exit: primary form passes, or the workflow explicitly invalidates/revises the
-hypothesis with concrete visual findings.
+`capture_model_views`
 
-### 3.9 Secondary Geometry / Hierarchy / Pivots
+Capture only reference-corresponding named views needed to answer the current
+question. Principal views are orthographic comparison evidence; 3/4 views add
+volume/readability context.
 
-Goal: add only geometry and structure that materially improve silhouette,
-readability, attachment, texture support, or required motion.
-
-Rules:
-
-- preserve primary masses that already passed unless a new visual finding proves
-  they are responsible for an issue;
-- add detail from large-to-small visual importance;
-- choose hierarchy for actual organization/articulation needs;
-- choose pivots only when there is a concrete transform/articulation/attachment
-  reason; an arbitrary pivot is a modelling defect, not harmless metadata;
-- after changing a pivot or parent transform, re-check the affected visible
-  relationships before assuming they remain coherent;
-- do not add geometry solely to compensate for an unresolved primary-form error.
-
-Exit: geometry/hierarchy/pivots support the intended asset without unnecessary
-parts or unexplained transforms.
-
-### 3.10 Full Geometry Review
-
-Goal: review the complete geometry against the full declared Model Reference
-view set.
+When numeric target bounds exist, explicit-envelope framing should be used so
+auto-framing cannot hide gross scale/offset problems.
 
 Check:
 
-- silhouette and major proportions across views;
-- presence/orientation of primary parts;
-- width/depth/footprint where visible;
-- coherent visible contacts and connections;
-- unnecessary/intersecting/inverted geometry;
-- rotations that do not correspond to a visible/form/function need;
-- pivots that are distant, arbitrary, or inconsistent with intended
-  articulation/attachment;
-- hierarchy/pivots where they affect the intended result.
+- recognizability;
+- whole silhouette;
+- major proportions;
+- primary mass placement;
+- important orientation/slopes;
+- visible primary contacts.
 
-A correction reopens only affected views/relationships unless it reveals that
-the primary hypothesis was wrong. Do not restart the whole model for a genuinely
-local issue, but do not protect a failed primary hypothesis from rebuild either.
+The screenshot tool is observation only. A successful capture is not `PASS`.
 
-Exit: no unresolved critical/major geometry issue remains, or status is
-`BLOCKED` / `NEEDS_REVIEW` with concrete findings.
+## 9. Classify Failure Before Correcting
 
-### 3.11 UV / Texture
+### Global Failure
 
-Goal: create usable UVs and texture appropriate to the requested scope.
+Examples:
 
-Follow `06-texture-standard.md`. Do not use texture to conceal incorrect primary
-geometry.
+- target is not recognizable;
+- whole silhouette is wrong;
+- multiple major mass proportions/placements/orientations fail together.
 
-Exit: required surfaces are mapped and the requested texture scope is complete.
-
-### 3.12 Texture Visual Gate
-
-Goal: verify texture placement, material/readability, UV orientation, pattern
-direction, and pixel-density consistency where relevant.
-
-Exit: no unresolved texture issue that materially reduces the requested output.
-
-### 3.13 Animation — Only When Required
-
-Goal: add only animations required by the task.
-
-Do not create animation as default ceremony. When animation is required, verify
-pivots, hierarchy, clipping/detachment, and intended motion in Blockbench.
-
-Exit: required animation works, or the task is explicitly blocked for local
-proof/correction.
-
-### 3.14 Final Validation
-
-Goal: verify the current model revision against the requested output.
-
-Required proof depends on the claim:
-
-- structural claims require relevant structural inspection;
-- visual claims require fresh visual evidence;
-- animation claims require live animation evidence;
-- saved-project claims require the project to be saved/reopenable when that can
-  be tested in the active environment.
-
-Do not turn unavailable local proof into a fake static check. ChatGPT → GitHub
-may prepare implementation and hand off one exact local test to Codex.
-
-Exit: `PASS`, `ISSUES_FOUND`, or `BLOCKED`/`NEEDS_REVIEW` with the limitation
-stated accurately.
-
-### 3.15 Save Project
-
-Goal: save the reviewed `.bbmodel` through the current verified save workflow.
-
-Exit: save is complete; reopening is proven only when actually tested.
-
-## 4. Correction Vocabulary
-
-When geometry is wrong, diagnose the relationship before choosing the edit.
-Prefer these causal operations:
+Action:
 
 ```text
-TRANSLATE  → placement is wrong
-RESIZE     → proportion/extent is wrong
-ROTATE     → orientation/slope is wrong
-REATTACH   → parent/contact relationship is wrong
-SPLIT      → one mass truly needs more than one orientation/volume
-MERGE/REMOVE → geometry is unnecessary or compensatory
+reject current primary scaffold
+→ revise/rebuild Primary Form Hypothesis
 ```
 
-Do not default to `ADD CUBE`. Adding geometry is justified only when a missing
-visible volume/silhouette/detail actually requires another mass.
+Do not preserve a bad blockout because many Cubes exist.
 
-## 5. Workflow Rules
+### Local Failure
 
-- Whole-form understanding precedes local polish.
-- The active reference decides object-specific relationships; this document does
-  not define anatomy.
-- Do not author exact Cuboid transforms before the coordinate frame and primary
-  spatial hypothesis are coherent enough to support them.
-- A Cube being created, connected, overlapping, grouped, or syntactically valid
-  never authorizes approval.
-- Rotation requires a visible orientation/form or required-motion reason.
-- Pivot requires a concrete transform/articulation/attachment reason.
-- Use the smallest useful geometry and the smallest useful proof.
-- Do not require per-cube user approval, per-cube screenshots, universal
-  construction order, numeric similarity scores, or repeated full-review loops.
-- Keep one active model per task unless the task explicitly requires more.
-- Do not repeat a stage without a concrete reason/new evidence.
-- Stop the same unsuccessful correction direction after two attempts without
-  new evidence and replan instead.
-- Do not claim visual completion without visual evidence.
-- Stop when the requested scope and required proof are complete.
+Whole form is sound, but one bounded relationship is wrong.
 
-## 6. Anti-Slop Failure Modes
+Action:
 
-Reject these patterns:
+1. locate exact UUID;
+2. `inspect_element` to read current authored state;
+3. classify the cause;
+4. mutate only the responsible relationship;
+5. capture fresh affected view(s).
 
-- arbitrary Cubes placed because they can be attached somewhere;
-- locally plausible Cubes forming a globally wrong object;
-- approving a model because all planned Cubes exist;
-- polishing one section before the whole primary form is coherent;
-- compensating geometry added to hide a primary proportion error;
-- arbitrary multi-axis rotations with no reference/form reason;
-- pivots chosen because a field requires a number rather than because the model
-  needs a rotation/articulation center;
-- preserving a grossly wrong blockout because rebuilding feels expensive;
-- fixture-specific rules promoted to generic product policy;
-- per-cube planning/validation ceremony with no evidence benefit;
-- automatic retries without a new visual finding/hypothesis;
-- structural/tool success reported as resemblance.
+## 10. Causal Correction Vocabulary
 
-## 7. Stop Conditions
+```text
+TRANSLATE    placement wrong
+RESIZE       extent/proportion wrong
+ROTATE       orientation/slope wrong
+REATTACH     contact/parent wrong
+SPLIT        one mass genuinely needs separate orientation/volume
+MERGE/REMOVE unnecessary/compensating geometry
+ADD MASS     a genuinely missing visible volume
+```
 
-Stop or replan when:
+Do not default to adding another Cube.
 
-- the approved reference cannot support a required modelling decision;
-- coordinate orientation/front/ground is materially ambiguous;
-- the Primary Form Hypothesis lacks enough evidence for a required primary mass;
-- the primary form fails the hard rebuild threshold;
-- the primary form fails the visual gate and no new correction hypothesis exists;
-- a critical/major full-geometry issue remains;
-- required local/visual proof is unavailable;
-- the requested scope is complete and further detail would not materially
-  improve the intended result.
+### One Cube
+
+Use `modify_cube` against a confirmed target UUID.
+
+### Several Cubes In One Relationship
+
+Use `modify_cubes_batch` only when one diagnosed relationship requires different
+updates to several exact Cube UUIDs. The batch is an execution/Undo boundary, not
+a planner.
+
+Do not combine unrelated cleanup/speculative edits into the same batch.
+
+## 11. Pivot Semantics
+
+A pivot is a transform decision, not required decoration.
+
+### Cube pivot only
+
+When geometry is already visually correct and only pivot is wrong:
+
+```text
+origin supplied
+from omitted
+to omitted
+rotation omitted
+→ pivot-only correction
+→ Cube.transferOrigin()
+→ visual position preserved
+```
+
+### Cube geometry + pivot rewrite
+
+When geometry/rotation and pivot are intentionally changed together, send the
+actual changed `origin` + `from/to/rotation` fields as one authored rewrite.
+
+### Group / Bone pivot
+
+For a material Group pivot change:
+
+- inspect exact Group;
+- identify the joint/attachment/transform-center reason;
+- use explicit target + origin;
+- current `bone_rigging(set_pivot)` uses `Group.transferOrigin()` semantics.
+
+Do not choose/copy arbitrary distant pivots.
+
+## 12. Correction Stop Rule
+
+After a correction, re-observe the smallest view set that tests the diagnosis.
+
+If the same correction direction fails twice without new evidence:
+
+```text
+stop patching
+→ revise the hypothesis
+```
+
+## 13. Secondary Geometry / Hierarchy / Pivots
+
+Only after primary form passes:
+
+- add geometry that materially improves silhouette/attachment/motion/detail;
+- add hierarchy for actual organization/articulation needs;
+- keep non-articulated organizational Groups neutral rather than inventing
+  transforms;
+- use exact identity for mutation/parent targeting;
+- re-check affected visible relationships after material hierarchy/pivot changes.
+
+## 14. Complete Geometry Review
+
+Review the complete declared reference view set needed for the asset.
+
+Check:
+
+- silhouette/proportions across views;
+- required major parts;
+- footprint/depth where visible;
+- visible contact quality;
+- unnecessary/intersecting/inverted geometry;
+- rotations with no form/motion reason;
+- arbitrary/distant pivots;
+- hierarchy/pivots required for editability/motion.
+
+A genuinely local issue reopens only affected relationships. A finding that
+invalidates the primary hypothesis returns to the primary loop.
+
+## 15. UV / Texture
+
+Follow [06-texture-standard.md](06-texture-standard.md) only after geometry is
+coherent. Texture must not conceal geometry failure.
+
+## 16. Animation
+
+Only when required. Verify hierarchy, pivot arcs, clipping/detachment, intended
+motion, and return/neutral behavior as relevant.
+
+## 17. Final Validation / Save
+
+Keep proof types separate:
+
+- structural proof;
+- visual proof;
+- animation proof;
+- persistence/reopen proof.
+
+Do not substitute static source inspection for live Blockbench proof.
+
+Save `.bbmodel` through the current verified operation when save is in scope.
+Claim reopen fidelity only when actually tested.
+
+## Anti-Slop Rules
+
+Reject:
+
+- Cube creation as progress without intentional extents;
+- placement because a Cube can touch/fit somewhere;
+- support-first/section-first/per-Cube universal plans;
+- arbitrary multi-axis rotation;
+- default/distant pivot on a rotated part;
+- detail added before primary form is coherent;
+- compensating Cubes used to hide primary errors;
+- structural/tool success reported as resemblance;
+- similarity/IoU/projection/SF3D authority;
+- repeated micro-patching without a new hypothesis.
+
+## Related
+
+- [Reference Guide](04-reference-guide.md)
+- [Geometry Standard](05-geometry-standard.md)
+- [Visual Validation](07-visual-validation.md)
+- [Reference Fidelity Decision](../knowledge/decisions/reference-fidelity-loop.md)
+- [Implementation Map](../knowledge/implementation-map.md)
