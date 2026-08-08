@@ -12,12 +12,12 @@ implementation notes.
 ## Active Goal
 
 Improve Reference Image / Modelling Brief → Blockbench fidelity by making Cube,
-rotation, pivot, hierarchy, and correction decisions evidence-backed rather than
-assumption-driven.
+rotation, pivot, hierarchy, targeting, and correction decisions evidence-backed
+rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_EXPLICIT_EXTENTS_HARDENED`
+`REFERENCE_FIDELITY_EXISTING_ROTATION_ACTIVATION_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -58,27 +58,27 @@ Current Local source already contains:
 - `capture_model_views` canonical observations;
 - `inspect_element` authored-state inspection;
 - `modify_cubes_batch` exact-UUID heterogeneous correction;
-- strict `modify_cube` target resolution;
+- strict explicit-target resolution when `modify_cube.id` is supplied;
 - strict `place_cube` Group targeting, no silent root fallback;
 - safer `add_group` parent/default behavior;
 - hardened `bone_rigging` preflight/rollback/Group pivot semantics;
 - Cube pivot-only correction using `Cube.transferOrigin()`;
 - explicit origin requirement for new non-zero-rotation Cubes;
-- explicit finite `from/to` requirement for every new `place_cube` element.
+- explicit finite `from/to` requirement for every new `place_cube` element;
+- zero→non-zero rotation activation on an existing Cube now requires explicit
+  `origin` before Undo; already-rotated Cubes may adjust angle while reusing the
+  existing pivot.
 
 These are **source implemented**, not live-proven.
 
 ## Documentation State
 
-Root `docs/` / Obsidian documentation was refreshed on 2026-08-08:
+Root `docs/` / Obsidian owners remain aligned with the current source slice:
 
-- foundation reflects the current Reference Fidelity architecture;
-- current ownership no longer points to stale `mcp/workflow/` or retired skill
-  roots;
-- historical reviews/source-selection notes are indexed/classified as history;
-- implementation/proof/backlog are separated into their canonical owners.
-
-See [Documentation Audit](operations/documentation-audit.md).
+- `docs/foundation/05-geometry-standard.md` owns the rotation/pivot policy;
+- `implementation-map.md` owns source locations;
+- `validation-report.md` owns evidence level;
+- this note owns only the next active task.
 
 ## Confirmed Failure Evidence
 
@@ -101,39 +101,33 @@ These failure patterns remain the quality target for the current source program.
 
 ## Next Step
 
-Audit **existing-Cube first rotation activation safety** in:
+Audit the **legacy implicit selected-Cube fallback** in `modify_cube`:
 
 ```text
-mcp/server/tools/cubes.ts
+modify_cube(id omitted)
+→ current source uses Cube.selected
+→ one or several editor-selected Cubes may receive the patch
 ```
 
-Current risk:
+Normal Reference Fidelity routing already requires exact confirmed UUIDs, so this
+implicit targeting path may no longer belong in the normal public mutation
+contract.
 
-```text
-Cube currently unrotated
-origin may be neutral [0,0,0]
-↓
-modify_cube / modify_cubes_batch sets first non-zero rotation
-↓
-rotation may silently activate around a pivot that was never intentionally chosen
-```
+Before changing it:
 
-Required distinction:
+1. search current Local source/docs for real callers that intentionally depend on
+   omitted `id` / editor selection;
+2. distinguish actual compatibility requirement from inherited upstream behavior;
+3. if no current need is proven, prefer making `id` explicit/required rather
+   than adding another selection-state safeguard;
+4. if a real caller depends on selection fallback, preserve it only with a clear
+   bounded reason instead of assuming compatibility is valuable by default.
 
-```text
-Cube already has non-zero rotation
-→ rotation adjustment may reuse its inspected existing pivot
-
-Cube currently unrotated
-→ first non-zero rotation must not silently reuse an unproven neutral pivot
-```
-
-Preferred solution: the smallest execution preflight using current Cube state.
-Do not require a new pivot on every later rotation adjustment; do not infer a
-pivot automatically; do not add a rotation/pivot planner.
+Do not change `modify_cubes_batch`, hierarchy, UV, G3, or add another targeting
+tool in this slice.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish the source contract and static diff only.
-Actual Blockbench rotation/pivot behavior remains `LOCAL PROOF REQUIRED` until
-local testing is resumed.
+ChatGPT→GitHub may establish caller evidence, the public contract, and static
+diff only. Actual Blockbench selection/mutation behavior remains
+`LOCAL PROOF REQUIRED` if the runtime path is changed.
