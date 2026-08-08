@@ -9,11 +9,14 @@ reconstructing prior chats.
 - **Goal:** solve gross Reference Image / Modelling Brief → Blockbench geometry
   divergence by making modelling decisions evidence-backed instead of
   assumption-driven.
-- **Status:** `REFERENCE_FIDELITY_RULES_HARDENED`.
-- **Execution now:** ChatGPT → GitHub architecture/contract work.
+- **Status:** `REFERENCE_FIDELITY_OBSERVATION_CONTRACT_FROZEN`.
+- **Execution now:** ChatGPT → GitHub architecture/source work.
 - **Local testing:** explicitly deferred by current user priority.
 - **G3:** paused.
-- **Primary review:** `docs/knowledge/reviews/mcp-reference-fidelity-root-cause.md`.
+- **Root-cause review:**
+  `docs/knowledge/reviews/mcp-reference-fidelity-root-cause.md`.
+- **Observation contract:**
+  `docs/knowledge/reviews/mcp-reference-fidelity-observation-contract.md`.
 
 ## Confirmed Failure Evidence
 
@@ -28,115 +31,7 @@ Prior modelling tests repeatedly showed:
    numeric fields instead of being chosen from a real joint/attachment/transform
    relationship.
 
-These are now treated as confirmed product failure patterns.
-
-## Hardened Reference Fidelity Rules
-
-Canonical owners have been updated:
-
-- `docs/foundation/03-modelling-workflow.md` → workflow v1.2;
-- `docs/foundation/05-geometry-standard.md` → geometry v1.2;
-- `docs/foundation/07-visual-validation.md` → validation v1.2;
-- `.agents/skills/blockbench-bedrock-modelling/SKILL.md`;
-- `mcp/prompts/bedrock.md`;
-- `docs/knowledge/reviews/mcp-reference-fidelity-root-cause.md`.
-
-### Before exact Cube transforms
-
-The modeller must establish:
-
-```text
-cross-view consistency
-→ coordinate frame/front/ground
-→ target envelope when available
-→ normalized Primary Form Hypothesis
-```
-
-For each primary mass the hypothesis records only:
-
-```text
-role
-relative size
-relative center/placement
-important orientation/slope
-major contact/attachment
-supporting reference view(s)
-uncertainty when evidence is weak
-```
-
-This is temporary modeller reasoning, not a locked per-Cube plan, pixel
-calibration, or geometry authority.
-
-### Placement rule
-
-A Cube is not justified because it:
-
-```text
-exists
-fits somewhere
-touches another Cube
-overlaps another Cube
-has a valid parent
-tool call succeeded
-```
-
-Each important primary Cube must implement a known mass role or necessary split
-supported by the reference/spatial hypothesis.
-
-### Rotation rule
-
-Rotation requires a concrete reason:
-
-- visible reference slope/orientation;
-- simpler coherent silhouette than stepped Cuboids; or
-- required articulation/motion.
-
-Do not use arbitrary multi-axis rotation, copied fixture angles, or rotation to
-compensate for wrong size/placement.
-
-### Pivot rule
-
-A meaningful pivot requires a concrete:
-
-- rotation center;
-- joint/articulation;
-- attachment; or
-- parent/group transform purpose.
-
-Arbitrary/distant pivots and pivots filled only because the schema exposes
-`origin` are not accepted modelling decisions.
-
-### Primary approval rule
-
-`PASS` cannot be based on:
-
-```text
-all Cubes are placed
-all parts are attached
-coordinates/hierarchy are valid
-rotation/pivot values exist
-validator returned no error
-```
-
-If the object is unrecognizable or several primary relationships fail together,
-**invalidate/revise the Primary Form Hypothesis and coarse blockout** rather than
-micro-patching it.
-
-### Correction rule
-
-Classify before mutating:
-
-```text
-TRANSLATE
-RESIZE
-ROTATE
-REATTACH
-SPLIT
-MERGE/REMOVE
-ADD MASS only when a visible volume is genuinely missing
-```
-
-Do not default to adding another Cube.
+Foundation/modelling rules are already hardened against those behaviors.
 
 ## Reference Fidelity Loop v1
 
@@ -169,41 +64,158 @@ FRESH AFFECTED EVIDENCE
 SECONDARY GEOMETRY / HIERARCHY / TEXTURE / OPTIONAL ANIMATION
 ```
 
-## Current Runtime Gap Exposed By The Rules
-
-The policy is now stricter than the current observation surface. Two small
-read-only instruments need a concrete MCP contract before implementation:
+## Frozen Read-Only Observation Contract
 
 ### `inspect_model_bounds`
 
-Must provide enough structural evidence to detect gross scale/position/ground
-failure that auto-framing can hide. It must not provide a visual score or PASS.
-
-Candidate evidence:
+v1 is deliberately small:
 
 ```text
-min/max
-size: width/height/length
-center
-ground/min-Y relation
-current project/front-orientation metadata where reliably available
-comparison with caller-supplied/known target envelope when appropriate
+input: {}
+active project only
+whole model only
+read-only
 ```
+
+It reports raw facts only:
+
+```text
+project identity
+has_geometry / cube_count
+rendered-current-pose bounds basis
+min / max / center
+size XYZ
+semantic width / height / length
+XZ footprint
+animation/timeline pose context
+warnings
+```
+
+Requirements:
+
+- bounds must describe the currently rendered model geometry, including Cube
+  rotation and visually-active parent/group transforms;
+- no fabricated default bounds when runtime inspection fails;
+- empty project returns `has_geometry=false` + `bounds=null`;
+- no target/tolerance input is needed; the modeller compares the raw result with
+  the already-approved target envelope;
+- no `PASS`, `within_tolerance`, correction delta, reanchor suggestion, or visual
+  score.
+
+Important implementation warning: Sample's rotation-aware `calculateBounds` is
+useful evidence but cannot be copied blindly if the implementation would ignore
+visually-active parent/group transforms. The claimed bounds semantics must match
+what the model actually renders as.
 
 ### `capture_model_views`
 
-Must provide stable requested model views for direct reference comparison:
+Minimal input:
 
 ```text
-named requested views
-principal orthographic views
-3/4 perspective where requested
-stable framing metadata
-actual image content
-restore prior project/camera/selection state
+views: 1–5 unique named views
+front_direction: +z | -z
+framing:
+  model
+  OR explicit min/max target envelope
 ```
 
-It must not perform similarity scoring or automatic visual approval.
+Named views:
+
+```text
+front
+back
+left
+right
+top
+bottom
+front_left_3q
+front_right_3q
+```
+
+Requirements:
+
+- active project only; no project selector/tab switching;
+- fixed 512×512 PNG output and fixed small framing padding;
+- front/back/left/right/top/bottom are true axis-aligned **orthographic** views;
+- no hidden vertical elevation on principal views;
+- front direction is explicit and has no default;
+- left/right semantics are object-relative to that front direction;
+- 3/4 views are stable perspective context views, not metric evidence;
+- `framing=model` uses the exact same trustworthy rendered-bounds reader as
+  `inspect_model_bounds`;
+- `framing=explicit` frames the caller-provided target envelope and must **not**
+  silently zoom out to include out-of-envelope geometry;
+- content ordering is labeled text + actual MCP image for each requested view;
+- no file-output mode in v1;
+- no custom camera, texture, animation, particle, or selected-element scope in
+  v1;
+- camera state is snapshotted and restored in `finally`; restoration failure is
+  a tool failure, not a successful result;
+- project, selection, mode/tool, texture, animation/time, and model state are not
+  changed.
+
+Local already has the correct low-level inline image response shape through
+`imageContent()` (`type=image`, base64 data, `image/png`). Whether a specific
+Codex/client configuration exposes that content to a vision-capable model remains
+a later `LOCAL PROOF REQUIRED` claim and is not the current blocker.
+
+## Why The Sample Tool Is Not Copied Whole
+
+Keep from Sample:
+
+```text
+named views
+deterministic framing
+inline images
+structured capture metadata
+finally-based restoration
+```
+
+Drop for Local v1:
+
+```text
+project switching
+file output
+custom camera input
+texture variants
+animation/time controls
+particle controls
+visible-alpha framing
+selected framing
+payload configuration surface
+```
+
+Also change the principal-camera semantics: Sample's front/back/left/right
+presets contain a small elevation offset. Local reference-fidelity views must be
+true axis-aligned orthographic views for direct comparison.
+
+## Shared Bounds Rule
+
+There must be **one** internal rendered-bounds definition reused by both public
+observation tools.
+
+Do not implement:
+
+```text
+inspect_model_bounds → bounds algorithm A
+capture_model_views  → separate bounds algorithm B
+```
+
+Contradictory structural and visual framing evidence would recreate the same
+assumption problem this work is intended to remove.
+
+## Implementation Order
+
+```text
+1. trustworthy internal rendered-bounds reader
+2. public inspect_model_bounds using it
+3. capture_model_views reusing the same reader
+4. only then inspect_element / modify_cubes_batch
+```
+
+The first public implementation is `inspect_model_bounds` even though canonical
+capture has higher product visibility, because capture framing depends on the
+same correct bounds definition.
 
 ## Holds
 
@@ -211,11 +223,11 @@ It must not perform similarity scoring or automatic visual approval.
 - **Slice A:** goal-oriented prompt source remains implemented; local proof is not
   the active blocker.
 - **G3 annotations:** paused.
-- **G4 screenshot restoration:** should be solved as part of canonical capture
-  state restoration rather than as an isolated patch.
+- **G4 screenshot restoration:** do not patch separately; canonical capture owns
+  its own strict camera restoration and avoids project switching entirely.
 - **G5 bone-rigging Undo preflight:** held until hierarchy runtime work resumes.
 - `inspect_element`, `modify_cubes_batch`, mutation safety, UV additions, and
-  public-surface reduction come **after** the observation layer is defined.
+  public-surface reduction remain later slices.
 
 ## Do Not Reintroduce
 
@@ -231,8 +243,8 @@ It must not perform similarity scoring or automatic visual approval.
 
 ## Next Step
 
-Define the **minimal read-only observation contract** for
-`inspect_model_bounds` + `capture_model_views`: exact inputs, outputs, state-
-restoration behavior, and what each capability is explicitly forbidden from
-claiming. Do not implement mutation tools or resume G3 before that contract is
-clear.
+Implement **only the shared rendered-bounds reader + public
+`inspect_model_bounds`** contract in Local. Do not implement `capture_model_views`,
+mutation tools, or resume G3 in the same slice. Static GitHub proof should verify
+schema/registration/output ownership; live rendered-bounds correctness remains
+`LOCAL PROOF REQUIRED` until the user chooses to run local Blockbench testing.
