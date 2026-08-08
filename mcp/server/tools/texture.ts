@@ -5,7 +5,6 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import {
   imageContent,
   findElementOrThrow,
-  findTextureGroupOrThrow,
   getChannelTextureInfo,
 } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
@@ -180,7 +179,12 @@ export const createPbrMaterialParameters = z.object({
 });
 
 export const configureMaterialParameters = z.object({
-  material: z.string().describe("Material name or UUID to configure."),
+  material: z
+    .string()
+    .min(1)
+    .describe(
+      "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique."
+    ),
   color_texture: z
     .string()
     .min(1)
@@ -232,7 +236,12 @@ export const configureMaterialParameters = z.object({
 export const listMaterialsParameters = z.object({});
 
 export const getMaterialInfoParameters = z.object({
-  material: z.string().describe("Material name or UUID."),
+  material: z
+    .string()
+    .min(1)
+    .describe(
+      "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique."
+    ),
 });
 
 export const importTextureSetParameters = z.object({
@@ -244,7 +253,12 @@ export const importTextureSetParameters = z.object({
 });
 
 export const assignTextureChannelParameters = z.object({
-  material: z.string().describe("Material name or UUID."),
+  material: z
+    .string()
+    .min(1)
+    .describe(
+      "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique."
+    ),
   texture: textureIdSchema
     .min(1)
     .describe(
@@ -254,7 +268,12 @@ export const assignTextureChannelParameters = z.object({
 });
 
 export const saveMaterialConfigParameters = z.object({
-  material: z.string().describe("Material name or UUID to save."),
+  material: z
+    .string()
+    .min(1)
+    .describe(
+      "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique."
+    ),
 });
 
 // ============================================================================
@@ -330,7 +349,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures an existing PBR material. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
+      "Configures one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous material targets fail before mutation. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
@@ -352,7 +371,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "get_material_info",
     description:
-      "Gets detailed information about a PBR material including the compiled texture_set.json preview for Bedrock export.",
+      "Gets detailed information about one explicit material/texture group, including the compiled texture_set.json preview for Bedrock export. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before material data is read.",
     annotations: {
       title: "Get Material Info",
       readOnlyHint: true,
@@ -375,7 +394,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "assign_texture_channel",
     description:
-      "Assigns one explicit texture to a PBR channel within a material. Texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
+      "Assigns one explicit texture to a PBR channel within one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique. Missing or ambiguous material/texture targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
     annotations: {
       title: "Assign Texture Channel",
       destructiveHint: true,
@@ -386,7 +405,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "save_material_config",
     description:
-      "Saves the material's texture_set.json file to disk (Bedrock format). Requires the color texture to have a valid file path.",
+      "Saves one explicit material/texture group's texture_set.json file to disk (Bedrock format). Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before save behavior. Requires the color texture to have a valid file path.",
     annotations: {
       title: "Save Material Config",
       destructiveHint: true,
@@ -718,6 +737,29 @@ function resolveAssignTextureChannelTexture(reference: string): Texture {
 
   throw new Error(
     `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before assigning the PBR channel.`
+  );
+}
+
+function resolveTextureToolMaterial(reference: string): TextureGroup {
+  const uuidMatch = TextureGroup.all.find(
+    (group: TextureGroup) => group.uuid === reference
+  );
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = TextureGroup.all.filter(
+    (group: TextureGroup) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Material/texture group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: TextureGroup) => `${group.name} (uuid: ${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Material/texture group "${reference}" not found. Use the list_materials tool to confirm the intended UUID or unique name.`
   );
 }
 
@@ -1099,7 +1141,7 @@ export function registerTextureTools() {
       mer_value,
       subsurface_value,
     }) {
-      const textureGroup = findTextureGroupOrThrow(material);
+      const textureGroup = resolveTextureToolMaterial(material);
       const textures = textureGroup.getTextures();
       const colorTexture =
         color_texture !== undefined && color_texture !== "none"
@@ -1235,7 +1277,7 @@ export function registerTextureTools() {
   createTool(textureToolDocs[8].name, {
     ...textureToolDocs[8],
     async execute({ material }) {
-      const textureGroup = findTextureGroupOrThrow(material);
+      const textureGroup = resolveTextureToolMaterial(material);
       const textures = textureGroup.getTextures();
 
       // Get compiled texture_set.json
@@ -1300,7 +1342,7 @@ export function registerTextureTools() {
   createTool(textureToolDocs[10].name, {
     ...textureToolDocs[10],
     async execute({ material, texture, channel }) {
-      const textureGroup = findTextureGroupOrThrow(material);
+      const textureGroup = resolveTextureToolMaterial(material);
       const tex = resolveAssignTextureChannelTexture(texture);
       const existingTextures = textureGroup.getTextures();
       const resetTextures = existingTextures.filter(
@@ -1348,7 +1390,7 @@ export function registerTextureTools() {
   createTool(textureToolDocs[11].name, {
     ...textureToolDocs[11],
     async execute({ material }) {
-      const textureGroup = findTextureGroupOrThrow(material);
+      const textureGroup = resolveTextureToolMaterial(material);
       const filePath = textureGroup.material_config.getFilePath();
 
       if (!filePath) {
