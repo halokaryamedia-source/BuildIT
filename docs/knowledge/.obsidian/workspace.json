@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "reviews/anti-slop-skill-candidates.md",
+                "file": "index.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "anti-slop-skill-candidates"
+              "title": "Knowledge Dashboard"
             }
           }
         ]
@@ -184,35 +184,27 @@
   },
   "active": "5aadd51b6577d647",
   "lastOpenFiles": [
-    "sources/source-map.md",
-    "minimal-nav.md",
-    "Untitled.canvas",
-    "workspace-map.md",
-    "next-action.md",
-    "sources",
-    "reviews/review-template.md",
-    "reviews/review-graph.md",
-    "reviews",
-    "workspace-structure.md",
-    "glossary.md",
-    "review-notes/review-template.md",
-    "operations/roadmap.md",
-    "maintenance/maintenance-template.md",
-    "operations/documentation-audit.md",
     "index.md",
-    "graph/source-map.md",
-    "graph",
-    "operations/context-boot-baseline.md",
-    "flow.md",
-    "rag-index.md",
+    "next-action.md",
+    "implementation-map.md",
+    "decisions/reference-fidelity-loop.md",
+    "reviews/review-graph.md",
+    "reviews/mcp-reference-fidelity-root-cause.md",
+    "reviews/mcp-reference-fidelity-observation-contract.md",
+    "sources/source-map.md",
+    "modules/module-map.md",
+    "modules/mcp-ownership.md",
+    "modules/skill-ownership.md",
     "skills/skill-map.md",
     "skills/activation-matrix.md",
-    "vault-overview.md",
-    "implementation-map.md",
+    "workspace-map.md",
+    "workspace-structure.md",
+    "glossary.md",
+    "operations/task-board.md",
+    "operations/roadmap.md",
+    "operations/documentation-audit.md",
     "decision-log.md",
-    "templates/decision.md",
-    "README.md",
-    "templates/maintenance.md",
-    "templates"
+    "flow.md",
+    "minimal-nav.md"
   ]
 }
