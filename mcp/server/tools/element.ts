@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { findElementOrThrow, findTextureOrThrow } from "@/lib/util";
+import { findTextureOrThrow } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import {
   elementIdSchema,
@@ -11,7 +11,9 @@ import {
 } from "@/lib/zodObjects";
 
 export const removeElementParameters = z.object({
-  id: elementIdSchema.describe("ID or name of the element to remove."),
+  id: elementIdSchema.describe(
+    "Exact element UUID or exact unique name. Ambiguous names are rejected before removal."
+  ),
 });
 
 export const elementTypeEnum = z.enum(["cube", "mesh", "group", "any"]);
@@ -26,7 +28,7 @@ export const findElementsByCriteriaParameters = z.object({
   name_contains: z
     .string()
     .optional()
-    .describe("Substring to match in element names. Case-insensitive."),
+    .describe("Substring to match element names. Case-insensitive."),
   type: elementTypeEnum
     .optional()
     .default("any")
@@ -144,20 +146,25 @@ export const listOutlineParameters = z.object({
 });
 
 export const duplicateElementParameters = z.object({
-  id: elementIdSchema.describe("ID or name of the element to duplicate."),
+  id: elementIdSchema.describe(
+    "Exact element UUID or exact unique name. Ambiguous names are rejected before duplication."
+  ),
   offset: vector3Schema.optional().default([0, 0, 0]),
   newName: z.string().optional(),
 });
 
 export const renameElementParameters = z.object({
-  id: elementIdSchema.describe("ID or name of the element to rename."),
+  id: elementIdSchema.describe(
+    "Exact element UUID or exact unique name. Ambiguous names are rejected before rename."
+  ),
   new_name: z.string().describe("New name to assign."),
 });
 
 export const elementToolDocs: ToolSpec[] = [
   {
     name: "remove_element",
-    description: "Removes the element with the given ID.",
+    description:
+      "Removes one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation.",
     annotations: {
       title: "Remove Element",
       destructiveHint: true,
@@ -190,14 +197,15 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "duplicate_element",
     description:
-      "Duplicates a cube, mesh or group by ID or name.  You may offset the duplicate or assign a new name.",
+      "Duplicates one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation. You may offset the duplicate or assign a new name.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
     status: STATUS_EXPERIMENTAL,
   },
   {
     name: "rename_element",
-    description: "Renames a cube, mesh or group by ID or name.",
+    description:
+      "Renames one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation.",
     annotations: { title: "Rename Element", destructiveHint: true },
     parameters: renameElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -299,6 +307,40 @@ function resolveParentGroup(reference: string): Group | "root" {
   );
 }
 
+function resolveUniqueDestructiveElement(reference: string): OutlinerElement {
+  const candidates = new Map<string, OutlinerElement>();
+
+  for (const element of Outliner.elements ?? []) {
+    candidates.set(element.uuid, element);
+  }
+  for (const group of Group.all ?? []) {
+    candidates.set(group.uuid, group);
+  }
+
+  const uuidMatch = candidates.get(reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = [...candidates.values()].filter(
+    (element) => element.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((element) => {
+          const type = getElementType(element) ?? "element";
+          return `${type} ${element.name} (${element.uuid})`;
+        })
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended UUID before retrying the destructive operation.`
+  );
+}
+
 function isDescendantOf(el: { parent?: unknown }, targetGroup: Group): boolean {
   let current: { parent?: unknown } | undefined = el;
   while (current && current.parent && typeof current.parent === "object") {
@@ -361,7 +403,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
     ...elementToolDocs[0],
     async execute({ id }) {
-      const element = findElementOrThrow(id);
+      const element = resolveUniqueDestructiveElement(id);
 
       Undo.initEdit({
         elements: [],
@@ -490,7 +532,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[3].name, {
     ...elementToolDocs[3],
     async execute({ id, offset, newName }) {
-      const element = findElementOrThrow(id);
+      const element = resolveUniqueDestructiveElement(id);
 
       function cloneCube(cube: Cube, parent: any) {
         const dupe = new Cube({
@@ -576,7 +618,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[4].name, {
     ...elementToolDocs[4],
     async execute({ id, new_name }) {
-      const element = findElementOrThrow(id);
+      const element = resolveUniqueDestructiveElement(id);
       Undo.initEdit({ elements: [element], outliner: true, collections: [] });
       element.extend({ name: new_name });
       Undo.finishEdit("Agent renamed element");
