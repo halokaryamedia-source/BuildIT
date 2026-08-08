@@ -5,7 +5,6 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import {
   imageContent,
   findElementOrThrow,
-  findTextureOrThrow,
   findTextureGroupOrThrow,
   getChannelTextureInfo,
 } from "@/lib/util";
@@ -246,7 +245,11 @@ export const importTextureSetParameters = z.object({
 
 export const assignTextureChannelParameters = z.object({
   material: z.string().describe("Material name or UUID."),
-  texture: textureIdSchema.describe("Texture name or UUID to assign."),
+  texture: textureIdSchema
+    .min(1)
+    .describe(
+      "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
   channel: pbrChannelEnum.describe("PBR channel to assign the texture to."),
 });
 
@@ -372,7 +375,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "assign_texture_channel",
     description:
-      "Assigns a texture to a specific PBR channel within a material.",
+      "Assigns one explicit texture to a PBR channel within a material. Texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
     annotations: {
       title: "Assign Texture Channel",
       destructiveHint: true,
@@ -676,6 +679,45 @@ function resolveConfigureMaterialTexture(reference: string): Texture {
 
   throw new Error(
     `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before configuring the material.`
+  );
+}
+
+function resolveAssignTextureChannelTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before assigning the PBR channel.`
   );
 }
 
@@ -1259,20 +1301,26 @@ export function registerTextureTools() {
     ...textureToolDocs[10],
     async execute({ material, texture, channel }) {
       const textureGroup = findTextureGroupOrThrow(material);
-      const tex = findTextureOrThrow(texture);
+      const tex = resolveAssignTextureChannelTexture(texture);
+      const existingTextures = textureGroup.getTextures();
+      const resetTextures = existingTextures.filter(
+        (existing: Texture) =>
+          existing.pbr_channel === channel && existing.uuid !== tex.uuid
+      );
+      const undoTextures = [tex, ...resetTextures].filter(
+        (candidate, index, all) =>
+          all.findIndex((item) => item.uuid === candidate.uuid) === index
+      );
 
       Undo.initEdit({
         texture_groups: [textureGroup],
-        textures: [tex],
+        textures: undoTextures,
       });
 
       // Remove any existing texture from this channel in the group
-      const existingTextures = textureGroup.getTextures();
-      existingTextures
-        .filter((t: Texture) => t.pbr_channel === channel && t.uuid !== tex.uuid)
-        .forEach((t: Texture) => {
-          t.pbr_channel = "color"; // Reset to color
-        });
+      resetTextures.forEach((existing: Texture) => {
+        existing.pbr_channel = "color"; // Reset to color
+      });
 
       // Assign the texture to the channel
       tex.extend({
