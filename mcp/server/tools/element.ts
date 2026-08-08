@@ -91,10 +91,26 @@ export const filterByMaterialParameters = z.object({
 export const getSelectionParameters = z.object({});
 
 export const addGroupParameters = z.object({
-  name: z.string(),
-  origin: vector3Schema,
-  rotation: vector3Schema,
-  parent: z.string().optional().default("root"),
+  name: z.string().min(1),
+  origin: vector3Schema
+    .optional()
+    .default([0, 0, 0])
+    .describe(
+      "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it."
+    ),
+  rotation: vector3Schema
+    .optional()
+    .default([0, 0, 0])
+    .describe(
+      "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it."
+    ),
+  parent: z
+    .string()
+    .optional()
+    .default("root")
+    .describe(
+      "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional."
+    ),
   visibility: z.boolean().optional().default(true),
   autouv: autoUvEnum
     .optional()
@@ -151,7 +167,8 @@ export const elementToolDocs: ToolSpec[] = [
   },
   {
     name: "add_group",
-    description: "Adds a new group with the given name and options.",
+    description:
+      "Adds a Group with neutral origin/rotation defaults so callers are not forced to invent pivots or angles. An explicit parent is preflighted UUID-first (or by exact unique name) before mutation; missing or ambiguous parents fail instead of falling back. Use a non-zero origin/rotation only when a real joint, attachment, or transform relationship justifies it.",
     annotations: {
       title: "Add Group",
       destructiveHint: true,
@@ -258,6 +275,30 @@ function getParentName(el: { parent?: unknown }): string | null {
   return parent.name ?? parent.uuid ?? null;
 }
 
+function resolveParentGroup(reference: string): Group | "root" {
+  if (reference === "root") return "root";
+
+  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Group.all.filter(
+    (group: Group) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Parent Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: Group) => `${group.name} (${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Parent Group "${reference}" not found. Use list_outline to confirm the intended Group UUID. Use "root" only when root parenting is intentional.`
+  );
+}
+
 function isDescendantOf(el: { parent?: unknown }, targetGroup: Group): boolean {
   let current: { parent?: unknown } | undefined = el;
   while (current && current.parent && typeof current.parent === "object") {
@@ -349,6 +390,8 @@ export function registerElementTools() {
       selected,
       shade,
     }) {
+      const parentGroup = resolveParentGroup(parent);
+
       Undo.initEdit({
         elements: [],
         outliner: true,
@@ -356,25 +399,26 @@ export function registerElementTools() {
         collections: [],
       });
 
-      const group = new Group({
-        name,
-        origin,
-        rotation,
-        autouv: Number(autouv) as 0 | 1 | 2,
-        visibility: Boolean(visibility),
-        selected: Boolean(selected),
-        shade: Boolean(shade),
-      }).init();
+      let group: Group;
+      try {
+        group = new Group({
+          name,
+          origin,
+          rotation,
+          autouv: Number(autouv) as 0 | 1 | 2,
+          visibility: Boolean(visibility),
+          selected: Boolean(selected),
+          shade: Boolean(shade),
+        }).init();
+        group.addTo(parentGroup);
+        Undo.finishEdit("Agent added group", { outliner: true, groups: [group] });
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
 
-      const parentGroup = parent === "root"
-        ? "root"
-        : // `@ts-expect-error` getAllGroups is a Blockbench global
-          getAllGroups().find((g: Group) => g.name === parent || g.uuid === parent);
-      group.addTo(parentGroup);
-
-      Undo.finishEdit("Agent added group", { outliner: true, groups: [group] });
       Canvas.updateAll();
-
       return `Added group ${group.name} with ID ${group.uuid}`;
     },
   }, elementToolDocs[1].status);
@@ -448,7 +492,6 @@ export function registerElementTools() {
     async execute({ id, offset, newName }) {
       const element = findElementOrThrow(id);
 
-      // Helper functions for each type; match patterns used in existing tools:contentReference[oaicite:5]{index=5}.
       function cloneCube(cube: Cube, parent: any) {
         const dupe = new Cube({
           name: newName || `${cube.name}_copy`,
@@ -527,7 +570,7 @@ export function registerElementTools() {
   }, elementToolDocs[3].status);
 
   /**
-   * Rename an element.  Mirrors the simple property change seen in the existing tools,
+   * Rename an element. Mirrors the simple property change seen in the existing tools,
    * using `extend` to apply the change and updating the editor.
    */
   createTool(elementToolDocs[4].name, {
@@ -557,7 +600,6 @@ export function registerElementTools() {
       const regex = safeCompileRegex(name_pattern);
       const needle = name_contains?.toLowerCase() ?? null;
       const parentScope = parent_group
-        // @ts-ignore - Group is a Blockbench global
         ? (Group.all.find((g: Group) => g.uuid === parent_group || g.name === parent_group) ?? null)
         : null;
 
@@ -613,7 +655,6 @@ export function registerElementTools() {
     ...elementToolDocs[6],
     async execute({ type, add_to_selection, parent_group }) {
       const parentScope = parent_group
-        // @ts-ignore - Group is a Blockbench global
         ? (Group.all.find((g: Group) => g.uuid === parent_group || g.name === parent_group) ?? null)
         : null;
 
@@ -634,9 +675,7 @@ export function registerElementTools() {
         : pool;
 
       if (!add_to_selection) {
-        // @ts-ignore - selected method available on element classes
         Cube.all.forEach((c: Cube) => c.selected && c.unselect?.());
-        // @ts-ignore - selected method available on element classes
         Mesh.all.forEach((m: Mesh) => m.selected && m.unselect?.());
         Group.all.forEach((g: Group) => {
           if (g.selected) g.selected = false;
@@ -648,7 +687,6 @@ export function registerElementTools() {
           el.selected = true;
           continue;
         }
-        // @ts-ignore - select method available on outliner elements
         el.select?.({ shiftKey: true });
       }
 
