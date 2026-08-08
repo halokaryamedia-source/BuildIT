@@ -60,19 +60,22 @@ export const promptDocs: PromptSpec[] = [
   {
     name: "model_creation_strategy",
     title: "Model Creation Strategy",
-    description: "A strategy for creating a new 3D model in Blockbench.",
+    description:
+      "Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.",
     argsSchema: z.object({
       format: z
         .enum(["java_block", "bedrock", "bedrock_block"])
         .optional()
         .default("bedrock")
         .describe(
-          "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use `bedrock_block` only when a Bedrock block model is explicitly requested."
+          "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it."
         ),
       approach: z
         .enum(["ui", "programmatic", "import"])
         .optional()
-        .describe("Creation approach to use."),
+        .describe(
+          "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required."
+        ),
     }),
     status: "stable",
   },
@@ -197,6 +200,6 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "hytale://cubes/{id}",
     title: "Hytale Cubes",
     description:
-      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
   },
 ];
