@@ -1,148 +1,108 @@
 ---
 name: development-brief
-description: Mandatory front door for BlockIT Developing tasks in both ChatGPT-to-GitHub and local Codex workflows. Use on any create/change request to ground the real goal in repository evidence, separate a suggested method or fixture from the generic requirement, detect the execution channel, decide whether development is actually needed, choose Build and Acceptance POVs after owner discovery, define input/output/scope/2-5 provable criteria and the minimum useful proof, surface material conflicts, ask only unresolved high-impact decisions, then hand off to one relevant specialist when needed. Re-check the same brief before completion. Use the fast path for trivial unambiguous changes. Do not use for Plan or Maintenance.
+description: Mandatory front door for BlockIT Developing tasks. Ground the real goal in repository evidence, separate suggested method/fixture from the requirement, detect ChatGPT-to-GitHub vs Codex-local execution, decide whether development is needed, choose Build and Acceptance POVs, define minimal scope with 2-5 provable criteria and a proof budget, then hand off to at most one specialist. Re-check the same contract before completion. Use the fast path for trivial unambiguous changes. Do not use for Plan or Maintenance.
 ---
 
 # Development Brief
 
-Turn a simple or incomplete user request into a grounded Developing contract before implementation.
+Turn a create/change request into the smallest grounded development contract.
+Root `AGENTS.md` already owns independent judgment, source precedence,
+root-cause gating, proof economy, evidence status, and anti-slop rules; apply
+those rules instead of duplicating them here.
 
-Do not make the user write an expert prompt. Inspect the repository and choose the appropriate expert perspective from the actual problem owner.
+## Required Decisions
 
-## Core Rules
+Before implementation establish only what materially affects the task:
 
-- Treat the user's **goal** and **suggested solution** as different things. A proposed implementation is not automatically a requirement.
-- Do not optimize for agreement. Reject a proposed method when repository evidence shows it is invalid, unnecessary, disproportionately complex, harmful to product quality, or contrary to an authoritative decision; explain why and recommend the smallest better path.
-- Treat a sample, fixture, Golden Sample, bug case, or named object as evidence unless the user explicitly requests object-specific behavior.
-- Inspect authoritative docs/source before deciding the Build POV or implementation path.
-- Detect the **execution channel** before defining proof: `ChatGPT → GitHub` or `Codex local`.
-- A Developing request may validly end with **no change required** when existing behavior already satisfies the goal.
-- Choose the **Build POV** from the actual problem owner after enough evidence exists; do not select it from prompt keywords alone.
-- Choose the **Acceptance POV** from the downstream beneficiary. Keep intermediate API/agent/tool consumers as interface constraints rather than extra personas.
-- Define only 2-5 acceptance criteria and make each criterion provable.
-- Use the **minimum useful proof** for the current risk and execution channel. Validation is evidence, not ceremony.
-- If material authorities conflict, do not choose silently. Report `Needs Validation` and resolve the conflict before behavior changes.
-- Ask the user only for unresolved high-impact decisions that repository inspection cannot establish.
-- Use one relevant specialist when the implementation has a real specialist owner. Do not stack overlapping specialists. The fast path may use this skill alone when another skill adds no domain value.
-- Re-check the original brief before `Selesai`; engineering success alone is insufficient when the downstream acceptance need still fails.
+```text
+Goal:
+Suggested method (if any):
+Observed fixture/example (if any):
+Generic requirement:
+Execution channel:
+Input authority:
+Expected output:
+Build POV:
+Acceptance POV:
+Interface constraints:
+In scope / Out of scope:
+Acceptance criteria: 2-5
+Proof budget:
+Open high-impact decisions:
+```
 
-## Workflow
+Omit fields that do not apply.
 
-1. **Ground the request**
-   - Read the current user request, `CONTEXT.md`, `docs/knowledge/next-action.md`, and only the relevant policy/source.
-   - Establish what is fact, what is a prior decision, and what remains unknown.
+## Procedure
 
-2. **Normalize intent**
-   - State the real goal in outcome language.
-   - Separate any user-proposed method from the goal.
-   - If a named example is present, distinguish the observed example from the generic requirement.
+1. **Ground the goal**
+   - Read the current request, `CONTEXT.md`, `next-action.md`, and only the
+     relevant policy/source.
+   - Separate fact, durable decision, assumption, and unknown.
+   - Treat a proposed solution as a method, not automatically as the requirement.
+   - Treat samples/fixtures/Golden Samples as evidence unless object-specific
+     behavior is explicitly requested.
 
-3. **Detect execution channel**
-   - **ChatGPT → GitHub:** repository reads/writes are available, but local shell, Blockbench runtime, and arbitrary local test execution are not assumed.
-   - **Codex local:** local source, shell/build/test commands, and runtime tools may be available; verify availability before relying on them.
-   - Never invent proof that the active channel cannot produce.
+2. **Detect the execution channel**
+   - `ChatGPT → GitHub`: repository preparation/static proof only.
+   - `Codex local`: targeted local build/runtime/Blockbench proof may be
+     available; verify availability before relying on it.
+   - Goal, scope, POVs, and acceptance criteria do not change between channels.
 
-4. **Check development necessity**
-   - Inspect existing capability/pattern first.
-   - If the requirement is already satisfied, do not invent work. Explain/reuse and verify instead.
+3. **Check whether development is necessary**
+   - Inspect the existing owner/pattern first.
+   - `No change required` is valid when current behavior already satisfies the
+     goal.
 
-5. **Set Dual POV**
-   - **Build POV:** expert responsibility owning the actual change, chosen after owner discovery.
-   - **Acceptance POV:** downstream user/consumer whose need determines whether the output is good.
-   - Record intermediate API/agent/tool consumers as interface constraints when relevant.
+4. **Choose the two POVs**
+   - **Build POV**: the expert/domain that owns the actual change.
+   - **Acceptance POV**: the downstream beneficiary that determines usefulness.
+   - Keep intermediate tools/APIs/agents as interface constraints rather than
+     extra personas.
 
-6. **Define the contract**
+5. **Set minimal scope and proof**
+   - Define 2-5 acceptance criteria that can actually be disproved/proved.
+   - Use the root `AGENTS.md` minimum-useful-proof and evidence-status rules.
+   - Ask the user only for unresolved high-impact decisions that repository
+     inspection cannot answer.
 
-   Keep this internal and omit irrelevant fields:
+6. **Select implementation owner**
+   - Use this skill alone for trivial work.
+   - Otherwise add **at most one** specialist when its domain procedure adds
+     material value.
+   - Do not stack specialists to cover implementation languages/frameworks that
+     are only incidental to the real owner.
 
-   ```text
-   Goal:
-   Suggested solution (if any):
-   Observed example / fixture (if any):
-   Generic requirement:
-   Execution channel:
-   Input authority:
-   Expected output:
-   Build POV:
-   Acceptance POV:
-   Interface constraints:
-   In scope:
-   Out of scope:
-   Acceptance criteria:
-   Proof budget:
-   Open high-impact decisions:
-   ```
+7. **Implement and final-gate**
+   - Make the smallest complete change.
+   - Before `Selesai`, re-check the same goal, scope, acceptance criteria, and
+     available proof.
+   - Distinguish `implemented` from `verified` when a material local/runtime
+     claim still needs proof.
 
-7. **Set the proof budget**
-   - Select the cheapest proof that can actually disprove the likely failure.
-   - Do not run a test merely because it exists.
-   - Do not create tests, CI, fixtures, screenshots, builds, or extra validation artifacts solely to make the task look rigorous.
-   - Reuse existing checks when they directly cover the changed behavior.
-   - Stop validating once the acceptance criteria have sufficient evidence.
+## User-Facing Brief
 
-   **ChatGPT → GitHub defaults:**
-   - text/docs/routing: inspect changed content, links, paths, and repository consistency;
-   - bounded source change: inspect the exact diff, callers/contracts that can be read through GitHub, and existing CI status only when it is directly relevant and already available;
-   - runtime/Blockbench behavior that cannot be exercised through GitHub: do not block useful repository work with fake validation. Record the exact remaining local proof and report `Perlu pemeriksaan` only when that proof is material to the claim.
+For non-trivial Developing work, keep the visible brief simple:
 
-   **Codex local defaults:**
-   - start with the smallest targeted check;
-   - run build/typecheck/test only when the changed boundary makes that check informative;
-   - prefer one targeted runtime reproduction over a broad test suite for a local bug;
-   - do not repeatedly re-run unchanged checks after they have already established the required proof.
+```text
+Tujuan:
+Cara berpikir:
+Hasil yang dituju:
+Tidak diubah:
+Cara memastikan benar:
+```
 
-   When a material support/feasibility/compatibility claim is uncertain or disputed,
-   use the root `AGENTS.md` evidence-status escalation. Do not create or load a
-   separate evidence skill.
-
-8. **Resolve ambiguity and conflicts**
-   - Use repository evidence for discoverable facts.
-   - Use lightweight requirement discovery only for unresolved high-impact decisions.
-   - If docs, current request, and implementation materially disagree, stop at `Needs Validation` until the authority is resolved.
-
-9. **Show a simple user brief**
-
-   For non-trivial work:
-
-   ```text
-   Tujuan:
-   Cara berpikir:
-   Hasil yang dituju:
-   Tidak diubah:
-   Cara memastikan benar:
-   ```
-
-   Keep technical machinery internal unless it affects a user decision.
-
-10. **Handoff and implement**
-   - Select one specialist only when its domain knowledge/procedure is actually needed.
-   - Implement the smallest complete change under the existing Local guardrails.
-
-11. **Final contract gate**
-   Before reporting `Selesai`, answer:
-   - Did the implementation satisfy the proof budget available in this channel?
-   - Did it satisfy the Acceptance POV outcome that can actually be verified here?
-   - Did scope remain inside the original brief?
-   - Is every material success claim backed by evidence from the active channel?
-
-   If a material claim requires unavailable local/runtime proof, distinguish **implemented** from **verified** and use `LOCAL PROOF REQUIRED` when that label helps clarify the remaining evidence.
-
-## Fast Path
-
-For a trivial, unambiguous, low-risk change:
-
-- perform the same internal checks quickly;
-- do not invoke discovery or produce a long brief;
-- do not load a specialist when it adds no domain value;
-- show one short line describing the intended change and boundary;
-- make the smallest change and inspect only the proof needed for that change.
-
-Examples: a clear typo, a known-file wording fix, or another change whose meaning and proof are obvious.
+For a trivial unambiguous change, one short line is enough.
 
 ## Escalation
 
-- **High-impact requirement still unclear:** use the repository's lightweight GSD-style discovery rule.
-- **Plan/decision needs adversarial challenge:** use `grilling` before implementation.
-- **Implemented change needs critique:** use `code-review` only when critique adds value beyond the final contract gate.
-- **Evidence is missing/disputed or the same direction repeatedly fails:** apply root `AGENTS.md` evidence-status escalation and root-cause rules; do not load a separate `evidence-gate` skill.
-- **The task expands into a genuinely cross-cutting contract/migration/multi-phase change:** reframe scope and apply the documented OpenSpec threshold instead of silently widening the brief.
+Use only when the concrete task needs it:
+
+- unresolved high-impact requirement → lightweight GSD-style discovery;
+- plan/decision needs adversarial challenge → `grilling`;
+- implemented change benefits from independent critique → `code-review`;
+- uncertain/disputed material evidence → root `AGENTS.md` evidence-status rules;
+- genuine cross-cutting contract/migration/multi-phase scope → documented
+  OpenSpec threshold.
+
+None are default ceremony.
