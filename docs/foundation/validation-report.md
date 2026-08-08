@@ -75,18 +75,19 @@ Official Blockbench types/source describe `Cube.transferOrigin(origin, update?)`
 moving the origin while updating Cube geometry so the same visual position is
 preserved. Local integration still needs live proof.
 
-## Destructive Element Target Safety
+## Destructive Element Target / Transaction Safety
 
 | Capability | Local source | Evidence status | Current claim |
 |---|---|---|---|
 | `remove_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | UUID resolves first; exact name is accepted only when unique across Cube/Mesh/Group; ambiguity fails before Undo. |
 | `duplicate_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before recursive duplication begins. |
+| `duplicate_element` rollback boundary | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | recursive Cube/Group/Mesh clone runs after one `Undo.initEdit`; clone/finish failure calls `Undo.cancelEdit(true)` and rethrows; normal Canvas refresh is after successful finish. |
 | `rename_element` target resolution | `mcp/server/tools/element.ts` | `LOCAL PROOF REQUIRED` | same strict target resolution before rename Undo. |
-| shared `findElementOrThrow` | `mcp/lib/util.ts` | unchanged / caller-specific | intentionally not broadened in this slice because GitHub code search was incomplete and unrelated caller semantics were not proven safe to migrate. |
+| shared `findElementOrThrow` | `mcp/lib/util.ts` | unchanged / caller-specific | intentionally not broadened because GitHub code search was incomplete and unrelated caller semantics were not proven safe to migrate. |
 
-The Local fix is deliberately scoped to the three destructive element tools. It
-does not claim that every generic element lookup in the repository now has
-unique-name semantics.
+The Local fixes are deliberately scoped to the proven destructive paths. They do
+not claim that every generic element lookup in the repository now has unique-name
+semantics.
 
 ## Group / Bone / Pivot Safety
 
@@ -132,14 +133,17 @@ texture runtime proof.
 
 Status: `LOCAL PROOF REQUIRED` when a concrete texture claim depends on it.
 
-### `duplicate_element` transaction recoverability
+### Scoped Group lookup in element discovery/selection
 
-Target ambiguity is now preflighted, but `duplicate_element` still opens Undo and
-runs recursive Cube/Group/Mesh cloning without a `try/catch` rollback boundary.
-If a later child clone throws after earlier children were created, partial state
-may remain until runtime behavior is proven/corrected.
+`find_elements_by_criteria(parent_group=...)` and
+`select_all_of_type(parent_group=...)` currently resolve the Group with a
+first-match `uuid || name` lookup. A duplicated exact Group name may therefore
+scope discovery/selection to the wrong Group even though later destructive tools
+have strict UUID-first targeting.
 
-Status: **next active source audit**. Keep it separate from target identity.
+Status: **next active source audit**. This is directly relevant to the normal
+`find_elements_by_criteria → inspect_element → mutate UUID` route; keep it
+separate from duplication rollback.
 
 ## Historical External Premises
 
@@ -178,8 +182,10 @@ Safe claims:
 - foundation/prompt rules are aligned with the Reference Fidelity architecture;
 - `modify_cube` source schema requires an explicit target and no longer reads
   `Cube.selected` as a fallback;
-- destructive remove/duplicate/rename tools now use a local UUID-first /
+- destructive remove/duplicate/rename tools use a local UUID-first /
   unique-exact-name resolver and preflight ambiguity before Undo;
+- `duplicate_element` source now wraps recursive cloning/finish in one rollback
+  boundary using `Undo.cancelEdit(true)` on failure;
 - shared `findElementOrThrow` was intentionally left unchanged;
 - official Blockbench types/source support the transfer-origin semantics used by
   the code.
@@ -191,7 +197,8 @@ Unsafe claims without local proof:
 - bounds/camera/Undo behavior works for every live edge case;
 - the MCP client definitely exposes the updated contracts until the current
   plugin is built/loaded and inspected;
-- recursive duplication is fully recoverable after a mid-clone failure;
+- a forced mid-recursive-clone failure definitely leaves zero partial duplicate
+  state in the installed Blockbench runtime;
 - the new loop now produces a good reference-matching model in practice;
 - save/reopen persistence is correct.
 
@@ -204,13 +211,13 @@ future proof queue is:
 2. verify default Bedrock project + bundled prompt behavior;
 3. inspect live MCP schemas for the current explicit-target contracts;
 4. create duplicate-name Cube/Group fixtures and verify destructive element tools reject ambiguous names before mutation;
-5. create a small model using strict `place_cube` inputs;
-6. verify `inspect_model_bounds` against visible transformed geometry;
-7. verify canonical `capture_model_views` image delivery/orientation/framing;
-8. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
-9. verify Cube and Group pivot-transfer behavior visually;
-10. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
-11. verify duplication rollback/recoverability if that source path is changed;
+5. force a controlled duplicate failure and verify `duplicate_element` rollback removes any partial clone;
+6. create a small model using strict `place_cube` inputs;
+7. verify `inspect_model_bounds` against visible transformed geometry;
+8. verify canonical `capture_model_views` image delivery/orientation/framing;
+9. verify `inspect_element` + explicit single-Cube correction + batch correction + Undo behavior;
+10. verify Cube and Group pivot-transfer behavior visually;
+11. verify zero→non-zero existing-Cube rotation activation requires explicit pivot while later rotation adjustments reuse it;
 12. save/reopen `.bbmodel` and inspect persistence;
 13. run one approved-reference → whole-form modelling session and evaluate actual
    reference fidelity.
@@ -221,8 +228,8 @@ validation resumes.
 ## Bottom Line
 
 The architectural problem is well-defined and the main observation, correction,
-targeting, pivot, initial-placement, and rotation-activation safety mechanisms are
-present in Local source.
+targeting, pivot, initial-placement, rotation-activation, and bounded duplication
+rollback mechanisms are present in Local source.
 
 The remaining major uncertainty is **live effectiveness**: whether the current
 Blockbench/MCP/Codex path observes and corrects models as intended. That remains
