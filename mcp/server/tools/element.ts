@@ -23,7 +23,7 @@ export const findElementsByCriteriaParameters = z.object({
     .string()
     .optional()
     .describe(
-      "Regex pattern to match element names (e.g., '^arm_.*'). Case-sensitive."
+      "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored."
     ),
   name_contains: z
     .string()
@@ -213,7 +213,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique; missing or ambiguous scopes fail before search. Returns element metadata, never modifies state.",
+      "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. An explicit invalid/rejected name_pattern fails instead of being silently ignored. Missing/ambiguous Group scopes fail before search. Returns element metadata, never modifies state.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
@@ -401,25 +401,22 @@ const CATASTROPHIC_BACKTRACK_HEURISTIC = /\([^)]*[+*?][^)]*\)\s*[+*?{]/;
 function safeCompileRegex(pattern: string | undefined): RegExp | null {
   if (!pattern) return null;
   if (pattern.length > MAX_REGEX_PATTERN_LENGTH) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern rejected — exceeds ${MAX_REGEX_PATTERN_LENGTH} chars (got ${pattern.length}).`
+    throw new Error(
+      `name_pattern rejected: maximum length is ${MAX_REGEX_PATTERN_LENGTH} characters (got ${pattern.length}). Omit name_pattern only when no regex filter is intended.`
     );
-    return null;
   }
   if (CATASTROPHIC_BACKTRACK_HEURISTIC.test(pattern)) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern rejected — nested quantifiers risk catastrophic backtracking: ${pattern}`
+    throw new Error(
+      `name_pattern rejected because it contains nested quantifiers that may cause catastrophic backtracking. Simplify the regex instead of retrying without the filter.`
     );
-    return null;
   }
   try {
     return new RegExp(pattern);
-  } catch (err) {
-    console.warn(
-      `[MCP] find_elements_by_criteria: name_pattern failed to compile, ignoring filter:`,
-      err
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Invalid name_pattern regex: ${reason}. Fix the pattern, or omit name_pattern only when no regex filter is intended.`
     );
-    return null;
   }
 }
 
