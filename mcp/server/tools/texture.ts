@@ -595,48 +595,54 @@ export function registerTextureTools() {
       });
 
       try {
-        // Replace selection with the resolved targets so Texture.apply()
-        // operates on exactly this scope.
-        Cube.all.forEach((c: Cube) => {
-          if (c.selected) c.unselect?.();
-        });
-        Mesh.all.forEach((m: Mesh) => {
-          if (m.selected) m.unselect?.();
-        });
-        for (const target of targets) {
-          // @ts-ignore - select method available on outliner elements
-          target.select?.({ shiftKey: true });
-        }
-        updateSelection();
+        try {
+          // Replace selection with the resolved targets so Texture.apply()
+          // operates on exactly this scope.
+          Cube.all.forEach((c: Cube) => {
+            if (c.selected) c.unselect?.();
+          });
+          Mesh.all.forEach((m: Mesh) => {
+            if (m.selected) m.unselect?.();
+          });
+          for (const target of targets) {
+            // @ts-ignore - select method available on outliner elements
+            target.select?.({ shiftKey: true });
+          }
+          updateSelection();
 
-        projectTexture.select();
+          projectTexture.select();
 
-        Texture.selected?.apply(
-          applyTo === "none" ? false : applyTo === "all" ? true : "blank"
-        );
+          Texture.selected?.apply(
+            applyTo === "none" ? false : applyTo === "all" ? true : "blank"
+          );
 
-        projectTexture.updateChangesAfterEdit();
-      } finally {
-        // Restore the caller's original selection.
-        Cube.all.forEach((c: Cube) => {
-          if (c.selected) c.unselect?.();
-        });
-        Mesh.all.forEach((m: Mesh) => {
-          if (m.selected) m.unselect?.();
-        });
-        for (const c of prevCubeSelection) {
-          // @ts-ignore - select method
-          c.select?.({ shiftKey: true });
+          projectTexture.updateChangesAfterEdit();
+        } finally {
+          // Restore the caller's original selection on success or failure.
+          Cube.all.forEach((c: Cube) => {
+            if (c.selected) c.unselect?.();
+          });
+          Mesh.all.forEach((m: Mesh) => {
+            if (m.selected) m.unselect?.();
+          });
+          for (const c of prevCubeSelection) {
+            // @ts-ignore - select method
+            c.select?.({ shiftKey: true });
+          }
+          for (const m of prevMeshSelection) {
+            // @ts-ignore - select method
+            m.select?.({ shiftKey: true });
+          }
+          if (prevGroup) prevGroup.selected = true;
+          updateSelection();
         }
-        for (const m of prevMeshSelection) {
-          // @ts-ignore - select method
-          m.select?.({ shiftKey: true });
-        }
-        if (prevGroup) prevGroup.selected = true;
-        updateSelection();
+
+        Undo.finishEdit("Agent applied texture");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
-
-      Undo.finishEdit("Agent applied texture");
 
       // Force face-level render refresh so the viewport matches the data.
       // Canvas.updateAll() alone sometimes doesn't push new face materials
