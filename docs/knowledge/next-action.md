@@ -6,160 +6,147 @@ reconstructing prior chats.
 
 ## Active Task
 
-- **Goal:** implement G2 so repository-owned Local prompts are the default runtime
-  authority instead of the upstream CDN.
-- **Status:** `MCP_G2_LOCAL_PROMPT_AUTHORITY`.
+- **Goal:** implement G3 so existing MCP tool annotations are actually forwarded
+  to the client-visible SDK registration contract.
+- **Status:** `MCP_G3_ANNOTATION_FORWARDING`.
 - **Execution now:** ChatGPT → GitHub.
 - **Final runtime proof later:** Codex local from root `BuildIT` with Blockbench +
   MCP.
-- **Specialist owner:** `mcp-server-development` because the affected behavior is
-  the MCP prompt/runtime contract. Use `bun-tooling` only if investigation proves
-  the build/package mechanism itself is the primary failure.
+- **Specialist owner:** `mcp-server-development`.
 
-## Completed Boundary
+Skill architecture remains frozen. Do not mix G4/G5 or new framework work into
+this correction.
 
-Skill architecture is frozen.
+## Completed Corrections
 
-The modelling-critical MCP audit identified five demonstrated correction
-candidates plus two local-proof questions. G1 has now been implemented in source;
-G2 is the active correction.
+### G1 — Bedrock Entity default/recommended path
 
-### G1 — Bedrock Entity default/recommended project path
+**Source implemented; `LOCAL PROOF REQUIRED`.**
 
-**Source implementation complete.**
+- `create_project.format` defaults to `bedrock`.
+- `model_creation_strategy` defaults to `bedrock` and separates `bedrock` from
+  explicit `bedrock_block` guidance.
+- `mcp/prompts/bedrock.md` owns focused Bedrock Entity format guidance.
+- generated-doc source exposes the same enum/default contract.
+- generated prompt/API artifacts remain build-generated, not hand-edited.
 
-Changed:
+Local proof later:
 
-- `mcp/server/tools/project.ts`
-  - `create_project.format` now defaults to `bedrock`;
-  - tool/schema description states Bedrock Entity is the default.
-- `mcp/server/prompts.ts`
-  - `model_creation_strategy.format` now supports
-    `java_block | bedrock | bedrock_block`;
-  - default is `bedrock`;
-  - `bedrock` and `bedrock_block` resolve to separate prompt content.
-- `mcp/prompts/bedrock.md`
-  - new focused Bedrock Entity format guidance;
-  - existing `bedrock_block.md` remains intact for explicit block-model requests.
-- `mcp/build/docs-manifest.ts`
-  - generated-doc source now exposes the same prompt enum/default contract.
+```text
+create_project(name="test")
+→ get_project_info()
+→ expected format.id = "bedrock"
+```
 
-Generated `mcp/prompts/manifest.json` and generated API docs were not edited by
-hand. The existing build flow regenerates them.
+### G2 — Local bundled prompt authority
 
-**Static evidence:** default/schema/routing/docs source are aligned and explicit
-alternate formats remain supported.
+**Source implemented; `LOCAL PROOF REQUIRED`.**
 
-**Remaining evidence:** `LOCAL PROOF REQUIRED` — after local build/load, call
-`create_project` without `format`, then `get_project_info`; expected
-`format.id = "bedrock"`. Also verify `model_creation_strategy()` returns Entity
-rather than block guidance once G2 makes Local prompts authoritative.
+Current contract:
 
-## Active Correction — G2 Local Bundled Prompt Authority
+```text
+user override
+→ bundled Local prompt
+→ optional remote/cache fallback for Local-missing prompt names
+→ empty
+```
+
+Implemented in `mcp/lib/promptLoader.ts`:
+
+- imports `mcp/prompts/manifest.json` into the runtime module graph;
+- validates and keeps that bundled manifest as the Local authority;
+- Local prompt names override same-named CDN/cache entries;
+- user overrides remain highest priority;
+- remote content is fallback-only;
+- `refreshFromCDN()` cannot replace same-named Local prompt content.
+
+Build/source evidence:
+
+- canonical `dev`/`build` scripts run `prompts:build` before Bun bundling;
+- `build/generate-manifest.ts` scans `mcp/prompts/*.md` into
+  `mcp/prompts/manifest.json`;
+- `tsconfig.json` enables JSON-module imports;
+- Bun bundles the TypeScript/JSON module graph into `dist/mcp.js`.
+
+Runtime/UI alignment:
+
+- `mcp_prompt_cdn_enabled` now defaults to `false`;
+- entrypoint treats CDN as strict opt-in (`=== true`);
+- setting descriptions now explain CDN as optional fallback rather than default
+  authority.
+
+Local proof later:
+
+1. run canonical local build so prompt manifest is regenerated;
+2. load the plugin with CDN disabled/network unavailable;
+3. call `model_creation_strategy()` and confirm it returns current Local Bedrock
+   Entity guidance;
+4. optionally enable CDN and confirm same-named Local prompt content still wins.
+
+## Active Correction — G3 Annotation Forwarding
 
 ### Demonstrated problem
 
-- `mcp/build/generate-manifest.ts` generates Local prompt content from
-  `mcp/prompts/*.md` into `mcp/prompts/manifest.json`.
-- `mcp/lib/promptLoader.ts` does **not** use that Local/bundled content as the
-  primary runtime source.
-- default behavior fetches
-  `jasonjgardner/blockbench-mcp-plugin@v<VERSION>/prompts/manifest.json` from
-  jsDelivr, then uses cache, then returns empty content when unavailable.
-- `mcp_prompt_cdn_enabled` defaults to `true`.
+`ToolSpec` and stored tool definitions contain MCP annotations such as:
 
-This means editing Local prompt source does not guarantee the running Local
-plugin serves those instructions.
+- `readOnlyHint`;
+- `destructiveHint`;
+- `openWorldHint`.
+
+But `mcp/lib/factories.ts` currently drops those annotations when calling
+`server.registerTool(...)` in both:
+
+1. initial/current-server registration;
+2. per-session `registerToolsOnServer(...)` reconstruction.
 
 ### Expected behavior
 
-Repository-owned prompt content is the default authority for the Local plugin.
-An optional remote refresh may remain only when it cannot silently replace the
-Local workflow contract.
+The annotation object already declared by each tool must be forwarded unchanged
+to the official SDK registration definition in both paths.
 
-### G2 constraints
+### Constraints
 
-- Do not create a new prompt framework.
-- Do not delete user overrides unless a conflict is proven.
-- Preserve synchronous `getPromptContent()` use by registered prompts unless
-  changing it is necessary.
-- Prefer build-time bundling or an existing build mechanism over runtime file
-  reads that would require new permissions.
-- Do not make network availability a prerequisite for normal Local prompts.
-- Do not mix G3 annotations, G4 screenshots, or G5 Undo correction into G2.
+- use the existing annotation object; do not create another metadata layer;
+- keep tool schemas/descriptions/results unchanged;
+- change both registration paths together so new sessions match the reference
+  server;
+- do not start G4 screenshot restoration or G5 Undo preflight in the same diff.
 
-### G2 proof
+### Proof
 
-**ChatGPT → GitHub:** prove source/build resolution order and that Local prompt
-content is included by the existing package/build path.
+**ChatGPT → GitHub:** inspect the exact factory diff and prove both
+`registerTool(...)` paths forward the stored annotation object.
 
-**Codex local:** with CDN/remote unavailable, load the built plugin and verify
-`model_creation_strategy()` returns the current Local Bedrock Entity guidance.
+**Codex local:** inspect at least one read-only tool (for example
+`get_project_info` or `capture_screenshot`) and one destructive tool (for example
+`place_cube`) through MCP Inspector/client and confirm annotations are exposed.
 This remains `LOCAL PROOF REQUIRED` until performed.
 
-## Remaining Demonstrated Gaps
+## Remaining Corrections
 
-### G3 — MCP annotations are dropped during registration
+### G4 — screenshot project-state restoration
 
-`ToolSpec` annotations exist but both initial and per-session `registerTool`
-paths omit them. Smallest correction: forward the existing annotations in both
-registration paths. Local proof: inspect one read-only and one destructive tool
-through MCP Inspector/client.
+`capture_screenshot(project=...)` can select another project and leave it active.
+Smallest correction: preserve prior selection, temporarily select target, restore
+in `finally`.
 
-### G4 — `capture_screenshot(project=...)` leaves project-selection side effects
+### G5 — bone-rigging preflight before Undo
 
-The helper may select another project and does not restore the prior selection.
-Smallest correction: temporary selection + `finally` restoration. Local proof:
-capture B while A is selected and verify A remains selected afterward.
+`bone_rigging` opens `Undo.initEdit` before action-specific target lookup. Invalid
+input can throw before `Undo.finishEdit`. Smallest correction: preflight target/
+input before opening Undo; no generic transaction framework.
 
-### G5 — `bone_rigging` opens Undo before action-specific preflight
+## Local-Proof Questions — Hold
 
-Invalid group/target lookup can throw after `Undo.initEdit` and before
-`Undo.finishEdit`. Smallest correction: preflight action target/input before
-opening Undo. Local proof: invalid target leaves history clean and subsequent
-Undo still works.
+- **P1 save/reopen `.bbmodel`:** prove existing project codec/action surface first.
+- **P2 camera/view semantics:** prove existing screenshot/set-camera surface first.
 
-## Local-Proof Questions — Do Not Add Code Yet
-
-### P1 — Save/reopen `.bbmodel`
-
-Existing `export_model`/project codec/action surfaces may already satisfy this.
-Prove save + reopen first; add a first-class save/open tool only if current
-surfaces cannot reliably do it.
-
-### P2 — Camera/view semantics
-
-`capture_screenshot`, `capture_app_screenshot`, and experimental
-`set_camera_angle` already exist. Prove required orthographic/3/4 evidence before
-adding another camera helper.
-
-## Explicit Non-Gaps / Holds
-
-- `place_cube` already supports bounded multi-Cuboid batches with Undo.
-- `modify_cube` already covers Cuboid transforms and pivot/UV-adjacent fields.
-- hierarchy/pivots already exist through `add_group` + `bone_rigging`.
-- history/undo/checkpoint surface already exists; no transaction framework is
-  justified yet.
-- broad mesh/Hytale/PBR capabilities are not defects merely because Local's main
-  product is Bedrock Entity Cuboid modelling.
-- automatic texture-canvas calculation is not yet a proven MCP requirement.
-- `risky_eval` result semantics remain lower priority; remove dependence on it
-  from the normal modelling path before expanding scope.
-
-## Correction Order
-
-1. ~~G1 — Bedrock Entity default/recommended path~~ — source implemented,
-   local proof pending.
-2. **G2 — Local bundled prompt authority** — active.
-3. G3 — MCP annotation forwarding.
-4. G4 — screenshot project-state restoration.
-5. G5 — bone-rigging preflight before Undo.
-6. Codex-local targeted proof for all corrected boundaries plus save/reopen and
-   camera semantics.
+Do not add save/open or camera helper tools until those existing capabilities fail
+focused local proof.
 
 ## Next Step
 
-Audit the **existing build path for prompt assets** and implement G2 with the
-smallest mechanism that makes Local/bundled prompt content primary at runtime.
-Inspect `mcp/build/index.ts`, build plugins/assets, `mcp/lib/promptLoader.ts`, and
-settings only as needed. Do not start G3 in the same change.
+Implement **G3 only** in `mcp/lib/factories.ts`: forward the existing annotation
+object through both official SDK `registerTool(...)` paths, inspect direct type/
+registration contracts, then leave Inspector/client verification as
+`LOCAL PROOF REQUIRED`.
