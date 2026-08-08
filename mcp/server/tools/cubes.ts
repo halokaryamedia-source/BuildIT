@@ -22,7 +22,9 @@ const cubeCorrectionUpdateSchema = z
       ),
     origin: finiteVec3Schema
       .optional()
-      .describe("New authored Cube pivot/origin."),
+      .describe(
+        "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite."
+      ),
     from: finiteVec3Schema
       .optional()
       .describe("New authored Cube from coordinates."),
@@ -104,7 +106,9 @@ export const modifyCubeParameters = z.object({
   origin: z
     .array(z.number()).length(3)
     .optional()
-    .describe("Pivot point of the cube."),
+    .describe(
+      "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite."
+    ),
   from: z
     .array(z.number()).length(3)
     .optional()
@@ -174,7 +178,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+      "Modifies one exact Cube when `id` is provided: UUID is resolved first, otherwise an exact name must be unique. Ambiguous names fail instead of modifying multiple Cubes. Omitting `id` retains the legacy selected-Cube fallback. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -185,7 +189,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -196,6 +200,30 @@ export const cubeToolDocs: ToolSpec[] = [
 ];
 
 type BatchUpdate = z.infer<typeof cubeCorrectionUpdateSchema>;
+
+type CubeTransformIntent = {
+  origin?: readonly number[];
+  from?: readonly number[];
+  to?: readonly number[];
+  rotation?: readonly number[];
+};
+
+function isPivotOnlyCorrection(update: CubeTransformIntent): boolean {
+  return (
+    update.origin !== undefined &&
+    update.from === undefined &&
+    update.to === undefined &&
+    update.rotation === undefined
+  );
+}
+
+function requirePivotTransferMesh(cube: Cube): void {
+  if (!cube.mesh) {
+    throw new Error(
+      `Cube "${cube.name}" (${cube.uuid}) has no preview mesh, so a pivot-only transfer cannot safely preserve its visual position. Use inspect_element/canonical views and retry only when the Cube is present in the active rendered project.`
+    );
+  }
+}
 
 function finalCubeState(cube: Cube) {
   return {
@@ -365,6 +393,11 @@ createTool(cubeToolDocs[1].name, {
       }
     }
 
+    const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
+    if (pivotOnly) {
+      cubes.forEach(requirePivotTransferMesh);
+    }
+
     Undo.initEdit({
       elements: cubes,
       outliner: true,
@@ -373,25 +406,31 @@ createTool(cubeToolDocs[1].name, {
 
     try {
       cubes.forEach((cube) => {
-        const cubeOrigin: [number, number, number] = (origin ?? cube.origin) as [number, number, number];
-        const cubeFrom: [number, number, number] = (from ?? cube.from) as [number, number, number];
-        const cubeTo: [number, number, number] = (to ?? cube.to) as [number, number, number];
-        const cubeRotation: [number, number, number] = (rotation ?? cube.rotation) as [number, number, number];
-        const cubeUVOffset: [number, number] = (uv_offset ?? cube.uv_offset) as [number, number];
+        if (pivotOnly) {
+          cube.transferOrigin(origin as [number, number, number]);
+        }
 
         cube.extend({
-          name: name ?? cube.name,
-          origin: cubeOrigin,
-          from: cubeFrom,
-          to: cubeTo,
-          rotation: cubeRotation,
-          uv_offset: cubeUVOffset,
-          autouv: autouv ? (Number(autouv) as 0 | 1 | 2) : cube.autouv,
-          mirror_uv: Boolean(mirror_uv ?? cube.mirror_uv),
-          inflate: inflate ?? cube.inflate,
-          color: color ?? cube.color,
-          visibility: visibility ?? cube.visibility,
-          shade: shade ?? cube.shade,
+          ...(name !== undefined ? { name } : {}),
+          ...(!pivotOnly && origin !== undefined
+            ? { origin: origin as [number, number, number] }
+            : {}),
+          ...(from !== undefined ? { from: from as [number, number, number] } : {}),
+          ...(to !== undefined ? { to: to as [number, number, number] } : {}),
+          ...(rotation !== undefined
+            ? { rotation: rotation as [number, number, number] }
+            : {}),
+          ...(uv_offset !== undefined
+            ? { uv_offset: uv_offset as [number, number] }
+            : {}),
+          ...(autouv !== undefined
+            ? { autouv: Number(autouv) as 0 | 1 | 2 }
+            : {}),
+          ...(mirror_uv !== undefined ? { mirror_uv } : {}),
+          ...(inflate !== undefined ? { inflate } : {}),
+          ...(color !== undefined ? { color } : {}),
+          ...(visibility !== undefined ? { visibility } : {}),
+          ...(shade !== undefined ? { shade } : {}),
         });
       });
 
@@ -418,19 +457,27 @@ createTool(cubeToolDocs[2].name, {
       );
     }
 
-    const targets: Array<{ cube: Cube; update: BatchUpdate }> = updates.map(
-      (update) => {
-        const cube = (Cube.all ?? []).find(
-          (candidate: Cube) => candidate.uuid === update.id
+    const targets: Array<{
+      cube: Cube;
+      update: BatchUpdate;
+      pivotOnly: boolean;
+    }> = updates.map((update) => {
+      const cube = (Cube.all ?? []).find(
+        (candidate: Cube) => candidate.uuid === update.id
+      );
+      if (!cube) {
+        throw new Error(
+          `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
         );
-        if (!cube) {
-          throw new Error(
-            `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
-          );
-        }
-        return { cube, update };
       }
-    );
+
+      const pivotOnly = isPivotOnlyCorrection(update);
+      if (pivotOnly) {
+        requirePivotTransferMesh(cube);
+      }
+
+      return { cube, update, pivotOnly };
+    });
 
     Undo.initEdit({
       elements: targets.map(({ cube }) => cube),
@@ -439,24 +486,32 @@ createTool(cubeToolDocs[2].name, {
     });
 
     try {
-      for (const { cube, update } of targets) {
+      for (const { cube, update, pivotOnly } of targets) {
+        if (pivotOnly) {
+          cube.transferOrigin(update.origin as [number, number, number]);
+        }
+
         cube.extend({
-          origin: (update.origin ?? cube.origin) as [number, number, number],
-          from: (update.from ?? cube.from) as [number, number, number],
-          to: (update.to ?? cube.to) as [number, number, number],
-          rotation: (update.rotation ?? cube.rotation) as [number, number, number],
-          visibility: update.visibility ?? cube.visibility,
+          ...(!pivotOnly && update.origin !== undefined
+            ? { origin: update.origin }
+            : {}),
+          ...(update.from !== undefined ? { from: update.from } : {}),
+          ...(update.to !== undefined ? { to: update.to } : {}),
+          ...(update.rotation !== undefined ? { rotation: update.rotation } : {}),
+          ...(update.visibility !== undefined
+            ? { visibility: update.visibility }
+            : {}),
         });
       }
 
       Undo.finishEdit("Agent corrected multiple cubes");
-      Canvas.updateAll();
     } catch (error) {
       Undo.cancelEdit(true);
       Canvas.updateAll();
       throw error;
     }
 
+    Canvas.updateAll();
     const result = {
       modified: targets.length,
       cubes: targets.map(({ cube }) => finalCubeState(cube)),
