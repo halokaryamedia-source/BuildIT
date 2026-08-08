@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-08
+Updated: 2026-08-09
 
 Use this note to answer **where current Local behavior lives**. It is a source
 ownership map, not an active-task tracker.
@@ -52,12 +52,13 @@ recreated merely to satisfy historical documentation.
 | `filter_by_material(texture=...)` | `mcp/server/tools/element.ts` | read-only texture discovery resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous ID/name and missing references fail before discovery |
 | material-discovery texture resolver | `mcp/server/tools/element.ts` | local to `filter_by_material`; shared `getProjectTexture` / `findTextureOrThrow` remain unchanged because they serve paint/mutation/PBR callers with broader semantics |
 
-### Texture Mutation Targeting
+### Texture Mutation Targeting / Transactions
 
 | Capability | Source owner | Current source meaning |
 |---|---|---|
 | `apply_texture` target preflight | `mcp/server/tools/texture.ts` | required non-empty element + texture references; element resolves UUID-first / exact unique name across Cube/Mesh/Group; texture resolves UUID → exact ID → exact unique name; ambiguity/missing fails before Undo |
 | `apply_texture` Group scope | `mcp/server/tools/texture.ts` | strict Group identity is resolved first, then existing behavior expands that Group to descendant Cube/Mesh targets before mutation |
+| `apply_texture` rollback boundary | `mcp/server/tools/texture.ts` | selection restore remains an inner `finally`; texture apply/update, selection restore, and `finishEdit` are inside an outer recoverable boundary; failure calls `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows |
 | `apply_texture` local resolvers | `mcp/server/tools/texture.ts` | local to this mutation path; shared `findElementOrThrow` / `findTextureOrThrow` remain unchanged for unrelated callers pending separate audits |
 
 ### Cube Creation / Correction
@@ -107,7 +108,7 @@ Live claims such as:
 - actual Blockbench camera/render behavior;
 - MCP image transport reaching the vision-capable agent;
 - Undo behavior in the installed Blockbench version;
-- live texture application/resolution behavior;
+- live texture application/resolution/rollback behavior;
 - save/reopen persistence;
 - visual resemblance of a produced model;
 
