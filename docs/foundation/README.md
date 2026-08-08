@@ -1,67 +1,114 @@
 # BlockIT Foundation
 
-This folder is the durable product/modelling policy source of truth.
+Updated: 2026-08-08  
+Status: active product/modelling policy set
 
-Do **not** load every foundation file for every task. Root `AGENTS.md`,
-`CONTEXT.md`, and `docs/knowledge/next-action.md` are the normal session boot;
-open only the foundation note relevant to the active boundary.
+This folder owns **durable BlockIT policy**. Active task status does not belong
+here; use [`../knowledge/next-action.md`](../knowledge/next-action.md) for that.
 
-## Document Groups
+## Current Product Direction
 
-### Policy and Product
+BlockIT builds clean, editable Minecraft Bedrock Entity `.bbmodel` projects in
+Blockbench through MCP from an approved visual Modelling Brief.
 
-- `00-agent-policy.md`: BlockIT-specific agent/product constraints only.
-- `01-project-overview.md`: product purpose and target user.
-- `02-product-requirements.md`: product scope, requirements, and definition of
-  done.
+The current quality problem and solution are explicit:
 
-### Workflow
+```text
+technical Cube success ≠ visual correctness
 
-- `03-modelling-workflow.md`: generic whole-form-first modelling sequence.
-- `04-reference-guide.md`: reference input/generation policy.
-- `08-source-selection.md`: source/reference selection rules.
-- `09-merge-map.md`: source/repository merge boundaries.
+Reference
+→ whole-form spatial reasoning
+→ intentional Cube transforms
+→ structural + visual observation
+→ causal correction
+→ secondary structure only after primary form is sound
+```
 
-### Modelling Standards
+The modelling flow must prevent assumption-driven Cube placement, arbitrary
+rotation, and arbitrary pivot/origin authoring.
 
-- `05-geometry-standard.md`: geometry/proportion rules.
-- `06-texture-standard.md`: texture/UV rules.
-- `07-visual-validation.md`: visual evidence and acceptance gates.
+## Document Map
 
-### Verification
+### Product / Agent Policy
 
-- `validation-report.md`: verified findings and remaining `Needs Validation`
-  items.
+- [00 — Agent Policy](00-agent-policy.md) — BlockIT-specific product constraints.
+- [01 — Project Overview](01-project-overview.md) — purpose, target user, success.
+- [02 — Product Requirements](02-product-requirements.md) — product scope and
+  definition of done.
+
+### Reference / Modelling
+
+- [03 — Modelling Workflow](03-modelling-workflow.md) — canonical Reference
+  Fidelity Loop and production sequence.
+- [04 — Reference Guide](04-reference-guide.md) — Source Image → approved
+  five-view Modelling Brief.
+- [05 — Geometry Standard](05-geometry-standard.md) — Cuboid, proportion,
+  placement, rotation, pivot, hierarchy rules.
+- [06 — Texture Standard](06-texture-standard.md) — UV/texture rules after
+  geometry is coherent.
+- [07 — Visual Validation](07-visual-validation.md) — structural vs visual proof,
+  canonical visual gates, repair loop.
+
+### Source / Historical Adoption Records
+
+- [08 — Source Selection](08-source-selection.md) — historical upstream source
+  selection record. **Current Local source is now the runtime authority.**
+- [09 — Merge Map](09-merge-map.md) — historical adoption/merge boundary. Do not
+  use it to override current Local implementation.
+
+### Proof Status
+
+- [Validation Report](validation-report.md) — current capability/evidence matrix:
+  source implemented vs official support vs local runtime proof still required.
+
+## Current Runtime-Facing Fidelity Instruments
+
+Current Local source contains the following fidelity-oriented surfaces; live
+Blockbench proof is tracked separately in the validation report:
+
+- `inspect_model_bounds` — rendered global Cube envelope facts;
+- `capture_model_views` — named canonical model images;
+- `inspect_element` — exact authored Cube/Group state;
+- `modify_cubes_batch` — coherent exact-UUID multi-Cube correction;
+- strict `place_cube` targeting and explicit initial `from/to` extents;
+- explicit pivot requirement for newly rotated Cubes;
+- pivot-only Cube correction through `Cube.transferOrigin()`;
+- safer Group creation and `bone_rigging` pivot/parent targeting.
+
+These tools provide observation/execution. They do **not** decide resemblance or
+supply automatic visual `PASS`.
 
 ## Task-Specific Read Rule
 
 | Need | Read |
 |---|---|
-| BlockIT product constraint | `00-agent-policy.md` + the specific product note only if needed |
-| Product scope / feature requirement | `02-product-requirements.md` |
-| Modelling sequence | `03-modelling-workflow.md` |
+| Product constraint | `00-agent-policy.md` |
+| Product scope | `01-project-overview.md`, then `02-product-requirements.md` if needed |
+| Model construction sequence | `03-modelling-workflow.md` |
 | Reference preparation | `04-reference-guide.md` |
-| Cube/proportion rule | `05-geometry-standard.md` |
-| Texture/UV | `06-texture-standard.md` |
-| Visual acceptance | `07-visual-validation.md` |
-| External/source authority | `08-source-selection.md` |
-| Merge/adoption boundary | `09-merge-map.md` |
-| Proof status | `validation-report.md` |
+| Cube / rotation / pivot / hierarchy decision | `05-geometry-standard.md` |
+| UV / texture | `06-texture-standard.md` |
+| Visual evidence / acceptance | `07-visual-validation.md` |
+| Current capability proof status | `validation-report.md` |
 
-Read a second note only when the active decision crosses that boundary.
+Do not read the whole folder for every task.
 
-## Rule of Use
+## Policy Rules
 
 - Stable product/model rules belong here.
-- Working task state does not belong here.
-- If a rule is unverified, mark it `Needs Validation`.
-- If a foundation rule conflicts with current verified source/decision, resolve
-  the conflict instead of layering another exception.
-- Remove/supersede misleading policy; do not compensate by adding more context.
+- Current source/runtime behavior can invalidate an old assumption; reconcile it
+  instead of layering exceptions.
+- Visual policy is allowed to be stricter than Blockbench itself. A rule can be
+  **BlockIT product policy** even when it is not a universal Blockbench rule.
+- A runtime claim requires runtime evidence; static GitHub work cannot prove live
+  Blockbench behavior.
+- Historical review/source-selection notes remain useful evidence but do not
+  override current policy/source.
 
-## Bridge to Knowledge
+## Bridge To The Obsidian Vault
 
-- `docs/knowledge/next-action.md` — current work/resume state.
-- `docs/knowledge/decision-log.md` — durable decisions/reasons.
-- `docs/knowledge/index.md` — project-memory navigation.
-- `docs/knowledge/glossary.md` — stable terminology.
+- [Knowledge Dashboard](../knowledge/index.md)
+- [Next Action](../knowledge/next-action.md)
+- [Implementation Map](../knowledge/implementation-map.md)
+- [Decision Log](../knowledge/decision-log.md)
+- [Review Status](../knowledge/reviews/review-graph.md)
