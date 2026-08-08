@@ -37,7 +37,7 @@ export const findElementsByCriteriaParameters = z.object({
     .string()
     .optional()
     .describe(
-      "UUID or name of a parent group. Only descendants of this group are returned."
+      "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search."
     ),
   min_size: vector3Schema
     .optional()
@@ -73,7 +73,7 @@ export const selectAllOfTypeParameters = z.object({
     .string()
     .optional()
     .describe(
-      "UUID or name of a parent group. If provided, only descendants of this group are selected."
+      "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes."
     ),
 });
 
@@ -213,7 +213,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent group, cube size ranges, and selection scope. Returns element metadata, never modifies state.",
+      "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique; missing or ambiguous scopes fail before search. Returns element metadata, never modifies state.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
@@ -224,7 +224,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "select_all_of_type",
     description:
-      "Selects all elements of the given type (cube, mesh, or group) in the current project. Optionally restrict to descendants of a parent group, or add to (rather than replace) the current selection.",
+      "Selects all elements of the given type (cube, mesh, or group) in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to (rather than replace) the current selection.",
     annotations: {
       title: "Select All of Type",
       destructiveHint: true,
@@ -304,6 +304,30 @@ function resolveParentGroup(reference: string): Group | "root" {
 
   throw new Error(
     `Parent Group "${reference}" not found. Use list_outline to confirm the intended Group UUID. Use "root" only when root parenting is intentional.`
+  );
+}
+
+function resolveOptionalGroupScope(reference?: string): Group | null {
+  if (!reference) return null;
+
+  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Group.all.filter(
+    (group: Group) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Parent Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: Group) => `${group.name} (${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Parent Group "${reference}" not found. Use list_outline to confirm the intended Group UUID, or omit parent_group when no scope is intended.`
   );
 }
 
@@ -649,15 +673,7 @@ export function registerElementTools() {
     }) {
       const regex = safeCompileRegex(name_pattern);
       const needle = name_contains?.toLowerCase() ?? null;
-      const parentScope = parent_group
-        ? (Group.all.find((g: Group) => g.uuid === parent_group || g.name === parent_group) ?? null)
-        : null;
-
-      if (parent_group && !parentScope) {
-        throw new Error(
-          `Parent group "${parent_group}" not found. Use list_outline to see available groups.`
-        );
-      }
+      const parentScope = resolveOptionalGroupScope(parent_group);
 
       const candidates: Array<Cube | Mesh | Group> = [
         ...(selected_only ? Cube.selected : Cube.all),
@@ -704,15 +720,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[6].name, {
     ...elementToolDocs[6],
     async execute({ type, add_to_selection, parent_group }) {
-      const parentScope = parent_group
-        ? (Group.all.find((g: Group) => g.uuid === parent_group || g.name === parent_group) ?? null)
-        : null;
-
-      if (parent_group && !parentScope) {
-        throw new Error(
-          `Parent group "${parent_group}" not found. Use list_outline to see available groups.`
-        );
-      }
+      const parentScope = resolveOptionalGroupScope(parent_group);
 
       const pool: Array<Cube | Mesh | Group> = (() => {
         if (type === "cube") return [...Cube.all];
