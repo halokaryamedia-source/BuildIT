@@ -1,281 +1,174 @@
-# BlockIT — Operating Model Texture
+# BlockIT — Texture Standard
 
-**Status:** Draft  
-**Version:** 1.0
+**Status:** Active Policy  
+**Version:** 1.1  
+**Updated:** 2026-08-08
 
-## 1. Purpose
+## Purpose
 
-Define the texturing rules Codex should follow when creating Minecraft Bedrock models in Blockbench.
+Define texture/UV quality rules for Minecraft Bedrock models after geometry is
+coherent.
 
-## 2. Core Principle
+This note defines **modelling policy**, not guaranteed MCP automation. Actual UV,
+texture, canvas, and persistence capability remains current source/runtime truth.
 
-Texture should support geometry.
+## Core Principle
+
+**Texture supports geometry; it does not repair geometry.**
 
 Use texture for:
 
-- color;
+- color/material identity;
 - pattern;
-- shading;
-- material;
-- surface detail;
-- small details that do not affect silhouette.
+- shading/highlight;
+- small surface detail;
+- information that does not need silhouette/real volume/separate motion.
 
-Texture must not hide incorrect geometry.
+If silhouette/proportion/attachment is wrong, fix geometry first.
 
-## 3. Texture Workflow
-
-```text
-Choose texture style
-↓
-Plan canvas
-↓
-Create UV
-↓
-Apply base texture
-↓
-Apply advanced texture if required
-↓
-Validate texture
-```
-
-## 4. Texture Style and Canvas Size
-
-### Texture Style
-
-- `16×16`
-- `32×32`
-
-### Canvas Size
-
-The user does not choose the UV Canvas. MCP calculates the required area from
-the finished geometry and uses the smallest standard canvas that fits:
+## Workflow
 
 ```text
-256×256 → 512×512 → 1024×1024
+primary + complete geometry passes
+↓
+choose texture style / required detail level
+↓
+prepare usable UV layout
+↓
+base color/material pass
+↓
+controlled secondary detail when required
+↓
+fresh texture visual gate
 ```
 
-Do not choose an arbitrary size. Do not downsize a canvas that already has
-final texture data. `1024×1024` is the current workflow limit, not a claim
-about the technical maximum.
+Do not begin texture polish on a primary form that still fails geometry review.
 
-## 5. Style Selection
+## Style / Resolution
 
-Choose `16×16` when:
+Common Minecraft-style targets may include `16×16` or `32×32` visual density,
+but the user/reference can request another appropriate style.
 
-- the project is simple;
-- detail is limited;
-- distance readability matters more;
-- simplicity matters more than extra detail.
+Use lower density when readability/simplicity is more important. Use higher
+density only when visible detail genuinely benefits.
 
-Choose `32×32` when:
+Do **not** treat a specific texture-canvas size (`256`, `512`, `1024`, etc.) as a
+universal product law or automatic MCP guarantee. Choose/verify canvas behavior
+from the current model, project format, and actual runtime capability.
 
-- higher detail is genuinely needed;
-- the model is a focal asset;
-- close viewing is expected;
-- the reference requires more detail than `16×16` can support.
+## UV Requirements
 
-## 6. Pixel-Density Consistency
+Where texture is required:
 
-Avoid major density differences between body parts unless they are intentional and easy to justify.
+- important visible surfaces have usable UVs;
+- UVs remain within the intended texture canvas;
+- accidental overlap is avoided;
+- mirrored UV is intentional;
+- focal areas receive adequate usable texel space;
+- orientation remains understandable/editable.
 
-## 7. UV Requirements
+Do not change UV layout after substantial finished painting without a concrete
+reason.
 
-Before texturing:
+## Mirror UV
 
-- all important surfaces need UV;
-- UV must stay inside the canvas;
-- unintended overlap must be avoided;
-- mirrored UV must be intentional;
-- focal parts need enough area;
-- the layout should remain understandable.
+Use mirrored UV when visual symmetry is intended and no directional/asymmetric
+marking is required.
 
-## 8. Mirror UV
+Avoid it for:
 
-Use mirror UV when both sides are identical and asymmetry is not needed.
+- text/symbols;
+- asymmetric markings;
+- left/right-specific details;
+- intentionally different material wear.
 
-Do not use mirror UV when text, symbols, or asymmetry matter.
+## Base Texture
 
-## 9. Base Texturing
+First establish:
 
-Base texturing defines:
-
-- primary colors;
-- secondary colors;
+- primary/secondary colors;
 - material zones;
-- accent colors;
-- basic shadow;
-- basic highlight.
+- accent/focal colors;
+- basic value separation.
 
-At the end of base texturing:
+At the base gate, no important required surface should be unintentionally blank.
 
-- all major areas have color;
-- major materials are distinguishable;
-- the palette follows the reference;
-- no important area is blank.
+## Secondary Texture Detail
 
-## 10. Advanced Texturing
+Add only detail that improves material/identity/readability:
 
-Advanced texturing improves:
+- controlled hue/value variation;
+- highlights/shadows;
+- material-specific marks;
+- purposeful pattern;
+- facial/identity details;
+- small wear/dirt/scratches when requested.
 
-- value variation;
-- hue variation;
-- saturation variation;
-- controlled gradients;
-- secondary shadows;
-- secondary highlights;
-- edge highlights;
-- ambient shading;
-- material definition;
-- focal details;
-- visual depth.
+Do not use random high-contrast noise as fake detail.
 
-It must not become random noise.
+## Lighting / Shading Consistency
 
-## 11. Gradient Definition
+Keep one coherent shading language across the asset. Avoid unrelated highlight
+directions between parts unless the requested style explicitly uses them.
 
-In BlockIT, a gradient is a controlled transition in color, value, hue, or saturation using intentional pixel clusters.
+## Material Readability
 
-For `16×16`, use fewer and stronger steps.
+Texture variation should follow the intended material rather than generic noise.
+For example:
 
-For `32×32`, use more steps only when they improve readability.
+- metal can use sharper contrast/highlights;
+- cloth/skin normally uses softer transitions;
+- wood grain follows form direction;
+- stone variation is irregular but controlled.
 
-## 12. Light Direction
+These are examples, not mandatory material recipes.
 
-Shading should use one consistent light direction, such as top-left or top-front.
+## Geometry Alignment
 
-Do not mix unrelated highlight directions across the model.
+Texture should follow form:
 
-## 13. Material Definition
+- pattern direction follows surface direction;
+- facial/identity features align to the intended face/view;
+- recessed/raised cues are consistent with geometry;
+- no accidental flip/rotation remains.
 
-### Cloth
+## Evidence Rule
 
-- softer contrast;
-- subtle highlights;
-- controlled variation.
+Structural proof such as “texture is linked” or “UV exists” does not prove visual
+texture quality.
 
-### Leather
+When texture completion is claimed, inspect fresh current-revision visual
+evidence for applicable criteria:
 
-- warmer tones;
-- medium contrast;
-- slight edge emphasis.
+- alignment;
+- density/readability;
+- pattern/material direction;
+- missing/broken surfaces;
+- identity/style match.
 
-### Metal
+## Runtime Boundary
 
-- stronger contrast;
-- brighter highlights;
-- sharper edges.
+Current Reference Fidelity work has not recently proven the full UV/texture
+runtime/persistence path. Any claim that a particular MCP tool automatically
+packs UVs, chooses the optimal canvas, or persists all texture state must be
+verified against current Local source/runtime before use.
 
-### Wood
+Use `LOCAL PROOF REQUIRED` when live proof matters.
 
-- directed grain;
-- hue and value variation;
-- medium contrast.
+## Completion Criteria
 
-### Stone
+Texture is complete for the requested scope when:
 
-- irregular value variation;
-- controlled cracks;
-- avoid uniform noise.
+- geometry is already coherent;
+- required UVs are usable;
+- required surfaces have intended material/color information;
+- texture density/style is coherent enough for the target;
+- no unresolved critical/major texture issue remains;
+- fresh visual evidence supports the texture claim;
+- persistence/linkage claims are proven when they are material to delivery.
 
-### Skin
+## Related
 
-- softer transitions;
-- warm and cool variation;
-- readable facial areas.
-
-## 14. Pattern and Surface Detail
-
-Patterns include:
-
-- stripes;
-- spots;
-- cloth patterns;
-- cracks;
-- dirt;
-- scratches;
-- wood grain;
-- armor lines.
-
-Patterns must follow the geometry and not disrupt the focal point.
-
-## 15. Color Palette
-
-Define:
-
-- primary colors;
-- secondary colors;
-- accent colors;
-- shadow colors;
-- highlight colors.
-
-Avoid too many colors without purpose.
-
-## 16. Pure Black and Pure White
-
-Use `#000000` and `#FFFFFF` carefully.
-
-They are not forbidden, but excessive use reduces room for shading and highlights.
-
-## 17. Noise Control
-
-Avoid:
-
-- random pixels;
-- unrelated color variation;
-- high-contrast noise;
-- noise used as fake detail.
-
-Variation should match the material.
-
-## 18. Texture and Geometry Alignment
-
-Texture should follow the geometry:
-
-- shadow in recessed areas;
-- highlight on raised areas;
-- pattern following surface direction;
-- face details aligned correctly;
-- no accidental flipped texture.
-
-## 19. Editing Efficiency
-
-Avoid:
-
-- repainting the full texture for a small local change;
-- rereading all pixel data after every change;
-- changing UV after advanced texture without strong reason;
-- enlarging canvas without need;
-- adding invisible details.
-
-## 20. Validation Checklist
-
-Check:
-
-- style is defined;
-- pixel density is consistent;
-- canvas size is reasonable;
-- UV stays inside the canvas;
-- no major blank areas remain;
-- all main parts are colored;
-- the model does not look flat;
-- material differences are visible;
-- shading direction is consistent;
-- noise is controlled;
-- texture is linked;
-- patterns align;
-- face details are placed correctly;
-- preview has been reviewed when available.
-
-## 21. Completion Criteria
-
-Texture is complete when:
-
-- style is selected;
-- canvas is selected;
-- UV is complete;
-- base texture is complete;
-- advanced texture is complete for the target scope;
-- materials are readable;
-- the model has enough depth;
-- no known critical texture issue remains;
-- texture is correctly linked.
+- [Geometry Standard](05-geometry-standard.md)
+- [Visual Validation](07-visual-validation.md)
+- [Validation Report](validation-report.md)
