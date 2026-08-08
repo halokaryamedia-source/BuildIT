@@ -117,9 +117,11 @@ export const getTextureParameters = z.object({
 });
 
 export const activateTextureParameters = z.object({
-  texture: textureIdSchema.describe(
-    "Texture ID, UUID, or name to activate in the texture panel."
-  ),
+  texture: textureIdSchema
+    .min(1)
+    .describe(
+      "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+    ),
 });
 
 export const createPbrMaterialParameters = z.object({
@@ -376,7 +378,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "activate_texture",
     description:
-      "Activates the given texture in the Blockbench texture panel so that subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) target it. Most paint tools already call this internally when a texture_id is provided, but you can invoke it explicitly to pin the active texture across multiple calls.",
+      "Activates one explicit texture in the Blockbench texture panel. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous references fail before the active texture selection changes. Subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) then target the activated texture by default.",
     annotations: {
       title: "Activate Texture",
       destructiveHint: false,
@@ -462,6 +464,45 @@ function resolveApplyTextureTexture(reference: string): Texture {
 
   throw new Error(
     `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before applying it.`
+  );
+}
+
+function resolveActivateTextureTexture(reference: string): Texture {
+  const textures = Project?.textures ?? Texture.all;
+
+  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
+  if (idMatches.length === 1) return idMatches[0];
+  if (idMatches.length > 1) {
+    throw new Error(
+      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  const nameMatches = textures.filter(
+    (texture: Texture) => texture.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
+        .map(
+          (texture: Texture) =>
+            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
+        )
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before activating it.`
   );
 }
 
@@ -1064,7 +1105,7 @@ export function registerTextureTools() {
   createTool(textureToolDocs[12].name, {
     ...textureToolDocs[12],
     async execute({ texture }) {
-      const target = findTextureOrThrow(texture);
+      const target = resolveActivateTextureTexture(texture);
       if (Texture.selected?.uuid !== target.uuid) {
         target.select();
       }
