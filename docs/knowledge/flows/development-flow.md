@@ -13,7 +13,7 @@ User request
       → smallest complete implementation
       → minimum useful engineering proof
       → Acceptance POV check
-      → conditional critique/evidence escalation
+      → conditional critique/evidence-status escalation
       → update repository state
 ```
 
@@ -22,13 +22,13 @@ User request
 `development-brief` is mandatory before implementation. Its canonical procedure
 lives in `.agents/skills/development-brief/SKILL.md`.
 
-At this boundary the agent must have a grounded goal, authoritative input,
-expected output, Build POV, Acceptance POV, minimal scope, acceptance criteria,
-and a proof budget appropriate to the execution channel.
+The user does not need to provide an expert prompt. The brief establishes the
+real goal, authoritative input, expected output, Build POV, Acceptance POV,
+minimal scope, 2-5 acceptance criteria, execution channel, and proof budget.
 
-The user does not need to provide an expert prompt. A proposed technical method
-is not automatically a requirement: reject or redirect it when evidence shows
-it would produce a worse, invalid, disproven, or needlessly complex result.
+A proposed technical method is not automatically a requirement. Reject or
+redirect it when evidence shows it is invalid, disproven, harmful to output, or
+needlessly complex.
 
 For trivial unambiguous work, use the fast path and keep the visible brief to one
 short line.
@@ -36,19 +36,16 @@ short line.
 ## Development Necessity
 
 Inspect existing behavior before inventing work. `No change required` is a valid
-Developing result when the requirement is already satisfied.
+result when the requirement is already satisfied.
 
 ## Specialist Boundary
 
 Use one specialist only when its domain procedure materially helps the active
-implementation boundary. A trivial text change may use `development-brief`
-alone.
+boundary. `development-brief` alone is valid when another skill adds no value.
 
-Do not stack overlapping specialists. If investigation exposes another real
-boundary, finish or explicitly reframe the current one before selecting a new
-specialist. If scope becomes a genuine multi-subsystem contract, migration, or
-multi-phase change, apply the OpenSpec threshold instead of silently widening
-the task.
+Do not stack overlapping specialists. Choose the semantic owner from the
+activation matrix. If investigation exposes another independent problem, finish
+or explicitly reframe the first boundary before switching owner.
 
 ## Execution Channel
 
@@ -56,13 +53,13 @@ the task.
 
 Prepare the repository as far as static evidence allows. Do not invent local
 shell, MCP, Blockbench, or visual proof. When a material live claim remains,
-leave one exact local proof step for Codex.
+leave the exact local proof needed by Codex.
 
 ### Codex local
 
 Use the same brief and acceptance criteria. Run the smallest targeted local
-check that can prove or disprove the remaining claim. Do not restart planning or
-run broad suites merely because the local environment makes them available.
+check that can prove/disprove the remaining claim. Do not restart planning or run
+broad suites merely because the local environment makes them available.
 
 ## Implementation
 
@@ -76,8 +73,8 @@ run broad suites merely because the local environment makes them available.
 
 ### Engineering Pass
 
-Use only proof that is informative for the changed boundary and available in the
-active channel.
+Use only proof informative for the changed boundary and available in the active
+channel.
 
 ### Acceptance Pass
 
@@ -91,12 +88,12 @@ Engineering PASS without Acceptance PASS is not completion.
 
 ## Conditional Escalation
 
-- `grilling` → plan/decision requires adversarial challenge before commitment;
-- `code-review` → independent critique materially adds value after an
-  implementation;
-- `evidence-gate` → proof is missing/disputed or a direction repeatedly fails;
+- `grilling` → plan/decision requires adversarial challenge;
+- `code-review` → independent critique materially adds value after implementation;
+- root `AGENTS.md` evidence status → material proof/support is uncertain or
+  disputed;
 - GSD-style discovery → unresolved high-impact requirement decision;
-- OpenSpec → genuine cross-cutting complexity boundary.
+- OpenSpec → genuine cross-cutting contract/migration/multi-phase boundary.
 
 None are mandatory ceremony.
 
@@ -105,9 +102,8 @@ None are mandatory ceremony.
 Do not create a planning note per task. Update only the canonical owner:
 
 - active goal/status/blocker/proof/next step → `docs/knowledge/next-action.md`;
-- durable decision/reason → `docs/knowledge/decision-log.md` or matching
-  decision owner;
-- stable policy → `docs/foundation/` only when the policy itself changes.
+- durable decision/reason → `docs/knowledge/decision-log.md` or matching owner;
+- stable policy → `docs/foundation/` only when policy itself changes.
 
 A new session resumes from these owners rather than reconstructed chat history.
 
@@ -121,8 +117,8 @@ Batasan:
 Next step:
 ```
 
-Keep it plain-language and concise. Distinguish `implemented` from `verified`
-when local proof is still pending.
+Keep it concise. Distinguish `implemented` from `verified` when local proof is
+still pending.
 
 ## Parent
 
