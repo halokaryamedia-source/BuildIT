@@ -12,6 +12,34 @@ const finiteVec3Schema = z.tuple([
   z.number().finite(),
 ]);
 
+function hasNonZeroRotation(rotation?: readonly number[]): boolean {
+  return rotation?.some((value) => value !== 0) ?? false;
+}
+
+const placeCubeElementSchema = cubeSchema
+  .extend({
+    origin: finiteVec3Schema
+      .optional()
+      .describe(
+        "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly."
+      ),
+    rotation: finiteVec3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe(
+        "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot."
+      ),
+  })
+  .refine(
+    (element) =>
+      !hasNonZeroRotation(element.rotation) || element.origin !== undefined,
+    {
+      message:
+        "A rotated Cube requires an explicit origin/pivot. Do not rely on an automatic [0,0,0] pivot for non-zero rotation.",
+      path: ["origin"],
+    }
+  );
+
 const cubeCorrectionUpdateSchema = z
   .object({
     id: z
@@ -53,7 +81,12 @@ const cubeCorrectionUpdateSchema = z
   );
 
 export const placeCubeParameters = z.object({
-  elements: z.array(cubeSchema).min(1).describe("Array of cubes to place."),
+  elements: z
+    .array(placeCubeElementSchema)
+    .min(1)
+    .describe(
+      "Array of Cubes to place. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
+    ),
   texture: z
     .string()
     .optional()
@@ -167,7 +200,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places one or more Cubes. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
+      "Places one or more Cubes. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -199,6 +232,7 @@ export const cubeToolDocs: ToolSpec[] = [
   },
 ];
 
+type PlaceCubeElement = z.infer<typeof placeCubeElementSchema>;
 type BatchUpdate = z.infer<typeof cubeCorrectionUpdateSchema>;
 
 type CubeTransformIntent = {
@@ -319,13 +353,13 @@ createTool(cubeToolDocs[0].name, {
 
     let cubes: Cube[];
     try {
-      cubes = elements.map((element: Cube) => {
+      cubes = elements.map((element: PlaceCubeElement) => {
         const cube = new Cube({
           autouv: autouv ? 1 : 0,
           name: element.name,
           from: element.from as [number, number, number],
           to: element.to as [number, number, number],
-          origin: element.origin as [number, number, number],
+          origin: (element.origin ?? [0, 0, 0]) as [number, number, number],
           rotation: element.rotation as [number, number, number],
         }).init();
 
