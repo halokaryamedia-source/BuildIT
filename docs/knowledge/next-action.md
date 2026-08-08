@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ASSIGN_TEXTURE_CHANNEL_ROLLBACK_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_TOOL_MATERIAL_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -75,7 +75,7 @@ Current Local source already contains:
   and `Undo.finishEdit`; failure calls `Undo.cancelEdit(true)` and rethrows;
 - `activate_texture(texture=...)` requires a non-empty explicit texture
   reference, resolves exact UUID → exact unique texture ID → exact unique name,
-  and rejects ambiguity/missing references before active texture selection
+  and rejects ambiguous/missing references before active texture selection
   changes;
 - `getAndActivateTexture(texture_id?)` preserves the existing omitted-reference
   fallback to current selected texture or default texture, while explicit
@@ -131,75 +131,21 @@ Current Local source already contains:
 - after successful `assign_texture_channel` target/reset preflight, the Undo scope
   remains `texture_groups: [textureGroup]` plus the deduplicated `undoTextures`.
   Channel resets, target assignment, material `saved` mutation, `updateMaterial`,
-  and `Undo.finishEdit` now run inside a rollback boundary; failure calls
-  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows. Material target lookup,
-  channel enum, reset semantics, return, and success Canvas behavior remain
+  and `Undo.finishEdit` run inside a rollback boundary; failure calls
+  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows;
+- the four proven material-target boundaries in `texture.ts` —
+  `configure_material`, `get_material_info`, `assign_texture_channel`, and
+  `save_material_config` — now require non-empty material references and resolve
+  exact UUID first, otherwise exact name only when unique. Ambiguous names fail
+  with candidate UUIDs and missing targets fail before caller mutation/read/save
+  effects. Their existing result, mutation, Undo, and save semantics remain
   unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Assign-Texture-Channel Rollback Finding
+## Latest Material-Target Identity Finding
 
-Before the latest change, target identity and exact Undo texture capture were
-already preflighted, but mutation continued as:
-
-```text
-preflighted target + resetTextures + undoTextures
-→ Undo.initEdit({ texture_groups: [textureGroup], textures: undoTextures })
-→ resetTextures pbr_channel = "color"
-→ target.extend({ group: textureGroup.uuid, pbr_channel: channel })
-→ saved = false
-→ textureGroup.updateMaterial()
-→ Undo.finishEdit
-→ Canvas.updateAll()
-```
-
-A failure after `Undo.initEdit` had no rollback boundary and could leave an open
-or partially applied edit.
-
-Current Local behavior is:
-
-```text
-preflighted target + resetTextures + undoTextures
-→ Undo.initEdit({ texture_groups: [textureGroup], textures: undoTextures })
-→ try
-   → resetTextures pbr_channel = "color"
-   → target.extend({ group: textureGroup.uuid, pbr_channel: channel })
-   → saved = false
-   → textureGroup.updateMaterial()
-   → Undo.finishEdit
-→ catch
-   → Undo.cancelEdit(true)
-   → Canvas.updateAll()
-   → rethrow
-→ Canvas.updateAll()
-→ success return
-```
-
-The strict target preflight, `resetTextures`, and deduplicated `undoTextures`
-remain unchanged before all mutation. The Undo scope was retained because it
-already covers the TextureGroup state, the assignment target, and every existing
-channel texture whose `pbr_channel` is reset.
-
-## Holds
-
-- **G1/G2:** source corrections implemented; local proof deferred.
-- **G3 annotations:** paused.
-- save/reopen proof: later local validation.
-- UV/texture feature additions: only after a concrete workflow proves a gap.
-- broad public-surface reduction: after the core fidelity path is proven.
-
-## Next Step
-
-Audit **shared material / TextureGroup target identity** around
-`findTextureGroupOrThrow()` in:
-
-```text
-mcp/lib/util.ts
-mcp/server/tools/texture.ts
-```
-
-Current shared resolver is:
+Before the latest change, all four proven PBR material-target callers used:
 
 ```text
 findTextureGroupOrThrow(material)
@@ -207,7 +153,12 @@ findTextureGroupOrThrow(material)
 → first UUID/name match wins
 ```
 
-Current material-target callers in `texture.ts` include at least:
+Exact UUID targeting was deterministic, but duplicate TextureGroup/material names
+could select the wrong group. Their public `material` schemas also accepted empty
+strings.
+
+The caller audit established exactly four direct uses inside current Local
+`texture.ts`:
 
 ```text
 configure_material
@@ -216,33 +167,86 @@ assign_texture_channel
 save_material_config
 ```
 
-Exact UUID targeting is deterministic, but duplicate TextureGroup/material names
-can select the wrong group because name matching is first-match. The public
-`material` fields also use plain string schemas rather than an explicit strict
-identity contract.
+Repository code search for the shared helper was incomplete, so the shared
+`mcp/lib/util.ts::findTextureGroupOrThrow()` owner was intentionally **not**
+changed. Instead, the four proven unsafe boundaries now use one file-local
+resolver:
+
+```text
+explicit non-empty material reference
+→ exact TextureGroup UUID → target
+→ exact unique TextureGroup name → target
+→ duplicate exact name → ERROR with candidate UUIDs
+→ missing → actionable ERROR
+```
+
+This keeps any un-audited shared-helper callers outside the change while giving
+all proven PBR material tools the same strict identity contract. No material-type
+validation, PBR channel behavior, mutation formula, result shape, or save behavior
+was redesigned.
+
+## Holds
+
+- **G1/G2:** source corrections implemented; local proof deferred.
+- **G3 annotations:** paused.
+- shared `findTextureGroupOrThrow()` hardening: deferred until remaining callers
+  can be exhaustively audited; current GitHub code search is incomplete.
+- save/reopen proof: later local validation.
+- UV/texture feature additions: only after a concrete workflow proves a gap.
+- broad public-surface reduction: after the core fidelity path is proven.
+
+## Next Step
+
+Audit **explicit TextureGroup identity for `create_texture(group=...)`**, especially
+when `pbr_channel` is supplied, in:
+
+```text
+mcp/server/tools/texture.ts
+```
+
+Current observed contract/path is:
+
+```text
+create_texture(..., group?, pbr_channel?)
+→ schema: group = optional plain string
+→ refinement: pbr_channel requires a truthy group
+→ Undo.initEdit({ textures: [], collections: [] })
+→ new Texture({ ..., group, pbr_channel, internal: true })
+→ image/canvas setup
+→ texture.add()
+→ Undo.finishEdit
+```
+
+Other hardened PBR paths assign `Texture.group` using a concrete
+`textureGroup.uuid`, while `create_texture` currently forwards the caller string
+directly. A supplied duplicate material/group name is therefore not identity-safe,
+and a missing/non-UUID group string can reach mutation without target preflight.
 
 Audit requirements:
 
-1. audit every direct `findTextureGroupOrThrow()` caller affected by a shared
-   resolver change before editing the helper;
-2. preserve exact UUID precedence and existing successful unique-name behavior;
-3. require an explicit material target to resolve exact UUID first, otherwise an
-   exact name must be unique; ambiguous names must fail with candidate UUIDs and
-   missing references must remain actionable before caller mutation/read effects;
-4. determine whether the affected public `material` schemas should require a
-   non-empty string so the MCP contract matches the strict resolver; preserve
-   each tool's result and mutation semantics otherwise;
-5. keep this identity slice separate from PBR channel redesign, material-type
-   validation, save behavior changes, or a generic resolver framework.
+1. preserve omitted `group`, current data-vs-fill rules, `layer_name`, dimensions,
+   render mode/sides, and current `pbr_channel` requirement semantics;
+2. determine the intended explicit `group` contract from existing Local PBR
+   patterns; if a group reference is supplied, require a non-empty explicit
+   reference and resolve exact TextureGroup UUID first, otherwise exact name only
+   when unique;
+3. ambiguous or missing supplied group references must fail before
+   `Undo.initEdit`, texture construction, or image/canvas mutation;
+4. pass the resolved TextureGroup UUID into the Texture constructor rather than
+   the caller's unresolved string, while preserving `pbr_channel` and all other
+   Texture creation behavior;
+5. keep this identity slice separate from `create_texture` Undo/recoverability,
+   file-loading behavior, PBR channel redesign, material-type validation, or a
+   generic resolver framework;
+6. prefer reusing the file-local strict material resolver already owned by
+   `texture.ts`; do not modify shared `findTextureGroupOrThrow()` in this slice.
 
-Prefer hardening the existing shared owner if and only if the caller audit proves
-all direct callers require the same UUID → unique-name semantics. Otherwise keep
-the correction local to the unsafe caller boundary.
+Keep `create_texture` rollback/recoverability as a separate follow-up unless the
+group-preflight audit proves they cannot be safely separated.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish source/schema/error/Undo structure and static diff
-only. Actual live paint targeting, standalone activation, `get_texture` reads,
-forced mutation rollback behavior, PBR material targeting, and future shared
-TextureGroup/material target resolution remain `LOCAL PROOF REQUIRED` until
-local Blockbench testing resumes.
+ChatGPT→GitHub may establish schema/resolver/control-flow structure and static diff
+only. Actual live paint targeting, PBR material targeting, TextureGroup assignment,
+file loading, texture creation, forced rollback, and save behavior remain
+`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
