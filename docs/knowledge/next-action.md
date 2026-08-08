@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_PAINT_TEXTURE_TARGET_HARDENED`
+`REFERENCE_FIDELITY_GET_TEXTURE_TARGET_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -79,55 +79,51 @@ Current Local source already contains:
   changes;
 - `getAndActivateTexture(texture_id?)` preserves the existing omitted-reference
   fallback to current selected texture or default texture, while explicit
-  non-empty references now resolve exact UUID → exact unique texture ID → exact
+  non-empty references resolve exact UUID → exact unique texture ID → exact
   unique name and reject ambiguity/missing before active texture selection. The
   direct paint callers remain unchanged and still call this helper before their
-  Undo/Painter operation boundary.
+  Undo/Painter operation boundary;
+- `get_texture(texture?)` preserves the existing omitted/falsy-reference fallback
+  to `Texture.getDefault()`, while explicit non-empty references resolve exact
+  UUID → exact unique texture ID → exact unique name and reject ambiguity/missing
+  before image data is returned. Shared texture helpers remain unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Paint-Texture Finding
+## Latest Texture-Read Finding
 
 Before the latest change:
 
 ```text
-paint tool(texture_id?)
-→ getAndActivateTexture(texture_id)
-   ├─ omitted → current selected texture or default texture
-   └─ explicit → getProjectTexture(texture_id)
-                 → first ID/name/UUID match wins
-                 → texture.select()
-→ paint-tool Undo / Painter operation
+get_texture(texture?)
+├─ omitted / falsy → Texture.getDefault()
+└─ explicit → findTextureOrThrow(texture)
+              → getProjectTexture(texture)
+              → first ID/name/UUID match wins
+              → imageContent(target.getDataURL())
 ```
 
-A duplicate texture name or ID could therefore select the wrong texture before a
-paint caller opened its Undo boundary and then mutate/read that unintended
-texture.
-
-The direct caller audit found nine `getAndActivateTexture()` calls in
-`mcp/server/tools/paint.ts`. The mutating paint callers resolve/activate before
-`Undo.initEdit` and Painter mutation; the color-picker caller resolves/activates
-before reading from the texture. This makes the helper the smallest shared owner
-for explicit paint texture identity without changing paint operation semantics.
+A duplicate texture name or ID could therefore return image evidence from a
+different texture than the caller intended.
 
 Current Local behavior is:
 
 ```text
-paint tool(texture_id?)
-→ getAndActivateTexture(texture_id)
-   ├─ omitted → current selected texture or default texture
-   └─ explicit non-empty reference
-       → exact UUID
-       → exact unique texture ID
-       → exact unique name
-       → ambiguous / missing = ERROR
-       → only then texture.select()
-→ caller Undo / Painter operation
+get_texture(texture?)
+├─ omitted / falsy → Texture.getDefault()
+└─ explicit non-empty reference
+    → local read resolver
+       ├─ exact UUID → target
+       ├─ exact unique texture ID → target
+       ├─ exact unique name → target
+       └─ ambiguous / missing → ERROR
+    → imageContent(target.getDataURL())
 ```
 
-`getProjectTexture()` remains unchanged for unrelated legacy callers. No paint
-tool schema, Undo scope, Painter operation, PBR/UV behavior, `apply_texture`, or
-standalone `activate_texture` behavior was changed.
+The tool description now states this target contract. `getTextureParameters`
+semantics, default-texture fallback, `findTextureOrThrow()`, `getProjectTexture()`,
+paint tools, standalone activation, apply behavior, and PBR/UV behavior were not
+changed.
 
 ## Holds
 
@@ -139,7 +135,7 @@ standalone `activate_texture` behavior was changed.
 
 ## Next Step
 
-Audit **explicit texture identity for read-only `get_texture`** in:
+Audit **explicit texture-list identity for `add_texture_group`** in:
 
 ```text
 mcp/server/tools/texture.ts
@@ -148,37 +144,48 @@ mcp/server/tools/texture.ts
 Current observed path is:
 
 ```text
-get_texture(texture?)
-├─ omitted / falsy → Texture.getDefault()
-└─ explicit → findTextureOrThrow(texture)
-              → getProjectTexture(texture)
-              → first ID/name/UUID match wins
-              → imageContent(target.getDataURL())
+add_texture_group(name, textures?, is_material)
+→ Undo.initEdit
+→ new TextureGroup(...).add()
+→ if textures provided
+   → textures.map(getProjectTexture).filter(Boolean)
+   → first ID/name/UUID match wins per reference
+   → missing individual references are silently dropped
+   → if none resolve, ERROR after Undo/group creation
+   → resolved textures extend({ group: textureGroup.uuid })
+→ Undo.finishEdit
 ```
 
-A duplicate texture name or ID can therefore return image evidence from a
-different texture than the caller intended, even though apply/activation/paint
-targeting are now strict at their audited boundaries.
+This means a duplicate texture name/ID can attach the wrong texture to the new
+group, and a partially invalid explicit texture list can succeed after silently
+ignoring unresolved references. The all-invalid path also throws only after the
+Undo boundary is open and the group has already been added.
 
 Audit requirements:
 
-1. preserve the existing omitted-reference behavior that returns the default
-   texture;
-2. for an explicit non-empty texture reference, resolve exact UUID first, then
-   exact texture ID, then exact name only when unique;
-3. ambiguous or missing explicit references must fail before image data is
-   returned;
-4. keep the change local to `get_texture`; do not change shared
-   `findTextureOrThrow()` / `getProjectTexture()` without caller proof;
-5. do not change paint tools, standalone `activate_texture`, `apply_texture`,
-   PBR/UV behavior, G3, or create a generic texture resolver framework.
+1. preserve the existing omitted `textures` behavior: creating an empty texture
+   group remains valid;
+2. when `textures` is provided, resolve every explicit non-empty reference by
+   exact UUID first, then exact texture ID, then exact name only when unique;
+3. ambiguous or missing provided references must fail as a whole before
+   `Undo.initEdit`, group creation, or texture reassignment; do not silently drop
+   invalid list entries;
+4. preserve current `name`, `is_material`, group creation, and texture assignment
+   semantics after successful preflight;
+5. keep the change local to `add_texture_group`; do not change shared
+   `getProjectTexture()`, PBR create/configure tools, standalone activation,
+   `get_texture`, `apply_texture`, paint tools, G3, or create a generic resolver
+   framework.
 
-Prefer the same small local strict-reference semantics already used by the other
-audited texture boundaries rather than widening a shared legacy helper.
+Prefer one complete preflight of the optional texture list before mutation. Do
+not expand this slice into a generic transaction framework; later failure after
+successful preflight remains a separate recoverability question if source review
+proves it material.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish source/schema/error contracts and static diff only.
-Actual live paint targeting with duplicate names/IDs, standalone activation
-selection, forced `apply_texture` rollback, and future `get_texture` runtime reads
-remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+Actual live paint targeting, standalone activation, `get_texture` reads with
+duplicate names/IDs, forced `apply_texture` rollback, and future
+`add_texture_group` runtime behavior remain `LOCAL PROOF REQUIRED` until local
+Blockbench testing resumes.
