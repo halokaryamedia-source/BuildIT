@@ -49,6 +49,8 @@ recreated merely to satisfy historical documentation.
 | `select_all_of_type(parent_group=...)` | `mcp/server/tools/element.ts` | same strict optional Group-scope resolution before any selection state changes |
 | scoped Group resolver | `mcp/server/tools/element.ts` | local resolver with no special `root` behavior; discovery/selection semantics are intentionally separate from `add_group` parent resolution |
 | `find_elements_by_criteria(name_pattern=...)` | `mcp/server/tools/element.ts` | omitted/empty pattern means no regex filter; explicit oversized, unsafe nested-quantifier, or invalid regex throws instead of silently broadening discovery |
+| `filter_by_material(texture=...)` | `mcp/server/tools/element.ts` | read-only texture discovery resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous ID/name and missing references fail before discovery |
+| material-discovery texture resolver | `mcp/server/tools/element.ts` | local to `filter_by_material`; shared `getProjectTexture` / `findTextureOrThrow` are intentionally unchanged because they serve paint/mutation/PBR callers with broader semantics |
 
 ### Cube Creation / Correction
 
