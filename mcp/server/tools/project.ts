@@ -8,8 +8,10 @@ export const createProjectParameters = z.object({
   name: z.string(),
   format: z
     .string()
-    .default("bedrock_block")
-    .describe("Project format ID from Blockbench's Formats registry."),
+    .default("bedrock")
+    .describe(
+      "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models."
+    ),
 });
 
 export const getProjectInfoParameters = z.object({});
@@ -17,7 +19,8 @@ export const getProjectInfoParameters = z.object({});
 export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
-    description: "Creates a new project with the given name and project type.",
+    description:
+      "Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.",
     annotations: {
       title: "Create Project",
       destructiveHint: true,
