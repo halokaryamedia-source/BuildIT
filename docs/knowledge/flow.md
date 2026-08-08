@@ -1,7 +1,9 @@
 # Flow
 
-Use this note as the single routing map. Detailed procedures remain in the
-linked development, maintenance, foundation, and skill notes.
+Updated: 2026-08-08
+
+Use this note as the single **agent work-routing** map. Product modelling flow is
+owned by `docs/foundation/03-modelling-workflow.md`.
 
 ## Agent Routing Flow
 
@@ -10,75 +12,89 @@ flowchart TD
     A[User request] --> B[Boot repository memory<br/>AGENTS → CONTEXT → next-action]
     B --> C{Work mode}
 
-    C -->|Plan| P[Ponytail<br/>GSD only if high-impact ambiguity remains]
-    C -->|Developing| D[development-brief<br/>goal/method → authority → Dual POV → output/proof]
-    C -->|Maintenance| M[Ponytail<br/>+ smallest diagnostic/specialist]
+    C -->|Plan| P[Ponytail<br/>Discovery only if high-impact ambiguity remains]
+    C -->|Developing| D[development-brief<br/>goal/method → authority → Build/Acceptance POV → scope/proof]
+    C -->|Maintenance| M[Ponytail<br/>+ smallest useful diagnostic/specialist]
 
     D --> N{Development needed?}
-    N -- No --> NC[Reuse / explain / minimum proof]
-    N -- Yes --> I[Inspect owner + affected boundary]
+    N -- No --> NC[Reuse / explain / no-change + minimum proof]
+    N -- Yes --> I[Inspect current owner + affected boundary]
     P --> I
     M --> I
 
     I --> K{Cause/scope grounded?}
-    K -- No --> X[Needs Validation / Terhenti]
-    K -- Yes --> S{Specialist adds value?}
-    S -- Yes --> SP[One specialist]
+    K -- No --> X[UNKNOWN / LOCAL PROOF REQUIRED<br/>or user-facing Terhenti/Perlu pemeriksaan]
+    K -- Yes --> S{One specialist adds real value?}
+    S -- Yes --> SP[Load one semantic owner]
     S -- No --> CH[Smallest complete change]
     SP --> CH
 
     CH --> V[Minimum useful proof]
     NC --> G
     V --> G{Developing?}
-    G -- Yes --> AP[Acceptance POV + original scope gate]
-    G -- No --> Q{Material uncertainty or critique needed?}
+    G -- Yes --> AP[Acceptance POV + original-scope gate]
+    G -- No --> Q{Material uncertainty/critique needed?}
     AP --> Q
 
     Q -- Yes --> E[Conditional critique or AGENTS evidence-status escalation]
-    Q -- No --> F{Evidence sufficient?}
+    Q -- No --> F{Evidence sufficient for claimed status?}
     E --> F
-    F -- No --> PR[Perlu pemeriksaan / Local proof required]
+    F -- No --> PR[Perlu pemeriksaan / exact remaining proof]
     F -- Yes --> OK[Selesai]
-    OK --> U[Update next-action / decision owner if state changed]
+    OK --> U[Update next-action / decision / owner only if state changed]
 ```
+
+## Developing Owner Budget
+
+```text
+development-brief
++ at most one useful specialist
+```
+
+Select by semantic owner, not implementation language:
+
+- MCP public/input/result contract → `mcp-server-development`;
+- Blockbench runtime/API/mutation mechanics → `blockbench-runtime-development`;
+- Bedrock model judgement/visual result → `blockbench-bedrock-modelling`;
+- TypeScript type-system issue → `typescript-type-safety`;
+- Bun build/tooling issue → `bun-tooling`.
 
 ## Conditional Escalations
 
-- **GSD-style discovery** — unresolved high-impact decisions after repo inspection.
-- **Grilling** — adversarial challenge for a plan/decision/idea when useful.
-- **CodeGraph** — optional broad source-navigation accelerator; never proof.
-- **Code review** — independent critique only when it materially adds value.
-- **Evidence status** — root `AGENTS.md` classification for uncertain/disputed
-  material claims; not a skill.
-- **OpenSpec** — genuine cross-cutting contract/migration/multi-phase boundary.
+Only when needed:
+
+- GSD-style discovery — unresolved high-impact requirement after repo inspection;
+- `grilling` — adversarial plan/decision challenge;
+- `code-review` — independent implementation critique;
+- CodeGraph — optional navigation accelerator, never proof;
+- OpenSpec — genuine cross-cutting contract/migration/multi-phase work;
+- root evidence labels — `CURRENT-PROJECT VERIFIED`, `OFFICIALLY VERIFIED`,
+  `LOCAL PROOF REQUIRED`, `UNSUPPORTED`, `UNKNOWN`.
 
 None are default ceremony.
 
-## Mode Outputs
+## Product Modelling Shortcut
 
-- **Plan:** bounded decisions, acceptance criteria, and next action.
-- **Developing:** grounded development brief, smallest required change or
-  verified no-change result, minimum useful proof, Acceptance POV check, and
-  concise result.
-- **Maintenance:** diagnosis, minimal correction when required, and relevant
-  regression proof.
+For the current Bedrock architecture, use:
 
-## Continuity Rule
+- [Modelling Workflow](../foundation/03-modelling-workflow.md)
+- [Reference Fidelity Decision](decisions/reference-fidelity-loop.md)
+- [Implementation Map](implementation-map.md)
 
-A new session resumes from `AGENTS.md` → `CONTEXT.md` → `next-action.md`.
-Update `next-action.md` only when active state changed; durable reasons belong in
-the decision log. Chat history is not the task tracker.
+Do not duplicate the modelling flow into this routing note.
 
-## Rule
+## Continuity
 
-- Keep this the only routing diagram.
-- If routing changes, update this note and the activation matrix in the same
-  bounded documentation task.
-- This diagram does not replace `AGENTS.md`, `CONTEXT.md`, foundation policy, or
-  the activation matrix.
+New session:
 
-## Related Notes
+`AGENTS.md` → `CONTEXT.md` → `next-action.md`
+
+Update only the canonical owner whose state actually changed. Chat history is not
+the task tracker.
+
+## Related
 
 - [Development Flow](flows/development-flow.md)
 - [Maintenance Flow](maintenance/maintenance-flow.md)
+- [Skill Activation Matrix](skills/activation-matrix.md)
 - [Knowledge Dashboard](index.md)
