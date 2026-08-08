@@ -27,13 +27,22 @@ createPrompt("blockbench_code_eval_safety", {
 });
 
 createPrompt("model_creation_strategy", {
-  description: "A strategy for creating a new 3D model in Blockbench.",
+  description:
+    "Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.",
   argsSchema: z.object({
     format: z
       .enum(["java_block", "bedrock", "bedrock_block"])
       .optional()
-      .default("bedrock"),
-    approach: z.enum(["ui", "programmatic", "import"]).optional(),
+      .default("bedrock")
+      .describe(
+        "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it."
+      ),
+    approach: z
+      .enum(["ui", "programmatic", "import"])
+      .optional()
+      .describe(
+        "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required."
+      ),
   }),
   async generate({ format, approach }) {
     const result: string[] = [];
@@ -63,7 +72,7 @@ createPrompt("model_creation_strategy", {
     }
 
     return {
-      messages: [{ role: "user", content: { type: "text", text: result.join("\n") } }],
+      messages: [{ role: "user", content: { type: "text", text: result.join("\n\n") } }],
     };
   },
 });
