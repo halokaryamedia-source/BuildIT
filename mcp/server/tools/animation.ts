@@ -307,6 +307,27 @@ export const boneRiggingParameters = z.object({
     .describe("Bone configuration data."),
 });
 
+const animationTimelineRangeSchema = z
+  .object({
+    start: z
+      .number()
+      .finite()
+      .min(0)
+      .describe("Finite non-negative start time in seconds."),
+    end: z
+      .number()
+      .finite()
+      .min(0)
+      .describe("Finite non-negative end time in seconds."),
+  })
+  .refine((range) => range.start <= range.end, {
+    message: "Timeline selection range start must be less than or equal to end.",
+    path: ["end"],
+  })
+  .describe(
+    "Inclusive finite non-negative timeline selection range with start less than or equal to end."
+  );
+
 export const animationTimelineParameters = z.object({
   action: z
     .enum([
@@ -347,7 +368,9 @@ export const animationTimelineParameters = z.object({
       "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
     ),
   loop_mode: loopModeEnum.optional().describe("Loop mode for the animation."),
-  range: timeRangeSchema.optional().describe("Time range for selection."),
+  range: animationTimelineRangeSchema
+    .optional()
+    .describe("Inclusive time range for select_range."),
 });
 
 export const batchKeyframeOperationsParameters = z.object({
