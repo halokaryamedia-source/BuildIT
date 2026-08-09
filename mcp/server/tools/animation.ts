@@ -37,7 +37,9 @@ export const createAnimationParameters = z.object({
         })
       )
     )
-    .describe("Keyframes for each bone"),
+    .describe(
+      "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Targets are canonicalized to the existing Group name before creation."
+    ),
   particle_effects: z
     .record(z.string().describe("Effect name"))
     .optional()
@@ -481,11 +483,73 @@ createTool(
         );
       }
 
+      const seenGroupReferences = new Map<string, string>();
+      const resolvedBoneEntries = Object.entries(bones).map(
+        ([boneReference, keyframes]) => {
+          const uuidMatch = Group.all.find(
+            (group: Group) => group.uuid === boneReference
+          );
+          let group: Group;
+
+          if (uuidMatch) {
+            group = uuidMatch;
+          } else {
+            const normalizedReference = boneReference.toLowerCase();
+            const nameMatches = Group.all.filter(
+              (candidate: Group) =>
+                candidate.name.toLowerCase() === normalizedReference
+            );
+            if (nameMatches.length === 1) {
+              group = nameMatches[0];
+            } else if (nameMatches.length > 1) {
+              throw new Error(
+                `Group name "${boneReference}" is ambiguous under Bedrock animation matching. Rename colliding Groups or target one after names are unique. Candidates: ${nameMatches
+                  .map((candidate: Group) => `${candidate.name} (${candidate.uuid})`)
+                  .join(", ")}`
+              );
+            } else {
+              throw new Error(
+                `Group "${boneReference}" not found. Every create_animation bone must target an existing Group UUID or unique Group name.`
+              );
+            }
+          }
+
+          const codecNameMatches = Group.all.filter(
+            (candidate: Group) =>
+              candidate.name.toLowerCase() === group.name.toLowerCase()
+          );
+          if (
+            codecNameMatches.length !== 1 ||
+            codecNameMatches[0].uuid !== group.uuid
+          ) {
+            throw new Error(
+              `Group "${group.name}" (${group.uuid}) cannot be targeted deterministically by create_animation because Bedrock animation import matches bone names case-insensitively. Rename colliding Groups first. Candidates: ${codecNameMatches
+                .map((candidate: Group) => `${candidate.name} (${candidate.uuid})`)
+                .join(", ")}`
+            );
+          }
+
+          const previousReference = seenGroupReferences.get(group.uuid);
+          if (previousReference !== undefined) {
+            throw new Error(
+              `create_animation bones "${previousReference}" and "${boneReference}" resolve to the same Group "${group.name}" (${group.uuid}). Provide each Group only once.`
+            );
+          }
+          seenGroupReferences.set(group.uuid, boneReference);
+
+          return {
+            requestedReference: boneReference,
+            group,
+            keyframes,
+          };
+        }
+      );
+
       const animationData = {
         loop,
         ...(animation_length && { animation_length }),
         bones: Object.fromEntries(
-          Object.entries(bones).map(([boneName, keyframes]) => {
+          resolvedBoneEntries.map(({ group, keyframes }) => {
             const boneData: Record<
               string,
               Record<string, number | number[]>
@@ -503,7 +567,7 @@ createTool(
               return acc;
             }, {} as Record<string, Record<string, number | number[]>>);
 
-            return [boneName, boneData];
+            return [group.name, boneData];
           })
         ),
         ...(particle_effects && { particle_effects }),
@@ -541,6 +605,15 @@ createTool(
         }
 
         const [createdAnimation] = createdAnimations;
+        resolvedBoneEntries.forEach(({ requestedReference, group }) => {
+          const animator = createdAnimation.animators[group.uuid];
+          if (!(animator instanceof BoneAnimator)) {
+            throw new Error(
+              `Created animation "${createdAnimation.name}" did not bind requested bone "${requestedReference}" to Group "${group.name}" (${group.uuid}).`
+            );
+          }
+        });
+
         Undo.finishEdit("Create animation", {
           animations: createdAnimations,
         });
