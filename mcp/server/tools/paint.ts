@@ -291,8 +291,10 @@ export const textureLayerManagementParameters = z.object({
   blend_mode: textureLayerBlendModeEnum.optional().describe("Layer blend mode."),
   target_index: z
     .number()
+    .int()
+    .nonnegative()
     .optional()
-    .describe("Target position for moving layers."),
+    .describe("0-based final layer index."),
 });
 
 export const paintToolDocs: ToolSpec[] = [
@@ -1265,22 +1267,43 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "move_layer") {
+          let result = "";
 
-        switch (action) {
-          case "move_layer":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
             if (target_index === undefined) {
               throw new Error("Target index required.");
             }
+            if (target_index >= texture.layers.length) {
+              throw new Error(
+                `Target index ${target_index} is out of range for ${texture.layers.length} layers.`
+              );
+            }
+
             const layerToMove = TextureLayer.selected;
             texture.layers.remove(layerToMove);
             texture.layers.splice(target_index, 0, layerToMove);
             result = `Moved layer to position ${target_index}`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "rename_layer":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
