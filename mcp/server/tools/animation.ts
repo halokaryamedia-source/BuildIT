@@ -1191,27 +1191,68 @@ createTool(
         throw new Error("No keyframes found matching selection criteria.");
       }
 
+      if (operation === "mirror" && !parameters.mirror_axis) {
+        throw new Error("Mirror axis required for mirror operation.");
+      }
+
+      if (operation === "offset" || operation === "mirror") {
+        Undo.initEdit({
+          keyframes,
+        });
+
+        try {
+          if (operation === "offset") {
+            keyframes.forEach((kf: _Keyframe) => {
+              if (parameters.offset_time !== undefined) {
+                kf.time += parameters.offset_time;
+              }
+
+              if (parameters.offset_values) {
+                const [offsetX, offsetY, offsetZ] = parameters.offset_values;
+                const offsetsMatch = offsetX === offsetY && offsetX === offsetZ;
+
+                if (kf.uniform && !offsetsMatch) {
+                  kf.uniform = false;
+                }
+
+                if (kf.uniform) {
+                  kf.offset("x", offsetX);
+                } else {
+                  kf.offset("x", offsetX);
+                  kf.offset("y", offsetY);
+                  kf.offset("z", offsetZ);
+                }
+              }
+            });
+          } else {
+            const axisIndex =
+              parameters.mirror_axis === "x"
+                ? 0
+                : parameters.mirror_axis === "y"
+                ? 1
+                : 2;
+            keyframes.forEach((kf: _Keyframe) => {
+              kf.flip(axisIndex);
+            });
+          }
+
+          Undo.finishEdit(`Batch keyframe operation: ${operation}`);
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Animator.preview();
+          updateKeyframeSelection();
+          throw error;
+        }
+
+        Animator.preview();
+        return `Performed ${operation} on ${keyframes.length} keyframes`;
+      }
+
       Undo.initEdit({
         keyframes: keyframes,
       });
 
       switch (operation) {
-        case "offset":
-          keyframes.forEach((kf) => {
-            if (parameters.offset_time !== undefined) {
-              kf.time += parameters.offset_time;
-            }
-            if (parameters.offset_values) {
-              const values = kf.getArray();
-              kf.set("values", [
-                values[0] + parameters.offset_values[0],
-                values[1] + parameters.offset_values[1],
-                values[2] + parameters.offset_values[2],
-              ]);
-            }
-          });
-          break;
-
         case "scale":
           const pivot = parameters.scale_pivot || 0;
           const factor = parameters.scale_factor || 1;
@@ -1226,23 +1267,6 @@ createTool(
           const maxTime = Math.max(...times);
           keyframes.forEach((kf) => {
             kf.time = maxTime - (kf.time - minTime);
-          });
-          break;
-
-        case "mirror":
-          if (!parameters.mirror_axis) {
-            throw new Error("Mirror axis required for mirror operation.");
-          }
-          const axisIndex =
-            parameters.mirror_axis === "x"
-              ? 0
-              : parameters.mirror_axis === "y"
-              ? 1
-              : 2;
-          keyframes.forEach((kf) => {
-            const values = kf.getArray();
-            values[axisIndex] *= -1;
-            kf.set("values", values);
           });
           break;
 
