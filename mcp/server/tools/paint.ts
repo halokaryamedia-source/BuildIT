@@ -240,6 +240,8 @@ export const textureSelectionParameters = z.object({
       "select_all",
       "clear_selection",
       "invert_selection",
+      "expand_selection",
+      "contract_selection",
     ])
     .describe("Selection action to perform."),
   texture_id: textureIdOptionalSchema,
@@ -252,6 +254,10 @@ export const textureSelectionParameters = z.object({
     })
     .optional()
     .describe("Selection area coordinates."),
+  radius: z
+    .number()
+    .optional()
+    .describe("Radius for expand/contract operations."),
   mode: z
     .enum(["create", "add", "subtract", "intersect"])
     .optional()
@@ -388,7 +394,7 @@ export const paintToolDocs: ToolSpec[] = [
     description: "Loads and applies a brush preset by name.",
     annotations: {
       title: "Load Brush Preset",
-      destructiveHint: true,
+      readOnlyHint: true,
     },
     parameters: loadBrushPresetParameters,
     status: STATUS_EXPERIMENTAL,
@@ -982,7 +988,7 @@ export function registerPaintTools() {
     paintToolDocs[10].name,
     {
       ...paintToolDocs[10],
-      async execute({ action, texture_id, coordinates, mode }) {
+      async execute({ action, texture_id, coordinates, radius, mode }) {
         const texture = getAndActivateTexture(texture_id);
 
         if (action === "invert_selection") {
@@ -1002,6 +1008,83 @@ export function registerPaintTools() {
             }
             UVEditor.updateSelectionOutline();
             Undo.finishSelection("Invert selection");
+          } catch (error) {
+            Undo.cancelSelection(true);
+            UVEditor.updateSelectionOutline();
+            throw error;
+          }
+
+          return `Applied ${action} to texture "${texture.name}"`;
+        }
+
+        if (action === "expand_selection" || action === "contract_selection") {
+          if (radius === undefined) {
+            throw new Error(
+              `Radius required for ${action === "expand_selection" ? "expand" : "contract"} selection.`
+            );
+          }
+
+          const signedRadius =
+            action === "contract_selection" ? -Math.abs(radius) : Math.abs(radius);
+          if (signedRadius === 0) {
+            return `Applied ${action} to texture "${texture.name}"`;
+          }
+
+          Undo.initSelection({ texture_selection: true });
+          try {
+            const selection = texture.selection;
+            const selectionRadius = Math.abs(signedRadius);
+            const radiusSquared = signedRadius ** 2;
+
+            if (selection.is_custom) {
+              const selectionArray = selection.array;
+              if (!selectionArray) {
+                throw new Error("Custom texture selection has no backing matrix.");
+              }
+              const selectionCopy = selectionArray.slice();
+              const expectedValue = signedRadius < 0 ? 0 : 1;
+
+              selection.forEachPixel((x, y, value, index) => {
+                if (value === expectedValue) return;
+                for (
+                  let offsetX = -selectionRadius;
+                  offsetX <= selectionRadius;
+                  offsetX++
+                ) {
+                  for (
+                    let offsetY = -selectionRadius;
+                    offsetY <= selectionRadius;
+                    offsetY++
+                  ) {
+                    if (offsetX ** 2 + offsetY ** 2 > radiusSquared) continue;
+                    if (selection.get(x + offsetX, y + offsetY) === expectedValue) {
+                      selectionCopy[index] = expectedValue;
+                      return;
+                    }
+                  }
+                }
+              });
+              selection.array = selectionCopy;
+            } else if (selection.override === true && signedRadius < 0) {
+              selection.setOverride(null);
+              const selectionArray = selection.array;
+              if (!selectionArray) {
+                throw new Error("Texture selection matrix is unavailable.");
+              }
+              selection.forEachPixel((x, y, value, index) => {
+                const selected =
+                  x >= selectionRadius &&
+                  y >= selectionRadius &&
+                  x < selection.width - selectionRadius &&
+                  y < selection.height - selectionRadius;
+                selectionArray[index] = selected ? 1 : 0;
+              });
+            }
+
+            UVEditor.updateSelectionOutline();
+            Undo.finishSelection(
+              action === "expand_selection" ? "Expand selection" : "Contract selection"
+            );
           } catch (error) {
             Undo.cancelSelection(true);
             UVEditor.updateSelectionOutline();
