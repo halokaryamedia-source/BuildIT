@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_BATCH_MUTATIONS_HARDENED_READBACK_GAP`
+`REFERENCE_FIDELITY_ANIMATION_READBACK_HARDENED_CREATE_IMPORTER_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,189 +35,253 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — Batch `smooth`
+## Latest Completed Animation Slice — Authored Animation Readback
 
-Primary owner:
-
-```text
-mcp/server/tools/animation.ts
-```
-
-Source commit:
+Primary source:
 
 ```text
-bba32caab8ae5137dc6b3a695b9b1ecc1f2710b6
-fix: limit batch smooth to transform keyframes
+mcp/server/tools/animation-inspection.ts
 ```
 
-The source change is limited to `batch_keyframe_operations.smooth`.
-
-`reverse`, `scale`, `offset`, `mirror`, `bake`, selection modes, timeline,
-graph editor, copy/paste, Geometry, and Texture were not intentionally changed.
-
-### Transform-only interpolation parity
-
-Previous Local applied:
+Registration/docs owners:
 
 ```text
-kf.interpolation = "catmullrom"
+mcp/server/tools.ts
+mcp/build/docs-manifest.ts
 ```
 
-to every matched keyframe, including non-transform keyframes.
-
-Current Blockbench interpolation UI exposes interpolation when at least one
-selected keyframe is a transform keyframe and mutates only entries where:
+Source commits:
 
 ```text
-kf.transform
+c37eecff7363a97268ab4b4aebe7352645639036
+feat: add authored animation inspection
+
+b9fe0c9f152094de930d493f242443524e64955a
+feat: register animation inspection
+
+020cfde4bea9a8a73f9df284d39024d9e4cc2198
+docs: register animation inspection surface
 ```
 
-Local now follows that contract:
+### Why inspection is a dedicated file
 
-1. filter matched keyframes to `kf.transform`;
-2. if the filtered set is empty, fail before opening Undo;
-3. set `catmullrom` only on those transform keyframes;
-4. report the actual number of transform keyframes changed.
-
-Sound/particle/timeline or other non-transform keyframes matched by the batch
-selector are left unchanged by `smooth`.
-
-### Recoverability
-
-Smooth now uses a bounded keyframe mutation transaction:
+Source inspection showed an existing focused read-only pattern in:
 
 ```text
-preflight transform targets
-→ Undo.initEdit({ keyframes: transformKeyframes })
-→ set interpolation = catmullrom
-→ Undo.finishEdit("Batch keyframe operation: smooth")
+mcp/server/tools/element-inspection.ts
 ```
 
-Failure after the edit opens runs:
+The new Animation readback follows that bounded pattern instead of expanding the
+large mutation-heavy `animation.ts` file. It remains registered under the
+Animation docs category and core tool registration.
+
+This choice avoids touching existing Animation mutation behavior while adding
+exactly one public read-only surface.
+
+### Public surface
+
+New tool:
 
 ```text
-Undo.cancelEdit(true)
-→ Animator.preview()
-→ updateKeyframeSelection()
-→ rethrow
+inspect_animation
 ```
 
-Success refreshes preview/keyframe selection after the transaction.
+Input:
 
-The old generic final batch mutation switch is removed; an unreachable explicit
-unsupported-operation error remains as a defensive fallback after all declared
-batch operations have returned.
+- `animation_id` — optional exact Animation UUID or exact unique name; omitted
+  reference uses the currently selected Animation;
+- `bone` — optional exact Group UUID or exact unique Group name.
+
+Animation and Group targeting use the same deterministic semantics as the
+existing Animation mutation surface:
+
+```text
+exact UUID
+→ exact unique name
+→ ambiguous/missing error
+```
+
+The inspection implementation keeps its resolver local because the existing
+mutation resolver is file-local; refactoring mutation targeting into a shared
+helper would widen this readback-only slice.
+
+### Read shape
+
+Every call returns structured MCP content containing authored Animation identity
+and settings:
+
+```text
+uuid
+name
+loop
+length
+snapping
+```
+
+It also returns stable summaries of existing `BoneAnimator` instances:
+
+```text
+animator UUID/name
+group UUID/name when the Group still exists
+rotation keyframe count
+position keyframe count
+scale keyframe count
+```
+
+When `bone` is provided, `focused_bone` returns detailed authored transform
+channels. Keyframes are copied and sorted by time then UUID for deterministic
+readback.
+
+Each detailed keyframe exposes:
+
+```text
+uuid
+time
+values for every authored data point
+uniform
+interpolation
+Bezier linked state + left/right time/value vectors when interpolation=bezier
+```
+
+A valid Group with no animator returns:
+
+```text
+has_animator: false
+animator: null
+empty rotation/position/scale keyframe arrays
+```
+
+so inspection does not need to create missing animation data merely to report
+that none exists.
+
+### Strict read-only boundary
+
+`inspect_animation` does not call:
+
+```text
+Animation.select()
+Timeline.setTime(...)
+Animator.preview()
+Animation.getBoneAnimator(...)
+Undo.*
+```
+
+It reads `Animation.all/selected`, `animation.animators`, `Group.all`, and current
+keyframe authored properties only.
+
+Therefore inspection does not intentionally:
+
+- change Animation/bone/keyframe selection;
+- move the playhead;
+- mutate preview state;
+- create/register a missing `BoneAnimator`;
+- change Geometry or Texture.
+
+### Manifest / registration
+
+The dedicated inspection docs array is merged into the existing `Animation`
+category in `mcp/build/docs-manifest.ts`.
+
+`registerAnimationInspectionTools` is added to the existing core registration
+list in `mcp/server/tools.ts`.
+
+Generated docs were not hand-edited.
 
 ### Diff / proof boundary
 
-The source commit contains one hunk replacing the old generic `smooth` path with
-the transform-only recoverable path above.
-
-GitHub has no registered CI/status checks for the source commit.
-
-Actual Blockbench Catmull-Rom playback, interpolation result, and Undo/Redo remain
-`LOCAL PROOF REQUIRED`.
-
-## Batch Mutation Boundary Now Covered
-
-The current high-value `batch_keyframe_operations` mutation paths now have the
-following source-hardening coverage:
-
-- `offset` → native axis/value offset primitives and bounded rollback;
-- `mirror` → native channel-aware `Keyframe.flip(axis)` and bounded rollback;
-- `bake` → positive interval safety, pre-mutation sampling, Animation-owned Undo,
-  and timeline-time restoration;
-- `scale` → native-like time stretch, snapping, Bezier handle-time scaling,
-  collision handling, Animation-owned Undo;
-- `reverse` → native timestamp/data-point/Bezier reversal semantics and rollback;
-- `smooth` → transform-only interpolation semantics and rollback.
-
-This does not claim live Blockbench verification.
-
-## Continuation Audit — Authored Animation Readback
-
-The next grounded Animation boundary is **focused read-only inspection**, not
-another broad mutation rewrite.
-
-### Existing Animation tool surface
-
-`mcp/server/tools/animation.ts` currently registers seven Animation-related
-surfaces:
+Net source changes from the pre-slice HEAD are limited to:
 
 ```text
-create_animation
-manage_keyframes
-animation_graph_editor
-bone_rigging
-animation_timeline
-batch_keyframe_operations
-animation_copy_paste
+mcp/server/tools/animation-inspection.ts  (new)
+mcp/server/tools.ts                       (2 registration lines)
+mcp/build/docs-manifest.ts                (Animation docs import/merge)
 ```
 
-They create, mutate, select, control, or copy Animation state. None is a focused
-read-only authored Animation inspection surface.
+`mcp/server/tools/animation.ts` and all existing Animation mutation paths were
+not changed in this slice.
 
-### Existing generic inspection does not close the gap
+Current Blockbench typings establish:
 
-`mcp/server/tools/element-inspection.ts` provides `inspect_element`, but its
-read-only contract intentionally covers authored **Cube/Group** state only. It
-does not return Animation animator/channel/keyframe state.
+- `AnimationItem.all` / `AnimationItem.selected`;
+- `_Animation.uuid/name/loop/length/snapping/animators`;
+- `BoneAnimator` / transform channel ownership;
+- `_Keyframe` authored data points, time, interpolation, and Bezier vectors.
 
-`mcp/server/tools/project.ts` provides `get_project_info` and
-`inspect_model_bounds`. `inspect_model_bounds` records only a small pose context:
+Actual values returned from a live project remain `LOCAL PROOF REQUIRED`.
+
+## Animation Mutation / Readback Boundary Now Covered
+
+Current high-value Animation source-hardening includes:
+
+- deterministic Animation + Group target identity;
+- recoverable `manage_keyframes` create/edit/delete and selection lifecycle;
+- native-vector Bezier handle contract;
+- target-bound recoverable copy/paste;
+- axis-aware graph-editor Bezier mutation;
+- recoverable persistent timeline settings;
+- hardened batch offset/mirror/bake/scale/reverse/smooth paths;
+- focused authored Animation readback;
+- no Mesh/vertex/morph animation expansion.
+
+This remains source/static proof until local Blockbench validation resumes.
+
+## Continuation Audit — `create_animation` Importer / Lifecycle
+
+The next grounded Animation boundary is **only `create_animation`**.
+
+Current Local still builds a Bedrock animation JSON object and calls:
 
 ```text
-selected animation UUID/name
-current Timeline.time
+Animator.loadFile({ content: JSON.stringify(...) })
 ```
 
-That is useful for identifying the current rendered pose, but it does not expose
-the authored Animation data that produced the pose.
+Current Blockbench typings explicitly mark `Animator.loadFile()` deprecated and
+state that `AnimationCodec` should be used instead.
 
-### Why this is now a material fidelity gap
+Current Blockbench Bedrock animation codec owns import through:
 
-After an MCP mutation succeeds, the current public surface cannot directly and
-deterministically read back the exact authored Animation target to answer basic
-verification questions such as:
+```text
+AnimationCodec
+→ bedrock animation codec
+→ codec.loadFile(file, animation_filter)
+```
 
-- which Animation UUID/name was changed;
-- current loop/length/snapping settings;
-- which Group/bone animator UUIDs are present;
-- which transform channels exist for a target bone;
-- keyframe times and authored XYZ values;
-- interpolation mode;
-- per-axis Bezier left/right time/value vectors.
+The native Bedrock import flow wraps codec loading in Animation Undo when
+animations are imported.
 
-A success string or current rendered pose is not equivalent to authored-state
-readback. Without focused readback, static/runtime workflows are forced to trust
-mutation responses or use generic evaluation/export mechanisms instead of a
-bounded Animation inspection contract.
+### Why this is a material gap
+
+`create_animation` is currently the only stable Animation creation surface, yet
+it depends on a deprecated importer and does not expose a bounded creation
+transaction/result identity comparable to the mutation paths that were already
+hardened.
+
+The current source also returns only a success string based on the requested
+name/bone count; it does not prove which newly created Animation UUID actually
+entered `Animation.all`.
+
+### Decisions to audit before editing
+
+The next slice must determine from current Blockbench source/API:
+
+1. the correct Bedrock `AnimationCodec` instance/access path from plugin runtime;
+2. the exact outer Undo ownership needed when loading one synthetic in-memory
+   animation without opening an import dialog;
+3. how to capture the newly created Animation deterministically from codec output
+   or before/after Animation identity without guessing;
+4. whether duplicate requested Animation names need explicit preflight or whether
+   current codec ownership already defines the valid behavior;
+5. how to return the created Animation UUID/name without widening into broad
+   animation import/export support.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
 - broad batch selection redesign;
-- deprecated `create_animation` importer/lifecycle audit;
+- shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
 - broad public-surface cleanup of generic non-Bedrock tools.
-
-## Completed Boundaries Kept In Place
-
-- deterministic Cube/Group geometry correction and Cuboid-only modelling policy;
-- frozen high-value Texture/PBR/layer source hardening;
-- `bone_rigging` UUID-first Group targeting and bounded rollback;
-- deterministic Animation + Group targeting on keyframe/curve/copy-paste paths;
-- recoverable/action-specific `manage_keyframes` mutation;
-- native-vector Bezier handle input contract for `manage_keyframes`;
-- recoverable target-bound copy/paste mutation;
-- axis-aware, vector-safe, recoverable graph-editor mutation;
-- recoverable native-owned persistent timeline mutations;
-- hardened batch offset/mirror/bake/scale/reverse/smooth mutation paths;
-- no Mesh/vertex/morph animation expansion.
-
-These are source/static conclusions where live Blockbench proof has not been
-performed.
 
 ## Holds
 
@@ -235,34 +299,33 @@ performed.
 
 ## Next Step
 
-Audit and implement **only one focused read-only authored Animation inspection
-surface** in the existing Animation owner, preferably `mcp/server/tools/animation.ts`
-so the current animation tool manifest/registration remains the owner unless
-source inspection proves otherwise.
+Audit and correct **only `create_animation` current `AnimationCodec` creation /
+Undo / created-identity lifecycle** in:
+
+```text
+mcp/server/tools/animation.ts
+```
 
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. resolve an explicit Animation target deterministically using the existing
-   UUID-first / exact-unique-name resolver; omitted reference may use the selected
-   Animation only if the public contract states that clearly;
-3. return stable authored Animation identity/settings needed for verification
-   (`uuid`, `name`, `loop`, `length`, `snapping`);
-4. expose animator/bone identity and transform-channel keyframes with authored
-   time, values, interpolation, and Bezier vectors where applicable;
-5. remain strictly read-only: no selection changes, no timeline movement, no
-   preview mutation, no implicit animator creation;
-6. use structured content suitable for deterministic MCP readback rather than a
-   success-only string;
-7. do **not** combine this with `create_animation`, batch selector redesign,
-   playback changes, Geometry, Texture, or local visual validation.
-
-After implementation, inspect the exact diff immediately and advance to exactly
-one grounded Animation boundary.
+2. replace the deprecated `Animator.loadFile()` creation path with the current
+   Blockbench-owned AnimationCodec path only after proving the exact codec API;
+3. preserve the current focused Bedrock animation input scope; do not build a
+   generic importer/exporter;
+4. make creation recoverable through the correct Animation Undo owner without
+   nested Undo;
+5. deterministically identify the newly created Animation and return at least its
+   UUID/name rather than trusting only the requested input name;
+6. do not modify existing keyframe/graph/timeline/batch/copy-paste/readback
+   behavior in this slice;
+7. inspect the exact commit diff immediately and advance to exactly one grounded
+   Animation boundary.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/schema/read-shape/control-flow only.
-Actual authored values seen inside a live Blockbench project, playback,
-Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior, and
-save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+ChatGPT → GitHub may prove source/API/schema/read-shape/control-flow/Undo structure
+only. Actual MCP registration, live authored values, codec import behavior,
+playback, Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral
+behavior, and save/reopen remain `LOCAL PROOF REQUIRED` until local runtime
+testing resumes.
