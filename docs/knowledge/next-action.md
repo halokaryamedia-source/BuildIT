@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_PARTICLE_TIMESTAMP_HARDENED_BONE_TIME_GAP`
+`REFERENCE_FIDELITY_ANIMATION_BONE_TIME_HARDENED_SCALE_ZERO_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — Particle Timestamp Contract
+## Latest Completed Animation Slice — `create_animation` Bone Keyframe Times
 
 Primary owner:
 
@@ -46,107 +46,94 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-7507591e1166b3a7ad8206f8d0f4b9e926e0c29e
-fix: validate created animation particle timestamps
+1f1d23f1ab507a669a94544d26c35ad5df1eec3a
+fix: validate created animation bone keyframe times
 ```
 
-The source change is limited to the public timestamp-key contract for
-`create_animation.particle_effects`. Particle object fields, bone binding,
-AnimationCodec/Undo lifecycle, authored readback, other Animation tools,
-Geometry, and Texture were not intentionally changed.
+The source diff is limited to the public `create_animation.bones` keyframe schema.
+No execute-path mutation, AnimationCodec lifecycle, particle behavior, other
+Animation tools, Geometry, or Texture were intentionally changed.
 
 ### Upstream time behavior used for the decision
 
-Current Bedrock animation import reads particle timestamps with:
+Current Bedrock animation import handles transform-channel timestamp maps with:
 
 ```text
-parseFloat(timestamp)
-→ EffectAnimator.addKeyframe({ channel: "particle", time: ... })
+for timestamp in b[channel]:
+  ba.addKeyframe({
+    time: parseFloat(timestamp),
+    channel,
+    ...
+  })
 ```
 
-`GeneralAnimator.addKeyframe()` constructs/pushes that keyframe without timeline
-snapping. `Keyframe.time` itself is a plain numeric property.
+`GeneralAnimator.addKeyframe()` stores the supplied time without snapping.
+`Keyframe.time` is a numeric property.
 
-However the user-facing Blockbench timeline is non-negative:
+The normal Blockbench timeline/export boundary is non-negative:
 
 ```text
 Timeline.setTime(...)  → lower bound 0
 Timeline.snapTime(...) → lower bound 0
+Keyframe.getTimecodeString() → Timeline.snapTime(...)
 ```
 
-and Bedrock keyframe time serialization uses:
+Therefore `create_animation` bone keyframe times are now required to be finite and
+`>= 0`. No arbitrary maximum and no extra snap-grid normalization were added.
+
+### Channel-aware collision contract
+
+A dedicated `bedrockBoneKeyframesSchema` now validates each bone's keyframe array
+before tool execution, therefore before Undo and before `codec.loadFile()`.
+
+For each of:
 
 ```text
-Keyframe.getTimecodeString()
-→ Timeline.snapTime(this.time, animation)
+position
+rotation
+scale
 ```
 
-Therefore allowing negative imported particle timestamps would create authored
-state that Blockbench's normal timeline/export path normalizes back to zero or
-non-negative time.
+Local tracks the raw numeric times that are actually written into the synthetic
+Bedrock timestamp map.
 
-No arbitrary maximum timestamp was introduced. Current evidence supports a
-non-negative lower boundary, but not a new MCP-specific upper cap.
+Two entries that define the **same channel at the same numeric time** now fail
+validation instead of relying on last-write-wins object assignment.
 
-### Public timestamp contract
-
-`particle_effects` still uses timestamp strings as record keys and still accepts
-either one particle object or a non-empty particle-object array at each key.
-
-The record now has schema-level `superRefine` validation before tool execution,
-therefore before `Undo.initEdit()` and before `codec.loadFile()`.
-
-For every key Local now:
-
-1. trims surrounding whitespace for numeric interpretation;
-2. requires a non-empty value;
-3. requires both `Number(...)` and `Number.parseFloat(...)` to produce the same
-   finite number;
-4. rejects negative effective time;
-5. tracks effective numeric times and rejects another distinct key that resolves
-   to the same number.
-
-Using both numeric parsers intentionally preserves complete numeric forms that the
-codec can read while rejecting permissive-prefix cases such as:
+Example rejected:
 
 ```text
-1abc
-0x10
-1e
+{ time: 1, rotation: [...] }
+{ time: 1, rotation: [...] }
 ```
 
-instead of adding an arbitrary regex language.
-
-Equivalent spellings such as:
+Same-time values across **different channels remain valid**:
 
 ```text
-1
-1.0
-01
-1e0
+{ time: 1, position: [...] }
+{ time: 1, rotation: [...] }
 ```
 
-cannot coexist in one particle record because they all resolve to the same
-effective imported time.
+This preserves legitimate multi-channel poses while preventing silent payload
+loss.
 
-Collision detection is based on the **raw numeric time used by the importer**,
-not on a speculative future snap grid. The native codec does not snap the time
-before `GeneralAnimator.addKeyframe()` stores it.
+The collision check uses raw numeric time, not speculative future snapping,
+because the current Bedrock importer does not snap before storing imported
+transform keyframes.
 
 ### Diff / proof boundary
 
-The exact source diff contains only:
+The exact source commit contains only:
 
-- one local `bedrockParticleEffectsSchema` wrapper;
-- timestamp validity checks;
-- effective-time collision checks;
-- the existing `particle_effects` field switched to that validated schema.
+- `bedrockBoneKeyframeSchema` with finite/non-negative `time`;
+- `bedrockBoneKeyframesSchema` with per-channel effective-time collision checks;
+- the existing `bones` record switched to that validated keyframe-array schema.
 
-No execute-path mutation logic changed. GitHub has no registered CI/status checks
-for the source commit.
+The payload builder itself remains unchanged. GitHub has no registered CI/status
+checks for the source commit.
 
-Actual MCP validation messages, codec import, emitter playback, locator binding,
-script execution, and save/reopen behavior remain `LOCAL PROOF REQUIRED`.
+Actual MCP validation, codec import, created keyframes, playback, Undo/Redo, and
+save/reopen remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -157,72 +144,66 @@ script execution, and save/reopen behavior remain `LOCAL PROOF REQUIRED`.
 - axis-aware graph-editor Bezier mutation;
 - recoverable persistent timeline settings;
 - hardened batch offset/mirror/bake/scale/reverse/smooth operations;
-- focused authored Animation transform readback;
+- authored transform + particle readback;
 - current Bedrock `AnimationCodec` creation / Undo / created identity;
 - deterministic `create_animation` bone-to-Group binding;
 - native-shaped `create_animation.particle_effects` input;
-- authored particle-effect readback;
 - validated non-ambiguous particle timestamp keys;
+- finite/non-negative, channel-aware transform bone keyframe times;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `create_animation` Bone Keyframe Times
+## Continuation Audit — Scalar `scale: 0` Preservation
 
-The next grounded Animation boundary is **only transform bone-keyframe time
-validation and same-channel collision semantics inside `create_animation`** in:
+The next grounded Animation boundary is **only explicit scalar zero preservation
+for `create_animation` scale values** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-Current public bone keyframes still use:
+Current public keyframe shape intentionally accepts:
 
 ```text
-time: z.number()
+scale: vector3 | number
 ```
 
-and synthetic Bedrock data is built with:
+The new collision validation correctly treats any scale value other than
+`undefined` as authored input, including numeric `0`.
+
+However the synthetic Bedrock payload builder still uses:
 
 ```text
-timeKey = keyframe.time.toString()
-(acc.position ??= {})[timeKey] = keyframe.position
-(acc.rotation ??= {})[timeKey] = keyframe.rotation
-(acc.scale ??= {})[timeKey] = keyframe.scale
+if (keyframe.scale) {
+  (acc.scale ??= {})[timeKey] = keyframe.scale;
+}
 ```
 
-### Why this is material
-
-The current reduction can silently replace earlier requested data when two
-entries on the same bone provide the same effective timestamp for the same
-channel.
-
-Examples:
+so an explicit scalar:
 
 ```text
-entry A: time 1, rotation [...]
-entry B: time 1, rotation [...]
+scale: 0
 ```
 
-The second rotation overwrites the first before the Bedrock codec sees either
-request as distinct authored intent.
+is silently omitted because `0` is falsy.
 
-By contrast, the same time across **different** channels is valid and must not be
-rejected merely because the timestamp matches:
+### Why `0` is valid input
+
+Current Bedrock animation import explicitly supports channel values whose type is
+`number`, and its keyframe-data conversion maps a numeric source uniformly to:
 
 ```text
-entry A: time 1, position [...]
-entry B: time 1, rotation [...]
+x = source
+y = source
+z = source
 ```
 
-The current `z.number()` time contract also does not express the non-negative
-Blockbench timeline/export boundary established above.
+There is no native special case excluding numeric zero. Therefore MCP must not
+reinterpret `0` as absence when its public schema already permits scalar scale.
 
-The next slice must determine the smallest channel-aware preflight that prevents
-silent payload overwrite while preserving legitimate same-time multi-channel
-keyframes. It must also decide from current source whether bone time should be
-only finite/non-negative or additionally normalized before JSON construction.
+This is a presence-check bug, not a reason to redesign scale representation.
 
 ## Other Animation Findings — Not Yet Active
 
@@ -252,8 +233,8 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `create_animation` bone keyframe time validation and
-same-bone/same-channel equivalent-time collision semantics** in:
+Audit and correct **only explicit scalar `scale: 0` preservation inside
+`create_animation` synthetic Bedrock payload construction** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -262,23 +243,17 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve the current bone record and keyframe object shape unless direct
-   source proof requires a minimal contract correction;
-3. establish the finite/non-negative bone-time boundary from current
-   Blockbench/Bedrock import and timeline behavior before editing;
-4. reject same-bone/same-channel requests that collapse to one effective payload
-   timestamp instead of relying on last-write-wins object assignment;
-5. preserve legitimate same-time values across different transform channels;
-6. keep all validation before Undo / `codec.loadFile()`;
-7. do not change `animation_length`, transform coordinate/sign semantics,
-   particle/sound/timeline effects, other Animation tools, Geometry, or Texture
-   in this slice;
-8. inspect the exact source diff immediately and advance to exactly one grounded
+2. preserve the existing `scale: vector3 | number` public contract;
+3. replace only the falsy presence check that drops numeric zero with an
+   explicit-presence check supported by the schema/native codec;
+4. do not change vector scale behavior, keyframe time/collision validation,
+   `animation_length`, transform coordinate/sign semantics, particle/sound/timeline
+   effects, other Animation tools, Geometry, or Texture;
+5. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/schema/read-shape/control-flow only. Actual
-MCP validation, codec import, authored keyframes, playback, Undo/Redo, motion
-arcs, clipping, bone pivots, return-to-neutral behavior, particle behavior, and
-save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+ChatGPT → GitHub may prove source/API/schema/control-flow only. Actual scalar-zero
+scale import, resulting authored scale, playback, Undo/Redo, motion, clipping,
+and save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
