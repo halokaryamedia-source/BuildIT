@@ -15,7 +15,7 @@ rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_GRAPH_EDITOR_HARDENED`
+`REFERENCE_FIDELITY_ANIMATION_TIMELINE_MUTATIONS_RECOVERABLE`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -36,7 +36,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 The existing 2D texture-selection utilities are not model geometry and are not
 an Animation gate.
 
-## Latest Completed Animation Slice — Graph Editor Axis / Bezier / Undo
+## Latest Completed Animation Slice — Persistent Timeline Mutations
 
 Primary owner:
 
@@ -44,115 +44,15 @@ Primary owner:
 mcp/server/tools/animation.ts
 ```
 
-Source commits:
+Source commit:
 
 ```text
-23863f32496bbe580f2dab22d390dd067835839f
-fix: align graph editor axis handles
-
-fdca13c766694e76a19af9a1f56289adf17a0619
-chore: preserve animation source file ending
+50bdd64bf5f9171e3c750ac72ebf20f2df99efe5
+fix: recover persistent animation timeline edits
 ```
 
-The second commit only restores the pre-existing no-final-newline byte ending
-after the full-file source write. Net behavior changes remain scoped to
-`animation_graph_editor`.
-
-### Axis now has real Bezier semantics
-
-Current Blockbench graph editing owns Bezier handle time/value as per-axis
-vectors and indexes them by graph-editor axis.
-
-Local now treats:
-
-```text
-axis = x → mutate handle component 0
-axis = y → mutate handle component 1
-axis = z → mutate handle component 2
-axis = all → explicitly apply the same handle change to components 0, 1, and 2
-```
-
-`linear`, `step`, and `catmullrom` remain keyframe-level interpolation modes;
-Local does not invent per-axis interpolation because Blockbench does not expose
-that model.
-
-The public axis description now states this distinction.
-
-### Scalar-to-vector corruption removed
-
-The old graph-editor path assigned values such as:
-
-```text
-kf.bezier_left_time = 0
-kf.bezier_right_time = duration
-```
-
-which replaced Blockbench vector properties with scalars.
-
-Local now mutates only selected vector components:
-
-```text
-bezier_left_time[axis]
-bezier_left_value[axis]
-bezier_right_time[axis]
-bezier_right_value[axis]
-```
-
-For the existing ease presets, the previous timing-ratio intent is retained, but
-left-handle offsets now use the native non-positive time direction instead of a
-positive left offset.
-
-### Custom-curve contract clarified
-
-`custom_curve.control_point_1` is now explicitly the left handle offset
-`[time, value]`; its time must be `<= 0`.
-
-`custom_curve.control_point_2` is the right handle offset `[time, value]`; its
-time must be `>= 0`.
-
-These conditions are preflighted before Undo opens. The scalar pair is applied
-to the requested axis component, or copied to all three components when
-`axis=all`; it is not assigned over the vector object itself.
-
-### Recoverability
-
-Graph-editor target/keyframe/range/custom-input validation now completes before
-the mutation transaction.
-
-Mutation uses:
-
-```text
-Undo.initEdit({ animations: [animation] })
-→ mutate interpolation / Bezier vector components
-→ Undo.finishEdit("Modify animation curves")
-```
-
-Failure after the edit opens runs:
-
-```text
-Undo.cancelEdit(true)
-→ Animator.preview()
-→ updateKeyframeSelection()
-→ rethrow
-```
-
-The Animation snapshot remains target-bound even when MCP resolves an explicit
-animation that is not the currently selected editor animation.
-
-### Diff / proof boundary
-
-Net source changes from the pre-slice HEAD affect only
-`mcp/server/tools/animation.ts`; no Geometry, Texture, copy/paste, timeline, or
-batch-operation source was intentionally changed.
-
-No CI/status checks are registered for the source commit.
-
-Actual graph curves, ease appearance, Bezier playback, and Undo/Redo remain
-`LOCAL PROOF REQUIRED`.
-
-## Continuation Audit — Persistent `animation_timeline` Mutations
-
-The next grounded Animation boundary is limited to persistent timeline settings:
+The source change is limited to the public FPS/snapping contract and persistent
+`animation_timeline` actions:
 
 ```text
 set_length
@@ -160,36 +60,146 @@ set_fps
 loop
 ```
 
-Current Local still performs direct mutations:
+`play`, `pause`, `stop`, `set_time`, and `select_range` remain behaviorally
+unchanged.
+
+### `set_length`
+
+Previous Local assigned:
 
 ```text
 Animation.selected.length = length
-Animation.selected.snapping = fps
+```
+
+Current Local uses the Blockbench-owned mutation lifecycle:
+
+```text
+Undo.initEdit({ animations: [animation] })
+→ animation.setLength(length)
+→ Undo.finishEdit("Change animation length")
+```
+
+`Animation.setLength()` owns the current Blockbench length constraints and
+selected-timeline length UI update. The returned MCP text now reports the actual
+post-`setLength()` value instead of blindly repeating an input that Blockbench
+may clamp.
+
+### `set_fps` / animation snapping
+
+Current Blockbench animation snapping is constrained to **10–500** in its
+Animation data/property path. The MCP contract previously advertised `1–120`.
+
+Local now validates:
+
+```text
+fps >= 10
+fps <= 500
+```
+
+and mutates through the same Animation property owner used by current
+Blockbench animation properties:
+
+```text
+Undo.initEdit({ animations: [animation] })
+→ animation.extend({ snapping: fps })
+→ Undo.finishEdit("Change animation snapping")
+→ Timeline.setTimecode(Timeline.time)
+```
+
+The timecode refresh keeps the currently displayed frame number aligned with the
+new snapping rate.
+
+### `loop`
+
+Previous Local directly assigned:
+
+```text
 Animation.selected.loop = loop_mode
 ```
 
-with no edit transaction or rollback path.
+Current Local uses:
 
-Current official Blockbench behavior establishes:
+```text
+Undo.initEdit({ animations: [animation] })
+→ animation.setLoop(loop_mode, false)
+→ Undo.finishEdit("Change animation loop mode")
+```
 
-- animation length changes use `Undo.initEdit({ animations: [animation] })`,
-  `animation.setLength(...)`, then `Undo.finishEdit(...)`;
-- `Animation.setLength()` owns length limiting plus selected-timeline UI refresh;
-- `Animation.setLoop(value, undo)` is the native loop mutation helper and can
-  own its Animation Undo transaction;
-- animation property edits, including `snapping`, are wrapped in Animation Undo.
+The outer MCP transaction owns Undo, so `setLoop(..., false)` deliberately avoids
+the native helper opening a nested transaction. If `loop_mode` is omitted or
+already equals the current mode, no persistent edit is opened and the current
+mode is returned.
 
-Therefore direct persistent assignment is not at parity with current Blockbench
-mutation ownership.
+### Recoverability
 
-Playback (`play`, `pause`, `stop`), scrubbing (`set_time`), and keyframe
-`select_range` are intentionally not part of this next persistent-setting slice.
+The three persistent actions share one function-local transaction wrapper.
+Failure after `Undo.initEdit()` runs:
+
+```text
+Undo.cancelEdit(true)
+→ Animator.preview()
+→ rethrow
+```
+
+The final existing `Animator.preview()` on success remains in place.
+
+### Diff / proof boundary
+
+The source commit contains only two source hunks:
+
+1. `animationTimelineParameters.fps` contract: `10–500` plus clarified
+   snapping/FPS description;
+2. `animation_timeline` persistent mutation lifecycle described above.
+
+No graph-editor, copy/paste, manage-keyframes, batch-operation, Geometry, or
+Texture behavior was intentionally changed. GitHub has no registered CI/status
+checks for the source commit.
+
+Actual Blockbench timeline settings, UI refresh, playback, and Undo/Redo remain
+`LOCAL PROOF REQUIRED`.
+
+## Continuation Audit — Batch Value Mutation Parity
+
+The next grounded Animation boundary is intentionally narrower than the entire
+`batch_keyframe_operations` tool.
+
+Current Local `offset` with `offset_values` and `mirror` still call:
+
+```text
+kf.set("values", ...)
+```
+
+but current Blockbench `Keyframe.set()` accepts an axis (`x`, `y`, or `z`), not a
+synthetic `values` property. This is the same API mismatch already corrected in
+`manage_keyframes`.
+
+The `mirror` path also manually multiplies one array component by `-1` for every
+transform channel. Current Blockbench already owns channel-aware mirroring via:
+
+```text
+Keyframe.flip(axis)
+```
+
+where transform semantics differ by channel (for example rotation does not use
+the same component rule as position). Reimplementing mirror as a generic array
+negation therefore risks producing incorrect Bedrock bone rotation data even if
+the request succeeds syntactically.
+
+The batch tool also opens `Undo.initEdit({ keyframes })` without a bounded
+try/catch + `Undo.cancelEdit(true)` recovery path. This should be corrected in the
+same value-mutation slice only where needed to keep the affected operation
+recoverable.
+
+`bake`, time scaling/reverse mechanics, broad selection behavior, and animation
+readback remain separate boundaries and must not be pulled into the next slice.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
-- `batch_keyframe_operations` API/Undo/value-write parity;
+- `batch_keyframe_operations` bake/create-keyframe lifecycle;
+- batch time scale/reverse semantic audit beyond what the value-mutation slice
+  requires;
 - animation readback/inspection coverage;
 - local save/reopen and visual playback proof.
 
@@ -203,6 +213,7 @@ Do not combine these into the next slice:
 - native-vector Bezier handle input contract for `manage_keyframes`;
 - recoverable target-bound copy/paste mutation;
 - axis-aware, vector-safe, recoverable graph-editor mutation;
+- recoverable native-owned persistent timeline mutations;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
@@ -226,8 +237,8 @@ performed.
 
 ## Next Step
 
-Audit and correct **only persistent `animation_timeline` mutation API/Undo parity**
-in:
+Audit and correct **only `batch_keyframe_operations` value mutation / mirror API
+parity and recoverability** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -235,17 +246,15 @@ mcp/server/tools/animation.ts
 
 Requirements:
 
-1. keep `play`, `pause`, `stop`, `set_time`, and `select_range` unchanged in this
-   slice;
-2. `set_length` must use current Blockbench `Animation.setLength(...)` inside a
-   recoverable Animation Undo transaction instead of direct `.length` assignment;
-3. `set_fps` / snapping must be validated against current Blockbench limits and
-   mutated inside Animation Undo, with required timeline/interface refresh only;
-4. `loop` must use the current Blockbench loop mutation lifecycle rather than
-   untracked direct assignment; avoid nested Undo if using `setLoop(..., undo)`;
-5. failure after an edit opens must cancel/revert before rethrow;
-6. preserve Cuboid-only Geometry and frozen Texture; do not touch graph editor,
-   copy/paste, manage-keyframes, or batch operations.
+1. preserve the existing selection modes and keep Geometry Cube/Cuboid-only;
+2. for `offset_values`, stop calling `Keyframe.set("values", ...)`; use current
+   Blockbench axis/value primitives and handle transform values without inventing
+   a synthetic property;
+3. for `mirror`, audit and use current `Keyframe.flip(axis)` semantics rather than
+   generic one-component negation where that is the correct owner;
+4. bound the affected mutation transaction with cancel/revert on failure;
+5. do **not** modify `bake`, broad time scale/reverse semantics, timeline,
+   graph-editor, copy/paste, Geometry, or Texture in this slice.
 
 After the source fix, inspect the commit diff immediately for drift and advance
 to exactly one grounded Animation boundary.
@@ -253,6 +262,6 @@ to exactly one grounded Animation boundary.
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/control-flow/target-resolution/Undo
-structure only. Actual Blockbench playback, graph curves, timeline settings,
+structure only. Actual Blockbench batch transforms, mirroring, playback,
 Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior, and
 save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
