@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-09
+Updated: 2026-08-10
 
 This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_CREATE_BONE_BINDING_HARDENED_PARTICLE_EFFECTS_GAP`
+`REFERENCE_FIDELITY_ANIMATION_CREATE_PARTICLE_EFFECTS_HARDENED_PARTICLE_READBACK_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — Deterministic `create_animation` Bone Binding
+## Latest Completed Animation Slice — `create_animation.particle_effects`
 
 Primary owner:
 
@@ -46,100 +46,86 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-0d457681b39de4155ab083022879f2b91deb67b6
-fix: bind created animation bones deterministically
+cf6e88af1097a47d8d18aa45252305e0611246a4
+fix: align created animation particle effects
 ```
 
-The source change is limited to the `create_animation` `bones` contract and its
-preflight/canonicalization/postcondition path.
+The source change is limited to the public `particle_effects` contract used by
+`create_animation` and the directly-related requested-particle count.
 
-Particle effects, existing keyframe/graph/timeline/batch/copy-paste/readback
-surfaces, Geometry, and Texture were not intentionally changed.
+Bone binding, current Bedrock codec/Undo lifecycle, existing Animation mutation
+and readback tools, Geometry, and Texture were not intentionally changed.
 
-### Why codec-name parity matters
+### Native Bedrock particle shape restored
 
-Current Bedrock animation import resolves imported bone names case-insensitively:
+Previous Local accepted:
 
 ```text
-lowercase_bone_name = bone_name.toLowerCase()
-group = Group.all.find(group.name.toLowerCase() == lowercase_bone_name)
-uuid = group ? group.uuid : guid()
+particle_effects: record<string>
 ```
 
-A missing imported bone name therefore produces an orphan/random animator UUID,
-and a case-insensitive name collision can silently choose the first Group.
+which treated each timestamp value as a plain effect-name string.
 
-That behavior is acceptable for generic file import but is not deterministic
-enough for an MCP command intended to animate an existing authored Bedrock rig.
-
-### Public `bones` contract
-
-The record shape is preserved.
-
-Each record key is now documented and executed as either:
+Current Bedrock import instead treats each timestamp as one particle object or an
+array of particle objects. Native particle compilation emits the corresponding
+Bedrock object fields:
 
 ```text
-exact Group UUID
-or
-Group name unique under case-insensitive Bedrock animation matching
+{
+  effect: <required effect id>,
+  locator: <optional locator>,
+  bind_to_actor: <optional boolean>,
+  pre_effect_script: <optional script>
+}
 ```
 
-Runtime preflight happens before Undo and before `codec.loadFile()`.
+Local now exposes exactly that bounded shape.
 
-For every entry Local now:
-
-1. resolves exact UUID first;
-2. otherwise performs case-insensitive Group-name matching because that is the
-   codec's actual compatibility boundary;
-3. rejects missing targets;
-4. rejects case-insensitive ambiguous names;
-5. verifies that the resolved Group's canonical name itself has exactly one
-   case-insensitive match in `Group.all`;
-6. rejects two input record keys that resolve to the same Group UUID.
-
-The UUID form cannot bypass an unsafe name collision because the downstream
-Bedrock codec still consumes a **name**. If `LeftArm` and `leftarm` both exist,
-Local fails before mutation even when one UUID was supplied, instead of passing
-a canonical name that the codec cannot distinguish safely.
-
-### Canonical payload
-
-The synthetic Bedrock JSON no longer forwards the caller's record key directly.
-After successful preflight it writes:
+A timestamp accepts either:
 
 ```text
-resolved Group.name → requested keyframes
+particle object
 ```
 
-This guarantees the codec receives the canonical existing Group name associated
-with the preflighted target.
-
-### Postcondition before commit
-
-After the codec returns the newly created Animation, Local verifies every
-preflighted Group UUID has a `BoneAnimator` in:
+or:
 
 ```text
-createdAnimation.animators[group.uuid]
+non-empty particle object[]
 ```
 
-If any expected binding is absent or is not a `BoneAnimator`, creation fails
-inside the already-open transaction and the existing creation rollback path
-removes Animations produced during the attempt and cancels/reverts the edit.
+Every particle requires a non-empty `effect` identifier. `locator`,
+`bind_to_actor`, and `pre_effect_script` are optional. No shorthand string form is
+kept because that is not the object shape read by the current Bedrock codec.
+
+### Payload ownership
+
+The validated `particle_effects` object is passed directly into the synthetic
+Bedrock animation JSON before `codec.loadFile()`.
+
+No post-import mutation or repair layer was added. The codec therefore receives
+the already-valid native-shaped particle payload it expects.
+
+### Result count semantics
+
+`requested_particle_effect_count` previously counted timestamp keys. That was
+equivalent to particle count only while the contract allowed one string per
+timestamp.
+
+Because one timestamp may now contain multiple particles, the result now counts
+the actual number of requested particle objects across all timestamps.
 
 ### Diff / proof boundary
 
 The source commit contains only:
 
-- the `bones` schema description update;
-- `create_animation` Group target preflight/canonicalization;
-- canonical `Group.name` JSON keys;
-- post-codec animator binding verification.
+- a local Bedrock particle Zod schema;
+- the `particle_effects` record value contract change;
+- directly-related requested particle count logic.
 
 GitHub has no registered CI/status checks for the source commit.
 
-Actual codec binding, created keyframes, playback, and Undo/Redo remain
-`LOCAL PROOF REQUIRED`.
+Actual particle import, emitter playback, locator binding, pre-effect script
+execution, and Undo/Redo remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -150,68 +136,57 @@ Actual codec binding, created keyframes, playback, and Undo/Redo remain
 - axis-aware graph-editor Bezier mutation;
 - recoverable persistent timeline settings;
 - hardened batch offset/mirror/bake/scale/reverse/smooth operations;
-- focused authored Animation readback;
+- focused authored Animation readback for Animation settings and transform bones;
 - current Bedrock `AnimationCodec` creation / Undo / created identity;
 - deterministic `create_animation` bone-to-Group binding;
+- native-shaped `create_animation.particle_effects` input;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `create_animation.particle_effects`
+## Continuation Audit — Particle Authored Readback
 
-The next grounded Animation boundary is **only the `particle_effects` input and
-synthetic Bedrock payload used by `create_animation`**.
+The next grounded Animation boundary is **only particle-effect readback in the
+existing `inspect_animation` surface**.
 
-Current Local schema still declares:
-
-```text
-particle_effects: record<string>
-```
-
-with timestamps as keys and effect-name strings as values. The object is then
-passed directly into the synthetic Bedrock animation JSON.
-
-Current Bedrock codec does not treat a particle timestamp value as a plain effect
-name string. During import it does, in effect:
+Current inspection owner:
 
 ```text
-particles = particle_effects[timestamp]
-if not array → [particles]
-for each particle:
-  particle.script = particle.pre_effect_script
-EffectAnimator.addKeyframe({ channel: "particle", data_points: particles })
+mcp/server/tools/animation-inspection.ts
 ```
 
-Therefore the native importer expects particle **objects** (or arrays of
-objects), not Local's current string-only contract.
+Current `inspect_animation` returns:
 
-Current native non-transform keyframe compilation emits particle entries shaped
-as:
+- Animation UUID/name/loop/length/snapping;
+- existing `BoneAnimator` summaries;
+- optional detailed rotation/position/scale keyframes for one Group.
 
-```text
-{
-  effect: <required effect id>,
-  locator: <optional locator>,
-  bind_to_actor: false <optional; omitted means default behavior>,
-  pre_effect_script: <optional script>
-}
-```
+It does **not** expose the existing `EffectAnimator.particle` channel.
 
-and can return either one object or an array when multiple particle data points
-share a timestamp.
+### Why this is now material
 
-### Why this is material
+After `create_animation` creates particle effects, the public MCP surface cannot
+read those authored particle keyframes back deterministically. A creation success
+response is not equivalent to authored-state verification.
 
-The current string contract cannot represent locator, actor binding, or
-pre-effect script and is not the shape the current codec reads. Passing a string
-through the codec's object-oriented particle import path is therefore not a
-reliable Bedrock creation contract.
+Current Blockbench source establishes that `EffectAnimator` owns a `particle`
+channel containing normal keyframes. Each particle keyframe has a timestamp and
+one or more data points. Bedrock import maps the file's `pre_effect_script` onto
+the runtime data-point script property; native compile maps runtime particle data
+back to Bedrock fields including `effect`, `locator`, `bind_to_actor`, and
+`pre_effect_script`.
+
+The next readback slice should normalize that existing runtime authored state into
+a stable Bedrock-facing particle read shape without changing selection, timeline,
+preview, or animator state.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
+- particle timestamp-key validation policy;
+- sound/timeline EffectAnimator readback;
 - broad batch selection redesign;
 - shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
@@ -233,35 +208,36 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `create_animation.particle_effects` Bedrock payload
-parity** in:
+Audit and implement **only authored particle-effect readback in
+`inspect_animation`** in:
 
 ```text
-mcp/server/tools/animation.ts
+mcp/server/tools/animation-inspection.ts
 ```
 
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve timestamp-keyed particle effects, but replace the current string-only
-   value contract with the smallest current Bedrock-compatible structured shape;
-3. require an `effect` identifier per particle and support only current native
-   fields that are materially owned by this path (`locator`, `bind_to_actor`,
-   `pre_effect_script`) unless source proves another required field;
-4. determine from current codec behavior whether each timestamp should accept one
-   particle object, an array of particle objects, or both; do not invent a
-   different representation;
-5. ensure the synthetic JSON passed to the Bedrock codec is already in the shape
-   that codec reads; do not add mutation after import merely to repair malformed
-   input;
-6. do not modify bone binding, importer lifecycle, existing Animation mutation or
-   readback tools, batch selection, Geometry, or Texture in this slice;
-7. inspect the exact source diff immediately and advance to exactly one grounded
+2. preserve deterministic Animation targeting and existing transform readback;
+3. inspect only an already-existing `EffectAnimator`; never create one for
+   inspection;
+4. return stable particle-channel authored data, including keyframe UUID/time and
+   every particle data point needed to represent current Bedrock fields
+   (`effect`, optional `locator`, optional `bind_to_actor`, and normalized
+   `pre_effect_script` from the runtime script property);
+5. preserve multiple particle data points at the same keyframe/timestamp and sort
+   keyframes deterministically by time then UUID;
+6. remain strictly read-only: no selection changes, no timeline movement, no
+   preview mutation, no Undo, and no animator/keyframe creation;
+7. do not add sound/timeline effect readback, mutation behavior, Geometry, or
+   Texture in this slice;
+8. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
 
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/read-shape/control-flow only. Actual
-particle import, emitter playback, locator binding, script behavior, Undo/Redo,
-motion arcs, clipping, bone pivots, return-to-neutral behavior, and save/reopen
-remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+particle data returned from a live Blockbench project, emitter playback, locator
+binding, script behavior, Undo/Redo, motion arcs, clipping, bone pivots,
+return-to-neutral behavior, and save/reopen remain `LOCAL PROOF REQUIRED` until
+local runtime testing resumes.
