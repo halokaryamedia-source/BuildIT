@@ -38,6 +38,61 @@ const bedrockParticleEffectSchema = z.object({
     .describe("Optional Molang script evaluated before the particle effect."),
 });
 
+const bedrockParticleEffectsSchema = z
+  .record(
+    z.union([
+      bedrockParticleEffectSchema,
+      z.array(bedrockParticleEffectSchema).min(1),
+    ])
+  )
+  .superRefine((particleEffects, ctx) => {
+    const effectiveTimes = new Map<number, string>();
+
+    Object.keys(particleEffects).forEach((timestamp) => {
+      const normalizedTimestamp = timestamp.trim();
+      const numericTime = Number(normalizedTimestamp);
+      const codecTime = Number.parseFloat(normalizedTimestamp);
+
+      if (
+        normalizedTimestamp.length === 0 ||
+        !Number.isFinite(numericTime) ||
+        !Number.isFinite(codecTime) ||
+        numericTime !== codecTime
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [timestamp],
+          message: `Particle timestamp "${timestamp}" must be a complete finite numeric value.`,
+        });
+        return;
+      }
+
+      if (numericTime < 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [timestamp],
+          message: `Particle timestamp "${timestamp}" must be greater than or equal to 0.`,
+        });
+        return;
+      }
+
+      const previousTimestamp = effectiveTimes.get(numericTime);
+      if (previousTimestamp !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [timestamp],
+          message: `Particle timestamps "${previousTimestamp}" and "${timestamp}" resolve to the same effective time ${numericTime}. Use one timestamp per effective time.`,
+        });
+        return;
+      }
+
+      effectiveTimes.set(numericTime, timestamp);
+    });
+  })
+  .describe(
+    "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
+  );
+
 export const createAnimationParameters = z.object({
   name: z.string().describe("Name of the animation"),
   loop: z
@@ -62,17 +117,7 @@ export const createAnimationParameters = z.object({
     .describe(
       "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Targets are canonicalized to the existing Group name before creation."
     ),
-  particle_effects: z
-    .record(
-      z.union([
-        bedrockParticleEffectSchema,
-        z.array(bedrockParticleEffectSchema).min(1),
-      ])
-    )
-    .optional()
-    .describe(
-      "Bedrock particle effects keyed by timestamp. Each timestamp accepts one particle object or a non-empty array of particle objects."
-    ),
+  particle_effects: bedrockParticleEffectsSchema.optional(),
 });
 
 const manageKeyframeDataSchema = keyframeDataSchema.extend({
