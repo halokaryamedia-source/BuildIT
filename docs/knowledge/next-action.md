@@ -17,7 +17,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_LAYER_MOVE_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_LAYER_RENAME_UNDO_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -92,9 +92,9 @@ Current Local source already contains:
 - `texture_layer_management(action="create_layer")` uses one outer Undo
   transaction, calls `activateLayers(false)` when layers are disabled, and rolls
   back activation/construction/addition/update/finish failures;
-- `texture_layer_management(action="delete_layer")` uses the same outer
-  transaction model, calls `TextureLayer.remove(false)` explicitly, and rolls
-  back removal/update/finish failures;
+- `texture_layer_management(action="delete_layer")` calls
+  `TextureLayer.remove(false)` inside the existing outer edit and rolls back
+  removal/update/finish failures;
 - `texture_layer_management(action="duplicate_layer")` follows Blockbench's
   native copy lifecycle (`getUndoCopy(true)` → `new TextureLayer` →
   `addForEditing()`), preserves the MCP `"<name> copy"` naming rule, and rolls
@@ -103,75 +103,78 @@ Current Local source already contains:
   MCP Undo transaction via `mergeDown(false)`, preserving native compositing,
   removal, adjacent selection, and no-lower-layer behavior while rolling back
   merge/update/finish failures;
-- `texture_layer_management(action="set_opacity")` preserves the public and
-  Blockbench-native 0..100 percentage contract, performs one texture update, and
-  rolls back assignment/update/finish failures;
+- `texture_layer_management(action="set_opacity")` preserves the Blockbench-native
+  0..100 percentage contract, performs one texture update, and rolls back
+  assignment/update/finish failures;
 - `texture_layer_management(action="set_blend_mode")` validates against the
-  current Blockbench-owned `TextureLayer.blend_mode` values with a file-local
-  schema and has an action-specific rollback boundary with exactly one texture
-  update;
-- `texture_layer_management(action="move_layer")` now treats `target_index` as
-  an explicit 0-based **final layer index**. The MCP schema requires a
-  non-negative integer, execution rejects `target_index >= texture.layers.length`
-  before array mutation, and valid moves retain the native Blockbench reorder
-  pattern (`remove` → `splice` → one texture update) inside the existing outer
-  MCP Undo edit. Validation/reorder/update/finish failures cancel/revert the edit,
-  refresh Canvas/interface state, and rethrow. `rename_layer` and
-  `flatten_layers` retain their previous common path pending their own audits.
+  current Blockbench-owned blend-mode values with a file-local schema, performs
+  one texture update, and has an action-specific rollback boundary;
+- `texture_layer_management(action="move_layer")` treats `target_index` as an
+  explicit 0-based final layer index, rejects fractional/negative/out-of-range
+  positions, preserves native remove/splice reorder semantics, and rolls back
+  validation/reorder/update/finish failures;
+- `texture_layer_management(action="rename_layer")` now has its own recoverable
+  transaction path. It preserves the existing selected-layer and truthy-name
+  checks, direct `TextureLayer.name` assignment, result text, one texture update,
+  and interface refresh. Validation/assignment/update/finish failures call
+  `Undo.cancelEdit(true)`, refresh Canvas/interface state, and rethrow. The shared
+  `layer_name` schema and `create_layer` generated-name fallback remain unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Move-Layer Finding
+## Latest Rename-Layer Finding
 
-Before the latest change:
+Before the latest source change, rename remained in the common tail:
 
 ```text
-target_index
-→ z.number().optional()
-
-move_layer
-→ require selected layer
-→ require target_index
-→ texture.layers.remove(selected)
-→ texture.layers.splice(target_index, 0, selected)
-→ common texture update + finish
+outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
+→ action = rename_layer
+   → require TextureLayer.selected
+   → require truthy layer_name
+   → oldName = TextureLayer.selected.name
+   → TextureLayer.selected.name = layer_name
+   → result = rename result
+→ common texture.updateChangesAfterEdit()
+→ Undo.finishEdit("Layer management: rename_layer")
+→ updateInterfacePanels()
 ```
 
-That allowed fractional, negative, and oversized values to reach JavaScript
-`splice()`, where coercion/clamping could silently move a layer somewhere other
-than the requested position.
+Blockbench treats `TextureLayer.name` as a normal layer property. Its native
+layer-properties flow opens an edit, changes the property, updates the owning
+texture, then finishes the edit. The MCP direct assignment was therefore
+compatible, but its open outer edit had no failure recovery.
 
 Current Local behavior is:
 
 ```text
-target_index
-→ z.number().int().nonnegative().optional()
-→ "0-based final layer index"
-
 outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ if action = move_layer
+→ if action = rename_layer
    → try
       → require TextureLayer.selected
-      → require target_index
-      → require target_index < texture.layers.length
-      → layerToMove = TextureLayer.selected
-      → texture.layers.remove(layerToMove)
-      → texture.layers.splice(target_index, 0, layerToMove)
+      → require truthy layer_name
+      → oldName = TextureLayer.selected.name
+      → TextureLayer.selected.name = layer_name
       → texture.updateChangesAfterEdit()
-      → Undo.finishEdit("Layer management: move_layer")
+      → Undo.finishEdit("Layer management: rename_layer")
    → catch
       → Undo.cancelEdit(true)
       → Canvas.updateAll()
       → updateInterfacePanels()
       → rethrow
    → updateInterfacePanels()
-   → return move result
+   → return rename result
 ```
 
-Current Blockbench drag reorder uses the same mutation shape after it calculates a
-concrete valid array index: remove the layer, splice it at that index, update the
-texture, then finish one Undo edit. The MCP keeps its explicit final-index API
-rather than copying UI drag/drop calculations.
+The existing outer Undo capture is retained because `Texture.getUndoCopy()`
+includes the active layer list/property state when layers are enabled. No
+new duplicate-name policy, sanitization, shared-schema restriction, or generic
+layer-property helper was introduced.
+
+During implementation, one full-file write accidentally reformatted unrelated
+`paint.ts` code. That commit was immediately neutralized by restoring the exact
+pre-slice `paint.ts` blob before the final rename change was applied. Net source
+diff from the slice starting head therefore contains only the intended
+`rename_layer` transaction change.
 
 ## Holds
 
@@ -187,8 +190,8 @@ rather than copying UI drag/drop calculations.
 
 ## Next Step
 
-Audit **`texture_layer_management(action="rename_layer")` Undo recoverability and
-property-update parity** in:
+Audit **`texture_layer_management(action="flatten_layers")` Blockbench API/Undo
+parity and recoverability** in:
 
 ```text
 mcp/server/tools/paint.ts
@@ -202,54 +205,47 @@ outer Undo.initEdit({
   layers: texture.layers,
   bitmap: true
 })
-→ action = rename_layer
-   → require TextureLayer.selected
-   → require truthy layer_name
-   → oldName = TextureLayer.selected.name
-   → TextureLayer.selected.name = layer_name
-   → result = `Renamed layer from "${oldName}" to "${layer_name}"`
-→ common texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: rename_layer")
+→ action = flatten_layers
+   → require texture.layers_enabled
+   → texture.flattenLayers()
+   → result = "Flattened all layers"
+→ texture.updateChangesAfterEdit()
+→ Undo.finishEdit("Layer management: flatten_layers")
 → updateInterfacePanels()
 ```
 
-Blockbench's native layer-properties path treats the layer name as a normal
-`TextureLayer` property edit: it opens Undo for the layer, applies the form data,
-updates the texture, then finishes the edit.
-
-The MCP mutation itself is therefore compatible, but the current common path has
-no rollback if the selected-layer check, required-name check, assignment, update,
-or outer finish fails after `Undo.initEdit()` has opened.
-
-Important contract detail: `layer_name` is shared with `create_layer`, where an
-omitted/falsy name currently falls back to the generated default name. Do **not**
-globally tighten the shared schema in a way that changes `create_layer` behavior
-just to harden rename.
+Unlike the already-audited layer operations, the current review has **not yet
+established the exact current Blockbench-owned `Texture.flattenLayers()`
+lifecycle**. GitHub code search has not produced an authoritative definition, so
+do not infer whether that call opens its own Undo edit, how it composites layers,
+or how it changes `layers_enabled` / selected-layer state.
 
 Audit requirements:
 
-1. keep this slice limited to `rename_layer`; do not change flatten or the
-   hardened create/delete/duplicate/merge/opacity/blend/move actions;
-2. preserve the current selected-layer requirement, current truthy-name
-   requirement, direct name assignment, result text, and interface refresh;
-3. preserve current `create_layer` `layer_name` fallback semantics and avoid a
-   shared-schema change unless fresh caller proof shows it is safe;
-4. confirm the existing outer Undo scope is sufficient for the selected layer
-   property change; perform one required texture update and finish the outer edit;
-5. if validation after Undo, assignment, update, or outer finish fails,
-   cancel/revert the open edit, refresh required Canvas/interface state, and
-   rethrow;
-6. do not add duplicate-name rules, sanitization, generic layer-property helpers,
-   or transaction abstractions in this slice.
+1. keep this slice limited to `flatten_layers`; do not reopen the hardened
+   create/delete/duplicate/merge/opacity/blend/move/rename actions;
+2. verify from current Blockbench source/typing whether `Texture.flattenLayers()`
+   exists in the target API and establish its exact mutation, Undo, layer-list,
+   selected-layer, and refresh lifecycle before editing Local;
+3. preserve the current `layers_enabled` guard, success text, and interface
+   refresh unless source evidence proves the current contract is invalid;
+4. confirm whether the existing outer Undo capture is sufficient for the
+   composite bitmap plus layer-list/selection changes; avoid nested Undo if the
+   native operation exposes an outer-transaction-safe path;
+5. if the API is supported and compatible, make the smallest action-specific
+   recoverability fix. If the call is stale/unsupported, correct only that
+   contract/runtime path rather than inventing new flatten behavior;
+6. do not add generic layer transactions, new flatten options, UV changes, paint
+   features, or material redesign in this slice.
 
-After `rename_layer`, audit `flatten_layers` only if a concrete current source/API
-transaction gap remains. Then run the single closing Texture source audit before
-moving to Animation.
+After this flatten audit, the next phase is the single closing Texture source
+audit. If that audit finds no critical/major source gap, freeze Texture and move
+the engineering sequence to Animation.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish schema/control-flow/API/Undo/Blockbench-source
-structure and static diff only. Actual layer ordering/renaming/selection,
+structure and static diff only. Actual layer flattening/renaming/selection,
 undo/redo, texture rendering, UV/paint behavior, save/reopen persistence, and
 viewport appearance remain `LOCAL PROOF REQUIRED` until local Blockbench testing
 resumes.
