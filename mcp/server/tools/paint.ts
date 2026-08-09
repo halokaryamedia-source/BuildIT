@@ -1148,19 +1148,38 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "duplicate_layer") {
+          let result = "";
 
-        switch (action) {
-          case "duplicate_layer":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
             const layerToDuplicate = TextureLayer.selected;
-            const duplicatedLayer = layerToDuplicate.duplicate();
-            duplicatedLayer.name = `${layerToDuplicate.name} copy`;
+            const layerCopy = layerToDuplicate.getUndoCopy(
+              true
+            ) as ConstructorParameters<typeof TextureLayer>[0];
+            layerCopy.name = `${layerToDuplicate.name} copy`;
+            const duplicatedLayer = new TextureLayer(layerCopy, texture);
+            duplicatedLayer.addForEditing();
             result = `Duplicated layer "${duplicatedLayer.name}"`;
-            break;
 
+            texture.updateLayerChanges(true);
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "merge_down":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
