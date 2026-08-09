@@ -13,6 +13,7 @@ import { projectToolDocs } from "../server/tools/project";
 import { textureToolDocs } from "../server/tools/texture";
 import { armatureToolDocs } from "../server/tools/armature";
 import { animationToolDocs } from "../server/tools/animation";
+import { animationInspectionToolDocs } from "../server/tools/animation-inspection";
 import { uiToolDocs } from "../server/tools/ui";
 import { hytaleToolDocs } from "../server/tools/hytale";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
@@ -28,7 +29,7 @@ export interface CategoryGroup {
 export const toolManifest: CategoryGroup[] = [
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
-  { category: "Animation", tools: animationToolDocs },
+  { category: "Animation", tools: [...animationToolDocs, ...animationInspectionToolDocs] },
   { category: "Armature", tools: armatureToolDocs },
   { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs] },
   { category: "Export", tools: exportToolDocs },
