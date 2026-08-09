@@ -2,7 +2,6 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { findGroupOrThrow } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import {
   vector3Schema,
@@ -50,7 +49,7 @@ export const manageKeyframesParameters = z.object({
   action: z
     .enum(["create", "delete", "edit", "select"])
     .describe("Action to perform on keyframes."),
-  bone_name: boneNameSchema.describe("Name of the bone/group to manage keyframes for."),
+  bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to manage keyframes for."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
   keyframes: z
     .array(keyframeDataSchema)
@@ -59,7 +58,7 @@ export const manageKeyframesParameters = z.object({
 
 export const animationGraphEditorParameters = z.object({
   animation_id: animationIdOptionalSchema,
-  bone_name: boneNameSchema.describe("Name of the bone/group to modify curves for."),
+  bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to modify curves for."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
   axis: axisWithAllEnum.default("all").describe("Axis to modify curves for."),
   action: z
@@ -241,7 +240,7 @@ export const animationCopyPasteParameters = z.object({
         .string()
         .optional()
         .describe("Source animation name or UUID."),
-      bone: z.string().describe("Source bone name."),
+      bone: z.string().describe("Exact source Group UUID or exact unique Group name."),
       channels: z
         .array(animationChannelEnum)
         .optional()
@@ -261,7 +260,7 @@ export const animationCopyPasteParameters = z.object({
         .string()
         .optional()
         .describe("Target animation name or UUID."),
-      bone: z.string().describe("Target bone name."),
+      bone: z.string().describe("Exact target Group UUID or exact unique Group name."),
       time_offset: z
         .number()
         .optional()
@@ -350,6 +349,39 @@ export const animationToolDocs: ToolSpec[] = [
     status: STATUS_EXPERIMENTAL,
   },
 ];
+
+function resolveAnimation(reference?: string) {
+  if (reference === undefined) {
+    const selected = Animation.selected;
+    if (!selected) {
+      throw new Error(
+        "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
+      );
+    }
+    return selected;
+  }
+
+  const uuidMatch = Animation.all.find(
+    (animation) => animation.uuid === reference
+  );
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Animation.all.filter(
+    (animation) => animation.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Animation name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((animation) => `${animation.name} (${animation.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Animation "${reference}" not found. Pass an exact Animation UUID or exact unique Animation name.`
+  );
+}
 
 function resolveRigGroup(reference: string): Group {
   const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
@@ -455,24 +487,13 @@ createTool(
   {
     ...animationToolDocs[1],
     async execute({ animation_id, action, bone_name, channel, keyframes }) {
-      // Find or select animation
-      const animation = animation_id
-        ? Animation.all.find(
-            (a) => a.uuid === animation_id || a.name === animation_id
-          )
-        : Animation.selected;
-
-      if (!animation) {
-        throw new Error("No animation found or selected.");
-      }
-
-      // Find the bone
-      const group = findGroupOrThrow(bone_name);
+      const animation = resolveAnimation(animation_id);
+      const group = resolveRigGroup(bone_name);
 
       // Get or create animator
       let animator = animation.animators[group.uuid];
       if (!animator) {
-        animator = new BoneAnimator(group.uuid, animation, bone_name);
+        animator = new BoneAnimator(group.uuid, animation, group.name);
         animation.animators[group.uuid] = animator;
       }
 
@@ -589,17 +610,8 @@ createTool(
       keyframe_range,
       custom_curve,
     }) {
-      const animation = animation_id
-        ? Animation.all.find(
-            (a) => a.uuid === animation_id || a.name === animation_id
-          )
-        : Animation.selected;
-
-      if (!animation) {
-        throw new Error("No animation found or selected.");
-      }
-
-      const group = findGroupOrThrow(bone_name);
+      const animation = resolveAnimation(animation_id);
+      const group = resolveRigGroup(bone_name);
 
       const animator = animation.animators[group.uuid];
       if (!animator || !animator[channel]) {
@@ -1152,18 +1164,8 @@ createTool(
             throw new Error("Source data required for copy operation.");
           }
 
-          const srcAnimation = source.animation
-            ? Animation.all.find(
-                (a) =>
-                  a.uuid === source.animation || a.name === source.animation
-              )
-            : Animation.selected;
-
-          if (!srcAnimation) {
-            throw new Error("Source animation not found.");
-          }
-
-          const srcBone = findGroupOrThrow(source.bone);
+          const srcAnimation = resolveAnimation(source.animation);
+          const srcBone = resolveRigGroup(source.bone);
 
           const animator = srcAnimation.animators[srcBone.uuid];
           if (!animator) {
@@ -1221,25 +1223,15 @@ createTool(
             throw new Error("No animation data in clipboard. Copy first.");
           }
 
-          const tgtAnimation = target.animation
-            ? Animation.all.find(
-                (a) =>
-                  a.uuid === target.animation || a.name === target.animation
-              )
-            : Animation.selected;
-
-          if (!tgtAnimation) {
-            throw new Error("Target animation not found.");
-          }
-
-          const tgtBone = findGroupOrThrow(target.bone);
+          const tgtAnimation = resolveAnimation(target.animation);
+          const tgtBone = resolveRigGroup(target.bone);
 
           let animator = tgtAnimation.animators[tgtBone.uuid];
           if (!animator) {
             animator = new BoneAnimator(
               tgtBone.uuid,
               tgtAnimation,
-              target.bone
+              tgtBone.name
             );
             tgtAnimation.animators[tgtBone.uuid] = animator;
           }
