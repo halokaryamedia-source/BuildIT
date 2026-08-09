@@ -15,7 +15,7 @@ rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_MANAGE_BEZIER_HANDLES_HARDENED`
+`REFERENCE_FIDELITY_ANIMATION_PASTE_RECOVERABLE`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -36,7 +36,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 The existing 2D texture-selection utilities are not model geometry and are not
 an Animation gate.
 
-## Latest Completed Animation Slice — `manage_keyframes` Bezier Handles
+## Latest Completed Animation Slice — Copy/Paste Mutation Recoverability
 
 Primary owner:
 
@@ -47,123 +47,130 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-352805e2419ae8482cfcdf49f55004d499722e1d
-fix: align manage keyframe bezier handles
+d789dcaca7ef439971d57a024bb0bd333413160f
+fix: recover animation paste mutations
 ```
 
-### Root cause
+The `copy` action remains read-only and unchanged. The source change is limited
+to `paste` / `mirror_paste`.
 
-Current Blockbench keyframes own Bezier handles as per-axis vectors:
+### Animator creation is now inside the target Animation transaction
 
-```text
-bezier_left_time   = [x, y, z]
-bezier_left_value  = [x, y, z]
-bezier_right_time  = [x, y, z]
-bezier_right_value = [x, y, z]
-```
-
-The interpolation implementation indexes the time/value handles by active axis.
-The previous shared MCP `keyframeDataSchema` instead allowed scalar
-`left_time/right_time`, and scalar values were assigned directly onto vector
-properties by `manage_keyframes`.
-
-### Shared-schema ownership decision
-
-The active task required auditing all direct callers before changing shared
-`mcp/lib/zodObjects.ts::keyframeDataSchema`.
-
-GitHub code search could not establish exhaustive ownership and, in fact, did not
-return the known `animation.ts` usage. An empty search result was therefore not
-treated as proof that no other caller exists.
-
-Accordingly:
-
-- shared `keyframeDataSchema` remains unchanged;
-- `mcp/lib/zodObjects.ts` remains unchanged;
-- no unknown caller inherits a breaking contract change.
-
-### Current Local contract
-
-`animation.ts` now derives a file-local schema:
-
-```text
-manageKeyframeDataSchema = keyframeDataSchema.extend(...)
-```
-
-For `manage_keyframes`, all four Bezier handle fields are now exact `vector3`
-inputs:
-
-```text
-left_time   : [x, y, z]
-left_value  : [x, y, z]
-right_time  : [x, y, z]
-right_value : [x, y, z]
-```
-
-This is intentionally native-parity rather than preserving the previous scalar
-shorthand. A scalar time/value is rejected at the MCP boundary for this tool
-instead of being written into a Blockbench vector property.
-
-The existing create/edit runtime assignments are therefore now fed only
-per-axis vector data. The recoverable `manage_keyframes` transaction, target
-identity, keyframe creation, selection lifecycle, and interpolation enum were
-not changed in this slice.
-
-### Diff proof
-
-The source commit changes only `mcp/server/tools/animation.ts`:
-
-- adds the file-local `manageKeyframeDataSchema` override;
-- changes `manageKeyframesParameters.keyframes` to use that local schema.
-
-Net source diff: **15 additions / 1 deletion**. No unrelated runtime path changed.
-No CI/status checks are registered for the source commit.
-
-Actual Bezier curve behavior and playback remain `LOCAL PROOF REQUIRED`.
-
-## Continuation Audit — `animation_copy_paste` Mutation Recoverability
-
-The next grounded high-value Animation boundary is `animation_copy_paste`,
-specifically `paste` and `mirror_paste`.
-
-Current Local already has deterministic Animation and Group target identity, but
-its mutation flow still remains:
+Previous paste flow could register a missing `BoneAnimator` before the Undo
+snapshot. Current Local now:
 
 ```text
 resolve target Animation + Group
-→ read target animator
-→ if missing:
-   new BoneAnimator(...)
-   targetAnimation.animators[group.uuid] = animator
-→ Undo.initEdit({ animations: [targetAnimation], keyframes: [] })
-→ create pasted keyframes
-→ Undo.finishEdit(...)
-→ Animator.preview()
+→ inspect existing animator without mutation
+→ read clipboard / mirror settings
+→ Undo.initEdit({ animations: [targetAnimation] })
+→ inside try:
+   getBoneAnimator(targetGroup) only when missing
+   add pasted keyframes
+   targetAnimation.setLength()
+   Undo.finishEdit(...)
+→ failure:
+   Undo.cancelEdit(true)
+   refresh animation/timeline state
+   rethrow
 ```
 
-### Why this remains a recoverability/API gap
+Because current Blockbench Animation undo copies include animator/keyframe state,
+opening the transaction before `getBoneAnimator()` allows rollback to restore the
+pre-paste structure, including the previous absence of an animator.
 
-1. A missing target animator is registered **before** the Undo snapshot. Failure
-   later in paste can therefore leave animator structure outside the intended
-   transaction boundary.
-2. The paste path has no try/catch + `Undo.cancelEdit(true)` recovery after the
-   edit is opened.
-3. It still uses `GeneralAnimator.createKeyframe()`. Current Blockbench
-   `createKeyframe()` calls `Animation.selected.setLength()`, so an explicit
-   target animation that is not the selected animation can update the wrong
-   animation length.
-4. Current copied Bezier handle data originates from real Blockbench keyframe
-   vector properties. Do not reopen the just-completed `manage_keyframes`
-   Bezier-input contract while fixing paste lifecycle.
+### Paste no longer depends on `Animation.selected`
 
-The `copy` action itself is read-only and should not be widened into a mutation
-rewrite.
+The old path used `GeneralAnimator.createKeyframe()`, which internally updates
+`Animation.selected.setLength()`. That is unsafe when MCP explicitly targets a
+different animation.
+
+Paste now uses primitives bound to the resolved target animation:
+
+```text
+targetAnimation.getBoneAnimator(targetGroup)
+animator.addKeyframe(...)
+Timeline.snapTime(time, targetAnimation)
+Keyframe.replaceOthers(...)
+targetAnimation.setLength()
+```
+
+The pasted keyframe data is supplied as explicit `data_points` so the target
+animation remains independent of editor selection.
+
+### Preserved behavior
+
+The following were intentionally preserved:
+
+- deterministic Animation/Group UUID-first target resolution;
+- `copy` behavior and clipboard shape;
+- `paste` / `mirror_paste` result text;
+- existing mirror-axis value semantics;
+- interpolation values;
+- copied vector Bezier handle data;
+- Geometry Cube/Cuboid-only contract;
+- frozen Texture boundary.
+
+### Diff proof
+
+The source commit changes one hunk in `animation_copy_paste` only. There is no
+source drift into `copy`, `manage_keyframes`, graph editor, timeline, batch
+operations, Geometry, or Texture. No CI/status checks are registered for the
+source commit.
+
+Actual Blockbench paste, mirror-paste, playback, and Undo/Redo remain
+`LOCAL PROOF REQUIRED`.
+
+## Continuation Audit — `animation_graph_editor`
+
+The next grounded Animation boundary is the graph-editor tool.
+
+Current Local exposes:
+
+```text
+axis = x | y | z | all
+```
+
+but the execute path currently does not use `axis` when applying graph-editor
+actions.
+
+For Bezier actions it also assigns scalar values directly to properties that
+current Blockbench owns as per-axis vectors, for example:
+
+```text
+kf.bezier_left_time = 0
+kf.bezier_right_time = duration
+```
+
+and the custom-curve path likewise assigns scalar handle times.
+
+Current official Blockbench graph-editor behavior proves that Bezier handles are
+read and edited by axis index:
+
+```text
+bezier_left_time[axis_number]
+bezier_left_value[axis_number]
+bezier_right_time[axis_number]
+bezier_right_value[axis_number]
+```
+
+Native handle dragging snapshots the full vectors, restores them, then mutates
+the selected axis component. Uniform keyframes may propagate that component to
+other axes explicitly. The UI itself has an X/Y/Z graph axis selector.
+
+Therefore the next correction must distinguish two concepts instead of treating
+`axis` as decorative:
+
+- keyframe `interpolation` is a keyframe-level property;
+- Bezier handle time/value data is per-axis vector state.
+
+The current graph-editor mutation also opens `Undo.initEdit()` without a
+try/catch + `Undo.cancelEdit(true)` recovery path.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
-- graph-editor curve/easing semantics and vector handle parity;
 - timeline mutation (`set_length`, `set_fps`, `loop`) Undo/API parity;
 - batch keyframe operations;
 - animation readback/inspection coverage.
@@ -176,6 +183,7 @@ Do not combine these into the next slice:
 - deterministic Animation + Group targeting on keyframe/curve/copy-paste paths;
 - recoverable/action-specific `manage_keyframes` animator/keyframe mutation;
 - native-vector Bezier handle input contract for `manage_keyframes`;
+- recoverable target-bound `animation_copy_paste` paste/mirror-paste mutation;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions only where live Blockbench proof has not been
@@ -199,8 +207,8 @@ performed.
 
 ## Next Step
 
-Audit and correct **only `animation_copy_paste` paste / mirror-paste animator
-creation and Undo recoverability** in:
+Audit and correct **only `animation_graph_editor` axis / Bezier-vector parity and
+Undo recoverability** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -208,18 +216,18 @@ mcp/server/tools/animation.ts
 
 Requirements:
 
-1. preserve deterministic target Animation/Group resolution and the Cuboid-only
-   modelling contract;
-2. keep `copy` read-only behavior unchanged unless direct evidence requires a
-   minimal correction;
-3. open the recoverable Animation mutation transaction before a missing target
-   animator is registered;
-4. use current Blockbench-owned animator/keyframe primitives without relying on
-   `Animation.selected` when an explicit target animation is supplied;
-5. ensure failure after mutation begins cancels/reverts the edit and refreshes
-   only required Animation/timeline state before rethrow;
-6. preserve pasted interpolation and vector Bezier-handle data;
-7. do not modify graph editor, timeline, batch operations, Geometry, or Texture.
+1. preserve deterministic Animation/Group target resolution and Cuboid-only
+   modelling;
+2. verify the action contract against current Blockbench graph-editor semantics:
+   interpolation mode is keyframe-level while Bezier handles are per-axis;
+3. stop assigning scalar values directly to vector-valued Bezier handle
+   properties;
+4. make `axis` meaningful for Bezier-handle edits, including an explicit and
+   deterministic interpretation of MCP `all` without inventing per-axis
+   interpolation support that Blockbench does not have;
+5. wrap graph-editor mutation/finish in recoverable Undo cancellation on failure;
+6. keep the slice limited to `animation_graph_editor`; do not modify timeline,
+   batch operations, copy/paste, Geometry, or Texture.
 
 After the source fix, inspect the commit diff immediately for drift and advance
 to exactly one grounded Animation boundary.
@@ -227,6 +235,6 @@ to exactly one grounded Animation boundary.
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/control-flow/target-resolution/Undo
-structure only. Actual Blockbench animation playback, pasted keyframes, Bezier
-curves, Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior,
-and save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+structure only. Actual Blockbench graph curves, pasted keyframes, playback,
+Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior, and
+save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
