@@ -93,6 +93,49 @@ const bedrockParticleEffectsSchema = z
     "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
   );
 
+const bedrockBoneKeyframeSchema = z.object({
+  time: z
+    .number()
+    .finite()
+    .min(0)
+    .describe("Finite non-negative keyframe time in seconds."),
+  position: vector3Schema.optional(),
+  rotation: vector3Schema.optional(),
+  scale: z.union([vector3Schema, z.number()]).optional(),
+});
+
+const bedrockBoneKeyframesSchema = z
+  .array(bedrockBoneKeyframeSchema)
+  .superRefine((keyframes, ctx) => {
+    const channelTimes = {
+      position: new Map<number, number>(),
+      rotation: new Map<number, number>(),
+      scale: new Map<number, number>(),
+    };
+    const channels = ["position", "rotation", "scale"] as const;
+
+    keyframes.forEach((keyframe, index) => {
+      channels.forEach((channel) => {
+        if (keyframe[channel] === undefined) return;
+
+        const previousIndex = channelTimes[channel].get(keyframe.time);
+        if (previousIndex !== undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [index, "time"],
+            message: `Bone keyframe entries ${previousIndex} and ${index} both define ${channel} at time ${keyframe.time}. Use one ${channel} value per effective time.`,
+          });
+          return;
+        }
+
+        channelTimes[channel].set(keyframe.time, index);
+      });
+    });
+  })
+  .describe(
+    "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time."
+  );
+
 export const createAnimationParameters = z.object({
   name: z.string().describe("Name of the animation"),
   loop: z
@@ -104,16 +147,7 @@ export const createAnimationParameters = z.object({
     .optional()
     .describe("Length of the animation in seconds"),
   bones: z
-    .record(
-      z.array(
-        z.object({
-          time: z.number(),
-          position: vector3Schema.optional(),
-          rotation: vector3Schema.optional(),
-          scale: z.union([vector3Schema, z.number()]).optional(),
-        })
-      )
-    )
+    .record(bedrockBoneKeyframesSchema)
     .describe(
       "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Targets are canonicalized to the existing Group name before creation."
     ),
