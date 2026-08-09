@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_CREATE_SCALE_ZERO_HARDENED_COORDINATE_SPACE_GAP`
+`REFERENCE_FIDELITY_ANIMATION_COORDINATE_SPACE_HARDENED_TRANSFORM_FINITE_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — Scalar `scale: 0` Preservation
+## Latest Completed Animation Slice — `create_animation` Transform Coordinate Space
 
 Primary owner:
 
@@ -46,55 +46,100 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-505a0f8085edaa0519d2d2e2095ae66444daa158
-fix: preserve zero scale in animation creation
+60d46648b995b658151db454982e1a88f4ea1819
+fix: align created animation transform space
 ```
 
-The exact source diff is one presence-check correction inside the synthetic
-Bedrock payload builder:
+The source change is limited to the public transform-space description for
+`create_animation` and the synthetic Bedrock payload conversion for position and
+rotation.
+
+Keyframe time/collision validation, scalar-zero scale preservation,
+`animation_length`, particle/sound/timeline effects, other Animation tools,
+Geometry, and Texture were not intentionally changed.
+
+### Public transform-space decision
+
+`create_animation`, `manage_keyframes`, and `inspect_animation` now share one MCP
+meaning:
 
 ```text
-if (keyframe.scale)
+transform vectors are authored Blockbench values
 ```
 
-became:
+This avoids exposing a separate Bedrock-file coordinate convention only for the
+creation path.
+
+`manage_keyframes` already writes requested transform values directly into
+Blockbench keyframes with `keyframe.set(...)`, and `inspect_animation` reads those
+authored data-point values back.
+
+### Native Bedrock conversion proved
+
+Current Blockbench Bedrock import converts file-space arrays into authored
+Blockbench space by inverting:
 
 ```text
-if (keyframe.scale !== undefined)
+position: X
+rotation: X and Y
+scale: unchanged
 ```
 
-No schema, AnimationCodec lifecycle, time/collision validation, coordinate/sign
-logic, effect behavior, other Animation tool, Geometry, or Texture was changed.
+Current `Keyframe.compileBedrockKeyframe()` performs the same sign conversion in
+the opposite serialization direction, proving that the conversion is the native
+Bedrock file-space boundary rather than the intended authored MCP value space.
 
-### Why the change is required
+### Creation payload correction
 
-The public `create_animation` keyframe contract intentionally accepts:
+`create_animation` still uses the current Bedrock `AnimationCodec`, but its
+synthetic JSON is now prepared as file-space data before import:
 
 ```text
-scale: vector3 | number
+requested Blockbench position [x, y, z]
+→ synthetic Bedrock [-x, y, z]
+→ codec import
+→ authored Blockbench [x, y, z]
 ```
 
-and current Bedrock animation import accepts numeric channel values, mapping one
-number uniformly to X/Y/Z. Numeric zero is not excluded by the native importer.
-
-The old truthy check therefore confused a valid authored value with absence:
+and:
 
 ```text
-scale: 0
+requested Blockbench rotation [x, y, z]
+→ synthetic Bedrock [-x, -y, z]
+→ codec import
+→ authored Blockbench [x, y, z]
 ```
 
-was omitted before the Bedrock codec ever saw it.
+Scale is forwarded unchanged because native Bedrock import/export does not apply
+the position/rotation sign conversion to scale.
 
-The explicit `!== undefined` check now preserves scalar zero while leaving all
-non-zero scalar and vector scale behavior unchanged.
+The conversion creates new arrays and does not mutate caller vectors.
+
+### Public descriptions
+
+The local `create_animation` keyframe schema now explicitly describes position,
+rotation, and scale as **Blockbench-authored** values. The tool description and
+`bones` description state that Bedrock file-space conversion is internal to the
+codec creation path.
+
+This makes the public contract consistent with mutation/readback rather than
+requiring callers to know Blockbench's Bedrock serializer internals.
 
 ### Diff / proof boundary
 
-GitHub shows exactly one changed line in the source commit. There are no
-registered CI/status checks for the commit.
+The exact source diff contains only:
 
-Actual scalar-zero import, resulting authored scale, playback, Undo/Redo, motion,
-clipping, and save/reopen remain `LOCAL PROOF REQUIRED`.
+- authored-space descriptions for create position/rotation/scale;
+- authored-space wording on `create_animation` / `bones`;
+- position X pre-inversion for the synthetic Bedrock payload;
+- rotation X/Y pre-inversion for the synthetic Bedrock payload.
+
+Scale payload behavior, including explicit scalar `scale: 0`, remains unchanged.
+GitHub has no registered CI/status checks for the source commit.
+
+Actual movement direction, authored values in a live project, playback,
+Undo/Redo, motion arcs, clipping, and save/reopen remain
+`LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -112,89 +157,73 @@ clipping, and save/reopen remain `LOCAL PROOF REQUIRED`.
 - validated non-ambiguous particle timestamp keys;
 - finite/non-negative, channel-aware transform bone keyframe times;
 - explicit scalar `scale: 0` preservation;
+- authored Blockbench transform-space parity across create/mutate/readback;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `create_animation` Transform Coordinate Space
+## Continuation Audit — `create_animation` Transform Value Finiteness
 
-The next grounded Animation boundary is **only transform coordinate/sign-space
-parity for `create_animation`** in:
+The next grounded Animation boundary is **only numeric finiteness of authored
+transform values accepted by `create_animation`** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-### Current inconsistency
-
-`manage_keyframes` writes authored transform values directly into Blockbench
-keyframes:
+Current local creation schema still derives vector components from the shared:
 
 ```text
-x → keyframe.set("x", value)
-y → keyframe.set("y", value)
-z → keyframe.set("z", value)
+vector3Schema = array(z.number()).length(3)
 ```
 
-and `inspect_animation` reads those authored Blockbench data-point values back.
-
-`create_animation`, however, currently forwards caller vectors directly into a
-synthetic **Bedrock animation JSON**, then imports that JSON through the Bedrock
-codec.
-
-Current Bedrock codec converts file-space transform arrays during import:
+and scalar scale uses:
 
 ```text
-position:
-  X is inverted
-
-rotation:
-  X is inverted
-  Y is inverted
-
-scale:
-  unchanged
+z.number()
 ```
 
-Therefore an identical input vector sent through `create_animation` and
-`manage_keyframes` does not currently have the same authored Blockbench meaning
-for position X or rotation X/Y.
+The project uses Zod 3.25.x, where `.finite()` is available and is already used
+locally for keyframe time. The shared vector schema is intentionally generic and
+must not be changed merely for this one creation boundary.
 
 ### Why this is material
 
-The MCP surface should have one explicit transform-space contract. Without one,
-a model author can create an Animation through `create_animation`, inspect it in
-Blockbench space, then get opposite signs compared with a later
-`manage_keyframes` edit using the same requested vector.
+The synthetic Bedrock creation payload is serialized through `JSON.stringify`.
+Non-finite JavaScript numbers are not valid JSON numeric values and serialize as
+`null` rather than preserving the requested transform number.
 
-This directly affects motion direction and reference fidelity; it is not merely a
-serialization detail.
+That means a non-finite position/rotation component or scalar/vector scale can
+cross the current public schema but cannot survive as the authored transform the
+caller requested.
 
-### Decision still to prove in the next slice
+The coordinate-space correction also performs numeric sign conversion on
+position/rotation, so the creation boundary should reject non-finite authored
+numbers before any synthetic payload is built.
 
-Do not assume the fix yet. Audit the existing public descriptions/callers and
-current Bedrock compile/import symmetry to choose exactly one contract:
+### Intended bounded direction
 
-1. **Blockbench-authored transform values** across MCP Animation tools, with
-   `create_animation` converting values into Bedrock file space before codec
-   import; or
-2. an explicitly Bedrock-file-space `create_animation` contract if repository
-   evidence proves that is intentionally different from mutation/readback tools.
+Do not modify shared `vector3Schema` in the next slice. Prefer a local
+`create_animation` transform-value contract that requires:
 
-The preferred direction should be the one that preserves deterministic
-round-trip parity with existing `manage_keyframes` + `inspect_animation` without
-inventing another coordinate system.
+```text
+position XYZ: finite numbers
+rotation XYZ: finite numbers
+scale XYZ or scalar: finite numbers
+```
+
+Do not invent arbitrary magnitude limits without source evidence.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
 - `animation_length` finite/range/zero semantics;
-- transform scalar/vector value finiteness beyond the proven coordinate issue;
 - sound/timeline EffectAnimator readback;
 - broad batch selection redesign;
 - shared Animation/Group resolver refactor;
+- shared `vector3Schema` migration;
 - local save/reopen and visual playback proof;
 - broad public-surface cleanup of generic non-Bedrock tools.
 
@@ -214,8 +243,7 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `create_animation` transform coordinate/sign-space
-parity** in:
+Audit and correct **only `create_animation` transform-value finiteness** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -224,21 +252,20 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve the current Cuboid bone rig and deterministic Group binding;
-3. compare `create_animation`, `manage_keyframes`, `inspect_animation`, and current
-   Bedrock import/compile sign conversion before choosing the public transform
-   space;
-4. make position/rotation values round-trip consistently with the chosen MCP
-   authored-space contract; scale must remain unaffected by sign conversion;
-5. do not change keyframe time/collision validation, scalar-zero scale handling,
-   `animation_length`, particle/sound/timeline effects, batch operations, Geometry,
-   or Texture in this slice;
+2. preserve the newly established Blockbench-authored transform-space contract;
+3. keep the correction local to `create_animation`; do not modify shared
+   `vector3Schema` or unrelated tool schemas;
+4. require every position/rotation vector component and every scalar/vector scale
+   value to be finite before execute / synthetic JSON construction;
+5. do not add arbitrary magnitude limits or alter sign conversion, keyframe
+   time/collision validation, scalar-zero behavior, `animation_length`, effects,
+   batch operations, Geometry, or Texture;
 6. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
 
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/serialization/control-flow parity
-only. Actual movement direction, playback, authored Blockbench values,
+only. Actual MCP validation, authored values, movement direction, playback,
 Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior, and
 save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
