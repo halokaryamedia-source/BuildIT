@@ -8,235 +8,192 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 ## Active Goal
 
-Improve Reference Image / Modelling Brief → Blockbench fidelity for Minecraft
-Bedrock Entity modelling while keeping Geometry **Cube/Cuboid only** and making
-Animation deterministic, API-correct, recoverable, and inspectable on the
-intended Bedrock rig.
+Stabilize and reduce the BlockIT MCP foundation **before** continuing feature
+hardening. Keep the proven Reference Fidelity work and recent Bedrock Animation
+improvements, but stop treating more tool coverage or more per-tool validation
+as progress until the MCP boundary itself is secure, enforced, testable, and
+appropriately small for the Minecraft Bedrock Entity product.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_TIMELINE_RANGE_HARDENED_SELECTION_LIFECYCLE_GAP`
+`MCP_DEVELOPMENT_AUDIT_RECORDED_FEATURE_WORK_FROZEN_REDUCTION_PLAN_NEXT`
 
 Execution channel now: **ChatGPT → GitHub**.  
-Local Blockbench testing: **intentionally deferred** by current priority.
+Local Blockbench testing: **intentionally deferred until stabilization planning
+selects the proof points.**
 
-## Frozen Boundaries
+## Current Governing Review
+
+Read first:
+
+```text
+docs/knowledge/reviews/mcp-development-quality-audit.md
+```
+
+Review commit:
+
+```text
+ed62775c16fc544f99a00384f45cae28d37b8a75
+docs: record MCP development quality audit
+```
+
+Review Index continuation:
+
+```text
+1499a727da8627f2e83d20885871acd9ef1922dd
+docs: index MCP development quality audit
+```
+
+The audit is **active evidence**, not an implementation plan.
+
+## Audit Verdict
+
+Current MCP is **not yet optimal**.
+
+Recent focused Bedrock work is materially stronger than the legacy foundation,
+but the repository still contains higher-priority problems that make additional
+micro-hardening inefficient or falsely reassuring.
+
+### P0 — foundation blockers
+
+1. server is not explicitly loopback-bound despite logging `localhost`;
+2. no proved Origin/auth boundary before MCP transport handling;
+3. `risky_eval` is a Stable/default arbitrary-JavaScript capability;
+4. tool safety annotations are stored but not passed through current MCP
+   registration/reconstruction;
+5. factory `extractShape()` can strip top-level Zod `.refine()` / `.superRefine()`
+   semantics, so schema presence is not proof of runtime MCP validation;
+6. `from_geo_json` has a misleading input/format contract and unnecessary URL
+   fetch surface;
+7. no effective test/typecheck/root-CI quality gate is proved;
+8. checked-in generated MCP API docs are stale and contradict current source.
+
+### P1 — overdevelopment / excess surface
+
+- generic Blockbench tool coverage is much broader than the active Bedrock Entity
+  product;
+- Mesh modelling/editing and Mesh UV are non-core for Cube/Cuboid-only Entity
+  geometry;
+- Armature/vertex-weight rigging is a mesh-deformation path, not the normal
+  Group/BoneAnimator Cuboid rig;
+- Bedrock Block material-instance tools are mixed into default core exposure;
+- UI automation/eval/import/export escape hatches are peers of semantic core
+  tools instead of gated fallbacks;
+- raw TCP/HTTP parsing + multiple keepalive/session layers are disproportionately
+  complex for a single-client desktop service;
+- `experimental` status does not meaningfully reduce MCP exposure;
+- progress plumbing is currently no-op;
+- result contracts and resolver ownership are inconsistent/duplicated.
+
+### P2 — maintenance debt
+
+- Paint surface is broader than the proven product need;
+- `mcp_instructions` appears disconnected from actual server creation;
+- resources can expose heavy texture source data and local project paths;
+- generic project/format behavior remains broader than the primary product;
+- same-domain numeric validation remains inconsistent across legacy/new tools;
+- Animation still has residual gaps, but they are no longer the active priority.
+
+The complete evidence, examples, false-confidence ledger, and provisional
+keep/gate/quarantine/remove classification are in the governing review.
+
+## False-Confidence Rule
+
+From this point forward:
+
+> Do not treat a schema, annotation, comment, UI setting, generated document,
+> build success, or `stable`/`experimental` label as proof unless the actual MCP
+> registration/execution path enforces the claimed contract.
+
+This rule specifically prevents more source that **looks** safe without making
+the runtime boundary safer.
+
+## Frozen Product Boundaries
 
 ### Geometry
 
-The active Minecraft Bedrock Entity modelling path is **Cube/Cuboid only**.
-Do not introduce Mesh, vertex deformation, morph targets, free-form geometry,
-or another shape system into the Bedrock modelling/animation path.
+Minecraft Bedrock Entity model geometry remains **Cube/Cuboid only**.
+
+Do not introduce Mesh, vertex deformation, morph targets, cylinders, spheres,
+free-form geometry, or another shape system into the default Bedrock Entity path.
 
 ### Texture
 
-Texture source-hardening is frozen. Reopen it only when a concrete Bedrock
-Cuboid modelling/Animation workflow proves a material Texture blocker.
+Texture feature hardening remains frozen unless the future stabilization plan or
+an end-to-end Bedrock proof identifies a real core blocker.
 
-2D texture-editor utilities are not model geometry and are not an Animation gate.
+### Animation
 
-## Latest Completed Animation Slice — `animation_timeline.select_range` Input
+Recent Animation source improvements remain retained, including deterministic
+identity, codec-backed creation, rollback, authored-space parity, transform and
+particle readback, and recent timeline input hardening.
 
-Primary owner:
+However, **do not continue Animation micro-hardening by default** until the MCP
+foundation work order is approved.
 
-```text
-mcp/server/tools/animation.ts
-```
-
-Source commit:
-
-```text
-dccd17dc29cfa1b83b3b7b2d4a50c9d75edf1839
-fix: validate animation timeline range
-```
-
-The exact source diff is limited to a timeline-local range schema and wiring the
-`animation_timeline.range` parameter to that schema.
-
-### Current timeline selection range contract
-
-`animation_timeline.select_range` now accepts only:
+The previously active runtime bug remains parked:
 
 ```text
-start: finite and >= 0
-end: finite and >= 0
-start <= end
+animation_timeline.select_range
 ```
 
-The interval remains inclusive.
+Repeated no-event `kf.select()` calls can clear prior timeline selection and the
+manual deselection branch can desynchronize `Timeline.selected` from per-keyframe
+flags. This remains a valid defect, but it is not currently the highest-priority
+source change.
 
-No `1000` upper bound was added because this range filters authored keyframes and
-does not call `Timeline.setTime()`.
+## Strong Patterns To Preserve
 
-### Shared schema intentionally unchanged
+Do not roll back these directions while reducing the MCP:
 
-Repository-wide `timeRangeSchema` remains unchanged. It is still used by other
-Animation surfaces such as graph editor ranges, batch selection, and copy ranges.
-Those callers were not silently migrated as part of this timeline-only boundary.
+- `place_cube`: explicit finite extents, intentional pivot rules, deterministic
+  targeting;
+- `modify_cubes_batch`: exact UUIDs, bounded batch, preflight, coherent Undo;
+- `inspect_element`: narrow read-only authored-state inspection;
+- `inspect_model_bounds`: structural whole-model observation;
+- `capture_model_views`: deterministic reference-facing image evidence;
+- recent `create_animation` / `inspect_animation`: Bedrock codec ownership,
+  deterministic Group binding, rollback/readback, explicit proof boundary;
+- source/static proof must not be promoted to live Blockbench proof.
 
-### Execute behavior intentionally unchanged
+## Feature Work Freeze
 
-The existing `select_range` execute path still compares:
+Until the next planning artifact is approved:
 
-```text
-kf.time >= range.start && kf.time <= range.end
-```
-
-No selection/runtime behavior was changed in this completed slice.
-
-GitHub shows only the local schema addition and the timeline `range` wiring; no
-registered CI/status checks exist for the source commit.
-
-Actual MCP validation, timeline selection UI, preview, Undo/Redo, and save/reopen
-remain `LOCAL PROOF REQUIRED`.
-
-## Completed High-Value Animation Boundaries Kept In Place
-
-- deterministic Animation + Group identity for mutation/readback paths;
-- recoverable `manage_keyframes` mutation and selection lifecycle;
-- native-vector Bezier handle contract;
-- target-bound recoverable copy/paste;
-- axis-aware graph-editor Bezier mutation;
-- recoverable persistent timeline settings;
-- hardened batch offset/mirror/bake/scale/reverse/smooth operations;
-- authored transform + particle readback;
-- current Bedrock `AnimationCodec` creation / Undo / created identity;
-- deterministic `create_animation` bone-to-Group binding;
-- native-shaped `create_animation.particle_effects` input;
-- validated non-ambiguous particle timestamp keys;
-- finite/non-negative, channel-aware transform bone keyframe times;
-- explicit scalar `scale: 0` preservation;
-- Blockbench-authored coordinate/sign-space parity across create/mutate/readback;
-- finite `create_animation` transform values;
-- finite/ranged `create_animation.animation_length` with native zero omission;
-- finite/ranged persistent `animation_timeline.set_length` input while preserving
-  native authored-keyframe floor semantics;
-- finite/ranged `animation_timeline.set_time` input matching native playhead range;
-- finite/non-negative/ordered `animation_timeline.select_range` input without
-  widening shared range semantics;
-- no Mesh/vertex/morph animation expansion.
-
-These are source/static conclusions where live Blockbench proof has not been
-performed.
-
-## Continuation Audit — `animation_timeline.select_range` Selection Lifecycle
-
-The next grounded Animation boundary is **only the runtime selection lifecycle of
-`animation_timeline.select_range`** in:
-
-```text
-mcp/server/tools/animation.ts
-```
-
-Current Local execute path is:
-
-```text
-Timeline.keyframes.forEach((kf) => {
-  if (kf.time >= range.start && kf.time <= range.end) {
-    kf.select();
-  } else {
-    kf.selected = false;
-  }
-});
-```
-
-### Proved native mismatch
-
-Current Blockbench `Keyframe.select(event)` clears the previous timeline
-selection when called without a modifier event:
-
-```text
-if (!event || no shift/ctrl modifier) {
-  Timeline.selected.forEach(kf => kf.selected = false)
-  Timeline.selected.empty()
-}
-...
-Timeline.selected.safePush(this)
-this.selected = true
-```
-
-Therefore repeatedly calling `kf.select()` with no event is not a valid way to
-build a multi-keyframe range selection. Each matching keyframe can clear the
-selection established by the previous matching keyframe, leaving only the last
-one selected.
-
-The current `else` branch also sets `kf.selected = false` directly without
-removing that keyframe from `Timeline.selected`, so a no-match/partial-match path
-can leave selection flags and the global selected-array lifecycle dependent on
-previous state.
-
-### Existing Local recovery pattern
-
-`manage_keyframes` already has the stronger selection pattern in the same file:
-
-```text
-Undo.initSelection({ timeline: true })
-Timeline.unselect()
-... set selected flags + update Timeline.selected ...
-updateKeyframeSelection()
-Undo.finishSelection(...)
-```
-
-with `Undo.cancelSelection(true)` and `updateKeyframeSelection()` on failure.
-
-The next slice should reuse that ownership model rather than inventing a new
-selection abstraction.
-
-## Other Animation Findings — Not Yet Active
-
-Do not combine these into the next slice:
-
-- sound/timeline EffectAnimator readback;
-- shared `timeRangeSchema` migration;
-- graph-editor/batch/copy range cleanup;
-- broad batch selection redesign;
-- shared Animation/Group resolver refactor;
-- local save/reopen and visual playback proof;
-- broad public-surface cleanup of generic non-Bedrock tools.
-
-## Holds
-
-- **G1/G2:** source corrections implemented; local proof deferred.
-- **G3 annotations:** paused.
-- auxiliary 2D `texture_selection` completeness: parked/non-gating.
-- shared `findTextureGroupOrThrow()` hardening: deferred until callers can be exhaustively audited.
-- shared `layerBlendModeEnum` cleanup: deferred until callers can be exhaustively audited.
-- shared `findGroupOrThrow()` migration: deferred.
-- shared `keyframeDataSchema` Bezier contract: unchanged because direct caller ownership could not be exhaustively proven.
-- save/reopen proof: later local validation.
+- no new MCP feature families;
+- no broad MCP API parity expansion;
+- no Mesh/Armature/Bedrock-Block expansion for the Entity workflow;
+- no additional per-tool micro-hardening unless it is required to create the
+  stabilization plan itself;
+- no large refactor simply because the audit is broad;
+- no source fixes are implied by this documentation commit.
 
 ## Next Step
 
-Audit and correct **only `animation_timeline.select_range` selection lifecycle**
-in:
+Create **one MCP Reduction & Stabilization Plan (P0 → P2)** from the governing
+review.
 
-```text
-mcp/server/tools/animation.ts
-```
+The plan must:
 
-Requirements:
+1. define the minimal **Bedrock Entity Core** MCP surface;
+2. classify current capability families as **keep / gate / quarantine / remove**;
+3. order P0 security + real-contract fixes before feature cleanup;
+4. restore real engineering proof: root CI, typecheck, targeted contract tests,
+   generated-doc freshness, then local MCP/Blockbench proof;
+5. decide which transport/session layers are truly required from current
+   primary SDK/protocol evidence instead of preserving them through sunk cost;
+6. identify ownership consolidation opportunities without beginning a broad
+   refactor;
+7. preserve the strong recent Cuboid/reference/Animation work;
+8. contain **no source implementation changes** while the plan is being written.
 
-1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve the completed local range validation and inclusive comparisons;
-3. stop using repeated no-event `kf.select()` calls to construct the range;
-4. establish the range selection through one timeline selection transaction,
-   keeping `Timeline.selected` and each keyframe's `selected` flag synchronized;
-5. use the existing Blockbench/Local selection lifecycle (`Undo.initSelection`,
-   clear existing selection, apply exact range, `updateKeyframeSelection`, finish;
-   cancel/recover on failure);
-6. preserve current preview and success-result semantics unless source proof
-   requires a directly-related correction;
-7. do not change `set_time`, `set_length`, create/effects/batch/copy-paste,
-   Geometry, or Texture;
-8. inspect the exact source diff immediately and advance to exactly one grounded
-   Animation boundary.
-
-Primary specialist for the next slice: `blockbench-runtime-development`, because
-the remaining fault is Blockbench selection/Undo runtime mechanics rather than
-the MCP input contract.
+After that plan is reviewed/approved, implementation may resume from its first
+P0 slice only.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/control-flow selection lifecycle only.
-Actual multi-keyframe range selection, timeline UI state, Undo/Redo, preview, and
-save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+Current audit conclusions are source/static evidence. Before implementing
+network/protocol changes, re-check current primary MCP SDK/protocol documentation.
+Actual network bind behavior, MCP client metadata visibility, runtime validation,
+Blockbench mutation, Undo/Redo, playback, save/reopen, and end-to-end modelling
+remain `LOCAL PROOF REQUIRED` where applicable.
