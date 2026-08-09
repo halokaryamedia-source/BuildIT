@@ -195,7 +195,7 @@ export const animationTimelineParameters = z.object({
   length: z
     .number()
     .optional()
-    .describe("Animation length in seconds (for set_length action)."),
+    .describe("Length of the animation in seconds (for set_length action)."),
   fps: z
     .number()
     .min(1)
