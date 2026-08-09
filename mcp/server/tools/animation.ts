@@ -322,8 +322,13 @@ export const animationTimelineParameters = z.object({
     .describe("Timeline action to perform."),
   time: z
     .number()
+    .finite()
+    .min(0)
+    .max(1000)
     .optional()
-    .describe("Time in seconds (for set_time action)."),
+    .describe(
+      "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
+    ),
   length: z
     .number()
     .finite()
