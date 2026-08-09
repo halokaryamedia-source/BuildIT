@@ -1294,21 +1294,7 @@ createTool(
 
           const tgtAnimation = resolveAnimation(target.animation);
           const tgtBone = resolveRigGroup(target.bone);
-
-          let animator = tgtAnimation.animators[tgtBone.uuid];
-          if (!animator) {
-            animator = new BoneAnimator(
-              tgtBone.uuid,
-              tgtAnimation,
-              tgtBone.name
-            );
-            tgtAnimation.animators[tgtBone.uuid] = animator;
-          }
-
-          Undo.initEdit({
-            animations: [tgtAnimation],
-            keyframes: [],
-          });
+          const existingAnimator = tgtAnimation.animators[tgtBone.uuid] as BoneAnimator | undefined;
 
           // @ts-ignore
           const clipboardData = global.animationClipboard;
@@ -1322,50 +1308,86 @@ createTool(
               : mirrorAxis === "z"
               ? 2
               : -1;
+          const timeOffset = target.time_offset ?? 0;
 
-          Object.entries(clipboardData.channels).forEach(
-            ([channel, keyframes]: [string, any[]]) => {
-              keyframes.forEach((kfData) => {
-                const values = [...kfData.values];
+          Undo.initEdit({
+            animations: [tgtAnimation],
+          });
 
-                if (
-                  mirrorAxis &&
-                  (channel === "rotation" || channel === "position")
-                ) {
-                  values[axisIndex] *= -1;
-                }
-
-                const keyframe = animator.createKeyframe(
-                  {
-                    time: kfData.time + (target.time_offset || 0),
-                    channel,
-                    values,
-                    interpolation: kfData.interpolation,
-                  },
-                  kfData.time + (target.time_offset || 0),
-                  channel,
-                  false
+          try {
+            let animator = existingAnimator;
+            if (!animator) {
+              const createdAnimator = tgtAnimation.getBoneAnimator(tgtBone);
+              if (!createdAnimator) {
+                throw new Error(
+                  `Cannot paste animation data into Group "${tgtBone.name}" in animation "${tgtAnimation.name}".`
                 );
-
-                if (kfData.interpolation === "bezier") {
-                  // @ts-ignore
-                  if (kfData.bezier_left_time !== undefined)
-                    keyframe.bezier_left_time = kfData.bezier_left_time;
-                  // @ts-ignore
-                  if (kfData.bezier_left_value)
-                    keyframe.bezier_left_value = kfData.bezier_left_value;
-                  // @ts-ignore
-                  if (kfData.bezier_right_time !== undefined)
-                    keyframe.bezier_right_time = kfData.bezier_right_time;
-                  // @ts-ignore
-                  if (kfData.bezier_right_value)
-                    keyframe.bezier_right_value = kfData.bezier_right_value;
-                }
-              });
+              }
+              animator = createdAnimator;
             }
-          );
 
-          Undo.finishEdit(`${action} animation data`);
+            Object.entries(clipboardData.channels).forEach(
+              ([channel, keyframes]: [string, any[]]) => {
+                keyframes.forEach((kfData) => {
+                  const values = [...kfData.values];
+
+                  if (
+                    mirrorAxis &&
+                    (channel === "rotation" || channel === "position")
+                  ) {
+                    values[axisIndex] *= -1;
+                  }
+
+                  const targetTime = Timeline.snapTime(
+                    kfData.time + timeOffset,
+                    tgtAnimation
+                  );
+                  const keyframe = animator!.addKeyframe({
+                    channel,
+                    data_points: [
+                      {
+                        x: values[0],
+                        y: values[1],
+                        z: values[2],
+                      },
+                    ],
+                    time: targetTime,
+                    interpolation: kfData.interpolation,
+                  });
+                  if (!keyframe) {
+                    throw new Error(
+                      `Channel "${channel}" is unavailable for ${tgtBone.name}.`
+                    );
+                  }
+                  keyframe.replaceOthers([]);
+
+                  if (kfData.interpolation === "bezier") {
+                    // @ts-ignore
+                    if (kfData.bezier_left_time !== undefined)
+                      keyframe.bezier_left_time = kfData.bezier_left_time;
+                    // @ts-ignore
+                    if (kfData.bezier_left_value)
+                      keyframe.bezier_left_value = kfData.bezier_left_value;
+                    // @ts-ignore
+                    if (kfData.bezier_right_time !== undefined)
+                      keyframe.bezier_right_time = kfData.bezier_right_time;
+                    // @ts-ignore
+                    if (kfData.bezier_right_value)
+                      keyframe.bezier_right_value = kfData.bezier_right_value;
+                  }
+                });
+              }
+            );
+
+            tgtAnimation.setLength();
+            Undo.finishEdit(`${action} animation data`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Animator.preview();
+            updateKeyframeSelection();
+            throw error;
+          }
+
           Animator.preview();
 
           return `Pasted animation data to "${target.bone}"${
