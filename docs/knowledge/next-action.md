@@ -8,192 +8,186 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 ## Active Goal
 
-Stabilize and reduce the BlockIT MCP foundation **before** continuing feature
-hardening. Keep the proven Reference Fidelity work and recent Bedrock Animation
-improvements, but stop treating more tool coverage or more per-tool validation
-as progress until the MCP boundary itself is secure, enforced, testable, and
-appropriately small for the Minecraft Bedrock Entity product.
+Stabilize and reduce the BlockIT MCP foundation before normal feature hardening resumes.
+
+The governing audit and ordered implementation plan now exist. Source implementation has **not** started yet.
 
 ## Current Status
 
-`MCP_DEVELOPMENT_AUDIT_RECORDED_FEATURE_WORK_FROZEN_REDUCTION_PLAN_NEXT`
+`MCP_REDUCTION_PLAN_RECORDED_P0_NETWORK_CONTAINMENT_NEXT`
 
 Execution channel now: **ChatGPT → GitHub**.  
-Local Blockbench testing: **intentionally deferred until stabilization planning
-selects the proof points.**
+Local Blockbench/network testing remains required for runtime proof after the source slice.
 
-## Current Governing Review
+## Governing Evidence
 
-Read first:
+Audit:
 
 ```text
 docs/knowledge/reviews/mcp-development-quality-audit.md
 ```
 
-Review commit:
+Audit commit:
 
 ```text
 ed62775c16fc544f99a00384f45cae28d37b8a75
 docs: record MCP development quality audit
 ```
 
-Review Index continuation:
+## Governing Plan
 
 ```text
-1499a727da8627f2e83d20885871acd9ef1922dd
-docs: index MCP development quality audit
+docs/knowledge/operations/mcp-reduction-stabilization-plan.md
 ```
 
-The audit is **active evidence**, not an implementation plan.
-
-## Audit Verdict
-
-Current MCP is **not yet optimal**.
-
-Recent focused Bedrock work is materially stronger than the legacy foundation,
-but the repository still contains higher-priority problems that make additional
-micro-hardening inefficient or falsely reassuring.
-
-### P0 — foundation blockers
-
-1. server is not explicitly loopback-bound despite logging `localhost`;
-2. no proved Origin/auth boundary before MCP transport handling;
-3. `risky_eval` is a Stable/default arbitrary-JavaScript capability;
-4. tool safety annotations are stored but not passed through current MCP
-   registration/reconstruction;
-5. factory `extractShape()` can strip top-level Zod `.refine()` / `.superRefine()`
-   semantics, so schema presence is not proof of runtime MCP validation;
-6. `from_geo_json` has a misleading input/format contract and unnecessary URL
-   fetch surface;
-7. no effective test/typecheck/root-CI quality gate is proved;
-8. checked-in generated MCP API docs are stale and contradict current source.
-
-### P1 — overdevelopment / excess surface
-
-- generic Blockbench tool coverage is much broader than the active Bedrock Entity
-  product;
-- Mesh modelling/editing and Mesh UV are non-core for Cube/Cuboid-only Entity
-  geometry;
-- Armature/vertex-weight rigging is a mesh-deformation path, not the normal
-  Group/BoneAnimator Cuboid rig;
-- Bedrock Block material-instance tools are mixed into default core exposure;
-- UI automation/eval/import/export escape hatches are peers of semantic core
-  tools instead of gated fallbacks;
-- raw TCP/HTTP parsing + multiple keepalive/session layers are disproportionately
-  complex for a single-client desktop service;
-- `experimental` status does not meaningfully reduce MCP exposure;
-- progress plumbing is currently no-op;
-- result contracts and resolver ownership are inconsistent/duplicated.
-
-### P2 — maintenance debt
-
-- Paint surface is broader than the proven product need;
-- `mcp_instructions` appears disconnected from actual server creation;
-- resources can expose heavy texture source data and local project paths;
-- generic project/format behavior remains broader than the primary product;
-- same-domain numeric validation remains inconsistent across legacy/new tools;
-- Animation still has residual gaps, but they are no longer the active priority.
-
-The complete evidence, examples, false-confidence ledger, and provisional
-keep/gate/quarantine/remove classification are in the governing review.
-
-## False-Confidence Rule
-
-From this point forward:
-
-> Do not treat a schema, annotation, comment, UI setting, generated document,
-> build success, or `stable`/`experimental` label as proof unless the actual MCP
-> registration/execution path enforces the claimed contract.
-
-This rule specifically prevents more source that **looks** safe without making
-the runtime boundary safer.
-
-## Frozen Product Boundaries
-
-### Geometry
-
-Minecraft Bedrock Entity model geometry remains **Cube/Cuboid only**.
-
-Do not introduce Mesh, vertex deformation, morph targets, cylinders, spheres,
-free-form geometry, or another shape system into the default Bedrock Entity path.
-
-### Texture
-
-Texture feature hardening remains frozen unless the future stabilization plan or
-an end-to-end Bedrock proof identifies a real core blocker.
-
-### Animation
-
-Recent Animation source improvements remain retained, including deterministic
-identity, codec-backed creation, rollback, authored-space parity, transform and
-particle readback, and recent timeline input hardening.
-
-However, **do not continue Animation micro-hardening by default** until the MCP
-foundation work order is approved.
-
-The previously active runtime bug remains parked:
+Plan commit:
 
 ```text
-animation_timeline.select_range
+9d80760bb910aba9793cbaa0f003de6107d77603
+docs: add MCP reduction stabilization plan
 ```
 
-Repeated no-event `kf.select()` calls can clear prior timeline selection and the
-manual deselection branch can desynchronize `Timeline.selected` from per-keyframe
-flags. This remains a valid defect, but it is not currently the highest-priority
-source change.
+The plan is the P0→P2 work order. Do not skip ahead unless new evidence invalidates its dependency order.
 
-## Strong Patterns To Preserve
+## Product Boundary
 
-Do not roll back these directions while reducing the MCP:
+Default BlockIT MCP remains:
 
-- `place_cube`: explicit finite extents, intentional pivot rules, deterministic
-  targeting;
-- `modify_cubes_batch`: exact UUIDs, bounded batch, preflight, coherent Undo;
-- `inspect_element`: narrow read-only authored-state inspection;
-- `inspect_model_bounds`: structural whole-model observation;
-- `capture_model_views`: deterministic reference-facing image evidence;
-- recent `create_animation` / `inspect_animation`: Bedrock codec ownership,
-  deterministic Group binding, rollback/readback, explicit proof boundary;
-- source/static proof must not be promoted to live Blockbench proof.
+```text
+Minecraft Bedrock Entity
+Geometry: Cube/Cuboid only
+Rig: Group hierarchy / Cuboid children
+Animation: Group/BoneAnimator
+Texture: minimum proven Bedrock Entity outcomes
+Execution: local desktop Blockbench service
+```
+
+Non-core generic capabilities are planned to become gated/quarantined/removed rather than hardened by default.
+
+## Protocol / SDK Decision For Current Stabilization
+
+Do **not** migrate SDK/protocol during P0.
+
+Current primary-source review shows:
+
+- stable Streamable HTTP security guidance already requires Origin validation and recommends loopback binding for local servers;
+- the 2026-07-28 protocol changes session/HTTP semantics materially;
+- the TypeScript SDK v2 / 2026 revision migration remains a separate pre-release/RC-era decision boundary at the time this plan was recorded.
+
+Therefore:
+
+- secure the current v1 transport first;
+- do not add more custom session/keepalive features;
+- reconsider transport/session architecture later at P1.4 using then-current stable primary evidence and actual supported clients.
+
+## Frozen Strong Work
+
+Preserve the recent stronger patterns while stabilizing:
+
+- explicit deterministic `place_cube` geometry/pivot/targeting;
+- bounded `modify_cubes_batch` preflight + Undo;
+- focused `inspect_element` authored-state readback;
+- `inspect_model_bounds`;
+- deterministic `capture_model_views`;
+- recent Bedrock `create_animation` / `inspect_animation` codec, identity, rollback, transform, and particle work;
+- source/static proof must never be promoted to live Blockbench proof.
+
+Do not reopen Mesh geometry for the Bedrock Entity default path.
 
 ## Feature Work Freeze
 
-Until the next planning artifact is approved:
+Until P0/P1 core stabilization is complete:
 
 - no new MCP feature families;
-- no broad MCP API parity expansion;
 - no Mesh/Armature/Bedrock-Block expansion for the Entity workflow;
-- no additional per-tool micro-hardening unless it is required to create the
-  stabilization plan itself;
-- no large refactor simply because the audit is broad;
-- no source fixes are implied by this documentation commit.
+- no broad Paint completeness work;
+- no additional Animation micro-hardening by default;
+- no generic output/resolver rewrite across gated legacy families;
+- no protocol migration bundled into modelling work.
 
-## Next Step
+The known `animation_timeline.select_range` lifecycle defect remains valid but parked.
 
-Create **one MCP Reduction & Stabilization Plan (P0 → P2)** from the governing
-review.
+## Current Work Order
 
-The plan must:
+```text
+P0.1  loopback + Origin containment              ← ACTIVE NEXT SLICE
+P0.2  dangerous default capability containment
+P0.3  full-schema validation + real annotations
+P0.4  typecheck/tests/root CI
+P0.5  generated-doc freshness
 
-1. define the minimal **Bedrock Entity Core** MCP surface;
-2. classify current capability families as **keep / gate / quarantine / remove**;
-3. order P0 security + real-contract fixes before feature cleanup;
-4. restore real engineering proof: root CI, typecheck, targeted contract tests,
-   generated-doc freshness, then local MCP/Blockbench proof;
-5. decide which transport/session layers are truly required from current
-   primary SDK/protocol evidence instead of preserving them through sunk cost;
-6. identify ownership consolidation opportunities without beginning a broad
-   refactor;
-7. preserve the strong recent Cuboid/reference/Animation work;
-8. contain **no source implementation changes** while the plan is being written.
+P1.1  default Bedrock Entity registration profile
+P1.2  family gates
+P1.3  core-only resolver/mutation/result consolidation
+P1.4  transport/session future decision
+P1.5  local end-to-end core acceptance
 
-After that plan is reviewed/approved, implementation may resume from its first
-P0 slice only.
+P2.*  evidence-driven cleanup and parked product fixes
+```
+
+## Next Step — P0.1 Only
+
+Audit and correct **only local transport containment** in:
+
+```text
+mcp/server/net.ts
+mcp/index.ts
+```
+
+Primary specialist:
+
+```text
+mcp-server-development
+```
+
+Before editing, re-check the current stable official MCP Streamable HTTP security requirements and inspect the installed SDK/runtime call path.
+
+### Required behavior
+
+1. explicitly bind the default MCP server to loopback rather than relying on the `localhost` log string;
+2. use/complete the existing `host` option instead of creating another network configuration layer;
+3. validate a present HTTP `Origin` before MCP transport handling;
+4. reject an invalid present Origin with HTTP `403 Forbidden`;
+5. preserve intended local non-browser clients that omit Origin;
+6. keep non-loopback/remote serving unsupported in the default product;
+7. do **not** add OAuth/token/auth infrastructure in this slice;
+8. do not change tool behavior, MCP schemas, Animation, Geometry, Texture, session architecture, keepalive architecture, or SDK version;
+9. inspect the exact source diff immediately after implementation;
+10. advance to exactly one next P0 boundary only after this slice is recorded.
+
+### Static acceptance
+
+Must prove from source/diff:
+
+```text
+explicit loopback host reaches listen()
+Origin validation runs before MCP transport dispatch
+invalid present Origin has deterministic HTTP 403 path
+no unrelated source family changed
+```
+
+### Local proof required
+
+Static GitHub work cannot prove:
+
+```text
+actual OS listener address
+successful intended MCP client connection
+actual 403 response over the runtime server
+absence of compatibility regressions
+```
+
+Later local proof must check at least:
+
+```text
+listener is loopback-only
+MCP Inspector/intended local client still connects
+external/non-local Origin is rejected
+normal local tool call still works
+```
 
 ## Proof Boundary
 
-Current audit conclusions are source/static evidence. Before implementing
-network/protocol changes, re-check current primary MCP SDK/protocol documentation.
-Actual network bind behavior, MCP client metadata visibility, runtime validation,
-Blockbench mutation, Undo/Redo, playback, save/reopen, and end-to-end modelling
-remain `LOCAL PROOF REQUIRED` where applicable.
+ChatGPT → GitHub may prove source/API/control-flow and exact diff only.
+
+Actual network bind behavior, MCP request handling, Blockbench runtime behavior, tool list visibility, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
