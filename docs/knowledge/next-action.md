@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_CREATE_TEXTURE_RENDER_PARITY_HARDENED`
+`REFERENCE_FIDELITY_LIST_TEXTURES_RENDER_OBSERVABILITY_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -152,64 +152,55 @@ Current Local source already contains:
   data/file/canvas setup, `texture.add()`, and `Undo.finishEdit` run inside a
   rollback boundary; failure calls `Undo.cancelEdit(true)`, refreshes Canvas, and
   rethrows;
-- `create_texture` now applies its existing schema-provided `render_mode` and
+- `create_texture` applies its existing schema-provided `render_mode` and
   `render_sides` values exactly once through the initial `Texture` constructor.
   Blockbench's Texture data contract owns both properties, and its constructor
   merges input data before material setup; schema defaults (`"default"`, `"auto"`),
   group preflight, data/file/canvas setup, Undo rollback, result shape, and
-  success refresh remain unchanged.
+  success refresh remain unchanged;
+- `list_textures` remains read-only and preserves its existing `name`, `uuid`,
+  `id`, and `group` result fields while also exposing each Texture's direct
+  `render_mode` and `render_sides` metadata. No image-data read, mutation, Undo,
+  `get_texture`, or `get_material_info` behavior changed.
 
 These are **source implemented**, not live-proven.
 
-## Latest Create-Texture Render-Parity Finding
+## Latest List-Textures Render-Observability Finding
 
-Before the latest change, the public schema exposed:
-
-```text
-render_mode: "default" | "emissive" | "additive" | "layered"
-render_sides: "auto" | "front" | "double"
-```
-
-but `create_texture.execute()` did not destructure either value and therefore did
-not pass them to the created Texture.
-
-Blockbench source/typing evidence confirms:
+Before the latest change, `create_texture` could author render settings but the
+general discovery path returned only:
 
 ```text
-TextureData
-├─ render_mode
-└─ render_sides
-
-new Texture(data)
-→ reset Texture properties
-→ extend(data)
-→ build ShaderMaterial using texture.render_mode / texture.render_sides
-→ updateMaterial()
+list_textures()
+→ [{
+     name,
+     uuid,
+     id,
+     group
+   }]
 ```
+
+Blockbench source/typing evidence already establishes `render_mode` and
+`render_sides` as direct Texture properties, and `get_material_info` reads those
+same properties for grouped material textures.
 
 Current Local behavior is:
 
 ```text
-create_texture(..., render_mode, render_sides)
-→ existing optional TextureGroup preflight
-→ Undo.initEdit(...)
-→ try
-   → new Texture({
-       ...existing fields,
-       render_mode,
-       render_sides,
-       internal: true
-     })
-   → existing data/file/canvas setup
-   → texture.add()
-   → Undo.finishEdit
-→ catch rollback
-→ success refresh/result
+list_textures()
+→ [{
+     name,
+     uuid,
+     id,
+     group,
+     render_mode,
+     render_sides
+   }]
 ```
 
-No post-construction fallback or duplicate render update was added. This keeps the
-render-setting application at the Blockbench-owned initialization point where the
-material is created.
+The tool remains read-only. Existing identity/group fields are unchanged and no
+additional metadata such as `pbr_channel`, dimensions, source/path, or selection
+state was added in this slice.
 
 ## Holds
 
@@ -223,51 +214,57 @@ material is created.
 
 ## Next Step
 
-Audit **`list_textures` render-setting observability** for `render_mode` and
-`render_sides` in:
+Audit **`create_texture` `layer_name` contract parity when `fill_color` is used**
+in:
 
 ```text
 mcp/server/tools/texture.ts
 ```
 
-Current discovery output is:
+Current observed contract/path is:
 
 ```text
-list_textures()
-→ [{
-     name,
-     uuid,
-     id,
-     group
-   }]
+createTextureParameters
+→ fill_color?: color
+→ layer_name?: string
+→ refinement: fill_color requires layer_name
+
+create_texture execute(..., fill_color, layer_name)
+→ destructures layer_name
+→ constructs Texture
+→ no-data branch gets texture.getActiveCanvas()
+→ fill_color paints directly to that canvas
+→ updateSource/updateLayerChanges
+→ layer_name is never read or applied
 ```
 
-`create_texture` can now deterministically set `render_mode` and `render_sides`,
-but the general texture discovery tool does not expose those values. Grouped PBR
-inspection can surface them through `get_material_info`, while a standalone
-texture has no equivalent lightweight metadata read path. This weakens the
-create → inspect → correct loop because the agent cannot confirm the render
-settings it just authored through `list_textures`.
+The public contract therefore requires the caller to provide a layer name for
+filled textures, but current execution does not create/name/select a TextureLayer
+or otherwise use that value. This can make a caller believe a named editable
+layer was authored when the result is only direct texture-canvas content.
 
 Audit requirements:
 
-1. preserve `list_textures` as read-only and preserve its existing `name`, `uuid`,
-   `id`, and `group` fields unchanged;
-2. confirm `Texture.render_mode` and `Texture.render_sides` are safe direct
-   metadata reads from the current Blockbench source/typing contract;
-3. if confirmed, expose only those two render-setting fields in each listed
-   texture so authored render state can be observed without image-data reads;
-4. do not broaden this slice into `pbr_channel`, dimensions, path/source,
-   selection state, material redesign, or a generic texture-info API;
-5. keep `get_texture` image-data behavior and `get_material_info` result shape
-   unchanged.
+1. verify the intended Local/Blockbench TextureLayer lifecycle and existing
+   `Texture.activateLayers` / `TextureLayer` creation patterns before editing;
+2. determine whether `layer_name` is meant to create a real named layer or is a
+   stale/incorrect public contract; do not assume either direction without source
+   evidence;
+3. preserve existing fill color, data-vs-fill exclusion, dimensions, group/PBR
+   targeting, render settings, Undo rollback, result shape, and success refresh;
+4. if a real layer is intended, ensure it is created/painted within the existing
+   create-texture transaction and that Undo capture remains sufficient; if the
+   contract is stale, remove only the unsupported requirement/field rather than
+   inventing layer behavior;
+5. keep this slice separate from new painting features, generic layer-management
+   APIs, UV changes, or material redesign.
 
-This is a read-path parity audit only; no Texture mutation or Undo behavior should
-be introduced.
+This is a contract-to-runtime parity audit first. Do not implement a layer until
+Blockbench-owned source evidence establishes the correct lifecycle.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish schema/control-flow/read-shape structure and static
-source parity only. Actual texture rendering, file loading, texture creation,
-forced rollback, PBR material behavior, and viewport appearance remain
-`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+ChatGPT→GitHub may establish schema/control-flow/read-shape/Blockbench-source
+structure and static parity only. Actual layer creation, texture rendering, file
+loading, texture creation, forced rollback, PBR material behavior, and viewport
+appearance remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
