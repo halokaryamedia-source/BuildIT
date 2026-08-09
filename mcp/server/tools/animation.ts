@@ -93,27 +93,31 @@ const bedrockParticleEffectsSchema = z
     "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
   );
 
+const finiteCreateAnimationVector3Schema = z
+  .array(z.number().finite())
+  .length(3);
+
 const bedrockBoneKeyframeSchema = z.object({
   time: z
     .number()
     .finite()
     .min(0)
     .describe("Finite non-negative keyframe time in seconds."),
-  position: vector3Schema
+  position: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Blockbench-authored position [x, y, z]. create_animation converts it to Bedrock file space before codec import."
+      "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
     ),
-  rotation: vector3Schema
+  rotation: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Blockbench-authored rotation [x, y, z]. create_animation converts it to Bedrock file space before codec import."
+      "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
     ),
   scale: z
-    .union([vector3Schema, z.number()])
+    .union([finiteCreateAnimationVector3Schema, z.number().finite()])
     .optional()
     .describe(
-      "Blockbench-authored scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
+      "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
     ),
 });
 
