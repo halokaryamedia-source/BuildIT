@@ -31,7 +31,13 @@ export const createTextureParameters = z
       .string()
       .optional()
       .describe("Path to the image file or data URL."),
-    group: z.string().optional(),
+    group: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique."
+      ),
     fill_color: colorSchema
       .optional()
       .describe("RGBA color to fill the texture, as tuple or HEX string."),
@@ -283,7 +289,8 @@ export const saveMaterialConfigParameters = z.object({
 export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_texture",
-    description: "Creates a new texture with the given name and size.",
+    description:
+      "Creates a new texture with the given name and size. When an explicit TextureGroup target is supplied, it resolves before mutation by exact UUID, otherwise an exact name must be unique; missing or ambiguous group targets fail before Undo or texture construction.",
     annotations: {
       title: "Create Texture",
       destructiveHint: true,
@@ -780,6 +787,9 @@ export function registerTextureTools() {
       group,
       layer_name,
     }) {
+      const textureGroup =
+        group !== undefined ? resolveTextureToolMaterial(group) : undefined;
+
       Undo.initEdit({
         textures: [],
         collections: [],
@@ -789,7 +799,7 @@ export function registerTextureTools() {
         name,
         width,
         height,
-        group,
+        group: textureGroup?.uuid,
         pbr_channel,
         internal: true,
       });
