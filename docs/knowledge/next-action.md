@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_TIMELINE_LENGTH_HARDENED_TIME_GAP`
+`REFERENCE_FIDELITY_ANIMATION_TIMELINE_TIME_HARDENED_SELECT_RANGE_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — `animation_timeline.set_length`
+## Latest Completed Animation Slice — `animation_timeline.set_time`
 
 Primary owner:
 
@@ -46,81 +46,74 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-bb35dbc23a20d5c522b05de4d6cd2d01d37d3a56
-fix: validate animation timeline length
+aa037f3c5cc801c961f485529609549c0d24bb13
+fix: validate animation timeline time
 ```
 
-The exact source diff is limited to the public `animation_timeline.length`
-schema and directly-related description.
+The exact source diff is limited to the public `animation_timeline.time` schema
+and directly-related description.
 
-### Current timeline length contract
+### Current timeline time contract
 
-When supplied, timeline `length` must now be:
+When supplied, timeline `time` must now be:
 
 ```text
 finite
 >= 0
-<= 10000
+<= 1000
 ```
 
 Invalid, negative, and over-limit values therefore fail at the MCP input
-boundary before the existing persistent Animation-level Undo transaction opens.
+boundary before `Timeline.setTime()` can silently normalize them.
 
-### Native authored-keyframe floor remains owner
+### Native playhead behavior preserved
 
-The execution path is intentionally unchanged:
-
-```text
-animation.setLength(length)
-```
-
-Current Blockbench `Animation.setLength(len)` performs:
+The execution path remains:
 
 ```text
-this.length = limitNumber(len, this.getMaxLength(), 1e4)
+Timeline.setTime(time)
 ```
 
-so an otherwise valid request below the current authored keyframe maximum is not
-pre-rejected by MCP. Native Blockbench remains the owner of that runtime floor.
-
-The tool already reports:
+Current Blockbench `Timeline.setTime(seconds)` begins with:
 
 ```text
-animation.length
+seconds = limitNumber(seconds, 0, 1000)
 ```
 
-after mutation, so a native floor adjustment remains observable to the caller.
+then updates the playhead, `Timeline.time`, timecode, timeline sizing, and reveal
+position.
 
-### Recoverability preserved
+The MCP boundary now matches that stable native range instead of accepting a
+wider input surface and relying on runtime clamping.
 
-The existing `set_length` mutation still runs through the same helper:
+### No animation-length clamp invented
 
-```text
-Undo.initEdit({ animations: [animation] })
-animation.setLength(length)
-Undo.finishEdit("Change animation length")
-```
+The schema does **not** clamp or reject against `animation.length`.
 
-with `Undo.cancelEdit(true)` on failure.
+Current native `Timeline.setTime()` uses its own fixed `0..1000` playhead range,
+not the selected Animation length. Accepted values may therefore be beyond the
+current authored animation length exactly as the native API permits.
 
-No mutation, result, or preview behavior changed in this slice.
+The existing result string remains unchanged and reports the accepted requested
+value. Since every accepted value is already within the native range, no range
+normalization occurs after schema validation.
 
 ### Scope preserved
 
 No change was made to:
 
+- `set_length`, play/pause/stop, FPS, loop, or range selection;
 - `create_animation`;
 - transform/keyframe behavior;
-- `set_time`, play/pause/stop, FPS, loop, or range selection;
 - effects;
 - batch operations;
 - Geometry or Texture.
 
-GitHub shows a single schema-only source hunk and no registered CI/status checks
-for the source commit.
+GitHub shows one schema-only source hunk and no registered CI/status checks for
+the source commit.
 
-Actual MCP validation, native keyframe-floor clamping, timeline UI state,
-Undo/Redo, playback, and save/reopen remain `LOCAL PROOF REQUIRED`.
+Actual MCP validation, timeline UI/playhead state, preview, playback, Undo/Redo,
+and save/reopen remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -143,69 +136,86 @@ Undo/Redo, playback, and save/reopen remain `LOCAL PROOF REQUIRED`.
 - finite/ranged `create_animation.animation_length` with native zero omission;
 - finite/ranged persistent `animation_timeline.set_length` input while preserving
   native authored-keyframe floor semantics;
+- finite/ranged `animation_timeline.set_time` input matching native playhead
+  range;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `animation_timeline.set_time`
+## Continuation Audit — `animation_timeline.select_range`
 
-The next grounded Animation boundary is **only public input parity for
-`animation_timeline.set_time`** in:
+The next grounded Animation boundary is **only action-local range validation for
+`animation_timeline.select_range`** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-Current Local timeline schema still accepts:
+Current timeline parameters still use the shared:
 
 ```text
-time: z.number().optional()
+timeRangeSchema
 ```
 
-and the action calls:
+for `range`.
+
+The shared schema currently accepts:
 
 ```text
-Timeline.setTime(time)
+{
+  start: z.number(),
+  end: z.number()
+}
 ```
 
-### Current native time behavior
+without finiteness, non-negative, or ordering constraints.
 
-Current Blockbench `Timeline.setTime(seconds)` begins with:
+The `select_range` action then performs direct comparisons:
 
 ```text
-seconds = limitNumber(seconds, 0, 1000)
+kf.time >= range.start && kf.time <= range.end
 ```
 
-then writes the normalized value into the playhead / `Timeline.time`, updates the
-timecode when appropriate, updates timeline size if needed, and reveals the
-requested time.
+and reports success after walking the timeline keyframes.
 
-Therefore native timeline-time input has a stable range boundary:
+### Why this is material
+
+A reversed range such as:
 
 ```text
-0..1000 seconds
+start: 5
+end: 2
 ```
 
-The Local MCP boundary currently does not state that range and can rely on silent
-runtime normalization instead.
+cannot match the intended inclusive interval but currently reaches execution and
+can produce an empty selection while still returning a successful result.
 
-### Grounded correction direction
+Non-finite values also do not represent a stable authored time interval.
 
-The next slice should validate only the stable public invariant:
+### Shared-schema boundary
+
+Do **not** harden repository-wide `timeRangeSchema` merely for this action.
+It is also consumed by other Animation surfaces such as graph-editor ranges,
+batch selection, and copy ranges. A shared migration would widen the scope and
+must be audited separately.
+
+The next slice should therefore keep the correction local to
+`animation_timeline.select_range`.
+
+### Intended local range contract
+
+For timeline selection only:
 
 ```text
-time must be finite
-time must be >= 0
-time must be <= 1000
+start: finite and >= 0
+end: finite and >= 0
+start <= end
 ```
 
-Do not clamp against `animation.length`; current `Timeline.setTime()` does not use
-the selected Animation length as its upper bound.
-
-After this validation, the existing result string can continue reporting the
-requested time because every accepted value is already inside the native range
-and therefore is not range-normalized by `Timeline.setTime()`.
+Do not add an upper bound of `1000` merely because `set_time` has one. Timeline
+range selection is not a call to `Timeline.setTime()`, and authored keyframe
+selection should not inherit the playhead limit without source evidence.
 
 ## Other Animation Findings — Not Yet Active
 
@@ -213,6 +223,7 @@ Do not combine these into the next slice:
 
 - sound/timeline EffectAnimator readback;
 - broad batch selection redesign;
+- shared `timeRangeSchema` migration;
 - shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
 - broad public-surface cleanup of generic non-Bedrock tools.
@@ -230,7 +241,8 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `animation_timeline.set_time` public time validation** in:
+Audit and correct **only `animation_timeline.select_range` local range validation**
+in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -239,20 +251,19 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve `Timeline.setTime()` as the runtime owner and do not change playback,
-   stop, or preview behavior;
-3. make timeline `time`, when provided, finite and within `0..1000` at the MCP
-   boundary;
-4. do not clamp against the current Animation length; native `Timeline.setTime()`
-   has a fixed `0..1000` boundary instead;
-5. keep the existing `set_time` result semantics for accepted values;
-6. do not change `set_length`, `create_animation`, effects, batch operations,
-   Geometry, or Texture;
+2. do not modify shared `timeRangeSchema` or other range consumers;
+3. make the range used by `animation_timeline.select_range` require finite,
+   non-negative `start` and `end` with `start <= end`;
+4. do not add a `1000` upper bound merely from playhead semantics;
+5. preserve current inclusive selection comparisons, selection behavior, preview,
+   and result semantics for accepted ranges;
+6. do not change `set_time`, `set_length`, `create_animation`, effects, batch,
+   copy/paste, Geometry, or Texture;
 7. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
 
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/control-flow parity only. Actual MCP
-validation, timeline UI/playhead state, playback, Undo/Redo, and save/reopen remain
-`LOCAL PROOF REQUIRED` until local runtime testing resumes.
+validation, timeline keyframe selection, selection UI, preview, Undo/Redo, and
+save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
