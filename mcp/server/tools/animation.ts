@@ -198,10 +198,12 @@ export const animationTimelineParameters = z.object({
     .describe("Length of the animation in seconds (for set_length action)."),
   fps: z
     .number()
-    .min(1)
-    .max(120)
+    .min(10)
+    .max(500)
     .optional()
-    .describe("Frames per second (for set_fps action)."),
+    .describe(
+      "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
+    ),
   loop_mode: loopModeEnum.optional().describe("Loop mode for the animation."),
   range: timeRangeSchema.optional().describe("Time range for selection."),
 });
@@ -1043,9 +1045,25 @@ createTool(
   {
     ...animationToolDocs[4],
     async execute({ action, time, length, fps, loop_mode, range }) {
-      if (!Animation.selected) {
+      const animation = Animation.selected;
+      if (!animation) {
         throw new Error("No animation selected.");
       }
+
+      const runPersistentAnimationEdit = (
+        label: string,
+        mutate: () => void
+      ) => {
+        Undo.initEdit({ animations: [animation] });
+        try {
+          mutate();
+          Undo.finishEdit(label);
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Animator.preview();
+          throw error;
+        }
+      };
 
       let result = "";
 
@@ -1078,23 +1096,30 @@ createTool(
           if (length === undefined) {
             throw new Error("Length parameter required for set_length action.");
           }
-          Animation.selected.length = length;
-          result = `Set animation length to ${length} seconds`;
+          runPersistentAnimationEdit("Change animation length", () => {
+            animation.setLength(length);
+          });
+          result = `Set animation length to ${animation.length} seconds`;
           break;
 
         case "set_fps":
           if (fps === undefined) {
             throw new Error("FPS parameter required for set_fps action.");
           }
-          Animation.selected.snapping = fps;
-          result = `Set animation FPS to ${fps}`;
+          runPersistentAnimationEdit("Change animation snapping", () => {
+            animation.extend({ snapping: fps });
+          });
+          Timeline.setTimecode(Timeline.time);
+          result = `Set animation FPS to ${animation.snapping}`;
           break;
 
         case "loop":
-          if (loop_mode) {
-            Animation.selected.loop = loop_mode;
+          if (loop_mode && loop_mode !== animation.loop) {
+            runPersistentAnimationEdit("Change animation loop mode", () => {
+              animation.setLoop(loop_mode, false);
+            });
           }
-          result = `Set loop mode to ${loop_mode || Animation.selected.loop}`;
+          result = `Set loop mode to ${animation.loop}`;
           break;
 
         case "select_range":
