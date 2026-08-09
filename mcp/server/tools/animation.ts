@@ -1466,22 +1466,38 @@ createTool(
         return `Performed ${operation} on ${keyframes.length} keyframes`;
       }
 
-      Undo.initEdit({
-        keyframes: keyframes,
-      });
+      if (operation === "smooth") {
+        const transformKeyframes = keyframes.filter(
+          (kf: _Keyframe) => kf.transform
+        );
+        if (!transformKeyframes.length) {
+          throw new Error(
+            "No transform keyframes found matching selection criteria for smooth."
+          );
+        }
 
-      switch (operation) {
-        case "smooth":
-          keyframes.forEach((kf) => {
+        Undo.initEdit({
+          keyframes: transformKeyframes,
+        });
+
+        try {
+          transformKeyframes.forEach((kf: _Keyframe) => {
             kf.interpolation = "catmullrom";
           });
-          break;
+          Undo.finishEdit("Batch keyframe operation: smooth");
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Animator.preview();
+          updateKeyframeSelection();
+          throw error;
+        }
+
+        Animator.preview();
+        updateKeyframeSelection();
+        return `Performed ${operation} on ${transformKeyframes.length} transform keyframes`;
       }
 
-      Undo.finishEdit(`Batch keyframe operation: ${operation}`);
-      Animator.preview();
-
-      return `Performed ${operation} on ${keyframes.length} keyframes`;
+      throw new Error(`Unsupported batch keyframe operation: ${operation}`);
     },
   },
   animationToolDocs[5].status
