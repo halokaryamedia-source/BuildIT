@@ -243,8 +243,9 @@ export const batchKeyframeOperationsParameters = z.object({
       mirror_axis: axisEnum.optional().describe("Axis to mirror values across."),
       bake_interval: z
         .number()
+        .positive()
         .optional()
-        .describe("Interval for baking keyframes."),
+        .describe("Strictly positive interval in seconds for baking keyframes."),
     })
     .optional()
     .describe("Operation-specific parameters."),
@@ -1248,6 +1249,112 @@ createTool(
         return `Performed ${operation} on ${keyframes.length} keyframes`;
       }
 
+      if (operation === "bake") {
+        const animation = Animation.selected;
+        const interval =
+          parameters.bake_interval ?? 1 / animation.snapping;
+        if (!Number.isFinite(interval) || interval <= 0) {
+          throw new Error(
+            "Bake interval must be a finite number greater than 0."
+          );
+        }
+
+        const originalTimelineTime = Timeline.time;
+        const animators = new Set(keyframes.map((kf) => kf.animator));
+        const bakeSamples: Array<{
+          animator: any;
+          channel: string;
+          time: number;
+          values: any[];
+        }> = [];
+        let editStarted = false;
+
+        try {
+          animators.forEach((animator: any) => {
+            const channels = ["rotation", "position", "scale"];
+            channels.forEach((channel) => {
+              const channelKfs = animator[channel];
+              if (!channelKfs || channelKfs.length < 2) return;
+
+              const startTime = Math.min(...channelKfs.map((kf: _Keyframe) => kf.time));
+              const endTime = Math.max(...channelKfs.map((kf: _Keyframe) => kf.time));
+
+              for (let time = startTime; time <= endTime; time += interval) {
+                const targetTime = Timeline.snapTime(time, animation);
+                const alreadyExists = channelKfs.some(
+                  (kf: _Keyframe) => Math.abs(kf.time - targetTime) < 0.001
+                );
+                const alreadyPlanned = bakeSamples.some(
+                  (sample) =>
+                    sample.animator === animator &&
+                    sample.channel === channel &&
+                    Math.abs(sample.time - targetTime) < 0.001
+                );
+                if (alreadyExists || alreadyPlanned) continue;
+
+                Timeline.time = targetTime;
+                const values = animator.interpolate(channel, true);
+                if (!Array.isArray(values) || values.length < 3) {
+                  throw new Error(
+                    `Could not sample ${channel} values while baking animation.`
+                  );
+                }
+                bakeSamples.push({
+                  animator,
+                  channel,
+                  time: targetTime,
+                  values: [...values],
+                });
+              }
+            });
+          });
+
+          Timeline.time = originalTimelineTime;
+
+          if (bakeSamples.length) {
+            Undo.initEdit({
+              animations: [animation],
+            });
+            editStarted = true;
+
+            bakeSamples.forEach((sample) => {
+              const keyframe = sample.animator.addKeyframe({
+                channel: sample.channel,
+                time: sample.time,
+                interpolation: settings.default_keyframe_interpolation.value,
+                data_points: [
+                  {
+                    x: sample.values[0],
+                    y: sample.values[1],
+                    z: sample.values[2],
+                  },
+                ],
+              });
+              if (!keyframe) {
+                throw new Error(
+                  `Channel "${sample.channel}" is unavailable while baking animation.`
+                );
+              }
+            });
+
+            animation.setLength();
+            Undo.finishEdit("Batch keyframe operation: bake");
+            editStarted = false;
+          }
+        } catch (error) {
+          if (editStarted) {
+            Undo.cancelEdit(true);
+          }
+          throw error;
+        } finally {
+          Timeline.time = originalTimelineTime;
+          Animator.preview();
+          updateKeyframeSelection();
+        }
+
+        return `Performed ${operation} on ${keyframes.length} keyframes`;
+      }
+
       Undo.initEdit({
         keyframes: keyframes,
       });
@@ -1273,45 +1380,6 @@ createTool(
         case "smooth":
           keyframes.forEach((kf) => {
             kf.interpolation = "catmullrom";
-          });
-          break;
-
-        case "bake":
-          const interval =
-            parameters.bake_interval || 1 / Animation.selected.snapping;
-          const animators = new Set(keyframes.map((kf) => kf.animator));
-
-          animators.forEach((animator) => {
-            const channels = ["rotation", "position", "scale"];
-            channels.forEach((channel) => {
-              const channelKfs = animator[channel];
-              if (!channelKfs || channelKfs.length < 2) return;
-
-              const startTime = Math.min(...channelKfs.map((kf) => kf.time));
-              const endTime = Math.max(...channelKfs.map((kf) => kf.time));
-
-              for (let time = startTime; time <= endTime; time += interval) {
-                if (
-                  !channelKfs.find((kf) => Math.abs(kf.time - time) < 0.001)
-                ) {
-                  Timeline.time = time;
-                  animator.fillValues(
-                    animator.createKeyframe(
-                      {
-                        time,
-                        channel,
-                        values: animator.interpolate(channel, true),
-                      },
-                      time,
-                      channel,
-                      false
-                    ),
-                    null,
-                    false
-                  );
-                }
-              }
-            });
           });
           break;
       }
