@@ -1355,19 +1355,77 @@ createTool(
         return `Performed ${operation} on ${keyframes.length} keyframes`;
       }
 
+      if (operation === "scale") {
+        const animation = Animation.selected;
+        const pivot = parameters.scale_pivot ?? 0;
+        const factor = parameters.scale_factor ?? 1;
+        if (!Number.isFinite(pivot)) {
+          throw new Error("Scale pivot must be a finite number.");
+        }
+        if (!Number.isFinite(factor)) {
+          throw new Error("Scale factor must be a finite number.");
+        }
+
+        const stretchStates = keyframes.map((keyframe: _Keyframe) => ({
+          keyframe,
+          time: keyframe.time,
+          bezierLeftTime:
+            keyframe.interpolation === "bezier"
+              ? [...keyframe.bezier_left_time]
+              : undefined,
+          bezierRightTime:
+            keyframe.interpolation === "bezier"
+              ? [...keyframe.bezier_right_time]
+              : undefined,
+        }));
+
+        Undo.initEdit({
+          animations: [animation],
+        });
+
+        try {
+          stretchStates.forEach(
+            ({ keyframe, time, bezierLeftTime, bezierRightTime }) => {
+              keyframe.time = Timeline.snapTime(
+                pivot + (time - pivot) * factor,
+                animation
+              );
+
+              if (bezierLeftTime && bezierRightTime) {
+                for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+                  keyframe.bezier_left_time[axisIndex] =
+                    bezierLeftTime[axisIndex] * factor;
+                  keyframe.bezier_right_time[axisIndex] =
+                    bezierRightTime[axisIndex] * factor;
+                }
+              }
+            }
+          );
+
+          const replacedKeyframes: _Keyframe[] = [];
+          stretchStates.forEach(({ keyframe }) => {
+            keyframe.replaceOthers(replacedKeyframes);
+          });
+
+          animation.setLength();
+          Undo.finishEdit("Batch keyframe operation: scale");
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Animator.preview();
+          updateKeyframeSelection();
+          throw error;
+        }
+
+        Animator.preview();
+        updateKeyframeSelection();
+        return `Performed ${operation} on ${keyframes.length} keyframes`;
+      }
+
       Undo.initEdit({
         keyframes: keyframes,
       });
 
       switch (operation) {
-        case "scale":
-          const pivot = parameters.scale_pivot || 0;
-          const factor = parameters.scale_factor || 1;
-          keyframes.forEach((kf) => {
-            kf.time = pivot + (kf.time - pivot) * factor;
-          });
-          break;
-
         case "reverse":
           const times = keyframes.map((kf) => kf.time);
           const minTime = Math.min(...times);
