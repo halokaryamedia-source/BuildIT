@@ -86,8 +86,8 @@ export const gradientToolParameters = z.object({
     x: z.number().describe("Gradient end X coordinate."),
     y: z.number().describe("Gradient end Y coordinate."),
   }),
-  start_color: z.string().describe("Gradient start color as hex string."),
-  end_color: z.string().describe("Gradient end color as hex string."),
+  start_color: z.string().describe("Start color as hex string."),
+  end_color: z.string().describe("End color as hex string."),
   opacity: opacitySchema.describe("Gradient opacity (0-255)."),
   blend_mode: blendModeEnum.optional().describe("Gradient blend mode."),
 });
