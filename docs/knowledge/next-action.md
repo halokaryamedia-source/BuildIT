@@ -17,7 +17,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_LAYER_RENAME_UNDO_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_LAYER_FLATTEN_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -33,8 +33,9 @@ finish remaining high-value Texture layer gaps
 → move the engineering sequence to Animation
 ```
 
-Do not chase theoretical 100% Texture coverage before Animation. Continue only
-when a concrete current source/API/contract gap is proven.
+The remaining layer-management actions have now been source-audited/hardened.
+Do not continue low-level Texture work by inertia. The next step is the single
+closing Texture source audit.
 
 ## Current Architecture
 
@@ -113,68 +114,81 @@ Current Local source already contains:
   explicit 0-based final layer index, rejects fractional/negative/out-of-range
   positions, preserves native remove/splice reorder semantics, and rolls back
   validation/reorder/update/finish failures;
-- `texture_layer_management(action="rename_layer")` now has its own recoverable
-  transaction path. It preserves the existing selected-layer and truthy-name
-  checks, direct `TextureLayer.name` assignment, result text, one texture update,
-  and interface refresh. Validation/assignment/update/finish failures call
-  `Undo.cancelEdit(true)`, refresh Canvas/interface state, and rethrow. The shared
-  `layer_name` schema and `create_layer` generated-name fallback remain unchanged.
+- `texture_layer_management(action="rename_layer")` preserves the current
+  truthy-name/direct-property contract and now rolls back
+  validation/assignment/update/finish failures without changing `create_layer`
+  name fallback behavior;
+- `texture_layer_management(action="flatten_layers")` no longer calls the stale
+  `Texture.flattenLayers()` method. Current Blockbench typing does not declare
+  that method and source search produced no definition. Local now follows the
+  native Disable Texture Layers lifecycle inside the existing outer MCP edit:
+  preserve the already-composited texture canvas, set `layers_enabled = false`,
+  clear `selected_layer`, empty the layer list, update the texture once, and
+  finish the edit. Failure cancels/reverts the open edit and refreshes
+  Canvas/interface state; success clears `UVEditor.vue.layer`, refreshes panels,
+  and updates bar conditions.
 
 These are **source implemented**, not live-proven.
 
-## Latest Rename-Layer Finding
+## Latest Flatten-Layer Finding
 
-Before the latest source change, rename remained in the common tail:
+Before the latest change, Local did:
 
 ```text
 outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ action = rename_layer
-   → require TextureLayer.selected
-   → require truthy layer_name
-   → oldName = TextureLayer.selected.name
-   → TextureLayer.selected.name = layer_name
-   → result = rename result
-→ common texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: rename_layer")
-→ updateInterfacePanels()
+→ require texture.layers_enabled
+→ texture.flattenLayers()
+→ texture.updateChangesAfterEdit()
+→ Undo.finishEdit("Layer management: flatten_layers")
 ```
 
-Blockbench treats `TextureLayer.name` as a normal layer property. Its native
-layer-properties flow opens an edit, changes the property, updates the owning
-texture, then finishes the edit. The MCP direct assignment was therefore
-compatible, but its open outer edit had no failure recovery.
+Current Blockbench `Texture` typing does not expose `flattenLayers()`, and a
+current official-source code search for `flattenLayers` produced no definition.
+The call was therefore stale/unsupported rather than merely missing rollback.
 
-Current Local behavior is:
+Blockbench's native `disable_texture_layers` action owns the equivalent flatten-
+to-bitmap lifecycle:
+
+```text
+Undo.initEdit({ textures: [texture], bitmap: true })
+→ texture.layers_enabled = false
+→ texture.selected_layer = null
+→ texture.layers.empty()
+→ Undo.finishEdit("Disable layers on texture")
+→ UVEditor.vue.layer = null
+→ updateInterfacePanels()
+→ BARS.updateConditions()
+```
+
+Local already opens a broader outer MCP edit before dispatching the action, so it
+does not open another Undo. Current Local behavior is now:
 
 ```text
 outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ if action = rename_layer
+→ if action = flatten_layers
    → try
-      → require TextureLayer.selected
-      → require truthy layer_name
-      → oldName = TextureLayer.selected.name
-      → TextureLayer.selected.name = layer_name
+      → require texture.layers_enabled
+      → texture.layers_enabled = false
+      → texture.selected_layer = null
+      → texture.layers.empty()
+      → result = "Flattened all layers"
       → texture.updateChangesAfterEdit()
-      → Undo.finishEdit("Layer management: rename_layer")
+      → Undo.finishEdit("Layer management: flatten_layers")
    → catch
       → Undo.cancelEdit(true)
       → Canvas.updateAll()
       → updateInterfacePanels()
       → rethrow
+   → UVEditor.vue.layer = null
    → updateInterfacePanels()
-   → return rename result
+   → BARS.updateConditions()
+   → return result
 ```
 
-The existing outer Undo capture is retained because `Texture.getUndoCopy()`
-includes the active layer list/property state when layers are enabled. No
-new duplicate-name policy, sanitization, shared-schema restriction, or generic
-layer-property helper was introduced.
-
-During implementation, one full-file write accidentally reformatted unrelated
-`paint.ts` code. That commit was immediately neutralized by restoring the exact
-pre-slice `paint.ts` blob before the final rename change was applied. Net source
-diff from the slice starting head therefore contains only the intended
-`rename_layer` transaction change.
+The outer texture+bitmap capture is sufficient to preserve the pre-flatten
+layer list, selected-layer identity, and bitmap state for cancellation/Undo at
+the source-contract level. Live Blockbench proof is still required before
+claiming actual Undo/Redo and visual bitmap fidelity.
 
 ## Holds
 
@@ -190,57 +204,36 @@ diff from the slice starting head therefore contains only the intended
 
 ## Next Step
 
-Audit **`texture_layer_management(action="flatten_layers")` Blockbench API/Undo
-parity and recoverability** in:
+Run the single **closing Texture source audit** before moving to Animation.
+
+Audit only the current high-value Texture/UV/paint/material execution surface,
+with emphasis on concrete failures that could still materially break the
+Reference Fidelity workflow:
+
+1. stale/unsupported Blockbench API calls in current Texture/paint/UV paths;
+2. explicit mutation targets that can still silently select the wrong
+   texture/material/group where that path is materially used by the workflow;
+3. public value contracts that are provably incompatible with current Blockbench
+   runtime values;
+4. mutation paths that open Undo and can leave partial state on a normal failure;
+5. missing update/persistence/observability behavior that makes an existing core
+   Texture workflow provably unusable.
+
+Do **not** use this audit to chase theoretical completeness, cosmetic cleanup,
+minor enum/helper debt, paused shared-helper migration, new UV/paint features, or
+broad refactors. Do not perform live Blockbench claims through GitHub.
+
+Closing decision:
 
 ```text
-mcp/server/tools/paint.ts
+no critical/major source gap
+→ freeze Texture source-hardening phase
+→ set the single next step to Animation source audit
+
+one critical/major source gap proven
+→ select exactly one smallest source slice
+→ fix it before freezing Texture
 ```
-
-Current Local path is:
-
-```text
-outer Undo.initEdit({
-  textures: [texture],
-  layers: texture.layers,
-  bitmap: true
-})
-→ action = flatten_layers
-   → require texture.layers_enabled
-   → texture.flattenLayers()
-   → result = "Flattened all layers"
-→ texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: flatten_layers")
-→ updateInterfacePanels()
-```
-
-Unlike the already-audited layer operations, the current review has **not yet
-established the exact current Blockbench-owned `Texture.flattenLayers()`
-lifecycle**. GitHub code search has not produced an authoritative definition, so
-do not infer whether that call opens its own Undo edit, how it composites layers,
-or how it changes `layers_enabled` / selected-layer state.
-
-Audit requirements:
-
-1. keep this slice limited to `flatten_layers`; do not reopen the hardened
-   create/delete/duplicate/merge/opacity/blend/move/rename actions;
-2. verify from current Blockbench source/typing whether `Texture.flattenLayers()`
-   exists in the target API and establish its exact mutation, Undo, layer-list,
-   selected-layer, and refresh lifecycle before editing Local;
-3. preserve the current `layers_enabled` guard, success text, and interface
-   refresh unless source evidence proves the current contract is invalid;
-4. confirm whether the existing outer Undo capture is sufficient for the
-   composite bitmap plus layer-list/selection changes; avoid nested Undo if the
-   native operation exposes an outer-transaction-safe path;
-5. if the API is supported and compatible, make the smallest action-specific
-   recoverability fix. If the call is stale/unsupported, correct only that
-   contract/runtime path rather than inventing new flatten behavior;
-6. do not add generic layer transactions, new flatten options, UV changes, paint
-   features, or material redesign in this slice.
-
-After this flatten audit, the next phase is the single closing Texture source
-audit. If that audit finds no critical/major source gap, freeze Texture and move
-the engineering sequence to Animation.
 
 ## Proof Boundary
 
