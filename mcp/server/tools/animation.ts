@@ -44,6 +44,20 @@ export const createAnimationParameters = z.object({
     .describe("Particle effects with timestamps as keys"),
 });
 
+const manageKeyframeDataSchema = keyframeDataSchema.extend({
+  bezier_handles: z
+    .object({
+      left_time: vector3Schema.optional(),
+      left_value: vector3Schema.optional(),
+      right_time: vector3Schema.optional(),
+      right_value: vector3Schema.optional(),
+    })
+    .optional()
+    .describe(
+      "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors."
+    ),
+});
+
 export const manageKeyframesParameters = z.object({
   animation_id: animationIdOptionalSchema,
   action: z
@@ -52,7 +66,7 @@ export const manageKeyframesParameters = z.object({
   bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to manage keyframes for."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
   keyframes: z
-    .array(keyframeDataSchema)
+    .array(manageKeyframeDataSchema)
     .describe("Keyframe data for the action."),
 });
 
