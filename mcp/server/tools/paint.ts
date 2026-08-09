@@ -445,6 +445,7 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Apply settings
         if (color) {
           ColorPanel.set(color);
         }
@@ -458,9 +459,11 @@ export function registerPaintTools() {
           setBarItemValue("blend_mode", blend_mode);
         }
 
+        // Select fill tool
         // @ts-ignore
         BarItems.fill_tool.select();
 
+        // Perform fill
         Painter.startPaintTool(texture, x, y, {}, { shiftKey: false });
         Painter.stopPaintTool();
 
@@ -494,6 +497,7 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Apply settings
         if (color) {
           ColorPanel.set(color);
         }
@@ -507,11 +511,14 @@ export function registerPaintTools() {
           setBarItemValue("blend_mode", blend_mode);
         }
 
+        // Set shape type
         setBarItemValue("draw_shape_type", shape);
 
+        // Select draw shape tool
         // @ts-ignore
         BarItems.draw_shape_tool.select();
 
+        // Draw shape
         Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
         Painter.useShapeTool(texture, end.x, end.y, {});
         Painter.stopPaintTool();
@@ -545,9 +552,10 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Apply settings
         ColorPanel.set(start_color);
         // @ts-ignore
-        ColorPanel.set(end_color, true);
+        ColorPanel.set(end_color, true); // Set as secondary color
 
         if (opacity !== undefined) {
           setBarItemValue("slider_brush_opacity", opacity);
@@ -556,9 +564,11 @@ export function registerPaintTools() {
           setBarItemValue("blend_mode", blend_mode);
         }
 
+        // Select gradient tool
         // @ts-ignore
         BarItems.gradient_tool.select();
 
+        // Apply gradient
         Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
         Painter.useGradientTool(texture, end.x, end.y, {});
         Painter.stopPaintTool();
@@ -579,13 +589,18 @@ export function registerPaintTools() {
       async execute({ texture_id, x, y, set_as_secondary, pick_opacity }) {
         const texture = getAndActivateTexture(texture_id);
 
+        // Pick color
         Painter.colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
+
+        // Get the picked color
         const color = ColorPanel.get();
 
         if (pick_opacity) {
+          // Get pixel color with alpha
           const pixelColor = Painter.getPixelColor(texture.ctx, x, y);
           const opacity = Math.floor(pixelColor.getAlpha() * 255);
 
+          // Apply opacity to brush tools
           for (let id in BarItems) {
             const tool = BarItems[id];
             // @ts-ignore
@@ -616,6 +631,7 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
         }
@@ -626,13 +642,16 @@ export function registerPaintTools() {
           setBarItemValue("copy_brush_mode", mode);
         }
 
+        // Select copy brush tool
         // @ts-ignore
         BarItems.copy_brush.select();
 
+        // Set source point (Ctrl+click equivalent)
         Painter.startPaintTool(texture, source.x, source.y, {}, {
           ctrlOrCmd: true,
         });
 
+        // Apply at target point
         Painter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
         Painter.stopPaintTool();
 
@@ -665,6 +684,7 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
         }
@@ -678,19 +698,24 @@ export function registerPaintTools() {
           setBarItemValue("brush_shape", shape);
         }
 
+        // Select eraser tool
         // @ts-ignore
         BarItems.eraser.select();
 
+        // Erase at coordinates
         for (let i = 0; i < coordinates.length; i++) {
           const coord = coordinates[i];
 
           if (i === 0 || !connect_strokes) {
+            // Start new stroke
             Painter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
           } else {
+            // Continue stroke
             Painter.movePaintTool(texture, coord.x, coord.y, {});
           }
         }
 
+        // Finish erasing
         Painter.stopPaintTool();
 
         Undo.finishEdit("Erase texture");
@@ -720,6 +745,7 @@ export function registerPaintTools() {
       }) {
         const settings: string[] = [];
 
+        // Mirror painting
         if (mirror_painting !== undefined) {
           setBarItemValue("mirror_painting", mirror_painting.enabled);
           Painter.mirror_painting = mirror_painting.enabled;
@@ -751,22 +777,26 @@ export function registerPaintTools() {
           }
         }
 
+        // Lock alpha
         if (lock_alpha !== undefined) {
           Painter.lock_alpha = lock_alpha;
           settings.push(`Lock alpha: ${lock_alpha}`);
         }
 
+        // Pixel perfect
         if (pixel_perfect !== undefined) {
           setBarItemValue("pixel_perfect_drawing", pixel_perfect);
           settings.push(`Pixel perfect: ${pixel_perfect}`);
         }
 
+        // Color erase mode
         if (color_erase_mode !== undefined) {
           setBarItemValue("color_erase_mode", color_erase_mode);
           Painter.erase_mode = color_erase_mode;
           settings.push(`Color erase mode: ${color_erase_mode}`);
         }
 
+        // Settings that require accessing the settings object
         if (paint_side_restrict !== undefined) {
           // @ts-ignore
           settings.paint_side_restrict.value = paint_side_restrict;
@@ -813,7 +843,12 @@ export function registerPaintTools() {
     paintToolDocs[7].name,
     {
       ...paintToolDocs[7],
-      async execute({ texture_id, coordinates, brush_settings, connect_strokes }) {
+      async execute({
+        texture_id,
+        coordinates,
+        brush_settings,
+        connect_strokes,
+      }) {
         const texture = getAndActivateTexture(texture_id);
 
         Undo.initEdit({
@@ -822,6 +857,7 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
+        // Parse brush color to RGB values
         const colorHex = brush_settings?.color ?? "#000000";
         const red = parseInt(colorHex.slice(1, 3), 16);
         const green = parseInt(colorHex.slice(3, 5), 16);
@@ -832,6 +868,7 @@ export function registerPaintTools() {
         const softness = brush_settings?.softness ?? 0;
         const shape = brush_settings?.shape ?? "square";
 
+        // Apply brush settings using .value assignment
         // @ts-ignore
         BarItems.slider_brush_size.value = size;
         // @ts-ignore
@@ -842,6 +879,7 @@ export function registerPaintTools() {
         BarItems.brush_shape.value = shape;
         ColorPanel.set(colorHex);
 
+        // Paint using Painter.edit() method
         texture.edit(
           (canvas: HTMLCanvasElement) => {
             const ctx = canvas.getContext("2d")!;
@@ -883,7 +921,16 @@ export function registerPaintTools() {
     paintToolDocs[8].name,
     {
       ...paintToolDocs[8],
-      async execute({ name, size, opacity, softness, shape, color, blend_mode, pixel_perfect }) {
+      async execute({
+        name,
+        size,
+        opacity,
+        softness,
+        shape,
+        color,
+        blend_mode,
+        pixel_perfect,
+      }) {
         const preset = {
           name,
           size: size ?? null,
@@ -900,7 +947,9 @@ export function registerPaintTools() {
         // @ts-ignore
         StateMemory.save("brush_presets");
 
-        return `Created brush preset "${name}" with settings: ${JSON.stringify(preset)}`;
+        return `Created brush preset "${name}" with settings: ${JSON.stringify(
+          preset
+        )}`;
       },
     },
     paintToolDocs[8].status
@@ -912,7 +961,9 @@ export function registerPaintTools() {
       ...paintToolDocs[9],
       async execute({ preset_name }) {
         // @ts-ignore
-        const preset = StateMemory.brush_presets.find((p) => p.name === preset_name);
+        const preset = StateMemory.brush_presets.find(
+          (p) => p.name === preset_name
+        );
 
         if (!preset) {
           throw new Error(`Brush preset "${preset_name}" not found.`);
@@ -959,14 +1010,23 @@ export function registerPaintTools() {
               throw new Error("Coordinates required for ellipse selection.");
             }
             selection.clear();
+            // Create elliptical selection
             selection.is_custom = true;
             const centerX = (coordinates.x1 + coordinates.x2) / 2;
             const centerY = (coordinates.y1 + coordinates.y2) / 2;
             const radiusX = Math.abs(coordinates.x2 - coordinates.x1) / 2;
             const radiusY = Math.abs(coordinates.y2 - coordinates.y1) / 2;
 
-            for (let x = Math.floor(centerX - radiusX); x <= Math.ceil(centerX + radiusX); x++) {
-              for (let y = Math.floor(centerY - radiusY); y <= Math.ceil(centerY + radiusY); y++) {
+            for (
+              let x = Math.floor(centerX - radiusX);
+              x <= Math.ceil(centerX + radiusX);
+              x++
+            ) {
+              for (
+                let y = Math.floor(centerY - radiusY);
+                y <= Math.ceil(centerY + radiusY);
+                y++
+              ) {
                 const dx = (x - centerX) / radiusX;
                 const dy = (y - centerY) / radiusY;
                 if (dx * dx + dy * dy <= 1) {
@@ -977,6 +1037,9 @@ export function registerPaintTools() {
             break;
 
           case "select_all":
+            // `selection.selectAll()` doesn't exist on current Blockbench
+            // (`H.selectAll is not a function`). Emulate via a full-texture
+            // rectangular selection instead, matching what the UI does.
             selection.clear();
             selection.start_x = 0;
             selection.start_y = 0;
@@ -1015,7 +1078,9 @@ export function registerPaintTools() {
             break;
         }
 
+        // Update UI
         UVEditor.vue.updateTexture();
+
         Undo.finishEdit("Texture selection");
 
         return `Applied ${action} to texture "${texture.name}"`;
@@ -1028,7 +1093,14 @@ export function registerPaintTools() {
     paintToolDocs[11].name,
     {
       ...paintToolDocs[11],
-      async execute({ action, texture_id, layer_name, opacity, blend_mode, target_index }) {
+      async execute({
+        action,
+        texture_id,
+        layer_name,
+        opacity,
+        blend_mode,
+        target_index,
+      }) {
         const texture = getAndActivateTexture(texture_id);
 
         Undo.initEdit({
@@ -1039,15 +1111,21 @@ export function registerPaintTools() {
 
         if (action === "create_layer") {
           let result = "";
+
           try {
-            if (!texture.layers_enabled) texture.activateLayers(false);
+            if (!texture.layers_enabled) {
+              texture.activateLayers(false);
+            }
             const newLayer = new TextureLayer(
-              { name: layer_name || `Layer ${texture.layers.length + 1}` },
+              {
+                name: layer_name || `Layer ${texture.layers.length + 1}`,
+              },
               texture
             );
             newLayer.setSize(texture.width, texture.height);
             newLayer.addForEditing();
             result = `Created layer "${newLayer.name}"`;
+
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1056,17 +1134,22 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "delete_layer") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
             const layerToDelete = TextureLayer.selected;
             layerToDelete.remove(false);
             result = `Deleted layer "${layerToDelete.name}"`;
+
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1075,20 +1158,27 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "duplicate_layer") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
             const layerToDuplicate = TextureLayer.selected;
-            const layerCopy = layerToDuplicate.getUndoCopy(true) as ConstructorParameters<typeof TextureLayer>[0];
+            const layerCopy = layerToDuplicate.getUndoCopy(
+              true
+            ) as ConstructorParameters<typeof TextureLayer>[0];
             layerCopy.name = `${layerToDuplicate.name} copy`;
             const duplicatedLayer = new TextureLayer(layerCopy, texture);
             duplicatedLayer.addForEditing();
             result = `Duplicated layer "${duplicatedLayer.name}"`;
+
             texture.updateLayerChanges(true);
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1097,16 +1187,21 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "merge_down") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
             TextureLayer.selected.mergeDown(false);
             result = "Merged layer down";
+
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1115,17 +1210,24 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "set_opacity") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
-            if (opacity === undefined) throw new Error("Opacity value required.");
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
+            if (opacity === undefined) {
+              throw new Error("Opacity value required.");
+            }
             TextureLayer.selected.opacity = opacity;
             result = `Set layer opacity to ${opacity}%`;
+
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1134,17 +1236,24 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "set_blend_mode") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
-            if (!blend_mode) throw new Error("Blend mode required.");
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
+            if (!blend_mode) {
+              throw new Error("Blend mode required.");
+            }
             TextureLayer.selected.blend_mode = blend_mode;
             result = `Set layer blend mode to ${blend_mode}`;
+
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1153,42 +1262,32 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         if (action === "move_layer") {
           let result = "";
+
           try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
-            if (target_index === undefined) throw new Error("Target index required.");
-            if (target_index >= texture.layers.length) {
-              throw new Error(`Target index ${target_index} is out of range for ${texture.layers.length} layers.`);
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
             }
+            if (target_index === undefined) {
+              throw new Error("Target index required.");
+            }
+            if (target_index >= texture.layers.length) {
+              throw new Error(
+                `Target index ${target_index} is out of range for ${texture.layers.length} layers.`
+              );
+            }
+
             const layerToMove = TextureLayer.selected;
             texture.layers.remove(layerToMove);
             texture.layers.splice(target_index, 0, layerToMove);
             result = `Moved layer to position ${target_index}`;
-            texture.updateChangesAfterEdit();
-            Undo.finishEdit(`Layer management: ${action}`);
-          } catch (error) {
-            Undo.cancelEdit(true);
-            Canvas.updateAll();
-            updateInterfacePanels();
-            throw error;
-          }
-          updateInterfacePanels();
-          return result;
-        }
 
-        if (action === "rename_layer") {
-          let result = "";
-          try {
-            if (!TextureLayer.selected) throw new Error("No layer selected.");
-            if (!layer_name) throw new Error("New layer name required.");
-            const oldName = TextureLayer.selected.name;
-            TextureLayer.selected.name = layer_name;
-            result = `Renamed layer from "${oldName}" to "${layer_name}"`;
             texture.updateChangesAfterEdit();
             Undo.finishEdit(`Layer management: ${action}`);
           } catch (error) {
@@ -1197,12 +1296,26 @@ export function registerPaintTools() {
             updateInterfacePanels();
             throw error;
           }
+
           updateInterfacePanels();
           return result;
         }
 
         let result = "";
+
         switch (action) {
+          case "rename_layer":
+            if (!TextureLayer.selected) {
+              throw new Error("No layer selected.");
+            }
+            if (!layer_name) {
+              throw new Error("New layer name required.");
+            }
+            const oldName = TextureLayer.selected.name;
+            TextureLayer.selected.name = layer_name;
+            result = `Renamed layer from "${oldName}" to "${layer_name}"`;
+            break;
+
           case "flatten_layers":
             if (!texture.layers_enabled) {
               throw new Error("Texture has no layers to flatten.");
@@ -1215,6 +1328,7 @@ export function registerPaintTools() {
         texture.updateChangesAfterEdit();
         Undo.finishEdit(`Layer management: ${action}`);
         updateInterfacePanels();
+
         return result;
       },
     },
