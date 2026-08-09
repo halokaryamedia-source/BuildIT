@@ -16,6 +16,28 @@ import {
   keyframeDataSchema,
 } from "@/lib/zodObjects";
 
+const bedrockParticleEffectSchema = z.object({
+  effect: z
+    .string()
+    .min(1)
+    .describe("Required Bedrock particle effect identifier."),
+  locator: z
+    .string()
+    .min(1)
+    .optional()
+    .describe("Optional Bedrock locator used to position the particle effect."),
+  bind_to_actor: z
+    .boolean()
+    .optional()
+    .describe(
+      "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+    ),
+  pre_effect_script: z
+    .string()
+    .optional()
+    .describe("Optional Molang script evaluated before the particle effect."),
+});
+
 export const createAnimationParameters = z.object({
   name: z.string().describe("Name of the animation"),
   loop: z
@@ -41,9 +63,16 @@ export const createAnimationParameters = z.object({
       "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Targets are canonicalized to the existing Group name before creation."
     ),
   particle_effects: z
-    .record(z.string().describe("Effect name"))
+    .record(
+      z.union([
+        bedrockParticleEffectSchema,
+        z.array(bedrockParticleEffectSchema).min(1),
+      ])
+    )
     .optional()
-    .describe("Particle effects with timestamps as keys"),
+    .describe(
+      "Bedrock particle effects keyed by timestamp. Each timestamp accepts one particle object or a non-empty array of particle objects."
+    ),
 });
 
 const manageKeyframeDataSchema = keyframeDataSchema.extend({
@@ -619,6 +648,16 @@ createTool(
         });
         editStarted = false;
 
+        const requestedParticleEffectCount = particle_effects
+          ? Object.values(particle_effects).reduce(
+              (count, particleOrParticles) =>
+                count +
+                (Array.isArray(particleOrParticles)
+                  ? particleOrParticles.length
+                  : 1),
+              0
+            )
+          : 0;
         const result = {
           animation: {
             uuid: createdAnimation.uuid,
@@ -629,9 +668,7 @@ createTool(
           },
           requested_name: requestedAnimationName,
           requested_bone_count: Object.keys(bones).length,
-          requested_particle_effect_count: particle_effects
-            ? Object.keys(particle_effects).length
-            : 0,
+          requested_particle_effect_count: requestedParticleEffectCount,
         };
 
         return {
