@@ -786,6 +786,8 @@ export function registerTextureTools() {
       fill_color,
       group,
       layer_name,
+      render_mode,
+      render_sides,
     }) {
       const textureGroup =
         group !== undefined ? resolveTextureToolMaterial(group) : undefined;
@@ -804,6 +806,8 @@ export function registerTextureTools() {
           height,
           group: textureGroup?.uuid,
           pbr_channel,
+          render_mode,
+          render_sides,
           internal: true,
         });
 
