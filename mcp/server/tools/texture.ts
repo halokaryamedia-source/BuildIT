@@ -323,7 +323,8 @@ export const textureToolDocs: ToolSpec[] = [
   },
   {
     name: "list_textures",
-    description: "Returns a list of all textures in the Blockbench editor.",
+    description:
+      "Returns a read-only list of all textures in the Blockbench editor, including identity/group metadata and the current render_mode/render_sides settings.",
     annotations: {
       title: "List Textures",
       readOnlyHint: true,
@@ -1025,6 +1026,8 @@ export function registerTextureTools() {
           uuid: texture.uuid,
           id: texture.id,
           group: texture.group,
+          render_mode: texture.render_mode,
+          render_sides: texture.render_sides,
         }))
       );
     },
