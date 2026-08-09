@@ -240,9 +240,6 @@ export const textureSelectionParameters = z.object({
       "select_all",
       "clear_selection",
       "invert_selection",
-      "expand_selection",
-      "contract_selection",
-      "feather_selection",
     ])
     .describe("Selection action to perform."),
   texture_id: textureIdOptionalSchema,
@@ -255,10 +252,6 @@ export const textureSelectionParameters = z.object({
     })
     .optional()
     .describe("Selection area coordinates."),
-  radius: z
-    .number()
-    .optional()
-    .describe("Radius for expand/contract/feather operations."),
   mode: z
     .enum(["create", "add", "subtract", "intersect"])
     .optional()
@@ -989,8 +982,34 @@ export function registerPaintTools() {
     paintToolDocs[10].name,
     {
       ...paintToolDocs[10],
-      async execute({ action, texture_id, coordinates, radius, mode }) {
+      async execute({ action, texture_id, coordinates, mode }) {
         const texture = getAndActivateTexture(texture_id);
+
+        if (action === "invert_selection") {
+          Undo.initSelection({ texture_selection: true });
+          try {
+            const selection = texture.selection;
+            if (selection.is_custom) {
+              const selectionArray = selection.array;
+              if (!selectionArray) {
+                throw new Error("Custom texture selection has no backing matrix.");
+              }
+              selection.forEachPixel((x, y, value, index) => {
+                selectionArray[index] = value ? 0 : 1;
+              });
+            } else {
+              selection.setOverride(!selection.override);
+            }
+            UVEditor.updateSelectionOutline();
+            Undo.finishSelection("Invert selection");
+          } catch (error) {
+            Undo.cancelSelection(true);
+            UVEditor.updateSelectionOutline();
+            throw error;
+          }
+
+          return `Applied ${action} to texture "${texture.name}"`;
+        }
 
         Undo.initEdit({
           textures: [texture],
@@ -1057,31 +1076,6 @@ export function registerPaintTools() {
 
           case "clear_selection":
             selection.clear();
-            break;
-
-          case "invert_selection":
-            selection.invert();
-            break;
-
-          case "expand_selection":
-            if (radius === undefined) {
-              throw new Error("Radius required for expand selection.");
-            }
-            selection.expand(radius);
-            break;
-
-          case "contract_selection":
-            if (radius === undefined) {
-              throw new Error("Radius required for contract selection.");
-            }
-            selection.contract(radius);
-            break;
-
-          case "feather_selection":
-            if (radius === undefined) {
-              throw new Error("Radius required for feather selection.");
-            }
-            selection.feather(radius);
             break;
         }
 
