@@ -1,0 +1,225 @@
+/// <reference types="three" />
+/// <reference types="blockbench-types" />
+import { z } from "zod";
+import { createTool, type ToolSpec } from "@/lib/factories";
+import { STATUS_EXPERIMENTAL } from "@/lib/constants";
+import { animationIdOptionalSchema } from "@/lib/zodObjects";
+
+export const inspectAnimationParameters = z.object({
+  animation_id: animationIdOptionalSchema.describe(
+    "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation."
+  ),
+  bone: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator."
+    ),
+});
+
+export const animationInspectionToolDocs: ToolSpec[] = [
+  {
+    name: "inspect_animation",
+    description:
+      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, and—when `bone` is provided—detailed rotation/position/scale keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+    annotations: {
+      title: "Inspect Authored Animation",
+      readOnlyHint: true,
+    },
+    parameters: inspectAnimationParameters,
+    status: STATUS_EXPERIMENTAL,
+  },
+];
+
+type TransformChannel = "rotation" | "position" | "scale";
+
+function resolveAnimation(reference?: string): _Animation {
+  if (reference === undefined) {
+    const selected = Animation.selected;
+    if (!selected) {
+      throw new Error(
+        "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
+      );
+    }
+    return selected;
+  }
+
+  const uuidMatch = Animation.all.find(
+    (animation) => animation.uuid === reference
+  );
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Animation.all.filter(
+    (animation) => animation.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Animation name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((animation) => `${animation.name} (${animation.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Animation "${reference}" not found. Pass an exact Animation UUID or exact unique Animation name.`
+  );
+}
+
+function resolveGroup(reference: string): Group {
+  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = Group.all.filter(
+    (group: Group) => group.name === reference
+  );
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((group: Group) => `${group.name} (${group.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID.`
+  );
+}
+
+function inspectKeyframe(keyframe: _Keyframe) {
+  return {
+    uuid: keyframe.uuid,
+    time: keyframe.time,
+    values: keyframe.data_points.map((_, index) => keyframe.getArray(index)),
+    uniform: keyframe.uniform,
+    interpolation: keyframe.interpolation,
+    bezier:
+      keyframe.interpolation === "bezier"
+        ? {
+            linked: keyframe.bezier_linked,
+            left_time: [...keyframe.bezier_left_time],
+            left_value: [...keyframe.bezier_left_value],
+            right_time: [...keyframe.bezier_right_time],
+            right_value: [...keyframe.bezier_right_value],
+          }
+        : null,
+  };
+}
+
+function inspectChannel(animator: BoneAnimator, channel: TransformChannel) {
+  const keyframes = ((animator[channel] as _Keyframe[] | undefined) ?? [])
+    .slice()
+    .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
+
+  return {
+    keyframe_count: keyframes.length,
+    keyframes: keyframes.map(inspectKeyframe),
+  };
+}
+
+function summarizeBoneAnimators(animation: _Animation) {
+  return Object.values(animation.animators)
+    .filter((animator): animator is BoneAnimator => animator instanceof BoneAnimator)
+    .map((animator) => {
+      const group = Group.all.find((candidate: Group) => candidate.uuid === animator.uuid);
+      return {
+        animator: {
+          uuid: animator.uuid,
+          name: animator.name,
+        },
+        group: group
+          ? {
+              uuid: group.uuid,
+              name: group.name,
+            }
+          : null,
+        channels: {
+          rotation: ((animator.rotation as _Keyframe[] | undefined) ?? []).length,
+          position: ((animator.position as _Keyframe[] | undefined) ?? []).length,
+          scale: ((animator.scale as _Keyframe[] | undefined) ?? []).length,
+        },
+      };
+    })
+    .sort((a, b) => {
+      const aName = a.group?.name ?? a.animator.name;
+      const bName = b.group?.name ?? b.animator.name;
+      return aName.localeCompare(bName) || a.animator.uuid.localeCompare(b.animator.uuid);
+    });
+}
+
+export function registerAnimationInspectionTools() {
+  createTool(
+    animationInspectionToolDocs[0].name,
+    {
+      ...animationInspectionToolDocs[0],
+      async execute({ animation_id, bone }) {
+        const animation = resolveAnimation(animation_id);
+        const boneAnimators = summarizeBoneAnimators(animation);
+
+        let focusedBone = null;
+        if (bone !== undefined) {
+          const group = resolveGroup(bone);
+          const existingAnimator = animation.animators[group.uuid];
+          if (existingAnimator && !(existingAnimator instanceof BoneAnimator)) {
+            throw new Error(
+              `Animator stored for Group "${group.name}" (${group.uuid}) is not a BoneAnimator.`
+            );
+          }
+
+          const animator = existingAnimator as BoneAnimator | undefined;
+          focusedBone = {
+            group: {
+              uuid: group.uuid,
+              name: group.name,
+            },
+            has_animator: !!animator,
+            animator: animator
+              ? {
+                  uuid: animator.uuid,
+                  name: animator.name,
+                }
+              : null,
+            channels: animator
+              ? {
+                  rotation: inspectChannel(animator, "rotation"),
+                  position: inspectChannel(animator, "position"),
+                  scale: inspectChannel(animator, "scale"),
+                }
+              : {
+                  rotation: { keyframe_count: 0, keyframes: [] },
+                  position: { keyframe_count: 0, keyframes: [] },
+                  scale: { keyframe_count: 0, keyframes: [] },
+                },
+          };
+        }
+
+        const result = {
+          authored_space: "blockbench_animation" as const,
+          animation: {
+            uuid: animation.uuid,
+            name: animation.name,
+            loop: animation.loop,
+            length: animation.length,
+            snapping: animation.snapping,
+          },
+          bone_animator_count: boneAnimators.length,
+          bone_animators: boneAnimators,
+          focused_bone: focusedBone,
+        };
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+          structuredContent: result,
+        };
+      },
+    },
+    animationInspectionToolDocs[0].status
+  );
+}
