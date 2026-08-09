@@ -1200,21 +1200,35 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "set_opacity") {
+          let result = "";
 
-        switch (action) {
-          case "set_opacity":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
             if (opacity === undefined) {
               throw new Error("Opacity value required.");
             }
-            TextureLayer.selected.opacity = opacity / 100;
-            texture.updateChangesAfterEdit();
+            TextureLayer.selected.opacity = opacity;
             result = `Set layer opacity to ${opacity}%`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "set_blend_mode":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
