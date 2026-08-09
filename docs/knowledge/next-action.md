@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_CREATE_TEXTURE_ROLLBACK_HARDENED`
+`REFERENCE_FIDELITY_CREATE_TEXTURE_RENDER_PARITY_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -75,7 +75,7 @@ Current Local source already contains:
   and `Undo.finishEdit`; failure calls `Undo.cancelEdit(true)` and rethrows;
 - `activate_texture(texture=...)` requires a non-empty explicit texture
   reference, resolves exact UUID → exact unique texture ID → exact unique name,
-  and rejects ambiguity/missing references before active texture selection
+  and rejects ambiguous/missing references before active texture selection
   changes;
 - `getAndActivateTexture(texture_id?)` preserves the existing omitted-reference
   fallback to current selected texture or default texture, while explicit
@@ -149,60 +149,67 @@ Current Local source already contains:
   the caller's unresolved string;
 - after successful `create_texture` optional group preflight, the existing Undo
   scope remains `textures: []` plus `collections: []`. Texture construction,
-  data/file/canvas setup, `texture.add()`, and `Undo.finishEdit` now run inside a
+  data/file/canvas setup, `texture.add()`, and `Undo.finishEdit` run inside a
   rollback boundary; failure calls `Undo.cancelEdit(true)`, refreshes Canvas, and
-  rethrows. Data/fill rules, layer requirement, dimensions, `pbr_channel`,
-  TextureGroup UUID assignment, return shape, and success Canvas refresh remain
-  unchanged.
+  rethrows;
+- `create_texture` now applies its existing schema-provided `render_mode` and
+  `render_sides` values exactly once through the initial `Texture` constructor.
+  Blockbench's Texture data contract owns both properties, and its constructor
+  merges input data before material setup; schema defaults (`"default"`, `"auto"`),
+  group preflight, data/file/canvas setup, Undo rollback, result shape, and
+  success refresh remain unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Create-Texture Rollback Finding
+## Latest Create-Texture Render-Parity Finding
 
-Before the latest change, optional TextureGroup identity was already preflighted,
-but the mutation path remained:
+Before the latest change, the public schema exposed:
 
 ```text
-optional resolved TextureGroup
-→ Undo.initEdit({ textures: [], collections: [] })
-→ construct Texture
-→ data branch
-   ├─ data URL → source/size mutation
-   └─ file path → fromFile/load/fillParticle/layer state
-→ no-data branch
-   → active canvas clear/fill
-   → updateSource/updateLayerChanges
-→ texture.add()
-→ Undo.finishEdit
-→ Canvas.updateAll()
-→ imageContent(texture.getDataURL())
+render_mode: "default" | "emissive" | "additive" | "layered"
+render_sides: "auto" | "front" | "double"
 ```
 
-A failure after `Undo.initEdit` had no rollback boundary and could leave an open
-or partially applied edit.
+but `create_texture.execute()` did not destructure either value and therefore did
+not pass them to the created Texture.
+
+Blockbench source/typing evidence confirms:
+
+```text
+TextureData
+├─ render_mode
+└─ render_sides
+
+new Texture(data)
+→ reset Texture properties
+→ extend(data)
+→ build ShaderMaterial using texture.render_mode / texture.render_sides
+→ updateMaterial()
+```
 
 Current Local behavior is:
 
 ```text
-optional resolved TextureGroup
-→ Undo.initEdit({ textures: [], collections: [] })
+create_texture(..., render_mode, render_sides)
+→ existing optional TextureGroup preflight
+→ Undo.initEdit(...)
 → try
-   → construct Texture
+   → new Texture({
+       ...existing fields,
+       render_mode,
+       render_sides,
+       internal: true
+     })
    → existing data/file/canvas setup
    → texture.add()
    → Undo.finishEdit
-→ catch
-   → Undo.cancelEdit(true)
-   → Canvas.updateAll()
-   → rethrow
-→ Canvas.updateAll()
-→ imageContent(texture.getDataURL())
+→ catch rollback
+→ success refresh/result
 ```
 
-The existing Undo capture was retained. This path creates/adds a Texture and does
-not mutate the preflighted TextureGroup object itself; current source provides no
-evidence that a wider `texture_groups` capture is required. Result generation
-remains after the successful transaction, matching the existing success path.
+No post-construction fallback or duplicate render update was added. This keeps the
+render-setting application at the Blockbench-owned initialization point where the
+material is created.
 
 ## Holds
 
@@ -216,51 +223,51 @@ remains after the successful transaction, matching the existing success path.
 
 ## Next Step
 
-Audit **`create_texture` render-setting contract parity** for `render_mode` and
+Audit **`list_textures` render-setting observability** for `render_mode` and
 `render_sides` in:
 
 ```text
 mcp/server/tools/texture.ts
 ```
 
-Current observed contract is:
+Current discovery output is:
 
 ```text
-createTextureParameters
-├─ render_mode: optional, default "default"
-└─ render_sides: optional, default "auto"
-
-create_texture execute(...)
-→ does not destructure render_mode/render_sides
-→ Texture constructor does not receive either value
+list_textures()
+→ [{
+     name,
+     uuid,
+     id,
+     group
+   }]
 ```
 
-The MCP schema therefore advertises caller-controlled texture rendering options,
-but supplied non-default values currently have no execution path. This can make a
-correct modelling/material instruction appear successful while Blockbench keeps
-its default render behavior.
+`create_texture` can now deterministically set `render_mode` and `render_sides`,
+but the general texture discovery tool does not expose those values. Grouped PBR
+inspection can surface them through `get_material_info`, while a standalone
+texture has no equivalent lightweight metadata read path. This weakens the
+create → inspect → correct loop because the agent cannot confirm the render
+settings it just authored through `list_textures`.
 
 Audit requirements:
 
-1. verify the Local/Blockbench-owned mutation field/API for `Texture.render_mode`
-   and `Texture.render_sides` from current source/typings/patterns before editing;
-2. preserve the schema defaults (`"default"`, `"auto"`) and all existing
-   create-texture validation, group preflight, data/file/canvas setup, Undo
-   rollback, result shape, and success refresh;
-3. ensure explicit caller values are applied exactly once to the created Texture
-   at the correct point in its lifecycle;
-4. do not redesign render enums, PBR channels, material validation, file loading,
-   or add compatibility fallbacks without source evidence;
-5. keep the change local to `create_texture` unless existing Local source proves
-   a shared owner is required.
+1. preserve `list_textures` as read-only and preserve its existing `name`, `uuid`,
+   `id`, and `group` fields unchanged;
+2. confirm `Texture.render_mode` and `Texture.render_sides` are safe direct
+   metadata reads from the current Blockbench source/typing contract;
+3. if confirmed, expose only those two render-setting fields in each listed
+   texture so authored render state can be observed without image-data reads;
+4. do not broaden this slice into `pbr_channel`, dimensions, path/source,
+   selection state, material redesign, or a generic texture-info API;
+5. keep `get_texture` image-data behavior and `get_material_info` result shape
+   unchanged.
 
-This is primarily a Blockbench runtime/execution-parity audit: the public schema
-already exposes the options, but their runtime application must be proven before
-implementation.
+This is a read-path parity audit only; no Texture mutation or Undo behavior should
+be introduced.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish schema/control-flow/Undo structure and static source
-parity only. Actual texture rendering, file loading, texture creation, forced
-rollback, PBR material behavior, and viewport appearance remain
+ChatGPT→GitHub may establish schema/control-flow/read-shape structure and static
+source parity only. Actual texture rendering, file loading, texture creation,
+forced rollback, PBR material behavior, and viewport appearance remain
 `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
