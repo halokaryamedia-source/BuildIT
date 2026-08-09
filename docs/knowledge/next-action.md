@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_CREATE_TRANSFORM_FINITE_HARDENED_LENGTH_GAP`
+`REFERENCE_FIDELITY_ANIMATION_CREATE_LENGTH_HARDENED_TIMELINE_LENGTH_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — `create_animation` Transform Finiteness
+## Latest Completed Animation Slice — `create_animation.animation_length`
 
 Primary owner:
 
@@ -46,74 +46,71 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-06f2e3260a401e238004a67d8490473c7da4f5f4
-fix: require finite created animation transforms
+decc44629a278b80003e6f35ed631e2aebfd1a28
+fix: validate created animation length
 ```
 
-The source change is limited to the local public schema used by
-`create_animation` transform values.
+The exact source diff is limited to the public `create_animation.animation_length`
+schema and its directly-related description.
 
-### Local finite transform contract
+### Current creation length contract
 
-A dedicated creation-only schema now requires every position/rotation/scale
-vector component to be a finite number:
+When supplied, `animation_length` must now be:
 
 ```text
-finiteCreateAnimationVector3Schema
-= array(z.number().finite()).length(3)
+finite
+>= 0
+<= 10000
 ```
 
-`position` and `rotation` use that schema directly.
+Invalid, negative, and over-limit values therefore fail at the MCP input boundary
+before `codec.loadFile()` instead of reaching JSON or relying on native clamping.
 
-`scale` still accepts the existing two authored forms:
+### Zero semantics kept native
+
+The existing synthetic Bedrock payload still uses:
 
 ```text
-[x, y, z]
+...(animation_length && { animation_length })
 ```
 
-or:
+so explicit numeric `0` is accepted by the public schema but omitted from the
+Bedrock payload.
 
-```text
-uniform scalar
-```
+This is intentional. Current native Bedrock compile emits `animation_length` only
+when `animation.length` is truthy, so zero is export-omission-equivalent rather
+than a distinct persistent Bedrock representation.
 
-but both vector components and the scalar must now be finite.
+### No invented keyframe-length rule
 
-This prevents `NaN`, `Infinity`, and `-Infinity` from reaching synthetic Bedrock
-JSON, where they cannot remain valid numeric authored transform values.
+The slice does **not** reject an explicit creation length merely because a
+requested transform/effect keyframe occurs later.
 
-### Scope preservation
+Current Bedrock import constructs the Animation with `a.animation_length` before
+adding keyframes. Imported keyframes are added with `GeneralAnimator.addKeyframe()`
+and the codec does not perform a post-keyframe `setLength()` normalization pass.
 
-The shared repository-wide `vector3Schema` was **not** changed. This avoids
-silently changing unrelated MCP tools that also import that shared schema.
+Therefore enforcing `animation_length >= last requested keyframe` in the MCP
+creation schema would invent behavior that current native import does not own.
 
-The following existing `create_animation` behavior remains unchanged:
+### Scope preserved
 
-- finite/non-negative keyframe time and per-channel collision validation;
-- deterministic Group binding;
-- Blockbench-authored transform-space contract;
-- pre-codec position X and rotation X/Y sign conversion;
+No change was made to:
+
+- transform finiteness;
+- Blockbench-authored position/rotation sign conversion;
+- keyframe-time/collision validation;
 - scalar `scale: 0` preservation;
-- particle object/timestamp contract;
-- current Bedrock `AnimationCodec` / Undo lifecycle.
-
-No execute-path mutation logic changed in this slice.
-
-### Diff / proof boundary
-
-The exact source diff contains only:
-
-- one local finite 3D-vector schema;
-- `position` and `rotation` switched from shared `vector3Schema` to that local
-  creation-only schema;
-- vector/scalar `scale` switched to finite-number equivalents;
-- directly-related public descriptions.
+- deterministic Group binding;
+- particle payload/timestamp behavior;
+- AnimationCodec / Undo lifecycle;
+- other Animation tools;
+- Geometry or Texture.
 
 GitHub has no registered CI/status checks for the source commit.
 
-Actual MCP rejection behavior, codec-created authored transforms, playback,
-Undo/Redo, motion direction, clipping, and save/reopen remain
-`LOCAL PROOF REQUIRED`.
+Actual MCP validation, codec creation, authored length, playback, Undo/Redo, and
+save/reopen remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -133,86 +130,79 @@ Undo/Redo, motion direction, clipping, and save/reopen remain
 - explicit scalar `scale: 0` preservation;
 - Blockbench-authored coordinate/sign-space parity across create/mutate/readback;
 - finite `create_animation` transform values;
+- finite/ranged `create_animation.animation_length` with native zero omission;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `create_animation.animation_length`
+## Continuation Audit — `animation_timeline.set_length`
 
-The next grounded Animation boundary is **only the public `animation_length`
-contract and its synthetic Bedrock payload semantics** in:
+The next grounded Animation boundary is **only public input parity for persistent
+`animation_timeline.set_length`** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-Current Local still accepts:
+Current Local timeline schema still accepts:
 
 ```text
-animation_length: z.number().optional()
+length: z.number().optional()
 ```
 
-and writes it with:
+and the `set_length` action calls:
 
 ```text
-...(animation_length && { animation_length })
+animation.setLength(length)
 ```
 
-### Current native behavior
+inside the existing recoverable Animation-level Undo transaction.
 
-Current Bedrock animation import passes the file value into the Animation
-constructor as:
+### Current native length mutation behavior
+
+Current Blockbench `Animation.setLength(len)` performs:
 
 ```text
-length: a.animation_length
+this.length = limitNumber(len, this.getMaxLength(), 1e4)
 ```
 
-Current `Animation.setLength(len)` clamps through:
+Therefore mutation has two distinct native constraints:
+
+1. upper boundary: `10000` seconds;
+2. lower boundary at runtime: `animation.getMaxLength()`.
+
+`getMaxLength()` is derived from the Animation's existing authored keyframes.
+Consequently requesting `set_length: 0` on an Animation whose authored keyframes
+extend to 3 seconds does not produce length 0; native Blockbench clamps the
+result to at least the authored maximum.
+
+The existing tool already returns the actual resulting `animation.length`, so
+that native floor is observable and should remain the runtime owner.
+
+### Grounded correction direction
+
+The next slice should validate only what is stable at the MCP input boundary:
 
 ```text
-limitNumber(len, this.getMaxLength(), 1e4)
+length must be finite
+length must be >= 0
+length must be <= 10000
 ```
 
-so the normal Blockbench setter has an upper boundary of `10000` seconds and does
-not preserve a negative requested length.
+Do **not** pre-reject a value merely because it is below `getMaxLength()`. Let the
+current `Animation.setLength()` own that authored-keyframe floor and keep returning
+the actual resulting value.
 
-During Bedrock import, however, the Animation is constructed **before** transform
-and effect keyframes are added. Imported keyframes use
-`GeneralAnimator.addKeyframe()`, which creates/pushes a keyframe but does not call
-`Animation.setLength()`.
-
-After import, the codec recalculates snapping and scope, but does not perform a
-post-import `setLength()` pass.
-
-Therefore the next MCP slice must **not invent** a rule that an explicit
-`animation_length` must be at least the final imported keyframe/effect time. The
-current native importer can represent an explicit length that is shorter than a
-later imported keyframe timestamp.
-
-### Zero semantics
-
-Current native Bedrock compile emits:
-
-```text
-animation_length
-```
-
-only when `animation.length` is truthy.
-
-Therefore explicit numeric `0` is normal export-omission-equivalent state. Local's
-current truthy synthetic-payload check also omits `0`, so zero must not be treated
-as a distinct persistent Bedrock representation merely to preserve the caller's
-spelling.
-
-The remaining gap is instead that Local currently accepts values that Blockbench
-would clamp or that JSON cannot preserve as a valid finite number.
+This prevents `NaN`, infinities, negative values, or over-limit requests from
+being silently normalized while preserving Blockbench's real mutation semantics.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
 - sound/timeline EffectAnimator readback;
+- `animation_timeline.set_time` range semantics;
 - broad batch selection redesign;
 - shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
@@ -223,19 +213,16 @@ Do not combine these into the next slice:
 - **G1/G2:** source corrections implemented; local proof deferred.
 - **G3 annotations:** paused.
 - auxiliary 2D `texture_selection` completeness: parked/non-gating.
-- shared `findTextureGroupOrThrow()` hardening: deferred until callers can be
-  exhaustively audited.
-- shared `layerBlendModeEnum` cleanup: deferred until callers can be exhaustively
-  audited.
+- shared `findTextureGroupOrThrow()` hardening: deferred until callers can be exhaustively audited.
+- shared `layerBlendModeEnum` cleanup: deferred until callers can be exhaustively audited.
 - shared `findGroupOrThrow()` migration: deferred.
-- shared `keyframeDataSchema` Bezier contract: unchanged because direct caller
-  ownership could not be exhaustively proven.
+- shared `keyframeDataSchema` Bezier contract: unchanged because direct caller ownership could not be exhaustively proven.
 - save/reopen proof: later local validation.
 
 ## Next Step
 
-Audit and correct **only `create_animation.animation_length` finite/range/zero
-semantics** in:
+Audit and correct **only `animation_timeline.set_length` public length validation**
+in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -244,26 +231,16 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve transform finiteness, authored coordinate/sign conversion,
-   keyframe-time collision handling, scalar-zero scale handling, deterministic
-   Group binding, particle behavior, and codec/Undo lifecycle;
-3. make `animation_length`, when provided, a finite number in the native
-   Blockbench range `0..10000` so invalid/over-limit input fails before
-   `codec.loadFile()` instead of being serialized/clamped silently;
-4. preserve `0` as valid omission-equivalent Bedrock state; do not invent a
-   persistent distinction that native compile itself removes;
-5. do **not** reject an explicit length merely because a requested transform or
-   effect keyframe timestamp is later than that length; current Bedrock import
-   does not perform a post-keyframe `setLength()` normalization;
-6. do not add sound/timeline effect support or change any other Animation tool,
-   Geometry, or Texture in this slice;
-7. inspect the exact source diff immediately and advance to exactly one grounded
-   Animation boundary.
+2. preserve the existing recoverable Animation-level Undo mutation path;
+3. make timeline `length`, when provided, finite and within `0..10000` at the MCP boundary;
+4. do not pre-reject values below current `animation.getMaxLength()`; native `Animation.setLength()` remains owner of that runtime floor;
+5. keep the result reporting the actual resulting `animation.length`;
+6. do not change `create_animation`, playback/time actions, effects, batch operations, Geometry, or Texture;
+7. inspect the exact source diff immediately and advance to exactly one grounded Animation boundary.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/schema/serialization/control-flow parity
-only. Actual MCP validation, imported length, playback cut-off/wrapping behavior,
-authored transforms, particle behavior, Undo/Redo, motion arcs, clipping, bone
-pivots, return-to-neutral behavior, and save/reopen remain
-`LOCAL PROOF REQUIRED` until local runtime testing resumes.
+ChatGPT → GitHub may prove source/API/schema/control-flow parity only. Actual MCP
+validation, native length clamping against authored keyframes, timeline UI state,
+playback, Undo/Redo, and save/reopen remain `LOCAL PROOF REQUIRED` until local
+runtime testing resumes.
