@@ -17,7 +17,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_LAYER_OPACITY_PARITY_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_LAYER_BLEND_CONTRACT_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -89,84 +89,23 @@ Current Local source already contains:
   MCP Undo transaction via `mergeDown(false)`, preserving native compositing,
   removal, adjacent selection, and no-lower-layer behavior while rolling back
   merge/update/finish failures;
-- `texture_layer_management(action="set_opacity")` now preserves the public and
-  Blockbench-native 0..100 percentage contract. The validated MCP value is
-  assigned directly to `TextureLayer.opacity` instead of being divided by 100.
-  The action performs one texture update, finishes the existing outer MCP edit,
-  and rolls back assignment/update/finish failures with Canvas/interface refresh.
-  Remaining layer-management actions retain their previous path.
+- `texture_layer_management(action="set_opacity")` preserves the public and
+  Blockbench-native 0..100 percentage contract, performs one texture update, and
+  rolls back assignment/update/finish failures;
+- `texture_layer_management(action="set_blend_mode")` now validates against the
+  current Blockbench-owned `TextureLayer.blend_mode` values before execution:
+  `default`, `set_opacity`, `color`, `multiply`, `add`, `darken`, `lighten`,
+  `screen`, `overlay`, `difference`, and `alpha_mask`. The schema is local to
+  `paint.ts`; the older shared `layerBlendModeEnum` and paint-tool
+  `blendModeEnum` remain unchanged because exhaustive shared-caller proof is not
+  available through current GitHub indexing.
 
 These are **source implemented**, not live-proven.
 
-## Latest Layer-Opacity Parity Finding
+## Latest Layer-Blend Contract Finding
 
-Before the latest change, the MCP contract and execution disagreed:
-
-```text
-opacity schema
-→ number 0..100
-→ "Layer opacity percentage"
-
-set_opacity
-→ TextureLayer.selected.opacity = opacity / 100
-```
-
-Blockbench's native layer-opacity control proves `TextureLayer.opacity` itself is
-percentage-based:
-
-```text
-slider range: 0..100
-get(): layer.opacity
-change(): layer.opacity = clamp(value, 0, 100)
-```
-
-Therefore an MCP request of `50` should store `50`, not `0.5`.
-
-Current Local behavior is:
-
-```text
-outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ if action = set_opacity
-   → try
-      → require TextureLayer.selected
-      → require opacity
-      → TextureLayer.selected.opacity = opacity
-      → texture.updateChangesAfterEdit()
-      → Undo.finishEdit("Layer management: set_opacity")
-   → catch
-      → Undo.cancelEdit(true)
-      → Canvas.updateAll()
-      → updateInterfacePanels()
-      → rethrow
-   → updateInterfacePanels()
-   → return `Set layer opacity to ${opacity}%`
-```
-
-This also removes the previous duplicate `updateChangesAfterEdit()` call for this
-action while preserving the schema range, selected-layer check, result text, and
-interface refresh.
-
-## Holds
-
-- **G1/G2:** source corrections implemented; local proof deferred.
-- **G3 annotations:** paused.
-- shared `findTextureGroupOrThrow()` hardening: deferred until remaining callers
-  can be exhaustively audited; GitHub code search has been incomplete.
-- save/reopen proof: later local validation.
-- UV/texture feature additions: only after a concrete workflow proves a gap.
-- broad public-surface reduction: after the core fidelity path is proven.
-
-## Next Step
-
-Audit **`texture_layer_management(action="set_blend_mode")` input-contract parity**
-in:
-
-```text
-mcp/lib/zodObjects.ts
-mcp/server/tools/paint.ts
-```
-
-Current Local public schema uses the shared `layerBlendModeEnum`:
+Before the latest change, `texture_layer_management.blend_mode` reused shared
+`layerBlendModeEnum`:
 
 ```text
 normal
@@ -199,33 +138,110 @@ difference
 alpha_mask
 ```
 
-The current MCP enum therefore accepts several values Blockbench does not own and
-rejects several values Blockbench does own. Execution then assigns the supplied
-value directly to `TextureLayer.selected.blend_mode`.
+The old MCP contract therefore accepted several unsupported values and rejected
+several native values, while execution assigned the supplied value directly to
+`TextureLayer.selected.blend_mode`.
+
+A repository code-search attempt for `layerBlendModeEnum` returned:
+
+```text
+total_count: 0
+incomplete_results: true
+```
+
+That result is not exhaustive proof, so the shared owner was deliberately not
+changed. Current Local instead uses a file-local schema for the exact
+`TextureLayer` contract:
+
+```text
+textureLayerBlendModeEnum
+→ z.enum([
+    "default",
+    "set_opacity",
+    "color",
+    "multiply",
+    "add",
+    "darken",
+    "lighten",
+    "screen",
+    "overlay",
+    "difference",
+    "alpha_mask"
+  ])
+
+textureLayerManagementParameters.blend_mode
+→ textureLayerBlendModeEnum.optional()
+```
+
+`mcp/lib/zodObjects.ts::layerBlendModeEnum` remains byte-for-byte unchanged.
+Paint-tool blend-mode contracts also remain unchanged. Runtime direct assignment,
+result text, Undo scope, and update behavior were intentionally left for a
+separate runtime slice.
+
+## Holds
+
+- **G1/G2:** source corrections implemented; local proof deferred.
+- **G3 annotations:** paused.
+- shared `findTextureGroupOrThrow()` hardening: deferred until remaining callers
+  can be exhaustively audited; GitHub code search has been incomplete.
+- shared `layerBlendModeEnum` cleanup: deferred until direct callers can be
+  exhaustively audited; `texture_layer_management` no longer depends on it.
+- save/reopen proof: later local validation.
+- UV/texture feature additions: only after a concrete workflow proves a gap.
+- broad public-surface reduction: after the core fidelity path is proven.
+
+## Next Step
+
+Audit **`texture_layer_management(action="set_blend_mode")` Undo recoverability
+and update parity** in:
+
+```text
+mcp/server/tools/paint.ts
+```
+
+Current post-contract path is:
+
+```text
+outer Undo.initEdit({
+  textures: [texture],
+  layers: texture.layers,
+  bitmap: true
+})
+→ action = set_blend_mode
+   → require TextureLayer.selected
+   → require validated blend_mode
+   → TextureLayer.selected.blend_mode = blend_mode
+   → texture.updateChangesAfterEdit()
+   → result = `Set layer blend mode to ${blend_mode}`
+→ common texture.updateChangesAfterEdit() again
+→ Undo.finishEdit("Layer management: set_blend_mode")
+→ updateInterfacePanels()
+```
+
+The input contract is now correct, but this action still performs the texture
+update twice and has no rollback boundary if assignment/update/outer finish
+fails.
 
 Audit requirements:
 
-1. audit every direct caller of shared `layerBlendModeEnum` before changing that
-   shared owner; GitHub code search has already shown incomplete indexing in this
-   repository, so do not treat a zero-result search as exhaustive proof;
-2. for `texture_layer_management(action="set_blend_mode")`, accept only the
-   current Blockbench-owned blend-mode values; do not invent aliases or translate
-   unsupported names silently;
-3. preserve the selected-layer requirement, result text, existing outer Undo
-   scope, and direct assignment semantics once the value is valid;
-4. keep this slice focused on input/value parity. Do **not** fold the remaining
-   `set_blend_mode` rollback/double-update cleanup into the same change unless the
-   audit proves it inseparable;
-5. do not redesign paint-tool blend modes, layer UI behavior, or introduce a
-   generic enum/resolver framework.
+1. keep this slice limited to `set_blend_mode`; do not change move, rename,
+   flatten, or the hardened create/delete/duplicate/merge/opacity actions;
+2. preserve the new file-local Blockbench-native blend-mode schema, selected-layer
+   requirement, direct assignment, result text, and interface refresh;
+3. confirm the existing outer Undo scope is sufficient for changing the selected
+   layer property; do not add nested Undo or expand capture without source proof;
+4. perform only one required texture update and finish the existing MCP edit;
+5. if assignment/update/outer finish fails, cancel/revert the open edit, refresh
+   required Canvas/interface state, and rethrow;
+6. do not change shared blend enums, add aliases/translations, or introduce a
+   generic transaction helper in this slice.
 
-Primary semantic owner for this slice is the MCP public/input contract. Use
-`mcp-server-development` after the mandatory `development-brief`; switch back to
-`blockbench-runtime-development` only for a later runtime/Undo-only slice.
+Primary semantic owner for the next slice is Blockbench runtime/Undo mechanics.
+Use `blockbench-runtime-development` after the mandatory `development-brief`.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish schema/control-flow/API/Undo/Blockbench-source
-structure and static diff only. Actual layer opacity/blend rendering, layer
-selection, undo/redo, texture rendering, and viewport appearance remain
+structure and static diff only. Actual layer blend rendering, layer selection,
+undo/redo, texture rendering, and viewport appearance remain
 `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
