@@ -15,7 +15,7 @@ rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_BATCH_SCALE_HARDENED`
+`REFERENCE_FIDELITY_ANIMATION_BATCH_REVERSE_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -33,10 +33,9 @@ or another shape system into the Bedrock modelling/animation path.
 Texture source-hardening is frozen. Reopen it only when a concrete Bedrock
 Cuboid modelling/Animation workflow proves a material Texture blocker.
 
-The existing 2D texture-selection utilities are not model geometry and are not
-an Animation gate.
+2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — Batch `scale` Time Stretch
+## Latest Completed Animation Slice — Batch `reverse`
 
 Primary owner:
 
@@ -47,97 +46,57 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-05c056b1fa7f4b4b458e3636a9fee0f008a9b32b
-fix: align batch keyframe time stretch
+0a21400907b0738bf2b9ee07d6aa3db378c12548
+fix: align batch keyframe reverse
 ```
 
-The source change is limited to `batch_keyframe_operations.scale`.
+The source change is limited to `batch_keyframe_operations.reverse`.
 
-`reverse`, `offset`, `mirror`, `smooth`, `bake`, selection modes, timeline,
+`scale`, `offset`, `mirror`, `smooth`, `bake`, selection modes, timeline,
 graph editor, copy/paste, Geometry, and Texture were not intentionally changed.
 
-### Scale-factor semantics are now explicit in runtime behavior
+### Native reversal semantics restored
 
-The old path used:
+Previous Local reversed only timestamp position across the selected range.
+
+Current Local follows current Blockbench `reverse_keyframes` semantics:
+
+1. compute selected `startTime` / `endTime`;
+2. reflect each selected keyframe with:
 
 ```text
-factor = parameters.scale_factor || 1
-pivot = parameters.scale_pivot || 0
+endTime + startTime - keyframe.time
 ```
 
-so an explicit factor `0` was silently replaced by `1`.
+3. for transform keyframes with multiple data points, reverse `data_points` so
+   pre/post transform data follows the reversed time direction;
+4. for Bezier interpolation:
+   - swap left/right handle-time vectors;
+   - swap left/right handle-value vectors;
+   - multiply the resulting handle-time vectors by `-1` so temporal tangent
+     direction remains valid after reversal.
 
-Current native Blockbench timeline time-stretch calculates a `time_factor` and
-does not clamp it to positive values before applying it. Zero and negative
-factors are therefore reachable native time-stretch states.
+The implementation snapshots the four Bezier vectors before mutation and writes
+the swapped result per axis, preserving the existing vector objects.
 
-Local now uses nullish defaults:
+### Snapping / collisions intentionally not added
 
-```text
-factor = parameters.scale_factor ?? 1
-pivot = parameters.scale_pivot ?? 0
-```
+Current native Blockbench `reverse_keyframes` does **not** call
+`Timeline.snapTime(...)`, `replaceOthers(...)`, or another collision-removal
+step for this command.
 
-and preflights both values with `Number.isFinite(...)` before opening Undo.
+Local therefore keeps the exact selected-range reflection intent and does not
+invent snapping/collision behavior during reverse.
 
-Consequences are deterministic:
+### Recoverability
 
-- `factor = 1` keeps relative spacing while still using Blockbench snapping;
-- `factor = 0` collapses selected keyframes to the pivot, after which native
-  collision replacement resolves duplicate times;
-- `factor < 0` reverses relative ordering around the requested pivot;
-- non-finite factor/pivot values fail before mutation.
-
-The existing MCP pivot remains the explicit anchor; this slice does not replace
-that contract with Blockbench's mouse-selected min/max drag anchor.
-
-### Native snapping and Bezier-handle timing
-
-Each selected keyframe now derives its new time from the original pre-stretch
-time and applies:
+Reverse now uses the same keyframe-level mutation owner as native reversal, but
+adds bounded failure recovery:
 
 ```text
-Timeline.snapTime(pivot + (originalTime - pivot) * factor, animation)
-```
-
-For Bezier keyframes, Local snapshots the original
-`bezier_left_time` / `bezier_right_time` vectors before mutation and multiplies
-each component by the same time factor. This mirrors current Blockbench
- time-stretch behavior, which restores original handle-time vectors and scales
-them with `time_factor` rather than leaving curve timing unchanged.
-
-Bezier value handles are intentionally not scaled because native time stretching
-scales handle **time**, not transform value.
-
-### Collision handling and recoverability
-
-After all selected times are transformed, Local calls current Blockbench
-`Keyframe.replaceOthers(...)` for each stretched keyframe. `replaceOthers()`
-removes another keyframe on the same animator/channel when the transformed time
-collides.
-
-Because collision replacement may delete a keyframe that was not part of the
-original selected list, the MCP scale operation uses:
-
-```text
-Undo.initEdit({ animations: [animation] })
-```
-
-rather than assuming a selected-keyframe-only snapshot can restore every
-casualty. The Animation undo copy owns animator/keyframe structure and animation
-length.
-
-Mutation flow:
-
-```text
-preflight finite pivot/factor
-→ snapshot original times + Bezier handle times
-→ Undo.initEdit({ animations: [animation] })
-→ snap transformed times
-→ scale Bezier handle-time vectors
-→ replace time collisions
-→ animation.setLength()
-→ Undo.finishEdit("Batch keyframe operation: scale")
+Undo.initEdit({ keyframes })
+→ reverse time / multi-point data / Bezier handles
+→ Undo.finishEdit("Batch keyframe operation: reverse")
 ```
 
 Failure after the edit opens runs:
@@ -149,49 +108,49 @@ Undo.cancelEdit(true)
 → rethrow
 ```
 
-Success also refreshes preview/keyframe selection after the transaction.
+Success refreshes preview/keyframe selection after the transaction.
 
 ### Diff / proof boundary
 
-The source commit contains one source hunk: the old scalar-time `scale` switch
-case is replaced by the dedicated recoverable time-stretch path above.
+The source commit contains one hunk: the old timestamp-only `reverse` switch
+case is replaced by the dedicated native-parity/recoverable reverse path.
 
 GitHub has no registered CI/status checks for the source commit.
 
-Actual Blockbench stretch results, collision outcome, Bezier curve preservation,
-playback, and Undo/Redo remain `LOCAL PROOF REQUIRED`.
+Actual Blockbench reversed motion, multi-point pre/post behavior, Bezier tangent
+shape, playback, and Undo/Redo remain `LOCAL PROOF REQUIRED`.
 
-## Continuation Audit — Batch `reverse`
+## Continuation Audit — Batch `smooth`
 
 The next grounded Animation boundary is **only**
-`batch_keyframe_operations.reverse`.
+`batch_keyframe_operations.smooth`.
 
-Current Local still performs only:
+Current Local still does:
 
 ```text
-minTime = min(selected times)
-maxTime = max(selected times)
-kf.time = maxTime - (kf.time - minTime)
+keyframes.forEach(kf => {
+  kf.interpolation = "catmullrom"
+})
 ```
 
-Current Blockbench has a native `reverse_keyframes` action with additional
-semantics that materially affect Bedrock animation fidelity.
+inside the remaining generic batch edit path.
 
-For each selected keyframe, native Blockbench:
+Current Blockbench interpolation UI establishes that interpolation changes apply
+only to transform keyframes:
 
-1. reflects time with `end + start - kf.time`;
-2. if a transform keyframe has multiple data points, reverses `data_points` so
-   pre/post transform data follows the reversed timeline direction;
-3. for Bezier interpolation, swaps left/right handle time vectors and value
-   vectors;
-4. multiplies the resulting left/right **handle-time** vectors by `-1` so handle
-   direction remains valid after temporal reversal;
-5. wraps the operation in keyframe Undo and refreshes keyframe/animation preview.
+```text
+if (kf.transform) {
+  kf.interpolation = selectedInterpolation
+}
+```
 
-Local currently does none of items 2–4 and also lacks bounded rollback for this
-operation. A reverse that only changes `.time` can therefore preserve the wrong
-pre/post data and wrong Bezier tangent direction even though the timestamps look
-reversed.
+The UI condition also requires at least one transform keyframe before exposing
+that interpolation action.
+
+Therefore Local `smooth` currently risks assigning transform interpolation
+metadata to sound/particle/timeline or other non-transform keyframes selected by
+the batch selector. The generic path also has no bounded `Undo.cancelEdit(true)`
+recovery if mutation/finish fails.
 
 ## Other Animation Findings — Not Yet Active
 
@@ -215,6 +174,7 @@ Do not combine these into the next slice:
 - native axis/value batch offsets and channel-aware keyframe mirroring;
 - safe/recoverable batch bake with timeline restoration;
 - native-like recoverable batch time stretch with Bezier handle-time scaling;
+- native-parity recoverable batch reversal;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
@@ -238,8 +198,8 @@ performed.
 
 ## Next Step
 
-Audit and correct **only `batch_keyframe_operations.reverse` native reversal
-parity and recoverability** in:
+Audit and correct **only `batch_keyframe_operations.smooth` transform-only
+interpolation parity and recoverability** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -247,18 +207,16 @@ mcp/server/tools/animation.ts
 
 Requirements:
 
-1. preserve existing selection modes and keep Geometry Cube/Cuboid-only;
-2. keep the existing selected-range time reflection intent, but verify whether
-   Blockbench snapping/collision handling is required for this deterministic
-   command rather than assuming it;
-3. reverse multi-point transform `data_points` exactly where current native
-   `reverse_keyframes` does;
-4. swap Bezier left/right time and value vectors, then invert handle-time vector
-   signs according to current Blockbench reversal semantics;
-5. bound the reverse mutation with cancel/revert on failure and perform only the
+1. preserve the existing selection modes and keep Geometry Cube/Cuboid-only;
+2. apply `catmullrom` only to keyframes whose current Blockbench contract marks
+   them as transform keyframes (`kf.transform`);
+3. if the selected/matched batch contains no transform keyframes, fail before
+   opening a mutation transaction rather than reporting a false successful
+   smooth;
+4. bound the smooth mutation with cancel/revert on failure and perform only the
    required preview/selection refresh;
-6. do **not** modify batch `scale`, `offset`, `mirror`, `smooth`, `bake`, timeline
-   tools, graph editor, copy/paste, Geometry, or Texture in this slice.
+5. do **not** modify batch `reverse`, `scale`, `offset`, `mirror`, `bake`,
+   timeline tools, graph editor, copy/paste, Geometry, or Texture in this slice.
 
 After the source fix, inspect the commit diff immediately for drift and advance
 to exactly one grounded Animation boundary.
@@ -266,7 +224,6 @@ to exactly one grounded Animation boundary.
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/control-flow/Undo structure only.
-Actual Blockbench reverse results, pre/post data behavior, Bezier tangent
-preservation, playback, Undo/Redo, motion arcs, clipping, bone pivots,
-return-to-neutral behavior, and save/reopen remain `LOCAL PROOF REQUIRED` until
-local runtime testing resumes.
+Actual Blockbench interpolation result, playback, Undo/Redo, motion arcs,
+clipping, bone pivots, return-to-neutral behavior, and save/reopen remain
+`LOCAL PROOF REQUIRED` until local runtime testing resumes.
