@@ -22,7 +22,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, and—when `bone` is provided—detailed rotation/position/scale keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed rotation/position/scale keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,
@@ -33,6 +33,12 @@ export const animationInspectionToolDocs: ToolSpec[] = [
 ];
 
 type TransformChannel = "rotation" | "position" | "scale";
+type ParticleDataPoint = KeyframeDataPoint & {
+  effect?: string;
+  locator?: string;
+  bind_to_actor?: boolean;
+  script?: string;
+};
 
 function resolveAnimation(reference?: string): _Animation {
   if (reference === undefined) {
@@ -119,6 +125,64 @@ function inspectChannel(animator: BoneAnimator, channel: TransformChannel) {
   };
 }
 
+function normalizePreEffectScript(script: string | undefined): string | null {
+  if (!script || !script.replace(/[\n\s;.]+/g, "")) return null;
+  return script.match(/;$/) ? script : `${script};`;
+}
+
+function inspectParticleEffects(animation: _Animation) {
+  const existingEffects = animation.animators.effects;
+  if (!existingEffects) {
+    return {
+      has_animator: false,
+      animator: null,
+      particle: {
+        keyframe_count: 0,
+        particle_count: 0,
+        keyframes: [],
+      },
+    };
+  }
+  if (!(existingEffects instanceof EffectAnimator)) {
+    throw new Error(
+      `Animation "${animation.name}" has a non-EffectAnimator stored at animation.animators.effects.`
+    );
+  }
+
+  const keyframes = ((existingEffects.particle as _Keyframe[] | undefined) ?? [])
+    .slice()
+    .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
+  const inspectedKeyframes = keyframes.map((keyframe) => ({
+    uuid: keyframe.uuid,
+    time: keyframe.time,
+    particles: keyframe.data_points.map((dataPoint) => {
+      const particle = dataPoint as ParticleDataPoint;
+      return {
+        effect: particle.effect || null,
+        locator: particle.locator || null,
+        bind_to_actor: particle.bind_to_actor === false ? false : null,
+        pre_effect_script: normalizePreEffectScript(particle.script),
+      };
+    }),
+  }));
+
+  return {
+    has_animator: true,
+    animator: {
+      uuid: existingEffects.uuid,
+      name: existingEffects.name,
+    },
+    particle: {
+      keyframe_count: inspectedKeyframes.length,
+      particle_count: inspectedKeyframes.reduce(
+        (count, keyframe) => count + keyframe.particles.length,
+        0
+      ),
+      keyframes: inspectedKeyframes,
+    },
+  };
+}
+
 function summarizeBoneAnimators(animation: _Animation) {
   return Object.values(animation.animators)
     .filter((animator): animator is BoneAnimator => animator instanceof BoneAnimator)
@@ -157,6 +221,7 @@ export function registerAnimationInspectionTools() {
       async execute({ animation_id, bone }) {
         const animation = resolveAnimation(animation_id);
         const boneAnimators = summarizeBoneAnimators(animation);
+        const effects = inspectParticleEffects(animation);
 
         let focusedBone = null;
         if (bone !== undefined) {
@@ -206,6 +271,7 @@ export function registerAnimationInspectionTools() {
           },
           bone_animator_count: boneAnimators.length,
           bone_animators: boneAnimators,
+          effects,
           focused_bone: focusedBone,
         };
 
