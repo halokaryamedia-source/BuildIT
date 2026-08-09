@@ -795,58 +795,67 @@ export function registerTextureTools() {
         collections: [],
       });
 
-      let texture = new Texture({
-        name,
-        width,
-        height,
-        group: textureGroup?.uuid,
-        pbr_channel,
-        internal: true,
-      });
+      let texture: Texture;
 
-      if (data) {
-        if (data.startsWith("data:image/")) {
-          texture.source = data;
-          texture.width = width;
-          texture.height = height;
+      try {
+        texture = new Texture({
+          name,
+          width,
+          height,
+          group: textureGroup?.uuid,
+          pbr_channel,
+          internal: true,
+        });
+
+        if (data) {
+          if (data.startsWith("data:image/")) {
+            texture.source = data;
+            texture.width = width;
+            texture.height = height;
+          } else {
+            texture = texture.fromFile({
+              name: data.split(/[\/\\]/).pop() || data,
+              path: data.replace(/^file:\/\//, ""),
+            });
+          }
+
+          texture.load();
+          texture.fillParticle();
+          texture.layers_enabled = false;
         } else {
-          texture = texture.fromFile({
-            name: data.split(/[\/\\]/).pop() || data,
-            path: data.replace(/^file:\/\//, ""),
-          });
+          const { ctx } = texture.getActiveCanvas();
+
+          if (fill_color) {
+            const color = Array.isArray(fill_color)
+              // @ts-ignore - tinycolor is available globally in Blockbench
+              ? tinycolor({
+                r: Number(fill_color[0]),
+                g: Number(fill_color[1]),
+                b: Number(fill_color[2]),
+                a: Number(fill_color[3] ?? 255),
+              })
+              // @ts-ignore - tinycolor ok
+              : tinycolor(fill_color);
+
+            ctx.fillStyle = color.toRgbString().toLowerCase();
+            ctx.fillRect(0, 0, texture.width, texture.height);
+          } else {
+            ctx.clearRect(0, 0, texture.width, texture.height);
+          }
+
+          texture.updateSource(ctx.canvas.toDataURL("image/png", 1));
+          texture.updateLayerChanges(true);
         }
 
-        texture.load();
-        texture.fillParticle();
-        texture.layers_enabled = false;
-      } else {
-        const { ctx } = texture.getActiveCanvas();
+        texture.add();
 
-        if (fill_color) {
-          const color = Array.isArray(fill_color)
-            // @ts-ignore - tinycolor is available globally in Blockbench
-            ? tinycolor({
-              r: Number(fill_color[0]),
-              g: Number(fill_color[1]),
-              b: Number(fill_color[2]),
-              a: Number(fill_color[3] ?? 255),
-            })
-            // @ts-ignore - tinycolor ok
-            : tinycolor(fill_color);
-
-          ctx.fillStyle = color.toRgbString().toLowerCase();
-          ctx.fillRect(0, 0, texture.width, texture.height);
-        } else {
-          ctx.clearRect(0, 0, texture.width, texture.height);
-        }
-
-        texture.updateSource(ctx.canvas.toDataURL("image/png", 1));
-        texture.updateLayerChanges(true);
+        Undo.finishEdit("Agent created texture");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      texture.add();
-
-      Undo.finishEdit("Agent created texture");
       Canvas.updateAll();
 
       return imageContent({
