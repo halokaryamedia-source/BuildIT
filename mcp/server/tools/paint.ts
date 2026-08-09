@@ -86,8 +86,8 @@ export const gradientToolParameters = z.object({
     x: z.number().describe("Gradient end X coordinate."),
     y: z.number().describe("Gradient end Y coordinate."),
   }),
-  start_color: z.string().describe("Start color as hex string."),
-  end_color: z.string().describe("End color as hex string."),
+  start_color: z.string().describe("Gradient start color as hex string."),
+  end_color: z.string().describe("Gradient end color as hex string."),
   opacity: opacitySchema.describe("Gradient opacity (0-255)."),
   blend_mode: blendModeEnum.optional().describe("Gradient blend mode."),
 });
@@ -1239,10 +1239,10 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "set_blend_mode") {
+          let result = "";
 
-        switch (action) {
-          case "set_blend_mode":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
@@ -1250,10 +1250,24 @@ export function registerPaintTools() {
               throw new Error("Blend mode required.");
             }
             TextureLayer.selected.blend_mode = blend_mode;
-            texture.updateChangesAfterEdit();
             result = `Set layer blend mode to ${blend_mode}`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "move_layer":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
