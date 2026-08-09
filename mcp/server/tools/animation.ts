@@ -1421,20 +1421,56 @@ createTool(
         return `Performed ${operation} on ${keyframes.length} keyframes`;
       }
 
+      if (operation === "reverse") {
+        const times = keyframes.map((kf: _Keyframe) => kf.time);
+        const startTime = Math.min(...times);
+        const endTime = Math.max(...times);
+
+        Undo.initEdit({
+          keyframes,
+        });
+
+        try {
+          keyframes.forEach((kf: _Keyframe) => {
+            kf.time = endTime + startTime - kf.time;
+
+            if (kf.transform && kf.data_points.length > 1) {
+              kf.data_points.reverse();
+            }
+
+            if (kf.interpolation === "bezier") {
+              const rightTime = [...kf.bezier_right_time];
+              const rightValue = [...kf.bezier_right_value];
+              const leftTime = [...kf.bezier_left_time];
+              const leftValue = [...kf.bezier_left_value];
+
+              for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+                kf.bezier_right_time[axisIndex] = -leftTime[axisIndex];
+                kf.bezier_right_value[axisIndex] = leftValue[axisIndex];
+                kf.bezier_left_time[axisIndex] = -rightTime[axisIndex];
+                kf.bezier_left_value[axisIndex] = rightValue[axisIndex];
+              }
+            }
+          });
+
+          Undo.finishEdit("Batch keyframe operation: reverse");
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Animator.preview();
+          updateKeyframeSelection();
+          throw error;
+        }
+
+        Animator.preview();
+        updateKeyframeSelection();
+        return `Performed ${operation} on ${keyframes.length} keyframes`;
+      }
+
       Undo.initEdit({
         keyframes: keyframes,
       });
 
       switch (operation) {
-        case "reverse":
-          const times = keyframes.map((kf) => kf.time);
-          const minTime = Math.min(...times);
-          const maxTime = Math.max(...times);
-          keyframes.forEach((kf) => {
-            kf.time = maxTime - (kf.time - minTime);
-          });
-          break;
-
         case "smooth":
           keyframes.forEach((kf) => {
             kf.interpolation = "catmullrom";
