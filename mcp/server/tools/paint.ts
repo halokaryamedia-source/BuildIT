@@ -1177,17 +1177,32 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "merge_down") {
+          let result = "";
 
-        switch (action) {
-          case "merge_down":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
-            TextureLayer.selected.mergeDown(true);
+            TextureLayer.selected.mergeDown(false);
             result = "Merged layer down";
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "set_opacity":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
