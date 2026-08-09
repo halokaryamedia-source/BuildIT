@@ -99,9 +99,22 @@ const bedrockBoneKeyframeSchema = z.object({
     .finite()
     .min(0)
     .describe("Finite non-negative keyframe time in seconds."),
-  position: vector3Schema.optional(),
-  rotation: vector3Schema.optional(),
-  scale: z.union([vector3Schema, z.number()]).optional(),
+  position: vector3Schema
+    .optional()
+    .describe(
+      "Blockbench-authored position [x, y, z]. create_animation converts it to Bedrock file space before codec import."
+    ),
+  rotation: vector3Schema
+    .optional()
+    .describe(
+      "Blockbench-authored rotation [x, y, z]. create_animation converts it to Bedrock file space before codec import."
+    ),
+  scale: z
+    .union([vector3Schema, z.number()])
+    .optional()
+    .describe(
+      "Blockbench-authored scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
+    ),
 });
 
 const bedrockBoneKeyframesSchema = z
@@ -149,7 +162,7 @@ export const createAnimationParameters = z.object({
   bones: z
     .record(bedrockBoneKeyframesSchema)
     .describe(
-      "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Targets are canonicalized to the existing Group name before creation."
+      "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation."
     ),
   particle_effects: bedrockParticleEffectsSchema.optional(),
 });
@@ -406,7 +419,8 @@ export const animationCopyPasteParameters = z.object({
 export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
-    description: "Creates a new animation with keyframes for bones.",
+    description:
+      "Creates a new animation from Blockbench-authored transform values using the current Bedrock AnimationCodec.",
     annotations: {
       title: "Create Animation",
       destructiveHint: true,
@@ -664,10 +678,12 @@ createTool(
             > = keyframes.reduce((acc, keyframe) => {
               const timeKey = keyframe.time.toString();
               if (keyframe.position) {
-                (acc.position ??= {})[timeKey] = keyframe.position;
+                const [x, y, z] = keyframe.position;
+                (acc.position ??= {})[timeKey] = [-x, y, z];
               }
               if (keyframe.rotation) {
-                (acc.rotation ??= {})[timeKey] = keyframe.rotation;
+                const [x, y, z] = keyframe.rotation;
+                (acc.rotation ??= {})[timeKey] = [-x, -y, z];
               }
               if (keyframe.scale !== undefined) {
                 (acc.scale ??= {})[timeKey] = keyframe.scale;
