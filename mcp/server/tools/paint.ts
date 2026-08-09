@@ -394,7 +394,7 @@ export const paintToolDocs: ToolSpec[] = [
     description: "Loads and applies a brush preset by name.",
     annotations: {
       title: "Load Brush Preset",
-      readOnlyHint: true,
+      destructiveHint: true,
     },
     parameters: loadBrushPresetParameters,
     status: STATUS_EXPERIMENTAL,
