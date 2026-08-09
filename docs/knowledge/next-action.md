@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_TIMELINE_TIME_HARDENED_SELECT_RANGE_GAP`
+`REFERENCE_FIDELITY_ANIMATION_TIMELINE_RANGE_HARDENED_SELECTION_LIFECYCLE_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — `animation_timeline.set_time`
+## Latest Completed Animation Slice — `animation_timeline.select_range` Input
 
 Primary owner:
 
@@ -46,74 +46,49 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-aa037f3c5cc801c961f485529609549c0d24bb13
-fix: validate animation timeline time
+dccd17dc29cfa1b83b3b7b2d4a50c9d75edf1839
+fix: validate animation timeline range
 ```
 
-The exact source diff is limited to the public `animation_timeline.time` schema
-and directly-related description.
+The exact source diff is limited to a timeline-local range schema and wiring the
+`animation_timeline.range` parameter to that schema.
 
-### Current timeline time contract
+### Current timeline selection range contract
 
-When supplied, timeline `time` must now be:
+`animation_timeline.select_range` now accepts only:
 
 ```text
-finite
->= 0
-<= 1000
+start: finite and >= 0
+end: finite and >= 0
+start <= end
 ```
 
-Invalid, negative, and over-limit values therefore fail at the MCP input
-boundary before `Timeline.setTime()` can silently normalize them.
+The interval remains inclusive.
 
-### Native playhead behavior preserved
+No `1000` upper bound was added because this range filters authored keyframes and
+does not call `Timeline.setTime()`.
 
-The execution path remains:
+### Shared schema intentionally unchanged
+
+Repository-wide `timeRangeSchema` remains unchanged. It is still used by other
+Animation surfaces such as graph editor ranges, batch selection, and copy ranges.
+Those callers were not silently migrated as part of this timeline-only boundary.
+
+### Execute behavior intentionally unchanged
+
+The existing `select_range` execute path still compares:
 
 ```text
-Timeline.setTime(time)
+kf.time >= range.start && kf.time <= range.end
 ```
 
-Current Blockbench `Timeline.setTime(seconds)` begins with:
+No selection/runtime behavior was changed in this completed slice.
 
-```text
-seconds = limitNumber(seconds, 0, 1000)
-```
+GitHub shows only the local schema addition and the timeline `range` wiring; no
+registered CI/status checks exist for the source commit.
 
-then updates the playhead, `Timeline.time`, timecode, timeline sizing, and reveal
-position.
-
-The MCP boundary now matches that stable native range instead of accepting a
-wider input surface and relying on runtime clamping.
-
-### No animation-length clamp invented
-
-The schema does **not** clamp or reject against `animation.length`.
-
-Current native `Timeline.setTime()` uses its own fixed `0..1000` playhead range,
-not the selected Animation length. Accepted values may therefore be beyond the
-current authored animation length exactly as the native API permits.
-
-The existing result string remains unchanged and reports the accepted requested
-value. Since every accepted value is already within the native range, no range
-normalization occurs after schema validation.
-
-### Scope preserved
-
-No change was made to:
-
-- `set_length`, play/pause/stop, FPS, loop, or range selection;
-- `create_animation`;
-- transform/keyframe behavior;
-- effects;
-- batch operations;
-- Geometry or Texture.
-
-GitHub shows one schema-only source hunk and no registered CI/status checks for
-the source commit.
-
-Actual MCP validation, timeline UI/playhead state, preview, playback, Undo/Redo,
-and save/reopen remain `LOCAL PROOF REQUIRED`.
+Actual MCP validation, timeline selection UI, preview, Undo/Redo, and save/reopen
+remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -136,94 +111,85 @@ and save/reopen remain `LOCAL PROOF REQUIRED`.
 - finite/ranged `create_animation.animation_length` with native zero omission;
 - finite/ranged persistent `animation_timeline.set_length` input while preserving
   native authored-keyframe floor semantics;
-- finite/ranged `animation_timeline.set_time` input matching native playhead
-  range;
+- finite/ranged `animation_timeline.set_time` input matching native playhead range;
+- finite/non-negative/ordered `animation_timeline.select_range` input without
+  widening shared range semantics;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `animation_timeline.select_range`
+## Continuation Audit — `animation_timeline.select_range` Selection Lifecycle
 
-The next grounded Animation boundary is **only action-local range validation for
+The next grounded Animation boundary is **only the runtime selection lifecycle of
 `animation_timeline.select_range`** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-Current timeline parameters still use the shared:
+Current Local execute path is:
 
 ```text
-timeRangeSchema
+Timeline.keyframes.forEach((kf) => {
+  if (kf.time >= range.start && kf.time <= range.end) {
+    kf.select();
+  } else {
+    kf.selected = false;
+  }
+});
 ```
 
-for `range`.
+### Proved native mismatch
 
-The shared schema currently accepts:
+Current Blockbench `Keyframe.select(event)` clears the previous timeline
+selection when called without a modifier event:
 
 ```text
-{
-  start: z.number(),
-  end: z.number()
+if (!event || no shift/ctrl modifier) {
+  Timeline.selected.forEach(kf => kf.selected = false)
+  Timeline.selected.empty()
 }
+...
+Timeline.selected.safePush(this)
+this.selected = true
 ```
 
-without finiteness, non-negative, or ordering constraints.
+Therefore repeatedly calling `kf.select()` with no event is not a valid way to
+build a multi-keyframe range selection. Each matching keyframe can clear the
+selection established by the previous matching keyframe, leaving only the last
+one selected.
 
-The `select_range` action then performs direct comparisons:
+The current `else` branch also sets `kf.selected = false` directly without
+removing that keyframe from `Timeline.selected`, so a no-match/partial-match path
+can leave selection flags and the global selected-array lifecycle dependent on
+previous state.
+
+### Existing Local recovery pattern
+
+`manage_keyframes` already has the stronger selection pattern in the same file:
 
 ```text
-kf.time >= range.start && kf.time <= range.end
+Undo.initSelection({ timeline: true })
+Timeline.unselect()
+... set selected flags + update Timeline.selected ...
+updateKeyframeSelection()
+Undo.finishSelection(...)
 ```
 
-and reports success after walking the timeline keyframes.
+with `Undo.cancelSelection(true)` and `updateKeyframeSelection()` on failure.
 
-### Why this is material
-
-A reversed range such as:
-
-```text
-start: 5
-end: 2
-```
-
-cannot match the intended inclusive interval but currently reaches execution and
-can produce an empty selection while still returning a successful result.
-
-Non-finite values also do not represent a stable authored time interval.
-
-### Shared-schema boundary
-
-Do **not** harden repository-wide `timeRangeSchema` merely for this action.
-It is also consumed by other Animation surfaces such as graph-editor ranges,
-batch selection, and copy ranges. A shared migration would widen the scope and
-must be audited separately.
-
-The next slice should therefore keep the correction local to
-`animation_timeline.select_range`.
-
-### Intended local range contract
-
-For timeline selection only:
-
-```text
-start: finite and >= 0
-end: finite and >= 0
-start <= end
-```
-
-Do not add an upper bound of `1000` merely because `set_time` has one. Timeline
-range selection is not a call to `Timeline.setTime()`, and authored keyframe
-selection should not inherit the playhead limit without source evidence.
+The next slice should reuse that ownership model rather than inventing a new
+selection abstraction.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
 - sound/timeline EffectAnimator readback;
-- broad batch selection redesign;
 - shared `timeRangeSchema` migration;
+- graph-editor/batch/copy range cleanup;
+- broad batch selection redesign;
 - shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
 - broad public-surface cleanup of generic non-Bedrock tools.
@@ -241,7 +207,7 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `animation_timeline.select_range` local range validation**
+Audit and correct **only `animation_timeline.select_range` selection lifecycle**
 in:
 
 ```text
@@ -251,19 +217,26 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. do not modify shared `timeRangeSchema` or other range consumers;
-3. make the range used by `animation_timeline.select_range` require finite,
-   non-negative `start` and `end` with `start <= end`;
-4. do not add a `1000` upper bound merely from playhead semantics;
-5. preserve current inclusive selection comparisons, selection behavior, preview,
-   and result semantics for accepted ranges;
-6. do not change `set_time`, `set_length`, `create_animation`, effects, batch,
-   copy/paste, Geometry, or Texture;
-7. inspect the exact source diff immediately and advance to exactly one grounded
+2. preserve the completed local range validation and inclusive comparisons;
+3. stop using repeated no-event `kf.select()` calls to construct the range;
+4. establish the range selection through one timeline selection transaction,
+   keeping `Timeline.selected` and each keyframe's `selected` flag synchronized;
+5. use the existing Blockbench/Local selection lifecycle (`Undo.initSelection`,
+   clear existing selection, apply exact range, `updateKeyframeSelection`, finish;
+   cancel/recover on failure);
+6. preserve current preview and success-result semantics unless source proof
+   requires a directly-related correction;
+7. do not change `set_time`, `set_length`, create/effects/batch/copy-paste,
+   Geometry, or Texture;
+8. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
+
+Primary specialist for the next slice: `blockbench-runtime-development`, because
+the remaining fault is Blockbench selection/Undo runtime mechanics rather than
+the MCP input contract.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/schema/control-flow parity only. Actual MCP
-validation, timeline keyframe selection, selection UI, preview, Undo/Redo, and
+ChatGPT → GitHub may prove source/API/control-flow selection lifecycle only.
+Actual multi-keyframe range selection, timeline UI state, Undo/Redo, preview, and
 save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
