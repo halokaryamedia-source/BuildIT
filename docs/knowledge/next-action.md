@@ -17,7 +17,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_LAYER_DELETE_UNDO_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_LAYER_DUPLICATE_API_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -78,70 +78,73 @@ Current Local source already contains:
 - `texture_layer_management(action="create_layer")` uses one outer Undo
   transaction, calls `activateLayers(false)` when layers are disabled, and rolls
   back activation/construction/addition/update/finish failures;
-- `texture_layer_management(action="delete_layer")` now uses the same outer
-  transaction model. It keeps the selected-layer requirement, calls
-  `TextureLayer.remove(false)` explicitly so Blockbench does not open an internal
-  Undo edit, then updates the Texture and finishes the existing MCP edit.
-  Failures—including missing selected layer, removal, update, or finish—call
-  `Undo.cancelEdit(true)`, refresh Canvas/interface state, and rethrow. Other
-  layer-management actions retain their previous path.
+- `texture_layer_management(action="delete_layer")` uses the same outer
+  transaction model, calls `TextureLayer.remove(false)` explicitly, and rolls
+  back removal/update/finish failures;
+- `texture_layer_management(action="duplicate_layer")` no longer calls the
+  unsupported `TextureLayer.duplicate()` method. It keeps the selected-layer
+  requirement, snapshots the source with `getUndoCopy(true)`, preserves the MCP
+  naming rule (`"<name> copy"`), constructs a new `TextureLayer` from that copy,
+  adds/selects it with `addForEditing()`, updates layer composition, and finishes
+  the existing outer MCP edit. Copy/construction/addition/update/finish failures
+  cancel/revert the outer Undo edit, refresh Canvas/interface state, and rethrow.
+  Remaining layer-management actions retain their previous path.
 
 These are **source implemented**, not live-proven.
 
-## Latest Delete-Layer Undo Finding
+## Latest Duplicate-Layer API Finding
 
 Before the latest change:
 
 ```text
 outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ action = delete_layer
+→ action = duplicate_layer
    → require TextureLayer.selected
-   → layerToDelete.remove()
+   → layerToDuplicate.duplicate()
+   → rename duplicate to "<name> copy"
 → texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: delete_layer")
+→ Undo.finishEdit("Layer management: duplicate_layer")
 → updateInterfacePanels()
 ```
 
-Blockbench owns `TextureLayer.remove(undo)`:
+Current Blockbench `TextureLayer` typing/source does not define `.duplicate()`.
+Its native duplicate action is instead:
 
 ```text
-remove(true)
-→ opens internal Undo
-→ removes layer / selects adjacent layer
-→ updates Texture
-→ finishes internal Undo
-
-remove(false)
-→ removes layer / selects adjacent layer
-→ no internal Undo/update
+original.getUndoCopy(true)
+→ adjust copied name
+→ new TextureLayer(copy, texture)
+→ addForEditing()
+→ texture.updateLayerChanges(true)
 ```
 
-The omitted argument was runtime-falsy but left transaction ownership implicit,
-and the MCP outer edit had no rollback if the action failed.
-
-Current Local behavior is:
+Current Local behavior now follows that Blockbench-owned lifecycle inside the
+already-open MCP transaction:
 
 ```text
 outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
-→ if action = delete_layer
+→ if action = duplicate_layer
    → try
       → require TextureLayer.selected
-      → layerToDelete.remove(false)
-      → texture.updateChangesAfterEdit()
-      → Undo.finishEdit("Layer management: delete_layer")
+      → layerCopy = selected.getUndoCopy(true)
+      → layerCopy.name = "<original> copy"
+      → duplicatedLayer = new TextureLayer(layerCopy, texture)
+      → duplicatedLayer.addForEditing()
+      → texture.updateLayerChanges(true)
+      → Undo.finishEdit("Layer management: duplicate_layer")
    → catch
       → Undo.cancelEdit(true)
       → Canvas.updateAll()
       → updateInterfacePanels()
       → rethrow
    → updateInterfacePanels()
-   → return delete-layer result
-→ remaining actions continue through their previous path
+   → return duplicate result
 ```
 
-The existing Undo scope was retained because it already captures the target
-Texture, current layers, and bitmap state. Blockbench's `remove(false)` preserves
-its native adjacent-layer selection behavior without creating another Undo edit.
+`getUndoCopy(true)` carries the source layer bitmap/property state, while
+`addForEditing()` preserves the native behavior of inserting above the selected
+layer and selecting the duplicate. No nested Undo or generic clone helper was
+introduced.
 
 ## Holds
 
@@ -155,8 +158,8 @@ its native adjacent-layer selection behavior without creating another Undo edit.
 
 ## Next Step
 
-Audit **`texture_layer_management(action="duplicate_layer")` Blockbench API
-parity and Undo recoverability** in:
+Audit **`texture_layer_management(action="merge_down")` Blockbench Undo parity
+and recoverability** in:
 
 ```text
 mcp/server/tools/paint.ts
@@ -170,57 +173,45 @@ outer Undo.initEdit({
   layers: texture.layers,
   bitmap: true
 })
-→ action = duplicate_layer
+→ action = merge_down
    → require TextureLayer.selected
-   → layerToDuplicate = TextureLayer.selected
-   → duplicatedLayer = layerToDuplicate.duplicate()
-   → duplicatedLayer.name = `${layerToDuplicate.name} copy`
+   → TextureLayer.selected.mergeDown(true)
 → texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: duplicate_layer")
+→ Undo.finishEdit("Layer management: merge_down")
 → updateInterfacePanels()
 ```
 
-Current Blockbench `TextureLayer` source/typing does **not** expose a
-`TextureLayer.duplicate()` method. Blockbench's native layer duplicate action is
-implemented explicitly as:
+Blockbench owns `TextureLayer.mergeDown(undo = true)`. With `undo=true` it opens
+and finishes its own Undo edit around compositing the selected layer into the
+layer below, removing the selected layer, and selecting the adjacent layer. With
+`undo=false` it performs the same layer/canvas mutation without opening or
+finishing an internal Undo edit.
 
-```text
-original = texture.getActiveLayer()
-→ copy = original.getUndoCopy(true)
-→ adjust copy name
-→ Undo.initEdit({ textures: [texture], bitmap: true })
-→ duplicate = new TextureLayer(copy, texture)
-→ duplicate.addForEditing()
-→ texture.updateLayerChanges(true)
-→ Undo.finishEdit("Duplicate layer")
-```
-
-So the MCP action currently depends on an unsupported runtime method instead of
-the Blockbench-owned duplication lifecycle.
+The MCP tool has already opened an outer Undo transaction, so the current
+`mergeDown(true)` creates a nested transaction boundary.
 
 Audit requirements:
 
-1. keep this slice limited to `duplicate_layer`; do not change merge, opacity,
-   blend, move, rename, flatten, create, or delete actions;
-2. preserve the selected-layer requirement, current MCP naming/result semantics,
-   duplicated bitmap/property state, selected duplicated layer behavior, and
-   interface refresh;
-3. replace the unsupported `.duplicate()` call only with the minimum
-   Blockbench-owned sequence grounded by `getUndoCopy(true)`, `new TextureLayer`,
-   and `addForEditing()` while participating in the already-open MCP Undo edit;
-4. confirm whether the existing outer Undo scope is sufficient and avoid a nested
-   Undo transaction;
-5. if copy/construction/addition/update/outer finish fails, cancel/revert the open
-   edit, refresh required Canvas/interface state, and rethrow;
-6. do not redesign layer naming, selection semantics, or add a generic layer
-   transaction/clone helper in this slice.
+1. keep this slice limited to `merge_down`; do not change opacity, blend, move,
+   rename, flatten, or the hardened create/delete/duplicate actions;
+2. preserve the selected-layer requirement, Blockbench merge/compositing and
+   adjacent-layer selection behavior, current success result, texture update,
+   and interface refresh;
+3. confirm the existing outer Undo scope is sufficient for both source/lower
+   layer bitmap changes and selected-layer removal; if so, call
+   `TextureLayer.selected.mergeDown(false)` so the mutation participates in the
+   already-open MCP transaction;
+4. if merge/update/outer finish fails, cancel/revert the open edit, refresh the
+   required Canvas/interface state, and rethrow;
+5. do not redesign the existing no-lower-layer behavior, layer selection rules,
+   blend semantics, or add a generic transaction helper in this slice.
 
-Prefer the same action-specific transaction isolation used by `create_layer` and
-`delete_layer`, leaving all remaining action paths unchanged.
+Prefer the same action-specific transaction isolation used by create/delete/
+duplicate, leaving all remaining action paths unchanged.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish schema/control-flow/API/Undo/Blockbench-source
-structure and static diff only. Actual layer duplication/selection, undo/redo,
-texture rendering, and viewport appearance remain `LOCAL PROOF REQUIRED` until
-local Blockbench testing resumes.
+structure and static diff only. Actual layer duplication/merge/selection,
+undo/redo, texture rendering, and viewport appearance remain
+`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
