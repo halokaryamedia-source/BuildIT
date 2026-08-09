@@ -74,7 +74,11 @@ export const animationGraphEditorParameters = z.object({
   animation_id: animationIdOptionalSchema,
   bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to modify curves for."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
-  axis: axisWithAllEnum.default("all").describe("Axis to modify curves for."),
+  axis: axisWithAllEnum
+    .default("all")
+    .describe(
+      "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level."
+    ),
   action: z
     .enum([
       "smooth",
@@ -96,15 +100,15 @@ export const animationGraphEditorParameters = z.object({
       control_point_1: z
         .array(z.number())
         .length(2)
-        .describe("First control point [time, value]."),
+        .describe("Left Bezier handle offset [time, value]; time must be <= 0."),
       control_point_2: z
         .array(z.number())
         .length(2)
-        .describe("Second control point [time, value]."),
+        .describe("Right Bezier handle offset [time, value]; time must be >= 0."),
     })
     .optional()
     .describe(
-      "Custom bezier curve control points (only for 'custom' action)."
+      "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action)."
     ),
 });
 
@@ -683,87 +687,143 @@ createTool(
       const group = resolveRigGroup(bone_name);
 
       const animator = animation.animators[group.uuid];
-      if (!animator || !animator[channel]) {
-        throw new Error(`No keyframes found for ${bone_name}.${channel}`);
+      if (!animator || !animator[channel]?.length) {
+        throw new Error(`No keyframes found for ${group.name}.${channel}`);
       }
-
-      Undo.initEdit({
-        animations: [animation],
-        keyframes: animator[channel],
-      });
+      if (action === "custom") {
+        if (!custom_curve) {
+          throw new Error("custom_curve is required for 'custom' action.");
+        }
+        if (custom_curve.control_point_1[0] > 0) {
+          throw new Error(
+            "custom_curve.control_point_1 is the left Bezier handle and its time offset must be <= 0."
+          );
+        }
+        if (custom_curve.control_point_2[0] < 0) {
+          throw new Error(
+            "custom_curve.control_point_2 is the right Bezier handle and its time offset must be >= 0."
+          );
+        }
+      }
 
       const keyframes = animator[channel].filter((kf) => {
         if (!keyframe_range) return true;
         return kf.time >= keyframe_range.start && kf.time <= keyframe_range.end;
       });
+      if (!keyframes.length) {
+        throw new Error(`No keyframes found for ${group.name}.${channel} in the requested range.`);
+      }
 
-      keyframes.forEach((kf, index) => {
-        switch (action) {
-          case "linear":
-            kf.interpolation = "linear";
-            break;
+      const axisIndexes =
+        axis === "all"
+          ? [0, 1, 2]
+          : [axis === "x" ? 0 : axis === "y" ? 1 : 2];
+      const setBezierComponents = (
+        keyframe: _Keyframe,
+        property:
+          | "bezier_left_time"
+          | "bezier_left_value"
+          | "bezier_right_time"
+          | "bezier_right_value",
+        value: number
+      ) => {
+        const handle = keyframe[property] as number[];
+        axisIndexes.forEach((axisIndex) => {
+          handle[axisIndex] = value;
+        });
+      };
 
-          case "stepped":
-            kf.interpolation = "step";
-            break;
-
-          case "smooth":
-            kf.interpolation = "catmullrom";
-            break;
-
-          case "ease_in":
-          case "ease_out":
-          case "ease_in_out":
-            kf.interpolation = "bezier";
-            const next = keyframes[index + 1];
-            if (next) {
-              const duration = next.time - kf.time;
-              // @ts-ignore
-              kf.bezier_left_time = 0;
-              // @ts-ignore
-              kf.bezier_right_time = duration;
-
-              if (action === "ease_in") {
-                // @ts-ignore
-                kf.bezier_right_time = duration * 0.6;
-              } else if (action === "ease_out") {
-                // @ts-ignore
-                kf.bezier_left_time = duration * 0.4;
-              } else {
-                // @ts-ignore
-                kf.bezier_left_time = duration * 0.3;
-                // @ts-ignore
-                kf.bezier_right_time = duration * 0.7;
-              }
-            }
-            break;
-
-          case "custom":
-            if (!custom_curve) {
-              throw new Error("custom_curve is required for 'custom' action.");
-            }
-            kf.interpolation = "bezier";
-            // @ts-ignore
-            kf.bezier_left_time = custom_curve.control_point_1[0];
-            // @ts-ignore
-            kf.bezier_left_value = [
-              custom_curve.control_point_1[1],
-              custom_curve.control_point_1[1],
-              custom_curve.control_point_1[1],
-            ];
-            // @ts-ignore
-            kf.bezier_right_time = custom_curve.control_point_2[0];
-            // @ts-ignore
-            kf.bezier_right_value = [
-              custom_curve.control_point_2[1],
-              custom_curve.control_point_2[1],
-              custom_curve.control_point_2[1],
-            ];
-            break;
-        }
+      Undo.initEdit({
+        animations: [animation],
       });
 
-      Undo.finishEdit("Modify animation curves");
+      try {
+        keyframes.forEach((kf, index) => {
+          switch (action) {
+            case "linear":
+              kf.interpolation = "linear";
+              break;
+
+            case "stepped":
+              kf.interpolation = "step";
+              break;
+
+            case "smooth":
+              kf.interpolation = "catmullrom";
+              break;
+
+            case "ease_in":
+            case "ease_out":
+            case "ease_in_out": {
+              kf.interpolation = "bezier";
+              const next = keyframes[index + 1];
+              if (!next) break;
+
+              const duration = next.time - kf.time;
+              setBezierComponents(kf, "bezier_left_time", 0);
+              setBezierComponents(kf, "bezier_right_time", duration);
+
+              if (action === "ease_in") {
+                setBezierComponents(
+                  kf,
+                  "bezier_right_time",
+                  duration * 0.6
+                );
+              } else if (action === "ease_out") {
+                setBezierComponents(
+                  kf,
+                  "bezier_left_time",
+                  -duration * 0.4
+                );
+              } else {
+                setBezierComponents(
+                  kf,
+                  "bezier_left_time",
+                  -duration * 0.3
+                );
+                setBezierComponents(
+                  kf,
+                  "bezier_right_time",
+                  duration * 0.7
+                );
+              }
+              break;
+            }
+
+            case "custom":
+              kf.interpolation = "bezier";
+              setBezierComponents(
+                kf,
+                "bezier_left_time",
+                custom_curve!.control_point_1[0]
+              );
+              setBezierComponents(
+                kf,
+                "bezier_left_value",
+                custom_curve!.control_point_1[1]
+              );
+              setBezierComponents(
+                kf,
+                "bezier_right_time",
+                custom_curve!.control_point_2[0]
+              );
+              setBezierComponents(
+                kf,
+                "bezier_right_value",
+                custom_curve!.control_point_2[1]
+              );
+              break;
+          }
+        });
+
+        Undo.finishEdit("Modify animation curves");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Animator.preview();
+        updateKeyframeSelection();
+        throw error;
+      }
+
       Animator.preview();
       updateKeyframeSelection();
 
