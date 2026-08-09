@@ -6,6 +6,7 @@ import { tools, prompts } from "@/lib/factories";
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
 import { registerAnimationTools } from "./tools/animation";
+import { registerAnimationInspectionTools } from "./tools/animation-inspection";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
 import { registerElementInspectionTools } from "./tools/element-inspection";
@@ -32,6 +33,7 @@ import { registerHytalePrompts } from "./prompts/hytale";
 // All registration functions - MUST be used to prevent tree-shaking
 const registrationFunctions = [
   registerAnimationTools,
+  registerAnimationInspectionTools,
   registerArmatureTools,
   registerCameraTools,
   registerCubesTools,
