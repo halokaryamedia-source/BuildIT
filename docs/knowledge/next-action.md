@@ -14,7 +14,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_CLOSING_AUDIT_BLOCKED_PAINT_SETTINGS`
+`REFERENCE_FIDELITY_TEXTURE_CLOSING_AUDIT_BLOCKED_SELECTION_MATRIX`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -31,62 +31,101 @@ finish remaining high-value Texture gaps
 ```
 
 The layer-management sequence is source-hardened through `flatten_layers`.
-The closing audit has now found one remaining **major** source/runtime blocker,
-so Texture is not frozen yet.
+The closing audit first found and has now source-fixed the `paint_settings`
+shadowing blocker, but the resumed audit found one additional **major** current
+Texture-selection API blocker. Texture is therefore not frozen yet.
 
-## Closing Audit Finding
+## Latest Completed Blocker — `paint_settings`
 
-### Major blocker — `paint_settings` shadows Blockbench global `settings`
-
-Current Local `mcp/server/tools/paint.ts::paint_settings` begins with:
+The previous Local implementation created:
 
 ```text
 const settings: string[] = []
 ```
 
-That local result array shadows Blockbench's global `settings` registry. Later,
-when any of these supplied inputs are handled:
+inside `paint_settings`, shadowing Blockbench's real global `settings` registry.
+Six supplied preferences could therefore attempt property writes on the local
+array and throw after earlier paint options had already mutated runtime state.
+
+Current Local now:
+
+- uses `appliedSettings: string[]` only as the result accumulator;
+- preflights every requested Blockbench setting before any paint-setting mutation:
+  `paint_side_restrict`, `brush_opacity_modifier`, `brush_size_modifier`,
+  `paint_with_stylus_only`, `pick_color_opacity`, and `pick_combined_color`;
+- fails before mutation if a requested setting entry is unavailable;
+- writes those six preferences through Blockbench's real `Setting.set(...)`
+  API, which is the typed setting setter that applies `onChange` and persistence;
+- preserves the existing public inputs and result text intent for mirror painting,
+  lock alpha, pixel perfect, color erase, and the six global settings.
+
+Source commit:
 
 ```text
-paint_side_restrict
-brush_opacity_modifier
-brush_size_modifier
-paint_with_stylus_only
-pick_color_opacity
-pick_combined_color
+1a5c90a873daa036294ce7694147727d5b94368d
+fix: use Blockbench paint settings registry
 ```
 
-Local executes expressions shaped like:
+The source commit diff is limited to `paint_settings`. No model Undo was invented
+for preference/state settings. Live preference behavior remains local proof.
+
+## Closing Audit Finding — Texture Selection API
+
+### Major blocker
+
+Current Local `texture_selection` publicly exposes:
 
 ```text
-settings.paint_side_restrict.value = ...
+invert_selection
+expand_selection
+contract_selection
+feather_selection
 ```
 
-but `settings` is the local array, so those properties are undefined and the
-operation can throw instead of updating the Blockbench setting.
+and executes them as:
 
-This is materially worse than cosmetic debt: earlier options in the same call
-(`mirror_painting`, `lock_alpha`, `pixel_perfect`, `color_erase_mode`) may already
-have mutated runtime state before a later shadowed setting throws, leaving a
-partially-applied `paint_settings` request.
+```text
+selection.invert()
+selection.expand(radius)
+selection.contract(radius)
+selection.feather(radius)
+```
 
-Current Blockbench source registers all six names above in its real global
-`settings` registry, so the intended runtime owner is established. The failure is
-Local variable shadowing, not an unsupported Blockbench capability.
+where `selection` is `texture.selection`, a Blockbench `IntMatrix`.
+
+Current official `blockbench-types` for `IntMatrix` exposes operations such as:
+
+```text
+activate
+get / allow / getDirect
+getBoundingRect / hasSelection
+set / clear / setOverride
+changeSize / forEachPixel / translate
+toBoxes / maskCanvas
+```
+
+but does **not** declare `invert`, `expand`, `contract`, or `feather`.
+Current official Blockbench source searches for `selection.invert` and
+`expand_selection` also produced no implementation proving those calls exist.
+This means the four Local actions are currently stale/unsupported at the source
+contract level and may throw instead of modifying a texture selection.
+
+`select_rectangle`, `select_ellipse`, `select_all`, and `clear_selection` are not
+reopened by this finding.
 
 ## Completed Texture Boundary Kept In Place
 
-Do not reopen the already-hardened work unless new evidence directly invalidates
-it:
+Do not reopen already-hardened work unless new evidence directly invalidates it:
 
-- deterministic texture/material/group targeting on the proven mutation paths;
+- deterministic texture/material/group targeting on proven mutation paths;
 - rollback boundaries for core texture/PBR creation/configuration/assignment;
 - `create_texture` group/render/fill-layer parity;
 - texture render observability;
 - layer create/delete/duplicate/merge/opacity/blend/move/rename/flatten source
   hardening;
 - stale `Texture.flattenLayers()` replacement with Blockbench's native
-  disable-layer lifecycle.
+  disable-layer lifecycle;
+- `paint_settings` global-settings shadowing fix and requested-setting preflight.
 
 These remain **source implemented**, not live-proven.
 
@@ -104,8 +143,8 @@ These remain **source implemented**, not live-proven.
 
 ## Next Step
 
-Fix **only** the `paint_settings` global-settings shadowing / partial-application
-blocker in:
+Audit and correct **only** the unsupported `texture_selection` IntMatrix actions
+in:
 
 ```text
 mcp/server/tools/paint.ts
@@ -113,26 +152,30 @@ mcp/server/tools/paint.ts
 
 Requirements:
 
-1. keep the slice limited to `paint_settings`; do not reopen layer management,
-   texture/PBR targeting, UV tools, or other paint tools;
-2. rename/separate the local string accumulator so it cannot shadow Blockbench's
-   global `settings` registry;
-3. write the six proven Blockbench settings through the actual global setting
-   entries while preserving their current public inputs and result text intent;
-4. inspect whether the operation needs an explicit preflight or rollback strategy
-   to avoid partial application when a requested runtime setting is unavailable;
-   do not invent model Undo for preference/state settings;
-5. preserve mirror/lock-alpha/pixel-perfect/color-erase behavior unless direct
-   source proof shows a related blocker;
-6. no generic settings abstraction or broad paint refactor.
+1. keep the slice limited to `invert_selection`, `expand_selection`,
+   `contract_selection`, and `feather_selection`; do not reopen layer management,
+   `paint_settings`, texture/PBR targeting, or unrelated paint tools;
+2. verify current Blockbench source for the real native selection behavior or
+   establish that a given operation no longer exists before changing the public
+   contract;
+3. do not call methods absent from current `IntMatrix`; if equivalent behavior is
+   still supported, implement it only through current Blockbench-owned selection
+   primitives and preserve the existing action meaning;
+4. if an advertised operation has no current Blockbench-equivalent behavior,
+   remove/reject only that unsupported action rather than inventing a new image
+   processing subsystem;
+5. preserve the already-working rectangle/ellipse/select-all/clear paths unless
+   direct source proof invalidates them;
+6. keep Undo/update handling bounded to the actual supported selection mutation;
+   no generic selection framework or broad UV redesign.
 
-After this blocker is fixed, resume the closing Texture decision. If no additional
-critical/major source blocker is proven, freeze Texture and set the single next
-step to the Animation source audit.
+After this blocker is resolved, resume the closing Texture decision. If no
+additional critical/major source blocker is proven, freeze Texture and set the
+single next step to the Animation source audit.
 
 ## Proof Boundary
 
 ChatGPT→GitHub can prove source ownership/control flow/API compatibility and static
-diff only. Actual Blockbench setting mutation, paint behavior, texture rendering,
-Undo/Redo, UV behavior, and persistence remain `LOCAL PROOF REQUIRED` until local
-runtime testing resumes.
+diff only. Actual Blockbench preference mutation, selection behavior, texture
+rendering, Undo/Redo, UV behavior, and persistence remain `LOCAL PROOF REQUIRED`
+until local runtime testing resumes.
