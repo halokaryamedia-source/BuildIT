@@ -489,74 +489,96 @@ createTool(
     async execute({ animation_id, action, bone_name, channel, keyframes }) {
       const animation = resolveAnimation(animation_id);
       const group = resolveRigGroup(bone_name);
+      const existingAnimator = animation.animators[group.uuid] as BoneAnimator | undefined;
 
-      // Get or create animator
-      let animator = animation.animators[group.uuid];
-      if (!animator) {
-        animator = new BoneAnimator(group.uuid, animation, group.name);
-        animation.animators[group.uuid] = animator;
+      const applyValues = (
+        keyframe: _Keyframe,
+        values: number | number[] | undefined
+      ) => {
+        if (values === undefined) return;
+        if (typeof values === "number") {
+          keyframe.uniform = true;
+          keyframe.set("x", values);
+        } else {
+          keyframe.uniform = false;
+          keyframe.set("x", values[0]);
+          keyframe.set("y", values[1]);
+          keyframe.set("z", values[2]);
+        }
+      };
+
+      if (action === "select") {
+        if (animation !== Animation.selected) {
+          throw new Error(
+            `Cannot select keyframes from animation "${animation.name}" because it is not the selected Blockbench animation.`
+          );
+        }
+        if (!existingAnimator || !existingAnimator[channel]?.length) {
+          throw new Error(`No keyframes found for ${group.name}.${channel}`);
+        }
+
+        Undo.initSelection({ timeline: true });
+        try {
+          Timeline.unselect();
+          existingAnimator.select();
+          keyframes.forEach((kf) => {
+            const keyframe = existingAnimator[channel]?.find(
+              (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+            );
+            if (keyframe) {
+              keyframe.selected = true;
+              if (!Timeline.selected.includes(keyframe)) {
+                Timeline.selected.push(keyframe);
+              }
+            }
+          });
+          updateKeyframeSelection();
+          Undo.finishSelection("Select keyframes");
+        } catch (error) {
+          Undo.cancelSelection(true);
+          updateKeyframeSelection();
+          throw error;
+        }
+
+        Animator.preview();
+        return `Successfully performed ${action} on ${keyframes.length} keyframes for ${bone_name}.${channel}`;
+      }
+
+      if (action !== "create" && (!existingAnimator || !existingAnimator[channel]?.length)) {
+        throw new Error(`No keyframes found for ${group.name}.${channel}`);
       }
 
       Undo.initEdit({
         animations: [animation],
-        keyframes: [],
       });
 
-      switch (action) {
-        case "create":
-          keyframes.forEach((kf) => {
-            const keyframe = animator.createKeyframe(
-              {
-                time: kf.time,
+      try {
+        let animator = existingAnimator;
+        if (!animator) {
+          const createdAnimator = animation.getBoneAnimator(group);
+          if (!createdAnimator) {
+            throw new Error(
+              `Cannot create animation data for Group "${group.name}" in animation "${animation.name}".`
+            );
+          }
+          animator = createdAnimator;
+        }
+
+        switch (action) {
+          case "create":
+            keyframes.forEach((kf) => {
+              const keyframe = animator!.addKeyframe({
                 channel,
-                values: kf.values,
+                data_points: [{}],
+                time: Timeline.snapTime(kf.time, animation),
                 interpolation: kf.interpolation,
-              },
-              kf.time,
-              channel,
-              false
-            );
-
-            if (kf.interpolation === "bezier" && kf.bezier_handles) {
-              // @ts-ignore
-              if (kf.bezier_handles.left_time !== undefined)
-                keyframe.bezier_left_time = kf.bezier_handles.left_time;
-              // @ts-ignore
-              if (kf.bezier_handles.left_value)
-                keyframe.bezier_left_value = kf.bezier_handles.left_value;
-              // @ts-ignore
-              if (kf.bezier_handles.right_time !== undefined)
-                keyframe.bezier_right_time = kf.bezier_handles.right_time;
-              // @ts-ignore
-              if (kf.bezier_handles.right_value)
-                keyframe.bezier_right_value = kf.bezier_handles.right_value;
-            }
-          });
-          break;
-
-        case "delete":
-          keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
-              (k) => Math.abs(k.time - kf.time) < 0.001
-            );
-            if (keyframe) {
-              keyframe.remove();
-            }
-          });
-          break;
-
-        case "edit":
-          keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
-              (k) => Math.abs(k.time - kf.time) < 0.001
-            );
-            if (keyframe) {
-              if (kf.values) {
-                keyframe.set("values", kf.values);
+              });
+              if (!keyframe) {
+                throw new Error(`Channel "${channel}" is unavailable for ${group.name}.`);
               }
-              if (kf.interpolation) {
-                keyframe.interpolation = kf.interpolation;
-              }
+              applyValues(keyframe, kf.values);
+              keyframe.replaceOthers([]);
+
               if (kf.interpolation === "bezier" && kf.bezier_handles) {
                 // @ts-ignore
                 if (kf.bezier_handles.left_time !== undefined)
@@ -571,26 +593,59 @@ createTool(
                 if (kf.bezier_handles.right_value)
                   keyframe.bezier_right_value = kf.bezier_handles.right_value;
               }
-            }
-          });
-          break;
+            });
+            animation.setLength();
+            break;
 
-        case "select":
-          Timeline.selected.empty();
-          keyframes.forEach((kf) => {
-            const keyframe = animator[channel]?.find(
-              (k) => Math.abs(k.time - kf.time) < 0.001
-            );
-            if (keyframe) {
-              keyframe.select();
-            }
-          });
-          break;
+          case "delete":
+            keyframes.forEach((kf) => {
+              const keyframe = animator![channel]?.find(
+                (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+              );
+              if (keyframe) {
+                keyframe.remove();
+              }
+            });
+            break;
+
+          case "edit":
+            keyframes.forEach((kf) => {
+              const keyframe = animator![channel]?.find(
+                (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+              );
+              if (keyframe) {
+                applyValues(keyframe, kf.values);
+                if (kf.interpolation) {
+                  keyframe.interpolation = kf.interpolation;
+                }
+                if (kf.interpolation === "bezier" && kf.bezier_handles) {
+                  // @ts-ignore
+                  if (kf.bezier_handles.left_time !== undefined)
+                    keyframe.bezier_left_time = kf.bezier_handles.left_time;
+                  // @ts-ignore
+                  if (kf.bezier_handles.left_value)
+                    keyframe.bezier_left_value = kf.bezier_handles.left_value;
+                  // @ts-ignore
+                  if (kf.bezier_handles.right_time !== undefined)
+                    keyframe.bezier_right_time = kf.bezier_handles.right_time;
+                  // @ts-ignore
+                  if (kf.bezier_handles.right_value)
+                    keyframe.bezier_right_value = kf.bezier_handles.right_value;
+                }
+              }
+            });
+            break;
+        }
+
+        Undo.finishEdit(`${action} keyframes`);
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Animator.preview();
+        updateKeyframeSelection();
+        throw error;
       }
 
-      Undo.finishEdit(`${action} keyframes`);
       Animator.preview();
-
       return `Successfully performed ${action} on ${keyframes.length} keyframes for ${bone_name}.${channel}`;
     },
   },
