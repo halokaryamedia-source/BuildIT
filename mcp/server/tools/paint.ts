@@ -1124,18 +1124,33 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "delete_layer") {
+          let result = "";
 
-        switch (action) {
-          case "delete_layer":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
             const layerToDelete = TextureLayer.selected;
-            layerToDelete.remove();
+            layerToDelete.remove(false);
             result = `Deleted layer "${layerToDelete.name}"`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "duplicate_layer":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
