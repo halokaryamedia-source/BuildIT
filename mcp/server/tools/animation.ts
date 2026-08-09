@@ -1207,7 +1207,7 @@ createTool(
                 kf.time += parameters.offset_time;
               }
 
-              if (parameters.offset_values) {
+              if (parameters.offset_values && kf.transform) {
                 const [offsetX, offsetY, offsetZ] = parameters.offset_values;
                 const offsetsMatch = offsetX === offsetY && offsetX === offsetZ;
 
