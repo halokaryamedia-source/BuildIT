@@ -17,7 +17,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_CREATE_TEXTURE_FILL_LAYER_PARITY_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_LAYER_CREATE_UNDO_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -69,70 +69,81 @@ Current Local source already contains:
   `findTextureGroupOrThrow()` helper;
 - `create_texture(group=...)` resolves a supplied non-empty TextureGroup target
   before Undo and passes the concrete UUID into the Texture constructor;
-- `create_texture` now applies schema-provided `render_mode` and `render_sides`
+- `create_texture` applies schema-provided `render_mode` and `render_sides`
   exactly once through the initial Texture constructor;
-- `list_textures` remains read-only and now exposes `render_mode` and
-  `render_sides` while preserving its existing identity/group fields;
-- `create_texture(fill_color=..., layer_name=...)` now preserves the existing
-  contract that `fill_color` requires `layer_name`, paints the existing texture
-  bitmap as before, adds the Texture, then enables layers with
-  `texture.activateLayers(false)` inside the already-open create transaction and
-  names the generated base layer with the supplied `layer_name` before
-  `Undo.finishEdit`.
+- `list_textures` remains read-only and exposes `render_mode` and `render_sides`
+  while preserving its existing identity/group fields;
+- `create_texture(fill_color=..., layer_name=...)` preserves the existing
+  requirement that filled textures receive a layer name, converts the authored
+  bitmap into a real base `TextureLayer` with `activateLayers(false)`, and names
+  that generated layer inside the existing create-texture transaction;
+- `texture_layer_management(action="create_layer")` now uses exactly one outer
+  Undo transaction. When layers are disabled it calls `activateLayers(false)`,
+  then creates/sizes/adds the requested layer, updates the texture, and finishes
+  the outer edit. Failures in activation/construction/addition/update/finish call
+  `Undo.cancelEdit(true)`, refresh Canvas/interface state, and rethrow. All other
+  layer-management actions retain their previous path.
 
 These are **source implemented**, not live-proven.
 
-## Latest Create-Texture Fill-Layer Finding
+## Latest Create-Layer Undo Finding
 
-Before the latest change, the public contract was:
-
-```text
-fill_color?: color
-layer_name?: string
-fill_color → layer_name required
-```
-
-but execution only painted the Texture canvas; `layer_name` was destructured and
-never used. The same mismatch existed in the upstream MCP source, so the field was
-not merely a Local regression.
-
-Blockbench-owned source establishes the intended layer lifecycle:
+Before the latest change:
 
 ```text
-Texture.activateLayers(false)
-→ layers_enabled = true
-→ if no layers:
-   → create TextureLayer attached to this Texture
-   → copy current texture canvas pixels into that layer
-   → add/select the layer
+getAndActivateTexture(texture_id)
+→ Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
+→ action = create_layer
+   → if !texture.layers_enabled
+      → texture.activateLayers(true)
+         → Blockbench opens/finishes another Undo edit
+   → new TextureLayer({ name }, texture)
+   → setSize(...)
+   → addForEditing()
+→ texture.updateChangesAfterEdit()
+→ Undo.finishEdit("Layer management: create_layer")
+→ updateInterfacePanels()
 ```
 
-`TextureLayer` has a direct `name` property, and Local's existing
-`texture_layer_management` tool also treats `layer_name` as a real layer name.
-`Texture.getUndoCopy()` serializes layer state when `layers_enabled`, so the
-existing create-texture Undo owner remains sufficient for this newly-created
-Texture; no separate nested Undo was added.
+This created a nested Undo boundary the first time layers were enabled, and the
+outer MCP edit had no rollback if the create path failed.
 
-Current Local behavior is:
+Blockbench's native `create_empty_layer` path provides direct source evidence for
+the intended transaction model:
 
 ```text
-create_texture(..., fill_color, layer_name)
-→ existing validation/group preflight
-→ Undo.initEdit({ textures: [], collections: [] })
-→ try
-   → construct Texture
-   → existing fill/data/canvas setup
-   → texture.add()
-   → if fill_color + layer_name
-      → texture.activateLayers(false)
-      → texture.getActiveLayer().name = layer_name
-   → Undo.finishEdit
-→ catch rollback
-→ success Canvas refresh/result
+Undo.initEdit({ textures: [texture], bitmap: true })
+→ if !layers_enabled: texture.activateLayers(false)
+→ new TextureLayer(...)
+→ setSize(...)
+→ addForEditing()
+→ Undo.finishEdit(...)
 ```
 
-The data-file branch, blank-texture branch, render settings, PBR/group targeting,
-result shape, and success refresh remain unchanged.
+Current Local behavior keeps the existing MCP Undo scope and isolates only the
+`create_layer` action:
+
+```text
+outer Undo.initEdit({ textures: [texture], layers: texture.layers, bitmap: true })
+→ if action = create_layer
+   → try
+      → if !layers_enabled: texture.activateLayers(false)
+      → create/sizes/add layer
+      → texture.updateChangesAfterEdit()
+      → Undo.finishEdit("Layer management: create_layer")
+   → catch
+      → Undo.cancelEdit(true)
+      → Canvas.updateAll()
+      → updateInterfacePanels()
+      → rethrow
+   → updateInterfacePanels()
+   → return create-layer result
+→ all other actions continue through the previous switch/common finish path
+```
+
+The `layer_name` fallback, layer size, `addForEditing()`, success result, and
+interface refresh remain unchanged. No generic transaction framework or changes
+to the other layer actions were introduced.
 
 ## Holds
 
@@ -146,8 +157,8 @@ result shape, and success refresh remain unchanged.
 
 ## Next Step
 
-Audit **`texture_layer_management(action="create_layer")` lifecycle and Undo
-parity when the target Texture does not yet have layers enabled** in:
+Audit **`texture_layer_management(action="delete_layer")` Blockbench API parity
+and Undo recoverability** in:
 
 ```text
 mcp/server/tools/paint.ts
@@ -156,52 +167,60 @@ mcp/server/tools/paint.ts
 Current observed path is:
 
 ```text
-getAndActivateTexture(texture_id)
-→ Undo.initEdit({
-    textures: [texture],
-    layers: texture.layers,
-    bitmap: true
-  })
-→ action = create_layer
-   → if !texture.layers_enabled
-      → texture.activateLayers(true)
-   → new TextureLayer({ name }, texture)
-   → setSize(texture.width, texture.height)
-   → addForEditing()
+outer Undo.initEdit({
+  textures: [texture],
+  layers: texture.layers,
+  bitmap: true
+})
+→ action = delete_layer
+   → require TextureLayer.selected
+   → layerToDelete = TextureLayer.selected
+   → layerToDelete.remove()
 → texture.updateChangesAfterEdit()
-→ Undo.finishEdit("Layer management: create_layer")
+→ Undo.finishEdit("Layer management: delete_layer")
 → updateInterfacePanels()
 ```
 
-Blockbench source shows `Texture.activateLayers(true)` opens and finishes its own
-Undo edit. Calling it after this MCP tool has already opened an Undo edit creates
-a nested transaction boundary. The tool also has no rollback boundary if layer
-activation/construction/addition/update/finish fails.
+Blockbench owns `TextureLayer.remove(undo)`. Source behavior is:
+
+```text
+remove(true)
+→ opens its own Undo edit
+→ removes layer / selects adjacent layer
+→ updateChangesAfterEdit()
+→ finishes its own Undo edit
+
+remove(false)
+→ removes layer / selects adjacent layer
+→ no internal Undo/update
+```
+
+The current MCP call omits the required `undo` argument. At runtime the omitted
+value is falsy, but that is implicit rather than contract-parity, and the outer
+MCP edit still has no rollback if removal, texture update, or `Undo.finishEdit`
+fails.
 
 Audit requirements:
 
-1. keep this slice limited to the `create_layer` action; do not fix/delete/
-   duplicate/merge/opacity/blend/move/rename/flatten actions yet;
-2. preserve `getAndActivateTexture`, the existing `layer_name` default naming,
-   layer size, `addForEditing()`, success result, `updateChangesAfterEdit()`, and
+1. keep this slice limited to the `delete_layer` action; do not change duplicate,
+   merge, opacity, blend, move, rename, flatten, or the now-hardened create action;
+2. preserve the selected-layer requirement, Blockbench's adjacent-layer selection
+   behavior, success result, `texture.updateChangesAfterEdit()`, and
    `updateInterfacePanels()` behavior;
-3. confirm the existing outer Undo scope is sufficient for enabling layers plus
-   adding the new layer; if so, call `texture.activateLayers(false)` so enabling
-   the base layer participates in the already-open MCP transaction rather than
-   opening another one;
-4. if any operation after the outer `Undo.initEdit` fails during this action,
-   cancel/revert the open edit, refresh the required Blockbench state, and
-   rethrow;
-5. do not redesign the layer-management API, add a generic transaction helper,
-   or broaden into layer observability/selection semantics in this slice.
+3. confirm the existing outer Undo scope is sufficient for layer removal; if so,
+   call `layerToDelete.remove(false)` explicitly so removal participates in the
+   already-open MCP transaction and never starts another Undo edit;
+4. if removal/update/outer finish fails, call `Undo.cancelEdit(true)`, refresh the
+   required Canvas/interface state, and rethrow;
+5. do not redesign layer selection, auto-disable layers when one remains, or add
+   generic transaction helpers in this slice.
 
-Prefer the smallest source change that establishes one Undo transaction for the
-entire create-layer operation. Keep any broader `texture_layer_management`
-cleanup as later evidence-driven work.
+Prefer the same action-specific transaction isolation now used by `create_layer`,
+leaving all other action paths unchanged.
 
 ## Proof Boundary
 
 ChatGPT→GitHub may establish schema/control-flow/Undo/Blockbench-source structure
-and static diff only. Actual layer creation, selection, undo/redo, texture
-rendering, file loading, and viewport appearance remain `LOCAL PROOF REQUIRED`
-until local Blockbench testing resumes.
+and static diff only. Actual layer creation/deletion/selection, undo/redo, texture
+rendering, and viewport appearance remain `LOCAL PROOF REQUIRED` until local
+Blockbench testing resumes.
