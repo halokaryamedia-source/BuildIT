@@ -1301,10 +1301,10 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "rename_layer") {
+          let result = "";
 
-        switch (action) {
-          case "rename_layer":
+          try {
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
             }
@@ -1314,8 +1314,23 @@ export function registerPaintTools() {
             const oldName = TextureLayer.selected.name;
             TextureLayer.selected.name = layer_name;
             result = `Renamed layer from "${oldName}" to "${layer_name}"`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "flatten_layers":
             if (!texture.layers_enabled) {
               throw new Error("Texture has no layers to flatten.");
