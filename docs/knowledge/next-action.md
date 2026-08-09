@@ -12,12 +12,12 @@ implementation notes.
 ## Active Goal
 
 Improve Reference Image / Modelling Brief → Blockbench fidelity by making Cube,
-rotation, pivot, hierarchy, targeting, discovery, correction, and material
-reference decisions evidence-backed rather than assumption-driven.
+rotation, pivot, hierarchy, targeting, discovery, correction, texture, and
+material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_LIST_TEXTURES_RENDER_OBSERVABILITY_HARDENED`
+`REFERENCE_FIDELITY_CREATE_TEXTURE_FILL_LAYER_PARITY_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -46,225 +46,162 @@ Approved Modelling Brief
 → Reference ↔ model comparison
 → GLOBAL rebuild or LOCAL inspect/correct
 → fresh affected evidence
-→ secondary geometry/hierarchy/pivots
+→ secondary geometry/hierarchy/pivots/textures
 ```
 
 ## Completed Source Boundary
 
 Current Local source already contains:
 
-- Bedrock-first modelling prompt route;
-- `inspect_model_bounds` + `capture_model_views` observation;
-- `inspect_element` authored-state inspection in
-  `mcp/server/tools/element-inspection.ts`;
-- strict explicit Cube extents, hierarchy targets, rotation activation, Cube
-  pivot semantics, and deterministic initial texture targeting;
-- explicit UUID-based single/batch Cube correction routing;
-- safer `add_group` + hardened `bone_rigging` targeting/pivot/rollback behavior;
-- strict destructive element target resolution plus bounded Undo rollback for
-  remove/duplicate/rename;
-- strict optional Group scope and fail-closed regex filtering in element discovery;
-- `filter_by_material(texture=...)` resolves UUID → exact texture ID → exact
-  unique name and rejects ambiguous/missing explicit references;
-- `apply_texture(id=..., texture=...)` requires non-empty explicit targets,
-  resolves element UUID → exact unique name across Cube/Mesh/Group, resolves
-  texture UUID → exact ID → exact unique name, and rejects ambiguity/missing
-  before descendant expansion and Undo;
-- `apply_texture` keeps selection restoration in an inner `finally` while an
-  outer rollback boundary covers texture apply/update, selection restoration,
-  and `Undo.finishEdit`; failure calls `Undo.cancelEdit(true)` and rethrows;
-- `activate_texture(texture=...)` requires a non-empty explicit texture
-  reference, resolves exact UUID → exact unique texture ID → exact unique name,
-  and rejects ambiguous/missing references before active texture selection
-  changes;
-- `getAndActivateTexture(texture_id?)` preserves the existing omitted-reference
-  fallback to current selected texture or default texture, while explicit
-  non-empty references resolve exact UUID → exact unique texture ID → exact
-  unique name and reject ambiguity/missing before active texture selection. The
-  direct paint callers remain unchanged and still call this helper before their
-  Undo/Painter operation boundary;
-- `get_texture(texture?)` preserves the existing omitted/falsy-reference fallback
-  to `Texture.getDefault()`, while explicit non-empty references resolve exact
-  UUID → exact unique texture ID → exact unique name and reject ambiguity/missing
-  before image data is returned. Shared texture helpers remain unchanged;
-- `add_texture_group(name, textures?, is_material)` preserves omitted `textures`
-  as valid empty-group creation. A provided list must be non-empty and contain
-  non-empty references; every reference is preflighted by exact UUID → exact
-  unique texture ID → exact unique name before `Undo.initEdit`. Any missing or
-  ambiguous entry fails the whole call before group creation or texture
-  reassignment;
-- after successful `add_texture_group` preflight, Undo captures
-  `texture_groups: []` plus the exact resolved `textureList`; group add, texture
-  reassignment, and `Undo.finishEdit` run inside a rollback boundary that calls
-  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows on failure;
-- `create_pbr_material` keeps all channel texture references optional, but a
-  supplied reference must be non-empty. Each supplied color/normal/height/MER
-  reference is resolved exactly once before `Undo.initEdit` by exact UUID → exact
-  unique texture ID → exact unique name. Missing or ambiguous supplied references
-  fail before Undo/material mutation, and the exact preflighted Texture objects
-  are reused for channel assignment;
-- after successful `create_pbr_material` channel preflight, the existing Undo
-  capture remains `texture_groups: []` plus the exact `texturesToAdd`. Material
-  config mutation, group add, channel assignment, `updateMaterial`, and
-  `Undo.finishEdit` run inside a rollback boundary; failure calls
-  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows;
-- `configure_material` preserves omitted channel fields and the exact `"none"`
-  sentinel behavior. Every provided non-`"none"` color/normal/height/MER target
-  must be non-empty and is resolved exactly once before `Undo.initEdit` by
-  exact UUID → exact unique texture ID → exact unique name. Missing or ambiguous
-  references fail before mutation, the preflighted Texture objects are reused for
-  assignment, and Undo texture capture includes both the material's current
-  textures and any external assignment targets;
-- after successful `configure_material` preflight, the existing Undo scope remains
-  `texture_groups: [textureGroup]` plus the deduplicated `undoTextures`. Channel
-  resets/assignments, uniform config mutation, `updateMaterial`, and
-  `Undo.finishEdit` run inside a rollback boundary; failure calls
-  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows;
-- `assign_texture_channel(texture=...)` requires a non-empty explicit texture
-  reference and resolves it exactly once before `Undo.initEdit` by exact UUID →
-  exact unique texture ID → exact unique name. Missing or ambiguous references
-  fail before mutation. Existing textures occupying the requested channel are
-  identified before Undo, excluding the assignment target, and Undo texture
-  capture is the unique union of the preflighted target plus every texture whose
-  `pbr_channel` will be reset to `"color"`. The exact preflighted target is reused
-  for assignment;
-- after successful `assign_texture_channel` target/reset preflight, the Undo scope
-  remains `texture_groups: [textureGroup]` plus the deduplicated `undoTextures`.
-  Channel resets, target assignment, material `saved` mutation, `updateMaterial`,
-  and `Undo.finishEdit` now run inside a rollback boundary; failure calls
-  `Undo.cancelEdit(true)`, refreshes Canvas, and rethrows;
-- the four proven material-target boundaries in `texture.ts` —
-  `configure_material`, `get_material_info`, `assign_texture_channel`, and
-  `save_material_config` — require non-empty material references and resolve
-  exact UUID first, otherwise exact name only when unique. Ambiguous names fail
-  with candidate UUIDs and missing targets fail before caller mutation/read/save
-  effects. Their existing result, mutation, Undo, and save semantics remain
-  unchanged;
-- `create_texture(group=...)` preserves omitted `group` as valid and preserves the
-  existing rule that `pbr_channel` requires a group. A supplied group reference
-  must be non-empty and is resolved before `Undo.initEdit` by exact
-  TextureGroup UUID, otherwise exact name only when unique. Missing or ambiguous
-  group references fail before texture construction/image mutation, and the
-  resolved TextureGroup UUID is passed into the Texture constructor instead of
-  the caller's unresolved string;
-- after successful `create_texture` optional group preflight, the existing Undo
-  scope remains `textures: []` plus `collections: []`. Texture construction,
-  data/file/canvas setup, `texture.add()`, and `Undo.finishEdit` run inside a
-  rollback boundary; failure calls `Undo.cancelEdit(true)`, refreshes Canvas, and
-  rethrows;
-- `create_texture` applies its existing schema-provided `render_mode` and
-  `render_sides` values exactly once through the initial `Texture` constructor.
-  Blockbench's Texture data contract owns both properties, and its constructor
-  merges input data before material setup; schema defaults (`"default"`, `"auto"`),
-  group preflight, data/file/canvas setup, Undo rollback, result shape, and
-  success refresh remain unchanged;
-- `list_textures` remains read-only and preserves its existing `name`, `uuid`,
-  `id`, and `group` result fields while also exposing each Texture's direct
-  `render_mode` and `render_sides` metadata. No image-data read, mutation, Undo,
-  `get_texture`, or `get_material_info` behavior changed.
+- Bedrock-first modelling prompt route plus `inspect_model_bounds`,
+  `capture_model_views`, and `inspect_element` observation paths;
+- strict Cube/hierarchy/rotation/pivot targeting and explicit UUID-based
+  correction routing;
+- safer group/bone/destructive-element targeting with bounded rollback;
+- strict texture identity for material filtering, `apply_texture`, standalone
+  activation, paint activation, `get_texture`, texture groups, PBR material
+  creation/configuration, and channel assignment;
+- rollback boundaries for `apply_texture`, `add_texture_group`,
+  `create_pbr_material`, `configure_material`, `assign_texture_channel`, and
+  `create_texture` mutation paths;
+- strict file-local PBR material/TextureGroup targeting for the proven material
+  callers in `texture.ts` without changing the still-un-audited shared
+  `findTextureGroupOrThrow()` helper;
+- `create_texture(group=...)` resolves a supplied non-empty TextureGroup target
+  before Undo and passes the concrete UUID into the Texture constructor;
+- `create_texture` now applies schema-provided `render_mode` and `render_sides`
+  exactly once through the initial Texture constructor;
+- `list_textures` remains read-only and now exposes `render_mode` and
+  `render_sides` while preserving its existing identity/group fields;
+- `create_texture(fill_color=..., layer_name=...)` now preserves the existing
+  contract that `fill_color` requires `layer_name`, paints the existing texture
+  bitmap as before, adds the Texture, then enables layers with
+  `texture.activateLayers(false)` inside the already-open create transaction and
+  names the generated base layer with the supplied `layer_name` before
+  `Undo.finishEdit`.
 
 These are **source implemented**, not live-proven.
 
-## Latest List-Textures Render-Observability Finding
+## Latest Create-Texture Fill-Layer Finding
 
-Before the latest change, `create_texture` could author render settings but the
-general discovery path returned only:
+Before the latest change, the public contract was:
 
 ```text
-list_textures()
-→ [{
-     name,
-     uuid,
-     id,
-     group
-   }]
+fill_color?: color
+layer_name?: string
+fill_color → layer_name required
 ```
 
-Blockbench source/typing evidence already establishes `render_mode` and
-`render_sides` as direct Texture properties, and `get_material_info` reads those
-same properties for grouped material textures.
+but execution only painted the Texture canvas; `layer_name` was destructured and
+never used. The same mismatch existed in the upstream MCP source, so the field was
+not merely a Local regression.
+
+Blockbench-owned source establishes the intended layer lifecycle:
+
+```text
+Texture.activateLayers(false)
+→ layers_enabled = true
+→ if no layers:
+   → create TextureLayer attached to this Texture
+   → copy current texture canvas pixels into that layer
+   → add/select the layer
+```
+
+`TextureLayer` has a direct `name` property, and Local's existing
+`texture_layer_management` tool also treats `layer_name` as a real layer name.
+`Texture.getUndoCopy()` serializes layer state when `layers_enabled`, so the
+existing create-texture Undo owner remains sufficient for this newly-created
+Texture; no separate nested Undo was added.
 
 Current Local behavior is:
 
 ```text
-list_textures()
-→ [{
-     name,
-     uuid,
-     id,
-     group,
-     render_mode,
-     render_sides
-   }]
+create_texture(..., fill_color, layer_name)
+→ existing validation/group preflight
+→ Undo.initEdit({ textures: [], collections: [] })
+→ try
+   → construct Texture
+   → existing fill/data/canvas setup
+   → texture.add()
+   → if fill_color + layer_name
+      → texture.activateLayers(false)
+      → texture.getActiveLayer().name = layer_name
+   → Undo.finishEdit
+→ catch rollback
+→ success Canvas refresh/result
 ```
 
-The tool remains read-only. Existing identity/group fields are unchanged and no
-additional metadata such as `pbr_channel`, dimensions, source/path, or selection
-state was added in this slice.
+The data-file branch, blank-texture branch, render settings, PBR/group targeting,
+result shape, and success refresh remain unchanged.
 
 ## Holds
 
 - **G1/G2:** source corrections implemented; local proof deferred.
 - **G3 annotations:** paused.
 - shared `findTextureGroupOrThrow()` hardening: deferred until remaining callers
-  can be exhaustively audited; current GitHub code search is incomplete.
+  can be exhaustively audited; GitHub code search has been incomplete.
 - save/reopen proof: later local validation.
 - UV/texture feature additions: only after a concrete workflow proves a gap.
 - broad public-surface reduction: after the core fidelity path is proven.
 
 ## Next Step
 
-Audit **`create_texture` `layer_name` contract parity when `fill_color` is used**
-in:
+Audit **`texture_layer_management(action="create_layer")` lifecycle and Undo
+parity when the target Texture does not yet have layers enabled** in:
 
 ```text
-mcp/server/tools/texture.ts
+mcp/server/tools/paint.ts
 ```
 
-Current observed contract/path is:
+Current observed path is:
 
 ```text
-createTextureParameters
-→ fill_color?: color
-→ layer_name?: string
-→ refinement: fill_color requires layer_name
-
-create_texture execute(..., fill_color, layer_name)
-→ destructures layer_name
-→ constructs Texture
-→ no-data branch gets texture.getActiveCanvas()
-→ fill_color paints directly to that canvas
-→ updateSource/updateLayerChanges
-→ layer_name is never read or applied
+getAndActivateTexture(texture_id)
+→ Undo.initEdit({
+    textures: [texture],
+    layers: texture.layers,
+    bitmap: true
+  })
+→ action = create_layer
+   → if !texture.layers_enabled
+      → texture.activateLayers(true)
+   → new TextureLayer({ name }, texture)
+   → setSize(texture.width, texture.height)
+   → addForEditing()
+→ texture.updateChangesAfterEdit()
+→ Undo.finishEdit("Layer management: create_layer")
+→ updateInterfacePanels()
 ```
 
-The public contract therefore requires the caller to provide a layer name for
-filled textures, but current execution does not create/name/select a TextureLayer
-or otherwise use that value. This can make a caller believe a named editable
-layer was authored when the result is only direct texture-canvas content.
+Blockbench source shows `Texture.activateLayers(true)` opens and finishes its own
+Undo edit. Calling it after this MCP tool has already opened an Undo edit creates
+a nested transaction boundary. The tool also has no rollback boundary if layer
+activation/construction/addition/update/finish fails.
 
 Audit requirements:
 
-1. verify the intended Local/Blockbench TextureLayer lifecycle and existing
-   `Texture.activateLayers` / `TextureLayer` creation patterns before editing;
-2. determine whether `layer_name` is meant to create a real named layer or is a
-   stale/incorrect public contract; do not assume either direction without source
-   evidence;
-3. preserve existing fill color, data-vs-fill exclusion, dimensions, group/PBR
-   targeting, render settings, Undo rollback, result shape, and success refresh;
-4. if a real layer is intended, ensure it is created/painted within the existing
-   create-texture transaction and that Undo capture remains sufficient; if the
-   contract is stale, remove only the unsupported requirement/field rather than
-   inventing layer behavior;
-5. keep this slice separate from new painting features, generic layer-management
-   APIs, UV changes, or material redesign.
+1. keep this slice limited to the `create_layer` action; do not fix/delete/
+   duplicate/merge/opacity/blend/move/rename/flatten actions yet;
+2. preserve `getAndActivateTexture`, the existing `layer_name` default naming,
+   layer size, `addForEditing()`, success result, `updateChangesAfterEdit()`, and
+   `updateInterfacePanels()` behavior;
+3. confirm the existing outer Undo scope is sufficient for enabling layers plus
+   adding the new layer; if so, call `texture.activateLayers(false)` so enabling
+   the base layer participates in the already-open MCP transaction rather than
+   opening another one;
+4. if any operation after the outer `Undo.initEdit` fails during this action,
+   cancel/revert the open edit, refresh the required Blockbench state, and
+   rethrow;
+5. do not redesign the layer-management API, add a generic transaction helper,
+   or broaden into layer observability/selection semantics in this slice.
 
-This is a contract-to-runtime parity audit first. Do not implement a layer until
-Blockbench-owned source evidence establishes the correct lifecycle.
+Prefer the smallest source change that establishes one Undo transaction for the
+entire create-layer operation. Keep any broader `texture_layer_management`
+cleanup as later evidence-driven work.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish schema/control-flow/read-shape/Blockbench-source
-structure and static parity only. Actual layer creation, texture rendering, file
-loading, texture creation, forced rollback, PBR material behavior, and viewport
-appearance remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+ChatGPT→GitHub may establish schema/control-flow/Undo/Blockbench-source structure
+and static diff only. Actual layer creation, selection, undo/redo, texture
+rendering, file loading, and viewport appearance remain `LOCAL PROOF REQUIRED`
+until local Blockbench testing resumes.
