@@ -1328,23 +1328,32 @@ export function registerPaintTools() {
           return result;
         }
 
-        let result = "";
+        if (action === "flatten_layers") {
+          let result = "";
 
-        switch (action) {
-          case "flatten_layers":
+          try {
             if (!texture.layers_enabled) {
               throw new Error("Texture has no layers to flatten.");
             }
-            texture.flattenLayers();
+            texture.layers_enabled = false;
+            texture.selected_layer = null;
+            texture.layers.empty();
             result = "Flattened all layers";
-            break;
+
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          UVEditor.vue.layer = null;
+          updateInterfacePanels();
+          BARS.updateConditions();
+          return result;
         }
-
-        texture.updateChangesAfterEdit();
-        Undo.finishEdit(`Layer management: ${action}`);
-        updateInterfacePanels();
-
-        return result;
       },
     },
     paintToolDocs[11].status
