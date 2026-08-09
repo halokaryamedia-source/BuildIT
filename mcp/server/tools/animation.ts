@@ -454,6 +454,33 @@ createTool(
   {
     ...animationToolDocs[0],
     async execute({ name, loop, animation_length, bones, particle_effects }) {
+      if (!Project) {
+        throw new Error(
+          "No project is open. Open or create the intended Bedrock Entity project before creating an animation."
+        );
+      }
+
+      type BedrockAnimationCodec = {
+        id: string;
+        loadFile?: (
+          file: { content: string; path?: string },
+          animationFilter?: string[]
+        ) => _Animation[];
+      };
+      const animationCodecApi = (
+        globalThis as typeof globalThis & {
+          AnimationCodec?: {
+            getCodec(animation?: _Animation): BedrockAnimationCodec | undefined;
+          };
+        }
+      ).AnimationCodec;
+      const codec = animationCodecApi?.getCodec();
+      if (!codec || codec.id !== "bedrock" || typeof codec.loadFile !== "function") {
+        throw new Error(
+          "create_animation requires the current Bedrock AnimationCodec. Open a Bedrock Entity project before creating an animation."
+        );
+      }
+
       const animationData = {
         loop,
         ...(animation_length && { animation_length }),
@@ -482,22 +509,79 @@ createTool(
         ...(particle_effects && { particle_effects }),
       };
 
-      Animator.loadFile({
-        content: JSON.stringify({
-          format_version: "1.8.0",
-          animations: {
-            [`animation.${name}`]: animationData,
-          },
-        }),
+      const requestedAnimationName = `animation.${name}`;
+      const fileContent = JSON.stringify({
+        format_version: "1.8.0",
+        animations: {
+          [requestedAnimationName]: animationData,
+        },
       });
+      const animationUuidsBefore = new Set(
+        Animation.all.map((animation) => animation.uuid)
+      );
+      let editStarted = false;
 
-      return `Created animation "${name}" with keyframes for ${
-        Object.keys(bones).length
-      } bones${
-        particle_effects
-          ? ` and ${Object.keys(particle_effects).length} particle effects`
-          : ""
-      }`;
+      try {
+        Undo.initEdit({ animations: [] });
+        editStarted = true;
+
+        const codecCreatedAnimations = codec.loadFile(
+          { content: fileContent },
+          [requestedAnimationName]
+        );
+        const createdAnimations = codecCreatedAnimations.filter(
+          (animation) =>
+            !animationUuidsBefore.has(animation.uuid) &&
+            Animation.all.includes(animation)
+        );
+        if (createdAnimations.length !== 1) {
+          throw new Error(
+            `Bedrock AnimationCodec created ${createdAnimations.length} new animations; expected exactly 1.`
+          );
+        }
+
+        const [createdAnimation] = createdAnimations;
+        Undo.finishEdit("Create animation", {
+          animations: createdAnimations,
+        });
+        editStarted = false;
+
+        const result = {
+          animation: {
+            uuid: createdAnimation.uuid,
+            name: createdAnimation.name,
+            loop: createdAnimation.loop,
+            length: createdAnimation.length,
+            snapping: createdAnimation.snapping,
+          },
+          requested_name: requestedAnimationName,
+          requested_bone_count: Object.keys(bones).length,
+          requested_particle_effect_count: particle_effects
+            ? Object.keys(particle_effects).length
+            : 0,
+        };
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+          structuredContent: result,
+        };
+      } catch (error) {
+        const createdDuringAttempt = Animation.all.filter(
+          (animation) => !animationUuidsBefore.has(animation.uuid)
+        );
+        createdDuringAttempt.forEach((animation) => {
+          animation.remove(false, false);
+        });
+        if (editStarted) {
+          Undo.cancelEdit(true);
+        }
+        throw error;
+      }
     },
   },
   animationToolDocs[0].status
