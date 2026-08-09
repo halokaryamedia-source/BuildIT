@@ -669,7 +669,7 @@ createTool(
               if (keyframe.rotation) {
                 (acc.rotation ??= {})[timeKey] = keyframe.rotation;
               }
-              if (keyframe.scale) {
+              if (keyframe.scale !== undefined) {
                 (acc.scale ??= {})[timeKey] = keyframe.scale;
               }
               return acc;
