@@ -161,8 +161,13 @@ export const createAnimationParameters = z.object({
     .describe("Whether the animation should loop"),
   animation_length: z
     .number()
+    .finite()
+    .min(0)
+    .max(10000)
     .optional()
-    .describe("Length of the animation in seconds"),
+    .describe(
+      "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization."
+    ),
   bones: z
     .record(bedrockBoneKeyframesSchema)
     .describe(
