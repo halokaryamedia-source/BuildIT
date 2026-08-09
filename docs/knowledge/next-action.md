@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_CREATE_LENGTH_HARDENED_TIMELINE_LENGTH_GAP`
+`REFERENCE_FIDELITY_ANIMATION_TIMELINE_LENGTH_HARDENED_TIME_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — `create_animation.animation_length`
+## Latest Completed Animation Slice — `animation_timeline.set_length`
 
 Primary owner:
 
@@ -46,16 +46,16 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-decc44629a278b80003e6f35ed631e2aebfd1a28
-fix: validate created animation length
+bb35dbc23a20d5c522b05de4d6cd2d01d37d3a56
+fix: validate animation timeline length
 ```
 
-The exact source diff is limited to the public `create_animation.animation_length`
-schema and its directly-related description.
+The exact source diff is limited to the public `animation_timeline.length`
+schema and directly-related description.
 
-### Current creation length contract
+### Current timeline length contract
 
-When supplied, `animation_length` must now be:
+When supplied, timeline `length` must now be:
 
 ```text
 finite
@@ -63,54 +63,64 @@ finite
 <= 10000
 ```
 
-Invalid, negative, and over-limit values therefore fail at the MCP input boundary
-before `codec.loadFile()` instead of reaching JSON or relying on native clamping.
+Invalid, negative, and over-limit values therefore fail at the MCP input
+boundary before the existing persistent Animation-level Undo transaction opens.
 
-### Zero semantics kept native
+### Native authored-keyframe floor remains owner
 
-The existing synthetic Bedrock payload still uses:
+The execution path is intentionally unchanged:
 
 ```text
-...(animation_length && { animation_length })
+animation.setLength(length)
 ```
 
-so explicit numeric `0` is accepted by the public schema but omitted from the
-Bedrock payload.
+Current Blockbench `Animation.setLength(len)` performs:
 
-This is intentional. Current native Bedrock compile emits `animation_length` only
-when `animation.length` is truthy, so zero is export-omission-equivalent rather
-than a distinct persistent Bedrock representation.
+```text
+this.length = limitNumber(len, this.getMaxLength(), 1e4)
+```
 
-### No invented keyframe-length rule
+so an otherwise valid request below the current authored keyframe maximum is not
+pre-rejected by MCP. Native Blockbench remains the owner of that runtime floor.
 
-The slice does **not** reject an explicit creation length merely because a
-requested transform/effect keyframe occurs later.
+The tool already reports:
 
-Current Bedrock import constructs the Animation with `a.animation_length` before
-adding keyframes. Imported keyframes are added with `GeneralAnimator.addKeyframe()`
-and the codec does not perform a post-keyframe `setLength()` normalization pass.
+```text
+animation.length
+```
 
-Therefore enforcing `animation_length >= last requested keyframe` in the MCP
-creation schema would invent behavior that current native import does not own.
+after mutation, so a native floor adjustment remains observable to the caller.
+
+### Recoverability preserved
+
+The existing `set_length` mutation still runs through the same helper:
+
+```text
+Undo.initEdit({ animations: [animation] })
+animation.setLength(length)
+Undo.finishEdit("Change animation length")
+```
+
+with `Undo.cancelEdit(true)` on failure.
+
+No mutation, result, or preview behavior changed in this slice.
 
 ### Scope preserved
 
 No change was made to:
 
-- transform finiteness;
-- Blockbench-authored position/rotation sign conversion;
-- keyframe-time/collision validation;
-- scalar `scale: 0` preservation;
-- deterministic Group binding;
-- particle payload/timestamp behavior;
-- AnimationCodec / Undo lifecycle;
-- other Animation tools;
+- `create_animation`;
+- transform/keyframe behavior;
+- `set_time`, play/pause/stop, FPS, loop, or range selection;
+- effects;
+- batch operations;
 - Geometry or Texture.
 
-GitHub has no registered CI/status checks for the source commit.
+GitHub shows a single schema-only source hunk and no registered CI/status checks
+for the source commit.
 
-Actual MCP validation, codec creation, authored length, playback, Undo/Redo, and
-save/reopen remain `LOCAL PROOF REQUIRED`.
+Actual MCP validation, native keyframe-floor clamping, timeline UI state,
+Undo/Redo, playback, and save/reopen remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -131,15 +141,17 @@ save/reopen remain `LOCAL PROOF REQUIRED`.
 - Blockbench-authored coordinate/sign-space parity across create/mutate/readback;
 - finite `create_animation` transform values;
 - finite/ranged `create_animation.animation_length` with native zero omission;
+- finite/ranged persistent `animation_timeline.set_length` input while preserving
+  native authored-keyframe floor semantics;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — `animation_timeline.set_length`
+## Continuation Audit — `animation_timeline.set_time`
 
-The next grounded Animation boundary is **only public input parity for persistent
-`animation_timeline.set_length`** in:
+The next grounded Animation boundary is **only public input parity for
+`animation_timeline.set_time`** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -148,61 +160,58 @@ mcp/server/tools/animation.ts
 Current Local timeline schema still accepts:
 
 ```text
-length: z.number().optional()
+time: z.number().optional()
 ```
 
-and the `set_length` action calls:
+and the action calls:
 
 ```text
-animation.setLength(length)
+Timeline.setTime(time)
 ```
 
-inside the existing recoverable Animation-level Undo transaction.
+### Current native time behavior
 
-### Current native length mutation behavior
-
-Current Blockbench `Animation.setLength(len)` performs:
+Current Blockbench `Timeline.setTime(seconds)` begins with:
 
 ```text
-this.length = limitNumber(len, this.getMaxLength(), 1e4)
+seconds = limitNumber(seconds, 0, 1000)
 ```
 
-Therefore mutation has two distinct native constraints:
+then writes the normalized value into the playhead / `Timeline.time`, updates the
+timecode when appropriate, updates timeline size if needed, and reveals the
+requested time.
 
-1. upper boundary: `10000` seconds;
-2. lower boundary at runtime: `animation.getMaxLength()`.
+Therefore native timeline-time input has a stable range boundary:
 
-`getMaxLength()` is derived from the Animation's existing authored keyframes.
-Consequently requesting `set_length: 0` on an Animation whose authored keyframes
-extend to 3 seconds does not produce length 0; native Blockbench clamps the
-result to at least the authored maximum.
+```text
+0..1000 seconds
+```
 
-The existing tool already returns the actual resulting `animation.length`, so
-that native floor is observable and should remain the runtime owner.
+The Local MCP boundary currently does not state that range and can rely on silent
+runtime normalization instead.
 
 ### Grounded correction direction
 
-The next slice should validate only what is stable at the MCP input boundary:
+The next slice should validate only the stable public invariant:
 
 ```text
-length must be finite
-length must be >= 0
-length must be <= 10000
+time must be finite
+time must be >= 0
+time must be <= 1000
 ```
 
-Do **not** pre-reject a value merely because it is below `getMaxLength()`. Let the
-current `Animation.setLength()` own that authored-keyframe floor and keep returning
-the actual resulting value.
+Do not clamp against `animation.length`; current `Timeline.setTime()` does not use
+the selected Animation length as its upper bound.
 
-This prevents `NaN`, infinities, negative values, or over-limit requests from
-being silently normalized while preserving Blockbench's real mutation semantics.
+After this validation, the existing result string can continue reporting the
+requested time because every accepted value is already inside the native range
+and therefore is not range-normalized by `Timeline.setTime()`.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
 - sound/timeline EffectAnimator readback;
-- `animation_timeline.set_time` range semantics;
 - broad batch selection redesign;
 - shared Animation/Group resolver refactor;
 - local save/reopen and visual playback proof;
@@ -221,8 +230,7 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only `animation_timeline.set_length` public length validation**
-in:
+Audit and correct **only `animation_timeline.set_time` public time validation** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -231,16 +239,20 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve the existing recoverable Animation-level Undo mutation path;
-3. make timeline `length`, when provided, finite and within `0..10000` at the MCP boundary;
-4. do not pre-reject values below current `animation.getMaxLength()`; native `Animation.setLength()` remains owner of that runtime floor;
-5. keep the result reporting the actual resulting `animation.length`;
-6. do not change `create_animation`, playback/time actions, effects, batch operations, Geometry, or Texture;
-7. inspect the exact source diff immediately and advance to exactly one grounded Animation boundary.
+2. preserve `Timeline.setTime()` as the runtime owner and do not change playback,
+   stop, or preview behavior;
+3. make timeline `time`, when provided, finite and within `0..1000` at the MCP
+   boundary;
+4. do not clamp against the current Animation length; native `Timeline.setTime()`
+   has a fixed `0..1000` boundary instead;
+5. keep the existing `set_time` result semantics for accepted values;
+6. do not change `set_length`, `create_animation`, effects, batch operations,
+   Geometry, or Texture;
+7. inspect the exact source diff immediately and advance to exactly one grounded
+   Animation boundary.
 
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/schema/control-flow parity only. Actual MCP
-validation, native length clamping against authored keyframes, timeline UI state,
-playback, Undo/Redo, and save/reopen remain `LOCAL PROOF REQUIRED` until local
-runtime testing resumes.
+validation, timeline UI/playhead state, playback, Undo/Redo, and save/reopen remain
+`LOCAL PROOF REQUIRED` until local runtime testing resumes.
