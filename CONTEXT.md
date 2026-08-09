@@ -3,7 +3,7 @@
 This is the stable context for the BlockIT/MCP-Blockbench workspace. Read this
 before detailed project notes. Keep it factual and compact.
 
-Last verified: 2026-08-08
+Last verified: 2026-08-09
 Stability: stable
 Owner: workspace agent
 
@@ -17,6 +17,17 @@ an approved visual modelling brief through the shortest evidence-backed workflow
 The product is object-agnostic: fixtures, Golden Samples, animals, props, or
 mechanical objects may validate the workflow but do not become generic runtime
 rules.
+
+For the active **Minecraft Bedrock Entity modelling path, geometry is Cube/Cuboid
+only**. Meshes, polygons, cylinders, free-form surfaces, and other non-Cuboid
+geometry are outside the modelling scope unless the product scope is explicitly
+changed. Existing generic MCP tools do not expand the Bedrock modelling contract.
+
+2D texture-editor operations such as rectangle/ellipse pixel selections are
+**texture-editing utilities, not model geometry primitives**. Their presence must
+not be interpreted as permission to build non-Cuboid Bedrock Entity geometry, and
+they must not gate Geometry completion merely because they exist in the paint
+surface.
 
 A valid file, successful tool call, or correct coordinates are not proof of
 visual resemblance.
