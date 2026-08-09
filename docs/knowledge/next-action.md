@@ -17,7 +17,7 @@ reference decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_CREATE_TEXTURE_GROUP_TARGET_HARDENED`
+`REFERENCE_FIDELITY_CREATE_TEXTURE_ROLLBACK_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -142,56 +142,67 @@ Current Local source already contains:
   unchanged;
 - `create_texture(group=...)` preserves omitted `group` as valid and preserves the
   existing rule that `pbr_channel` requires a group. A supplied group reference
-  must now be non-empty and is resolved before `Undo.initEdit` by exact
+  must be non-empty and is resolved before `Undo.initEdit` by exact
   TextureGroup UUID, otherwise exact name only when unique. Missing or ambiguous
   group references fail before texture construction/image mutation, and the
   resolved TextureGroup UUID is passed into the Texture constructor instead of
-  the caller's unresolved string. Data/fill, layer, dimensions, render settings,
-  and `pbr_channel` behavior remain unchanged.
+  the caller's unresolved string;
+- after successful `create_texture` optional group preflight, the existing Undo
+  scope remains `textures: []` plus `collections: []`. Texture construction,
+  data/file/canvas setup, `texture.add()`, and `Undo.finishEdit` now run inside a
+  rollback boundary; failure calls `Undo.cancelEdit(true)`, refreshes Canvas, and
+  rethrows. Data/fill rules, layer requirement, dimensions, `pbr_channel`,
+  TextureGroup UUID assignment, return shape, and success Canvas refresh remain
+  unchanged.
 
 These are **source implemented**, not live-proven.
 
-## Latest Create-Texture Group-Target Finding
+## Latest Create-Texture Rollback Finding
 
-Before the latest change:
+Before the latest change, optional TextureGroup identity was already preflighted,
+but the mutation path remained:
 
 ```text
-create_texture(..., group?, pbr_channel?)
-→ schema: group = optional plain string
-→ refinement: pbr_channel requires a truthy group
+optional resolved TextureGroup
 → Undo.initEdit({ textures: [], collections: [] })
-→ new Texture({ ..., group: callerString, pbr_channel, internal: true })
-→ image/canvas setup
+→ construct Texture
+→ data branch
+   ├─ data URL → source/size mutation
+   └─ file path → fromFile/load/fillParticle/layer state
+→ no-data branch
+   → active canvas clear/fill
+   → updateSource/updateLayerChanges
 → texture.add()
 → Undo.finishEdit
+→ Canvas.updateAll()
+→ imageContent(texture.getDataURL())
 ```
 
-A supplied group name could be ambiguous, and missing/non-UUID strings could reach
-Texture construction without validating that the intended TextureGroup existed.
+A failure after `Undo.initEdit` had no rollback boundary and could leave an open
+or partially applied edit.
 
 Current Local behavior is:
 
 ```text
-create_texture(..., group?, pbr_channel?)
-→ group omitted → preserve undefined group
-→ supplied group schema requires non-empty string
-→ before Undo, resolve group
-   ├─ exact TextureGroup UUID → target
-   ├─ exact unique TextureGroup name → target
-   ├─ duplicate exact name → ERROR with candidate UUIDs
-   └─ missing → actionable ERROR
+optional resolved TextureGroup
 → Undo.initEdit({ textures: [], collections: [] })
-→ new Texture({ ..., group: resolvedGroup?.uuid, pbr_channel, internal: true })
-→ existing image/canvas setup
-→ texture.add()
-→ Undo.finishEdit
+→ try
+   → construct Texture
+   → existing data/file/canvas setup
+   → texture.add()
+   → Undo.finishEdit
+→ catch
+   → Undo.cancelEdit(true)
+   → Canvas.updateAll()
+   → rethrow
 → Canvas.updateAll()
+→ imageContent(texture.getDataURL())
 ```
 
-The existing file-local `resolveTextureToolMaterial()` owner was reused. Shared
-`mcp/lib/util.ts::findTextureGroupOrThrow()` remains unchanged. No material-type
-validation, file-loading redesign, PBR channel redesign, or rollback change was
-included in this identity slice.
+The existing Undo capture was retained. This path creates/adds a Texture and does
+not mutate the preflighted TextureGroup object itself; current source provides no
+evidence that a wider `texture_groups` capture is required. Result generation
+remains after the successful transaction, matching the existing success path.
 
 ## Holds
 
@@ -205,60 +216,51 @@ included in this identity slice.
 
 ## Next Step
 
-Audit **`create_texture` mutation/Undo recoverability after successful optional
-TextureGroup preflight** in:
+Audit **`create_texture` render-setting contract parity** for `render_mode` and
+`render_sides` in:
 
 ```text
 mcp/server/tools/texture.ts
 ```
 
-Current post-preflight path is:
+Current observed contract is:
 
 ```text
-optional resolved TextureGroup
-→ Undo.initEdit({ textures: [], collections: [] })
-→ construct Texture
-→ data branch
-   ├─ data URL → mutate source/size
-   └─ file path → texture.fromFile(...) → load/fillParticle/layer state
-→ no-data branch
-   → active canvas clear/fill
-   → updateSource/updateLayerChanges
-→ texture.add()
-→ Undo.finishEdit
-→ Canvas.updateAll()
-→ return imageContent(texture.getDataURL())
+createTextureParameters
+├─ render_mode: optional, default "default"
+└─ render_sides: optional, default "auto"
+
+create_texture execute(...)
+→ does not destructure render_mode/render_sides
+→ Texture constructor does not receive either value
 ```
 
-Target preflight now fails before Undo, but there is still no rollback boundary
-after `Undo.initEdit`. A failure during Texture construction/setup, file loading,
-canvas/source mutation, `texture.add()`, or `Undo.finishEdit` can therefore leave
-an open or partially applied edit.
+The MCP schema therefore advertises caller-controlled texture rendering options,
+but supplied non-default values currently have no execution path. This can make a
+correct modelling/material instruction appear successful while Blockbench keeps
+its default render behavior.
 
 Audit requirements:
 
-1. preserve optional group preflight and resolved UUID behavior unchanged before
-   all mutation;
-2. preserve current data-vs-fill rules, layer requirement, dimensions,
-   `pbr_channel`, render settings, file-loading path, return shape, and success
-   Canvas refresh;
-3. audit whether the existing `textures: []` plus `collections: []` Undo scope is
-   sufficient for the actual create-texture path; change capture only if source
-   evidence proves a missing mutation owner;
-4. if any operation fails after `Undo.initEdit`, cancel/revert the open edit,
-   refresh Canvas, and rethrow;
-5. keep the change local to `create_texture`; do not modify group/material
-   resolvers, other texture/PBR tools, shared helpers, file-loading semantics, G3,
-   or create a generic transaction framework.
+1. verify the Local/Blockbench-owned mutation field/API for `Texture.render_mode`
+   and `Texture.render_sides` from current source/typings/patterns before editing;
+2. preserve the schema defaults (`"default"`, `"auto"`) and all existing
+   create-texture validation, group preflight, data/file/canvas setup, Undo
+   rollback, result shape, and success refresh;
+3. ensure explicit caller values are applied exactly once to the created Texture
+   at the correct point in its lifecycle;
+4. do not redesign render enums, PBR channels, material validation, file loading,
+   or add compatibility fallbacks without source evidence;
+5. keep the change local to `create_texture` unless existing Local source proves
+   a shared owner is required.
 
-Prefer the smallest rollback boundary around the existing create/setup/add/
-`Undo.finishEdit` sequence. Keep success `Canvas.updateAll()` outside the rollback
-boundary after a successful `Undo.finishEdit`, matching the existing Local
-transaction pattern.
+This is primarily a Blockbench runtime/execution-parity audit: the public schema
+already exposes the options, but their runtime application must be proven before
+implementation.
 
 ## Proof Boundary
 
-ChatGPT→GitHub may establish schema/resolver/control-flow/Undo structure and static
-diff only. Actual live paint targeting, PBR material targeting, TextureGroup
-assignment, file loading, texture creation, forced rollback, and save behavior
-remain `LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
+ChatGPT→GitHub may establish schema/control-flow/Undo structure and static source
+parity only. Actual texture rendering, file loading, texture creation, forced
+rollback, PBR material behavior, and viewport appearance remain
+`LOCAL PROOF REQUIRED` until local Blockbench testing resumes.
