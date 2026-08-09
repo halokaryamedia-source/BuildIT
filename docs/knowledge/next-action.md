@@ -14,7 +14,7 @@ material decisions evidence-backed rather than assumption-driven.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_CLOSING_AUDIT_BLOCKED_SELECTION_MATRIX`
+`REFERENCE_FIDELITY_TEXTURE_SELECTION_MATRIX_HARDENED`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -30,59 +30,12 @@ finish remaining high-value Texture gaps
 → move to Animation
 ```
 
-The layer-management sequence is source-hardened through `flatten_layers`.
-The closing audit first found and has now source-fixed the `paint_settings`
-shadowing blocker, but the resumed audit found one additional **major** current
-Texture-selection API blocker. Texture is therefore not frozen yet.
+Texture is not frozen yet because the resumed closing audit has established one
+remaining major selection-state/operation contract gap described below.
 
-## Latest Completed Blocker — `paint_settings`
+## Latest Completed Selection-Matrix Slice
 
-The previous Local implementation created:
-
-```text
-const settings: string[] = []
-```
-
-inside `paint_settings`, shadowing Blockbench's real global `settings` registry.
-Six supplied preferences could therefore attempt property writes on the local
-array and throw after earlier paint options had already mutated runtime state.
-
-Current Local now:
-
-- uses `appliedSettings: string[]` only as the result accumulator;
-- preflights every requested Blockbench setting before any paint-setting mutation:
-  `paint_side_restrict`, `brush_opacity_modifier`, `brush_size_modifier`,
-  `paint_with_stylus_only`, `pick_color_opacity`, and `pick_combined_color`;
-- fails before mutation if a requested setting entry is unavailable;
-- writes those six preferences through Blockbench's real `Setting.set(...)`
-  API, which is the typed setting setter that applies `onChange` and persistence;
-- preserves the existing public inputs and result text intent for mirror painting,
-  lock alpha, pixel perfect, color erase, and the six global settings.
-
-Source commit:
-
-```text
-1a5c90a873daa036294ce7694147727d5b94368d
-fix: use Blockbench paint settings registry
-```
-
-The source commit diff is limited to `paint_settings`. No model Undo was invented
-for preference/state settings. Live preference behavior remains local proof.
-
-## Closing Audit Finding — Texture Selection API
-
-### Major blocker
-
-Current Local `texture_selection` publicly exposes:
-
-```text
-invert_selection
-expand_selection
-contract_selection
-feather_selection
-```
-
-and executes them as:
+Current Blockbench `IntMatrix` does not expose Local's former calls:
 
 ```text
 selection.invert()
@@ -91,27 +44,126 @@ selection.contract(radius)
 selection.feather(radius)
 ```
 
-where `selection` is `texture.selection`, a Blockbench `IntMatrix`.
+The corrected Local source now follows current Blockbench ownership instead:
 
-Current official `blockbench-types` for `IntMatrix` exposes operations such as:
+### `invert_selection`
+
+Current Blockbench native paint-selection flow uses:
 
 ```text
-activate
-get / allow / getDirect
-getBoundingRect / hasSelection
-set / clear / setOverride
-changeSize / forEachPixel / translate
-toBoxes / maskCanvas
+Undo.initSelection({ texture_selection: true })
+→ if custom matrix: forEachPixel and flip each matrix value
+→ otherwise: setOverride(!override)
+→ UVEditor.updateSelectionOutline()
+→ Undo.finishSelection("Invert selection")
 ```
 
-but does **not** declare `invert`, `expand`, `contract`, or `feather`.
-Current official Blockbench source searches for `selection.invert` and
-`expand_selection` also produced no implementation proving those calls exist.
-This means the four Local actions are currently stale/unsupported at the source
-contract level and may throw instead of modifying a texture selection.
+Local now follows that lifecycle and cancels/reverts the selection transaction if
+the matrix mutation or finish path fails.
 
-`select_rectangle`, `select_ellipse`, `select_all`, and `clear_selection` are not
-reopened by this finding.
+### `expand_selection` / `contract_selection`
+
+A later source check established that these operations **are still supported** by
+Blockbench, but through the native `expand_texture_selection` action rather than
+`IntMatrix.expand()` / `contract()` methods.
+
+Blockbench's native action performs a pixel-matrix dilation/erosion using
+`IntMatrix.forEachPixel()` and `get()`:
+
+- positive radius expands the selection;
+- negative radius contracts it;
+- the dialog's default corner mode is round;
+- contracting a full-selection override converts it into a custom matrix and
+  removes the requested border radius.
+
+Local preserves the public `expand_selection` and `contract_selection` actions,
+uses the current Blockbench matrix primitives with the native round-radius
+behavior, wraps the mutation in `Undo.initSelection({ texture_selection: true })`,
+refreshes the selection outline, and cancels/reverts on failure.
+
+### `feather_selection`
+
+No current Blockbench texture-selection feather equivalent was found in the
+current source/API surface. The public `feather_selection` action was therefore
+removed instead of inventing a new image-processing subsystem.
+
+### Source sequence
+
+```text
+b1fab8ff0e89b79751d071b2b9ccb51dd15ab23a
+fix: align texture selection actions
+
+ea4339b7ffd975539d4ddf1ca612e9e3a8bdd284
+fix: preserve supported texture selection growth
+
+370e2c5463753d934d3c55f49b568adf8b6c3fdf
+fix: restore brush preset annotation
+```
+
+The first source pass was corrected after current Blockbench source proved that
+expand/contract still exist under a different native owner. A full-file write
+also changed the unrelated `load_brush_preset` annotation; that drift was
+immediately restored. Net source change from the slice starting head is therefore
+limited to the intended `texture_selection` contract/runtime path.
+
+## Closing Audit Finding — Remaining Selection State / Operation Parity
+
+One major blocker remains before Texture can be frozen.
+
+Current Local still publicly exposes:
+
+```text
+mode = create | add | subtract | intersect
+```
+
+Blockbench current source confirms these are real native selection-tool operation
+modes, but Local currently destructures `mode` and does not use it. Rectangle and
+ellipse therefore always behave as a replacement/create operation regardless of
+the requested mode.
+
+The remaining common selection path also still uses stale state mechanics:
+
+```text
+select_rectangle
+→ selection.clear()
+→ assign selection.start_x/start_y/end_x/end_y
+→ assign selection.is_custom = false
+
+select_ellipse
+→ selection.clear()
+→ assign selection.is_custom = true
+→ set ellipse pixels
+
+select_all
+→ selection.clear()
+→ assign start/end pseudo-fields
+→ assign selection.is_custom = false
+
+clear_selection
+→ selection.clear()
+```
+
+Current Blockbench `IntMatrix` does not own `start_x/start_y/end_x/end_y`, and
+`is_custom` is a getter derived from `override === null`, not a writable state
+field. Native selection state is expressed through `setOverride(...)` and the
+pixel matrix.
+
+In addition, these remaining actions currently open:
+
+```text
+Undo.initEdit({ textures: [texture], bitmap: true })
+```
+
+while current Blockbench paint-selection actions use selection history:
+
+```text
+Undo.initSelection({ texture_selection: true })
+...
+Undo.finishSelection(...)
+```
+
+This is one coherent remaining selection-state/operation parity problem, not a
+request for broader UV redesign.
 
 ## Completed Texture Boundary Kept In Place
 
@@ -119,13 +171,14 @@ Do not reopen already-hardened work unless new evidence directly invalidates it:
 
 - deterministic texture/material/group targeting on proven mutation paths;
 - rollback boundaries for core texture/PBR creation/configuration/assignment;
-- `create_texture` group/render/fill-layer parity;
-- texture render observability;
+- `create_texture` group/render/fill-layer parity and render observability;
 - layer create/delete/duplicate/merge/opacity/blend/move/rename/flatten source
   hardening;
 - stale `Texture.flattenLayers()` replacement with Blockbench's native
   disable-layer lifecycle;
-- `paint_settings` global-settings shadowing fix and requested-setting preflight.
+- `paint_settings` global-settings shadowing fix and requested-setting preflight;
+- selection invert/expand/contract current-API parity and removal of unsupported
+  feather selection.
 
 These remain **source implemented**, not live-proven.
 
@@ -143,8 +196,8 @@ These remain **source implemented**, not live-proven.
 
 ## Next Step
 
-Audit and correct **only** the unsupported `texture_selection` IntMatrix actions
-in:
+Audit and correct **only the remaining `texture_selection` state/operation-mode
+parity** in:
 
 ```text
 mcp/server/tools/paint.ts
@@ -152,30 +205,29 @@ mcp/server/tools/paint.ts
 
 Requirements:
 
-1. keep the slice limited to `invert_selection`, `expand_selection`,
-   `contract_selection`, and `feather_selection`; do not reopen layer management,
-   `paint_settings`, texture/PBR targeting, or unrelated paint tools;
-2. verify current Blockbench source for the real native selection behavior or
-   establish that a given operation no longer exists before changing the public
-   contract;
-3. do not call methods absent from current `IntMatrix`; if equivalent behavior is
-   still supported, implement it only through current Blockbench-owned selection
-   primitives and preserve the existing action meaning;
-4. if an advertised operation has no current Blockbench-equivalent behavior,
-   remove/reject only that unsupported action rather than inventing a new image
-   processing subsystem;
-5. preserve the already-working rectangle/ellipse/select-all/clear paths unless
-   direct source proof invalidates them;
-6. keep Undo/update handling bounded to the actual supported selection mutation;
-   no generic selection framework or broad UV redesign.
+1. keep the slice limited to `select_rectangle`, `select_ellipse`, `select_all`,
+   `clear_selection`, and their existing `mode` contract; do not reopen
+   invert/expand/contract, layer management, `paint_settings`, PBR, or unrelated
+   UV/paint tools;
+2. replace pseudo-field writes (`start_x/start_y/end_x/end_y` and writable
+   `is_custom`) with current `IntMatrix` state primitives;
+3. implement or narrow the already-public `create/add/subtract/intersect` mode
+   contract according to current Blockbench selection-tool semantics; do not
+   silently ignore a supplied mode;
+4. use texture-selection Undo (`Undo.initSelection({ texture_selection: true })`)
+   and matching finish/cancel behavior for selection-only mutations rather than
+   bitmap/model edit history;
+5. preserve current rectangle/ellipse/select-all/clear action meanings and result
+   text where compatible with current Blockbench behavior;
+6. no new selection shapes, no generic selection framework, no broad UV redesign.
 
-After this blocker is resolved, resume the closing Texture decision. If no
-additional critical/major source blocker is proven, freeze Texture and set the
-single next step to the Animation source audit.
+After this slice, resume the closing Texture decision. If no additional
+critical/major source blocker is proven, freeze Texture and set the single next
+step to the Animation source audit.
 
 ## Proof Boundary
 
 ChatGPT→GitHub can prove source ownership/control flow/API compatibility and static
-diff only. Actual Blockbench preference mutation, selection behavior, texture
-rendering, Undo/Redo, UV behavior, and persistence remain `LOCAL PROOF REQUIRED`
-until local runtime testing resumes.
+diff only. Actual selection geometry, operation-mode combination, visual outline,
+Undo/Redo, texture rendering, UV behavior, and persistence remain
+`LOCAL PROOF REQUIRED` until local runtime testing resumes.
