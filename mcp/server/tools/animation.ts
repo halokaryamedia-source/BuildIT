@@ -326,8 +326,13 @@ export const animationTimelineParameters = z.object({
     .describe("Time in seconds (for set_time action)."),
   length: z
     .number()
+    .finite()
+    .min(0)
+    .max(10000)
     .optional()
-    .describe("Length of the animation in seconds (for set_length action)."),
+    .describe(
+      "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
+    ),
   fps: z
     .number()
     .min(10)
