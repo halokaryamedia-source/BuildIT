@@ -8,226 +8,145 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 ## Active Goal
 
-Improve Reference Image / Modelling Brief → Blockbench fidelity by making Cube,
-rotation, pivot, hierarchy, targeting, discovery, correction, texture, and
-material decisions evidence-backed rather than assumption-driven.
+Improve Reference Image / Modelling Brief → Blockbench fidelity for Minecraft
+Bedrock Entity modelling while keeping the execution surface aligned with the
+actual Bedrock modelling contract.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_TEXTURE_SELECTION_MATRIX_HARDENED`
+`REFERENCE_FIDELITY_TEXTURE_FROZEN_ANIMATION_NEXT`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
 
-## Texture Exit Strategy
+## Corrected Bedrock Geometry Scope
 
-User-approved direction remains:
+The active Minecraft Bedrock Entity modelling path is **Cube/Cuboid only**.
+
+Canonical geometry policy already establishes:
 
 ```text
-finish remaining high-value Texture gaps
-→ closing Texture source audit
-→ if no critical/major source gap remains, freeze Texture
+Modelling Brief
+→ Primary Form Hypothesis
+→ intentional coarse Cuboids
+→ visual correction
+→ secondary Cuboid geometry / hierarchy / pivots
+```
+
+The active `blockbench-bedrock-modelling` skill likewise owns Cuboid geometry and
+explicitly excludes generic mesh sculpting / Hytale / unrelated geometry
+expansion.
+
+Therefore:
+
+- do not route Bedrock Entity modelling through Mesh/non-Cuboid geometry;
+- do not treat generic MCP tool availability as permission to expand Bedrock
+  geometry beyond Cuboids;
+- animation work must operate through the Bedrock rig/hierarchy that drives
+  Cuboid children, not vertex/morph/free-form deformation.
+
+## Texture Scope Correction
+
+The previous continuation incorrectly treated `texture_selection` rectangle /
+ellipse and operation-mode parity as a **Bedrock modelling blocker**.
+
+That classification was wrong.
+
+`select_rectangle`, `select_ellipse`, selection growth/invert, and related
+operations are **2D pixel-selection utilities inside the texture editor**. They
+are not model geometry primitives and do not imply rectangle/ellipse geometry in
+the Bedrock Entity model.
+
+The source corrections already made to current Blockbench selection APIs may
+remain as bounded texture-editor maintenance, but they are **not a requirement
+for Cuboid geometry fidelity** and are no longer a gate for the main engineering
+sequence.
+
+Remaining selection-operation completeness is parked as auxiliary/non-gating
+work. Do not continue it by inertia.
+
+## Texture Phase Decision
+
+The user-approved exit strategy was:
+
+```text
+finish high-value Texture blockers
+→ closing source audit
+→ freeze Texture when remaining findings are not critical to Bedrock modelling
 → move to Animation
 ```
 
-Texture is not frozen yet because the resumed closing audit has established one
-remaining major selection-state/operation contract gap described below.
+That condition is now met under the corrected Cuboid-only product scope.
 
-## Latest Completed Selection-Matrix Slice
+### Texture source-hardening is frozen
 
-Current Blockbench `IntMatrix` does not expose Local's former calls:
-
-```text
-selection.invert()
-selection.expand(radius)
-selection.contract(radius)
-selection.feather(radius)
-```
-
-The corrected Local source now follows current Blockbench ownership instead:
-
-### `invert_selection`
-
-Current Blockbench native paint-selection flow uses:
-
-```text
-Undo.initSelection({ texture_selection: true })
-→ if custom matrix: forEachPixel and flip each matrix value
-→ otherwise: setOverride(!override)
-→ UVEditor.updateSelectionOutline()
-→ Undo.finishSelection("Invert selection")
-```
-
-Local now follows that lifecycle and cancels/reverts the selection transaction if
-the matrix mutation or finish path fails.
-
-### `expand_selection` / `contract_selection`
-
-A later source check established that these operations **are still supported** by
-Blockbench, but through the native `expand_texture_selection` action rather than
-`IntMatrix.expand()` / `contract()` methods.
-
-Blockbench's native action performs a pixel-matrix dilation/erosion using
-`IntMatrix.forEachPixel()` and `get()`:
-
-- positive radius expands the selection;
-- negative radius contracts it;
-- the dialog's default corner mode is round;
-- contracting a full-selection override converts it into a custom matrix and
-  removes the requested border radius.
-
-Local preserves the public `expand_selection` and `contract_selection` actions,
-uses the current Blockbench matrix primitives with the native round-radius
-behavior, wraps the mutation in `Undo.initSelection({ texture_selection: true })`,
-refreshes the selection outline, and cancels/reverts on failure.
-
-### `feather_selection`
-
-No current Blockbench texture-selection feather equivalent was found in the
-current source/API surface. The public `feather_selection` action was therefore
-removed instead of inventing a new image-processing subsystem.
-
-### Source sequence
-
-```text
-b1fab8ff0e89b79751d071b2b9ccb51dd15ab23a
-fix: align texture selection actions
-
-ea4339b7ffd975539d4ddf1ca612e9e3a8bdd284
-fix: preserve supported texture selection growth
-
-370e2c5463753d934d3c55f49b568adf8b6c3fdf
-fix: restore brush preset annotation
-```
-
-The first source pass was corrected after current Blockbench source proved that
-expand/contract still exist under a different native owner. A full-file write
-also changed the unrelated `load_brush_preset` annotation; that drift was
-immediately restored. Net source change from the slice starting head is therefore
-limited to the intended `texture_selection` contract/runtime path.
-
-## Closing Audit Finding — Remaining Selection State / Operation Parity
-
-One major blocker remains before Texture can be frozen.
-
-Current Local still publicly exposes:
-
-```text
-mode = create | add | subtract | intersect
-```
-
-Blockbench current source confirms these are real native selection-tool operation
-modes, but Local currently destructures `mode` and does not use it. Rectangle and
-ellipse therefore always behave as a replacement/create operation regardless of
-the requested mode.
-
-The remaining common selection path also still uses stale state mechanics:
-
-```text
-select_rectangle
-→ selection.clear()
-→ assign selection.start_x/start_y/end_x/end_y
-→ assign selection.is_custom = false
-
-select_ellipse
-→ selection.clear()
-→ assign selection.is_custom = true
-→ set ellipse pixels
-
-select_all
-→ selection.clear()
-→ assign start/end pseudo-fields
-→ assign selection.is_custom = false
-
-clear_selection
-→ selection.clear()
-```
-
-Current Blockbench `IntMatrix` does not own `start_x/start_y/end_x/end_y`, and
-`is_custom` is a getter derived from `override === null`, not a writable state
-field. Native selection state is expressed through `setOverride(...)` and the
-pixel matrix.
-
-In addition, these remaining actions currently open:
-
-```text
-Undo.initEdit({ textures: [texture], bitmap: true })
-```
-
-while current Blockbench paint-selection actions use selection history:
-
-```text
-Undo.initSelection({ texture_selection: true })
-...
-Undo.finishSelection(...)
-```
-
-This is one coherent remaining selection-state/operation parity problem, not a
-request for broader UV redesign.
-
-## Completed Texture Boundary Kept In Place
-
-Do not reopen already-hardened work unless new evidence directly invalidates it:
+High-value completed source boundaries include:
 
 - deterministic texture/material/group targeting on proven mutation paths;
 - rollback boundaries for core texture/PBR creation/configuration/assignment;
 - `create_texture` group/render/fill-layer parity and render observability;
-- layer create/delete/duplicate/merge/opacity/blend/move/rename/flatten source
-  hardening;
-- stale `Texture.flattenLayers()` replacement with Blockbench's native
-  disable-layer lifecycle;
+- texture-layer create/delete/duplicate/merge/opacity/blend/move/rename/flatten
+  source hardening;
+- stale `Texture.flattenLayers()` replacement with current Blockbench lifecycle;
 - `paint_settings` global-settings shadowing fix and requested-setting preflight;
-- selection invert/expand/contract current-API parity and removal of unsupported
-  feather selection.
+- current-API repair for texture-selection invert/expand/contract and removal of
+  unsupported feather selection.
 
 These remain **source implemented**, not live-proven.
+
+Do not reopen Texture merely to chase 2D editor feature completeness. Reopen it
+only if Animation or a concrete Bedrock Cuboid modelling workflow proves a
+material Texture blocker.
 
 ## Holds
 
 - **G1/G2:** source corrections implemented; local proof deferred.
 - **G3 annotations:** paused.
-- shared `findTextureGroupOrThrow()` hardening: deferred until remaining callers
-  can be exhaustively audited.
-- shared `layerBlendModeEnum` cleanup: deferred until direct callers can be
+- auxiliary `texture_selection` rectangle/ellipse operation-mode/state parity:
+  parked; it is not a Bedrock geometry or Texture-exit blocker.
+- shared `findTextureGroupOrThrow()` hardening: deferred until callers can be
   exhaustively audited.
+- shared `layerBlendModeEnum` cleanup: deferred until callers can be exhaustively
+  audited.
 - save/reopen proof: later local validation.
-- new UV/paint features: only after a concrete workflow proves a gap.
-- broad public-surface reduction: later.
+- broad public-surface reduction/removal of generic non-Bedrock tools: separate
+  scope; do not delete generic tools merely because the active Bedrock modelling
+  route does not use them.
 
 ## Next Step
 
-Audit and correct **only the remaining `texture_selection` state/operation-mode
-parity** in:
+Run the first **Animation source audit** for the active Minecraft Bedrock Entity
+workflow.
+
+Primary owner:
 
 ```text
-mcp/server/tools/paint.ts
+mcp/server/tools/animation.ts
 ```
 
-Requirements:
+Inspect `armature.ts` only when required to establish bone/group hierarchy or
+pivot ownership for animation.
 
-1. keep the slice limited to `select_rectangle`, `select_ellipse`, `select_all`,
-   `clear_selection`, and their existing `mode` contract; do not reopen
-   invert/expand/contract, layer management, `paint_settings`, PBR, or unrelated
-   UV/paint tools;
-2. replace pseudo-field writes (`start_x/start_y/end_x/end_y` and writable
-   `is_custom`) with current `IntMatrix` state primitives;
-3. implement or narrow the already-public `create/add/subtract/intersect` mode
-   contract according to current Blockbench selection-tool semantics; do not
-   silently ignore a supplied mode;
-4. use texture-selection Undo (`Undo.initSelection({ texture_selection: true })`)
-   and matching finish/cancel behavior for selection-only mutations rather than
-   bitmap/model edit history;
-5. preserve current rectangle/ellipse/select-all/clear action meanings and result
-   text where compatible with current Blockbench behavior;
-6. no new selection shapes, no generic selection framework, no broad UV redesign.
+Audit only the high-value Bedrock Cuboid animation path:
 
-After this slice, resume the closing Texture decision. If no additional
-critical/major source blocker is proven, freeze Texture and set the single next
-step to the Animation source audit.
+1. animation target identity must resolve the intended Bedrock bone/group rather
+   than relying on ambiguous editor selection;
+2. keyframe channels/values/timing/interpolation must match current Blockbench
+   Bedrock animation contracts;
+3. animation mutation must have bounded Undo/recoverability where normal failure
+   can leave partial state;
+4. inspect/readback must be sufficient to observe the animation state needed for
+   correction;
+5. preserve the existing Cuboid-only geometry contract: **no Mesh animator,
+   vertex deformation, morph targets, free-form geometry, or new shape system**.
+
+Do not redesign the entire animation system in one pass. Select exactly one
+critical/major source gap if the audit proves one; otherwise advance to the next
+smallest Bedrock animation boundary.
 
 ## Proof Boundary
 
-ChatGPT→GitHub can prove source ownership/control flow/API compatibility and static
-diff only. Actual selection geometry, operation-mode combination, visual outline,
-Undo/Redo, texture rendering, UV behavior, and persistence remain
+ChatGPT → GitHub may establish source/API/schema/control-flow/Undo structure only.
+Actual Blockbench animation playback, motion arcs, clipping, bone pivots,
+return-to-neutral behavior, texture rendering, and save/reopen behavior remain
 `LOCAL PROOF REQUIRED` until local runtime testing resumes.
