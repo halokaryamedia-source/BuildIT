@@ -1094,12 +1094,12 @@ export function registerPaintTools() {
           bitmap: true,
         });
 
-        let result = "";
+        if (action === "create_layer") {
+          let result = "";
 
-        switch (action) {
-          case "create_layer":
+          try {
             if (!texture.layers_enabled) {
-              texture.activateLayers(true);
+              texture.activateLayers(false);
             }
             const newLayer = new TextureLayer(
               {
@@ -1110,8 +1110,23 @@ export function registerPaintTools() {
             newLayer.setSize(texture.width, texture.height);
             newLayer.addForEditing();
             result = `Created layer "${newLayer.name}"`;
-            break;
 
+            texture.updateChangesAfterEdit();
+            Undo.finishEdit(`Layer management: ${action}`);
+          } catch (error) {
+            Undo.cancelEdit(true);
+            Canvas.updateAll();
+            updateInterfacePanels();
+            throw error;
+          }
+
+          updateInterfacePanels();
+          return result;
+        }
+
+        let result = "";
+
+        switch (action) {
           case "delete_layer":
             if (!TextureLayer.selected) {
               throw new Error("No layer selected.");
