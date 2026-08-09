@@ -854,6 +854,11 @@ export function registerTextureTools() {
 
         texture.add();
 
+        if (fill_color && layer_name) {
+          texture.activateLayers(false);
+          texture.getActiveLayer().name = layer_name;
+        }
+
         Undo.finishEdit("Agent created texture");
       } catch (error) {
         Undo.cancelEdit(true);
