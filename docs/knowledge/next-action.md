@@ -15,7 +15,7 @@ intended Bedrock rig.
 
 ## Current Status
 
-`REFERENCE_FIDELITY_ANIMATION_BONE_TIME_HARDENED_SCALE_ZERO_GAP`
+`REFERENCE_FIDELITY_ANIMATION_CREATE_SCALE_ZERO_HARDENED_COORDINATE_SPACE_GAP`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench testing: **intentionally deferred** by current priority.
@@ -35,7 +35,7 @@ Cuboid modelling/Animation workflow proves a material Texture blocker.
 
 2D texture-editor utilities are not model geometry and are not an Animation gate.
 
-## Latest Completed Animation Slice — `create_animation` Bone Keyframe Times
+## Latest Completed Animation Slice — Scalar `scale: 0` Preservation
 
 Primary owner:
 
@@ -46,94 +46,55 @@ mcp/server/tools/animation.ts
 Source commit:
 
 ```text
-1f1d23f1ab507a669a94544d26c35ad5df1eec3a
-fix: validate created animation bone keyframe times
+505a0f8085edaa0519d2d2e2095ae66444daa158
+fix: preserve zero scale in animation creation
 ```
 
-The source diff is limited to the public `create_animation.bones` keyframe schema.
-No execute-path mutation, AnimationCodec lifecycle, particle behavior, other
-Animation tools, Geometry, or Texture were intentionally changed.
-
-### Upstream time behavior used for the decision
-
-Current Bedrock animation import handles transform-channel timestamp maps with:
+The exact source diff is one presence-check correction inside the synthetic
+Bedrock payload builder:
 
 ```text
-for timestamp in b[channel]:
-  ba.addKeyframe({
-    time: parseFloat(timestamp),
-    channel,
-    ...
-  })
+if (keyframe.scale)
 ```
 
-`GeneralAnimator.addKeyframe()` stores the supplied time without snapping.
-`Keyframe.time` is a numeric property.
-
-The normal Blockbench timeline/export boundary is non-negative:
+became:
 
 ```text
-Timeline.setTime(...)  → lower bound 0
-Timeline.snapTime(...) → lower bound 0
-Keyframe.getTimecodeString() → Timeline.snapTime(...)
+if (keyframe.scale !== undefined)
 ```
 
-Therefore `create_animation` bone keyframe times are now required to be finite and
-`>= 0`. No arbitrary maximum and no extra snap-grid normalization were added.
+No schema, AnimationCodec lifecycle, time/collision validation, coordinate/sign
+logic, effect behavior, other Animation tool, Geometry, or Texture was changed.
 
-### Channel-aware collision contract
+### Why the change is required
 
-A dedicated `bedrockBoneKeyframesSchema` now validates each bone's keyframe array
-before tool execution, therefore before Undo and before `codec.loadFile()`.
-
-For each of:
+The public `create_animation` keyframe contract intentionally accepts:
 
 ```text
-position
-rotation
-scale
+scale: vector3 | number
 ```
 
-Local tracks the raw numeric times that are actually written into the synthetic
-Bedrock timestamp map.
+and current Bedrock animation import accepts numeric channel values, mapping one
+number uniformly to X/Y/Z. Numeric zero is not excluded by the native importer.
 
-Two entries that define the **same channel at the same numeric time** now fail
-validation instead of relying on last-write-wins object assignment.
-
-Example rejected:
+The old truthy check therefore confused a valid authored value with absence:
 
 ```text
-{ time: 1, rotation: [...] }
-{ time: 1, rotation: [...] }
+scale: 0
 ```
 
-Same-time values across **different channels remain valid**:
+was omitted before the Bedrock codec ever saw it.
 
-```text
-{ time: 1, position: [...] }
-{ time: 1, rotation: [...] }
-```
-
-This preserves legitimate multi-channel poses while preventing silent payload
-loss.
-
-The collision check uses raw numeric time, not speculative future snapping,
-because the current Bedrock importer does not snap before storing imported
-transform keyframes.
+The explicit `!== undefined` check now preserves scalar zero while leaving all
+non-zero scalar and vector scale behavior unchanged.
 
 ### Diff / proof boundary
 
-The exact source commit contains only:
+GitHub shows exactly one changed line in the source commit. There are no
+registered CI/status checks for the commit.
 
-- `bedrockBoneKeyframeSchema` with finite/non-negative `time`;
-- `bedrockBoneKeyframesSchema` with per-channel effective-time collision checks;
-- the existing `bones` record switched to that validated keyframe-array schema.
-
-The payload builder itself remains unchanged. GitHub has no registered CI/status
-checks for the source commit.
-
-Actual MCP validation, codec import, created keyframes, playback, Undo/Redo, and
-save/reopen remain `LOCAL PROOF REQUIRED`.
+Actual scalar-zero import, resulting authored scale, playback, Undo/Redo, motion,
+clipping, and save/reopen remain `LOCAL PROOF REQUIRED`.
 
 ## Completed High-Value Animation Boundaries Kept In Place
 
@@ -150,67 +111,87 @@ save/reopen remain `LOCAL PROOF REQUIRED`.
 - native-shaped `create_animation.particle_effects` input;
 - validated non-ambiguous particle timestamp keys;
 - finite/non-negative, channel-aware transform bone keyframe times;
+- explicit scalar `scale: 0` preservation;
 - no Mesh/vertex/morph animation expansion.
 
 These are source/static conclusions where live Blockbench proof has not been
 performed.
 
-## Continuation Audit — Scalar `scale: 0` Preservation
+## Continuation Audit — `create_animation` Transform Coordinate Space
 
-The next grounded Animation boundary is **only explicit scalar zero preservation
-for `create_animation` scale values** in:
+The next grounded Animation boundary is **only transform coordinate/sign-space
+parity for `create_animation`** in:
 
 ```text
 mcp/server/tools/animation.ts
 ```
 
-Current public keyframe shape intentionally accepts:
+### Current inconsistency
+
+`manage_keyframes` writes authored transform values directly into Blockbench
+keyframes:
 
 ```text
-scale: vector3 | number
+x → keyframe.set("x", value)
+y → keyframe.set("y", value)
+z → keyframe.set("z", value)
 ```
 
-The new collision validation correctly treats any scale value other than
-`undefined` as authored input, including numeric `0`.
+and `inspect_animation` reads those authored Blockbench data-point values back.
 
-However the synthetic Bedrock payload builder still uses:
+`create_animation`, however, currently forwards caller vectors directly into a
+synthetic **Bedrock animation JSON**, then imports that JSON through the Bedrock
+codec.
+
+Current Bedrock codec converts file-space transform arrays during import:
 
 ```text
-if (keyframe.scale) {
-  (acc.scale ??= {})[timeKey] = keyframe.scale;
-}
+position:
+  X is inverted
+
+rotation:
+  X is inverted
+  Y is inverted
+
+scale:
+  unchanged
 ```
 
-so an explicit scalar:
+Therefore an identical input vector sent through `create_animation` and
+`manage_keyframes` does not currently have the same authored Blockbench meaning
+for position X or rotation X/Y.
 
-```text
-scale: 0
-```
+### Why this is material
 
-is silently omitted because `0` is falsy.
+The MCP surface should have one explicit transform-space contract. Without one,
+a model author can create an Animation through `create_animation`, inspect it in
+Blockbench space, then get opposite signs compared with a later
+`manage_keyframes` edit using the same requested vector.
 
-### Why `0` is valid input
+This directly affects motion direction and reference fidelity; it is not merely a
+serialization detail.
 
-Current Bedrock animation import explicitly supports channel values whose type is
-`number`, and its keyframe-data conversion maps a numeric source uniformly to:
+### Decision still to prove in the next slice
 
-```text
-x = source
-y = source
-z = source
-```
+Do not assume the fix yet. Audit the existing public descriptions/callers and
+current Bedrock compile/import symmetry to choose exactly one contract:
 
-There is no native special case excluding numeric zero. Therefore MCP must not
-reinterpret `0` as absence when its public schema already permits scalar scale.
+1. **Blockbench-authored transform values** across MCP Animation tools, with
+   `create_animation` converting values into Bedrock file space before codec
+   import; or
+2. an explicitly Bedrock-file-space `create_animation` contract if repository
+   evidence proves that is intentionally different from mutation/readback tools.
 
-This is a presence-check bug, not a reason to redesign scale representation.
+The preferred direction should be the one that preserves deterministic
+round-trip parity with existing `manage_keyframes` + `inspect_animation` without
+inventing another coordinate system.
 
 ## Other Animation Findings — Not Yet Active
 
 Do not combine these into the next slice:
 
-- `animation_length` optional/zero semantics;
-- transform coordinate/sign-space contract;
+- `animation_length` finite/range/zero semantics;
+- transform scalar/vector value finiteness beyond the proven coordinate issue;
 - sound/timeline EffectAnimator readback;
 - broad batch selection redesign;
 - shared Animation/Group resolver refactor;
@@ -233,8 +214,8 @@ Do not combine these into the next slice:
 
 ## Next Step
 
-Audit and correct **only explicit scalar `scale: 0` preservation inside
-`create_animation` synthetic Bedrock payload construction** in:
+Audit and correct **only `create_animation` transform coordinate/sign-space
+parity** in:
 
 ```text
 mcp/server/tools/animation.ts
@@ -243,17 +224,21 @@ mcp/server/tools/animation.ts
 Requirements:
 
 1. keep Geometry Cube/Cuboid-only and do not reopen Texture;
-2. preserve the existing `scale: vector3 | number` public contract;
-3. replace only the falsy presence check that drops numeric zero with an
-   explicit-presence check supported by the schema/native codec;
-4. do not change vector scale behavior, keyframe time/collision validation,
-   `animation_length`, transform coordinate/sign semantics, particle/sound/timeline
-   effects, other Animation tools, Geometry, or Texture;
-5. inspect the exact source diff immediately and advance to exactly one grounded
+2. preserve the current Cuboid bone rig and deterministic Group binding;
+3. compare `create_animation`, `manage_keyframes`, `inspect_animation`, and current
+   Bedrock import/compile sign conversion before choosing the public transform
+   space;
+4. make position/rotation values round-trip consistently with the chosen MCP
+   authored-space contract; scale must remain unaffected by sign conversion;
+5. do not change keyframe time/collision validation, scalar-zero scale handling,
+   `animation_length`, particle/sound/timeline effects, batch operations, Geometry,
+   or Texture in this slice;
+6. inspect the exact source diff immediately and advance to exactly one grounded
    Animation boundary.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/schema/control-flow only. Actual scalar-zero
-scale import, resulting authored scale, playback, Undo/Redo, motion, clipping,
-and save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
+ChatGPT → GitHub may prove source/API/schema/serialization/control-flow parity
+only. Actual movement direction, playback, authored Blockbench values,
+Undo/Redo, motion arcs, clipping, bone pivots, return-to-neutral behavior, and
+save/reopen remain `LOCAL PROOF REQUIRED` until local runtime testing resumes.
