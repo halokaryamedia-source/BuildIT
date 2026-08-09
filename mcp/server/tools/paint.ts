@@ -12,7 +12,6 @@ import {
   brushSoftnessSchema,
   brushShapeEnum,
   blendModeEnum,
-  layerBlendModeEnum,
   fillModeEnum,
   drawShapeEnum,
   copyBrushModeEnum,
@@ -21,6 +20,20 @@ import {
   coordinateSchema,
   brushSettingsSchema,
 } from "@/lib/zodObjects";
+
+const textureLayerBlendModeEnum = z.enum([
+  "default",
+  "set_opacity",
+  "color",
+  "multiply",
+  "add",
+  "darken",
+  "lighten",
+  "screen",
+  "overlay",
+  "difference",
+  "alpha_mask",
+]);
 
 export const paintFillToolParameters = z.object({
   texture_id: textureIdOptionalSchema,
@@ -275,7 +288,7 @@ export const textureLayerManagementParameters = z.object({
     .max(100)
     .optional()
     .describe("Layer opacity percentage."),
-  blend_mode: layerBlendModeEnum.optional().describe("Layer blend mode."),
+  blend_mode: textureLayerBlendModeEnum.optional().describe("Layer blend mode."),
   target_index: z
     .number()
     .optional()
