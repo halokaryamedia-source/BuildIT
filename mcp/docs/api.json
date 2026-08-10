@@ -1,11 +1,11 @@
 {
-  "version": "1.6.0",
-  "generatedAt": "2026-05-22T14:18:59.107Z",
+  "version": "1.6.1",
+  "generatedAt": "2026-08-10T07:45:49.291Z",
   "tools": [
     {
       "name": "place_cube",
       "title": "Place Cube",
-      "description": "Places a cube of the given size at the specified position. Texture and group are optional.",
+      "description": "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -27,83 +27,102 @@
                     },
                     "origin": {
                       "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
                       "minItems": 3,
                       "maxItems": 3,
-                      "description": "Pivot point of the cube.",
-                      "markdownDescription": "Pivot point of the cube.",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly.",
+                      "markdownDescription": "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly."
                     },
                     "from": {
                       "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
                       "minItems": 3,
                       "maxItems": 3,
-                      "description": "Starting point of the cube.",
-                      "markdownDescription": "Starting point of the cube.",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent.",
+                      "markdownDescription": "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
                     },
                     "to": {
                       "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
                       "minItems": 3,
                       "maxItems": 3,
-                      "description": "Ending point of the cube.",
-                      "markdownDescription": "Ending point of the cube.",
-                      "default": [
-                        1,
-                        1,
-                        1
-                      ]
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent.",
+                      "markdownDescription": "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
                     },
                     "rotation": {
                       "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
                       "minItems": 3,
                       "maxItems": 3,
-                      "description": "Rotation of the cube.",
-                      "markdownDescription": "Rotation of the cube.",
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
                       "default": [
                         0,
                         0,
                         0
-                      ]
+                      ],
+                      "description": "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot.",
+                      "markdownDescription": "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot."
                     }
                   },
                   "required": [
-                    "name"
+                    "name",
+                    "from",
+                    "to"
                   ],
                   "additionalProperties": false
                 },
                 "minItems": 1,
-                "description": "Array of cubes to place.",
-                "markdownDescription": "Array of cubes to place."
+                "description": "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot.",
+                "markdownDescription": "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
               },
               "texture": {
                 "type": "string",
-                "description": "Texture ID or name to apply to the cube.",
-                "markdownDescription": "Texture ID or name to apply to the cube."
+                "description": "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation.",
+                "markdownDescription": "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation."
               },
               "group": {
                 "type": "string",
-                "description": "Group/bone to which the cube belongs.",
-                "markdownDescription": "Group/bone to which the cube belongs."
+                "description": "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional.",
+                "markdownDescription": "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional."
               },
               "faces": {
                 "anyOf": [
@@ -191,7 +210,7 @@
     {
       "name": "modify_cube",
       "title": "Modify Cube",
-      "description": "Modifies the cube with the given ID. Auto UV setting: saved as an integer, where 0 means disabled, 1 means enabled, and 2 means relative auto UV (cube position affects UV)",
+      "description": "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -205,8 +224,9 @@
             "properties": {
               "id": {
                 "type": "string",
-                "description": "ID or name of the cube to modify. Defaults to selected, which could be more than one.",
-                "markdownDescription": "ID or name of the cube to modify. Defaults to selected, which could be more than one."
+                "minLength": 1,
+                "description": "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target.",
+                "markdownDescription": "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target."
               },
               "name": {
                 "type": "string",
@@ -220,8 +240,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Pivot point of the cube.",
-                "markdownDescription": "Pivot point of the cube."
+                "description": "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite.",
+                "markdownDescription": "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite."
               },
               "from": {
                 "type": "array",
@@ -250,8 +270,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Rotation of the cube.",
-                "markdownDescription": "Rotation of the cube."
+                "description": "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot.",
+                "markdownDescription": "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot."
               },
               "autouv": {
                 "type": "string",
@@ -299,6 +319,133 @@
                 "markdownDescription": "Whether the cube is visible or not."
               }
             },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "modify_cubes_batch",
+      "title": "Modify Cubes Batch",
+      "description": "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+      "status": "stable",
+      "category": "Cubes",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/modify_cubes_batch",
+        "definitions": {
+          "modify_cubes_batch": {
+            "type": "object",
+            "properties": {
+              "updates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element.",
+                      "markdownDescription": "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element."
+                    },
+                    "origin": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite.",
+                      "markdownDescription": "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite."
+                    },
+                    "from": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "New authored Cube from coordinates.",
+                      "markdownDescription": "New authored Cube from coordinates."
+                    },
+                    "to": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "New authored Cube to coordinates.",
+                      "markdownDescription": "New authored Cube to coordinates."
+                    },
+                    "rotation": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "description": "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot.",
+                      "markdownDescription": "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot."
+                    },
+                    "visibility": {
+                      "type": "boolean",
+                      "description": "New Cube visibility.",
+                      "markdownDescription": "New Cube visibility."
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 32,
+                "description": "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit.",
+                "markdownDescription": "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit."
+              }
+            },
+            "required": [
+              "updates"
+            ],
             "additionalProperties": false
           }
         },
@@ -407,6 +554,12 @@
                 ],
                 "description": "Camera projection type.",
                 "markdownDescription": "Camera projection type."
+              },
+              "zoom": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Orthographic camera zoom.",
+                "markdownDescription": "Orthographic camera zoom."
               }
             },
             "required": [
@@ -420,9 +573,131 @@
       }
     },
     {
+      "name": "capture_model_views",
+      "title": "Capture Model Views",
+      "description": "Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, and returns actual MCP image content through Blockbench's offscreen screenshot preview so the active editor camera remains untouched. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.",
+      "status": "stable",
+      "category": "Camera & Screenshots",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/capture_model_views",
+        "definitions": {
+          "capture_model_views": {
+            "type": "object",
+            "properties": {
+              "views": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "front",
+                    "back",
+                    "left",
+                    "right",
+                    "top",
+                    "bottom",
+                    "front_left_3q",
+                    "front_right_3q"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 5,
+                "description": "One to five unique canonical model views to capture.",
+                "markdownDescription": "One to five unique canonical model views to capture."
+              },
+              "front_direction": {
+                "type": "string",
+                "enum": [
+                  "+z",
+                  "-z"
+                ],
+                "description": "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons.",
+                "markdownDescription": "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons."
+              },
+              "framing": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "model"
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "explicit"
+                      },
+                      "min": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "max": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "min",
+                      "max"
+                    ],
+                    "additionalProperties": false
+                  }
+                ],
+                "default": {
+                  "mode": "model"
+                }
+              }
+            },
+            "required": [
+              "views",
+              "front_direction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_animation",
       "title": "Create Animation",
-      "description": "Creates a new animation with keyframes for bones.",
+      "description": "Creates a new animation from Blockbench-authored transform values using the current Bedrock AnimationCodec.",
       "status": "stable",
       "category": "Animation",
       "annotations": {
@@ -447,8 +722,10 @@
               },
               "animation_length": {
                 "type": "number",
-                "description": "Length of the animation in seconds",
-                "markdownDescription": "Length of the animation in seconds"
+                "minimum": 0,
+                "maximum": 10000,
+                "description": "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization.",
+                "markdownDescription": "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization."
               },
               "bones": {
                 "type": "object",
@@ -458,7 +735,10 @@
                     "type": "object",
                     "properties": {
                       "time": {
-                        "type": "number"
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Finite non-negative keyframe time in seconds.",
+                        "markdownDescription": "Finite non-negative keyframe time in seconds."
                       },
                       "position": {
                         "type": "array",
@@ -467,8 +747,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "3D vector [x, y, z].",
-                        "markdownDescription": "3D vector [x, y, z]."
+                        "description": "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import.",
+                        "markdownDescription": "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
                       },
                       "rotation": {
                         "type": "array",
@@ -477,8 +757,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "3D vector [x, y, z].",
-                        "markdownDescription": "3D vector [x, y, z]."
+                        "description": "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import.",
+                        "markdownDescription": "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
                       },
                       "scale": {
                         "anyOf": [
@@ -488,34 +768,101 @@
                               "type": "number"
                             },
                             "minItems": 3,
-                            "maxItems": 3,
-                            "description": "3D vector [x, y, z].",
-                            "markdownDescription": "3D vector [x, y, z]."
+                            "maxItems": 3
                           },
                           {
                             "type": "number"
                           }
-                        ]
+                        ],
+                        "description": "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged.",
+                        "markdownDescription": "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
                       }
                     },
                     "required": [
                       "time"
                     ],
                     "additionalProperties": false
-                  }
+                  },
+                  "description": "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time.",
+                  "markdownDescription": "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time."
                 },
-                "description": "Keyframes for each bone",
-                "markdownDescription": "Keyframes for each bone"
+                "description": "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation.",
+                "markdownDescription": "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation."
               },
               "particle_effects": {
                 "type": "object",
                 "additionalProperties": {
-                  "type": "string",
-                  "description": "Effect name",
-                  "markdownDescription": "Effect name"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Required Bedrock particle effect identifier.",
+                          "markdownDescription": "Required Bedrock particle effect identifier."
+                        },
+                        "locator": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Optional Bedrock locator used to position the particle effect.",
+                          "markdownDescription": "Optional Bedrock locator used to position the particle effect."
+                        },
+                        "bind_to_actor": {
+                          "type": "boolean",
+                          "description": "Optional Bedrock actor-binding flag. Omit for the native default behavior.",
+                          "markdownDescription": "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+                        },
+                        "pre_effect_script": {
+                          "type": "string",
+                          "description": "Optional Molang script evaluated before the particle effect.",
+                          "markdownDescription": "Optional Molang script evaluated before the particle effect."
+                        }
+                      },
+                      "required": [
+                        "effect"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Required Bedrock particle effect identifier.",
+                            "markdownDescription": "Required Bedrock particle effect identifier."
+                          },
+                          "locator": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Optional Bedrock locator used to position the particle effect.",
+                            "markdownDescription": "Optional Bedrock locator used to position the particle effect."
+                          },
+                          "bind_to_actor": {
+                            "type": "boolean",
+                            "description": "Optional Bedrock actor-binding flag. Omit for the native default behavior.",
+                            "markdownDescription": "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+                          },
+                          "pre_effect_script": {
+                            "type": "string",
+                            "description": "Optional Molang script evaluated before the particle effect.",
+                            "markdownDescription": "Optional Molang script evaluated before the particle effect."
+                          }
+                        },
+                        "required": [
+                          "effect"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  ]
                 },
-                "description": "Particle effects with timestamps as keys",
-                "markdownDescription": "Particle effects with timestamps as keys"
+                "description": "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects.",
+                "markdownDescription": "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
               }
             },
             "required": [
@@ -561,8 +908,8 @@
               },
               "bone_name": {
                 "type": "string",
-                "description": "Name of the bone/group to manage keyframes for.",
-                "markdownDescription": "Name of the bone/group to manage keyframes for."
+                "description": "Exact Group UUID or exact unique Group name to manage keyframes for.",
+                "markdownDescription": "Exact Group UUID or exact unique Group name to manage keyframes for."
               },
               "channel": {
                 "type": "string",
@@ -619,49 +966,49 @@
                       "type": "object",
                       "properties": {
                         "left_time": {
-                          "type": "number"
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "description": "3D vector [x, y, z].",
+                          "markdownDescription": "3D vector [x, y, z]."
                         },
                         "left_value": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              },
-                              "minItems": 3,
-                              "maxItems": 3,
-                              "description": "3D vector [x, y, z].",
-                              "markdownDescription": "3D vector [x, y, z]."
-                            },
-                            {
-                              "type": "number"
-                            }
-                          ]
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "description": "3D vector [x, y, z].",
+                          "markdownDescription": "3D vector [x, y, z]."
                         },
                         "right_time": {
-                          "type": "number"
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "description": "3D vector [x, y, z].",
+                          "markdownDescription": "3D vector [x, y, z]."
                         },
                         "right_value": {
-                          "anyOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              },
-                              "minItems": 3,
-                              "maxItems": 3,
-                              "description": "3D vector [x, y, z].",
-                              "markdownDescription": "3D vector [x, y, z]."
-                            },
-                            {
-                              "type": "number"
-                            }
-                          ]
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "description": "3D vector [x, y, z].",
+                          "markdownDescription": "3D vector [x, y, z]."
                         }
                       },
                       "additionalProperties": false,
-                      "description": "Bezier handle positions for bezier interpolation.",
-                      "markdownDescription": "Bezier handle positions for bezier interpolation."
+                      "description": "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors.",
+                      "markdownDescription": "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors."
                     }
                   },
                   "required": [
@@ -707,8 +1054,8 @@
               },
               "bone_name": {
                 "type": "string",
-                "description": "Name of the bone/group to modify curves for.",
-                "markdownDescription": "Name of the bone/group to modify curves for."
+                "description": "Exact Group UUID or exact unique Group name to modify curves for.",
+                "markdownDescription": "Exact Group UUID or exact unique Group name to modify curves for."
               },
               "channel": {
                 "type": "string",
@@ -736,8 +1083,8 @@
                   }
                 ],
                 "default": "all",
-                "description": "Axis to modify curves for.",
-                "markdownDescription": "Axis to modify curves for."
+                "description": "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level.",
+                "markdownDescription": "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level."
               },
               "action": {
                 "type": "string",
@@ -785,8 +1132,8 @@
                     },
                     "minItems": 2,
                     "maxItems": 2,
-                    "description": "First control point [time, value].",
-                    "markdownDescription": "First control point [time, value]."
+                    "description": "Left Bezier handle offset [time, value]; time must be <= 0.",
+                    "markdownDescription": "Left Bezier handle offset [time, value]; time must be <= 0."
                   },
                   "control_point_2": {
                     "type": "array",
@@ -795,8 +1142,8 @@
                     },
                     "minItems": 2,
                     "maxItems": 2,
-                    "description": "Second control point [time, value].",
-                    "markdownDescription": "Second control point [time, value]."
+                    "description": "Right Bezier handle offset [time, value]; time must be >= 0.",
+                    "markdownDescription": "Right Bezier handle offset [time, value]; time must be >= 0."
                   }
                 },
                 "required": [
@@ -804,8 +1151,8 @@
                   "control_point_2"
                 ],
                 "additionalProperties": false,
-                "description": "Custom bezier curve control points (only for 'custom' action).",
-                "markdownDescription": "Custom bezier curve control points (only for 'custom' action)."
+                "description": "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action).",
+                "markdownDescription": "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action)."
               }
             },
             "required": [
@@ -822,7 +1169,7 @@
     {
       "name": "bone_rigging",
       "title": "Bone Rigging",
-      "description": "Creates and manipulates the bone structure (rig) of a model for animation.",
+      "description": "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and uses Blockbench pivot transfer semantics so the pivot changes without intentionally moving the group's visual contents. mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -854,13 +1201,20 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "Name of the bone.",
-                    "markdownDescription": "Name of the bone."
+                    "minLength": 1,
+                    "description": "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred.",
+                    "markdownDescription": "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
+                  },
+                  "new_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "New unique bone name required by the rename action.",
+                    "markdownDescription": "New unique bone name required by the rename action."
                   },
                   "parent": {
                     "type": "string",
-                    "description": "Parent bone name.",
-                    "markdownDescription": "Parent bone name."
+                    "description": "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root).",
+                    "markdownDescription": "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root)."
                   },
                   "origin": {
                     "type": "array",
@@ -869,8 +1223,8 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Pivot point of the bone.",
-                    "markdownDescription": "Pivot point of the bone."
+                    "description": "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot.",
+                    "markdownDescription": "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot."
                   },
                   "rotation": {
                     "type": "array",
@@ -879,16 +1233,16 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Initial rotation of the bone.",
-                    "markdownDescription": "Initial rotation of the bone."
+                    "description": "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason.",
+                    "markdownDescription": "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason."
                   },
                   "children": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "Names of elements to add to this bone.",
-                    "markdownDescription": "Names of elements to add to this bone."
+                    "description": "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation.",
+                    "markdownDescription": "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation."
                   },
                   "ik_enabled": {
                     "type": "boolean",
@@ -897,8 +1251,8 @@
                   },
                   "ik_target": {
                     "type": "string",
-                    "description": "Target bone for IK chain.",
-                    "markdownDescription": "Target bone for IK chain."
+                    "description": "Existing target Group UUID or exact unique name for IK.",
+                    "markdownDescription": "Existing target Group UUID or exact unique name for IK."
                   },
                   "mirror_axis": {
                     "type": "string",
@@ -907,8 +1261,8 @@
                       "y",
                       "z"
                     ],
-                    "description": "Axis to mirror the bone across.",
-                    "markdownDescription": "Axis to mirror the bone across."
+                    "description": "Axis required by mirror; no implicit mirror axis is assumed.",
+                    "markdownDescription": "Axis required by mirror; no implicit mirror axis is assumed."
                   }
                 },
                 "required": [
@@ -961,20 +1315,24 @@
               },
               "time": {
                 "type": "number",
-                "description": "Time in seconds (for set_time action).",
-                "markdownDescription": "Time in seconds (for set_time action)."
+                "minimum": 0,
+                "maximum": 1000,
+                "description": "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length.",
+                "markdownDescription": "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
               },
               "length": {
                 "type": "number",
-                "description": "Animation length in seconds (for set_length action).",
-                "markdownDescription": "Animation length in seconds (for set_length action)."
+                "minimum": 0,
+                "maximum": 10000,
+                "description": "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor.",
+                "markdownDescription": "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
               },
               "fps": {
                 "type": "number",
-                "minimum": 1,
-                "maximum": 120,
-                "description": "Frames per second (for set_fps action).",
-                "markdownDescription": "Frames per second (for set_fps action)."
+                "minimum": 10,
+                "maximum": 500,
+                "description": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500.",
+                "markdownDescription": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
               },
               "loop_mode": {
                 "type": "string",
@@ -991,13 +1349,15 @@
                 "properties": {
                   "start": {
                     "type": "number",
-                    "description": "Start time in seconds.",
-                    "markdownDescription": "Start time in seconds."
+                    "minimum": 0,
+                    "description": "Finite non-negative start time in seconds.",
+                    "markdownDescription": "Finite non-negative start time in seconds."
                   },
                   "end": {
                     "type": "number",
-                    "description": "End time in seconds.",
-                    "markdownDescription": "End time in seconds."
+                    "minimum": 0,
+                    "description": "Finite non-negative end time in seconds.",
+                    "markdownDescription": "Finite non-negative end time in seconds."
                   }
                 },
                 "required": [
@@ -1005,8 +1365,8 @@
                   "end"
                 ],
                 "additionalProperties": false,
-                "description": "Time range for selection.",
-                "markdownDescription": "Time range for selection."
+                "description": "Inclusive time range for select_range.",
+                "markdownDescription": "Inclusive time range for select_range."
               }
             },
             "required": [
@@ -1142,8 +1502,9 @@
                   },
                   "bake_interval": {
                     "type": "number",
-                    "description": "Interval for baking keyframes.",
-                    "markdownDescription": "Interval for baking keyframes."
+                    "exclusiveMinimum": 0,
+                    "description": "Strictly positive interval in seconds for baking keyframes.",
+                    "markdownDescription": "Strictly positive interval in seconds for baking keyframes."
                   }
                 },
                 "additionalProperties": false,
@@ -1195,8 +1556,8 @@
                   },
                   "bone": {
                     "type": "string",
-                    "description": "Source bone name.",
-                    "markdownDescription": "Source bone name."
+                    "description": "Exact source Group UUID or exact unique Group name.",
+                    "markdownDescription": "Exact source Group UUID or exact unique Group name."
                   },
                   "channels": {
                     "type": "array",
@@ -1256,8 +1617,8 @@
                   },
                   "bone": {
                     "type": "string",
-                    "description": "Target bone name.",
-                    "markdownDescription": "Target bone name."
+                    "description": "Exact target Group UUID or exact unique Group name.",
+                    "markdownDescription": "Exact target Group UUID or exact unique Group name."
                   },
                   "time_offset": {
                     "type": "number",
@@ -1294,689 +1655,32 @@
       }
     },
     {
-      "name": "list_armatures",
-      "title": "List Armatures",
-      "description": "Lists all armatures in the current project with their basic info.",
-      "status": "stable",
-      "category": "Armature",
+      "name": "inspect_animation",
+      "title": "Inspect Authored Animation",
+      "description": "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed authored transform-channel keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+      "status": "experimental",
+      "category": "Animation",
       "annotations": {
         "readOnlyHint": true
       },
       "parameters": {
-        "$ref": "#/definitions/list_armatures",
+        "$ref": "#/definitions/inspect_animation",
         "definitions": {
-          "list_armatures": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "get_armature",
-      "title": "Get Armature",
-      "description": "Gets detailed information about a specific armature including its bones.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/get_armature",
-        "definitions": {
-          "get_armature": {
+          "inspect_animation": {
             "type": "object",
             "properties": {
-              "id": {
+              "animation_id": {
                 "type": "string",
-                "description": "UUID or name of the armature.",
-                "markdownDescription": "UUID or name of the armature."
+                "description": "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation.",
+                "markdownDescription": "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation."
               },
-              "include_bones": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether to include bone hierarchy in response.",
-                "markdownDescription": "Whether to include bone hierarchy in response."
+              "bone": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator.",
+                "markdownDescription": "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator."
               }
             },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "add_armature",
-      "title": "Add Armature",
-      "description": "Creates a new armature in the project. An armature is a skeletal rig used for mesh deformation.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/add_armature",
-        "definitions": {
-          "add_armature": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "default": "armature",
-                "description": "Name for the new armature.",
-                "markdownDescription": "Name for the new armature."
-              },
-              "visibility": {
-                "type": "boolean",
-                "default": true
-              },
-              "locked": {
-                "type": "boolean",
-                "default": false
-              },
-              "add_initial_bone": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether to add an initial bone to the armature.",
-                "markdownDescription": "Whether to add an initial bone to the armature."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "remove_armature",
-      "title": "Remove Armature",
-      "description": "Removes an armature and all its bones from the project.",
-      "status": "experimental",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/remove_armature",
-        "definitions": {
-          "remove_armature": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "UUID or name of the armature to remove.",
-                "markdownDescription": "UUID or name of the armature to remove."
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "update_armature",
-      "title": "Update Armature",
-      "description": "Updates properties of an existing armature.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/update_armature",
-        "definitions": {
-          "update_armature": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "UUID or name of the armature.",
-                "markdownDescription": "UUID or name of the armature."
-              },
-              "name": {
-                "type": "string",
-                "description": "New name for the armature.",
-                "markdownDescription": "New name for the armature."
-              },
-              "visibility": {
-                "type": "boolean"
-              },
-              "locked": {
-                "type": "boolean"
-              },
-              "export": {
-                "type": "boolean",
-                "description": "Whether to export this armature.",
-                "markdownDescription": "Whether to export this armature."
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "list_armature_bones",
-      "title": "List Armature Bones",
-      "description": "Lists all armature bones, optionally filtered by a specific armature.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/list_armature_bones",
-        "definitions": {
-          "list_armature_bones": {
-            "type": "object",
-            "properties": {
-              "armature_id": {
-                "type": "string",
-                "description": "Filter bones by armature UUID or name. If not provided, lists all bones.",
-                "markdownDescription": "Filter bones by armature UUID or name. If not provided, lists all bones."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "get_armature_bone",
-      "title": "Get Armature Bone",
-      "description": "Gets detailed information about a specific armature bone.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/get_armature_bone",
-        "definitions": {
-          "get_armature_bone": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "UUID or name of the bone.",
-                "markdownDescription": "UUID or name of the bone."
-              },
-              "include_weights": {
-                "type": "boolean",
-                "default": false,
-                "description": "Whether to include all vertex weights in response.",
-                "markdownDescription": "Whether to include all vertex weights in response."
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "add_armature_bone",
-      "title": "Add Armature Bone",
-      "description": "Creates a new bone and adds it to an armature or parent bone.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/add_armature_bone",
-        "definitions": {
-          "add_armature_bone": {
-            "type": "object",
-            "properties": {
-              "parent_id": {
-                "type": "string",
-                "description": "UUID or name of parent armature or bone.",
-                "markdownDescription": "UUID or name of parent armature or bone."
-              },
-              "name": {
-                "type": "string",
-                "default": "bone",
-                "description": "Name for the new bone.",
-                "markdownDescription": "Name for the new bone."
-              },
-              "origin": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Position of the bone. Defaults to [0, parent.length, 0] for child bones.",
-                "markdownDescription": "Position of the bone. Defaults to [0, parent.length, 0] for child bones."
-              },
-              "rotation": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "3D vector [x, y, z].",
-                "markdownDescription": "3D vector [x, y, z].",
-                "default": [
-                  0,
-                  0,
-                  0
-                ]
-              },
-              "length": {
-                "type": "number",
-                "default": 8,
-                "description": "Length of the bone.",
-                "markdownDescription": "Length of the bone."
-              },
-              "width": {
-                "type": "number",
-                "default": 2,
-                "description": "Width of the bone.",
-                "markdownDescription": "Width of the bone."
-              },
-              "connected": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether bone is connected to parent.",
-                "markdownDescription": "Whether bone is connected to parent."
-              },
-              "color": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 7,
-                "description": "Marker color index (0-7).",
-                "markdownDescription": "Marker color index (0-7)."
-              }
-            },
-            "required": [
-              "parent_id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "remove_armature_bone",
-      "title": "Remove Armature Bone",
-      "description": "Removes an armature bone from the project.",
-      "status": "experimental",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/remove_armature_bone",
-        "definitions": {
-          "remove_armature_bone": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "UUID or name of the bone to remove.",
-                "markdownDescription": "UUID or name of the bone to remove."
-              },
-              "remove_children": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether to also remove child bones.",
-                "markdownDescription": "Whether to also remove child bones."
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "update_armature_bone",
-      "title": "Update Armature Bone",
-      "description": "Updates properties of an existing armature bone.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/update_armature_bone",
-        "definitions": {
-          "update_armature_bone": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "UUID or name of the bone.",
-                "markdownDescription": "UUID or name of the bone."
-              },
-              "name": {
-                "type": "string"
-              },
-              "origin": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "New position of the bone.",
-                "markdownDescription": "New position of the bone."
-              },
-              "rotation": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "New rotation [x, y, z] in degrees.",
-                "markdownDescription": "New rotation [x, y, z] in degrees."
-              },
-              "length": {
-                "type": "number"
-              },
-              "width": {
-                "type": "number"
-              },
-              "connected": {
-                "type": "boolean"
-              },
-              "color": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 7
-              },
-              "visibility": {
-                "type": "boolean"
-              },
-              "locked": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "update_armature_bones_batch",
-      "title": "Update Armature Bones (Batch)",
-      "description": "Updates multiple armature bones at once with the same properties.",
-      "status": "experimental",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/update_armature_bones_batch",
-        "definitions": {
-          "update_armature_bones_batch": {
-            "type": "object",
-            "properties": {
-              "ids": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "description": "ID or name of the element.",
-                  "markdownDescription": "ID or name of the element."
-                },
-                "description": "Array of bone UUIDs or names to update.",
-                "markdownDescription": "Array of bone UUIDs or names to update."
-              },
-              "visibility": {
-                "type": "boolean"
-              },
-              "locked": {
-                "type": "boolean"
-              },
-              "color": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 7
-              }
-            },
-            "required": [
-              "ids"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "select_armature_bones",
-      "title": "Select Armature Bones",
-      "description": "Selects armature bones by ID. Can select single bone, multiple bones, or bone hierarchy.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/select_armature_bones",
-        "definitions": {
-          "select_armature_bones": {
-            "type": "object",
-            "properties": {
-              "ids": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "description": "ID or name of the element.",
-                  "markdownDescription": "ID or name of the element."
-                },
-                "description": "Array of bone UUIDs or names to select.",
-                "markdownDescription": "Array of bone UUIDs or names to select."
-              },
-              "armature_id": {
-                "type": "string",
-                "description": "Select all bones in this armature.",
-                "markdownDescription": "Select all bones in this armature."
-              },
-              "include_descendants": {
-                "type": "boolean",
-                "default": false,
-                "description": "Include all descendant bones in selection.",
-                "markdownDescription": "Include all descendant bones in selection."
-              },
-              "clear_selection": {
-                "type": "boolean",
-                "default": true,
-                "description": "Clear existing selection before selecting.",
-                "markdownDescription": "Clear existing selection before selecting."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "get_vertex_weights",
-      "title": "Get Vertex Weights",
-      "description": "Gets vertex weights for a mesh from all bones affecting it.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/get_vertex_weights",
-        "definitions": {
-          "get_vertex_weights": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "bone_id": {
-                "type": "string",
-                "description": "Filter weights by specific bone.",
-                "markdownDescription": "Filter weights by specific bone."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "set_vertex_weight",
-      "title": "Set Vertex Weight",
-      "description": "Sets the weight of a specific vertex on a bone.",
-      "status": "stable",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/set_vertex_weight",
-        "definitions": {
-          "set_vertex_weight": {
-            "type": "object",
-            "properties": {
-              "bone_id": {
-                "type": "string",
-                "description": "UUID or name of the bone.",
-                "markdownDescription": "UUID or name of the bone."
-              },
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "vertex_key": {
-                "type": "string",
-                "description": "Key of the vertex in the mesh.",
-                "markdownDescription": "Key of the vertex in the mesh."
-              },
-              "weight": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 1,
-                "description": "Weight value (0-1). Set to 0 to remove weight.",
-                "markdownDescription": "Weight value (0-1). Set to 0 to remove weight."
-              }
-            },
-            "required": [
-              "bone_id",
-              "vertex_key",
-              "weight"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "set_vertex_weights_batch",
-      "title": "Set Vertex Weights (Batch)",
-      "description": "Sets multiple vertex weights at once on a bone.",
-      "status": "experimental",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/set_vertex_weights_batch",
-        "definitions": {
-          "set_vertex_weights_batch": {
-            "type": "object",
-            "properties": {
-              "bone_id": {
-                "type": "string",
-                "description": "UUID or name of the bone.",
-                "markdownDescription": "UUID or name of the bone."
-              },
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "weights": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 1
-                },
-                "description": "Map of vertex_key -> weight value.",
-                "markdownDescription": "Map of vertex_key -> weight value."
-              }
-            },
-            "required": [
-              "bone_id",
-              "weights"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "clear_vertex_weights",
-      "title": "Clear Vertex Weights",
-      "description": "Clears all vertex weights from a bone for a specific mesh.",
-      "status": "experimental",
-      "category": "Armature",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/clear_vertex_weights",
-        "definitions": {
-          "clear_vertex_weights": {
-            "type": "object",
-            "properties": {
-              "bone_id": {
-                "type": "string",
-                "description": "UUID or name of the bone.",
-                "markdownDescription": "UUID or name of the bone."
-              },
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              }
-            },
-            "required": [
-              "bone_id"
-            ],
             "additionalProperties": false
           }
         },
@@ -1986,7 +1690,7 @@
     {
       "name": "remove_element",
       "title": "Remove Element",
-      "description": "Removes the element with the given ID.",
+      "description": "Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2000,8 +1704,8 @@
             "properties": {
               "id": {
                 "type": "string",
-                "description": "ID or name of the element to remove.",
-                "markdownDescription": "ID or name of the element to remove."
+                "description": "Exact element UUID or exact unique name. Ambiguous names are rejected before removal.",
+                "markdownDescription": "Exact element UUID or exact unique name. Ambiguous names are rejected before removal."
               }
             },
             "required": [
@@ -2016,7 +1720,7 @@
     {
       "name": "add_group",
       "title": "Add Group",
-      "description": "Adds a new group with the given name and options.",
+      "description": "Adds a Group with neutral origin/rotation defaults so callers are not forced to invent pivots or angles. An explicit parent is preflighted UUID-first (or by exact unique name) before mutation; missing or ambiguous parents fail instead of falling back. Use a non-zero origin/rotation only when a real joint, attachment, or transform relationship justifies it.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2029,7 +1733,8 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               },
               "origin": {
                 "type": "array",
@@ -2038,8 +1743,13 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "3D vector [x, y, z].",
-                "markdownDescription": "3D vector [x, y, z]."
+                "description": "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it.",
+                "markdownDescription": "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it.",
+                "default": [
+                  0,
+                  0,
+                  0
+                ]
               },
               "rotation": {
                 "type": "array",
@@ -2048,12 +1758,19 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "3D vector [x, y, z].",
-                "markdownDescription": "3D vector [x, y, z]."
+                "description": "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it.",
+                "markdownDescription": "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it.",
+                "default": [
+                  0,
+                  0,
+                  0
+                ]
               },
               "parent": {
                 "type": "string",
-                "default": "root"
+                "default": "root",
+                "description": "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional.",
+                "markdownDescription": "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional."
               },
               "visibility": {
                 "type": "boolean",
@@ -2080,9 +1797,7 @@
               }
             },
             "required": [
-              "name",
-              "origin",
-              "rotation"
+              "name"
             ],
             "additionalProperties": false
           }
@@ -2093,7 +1808,7 @@
     {
       "name": "list_outline",
       "title": "List Outline",
-      "description": "Returns the project outline as a hierarchical tree. Each node reports { name, uuid, type (cube|mesh|group), children? }. Groups contain child cubes, meshes, and sub-groups. Use `include_cubes=false` to get a group-only skeleton when you just need structure, or `max_depth` to bound very deep trees.",
+      "description": "Returns the Bedrock Cuboid modelling outline as a hierarchical Cube/Group tree. Each node reports { name, uuid, type (cube|group), children? }. Use `include_cubes=false` to get a group-only skeleton, or `max_depth` to bound very deep trees.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2110,12 +1825,6 @@
                 "default": true,
                 "description": "If true, include cubes as leaves. If false, return groups only.",
                 "markdownDescription": "If true, include cubes as leaves. If false, return groups only."
-              },
-              "include_meshes": {
-                "type": "boolean",
-                "default": true,
-                "description": "If true, include meshes as leaves. If false, omit meshes.",
-                "markdownDescription": "If true, include meshes as leaves. If false, omit meshes."
               },
               "max_depth": {
                 "type": "integer",
@@ -2135,7 +1844,7 @@
     {
       "name": "duplicate_element",
       "title": "Duplicate Element",
-      "description": "Duplicates a cube, mesh or group by ID or name.  You may offset the duplicate or assign a new name.",
+      "description": "Duplicates one explicit Cube or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2149,8 +1858,8 @@
             "properties": {
               "id": {
                 "type": "string",
-                "description": "ID or name of the element to duplicate.",
-                "markdownDescription": "ID or name of the element to duplicate."
+                "description": "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication.",
+                "markdownDescription": "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
               },
               "offset": {
                 "type": "array",
@@ -2183,7 +1892,7 @@
     {
       "name": "rename_element",
       "title": "Rename Element",
-      "description": "Renames a cube, mesh or group by ID or name.",
+      "description": "Renames one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2197,8 +1906,8 @@
             "properties": {
               "id": {
                 "type": "string",
-                "description": "ID or name of the element to rename.",
-                "markdownDescription": "ID or name of the element to rename."
+                "description": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename.",
+                "markdownDescription": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename."
               },
               "new_name": {
                 "type": "string",
@@ -2219,7 +1928,7 @@
     {
       "name": "find_elements_by_criteria",
       "title": "Find Elements by Criteria",
-      "description": "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent group, cube size ranges, and selection scope. Returns element metadata, never modifies state.",
+      "description": "Searches the current Bedrock Cuboid modelling project for Cubes/Groups matching the given criteria. Supports name pattern matching (regex or substring), Cube/Group type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. Invalid/rejected name_pattern values fail instead of being silently ignored. Returns metadata and never modifies state.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2233,30 +1942,29 @@
             "properties": {
               "name_pattern": {
                 "type": "string",
-                "description": "Regex pattern to match element names (e.g., '^arm_.*'). Case-sensitive.",
-                "markdownDescription": "Regex pattern to match element names (e.g., '^arm_.*'). Case-sensitive."
+                "description": "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored.",
+                "markdownDescription": "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored."
               },
               "name_contains": {
                 "type": "string",
-                "description": "Substring to match in element names. Case-insensitive.",
-                "markdownDescription": "Substring to match in element names. Case-insensitive."
+                "description": "Substring to match element names. Case-insensitive.",
+                "markdownDescription": "Substring to match element names. Case-insensitive."
               },
               "type": {
                 "type": "string",
                 "enum": [
                   "cube",
-                  "mesh",
                   "group",
                   "any"
                 ],
                 "default": "any",
-                "description": "Restrict to a single element type.",
-                "markdownDescription": "Restrict to a single element type."
+                "description": "Restrict to Cube or Group results.",
+                "markdownDescription": "Restrict to Cube or Group results."
               },
               "parent_group": {
                 "type": "string",
-                "description": "UUID or name of a parent group. Only descendants of this group are returned.",
-                "markdownDescription": "UUID or name of a parent group. Only descendants of this group are returned."
+                "description": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search.",
+                "markdownDescription": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search."
               },
               "min_size": {
                 "type": "array",
@@ -2281,8 +1989,8 @@
               "selected_only": {
                 "type": "boolean",
                 "default": false,
-                "description": "Only consider currently selected elements.",
-                "markdownDescription": "Only consider currently selected elements."
+                "description": "Only consider currently selected Cubes/Groups.",
+                "markdownDescription": "Only consider currently selected Cubes/Groups."
               },
               "limit": {
                 "type": "integer",
@@ -2302,7 +2010,7 @@
     {
       "name": "select_all_of_type",
       "title": "Select All of Type",
-      "description": "Selects all elements of the given type (cube, mesh, or group) in the current project. Optionally restrict to descendants of a parent group, or add to (rather than replace) the current selection.",
+      "description": "Selects all Cubes or Groups of the requested type in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to rather than replace the current Cube/Group selection.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2318,7 +2026,6 @@
                 "type": "string",
                 "enum": [
                   "cube",
-                  "mesh",
                   "group"
                 ],
                 "description": "Element type to select.",
@@ -2327,13 +2034,13 @@
               "add_to_selection": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, add to current selection. If false, replace selection.",
-                "markdownDescription": "If true, add to current selection. If false, replace selection."
+                "description": "If true, add to current selection. If false, replace Cube/Group selection.",
+                "markdownDescription": "If true, add to current selection. If false, replace Cube/Group selection."
               },
               "parent_group": {
                 "type": "string",
-                "description": "UUID or name of a parent group. If provided, only descendants of this group are selected.",
-                "markdownDescription": "UUID or name of a parent group. If provided, only descendants of this group are selected."
+                "description": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes.",
+                "markdownDescription": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes."
               }
             },
             "required": [
@@ -2348,7 +2055,7 @@
     {
       "name": "filter_by_material",
       "title": "Filter Elements by Material",
-      "description": "Returns all elements that reference the given texture. For cubes, includes the list of face keys (e.g., 'north', 'up') that use the texture. For meshes, returns the mesh if any face uses the texture.",
+      "description": "Returns Cubes that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. Matching cube face keys are included when requested. This tool is read-only and does not activate, paint, or mutate textures.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2362,8 +2069,8 @@
             "properties": {
               "texture": {
                 "type": "string",
-                "description": "Texture ID, UUID or name to search for.",
-                "markdownDescription": "Texture ID, UUID or name to search for."
+                "description": "Explicit texture reference for read-only Cube material discovery. UUID is preferred, then exact texture ID, then exact name only when unique. Ambiguous IDs or names are rejected.",
+                "markdownDescription": "Explicit texture reference for read-only Cube material discovery. UUID is preferred, then exact texture ID, then exact name only when unique. Ambiguous IDs or names are rejected."
               },
               "include_face_keys": {
                 "type": "boolean",
@@ -2384,7 +2091,7 @@
     {
       "name": "get_selection",
       "title": "Get Selection",
-      "description": "Returns the current selection state: selected cube/mesh/group UUIDs and names, plus the active texture. Use this to verify what `apply_texture` or a paint tool with `fill_mode=\"selected_elements\"` will target.",
+      "description": "Returns the current Cube/Group selection state plus the active texture. Use this to verify explicit Bedrock Cuboid editing/texture targets without depending on generic Mesh selection.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2396,6 +2103,37 @@
           "get_selection": {
             "type": "object",
             "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "inspect_element",
+      "title": "Inspect Authored Element",
+      "description": "Returns focused read-only authored state for one explicit Bedrock Cube or Group in the active project. Cube output includes parent, from/to/size, origin (pivot), rotation, and visibility. Group output includes parent, origin (pivot), rotation, visibility, and child count. Exact names must be unique; UUID is preferred. This tool does not infer whether placement/rotation/pivot is correct, does not modify selection or model state, and does not return visual PASS/FAIL.",
+      "status": "stable",
+      "category": "Elements",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/inspect_element",
+        "definitions": {
+          "inspect_element": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria.",
+                "markdownDescription": "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria."
+              }
+            },
+            "required": [
+              "id"
+            ],
             "additionalProperties": false
           }
         },
@@ -2632,7 +2370,7 @@
     {
       "name": "get_face_material_instances",
       "title": "Get Face Material Instances",
-      "description": "Gets the material instance names for cube faces. Material instances are used in Bedrock Block format to map faces to materials defined in the minecraft:material_instances component.",
+      "description": "Gets material-instance metadata from Bedrock cube faces. Blockbench's Bedrock geometry codec preserves this field on per-face UV data.",
       "status": "stable",
       "category": "Material Instances",
       "annotations": {
@@ -2675,7 +2413,7 @@
     {
       "name": "set_face_material_instance",
       "title": "Set Face Material Instance",
-      "description": "Sets the material instance name for one or more cube faces. Material instances are strings that map to materials defined in the minecraft:material_instances component for Bedrock Block format.",
+      "description": "Sets material-instance metadata on one or more Bedrock cube faces using the face field preserved by Blockbench's Bedrock geometry codec.",
       "status": "experimental",
       "category": "Material Instances",
       "annotations": {
@@ -2863,707 +2601,6 @@
                 "markdownDescription": "If true, clears material instances from all cubes in the project."
               }
             },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "place_mesh",
-      "title": "Place Mesh",
-      "description": "Places a mesh at the specified position. Texture and group are optional.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/place_mesh",
-        "definitions": {
-          "place_mesh": {
-            "type": "object",
-            "properties": {
-              "elements": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "position": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "Position of the mesh.",
-                      "markdownDescription": "Position of the mesh.",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
-                    },
-                    "rotation": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "Rotation of the mesh.",
-                      "markdownDescription": "Rotation of the mesh.",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
-                    },
-                    "scale": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "Scale of the mesh.",
-                      "markdownDescription": "Scale of the mesh.",
-                      "default": [
-                        1,
-                        1,
-                        1
-                      ]
-                    },
-                    "vertices": {
-                      "type": "array",
-                      "items": {
-                        "type": "array",
-                        "items": {
-                          "type": "number"
-                        },
-                        "minItems": 3,
-                        "maxItems": 3,
-                        "description": "Vertex coordinates in the mesh.",
-                        "markdownDescription": "Vertex coordinates in the mesh."
-                      },
-                      "default": [],
-                      "description": "Vertices of the mesh.",
-                      "markdownDescription": "Vertices of the mesh."
-                    }
-                  },
-                  "required": [
-                    "name"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "Array of meshes to place.",
-                "markdownDescription": "Array of meshes to place."
-              },
-              "texture": {
-                "type": "string",
-                "description": "Texture ID or name to apply to the mesh.",
-                "markdownDescription": "Texture ID or name to apply to the mesh."
-              },
-              "group": {
-                "type": "string",
-                "description": "Group/bone to which the mesh belongs.",
-                "markdownDescription": "Group/bone to which the mesh belongs."
-              }
-            },
-            "required": [
-              "elements"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "extrude_mesh",
-      "title": "Extrude Mesh",
-      "description": "Extrudes selected faces or edges of a mesh.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/extrude_mesh",
-        "definitions": {
-          "extrude_mesh": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "distance": {
-                "type": "number",
-                "default": 1,
-                "description": "Distance to extrude.",
-                "markdownDescription": "Distance to extrude."
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "faces",
-                  "edges",
-                  "vertices"
-                ],
-                "default": "faces",
-                "description": "What to extrude: faces, edges, or vertices.",
-                "markdownDescription": "What to extrude: faces, edges, or vertices."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "subdivide_mesh",
-      "title": "Subdivide Mesh",
-      "description": "Subdivides selected faces of a mesh to create more geometry.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/subdivide_mesh",
-        "definitions": {
-          "subdivide_mesh": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "cuts": {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 10,
-                "default": 1,
-                "description": "Number of subdivision cuts to make.",
-                "markdownDescription": "Number of subdivision cuts to make."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "create_sphere",
-      "title": "Create Sphere",
-      "description": "Creates a sphere mesh at the specified position with the given parameters. The sphere is created as a mesh with vertices and faces using spherical coordinates.",
-      "status": "stable",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/create_sphere",
-        "definitions": {
-          "create_sphere": {
-            "type": "object",
-            "properties": {
-              "elements": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "Name of the sphere.",
-                      "markdownDescription": "Name of the sphere."
-                    },
-                    "position": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "Position of the sphere center.",
-                      "markdownDescription": "Position of the sphere center."
-                    },
-                    "diameter": {
-                      "type": "number",
-                      "minimum": 1,
-                      "maximum": 64,
-                      "default": 16,
-                      "description": "Diameter of the sphere.",
-                      "markdownDescription": "Diameter of the sphere."
-                    },
-                    "sides": {
-                      "type": "number",
-                      "minimum": 3,
-                      "maximum": 48,
-                      "default": 12,
-                      "description": "Number of horizontal divisions (affects sphere quality).",
-                      "markdownDescription": "Number of horizontal divisions (affects sphere quality)."
-                    },
-                    "rotation": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "Rotation of the sphere.",
-                      "markdownDescription": "Rotation of the sphere.",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
-                    },
-                    "align_edges": {
-                      "type": "boolean",
-                      "default": true,
-                      "description": "Whether to align edges for better geometry.",
-                      "markdownDescription": "Whether to align edges for better geometry."
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "position"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "Array of spheres to create.",
-                "markdownDescription": "Array of spheres to create."
-              },
-              "texture": {
-                "type": "string",
-                "description": "Texture ID or name to apply to the sphere.",
-                "markdownDescription": "Texture ID or name to apply to the sphere."
-              },
-              "group": {
-                "type": "string",
-                "description": "Group/bone to which the sphere belongs.",
-                "markdownDescription": "Group/bone to which the sphere belongs."
-              }
-            },
-            "required": [
-              "elements"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "select_mesh_elements",
-      "title": "Select Mesh Elements",
-      "description": "Selects vertices, edges, or faces of a mesh for manipulation.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/select_mesh_elements",
-        "definitions": {
-          "select_mesh_elements": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh to select elements from.",
-                "markdownDescription": "ID or name of the mesh to select elements from."
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "vertex",
-                  "edge",
-                  "face"
-                ],
-                "description": "Selection mode.",
-                "markdownDescription": "Selection mode."
-              },
-              "elements": {
-                "type": "array",
-                "items": {
-                  "type": [
-                    "string",
-                    "number"
-                  ]
-                },
-                "description": "Specific elements to select. If not provided, selects all.",
-                "markdownDescription": "Specific elements to select. If not provided, selects all."
-              },
-              "action": {
-                "type": "string",
-                "enum": [
-                  "select",
-                  "add",
-                  "remove",
-                  "toggle"
-                ],
-                "default": "select",
-                "description": "Selection action: select (replace), add, remove, or toggle.",
-                "markdownDescription": "Selection action: select (replace), add, remove, or toggle."
-              }
-            },
-            "required": [
-              "mesh_id",
-              "mode"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "move_mesh_vertices",
-      "title": "Move Mesh Vertices",
-      "description": "Moves selected vertices of a mesh by the specified offset.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/move_mesh_vertices",
-        "definitions": {
-          "move_mesh_vertices": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "offset": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Offset to move vertices by [x, y, z].",
-                "markdownDescription": "Offset to move vertices by [x, y, z]."
-              },
-              "vertices": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Specific vertex keys to move. If not provided, moves all selected vertices.",
-                "markdownDescription": "Specific vertex keys to move. If not provided, moves all selected vertices."
-              }
-            },
-            "required": [
-              "offset"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "delete_mesh_elements",
-      "title": "Delete Mesh Elements",
-      "description": "Deletes selected vertices, edges, or faces from a mesh.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/delete_mesh_elements",
-        "definitions": {
-          "delete_mesh_elements": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "vertices",
-                  "edges",
-                  "faces"
-                ],
-                "default": "faces",
-                "description": "What to delete: vertices, edges, or faces.",
-                "markdownDescription": "What to delete: vertices, edges, or faces."
-              },
-              "keep_vertices": {
-                "type": "boolean",
-                "default": false,
-                "description": "When deleting faces/edges, whether to keep the vertices.",
-                "markdownDescription": "When deleting faces/edges, whether to keep the vertices."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "merge_mesh_vertices",
-      "title": "Merge Mesh Vertices",
-      "description": "Merges vertices that are within a specified distance of each other.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/merge_mesh_vertices",
-        "definitions": {
-          "merge_mesh_vertices": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh.",
-                "markdownDescription": "ID or name of the mesh."
-              },
-              "threshold": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 10,
-                "default": 0.1,
-                "description": "Maximum distance between vertices to merge.",
-                "markdownDescription": "Maximum distance between vertices to merge."
-              },
-              "selected_only": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether to only merge selected vertices.",
-                "markdownDescription": "Whether to only merge selected vertices."
-              }
-            },
-            "required": [
-              "mesh_id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "create_mesh_face",
-      "title": "Create Mesh Face",
-      "description": "Creates a new face from selected vertices.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/create_mesh_face",
-        "definitions": {
-          "create_mesh_face": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "vertices": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "minItems": 3,
-                "maxItems": 4,
-                "description": "Vertex keys to create face from. Must be 3 or 4 vertices.",
-                "markdownDescription": "Vertex keys to create face from. Must be 3 or 4 vertices."
-              },
-              "texture": {
-                "type": "string",
-                "description": "Texture ID or name to apply to the new face.",
-                "markdownDescription": "Texture ID or name to apply to the new face."
-              }
-            },
-            "required": [
-              "vertices"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "create_cylinder",
-      "title": "Create Cylinder",
-      "description": "Creates one or more cylinder meshes with optional end caps.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/create_cylinder",
-        "definitions": {
-          "create_cylinder": {
-            "type": "object",
-            "properties": {
-              "elements": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "position": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "3D vector [x, y, z].",
-                      "markdownDescription": "3D vector [x, y, z]."
-                    },
-                    "height": {
-                      "type": "number",
-                      "minimum": 1,
-                      "maximum": 64,
-                      "default": 16
-                    },
-                    "diameter": {
-                      "type": "number",
-                      "minimum": 1,
-                      "maximum": 64,
-                      "default": 16
-                    },
-                    "sides": {
-                      "type": "number",
-                      "minimum": 3,
-                      "maximum": 64,
-                      "default": 12
-                    },
-                    "rotation": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "3D vector [x, y, z].",
-                      "markdownDescription": "3D vector [x, y, z].",
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ]
-                    },
-                    "capped": {
-                      "type": "boolean",
-                      "default": true
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "position"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1
-              },
-              "texture": {
-                "type": "string",
-                "description": "Texture ID or name. If not provided, uses selected texture.",
-                "markdownDescription": "Texture ID or name. If not provided, uses selected texture."
-              },
-              "group": {
-                "type": "string",
-                "description": "Group/bone ID or name.",
-                "markdownDescription": "Group/bone ID or name."
-              }
-            },
-            "required": [
-              "elements"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "knife_tool",
-      "title": "Knife Tool",
-      "description": "Uses the knife tool to cut custom edges into mesh faces.",
-      "status": "experimental",
-      "category": "Mesh Editing",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/knife_tool",
-        "definitions": {
-          "knife_tool": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh to cut.",
-                "markdownDescription": "ID or name of the mesh to cut."
-              },
-              "points": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "position": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "description": "3D position of the cut point.",
-                      "markdownDescription": "3D position of the cut point."
-                    },
-                    "face": {
-                      "type": "string",
-                      "description": "Face key to attach the point to.",
-                      "markdownDescription": "Face key to attach the point to."
-                    }
-                  },
-                  "required": [
-                    "position"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 2,
-                "description": "Points defining the cut path.",
-                "markdownDescription": "Points defining the cut path."
-              }
-            },
-            "required": [
-              "mesh_id",
-              "points"
-            ],
             "additionalProperties": false
           }
         },
@@ -4517,8 +3554,7 @@
                   "clear_selection",
                   "invert_selection",
                   "expand_selection",
-                  "contract_selection",
-                  "feather_selection"
+                  "contract_selection"
                 ],
                 "description": "Selection action to perform.",
                 "markdownDescription": "Selection action to perform."
@@ -4564,8 +3600,8 @@
               },
               "radius": {
                 "type": "number",
-                "description": "Radius for expand/contract/feather operations.",
-                "markdownDescription": "Radius for expand/contract/feather operations."
+                "description": "Radius for expand/contract operations.",
+                "markdownDescription": "Radius for expand/contract operations."
               },
               "mode": {
                 "type": "string",
@@ -4640,26 +3676,26 @@
               "blend_mode": {
                 "type": "string",
                 "enum": [
-                  "normal",
+                  "default",
+                  "set_opacity",
+                  "color",
                   "multiply",
-                  "screen",
-                  "overlay",
-                  "soft_light",
-                  "hard_light",
-                  "color_dodge",
-                  "color_burn",
+                  "add",
                   "darken",
                   "lighten",
+                  "screen",
+                  "overlay",
                   "difference",
-                  "exclusion"
+                  "alpha_mask"
                 ],
                 "description": "Layer blend mode.",
                 "markdownDescription": "Layer blend mode."
               },
               "target_index": {
-                "type": "number",
-                "description": "Target position for moving layers.",
-                "markdownDescription": "Target position for moving layers."
+                "type": "integer",
+                "minimum": 0,
+                "description": "0-based final layer index.",
+                "markdownDescription": "0-based final layer index."
               }
             },
             "required": [
@@ -4674,7 +3710,7 @@
     {
       "name": "create_project",
       "title": "Create Project",
-      "description": "Creates a new project with the given name and project type.",
+      "description": "Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4692,9 +3728,9 @@
               },
               "format": {
                 "type": "string",
-                "default": "bedrock_block",
-                "description": "Project format ID from Blockbench's Formats registry.",
-                "markdownDescription": "Project format ID from Blockbench's Formats registry."
+                "default": "bedrock",
+                "description": "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models.",
+                "markdownDescription": "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models."
               }
             },
             "required": [
@@ -4709,7 +3745,7 @@
     {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
+      "description": "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution, Cube/Group/texture counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4728,9 +3764,30 @@
       }
     },
     {
+      "name": "inspect_model_bounds",
+      "title": "Inspect Model Bounds",
+      "description": "Returns raw rendered-current-pose bounds for visible Cube geometry in the active project: min/max/center, width-height-length, XZ footprint, Cube counts, and pose context. Uses Blockbench global Cube vertices so active Cube/group transforms are reflected. This is structural observation only: it does not compare against a target, score resemblance, recommend corrections, or return PASS/FAIL.",
+      "status": "stable",
+      "category": "Project",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/inspect_model_bounds",
+        "definitions": {
+          "inspect_model_bounds": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_texture",
       "title": "Create Texture",
-      "description": "Creates a new texture with the given name and size.",
+      "description": "Creates a new texture with the given name and size. When an explicit TextureGroup target is supplied, it resolves before mutation by exact UUID, otherwise an exact name must be unique; missing or ambiguous group targets fail before Undo or texture construction.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4764,7 +3821,10 @@
                 "markdownDescription": "Path to the image file or data URL."
               },
               "group": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1,
+                "description": "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique.",
+                "markdownDescription": "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique."
               },
               "fill_color": {
                 "anyOf": [
@@ -4850,7 +3910,7 @@
     {
       "name": "apply_texture",
       "title": "Apply Texture",
-      "description": "Applies the given texture to the element with the specified ID.",
+      "description": "Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4864,13 +3924,15 @@
             "properties": {
               "id": {
                 "type": "string",
-                "description": "ID or name of the element to apply the texture to.",
-                "markdownDescription": "ID or name of the element to apply the texture to."
+                "minLength": 1,
+                "description": "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types.",
+                "markdownDescription": "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types."
               },
               "texture": {
                 "type": "string",
-                "description": "ID or name of the texture to apply.",
-                "markdownDescription": "ID or name of the texture to apply."
+                "minLength": 1,
+                "description": "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "applyTo": {
                 "type": "string",
@@ -4897,7 +3959,7 @@
     {
       "name": "add_texture_group",
       "title": "Add Texture Group",
-      "description": "Adds a new texture group with the given name.",
+      "description": "Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4915,10 +3977,12 @@
               "textures": {
                 "type": "array",
                 "items": {
-                  "type": "string"
+                  "type": "string",
+                  "minLength": 1
                 },
-                "description": "Array of texture IDs or names to add to the group.",
-                "markdownDescription": "Array of texture IDs or names to add to the group."
+                "minItems": 1,
+                "description": "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique."
               },
               "is_material": {
                 "type": "boolean",
@@ -4939,7 +4003,7 @@
     {
       "name": "list_textures",
       "title": "List Textures",
-      "description": "Returns a list of all textures in the Blockbench editor.",
+      "description": "Returns a read-only list of all textures in the Blockbench editor, including identity/group metadata and the current render_mode/render_sides settings.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4960,7 +4024,7 @@
     {
       "name": "get_texture",
       "title": "Get Texture",
-      "description": "Returns the image data of the given texture or default texture.",
+      "description": "Returns image data for the default texture when no texture is specified. Explicit texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before image data is returned.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4987,7 +4051,7 @@
     {
       "name": "create_pbr_material",
       "title": "Create PBR Material",
-      "description": "Creates a new PBR material (texture group with is_material=true) and optionally assigns textures to PBR channels. Use this for Minecraft Bedrock resource packs or any format supporting PBR.",
+      "description": "Creates a new PBR material (texture group with is_material=true). Optional channel texture references are resolved exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous supplied references fail before Undo or material creation. Uniform color, MER, and subsurface values remain supported.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5006,23 +4070,27 @@
               },
               "color_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the color (albedo) channel.",
-                "markdownDescription": "Texture ID/name for the color (albedo) channel."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "normal_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the normal map channel.",
-                "markdownDescription": "Texture ID/name for the normal map channel."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "height_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the height/displacement map channel.",
-                "markdownDescription": "Texture ID/name for the height/displacement map channel."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "mer_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the MER (Metalness/Emissive/Roughness) channel.",
-                "markdownDescription": "Texture ID/name for the MER (Metalness/Emissive/Roughness) channel."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "color_value": {
                 "type": "array",
@@ -5068,7 +4136,7 @@
     {
       "name": "configure_material",
       "title": "Configure Material",
-      "description": "Configures an existing PBR material's properties including channel assignments, uniform values, and subsurface scattering.",
+      "description": "Configures one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous material targets fail before mutation. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5082,28 +4150,33 @@
             "properties": {
               "material": {
                 "type": "string",
-                "description": "Material name or UUID to configure.",
-                "markdownDescription": "Material name or UUID to configure."
+                "minLength": 1,
+                "description": "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique.",
+                "markdownDescription": "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique."
               },
               "color_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the color channel, or 'none' to use uniform color.",
-                "markdownDescription": "Texture ID/name for the color channel, or 'none' to use uniform color."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
               },
               "normal_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the normal map, or 'none' to remove.",
-                "markdownDescription": "Texture ID/name for the normal map, or 'none' to remove."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
               },
               "height_texture": {
                 "type": "string",
-                "description": "Texture ID/name for the height map, or 'none' to remove.",
-                "markdownDescription": "Texture ID/name for the height map, or 'none' to remove."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
               },
               "mer_texture": {
                 "type": "string",
-                "description": "Texture ID/name for MER channel, or 'none' to use uniform values.",
-                "markdownDescription": "Texture ID/name for MER channel, or 'none' to use uniform values."
+                "minLength": 1,
+                "description": "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
               },
               "color_value": {
                 "type": "array",
@@ -5170,7 +4243,7 @@
     {
       "name": "get_material_info",
       "title": "Get Material Info",
-      "description": "Gets detailed information about a PBR material including the compiled texture_set.json preview for Bedrock export.",
+      "description": "Gets detailed information about one explicit material/texture group, including the compiled texture_set.json preview for Bedrock export. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before material data is read.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -5184,8 +4257,9 @@
             "properties": {
               "material": {
                 "type": "string",
-                "description": "Material name or UUID.",
-                "markdownDescription": "Material name or UUID."
+                "minLength": 1,
+                "description": "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique.",
+                "markdownDescription": "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique."
               }
             },
             "required": [
@@ -5231,7 +4305,7 @@
     {
       "name": "assign_texture_channel",
       "title": "Assign Texture Channel",
-      "description": "Assigns a texture to a specific PBR channel within a material.",
+      "description": "Assigns one explicit texture to a PBR channel within one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique. Missing or ambiguous material/texture targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5245,13 +4319,15 @@
             "properties": {
               "material": {
                 "type": "string",
-                "description": "Material name or UUID.",
-                "markdownDescription": "Material name or UUID."
+                "minLength": 1,
+                "description": "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique.",
+                "markdownDescription": "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique."
               },
               "texture": {
                 "type": "string",
-                "description": "Texture name or UUID to assign.",
-                "markdownDescription": "Texture name or UUID to assign."
+                "minLength": 1,
+                "description": "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               },
               "channel": {
                 "type": "string",
@@ -5279,7 +4355,7 @@
     {
       "name": "save_material_config",
       "title": "Save Material Config",
-      "description": "Saves the material's texture_set.json file to disk (Bedrock format). Requires the color texture to have a valid file path.",
+      "description": "Saves one explicit material/texture group's texture_set.json file to disk (Bedrock format). Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before save behavior. Requires the color texture to have a valid file path.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5294,8 +4370,9 @@
             "properties": {
               "material": {
                 "type": "string",
-                "description": "Material name or UUID to save.",
-                "markdownDescription": "Material name or UUID to save."
+                "minLength": 1,
+                "description": "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique.",
+                "markdownDescription": "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique."
               }
             },
             "required": [
@@ -5310,7 +4387,7 @@
     {
       "name": "activate_texture",
       "title": "Activate Texture",
-      "description": "Activates the given texture in the Blockbench texture panel so that subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) target it. Most paint tools already call this internally when a texture_id is provided, but you can invoke it explicitly to pin the active texture across multiple calls.",
+      "description": "Activates one explicit texture in the Blockbench texture panel. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous references fail before the active texture selection changes. Subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) then target the activated texture by default.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -5324,8 +4401,9 @@
             "properties": {
               "texture": {
                 "type": "string",
-                "description": "Texture ID, UUID, or name to activate in the texture panel.",
-                "markdownDescription": "Texture ID, UUID, or name to activate in the texture panel."
+                "minLength": 1,
+                "description": "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
+                "markdownDescription": "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
               }
             },
             "required": [
@@ -5383,7 +4461,7 @@
       "name": "risky_eval",
       "title": "Eval",
       "description": "Evaluates the given expression and logs it to the console. Do not pass `console` commands as they will not work.",
-      "status": "stable",
+      "status": "experimental",
       "category": "UI Interaction",
       "annotations": {
         "destructiveHint": true,
@@ -5535,579 +4613,6 @@
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
       }
-    },
-    {
-      "name": "set_mesh_uv",
-      "title": "Set Mesh UV",
-      "description": "Sets UV coordinates for mesh faces or vertices.",
-      "status": "experimental",
-      "category": "UV Mapping",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/set_mesh_uv",
-        "definitions": {
-          "set_mesh_uv": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh.",
-                "markdownDescription": "ID or name of the mesh."
-              },
-              "face_key": {
-                "type": "string",
-                "description": "Face key to set UV for.",
-                "markdownDescription": "Face key to set UV for."
-              },
-              "uv_mapping": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "array",
-                  "items": {
-                    "type": "number"
-                  },
-                  "minItems": 2,
-                  "maxItems": 2,
-                  "description": "2D vector [x, y].",
-                  "markdownDescription": "2D vector [x, y]."
-                },
-                "description": "UV coordinates for each vertex of the face.",
-                "markdownDescription": "UV coordinates for each vertex of the face."
-              }
-            },
-            "required": [
-              "mesh_id",
-              "face_key",
-              "uv_mapping"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "auto_uv_mesh",
-      "title": "Auto UV Mesh",
-      "description": "Automatically generates UV mapping for selected mesh faces.",
-      "status": "experimental",
-      "category": "UV Mapping",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/auto_uv_mesh",
-        "definitions": {
-          "auto_uv_mesh": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "project",
-                  "unwrap",
-                  "cylinder",
-                  "sphere"
-                ],
-                "default": "project",
-                "description": "UV mapping mode: project from view, unwrap, cylinder, or sphere mapping.",
-                "markdownDescription": "UV mapping mode: project from view, unwrap, cylinder, or sphere mapping."
-              },
-              "faces": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Specific face keys to UV map. If not provided, maps all selected faces.",
-                "markdownDescription": "Specific face keys to UV map. If not provided, maps all selected faces."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "rotate_mesh_uv",
-      "title": "Rotate Mesh UV",
-      "description": "Rotates UV coordinates of selected mesh faces.",
-      "status": "experimental",
-      "category": "UV Mapping",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/rotate_mesh_uv",
-        "definitions": {
-          "rotate_mesh_uv": {
-            "type": "object",
-            "properties": {
-              "mesh_id": {
-                "type": "string",
-                "description": "ID or name of the mesh. If not provided, uses selected mesh.",
-                "markdownDescription": "ID or name of the mesh. If not provided, uses selected mesh."
-              },
-              "angle": {
-                "type": "string",
-                "enum": [
-                  "-90",
-                  "90",
-                  "180"
-                ],
-                "default": "90",
-                "description": "Rotation angle in degrees.",
-                "markdownDescription": "Rotation angle in degrees."
-              },
-              "faces": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Specific face keys to rotate UV for. If not provided, rotates all selected faces.",
-                "markdownDescription": "Specific face keys to rotate UV for. If not provided, rotates all selected faces."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_get_format_info",
-      "title": "Get Hytale Format Info",
-      "description": "Returns information about the current Hytale format. Requires the Hytale plugin and a Hytale format project to be active.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_get_format_info",
-        "definitions": {
-          "hytale_get_format_info": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_validate_model",
-      "title": "Validate Hytale Model",
-      "description": "Validates the current Hytale model against Hytale engine constraints (node count, UV sizes, etc.).",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_validate_model",
-        "definitions": {
-          "hytale_validate_model": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_set_cube_properties",
-      "title": "Set Hytale Cube Properties",
-      "description": "Sets Hytale-specific properties on a cube: shading_mode (flat, standard, fullbright, reflective) and double_sided.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_set_cube_properties",
-        "definitions": {
-          "hytale_set_cube_properties": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "description": "ID or name of the cube. If not provided, uses selected cube.",
-                "markdownDescription": "ID or name of the cube. If not provided, uses selected cube."
-              },
-              "shading_mode": {
-                "type": "string",
-                "enum": [
-                  "flat",
-                  "standard",
-                  "fullbright",
-                  "reflective"
-                ],
-                "description": "Shading mode: flat (no lighting), standard (normal), fullbright (emissive), reflective",
-                "markdownDescription": "Shading mode: flat (no lighting), standard (normal), fullbright (emissive), reflective"
-              },
-              "double_sided": {
-                "type": "boolean",
-                "description": "Whether to render both sides of faces",
-                "markdownDescription": "Whether to render both sides of faces"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_get_cube_properties",
-      "title": "Get Hytale Cube Properties",
-      "description": "Gets Hytale-specific properties from a cube (shading_mode, double_sided).",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_get_cube_properties",
-        "definitions": {
-          "hytale_get_cube_properties": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "description": "ID or name of the cube. If not provided, uses selected cube.",
-                "markdownDescription": "ID or name of the cube. If not provided, uses selected cube."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_create_quad",
-      "title": "Create Hytale Quad",
-      "description": "Creates a Hytale quad (2D plane) with a specified normal direction. Quads are single-face elements useful for flat surfaces.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_create_quad",
-        "definitions": {
-          "hytale_create_quad": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Name for the quad",
-                "markdownDescription": "Name for the quad"
-              },
-              "position": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Position [x, y, z]",
-                "markdownDescription": "Position [x, y, z]",
-                "default": [
-                  0,
-                  0,
-                  0
-                ]
-              },
-              "normal": {
-                "type": "string",
-                "enum": [
-                  "+X",
-                  "-X",
-                  "+Y",
-                  "-Y",
-                  "+Z",
-                  "-Z"
-                ],
-                "default": "+Y",
-                "description": "Normal direction: +X, -X, +Y, -Y, +Z, -Z",
-                "markdownDescription": "Normal direction: +X, -X, +Y, -Y, +Z, -Z"
-              },
-              "size": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 2,
-                "maxItems": 2,
-                "description": "Size [width, height].",
-                "markdownDescription": "Size [width, height].",
-                "default": [
-                  16,
-                  16
-                ]
-              },
-              "group": {
-                "type": "string",
-                "description": "Parent group/bone name",
-                "markdownDescription": "Parent group/bone name"
-              },
-              "double_sided": {
-                "type": "boolean",
-                "default": true,
-                "description": "Whether to render both sides",
-                "markdownDescription": "Whether to render both sides"
-              }
-            },
-            "required": [
-              "name"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_list_attachments",
-      "title": "List Hytale Attachments",
-      "description": "Lists all attachment collections in the current Hytale project.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_list_attachments",
-        "definitions": {
-          "hytale_list_attachments": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_set_attachment_piece",
-      "title": "Set Attachment Piece",
-      "description": "Marks or unmarks a group as an attachment piece. Attachment pieces attach to like-named bones in the main model.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_set_attachment_piece",
-        "definitions": {
-          "hytale_set_attachment_piece": {
-            "type": "object",
-            "properties": {
-              "group_name": {
-                "type": "string",
-                "description": "Name of the group to mark as attachment piece",
-                "markdownDescription": "Name of the group to mark as attachment piece"
-              },
-              "is_piece": {
-                "type": "boolean",
-                "description": "Whether the group is an attachment piece",
-                "markdownDescription": "Whether the group is an attachment piece"
-              }
-            },
-            "required": [
-              "group_name",
-              "is_piece"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_list_attachment_pieces",
-      "title": "List Attachment Pieces",
-      "description": "Lists all groups marked as attachment pieces.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_list_attachment_pieces",
-        "definitions": {
-          "hytale_list_attachment_pieces": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_create_visibility_keyframe",
-      "title": "Create Visibility Keyframe",
-      "description": "Creates a visibility keyframe for a bone. Hytale supports toggling node visibility at keyframes.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_create_visibility_keyframe",
-        "definitions": {
-          "hytale_create_visibility_keyframe": {
-            "type": "object",
-            "properties": {
-              "bone_name": {
-                "type": "string",
-                "description": "Name of the bone/group.",
-                "markdownDescription": "Name of the bone/group."
-              },
-              "time": {
-                "type": "number",
-                "description": "Time in seconds for the keyframe",
-                "markdownDescription": "Time in seconds for the keyframe"
-              },
-              "visible": {
-                "type": "boolean",
-                "description": "Whether the bone is visible at this keyframe",
-                "markdownDescription": "Whether the bone is visible at this keyframe"
-              },
-              "animation_id": {
-                "type": "string",
-                "description": "Animation UUID or name. If not provided, uses current animation.",
-                "markdownDescription": "Animation UUID or name. If not provided, uses current animation."
-              }
-            },
-            "required": [
-              "bone_name",
-              "time",
-              "visible"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_set_animation_loop",
-      "title": "Set Animation Loop Mode",
-      "description": "Sets the loop mode for a Hytale animation. Hytale supports \"loop\" (continuous) or \"hold\" (freeze on last frame).",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_set_animation_loop",
-        "definitions": {
-          "hytale_set_animation_loop": {
-            "type": "object",
-            "properties": {
-              "animation_id": {
-                "type": "string",
-                "description": "Animation UUID or name. If not provided, uses current animation.",
-                "markdownDescription": "Animation UUID or name. If not provided, uses current animation."
-              },
-              "loop_mode": {
-                "type": "string",
-                "enum": [
-                  "loop",
-                  "hold",
-                  "once"
-                ],
-                "description": "Loop mode: loop (continuous), hold (freeze on last frame), once (play once)",
-                "markdownDescription": "Loop mode: loop (continuous), hold (freeze on last frame), once (play once)"
-              }
-            },
-            "required": [
-              "loop_mode"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_set_cube_stretch",
-      "title": "Set Cube Stretch",
-      "description": "Sets the stretch values for a cube. Hytale uses stretch instead of float sizes for better UV handling.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_set_cube_stretch",
-        "definitions": {
-          "hytale_set_cube_stretch": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "description": "ID or name of the cube. If not provided, uses selected cube.",
-                "markdownDescription": "ID or name of the cube. If not provided, uses selected cube."
-              },
-              "stretch": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Stretch values [x, y, z].",
-                "markdownDescription": "Stretch values [x, y, z]."
-              }
-            },
-            "required": [
-              "stretch"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_get_cube_stretch",
-      "title": "Get Cube Stretch",
-      "description": "Gets the stretch values for a cube.",
-      "status": "experimental",
-      "category": "Hytale Integration",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/hytale_get_cube_stretch",
-        "definitions": {
-          "hytale_get_cube_stretch": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "description": "ID or name of the cube. If not provided, uses selected cube.",
-                "markdownDescription": "ID or name of the cube. If not provided, uses selected cube."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
     }
   ],
   "prompts": [
@@ -6128,7 +4633,7 @@
     {
       "name": "model_creation_strategy",
       "title": "Model Creation Strategy",
-      "description": "A strategy for creating a new 3D model in Blockbench.",
+      "description": "Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.",
       "status": "stable",
       "arguments": {
         "$ref": "#/definitions/model_creation_strategy",
@@ -6140,10 +4645,12 @@
                 "type": "string",
                 "enum": [
                   "java_block",
-                  "bedrock"
+                  "bedrock",
+                  "bedrock_block"
                 ],
-                "description": "Target model format.",
-                "markdownDescription": "Target model format."
+                "default": "bedrock",
+                "description": "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it.",
+                "markdownDescription": "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it."
               },
               "approach": {
                 "type": "string",
@@ -6152,8 +4659,8 @@
                   "programmatic",
                   "import"
                 ],
-                "description": "Creation approach to use.",
-                "markdownDescription": "Creation approach to use."
+                "description": "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required.",
+                "markdownDescription": "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required."
               }
             },
             "additionalProperties": false
@@ -6161,72 +4668,6 @@
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
       }
-    },
-    {
-      "name": "hytale_model_creation",
-      "title": "Hytale Model Creation Guide",
-      "description": "Comprehensive guide for creating Hytale character and prop models. Covers format selection, node limits, shading modes, stretch, quads, and best practices.",
-      "status": "experimental",
-      "arguments": {
-        "$ref": "#/definitions/hytale_model_creation",
-        "definitions": {
-          "hytale_model_creation": {
-            "type": "object",
-            "properties": {
-              "format_type": {
-                "type": "string",
-                "enum": [
-                  "character",
-                  "prop",
-                  "both"
-                ],
-                "description": "Which format type to focus on.",
-                "markdownDescription": "Which format type to focus on.",
-                "default": "both"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_animation_workflow",
-      "title": "Hytale Animation Workflow",
-      "description": "Guide for creating animations for Hytale models. Covers 60 FPS timing, quaternion rotations, visibility keyframes, loop modes, and common animation patterns.",
-      "status": "experimental",
-      "arguments": {
-        "$ref": "#/definitions/hytale_animation_workflow",
-        "definitions": {
-          "hytale_animation_workflow": {
-            "type": "object",
-            "properties": {
-              "animation_type": {
-                "type": "string",
-                "enum": [
-                  "walk",
-                  "idle",
-                  "attack",
-                  "general"
-                ],
-                "description": "Type of animation to focus on.",
-                "markdownDescription": "Type of animation to focus on.",
-                "default": "general"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "hytale_attachments",
-      "title": "Hytale Attachments System",
-      "description": "Guide for creating and managing attachments in Hytale models. Covers attachment collections, piece bones, modular equipment, and best practices.",
-      "status": "experimental",
-      "arguments": null
     }
   ],
   "resources": [
@@ -6277,30 +4718,6 @@
       "title": "Validator Errors",
       "description": "Returns all current validation errors with element references where available.",
       "uriTemplate": "validator://errors"
-    },
-    {
-      "name": "hytale-format",
-      "title": "Hytale Format Information",
-      "description": "Returns comprehensive information about the current Hytale format, including format type, block size, node limits, and feature support.",
-      "uriTemplate": "hytale://format"
-    },
-    {
-      "name": "hytale-attachments",
-      "title": "Hytale Attachments",
-      "description": "Returns information about attachment collections. List URIs use slugified collection names (e.g. `hytale://attachments/helmet`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
-      "uriTemplate": "hytale://attachments/{id}"
-    },
-    {
-      "name": "hytale-pieces",
-      "title": "Hytale Attachment Pieces",
-      "description": "Returns groups marked as attachment pieces — they connect to like-named bones in the main model. List URIs use slugified bone names (e.g. `hytale://pieces/hand-right`) with `~<uuid-prefix>` on collision.",
-      "uriTemplate": "hytale://pieces/{id}"
-    },
-    {
-      "name": "hytale-cubes",
-      "title": "Hytale Cubes",
-      "description": "Returns cubes with Hytale-specific properties (shading_mode, double_sided, stretch). List URIs use slugified cube names (e.g. `hytale://cubes/torso`) with `~<uuid-prefix>` on collision.",
-      "uriTemplate": "hytale://cubes/{id}"
     }
   ]
 }
