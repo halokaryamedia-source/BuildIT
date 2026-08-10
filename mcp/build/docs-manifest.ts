@@ -6,6 +6,7 @@ import { cameraToolDocs } from "../server/tools/camera";
 import { cubeToolDocs } from "../server/tools/cubes";
 import { elementToolDocs } from "../server/tools/element";
 import { elementInspectionToolDocs } from "../server/tools/element-inspection";
+import { locatorToolDocs } from "../server/tools/locators";
 import { importToolDocs } from "../server/tools/import";
 import { paintToolDocs } from "../server/tools/paint";
 import { projectToolDocs } from "../server/tools/project";
@@ -26,7 +27,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
   { category: "Animation", tools: [...animationToolDocs, ...animationInspectionToolDocs] },
-  { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs] },
+  { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs, ...locatorToolDocs] },
   { category: "Export", tools: exportToolDocs },
   { category: "History", tools: historyToolDocs },
   { category: "Import/Export", tools: importToolDocs },
