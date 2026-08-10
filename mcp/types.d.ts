@@ -46,4 +46,56 @@ declare global {
     /** Bedrock MER subsurface channel value, 0-255. */
     subsurface_value: number;
   }
+
+  /**
+   * Small runtime-only Painter surface proven by Blockbench's official
+   * `js/texturing/painter.js` implementation but omitted/read-only in the
+   * published declarations. Paint tools cast to this interface locally.
+   */
+  interface BlockbenchRuntimePainter {
+    startPaintTool(
+      texture: Texture,
+      x: number,
+      y: number,
+      uvTag: unknown,
+      event: Record<string, unknown>,
+      data?: unknown
+    ): void;
+    movePaintTool(
+      texture: Texture,
+      x: number,
+      y: number,
+      event: Record<string, unknown>,
+      newFace?: boolean,
+      uv?: unknown
+    ): void;
+    stopPaintTool(): void;
+    useShapeTool(
+      texture: Texture,
+      x: number,
+      y: number,
+      event: Record<string, unknown>,
+      uv?: unknown
+    ): void;
+    useGradientTool(
+      texture: Texture,
+      x: number,
+      y: number,
+      event: Record<string, unknown>,
+      uv?: unknown
+    ): void;
+    colorPicker(
+      texture: Texture,
+      x: number,
+      y: number,
+      event: Record<string, unknown>
+    ): void;
+    mirror_painting: boolean;
+    lock_alpha: boolean;
+    erase_mode: boolean;
+    mirror_painting_options: Record<string, unknown> & {
+      texture?: boolean;
+      texture_center?: [number, number];
+    };
+  }
 }
