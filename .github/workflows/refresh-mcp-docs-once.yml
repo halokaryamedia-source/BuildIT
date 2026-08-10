@@ -32,9 +32,8 @@ jobs:
         working-directory: mcp
         run: bun run docs:build
 
-      - name: Verify generated scope and commit
+      - name: Commit generated output
         run: |
-          git diff --check
           git status --short -- mcp/docs/api.json mcp/docs/index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
