@@ -10,14 +10,14 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 Stabilize and reduce the BlockIT MCP foundation before normal feature hardening resumes.
 
-P0.1 local network containment is now implemented in source. Runtime/network proof remains local. The next source boundary is P0.2 dangerous default capability containment.
+P0.1 local network containment and P0.2 dangerous default capability containment are now implemented in source. Runtime/network/tool-list proof remains local. The next source boundary is P0.3 real MCP schema enforcement + annotations.
 
 ## Current Status
 
-`MCP_P0_NETWORK_CONTAINMENT_SOURCE_COMPLETE_DANGEROUS_DEFAULTS_NEXT`
+`MCP_P0_DANGEROUS_DEFAULTS_SOURCE_COMPLETE_SCHEMA_ENFORCEMENT_NEXT`
 
 Execution channel now: **ChatGPT → GitHub**.  
-Local Blockbench/network testing remains required for runtime proof.
+Local Blockbench/MCP testing remains required for runtime proof.
 
 ## Governing Evidence
 
@@ -90,7 +90,7 @@ Until P0/P1 core stabilization is complete:
 
 The known `animation_timeline.select_range` selection-lifecycle defect remains valid but parked.
 
-# Latest Completed Slice — P0.1 Local Transport Containment
+# Completed Slice — P0.1 Local Transport Containment
 
 Primary owners:
 
@@ -147,8 +147,6 @@ with a JSON-RPC-shaped error body. Requests that omit `Origin` preserve the prev
 - no tool/schema/registration changes;
 - no Animation, Geometry, Texture, Mesh, Paint, or export changes.
 
-GitHub has no registered CI/status checks for the source commit.
-
 ## P0.1 proof boundary
 
 Static source/diff proves:
@@ -170,12 +168,85 @@ browser/proxy compatibility
 normal tool call after initialization
 ```
 
+# Latest Completed Slice — P0.2 Dangerous Default Capability Containment
+
+Primary owners:
+
+```text
+mcp/server/tools/ui.ts
+mcp/server/tools/import.ts
+```
+
+Existing registration semantics confirmed in:
+
+```text
+mcp/lib/factories.ts
+```
+
+Source commit:
+
+```text
+33bd7ab2a9cec674fb2183cb178fa24e1727b4e9
+fix: disable dangerous default MCP tools
+```
+
+## Implemented source contract
+
+The existing fourth `createTool()` argument is now used to disable only:
+
+```text
+risky_eval      enabled=false
+from_geo_json   enabled=false
+```
+
+`createTool()` therefore preserves both tool definitions in local metadata/source while omitting their initial MCP registration. Existing `getEnabledToolDefinitions()` / `registerToolsOnServer()` behavior also excludes them from reconstructed session servers.
+
+`risky_eval` metadata is reclassified:
+
+```text
+Stable → Experimental
+```
+
+No sandbox or replacement generic execution/import mechanism was introduced.
+
+## P0.2 intentionally unchanged
+
+- no `mcp/lib/factories.ts` redesign;
+- no capability-profile framework;
+- no broader UI/import family gating;
+- no transport/session changes;
+- no SDK/protocol changes;
+- no Animation, Geometry, Texture, Paint, Mesh, Armature, export, or generated-doc changes.
+
+GitHub has no registered CI/status checks for the source commit.
+
+## P0.2 proof boundary
+
+Exact source diff proves:
+
+```text
+risky_eval uses enabled=false
+from_geo_json uses enabled=false
+risky_eval is no longer Stable metadata
+other UI tools are unchanged
+no full capability-profile framework was introduced
+```
+
+Still `LOCAL PROOF REQUIRED`:
+
+```text
+tools/list omits risky_eval
+tools/list omits from_geo_json
+remaining intended default tools still register
+no server initialization regression
+```
+
 # Current Work Order
 
 ```text
 P0.1  loopback + Origin containment              SOURCE COMPLETE / LOCAL PROOF PENDING
-P0.2  dangerous default capability containment   ← ACTIVE NEXT SLICE
-P0.3  full-schema validation + real annotations
+P0.2  dangerous default capability containment   SOURCE COMPLETE / LOCAL PROOF PENDING
+P0.3  full-schema validation + real annotations  ← ACTIVE NEXT SLICE
 P0.4  typecheck/tests/root CI
 P0.5  generated-doc freshness
 
@@ -188,23 +259,15 @@ P1.5  local end-to-end core acceptance
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P0.2 Only
+# Next Step — P0.3 Only
 
-Contain **only the two highest-risk generic default capabilities**:
+Make the **existing MCP tool factory** the real public-contract owner.
 
-```text
-risky_eval
-from_geo_json
-```
-
-Primary source owners:
+Primary source owner:
 
 ```text
-mcp/server/tools/ui.ts
-mcp/server/tools/import.ts
+mcp/lib/factories.ts
 ```
-
-Inspect `mcp/lib/factories.ts` only to confirm the existing enabled/disabled registration semantics; do not redesign the factory in this slice.
 
 Primary specialist:
 
@@ -212,50 +275,56 @@ Primary specialist:
 mcp-server-development
 ```
 
-## Grounded existing mechanism
-
-`createTool()` already accepts an `enabled` boolean. Disabled tools remain represented in local metadata but are not registered on the current server, and `registerToolsOnServer()` filters session reconstruction through enabled tool definitions.
-
-Use that existing mechanism instead of building the P1 capability-profile system early.
+Before editing, inspect the installed current SDK types/runtime registration path and the existing Zod schema handling. Stay on the current SDK line; do not migrate protocol/SDK in this slice.
 
 ## Required behavior
 
-1. `risky_eval` must no longer be registered in the default MCP tool surface;
-2. `from_geo_json` must no longer be registered in the default MCP tool surface;
-3. reclassify `risky_eval` away from Stable/default semantics;
-4. preserve source temporarily so removal/review remains explicit and reversible;
-5. do not build a sandbox around `eval`;
-6. do not create a replacement generic import/execution framework;
-7. do not gate all UI/import families yet — P1 owns broader family profiles;
-8. do not modify factories, transport, sessions, Animation, Geometry, Texture, Paint, Mesh, Armature, export, or generated docs unless direct source proof makes a minimal related change unavoidable;
-9. inspect the exact source diff immediately;
-10. advance to exactly P0.3 after this slice is recorded.
+1. preserve each tool's original complete Zod schema for execution;
+2. validate callback args through that complete schema before tool logic runs so top-level `.refine()` / `.superRefine()` rules cannot disappear;
+3. continue supplying the installed v1 SDK-compatible `inputSchema` representation required for registration;
+4. pass supported tool annotations through both initial registration and reconstructed session registration;
+5. include `idempotentHint` in local annotation typing only if the installed SDK supports it;
+6. keep initial and reconstructed registration behavior contract-equivalent;
+7. do not duplicate validation inside individual tools to compensate for the factory;
+8. keep schema construction free of Blockbench globals;
+9. do not change tool behavior outside what is required by real schema/annotation enforcement;
+10. do not add tests/CI framework early — P0.4 owns the engineering gate;
+11. inspect the exact source diff immediately after implementation;
+12. advance to exactly P0.4 only after P0.3 is recorded.
+
+## Error policy
+
+Input-contract failure must become a real failed tool call / SDK validation error, not an ordinary successful text result.
+
+Tool implementations may continue returning targeted application-level errors for validly-shaped inputs when useful.
 
 ## Static acceptance
 
 Must prove from source/diff:
 
 ```text
-risky_eval enabled=false (or equivalent existing registration disable path)
-from_geo_json enabled=false (or equivalent existing registration disable path)
-risky_eval is no longer Stable/default metadata
-other UI tools remain unchanged
-no full capability-profile framework introduced
+complete Zod schema is retained for runtime validation
+initial tool execution validates args through the complete schema
+reconstructed-session execution validates args through the same complete schema
+supported annotations are passed to both registration paths
+no per-tool validation workaround was introduced
+no SDK/protocol migration or unrelated feature-family change was introduced
 ```
 
-## Local proof required
+## Runtime / later regression proof required
 
-Later local MCP inspection must confirm:
+Local MCP/Blockbench or the P0.4 targeted contract-test gate must confirm:
 
 ```text
-tools/list omits risky_eval
-tools/list omits from_geo_json
-remaining intended default tools still register
-no server initialization regression
+a top-level .refine() invalid input is rejected before tool logic
+a .superRefine() invalid input is rejected before tool logic
+tool annotations are visible through tools/list / MCP Inspector
+reconstructed session registration exposes the same schema/annotation behavior
+normal valid tool execution still works
 ```
 
 ## Proof Boundary
 
 ChatGPT → GitHub may prove source/API/control-flow and exact diff only.
 
-Actual network bind behavior, MCP tool-list visibility, Blockbench runtime behavior, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
+Actual network bind behavior, MCP tool-list visibility, SDK runtime rejection behavior, Blockbench runtime behavior, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
