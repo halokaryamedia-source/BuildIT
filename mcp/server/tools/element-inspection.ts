@@ -9,7 +9,7 @@ export const inspectElementParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Exact element UUID or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria."
+      "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria."
     ),
 });
 
@@ -28,12 +28,9 @@ export const elementInspectionToolDocs: ToolSpec[] = [
 ];
 
 type InspectableElement = Cube | Group;
-type CandidateElement = Cube | Group | Mesh;
 
-function elementType(element: CandidateElement): "cube" | "group" | "mesh" {
-  if (element instanceof Cube) return "cube";
-  if (element instanceof Group) return "group";
-  return "mesh";
+function elementType(element: InspectableElement): "cube" | "group" {
+  return element instanceof Cube ? "cube" : "group";
 }
 
 function resolveInspectableElement(reference: string): InspectableElement {
@@ -43,21 +40,13 @@ function resolveInspectableElement(reference: string): InspectableElement {
     );
   }
 
-  const candidates: CandidateElement[] = [
+  const candidates: InspectableElement[] = [
     ...Cube.all,
     ...Group.all,
-    ...Mesh.all,
   ];
 
   const uuidMatch = candidates.find((element) => element.uuid === reference);
-  if (uuidMatch) {
-    if (uuidMatch instanceof Mesh) {
-      throw new Error(
-        `Element "${reference}" is a Mesh. inspect_element v1 intentionally supports Cube/Group authored state only for the normal Bedrock Cuboid fidelity loop.`
-      );
-    }
-    return uuidMatch;
-  }
+  if (uuidMatch) return uuidMatch;
 
   const nameMatches = candidates.filter((element) => element.name === reference);
   if (nameMatches.length > 1) {
@@ -72,15 +61,7 @@ function resolveInspectableElement(reference: string): InspectableElement {
     );
   }
 
-  if (nameMatches.length === 1) {
-    const match = nameMatches[0];
-    if (match instanceof Mesh) {
-      throw new Error(
-        `Element "${reference}" is a Mesh. inspect_element v1 intentionally supports Cube/Group authored state only for the normal Bedrock Cuboid fidelity loop.`
-      );
-    }
-    return match;
-  }
+  if (nameMatches.length === 1) return nameMatches[0];
 
   throw new Error(
     `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to locate the intended Cube/Group and then inspect it by UUID.`
