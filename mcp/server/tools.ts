@@ -16,6 +16,7 @@ import { registerAnimationInspectionTools } from "./tools/animation-inspection";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
 import { registerElementInspectionTools } from "./tools/element-inspection";
+import { registerLocatorTools } from "./tools/locators";
 import { registerImportTools } from "./tools/import";
 import { registerPaintTools } from "./tools/paint";
 import { registerProjectTools } from "./tools/project";
@@ -30,6 +31,11 @@ import { registerValidatorResources } from "./resources/validator";
 
 type RegistrationFunction = () => void;
 
+function registerElementFamilyTools(): void {
+  registerElementTools();
+  registerLocatorTools();
+}
+
 /**
  * Registration ownership stays family-level. The profile selects which existing
  * family registration functions are invoked; it does not introduce per-tool
@@ -43,7 +49,7 @@ const registrationFunctions: Record<
   animation_inspection: registerAnimationInspectionTools,
   camera: registerCameraTools,
   cubes: registerCubesTools,
-  elements: registerElementTools,
+  elements: registerElementFamilyTools,
   element_inspection: registerElementInspectionTools,
   export: registerExportTools,
   history: registerHistoryTools,
