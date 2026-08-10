@@ -345,3 +345,15 @@ UI truthfulness in the running plugin
 ```
 
 Do not start P1.5 until that focused P1.4 local transport proof passes or records a concrete blocking defect.
+
+## Non-local compatibility follow-up
+
+The strongest non-local compatibility evidence is recorded separately at:
+
+```text
+docs/knowledge/reviews/mcp-p1-4-nonlocal-compatibility-proof-2026-08-10.md
+```
+
+It records the pinned TypeScript SDK stateless example, current Codex direct Streamable HTTP path, exact `rmcp-v3.0.0` stateless behavior, Codex's current `2025-06-18` initialization revision, pinned-SDK executable request sequencing, raw `node:net` TCP integration, canonical 32/32 test proof, and the prepared local smoke command.
+
+This follow-up does **not** change the decision or proof boundary: P1.4 remains source/non-local complete with real Blockbench + Codex runtime proof still required before P1.5.

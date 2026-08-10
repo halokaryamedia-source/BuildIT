@@ -24,6 +24,8 @@ Execution channel: **ChatGPT → GitHub**.
 Working branch: **`Local` only**.  
 Live Blockbench/MCP behavior remains local proof where applicable.
 
+Latest P1.4 non-local compatibility proof: `docs/knowledge/reviews/mcp-p1-4-nonlocal-compatibility-proof-2026-08-10.md`.
+
 ## Governing Evidence
 
 Primary audit:
