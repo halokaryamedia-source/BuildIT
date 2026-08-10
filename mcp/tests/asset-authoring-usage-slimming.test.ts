@@ -45,6 +45,27 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(exportModelParameters.parse({ path: "/tmp/model.json", max_content_length: 500 }).max_content_length).toBe(500);
   });
 
+  test("filesystem export path must be platform-absolute", () => {
+    for (const path of [
+      "/tmp/model.json",
+      "C:\\Exports\\model.json",
+      "D:/Exports/model.bbmodel",
+      "\\\\server\\share\\model.json",
+    ]) {
+      expect(exportModelParameters.safeParse({ path }).success).toBe(true);
+    }
+
+    for (const path of [
+      "",
+      "model.json",
+      "exports/model.json",
+      ".\\model.json",
+      "C:model.json",
+    ]) {
+      expect(exportModelParameters.safeParse({ path }).success).toBe(false);
+    }
+  });
+
   test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {
     const files = await Promise.all([
       source("server/tools/element-inspection.ts"),

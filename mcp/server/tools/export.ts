@@ -9,6 +9,14 @@ const blockitModelCodecEnum = z.enum(BLOCKIT_MODEL_CODEC_IDS);
 
 export const listExportFormatsParameters = z.object({});
 
+function isAbsoluteOutputPath(value: string): boolean {
+  return (
+    value.startsWith("/") ||
+    /^[A-Za-z]:[\\/]/.test(value) ||
+    /^\\\\[^\\]+\\[^\\]+(?:\\|$)/.test(value)
+  );
+}
+
 export const exportModelParameters = z.object({
   codec_id: blockitModelCodecEnum
     .optional()
@@ -24,6 +32,10 @@ export const exportModelParameters = z.object({
     ),
   path: z
     .string()
+    .refine(isAbsoluteOutputPath, {
+      message:
+        "Export path must be absolute: use a POSIX `/...` path, a Windows drive path such as `C:\\...`, or a UNC path such as `\\\\server\\share\\...`.",
+    })
     .optional()
     .describe(
       "Optional absolute output path; requires Blockbench filesystem permission."
