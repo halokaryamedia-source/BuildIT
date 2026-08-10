@@ -47,11 +47,12 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(workflow).toContain("`BLOCKED`");
   });
 
-  test("next work remains problem-driven after correction accuracy", async () => {
+  test("correction safeguards remain active as problem-driven work advances", async () => {
     const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain(
-      "MCP_MODEL_EFFECTIVENESS_CORRECTION_ACCURACY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED"
+    expect(next).toContain("correction accuracy");
+    expect(next).toContain("tool-choice / context friction");
+    expect(next).not.toContain(
+      "The next bounded modelling problem is:\n\n```text\nP1 — correction accuracy"
     );
-    expect(next).toContain("P1 — tool-choice / context friction");
   });
 });
