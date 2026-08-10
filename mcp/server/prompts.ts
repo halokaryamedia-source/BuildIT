@@ -2,29 +2,39 @@ import { z } from "zod";
 import { createPrompt, prompts } from "@/lib/factories";
 import { getPromptContent } from "@/lib/promptLoader";
 
-createPrompt("blockbench_native_apis", {
-  description:
-    "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
-  argsSchema: z.object({}),
-  async generate() {
-    const text = getPromptContent("blockbench_native_apis");
-    return {
-      messages: [{ role: "user", content: { type: "text", text } }],
-    };
+createPrompt(
+  "blockbench_native_apis",
+  {
+    description:
+      "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
+    argsSchema: z.object({}),
+    async generate() {
+      const text = getPromptContent("blockbench_native_apis");
+      return {
+        messages: [{ role: "user", content: { type: "text", text } }],
+      };
+    },
   },
-});
+  "stable",
+  false
+);
 
-createPrompt("blockbench_code_eval_safety", {
-  description:
-    "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage. MUST READ before generating or executing Blockbench plugin code.",
-  argsSchema: z.object({}),
-  async generate() {
-    const text = getPromptContent("blockbench_code_eval_safety");
-    return {
-      messages: [{ role: "user", content: { type: "text", text } }],
-    };
+createPrompt(
+  "blockbench_code_eval_safety",
+  {
+    description:
+      "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage. MUST READ before generating or executing Blockbench plugin code.",
+    argsSchema: z.object({}),
+    async generate() {
+      const text = getPromptContent("blockbench_code_eval_safety");
+      return {
+        messages: [{ role: "user", content: { type: "text", text } }],
+      };
+    },
   },
-});
+  "stable",
+  false
+);
 
 createPrompt("model_creation_strategy", {
   description:
