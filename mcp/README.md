@@ -34,7 +34,6 @@ Settings are under Blockbench **Settings → General**:
 
 - MCP Server Port
 - MCP Server Endpoint
-- Optional prompt CDN fallback (off by default)
 - Extended MCP Families (off by default)
 
 The Extended toggle exposes only source-preserved generic fallback families; individually quarantined tools such as `risky_eval` and `from_geo_json` remain disabled.

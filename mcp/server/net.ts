@@ -1,5 +1,5 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
-import type { Server as NetServer, Socket } from 'node:net'
+import type { Server as NodeNetServer, Socket } from 'node:net'
 import {
   registerToolsOnServer,
   registerResourcesOnServer,
@@ -12,7 +12,9 @@ import {
 } from '@/lib/registrationProfile'
 import { createProductIdentity } from '@/lib/productIdentity'
 
-export type { NetServer }
+export interface NetServer extends NodeNetServer {
+  closeActiveSockets(): void
+}
 
 function getStatusText (status: number): string {
   const texts: Record<number, string> = {
@@ -109,7 +111,7 @@ async function handleStatelessMcpRequest (
 export default function createNetServer (
   {
     createServer
-  }: { createServer: (callback: (socket: Socket) => void) => NetServer },
+  }: { createServer: (callback: (socket: Socket) => void) => NodeNetServer },
   {
     port,
     endpoint,
@@ -122,7 +124,9 @@ export default function createNetServer (
     profile?: McpRegistrationProfile
   }
 ): NetServer {
+  const activeSockets = new Set<Socket>()
   const httpServer = createServer((socket: Socket) => {
+    activeSockets.add(socket)
     let buffer = Buffer.alloc(0)
     let socketEnded = false
     let processing = false
@@ -142,6 +146,7 @@ export default function createNetServer (
 
     socket.on('close', () => {
       buffer = Buffer.alloc(0)
+      activeSockets.delete(socket)
     })
 
     async function processBufferedRequests (): Promise<void> {
@@ -409,7 +414,14 @@ export default function createNetServer (
 
       return true
     }
-  })
+  }) as NetServer
+
+  httpServer.closeActiveSockets = () => {
+    for (const socket of activeSockets) {
+      socket.destroy()
+    }
+    activeSockets.clear()
+  }
 
   httpServer.listen(port, host, () => {
     console.log(`[MCP] Server listening on http://${host}:${port}${endpoint}`)

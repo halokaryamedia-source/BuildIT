@@ -7,7 +7,6 @@ import {
   registerToolsOnServer,
   tools,
 } from "@/lib/factories";
-import { setServer } from "@/server/server";
 import { registerImportTools } from "@/server/tools/import";
 import { registerUITools } from "@/server/tools/ui";
 
@@ -64,8 +63,6 @@ async function expectRejectedBeforeExecution(
 describe("P0 MCP contract regressions", () => {
   test("initial registration preserves top-level refine validation and annotations", async () => {
     const capture = createCaptureServer();
-    setServer(capture.server as never);
-
     const parameters = z
       .object({ value: z.number() })
       .refine(({ value }) => value > 0, {
@@ -91,6 +88,7 @@ describe("P0 MCP contract regressions", () => {
       "experimental"
     );
 
+    registerToolsOnServer(capture.server);
     const registration = capture.registrations.get("p0_refine_contract_fixture");
     expect(registration).toBeDefined();
     if (!registration) throw new Error("Fixture tool was not registered.");
@@ -116,8 +114,6 @@ describe("P0 MCP contract regressions", () => {
 
   test("reconstructed registration preserves superRefine validation and annotations", async () => {
     const initialCapture = createCaptureServer();
-    setServer(initialCapture.server as never);
-
     const parameters = z
       .object({ start: z.number(), end: z.number() })
       .superRefine(({ start, end }, ctx) => {
@@ -176,10 +172,9 @@ describe("P0 MCP contract regressions", () => {
 
   test("dangerous default tools remain disabled while other UI tools register", () => {
     const capture = createCaptureServer();
-    setServer(capture.server as never);
-
     registerUITools();
     registerImportTools();
+    registerToolsOnServer(capture.server);
 
     expect(capture.registrations.has("risky_eval")).toBe(false);
     expect(capture.registrations.has("from_geo_json")).toBe(false);

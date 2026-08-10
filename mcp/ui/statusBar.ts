@@ -1,12 +1,22 @@
 import statusBarCSS from "@/ui/statusBar.css";
 
 let statusBarElement: HTMLDivElement | undefined;
+let statusBarCssHandle: { delete(): void } | undefined;
 
 export function statusBarSetup(): void {
+  statusBarTeardown();
+
   const port = Settings.get("mcp_port") || 3000;
   const endpoint = Settings.get("mcp_endpoint") || "/bb-mcp";
+  statusBarCssHandle = Blockbench.addCSS(statusBarCSS);
 
-  Blockbench.addCSS(statusBarCSS);
+  const existingStatusBar = document.getElementById("status_bar");
+  if (!existingStatusBar) {
+    console.warn("Could not find status_bar element");
+    statusBarCssHandle.delete();
+    statusBarCssHandle = undefined;
+    return;
+  }
 
   statusBarElement = document.createElement("div");
   statusBarElement.id = "mcp-status-bar";
@@ -15,8 +25,6 @@ export function statusBarSetup(): void {
   statusIndicator.className = "mcp-status-indicator";
   statusIndicator.title = tl("mcp.tooltip.click_to_view_panel");
 
-  // Keep the neutral status dot. Stateless Streamable HTTP has no durable MCP
-  // session whose presence could truthfully drive a connected/disconnected UI.
   const statusDot = document.createElement("div");
   statusDot.className = "mcp-status-dot";
 
@@ -36,34 +44,20 @@ export function statusBarSetup(): void {
   statusIndicator.addEventListener("click", () => {
     // @ts-ignore - Blockbench Panel types
     const mcpPanel = Panels.mcp_panel;
-
-    if (!mcpPanel) {
-      return;
-    }
-
+    if (!mcpPanel) return;
     if (mcpPanel.folded) {
       mcpPanel.fold(false);
       return;
     }
-
-    if (mcpPanel.slot === "float") {
-      mcpPanel.moveToFront();
-    }
+    if (mcpPanel.slot === "float") mcpPanel.moveToFront();
   });
-
-  const existingStatusBar = document.getElementById("status_bar");
-
-  if (!existingStatusBar) {
-    console.warn("Could not find status_bar element");
-    return;
-  }
 
   existingStatusBar.appendChild(statusBarElement);
 }
 
 export function statusBarTeardown(): void {
-  if (statusBarElement) {
-    statusBarElement.remove();
-    statusBarElement = undefined;
-  }
+  statusBarElement?.remove();
+  statusBarElement = undefined;
+  statusBarCssHandle?.delete();
+  statusBarCssHandle = undefined;
 }

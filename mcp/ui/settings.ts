@@ -2,19 +2,11 @@ import { MCP_EXTENDED_FAMILIES_SETTING_ID } from "@/lib/registrationProfile";
 
 const settings: Setting[] = [];
 
-export function settingsSetup() {
+export function settingsSetup(): void {
+  settingsTeardown();
   const category = "general";
 
   settings.push(
-    new Setting("mcp_instructions", {
-      name: tl("mcp.settings.instructions_name"),
-      description: tl("mcp.settings.instructions_desc"),
-      type: "text",
-      value:
-        "Create or revise Minecraft Bedrock Entity models with explicit Cube/Group structure and evidence-backed visual checks.",
-      category,
-      icon: "psychology",
-    }),
     new Setting("mcp_port", {
       name: tl("mcp.settings.port_name"),
       description: tl("mcp.settings.port_desc"),
@@ -31,16 +23,6 @@ export function settingsSetup() {
       category,
       icon: "webhook",
     }),
-    new Setting("mcp_prompt_cdn_enabled", {
-      name: tl("mcp.settings.prompt_cdn_name"),
-      description: tl("mcp.settings.prompt_cdn_desc"),
-      type: "toggle",
-      // Local bundled prompts are authoritative. CDN content is an optional
-      // fallback for prompt names not provided by the Local build.
-      value: false,
-      category,
-      icon: "cloud_download",
-    }),
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
       name: "Extended MCP Families",
       description:
@@ -53,8 +35,8 @@ export function settingsSetup() {
   );
 }
 
-export function settingsTeardown() {
-  settings.forEach((setting) => {
+export function settingsTeardown(): void {
+  for (const setting of settings.splice(0)) {
     setting.delete();
-  });
+  }
 }

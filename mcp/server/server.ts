@@ -1,38 +1,12 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
-import { VERSION } from "@/lib/constants";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { PRODUCT_NAME, PRODUCT_VERSION } from "@/lib/productIdentity";
 
-let serverInstance: McpServer | null = null;
-
-/**
- * Creates a new MCP server instance using the official SDK
- */
-export function createServer() {
+/** Create one request-owned MCP server instance. */
+export function createServer(): McpServer {
   return new McpServer({
-    name: "Blockbench MCP",
-    version: VERSION,
+    name: PRODUCT_NAME,
+    version: PRODUCT_VERSION,
   });
 }
-
-/**
- * Gets the current server instance
- */
-export function getServer() {
-  if (!serverInstance) {
-    serverInstance = createServer();
-  }
-  return serverInstance;
-}
-
-/**
- * Replaces the current server instance with a new one
- * @param newServer - The new server instance
- */
-export function setServer(newServer: McpServer) {
-  serverInstance = newServer;
-}
-
-// Export the default server instance
-const server = getServer();
-export default server;

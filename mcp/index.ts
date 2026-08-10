@@ -66,14 +66,9 @@ BBPlugin.register("mcp", {
     );
     registerMcpProfile(registrationProfile);
 
-    // Local prompt content is bundled into the plugin and remains the default
-    // authority. Optional CDN content is loaded only as fallback when enabled.
-    try {
-      const cdnEnabled = Settings.get("mcp_prompt_cdn_enabled") === true;
-      await initPromptLoader(cdnEnabled);
-    } catch (err) {
-      console.error("[MCP] Prompt loader initialization failed:", err);
-    }
+    // Local prompt content is bundled into this BlockIT build. User overrides
+    // remain local; normal plugin startup performs no prompt-network fetch.
+    await initPromptLoader();
 
     // P1.4 default transport is request-owned/stateless Streamable HTTP on
     // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
@@ -96,6 +91,7 @@ BBPlugin.register("mcp", {
   onunload() {
     if (httpServer) {
       httpServer.close();
+      httpServer.closeActiveSockets();
       httpServer = null;
     }
 

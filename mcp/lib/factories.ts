@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { IMCPTool, IMCPPrompt, IMCPResource, StatusType } from "@/types";
-import { getServer } from "@/server/server";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type {
   GetPromptResult,
@@ -86,7 +85,7 @@ interface ToolDefinition {
 }
 
 /**
- * Store tool definitions for dynamic server reconstruction
+ * Store tool definitions for request-owned server reconstruction
  */
 const toolDefinitions: Record<string, ToolDefinition> = {};
 
@@ -154,62 +153,6 @@ export function createTool<T extends z.ZodType>(
   // Store tool definition
   toolDefinitions[name] = toolDef;
 
-  // Register with server if enabled
-  if (enabled) {
-    type ToolArgs = z.infer<T>;
-
-    const server = getServer();
-
-    const registerTool = server.registerTool.bind(server) as unknown as (
-      toolName: string,
-      definition: {
-        title: string;
-        description: string;
-        inputSchema: Record<string, z.ZodType>;
-        annotations?: ToolAnnotations;
-      },
-      callback: (args: unknown, extra: unknown) => Promise<unknown>
-    ) => void;
-
-    registerTool(
-      name,
-      {
-        title: toolDef.title,
-        description: toolDef.description,
-        inputSchema,
-        annotations: toolDef.annotations,
-      },
-      async (args: unknown, _extra: unknown) => {
-        // Provide a no-op reportProgress function
-        // Note: Progress notifications require SSE streaming which is not enabled
-        // in the current StreamableHTTPServerTransport configuration (enableJsonResponse: true)
-        const reportProgress: ToolContext["reportProgress"] = () => {};
-
-        const context: ToolContext = { reportProgress };
-        const validatedArgs = (await tool.parameters.parseAsync(args)) as ToolArgs;
-        const result = await tool.execute(validatedArgs, context);
-
-        // Normalize result to MCP CallToolResult format
-        // Tools may return plain strings for convenience, convert to proper format
-        if (typeof result === "string") {
-          return {
-            content: [{ type: "text", text: result }],
-          };
-        }
-
-        // If result already has content array, return as-is
-        if (result && typeof result === "object" && "content" in result) {
-          return result;
-        }
-
-        // Fallback: stringify any other result
-        return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
-        };
-      }
-    );
-  }
-
   tools[name] = {
     name,
     description: toolDef.title,
@@ -238,7 +181,7 @@ export function getEnabledToolDefinitions() {
 
 /**
  * Registers all enabled tools on a server instance
- * Used to set up new session servers with the same tools
+ * Used to set up fresh request-owned servers with the same tools
  */
 export function registerToolsOnServer(server: unknown) {
   const enabledDefs = getEnabledToolDefinitions();
@@ -293,7 +236,7 @@ export function registerToolsOnServer(server: unknown) {
 }
 
 /**
- * Resource definition storage for dynamic server reconstruction
+ * Resource definition storage for request-owned server reconstruction
  */
 interface ResourceDefinition {
   name: string;
@@ -374,55 +317,8 @@ export function createResource(
     readCallback: config.readCallback,
   };
 
-  // Store resource definition for session reconstruction
+  // Store resource definition for request-owned server reconstruction
   resourceDefinitions[name] = resourceDef;
-
-  // Register with the current server instance
-  // Use ResourceTemplate to enable dynamic resource listing via listCallback
-  const server = getServer();
-
-  const registerResource = (
-    server as unknown as {
-      registerResource: (
-        resourceName: string,
-        uriOrTemplate: ResourceTemplate,
-        metadata: {
-          title?: string;
-          description?: string;
-        },
-        readCallback: (
-          uri: URL,
-          variables: Record<string, string | string[]>
-        ) => Promise<{
-          contents: Array<
-            | { uri: string; text: string; mimeType?: string }
-            | { uri: string; blob: string; mimeType?: string }
-          >;
-        }>
-      ) => void;
-    }
-  ).registerResource.bind(server);
-
-  registerResource(
-    name,
-    new ResourceTemplate(config.uriTemplate, { list: config.listCallback }),
-    {
-      title: config.title,
-      description: config.description,
-    },
-    async (uri: URL, variables: Record<string, string | string[]>) => {
-      const normalizedVariables = Object.fromEntries(
-        Object.entries(variables).map(([key, value]) => {
-          if (Array.isArray(value)) {
-            return [key, value[0] ?? ""];
-          }
-          return [key, value];
-        })
-      ) as Record<string, string>;
-
-      return config.readCallback(uri, normalizedVariables);
-    }
-  );
 
   resources[name] = {
     name,
@@ -442,7 +338,7 @@ export function getAllResourceDefinitions() {
 
 /**
  * Registers all resources on a server instance
- * Used to set up new session servers with the same resources
+ * Used to set up fresh request-owned servers with the same resources
  */
 export function registerResourcesOnServer(server: unknown) {
   const typedServer = server as {
@@ -489,7 +385,7 @@ export function registerResourcesOnServer(server: unknown) {
 }
 
 /**
- * Prompt definition storage for dynamic server reconstruction
+ * Prompt definition storage for request-owned server reconstruction
  */
 interface PromptDefinition {
   name: string;
@@ -544,7 +440,7 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
 
   const argsShape = prompt.argsSchema?.shape;
 
-  // Store prompt definition for session reconstruction
+  // Store enabled prompt definitions for request-owned server reconstruction.
   if (enabled && prompt.generate && argsShape) {
     const promptDef: PromptDefinition = {
       name,
@@ -556,31 +452,6 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     };
 
     promptDefinitions[name] = promptDef;
-
-    const server = getServer();
-    const registerPrompt = server.registerPrompt.bind(server) as unknown as (
-      promptName: string,
-      definition: {
-        title: string;
-        description: string;
-        argsSchema?: Record<string, z.ZodType>;
-      },
-      callback: (
-        args: Record<string, unknown>,
-        extra: unknown
-      ) => Promise<GetPromptResult>
-    ) => void;
-
-    registerPrompt(
-      name,
-      {
-        title: promptDef.title,
-        description: promptDef.description,
-        argsSchema: promptDef.argsSchema,
-      },
-      async (args: Record<string, unknown>, _extra: unknown) =>
-        promptDef.generate(args)
-    );
   }
 
   prompts[name] = {
@@ -603,7 +474,7 @@ export function getAllPromptDefinitions() {
 
 /**
  * Registers all prompts on a server instance
- * Used to set up new session servers with the same prompts
+ * Used to set up fresh request-owned servers with the same prompts
  */
 export function registerPromptsOnServer(server: unknown) {
   const typedServer = server as {

@@ -7,8 +7,8 @@ import {
 } from "@/lib/productIdentity";
 import { createSurfaceManifest } from "@/lib/surfaceManifest";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
-import { openToolTestDialog } from "@/ui/toolTestDialog";
-import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
+import { openToolTestDialog, toolTestDialogTeardown } from "@/ui/toolTestDialog";
+import { openPromptPreviewDialog, promptPreviewDialogTeardown } from "@/ui/promptPreviewDialog";
 import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
 import { hasPromptOverride } from "@/lib/promptLoader";
 import { formatArgumentCount } from "@/ui/i18n";
@@ -17,6 +17,7 @@ import template from "@/ui/panel.html";
 
 let panel: Panel | undefined;
 let overrideListener: (() => void) | undefined;
+let panelCssHandle: { delete(): void } | undefined;
 
 export function uiSetup({
   tools,
@@ -30,7 +31,8 @@ export function uiSetup({
   profile: McpRegistrationProfile;
 }) {
   const surface = createSurfaceManifest({ profile, tools, resources, prompts });
-  Blockbench.addCSS(panelCSS);
+  panelCssHandle?.delete();
+  panelCssHandle = Blockbench.addCSS(panelCSS);
 
   // Stateless HTTP has no durable MCP client session to display. The status bar
   // represents the local server surface only, not a fabricated connection count.
@@ -183,8 +185,17 @@ export function uiSetup({
   return panel;
 }
 
-export function uiTeardown() {
+export function uiTeardown(): void {
+  if (overrideListener) {
+    overrideListener();
+    overrideListener = undefined;
+  }
   overrideDialogTeardown();
+  toolTestDialogTeardown();
+  promptPreviewDialogTeardown();
   statusBarTeardown();
   panel?.delete();
+  panel = undefined;
+  panelCssHandle?.delete();
+  panelCssHandle = undefined;
 }

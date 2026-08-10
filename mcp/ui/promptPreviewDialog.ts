@@ -182,6 +182,13 @@ let currentDialog: Dialog | null = null;
 /**
  * Opens a dialog to preview an MCP prompt
  */
+export function promptPreviewDialogTeardown(): void {
+  currentDialog?.hide();
+  currentDialog = null;
+  contentDialog?.hide();
+  contentDialog = null;
+}
+
 export function openPromptPreviewDialog(promptName: string) {
   const promptDefs = getAllPromptDefinitions();
   const promptDef = promptDefs[promptName];

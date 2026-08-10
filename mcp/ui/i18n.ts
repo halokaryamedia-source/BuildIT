@@ -11,19 +11,14 @@
 // English translations (fallback)
 const en: Record<string, string> = {
   // Panel sections
-  "mcp.panel.sessions": "Sessions",
   "mcp.panel.server": "Server",
   "mcp.panel.tools": "Tools",
   "mcp.panel.resources": "Resources",
   "mcp.panel.prompts": "Prompts",
 
-  // Sessions section
-  "mcp.sessions.no_clients": "No clients connected",
-
   // Server section
   "mcp.server.name": "Server Name",
   "mcp.server.version": "Server Version",
-  "mcp.server.connected_clients": "Connected Clients",
 
   // Filter UI
   "mcp.filter.tools_placeholder": "Filter tools...",
@@ -51,22 +46,12 @@ const en: Record<string, string> = {
   // Status bar
   "mcp.status.experimental_tooltip": "This tool is experimental",
   "mcp.status.server": "MCP Server",
-  "mcp.status.server_one_client": "MCP Server (1 client)",
-  "mcp.status.server_clients": "MCP Server (%0 clients)",
 
   // Settings
-  "mcp.settings.instructions_name": "MCP System Instructions",
-  "mcp.settings.instructions_desc": "Instructions for the MCP system.",
   "mcp.settings.port_name": "MCP Server Port",
   "mcp.settings.port_desc": "Port for the MCP server.",
   "mcp.settings.endpoint_name": "MCP Server Endpoint",
   "mcp.settings.endpoint_desc": "Endpoint for the MCP server.",
-  "mcp.settings.prompt_cdn_name": "Enable Prompt CDN",
-  "mcp.settings.prompt_cdn_desc": "Use CDN prompt content only as an optional fallback for prompts not included in this Local build. Bundled Local prompts remain authoritative.",
-  "mcp.settings.session_timeout_name": "Session Inactivity Timeout (minutes)",
-  "mcp.settings.session_timeout_desc": "Disconnect MCP sessions after this many minutes of inactivity. Lower values free resources faster; higher values tolerate idle clients.",
-  "mcp.settings.sse_heartbeat_name": "SSE Heartbeat Interval (seconds)",
-  "mcp.settings.sse_heartbeat_desc": "Send keep-alive comments on streaming responses to prevent proxies/firewalls from closing idle connections. Set to 0 to disable.",
 
   // Tool test dialog
   "mcp.dialog.result_title": "Result: %0",
@@ -107,19 +92,14 @@ const en: Record<string, string> = {
 // German translations
 const de: Record<string, string> = {
   // Panel sections
-  "mcp.panel.sessions": "Sitzungen",
   "mcp.panel.server": "Server",
   "mcp.panel.tools": "Werkzeuge",
   "mcp.panel.resources": "Ressourcen",
   "mcp.panel.prompts": "Prompts",
 
-  // Sessions section
-  "mcp.sessions.no_clients": "Keine Clients verbunden",
-
   // Server section
   "mcp.server.name": "Servername",
   "mcp.server.version": "Serverversion",
-  "mcp.server.connected_clients": "Verbundene Clients",
 
   // Filter UI
   "mcp.filter.tools_placeholder": "Werkzeuge filtern...",
@@ -147,22 +127,12 @@ const de: Record<string, string> = {
   // Status bar
   "mcp.status.experimental_tooltip": "Dieses Werkzeug ist experimentell",
   "mcp.status.server": "MCP Server",
-  "mcp.status.server_one_client": "MCP Server (1 Client)",
-  "mcp.status.server_clients": "MCP Server (%0 Clients)",
 
   // Settings
-  "mcp.settings.instructions_name": "MCP Systemanweisungen",
-  "mcp.settings.instructions_desc": "Anweisungen für das MCP-System.",
   "mcp.settings.port_name": "MCP Server Port",
   "mcp.settings.port_desc": "Port für den MCP-Server.",
   "mcp.settings.endpoint_name": "MCP Server Endpunkt",
   "mcp.settings.endpoint_desc": "Endpunkt für den MCP-Server.",
-  "mcp.settings.prompt_cdn_name": "Prompt-CDN aktivieren",
-  "mcp.settings.prompt_cdn_desc": "CDN-Prompts nur als optionalen Fallback für Prompts verwenden, die im lokalen Build fehlen. Gebündelte lokale Prompts bleiben maßgeblich.",
-  "mcp.settings.session_timeout_name": "Sitzungs-Inaktivitäts-Timeout (Minuten)",
-  "mcp.settings.session_timeout_desc": "MCP-Sitzungen nach dieser Anzahl von Minuten Inaktivität trennen. Niedrigere Werte geben Ressourcen schneller frei; höhere Werte tolerieren inaktive Clients.",
-  "mcp.settings.sse_heartbeat_name": "SSE-Heartbeat-Intervall (Sekunden)",
-  "mcp.settings.sse_heartbeat_desc": "Sendet Keep-Alive-Kommentare auf Streaming-Antworten, um zu verhindern, dass Proxys/Firewalls inaktive Verbindungen schließen. Auf 0 setzen zum Deaktivieren.",
 
   // Tool test dialog
   "mcp.dialog.result_title": "Ergebnis: %0",
@@ -203,19 +173,14 @@ const de: Record<string, string> = {
 // Japanese translations
 const ja: Record<string, string> = {
   // Panel sections
-  "mcp.panel.sessions": "セッション",
   "mcp.panel.server": "サーバー",
   "mcp.panel.tools": "ツール",
   "mcp.panel.resources": "リソース",
   "mcp.panel.prompts": "プロンプト",
 
-  // Sessions section
-  "mcp.sessions.no_clients": "クライアントが接続されていません",
-
   // Server section
   "mcp.server.name": "サーバー名",
   "mcp.server.version": "サーバーバージョン",
-  "mcp.server.connected_clients": "接続中のクライアント",
 
   // Filter UI
   "mcp.filter.tools_placeholder": "ツールを検索...",
@@ -243,22 +208,12 @@ const ja: Record<string, string> = {
   // Status bar
   "mcp.status.experimental_tooltip": "このツールは実験的です",
   "mcp.status.server": "MCPサーバー",
-  "mcp.status.server_one_client": "MCPサーバー (1クライアント)",
-  "mcp.status.server_clients": "MCPサーバー (%0クライアント)",
 
   // Settings
-  "mcp.settings.instructions_name": "MCPシステム指示",
-  "mcp.settings.instructions_desc": "MCPシステムの指示。",
   "mcp.settings.port_name": "MCPサーバーポート",
   "mcp.settings.port_desc": "MCPサーバーのポート。",
   "mcp.settings.endpoint_name": "MCPサーバーエンドポイント",
   "mcp.settings.endpoint_desc": "MCPサーバーのエンドポイント。",
-  "mcp.settings.prompt_cdn_name": "プロンプトCDNを有効化",
-  "mcp.settings.prompt_cdn_desc": "このLocalビルドに含まれないプロンプトだけをCDNから補完します。バンドルされたLocalプロンプトが常に優先されます。",
-  "mcp.settings.session_timeout_name": "セッション非アクティブタイムアウト (分)",
-  "mcp.settings.session_timeout_desc": "この分数の非アクティブ後にMCPセッションを切断します。値が小さいほどリソースを早く解放し、大きいほどアイドルクライアントを許容します。",
-  "mcp.settings.sse_heartbeat_name": "SSEハートビート間隔 (秒)",
-  "mcp.settings.sse_heartbeat_desc": "ストリーミング応答にキープアライブコメントを送信し、プロキシ/ファイアウォールがアイドル接続を閉じるのを防ぎます。0に設定すると無効になります。",
 
   // Tool test dialog
   "mcp.dialog.result_title": "結果: %0",
@@ -299,19 +254,14 @@ const ja: Record<string, string> = {
 // Chinese (Simplified) translations
 const zh: Record<string, string> = {
   // Panel sections
-  "mcp.panel.sessions": "会话",
   "mcp.panel.server": "服务器",
   "mcp.panel.tools": "工具",
   "mcp.panel.resources": "资源",
   "mcp.panel.prompts": "提示词",
 
-  // Sessions section
-  "mcp.sessions.no_clients": "没有客户端连接",
-
   // Server section
   "mcp.server.name": "服务器名称",
   "mcp.server.version": "服务器版本",
-  "mcp.server.connected_clients": "已连接客户端",
 
   // Filter UI
   "mcp.filter.tools_placeholder": "筛选工具...",
@@ -339,22 +289,12 @@ const zh: Record<string, string> = {
   // Status bar
   "mcp.status.experimental_tooltip": "此工具为实验性功能",
   "mcp.status.server": "MCP服务器",
-  "mcp.status.server_one_client": "MCP服务器 (1个客户端)",
-  "mcp.status.server_clients": "MCP服务器 (%0个客户端)",
 
   // Settings
-  "mcp.settings.instructions_name": "MCP系统指令",
-  "mcp.settings.instructions_desc": "MCP系统的指令。",
   "mcp.settings.port_name": "MCP服务器端口",
   "mcp.settings.port_desc": "MCP服务器的端口。",
   "mcp.settings.endpoint_name": "MCP服务器端点",
   "mcp.settings.endpoint_desc": "MCP服务器的端点。",
-  "mcp.settings.prompt_cdn_name": "启用提示词CDN",
-  "mcp.settings.prompt_cdn_desc": "仅将CDN提示词作为此Local构建中缺失提示词的可选补充。本地打包的Local提示词始终优先。",
-  "mcp.settings.session_timeout_name": "会话非活动超时（分钟）",
-  "mcp.settings.session_timeout_desc": "在非活动指定分钟数后断开 MCP 会话。较低的值更快释放资源；较高的值容忍空闲客户端。",
-  "mcp.settings.sse_heartbeat_name": "SSE 心跳间隔（秒）",
-  "mcp.settings.sse_heartbeat_desc": "在流式响应上发送保活注释，防止代理/防火墙关闭空闲连接。设为 0 表示禁用。",
 
   // Tool test dialog
   "mcp.dialog.result_title": "结果: %0",

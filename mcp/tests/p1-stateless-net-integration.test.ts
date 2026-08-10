@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { createServer as createTcpServer, type AddressInfo, type Server } from "node:net";
+import { createConnection, createServer as createTcpServer, type AddressInfo } from "node:net";
 import { z } from "zod";
 import { createTool } from "@/lib/factories";
-import createNetServer from "@/server/net";
+import createNetServer, { type NetServer } from "@/server/net";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
@@ -10,7 +10,7 @@ const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
 const FIXTURE_TOOL = "p1_raw_net_echo_fixture";
 
-let server: Server;
+let server: NetServer;
 let baseUrl = "";
 
 // The raw-net integration test is deliberately transport-owned. Register one
@@ -223,5 +223,34 @@ describe("P1.4 raw-net stateless integration", () => {
       (callBody.result as { content?: Array<{ type?: string; text?: string }> })
         .content
     ).toEqual([{ type: "text", text: "raw-net-ok" }]);
+  });
+
+
+  test("active keep-alive sockets can be closed deterministically", async () => {
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected active TCP listener.");
+    }
+
+    const socket = createConnection({ host: HOST, port: address.port });
+    await new Promise<void>((resolve, reject) => {
+      socket.once("connect", resolve);
+      socket.once("error", reject);
+    });
+
+    const responseReceived = new Promise<void>((resolve, reject) => {
+      socket.once("data", () => resolve());
+      socket.once("error", reject);
+    });
+    socket.write(
+      `GET ${ENDPOINT}/health HTTP/1.1\r\nHost: ${HOST}\r\nConnection: keep-alive\r\n\r\n`
+    );
+    await responseReceived;
+    expect(socket.destroyed).toBe(false);
+
+    const closed = new Promise<void>((resolve) => socket.once("close", () => resolve()));
+    server.closeActiveSockets();
+    await closed;
+    expect(socket.destroyed).toBe(true);
   });
 });

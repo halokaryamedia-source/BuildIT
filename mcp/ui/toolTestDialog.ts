@@ -322,6 +322,13 @@ export function openToolTestDialog(toolName: string) {
   currentDialog.show();
 }
 
+export function toolTestDialogTeardown(): void {
+  currentDialog?.hide();
+  currentDialog = null;
+  resultDialog?.hide();
+  resultDialog = null;
+}
+
 export function getToolInfo(toolName: string): {
   name: string;
   title: string;
