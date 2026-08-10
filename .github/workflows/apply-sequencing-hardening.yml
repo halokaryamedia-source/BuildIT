@@ -1,0 +1,65 @@
+name: Apply Sequencing Hardening
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-sequencing-hardening.yml"
+      - "mcp/scripts/apply-sequencing-hardening.py"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply guarded sequencing patch
+        run: python3 mcp/scripts/apply-sequencing-hardening.py
+      - name: Install
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Tests
+        working-directory: mcp
+        run: bun run test
+      - name: Build
+        working-directory: mcp
+        run: bun run build
+      - name: Generate docs
+        working-directory: mcp
+        run: bun run ./build/docs.ts
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit sequencing hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .agents/skills/blockit-bedrock-entity-mcp/SKILL.md \
+            .agents/skills/blockit-bedrock-texturing/SKILL.md \
+            .agents/skills/blockit-bedrock-animation/SKILL.md \
+            docs/foundation/03-modelling-workflow.md \
+            docs/foundation/06-texture-standard.md \
+            docs/knowledge/next-action.md \
+            docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md \
+            mcp/prompts/bedrock_entity_workflow.md \
+            mcp/prompts/manifest.json \
+            mcp/docs/api.json \
+            mcp/docs/index.html \
+            mcp/tests/model-effectiveness-tool-routing.test.ts \
+            mcp/tests/model-effectiveness-sequencing.test.ts
+          git diff --cached --quiet && { echo "No sequencing changes"; exit 1; }
+          git commit -m "docs: harden texture animation sequencing"
+          git push origin HEAD:Local
