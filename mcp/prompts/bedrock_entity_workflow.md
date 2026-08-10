@@ -41,6 +41,24 @@ At a primary gate, answer concrete questions rather than writing generic praise:
 
 If the whole object is unrecognizable or multiple primary relationships are wrong together, rebuild/revise the primary hypothesis rather than micro-patching.
 
+## Reference Fidelity Verdict
+
+At every material visual gate, perform a **difference-first** reference ↔ model review before approval. Do not start from "does it look good?"; first search for concrete mismatch.
+
+The verdict must be exactly one of:
+
+```text
+FAIL
+UNVERIFIED
+PASS
+```
+
+- **FAIL** — a critical or major mismatch is visible. State the mismatch, severity, and supporting reference/model view(s).
+- **UNVERIFIED** — evidence needed for the claim is missing, ambiguous, conflicting, or unavailable. Missing evidence is not permission to guess.
+- **PASS** — only when fresh corresponding model views were directly compared with the available reference views, applicable silhouette/proportion/placement/orientation/contact criteria were checked, and no critical or major mismatch was found.
+
+For each relevant paired view, report material differences before the verdict. When the reference provides multiple views, use the views that constrain the claimed 3D axes. A model matching only the front view is not a full 3D PASS if depth/side evidence is missing or fails.
+
 ## Locator / Null Object authored state
 
 Use `list_locator_elements` to discover Locator and Null Object identities, then `inspect_element` for focused authored state.

@@ -31,6 +31,46 @@ None of these proves resemblance by itself:
 Visual `PASS` requires fresh current-revision visual evidence compared directly
 with the active Modelling Brief.
 
+## Visual Verdict Contract
+
+Every material visual gate must end in exactly one state:
+
+```text
+FAIL
+UNVERIFIED
+PASS
+```
+
+### FAIL
+
+Use when any critical or major mismatch is visible in an applicable criterion. The review must name the mismatch and the corresponding reference/model evidence.
+
+### UNVERIFIED
+
+Use when evidence needed for the claim is missing or insufficient. Examples include missing side/depth reference evidence, materially conflicting views, or an unavailable current model capture. Missing evidence is not a visual pass.
+
+### PASS
+
+Use only after fresh current-revision model images were directly compared with the corresponding reference view(s), a difference-first review checked the applicable silhouette/proportion/placement/orientation/contact criteria, and no critical or major mismatch was found.
+
+A claim may be narrower than the whole model. For example, a front silhouette can pass while depth remains UNVERIFIED. Do not upgrade a partial-view success into a full 3D PASS.
+
+### Difference-first review
+
+Before approval, actively search for mismatch in each relevant paired view:
+
+```text
+REFERENCE VIEW ↔ MODEL VIEW
+silhouette difference
+primary proportion difference
+primary placement difference
+orientation / slope difference
+visible contact difference
+severity: critical / major / minor / none
+```
+
+Only after this mismatch search may the reviewer choose PASS. Generic positive language is not a substitute for this comparison.
+
 ## Evidence Types
 
 ### Structural Evidence

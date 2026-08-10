@@ -46,6 +46,22 @@ describe("pre-local Bedrock prompt and skill surface", () => {
     expect(animation).toContain("Do not fake these with `risky_eval`");
   });
 
+  test("reference-driven modelling uses a difference-first three-state visual verdict", async () => {
+    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    const validation = await source("../docs/foundation/07-visual-validation.md");
+
+    for (const text of [workflow, modelling, validation]) {
+      expect(text).toContain("FAIL");
+      expect(text).toContain("UNVERIFIED");
+      expect(text).toContain("PASS");
+      expect(text.toLowerCase()).toContain("difference-first");
+    }
+    expect(orchestrator).toContain("FAIL / UNVERIFIED / PASS");
+    expect(workflow).toContain("front view is not a full 3D PASS");
+  });
+
   test("generated-doc source is BlockIT-branded and install guidance does not offer the upstream hosted binary", async () => {
     const docs = await source("build/docs.ts");
     const install = await source("docs/llms/install.md");

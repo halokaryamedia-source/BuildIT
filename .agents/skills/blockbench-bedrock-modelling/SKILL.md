@@ -168,6 +168,26 @@ Compare them with corresponding reference views and check:
 `PASS` cannot be justified by "all Cubes are placed", "everything is attached",
 "coordinates are valid", or "the tool succeeded".
 
+#### Mandatory Reference Fidelity Verdict
+
+Do not begin a visual gate by asking whether the model "looks good". Begin by actively searching for differences between each relevant reference view and the matching fresh model view.
+
+Every material whole-form visual gate must end in exactly one state:
+
+```text
+FAIL
+UNVERIFIED
+PASS
+```
+
+- **FAIL** — any critical or major mismatch is visible. Name the mismatch, responsible mass/relationship when known, severity, and the reference/model view that demonstrates it.
+- **UNVERIFIED** — evidence is missing or insufficient for the claim. Missing side/depth/top evidence, conflicting reference views, or an unavailable current model view cannot be upgraded to PASS by plausibility.
+- **PASS** — only after a difference-first review finds no critical or major mismatch in the applicable criteria supported by the available reference evidence.
+
+For each relevant paired view, explicitly check applicable silhouette, primary proportion, primary placement, orientation/slope, and visible contact differences before deciding the verdict. If multiple independent reference views exist and the claim concerns the 3D whole form, use the views that constrain the relevant axes. A front-only match cannot become a full 3D PASS when side/depth evidence is missing.
+
+Generic statements such as "looks correct", "matches well", or "all parts are present" are not evidence and must not be used as the basis for PASS.
+
 #### Hard rebuild rule
 
 Invalidate/revise the Primary Form Hypothesis instead of micro-patching when:

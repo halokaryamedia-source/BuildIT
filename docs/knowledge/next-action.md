@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_LOCATOR_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_FALSE_PASS_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -106,6 +106,27 @@ blockit-bedrock-entity-mcp
 
 Do not use upstream generic Mesh/Hytale/eval-oriented skills as the canonical BlockIT workflow.
 
+## Model Creation Effectiveness Priority
+
+The primary product goal is not MCP feature completeness. It is whether Codex can create a Bedrock Entity model that actually resembles the approved reference.
+
+Current problem order:
+
+```text
+P0  false visual approval
+P0  wrong primary geometry decomposition
+P0  cross-view / depth hallucination
+P1  patch churn / sunk-cost preservation
+P1  correction accuracy
+P1  tool-choice/context friction
+P2  texture and animation sequencing
+P3  specialized native capability gaps when a real workflow needs them
+```
+
+Problem/solution owner: `docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md`.
+
+The false-approval solution is now a mandatory difference-first `FAIL / UNVERIFIED / PASS` verdict contract in the modelling skill, canonical MCP prompt, visual-validation policy, and Reference Fidelity decision. No new visual scoring or automatic similarity tool was added.
+
 ## Locator / Null Object Coverage
 
 Direct Locator/Null Object authored-state ownership now remains inside the existing Elements family; no new registration family or generic element framework was introduced.
@@ -171,13 +192,17 @@ Generic full-app screenshot and arbitrary editor-camera mutation are not part of
 
 ## Next Allowed Step
 
-If continuing non-local native-capability work before local Blockbench acceptance becomes available, the next bounded slice is:
+If continuing non-local work before local Blockbench acceptance becomes available, continue **model creation effectiveness**, not capability completeness.
+
+The next bounded problem is:
 
 ```text
-TextureMesh official-source audit and minimum direct authored-state coverage
+P0 — wrong primary geometry decomposition
 ```
 
-Do not reintroduce the removed generic Mesh family as a shortcut; native Bedrock TextureMesh must be mapped from its own Blockbench source contract.
+Audit whether the current Primary Form Hypothesis → coarse Cube blockout workflow actually prevents the recurring real failures: wrong whole silhouette, wrong relative mass scale/placement, front-view overfitting with bad depth, arbitrary slopes/rotations, excessive Cubes before recognizability, and detail used to compensate for a wrong primary scaffold.
+
+Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, or another modelling framework unless a concrete modelling requirement proves it is needed.
 
 When the local Blockbench environment is available, local acceptance still needs to verify the stateless endpoint plus actual Locator/Null Object create/update/inspect/rename/remove behavior and Bedrock save/reopen/export round-trip before the Locator slice is considered runtime-proven.
 

@@ -79,6 +79,10 @@ Protected examples currently include direct authored-state owners for:
 
 Do not emulate these with generic Mesh, arbitrary Cubes, `risky_eval`, UI clicks, or another model format. Existing data should be preserved where the normal project/Bedrock codecs preserve it. Record the gap for MCP implementation audit.
 
+## Visual Verdict Boundary
+
+For reference-driven modelling, route visual judgement to `blockbench-bedrock-modelling` and require its `FAIL / UNVERIFIED / PASS` Reference Fidelity Verdict. Missing reference/view evidence means UNVERIFIED for that claim, not PASS. Do not let successful MCP execution, bounds, hierarchy, or validator output upgrade the visual verdict.
+
 ## Texture And PBR Boundary
 
 Native Bedrock PBR and per-face `material_instance` are valid BlockIT capabilities. Route those tasks to `blockit-bedrock-texturing`; do not classify them as generic Mesh/PBR shortcuts.

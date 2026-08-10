@@ -152,6 +152,18 @@ inspect exact target state
 
 `ADD MASS` is not the default correction.
 
+## Reference Fidelity Verdict
+
+Visual approval uses three states, not a forced binary:
+
+```text
+FAIL        critical/major mismatch exists
+UNVERIFIED  evidence is insufficient for the claim
+PASS        fresh paired evidence was checked and no critical/major mismatch remains
+```
+
+The review is difference-first: search for silhouette, proportion, placement, orientation/slope, and visible-contact mismatches before approval. If the reference does not constrain an important axis or view, that aspect remains UNVERIFIED rather than being guessed into PASS.
+
 ## Observation Decision
 
 BlockIT uses read-only observation instruments rather than numeric resemblance
