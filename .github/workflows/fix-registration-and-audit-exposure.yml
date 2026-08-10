@@ -1,0 +1,115 @@
+name: Fix Registration And Audit Exposure
+
+on:
+  push:
+    paths:
+      - ".github/workflows/fix-registration-and-audit-exposure.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Fix Painter registration-time global
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('mcp/server/tools/paint.ts')
+          text = path.read_text(encoding='utf-8')
+          old = '''export function registerPaintTools() {\n  const runtimePainter = Painter as unknown as BlockbenchRuntimePainter;\n'''
+          new = '''function getRuntimePainter(): BlockbenchRuntimePainter {\n  return Painter as unknown as BlockbenchRuntimePainter;\n}\n\nexport function registerPaintTools() {\n'''
+          if text.count(old) != 1:
+              raise SystemExit('Unexpected Painter registration shape')
+          text = text.replace(old, new, 1)
+          text = text.replace('runtimePainter.', 'getRuntimePainter().')
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Add registration regression
+        run: |
+          cat > mcp/tests/default-registration-import-safe.test.ts <<'TEST'
+          import { describe, expect, test } from "bun:test";
+
+          describe("default MCP registration is runtime-lazy", () => {
+            test("default tool registry reconstructs outside Blockbench without reading runtime globals", async () => {
+              const module = await import("../server/tools");
+              const exposed = Object.values(module.tools).filter((tool) => tool.enabled);
+              expect(exposed.length).toBeGreaterThan(0);
+              expect(exposed.some((tool) => tool.name === "place_cube")).toBe(true);
+              expect(exposed.some((tool) => tool.name === "paint_with_brush")).toBe(true);
+            });
+          });
+          TEST
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Measure actual default exposure
+        run: |
+          bun - <<'BUN'
+          import { tools } from './mcp/server/tools.ts';
+          import api from './mcp/docs/api.json';
+          const exposed = Object.values(tools).filter((tool) => tool.enabled).map((tool) => tool.name).sort();
+          const disabled = Object.values(tools).filter((tool) => !tool.enabled).map((tool) => tool.name).sort();
+          const byName = new Map(api.tools.map((tool) => [tool.name, tool]));
+          const chars = (names) => names.reduce((sum, name) => sum + JSON.stringify(byName.get(name) ?? {}).length, 0);
+          const categories = new Map();
+          for (const name of exposed) {
+            const tool = byName.get(name);
+            const category = tool?.category ?? 'Unknown';
+            const row = categories.get(category) ?? { count: 0, chars: 0, names: [] };
+            row.count += 1;
+            row.chars += JSON.stringify(tool ?? {}).length;
+            row.names.push(name);
+            categories.set(category, row);
+          }
+          const geometryLane = [
+            'create_project','get_project_info','list_outline','find_elements_by_criteria',
+            'place_cube','add_group','capture_model_views','inspect_model_bounds',
+            'inspect_element','modify_cube','modify_cubes_batch','remove_element',
+            'undo','save_checkpoint','export_model'
+          ].filter((name) => exposed.includes(name));
+          console.log('EXPOSED_COUNT', exposed.length);
+          console.log('DISABLED_COUNT', disabled.length);
+          console.log('EXPOSED_METADATA_CHARS', chars(exposed));
+          console.log('EXPOSED', JSON.stringify(exposed));
+          console.log('DISABLED', JSON.stringify(disabled));
+          console.log('BY_CATEGORY');
+          for (const [category, row] of [...categories.entries()].sort()) {
+            console.log(category, 'count=' + row.count, 'chars=' + row.chars, JSON.stringify(row.names.sort()));
+          }
+          console.log('GEOMETRY_LANE_COUNT', geometryLane.length);
+          console.log('GEOMETRY_LANE_METADATA_CHARS', chars(geometryLane));
+          console.log('GEOMETRY_LANE', JSON.stringify(geometryLane));
+          BUN
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit source fix and remove temporary workflows
+        run: |
+          git rm .github/workflows/audit-default-exposed-tools.yml .github/workflows/fix-registration-and-audit-exposure.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: keep default MCP registration runtime-lazy"
+          git push origin HEAD:Local
