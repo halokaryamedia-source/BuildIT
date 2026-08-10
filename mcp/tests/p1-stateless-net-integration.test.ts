@@ -1,14 +1,32 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createServer as createTcpServer, type AddressInfo, type Server } from "node:net";
-import "@/server";
+import { z } from "zod";
+import { createTool } from "@/lib/factories";
 import createNetServer from "@/server/net";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-11-25";
+const FIXTURE_TOOL = "p1_raw_net_echo_fixture";
 
 let server: Server;
 let baseUrl = "";
+
+// The raw-net integration test is deliberately transport-owned. Register one
+// runtime-independent MCP fixture through BlockIT's real factory registry rather
+// than importing the full Bedrock profile, whose Paint family correctly expects
+// live Blockbench globals such as Painter during registration.
+createTool(
+  FIXTURE_TOOL,
+  {
+    description: "P1.4 raw-net protocol fixture",
+    parameters: z.object({ value: z.string() }),
+    async execute({ value }) {
+      return value;
+    },
+  },
+  "experimental"
+);
 
 function closedHeaders(extra: Record<string, string> = {}): Headers {
   return new Headers({
@@ -141,7 +159,7 @@ describe("P1.4 raw-net stateless integration", () => {
     expect((body.error as { message?: string }).message).toContain("invalid Origin");
   });
 
-  test("initialize and repeated tools/list work through the real raw HTTP parser without sessions", async () => {
+  test("initialize, tools/list and tools/call pass through the real raw HTTP parser without sessions", async () => {
     const initializeResponse = await postMcp({
       jsonrpc: "2.0",
       id: 1,
@@ -182,12 +200,27 @@ describe("P1.4 raw-net stateless integration", () => {
     expect(second.response.status).toBe(200);
     expect(first.response.headers.get("mcp-session-id")).toBeNull();
     expect(second.response.headers.get("mcp-session-id")).toBeNull();
-    expect(first.names).toContain("place_cube");
-    expect(first.names).toContain("inspect_element");
-    expect(first.names).toContain("create_texture");
-    expect(first.names).toContain("create_animation");
-    expect(first.names).not.toContain("risky_eval");
-    expect(first.names).not.toContain("from_geo_json");
+    expect(first.names).toContain(FIXTURE_TOOL);
     expect(second.names).toEqual(first.names);
+
+    const callResponse = await postMcp(
+      {
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/call",
+        params: {
+          name: FIXTURE_TOOL,
+          arguments: { value: "raw-net-ok" },
+        },
+      },
+      { protocolVersion: true }
+    );
+    expect(callResponse.status).toBe(200);
+    expect(callResponse.headers.get("mcp-session-id")).toBeNull();
+    const callBody = await bodyJson(callResponse);
+    expect(
+      (callBody.result as { content?: Array<{ type?: string; text?: string }> })
+        .content
+    ).toEqual([{ type: "text", text: "raw-net-ok" }]);
   });
 });
