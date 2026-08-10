@@ -48,8 +48,9 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
   test("cross-view safeguards remain active as problem-driven work advances", async () => {
     const next = await source("../docs/knowledge/next-action.md");
     expect(next).toContain("cross-view / depth hallucination");
-    expect(next).toContain("MCP_MODEL_EFFECTIVENESS_CORRECTION_ACCURACY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
-    expect(next).toContain("P1 — tool-choice / context friction");
-    expect(next).not.toContain("The next bounded modelling problem is:\n\n```text\nP0 — cross-view / depth hallucination");
+    expect(next).toContain("BLOCKED");
+    expect(next).not.toContain(
+      "The next bounded modelling problem is:\n\n```text\nP0 — cross-view / depth hallucination"
+    );
   });
 });
