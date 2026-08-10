@@ -27,7 +27,16 @@ jobs:
         run: |
           sed -i 's/tags: \["MCP", "AI", "Minecraft", "Bedrock"\]/tags: ["MCP", "AI"]/g' .github/prelocal_plugin_surface_patch.py
           python .github/prelocal_plugin_surface_patch.py
-          sed -i 's/Streamable HTTP (stateless)\\"/Streamable HTTP (stateless JSON)\\"/' mcp/tests/p1-transport-stateless.test.ts
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("mcp/tests/p1-transport-stateless.test.ts")
+          text = path.read_text()
+          old = 'expect(uiSource).toContain(\'transport: "Streamable HTTP (stateless)"\');'
+          new = 'expect(uiSource).toContain(\'transport: "Streamable HTTP (stateless JSON)"\');'
+          if text.count(old) != 1:
+              raise SystemExit(f"Expected one stateless UI assertion, found {text.count(old)}")
+          path.write_text(text.replace(old, new, 1))
+          PY
 
       - name: Install dependencies
         working-directory: mcp
