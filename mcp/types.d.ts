@@ -1,4 +1,4 @@
-import type { ToolParameters, Tool, Prompt, PromptArgument } from "fastmcp";
+import type { PromptArgument } from "@modelcontextprotocol/sdk/types.js";
 
 export type StatusType = "stable" | "experimental";
 
