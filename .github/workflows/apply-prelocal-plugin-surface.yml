@@ -29,6 +29,7 @@ jobs:
           python .github/prelocal_plugin_surface_patch.py
           python - <<'PY'
           from pathlib import Path
+
           path = Path("mcp/tests/p1-transport-stateless.test.ts")
           text = path.read_text()
           old = 'expect(uiSource).toContain(\'transport: "Streamable HTTP (stateless)"\');'
@@ -36,6 +37,10 @@ jobs:
           if text.count(old) != 1:
               raise SystemExit(f"Expected one stateless UI assertion, found {text.count(old)}")
           path.write_text(text.replace(old, new, 1))
+
+          for target in [Path("mcp/README.md"), Path("mcp/server/net.ts")]:
+              normalized = "\n".join(line.rstrip() for line in target.read_text().splitlines()) + "\n"
+              target.write_text(normalized)
           PY
 
       - name: Install dependencies
