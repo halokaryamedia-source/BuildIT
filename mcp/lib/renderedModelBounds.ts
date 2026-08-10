@@ -34,6 +34,30 @@ export interface RenderedModelBoundsObservation {
 function normalizeNumber(value: number): number {
   return Object.is(value, -0) ? 0 : value;
 }
+export function summarizeFiniteBounds(
+  min: Vec3,
+  max: Vec3
+): { center: Vec3; size: Vec3 } {
+  const size: Vec3 = [
+    normalizeNumber(max[0] - min[0]),
+    normalizeNumber(max[1] - min[1]),
+    normalizeNumber(max[2] - min[2]),
+  ];
+  if (size.some((value) => !Number.isFinite(value))) {
+    throw new Error("Rendered model bounds span is non-finite and cannot be trusted.");
+  }
+
+  const center: Vec3 = [
+    normalizeNumber(min[0] + size[0] / 2),
+    normalizeNumber(min[1] + size[1] / 2),
+    normalizeNumber(min[2] + size[2] / 2),
+  ];
+  if (center.some((value) => !Number.isFinite(value))) {
+    throw new Error("Rendered model bounds center is non-finite and cannot be trusted.");
+  }
+
+  return { center, size };
+}
 
 function asFiniteVec3(value: unknown, cubeName: string): Vec3 {
   if (
@@ -154,16 +178,7 @@ export function readRenderedModelBounds(): RenderedModelBoundsObservation {
     throw new Error("Rendered model bounds are non-finite and cannot be trusted.");
   }
 
-  const center: Vec3 = [
-    normalizeNumber((min[0] + max[0]) / 2),
-    normalizeNumber((min[1] + max[1]) / 2),
-    normalizeNumber((min[2] + max[2]) / 2),
-  ];
-  const size: Vec3 = [
-    normalizeNumber(max[0] - min[0]),
-    normalizeNumber(max[1] - min[1]),
-    normalizeNumber(max[2] - min[2]),
-  ];
+  const { center, size } = summarizeFiniteBounds(min, max);
 
   return {
     total_cube_count: totalCubeCount,
