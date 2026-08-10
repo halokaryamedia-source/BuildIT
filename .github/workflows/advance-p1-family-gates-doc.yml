@@ -1,0 +1,238 @@
+name: Record P1.2 Family Gates Completion
+
+on:
+  push:
+    paths:
+      - ".github/workflows/advance-p1-family-gates-doc.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 0
+
+      - name: Advance next-action snapshot
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("docs/knowledge/next-action.md")
+          text = path.read_text()
+
+          old_intro = "P0.1–P0.5 and P1.1 are complete for their source/repository boundaries. The active source boundary is now **P1.2 — family gates**."
+          new_intro = "P0.1–P0.5, P1.1, and P1.2 are complete for their source/repository boundaries. The active source boundary is now **P1.3 — core-only resolver/mutation/result consolidation**."
+          if text.count(old_intro) != 1:
+              raise SystemExit("Expected P1.2 active intro exactly once")
+          text = text.replace(old_intro, new_intro, 1)
+
+          old_status = "`MCP_P1_DEFAULT_BEDROCK_PROFILE_COMPLETE_FAMILY_GATES_NEXT`"
+          new_status = "`MCP_P1_FAMILY_GATES_COMPLETE_CORE_OWNERSHIP_NEXT`"
+          if text.count(old_status) != 1:
+              raise SystemExit("Expected P1.2 status exactly once")
+          text = text.replace(old_status, new_status, 1)
+
+          p12_section = '''# Completed P1.2 — Explicit Family Gates
+
+P1.2 converts the P1.1 source-preserved `extended` distinction into a real opt-in without introducing an ACL, role system, policy DSL, or dynamic permission engine.
+
+## Source commits
+
+```text
+b126a9912a5b9c13f9ba8300de5a650c4ac7ad79
+feat: add explicit MCP family gates
+
+89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
+test: align registration profile contract with family gates
+```
+
+## Gate contract
+
+The existing Blockbench `Setting` mechanism now owns one small opt-in:
+
+```text
+mcp_extended_families_enabled
+```
+
+Contract:
+
+```text
+default value                         false
+literal boolean true                  selects extended profile
+missing/false/string-like values      remain bedrock_entity
+extended adds                         import + ui only
+bedrock_entity families               unchanged
+```
+
+`registerMcpProfile()` tracks already-registered families and is idempotent per family. The default Bedrock Entity profile is still registered at module load; after settings initialize, an explicit extended opt-in adds only the missing fallback families before network startup.
+
+The reconstructed-session path still consumes the same canonical `tools.enabled` / stored tool-definition truth created by those family registration functions. No second reconstructed-session profile table was introduced.
+
+P0.2 remains authoritative inside the optional fallback families:
+
+```text
+from_geo_json  enabled=false
+risky_eval     enabled=false
+```
+
+Therefore enabling the extended families does not expose either dangerous tool.
+
+No Animation, Paint, Texture, PBR, material-instance, Cube, history, export, or project implementation file was changed by P1.2. Native/relevant Bedrock capability remains in the normal `bedrock_entity` family set.
+
+## P1.2 focused proof
+
+The added family-gate tests prove:
+
+```text
+extended families require explicit boolean opt-in
+extended adds exactly import + ui
+setting defaults off and is read before server startup
+profile registration is idempotent by family
+dangerous tools remain disabled inside opted-in fallback families
+setting identifier has one canonical owner
+```
+
+Canonical root workflow:
+
+```text
+MCP Verify
+run: 31369553909
+verified head: 89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
+```
+
+Result:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+Bun contract tests          PASS — 14/14, 0 failures, 82 expect() calls
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+The first P1.2 run correctly failed closed because one P1.1 source-reading test asserted the previous loop syntax rather than the registration invariant. The follow-up test-only commit updated that assertion to the new idempotent registrar contract; no runtime behavior was weakened to make the test pass.
+
+Actual Blockbench setting persistence, plugin reload behavior, and real `tools/list` differences after opting into extended families remain `LOCAL PROOF REQUIRED`.
+
+'''
+
+          marker = "# Current Work Order\n"
+          if text.count(marker) != 1:
+              raise SystemExit("Expected Current Work Order marker exactly once")
+          text = text.replace(marker, p12_section + marker, 1)
+
+          old_order = '''P1.1  default Bedrock Entity registration profile COMPLETE
+P1.2  family gates                               ← ACTIVE NEXT SLICE
+P1.3  core-only resolver/mutation/result consolidation
+P1.4  transport/session future decision
+P1.5  local end-to-end core acceptance'''
+          new_order = '''P1.1  default Bedrock Entity registration profile COMPLETE
+P1.2  family gates                               COMPLETE
+P1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE
+P1.4  transport/session future decision
+P1.5  local end-to-end core acceptance'''
+          if text.count(old_order) != 1:
+              raise SystemExit("Expected P1 work order block exactly once")
+          text = text.replace(old_order, new_order, 1)
+
+          next_marker = "# Next Step — P1.2 Family Gates Only"
+          if text.count(next_marker) != 1:
+              raise SystemExit("Expected P1.2 next-step marker exactly once")
+          prefix = text.split(next_marker, 1)[0]
+
+          p13_next = '''# Next Step — P1.3 Core Ownership Consolidation Only
+
+Do not start P1.4 or later work in the same slice.
+
+## Goal
+
+Consolidate deterministic identity, bounded mutation/rollback, and useful result ownership **only inside the surviving Bedrock Entity core**. Do not globally refactor gated or legacy source.
+
+## Required approach
+
+1. Audit current callers before creating or reusing shared resolver helpers.
+2. Limit resolver consolidation to core identities where duplication is real:
+
+```text
+Cube
+Group
+Texture
+Animation
+```
+
+3. Normal explicit mutation identity must converge on:
+
+```text
+exact UUID first
+otherwise exact name only when unique
+ambiguous explicit target → fail
+missing explicit target → fail
+no UUID-prefix matching for mutation
+no silent root/default fallback
+```
+
+4. Selection fallback remains allowed only for tools whose public contract explicitly states that they operate on selection.
+5. Core mutation paths should use the bounded pattern where applicable:
+
+```text
+preflight all external targets
+open one Undo transaction
+mutate
+finish
+failure after open → cancel/revert
+```
+
+6. Consolidate result/readback shape only where it improves deterministic continuation. Prefer compact human-readable content plus stable structured data when identity/state matters.
+7. Preserve all current Bedrock Entity capability. Do not use consolidation as a reason to gate or delete TextureMesh, Locator, bounding-box, Animation, Paint/PBR, material-instance, history, camera/observation, export, or other audited Bedrock-relevant behavior.
+8. Do not refactor `import` / generic `ui` merely because they remain compiled under the explicit extended gate.
+9. Do not migrate MCP SDK/protocol, redesign transport, add authentication, or resume parked feature hardening in P1.3.
+10. Add focused regression tests for any new shared owner/contract and rerun the complete MCP Verify workflow.
+
+## Static acceptance
+
+```text
+shared resolver ownership exists only where audited core callers justify it
+core explicit mutations use deterministic identity rules
+bounded Undo/rollback ownership is consistent where consolidated
+core readback/result identity is sufficient for continuation
+no gated legacy family is globally refactored
+no native Bedrock capability is removed or silently gated
+```
+
+## Executable acceptance
+
+```text
+focused P1.3 regression tests PASS
+bun run typecheck               PASS
+bun run test                    PASS
+bun run build                   PASS
+bun run docs:check              PASS
+root MCP Verify                 PASS
+```
+
+Only after P1.3 is recorded may the active boundary advance to **P1.4 — transport/session simplification decision**.
+
+## Proof Boundary
+
+GitHub Actions/package tests can prove source/build/contracts that do not require Blockbench globals. Actual mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, and end-to-end identity stability remain `LOCAL PROOF REQUIRED` where applicable.
+'''
+
+          path.write_text(prefix + p13_next)
+          PY
+
+      - name: Commit documentation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/knowledge/next-action.md
+          git diff --cached --check
+          git commit -m "docs: advance MCP stabilization to core ownership"
+          git push origin Local
