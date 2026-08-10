@@ -47,6 +47,7 @@ jobs:
                   'tool_desc': len(tool.get('description', '') or ''),
                   'schema_desc': description_chars(params),
                   'schema_total': len(json.dumps(params, separators=(',', ':'))),
+                  'annotations': tool.get('annotations') or {},
               })
 
           print('TOOLS_TOTAL', len(rows))
@@ -59,6 +60,12 @@ jobs:
           print('\nTOP_DESCRIPTION')
           for row in sorted(rows, key=lambda r: r['tool_desc'] + r['schema_desc'], reverse=True)[:20]:
               print(f"{row['name']} prose={row['tool_desc'] + row['schema_desc']} tool_desc={row['tool_desc']} schema_desc={row['schema_desc']}")
+
+          print('\nANNOTATIONS')
+          for row in rows:
+              a = row['annotations']
+              if not a.get('readOnlyHint') and 'destructiveHint' not in a:
+                  print('NO_READ_MUTATION_HINT', row['name'], a)
 
           prompts = api.get('prompts', [])
           resources = api.get('resources', [])
