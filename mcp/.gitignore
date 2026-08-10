@@ -2,3 +2,5 @@ node_modules
 dist/
 .claude
 nul
+__pycache__/
+*.pyc
