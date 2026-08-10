@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { IMCPTool, IMCPPrompt, IMCPResource, StatusType } from "@/types";
 import { getServer } from "@/server/server";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Declarative tool spec for documentation and registration.
@@ -10,12 +11,7 @@ import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 export interface ToolSpec {
   name: string;
   description: string;
-  annotations?: {
-    title?: string;
-    destructiveHint?: boolean;
-    readOnlyHint?: boolean;
-    openWorldHint?: boolean;
-  };
+  annotations?: ToolAnnotations;
   parameters: z.ZodType;
   status: StatusType;
 }
@@ -79,14 +75,10 @@ interface ToolDefinition {
   title: string;
   description: string;
   inputSchema: Record<string, z.ZodType>;
+  parameterSchema: z.ZodType;
   outputSchema?: Record<string, z.ZodType> | z.ZodType;
   execute: (args: Record<string, unknown>, context?: ToolContext) => Promise<ToolResult>;
-  annotations?: {
-    title?: string;
-    destructiveHint?: boolean;
-    openWorldHint?: boolean;
-    readOnlyHint?: boolean;
-  };
+  annotations?: ToolAnnotations;
 }
 
 /**
@@ -95,8 +87,8 @@ interface ToolDefinition {
 const toolDefinitions: Record<string, ToolDefinition> = {};
 
 /**
- * Extracts the shape from a Zod schema, unwrapping ZodEffects if necessary.
- * Uses _def.typeName for reliable type checking across different Zod instances.
+ * Extracts the SDK-compatible object shape used for MCP registration/listing.
+ * The original complete schema is retained separately for runtime validation.
  */
 function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
   const def = schema._def as { typeName?: string; schema?: z.ZodType; shape?: () => Record<string, z.ZodType> };
@@ -129,12 +121,7 @@ export function createTool<T extends z.ZodType>(
   name: string,
   tool: {
     description: string;
-    annotations?: {
-      title?: string;
-      destructiveHint?: boolean;
-      openWorldHint?: boolean;
-      readOnlyHint?: boolean;
-    };
+    annotations?: ToolAnnotations;
     parameters: T;
     execute: (args: z.infer<T>, context?: ToolContext) => Promise<ToolResult>;
   },
@@ -151,6 +138,7 @@ export function createTool<T extends z.ZodType>(
     title: tool.annotations?.title ?? tool.description,
     description: tool.description,
     inputSchema,
+    parameterSchema: tool.parameters,
     execute: tool.execute,
     annotations: tool.annotations,
   };
@@ -170,6 +158,7 @@ export function createTool<T extends z.ZodType>(
         title: string;
         description: string;
         inputSchema: Record<string, z.ZodType>;
+        annotations?: ToolAnnotations;
       },
       callback: (args: unknown, extra: unknown) => Promise<unknown>
     ) => void;
@@ -180,6 +169,7 @@ export function createTool<T extends z.ZodType>(
         title: toolDef.title,
         description: toolDef.description,
         inputSchema,
+        annotations: toolDef.annotations,
       },
       async (args: unknown, _extra: unknown) => {
         // Provide a no-op reportProgress function
@@ -188,7 +178,8 @@ export function createTool<T extends z.ZodType>(
         const reportProgress: ToolContext["reportProgress"] = () => {};
 
         const context: ToolContext = { reportProgress };
-        const result = await tool.execute(args as ToolArgs, context);
+        const validatedArgs = await tool.parameters.parseAsync(args) as ToolArgs;
+        const result = await tool.execute(validatedArgs, context);
 
         // Normalize result to MCP CallToolResult format
         // Tools may return plain strings for convenience, convert to proper format
@@ -251,6 +242,7 @@ export function registerToolsOnServer(server: unknown) {
         title: string;
         description: string;
         inputSchema: Record<string, z.ZodType>;
+        annotations?: ToolAnnotations;
       },
       callback: (args: unknown, extra: unknown) => Promise<unknown>
     ) => void;
@@ -263,11 +255,13 @@ export function registerToolsOnServer(server: unknown) {
         title: toolDef.title,
         description: toolDef.description,
         inputSchema: toolDef.inputSchema,
+        annotations: toolDef.annotations,
       },
       async (args: unknown, _extra: unknown) => {
         const reportProgress: ToolContext["reportProgress"] = () => {};
         const context: ToolContext = { reportProgress };
-        const result = await toolDef.execute(args as Record<string, unknown>, context);
+        const validatedArgs = await toolDef.parameterSchema.parseAsync(args);
+        const result = await toolDef.execute(validatedArgs as Record<string, unknown>, context);
 
         if (typeof result === "string") {
           return {
