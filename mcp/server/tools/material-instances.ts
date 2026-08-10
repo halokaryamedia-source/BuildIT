@@ -98,7 +98,7 @@ export const materialInstanceToolDocs: ToolSpec[] = [
   {
     name: "get_face_material_instances",
     description:
-      "Gets the material instance names for cube faces. Material instances are used in Bedrock Block format to map faces to materials defined in the minecraft:material_instances component.",
+      "Gets material-instance metadata from Bedrock cube faces. Blockbench's Bedrock geometry codec preserves this field on per-face UV data.",
     annotations: {
       title: "Get Face Material Instances",
       readOnlyHint: true,
@@ -109,7 +109,7 @@ export const materialInstanceToolDocs: ToolSpec[] = [
   {
     name: "set_face_material_instance",
     description:
-      "Sets the material instance name for one or more cube faces. Material instances are strings that map to materials defined in the minecraft:material_instances component for Bedrock Block format.",
+      "Sets material-instance metadata on one or more Bedrock cube faces using the face field preserved by Blockbench's Bedrock geometry codec.",
     annotations: {
       title: "Set Face Material Instance",
       destructiveHint: true,
@@ -170,9 +170,12 @@ export function registerMaterialInstanceTools() {
         for (const faceDir of facesToCheck) {
           const face = cube.faces[faceDir];
           if (face) {
+            const faceTexture = face.getTexture();
             result[faceDir] = {
               material_name: face.material_name || "",
-              texture: face.texture ? (face.getTexture()?.name || face.texture.toString()) : null,
+              texture: face.texture
+                ? (faceTexture ? faceTexture.name : face.texture.toString())
+                : null,
             };
           }
         }
@@ -209,7 +212,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubes,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
@@ -296,7 +298,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubesToEdit,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
@@ -348,7 +349,6 @@ export function registerMaterialInstanceTools() {
 
         Undo.initEdit({
           elements: cubes,
-          // @ts-expect-error - uv_only is a valid Blockbench API property
           uv_only: true,
         });
 
