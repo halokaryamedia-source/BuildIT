@@ -1,3 +1,5 @@
+import { resolveCoreTexture } from "@/lib/coreIdentity";
+
 /**
  * Helper function to create properly formatted image content for MCP responses.
  * Handles data URLs, base64 strings, and objects with url property.
@@ -155,59 +157,14 @@ export function getAndActivateTexture(id?: string): Texture {
     return active;
   }
 
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === id);
-  if (uuidMatch) {
-    if (Texture.selected?.uuid !== uuidMatch.uuid) {
-      uuidMatch.select();
-    }
-    return uuidMatch;
-  }
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === id);
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${id}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  if (idMatches.length === 1) {
-    const texture = idMatches[0];
-    if (Texture.selected?.uuid !== texture.uuid) {
-      texture.select();
-    }
-    return texture;
-  }
-
-  const nameMatches = textures.filter((texture: Texture) => texture.name === id);
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${id}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  if (nameMatches.length === 1) {
-    const texture = nameMatches[0];
-    if (Texture.selected?.uuid !== texture.uuid) {
-      texture.select();
-    }
-    return texture;
-  }
-
-  throw new Error(
-    `Texture "${id}" not found. Use the list_textures tool to confirm the intended UUID or texture ID before painting.`
+  const texture = resolveCoreTexture(
+    id,
+    "Use list_textures to confirm the intended UUID or texture ID before painting."
   );
+  if (Texture.selected?.uuid !== texture.uuid) {
+    texture.select();
+  }
+  return texture;
 }
 
 // ============================================================================

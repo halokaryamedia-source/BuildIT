@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { resolveCoreAnimation, resolveCoreGroup } from "@/lib/coreIdentity";
 import {
   vector3Schema,
   animationIdOptionalSchema,
@@ -545,56 +546,16 @@ function toArrayVector3(values: readonly number[]): ArrayVector3 {
 }
 
 function resolveAnimation(reference?: string) {
-  if (reference === undefined) {
-    const selected = AnimationItem.selected;
-    if (!selected) {
-      throw new Error(
-        "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
-      );
-    }
-    return selected;
-  }
-
-  const uuidMatch = AnimationItem.all.find(
-    (animation) => animation.uuid === reference
-  );
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = AnimationItem.all.filter(
-    (animation) => animation.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Animation name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((animation) => `${animation.name} (${animation.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Animation "${reference}" not found. Pass an exact Animation UUID or exact unique Animation name.`
-  );
+  return resolveCoreAnimation(reference, {
+    allowSelected: true,
+    notFoundHint: "Pass an exact Animation UUID or exact unique Animation name.",
+  });
 }
 
 function resolveRigGroup(reference: string): Group {
-  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = Group.all.filter(
-    (group: Group) => group.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((group: Group) => `${group.name} (${group.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID.`
+  return resolveCoreGroup(
+    reference,
+    "Use list_outline to confirm the intended Group UUID."
   );
 }
 

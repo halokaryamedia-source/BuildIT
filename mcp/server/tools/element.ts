@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import {
   elementIdSchema,
   vector3Schema,
@@ -280,49 +281,17 @@ function getParentName(el: { parent?: unknown }): string | null {
 
 function resolveParentGroup(reference: string): Group | "root" {
   if (reference === "root") return "root";
-
-  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = Group.all.filter(
-    (group: Group) => group.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Parent Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((group: Group) => `${group.name} (${group.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Parent Group "${reference}" not found. Use list_outline to confirm the intended Group UUID. Use "root" only when root parenting is intentional.`
+  return resolveCoreGroup(
+    reference,
+    'Use list_outline to confirm the intended Group UUID. Use "root" only when root parenting is intentional.'
   );
 }
 
 function resolveOptionalGroupScope(reference?: string): Group | null {
   if (!reference) return null;
-
-  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = Group.all.filter(
-    (group: Group) => group.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Parent Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((group: Group) => `${group.name} (${group.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Parent Group "${reference}" not found. Use list_outline to confirm the intended Group UUID, or omit parent_group when no scope is intended.`
+  return resolveCoreGroup(
+    reference,
+    "Use list_outline to confirm the intended Group UUID, or omit parent_group when no scope is intended."
   );
 }
 
@@ -363,41 +332,9 @@ function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
 }
 
 function resolveUniqueTextureForDiscovery(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before retrying material discovery.`
+  return resolveCoreTexture(
+    reference,
+    "Use list_textures to confirm the intended UUID or texture ID before retrying material discovery."
   );
 }
 
@@ -523,7 +460,25 @@ export function registerElementTools() {
       }
 
       Canvas.updateAll();
-      return `Added group ${group.name} with ID ${group.uuid}`;
+      const result = {
+        group: {
+uuid: group.uuid,
+name: group.name,
+origin: [...group.origin],
+rotation: [...group.rotation],
+visibility: group.visibility !== false,
+parent: group.parent instanceof Group ? group.parent.uuid : "root",
+        },
+      };
+      return {
+        content: [
+{
+  type: "text" as const,
+  text: `Added Group ${group.name} (${group.uuid}).`,
+},
+        ],
+        structuredContent: result,
+      };
     },
   }, elementToolDocs[1].status);
 

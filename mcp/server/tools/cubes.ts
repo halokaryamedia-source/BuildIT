@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { cubeSchema } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
+import { resolveCoreCube, resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 
 const finiteVec3Schema = z.tuple([
   z.number().finite(),
@@ -307,91 +308,25 @@ function finalCubeState(cube: Cube) {
 }
 
 function resolveUniqueCube(reference: string): Cube {
-  const uuidMatch = (Cube.all ?? []).find(
-    (cube: Cube) => cube.uuid === reference
-  );
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = (Cube.all ?? []).filter(
-    (cube: Cube) => cube.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Cube name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((cube: Cube) => `${cube.name} (${cube.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Cube "${reference}" not found. Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended UUID.`
+  return resolveCoreCube(
+    reference,
+    "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended UUID."
   );
 }
 
 function resolvePlacementGroup(reference?: string): Group | "root" {
   if (reference === undefined || reference === "root") return "root";
-
-  const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = Group.all.filter(
-    (group: Group) => group.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Group name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((group: Group) => `${group.name} (${group.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID. Omit group or pass "root" only when root placement is intentional.`
+  return resolveCoreGroup(
+    reference,
+    'Use list_outline to confirm the intended Group UUID. Omit group or pass "root" only when root placement is intentional.'
   );
 }
 
 function resolvePlacementTexture(reference?: string): Texture | null {
   if (reference === undefined) return Texture.getDefault() ?? null;
-
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before placing Cubes.`
+  return resolveCoreTexture(
+    reference,
+    "Use list_textures to confirm the intended UUID or texture ID before placing Cubes."
   );
 }
 
@@ -455,11 +390,19 @@ createTool(cubeToolDocs[0].name, {
     }
 
     Canvas.updateAll();
-    return await Promise.resolve(
-      JSON.stringify(
-        cubes.map((cube: Cube) => `Added cube ${cube.name} with ID ${cube.uuid}`)
-      )
-    );
+    const result = {
+      added: cubes.length,
+      cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
+    };
+    return {
+      content: [
+        {
+type: "text" as const,
+text: `Added ${cubes.length} Cube${cubes.length === 1 ? "" : "s"}.`,
+        },
+      ],
+      structuredContent: result,
+    };
   },
 }, cubeToolDocs[0].status);
 
@@ -535,9 +478,19 @@ createTool(cubeToolDocs[1].name, {
     }
 
     Canvas.updateAll();
-    return `Modified cubes ${cubes
-      .map((cube) => cube.name)
-      .join(", ")} with IDs ${cubes.map((cube) => cube.uuid).join(", ")}`;
+    const result = {
+      modified: cubes.length,
+      cube: finalCubeState(cubes[0]),
+    };
+    return {
+      content: [
+        {
+type: "text" as const,
+text: `Modified Cube ${cubes[0].name} (${cubes[0].uuid}).`,
+        },
+      ],
+      structuredContent: result,
+    };
   },
 }, cubeToolDocs[1].status);
 

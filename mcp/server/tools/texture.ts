@@ -2,12 +2,9 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import {
-  imageContent,
-  findElementOrThrow,
-  getChannelTextureInfo,
-} from "@/lib/util";
+import { imageContent, getChannelTextureInfo } from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { resolveCoreCubeOrGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import {
   colorSchema,
   elementIdSchema,
@@ -445,301 +442,38 @@ function applyTextureElementType(
 }
 
 function resolveApplyTextureElement(reference: string): ApplyTextureElement {
-  const candidates: ApplyTextureElement[] = [
-    ...(Cube.all ?? []),
-    ...(Group.all ?? []),
-  ];
-
-  const uuidMatch = candidates.find((element) => element.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = candidates.filter((element) => element.name === reference);
-  if (nameMatches.length === 1) return nameMatches[0];
-
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((element) => `${applyTextureElementType(element)} ${element.name} (${element.uuid})`)
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID before applying a texture.`
+  return resolveCoreCubeOrGroup(
+    reference,
+    "Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID before applying a texture."
   );
 }
 
 function resolveApplyTextureTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before applying it.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before applying it.");
 }
 
 function resolveActivateTextureTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before activating it.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before activating it.");
 }
 
 function resolveGetTextureTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before reading image data.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before reading image data.");
 }
 
 function resolveAddTextureGroupTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before adding the texture group.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before adding the texture group.");
 }
 
 function resolveCreatePbrMaterialTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before creating the PBR material.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before creating the PBR material.");
 }
 
 function resolveConfigureMaterialTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before configuring the material.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before configuring the material.");
 }
 
 function resolveAssignTextureChannelTexture(reference: string): Texture {
-  const textures = Project?.textures ?? Texture.all;
-
-  const uuidMatch = textures.find((texture: Texture) => texture.uuid === reference);
-  if (uuidMatch) return uuidMatch;
-
-  const idMatches = textures.filter((texture: Texture) => texture.id === reference);
-  if (idMatches.length === 1) return idMatches[0];
-  if (idMatches.length > 1) {
-    throw new Error(
-      `Texture ID "${reference}" is ambiguous. Use an exact UUID. Candidates: ${idMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  const nameMatches = textures.filter(
-    (texture: Texture) => texture.name === reference
-  );
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `Texture name "${reference}" is ambiguous. Use an exact UUID or texture ID. Candidates: ${nameMatches
-        .map(
-          (texture: Texture) =>
-            `${texture.name} (id: ${texture.id}, uuid: ${texture.uuid})`
-        )
-        .join(", ")}`
-    );
-  }
-
-  throw new Error(
-    `Texture "${reference}" not found. Use list_textures to confirm the intended UUID or texture ID before assigning the PBR channel.`
-  );
+  return resolveCoreTexture(reference, "Use list_textures to confirm the intended UUID or texture ID before assigning the PBR channel.");
 }
 
 function resolveTextureToolMaterial(reference: string): TextureGroup {
