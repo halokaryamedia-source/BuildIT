@@ -1,0 +1,222 @@
+# Codex Native Deferred MCP Tool Loading — Official Source Audit
+
+Updated: 2026-08-11
+Status: `OFFICIALLY VERIFIED`; actual BlockIT/Codex behavior remains `LOCAL PROOF REQUIRED`
+
+## Question
+
+Can BlockIT keep the full retained Minecraft Bedrock Entity MCP capability surface while avoiding a requirement for every enabled MCP tool schema to be model-visible at once, without adding a BlockIT-specific router/profile framework?
+
+## Result
+
+Yes, in the current official Codex source there is a native client-owned deferred MCP path. When the active model supports tool search and the active provider supports namespace tools, Codex registers MCP tools with deferred exposure, provides `tool_search`, indexes MCP tool metadata, and can load the matching tool specifications returned by search.
+
+This means **no BlockIT runtime/source change is justified merely to opt into deferred loading**. BlockIT should preserve its retained Bedrock Entity capabilities and let the client own deferred exposure when the actual local Codex environment supports it.
+
+This source audit does **not** prove that the user's installed Codex build, active model/provider, or live Blockbench session is currently using that path. That remains local acceptance evidence.
+
+## Official Codex Source Evidence
+
+Pinned upstream snapshot inspected for this audit:
+
+```text
+openai/codex@63002bdb26c939925f3fa59b9575cc0a3564cb45
+```
+
+### 1. MCP exposure becomes deferred when search is available
+
+Owner:
+
+```text
+codex-rs/core/src/mcp_tool_exposure.rs
+```
+
+`append_mcp_tools(...)` selects:
+
+```text
+search enabled   -> ToolExposure::Deferred
+search disabled  -> ToolExposure::Direct
+```
+
+The same path is applied to ordinary MCP tools and eligible Apps MCP tools; it is not a BlockIT-specific behavior.
+
+### 2. Tool search availability is client/model/provider owned
+
+Owner:
+
+```text
+codex-rs/core/src/tools/spec_plan.rs
+```
+
+The effective search condition is the conjunction of:
+
+```text
+active model supports_search_tool
+AND
+active provider supports namespace_tools
+```
+
+When search is available and deferred searchable runtimes exist, Codex adds its native `tool_search` handler. Exposure policy then keeps those eligible tools on the deferred path rather than sending them as normal direct tools.
+
+### 3. Official tests protect deferred MCP exposure
+
+Owner:
+
+```text
+codex-rs/core/src/mcp_tool_exposure_test.rs
+```
+
+The current suite explicitly covers:
+
+```text
+defers_effective_tool_sets_when_search_is_available
+defers_apps_and_non_app_mcp_tools
+```
+
+It separately verifies direct exposure when search is unavailable. This is stronger evidence than inferring behavior from a single implementation branch.
+
+### 4. Standard MCP metadata is sufficient for native search
+
+Owner:
+
+```text
+codex-rs/core/src/tools/handlers/mcp.rs
+```
+
+Codex builds MCP search text from existing MCP information including:
+
+```text
+canonical/callable/raw tool names
+server name
+title
+description
+connector / namespace metadata when present
+input-schema property names
+```
+
+There is no requirement here for a BlockIT-owned `defer_loading` field or custom search manifest.
+
+### 5. Search returns loadable matching specifications
+
+Owner:
+
+```text
+codex-rs/core/src/tools/handlers/tool_search.rs
+```
+
+The native handler builds a BM25 search index from deferred tool search metadata. A search returns matching `LoadableToolSpec` values and coalesces matching namespaces. This is the client-side mechanism that avoids treating the entire MCP catalog as one undifferentiated direct tool surface.
+
+### 6. Current official model/provider source supports the mechanism
+
+Owners:
+
+```text
+codex-rs/models-manager/models.json
+codex-rs/model-provider/src/provider.rs
+```
+
+The inspected current Codex model catalog includes models with `supports_search_tool: true`; the current `gpt-5.6-sol` entry is one such model. Standard provider capabilities default `namespace_tools` to true.
+
+These are official-source facts only. The actual installed Codex version, active model, provider, and resolved remote model metadata must still be recorded in the local acceptance run instead of inferred from this snapshot.
+
+## BlockIT Compatibility Audit
+
+### Existing MCP registration already exposes indexed metadata
+
+Owner:
+
+```text
+mcp/lib/factories.ts
+```
+
+BlockIT's existing `createTool(...)` / `registerToolsOnServer(...)` path registers the standard MCP fields Codex search consumes:
+
+```text
+name
+title
+description
+inputSchema
+annotations
+```
+
+The full Zod schema remains the runtime validation owner while the extracted object shape is used for MCP registration/listing. No additional BlockIT search registry is needed.
+
+### Existing family/profile architecture should remain unchanged
+
+Owner:
+
+```text
+mcp/server/tools.ts
+```
+
+BlockIT registration is intentionally family-level. The current profile selects existing families and does not introduce per-tool ACLs or a dynamic policy engine. Native Codex deferred exposure is therefore a client concern, not a reason to add a second BlockIT routing layer.
+
+### Existing authoring routing already gives high-signal search intent
+
+Owner:
+
+```text
+.agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+```
+
+The normal stage-gated lane names the intended operations directly (`create_project`, `place_cube`, `capture_model_views`, `inspect_element`, `modify_cube`, `export_model`, etc.) and loads texture/animation specialists only when their stage is active. This already supplies much better intent for native tool search than catalog exploration.
+
+## Local Decision
+
+For the current `Local` branch:
+
+```text
+DO NOT add a BlockIT custom tool router.
+DO NOT add another capability/profile framework for context reduction.
+DO NOT disable retained native Bedrock capabilities merely to shrink model context.
+DO NOT claim usage reduction from this source audit alone.
+```
+
+Use Codex's native deferred/search path when the actual local environment proves it is active. If the local proof fails, diagnose the installed client version, model, provider, and resolved tool exposure first. Only then reconsider a BlockIT-side mechanism if a real remaining blocker is demonstrated.
+
+## Required Local Proof
+
+Use the actual Codex + Blockbench + BlockIT environment. The proof is intentionally diagnostic and bounded; it is not another product framework.
+
+1. Record the installed `codex --version`, active model, and provider used for the run.
+2. Start Blockbench with the current `Local` BlockIT build and verify the normal stateless endpoint is reachable.
+3. Set a temporary `CODEX_ROLLOUT_TRACE_ROOT` outside the repository before starting the bounded Codex run. Rollout traces can contain prompts, responses, tool inputs/outputs, terminal output, and paths, so **never commit the trace bundle**.
+4. Run one small BlockIT authoring task from the `BuildIT` root that requires a known geometry operation.
+5. Reduce the produced bundle with:
+
+```text
+codex debug trace-reduce <trace-bundle>
+```
+
+6. Inspect the first model-facing request and prove that the full 65-tool BlockIT schema surface is not all sent as direct model-visible tool specifications when native search is active.
+7. Inspect the subsequent request/runtime evidence and prove that a relevant BlockIT tool is discovered/loaded and then called successfully.
+8. Repeat only enough bounded discovery to prove retained reachability across the product path: geometry plus texture and either animation or Locator/Null Object. Do not run every tool.
+9. When practical, record the initial model-visible BlockIT tool-spec count/serialized size and compare it with the existing full `tools/list` baseline of 65 enabled tools / 72,817 response characters. Keep this as diagnostic evidence, not a permanent runtime metric.
+
+### PASS
+
+```text
+Initial model-visible BlockIT schema surface is materially smaller than the full catalog
+AND
+native search discovers/loads the relevant retained BlockIT tools
+AND
+representative retained domains remain callable
+```
+
+### FAIL
+
+```text
+All 65 full BlockIT tool specifications remain model-visible at the initial request
+OR
+native search cannot discover/load a retained capability required by the bounded test
+```
+
+On failure, inspect client/model/provider support before changing BlockIT architecture.
+
+### BLOCKED
+
+Use `BLOCKED` when the installed Codex environment cannot expose the evidence needed to determine direct vs deferred model-visible tool exposure. Report the exact version/model/provider or trace limitation; do not substitute a guess or add a router to create apparent progress.
+
+## Evidence Boundary
+
+This audit upgrades the existence and compatibility of the native Codex mechanism to `OFFICIALLY VERIFIED`. It does **not** upgrade BlockIT's real local client behavior, token usage, model quality, Blockbench behavior, or end-to-end acceptance. Those remain `LOCAL PROOF REQUIRED` until the bounded run above is completed.
