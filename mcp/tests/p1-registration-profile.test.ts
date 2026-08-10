@@ -56,8 +56,9 @@ describe("P1 Bedrock Entity registration profile", () => {
     );
 
     expect(source).toContain(
-      "getRegistrationFamilies(DEFAULT_MCP_REGISTRATION_PROFILE)"
+      "registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);"
     );
+    expect(source).toContain("getRegistrationFamilies(profile)");
     expect(source).toContain("import: registerImportTools");
     expect(source).toContain("ui: registerUITools");
     expect(source).not.toContain("registerImportTools,\n  registerUITools");
