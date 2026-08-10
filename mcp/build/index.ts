@@ -78,7 +78,7 @@ async function buildPlugin(): Promise<boolean> {
   });
 
   if (!result.success) {
-    log.header("[Build] Failed");
+    log.header(`${c.red}[Build] Failed${c.reset}`);
     for (const message of result.logs) {
       log.error(String(message));
     }
