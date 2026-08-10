@@ -1,0 +1,82 @@
+name: Audit Default MCP Tool Exposure
+
+on:
+  push:
+    paths:
+      - ".github/workflows/audit-default-exposed-tools.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure actual default exposure
+        run: |
+          bun - <<'BUN'
+          import { tools } from './mcp/server/tools.ts';
+          import api from './mcp/docs/api.json';
+
+          const exposed = Object.values(tools).filter((tool) => tool.enabled).map((tool) => tool.name).sort();
+          const disabled = Object.values(tools).filter((tool) => !tool.enabled).map((tool) => tool.name).sort();
+          const docs = api.tools;
+          const byName = new Map(docs.map((tool) => [tool.name, tool]));
+          const chars = (names) => names.reduce((sum, name) => {
+            const tool = byName.get(name);
+            return sum + (tool ? JSON.stringify(tool).length : 0);
+          }, 0);
+
+          const categories = new Map();
+          for (const name of exposed) {
+            const tool = byName.get(name);
+            const category = tool?.category ?? 'Unknown';
+            const row = categories.get(category) ?? { count: 0, chars: 0, names: [] };
+            row.count += 1;
+            row.chars += tool ? JSON.stringify(tool).length : 0;
+            row.names.push(name);
+            categories.set(category, row);
+          }
+
+          const geometryLane = [
+            'create_project', 'get_project_info',
+            'list_outline', 'find_elements_by_criteria',
+            'place_cube', 'add_group',
+            'capture_model_views', 'inspect_model_bounds',
+            'inspect_element', 'modify_cube', 'modify_cubes_batch', 'remove_element',
+            'undo', 'save_checkpoint', 'export_model'
+          ].filter((name) => exposed.includes(name));
+
+          const endToEndCategories = new Set([
+            'Project', 'Cubes', 'Elements', 'Element Inspection', 'Camera',
+            'History', 'Export', 'Textures', 'Paint', 'Material Instances',
+            'Animation', 'Animation Inspection'
+          ]);
+          const endToEnd = exposed.filter((name) => endToEndCategories.has(byName.get(name)?.category ?? ''));
+
+          console.log('EXPOSED_COUNT', exposed.length);
+          console.log('DISABLED_COUNT', disabled.length);
+          console.log('EXPOSED_METADATA_CHARS', chars(exposed));
+          console.log('EXPOSED', JSON.stringify(exposed));
+          console.log('DISABLED', JSON.stringify(disabled));
+          console.log('\nBY_CATEGORY');
+          for (const [category, row] of [...categories.entries()].sort()) {
+            console.log(category, 'count=' + row.count, 'chars=' + row.chars, JSON.stringify(row.names.sort()));
+          }
+          console.log('\nGEOMETRY_LANE_COUNT', geometryLane.length);
+          console.log('GEOMETRY_LANE_METADATA_CHARS', chars(geometryLane));
+          console.log('GEOMETRY_LANE', JSON.stringify(geometryLane));
+          console.log('\nEND_TO_END_COUNT', endToEnd.length);
+          console.log('END_TO_END_METADATA_CHARS', chars(endToEnd));
+          console.log('END_TO_END', JSON.stringify(endToEnd));
+          BUN
