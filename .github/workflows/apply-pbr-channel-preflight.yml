@@ -1,0 +1,190 @@
+name: Apply PBR Channel Identity Preflight
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-pbr-channel-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Add distinct PBR channel preflight
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("mcp/server/tools/texture.ts")
+          text = path.read_text(encoding="utf-8")
+
+          registration_marker = "// ============================================================================\n// Tool Registration\n// ============================================================================\n"
+          helper = '''type PbrChannelAssignment = {
+  channel: z.infer<typeof pbrChannelEnum>;
+  texture?: Pick<Texture, "uuid" | "name">;
+};
+
+export function requireDistinctPbrChannelAssignments(
+  assignments: readonly PbrChannelAssignment[]
+): void {
+  const channelByTexture = new Map<string, string>();
+
+  for (const { channel, texture } of assignments) {
+    if (!texture) continue;
+
+    const previousChannel = channelByTexture.get(texture.uuid);
+    if (previousChannel && previousChannel !== channel) {
+      throw new Error(
+        `Texture "${texture.name}" (${texture.uuid}) cannot be assigned to both ${previousChannel} and ${channel} in one material operation. A Texture has one pbr_channel; use distinct textures per channel.`
+      );
+    }
+    channelByTexture.set(texture.uuid, channel);
+  }
+}
+
+'''
+          if text.count(registration_marker) != 1:
+              raise SystemExit("Unexpected texture registration marker")
+          text = text.replace(registration_marker, helper + registration_marker, 1)
+
+          create_anchor = '''      const merTexture =
+        mer_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(mer_texture)
+          : undefined;
+      const texturesToAdd = [
+'''
+          create_replacement = '''      const merTexture =
+        mer_texture !== undefined
+          ? resolveCreatePbrMaterialTexture(mer_texture)
+          : undefined;
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: colorTexture },
+        { channel: "normal", texture: normalTexture },
+        { channel: "height", texture: heightTexture },
+        { channel: "mer", texture: merTexture },
+      ]);
+      const texturesToAdd = [
+'''
+          if text.count(create_anchor) != 1:
+              raise SystemExit("Unexpected create PBR insertion point")
+          text = text.replace(create_anchor, create_replacement, 1)
+
+          configure_anchor = '''      const merTexture =
+        mer_texture !== undefined && mer_texture !== "none"
+          ? resolveConfigureMaterialTexture(mer_texture)
+          : undefined;
+      const assignmentTextures = [
+'''
+          configure_replacement = '''      const merTexture =
+        mer_texture !== undefined && mer_texture !== "none"
+          ? resolveConfigureMaterialTexture(mer_texture)
+          : undefined;
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: colorTexture },
+        { channel: "normal", texture: normalTexture },
+        { channel: "height", texture: heightTexture },
+        { channel: "mer", texture: merTexture },
+      ]);
+      const assignmentTextures = [
+'''
+          if text.count(configure_anchor) != 1:
+              raise SystemExit("Unexpected configure material insertion point")
+          text = text.replace(configure_anchor, configure_replacement, 1)
+
+          old_create_description = "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported."
+          new_create_description = "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported."
+          if text.count(old_create_description) != 1:
+              raise SystemExit("Unexpected create PBR description")
+          text = text.replace(old_create_description, new_create_description, 1)
+
+          old_configure_description = "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation."
+          new_configure_description = "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call."
+          if text.count(old_configure_description) != 1:
+              raise SystemExit("Unexpected configure material description")
+          path.write_text(text.replace(old_configure_description, new_configure_description, 1), encoding="utf-8")
+
+          test_path = Path("mcp/tests/pbr-channel-contract.test.ts")
+          if test_path.exists():
+              raise SystemExit("PBR channel contract test already exists")
+          test_path.write_text('''import { describe, expect, test } from "bun:test";
+import { requireDistinctPbrChannelAssignments } from "@/server/tools/texture";
+
+describe("PBR channel identity preflight", () => {
+  test("accepts distinct Texture identities across channels", () => {
+    expect(() =>
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: { uuid: "color-1", name: "Color" } },
+        { channel: "normal", texture: { uuid: "normal-1", name: "Normal" } },
+        { channel: "mer", texture: { uuid: "mer-1", name: "MER" } },
+      ])
+    ).not.toThrow();
+  });
+
+  test("rejects one Texture identity assigned to multiple channels", () => {
+    expect(() =>
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: { uuid: "shared", name: "Shared" } },
+        { channel: "normal", texture: { uuid: "shared", name: "Shared Alias" } },
+      ])
+    ).toThrow("cannot be assigned to both color and normal");
+  });
+});
+''', encoding="utf-8")
+
+          next_path = Path("docs/knowledge/next-action.md")
+          next_text = next_path.read_text(encoding="utf-8")
+          anchor = "The current source slice has hardened **P2 — texture and animation sequencing**. End-to-end downstream production waits for the geometry/rig state it actually depends on; existing-asset texture-only/animation-only tasks may use current geometry as a baseline without inventing a geometry `PASS`; affected downstream work is revalidated after material geometry/hierarchy/pivot changes.\n"
+          note = "\nA bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged.\n"
+          if next_text.count(anchor) != 1:
+              raise SystemExit("Unexpected P2 continuity anchor")
+          next_path.write_text(next_text.replace(anchor, anchor + note, 1), encoding="utf-8")
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit PBR preflight and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-pbr-channel-preflight.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: reject conflicting PBR channel assignments"
+          git push origin HEAD:Local
