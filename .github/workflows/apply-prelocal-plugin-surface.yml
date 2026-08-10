@@ -24,10 +24,9 @@ jobs:
           bun-version: latest
 
       - name: Apply guarded patch
-        run: python .github/prelocal_plugin_surface_patch.py
-
-      - name: Show patched plugin metadata
-        run: nl -ba mcp/index.ts | sed -n '30,45p'
+        run: |
+          sed -i 's/tags: \["MCP", "AI", "Minecraft", "Bedrock"\]/tags: ["MCP", "AI"]/g' .github/prelocal_plugin_surface_patch.py
+          python .github/prelocal_plugin_surface_patch.py
 
       - name: Install dependencies
         working-directory: mcp
