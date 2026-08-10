@@ -5,6 +5,25 @@ Active task state belongs in `next-action.md`, not here.
 
 ## Current Decisions
 
+
+### MCP transport will simplify on the production v1 SDK line before any v2 migration
+
+- **Decision:** `SIMPLIFY ON CURRENT SDK LINE`.
+- **Date:** 2026-08-10.
+- **Official protocol evidence:** `2025-11-25` remains the current stable MCP revision. `2026-07-28` is still an RC/draft and is not implementation authority yet.
+- **Official SDK evidence:** TypeScript SDK v2 remains in development/pre-alpha; v1.x remains the recommended production line. BlockIT currently resolves `@modelcontextprotocol/sdk@1.25.3`.
+- **Actual supported client requirement:** BlockIT runtime proof targets Codex local. Current Codex clients support direct Streamable HTTP by URL; inherited `mcp/README.md` examples for Claude/mcp-remote/Cline/Ollama/OpenCode are not product compatibility requirements by themselves.
+- **Target topology:** loopback-only direct Streamable HTTP, stateless v1 hosting, JSON response mode, no protocol session ID, no MCP ping/SSE heartbeat/custom session timeout/per-session transport map.
+- **Preserve:** `127.0.0.1` binding and invalid-present-Origin rejection before MCP dispatch. HTTP keep-alive may remain only as ordinary connection reuse, not as MCP session/liveness state.
+- **Temporary owner retained:** the current raw `node:net` HTTP parsing/dispatch remains until a Blockbench-compatible official HTTP adapter/runtime is locally proven. Do not combine parser replacement with the first stateless conversion.
+- **UI consequence:** current panel/status-bar session counts are coupled to `sessionManager`; stateless implementation must remove or replace that session-shaped UI state rather than displaying nonexistent protocol sessions.
+- **No auth change:** no OAuth/auth framework is added while the product remains loopback-only. Reconsider auth before any future non-loopback boundary.
+- **No v2 change:** do not migrate SDK packages or adopt `2026-07-28` in the same implementation slice.
+- **Evidence record:** `docs/knowledge/reviews/mcp-transport-session-decision-2026-08-10.md`.
+- **Proof boundary:** this is a source/research decision. Direct Codex↔Blockbench stateless behavior remains `LOCAL PROOF REQUIRED` after the implementation passes non-local gates.
+- **Owner:** workspace agent.
+
+
 ### Evidence-gate capability is baseline evidence status, not a standalone skill
 
 - **Audit decision:** `MERGE + DROP AS SKILL`.

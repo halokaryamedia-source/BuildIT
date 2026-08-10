@@ -14,11 +14,11 @@ The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. The active source boundary is now **P1.4 — transport/session simplification decision**.
+P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. The P1.4 transport/session decision is recorded as **SIMPLIFY ON CURRENT SDK LINE**. The active source boundary is now **P1.4 implementation — stateless v1 Streamable HTTP simplification**.
 
 ## Current Status
 
-`MCP_P1_CORE_OWNERSHIP_COMPLETE_TRANSPORT_DECISION_NEXT`
+`MCP_P1_TRANSPORT_DECISION_COMPLETE_STATELESS_V1_IMPLEMENTATION_NEXT`
 
 Execution channel: **ChatGPT → GitHub**.  
 Working branch: **`Local` only**.  
@@ -551,77 +551,154 @@ P0.5  generated-doc freshness                    COMPLETE
 P1.1  default Bedrock Entity registration profile COMPLETE
 P1.2  family gates                               COMPLETE
 P1.3  core-only resolver/mutation/result consolidation COMPLETE
-P1.4  transport/session future decision              ← ACTIVE NEXT SLICE
+P1.4  transport/session simplification              DECISION COMPLETE / IMPLEMENTATION NEXT
 P1.5  local end-to-end core acceptance
 
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P1.4 Transport / Session Decision Only
+# Completed P1.4 Decision — Simplify On Current SDK Line
 
-Do not implement a transport migration before the decision is recorded, and do not start P1.5 in the same slice.
+Decision record:
+
+```text
+docs/knowledge/reviews/mcp-transport-session-decision-2026-08-10.md
+```
+
+Decision:
+
+```text
+SIMPLIFY ON CURRENT SDK LINE
+```
+
+Current official evidence checked on 2026-08-10 established:
+
+```text
+current stable MCP revision     2025-11-25
+2026-07-28 revision             RC / draft, not final
+TypeScript SDK v2               development / pre-alpha
+production SDK recommendation   v1.x
+actual required BlockIT client  Codex local, direct Streamable HTTP
+```
+
+The inherited broad client list in `mcp/README.md` is not a compatibility requirement for the BlockIT product. P1.4 implementation targets the actual Codex local path first.
+
+Target transport ownership:
+
+```text
+KEEP       loopback binding
+KEEP       invalid-present-Origin -> 403 before MCP dispatch
+REMOVE     custom TCP keepalive as MCP liveness
+REMOVE     socket idle timeout as session lifetime
+KEEP MIN   ordinary HTTP keep-alive only if useful
+REMOVE     SSE heartbeat from default path
+REMOVE     MCP ping
+REMOVE     custom inactivity/session timeout
+REMOVE     Mcp-Session-Id / protocol session routing
+REMOVE     per-session transport map
+REMOVE     per-session McpServer reconstruction
+KEEP TEMP  current raw node:net HTTP parser/serializer
+ADAPT      health/status UI so it does not claim nonexistent sessions
+```
+
+No SDK v2 migration, 2026 draft adoption, authentication framework, Bedrock tool work, or broad HTTP-runtime rewrite is authorized by this decision.
+
+# Next Step — P1.4 Stateless v1 Implementation Only
+
+Implement the recorded transport decision **non-local first**. Do not start P1.5 until the implementation has passed repository gates and the required local proof has been run.
 
 ## Goal
 
-Re-evaluate the MCP transport/session architecture against the **current official MCP protocol and TypeScript SDK state** plus the actual BlockIT client requirement, then choose the smallest supported direction before any source rewrite.
+Replace the current sessionful/layered-liveness Streamable HTTP ownership with the smallest direct-Codex stateless v1 path while preserving loopback/Origin containment and all Bedrock Entity MCP registration behavior.
 
-Because protocol/SDK status is time-sensitive, P1.4 must use current official primary sources rather than repository-era assumptions.
-
-## Required research
-
-Re-check at execution time:
+## Intended implementation shape
 
 ```text
-current stable MCP protocol revision
-current stable @modelcontextprotocol/sdk / official TypeScript SDK line
-official Streamable HTTP requirements and security guidance
-current session semantics / deprecations
-Blockbench desktop runtime constraints
-actual BlockIT MCP client(s) that must remain supported
+HTTP MCP request
+↓
+existing loopback / Origin / endpoint checks
+↓
+fresh request-owned McpServer
+↓
+register canonical enabled tools/resources/prompts
+↓
+fresh WebStandardStreamableHTTPServerTransport
+  sessionIdGenerator: undefined
+  enableJsonResponse: true
+↓
+handle request
+↓
+close/discard request-owned server + transport
 ```
 
-## Required decision
-
-Choose and document exactly one:
+## Source scope to audit/change
 
 ```text
-KEEP CURRENT MINIMAL
-SIMPLIFY ON CURRENT SDK LINE
-MIGRATE TO CURRENT STABLE SDK/PROTOCOL
+mcp/server/net.ts
+mcp/lib/sessions.ts
+mcp/index.ts
+mcp/ui/index.ts
+mcp/ui/statusBar.ts
+mcp/ui/settings.ts
+focused transport tests
 ```
 
-For the chosen direction, explicitly classify whether these existing layers remain necessary:
+`mcp/lib/sessions.ts` may be retired if no truthful non-session owner remains. Do not preserve it merely for historical client compatibility.
+
+The panel/status bar must not present a durable "connected session" when the transport is stateless. Prefer server-running / recent-request telemetry only if it has a real product use; otherwise remove the session-specific display cleanly rather than inventing another state system.
+
+## Must preserve
 
 ```text
-TCP keepalive
-HTTP keep-alive
-SSE heartbeat
-MCP ping
-custom inactivity timeout
-protocol session IDs
-per-session server reconstruction
-custom HTTP parsing/dispatch
+host default/bind = 127.0.0.1
+present invalid Origin rejected with 403 before MCP handling
+normal Bedrock Entity registration truth
+P0.2 disabled dangerous tools
+P1.1/P1.2 default + extended family gates
+P1.3 core identity/result ownership
+health/ready only if their returned state remains truthful
 ```
 
-Do not preserve transport complexity merely because it already exists. Do not remove compatibility required by the actual BlockIT client without evidence.
-
-## Non-goals
+## Explicit non-goals
 
 ```text
-no modelling/tool feature work
+no SDK v2 migration
+no 2026-07-28 protocol adoption
+no auth/OAuth framework
+no Bedrock modelling/tool feature work
 no Animation/Paint/Texture rewrite
-no authentication system unless a newly approved non-loopback requirement actually demands it
-no P1.5 local E2E execution yet
+no generic HTTP-framework migration
+no custom parser replacement unless the existing parser blocks the stateless implementation
 ```
 
-## Acceptance
+Do not upgrade `@modelcontextprotocol/sdk` merely because newer v1 releases exist. If the installed `1.25.3` proves to block the documented stateless pattern, stop and make the dependency update an explicit evidence-backed subdecision rather than silently mixing it into the transport rewrite.
+
+## Non-local acceptance
 
 ```text
-official current protocol/SDK evidence recorded
-actual supported client requirement recorded
-decision among keep/simplify/migrate recorded
-redundant vs required transport/session layers classified
-implementation boundary for any later transport change is explicit
+focused stateless transport tests PASS
+no session ID / ping / heartbeat / inactivity ownership remains in default path
+typecheck PASS
+full Bun tests PASS
+production build PASS
+generated docs freshness PASS
+root MCP Verify PASS
 ```
 
-Only after this decision may P1.4 implementation proceed if the decision requires source changes. P1.5 remains the later local end-to-end acceptance boundary.
+## Local proof required before closing P1.4
+
+```text
+Blockbench plugin binds loopback
+Codex local connects directly by Streamable HTTP URL
+initialize succeeds
+real tools/list works
+repeated requests work without Mcp-Session-Id
+read-only tool call works
+bounded mutation works
+invalid present Origin still returns 403
+no unexpected standalone SSE dependency
+plugin unload/reload closes server cleanly
+UI does not report fake protocol sessions
+```
+
+Only after that local proof passes (or records an explicit blocking defect) may P1.4 close and P1.5 full Bedrock Entity end-to-end acceptance begin.
