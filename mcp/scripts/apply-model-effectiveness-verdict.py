@@ -120,7 +120,7 @@ insert_before(
     validation_verdict,
 )
 
-decision_verdict = r'''### Verdict states
+decision_verdict = r'''## Reference Fidelity Verdict
 
 Visual approval uses three states, not a forced binary:
 
@@ -135,7 +135,7 @@ The review is difference-first: search for silhouette, proportion, placement, or
 '''
 insert_before(
     "docs/knowledge/decisions/reference-fidelity-loop.md",
-    "A `PASS` whose main evidence is structural validity is invalid.\n",
+    "## Observation Decision\n",
     decision_verdict,
 )
 
@@ -210,7 +210,6 @@ Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, or 
 '''
 replace_once("docs/knowledge/next-action.md", old_next, new_next)
 
-# Lock the semantic contract in the existing prompt/skill regression file.
 test_marker = '  test("generated-doc source is BlockIT-branded and install guidance does not offer the upstream hosted binary", async () => {\n'
 test_addition = r'''  test("reference-driven modelling uses a difference-first three-state visual verdict", async () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
