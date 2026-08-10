@@ -13,16 +13,20 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 ap = Path("mcp/server/tools/animation.ts")
 a = ap.read_text()
 
-helper_anchor = 'type TransformChannel = "rotation" | "position" | "scale";'
-helper = '''type TransformChannel = "rotation" | "position" | "scale";
-
+animation_helper = '''
 function toArrayVector3(values: readonly number[]): ArrayVector3 {
   if (values.length !== 3) {
     throw new Error(`Expected exactly 3 vector components, got ${values.length}.`);
   }
   return [values[0], values[1], values[2]];
-}'''
-a = replace_once(a, helper_anchor, helper, "animation vector helper")
+}
+'''
+a = replace_once(
+    a,
+    "\nfunction resolveAnimation(reference?: string) {",
+    f"{animation_helper}\nfunction resolveAnimation(reference?: string) {{",
+    "animation vector helper",
+)
 a = a.replace(
     '(candidate) => Math.abs(candidate.time - kf.time) < 0.001',
     '(candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001',
