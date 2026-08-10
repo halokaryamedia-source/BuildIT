@@ -404,9 +404,9 @@ export function registerCameraTools() {
 
       // @ts-expect-error Blockbench accepts an AnglePreset-like object here.
       preview.loadAnglePreset({ ...angle });
-      if (angle.zoom !== undefined && preview.camera.isOrthographicCamera) {
-        preview.camera.zoom = angle.zoom;
-        preview.camera.updateProjectionMatrix();
+      if (angle.zoom !== undefined && preview.isOrtho) {
+        preview.camOrtho.zoom = angle.zoom;
+        preview.camOrtho.updateProjectionMatrix();
         preview.controls.update();
       }
       return captureScreenshot();

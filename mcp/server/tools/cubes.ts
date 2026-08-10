@@ -554,7 +554,7 @@ createTool(cubeToolDocs[2].name, {
       cube: Cube;
       update: BatchUpdate;
       pivotOnly: boolean;
-    }> = updates.map((update) => {
+    }> = updates.map((update: BatchUpdate) => {
       const cube = (Cube.all ?? []).find(
         (candidate: Cube) => candidate.uuid === update.id
       );

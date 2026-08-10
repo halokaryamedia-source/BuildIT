@@ -326,8 +326,10 @@ function resolveOptionalGroupScope(reference?: string): Group | null {
   );
 }
 
-function resolveUniqueDestructiveElement(reference: string): OutlinerElement {
-  const candidates = new Map<string, OutlinerElement>();
+type ResolvedElement = OutlinerElement | Group;
+
+function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
+  const candidates = new Map<string, ResolvedElement>();
 
   for (const element of Outliner.elements ?? []) {
     candidates.set(element.uuid, element);
@@ -597,9 +599,9 @@ export function registerElementTools() {
       function cloneCube(cube: Cube, parent: any) {
         const dupe = new Cube({
           name: newName || `${cube.name}_copy`,
-          from: cube.from.map((v, i) => v + offset[i]),
-          to: cube.to.map((v, i) => v + offset[i]),
-          origin: cube.origin.map((v, i) => v + offset[i]),
+          from: [cube.from[0] + offset[0], cube.from[1] + offset[1], cube.from[2] + offset[2]],
+          to: [cube.to[0] + offset[0], cube.to[1] + offset[1], cube.to[2] + offset[2]],
+          origin: [cube.origin[0] + offset[0], cube.origin[1] + offset[1], cube.origin[2] + offset[2]],
           rotation: cube.rotation,
           autouv: cube.autouv,
           uv_offset: cube.uv_offset,
@@ -616,7 +618,7 @@ export function registerElementTools() {
       function cloneGroup(group: Group, parent: any) {
         const dupeGroup = new Group({
           name: newName || `${group.name}_copy`,
-          origin: group.origin.map((v, i) => v + offset[i]),
+          origin: [group.origin[0] + offset[0], group.origin[1] + offset[1], group.origin[2] + offset[2]],
           rotation: group.rotation,
           autouv: group.autouv,
           selected: group.selected,
@@ -660,10 +662,15 @@ export function registerElementTools() {
     ...elementToolDocs[4],
     async execute({ id, new_name }) {
       const element = resolveUniqueDestructiveElement(id);
-      Undo.initEdit({ elements: [element], outliner: true, collections: [] });
+      Undo.initEdit({
+        elements: element instanceof Group ? [] : [element],
+        groups: element instanceof Group ? [element] : [],
+        outliner: true,
+        collections: [],
+      });
 
       try {
-        element.extend({ name: new_name });
+        element.name = new_name;
         Undo.finishEdit("Agent renamed element");
       } catch (error) {
         Undo.cancelEdit(true);
@@ -757,7 +764,7 @@ export function registerElementTools() {
           el.selected = true;
           continue;
         }
-        el.select?.({ shiftKey: true });
+        el.select?.(new MouseEvent("click", { shiftKey: true }));
       }
 
       updateSelection();
