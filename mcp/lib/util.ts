@@ -221,7 +221,6 @@ export function getAndActivateTexture(id?: string): Texture {
  * @throws Error with suggestion to use list_outline
  */
 export function findGroupOrThrow(name: string): Group {
-  // @ts-ignore - Group is globally available in Blockbench
   const group = Group.all.find((g: Group) => g.name === name);
   if (!group) {
     throw new Error(
@@ -236,10 +235,10 @@ export function findGroupOrThrow(name: string): Group {
  * Shared callers must still enforce their own supported Bedrock element type
  * after resolution (for example Cube-only material-instance operations).
  * @param id - The UUID or name of the element to find
- * @returns The found OutlinerElement
+ * @returns The found Outliner element or Group
  * @throws Error with suggestion to use list_outline
  */
-export function findElementOrThrow(id: string): OutlinerElement {
+export function findElementOrThrow(id: string): OutlinerElement | Group {
   const element =
     Outliner.elements.find(
       (el: OutlinerElement) => el.uuid === id || el.name === id
@@ -272,7 +271,6 @@ export function findTextureOrThrow(id: string): Texture {
  * Helper to find a TextureGroup by name or UUID
  */
 export function findTextureGroupOrThrow(id: string): TextureGroup {
-  // @ts-ignore - TextureGroup is globally available in Blockbench
   const group = TextureGroup.all.find(
     (g: TextureGroup) => g.uuid === id || g.name === id
   );
@@ -299,7 +297,7 @@ export function getChannelTextureInfo(textures: Texture[], channel: string) {
  * Uses Blockbench's native rendering pipeline for accurate capture.
  */
 export function captureScreenshot(project?: string) {
-  let selectedProject = Project;
+  let selectedProject: ModelProject | undefined = Project || undefined;
 
   if (!selectedProject || project !== undefined) {
     selectedProject = ModelProject.all.find(
@@ -316,7 +314,6 @@ export function captureScreenshot(project?: string) {
     selectedProject.select();
   }
 
-  // @ts-ignore - Preview is globally available in Blockbench
   const preview = Preview.selected;
   if (!preview) {
     throw new Error("No preview available for the selected project.");
@@ -325,7 +322,6 @@ export function captureScreenshot(project?: string) {
   // Capture the preview canvas using Blockbench's native approach
   // Canvas.withoutGizmos temporarily hides gizmos, executes the callback, then restores them
   let dataUrl: string | undefined;
-  // @ts-ignore - Canvas is globally available in Blockbench
   Canvas.withoutGizmos(() => {
     preview.render();
     dataUrl = preview.canvas.toDataURL();
@@ -356,7 +352,7 @@ export async function captureAppScreenshot(): Promise<ReturnType<typeof imageCon
     }, 5000);
 
     // Use Blockbench's native Screencam.fullScreen which uses Electron's capturePage
-    // @ts-ignore - Screencam is globally available in Blockbench
+    // @ts-ignore - Screencam.fullScreen callback type is incomplete in public typings.
     Screencam.fullScreen({}, (dataUrl: string) => {
       if (!resolved) {
         resolved = true;
