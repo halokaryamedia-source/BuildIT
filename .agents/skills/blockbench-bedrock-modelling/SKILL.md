@@ -285,6 +285,29 @@ rather than protecting a bad blockout because it already contains many Cubes.
 After two attempts in the same correction direction without new evidence, stop
 and reframe the hypothesis instead of patching again.
 
+### Correction Contract Before Numeric Mutation
+
+For a diagnosed local mismatch, do not jump directly from "too long / too high / misplaced / wrong angle" to new coordinates. First read the exact target with `inspect_element`, then state the smallest useful correction contract:
+
+```text
+cause
+target UUID(s)
+current state
+invariant(s)
+expected structural effect
+```
+
+Examples:
+
+- TRANSLATE: preserve size; move center by the intended delta.
+- RESIZE: identify the axis plus the center/face/contact that must stay fixed.
+- ROTATE: preserve extents/size; change only the evidence-backed angle/pivot relationship.
+- hierarchy REATTACH: use a direct supported parent-mutation owner only. If none is exposed, report `BLOCKED` rather than simulating attachment through coordinate patches.
+
+`modify_cube` and `modify_cubes_batch` return authored before/after state plus `geometry_effect`. Check that effect against the invariant **before** calling the visual correction successful. An unintended center shift during a center-preserving resize, a size change during TRANSLATE, or a changed extent during ROTATE is a failed correction.
+
+If the requested geometry correction produces no effective geometry/visibility change, do not call it progress and do not repeat the same values. Re-diagnose. If the same causal direction reaches the existing two-failure threshold without new evidence, enter `BLOCKED`.
+
 ### 6. Add Secondary Geometry / Hierarchy / Pivots
 
 Only after the primary form passes:

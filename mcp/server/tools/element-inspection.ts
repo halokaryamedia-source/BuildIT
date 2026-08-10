@@ -17,7 +17,7 @@ export const elementInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_element",
     description:
-      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.",
+      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Cube output includes from/to, size, center, origin, rotation, parent, and visibility so a local correction can be derived from exact current authored state. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.",
     annotations: {
       title: "Inspect Authored Element",
       readOnlyHint: true,
@@ -101,6 +101,11 @@ function inspectCube(cube: Cube) {
     from: [...cube.from] as [number, number, number],
     to: [...cube.to] as [number, number, number],
     size: cubeSize(cube),
+    center: [
+      (cube.from[0] + cube.to[0]) / 2,
+      (cube.from[1] + cube.to[1]) / 2,
+      (cube.from[2] + cube.to[2]) / 2,
+    ] as [number, number, number],
     origin: [...cube.origin] as [number, number, number],
     rotation: [...cube.rotation] as [number, number, number],
     visibility: cube.visibility !== false,

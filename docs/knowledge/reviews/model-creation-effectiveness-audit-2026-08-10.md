@@ -31,7 +31,7 @@ A change is valuable only when it materially improves one of those stages or rem
 | P0 | Cross-view / depth hallucination | Front view looks plausible while side/top/depth is wrong | One view is over-weighted, conflicting views are averaged, or missing depth evidence is treated as permission to invent geometry | Tie each important width/height/length/placement claim to the reference view that actually constrains it; unsupported dimensions remain `UNVERIFIED` rather than guessed or approved |
 | P1 | Patch churn / correction loop | Many small Cubes and edits accumulate around a wrong base shape, or the same mismatch is repeatedly edited without new evidence | Agent protects already-authored geometry and lacks a hard blocker escalation when correction is not converging | Global-vs-local diagnosis; hard rebuild threshold; after two failed attempts in the same causal direction without new evidence, stop as `BLOCKED` and report what is needed to continue |
 | P1 | Framing creates false confidence | Oversized, undersized, floating, or displaced model still fills the screenshot and appears plausible | Auto-framing normalizes the presentation and can hide gross envelope errors | Structural bounds/ground check before visual approval when target dimensions exist; use explicit target-envelope framing when possible |
-| P1 | Correction is another guess | Agent notices a wrong part but changes coordinates from memory/screenshot and makes it worse | Visual diagnosis is not linked to exact authored state | Locate exact identity, `inspect_element`, classify the causal error, then perform one bounded correction and re-observe the affected view |
+| P1 | Correction is another guess | Agent notices a wrong part but changes coordinates from memory/screenshot, or fixes one symptom while accidentally moving another relationship | Visual diagnosis is not converted into an explicit invariant/expected structural effect before mutation | Inspect exact authored state; define causal class + invariant; mutate once; verify returned before/after `geometry_effect`; only then re-observe visually |
 | P1 | Tool-choice/context friction | Codex spends calls exploring irrelevant capabilities or chooses generic helpers instead of the modelling path | Broad tool catalog competes with the intended Bedrock workflow | Keep normal skill routing focused on create/inspect/capture/correct/texture/animate/export; capability count alone must never drive expansion |
 | P2 | Texture hides geometry failure | Surface detail makes a bad silhouette appear more finished without making it more correct | Texture starts before primary geometry is accepted | Geometry gate before texture; texture may improve surface identity but cannot approve wrong form |
 | P2 | Animation built on bad rig/form | Motion is created around bad pivots, hierarchy, or geometry | Animation begins before geometry/pivots are visually/functionally established | Animate only after required geometry/hierarchy/pivot state is coherent; animation proof is separate from static geometry proof |
@@ -237,6 +237,41 @@ It must not continue changing geometry just to create the appearance of progress
 ### Remaining proof
 
 This source contract prevents false certainty in the workflow definition. Actual reduction of depth hallucination and correction looping still requires deliberate local modelling tests with difficult multi-view references; until then it remains local effectiveness proof, not a claimed visual-quality result.
+
+## Problem #4 — Correction Accuracy
+
+### Failure we must prevent
+
+```text
+model view correctly reveals a mismatch
+-> Codex guesses new absolute coordinates
+-> mutation succeeds
+-> the intended issue may improve, but another relationship moves accidentally
+-> tool success is mistaken for a valid correction
+-> more patches accumulate
+```
+
+### Root causes
+
+1. **Diagnosis-to-number jump** — "too long" or "too high" is converted directly into new from/to values without defining what must remain fixed.
+2. **Mixed transform side effects** — an intended TRANSLATE can accidentally resize; an intended RESIZE can shift center/contact; a ROTATE can be mixed with unnecessary extent changes.
+3. **After-only feedback** — without authored before/after deltas, structural side effects are easy to miss before visual review.
+4. **No-op progress** — an id-only or same-state request can look like another correction attempt even when it changes nothing useful.
+5. **REATTACH ambiguity** — visual contact correction and hierarchy-parent correction can be conflated; coordinate patches are not a substitute for a direct parent mutation.
+
+### Implemented source solution
+
+- `modify_cube` rejects an id-only request and uses finite transform vectors.
+- `inspect_element` Cube state now includes center in addition to from/to/size/origin/rotation.
+- `modify_cube` returns authored `before`, `after`, and deterministic `geometry_effect`.
+- `modify_cubes_batch` returns the same structural effect per target plus the count of targets with an effective geometry/visibility change.
+- correction workflow requires an explicit invariant before numeric mutation and validates the returned structural effect before visual approval.
+- if hierarchy reparenting is the actual required fix and no direct supported owner is exposed, the correct result is `BLOCKED`, not fake attachment through coordinate edits.
+- the existing two-failed-attempt blocker remains the stop condition for non-converging corrections.
+
+### Remaining proof
+
+Local modelling tests must still demonstrate that Codex uses these effects to make better corrections on real models. Source/CI proves the contract and deterministic structural metadata exist; it does not prove final visual improvement.
 
 ## Product Priority Rule
 

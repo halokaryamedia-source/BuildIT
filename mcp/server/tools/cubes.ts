@@ -146,22 +146,18 @@ export const modifyCubeParameters = z.object({
       "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target."
     ),
   name: z.string().optional().describe("New name of the cube."),
-  origin: z
-    .array(z.number()).length(3)
+  origin: finiteVec3Schema
     .optional()
     .describe(
       "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite."
     ),
-  from: z
-    .array(z.number()).length(3)
+  from: finiteVec3Schema
     .optional()
     .describe("Starting point of the cube."),
-  to: z
-    .array(z.number()).length(3)
+  to: finiteVec3Schema
     .optional()
     .describe("Ending point of the cube."),
-  rotation: z
-    .array(z.number()).length(3)
+  rotation: finiteVec3Schema
     .optional()
     .describe(
       "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot."
@@ -190,7 +186,16 @@ export const modifyCubeParameters = z.object({
     .boolean()
     .optional()
     .describe("Whether the cube is visible or not."),
-});
+}).refine(
+  (update) =>
+    Object.entries(update).some(
+      ([key, value]) => key !== "id" && value !== undefined
+    ),
+  {
+    message:
+      "modify_cube requires at least one authored field change in addition to id. Inspect the target and send the intended correction; an id-only request is not progress.",
+  }
+);
 
 export const modifyCubesBatchParameters = z.object({
   updates: z
@@ -223,7 +228,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. A successful return confirms only that the authored update was applied; it does not evaluate whether the Cube is visually correct or matches the reference.",
+      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. The result includes authored before/after state plus a deterministic `geometry_effect` summary (changed transform fields, center/size/origin/rotation deltas, visibility change) so the caller can verify that the structural effect matches the diagnosed correction invariant. A successful return still does not evaluate whether the Cube is visually correct or matches the reference.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -234,7 +239,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
+      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. Each target result includes authored before/after state plus a deterministic `geometry_effect` summary so unintended structural side effects can be detected before visual approval. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -304,6 +309,50 @@ function finalCubeState(cube: Cube) {
     origin: [...cube.origin] as [number, number, number],
     rotation: [...cube.rotation] as [number, number, number],
     visibility: cube.visibility !== false,
+  };
+}
+
+
+type CubeAuthoredState = ReturnType<typeof finalCubeState>;
+
+function vec3Delta(
+  after: readonly number[],
+  before: readonly number[]
+): [number, number, number] {
+  return [
+    after[0] - before[0],
+    after[1] - before[1],
+    after[2] - before[2],
+  ];
+}
+
+function vec3Equal(a: readonly number[], b: readonly number[]): boolean {
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+}
+
+function cubeStateCenter(state: CubeAuthoredState): [number, number, number] {
+  return [
+    (state.from[0] + state.to[0]) / 2,
+    (state.from[1] + state.to[1]) / 2,
+    (state.from[2] + state.to[2]) / 2,
+  ];
+}
+
+function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState) {
+  const changedFields: string[] = [];
+  if (!vec3Equal(before.from, after.from)) changedFields.push("from");
+  if (!vec3Equal(before.to, after.to)) changedFields.push("to");
+  if (!vec3Equal(before.origin, after.origin)) changedFields.push("origin");
+  if (!vec3Equal(before.rotation, after.rotation)) changedFields.push("rotation");
+  if (before.visibility !== after.visibility) changedFields.push("visibility");
+
+  return {
+    changed_fields: changedFields,
+    center_delta: vec3Delta(cubeStateCenter(after), cubeStateCenter(before)),
+    size_delta: vec3Delta(after.size, before.size),
+    origin_delta: vec3Delta(after.origin, before.origin),
+    rotation_delta: vec3Delta(after.rotation, before.rotation),
+    visibility_changed: before.visibility !== after.visibility,
   };
 }
 
@@ -426,6 +475,7 @@ createTool(cubeToolDocs[1].name, {
     visibility,
   }) {
     const cubes = [resolveUniqueCube(id)];
+    const before = finalCubeState(cubes[0]);
 
     cubes.forEach((cube) =>
       requireIntentionalRotationActivation(cube, rotation, origin)
@@ -480,17 +530,25 @@ createTool(cubeToolDocs[1].name, {
     }
 
     Canvas.updateAll();
+    const after = finalCubeState(cubes[0]);
+    const geometryEffect = cubeGeometryEffect(before, after);
     const result = {
       execution: "applied" as const,
       visual_verdict: "not_evaluated" as const,
       modified: cubes.length,
-      cube: finalCubeState(cubes[0]),
+      before,
+      after,
+      geometry_effect: geometryEffect,
+      cube: after,
     };
     return {
       content: [
         {
-type: "text" as const,
-text: `Applied authored update to Cube ${cubes[0].name} (${cubes[0].uuid}). Reference fidelity was not evaluated.`,
+          type: "text" as const,
+          text:
+            geometryEffect.changed_fields.length === 0
+              ? `Applied request to Cube ${cubes[0].name} (${cubes[0].uuid}), but no geometry/visibility field changed. This is not evidence of correction; reference fidelity was not evaluated.`
+              : `Applied authored update to Cube ${cubes[0].name} (${cubes[0].uuid}). Structural effect recorded; reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,
@@ -511,6 +569,7 @@ createTool(cubeToolDocs[2].name, {
       cube: Cube;
       update: BatchUpdate;
       pivotOnly: boolean;
+      before: CubeAuthoredState;
     }> = updates.map((update: BatchUpdate) => {
       const cube = (Cube.all ?? []).find(
         (candidate: Cube) => candidate.uuid === update.id
@@ -532,7 +591,7 @@ createTool(cubeToolDocs[2].name, {
         requirePivotTransferMesh(cube);
       }
 
-      return { cube, update, pivotOnly };
+      return { cube, update, pivotOnly, before: finalCubeState(cube) };
     });
 
     Undo.initEdit({
@@ -560,7 +619,7 @@ createTool(cubeToolDocs[2].name, {
         });
       }
 
-      Undo.finishEdit("Agent corrected multiple cubes");
+      Undo.finishEdit("Agent modified multiple cubes");
     } catch (error) {
       Undo.cancelEdit(true);
       Canvas.updateAll();
@@ -568,18 +627,33 @@ createTool(cubeToolDocs[2].name, {
     }
 
     Canvas.updateAll();
+    const effects = targets.map(({ cube, before }) => {
+      const after = finalCubeState(cube);
+      return {
+        uuid: cube.uuid,
+        name: cube.name,
+        before,
+        after,
+        geometry_effect: cubeGeometryEffect(before, after),
+      };
+    });
+    const effectiveGeometryTargets = effects.filter(
+      ({ geometry_effect }) => geometry_effect.changed_fields.length > 0
+    ).length;
     const result = {
       execution: "applied" as const,
       visual_verdict: "not_evaluated" as const,
       modified: targets.length,
-      cubes: targets.map(({ cube }) => finalCubeState(cube)),
+      effective_geometry_targets: effectiveGeometryTargets,
+      effects,
+      cubes: effects.map(({ after }) => after),
     };
 
     return {
       content: [
         {
           type: "text" as const,
-          text: `Applied authored updates to ${targets.length} Cubes in one Undo unit. Reference fidelity was not evaluated.`,
+          text: `Applied authored updates to ${targets.length} Cubes in one Undo unit; ${effectiveGeometryTargets} target(s) changed geometry/visibility. Structural effects recorded; reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,

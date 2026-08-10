@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_CROSS_VIEW_BLOCKER_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_CORRECTION_ACCURACY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -198,13 +198,17 @@ The current source slice has hardened **P0 — wrong primary geometry decomposit
 
 The current source slice has hardened **P0 — cross-view / depth hallucination** and introduced a non-looping `BLOCKED` workflow outcome for unresolved evidence/runtime/correction blockers.
 
+The current source slice has hardened **P1 — correction accuracy** by linking diagnosis to exact authored state, a declared structural invariant, and deterministic before/after mutation effects.
+
 The next bounded modelling problem is:
 
 ```text
-P1 — correction accuracy
+P1 — tool-choice / context friction
 ```
 
-Audit whether a diagnosed visual mismatch reliably becomes the correct causal mutation (`TRANSLATE / RESIZE / ROTATE / REATTACH / SPLIT / MERGE-REMOVE / ADD MASS`) from exact authored state, instead of another coordinate guess. Preserve the new blocker rule: two failed attempts in the same causal direction without new evidence must stop rather than loop.
+Audit whether Codex is still exposed to or encouraged to call irrelevant/redundant tools during normal create -> observe -> correct modelling. Prefer simplifying routing/descriptions over deleting native Bedrock capability. Do not reduce tool count merely for aesthetics.
+
+Preserve all existing validity rules: execution success is not visual approval, unsupported axes stay provisional/unverified, unresolved blockers stop mutation, and correction effects must match the declared invariant.
 
 Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, similarity scoring, or another modelling framework unless a concrete modelling requirement proves it is needed.
 

@@ -302,6 +302,45 @@ ADD MASS     required visible volume genuinely missing
 
 Use `ADD MASS` only when evidence shows missing volume.
 
+## Correction Accuracy Contract
+
+A visual diagnosis is not yet a coordinate correction. Before mutating a diagnosed local mismatch, define a small correction contract from fresh `inspect_element` state:
+
+```text
+mismatch + supporting view(s)
+causal class: TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS
+exact target UUID(s)
+current authored state
+invariant(s) that must remain unchanged
+expected structural effect
+```
+
+Keep this compact; it is not a persisted planner.
+
+### Structural invariants by common correction
+
+- **TRANSLATE** — size must remain unchanged. The intended center moves by the diagnosed delta. For a rotated Cube, preserve the intended pivot relationship rather than moving only its extents around a stale pivot.
+- **RESIZE** — name the axis and what remains fixed before choosing numbers: center, one face/contact edge, or another evidence-backed anchor. A resize is invalid if an unplanned axis or protected contact moves.
+- **ROTATE** — do not change `from/to/size` merely to make an angle adjustment. Use the inspected pivot or an explicitly justified new pivot, then verify the returned rotation/origin effect.
+- **REATTACH** — distinguish a visual contact problem from a hierarchy-parent problem. A visual contact may resolve as TRANSLATE/RESIZE. If the actual correction requires reparenting an existing Cube/Group and the exposed normal MCP surface has no direct supported owner, stop as `BLOCKED`; do not fake reparenting by moving geometry until it appears attached.
+
+After `modify_cube` / `modify_cubes_batch`, inspect the returned `geometry_effect` before visual approval:
+
+```text
+changed_fields
+center_delta
+size_delta
+origin_delta
+rotation_delta
+visibility_changed
+```
+
+If the structural effect violates the declared invariant, the correction itself is invalid even before visual review. Undo the last bounded correction when safe, revise the correction hypothesis, and do not describe it as progress.
+
+If a geometry correction was intended but the returned structural effect shows no geometry/visibility change, it does not count as a successful correction attempt. Re-diagnose instead of repeating the same request.
+
+Only after the structural effect matches the intended correction contract should fresh affected model view(s) decide whether the visual mismatch improved.
+
 ## Multi-Cube Correction
 
 If one diagnosed relationship spans several Cubes, correction should remain one
