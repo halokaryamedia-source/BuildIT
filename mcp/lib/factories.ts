@@ -113,7 +113,7 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 
 /**
  * Stores one MCP tool definition for request-owned server registration.
- * @param name - The tool name suffix (will be prefixed with "blockbench_").
+ * @param name - The exact MCP tool name.
  * @param tool - The tool configuration.
  * @param tool.description - The description of the tool.
  * @param tool.annotations - Annotations for the tool (title, hints).
