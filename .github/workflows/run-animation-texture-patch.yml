@@ -26,3 +26,4 @@ jobs:
           git diff --cached --check
           git commit -m "fix: align retained Bedrock Animation and Texture types"
           git push origin Local
+      # One-shot helper; remove after the source commit is verified.
