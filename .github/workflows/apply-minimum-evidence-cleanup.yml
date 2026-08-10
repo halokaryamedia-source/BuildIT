@@ -20,7 +20,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Repair temporary helper quoting
+      - name: Repair temporary helper
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -38,6 +38,15 @@ jobs:
               if old not in text:
                   raise SystemExit(f"Missing helper repair target: {old}")
               text = text.replace(old, new, 1)
+          redundant = '''replace_once(
+              path,
+              "inspect_model_bounds / capture_model_views",
+              "inspect_model_bounds only when envelope/scale/ground evidence matters; capture_model_views only for relevant reference-corresponding views"
+          )
+          '''
+          if redundant not in text:
+              raise SystemExit("Missing redundant helper block")
+          text = text.replace(redundant, "", 1)
           if text.count('"""') % 2 != 0:
               raise SystemExit("Temporary helper still has an unmatched triple-quote delimiter")
           p.write_text(text, encoding="utf-8")
