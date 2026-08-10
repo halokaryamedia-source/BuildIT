@@ -45,6 +45,18 @@ jobs:
           python3 -m py_compile mcp/scripts/apply-plugin-runtime-cleanup.py
       - name: Apply guarded cleanup
         run: python3 mcp/scripts/apply-plugin-runtime-cleanup.py
+      - name: Align prior minimum-evidence regression
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("mcp/tests/model-effectiveness-minimum-evidence.test.ts")
+          text = path.read_text(encoding="utf-8")
+          old = '    expect(next).toContain("MCP_MODEL_EFFECTIVENESS_MINIMUM_EVIDENCE_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");\n'
+          new = '    expect(next).toContain("Minimum Necessary Evidence");\n    expect(next).toContain("MCP_PLUGIN_RUNTIME_CLEANUP_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");\n'
+          if text.count(old) != 1:
+              raise SystemExit("Unexpected minimum-evidence status assertion")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
       - name: Install from lockfile
         working-directory: mcp
         run: bun install --frozen-lockfile
