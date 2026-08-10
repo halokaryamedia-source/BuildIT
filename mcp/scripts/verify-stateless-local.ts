@@ -1,7 +1,8 @@
 export {};
 
 const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
-const PROTOCOL_VERSION = "2025-11-25";
+// Match the current Codex legacy Streamable HTTP initialization revision.
+const PROTOCOL_VERSION = "2025-06-18";
 
 const REQUIRED_CORE_TOOLS = [
   "place_cube",
@@ -65,6 +66,7 @@ async function postMcp(
 
 async function verify(): Promise<void> {
   console.log(`BlockIT P1.4 stateless smoke check: ${targetUrl}`);
+  console.log(`Codex-compatible protocol fixture: ${PROTOCOL_VERSION}`);
   console.log("This is a transport smoke harness, not a substitute for Blockbench/Codex local acceptance.\n");
 
   const healthResponse = await fetch(healthUrl);
@@ -212,7 +214,7 @@ async function verify(): Promise<void> {
   const failed = checks.filter((check) => !check.ok);
   console.log(`\nResult: ${checks.length - failed.length}/${checks.length} checks passed.`);
   console.log(
-    "Still requires manual/local acceptance: OS bind address, real Codex connection, Blockbench read-only + bounded mutation, plugin unload/reload, and running UI truthfulness."
+    "Still requires manual/local acceptance: OS bind address in Blockbench, real Codex connection, Blockbench read-only + bounded mutation, plugin unload/reload, and running UI truthfulness."
   );
 
   if (failed.length > 0) {
