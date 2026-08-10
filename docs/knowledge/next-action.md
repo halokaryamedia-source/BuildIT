@@ -14,11 +14,11 @@ The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.5 and P1.1 are complete for their source/repository boundaries. The active source boundary is now **P1.2 — family gates**.
+P0.1–P0.5, P1.1, and P1.2 are complete for their source/repository boundaries. The active source boundary is now **P1.3 — core-only resolver/mutation/result consolidation**.
 
 ## Current Status
 
-`MCP_P1_DEFAULT_BEDROCK_PROFILE_COMPLETE_FAMILY_GATES_NEXT`
+`MCP_P1_FAMILY_GATES_COMPLETE_CORE_OWNERSHIP_NEXT`
 
 Execution channel: **ChatGPT → GitHub**.  
 Working branch: **`Local` only**.  
@@ -371,6 +371,90 @@ registration root consumes the explicit default profile
 developer/eval prompts are not default registered
 ```
 
+# Completed P1.2 — Explicit Family Gates
+
+P1.2 converts the P1.1 source-preserved `extended` distinction into a real opt-in without introducing an ACL, role system, policy DSL, or dynamic permission engine.
+
+## Source commits
+
+```text
+b126a9912a5b9c13f9ba8300de5a650c4ac7ad79
+feat: add explicit MCP family gates
+
+89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
+test: align registration profile contract with family gates
+```
+
+## Gate contract
+
+The existing Blockbench `Setting` mechanism now owns one small opt-in:
+
+```text
+mcp_extended_families_enabled
+```
+
+Contract:
+
+```text
+default value                         false
+literal boolean true                  selects extended profile
+missing/false/string-like values      remain bedrock_entity
+extended adds                         import + ui only
+bedrock_entity families               unchanged
+```
+
+`registerMcpProfile()` tracks already-registered families and is idempotent per family. The default Bedrock Entity profile is still registered at module load; after settings initialize, an explicit extended opt-in adds only the missing fallback families before network startup.
+
+The reconstructed-session path still consumes the same canonical `tools.enabled` / stored tool-definition truth created by those family registration functions. No second reconstructed-session profile table was introduced.
+
+P0.2 remains authoritative inside the optional fallback families:
+
+```text
+from_geo_json  enabled=false
+risky_eval     enabled=false
+```
+
+Therefore enabling the extended families does not expose either dangerous tool.
+
+No Animation, Paint, Texture, PBR, material-instance, Cube, history, export, or project implementation file was changed by P1.2. Native/relevant Bedrock capability remains in the normal `bedrock_entity` family set.
+
+## P1.2 focused proof
+
+The added family-gate tests prove:
+
+```text
+extended families require explicit boolean opt-in
+extended adds exactly import + ui
+setting defaults off and is read before server startup
+profile registration is idempotent by family
+dangerous tools remain disabled inside opted-in fallback families
+setting identifier has one canonical owner
+```
+
+Canonical root workflow:
+
+```text
+MCP Verify
+run: 31369553909
+verified head: 89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
+```
+
+Result:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+Bun contract tests          PASS — 14/14, 0 failures, 82 expect() calls
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+The first P1.2 run correctly failed closed because one P1.1 source-reading test asserted the previous loop syntax rather than the registration invariant. The follow-up test-only commit updated that assertion to the new idempotent registrar contract; no runtime behavior was weakened to make the test pass.
+
+Actual Blockbench setting persistence, plugin reload behavior, and real `tools/list` differences after opting into extended families remain `LOCAL PROOF REQUIRED`.
+
 # Current Work Order
 
 ```text
@@ -381,78 +465,77 @@ P0.4  typecheck/tests/root CI                     COMPLETE
 P0.5  generated-doc freshness                    COMPLETE
 
 P1.1  default Bedrock Entity registration profile COMPLETE
-P1.2  family gates                               ← ACTIVE NEXT SLICE
-P1.3  core-only resolver/mutation/result consolidation
+P1.2  family gates                               COMPLETE
+P1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE
 P1.4  transport/session future decision
 P1.5  local end-to-end core acceptance
 
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P1.2 Family Gates Only
+# Next Step — P1.3 Core Ownership Consolidation Only
 
-Do not start P1.3 or later work in the same slice.
+Do not start P1.4 or later work in the same slice.
 
 ## Goal
 
-Turn the P1.1 registration distinction into explicit, reviewable **family gates** without creating a broad capability-policy framework and without deleting native Bedrock Entity capability.
+Consolidate deterministic identity, bounded mutation/rollback, and useful result ownership **only inside the surviving Bedrock Entity core**. Do not globally refactor gated or legacy source.
 
 ## Required approach
 
-1. Audit the existing P1.1 `bedrock_entity` + `extended` family split before adding any new switch.
-2. Keep family-level ownership; do not introduce per-tool ACLs, role systems, policy DSLs, or dynamic permission engines.
-3. Define how a non-default family becomes explicitly available when there is a real use case, using the smallest existing configuration mechanism.
-4. `import` and generic `ui` are the currently proven generic fallback families; they must remain non-default.
-5. `risky_eval` and `from_geo_json` remain individually disabled even when their containing family is opted in unless a separate future review explicitly changes that decision.
-6. Do **not** treat all optional Bedrock functionality as legacy merely because it is not needed in every workflow.
-7. Preserve source and availability for native/relevant Bedrock capability, especially:
+1. Audit current callers before creating or reusing shared resolver helpers.
+2. Limit resolver consolidation to core identities where duplication is real:
 
 ```text
-TextureMesh
-Locators
-Bounding boxes
-Paint
-PBR
-cube-face material_instance
-Animation effects/controllers
+Cube
+Group
+Texture
+Animation
 ```
 
-8. Re-audit any candidate family before gating it away from the normal Entity profile. If there is doubt, keep it available until official-source/product evidence resolves the doubt.
-9. Initial and reconstructed-session registration must continue to derive from one registration truth.
-10. Add focused gate tests and rerun the complete MCP Verify workflow.
-
-## Important non-goal
-
-P1.2 is **not** a tool-count reduction contest. A smaller default list is a consequence of product scope, not the objective itself.
-
-Do not use P1.2 to:
+3. Normal explicit mutation identity must converge on:
 
 ```text
-rewrite Animation
-rewrite Paint/Texture/PBR
-redesign export
-refactor all resolvers
-migrate MCP protocol/SDK
-add authentication
-resume parked feature work
+exact UUID first
+otherwise exact name only when unique
+ambiguous explicit target → fail
+missing explicit target → fail
+no UUID-prefix matching for mutation
+no silent root/default fallback
 ```
+
+4. Selection fallback remains allowed only for tools whose public contract explicitly states that they operate on selection.
+5. Core mutation paths should use the bounded pattern where applicable:
+
+```text
+preflight all external targets
+open one Undo transaction
+mutate
+finish
+failure after open → cancel/revert
+```
+
+6. Consolidate result/readback shape only where it improves deterministic continuation. Prefer compact human-readable content plus stable structured data when identity/state matters.
+7. Preserve all current Bedrock Entity capability. Do not use consolidation as a reason to gate or delete TextureMesh, Locator, bounding-box, Animation, Paint/PBR, material-instance, history, camera/observation, export, or other audited Bedrock-relevant behavior.
+8. Do not refactor `import` / generic `ui` merely because they remain compiled under the explicit extended gate.
+9. Do not migrate MCP SDK/protocol, redesign transport, add authentication, or resume parked feature hardening in P1.3.
+10. Add focused regression tests for any new shared owner/contract and rerun the complete MCP Verify workflow.
 
 ## Static acceptance
 
 ```text
-family gates are explicit and small
-bedrock_entity remains the default
-generic import/UI fallback requires explicit opt-in
-risky_eval/from_geo_json remain disabled
-native/relevant Bedrock capability remains available
-one registration truth feeds initial + reconstructed sessions
-no ACL/policy framework introduced
+shared resolver ownership exists only where audited core callers justify it
+core explicit mutations use deterministic identity rules
+bounded Undo/rollback ownership is consistent where consolidated
+core readback/result identity is sufficient for continuation
+no gated legacy family is globally refactored
+no native Bedrock capability is removed or silently gated
 ```
 
 ## Executable acceptance
 
 ```text
-focused family-gate tests PASS
+focused P1.3 regression tests PASS
 bun run typecheck               PASS
 bun run test                    PASS
 bun run build                   PASS
@@ -460,10 +543,8 @@ bun run docs:check              PASS
 root MCP Verify                 PASS
 ```
 
-Only after P1.2 is recorded may the active boundary advance to **P1.3 — core-only resolver/mutation/result consolidation**.
+Only after P1.3 is recorded may the active boundary advance to **P1.4 — transport/session simplification decision**.
 
 ## Proof Boundary
 
-GitHub Actions/package tests prove source/build/generated-doc/registration contracts that do not require Blockbench globals.
-
-Actual OS listener state, live MCP Inspector behavior, Blockbench runtime behavior, Undo/Redo semantics, playback, export/save/reopen, optional-family opt-in behavior in the real plugin UI, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
+GitHub Actions/package tests can prove source/build/contracts that do not require Blockbench globals. Actual mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, and end-to-end identity stability remain `LOCAL PROOF REQUIRED` where applicable.
