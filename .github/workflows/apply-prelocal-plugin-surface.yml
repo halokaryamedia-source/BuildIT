@@ -27,6 +27,7 @@ jobs:
         run: |
           sed -i 's/tags: \["MCP", "AI", "Minecraft", "Bedrock"\]/tags: ["MCP", "AI"]/g' .github/prelocal_plugin_surface_patch.py
           python .github/prelocal_plugin_surface_patch.py
+          sed -i 's/Streamable HTTP (stateless)\\"/Streamable HTTP (stateless JSON)\\"/' mcp/tests/p1-transport-stateless.test.ts
 
       - name: Install dependencies
         working-directory: mcp
