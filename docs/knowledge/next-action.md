@@ -8,688 +8,284 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 ## Active Goal
 
-Reduce the stabilized BlockIT MCP into a trustworthy **Minecraft Bedrock Entity** MCP while preserving every capability that genuinely belongs to Bedrock Entity.
+Maintain BlockIT as a trustworthy **Minecraft Bedrock Entity MCP for Blockbench** while preserving every capability that genuinely belongs to Bedrock Entity.
 
-The product decision is explicit:
+The product rule is unchanged:
 
-> Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
-
-P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. P1.4 decision + stateless-v1 source implementation are complete and verified non-locally. The active boundary is now **P1.4 local transport proof only**; do not start P1.5 yet.
+> Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. A missing MCP mapping for a native Bedrock capability is a protected implementation gap, not deletion permission.
 
 ## Current Status
 
-`MCP_P1_STATELESS_V1_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_PRELOCAL_SURFACE_HARDENING_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Execution channel: **ChatGPT → GitHub**.  
 Working branch: **`Local` only**.  
-Live Blockbench/MCP behavior remains local proof where applicable.
+Local Blockbench/Codex runtime proof is still unavailable and must not be fabricated from source, CI, or official-source evidence.
 
-Latest P1.4 non-local compatibility proof: `docs/knowledge/reviews/mcp-p1-4-nonlocal-compatibility-proof-2026-08-10.md`.
+**Do not start P1.5 while P1.4 local acceptance remains unavailable.**
 
-## Governing Evidence
-
-Primary audit:
+## Completed Stabilization Boundary
 
 ```text
-docs/knowledge/reviews/mcp-development-quality-audit.md
+P0.1  loopback + Origin containment                     SOURCE COMPLETE / LOCAL PROOF PENDING
+P0.2  dangerous default containment                     SOURCE COMPLETE / LOCAL PROOF PENDING
+P0.3  full-schema validation + annotations              SOURCE COMPLETE / TARGETED PROOF COMPLETE
+P0.4  engineering gate + retained typecheck             COMPLETE
+P0.5  generated-doc freshness                           COMPLETE
+
+P1.1  default Bedrock Entity registration profile       COMPLETE
+P1.2  explicit family gates                             COMPLETE
+P1.3  core identity / mutation-result ownership         COMPLETE
+P1.4  stateless-v1 decision + source/non-local proof    SOURCE COMPLETE / LOCAL PROOF REQUIRED
+
+Pre-local plugin surface hardening:
+A  BlockIT product identity + build fingerprint         COMPLETE
+B  truthful exposed/catalog/available panel surface     COMPLETE
+C  Tool Test disabled-definition containment            COMPLETE
+D  Bedrock capability surface matrix                    COMPLETE
+E  generic semantics narrowing                          COMPLETE
+F  canonical Bedrock Entity MCP prompt                  COMPLETE
+G  repository-owned BlockIT agent skill stack           COMPLETE
+H  BlockIT docs/install normalization                   COMPLETE
+
+P1.5  local end-to-end core acceptance                  BLOCKED ON LOCAL ENVIRONMENT
 ```
 
-Ordered stabilization plan:
+## Latest Pre-Local Source Commits
 
 ```text
-docs/knowledge/operations/mcp-reduction-stabilization-plan.md
+bc50a3c1772249a51bddc2a52e0f10440621e77d
+fix: harden BlockIT plugin surface before local proof
+
+efaaeb227175395abf9d4715b384f0c44da2c25d
+fix: narrow generic MCP semantics before local proof
+
+0c6f7e52a95f7ba231759ba19dc85a326f18a480
+docs: align Bedrock MCP prompts and agent skills
 ```
 
-Official-source Bedrock capability audit:
+Temporary GitHub runner patch/workflow harnesses used for A–H must not remain in the repository after verification. The only durable root workflow should be `.github/workflows/mcp-verify.yml`.
+
+## Product / Plugin Identity
+
+Visible plugin identity is now BlockIT-owned:
 
 ```text
-docs/knowledge/reviews/bedrock-entity-capability-surface-audit.md
+BlockIT — Bedrock Entity MCP
 ```
 
-Safe reduction execution note:
+The plugin panel and `/health` surface build/profile information so local acceptance can distinguish the current BuildIT artifact from the upstream Jason Gardner hosted plugin.
 
-```text
-docs/knowledge/operations/bedrock-entity-reduction-execution.md
-```
+For BlockIT validation, build branch `Local` and load `mcp/dist/mcp.js`. Do **not** use the upstream hosted `jasonjgardner.github.io/.../mcp.js` artifact as evidence for this fork.
 
-# Product Boundary
+Upstream attribution/license remains preserved.
 
-Retained BlockIT MCP target:
+## Registration / Surface Truth
 
-```text
-Minecraft Bedrock Entity
-Geometry: Cube/Cuboid only for BlockIT modelling
-Rig: Group hierarchy / Cuboid children
-Animation: Group/BoneAnimator
-Texture/Paint/PBR: preserve all proven Bedrock Entity capability
-Observation: exact authored state + deterministic rendered views
-Execution: local desktop Blockbench service
-```
-
-The official Blockbench Bedrock format is broader than BlockIT's Cube-only modelling policy. Native optional Bedrock capabilities must not be confused with generic legacy families.
-
-## Native Bedrock capability that must remain available
-
-Official Blockbench source review established the Bedrock format/codec relevance of:
-
-```text
-Cube/Cuboid
-Group-as-bone hierarchy
-Cube UV / UV rotation / box UV
-TextureMesh
-Locators
-Bounding boxes
-Animation / animation controllers
-animation sound / particle / timeline effects
-Texture
-Paint
-PBR
-cube-face material_instance semantics
-History / Undo / Redo
-canonical model capture
-current-format Bedrock export outcome
-```
-
-Do not delete those merely to reduce registration breadth or implementation cost. `TextureMesh` is distinct from generic `Mesh`.
-
-P1 registration gating is an **exposure decision**, not permission to delete native Bedrock capability. If a native/optional Bedrock capability is later removed from the smallest default list, it must remain available through an intentional Bedrock-capable path unless a newer product/source audit explicitly approves removal.
-
-## Capability already proved outside the native Bedrock Entity product
-
-Removed rather than type-hardened:
-
-```text
-Hytale integration
-Generic Mesh MCP family
-Armature / ArmatureBone / vertex-weight family
-generic-Mesh-only MCP UV family
-```
-
-Cube UV remains owned by `mcp/server/tools/cubes.ts`.
-
-No TextureMesh, Locator, Animation, Paint, PBR, or material-instance capability was removed by that reduction.
-
-# Completed P0 Stabilization
-
-## P0.1 — Local transport containment
-
-Source commit:
-
-```text
-49c7440ed0dbb5f58c879db14543817791044e80
-fix: contain MCP server to local origins
-```
-
-Source establishes loopback binding + local Origin containment. Real listener/Inspector/browser behavior remains `LOCAL PROOF REQUIRED`.
-
-## P0.2 — Dangerous default capability containment
-
-Source commit:
-
-```text
-33bd7ab2a9cec674fb2183cb178fa24e1727b4e9
-fix: disable dangerous default MCP tools
-```
-
-Contract:
-
-```text
-risky_eval      enabled=false
-from_geo_json   enabled=false
-risky_eval      Stable → Experimental
-```
-
-No sandbox, replacement importer, or capability-profile framework was introduced.
-
-## P0.3 — Real MCP schema enforcement + annotations
-
-Source commit:
-
-```text
-2fec534b0204a33c9b20c536724159018a4b5c38
-fix: enforce MCP tool schemas and annotations
-```
-
-The complete original Zod schema is retained and parsed before execution for initial and reconstructed-session registration. Supported MCP annotations are passed through both paths.
-
-Focused contract tests prove top-level `.refine()` / `.superRefine()` rejection before tool logic and annotation preservation in isolated registration fixtures. Real MCP Inspector behavior remains local proof where applicable.
-
-## P0.4 — Engineering gate + retained typecheck
-
-Package/repository gates:
-
-```text
-typecheck   → tsc --noEmit
-test        → bun test
-build       → production build
-docs:check  → generated-doc freshness assertion
-```
-
-Important retained-package remediation outcomes:
-
-```text
-blockbench-types pinned/synced to 5.1.0 in package.json + bun.lock
-obsolete fastmcp type dependency removed
-MCP prompt factory aligned with installed SDK 1.25.3
-shared BarItem compatibility localized
-Animation kept and aligned with Blockbench AnimationItem/runtime typing
-Texture kept; generic Mesh branch removed from apply_texture
-Paint kept and aligned with official Painter/runtime selection APIs
-PBR/material-instance runtime fields retained through narrow evidence-backed declarations
-```
-
-P0.4 source-head proof on:
-
-```text
-35b142d7a45590399ef035978ed448e3b6f059e2
-fix: refine Blockbench Paint runtime event types
-```
-
-established:
-
-```text
-frozen-lockfile install     PASS
-full tsc --noEmit           PASS
-focused Bun contract tests  PASS — 4/4, 0 failures
-production build            PASS
-```
-
-## P0.5 — Generated-doc freshness
-
-Generated documentation was rebuilt through the repository generator rather than hand-editing tool entries.
-
-The generator normalizes trailing horizontal whitespace and final newline before writing `index.html`, making its checked-in output deterministic for repository freshness checks.
-
-Final generated reference recorded by the completed P0 slice:
-
-```text
-0842e25fdc9a152be2d47bcc9ec77659219ea1a4
-docs: refresh generated MCP reference
-```
-
-Generation reports:
-
-```text
-69 tools across 12 categories
-3 documented prompts
-8 resources
-```
-
-Canonical P0.5 verification recorded by the prior slice:
-
-```text
-MCP Verify
-run: 31367549245
-```
-
-with install/typecheck/tests/build/docs freshness/fail-closed aggregator all passing.
-
-# Completed P1.1 — Default Bedrock Entity Registration Profile
-
-P1.1 intentionally implemented the **smallest family-level profile mechanism**, not a dynamic ACL, permission engine, role model, or policy framework.
-
-## Source commits
-
-```text
-b54e5fd31f3ee153d595bacf55116cafd573de33
-feat: define Bedrock Entity MCP registration profile
-
-447792b82a7833e5fda29edcdbd48918238d90c9
-feat: apply Bedrock Entity MCP registration profile
-
-68b09f759e8edbfc071cc83ad61a732e0a5bed47
-feat: keep developer prompts out of Bedrock default
-
-97a29e24a5446016e0ce73b790c2274e7be16d3f
-test: lock Bedrock Entity default registration profile
-```
-
-Exact P1.1 source diff from the pre-slice head modifies only:
-
-```text
-mcp/lib/registrationProfile.ts       added
-mcp/server/tools.ts                  registration-root profile selection
-mcp/server/prompts.ts                developer/eval prompts disabled by default
-mcp/tests/p1-registration-profile.test.ts  added
-```
-
-No Animation, Cube, Texture, Paint, PBR, material-instance, history, camera, export, or project implementation file was removed or modified by P1.1.
-
-## Default registration profile
-
-Default profile name:
+Default profile:
 
 ```text
 bedrock_entity
 ```
 
-Default registered families:
+Normal default families preserve the audited Bedrock workflow surface. Generic fallback families remain source-preserved behind explicit opt-in where applicable.
+
+Dangerous tools remain quarantined:
 
 ```text
-animation
-animation_inspection
-camera
-cubes
-elements
-element_inspection
-export
-history
-material_instances
-paint
-project
-textures
-validator_resources
+risky_eval      enabled=false
+from_geo_json   enabled=false
 ```
 
-This intentionally keeps the audited Bedrock/native families available in the normal profile, including:
+The Blockbench panel now distinguishes:
 
 ```text
-Animation
-Paint
-PBR/Texture
-cube-face material_instance operations
-history/recoverability
-canonical camera/observation
-Bedrock export outcome
+Tools      exposed vs catalog
+Resources  currently available
+Prompts    exposed vs catalog
 ```
 
-## Source-preserved generic fallback families
+Disabled definitions are hidden by default and are not executable through the BlockIT Tool Test dialog. Tool Test also runs the complete Zod `parameterSchema.parseAsync()` contract before execution.
 
-Not invoked by the default profile:
+## Generic Semantics Narrowed Before Local Proof
+
+### Project creation
+
+`create_project` accepts Minecraft Bedrock Entity format `bedrock` only. Arbitrary `Formats[...]` creation is outside the normal BlockIT product tool.
+
+### Model export
+
+`export_model` / `list_export_formats` intentionally expose only:
 
 ```text
-import
-ui
+bedrock  → native Minecraft Bedrock geometry JSON
+project  → editable Blockbench .bbmodel
 ```
 
-They remain source-compiled under the small `extended` profile definition for later explicit family-gate work. P1.1 does **not** introduce a user-facing extended-profile setting yet; that belongs to the P1.2 family-gate decision.
+Bedrock animation/controller file behavior belongs to Blockbench's separate native Bedrock `AnimationCodec`; this model-export narrowing is not animation capability deletion.
 
-P0.2 containment remains authoritative if those families are ever explicitly invoked:
+### Camera / app UI convenience
+
+Default exposed observation keeps the useful model paths such as:
 
 ```text
-from_geo_json  enabled=false
-risky_eval     enabled=false
+capture_screenshot
+capture_model_views
+inspect_model_bounds
 ```
 
-Therefore the extended family definition does not silently re-enable either dangerous tool.
-
-## Prompt default surface
-
-Default enabled prompt:
+Generic full-application screenshot and arbitrary editor-camera mutation are source-preserved but default-disabled:
 
 ```text
-model_creation_strategy
+capture_app_screenshot
+set_camera_angle
 ```
 
-Developer/debug prompts are source-preserved but disabled from normal registration:
+### Validator references
+
+Validator resources remain available, but regex/message-derived element links explicitly report:
 
 ```text
-blockbench_native_apis
-blockbench_code_eval_safety
+elementRefsSource: message_heuristic | none
+elementRefsAuthoritative: false
 ```
 
-This is registration truth through `createPrompt(..., enabled=false)`, not a documentation-only filter.
+Do not treat those inferred links as authored identity evidence.
 
-## Registration equivalence
+### `nodes://` resource
 
-Initial startup invokes only the families returned by:
+The broad `nodes://{id}` observation resource is intentionally **deferred, not removed**. Direct authored-state owners for native Locator and TextureMesh are still protected gaps, so removing the broader observation route first would reduce observability while pretending the product became cleaner.
+
+## Canonical Prompt Surface
+
+The one enabled normal workflow prompt is now:
 
 ```text
-getRegistrationFamilies(DEFAULT_MCP_REGISTRATION_PROFILE)
+bedrock_entity_workflow
 ```
 
-The resulting enabled tool definitions remain the canonical input to `registerToolsOnServer()` for reconstructed-session servers. No separate reconstructed-session profile list was introduced, avoiding divergent registration ownership.
+It has no Java Block / Bedrock Block / generic UI / programmatic / import routing branches.
 
-## P1.1 executable proof
-
-Root workflow:
+Bundled prompt content is reduced to three files:
 
 ```text
-MCP Verify
-run: 31368270648
-verified source head: 97a29e24a5446016e0ce73b790c2274e7be16d3f
+bedrock_entity_workflow.md
+blockbench_native_apis.md          disabled maintainer reference
+blockbench_code_eval_safety.md     disabled maintainer reference
 ```
 
-Result:
+The Bedrock workflow explicitly requires protected native gaps to remain visible rather than being faked with generic Mesh, arbitrary Cubes, UI automation, code evaluation, or a different format.
+
+## Repository-Owned Agent Skills
+
+Canonical Bedrock authoring stack:
 
 ```text
-frozen-lockfile install     PASS
-full tsc --noEmit           PASS
-Bun contract tests          PASS — 8/8, 0 failures, 59 expect() calls
-production build            PASS
-generated docs freshness    PASS
-fail-closed aggregator      PASS
-workflow conclusion         SUCCESS
+blockit-bedrock-entity-mcp         MCP workflow/surface orchestrator
+  ├─ blockbench-bedrock-modelling  whole-form/Cuboid/hierarchy/pivot judgement
+  ├─ blockit-bedrock-texturing     texture/Paint/PBR/material_instance
+  └─ blockit-bedrock-animation     BoneAnimator/keyframes/mapped particle effects
 ```
 
-P1-specific tests prove:
+Maintainer skills such as `blockbench-runtime-development` and `mcp-server-development` remain separate from normal asset authoring.
+
+Do not install/copy the upstream `jasonjgardner/blockbench-mcp-project` skills as BlockIT's canonical layer. They describe a broader generic MCP surface containing Mesh, Hytale, risky-eval fallback, arbitrary formats/codecs, and tool names that no longer match the normal BlockIT contract.
+
+## Protected Native Bedrock Capability Gaps
+
+Official Blockbench source establishes native/relevant Bedrock capability beyond BlockIT's current direct MCP authoring surface. The following remain protected until direct owners are audited/implemented:
 
 ```text
-default profile is bedrock_entity
-audited Bedrock families remain in default profile
-import/ui are absent from default profile
-extended profile adds exactly import + ui
-registration root consumes the explicit default profile
-developer/eval prompts are not default registered
+Locator / NullObject locator authoring
+TextureMesh authoring / authored-state inspection
+native Bedrock visible bounding-box fields
+animation controllers
+animation sound effects
+animation timeline effects
+animated-texture authoring
+bone-binding expressions
 ```
 
-# Completed P1.2 — Explicit Family Gates
-
-P1.2 converts the P1.1 source-preserved `extended` distinction into a real opt-in without introducing an ACL, role system, policy DSL, or dynamic permission engine.
-
-## Source commits
+Also preserve already-mapped native capabilities:
 
 ```text
-b126a9912a5b9c13f9ba8300de5a650c4ac7ad79
-feat: add explicit MCP family gates
-
-89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
-test: align registration profile contract with family gates
+Cube/Cuboid
+Group-as-bone hierarchy
+Cube UV / box UV / UV rotation semantics
+Texture / Paint
+PBR / TextureGroup materials
+per-face material_instance
+Animation / BoneAnimator transform channels
+mapped particle effects
+History / Undo / Redo
+Bedrock geometry + editable .bbmodel outcomes
 ```
 
-## Gate contract
+`TextureMesh` is distinct from generic Blockbench `Mesh` and must never be removed merely because the generic Mesh MCP family was removed.
 
-The existing Blockbench `Setting` mechanism now owns one small opt-in:
+## Governing Evidence
+
+Read these before any next capability change:
 
 ```text
-mcp_extended_families_enabled
+docs/knowledge/reviews/mcp-development-quality-audit.md
+docs/knowledge/operations/mcp-reduction-stabilization-plan.md
+docs/knowledge/reviews/bedrock-entity-capability-surface-audit.md
+docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md
+docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md
+docs/knowledge/reviews/blockit-agent-skill-surface-2026-08-10.md
+docs/knowledge/reviews/mcp-p1-4-nonlocal-compatibility-proof-2026-08-10.md
 ```
 
-Contract:
+## Non-Local Proof Available
+
+P1.4 already has SDK/raw-TCP proof for stateless request flow, loopback binding in the test listener, real HTTP Origin rejection, initialize/initialized/tools-list/tools-call, and Codex legacy protocol compatibility.
+
+A–E helper gates established typecheck/tests/build/docs/diff hygiene before source commits. The F–G–H helper gate established:
 
 ```text
-default value                         false
-literal boolean true                  selects extended profile
-missing/false/string-like values      remain bedrock_entity
-extended adds                         import + ui only
-bedrock_entity families               unchanged
+typecheck              PASS
+Bun tests              PASS — 46/46, 253 expect() calls
+production build       PASS
+prompt manifest        3 prompt content files
+generated MCP docs     69 tools / 3 prompt metadata / 8 resource catalog
+docs freshness         PASS
+git diff hygiene       PASS
 ```
 
-`registerMcpProfile()` tracks already-registered families and is idempotent per family. The default Bedrock Entity profile is still registered at module load; after settings initialize, an explicit extended opt-in adds only the missing fallback families before network startup.
+The durable `MCP Verify` workflow remains the authoritative final clean-head repository gate and should be run after helper cleanup.
 
-The reconstructed-session path still consumes the same canonical `tools.enabled` / stored tool-definition truth created by those family registration functions. No second reconstructed-session profile table was introduced.
+## Exact Next Step When Local Environment Becomes Available
 
-P0.2 remains authoritative inside the optional fallback families:
+**P1.4 Local Stateless Transport + Plugin Surface Proof**, using the current BuildIT Local plugin artifact.
+
+Minimum acceptance:
 
 ```text
-from_geo_json  enabled=false
-risky_eval     enabled=false
+load current mcp/dist/mcp.js in desktop Blockbench
+confirm panel says BlockIT — Bedrock Entity MCP
+confirm displayed build revision/profile matches intended Local build
+confirm listener is actually loopback-only
+run bun run verify:stateless-local
+connect real Codex directly to Streamable HTTP endpoint
+initialize + real tools/list pass without Mcp-Session-Id
+panel exposed counts agree with real tools/list/prompt exposure
+read-only Bedrock tool call passes
+bounded Bedrock mutation passes with Undo/re-observation
+invalid present Origin is real HTTP 403
+plugin unload/reload cleans listener/UI correctly
+Paint/texture/animation runtime behavior is checked where applicable
 ```
 
-Therefore enabling the extended families does not expose either dangerous tool.
+Only after that proof may P1.4 be marked fully complete and P1.5 begin.
 
-No Animation, Paint, Texture, PBR, material-instance, Cube, history, export, or project implementation file was changed by P1.2. Native/relevant Bedrock capability remains in the normal `bedrock_entity` family set.
+## Do Not Do Next
 
-## P1.2 focused proof
+Until local proof is available:
 
-The added family-gate tests prove:
-
-```text
-extended families require explicit boolean opt-in
-extended adds exactly import + ui
-setting defaults off and is read before server startup
-profile registration is idempotent by family
-dangerous tools remain disabled inside opted-in fallback families
-setting identifier has one canonical owner
-```
-
-Canonical root workflow:
-
-```text
-MCP Verify
-run: 31369553909
-verified head: 89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
-```
-
-Result:
-
-```text
-frozen-lockfile install     PASS
-full tsc --noEmit           PASS
-Bun contract tests          PASS — 14/14, 0 failures, 82 expect() calls
-production build            PASS
-generated docs freshness    PASS
-fail-closed aggregator      PASS
-workflow conclusion         SUCCESS
-```
-
-The first P1.2 run correctly failed closed because one P1.1 source-reading test asserted the previous loop syntax rather than the registration invariant. The follow-up test-only commit updated that assertion to the new idempotent registrar contract; no runtime behavior was weakened to make the test pass.
-
-Actual Blockbench setting persistence, plugin reload behavior, and real `tools/list` differences after opting into extended families remain `LOCAL PROOF REQUIRED`.
-
-# Completed P1.3 — Bedrock Core Identity / Result Ownership
-
-P1.3 consolidated only duplicated identity and continuation-result ownership inside the surviving Bedrock Entity core. It did not globally refactor gated legacy families and did not remove or gate any native Bedrock capability.
-
-## Verified source commit
-
-```text
-56967694c2f0a561d956c8e6e7eafa49f5463209
-refactor: consolidate Bedrock core identity ownership
-```
-
-Primary source owners changed:
-
-```text
-mcp/lib/coreIdentity.ts                 added
-mcp/lib/util.ts
-mcp/server/tools/cubes.ts
-mcp/server/tools/element.ts
-mcp/server/tools/texture.ts
-mcp/server/tools/animation.ts
-mcp/tests/p1-core-ownership.test.ts     added
-```
-
-Shared identity contract now covers the audited core identities:
-
-```text
-Cube       exact UUID -> exact unique name
-Group      exact UUID -> exact unique name
-Animation  exact UUID -> exact unique name
-Texture    exact UUID -> exact unique texture ID -> exact unique name
-```
-
-Explicit core mutation resolution does not prefix-match and does not silently select the first ambiguous name. Existing selection fallback is retained only where the public Animation helper already explicitly allowed selected-animation behavior. `create_animation` keeps its Bedrock AnimationCodec-specific case-insensitive bone-name validation local because that is codec semantics rather than generic identity resolution.
-
-The broader `element.ts` destructive resolver was intentionally **not** narrowed to Cube/Group because the native Bedrock Entity surface may include other Outliner element types such as Locator/TextureMesh; P1.3 does not trade native capability for resolver uniformity.
-
-Texture/PBR implementation was preserved. Repeated Texture lookup algorithms in Cube/Element/Texture/Paint-support paths now consume one strict Texture identity owner while TextureGroup/material semantics remain separate.
-
-Continuation result ownership was improved only for high-value identity-returning core mutations:
-
-```text
-place_cube   -> structured final Cube states
-modify_cube  -> structured final Cube state
-add_group    -> structured Group identity/state
-```
-
-Existing `modify_cubes_batch` and `create_animation` structured results remain intact. No mass result-format rewrite was performed.
-
-## Non-local executable proof
-
-Canonical workflow:
-
-```text
-MCP Verify
-run: 31372079399
-verified source commit: 56967694c2f0a561d956c8e6e7eafa49f5463209
-```
-
-Result:
-
-```text
-frozen-lockfile install     PASS
-full tsc --noEmit           PASS
-Bun contract tests          PASS — 20/20, 0 failures, 106 expect() calls
-production build            PASS
-generated docs freshness    PASS
-fail-closed aggregator      PASS
-workflow conclusion         SUCCESS
-```
-
-Generated source manifest remains unchanged at:
-
-```text
-69 tools across 12 categories
-3 documented prompts
-8 resources
-```
-
-Temporary GitHub-runner harnesses used to perform/test the non-local consolidation were removed after the canonical proof. The durable repository verification workflow remains `mcp-verify.yml`.
-
-## P1.3 proof boundary
-
-The non-local evidence proves TypeScript/build/test/doc consistency plus pure deterministic identity contracts. It does **not** prove live Blockbench mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, or end-to-end identity stability. Those remain `LOCAL PROOF REQUIRED`, primarily for P1.5 acceptance.
-
-# Current Work Order
-
-```text
-P0.1  loopback + Origin containment              SOURCE COMPLETE / LOCAL PROOF PENDING
-P0.2  dangerous default capability containment   SOURCE COMPLETE / LOCAL PROOF PENDING
-P0.3  full-schema validation + real annotations  SOURCE COMPLETE / TARGETED REGRESSION PROOF PARTIAL
-P0.4  typecheck/tests/root CI                     COMPLETE
-P0.5  generated-doc freshness                    COMPLETE
-
-P1.1  default Bedrock Entity registration profile COMPLETE
-P1.2  family gates                               COMPLETE
-P1.3  core-only resolver/mutation/result consolidation COMPLETE
-P1.4  transport/session simplification              SOURCE COMPLETE / LOCAL PROOF REQUIRED
-P1.5  local end-to-end core acceptance                  WAITING — DO NOT START YET
-
-P2.*  evidence-driven cleanup and parked product fixes
-```
-
-# Completed P1.4 Decision — Simplify On Current SDK Line
-
-Decision record:
-
-```text
-docs/knowledge/reviews/mcp-transport-session-decision-2026-08-10.md
-```
-
-Decision:
-
-```text
-SIMPLIFY ON CURRENT SDK LINE
-```
-
-Current official evidence checked on 2026-08-10 established:
-
-```text
-current stable MCP revision     2025-11-25
-2026-07-28 revision             RC / draft, not final
-TypeScript SDK v2               development / pre-alpha
-production SDK recommendation   v1.x
-actual required BlockIT client  Codex local, direct Streamable HTTP
-```
-
-The inherited broad client list in `mcp/README.md` is not a compatibility requirement for the BlockIT product. P1.4 implementation targets the actual Codex local path first.
-
-Target transport ownership:
-
-```text
-KEEP       loopback binding
-KEEP       invalid-present-Origin -> 403 before MCP dispatch
-REMOVE     custom TCP keepalive as MCP liveness
-REMOVE     socket idle timeout as session lifetime
-KEEP MIN   ordinary HTTP keep-alive only if useful
-REMOVE     SSE heartbeat from default path
-REMOVE     MCP ping
-REMOVE     custom inactivity/session timeout
-REMOVE     Mcp-Session-Id / protocol session routing
-REMOVE     per-session transport map
-REMOVE     per-session McpServer reconstruction
-KEEP TEMP  current raw node:net HTTP parser/serializer
-ADAPT      health/status UI so it does not claim nonexistent sessions
-```
-
-No SDK v2 migration, 2026 draft adoption, authentication framework, Bedrock tool work, or broad HTTP-runtime rewrite is authorized by this decision.
-
-# Completed P1.4 Source — Stateless v1 Streamable HTTP
-
-Verified source commit:
-
-```text
-775a104a41fc703d6424409c8f71c862727548ae
-refactor: simplify MCP transport to stateless v1
-```
-
-Implemented repository contract:
-
-```text
-request-owned McpServer + WebStandardStreamableHTTPServerTransport
-sessionIdGenerator: undefined
-enableJsonResponse: true
-no Mcp-Session-Id routing
-no per-session transport/server map
-no sessionManager
-no MCP ping
-no SSE heartbeat
-no custom inactivity/session timeout
-GET default MCP endpoint -> 405 (no standalone SSE)
-DELETE default MCP endpoint -> 405 (no protocol sessions)
-loopback + present-Origin containment retained
-raw node:net HTTP owner retained
-ordinary HTTP keep-alive remains independent from MCP state
-session-shaped UI/settings removed
-```
-
-Canonical non-local proof:
-
-```text
-MCP Verify
-run: 31374646462
-verified source: 775a104a41fc703d6424409c8f71c862727548ae
-
-install      PASS
-typecheck    PASS
-tests        PASS — 26/26, 148 expect() calls
-build        PASS
-docs:check   PASS
-aggregator   PASS
-```
-
-No SDK/package upgrade was required. `@modelcontextprotocol/sdk@1.25.3` remains the committed resolved SDK.
-
-# Next Step — P1.4 Local Stateless Transport Proof Only
-
-Do not start P1.5 yet.
-
-Use the real Blockbench desktop plugin and the actual Codex local client. This is verification, not a source redesign unless the real run exposes a concrete defect.
-
-Required proof sequence:
-
-```text
-1. load/reload the current Local plugin build
-2. prove the OS listener is bound only to 127.0.0.1 on configured port
-3. connect Codex local directly to http://127.0.0.1:<port>/<endpoint>
-4. initialize successfully
-5. inspect real tools/list and confirm Bedrock default profile
-6. issue repeated independent requests with no server-issued Mcp-Session-Id
-7. execute at least one read-only MCP tool
-8. execute at least one bounded core mutation
-9. send a request with an invalid present Origin and record actual HTTP 403
-10. confirm Codex does not require a standalone GET/SSE stream for this path
-11. unload/reload plugin and confirm the listener closes/reopens cleanly
-12. inspect the running MCP panel/status bar and confirm it does not report fake protocol sessions
-```
-
-Record:
-
-```text
-Blockbench version
-Codex client surface/version if visible
-configured URL
-initialize result
-real tools/list result
-read-only call used/result
-mutation call used/result
-whether any Mcp-Session-Id was issued/required
-GET/SSE behavior observed
-Origin 403 evidence
-unload/reload result
-UI result
-actual defects
-```
-
-If this focused transport proof passes, mark P1.4 complete and then begin P1.5 full Bedrock Entity create→observe→correct→texture→animate→history/export acceptance. If it fails, fix only the evidenced P1.4 blocker before advancing.
+- do not start P1.5 and call it accepted;
+- do not migrate MCP SDK/protocol merely for novelty;
+- do not reintroduce generic Mesh/Hytale/UI/eval fallback into the default workflow;
+- do not remove a protected native Bedrock capability because direct MCP coverage is incomplete;
+- do not replace `nodes://` until Locator/TextureMesh authored-state ownership is designed;
+- do not claim live Blockbench/Painter/Animation behavior from CI alone.
