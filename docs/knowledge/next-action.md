@@ -10,14 +10,14 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 Stabilize and reduce the BlockIT MCP foundation before normal feature hardening resumes.
 
-P0.1 local network containment, P0.2 dangerous default capability containment, and P0.3 real MCP schema enforcement + annotations are now implemented in source. Runtime/network/tool-list/schema behavior proof remains local or belongs to the upcoming regression gate. The next source boundary is P0.4 typecheck/tests/root CI.
+P0.1 local network containment, P0.2 dangerous default capability containment, and P0.3 real MCP schema enforcement + annotations are implemented in source. P0.4 engineering-gate infrastructure is now implemented and executable, but P0.4 is **not complete** because the first full-package `tsc --noEmit` gate exposed broad existing TypeScript/Blockbench typing debt. Do not advance to P0.5 until that blocker is resolved or the governing work order is deliberately revised.
 
 ## Current Status
 
-`MCP_P0_SCHEMA_ENFORCEMENT_SOURCE_COMPLETE_ENGINEERING_GATE_NEXT`
+`MCP_P0_ENGINEERING_GATE_IMPLEMENTED_FULL_TYPECHECK_BLOCKED`
 
 Execution channel now: **ChatGPT → GitHub**.  
-Local Blockbench/MCP testing remains required for runtime proof.
+Local Blockbench/MCP testing remains required for runtime-only proof.
 
 ## Governing Evidence
 
@@ -218,8 +218,6 @@ No sandbox or replacement generic execution/import mechanism was introduced.
 - no SDK/protocol changes;
 - no Animation, Geometry, Texture, Paint, Mesh, Armature, export, or generated-doc changes.
 
-GitHub has no registered CI/status checks for the source commit.
-
 ## P0.2 proof boundary
 
 Exact source diff proves:
@@ -241,7 +239,7 @@ remaining intended default tools still register
 no server initialization regression
 ```
 
-# Latest Completed Slice — P0.3 Real MCP Schema Enforcement + Annotations
+# Completed Slice — P0.3 Real MCP Schema Enforcement + Annotations
 
 Primary owner:
 
@@ -266,18 +264,18 @@ The committed lockfile resolves:
 
 The exact v1.25.3 SDK registration contract accepts raw Zod shapes or schemas and supports `ToolAnnotations`. The same SDK exposes annotations in `tools/list`, and its `ToolAnnotations` contract includes `idempotentHint`.
 
-For BlockIT's current v1 registration path, the existing extracted object shape remains the MCP registration/listing representation. The original complete tool Zod schema is now retained separately as the execution contract so top-level `ZodEffects` refinements are not discarded by the local factory.
+For BlockIT's current v1 registration path, the existing extracted object shape remains the MCP registration/listing representation. The original complete tool Zod schema is retained separately as the execution contract so top-level `ZodEffects` refinements are not discarded by the local factory.
 
 ## Implemented source contract
 
-`ToolDefinition` now retains both:
+`ToolDefinition` retains both:
 
 ```text
 inputSchema      → SDK-compatible extracted object shape
 parameterSchema  → original complete Zod schema
 ```
 
-Before tool logic runs, both registration paths now execute:
+Before tool logic runs, both registration paths execute:
 
 ```text
 complete parameter schema parseAsync(args)
@@ -292,7 +290,7 @@ reconstructed per-session server registration
 
 A complete-schema parse failure throws before tool logic and therefore reaches the SDK tool-error path rather than becoming an ordinary successful tool response from the implementation.
 
-Tool annotations are now passed in both registration definitions rather than remaining source-only metadata. Local annotation typing now uses the installed SDK's `ToolAnnotations`, including supported `idempotentHint` metadata.
+Tool annotations are passed in both registration definitions rather than remaining source-only metadata. Local annotation typing uses the installed SDK's `ToolAnnotations`, including supported `idempotentHint` metadata.
 
 ## P0.3 intentionally unchanged
 
@@ -302,8 +300,6 @@ Tool annotations are now passed in both registration definitions rather than rem
 - no transport/session architecture change;
 - no tests/CI framework was added early;
 - no Animation, Geometry, Texture, Paint, Mesh, Armature, import/export, capability-profile, or generated-doc work was bundled into this slice.
-
-GitHub has no registered CI/status checks for the source commit.
 
 ## P0.3 proof boundary
 
@@ -319,24 +315,131 @@ idempotentHint is supported by the installed SDK annotation type
 no per-tool validation workaround or SDK migration was introduced
 ```
 
-Still `LOCAL PROOF REQUIRED` or targeted P0.4 regression proof:
+P0.4 isolated contract tests now additionally prove the `.refine()` and `.superRefine()` callbacks reject invalid input before tool logic in the test fixture and preserve annotations in both registration paths. Real Blockbench/MCP Inspector behavior remains local proof where applicable.
+
+# Active Slice — P0.4 Engineering Gate
+
+Primary package/repository owners:
 
 ```text
-a top-level .refine() invalid input is rejected before tool logic
-a .superRefine() invalid input is rejected before tool logic
-tool annotations are visible through tools/list / MCP Inspector
-reconstructed session registration exposes the same schema/annotation behavior
-normal valid tool execution still works
+mcp/package.json
+mcp/tsconfig.json
+mcp/build/check-docs-freshness.ts
+mcp/tests/p0-contracts.test.ts
+.github/workflows/mcp-verify.yml
 ```
+
+Implementation commits on `Local`:
+
+```text
+e1552da49b96a085ad0e08a45b89adc439ae34c1
+test: add MCP engineering verification gate
+
+e63e26457fcee8dac610762359981924d8c9e3fd
+test: complete MCP engineering verification gate
+
+4ca90aac0fbccc2a7d462a2b39fef285943cb02e
+ci: report all MCP verification gates
+```
+
+## Implemented gate
+
+The package now exposes:
+
+```text
+typecheck   → tsc --noEmit
+test        → bun test
+build       → existing production build
+docs:check  → regenerate + compare checked-in generated docs
+```
+
+A repository-root workflow now installs from the committed Bun lockfile and runs all four gates. Individual verification steps are allowed to finish so one run reports the whole state, then a final aggregator fails closed if any gate failed.
+
+The focused contract suite covers:
+
+```text
+top-level .refine() validation before initial tool execution
+top-level .superRefine() validation before reconstructed-session execution
+annotation preservation on both registration paths
+disabled risky_eval / from_geo_json registration behavior
+Origin rejection ordering before MCP transport dispatch
+```
+
+The generated-doc freshness checker is non-destructive: it snapshots the checked-in generated files, regenerates, ignores only the nondeterministic generation timestamp when comparing, reports stale substantive output, then restores the originals.
+
+## Executable proof — GitHub Actions
+
+Latest complete verification run for the gate implementation established:
+
+```text
+frozen-lockfile dependency install   PASS
+focused Bun contract tests           PASS — 4 tests, 0 failures
+production MCP build                 PASS
+generated docs freshness             FAIL — api.json and index.html are stale
+full package tsc --noEmit             FAIL
+final workflow result                 FAIL-CLOSED
+```
+
+The stale generated docs are the already-known P0.5 problem. P0.4 correctly detects them; do not regenerate or hand-edit them inside P0.4 merely to make the check green.
+
+## P0.4 blocker — full-package typecheck debt
+
+The first real full-package `tsc --noEmit` gate exposed broad existing compile-time debt rather than one isolated P0.4 regression. Errors span, among others:
+
+```text
+mcp/lib/factories.ts
+mcp/lib/hytale.ts
+mcp/lib/util.ts
+mcp/server/tools/animation*.ts
+mcp/server/tools/armature.ts
+mcp/server/tools/camera.ts
+mcp/server/tools/cubes.ts
+mcp/server/tools/element.ts
+mcp/server/tools/hytale.ts
+mcp/server/tools/mesh.ts
+mcp/server/tools/paint.ts
+mcp/server/tools/texture.ts
+mcp/server/tools/ui.ts
+mcp/server/tools/uv.ts
+mcp/ui/*.ts
+```
+
+The errors include both actual local type-contract issues and apparent mismatches between current source/runtime APIs and `blockbench-types`. Resolving that entire list would materially broaden the current slice across Animation, Paint, Mesh, Hytale, Texture, UV, UI, and other families.
+
+That broad remediation conflicts with the current feature-work freeze unless it is explicitly accepted as required engineering-debt work for P0.4. Do not hide the blocker by:
+
+```text
+weakening strict TypeScript
+excluding failing source families from the package typecheck
+adding broad ts-ignore / any / cast suppression
+creating an unreviewed compatibility framework
+```
+
+A few `mcp/lib/factories.ts` prompt typing errors are directly local/shared-owner issues, but fixing only those cannot make the required full-package typecheck pass.
+
+## Decision required before further P0.4 edits
+
+The repository now has enough evidence to expose a real scope decision:
+
+```text
+Option A — authorize full-package type-safety remediation as part of P0.4,
+           while preserving runtime behavior and fixing shared typing owners first.
+
+Option B — do not widen P0.4; revise the governing stabilization order/acceptance
+           explicitly before proceeding, because the currently required full
+           package typecheck cannot pass without broader remediation.
+```
+
+Do not choose between these silently.
 
 # Current Work Order
 
 ```text
 P0.1  loopback + Origin containment              SOURCE COMPLETE / LOCAL PROOF PENDING
 P0.2  dangerous default capability containment   SOURCE COMPLETE / LOCAL PROOF PENDING
-P0.3  full-schema validation + real annotations  SOURCE COMPLETE / RUNTIME REGRESSION PROOF PENDING
-P0.4  typecheck/tests/root CI                     ← ACTIVE NEXT SLICE
-P0.5  generated-doc freshness
+P0.3  full-schema validation + real annotations  SOURCE COMPLETE / TARGETED REGRESSION PROOF PARTIAL
+P0.4  typecheck/tests/root CI                     ACTIVE / GATE IMPLEMENTED / BLOCKED BY FULL TYPECHECK
+P0.5  generated-doc freshness                    WAITING — DO NOT START YET
 
 P1.1  default Bedrock Entity registration profile
 P1.2  family gates
@@ -347,73 +450,14 @@ P1.5  local end-to-end core acceptance
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P0.4 Only
+# Next Step — Resolve P0.4 Typecheck Scope Only
 
-Create the repository's **real MCP engineering gate**. Do not move into generated-doc freshness or P1 capability reduction yet.
+Do not start P0.5 or P1 work.
 
-Primary package/repository owners:
-
-```text
-mcp/package.json
-mcp/tsconfig.json
-repository-root .github/workflows/
-focused MCP contract tests
-```
-
-Primary specialist:
-
-```text
-mcp-server-development
-```
-
-Before editing, inspect the current package scripts, compiler configuration, existing nested workflow, build entrypoints, and the smallest seams required to test the already identified P0 contracts. Do not create broad low-value coverage.
-
-## Required behavior
-
-1. add a real package `typecheck` command using `tsc --noEmit`;
-2. replace the placeholder test command with real Bun contract tests;
-3. retain the current production build as a separate gate;
-4. establish a repository-root GitHub Actions workflow that runs against the `mcp/` package;
-5. install dependencies from the committed lockfile;
-6. gate full package typecheck;
-7. gate focused contract tests;
-8. gate the production build;
-9. include generated-document freshness assertion only to the extent required by the approved P0 gate, without hand-editing generated docs or starting P0.5 source/docs cleanup early;
-10. target the high-risk contracts already identified by the audit rather than creating broad coverage;
-11. inspect the exact source/workflow diff immediately after implementation;
-12. advance to exactly P0.5 only after this slice is recorded.
-
-## Initial targeted regression scope
-
-The engineering gate must cover the smallest useful seams for:
-
-```text
-full-schema refinement preservation
-annotation registration
-Origin validation helper/path
-disabled/quarantined tool exposure
-generated-doc freshness
-```
-
-Do not convert live Blockbench behavior into fake unit proof. Tests should cover contracts that can actually be exercised outside Blockbench; runtime-only behavior remains explicitly local proof.
-
-## Static / executable acceptance
-
-Must establish executable repository evidence for:
-
-```text
-bun lockfile install path
-full TypeScript typecheck
-focused Bun contract tests
-production MCP build
-repository-root MCP verification workflow
-clear separation between static/automated proof and local Blockbench proof
-```
-
-Do not claim P0.4 complete while `tsc --noEmit` still fails.
+Resolve whether the broad existing full-package TypeScript/Blockbench typing debt is authorized to be remediated inside P0.4, or whether the governing plan must be revised first. Until that decision is explicit, keep the fail-closed engineering gate and existing source behavior unchanged.
 
 ## Proof Boundary
 
-GitHub Actions/package tests may prove compile/build and isolated MCP contract behavior that does not require Blockbench globals.
+GitHub Actions/package tests now prove the focused MCP contract fixtures and production build independently from the failing full-package typecheck and stale generated documentation.
 
 Actual OS listener state, real MCP Inspector behavior where not covered by an isolated server fixture, Blockbench runtime behavior, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
