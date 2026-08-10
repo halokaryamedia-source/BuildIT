@@ -537,6 +537,13 @@ export const animationToolDocs: ToolSpec[] = [
   },
 ];
 
+function toArrayVector3(values: readonly number[]): ArrayVector3 {
+  if (values.length !== 3) {
+    throw new Error(`Expected exactly 3 vector components, got ${values.length}.`);
+  }
+  return [values[0], values[1], values[2]];
+}
+
 function resolveAnimation(reference?: string) {
   if (reference === undefined) {
     const selected = AnimationItem.selected;
@@ -877,7 +884,7 @@ createTool(
           existingAnimator.select();
           keyframes.forEach((kf) => {
             const keyframe = existingAnimator[channel]?.find(
-              (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+              (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
             );
             if (keyframe) {
               keyframe.selected = true;
@@ -936,16 +943,16 @@ createTool(
               if (kf.interpolation === "bezier" && kf.bezier_handles) {
                 // @ts-ignore
                 if (kf.bezier_handles.left_time !== undefined)
-                  keyframe.bezier_left_time = kf.bezier_handles.left_time;
+                  keyframe.bezier_left_time = toArrayVector3(kf.bezier_handles.left_time);
                 // @ts-ignore
                 if (kf.bezier_handles.left_value)
-                  keyframe.bezier_left_value = kf.bezier_handles.left_value;
+                  keyframe.bezier_left_value = toArrayVector3(kf.bezier_handles.left_value);
                 // @ts-ignore
                 if (kf.bezier_handles.right_time !== undefined)
-                  keyframe.bezier_right_time = kf.bezier_handles.right_time;
+                  keyframe.bezier_right_time = toArrayVector3(kf.bezier_handles.right_time);
                 // @ts-ignore
                 if (kf.bezier_handles.right_value)
-                  keyframe.bezier_right_value = kf.bezier_handles.right_value;
+                  keyframe.bezier_right_value = toArrayVector3(kf.bezier_handles.right_value);
               }
             });
             animation.setLength();
@@ -954,7 +961,7 @@ createTool(
           case "delete":
             keyframes.forEach((kf) => {
               const keyframe = animator![channel]?.find(
-                (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+                (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
               );
               if (keyframe) {
                 keyframe.remove();
@@ -965,7 +972,7 @@ createTool(
           case "edit":
             keyframes.forEach((kf) => {
               const keyframe = animator![channel]?.find(
-                (candidate) => Math.abs(candidate.time - kf.time) < 0.001
+                (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
               );
               if (keyframe) {
                 applyValues(keyframe, kf.values);
@@ -975,16 +982,16 @@ createTool(
                 if (kf.interpolation === "bezier" && kf.bezier_handles) {
                   // @ts-ignore
                   if (kf.bezier_handles.left_time !== undefined)
-                    keyframe.bezier_left_time = kf.bezier_handles.left_time;
+                    keyframe.bezier_left_time = toArrayVector3(kf.bezier_handles.left_time);
                   // @ts-ignore
                   if (kf.bezier_handles.left_value)
-                    keyframe.bezier_left_value = kf.bezier_handles.left_value;
+                    keyframe.bezier_left_value = toArrayVector3(kf.bezier_handles.left_value);
                   // @ts-ignore
                   if (kf.bezier_handles.right_time !== undefined)
-                    keyframe.bezier_right_time = kf.bezier_handles.right_time;
+                    keyframe.bezier_right_time = toArrayVector3(kf.bezier_handles.right_time);
                   // @ts-ignore
                   if (kf.bezier_handles.right_value)
-                    keyframe.bezier_right_value = kf.bezier_handles.right_value;
+                    keyframe.bezier_right_value = toArrayVector3(kf.bezier_handles.right_value);
                 }
               }
             });
@@ -1043,7 +1050,7 @@ createTool(
         }
       }
 
-      const keyframes = animator[channel].filter((kf) => {
+      const keyframes = (animator[channel] as _Keyframe[]).filter((kf: _Keyframe) => {
         if (!keyframe_range) return true;
         return kf.time >= keyframe_range.start && kf.time <= keyframe_range.end;
       });
@@ -1075,7 +1082,7 @@ createTool(
       });
 
       try {
-        keyframes.forEach((kf, index) => {
+        keyframes.forEach((kf: _Keyframe, index: number) => {
           switch (action) {
             case "linear":
               kf.interpolation = "linear";
@@ -1285,8 +1292,8 @@ createTool(
           case "create": {
             const group = new Group({
               name: bone_data.name,
-              origin: bone_data.origin ?? [0, 0, 0],
-              rotation: bone_data.rotation ?? [0, 0, 0],
+              origin: bone_data.origin ? toArrayVector3(bone_data.origin) : [0, 0, 0],
+              rotation: bone_data.rotation ? toArrayVector3(bone_data.rotation) : [0, 0, 0],
             }).init();
             createdGroup = group;
 
@@ -1327,7 +1334,7 @@ createTool(
           }
 
           case "set_pivot": {
-            targetBone!.transferOrigin(bone_data.origin!);
+            targetBone!.transferOrigin(toArrayVector3(bone_data.origin!));
             result = `Set pivot point for "${targetBone!.name}"`;
             break;
           }
@@ -1872,16 +1879,17 @@ createTool(
           source.channels.forEach((channel) => {
             if (!animator[channel]) return;
 
-            let keyframes = animator[channel];
-            if (source.time_range) {
+            let keyframes = animator[channel] as _Keyframe[];
+            const timeRange = source.time_range;
+            if (timeRange) {
               keyframes = keyframes.filter(
-                (kf) =>
-                  kf.time >= source.time_range.start &&
-                  kf.time <= source.time_range.end
+                (kf: _Keyframe) =>
+                  kf.time >= timeRange.start &&
+                  kf.time <= timeRange.end
               );
             }
 
-            copiedData.channels[channel] = keyframes.map((kf) => ({
+            copiedData.channels[channel] = keyframes.map((kf: _Keyframe) => ({
               time: kf.time,
               values: kf.getArray(),
               interpolation: kf.interpolation,

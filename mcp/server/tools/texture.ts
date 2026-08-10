@@ -86,7 +86,7 @@ export const applyTextureParameters = z.object({
   id: elementIdSchema
     .min(1)
     .describe(
-      "Required Cube, Mesh, or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported element types."
+      "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types."
     ),
   texture: textureIdSchema
     .min(1)
@@ -302,7 +302,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "apply_texture",
     description:
-      "Applies one explicit texture to one explicit Cube, Mesh, or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Mesh/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets retain the existing behavior of applying to all descendant Cubes/Meshes.",
+      "Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface.",
     annotations: {
       title: "Apply Texture",
       destructiveHint: true,
@@ -436,20 +436,17 @@ export const textureToolDocs: ToolSpec[] = [
   },
 ];
 
-type ApplyTextureElement = Cube | Mesh | Group;
+type ApplyTextureElement = Cube | Group;
 
 function applyTextureElementType(
   element: ApplyTextureElement
-): "cube" | "mesh" | "group" {
-  if (element instanceof Cube) return "cube";
-  if (element instanceof Mesh) return "mesh";
-  return "group";
+): "cube" | "group" {
+  return element instanceof Cube ? "cube" : "group";
 }
 
 function resolveApplyTextureElement(reference: string): ApplyTextureElement {
   const candidates: ApplyTextureElement[] = [
     ...(Cube.all ?? []),
-    ...(Mesh.all ?? []),
     ...(Group.all ?? []),
   ];
 
@@ -462,16 +459,13 @@ function resolveApplyTextureElement(reference: string): ApplyTextureElement {
   if (nameMatches.length > 1) {
     throw new Error(
       `Element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map(
-          (element) =>
-            `${applyTextureElementType(element)} ${element.name} (${element.uuid})`
-        )
+        .map((element) => `${applyTextureElementType(element)} ${element.name} (${element.uuid})`)
         .join(", ")}`
     );
   }
 
   throw new Error(
-    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended Cube/Mesh/Group UUID before applying a texture.`
+    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID before applying a texture.`
   );
 }
 
@@ -778,6 +772,7 @@ function resolveTextureToolMaterial(reference: string): TextureGroup {
 export function registerTextureTools() {
   createTool(textureToolDocs[0].name, {
     ...textureToolDocs[0],
+    parameters: createTextureParameters,
     async execute({
       name,
       width,
@@ -876,18 +871,18 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[1].name, {
     ...textureToolDocs[1],
+    parameters: applyTextureParameters,
     async execute({ applyTo, id, texture }) {
       const element = resolveApplyTextureElement(id);
       const projectTexture = resolveApplyTextureTexture(texture);
 
-      // Resolve `id` to the concrete set of cubes/meshes to texture.
-      // - Group → all descendant cubes + meshes
-      // - Cube / Mesh → that single element
-      const targets: Array<Cube | Mesh> = [];
+      // Resolve the target to concrete Bedrock Cube geometry.
+      // Group scopes recurse through Groups and collect descendant Cubes only.
+      const targets: Cube[] = [];
       if (element instanceof Group) {
         const collectDescendants = (group: Group) => {
           for (const child of group.children ?? []) {
-            if (child instanceof Cube || child instanceof Mesh) {
+            if (child instanceof Cube) {
               targets.push(child);
               continue;
             }
@@ -895,24 +890,17 @@ export function registerTextureTools() {
           }
         };
         collectDescendants(element);
-      } else if (element instanceof Cube || element instanceof Mesh) {
-        targets.push(element);
       } else {
-        throw new Error(
-          `Element "${id}" is not a cube, mesh, or group — cannot apply texture to it.`
-        );
+        targets.push(element);
       }
 
       if (targets.length === 0) {
-        throw new Error(
-          `Element "${id}" resolved to no paintable cubes or meshes.`
-        );
+        throw new Error(`Element "${id}" resolved to no paintable Bedrock Cubes.`);
       }
 
-      // Save prior selection so the call is non-destructive to UI state.
+      // Save prior direct selection so the call remains non-destructive to UI state.
       const prevCubeSelection = [...Cube.selected];
-      const prevMeshSelection = [...Mesh.selected];
-      const prevGroup = Group.selected ?? null;
+      const prevGroupSelection = [...Group.selected];
 
       // Undo must capture the element face-texture state, not just outliner.
       Undo.initEdit({
@@ -923,44 +911,35 @@ export function registerTextureTools() {
 
       try {
         try {
-          // Replace selection with the resolved targets so Texture.apply()
-          // operates on exactly this scope.
-          Cube.all.forEach((c: Cube) => {
-            if (c.selected) c.unselect?.();
+          // Replace selection with exactly the resolved Cube targets so Texture.apply()
+          // cannot be affected by unrelated caller selection.
+          Cube.all.forEach((cube: Cube) => {
+            if (cube.selected) cube.unselect?.();
           });
-          Mesh.all.forEach((m: Mesh) => {
-            if (m.selected) m.unselect?.();
-          });
+          Group.selected.slice().forEach((group: Group) => group.unselect());
+
           for (const target of targets) {
-            // @ts-ignore - select method available on outliner elements
-            target.select?.({ shiftKey: true });
+            target.select?.(new MouseEvent("click", { shiftKey: true }));
           }
           updateSelection();
 
           projectTexture.select();
-
           Texture.selected?.apply(
             applyTo === "none" ? false : applyTo === "all" ? true : "blank"
           );
-
           projectTexture.updateChangesAfterEdit();
         } finally {
-          // Restore the caller's original selection on success or failure.
-          Cube.all.forEach((c: Cube) => {
-            if (c.selected) c.unselect?.();
+          Cube.all.forEach((cube: Cube) => {
+            if (cube.selected) cube.unselect?.();
           });
-          Mesh.all.forEach((m: Mesh) => {
-            if (m.selected) m.unselect?.();
-          });
-          for (const c of prevCubeSelection) {
-            // @ts-ignore - select method
-            c.select?.({ shiftKey: true });
+          Group.selected.slice().forEach((group: Group) => group.unselect());
+
+          for (const cube of prevCubeSelection) {
+            cube.select?.(new MouseEvent("click", { shiftKey: true }));
           }
-          for (const m of prevMeshSelection) {
-            // @ts-ignore - select method
-            m.select?.({ shiftKey: true });
+          for (const group of prevGroupSelection) {
+            group.markAsSelected(false);
           }
-          if (prevGroup) prevGroup.selected = true;
           updateSelection();
         }
 
@@ -980,12 +959,13 @@ export function registerTextureTools() {
       });
       Canvas.updateAll();
 
-      return `Applied texture "${projectTexture.name}" to ${targets.length} element(s) scoped by "${id}" (${element instanceof Group ? "group" : element instanceof Cube ? "cube" : "mesh"}).`;
+      return `Applied texture "${projectTexture.name}" to ${targets.length} Bedrock Cube(s) scoped by "${id}" (${element instanceof Group ? "group" : "cube"}).`;
     },
   }, textureToolDocs[1].status);
 
   createTool(textureToolDocs[2].name, {
     ...textureToolDocs[2],
+    parameters: addTextureGroupParameters,
     async execute({ name, textures, is_material }) {
       const textureList = textures?.map(resolveAddTextureGroupTexture) ?? [];
       const textureGroup = new TextureGroup({
@@ -1022,6 +1002,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[3].name, {
     ...textureToolDocs[3],
+    parameters: listTexturesParameters,
     async execute() {
       const textures = Project?.textures ?? Texture.all;
 
@@ -1040,6 +1021,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[4].name, {
     ...textureToolDocs[4],
+    parameters: getTextureParameters,
     async execute({ texture }) {
       if (!texture) {
         const defaultTexture = Texture.getDefault();
@@ -1058,6 +1040,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[5].name, {
     ...textureToolDocs[5],
+    parameters: createPbrMaterialParameters,
     async execute({
       name,
       color_texture,
@@ -1162,6 +1145,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[6].name, {
     ...textureToolDocs[6],
+    parameters: configureMaterialParameters,
     async execute({
       material,
       color_texture,
@@ -1275,6 +1259,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[7].name, {
     ...textureToolDocs[7],
+    parameters: listMaterialsParameters,
     async execute() {
       // @ts-ignore - TextureGroup is globally available
       const materials = TextureGroup.all.filter(
@@ -1307,6 +1292,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[8].name, {
     ...textureToolDocs[8],
+    parameters: getMaterialInfoParameters,
     async execute({ material }) {
       const textureGroup = resolveTextureToolMaterial(material);
       const textures = textureGroup.getTextures();
@@ -1348,6 +1334,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[9].name, {
     ...textureToolDocs[9],
+    parameters: importTextureSetParameters,
     async execute({ path }) {
       // Validate path ends with texture_set.json
       if (!path.endsWith(".texture_set.json")) {
@@ -1356,8 +1343,10 @@ export function registerTextureTools() {
         );
       }
 
-      // @ts-ignore - fs module available via Blockbench
       const fs = requireNativeModule("fs");
+      if (!fs) {
+        throw new Error("File system access was denied. Cannot import texture_set.json.");
+      }
       if (!fs.existsSync(path)) {
         throw new Error(`File not found: ${path}`);
       }
@@ -1372,6 +1361,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[10].name, {
     ...textureToolDocs[10],
+    parameters: assignTextureChannelParameters,
     async execute({ material, texture, channel }) {
       const textureGroup = resolveTextureToolMaterial(material);
       const tex = resolveAssignTextureChannelTexture(texture);
@@ -1420,6 +1410,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[11].name, {
     ...textureToolDocs[11],
+    parameters: saveMaterialConfigParameters,
     async execute({ material }) {
       const textureGroup = resolveTextureToolMaterial(material);
       const filePath = textureGroup.material_config.getFilePath();
@@ -1438,6 +1429,7 @@ export function registerTextureTools() {
 
   createTool(textureToolDocs[12].name, {
     ...textureToolDocs[12],
+    parameters: activateTextureParameters,
     async execute({ texture }) {
       const target = resolveActivateTextureTexture(texture);
       if (Texture.selected?.uuid !== target.uuid) {
