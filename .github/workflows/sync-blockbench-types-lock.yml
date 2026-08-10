@@ -1,0 +1,39 @@
+name: Sync Blockbench Types Lock
+
+on:
+  push:
+    paths:
+      - ".github/workflows/sync-blockbench-types-lock.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Resolve official Blockbench types
+        working-directory: mcp
+        run: bun add --dev blockbench-types@5.1.0 --lockfile-only
+
+      - name: Commit resolved lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mcp/package.json mcp/bun.lock
+          if git diff --cached --quiet; then
+            echo "No dependency changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: sync Blockbench types lock"
+          git push origin Local
