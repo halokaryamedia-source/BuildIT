@@ -88,31 +88,39 @@ export function getProjectTexture(id: string): Texture | null {
   return texture || null;
 }
 
+type RuntimeMutableBarItem = BarItem & {
+  set?: (value: unknown) => unknown;
+  change?: (value: unknown) => unknown;
+  update?: () => unknown;
+  value?: unknown;
+};
+
 /**
  * Programmatically sets a BarItems slider/widget's value, tolerating the API
- * drift between Blockbench versions where some items expose `.set(n)`,
- * `.change(n)`, or only allow `.value = n`. Prior to this helper, calls like
- * `BarItems.slider_brush_size.set(n)` crashed hollow-shape drawing with
- * `… .set is not a function` on current Blockbench builds.
+ * drift between Blockbench widget subclasses where some expose `.set(n)`,
+ * `.change(n)`, or only a mutable `.value`. Blockbench's public BarItems type is
+ * the common BarItem base class, so subclass-only mutators are localized behind
+ * this runtime adapter instead of being cast throughout paint tools.
  */
 export function setBarItemValue(id: string, value: unknown): void {
-  // @ts-ignore - BarItems is a Blockbench global
-  const item = BarItems?.[id];
+  const item = BarItems?.[id] as RuntimeMutableBarItem | undefined;
   if (!item) return;
+
   if (typeof item.set === "function") {
     try {
       item.set(value);
       return;
     } catch {
-      // Fall through to direct assignment for widgets whose runtime method
-      // signatures drifted from the public type surface.
+      // Fall through to another runtime-supported mutator.
     }
   }
+
   if ("value" in item) {
     item.value = value;
     if (typeof item.update === "function") item.update();
     return;
   }
+
   if (typeof item.change === "function") {
     try {
       item.change(value);
@@ -224,32 +232,18 @@ export function findGroupOrThrow(name: string): Group {
 }
 
 /**
- * Finds a mesh by ID or name and throws an actionable error if not found.
- * @param id - The UUID or name of the mesh to find
- * @returns The found Mesh
- * @throws Error with suggestion to use list_outline
- */
-export function findMeshOrThrow(id: string): Mesh {
-  // @ts-ignore - Mesh is globally available in Blockbench
-  const mesh = Mesh.all.find((m: Mesh) => m.uuid === id || m.name === id);
-  if (!mesh) {
-    throw new Error(
-      `Mesh "${id}" not found. Use the list_outline tool to see available meshes.`
-    );
-  }
-  return mesh;
-}
-
-/**
- * Finds an element (cube, mesh, group) by ID or name and throws an actionable error if not found.
+ * Finds an element by ID or name and throws an actionable error if not found.
+ * Shared callers must still enforce their own supported Bedrock element type
+ * after resolution (for example Cube-only material-instance operations).
  * @param id - The UUID or name of the element to find
  * @returns The found OutlinerElement
  * @throws Error with suggestion to use list_outline
  */
 export function findElementOrThrow(id: string): OutlinerElement {
-  const element = Outliner.elements.find(
-    (el: OutlinerElement) => el.uuid === id || el.name === id
-  ) || Group.all.find((g: Group) => g.uuid === id || g.name === id);
+  const element =
+    Outliner.elements.find(
+      (el: OutlinerElement) => el.uuid === id || el.name === id
+    ) || Group.all.find((g: Group) => g.uuid === id || g.name === id);
   if (!element) {
     throw new Error(
       `Element "${id}" not found. Use the list_outline tool to see available elements.`
@@ -298,27 +292,6 @@ export function getChannelTextureInfo(textures: Texture[], channel: string) {
   return tex
     ? { name: tex.name, uuid: tex.uuid, hasTexture: true }
     : { hasTexture: false };
-}
-
-/**
- * Gets a mesh by ID or returns the selected mesh if no ID provided.
- * Throws an actionable error if no mesh is found.
- * @param meshId - Optional mesh UUID or name
- * @returns The found or selected Mesh
- * @throws Error with suggestion to use list_outline
- */
-export function getMeshOrSelected(meshId?: string): Mesh {
-  if (meshId) {
-    return findMeshOrThrow(meshId);
-  }
-  // @ts-ignore - Mesh is globally available in Blockbench
-  const selected = Mesh.selected[0];
-  if (!selected) {
-    throw new Error(
-      "No mesh selected and no mesh_id provided. Select a mesh or provide a mesh_id. Use the list_outline tool to see available meshes."
-    );
-  }
-  return selected;
 }
 
 /**
