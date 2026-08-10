@@ -83,9 +83,10 @@ jobs:
               "    ).toBe(true);",
               "  });",
           ])
-          if test.count(close_marker) != 1:
-              raise SystemExit("Unexpected PBR test closing marker")
-          test_path.write_text(test.replace(close_marker, addition + "\n" + close_marker, 1), encoding="utf-8")
+          if close_marker not in test:
+              raise SystemExit("Missing PBR test closing marker")
+          head, tail = test.rsplit(close_marker, 1)
+          test_path.write_text(head + addition + "\n" + close_marker + tail, encoding="utf-8")
 
           next_path = Path("docs/knowledge/next-action.md")
           next_text = next_path.read_text(encoding="utf-8")
