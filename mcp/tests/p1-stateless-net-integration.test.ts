@@ -6,7 +6,8 @@ import createNetServer from "@/server/net";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
-const PROTOCOL_VERSION = "2025-11-25";
+// Match the current Codex legacy Streamable HTTP initialization revision.
+const PROTOCOL_VERSION = "2025-06-18";
 const FIXTURE_TOOL = "p1_raw_net_echo_fixture";
 
 let server: Server;
