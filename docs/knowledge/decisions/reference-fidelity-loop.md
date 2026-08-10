@@ -164,6 +164,19 @@ PASS        fresh paired evidence was checked and no critical/major mismatch rem
 
 The review is difference-first: search for silhouette, proportion, placement, orientation/slope, and visible-contact mismatches before approval. If the reference does not constrain an important axis or view, that aspect remains UNVERIFIED rather than being guessed into PASS.
 
+## Mutation Result Boundary
+
+Cube mutation tools separate execution from visual acceptance:
+
+```text
+execution: applied
+visual_verdict: not_evaluated
+```
+
+This is intentional. `place_cube`, `modify_cube`, and `modify_cubes_batch` can prove that authored state changed, but they cannot prove that the geometry resembles the reference. Language such as "corrected Cubes" must not be emitted by mutation tools because correction is a visual/model decision made only after fresh evidence.
+
+A successful placement is therefore not a reason to continue placing more geometry. The modelling workflow must stop after a judgeable primary blockout and obtain a Reference Fidelity Verdict before secondary/detail geometry continues.
+
 ## Observation Decision
 
 BlockIT uses read-only observation instruments rather than numeric resemblance

@@ -212,7 +212,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation.",
+      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -223,7 +223,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. A successful return confirms only that the authored update was applied; it does not evaluate whether the Cube is visually correct or matches the reference.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -234,7 +234,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -391,6 +391,8 @@ createTool(cubeToolDocs[0].name, {
 
     Canvas.updateAll();
     const result = {
+      execution: "applied" as const,
+      visual_verdict: "not_evaluated" as const,
       added: cubes.length,
       cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
     };
@@ -398,7 +400,7 @@ createTool(cubeToolDocs[0].name, {
       content: [
         {
 type: "text" as const,
-text: `Added ${cubes.length} Cube${cubes.length === 1 ? "" : "s"}.`,
+text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"}. Execution succeeded; reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,
@@ -479,6 +481,8 @@ createTool(cubeToolDocs[1].name, {
 
     Canvas.updateAll();
     const result = {
+      execution: "applied" as const,
+      visual_verdict: "not_evaluated" as const,
       modified: cubes.length,
       cube: finalCubeState(cubes[0]),
     };
@@ -486,7 +490,7 @@ createTool(cubeToolDocs[1].name, {
       content: [
         {
 type: "text" as const,
-text: `Modified Cube ${cubes[0].name} (${cubes[0].uuid}).`,
+text: `Applied authored update to Cube ${cubes[0].name} (${cubes[0].uuid}). Reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,
@@ -565,6 +569,8 @@ createTool(cubeToolDocs[2].name, {
 
     Canvas.updateAll();
     const result = {
+      execution: "applied" as const,
+      visual_verdict: "not_evaluated" as const,
       modified: targets.length,
       cubes: targets.map(({ cube }) => finalCubeState(cube)),
     };
@@ -573,7 +579,7 @@ createTool(cubeToolDocs[2].name, {
       content: [
         {
           type: "text" as const,
-          text: `Corrected ${targets.length} Cubes in one Undo unit.`,
+          text: `Applied authored updates to ${targets.length} Cubes in one Undo unit. Reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,

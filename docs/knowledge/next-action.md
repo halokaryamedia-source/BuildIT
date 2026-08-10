@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_FALSE_PASS_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_PRIMARY_GEOMETRY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -194,15 +194,17 @@ Generic full-app screenshot and arbitrary editor-camera mutation are not part of
 
 If continuing non-local work before local Blockbench acceptance becomes available, continue **model creation effectiveness**, not capability completeness.
 
-The next bounded problem is:
+The current source slice has hardened **P0 — wrong primary geometry decomposition** around execution-success bias and premature detail.
+
+The next bounded modelling problem is:
 
 ```text
-P0 — wrong primary geometry decomposition
+P0 — cross-view / depth hallucination
 ```
 
-Audit whether the current Primary Form Hypothesis → coarse Cube blockout workflow actually prevents the recurring real failures: wrong whole silhouette, wrong relative mass scale/placement, front-view overfitting with bad depth, arbitrary slopes/rotations, excessive Cubes before recognizability, and detail used to compensate for a wrong primary scaffold.
+Audit how Codex derives width/height/depth, placement, and orientation when reference views provide unequal or conflicting evidence. The solution should keep unsupported axes explicitly provisional/UNVERIFIED and prevent a strong front-view match from hiding bad side/top/depth geometry.
 
-Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, or another modelling framework unless a concrete modelling requirement proves it is needed.
+Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, similarity scoring, or another modelling framework unless a concrete modelling requirement proves it is needed.
 
 When the local Blockbench environment is available, local acceptance still needs to verify the stateless endpoint plus actual Locator/Null Object create/update/inspect/rename/remove behavior and Bedrock save/reopen/export round-trip before the Locator slice is considered runtime-proven.
 

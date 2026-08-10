@@ -140,20 +140,40 @@ the tool succeeded
 
 ## Problem #2 — Wrong Primary Geometry
 
-This is the next modelling-effectiveness target after Problem #1 is hardened.
+### Failure we must prevent
 
-The product question is not whether BlockIT can place more primitive types. It is whether Codex can derive the correct major volumes from a reference before committing to local detail.
+```text
+agent recognizes semantic parts
+→ invents exact Cube extents independently
+→ place_cube succeeds
+→ success is treated as proof that the part was placed correctly
+→ more Cubes are added around the assumption
+→ the model becomes detailed but the whole silhouette/proportions remain wrong
+```
 
-The next audit should test the current primary-form workflow against realistic failure patterns:
+The product question is not whether BlockIT can place more primitive types. It is whether Codex can derive the correct major volumes from the reference before committing to local detail.
 
-- wrong overall silhouette despite correct object category;
-- head/body/handle/support masses with incorrect relative scale;
-- correct front profile but wrong depth;
-- arbitrary slopes/rotations that make the model look sophisticated but less accurate;
-- too many Cubes used before the whole form is recognizable;
-- detail added to compensate for a wrong main mass.
+### Root causes
 
-Do not add a planner or automatic image-to-Cuboid system unless the simpler reference-fidelity workflow is proven insufficient.
+1. **Execution-success bias** — mutation success sounds like modelling success even though the tool never judged the reference.
+2. **Independent-Cube reasoning** — semantic labels such as body/head/handle are converted directly into unrelated exact transforms instead of one coherent set of primary mass relationships.
+3. **Success chaining** — the next Cube is placed because the previous call worked, not because a still-unrepresented primary mass requires it.
+4. **Premature detail** — secondary Cubes make the model look more complete and create sunk cost before the primary silhouette has been accepted.
+5. **Unsupported certainty** — a provisional depth/rotation/placement estimate becomes treated as correct after Blockbench accepts it.
+
+### Implemented source solution
+
+- Cube mutation outputs now report `execution: applied` and `visual_verdict: not_evaluated`.
+- Mutation text says that reference fidelity was not evaluated; `modify_cubes_batch` no longer calls its own result "Corrected".
+- The modelling skill and canonical MCP prompt prohibit chaining placement from tool success.
+- Once the currently hypothesized primary masses form a judgeable blockout, geometry authoring must stop for the primary visual gate before secondary/detail work.
+- Under-constrained axes may use provisional working values when necessary, but those values remain hypotheses and cannot become PASS without supporting evidence.
+
+### Remaining proof
+
+Local modelling tests still need to demonstrate that this boundary changes actual Codex behavior on difficult references. Source/CI can prove the contract exists; they cannot prove improved visual quality without live model construction.
+
+Do not add a planner or automatic image-to-Cuboid system unless this simpler execution/acceptance separation is proven insufficient.
 
 ## Product Priority Rule
 

@@ -168,6 +168,24 @@ Compare them with corresponding reference views and check:
 `PASS` cannot be justified by "all Cubes are placed", "everything is attached",
 "coordinates are valid", or "the tool succeeded".
 
+#### Placement Execution Is Not Geometry Approval
+
+Treat every successful `place_cube`, `modify_cube`, or `modify_cubes_batch` call as **execution evidence only**. It proves that Blockbench accepted the authored state; it does not prove that the chosen mass, size, position, depth, rotation, contact, or silhouette is correct. Cube mutation results use `visual_verdict: not_evaluated` for this reason.
+
+Do not continue with another Cube merely because the previous placement succeeded. Every additional primary Cube must still be justified by a primary mass or necessary split that remains unrepresented in the current Primary Form Hypothesis.
+
+Once the currently hypothesized primary masses are represented well enough to judge the whole form, **stop adding geometry** and run the primary visual gate before any secondary/detail pass. Do not use extra detail, bevel-like stepped Cubes, texture, or decorative parts to make an unverified primary scaffold look more finished.
+
+If the primary gate returns:
+
+```text
+FAIL       revise/rebuild the responsible primary mass relationships before adding detail
+UNVERIFIED keep unsupported axes/relationships provisional; do not claim them correct
+PASS       only then continue to secondary geometry
+```
+
+When one axis such as depth is weakly supported, a provisional working extent may be necessary to create a 3D blockout, but it remains a hypothesis. Do not convert that provisional value into reference-backed certainty simply because `place_cube` accepted it.
+
 #### Mandatory Reference Fidelity Verdict
 
 Do not begin a visual gate by asking whether the model "looks good". Begin by actively searching for differences between each relevant reference view and the matching fresh model view.
