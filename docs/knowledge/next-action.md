@@ -10,11 +10,11 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 Stabilize and reduce the BlockIT MCP foundation before normal feature hardening resumes.
 
-P0.1 local network containment and P0.2 dangerous default capability containment are now implemented in source. Runtime/network/tool-list proof remains local. The next source boundary is P0.3 real MCP schema enforcement + annotations.
+P0.1 local network containment, P0.2 dangerous default capability containment, and P0.3 real MCP schema enforcement + annotations are now implemented in source. Runtime/network/tool-list/schema behavior proof remains local or belongs to the upcoming regression gate. The next source boundary is P0.4 typecheck/tests/root CI.
 
 ## Current Status
 
-`MCP_P0_DANGEROUS_DEFAULTS_SOURCE_COMPLETE_SCHEMA_ENFORCEMENT_NEXT`
+`MCP_P0_SCHEMA_ENFORCEMENT_SOURCE_COMPLETE_ENGINEERING_GATE_NEXT`
 
 Execution channel now: **ChatGPT → GitHub**.  
 Local Blockbench/MCP testing remains required for runtime proof.
@@ -168,7 +168,7 @@ browser/proxy compatibility
 normal tool call after initialization
 ```
 
-# Latest Completed Slice — P0.2 Dangerous Default Capability Containment
+# Completed Slice — P0.2 Dangerous Default Capability Containment
 
 Primary owners:
 
@@ -241,13 +241,101 @@ remaining intended default tools still register
 no server initialization regression
 ```
 
+# Latest Completed Slice — P0.3 Real MCP Schema Enforcement + Annotations
+
+Primary owner:
+
+```text
+mcp/lib/factories.ts
+```
+
+Source commit:
+
+```text
+2fec534b0204a33c9b20c536724159018a4b5c38
+fix: enforce MCP tool schemas and annotations
+```
+
+## Grounded installed SDK contract
+
+The committed lockfile resolves:
+
+```text
+@modelcontextprotocol/sdk 1.25.3
+```
+
+The exact v1.25.3 SDK registration contract accepts raw Zod shapes or schemas and supports `ToolAnnotations`. The same SDK exposes annotations in `tools/list`, and its `ToolAnnotations` contract includes `idempotentHint`.
+
+For BlockIT's current v1 registration path, the existing extracted object shape remains the MCP registration/listing representation. The original complete tool Zod schema is now retained separately as the execution contract so top-level `ZodEffects` refinements are not discarded by the local factory.
+
+## Implemented source contract
+
+`ToolDefinition` now retains both:
+
+```text
+inputSchema      → SDK-compatible extracted object shape
+parameterSchema  → original complete Zod schema
+```
+
+Before tool logic runs, both registration paths now execute:
+
+```text
+complete parameter schema parseAsync(args)
+```
+
+This applies to:
+
+```text
+initial singleton server registration
+reconstructed per-session server registration
+```
+
+A complete-schema parse failure throws before tool logic and therefore reaches the SDK tool-error path rather than becoming an ordinary successful tool response from the implementation.
+
+Tool annotations are now passed in both registration definitions rather than remaining source-only metadata. Local annotation typing now uses the installed SDK's `ToolAnnotations`, including supported `idempotentHint` metadata.
+
+## P0.3 intentionally unchanged
+
+- no individual tool received a validation workaround;
+- no tool implementation behavior was otherwise changed;
+- no SDK/protocol version change;
+- no transport/session architecture change;
+- no tests/CI framework was added early;
+- no Animation, Geometry, Texture, Paint, Mesh, Armature, import/export, capability-profile, or generated-doc work was bundled into this slice.
+
+GitHub has no registered CI/status checks for the source commit.
+
+## P0.3 proof boundary
+
+Exact source/SDK control-flow inspection proves:
+
+```text
+complete Zod schema is retained for runtime validation
+initial tool callback parses through the complete schema before execute()
+reconstructed-session callback parses through the same complete schema before execute()
+raw object shape remains the v1 registration/listing schema representation
+supported annotations are passed to both registration paths
+idempotentHint is supported by the installed SDK annotation type
+no per-tool validation workaround or SDK migration was introduced
+```
+
+Still `LOCAL PROOF REQUIRED` or targeted P0.4 regression proof:
+
+```text
+a top-level .refine() invalid input is rejected before tool logic
+a .superRefine() invalid input is rejected before tool logic
+tool annotations are visible through tools/list / MCP Inspector
+reconstructed session registration exposes the same schema/annotation behavior
+normal valid tool execution still works
+```
+
 # Current Work Order
 
 ```text
 P0.1  loopback + Origin containment              SOURCE COMPLETE / LOCAL PROOF PENDING
 P0.2  dangerous default capability containment   SOURCE COMPLETE / LOCAL PROOF PENDING
-P0.3  full-schema validation + real annotations  ← ACTIVE NEXT SLICE
-P0.4  typecheck/tests/root CI
+P0.3  full-schema validation + real annotations  SOURCE COMPLETE / RUNTIME REGRESSION PROOF PENDING
+P0.4  typecheck/tests/root CI                     ← ACTIVE NEXT SLICE
 P0.5  generated-doc freshness
 
 P1.1  default Bedrock Entity registration profile
@@ -259,14 +347,17 @@ P1.5  local end-to-end core acceptance
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P0.3 Only
+# Next Step — P0.4 Only
 
-Make the **existing MCP tool factory** the real public-contract owner.
+Create the repository's **real MCP engineering gate**. Do not move into generated-doc freshness or P1 capability reduction yet.
 
-Primary source owner:
+Primary package/repository owners:
 
 ```text
-mcp/lib/factories.ts
+mcp/package.json
+mcp/tsconfig.json
+repository-root .github/workflows/
+focused MCP contract tests
 ```
 
 Primary specialist:
@@ -275,56 +366,54 @@ Primary specialist:
 mcp-server-development
 ```
 
-Before editing, inspect the installed current SDK types/runtime registration path and the existing Zod schema handling. Stay on the current SDK line; do not migrate protocol/SDK in this slice.
+Before editing, inspect the current package scripts, compiler configuration, existing nested workflow, build entrypoints, and the smallest seams required to test the already identified P0 contracts. Do not create broad low-value coverage.
 
 ## Required behavior
 
-1. preserve each tool's original complete Zod schema for execution;
-2. validate callback args through that complete schema before tool logic runs so top-level `.refine()` / `.superRefine()` rules cannot disappear;
-3. continue supplying the installed v1 SDK-compatible `inputSchema` representation required for registration;
-4. pass supported tool annotations through both initial registration and reconstructed session registration;
-5. include `idempotentHint` in local annotation typing only if the installed SDK supports it;
-6. keep initial and reconstructed registration behavior contract-equivalent;
-7. do not duplicate validation inside individual tools to compensate for the factory;
-8. keep schema construction free of Blockbench globals;
-9. do not change tool behavior outside what is required by real schema/annotation enforcement;
-10. do not add tests/CI framework early — P0.4 owns the engineering gate;
-11. inspect the exact source diff immediately after implementation;
-12. advance to exactly P0.4 only after P0.3 is recorded.
+1. add a real package `typecheck` command using `tsc --noEmit`;
+2. replace the placeholder test command with real Bun contract tests;
+3. retain the current production build as a separate gate;
+4. establish a repository-root GitHub Actions workflow that runs against the `mcp/` package;
+5. install dependencies from the committed lockfile;
+6. gate full package typecheck;
+7. gate focused contract tests;
+8. gate the production build;
+9. include generated-document freshness assertion only to the extent required by the approved P0 gate, without hand-editing generated docs or starting P0.5 source/docs cleanup early;
+10. target the high-risk contracts already identified by the audit rather than creating broad coverage;
+11. inspect the exact source/workflow diff immediately after implementation;
+12. advance to exactly P0.5 only after this slice is recorded.
 
-## Error policy
+## Initial targeted regression scope
 
-Input-contract failure must become a real failed tool call / SDK validation error, not an ordinary successful text result.
-
-Tool implementations may continue returning targeted application-level errors for validly-shaped inputs when useful.
-
-## Static acceptance
-
-Must prove from source/diff:
+The engineering gate must cover the smallest useful seams for:
 
 ```text
-complete Zod schema is retained for runtime validation
-initial tool execution validates args through the complete schema
-reconstructed-session execution validates args through the same complete schema
-supported annotations are passed to both registration paths
-no per-tool validation workaround was introduced
-no SDK/protocol migration or unrelated feature-family change was introduced
+full-schema refinement preservation
+annotation registration
+Origin validation helper/path
+disabled/quarantined tool exposure
+generated-doc freshness
 ```
 
-## Runtime / later regression proof required
+Do not convert live Blockbench behavior into fake unit proof. Tests should cover contracts that can actually be exercised outside Blockbench; runtime-only behavior remains explicitly local proof.
 
-Local MCP/Blockbench or the P0.4 targeted contract-test gate must confirm:
+## Static / executable acceptance
+
+Must establish executable repository evidence for:
 
 ```text
-a top-level .refine() invalid input is rejected before tool logic
-a .superRefine() invalid input is rejected before tool logic
-tool annotations are visible through tools/list / MCP Inspector
-reconstructed session registration exposes the same schema/annotation behavior
-normal valid tool execution still works
+bun lockfile install path
+full TypeScript typecheck
+focused Bun contract tests
+production MCP build
+repository-root MCP verification workflow
+clear separation between static/automated proof and local Blockbench proof
 ```
+
+Do not claim P0.4 complete while `tsc --noEmit` still fails.
 
 ## Proof Boundary
 
-ChatGPT → GitHub may prove source/API/control-flow and exact diff only.
+GitHub Actions/package tests may prove compile/build and isolated MCP contract behavior that does not require Blockbench globals.
 
-Actual network bind behavior, MCP tool-list visibility, SDK runtime rejection behavior, Blockbench runtime behavior, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
+Actual OS listener state, real MCP Inspector behavior where not covered by an isolated server fixture, Blockbench runtime behavior, Undo/Redo, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
