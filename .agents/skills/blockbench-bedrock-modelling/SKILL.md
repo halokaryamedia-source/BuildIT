@@ -84,6 +84,17 @@ individual geometry from those dimensions plus visible cross-view proportions.
 
 ## Procedure
 
+### Minimum Necessary Evidence
+
+Use the smallest evidence set that can change the next modelling decision. Strictness applies to claims, not to the number of MCP calls.
+
+- No per-Cube inspection ceremony for newly authored geometry that has no diagnosed problem.
+- No screenshot-per-mutation loop. Build a judgeable coarse whole form, then run one meaningful visual gate.
+- Re-observe only affected relationship/view(s) after a genuinely local correction; reopen the whole-form gate only when the correction exposes a global hypothesis problem.
+- Structural bounds are conditional: use them for approved numeric envelope, scale, ground, displacement, or gross-placement questions, not as a universal pre-screenshot ritual.
+- `UNVERIFIED` does not automatically require more calls. Obtain more evidence only when it can materially change the current decision and is plausibly available.
+- Keep Primary Form reasoning compact for simple assets; expand the hypothesis/evidence map only when complexity, ambiguity, or conflicting views require it.
+
 ### Tool Lane Discipline
 
 For normal reference-driven modelling, keep the active execution set small. Use project/orientation discovery, Cube/Group authoring, deterministic whole-form observation, exact element inspection, bounded correction, recovery, and final export. Do not explore or invoke texture/Paint, animation, material-instance, Locator, selection, duplicate, validator, or export tools merely because they appear in the MCP catalog.
@@ -131,7 +142,7 @@ uncertainty where applicable
 ```
 
 Approximate normalized ratios or qualitative placement are acceptable internal
-reasoning. They are not image-pixel measurements.
+reasoning. They are not image-pixel measurements. For a simple asset, keep this as a short working note rather than a formal per-part report.
 
 Do not produce a locked per-Cube plan. Do not impose support-first,
 section-first, largest-first, anatomy templates, fixed Cube count, or exact
@@ -149,7 +160,7 @@ hypothesis, not guessed independently per Cube.
 
 ### 2A. Build A Small Axis Evidence Map
 
-Before exact primary Cube extents, separate what the reference actually proves from what the modeller merely needs to hypothesize. For each material primary mass/relationship, track only the relevant claims:
+When an important axis/relationship is materially uncertain, hidden, or cross-view dependent, separate what the reference actually proves from what the modeller merely needs to hypothesize. Track only claims that can affect the current primary-form decision:
 
 ```text
 claim / axis
@@ -188,9 +199,10 @@ technical overlap does not mean the shape is correct.
 
 ### 4. Run Structural Envelope + Primary Visual Gate
 
-When the required runtime capability exists, check overall model bounds/ground
-against approved dimensions before allowing camera framing to hide gross scale
-errors. Structural envelope evidence cannot prove resemblance.
+When approved numeric dimensions/envelope exist, or the active question is scale,
+ground, displacement, or gross placement, check overall model bounds/ground before
+visual approval. Otherwise skip the bounds call. Structural envelope evidence cannot
+prove resemblance.
 
 Then use only fresh model views needed to answer the current whole-form question.
 Compare them with corresponding reference views and check:
@@ -221,7 +233,7 @@ UNVERIFIED keep unsupported axes/relationships provisional; do not claim them co
 PASS       only then continue to secondary geometry
 ```
 
-When one axis such as depth is weakly supported, a provisional working extent may be necessary to create a 3D blockout, but it remains a hypothesis. Do not convert that provisional value into reference-backed certainty simply because `place_cube` accepted it.
+When one axis such as depth is weakly supported, a provisional working extent may be necessary to create a 3D blockout, but it remains a hypothesis. Do not convert that provisional value into reference-backed certainty simply because `place_cube` accepted it. `UNVERIFIED` by itself does not require another search/capture cycle; seek additional evidence only when the claim is material to the next decision and that evidence is plausibly obtainable.
 
 #### Mandatory Reference Fidelity Verdict
 

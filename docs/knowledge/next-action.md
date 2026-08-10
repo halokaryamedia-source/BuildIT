@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
 This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_SEQUENCING_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_MINIMUM_EVIDENCE_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -204,6 +204,10 @@ The current source slice has hardened **P1 — tool-choice / context friction** 
 
 The current source slice has hardened **P2 — texture and animation sequencing**. End-to-end downstream production waits for the geometry/rig state it actually depends on; existing-asset texture-only/animation-only tasks may use current geometry as a baseline without inventing a geometry `PASS`; affected downstream work is revalidated after material geometry/hierarchy/pivot changes.
 
+The final pre-local cleanup has hardened **Minimum Necessary Evidence**: bounds are conditional, specialists load lazily, checkpoints are risk-based, newly placed Cubes do not require per-Cube inspection, captures happen at meaningful gates/affected views only, simple Primary Form reasoning stays compact, and `UNVERIFIED` is not an automatic retry/search instruction. No runtime mode/profile/framework was added.
+
+**Proof boundary:** modelling-effectiveness CI tests are source/contract regression proof. They are not behavioral proof that Codex follows the workflow, and they are not visual proof that a live model resembles its reference.
+
 The next authoritative modelling-effectiveness step is:
 
 ```text
@@ -218,9 +222,11 @@ Use real Codex + Blockbench runs to test the product loop rather than adding ano
 4. unresolved evidence/capability/correction loop -> explicit `BLOCKED` report;
 5. geometry `FAIL` -> no production texture/animation;
 6. accepted geometry -> texture -> animation when required -> affected downstream revalidation after any later material geometry/rig change;
-7. texture-only / animation-only existing-asset task -> bounded domain work without pretending the baseline geometry was reference-approved.
+7. texture-only / animation-only existing-asset task -> bounded domain work without pretending the baseline geometry was reference-approved;
+8. efficiency trace -> record tool calls by purpose and flag redundant bounds/discovery/per-Cube inspect/capture/checkpoint/specialist loads;
+9. simple happy-path model -> demonstrate that strict validity can complete with one meaningful primary visual gate rather than screenshot-per-mutation ceremony.
 
-If the local environment is unavailable, do **not** invent another modelling framework, readiness state machine, planner, scoring system, or capability slice merely to keep work moving. Continue non-local work only for a concrete source defect, failing existing gate, or explicit product requirement with direct modelling value.
+If the local environment is unavailable, do **not** invent another modelling framework, readiness state machine, planner, scoring system, efficiency mode, or capability slice merely to keep work moving. Continue non-local work only for a concrete source defect, failing existing gate, or explicit product requirement with direct modelling value.
 
 When the local Blockbench environment is available, local acceptance still needs to verify the stateless endpoint plus actual Locator/Null Object create/update/inspect/rename/remove behavior and Bedrock save/reopen/export round-trip before the Locator slice is considered runtime-proven.
 

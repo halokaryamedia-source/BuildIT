@@ -59,7 +59,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(profile).not.toContain("sequencing");
     expect(profile).not.toContain("readiness");
     expect(audit).toContain("No runtime readiness state, new profile, or tool gate was added");
-    expect(next).toContain("MCP_MODEL_EFFECTIVENESS_SEQUENCING_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
+    expect(next).toContain("texture and animation sequencing");
+    expect(next).toContain("Minimum Necessary Evidence");
     expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
     expect(next).toContain("do **not** invent another modelling framework");
   });

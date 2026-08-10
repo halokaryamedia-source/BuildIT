@@ -32,9 +32,9 @@ Prepare/open Bedrock project
 ↓
 Explicit coarse primary Cube authoring
 ↓
-inspect_model_bounds
+inspect_model_bounds only when numeric envelope/scale/ground evidence is relevant
 ↓
-capture_model_views
+capture_model_views using only reference-corresponding views needed for the gate
 ↓
 Reference ↔ model primary visual gate
 ↓
@@ -60,6 +60,23 @@ Final validation
 ↓
 Save `.bbmodel` when in scope
 ```
+
+## Minimum Necessary Evidence
+
+The workflow is strict about claims, not ritualistic about calls. Use a read, capture, or checkpoint only when its result can change the next modelling decision or prove an in-scope completion claim.
+
+```text
+no per-Cube inspect by default
+no screenshot per mutation
+no automatic full-view capture
+no bounds call without an envelope/scale/ground question
+no repeated discovery of state already known
+no checkpoint based only on mutation count
+local correction -> affected view/state only
+UNVERIFIED -> preserve uncertainty unless more evidence is both material and obtainable
+```
+
+A global failure still reopens the whole-form hypothesis. A genuinely local failure should not trigger a full-project validation ceremony.
 
 ## 1. Understand Request
 
@@ -125,7 +142,7 @@ supporting reference view(s)
 uncertainty
 ```
 
-This may use qualitative/normalized proportions. It is **not**:
+This may use qualitative/normalized proportions. Keep it as a compact working note for simple assets and expand it only when complexity/ambiguity requires more evidence tracking. It is **not**:
 
 - pixel calibration;
 - a locked Cube blueprint;
@@ -191,12 +208,11 @@ For hierarchy:
 
 ## 7. Inspect Global Structural Envelope
 
-After coarse primary authoring, use:
+After coarse primary authoring, use `inspect_model_bounds` only when an approved
+numeric target envelope exists or the active question concerns scale, ground,
+displacement, or gross placement. Otherwise skip this structural check.
 
-`inspect_model_bounds`
-
-Compare raw rendered bounds/center/ground facts with the approved target envelope
-when one exists.
+When used, compare raw rendered bounds/center/ground facts with the approved target envelope.
 
 This can reveal catastrophic scale/displacement/ground errors. It **cannot**
 prove resemblance.

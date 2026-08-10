@@ -7,9 +7,20 @@ Create or revise a Minecraft Bedrock **entity** model as a clean, editable Block
 - Use Cubes as the normal geometry primitive and groups as bones/organization when the asset actually needs them.
 - Treat the user brief and approved visual reference as the modelling authority. Tool success, valid coordinates, connected Cubes, or a validator pass are not proof of visual resemblance.
 
+## Minimum necessary evidence
+
+Keep validity strict and calls sparse. Use a tool, inspection, capture, or specialist only when its result can change the next decision or prove an in-scope completion claim.
+
+- Do not inspect each newly placed Cube or capture after every mutation.
+- Do not re-discover project/outline state already known from this workflow unless it may have changed.
+- Use `inspect_model_bounds` only for numeric envelope/scale/ground/gross-placement questions.
+- Capture only reference-corresponding views needed for the current gate; after a local correction, re-capture only affected view(s).
+- `UNVERIFIED` does not mean keep searching. Seek more evidence only when it is material and plausibly obtainable; otherwise preserve the uncertainty or report `BLOCKED` when that proof is required.
+- Load/use texture or animation specialist instructions only when that stage is actually reached.
+
 ## Normal modelling route
 
-1. **Orient before mutating.** Use `get_project_info`, then targeted outline/search only as needed. Establish a consistent model frame: X=width, Y=height, Z=length/front-back, plus explicit `front_direction` (`+z` or `-z`) and ground relationship when relevant.
+1. **Orient before mutating.** Use `get_project_info` for an existing or uncertain project state, then targeted outline/search only as needed. If this workflow just created the project and no relevant state changed, do not re-read it only for confirmation. Establish X=width, Y=height, Z=length/front-back, explicit `front_direction` when relevant, and the ground relationship when it matters.
 2. **Check the reference as one 3D object.** Do not average materially conflicting views. Know which view(s) support width, height, length, primary placement, and important slopes.
 ### Cross-view axis evidence contract
 
@@ -26,7 +37,7 @@ SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 
 Do not transfer confidence between axes. A front-view match cannot certify depth; a 3/4 impression cannot override clearer orthographic evidence. Provisional values remain hypotheses after successful Cube placement. Conflicting primary-form evidence must not be averaged into a compromise; if the active brief/user intent cannot resolve it, stop as `BLOCKED` rather than hallucinating a solution.
 
-3. **Create a temporary Primary Form Hypothesis before exact Cube transforms.** For each primary mass, reason about its relative size, relative center/placement, important orientation, major contact, and supporting reference view(s). This is not a locked Cube plan and is not pixel calibration.
+3. **Create a temporary Primary Form Hypothesis before exact Cube transforms.** Keep it compact for simple assets: primary masses, relative size/placement, important orientation/contact, and only material uncertainty. Expand the evidence map only for ambiguous/complex relationships. This is not a locked Cube plan or pixel calibration.
 4. **Build a coarse whole-form blockout.** Every primary Cube must implement a known mass role or necessary split. Before calling `place_cube`, choose explicit finite `from` and `to` extents from the spatial hypothesis; the tool does not supply a default Cube when geometry was not decided. Never place a Cube merely because it can touch/overlap/attach to another Cube. Derive exact `from/to/origin/rotation` from the spatial hypothesis and reference evidence rather than guessing each Cube independently. If a Cube is intentionally placed under a specific Group/bone, first locate the exact Group UUID and pass that target explicitly; omit `group` (or use `root`) only when root placement is actually intended. Do not guess a group name and rely on fallback placement.
 ### Placement result boundary
 
@@ -34,10 +45,10 @@ A successful `place_cube`, `modify_cube`, or `modify_cubes_batch` call means onl
 
 Do not chain Cube placement based on previous tool success. Each next primary Cube must represent a still-required primary mass/necessary split from the current Primary Form Hypothesis. Once those primary masses are represented well enough to judge the whole form, stop placing geometry and run the primary visual gate before adding secondary/detail Cubes.
 
-A provisional extent chosen for an under-constrained axis is a working hypothesis, not verified reference evidence. If the available reference cannot validate that axis, keep the claim UNVERIFIED even when the Cube was placed successfully.
+A provisional extent chosen for an under-constrained axis is a working hypothesis, not verified reference evidence. If the available reference cannot validate that axis, keep the claim UNVERIFIED even when the Cube was placed successfully. Do not spend additional calls trying to remove UNVERIFIED unless the missing proof can change the next decision and is plausibly obtainable.
 
 5. **Use rotation only with evidence and an intentional pivot.** Prefer axis-aligned Cuboids when they explain the form. An unrotated Cube does not need pivot ceremony and may use the neutral origin default. If a newly placed Cube has any non-zero rotation, `place_cube` requires an explicit `origin`; choose that pivot from a visible slope/attachment/rotation-center reason rather than allowing an omitted pivot to become `[0,0,0]`. When an existing Cube is currently unrotated and a correction activates its non-zero rotation, inspect that Cube and send the intended `origin` explicitly in the same `modify_cube` / `modify_cubes_batch` update. Once a Cube is already rotated, later angle adjustments may reuse its inspected existing pivot without restating `origin`. Do not use arbitrary multi-axis rotation, copied pivots, or rotation to compensate for wrong size/placement.
-6. **Measure the primary envelope before visual approval.** After the coarse primary blockout, call `inspect_model_bounds`. Compare its raw width/height/length, center, footprint, and ground/min-Y facts with the approved target envelope when one exists. Matching bounds are structural evidence only and never prove resemblance.
+6. **Measure the primary envelope only when it can answer a real question.** Call `inspect_model_bounds` when approved numeric dimensions/envelope exist or when scale, ground, displacement, or gross placement is in doubt. Otherwise skip it. Matching bounds are structural evidence only and never prove resemblance.
 7. **Run the primary visual gate with canonical views.** Use `capture_model_views` with the established `front_direction` and only the reference-corresponding views needed for the question. When approved numeric target bounds exist, use `framing: { mode: "explicit", min, max }` so an oversized/misplaced model cannot be hidden by auto-framing. When no numeric envelope exists, use `framing: { mode: "model" }` and make no numeric scale claim. Principal views are orthographic evidence; 3/4 views are volume/readability context.
 8. **Compare reference ↔ model directly.** Judge recognizability, silhouette, major proportions, mass placement, orientation, and visible contacts from the labeled images. `capture_model_views` is an observation tool only; its successful return is not a visual `PASS`.
 9. **Reject bad primary scaffolds.** If the intended object is not recognizable or several primary relationships fail together, revise/rebuild the Primary Form Hypothesis and coarse blockout. Do not preserve a bad model merely because many Cubes are already placed.
@@ -150,32 +161,8 @@ For normal BlockIT model deliverables, `export_model` intentionally supports onl
 
 Bedrock animation/controller files belong to Blockbench's separate Bedrock AnimationCodec surface. Do not substitute arbitrary OBJ/glTF/model codecs for a Bedrock Entity deliverable.
 
-## Stage-Gated Tool Routing
+## Tool routing boundary
 
-The exposed MCP catalog is capability, not a checklist. For normal reference-driven geometry, prefer this lane and do not branch without a concrete stage/intent:
+The catalog is capability, not a checklist. Stay in the smallest active lane: project/orient -> coarse Cube/Group build -> relevant model views -> exact inspect/correct only on a diagnosed mismatch -> downstream domain only after its prerequisite gate -> export only for a requested artifact.
 
-```text
-get_project_info / create_project
-list_outline / find_elements_by_criteria
-place_cube / add_group
-inspect_model_bounds / capture_model_views
-inspect_element -> modify_cube / modify_cubes_batch
-remove_element only for a diagnosed MERGE/REMOVE
-undo / save_checkpoint only when recovery value is real
-export_model only for a requested deliverable/artifact
-```
-
-Branch rules:
-
-- texture/UV/Paint/PBR/material-instance tools only when geometry has reached the appropriate gate and the surface task is active;
-- animation tools only when requested and required hierarchy/pivots are coherent;
-- Locator/Null Object tools only for a concrete native attachment/effect-point need;
-- selection tools only when current editor selection is genuinely required by the active workflow, never as geometry identity;
-- `duplicate_element` only after repetition/symmetry is already supported, never to invent primary form;
-- `capture_screenshot` only when the current editor view itself answers a question canonical `capture_model_views` cannot;
-- validator output is structural diagnostics and never resemblance approval;
-- export is not a validation step.
-
-Do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature tooling, or Hytale tooling as shortcuts. Native Bedrock PBR/material-instance workflows remain valid when the asset actually requires them.
-
-Prefer `inspect_model_bounds` + `capture_model_views` for whole-form evidence, `inspect_element` for a diagnosed local target, exact UUIDs for normal mutation/hierarchy targets, and `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs. If primary geometry is still FAIL/UNVERIFIED, do not switch domains merely to make the asset look more complete.
+Use bounds only for envelope/scale/ground questions, selection only for a real selection workflow, duplication only for supported repetition/symmetry, validators only for structural diagnostics, and checkpoints only when rollback value is meaningful. Do not use `risky_eval`, generic UI automation, generic Mesh/Hytale tooling, or a different format as shortcuts.

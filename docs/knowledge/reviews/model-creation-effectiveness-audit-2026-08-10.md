@@ -347,6 +347,55 @@ Material `FAIL` returns to modelling. A required downstream dependency that rema
 
 Local end-to-end tests must show that Codex actually delays downstream production on a failing model, allows bounded existing-asset texture/animation tasks without inventing geometry approval, and revalidates affected downstream work after geometry/rig edits. Source/CI proves the sequencing contract exists; it does not prove live behaviour or visual quality.
 
+## Problem #6 — Validation Overhead / Usage Waste
+
+### Failure we must prevent
+
+```text
+strict policy
+-> per-Cube inspect/capture/discovery/checkpoint rituals
+-> many MCP calls without new decision-changing evidence
+-> high context/usage cost
+-> slower modelling without stronger proof
+```
+
+### Source solution — Minimum Necessary Evidence
+
+A read/capture/checkpoint/specialist load is justified only when its result can change the next modelling decision or prove an in-scope completion claim.
+
+- bounds are conditional on numeric envelope/scale/ground/gross-placement questions;
+- newly authored Cubes are not inspected one-by-one unless a diagnosis/identity/current-state question requires it;
+- captures happen at meaningful gates, not after every mutation;
+- local corrections revalidate affected views/state only unless they expose a global hypothesis problem;
+- specialists load lazily when their stage is reached;
+- checkpoints are risk/recovery based, not mutation-count based;
+- simple Primary Form Hypotheses remain compact;
+- `UNVERIFIED` preserves uncertainty and does not automatically authorize more search/capture calls.
+
+No `lean_mode`, runtime readiness state, new profile, scoring system, or dynamic gating framework was added.
+
+## Proof Taxonomy — Do Not Confuse Contract With Behaviour
+
+Current CI/source tests prove that schemas, routing text, mutation-result contracts, and regression guardrails exist and remain internally consistent. Many modelling-effectiveness tests deliberately inspect source/policy text. That is **contract proof**, not evidence that Codex will obey the contract during a real modelling run.
+
+```text
+SOURCE / CONTRACT PROOF
+  tests/build/docs verify the rule exists and source remains valid
+
+LIVE TOOL PROOF
+  real Blockbench + MCP call proves a tool behaves as claimed in the active runtime
+
+BEHAVIORAL MODELLING PROOF
+  real Codex + Blockbench reference task demonstrates tool choice, call economy,
+  visual FAIL/UNVERIFIED/PASS judgement, correction behaviour, and blocker handling
+
+REFERENCE-FIDELITY OUTCOME PROOF
+  fresh rendered result is directly compared with the approved reference and
+  supports the claimed model quality
+```
+
+A green CI run must never be reported as proof that visual fidelity, anti-hallucination behaviour, call efficiency, or `BLOCKED` escalation works live. Those remain `LOCAL PROOF REQUIRED` until acceptance scenarios exercise them.
+
 ## Product Priority Rule
 
 Before future work, ask:

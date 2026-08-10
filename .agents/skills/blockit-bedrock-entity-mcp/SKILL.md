@@ -26,7 +26,7 @@ Use this skill before substantive BlockIT MCP asset work. It owns **workflow orc
 | Plugin/runtime implementation defect | `blockbench-runtime-development` |
 | MCP server/schema/registration implementation | `mcp-server-development` |
 
-Load every relevant domain specialist before a multi-domain task, but keep one domain responsible for each decision.
+Load specialists lazily. Start with the specialist that owns the current decision; load texturing or animation only when that stage is actually reached. A multi-domain user request does not justify preloading every specialist before geometry has earned the next stage.
 
 ## Stage-Gated Tool Routing
 
@@ -38,7 +38,8 @@ Normal **reference-driven geometry lane**:
 project        get_project_info / create_project
 orient/find    list_outline / find_elements_by_criteria
 build          place_cube / add_group
-whole-form     inspect_model_bounds / capture_model_views
+bounds         inspect_model_bounds only for a numeric envelope or scale/ground/placement question
+whole-form     capture_model_views using only the views that can change the current decision
 local correct  inspect_element -> modify_cube / modify_cubes_batch
 remove         remove_element only after MERGE/REMOVE diagnosis
 recover        undo; save_checkpoint only before meaningful risky multi-step rework
@@ -58,6 +59,18 @@ validator resources                             -> structural diagnostics, never
 ```
 
 Do not call specialist tools merely because they are available. Texture, Paint, animation, material-instance, Locator, selection, validator, and export work must not interrupt an unresolved primary-geometry `FAIL`/`UNVERIFIED` state.
+
+## Minimum Necessary Evidence
+
+Keep validity strict but execution lightweight. A tool call, inspection, capture, specialist load, or document read is justified only when its result can change the next modelling decision or prove a completion claim that is actually in scope.
+
+- Do not re-read project/outline state that this workflow just created or already knows unless state may have changed or identity is uncertain.
+- Do not inspect every newly placed Cube. Use `inspect_element` for a diagnosed target, ambiguous identity, or exact authored state needed for a correction.
+- Do not capture after every mutation. Capture at a meaningful geometry gate; after a local correction, re-capture only the affected reference-corresponding view(s).
+- Use `inspect_model_bounds` only when approved numeric dimensions/envelope exist or the active question is scale, ground, displacement, or gross placement. Without such a question, skip it and do not manufacture a numeric claim.
+- `UNVERIFIED` is an evidence label, not an instruction to keep searching. Seek more evidence only when it is material to the current decision and plausibly obtainable. Otherwise keep the claim provisional/unverified, or report `BLOCKED` if that missing proof is required for the requested deliverable.
+- Create a checkpoint only when rollback value is meaningful because upcoming work is broad/risky. Mutation count alone is not a checkpoint trigger.
+- Keep progress reporting compact during execution. Detailed evidence reporting is reserved for a material gate, blocker, or final completion claim.
 
 ## Downstream Readiness Gate
 
@@ -84,7 +97,7 @@ If material geometry, hierarchy, or pivots change after downstream work has begu
 ## Preflight
 
 1. Call `get_project_info` before mutation when an existing project is open.
-2. If no project exists and creation is requested, use `create_project`; BlockIT accepts only `bedrock`.
+2. If no project exists and creation is requested, use `create_project`; BlockIT accepts only `bedrock`. Do not immediately call `get_project_info` again merely to confirm the project that this workflow just created unless state is uncertain or has changed.
 3. Confirm the intended project is actually `bedrock`. Do not silently convert another format.
 4. Inspect only the state needed for the next decision:
    - Cube/Group structure: `list_outline`, `find_elements_by_criteria`, `inspect_element`;
@@ -96,7 +109,7 @@ If material geometry, hierarchy, or pivots change after downstream work has begu
 
 ## Mutation Discipline
 
-- For three or more material mutations, or any risky multi-step rework, create a `save_checkpoint` first when recovery value is meaningful.
+- Create `save_checkpoint` only before broad/risky multi-step rework where rollback value is meaningful. Do not trigger checkpoints from an arbitrary mutation count.
 - Use `modify_cube` for one diagnosed Cube correction.
 - Use `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs.
 - Use `manage_locator` for native Bedrock Locator parent/position/rotation/`ignore_inherited_scale` authoring under an explicit Group/bone.
@@ -110,7 +123,7 @@ If material geometry, hierarchy, or pivots change after downstream work has begu
 
 For reference-driven modelling:
 
-- use `inspect_model_bounds` for structural envelope facts;
+- use `inspect_model_bounds` only for approved numeric envelope/scale/ground/gross-placement questions;
 - use `capture_model_views` for deterministic labeled views with explicit `front_direction`;
 - use `capture_screenshot` only when the current editor view itself is useful;
 - successful capture or validator execution is observation evidence, not a resemblance PASS.
