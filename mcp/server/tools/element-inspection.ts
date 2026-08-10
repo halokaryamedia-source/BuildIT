@@ -9,7 +9,7 @@ export const inspectElementParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria."
+      "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool."
     ),
 });
 
@@ -17,7 +17,7 @@ export const elementInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_element",
     description:
-      "Returns focused read-only authored state for one explicit Bedrock Cube or Group in the active project. Cube output includes parent, from/to/size, origin (pivot), rotation, and visibility. Group output includes parent, origin (pivot), rotation, visibility, and child count. Exact names must be unique; UUID is preferred. This tool does not infer whether placement/rotation/pivot is correct, does not modify selection or model state, and does not return visual PASS/FAIL.",
+      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.",
     annotations: {
       title: "Inspect Authored Element",
       readOnlyHint: true,
@@ -27,10 +27,15 @@ export const elementInspectionToolDocs: ToolSpec[] = [
   },
 ];
 
-type InspectableElement = Cube | Group;
+type InspectableElement = Cube | Group | Locator | NullObject;
 
-function elementType(element: InspectableElement): "cube" | "group" {
-  return element instanceof Cube ? "cube" : "group";
+function elementType(
+  element: InspectableElement
+): "cube" | "group" | "locator" | "null_object" {
+  if (element instanceof Cube) return "cube";
+  if (element instanceof Group) return "group";
+  if (element instanceof Locator) return "locator";
+  return "null_object";
 }
 
 function resolveInspectableElement(reference: string): InspectableElement {
@@ -43,6 +48,8 @@ function resolveInspectableElement(reference: string): InspectableElement {
   const candidates: InspectableElement[] = [
     ...Cube.all,
     ...Group.all,
+    ...Locator.all,
+    ...NullObject.all,
   ];
 
   const uuidMatch = candidates.find((element) => element.uuid === reference);
@@ -64,7 +71,7 @@ function resolveInspectableElement(reference: string): InspectableElement {
   if (nameMatches.length === 1) return nameMatches[0];
 
   throw new Error(
-    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to locate the intended Cube/Group and then inspect it by UUID.`
+    `Element "${reference}" not found. Use list_outline, find_elements_by_criteria, or list_locator_elements to locate the intended authored element and then inspect it by UUID.`
   );
 }
 
@@ -114,6 +121,35 @@ function inspectGroup(group: Group) {
   };
 }
 
+function inspectLocator(locator: Locator) {
+  return {
+    uuid: locator.uuid,
+    name: locator.name,
+    type: "locator" as const,
+    authored_space: "blockbench_model" as const,
+    parent: parentInfo(locator),
+    position: [...locator.position] as [number, number, number],
+    rotation: [...locator.rotation] as [number, number, number],
+    ignore_inherited_scale: locator.ignore_inherited_scale,
+    visibility: locator.visibility !== false,
+  };
+}
+
+function inspectNullObject(element: NullObject) {
+  return {
+    uuid: element.uuid,
+    name: element.name,
+    type: "null_object" as const,
+    authored_space: "blockbench_model" as const,
+    parent: parentInfo(element),
+    position: [...element.position] as [number, number, number],
+    ik_target: element.ik_target || null,
+    ik_source: element.ik_source || null,
+    lock_ik_target_rotation: element.lock_ik_target_rotation,
+    visibility: element.visibility !== false,
+  };
+}
+
 export function registerElementInspectionTools() {
   createTool(
     elementInspectionToolDocs[0].name,
@@ -122,7 +158,13 @@ export function registerElementInspectionTools() {
       async execute({ id }) {
         const element = resolveInspectableElement(id);
         const result =
-          element instanceof Cube ? inspectCube(element) : inspectGroup(element);
+          element instanceof Cube
+            ? inspectCube(element)
+            : element instanceof Group
+              ? inspectGroup(element)
+              : element instanceof Locator
+                ? inspectLocator(element)
+                : inspectNullObject(element);
 
         return {
           content: [
