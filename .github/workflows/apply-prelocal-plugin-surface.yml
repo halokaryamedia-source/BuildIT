@@ -23,25 +23,8 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Apply guarded patch
-        run: |
-          sed -i 's/tags: \["MCP", "AI", "Minecraft", "Bedrock"\]/tags: ["MCP", "AI"]/g' .github/prelocal_plugin_surface_patch.py
-          python .github/prelocal_plugin_surface_patch.py
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("mcp/tests/p1-transport-stateless.test.ts")
-          text = path.read_text()
-          old = 'expect(uiSource).toContain(\'transport: "Streamable HTTP (stateless)"\');'
-          new = 'expect(uiSource).toContain(\'transport: "Streamable HTTP (stateless JSON)"\');'
-          if text.count(old) != 1:
-              raise SystemExit(f"Expected one stateless UI assertion, found {text.count(old)}")
-          path.write_text(text.replace(old, new, 1))
-
-          for target in [Path("mcp/README.md"), Path("mcp/server/net.ts")]:
-              normalized = "\n".join(line.rstrip() for line in target.read_text().splitlines()) + "\n"
-              target.write_text(normalized)
-          PY
+      - name: Apply guarded E patch
+        run: python .github/prelocal_plugin_surface_patch.py
 
       - name: Install dependencies
         working-directory: mcp
@@ -59,6 +42,10 @@ jobs:
         working-directory: mcp
         run: bun run build
 
+      - name: Refresh generated MCP reference
+        working-directory: mcp
+        run: bun run docs:build
+
       - name: Docs freshness
         working-directory: mcp
         run: bun run docs:check
@@ -66,11 +53,11 @@ jobs:
       - name: Diff hygiene
         run: git diff --check
 
-      - name: Commit source hardening
+      - name: Commit E narrowing
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mcp docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md
-          git diff --cached --quiet && { echo "No target changes to commit"; exit 1; }
-          git commit -m "fix: harden BlockIT plugin surface before local proof"
+          git add mcp docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md
+          git diff --cached --quiet && { echo "No E target changes to commit"; exit 1; }
+          git commit -m "fix: narrow generic MCP semantics before local proof"
           git push origin HEAD:Local
