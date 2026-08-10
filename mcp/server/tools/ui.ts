@@ -107,7 +107,7 @@ export const uiToolDocs: ToolSpec[] = [
       openWorldHint: true,
     },
     parameters: riskyEvalParametersSchema,
-    status: STATUS_STABLE,
+    status: STATUS_EXPERIMENTAL,
   },
   {
     name: "emulate_clicks",
@@ -215,7 +215,8 @@ export function registerUITools() {
         }
       },
     },
-    uiToolDocs[1].status
+    uiToolDocs[1].status,
+    false
   );
 
   createTool(

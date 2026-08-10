@@ -77,5 +77,5 @@ export function registerImportTools() {
         }, 3000);
       });
     },
-  }, importToolDocs[0].status);
+  }, importToolDocs[0].status, false);
 }
