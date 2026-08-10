@@ -15,7 +15,7 @@ export const removeElementParameters = z.object({
   ),
 });
 
-export const elementTypeEnum = z.enum(["cube", "mesh", "group", "any"]);
+export const elementTypeEnum = z.enum(["cube", "group", "any"]);
 
 export const findElementsByCriteriaParameters = z.object({
   name_pattern: z
@@ -31,7 +31,7 @@ export const findElementsByCriteriaParameters = z.object({
   type: elementTypeEnum
     .optional()
     .default("any")
-    .describe("Restrict to a single element type."),
+    .describe("Restrict to Cube or Group results."),
   parent_group: z
     .string()
     .optional()
@@ -48,7 +48,7 @@ export const findElementsByCriteriaParameters = z.object({
     .boolean()
     .optional()
     .default(false)
-    .describe("Only consider currently selected elements."),
+    .describe("Only consider currently selected Cubes/Groups."),
   limit: z
     .number()
     .int()
@@ -61,13 +61,13 @@ export const findElementsByCriteriaParameters = z.object({
 
 export const selectAllOfTypeParameters = z.object({
   type: z
-    .enum(["cube", "mesh", "group"])
+    .enum(["cube", "group"])
     .describe("Element type to select."),
   add_to_selection: z
     .boolean()
     .optional()
     .default(false)
-    .describe("If true, add to current selection. If false, replace selection."),
+    .describe("If true, add to current selection. If false, replace Cube/Group selection."),
   parent_group: z
     .string()
     .optional()
@@ -80,7 +80,7 @@ export const filterByMaterialParameters = z.object({
   texture: z
     .string()
     .describe(
-      "Explicit texture reference for read-only material discovery. UUID is preferred, then exact texture ID, then exact name only when unique. Ambiguous IDs or names are rejected."
+      "Explicit texture reference for read-only Cube material discovery. UUID is preferred, then exact texture ID, then exact name only when unique. Ambiguous IDs or names are rejected."
     ),
   include_face_keys: z
     .boolean()
@@ -131,11 +131,6 @@ export const listOutlineParameters = z.object({
     .optional()
     .default(true)
     .describe("If true, include cubes as leaves. If false, return groups only."),
-  include_meshes: z
-    .boolean()
-    .optional()
-    .default(true)
-    .describe("If true, include meshes as leaves. If false, omit meshes."),
   max_depth: z
     .number()
     .int()
@@ -148,7 +143,7 @@ export const listOutlineParameters = z.object({
 
 export const duplicateElementParameters = z.object({
   id: elementIdSchema.describe(
-    "Exact element UUID or exact unique name. Ambiguous names are rejected before duplication."
+    "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
   ),
   offset: vector3Schema.optional().default([0, 0, 0]),
   newName: z.string().optional(),
@@ -156,7 +151,7 @@ export const duplicateElementParameters = z.object({
 
 export const renameElementParameters = z.object({
   id: elementIdSchema.describe(
-    "Exact element UUID or exact unique name. Ambiguous names are rejected before rename."
+    "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename."
   ),
   new_name: z.string().describe("New name to assign."),
 });
@@ -165,7 +160,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "remove_element",
     description:
-      "Removes one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation.",
+      "Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
     annotations: {
       title: "Remove Element",
       destructiveHint: true,
@@ -187,7 +182,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "list_outline",
     description:
-      "Returns the project outline as a hierarchical tree. Each node reports { name, uuid, type (cube|mesh|group), children? }. Groups contain child cubes, meshes, and sub-groups. Use `include_cubes=false` to get a group-only skeleton when you just need structure, or `max_depth` to bound very deep trees.",
+      "Returns the Bedrock Cuboid modelling outline as a hierarchical Cube/Group tree. Each node reports { name, uuid, type (cube|group), children? }. Use `include_cubes=false` to get a group-only skeleton, or `max_depth` to bound very deep trees.",
     annotations: {
       title: "List Outline",
       readOnlyHint: true,
@@ -198,7 +193,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "duplicate_element",
     description:
-      "Duplicates one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation. You may offset the duplicate or assign a new name.",
+      "Duplicates one explicit Cube or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -206,7 +201,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "rename_element",
     description:
-      "Renames one explicit Cube, Mesh, or Group target. UUID is resolved first; an exact name is accepted only when unique across Cube/Mesh/Group elements. Ambiguous names fail before mutation.",
+      "Renames one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
     annotations: { title: "Rename Element", destructiveHint: true },
     parameters: renameElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -214,7 +209,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Searches the current project for elements matching the given criteria. Supports name pattern matching (regex or substring), type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. An explicit invalid/rejected name_pattern fails instead of being silently ignored. Missing/ambiguous Group scopes fail before search. Returns element metadata, never modifies state.",
+      "Searches the current Bedrock Cuboid modelling project for Cubes/Groups matching the given criteria. Supports name pattern matching (regex or substring), Cube/Group type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. Invalid/rejected name_pattern values fail instead of being silently ignored. Returns metadata and never modifies state.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
@@ -225,7 +220,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "select_all_of_type",
     description:
-      "Selects all elements of the given type (cube, mesh, or group) in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to (rather than replace) the current selection.",
+      "Selects all Cubes or Groups of the requested type in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to rather than replace the current Cube/Group selection.",
     annotations: {
       title: "Select All of Type",
       destructiveHint: true,
@@ -236,7 +231,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "filter_by_material",
     description:
-      "Returns all elements that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. For cubes, includes the matching face keys when requested. This tool is read-only and does not activate, paint, or mutate textures.",
+      "Returns Cubes that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. Matching cube face keys are included when requested. This tool is read-only and does not activate, paint, or mutate textures.",
     annotations: {
       title: "Filter Elements by Material",
       readOnlyHint: true,
@@ -247,7 +242,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "get_selection",
     description:
-      "Returns the current selection state: selected cube/mesh/group UUIDs and names, plus the active texture. Use this to verify what `apply_texture` or a paint tool with `fill_mode=\"selected_elements\"` will target.",
+      "Returns the current Cube/Group selection state plus the active texture. Use this to verify explicit Bedrock Cuboid editing/texture targets without depending on generic Mesh selection.",
     annotations: {
       title: "Get Selection",
       readOnlyHint: true,
@@ -260,20 +255,19 @@ export const elementToolDocs: ToolSpec[] = [
 interface IElementMatch {
   uuid: string;
   name: string;
-  type: "cube" | "mesh" | "group";
+  type: "cube" | "group";
   parent: string | null;
 }
 
 interface IFilterByMaterialMatch {
   uuid: string;
   name: string;
-  type: "cube" | "mesh";
+  type: "cube";
   faces?: string[];
 }
 
-function getElementType(el: unknown): "cube" | "mesh" | "group" | null {
+function getElementType(el: unknown): "cube" | "group" | null {
   if (el instanceof Cube) return "cube";
-  if (el instanceof Mesh) return "mesh";
   if (el instanceof Group) return "group";
   return null;
 }
@@ -533,11 +527,11 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[2].name, {
     ...elementToolDocs[2],
-    async execute({ include_cubes, include_meshes, max_depth }) {
+    async execute({ include_cubes, max_depth }) {
       interface IOutlineNode {
         name: string;
         uuid: string;
-        type: "cube" | "mesh" | "group";
+        type: "cube" | "group";
         children?: IOutlineNode[];
       }
 
@@ -566,10 +560,6 @@ export function registerElementTools() {
           if (!include_cubes) return null;
           return { name: el.name, uuid: el.uuid, type: "cube" };
         }
-        if (el instanceof Mesh) {
-          if (!include_meshes) return null;
-          return { name: el.name, uuid: el.uuid, type: "mesh" };
-        }
         return null;
       };
 
@@ -580,7 +570,6 @@ export function registerElementTools() {
       const counts = {
         groups: Group.all.length,
         cubes: Cube.all.length,
-        meshes: Mesh.all.length,
       };
 
       return JSON.stringify(
@@ -599,6 +588,11 @@ export function registerElementTools() {
     ...elementToolDocs[3],
     async execute({ id, offset, newName }) {
       const element = resolveUniqueDestructiveElement(id);
+      if (!(element instanceof Cube) && !(element instanceof Group)) {
+        throw new Error(
+          `Element "${id}" cannot be duplicated by the Bedrock Cuboid workflow. Use an explicit Cube or Group target.`
+        );
+      }
 
       function cloneCube(cube: Cube, parent: any) {
         const dupe = new Cube({
@@ -634,43 +628,16 @@ export function registerElementTools() {
         return dupeGroup;
       }
 
-      function cloneMesh(mesh: Mesh, parent: any) {
-        const dupe = new Mesh({
-          name: newName || `${mesh.name}_copy`,
-          vertices: {},
-          origin: mesh.origin.map((v, i) => v + offset[i]),
-          rotation: mesh.rotation,
-        }).init();
-        const map: Record<string, any> = {};
-        Object.entries(mesh.vertices).forEach(([key, coords]: [any, any]) => {
-          map[key] = dupe.addVertices([
-            coords[0] + offset[0],
-            coords[1] + offset[1],
-            coords[2] + offset[2],
-          ])[0];
-        });
-        mesh.faces.forEach((face: any) => {
-          dupe.addFaces(
-            new MeshFace(dupe, {
-              vertices: face.vertices.map((v: any) => map[v]),
-              uv: face.uv,
-            })
-          );
-        });
-        dupe.addTo(parent);
-        if ((mesh as any).material) dupe.applyTexture((mesh as any).material);
-        return dupe;
-      }
-
       function cloneElement(el: any, parent: any) {
         if (el instanceof Cube) return cloneCube(el, parent);
         if (el instanceof Group) return cloneGroup(el, parent);
-        if (el instanceof Mesh) return cloneMesh(el, parent);
-        throw new Error("Unsupported element type.");
+        throw new Error(
+          `Group "${parent?.name ?? "(unknown)"}" contains an element type that the Bedrock Cuboid duplicate workflow does not clone.`
+        );
       }
 
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
-      let dup: Cube | Group | Mesh;
+      let dup: Cube | Group;
       try {
         dup = cloneElement(element, element.parent ?? Outliner);
         Undo.finishEdit("Agent duplicated element");
@@ -725,9 +692,8 @@ export function registerElementTools() {
       const needle = name_contains?.toLowerCase() ?? null;
       const parentScope = resolveOptionalGroupScope(parent_group);
 
-      const candidates: Array<Cube | Mesh | Group> = [
+      const candidates: Array<Cube | Group> = [
         ...(selected_only ? Cube.selected : Cube.all),
-        ...(selected_only ? Mesh.selected : Mesh.all),
         ...(selected_only ? Group.all.filter((g: Group) => g.selected) : Group.all),
       ];
 
@@ -772,11 +738,8 @@ export function registerElementTools() {
     async execute({ type, add_to_selection, parent_group }) {
       const parentScope = resolveOptionalGroupScope(parent_group);
 
-      const pool: Array<Cube | Mesh | Group> = (() => {
-        if (type === "cube") return [...Cube.all];
-        if (type === "mesh") return [...Mesh.all];
-        return [...Group.all];
-      })();
+      const pool: Array<Cube | Group> =
+        type === "cube" ? [...Cube.all] : [...Group.all];
 
       const targets = parentScope
         ? pool.filter((el) => isDescendantOf(el, parentScope))
@@ -784,7 +747,6 @@ export function registerElementTools() {
 
       if (!add_to_selection) {
         Cube.all.forEach((c: Cube) => c.selected && c.unselect?.());
-        Mesh.all.forEach((m: Mesh) => m.selected && m.unselect?.());
         Group.all.forEach((g: Group) => {
           if (g.selected) g.selected = false;
         });
@@ -837,24 +799,6 @@ export function registerElementTools() {
         }
       }
 
-      for (const mesh of Mesh.all) {
-        const faceKeys: string[] = [];
-        for (const [key, face] of Object.entries(mesh.faces ?? {})) {
-          const faceTexId = (face as { texture?: unknown }).texture;
-          if (faceTexId === tex.uuid || faceTexId === tex.id) {
-            faceKeys.push(key);
-          }
-        }
-        if (faceKeys.length > 0) {
-          matches.push({
-            uuid: mesh.uuid,
-            name: mesh.name,
-            type: "mesh",
-            ...(include_face_keys ? { faces: faceKeys } : {}),
-          });
-        }
-      }
-
       return JSON.stringify(
         {
           texture: { uuid: tex.uuid, name: tex.name },
@@ -874,11 +818,6 @@ export function registerElementTools() {
         uuid: c.uuid,
         name: c.name,
         type: "cube" as const,
-      }));
-      const meshes = Mesh.selected.map((m: Mesh) => ({
-        uuid: m.uuid,
-        name: m.name,
-        type: "mesh" as const,
       }));
       const groups = Group.all
         .filter((g: Group) => g.selected)
@@ -902,11 +841,9 @@ export function registerElementTools() {
         {
           counts: {
             cubes: cubes.length,
-            meshes: meshes.length,
             groups: groups.length,
           },
           cubes,
-          meshes,
           groups,
           active_texture: activeTexture,
         },
