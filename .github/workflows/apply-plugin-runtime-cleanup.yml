@@ -26,11 +26,21 @@ jobs:
           from pathlib import Path
           path = Path("mcp/scripts/apply-plugin-runtime-cleanup.py")
           text = path.read_text(encoding="utf-8")
-          old = '    return {line.strip() for line in result.stdout.splitlines() if line.strip()}\n'
-          new = '    return {line.strip() for line in result.stdout.splitlines() if line.strip() and line.strip() != "mcp/scripts/apply-plugin-runtime-cleanup.py"}\n'
-          if text.count(old) != 1:
-              raise SystemExit("Unexpected grep_paths helper shape")
-          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          repairs = [
+              (
+                  '    return {line.strip() for line in result.stdout.splitlines() if line.strip()}\n',
+                  '    return {line.strip() for line in result.stdout.splitlines() if line.strip() and line.strip() != "mcp/scripts/apply-plugin-runtime-cleanup.py"}\n',
+              ),
+              (
+                  '    "    createServer: (callback: (socket: Socket) => void) => NetServer\\n",\n    "    createServer: (callback: (socket: Socket) => void) => NodeNetServer\\n",\n',
+                  '    "  }: { createServer: (callback: (socket: Socket) => void) => NetServer },\\n",\n    "  }: { createServer: (callback: (socket: Socket) => void) => NodeNetServer },\\n",\n',
+              ),
+          ]
+          for old, new in repairs:
+              if text.count(old) != 1:
+                  raise SystemExit(f"Unexpected cleanup helper shape for: {old[:80]!r}")
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding="utf-8")
           PY
           python3 -m py_compile mcp/scripts/apply-plugin-runtime-cleanup.py
       - name: Apply guarded cleanup
