@@ -30,6 +30,7 @@ jobs:
               'completion claim."\n)',
               'conflicting views require it."\n)',
               'stage is actually reached."\n)',
+              'a different format as shortcuts."\n)',
               'full-project validation ceremony."\n)',
               'acceptance scenarios exercise them."\n)',
           ]:
@@ -37,6 +38,8 @@ jobs:
               if old not in text:
                   raise SystemExit(f"Missing helper repair target: {old}")
               text = text.replace(old, new, 1)
+          if text.count('"""') % 2 != 0:
+              raise SystemExit("Temporary helper still has an unmatched triple-quote delimiter")
           p.write_text(text, encoding="utf-8")
           PY
       - name: Apply guarded cleanup
