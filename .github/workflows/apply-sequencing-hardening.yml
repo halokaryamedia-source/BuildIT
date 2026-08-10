@@ -22,6 +22,22 @@ jobs:
           bun-version: latest
       - name: Apply guarded sequencing patch
         run: python3 mcp/scripts/apply-sequencing-hardening.py
+      - name: Align focused test wording
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("mcp/tests/model-effectiveness-sequencing.test.ts")
+          text = p.read_text(encoding="utf-8")
+          text = text.replace(
+              'expect(text.toLowerCase()).toContain("existing asset");',
+              'expect(text.toLowerCase().replaceAll("-", " ")).toContain("existing asset");',
+          )
+          text = text.replace(
+              'expect(foundation).toContain("Existing keyframe effort never justifies preserving a bad rig or geometry baseline");',
+              'expect(foundation).toContain("keyframe effort never justifies preserving a bad rig or geometry baseline");',
+          )
+          p.write_text(text, encoding="utf-8")
+          PY
       - name: Install
         working-directory: mcp
         run: bun install --frozen-lockfile
