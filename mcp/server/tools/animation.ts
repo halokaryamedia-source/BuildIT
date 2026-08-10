@@ -680,7 +680,7 @@ createTool(
 
       const animationData = {
         loop,
-        ...(animation_length && { animation_length }),
+        ...(animation_length !== undefined && { animation_length }),
         bones: Object.fromEntries(
           resolvedBoneEntries.map(({ group, keyframes }) => {
             const boneData: Record<
