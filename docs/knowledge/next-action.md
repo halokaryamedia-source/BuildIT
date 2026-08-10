@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_PRIMARY_GEOMETRY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_CROSS_VIEW_BLOCKER_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -196,13 +196,15 @@ If continuing non-local work before local Blockbench acceptance becomes availabl
 
 The current source slice has hardened **P0 — wrong primary geometry decomposition** around execution-success bias and premature detail.
 
+The current source slice has hardened **P0 — cross-view / depth hallucination** and introduced a non-looping `BLOCKED` workflow outcome for unresolved evidence/runtime/correction blockers.
+
 The next bounded modelling problem is:
 
 ```text
-P0 — cross-view / depth hallucination
+P1 — correction accuracy
 ```
 
-Audit how Codex derives width/height/depth, placement, and orientation when reference views provide unequal or conflicting evidence. The solution should keep unsupported axes explicitly provisional/UNVERIFIED and prevent a strong front-view match from hiding bad side/top/depth geometry.
+Audit whether a diagnosed visual mismatch reliably becomes the correct causal mutation (`TRANSLATE / RESIZE / ROTATE / REATTACH / SPLIT / MERGE-REMOVE / ADD MASS`) from exact authored state, instead of another coordinate guess. Preserve the new blocker rule: two failed attempts in the same causal direction without new evidence must stop rather than loop.
 
 Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, similarity scoring, or another modelling framework unless a concrete modelling requirement proves it is needed.
 

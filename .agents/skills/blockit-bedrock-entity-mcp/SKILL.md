@@ -83,6 +83,14 @@ Do not emulate these with generic Mesh, arbitrary Cubes, `risky_eval`, UI clicks
 
 For reference-driven modelling, route visual judgement to `blockbench-bedrock-modelling` and require its `FAIL / UNVERIFIED / PASS` Reference Fidelity Verdict. Missing reference/view evidence means UNVERIFIED for that claim, not PASS. Do not let successful MCP execution, bounds, hierarchy, or validator output upgrade the visual verdict.
 
+## Blocker Escalation
+
+Do not convert persistent failure into repeated tool calls. `BLOCKED` is the correct task outcome when the current evidence/capability cannot support a valid result.
+
+For modelling, stop and report `BLOCKED` when `blockbench-bedrock-modelling` reaches its cross-view/runtime/loop-stop threshold. Keep `FAIL / UNVERIFIED / PASS` for visual verdicts; do not use them to hide an execution/reference blocker.
+
+A blocker report must identify the blocker, the evidence or tool failure that proves it, what cannot be validated, what bounded attempts were made, and what specifically is needed to unblock. Do not continue speculative mutation after that point.
+
 ## Texture And PBR Boundary
 
 Native Bedrock PBR and per-face `material_instance` are valid BlockIT capabilities. Route those tasks to `blockit-bedrock-texturing`; do not classify them as generic Mesh/PBR shortcuts.

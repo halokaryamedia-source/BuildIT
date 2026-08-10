@@ -144,6 +144,34 @@ left/right interpretations.
 Do not require every view after every mutation. Capture the smallest view set
 that can answer the current modelling question.
 
+## Cross-View Validity
+
+A whole-form verdict must cover the views/axes that the claim actually depends on.
+
+```text
+front PASS + side FAIL        -> whole-form FAIL
+front PASS + side unavailable -> whole-form UNVERIFIED for depth/side claims
+front PASS + conflicting side/top reference -> BLOCKED if the conflict materially affects primary form and cannot be resolved
+```
+
+Do not promote the strongest-looking view to represent the whole 3D model. For each material mismatch/approval, name the paired view that supports it and keep unsupported axes provisional or unverified.
+
+### Blocked validation
+
+`BLOCKED` is not a visual quality grade. It means a valid visual verdict cannot currently be reached without missing evidence, resolving a material reference conflict, or restoring a required runtime capability.
+
+When blocked, stop speculative corrections and report:
+
+```text
+blocker category
+evidence
+claim/result that cannot be validated
+bounded attempts already made
+exact requirement to unblock
+```
+
+If the same causal correction direction fails twice without new evidence, treat continued patching as a loop and stop. Do not manufacture a success report from repeated attempts.
+
 ## Structural Envelope Gate
 
 When approved numeric target bounds exist:

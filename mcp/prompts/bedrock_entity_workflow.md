@@ -11,6 +11,21 @@ Create or revise a Minecraft Bedrock **entity** model as a clean, editable Block
 
 1. **Orient before mutating.** Use `get_project_info`, then targeted outline/search only as needed. Establish a consistent model frame: X=width, Y=height, Z=length/front-back, plus explicit `front_direction` (`+z` or `-z`) and ground relationship when relevant.
 2. **Check the reference as one 3D object.** Do not average materially conflicting views. Know which view(s) support width, height, length, primary placement, and important slopes.
+### Cross-view axis evidence contract
+
+Before turning primary masses into exact 3D extents, distinguish reference-backed facts from working guesses. For each material width/height/depth, primary placement, orientation/slope, or visible contact claim, keep a small working status:
+
+```text
+SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+```
+
+- **SUPPORTED** — relevant view(s) directly constrain the claim.
+- **PROVISIONAL** — a temporary value is necessary to build, but evidence is incomplete.
+- **CONFLICTING** — relevant views materially disagree.
+- **UNAVAILABLE** — the package cannot show the claim well enough to judge it.
+
+Do not transfer confidence between axes. A front-view match cannot certify depth; a 3/4 impression cannot override clearer orthographic evidence. Provisional values remain hypotheses after successful Cube placement. Conflicting primary-form evidence must not be averaged into a compromise; if the active brief/user intent cannot resolve it, stop as `BLOCKED` rather than hallucinating a solution.
+
 3. **Create a temporary Primary Form Hypothesis before exact Cube transforms.** For each primary mass, reason about its relative size, relative center/placement, important orientation, major contact, and supporting reference view(s). This is not a locked Cube plan and is not pixel calibration.
 4. **Build a coarse whole-form blockout.** Every primary Cube must implement a known mass role or necessary split. Before calling `place_cube`, choose explicit finite `from` and `to` extents from the spatial hypothesis; the tool does not supply a default Cube when geometry was not decided. Never place a Cube merely because it can touch/overlap/attach to another Cube. Derive exact `from/to/origin/rotation` from the spatial hypothesis and reference evidence rather than guessing each Cube independently. If a Cube is intentionally placed under a specific Group/bone, first locate the exact Group UUID and pass that target explicitly; omit `group` (or use `root`) only when root placement is actually intended. Do not guess a group name and rely on fallback placement.
 ### Placement result boundary
@@ -66,6 +81,20 @@ PASS
 - **PASS** — only when fresh corresponding model views were directly compared with the available reference views, applicable silhouette/proportion/placement/orientation/contact criteria were checked, and no critical or major mismatch was found.
 
 For each relevant paired view, report material differences before the verdict. When the reference provides multiple views, use the views that constrain the claimed 3D axes. A model matching only the front view is not a full 3D PASS if depth/side evidence is missing or fails.
+
+## Blocker / Non-Looping Completion Contract
+
+`FAIL / UNVERIFIED / PASS` describe visual evidence. `BLOCKED` is separate: it describes a workflow that cannot validly continue with the current evidence/capability.
+
+Use `BLOCKED` and stop speculative mutation when:
+
+- material cross-view conflict cannot be resolved from the active brief/user intent;
+- required observation evidence remains unavailable after one controlled retry when useful;
+- the same causal correction direction fails twice without new evidence;
+- a required supported MCP/runtime capability is unavailable;
+- continuing would require presenting a provisional/unsupported geometry claim as verified.
+
+A blocker report must state: blocker category, concrete evidence, affected claim/result, bounded attempts already made, and the exact new evidence/user decision/capability needed to continue. Do not keep changing coordinates merely to avoid reporting a blocker, and do not label unresolved work as fixed or successful.
 
 ## Locator / Null Object authored state
 

@@ -29,7 +29,7 @@ A change is valuable only when it materially improves one of those stages or rem
 | P0 | False visual approval | Model is visibly unlike the reference but Codex says it is correct or close enough | Structural/tool success can be rationalized as visual success; the same agent creates and judges; current rules do not force a negative-first comparison or an explicit `UNVERIFIED` state | Mandatory Reference Fidelity Verdict: difference-first review, `FAIL / UNVERIFIED / PASS`, evidence tied to matching reference/model views, and no full PASS when an important axis/view is unsupported |
 | P0 | Wrong primary geometry decomposition | Cubes are valid but the whole silhouette/proportions are fundamentally wrong | Agent jumps from semantic labels such as body/head/handle directly to exact transforms; local Cube decisions are made independently instead of as primary mass relationships | Stabilize primary masses before local detail, build the minimum recognizable whole form, and reject/rebuild a globally wrong scaffold before secondary geometry |
 | P0 | Cross-view / depth hallucination | Front view looks plausible while side/top/depth is wrong | One view is over-weighted, conflicting views are averaged, or missing depth evidence is treated as permission to invent geometry | Tie each important width/height/length/placement claim to the reference view that actually constrains it; unsupported dimensions remain `UNVERIFIED` rather than guessed or approved |
-| P1 | Patch churn / sunk-cost preservation | Many small Cubes and edits accumulate around a wrong base shape | Agent protects already-authored geometry and defaults to adding mass instead of revising the primary hypothesis | Global-vs-local diagnosis before correction; hard rebuild threshold; two failed attempts in the same direction require reframing rather than more patches |
+| P1 | Patch churn / correction loop | Many small Cubes and edits accumulate around a wrong base shape, or the same mismatch is repeatedly edited without new evidence | Agent protects already-authored geometry and lacks a hard blocker escalation when correction is not converging | Global-vs-local diagnosis; hard rebuild threshold; after two failed attempts in the same causal direction without new evidence, stop as `BLOCKED` and report what is needed to continue |
 | P1 | Framing creates false confidence | Oversized, undersized, floating, or displaced model still fills the screenshot and appears plausible | Auto-framing normalizes the presentation and can hide gross envelope errors | Structural bounds/ground check before visual approval when target dimensions exist; use explicit target-envelope framing when possible |
 | P1 | Correction is another guess | Agent notices a wrong part but changes coordinates from memory/screenshot and makes it worse | Visual diagnosis is not linked to exact authored state | Locate exact identity, `inspect_element`, classify the causal error, then perform one bounded correction and re-observe the affected view |
 | P1 | Tool-choice/context friction | Codex spends calls exploring irrelevant capabilities or chooses generic helpers instead of the modelling path | Broad tool catalog competes with the intended Bedrock workflow | Keep normal skill routing focused on create/inspect/capture/correct/texture/animate/export; capability count alone must never drive expansion |
@@ -174,6 +174,69 @@ The product question is not whether BlockIT can place more primitive types. It i
 Local modelling tests still need to demonstrate that this boundary changes actual Codex behavior on difficult references. Source/CI can prove the contract exists; they cannot prove improved visual quality without live model construction.
 
 Do not add a planner or automatic image-to-Cuboid system unless this simpler execution/acceptance separation is proven insufficient.
+
+## Problem #3 — Cross-View / Depth Hallucination
+
+### Failure we must prevent
+
+```text
+front view looks plausible
+-> agent gains confidence in the whole object
+-> hidden/weakly observed depth or placement is invented
+-> side/top evidence is ignored, unavailable, or averaged when conflicting
+-> Cube placement succeeds
+-> invented 3D geometry is reported as matched
+```
+
+### Root causes
+
+1. **Axis confidence leakage** — evidence for width/height is incorrectly reused as confidence for depth.
+2. **Single-view dominance** — the visually strongest/most familiar view becomes the de facto authority for the whole model.
+3. **Conflict averaging** — incompatible views are silently averaged instead of being treated as a reference blocker.
+4. **Mutation confirmation** — Blockbench accepting a provisional depth/rotation makes the guess feel validated.
+5. **No blocker escalation** — the agent keeps patching when the reference/runtime cannot actually provide enough evidence for a valid solution.
+
+### Implemented source solution
+
+Primary modelling now uses a small cross-view evidence map with four states:
+
+```text
+SUPPORTED    directly constrained by relevant view(s)
+PROVISIONAL  working hypothesis; not verified
+CONFLICTING  relevant views materially disagree
+UNAVAILABLE  required evidence is not observable
+```
+
+Rules:
+
+- confidence cannot transfer between axes;
+- front-only success cannot produce a full 3D PASS;
+- provisional extents remain provisional after successful Cube placement;
+- material conflicting views are not averaged;
+- unresolved material conflict produces `BLOCKED`, not speculative geometry;
+- unavailable evidence keeps the affected claim `UNVERIFIED`.
+
+## Workflow Blocker / Non-Looping Rule
+
+A valid result is more important than producing a success report.
+
+`BLOCKED` is required when current evidence/capability cannot support a valid continuation, including unresolved material cross-view conflict, missing required observation, unsupported capability, or two failed attempts in the same causal correction direction without new evidence.
+
+On `BLOCKED`, Codex stops mutation and reports:
+
+```text
+blocker category
+concrete evidence / error
+affected claim or deliverable
+bounded attempts made
+exact requirement to unblock
+```
+
+It must not continue changing geometry just to create the appearance of progress, and it must not call unresolved work fixed/resolved.
+
+### Remaining proof
+
+This source contract prevents false certainty in the workflow definition. Actual reduction of depth hallucination and correction looping still requires deliberate local modelling tests with difficult multi-view references; until then it remains local effectiveness proof, not a claimed visual-quality result.
 
 ## Product Priority Rule
 

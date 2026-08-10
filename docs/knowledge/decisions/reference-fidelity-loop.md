@@ -114,6 +114,25 @@ origin + from/to/rotation
 A material pivot change uses `Group.transferOrigin()` against an explicit target
 and only when there is a real joint/attachment/transform-center reason.
 
+## Cross-View Evidence Decision
+
+Primary 3D claims use four evidence states:
+
+```text
+SUPPORTED
+PROVISIONAL
+CONFLICTING
+UNAVAILABLE
+```
+
+Confidence does not transfer between axes. A strong front result cannot validate depth. A provisional value may be authored for a coarse blockout, but successful mutation does not upgrade its evidence status.
+
+Material `CONFLICTING` evidence is not averaged. If the active brief/user intent cannot resolve the contradiction, the workflow becomes `BLOCKED` until clarification exists.
+
+`BLOCKED` is also required when the same causal correction direction fails twice without new evidence or when required observation/capability remains unavailable. At that point the agent stops mutation and reports the concrete blocker plus the exact condition needed to continue.
+
+This stop condition exists to prevent correction loops from being mistaken for progress.
+
 ## Failure Classification
 
 ### Global Failure

@@ -131,6 +131,27 @@ The purpose is to stop the direct jump:
 Exact Blockbench transforms should be derived from a coherent primary-mass
 hypothesis, not guessed independently per Cube.
 
+### 2A. Build A Small Axis Evidence Map
+
+Before exact primary Cube extents, separate what the reference actually proves from what the modeller merely needs to hypothesize. For each material primary mass/relationship, track only the relevant claims:
+
+```text
+claim / axis
+supporting reference view(s)
+state: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+```
+
+Apply the states as follows:
+
+- **SUPPORTED** — relevant view(s) visibly constrain the dimension, placement, orientation, or contact.
+- **PROVISIONAL** — a temporary working value is needed for the 3D blockout but current evidence is weak/incomplete.
+- **CONFLICTING** — relevant views materially disagree.
+- **UNAVAILABLE** — the package does not show the claim well enough to judge it.
+
+Do not transfer confidence across axes. A convincing front silhouette does not validate depth. A strong side view does not prove hidden width detail. A 3/4 view is useful context but must not override clearer orthographic evidence.
+
+If a material primary-form conflict cannot be resolved from the approved brief or explicit user intent, do not average the views or pick whichever is easiest to model. Enter the workflow `BLOCKED` state described below and report the exact conflict.
+
 ### 3. Build The Coarse Primary Geometry Pass
 
 Create the **minimum coherent whole form** needed for recognizability.
@@ -205,6 +226,29 @@ PASS
 For each relevant paired view, explicitly check applicable silhouette, primary proportion, primary placement, orientation/slope, and visible contact differences before deciding the verdict. If multiple independent reference views exist and the claim concerns the 3D whole form, use the views that constrain the relevant axes. A front-only match cannot become a full 3D PASS when side/depth evidence is missing.
 
 Generic statements such as "looks correct", "matches well", or "all parts are present" are not evidence and must not be used as the basis for PASS.
+
+#### Workflow Blocker / Loop Stop Contract
+
+`BLOCKED` is a workflow state, not a visual verdict. Use it when a valid modelling result cannot currently be reached without inventing evidence or repeating failed work.
+
+Enter `BLOCKED` when any of these applies:
+
+- material reference views conflict and the active brief/user intent cannot resolve the conflict;
+- a required reference/model view or runtime observation remains unavailable after one controlled retry when a retry is plausibly useful;
+- the same causal correction direction has failed twice without new evidence;
+- a required MCP/runtime capability is unavailable and no supported path can validate the requested result;
+- continuing would require guessing an unsupported primary dimension/relationship and then presenting it as verified.
+
+When `BLOCKED`:
+
+1. stop further speculative mutation;
+2. keep the last valid authored state rather than stacking more patches;
+3. report the blocker category and concrete evidence;
+4. state what claim/result cannot be validated because of it;
+5. summarize the bounded attempts already made;
+6. state the exact new evidence, user decision, or working capability needed to continue.
+
+Do not report `PASS`, "fixed", "resolved", or "should be correct" while the blocker remains. A blocker report is preferable to an endless correction loop with no new evidence.
 
 #### Hard rebuild rule
 

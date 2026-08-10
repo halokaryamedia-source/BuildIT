@@ -78,6 +78,37 @@ relationship.
 If primary-mass evidence materially conflicts across views, mark the reference
 `NOT READY / NEEDS REVIEW` rather than silently averaging contradictory shapes.
 
+## Axis Evidence States
+
+Do not let one strong view silently provide information about an axis it does not actually show. For every material primary-mass dimension or relationship that affects the 3D blockout, classify the evidence before treating it as reference-backed:
+
+```text
+SUPPORTED    one or more relevant views directly constrain the claim
+PROVISIONAL  a working value is needed to build, but evidence is weak/incomplete
+CONFLICTING  relevant views materially disagree
+UNAVAILABLE  the required axis/relationship cannot be observed from the package
+```
+
+Typical evidence directions remain:
+
+```text
+width  <- front/back + top when visible
+height <- front/back + side
+length/depth <- side + top
+```
+
+These are guidance, not a fixed camera law. A view only constrains what it actually reveals.
+
+Rules:
+
+- A front view may support width/height but cannot by itself certify depth.
+- A perspective 3/4 view may help interpret volume but must not override clearer orthographic evidence.
+- `PROVISIONAL` values may be used for a coarse working blockout when necessary, but they remain hypotheses and cannot become verified merely because Blockbench accepted the Cube.
+- `CONFLICTING` evidence must not be averaged into a fake compromise. If the conflict materially changes the primary form and the approved brief/user intent cannot resolve it, modelling is **BLOCKED** until the reference is clarified.
+- `UNAVAILABLE` evidence leaves the affected claim `UNVERIFIED`; do not invent hidden dimensions/features and then report them as matched.
+
+The goal is not to produce a large manifest. Keep only the small axis/relationship evidence map needed for current primary modelling decisions.
+
 ## Dimensions
 
 When dimensions are approved:
