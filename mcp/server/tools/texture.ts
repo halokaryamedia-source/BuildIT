@@ -1088,10 +1088,19 @@ export function registerTextureTools() {
       try {
         // Set material config values
         if (color_value) {
-          textureGroup.material_config.color_value = color_value;
+          textureGroup.material_config.color_value = [
+            color_value[0],
+            color_value[1],
+            color_value[2],
+            color_value[3],
+          ];
         }
         if (mer_value) {
-          textureGroup.material_config.mer_value = mer_value;
+          textureGroup.material_config.mer_value = [
+            mer_value[0],
+            mer_value[1],
+            mer_value[2],
+          ];
         }
         if (subsurface_value !== undefined) {
           textureGroup.material_config.subsurface_value = subsurface_value;
@@ -1232,10 +1241,19 @@ export function registerTextureTools() {
 
         // Update uniform values
         if (color_value) {
-          textureGroup.material_config.color_value = color_value;
+          textureGroup.material_config.color_value = [
+            color_value[0],
+            color_value[1],
+            color_value[2],
+            color_value[3],
+          ];
         }
         if (mer_value) {
-          textureGroup.material_config.mer_value = mer_value;
+          textureGroup.material_config.mer_value = [
+            mer_value[0],
+            mer_value[1],
+            mer_value[2],
+          ];
         }
         if (subsurface_value !== undefined) {
           textureGroup.material_config.subsurface_value = subsurface_value;

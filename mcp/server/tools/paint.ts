@@ -422,9 +422,8 @@ export const paintToolDocs: ToolSpec[] = [
   },
 ];
 
-const runtimePainter = Painter as unknown as BlockbenchRuntimePainter;
-
 export function registerPaintTools() {
+  const runtimePainter = Painter as unknown as BlockbenchRuntimePainter;
   createTool(
     paintToolDocs[0].name,
     {
