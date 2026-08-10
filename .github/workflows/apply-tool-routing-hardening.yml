@@ -62,3 +62,5 @@ jobs:
           git diff --cached --quiet && { echo "No routing changes"; exit 1; }
           git commit -m "docs: harden modelling tool routing"
           git push origin HEAD:Local
+
+# rerun after durable regression alignment
