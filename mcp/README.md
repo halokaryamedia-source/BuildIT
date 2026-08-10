@@ -18,7 +18,7 @@ bun install --frozen-lockfile
 bun run build
 ```
 
-Load the generated `mcp/dist/mcp.js` as a local Blockbench plugin. The BlockIT panel displays the product name, version, build channel/revision, active registration profile, endpoint, and transport so the loaded artifact can be identified before runtime acceptance.
+Load the generated `mcp/dist/mcp.js` as a local Blockbench plugin. The BlockIT panel shows the product name, version, active registration profile, endpoint, transport, and truthful exposed surface counts.
 
 ## MCP endpoint
 
