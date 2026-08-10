@@ -1,0 +1,217 @@
+name: Record P1.3 Core Ownership Completion
+
+on:
+  push:
+    paths:
+      - ".github/workflows/advance-p1-core-ownership-doc.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 0
+
+      - name: Advance next-action snapshot
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("docs/knowledge/next-action.md")
+          text = path.read_text()
+
+          replacements = {
+              "P0.1–P0.5, P1.1, and P1.2 are complete for their source/repository boundaries. The active source boundary is now **P1.3 — core-only resolver/mutation/result consolidation**.":
+              "P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. The active source boundary is now **P1.4 — transport/session simplification decision**.",
+              "`MCP_P1_FAMILY_GATES_COMPLETE_CORE_OWNERSHIP_NEXT`":
+              "`MCP_P1_CORE_OWNERSHIP_COMPLETE_TRANSPORT_DECISION_NEXT`",
+              "P1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE\nP1.4  transport/session future decision":
+              "P1.3  core-only resolver/mutation/result consolidation COMPLETE\nP1.4  transport/session future decision              ← ACTIVE NEXT SLICE",
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f"Expected snapshot text exactly once: {old}")
+              text = text.replace(old, new, 1)
+
+          section = '''# Completed P1.3 — Bedrock Core Identity / Result Ownership
+
+P1.3 consolidated only duplicated identity and continuation-result ownership inside the surviving Bedrock Entity core. It did not globally refactor gated legacy families and did not remove or gate any native Bedrock capability.
+
+## Verified source commit
+
+```text
+56967694c2f0a561d956c8e6e7eafa49f5463209
+refactor: consolidate Bedrock core identity ownership
+```
+
+Primary source owners changed:
+
+```text
+mcp/lib/coreIdentity.ts                 added
+mcp/lib/util.ts
+mcp/server/tools/cubes.ts
+mcp/server/tools/element.ts
+mcp/server/tools/texture.ts
+mcp/server/tools/animation.ts
+mcp/tests/p1-core-ownership.test.ts     added
+```
+
+Shared identity contract now covers the audited core identities:
+
+```text
+Cube       exact UUID -> exact unique name
+Group      exact UUID -> exact unique name
+Animation  exact UUID -> exact unique name
+Texture    exact UUID -> exact unique texture ID -> exact unique name
+```
+
+Explicit core mutation resolution does not prefix-match and does not silently select the first ambiguous name. Existing selection fallback is retained only where the public Animation helper already explicitly allowed selected-animation behavior. `create_animation` keeps its Bedrock AnimationCodec-specific case-insensitive bone-name validation local because that is codec semantics rather than generic identity resolution.
+
+The broader `element.ts` destructive resolver was intentionally **not** narrowed to Cube/Group because the native Bedrock Entity surface may include other Outliner element types such as Locator/TextureMesh; P1.3 does not trade native capability for resolver uniformity.
+
+Texture/PBR implementation was preserved. Repeated Texture lookup algorithms in Cube/Element/Texture/Paint-support paths now consume one strict Texture identity owner while TextureGroup/material semantics remain separate.
+
+Continuation result ownership was improved only for high-value identity-returning core mutations:
+
+```text
+place_cube   -> structured final Cube states
+modify_cube  -> structured final Cube state
+add_group    -> structured Group identity/state
+```
+
+Existing `modify_cubes_batch` and `create_animation` structured results remain intact. No mass result-format rewrite was performed.
+
+## Non-local executable proof
+
+Canonical workflow:
+
+```text
+MCP Verify
+run: 31372079399
+verified source commit: 56967694c2f0a561d956c8e6e7eafa49f5463209
+```
+
+Result:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+Bun contract tests          PASS — 20/20, 0 failures, 106 expect() calls
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+Generated source manifest remains unchanged at:
+
+```text
+69 tools across 12 categories
+3 documented prompts
+8 resources
+```
+
+Temporary GitHub-runner harnesses used to perform/test the non-local consolidation were removed after the canonical proof. The durable repository verification workflow remains `mcp-verify.yml`.
+
+## P1.3 proof boundary
+
+The non-local evidence proves TypeScript/build/test/doc consistency plus pure deterministic identity contracts. It does **not** prove live Blockbench mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, or end-to-end identity stability. Those remain `LOCAL PROOF REQUIRED`, primarily for P1.5 acceptance.
+
+'''
+          marker = "# Current Work Order\n"
+          if text.count(marker) != 1:
+              raise SystemExit("Expected Current Work Order marker exactly once")
+          text = text.replace(marker, section + marker, 1)
+
+          next_marker = "# Next Step — P1.3 Core Ownership Consolidation Only"
+          if text.count(next_marker) != 1:
+              raise SystemExit("Expected P1.3 next-step marker exactly once")
+          prefix = text.split(next_marker, 1)[0]
+
+          next_section = '''# Next Step — P1.4 Transport / Session Decision Only
+
+Do not implement a transport migration before the decision is recorded, and do not start P1.5 in the same slice.
+
+## Goal
+
+Re-evaluate the MCP transport/session architecture against the **current official MCP protocol and TypeScript SDK state** plus the actual BlockIT client requirement, then choose the smallest supported direction before any source rewrite.
+
+Because protocol/SDK status is time-sensitive, P1.4 must use current official primary sources rather than repository-era assumptions.
+
+## Required research
+
+Re-check at execution time:
+
+```text
+current stable MCP protocol revision
+current stable @modelcontextprotocol/sdk / official TypeScript SDK line
+official Streamable HTTP requirements and security guidance
+current session semantics / deprecations
+Blockbench desktop runtime constraints
+actual BlockIT MCP client(s) that must remain supported
+```
+
+## Required decision
+
+Choose and document exactly one:
+
+```text
+KEEP CURRENT MINIMAL
+SIMPLIFY ON CURRENT SDK LINE
+MIGRATE TO CURRENT STABLE SDK/PROTOCOL
+```
+
+For the chosen direction, explicitly classify whether these existing layers remain necessary:
+
+```text
+TCP keepalive
+HTTP keep-alive
+SSE heartbeat
+MCP ping
+custom inactivity timeout
+protocol session IDs
+per-session server reconstruction
+custom HTTP parsing/dispatch
+```
+
+Do not preserve transport complexity merely because it already exists. Do not remove compatibility required by the actual BlockIT client without evidence.
+
+## Non-goals
+
+```text
+no modelling/tool feature work
+no Animation/Paint/Texture rewrite
+no authentication system unless a newly approved non-loopback requirement actually demands it
+no P1.5 local E2E execution yet
+```
+
+## Acceptance
+
+```text
+official current protocol/SDK evidence recorded
+actual supported client requirement recorded
+decision among keep/simplify/migrate recorded
+redundant vs required transport/session layers classified
+implementation boundary for any later transport change is explicit
+```
+
+Only after this decision may P1.4 implementation proceed if the decision requires source changes. P1.5 remains the later local end-to-end acceptance boundary.
+'''
+
+          path.write_text(prefix + next_section)
+          PY
+
+      - name: Commit documentation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/knowledge/next-action.md
+          git diff --cached --check
+          git commit -m "docs: advance MCP stabilization to transport decision"
+          git push origin Local
