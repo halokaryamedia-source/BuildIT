@@ -1,0 +1,46 @@
+name: MCP Verify
+
+on:
+  push:
+    paths:
+      - "mcp/**"
+      - ".github/workflows/mcp-verify.yml"
+  pull_request:
+    paths:
+      - "mcp/**"
+      - ".github/workflows/mcp-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies from lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Contract tests
+        run: bun run test
+
+      - name: Production build
+        run: bun run build
+
+      - name: Generated docs freshness
+        run: bun run docs:check

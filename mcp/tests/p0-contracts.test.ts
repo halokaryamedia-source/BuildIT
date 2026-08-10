@@ -1,0 +1,228 @@
+import { describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { z } from "zod";
+import {
+  createTool,
+  getEnabledToolDefinitions,
+  registerToolsOnServer,
+  tools,
+} from "@/lib/factories";
+import { setServer } from "@/server/server";
+import { registerImportTools } from "@/server/tools/import";
+import { registerUITools } from "@/server/tools/ui";
+
+interface CapturedToolDefinition {
+  title?: string;
+  description?: string;
+  inputSchema?: unknown;
+  annotations?: Record<string, unknown>;
+}
+
+type CapturedToolCallback = (
+  args: unknown,
+  extra: unknown
+) => Promise<unknown>;
+
+interface CapturedRegistration {
+  definition: CapturedToolDefinition;
+  callback: CapturedToolCallback;
+}
+
+function createCaptureServer() {
+  const registrations = new Map<string, CapturedRegistration>();
+
+  return {
+    registrations,
+    server: {
+      registerTool(
+        name: string,
+        definition: CapturedToolDefinition,
+        callback: CapturedToolCallback
+      ) {
+        registrations.set(name, { definition, callback });
+      },
+    },
+  };
+}
+
+async function expectRejectedBeforeExecution(
+  callback: CapturedToolCallback,
+  args: unknown,
+  getExecutionCount: () => number
+): Promise<void> {
+  let rejected = false;
+  try {
+    await callback(args, {});
+  } catch {
+    rejected = true;
+  }
+
+  expect(rejected).toBe(true);
+  expect(getExecutionCount()).toBe(0);
+}
+
+describe("P0 MCP contract regressions", () => {
+  test("initial registration preserves top-level refine validation and annotations", async () => {
+    const capture = createCaptureServer();
+    setServer(capture.server as never);
+
+    const parameters = z
+      .object({ value: z.number() })
+      .refine(({ value }) => value > 0, {
+        message: "value must be positive",
+      });
+
+    let executions = 0;
+    createTool(
+      "p0_refine_contract_fixture",
+      {
+        description: "P0 refine contract fixture",
+        annotations: {
+          title: "P0 Refine Fixture",
+          destructiveHint: false,
+          idempotentHint: true,
+        },
+        parameters,
+        async execute({ value }) {
+          executions += 1;
+          return String(value);
+        },
+      },
+      "experimental"
+    );
+
+    const registration = capture.registrations.get("p0_refine_contract_fixture");
+    expect(registration).toBeDefined();
+    if (!registration) throw new Error("Fixture tool was not registered.");
+
+    expect(registration.definition.annotations).toEqual({
+      title: "P0 Refine Fixture",
+      destructiveHint: false,
+      idempotentHint: true,
+    });
+
+    await expectRejectedBeforeExecution(
+      registration.callback,
+      { value: -1 },
+      () => executions
+    );
+
+    const result = await registration.callback({ value: 2 }, {});
+    expect(executions).toBe(1);
+    expect(result).toEqual({
+      content: [{ type: "text", text: "2" }],
+    });
+  });
+
+  test("reconstructed registration preserves superRefine validation and annotations", async () => {
+    const initialCapture = createCaptureServer();
+    setServer(initialCapture.server as never);
+
+    const parameters = z
+      .object({ start: z.number(), end: z.number() })
+      .superRefine(({ start, end }, ctx) => {
+        if (end <= start) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "end must be greater than start",
+          });
+        }
+      });
+
+    let executions = 0;
+    createTool(
+      "p0_super_refine_contract_fixture",
+      {
+        description: "P0 superRefine contract fixture",
+        annotations: {
+          title: "P0 SuperRefine Fixture",
+          readOnlyHint: true,
+        },
+        parameters,
+        async execute({ start, end }) {
+          executions += 1;
+          return `${start}:${end}`;
+        },
+      },
+      "experimental"
+    );
+
+    const reconstructedCapture = createCaptureServer();
+    registerToolsOnServer(reconstructedCapture.server);
+
+    const registration = reconstructedCapture.registrations.get(
+      "p0_super_refine_contract_fixture"
+    );
+    expect(registration).toBeDefined();
+    if (!registration) throw new Error("Reconstructed fixture tool was not registered.");
+
+    expect(registration.definition.annotations).toEqual({
+      title: "P0 SuperRefine Fixture",
+      readOnlyHint: true,
+    });
+
+    await expectRejectedBeforeExecution(
+      registration.callback,
+      { start: 3, end: 3 },
+      () => executions
+    );
+
+    const result = await registration.callback({ start: 3, end: 4 }, {});
+    expect(executions).toBe(1);
+    expect(result).toEqual({
+      content: [{ type: "text", text: "3:4" }],
+    });
+  });
+
+  test("dangerous default tools remain disabled while other UI tools register", () => {
+    const capture = createCaptureServer();
+    setServer(capture.server as never);
+
+    registerUITools();
+    registerImportTools();
+
+    expect(capture.registrations.has("risky_eval")).toBe(false);
+    expect(capture.registrations.has("from_geo_json")).toBe(false);
+    expect(capture.registrations.has("trigger_action")).toBe(true);
+    expect(capture.registrations.has("emulate_clicks")).toBe(true);
+    expect(capture.registrations.has("fill_dialog")).toBe(true);
+
+    expect(tools.risky_eval?.enabled).toBe(false);
+    expect(tools.risky_eval?.status).toBe("experimental");
+    expect(tools.from_geo_json?.enabled).toBe(false);
+
+    const enabledDefinitions = getEnabledToolDefinitions();
+    expect("risky_eval" in enabledDefinitions).toBe(false);
+    expect("from_geo_json" in enabledDefinitions).toBe(false);
+  });
+
+  test("Origin rejection remains ahead of MCP transport dispatch", async () => {
+    const netSource = await readFile(
+      new URL("../server/net.ts", import.meta.url),
+      "utf8"
+    );
+
+    const originGuard = netSource.indexOf(
+      "if (origin !== undefined && !isAllowedLocalOrigin(origin))"
+    );
+    const forbiddenResponse = netSource.indexOf("403", originGuard);
+    const requestConstruction = netSource.indexOf(
+      "const webRequest = new Request(url, requestInit)",
+      originGuard
+    );
+    const transportDispatch = netSource.indexOf(
+      "session.transport.handleRequest(webRequest)",
+      originGuard
+    );
+
+    expect(originGuard).toBeGreaterThan(-1);
+    expect(forbiddenResponse).toBeGreaterThan(originGuard);
+    expect(requestConstruction).toBeGreaterThan(originGuard);
+    expect(transportDispatch).toBeGreaterThan(requestConstruction);
+
+    expect(netSource).toContain("hostname === 'localhost'");
+    expect(netSource).toContain("hostname === '127.0.0.1'");
+    expect(netSource).toContain("hostname === '[::1]'");
+    expect(netSource).toContain("hostname === '::1'");
+  });
+});
