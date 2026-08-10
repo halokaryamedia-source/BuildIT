@@ -23,7 +23,7 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Apply guarded E patch
+      - name: Apply guarded F-G-H patch
         run: python .github/prelocal_plugin_surface_patch.py
 
       - name: Install dependencies
@@ -53,11 +53,11 @@ jobs:
       - name: Diff hygiene
         run: git diff --check
 
-      - name: Commit E narrowing
+      - name: Commit F-G-H normalization
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mcp docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md
-          git diff --cached --quiet && { echo "No E target changes to commit"; exit 1; }
-          git commit -m "fix: narrow generic MCP semantics before local proof"
+          git add mcp .agents/skills docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md docs/knowledge/reviews/blockit-agent-skill-surface-2026-08-10.md
+          git diff --cached --quiet && { echo "No F-G-H target changes to commit"; exit 1; }
+          git commit -m "docs: align Bedrock MCP prompts and agent skills"
           git push origin HEAD:Local
