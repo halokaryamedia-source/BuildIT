@@ -32,7 +32,6 @@ function getZodTypeMeta(zodType: z.ZodType): {
   let max: number | undefined;
   let innerType: z.ZodType | undefined;
 
-  // Unwrap optional/nullable/default types
   if (typeName === "ZodOptional" || typeName === "ZodNullable") {
     isOptional = true;
     const inner = def.innerType as z.ZodType;
@@ -47,18 +46,15 @@ function getZodTypeMeta(zodType: z.ZodType): {
     return { ...innerMeta, defaultValue, isOptional: true };
   }
 
-  // Handle array types
   if (typeName === "ZodArray") {
     isArray = true;
     innerType = def.type as z.ZodType;
   }
 
-  // Handle enum types
   if (typeName === "ZodEnum") {
     enumValues = def.values as string[];
   }
 
-  // Handle number constraints
   if (typeName === "ZodNumber") {
     const checks = def.checks as Array<{ kind: string; value: number }> | undefined;
     checks?.forEach((check) => {
@@ -67,7 +63,6 @@ function getZodTypeMeta(zodType: z.ZodType): {
     });
   }
 
-  // Map Zod types to form types
   let type: FormElementOptions["type"] = "text";
   switch (typeName) {
     case "ZodString":
@@ -83,13 +78,9 @@ function getZodTypeMeta(zodType: z.ZodType): {
       type = "select";
       break;
     case "ZodArray":
-      type = "textarea"; // Arrays will be JSON input
-      break;
     case "ZodObject":
-      type = "textarea"; // Objects will be JSON input
-      break;
     case "ZodUnion":
-      type = "textarea"; // Unions will be JSON input
+      type = "textarea";
       break;
     default:
       type = "text";
@@ -108,9 +99,6 @@ function getZodTypeMeta(zodType: z.ZodType): {
   };
 }
 
-/**
- * Converts a Zod schema to Blockbench InputFormConfig
- */
 function zodSchemaToFormConfig(
   inputSchema: Record<string, z.ZodType>
 ): InputFormConfig {
@@ -126,7 +114,6 @@ function zodSchemaToFormConfig(
       type: meta.type,
     };
 
-    // Set default/placeholder
     if (meta.defaultValue !== undefined) {
       if (meta.type === "textarea") {
         fieldConfig.value = JSON.stringify(meta.defaultValue, null, 2);
@@ -135,12 +122,10 @@ function zodSchemaToFormConfig(
       }
     }
 
-    // Handle placeholder from description
     if (meta.description) {
       fieldConfig.placeholder = meta.description;
     }
 
-    // Handle enum options
     if (meta.enumValues) {
       fieldConfig.options = {};
       for (const val of meta.enumValues) {
@@ -148,11 +133,9 @@ function zodSchemaToFormConfig(
       }
     }
 
-    // Handle number constraints
     if (meta.min !== undefined) fieldConfig.min = meta.min;
     if (meta.max !== undefined) fieldConfig.max = meta.max;
 
-    // Arrays and objects get textarea with larger height
     if (meta.type === "textarea") {
       fieldConfig.height = 100;
       if (meta.isArray) {
@@ -170,9 +153,6 @@ function zodSchemaToFormConfig(
   return formConfig;
 }
 
-/**
- * Parses form result values back to proper types based on schema
- */
 function parseFormResult(
   formResult: Record<string, unknown>,
   inputSchema: Record<string, z.ZodType>
@@ -183,12 +163,10 @@ function parseFormResult(
     const value = formResult[fieldName];
     const meta = getZodTypeMeta(zodType);
 
-    // Skip empty optional fields
     if (meta.isOptional && (value === "" || value === undefined || value === null)) {
       continue;
     }
 
-    // Parse based on type
     if (meta.type === "textarea" && typeof value === "string") {
       try {
         parsed[fieldName] = JSON.parse(value);
@@ -207,9 +185,6 @@ function parseFormResult(
 
 let resultDialog: Dialog | null = null;
 
-/**
- * Shows the result of a tool execution
- */
 function showResultDialog(toolName: string, result: unknown, isError: boolean) {
   const resultStr = typeof result === "string"
     ? result
@@ -242,9 +217,6 @@ function showResultDialog(toolName: string, result: unknown, isError: boolean) {
   resultDialog.show();
 }
 
-/**
- * Escapes HTML special characters
- */
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -256,9 +228,6 @@ function escapeHtml(text: string): string {
 
 let currentDialog: Dialog | null = null;
 
-/**
- * Opens a dialog to test an MCP tool
- */
 export function openToolTestDialog(toolName: string) {
   const toolDefs = getAllToolDefinitions();
   const toolDef = toolDefs[toolName];
@@ -268,7 +237,6 @@ export function openToolTestDialog(toolName: string) {
     return;
   }
 
-  // Close any existing dialog
   currentDialog?.hide();
 
   const formConfig = zodSchemaToFormConfig(toolDef.inputSchema);
@@ -277,13 +245,11 @@ export function openToolTestDialog(toolName: string) {
   async function runToolTest(formResult: Record<string, unknown>): Promise<void> {
     const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
 
-    // Show loading message
     Blockbench.showQuickMessage(tl("mcp.dialog.running_tool"), 1000);
 
     try {
       const result = await toolDef.execute(args);
 
-      // Format result for display
       let displayResult: unknown;
       if (typeof result === "string") {
         displayResult = result;
@@ -318,10 +284,8 @@ export function openToolTestDialog(toolName: string) {
     confirmIndex: 0,
     cancelIndex: 2,
     onButton(buttonIndex: number) {
-      // Handle "Copy Input" button (index 1)
       if (buttonIndex === 1) {
-        const dialog = this as Dialog;
-        const formResult = dialog.form?.getResult() ?? {};
+        const formResult = currentDialog?.form?.getResult() ?? {};
         const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
 
         const jsonData = JSON.stringify({
@@ -329,14 +293,12 @@ export function openToolTestDialog(toolName: string) {
           arguments: args,
         }, null, 2);
 
-        // Copy to clipboard
         navigator.clipboard.writeText(jsonData).then(() => {
           Blockbench.showQuickMessage(tl("mcp.dialog.input_copied"), 1500);
         }).catch(() => {
           Blockbench.showQuickMessage(tl("mcp.dialog.copy_failed"), 1500);
         });
 
-        // Return false to keep dialog open
         return false;
       }
     },
@@ -348,9 +310,6 @@ export function openToolTestDialog(toolName: string) {
   currentDialog.show();
 }
 
-/**
- * Gets tool info for display in UI
- */
 export function getToolInfo(toolName: string): {
   name: string;
   title: string;
