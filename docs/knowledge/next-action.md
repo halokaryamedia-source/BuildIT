@@ -14,11 +14,11 @@ The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.4 are now complete for their source/engineering boundaries. The only failing repository verification gate is generated-document freshness, which is the planned **P0.5** owner.
+P0.1–P0.5 are complete for their source/repository boundaries. The active source boundary is now **P1.1 — default Bedrock Entity registration profile**.
 
 ## Current Status
 
-`MCP_P0_ENGINEERING_GATE_COMPLETE_GENERATED_DOCS_NEXT`
+`MCP_P0_COMPLETE_BEDROCK_DEFAULT_REGISTRATION_PROFILE_NEXT`
 
 Execution channel: **ChatGPT → GitHub**.  
 Live Blockbench/MCP behavior remains local proof where applicable.
@@ -86,7 +86,7 @@ canonical model capture
 current-format Bedrock export outcome
 ```
 
-Do not delete those merely to reduce typecheck or registration breadth. `TextureMesh` is distinct from generic `Mesh`.
+Do not delete those merely to reduce registration breadth or implementation cost. `TextureMesh` is distinct from generic `Mesh`.
 
 ## Capability already proved outside the native Bedrock Entity product
 
@@ -103,7 +103,7 @@ Cube UV remains owned by `mcp/server/tools/cubes.ts`.
 
 No TextureMesh, Locator, Animation, Paint, PBR, or material-instance capability was removed by that reduction.
 
-# Completed Foundation Slices
+# Completed P0 Stabilization
 
 ## P0.1 — Local transport containment
 
@@ -148,19 +148,9 @@ The complete original Zod schema is retained and parsed before execution for ini
 
 Focused P0.4 contract tests prove top-level `.refine()` / `.superRefine()` rejection before tool logic and annotation preservation in isolated registration fixtures. Real MCP Inspector behavior remains local proof where applicable.
 
-# Completed Slice — P0.4 Engineering Gate + Retained Typecheck
+## P0.4 — Engineering gate + retained typecheck
 
-Primary gate owners:
-
-```text
-mcp/package.json
-mcp/tsconfig.json
-mcp/build/check-docs-freshness.ts
-mcp/tests/p0-contracts.test.ts
-.github/workflows/mcp-verify.yml
-```
-
-Package gates:
+Package/repository gates:
 
 ```text
 typecheck   → tsc --noEmit
@@ -169,20 +159,7 @@ build       → production build
 docs:check  → generated-doc freshness assertion
 ```
 
-The root GitHub workflow installs from the committed Bun lockfile, executes all gates, and fails closed through a final aggregator.
-
-## Bedrock-retained type remediation
-
-The first full typecheck exposed both irrelevant legacy families and valid Bedrock owners. The approved response was:
-
-```text
-1. audit official Blockbench Bedrock Entity source;
-2. remove only capability proved unrelated;
-3. preserve native Bedrock Entity capability;
-4. type-fix the retained package against real Blockbench/MCP contracts.
-```
-
-Important remediation outcomes include:
+Important retained-package remediation outcomes:
 
 ```text
 blockbench-types pinned/synced to 5.1.0 in package.json + bun.lock
@@ -195,40 +172,79 @@ Paint kept and aligned with official Painter/runtime selection APIs
 PBR/material-instance runtime fields retained through narrow evidence-backed declarations
 ```
 
-The final retained-source type remediation after the earlier baseline touched only:
-
-```text
-mcp/server/tools/animation.ts
-mcp/server/tools/paint.ts
-mcp/server/tools/texture.ts
-mcp/types.d.ts
-```
-
-That remediation did not remove the retained Bedrock Animation, Texture, Paint, PBR, or material-instance families.
-
-## P0.4 executable proof
-
-Exact `MCP Verify` run on source head:
+P0.4 source-head proof on:
 
 ```text
 35b142d7a45590399ef035978ed448e3b6f059e2
 fix: refine Blockbench Paint runtime event types
 ```
 
-reported:
+established:
 
 ```text
 frozen-lockfile install     PASS
 full tsc --noEmit           PASS
 focused Bun contract tests  PASS — 4/4, 0 failures
 production build            PASS
-generated docs freshness    FAIL — api.json + index.html stale
-workflow final result       FAIL-CLOSED only because DOCS failed
 ```
 
-Therefore the P0.4-owned engineering/typecheck blocker is resolved. Do not reopen unrelated feature hardening simply because P0.4 is complete.
+The only failure at that checkpoint was stale generated documentation, owned by P0.5.
 
-The generated documentation failure is not hidden or waived; it is exactly the active P0.5 problem.
+## P0.5 — Generated-doc freshness
+
+Primary owners:
+
+```text
+mcp/build/docs.ts
+mcp/docs/api.json
+mcp/docs/index.html
+mcp/build/check-docs-freshness.ts
+```
+
+Generated documentation was rebuilt through the repository generator rather than hand-editing tool entries.
+
+The generator now normalizes trailing horizontal whitespace and final newline before writing `index.html`, making its checked-in output deterministic for repository freshness checks. No documentation layout, tool schema, registration behavior, or product capability was redesigned by this normalization.
+
+Final generated reference commit:
+
+```text
+0842e25fdc9a152be2d47bcc9ec77659219ea1a4
+docs: refresh generated MCP reference
+```
+
+Generation consistently reports:
+
+```text
+69 tools across 12 categories
+3 documented prompts
+8 resources
+```
+
+The generated reference comes from the reduced current source surface: removed Hytale, generic Mesh, Armature, and mesh-only UV source families are not reintroduced; retained Cube/Animation/Texture/Paint/PBR-related ToolSpecs remain part of the current source manifest.
+
+### P0.5 final executable proof
+
+Canonical workflow:
+
+```text
+MCP Verify
+run: 31367549245
+verified commit: 0842e25fdc9a152be2d47bcc9ec77659219ea1a4
+```
+
+Final outcome:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+focused Bun contract tests  PASS — 4/4, 0 failures
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+Temporary one-shot documentation refresh/verification workflows used to execute the generator on GitHub runners were removed after proof. The durable repository gate remains `.github/workflows/mcp-verify.yml`.
 
 # Current Work Order
 
@@ -236,10 +252,10 @@ The generated documentation failure is not hidden or waived; it is exactly the a
 P0.1  loopback + Origin containment              SOURCE COMPLETE / LOCAL PROOF PENDING
 P0.2  dangerous default capability containment   SOURCE COMPLETE / LOCAL PROOF PENDING
 P0.3  full-schema validation + real annotations  SOURCE COMPLETE / TARGETED REGRESSION PROOF PARTIAL
-P0.4  typecheck/tests/root CI                     COMPLETE — RETAINED PACKAGE TYPECHECK PASS
-P0.5  generated-doc freshness                    ← ACTIVE NEXT SLICE
+P0.4  typecheck/tests/root CI                     COMPLETE
+P0.5  generated-doc freshness                    COMPLETE
 
-P1.1  default Bedrock Entity registration profile
+P1.1  default Bedrock Entity registration profile ← ACTIVE NEXT SLICE
 P1.2  family gates
 P1.3  core-only resolver/mutation/result consolidation
 P1.4  transport/session future decision
@@ -248,48 +264,47 @@ P1.5  local end-to-end core acceptance
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P0.5 Generated-Doc Freshness Only
+# Next Step — P1.1 Default Bedrock Entity Registration Profile Only
 
-Do not start P1 work yet.
-
-Primary owner:
-
-```text
-mcp/docs/api.json
-mcp/docs/index.html
-mcp/build/docs.ts
-mcp/build/check-docs-freshness.ts
-```
+Do not start P1.2 or later work in the same slice.
 
 ## Goal
 
-Bring checked-in generated MCP documentation back into exact agreement with the retained source/tool manifest after P0.2–P0.4 and the Bedrock-only reduction.
+Make the **default MCP registration surface** match the actual BlockIT product: Minecraft Bedrock Entity, while preserving every capability that is legitimately required by that Entity workflow.
 
-## Required behavior
+This is a registration/default-surface problem, not permission to delete native Bedrock capability.
 
-1. Generate docs through the existing documented generator; do not hand-edit generated tool entries.
-2. Generated docs must reflect the current **69 tools / 3 documented prompts / 8 resources** source manifest unless generation itself proves the count has legitimately changed.
-3. Removed Hytale, generic Mesh, Armature, and mesh-only UV entries must not reappear.
-4. `risky_eval` and `from_geo_json` metadata must reflect their current disabled/default-containment state as represented by the generator contract.
-5. Bedrock-retained Animation, Cube, Texture, Paint, PBR/material-instance documentation must remain present where their source ToolSpecs/resources exist.
-6. `bun run docs:check` must pass after regeneration.
-7. Re-run typecheck, focused tests, and production build after generated output is committed so P0.5 does not regress P0.4.
-8. Do not use P0.5 to redesign documentation layout, tool schemas, registration profiles, or product capability.
+## Required approach
+
+1. Inventory the currently registered tools/resources/prompts from source and the now-fresh generated manifest.
+2. Classify each remaining family against the official-source Bedrock capability audit and actual BlockIT Entity workflow.
+3. Preserve all native/relevant Bedrock Entity capability, including optional native capability already identified by the audit.
+4. Remove from the **default registered surface** only capability that is proven generic/non-Entity or legacy fallback.
+5. Prefer the smallest existing registration mechanism; do not introduce a broad capability-profile framework unless current source proves it is necessary.
+6. `risky_eval` and `from_geo_json` remain disabled.
+7. Do not use P1.1 to harden or redesign individual Animation, Paint, Texture, Cube, transport, resolver, or output implementations.
+8. Initial and reconstructed-session registration must expose an equivalent default surface.
+9. Add/adjust focused registration tests where needed to prove the default list rather than relying on documentation alone.
+10. Re-run the full P0 engineering gate after the P1.1 source change.
+
+## Explicit preservation rule
+
+If there is doubt whether a capability belongs to Bedrock Entity, **do not remove or disable it until official Blockbench source/product evidence resolves the doubt**.
 
 ## Static acceptance
 
 ```text
-api.json regenerated from current source
-index.html regenerated from current source
-no removed non-Bedrock family resurrected
-no retained Bedrock family silently lost
-generated files contain no hand-maintained divergence
+default registration surface is explicitly Bedrock Entity oriented
+all audited native/relevant Bedrock capability remains available
+proven non-Entity legacy surface is not default-registered
+initial and reconstructed registration remain equivalent
+no new broad profile/framework architecture without demonstrated need
 ```
 
 ## Executable acceptance
 
 ```text
-bun install --frozen-lockfile   PASS
+focused default-registration tests PASS
 bun run typecheck               PASS
 bun run test                    PASS
 bun run build                   PASS
@@ -297,10 +312,10 @@ bun run docs:check              PASS
 root MCP Verify                 PASS
 ```
 
-Only after that proof may the active boundary advance to **P1.1 — default Bedrock Entity registration profile**.
+Only after P1.1 is recorded may the active boundary advance to **P1.2 — family gates**.
 
 ## Proof Boundary
 
-GitHub Actions/package tests prove source/build/generated-doc consistency that does not require Blockbench globals.
+GitHub Actions/package tests prove source/build/generated-doc/registration contracts that do not require Blockbench globals.
 
 Actual OS listener state, live MCP Inspector behavior, Blockbench runtime behavior, Undo/Redo semantics, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
