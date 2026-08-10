@@ -41,9 +41,19 @@ At a primary gate, answer concrete questions rather than writing generic praise:
 
 If the whole object is unrecognizable or multiple primary relationships are wrong together, rebuild/revise the primary hypothesis rather than micro-patching.
 
+## Locator / Null Object authored state
+
+Use `list_locator_elements` to discover Locator and Null Object identities, then `inspect_element` for focused authored state.
+
+- `manage_locator` creates/updates native Bedrock Locator parent, position, rotation, and `ignore_inherited_scale` under an explicit Group/bone.
+- `manage_null_object` creates/updates the Null Object base parent/position state used by the Bedrock workflow.
+- Use `rename_element` / `remove_element` for rename/delete rather than duplicating those operations in Locator tools.
+- Null Object `ik_target`, `ik_source`, and `lock_ik_target_rotation` are inspectable but not mutation inputs in the minimum Locator slice. They are Blockbench editor/animation state, while Bedrock geometry round-trips the Null Object through a `_null_` locator entry.
+- Do not use generic Mesh, arbitrary Cubes, or UI automation as a replacement for Locator/Null Object authored state.
+
 ## Protected Native Capability Gaps
 
-BlockIT preserves the Minecraft Bedrock Entity product boundary even when a native capability does not yet have a direct MCP authoring/inspection owner. Current protected examples include direct Locator/NullObject authoring, TextureMesh authoring, native visible bounding-box fields, animation controllers, sound/timeline animation effects, animated-texture authoring, and bone-binding expressions.
+BlockIT preserves the Minecraft Bedrock Entity product boundary even when a native capability does not yet have a direct MCP authoring/inspection owner. Current protected examples include TextureMesh authoring, native visible bounding-box fields, animation controllers, sound/timeline animation effects, animated-texture authoring, and bone-binding expressions.
 
 When the user asks for one of these native capabilities and the current exposed MCP surface has no direct owner:
 
