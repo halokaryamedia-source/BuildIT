@@ -11,7 +11,7 @@ export function settingsSetup() {
       description: tl("mcp.settings.instructions_desc"),
       type: "text",
       value:
-        "Generate simple, low-poly models for Minecraft inside Blockbench.",
+        "Create or revise Minecraft Bedrock Entity models with explicit Cube/Group structure and evidence-backed visual checks.",
       category,
       icon: "psychology",
     }),

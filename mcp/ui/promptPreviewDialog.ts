@@ -4,7 +4,7 @@ import type {
   FormElementOptions,
   InputFormConfig,
 } from "blockbench-types/generated/interface/form";
-import { getAllPromptDefinitions } from "@/lib/factories";
+import { getAllPromptDefinitions, prompts } from "@/lib/factories";
 import { openPromptOverrideDialog } from "@/ui/promptOverrideDialog";
 
 /**
@@ -188,6 +188,14 @@ export function openPromptPreviewDialog(promptName: string) {
 
   if (!promptDef) {
     Blockbench.showQuickMessage(tl("mcp.dialog.prompt_not_found", [promptName]), 2000);
+    return;
+  }
+
+  if (!prompts[promptName]?.enabled) {
+    Blockbench.showQuickMessage(
+      `Prompt "${promptName}" is disabled and is not exposed through MCP.`,
+      2500
+    );
     return;
   }
 

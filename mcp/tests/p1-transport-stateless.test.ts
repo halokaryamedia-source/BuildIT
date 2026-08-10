@@ -81,7 +81,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
 
     expect(uiSource).not.toContain("sessionManager");
     expect(uiSource).not.toContain("sessions:");
-    expect(uiSource).toContain('transport: "Streamable HTTP (stateless)"');
+    expect(uiSource).toContain('transport: "Streamable HTTP (stateless JSON)"');
 
     expect(statusSource).not.toContain("sessionManager");
     expect(statusSource).not.toContain("server_one_client");

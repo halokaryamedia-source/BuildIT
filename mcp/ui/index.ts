@@ -1,5 +1,13 @@
 import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
+import type { McpRegistrationProfile } from "@/lib/registrationProfile";
+import {
+  PRODUCT_BUILD_CHANNEL,
+  PRODUCT_BUILD_REVISION,
+  PRODUCT_NAME,
+  PRODUCT_REPOSITORY,
+} from "@/lib/productIdentity";
+import { createSurfaceManifest } from "@/lib/surfaceManifest";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
 import { openToolTestDialog } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
@@ -16,11 +24,14 @@ export function uiSetup({
   tools,
   resources,
   prompts,
+  profile,
 }: {
   tools: Record<string, IMCPTool>;
   resources: Record<string, IMCPResource>;
   prompts: Record<string, IMCPPrompt>;
+  profile: McpRegistrationProfile;
 }) {
+  const surface = createSurfaceManifest({ profile, tools, resources, prompts });
   Blockbench.addCSS(panelCSS);
 
   // Stateless HTTP has no durable MCP client session to display. The status bar
@@ -50,10 +61,16 @@ export function uiSetup({
       },
       data: () => ({
         server: {
-          name: "Blockbench MCP",
+          name: PRODUCT_NAME,
           version: VERSION,
-          transport: "Streamable HTTP (stateless)",
+          repositoryUrl: PRODUCT_REPOSITORY,
+          build: PRODUCT_BUILD_REVISION,
+          channel: PRODUCT_BUILD_CHANNEL,
+          profile,
+          endpoint: `127.0.0.1:${Settings.get("mcp_port") || 3000}${Settings.get("mcp_endpoint") || "/bb-mcp"}`,
+          transport: "Streamable HTTP (stateless JSON)",
         },
+        surface,
         tools: Object.values(tools).map((tool) => ({
           name: tool.name,
           description: tool.description,
@@ -75,6 +92,7 @@ export function uiSetup({
         toolsFilter: {
           search: "",
           showExperimental: true,
+          showDisabled: false,
         },
         resourcesFilter: {
           search: "",
@@ -82,6 +100,7 @@ export function uiSetup({
         promptsFilter: {
           search: "",
           showExperimental: true,
+          showDisabled: false,
         },
       }),
       computed: {
@@ -89,7 +108,8 @@ export function uiSetup({
           // @ts-ignore - Vue component context
           const { tools, toolsFilter } = this;
           const searchLower = toolsFilter.search.toLowerCase();
-          return tools.filter((tool: { name: string; status: string }) => {
+          return tools.filter((tool: { name: string; status: string; enabled: boolean }) => {
+            if (!tool.enabled && !toolsFilter.showDisabled) return false;
             if (tool.status === "experimental" && !toolsFilter.showExperimental) return false;
             if (searchLower && !tool.name.toLowerCase().includes(searchLower)) return false;
             return true;
@@ -108,7 +128,8 @@ export function uiSetup({
           // @ts-ignore - Vue component context
           const { prompts, promptsFilter } = this;
           const searchLower = promptsFilter.search.toLowerCase();
-          return prompts.filter((prompt: { name: string; status: string }) => {
+          return prompts.filter((prompt: { name: string; status: string; enabled: boolean }) => {
+            if (!prompt.enabled && !promptsFilter.showDisabled) return false;
             if (prompt.status === "experimental" && !promptsFilter.showExperimental) return false;
             if (searchLower && !prompt.name.toLowerCase().includes(searchLower)) return false;
             return true;

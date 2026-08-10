@@ -6,6 +6,11 @@ import {
   registerPromptsOnServer
 } from '@/lib/factories'
 import { createServer as createMcpServer } from '@/server/server'
+import {
+  DEFAULT_MCP_REGISTRATION_PROFILE,
+  type McpRegistrationProfile
+} from '@/lib/registrationProfile'
+import { createProductIdentity } from '@/lib/productIdentity'
 
 export type { NetServer }
 
@@ -108,11 +113,13 @@ export default function createNetServer (
   {
     port,
     endpoint,
-    host = '127.0.0.1'
+    host = '127.0.0.1',
+    profile = DEFAULT_MCP_REGISTRATION_PROFILE
   }: {
     endpoint: string
     port: number
     host?: string
+    profile?: McpRegistrationProfile
   }
 ): NetServer {
   const httpServer = createServer((socket: Socket) => {
@@ -235,6 +242,7 @@ export default function createNetServer (
               JSON.stringify({
                 status: 'ok',
                 timestamp: new Date().toISOString(),
+                product: createProductIdentity(profile),
                 transport: {
                   mode: 'stateless',
                   response_mode: 'json'

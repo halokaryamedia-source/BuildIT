@@ -5,15 +5,21 @@
             <dt>{{tl('mcp.server.name')}}</dt>
             <dd>{{server.name}}</dd>
             <dt>{{tl('mcp.server.version')}}</dt>
-            <dd><a href="https://github.com/jasonjgardner/blockbench-mcp-plugin/releases/" target="_blank"
+            <dd><a :href="server.repositoryUrl" target="_blank"
                     rel="noopener noreferrer">{{server.version}}</a>
             </dd>
+            <dt>Build</dt>
+            <dd>{{server.channel}} @ {{server.build}}</dd>
+            <dt>Profile</dt>
+            <dd>{{server.profile}}</dd>
+            <dt>Endpoint</dt>
+            <dd>{{server.endpoint}}</dd>
             <dt>Transport</dt>
             <dd>{{server.transport}}</dd>
         </dl>
     </details>
     <details name="mcp_panel" @toggle="onToolsToggle">
-        <summary>{{tl('mcp.panel.tools')}} ({{filteredTools.length}}/{{tools.length}})</summary>
+        <summary>{{tl('mcp.panel.tools')}} ({{surface.tools.exposed_count}} exposed / {{surface.tools.catalog_count}} catalog)</summary>
 
         <div class="filter-bar">
             <input type="text" v-model="toolsFilter.search" :placeholder="tl('mcp.filter.tools_placeholder')"
@@ -24,15 +30,23 @@
                 <span class="switch-slider"></span>
                 <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
             </label>
+            <label class="filter-switch">
+                <input type="checkbox" v-model="toolsFilter.showDisabled">
+                <span class="switch-slider"></span>
+                <span class="switch-label">Show disabled</span>
+            </label>
         </div>
 
         <div v-if="filteredTools.length > 0">
-            <div v-for="tool in filteredTools" :key="tool.name" class="tool-toggle-row clickable"
-                @click="openToolTest(tool.name)" :title="tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)])">
+            <div v-for="tool in filteredTools" :key="tool.name" class="tool-toggle-row"
+                :class="{ clickable: tool.enabled, disabled: !tool.enabled }"
+                @click="tool.enabled && openToolTest(tool.name)"
+                :title="tool.enabled ? tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)]) : 'Disabled tools are not executable from the BlockIT panel.'">
                 <div class="tool-info">
                     <div class="tool-name">
                         {{getDisplayName(tool.name)}}
                         <span v-if="tool.status === 'experimental'" class="tool-status experimental" :title="tl('mcp.status.experimental_tooltip')"></span>
+                        <span v-if="!tool.enabled" class="surface-badge disabled">disabled</span>
                     </div>
                     <div class="tool-description" :title="tool.description">{{tool.description}}</div>
                 </div>
@@ -46,7 +60,7 @@
         </div>
     </details>
     <details name="mcp_panel" @toggle="onResourcesToggle">
-        <summary>{{tl('mcp.panel.resources')}} ({{filteredResources.length}}/{{resources.length}})</summary>
+        <summary>{{tl('mcp.panel.resources')}} ({{surface.resources.available_count}} available)</summary>
 
         <div class="filter-bar">
             <input type="text" v-model="resourcesFilter.search" :placeholder="tl('mcp.filter.resources_placeholder')"
@@ -72,7 +86,7 @@
         </div>
     </details>
     <details name="mcp_panel" @toggle="onPromptsToggle">
-        <summary>{{tl('mcp.panel.prompts')}} ({{filteredPrompts.length}}/{{prompts.length}})</summary>
+        <summary>{{tl('mcp.panel.prompts')}} ({{surface.prompts.exposed_count}} exposed / {{surface.prompts.catalog_count}} catalog)</summary>
 
         <div class="filter-bar">
             <input type="text" v-model="promptsFilter.search" :placeholder="tl('mcp.filter.prompts_placeholder')"
@@ -83,17 +97,24 @@
                 <span class="switch-slider"></span>
                 <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
             </label>
+            <label class="filter-switch">
+                <input type="checkbox" v-model="promptsFilter.showDisabled">
+                <span class="switch-slider"></span>
+                <span class="switch-label">Show disabled</span>
+            </label>
         </div>
 
         <div v-if="filteredPrompts.length > 0">
-            <div v-for="prompt in filteredPrompts" :key="prompt.name" class="tool-toggle-row clickable"
-                @click="openPromptPreview(prompt.name)"
-                :title="tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)])">
+            <div v-for="prompt in filteredPrompts" :key="prompt.name" class="tool-toggle-row"
+                :class="{ clickable: prompt.enabled, disabled: !prompt.enabled }"
+                @click="prompt.enabled && openPromptPreview(prompt.name)"
+                :title="prompt.enabled ? tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)]) : 'Disabled prompts are not exposed through MCP.'">
                 <div class="tool-info" style="flex: 1;">
                     <div class="tool-name">
                         {{getDisplayName(prompt.name)}}
                         <span v-if="prompt.status === 'experimental'" class="tool-status experimental" :title="tl('mcp.status.experimental_tooltip')"></span>
-                        <span v-if="isPromptOverridden(prompt.name)" style="
+                        <span v-if="!prompt.enabled" class="surface-badge disabled">disabled</span>
+                        <span v-if="prompt.enabled && isPromptOverridden(prompt.name)" style="
                             background: var(--color-accent);
                             color: var(--color-light);
                             font-size: 10px;
@@ -109,7 +130,7 @@
                         {{formatArgumentCount(prompt.argumentCount)}}
                     </div>
                 </div>
-                <div @click.stop style="display: flex; align-items: center; padding-left: 4px;">
+                <div v-if="prompt.enabled" @click.stop style="display: flex; align-items: center; padding-left: 4px;">
                     <i class="material-icons" @click="openPromptOverride(prompt.name)"
                         :title="tl('mcp.dialog.edit_override')"
                         style="cursor: pointer; opacity: 0.5; font-size: 18px;"

@@ -63,6 +63,23 @@
         background-color: var(--color-accent);
     }
 
+    .tool-toggle-row.disabled {
+        opacity: 0.58;
+    }
+
+    .surface-badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 4px;
+        border: 1px solid var(--color-border);
+        border-radius: 3px;
+        color: var(--color-subtle_text);
+        font-size: 9px;
+        font-weight: normal;
+        line-height: 1.2;
+        vertical-align: middle;
+    }
+
     .tool-toggle-row.clickable .tool-name::after {
         content: "chevron_right";
         font-family: "Material Icons";

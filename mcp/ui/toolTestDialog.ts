@@ -4,7 +4,7 @@ import type {
   FormElementOptions,
   InputFormConfig,
 } from "blockbench-types/generated/interface/form";
-import { getAllToolDefinitions } from "@/lib/factories";
+import { getAllToolDefinitions, tools } from "@/lib/factories";
 
 /**
  * Extracts metadata from a Zod schema type
@@ -237,6 +237,14 @@ export function openToolTestDialog(toolName: string) {
     return;
   }
 
+  if (!tools[toolName]?.enabled) {
+    Blockbench.showQuickMessage(
+      `Tool "${toolName}" is disabled and cannot be executed from the BlockIT panel.`,
+      2500
+    );
+    return;
+  }
+
   currentDialog?.hide();
 
   const formConfig = zodSchemaToFormConfig(toolDef.inputSchema);
@@ -248,7 +256,11 @@ export function openToolTestDialog(toolName: string) {
     Blockbench.showQuickMessage(tl("mcp.dialog.running_tool"), 1000);
 
     try {
-      const result = await toolDef.execute(args);
+      if (!tools[toolName]?.enabled) {
+        throw new Error(`Tool "${toolName}" is disabled.`);
+      }
+      const validatedArgs = await toolDef.parameterSchema.parseAsync(args);
+      const result = await toolDef.execute(validatedArgs);
 
       let displayResult: unknown;
       if (typeof result === "string") {

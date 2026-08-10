@@ -1,133 +1,75 @@
-# Blockbench MCP
+# BlockIT — Bedrock Entity MCP
 
-https://github.com/user-attachments/assets/ab1b7e63-b6f0-4d5b-85ab-79d328de31db
+BlockIT is a Minecraft **Bedrock Entity-focused** MCP server that runs inside the desktop version of Blockbench. The default product surface preserves native/relevant Bedrock Entity capabilities while generic Blockbench fallback families remain outside the normal profile.
 
-## Plugin Installation
+## Current development source
 
-Open the desktop version of Blockbench, go to File > Plugins and click the "Load Plugin from URL" and paste in this URL:
+Repository: `halokaryamedia-source/BuildIT`
+Working branch for this stabilization line: `Local`
 
-**[https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js](https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js)**
+Do **not** use the upstream hosted `jasonjgardner.github.io/.../mcp.js` URL when validating BlockIT. That URL installs a different upstream product surface and cannot prove the behavior of this repository.
 
-## Model Context Protocol Server
-
-Configure the MCP server under Blockbench settings: **Settings** > **General** > **MCP Server Port** and **MCP Server Endpoint**
-
-The following examples use the default values of `:3000/bb-mcp`
-
-### Installation
-
-
-#### General
+### Build and load the Local plugin
 
 ```bash
-npx mcp-add --type http --url "http://localhost:3000/bb-mcp" --scope project
+git checkout Local
+cd mcp
+bun install --frozen-lockfile
+bun run build
 ```
 
-#### VS Code
+Load the generated `mcp/dist/mcp.js` as a local Blockbench plugin. The BlockIT panel displays the product name, version, build channel/revision, active registration profile, endpoint, and transport so the loaded artifact can be identified before runtime acceptance.
 
-**`.vscode/mcp.json`**
+## MCP endpoint
 
-```json
-{
-  "servers": {
-    "blockbench": {
-      "url": "http://localhost:3000/bb-mcp",
-      "type": "http"
-    }
-  }
-}
+Default local endpoint:
+
+```text
+http://127.0.0.1:3000/bb-mcp
 ```
 
-#### Claude Desktop
+The server binds to loopback and uses request-owned stateless Streamable HTTP with JSON responses. Configure MCP clients to connect directly to that URL when they support Streamable HTTP.
 
-**`claude_desktop_config.json`** (macOS/Linux)
+Settings are under Blockbench **Settings → General**:
 
-```json
-{
-  "mcpServers": {
-    "blockbench": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://localhost:3000/bb-mcp"]
-    }
-  }
-}
-```
+- MCP Server Port
+- MCP Server Endpoint
+- Optional prompt CDN fallback (off by default)
+- Extended MCP Families (off by default)
 
-**`claude_desktop_config.json`** (Windows)
+The Extended toggle exposes only source-preserved generic fallback families; individually quarantined tools such as `risky_eval` and `from_geo_json` remain disabled.
 
-```json
-{
-  "mcpServers": {
-    "blockbench": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "mcp-remote", "http://localhost:3000/bb-mcp"]
-    }
-  }
-}
-```
+## Product boundary
 
-#### Claude Code
+Normal BlockIT work targets Minecraft Bedrock Entity projects (`bedrock`). The trusted path centers on Cube/Cuboid geometry, Group/bone hierarchy, deterministic inspection/canonical views, Bedrock texture/paint/PBR/material-instance capability, Bedrock animation/BoneAnimator capability, undo/history, and current-format export outcomes.
+
+Native Bedrock capabilities must not be removed merely to reduce tool count. See the capability surface audit/matrix under `docs/knowledge/reviews/` before narrowing any family.
+
+## Surface truth
+
+The Blockbench panel distinguishes **exposed** tools/prompts from disabled catalog entries. Resources are reported as **available** for the current runtime. Disabled tool definitions are not executable through the panel test dialog.
+
+## Verification
 
 ```bash
-claude mcp add blockbench --transport http http://localhost:3000/bb-mcp
+bun run typecheck
+bun run test
+bun run build
+bun run docs:check
 ```
 
-#### [Antigravity](https://antigravity.google/docs/mcp#connecting-custom-mcp-servers)
-
-```json
-{
-  "mcpServers": {
-    "blockbench": {
-      "serverUrl": "http://localhost:3000/bb-mcp"
-    }
-  }
-}
-```
-
-#### Cline
-
-<img width="674" height="486" alt="Connecting to Blockbench MCP plugin through Cline" src="https://github.com/user-attachments/assets/f27f2304-dd56-4c60-b159-86fbd5af65ee" />
-
-**`cline_mcp_settings.json`**
-
-```json
-{
-  "mcpServers": {
-    "blockbench": {
-      "url": "http://localhost:3000/bb-mcp",
-      "type": "streamableHttp",
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-#### Ollama
+Local stateless transport smoke harness (requires the current BlockIT plugin running in Blockbench):
 
 ```bash
-uvx ollmcp -u http://localhost:3000/bb-mcp
+bun run verify:stateless-local
 ```
 
-Recommended: [jonigl/mcp-client-for-ollama](https://github.com/jonigl/mcp-client-for-ollama)
+## Agent skills
 
-#### OpenCode
+The upstream `jasonjgardner/blockbench-mcp-project` skills are useful historical/reference material, but they describe a broader generic Blockbench MCP including Mesh, Hytale, risky evaluation, and other paths that are not the normal BlockIT Bedrock Entity workflow. Do not install them as the canonical BlockIT orchestration layer without adaptation.
 
-```bash
-opencode mcp add
-```
+A BlockIT-specific skill pack is a separate pre-local hardening step and should be generated from the current capability matrix and actual MCP contract.
 
-<img width="504" height="300" alt="Connecting to Blockbench MCP plugin through OpenCode." src="https://github.com/user-attachments/assets/238971fc-0048-4b8d-95dd-6681604bbe90" />
+## Upstream attribution
 
-
-## Usage
-
-[See sample project](https://github.com/jasonjgardner/blockbench-mcp-project) for prompt examples.
-
-### [Skills](https://skills.sh/jasonjgardner/blockbench-mcp-project)
-
-Use Agent Skills to orchestrate tool usage.
-
-## Plugin Development
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions on setting up the development environment and how to add new tools, resources, and prompts.
+BlockIT's MCP implementation is derived from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Upstream attribution and the repository license remain preserved; BlockIT product identity distinguishes this Bedrock-focused fork from the upstream hosted plugin.

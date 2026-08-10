@@ -6,6 +6,12 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
+import {
+  PRODUCT_BUG_TRACKER,
+  PRODUCT_DESCRIPTION,
+  PRODUCT_NAME,
+  PRODUCT_REPOSITORY,
+} from "@/lib/productIdentity";
 import { tools, prompts, registerMcpProfile } from "@/server/tools";
 import {
   MCP_EXTENDED_FAMILIES_SETTING_ID,
@@ -24,14 +30,14 @@ let httpServer: NetServer | null = null;
 
 BBPlugin.register("mcp", {
   version: VERSION,
-  title: "MCP Server",
-  author: "Jason J. Gardner",
+  title: PRODUCT_NAME,
+  author: "Halo Karya Media",
   contributors: ["jasonjgardner", "brokestar233"],
-  description: "Create an MCP server inside Blockbench.",
+  description: PRODUCT_DESCRIPTION,
   tags: ["MCP", "AI"],
-  website: "https://jasonjgardner.github.io/blockbench-mcp-plugin/",
-  repository: "https://github.com/jasonjgardner/blockbench-mcp-plugin",
-  bug_tracker: "https://github.com/jasonjgardner/blockbench-mcp-plugin/issues",
+  website: PRODUCT_REPOSITORY,
+  repository: PRODUCT_REPOSITORY,
+  bug_tracker: PRODUCT_BUG_TRACKER,
   icon: getIcon(),
   variant: "desktop",
   async onload() {
@@ -55,11 +61,10 @@ BBPlugin.register("mcp", {
     // Bedrock Entity remains the default registration truth. The optional
     // setting can only add the source-preserved generic import/UI families for
     // this plugin load; registerMcpProfile() will not register core families twice.
-    registerMcpProfile(
-      resolveMcpRegistrationProfile(
-        Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
-      )
+    const registrationProfile = resolveMcpRegistrationProfile(
+      Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
     );
+    registerMcpProfile(registrationProfile);
 
     // Local prompt content is bundled into the plugin and remains the default
     // authority. Optional CDN content is loaded only as fallback when enabled.
@@ -77,12 +82,14 @@ BBPlugin.register("mcp", {
       port: Number(Settings.get("mcp_port") || 3000),
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
       host: "127.0.0.1",
+      profile: registrationProfile,
     });
 
     uiSetup({
       tools,
       resources,
       prompts,
+      profile: registrationProfile,
     });
   },
 
@@ -97,11 +104,11 @@ BBPlugin.register("mcp", {
   },
 
   oninstall() {
-    Blockbench.showQuickMessage("Installed MCP Server plugin", 2000);
+    Blockbench.showQuickMessage("Installed BlockIT Bedrock Entity MCP", 2000);
   },
 
   onuninstall() {
-    Blockbench.showQuickMessage("Uninstalled MCP Server plugin", 2000);
+    Blockbench.showQuickMessage("Uninstalled BlockIT Bedrock Entity MCP", 2000);
     settingsTeardown();
   },
 });

@@ -1,63 +1,27 @@
-## Model Context Protocol Server
-Configure experimental MCP server under Blockbench settings: __Settings__ > __General__ > __MCP Server Port__ and __MCP Server Endpoint__
+## BlockIT — Bedrock Entity MCP
 
-The following examples use the default values of `:3000/mcp`
+BlockIT provides a Minecraft **Bedrock Entity-focused** Model Context Protocol server inside desktop Blockbench.
 
-> __Be sure your Blockbench settings match the port and endpoint used in the MCP JSON configuration.__
+### Default endpoint
 
-## Installation
+`http://127.0.0.1:3000/bb-mcp`
 
-### Claude Desktop
+The default transport is loopback-only, stateless Streamable HTTP with JSON responses. The BlockIT panel shows the loaded version, build revision/channel, active profile, endpoint, and truthful exposed surface counts.
 
-__`claude_desktop_config.json`__
+### Product boundary
 
-```json
-{
-  "mcpServers": {
-    "blockbench": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:3000/mcp"
-      ]
-    }
-  }
-}
-```
+The normal profile is `bedrock_entity`. It preserves capability that genuinely belongs to Minecraft Bedrock Entity while broad generic Blockbench fallback families are not exposed by default. Native Bedrock capability is not removed merely to minimize the surface.
 
-### VS Code
+The panel distinguishes exposed tools/prompts from disabled catalog entries, and disabled definitions cannot be executed through the panel's Tool Test path.
 
-<span style="background: darkred; box-shadow: 1px 1px 6px rgba(0 0 0 / 50%); color: pink; font: 600 12px sans-serif; padding: 0.3em 0.5em; border-radius: 0.25em; outline: 0.125em solid red;">Unstable</span>
+### Local development builds
 
-> This plugin _should_ be compatible but Copilot often throws errors when using most tools.
+For this stabilization line, build `halokaryamedia-source/BuildIT` branch `Local` and load the generated `mcp/dist/mcp.js`. Do not use the upstream hosted plugin URL as evidence for BlockIT runtime behavior; it is a different artifact/product surface.
 
-__`.vscode/mcp.json`__
+### Expectations
 
-```json
-{
-    "servers": {
-        "blockbench": {
-            "url": "http://localhost:3000/mcp"
-        },
-    }
-}
-```
+AI-assisted modeling remains human-in-the-loop. Tool success, valid coordinates, a validator pass, or a screenshot call succeeding are not proof that a model visually matches its reference. BlockIT's Bedrock workflow uses explicit inspection, bounded corrections, canonical views, and fresh visual comparison.
 
-## Basic Usage
+### Upstream attribution
 
-1. Start Blockbench
-2. Start your MCP client
-3. Enable/disable tools in client
-4. Prompt to create models
-
-### Limitations / Expectations
-
-Only a small fraction of Blockbench's API has been mapped to a MCP server tool, so some capabilities may be limited.
-
-"One-shotting" a model is possible but human-in-the-loop interaction and project clean-up should usually be expected.
-
-### Tips
-
-- __Set the agent up for success__ by adding textures and groups to the project ahead of prompting.
-- __Find the right amount of context__ by disabling tools you do not want or need, _but also_ try providing lots of specific project details and even __use other MCP servers in the same context.__ (i.e. File or web access tools.)
-- __Make a backup.__ This is experimental tech! Working in existing projects may yield unexpected results.
+This implementation is derived from Jason J. Gardner's open-source Blockbench MCP project and retains upstream attribution/license information while presenting a distinct BlockIT Bedrock Entity product identity.
