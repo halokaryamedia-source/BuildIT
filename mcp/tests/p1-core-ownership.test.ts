@@ -100,7 +100,10 @@ describe("P1.3 core identity ownership", () => {
 
     expect(cubes).toContain("structuredContent: result");
     expect(cubes).toContain("added: cubes.length");
-    expect(cubes).toContain("cube: finalCubeState(cubes[0])");
+    expect(cubes).toContain("before,");
+    expect(cubes).toContain("after,");
+    expect(cubes).toContain("geometry_effect: geometryEffect");
+    expect(cubes).toContain("cube: after");
     expect(elements).toContain("structuredContent: result");
     expect(elements).toContain("group: {");
   });
