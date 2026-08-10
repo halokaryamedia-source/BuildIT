@@ -25,18 +25,18 @@ def insert_before(path: str, marker: str, addition: str) -> None:
 cubes = "mcp/server/tools/cubes.ts"
 replace_once(
     cubes,
-    "If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation.\",
-    "If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.\",
+    "If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation.",
+    "If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.",
 )
 replace_once(
     cubes,
-    "Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.\",
-    "Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. A successful return confirms only that the authored update was applied; it does not evaluate whether the Cube is visually correct or matches the reference.\",
+    "Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+    "Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. A successful return confirms only that the authored update was applied; it does not evaluate whether the Cube is visually correct or matches the reference.",
 )
 replace_once(
     cubes,
-    "This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.\",
-    "This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.\",
+    "This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction.",
+    "This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
 )
 
 replace_once(
@@ -74,7 +74,7 @@ replace_once(
 #    primary blockout must stop for visual review before detail continues.
 skill_addition = r'''#### Placement Execution Is Not Geometry Approval
 
-Treat every successful `place_cube`, `modify_cube`, or `modify_cubes_batch` call as **execution evidence only**. It proves that Blockbench accepted the authored state; it does not prove that the chosen mass, size, position, depth, rotation, contact, or silhouette is correct.
+Treat every successful `place_cube`, `modify_cube`, or `modify_cubes_batch` call as **execution evidence only**. It proves that Blockbench accepted the authored state; it does not prove that the chosen mass, size, position, depth, rotation, contact, or silhouette is correct. Cube mutation results use `visual_verdict: not_evaluated` for this reason.
 
 Do not continue with another Cube merely because the previous placement succeeded. Every additional primary Cube must still be justified by a primary mass or necessary split that remains unrepresented in the current Primary Form Hypothesis.
 
@@ -236,7 +236,7 @@ describe("model creation effectiveness — primary geometry", () => {
     const cubes = await source("server/tools/cubes.ts");
     expect((cubes.match(/visual_verdict: \"not_evaluated\" as const/g) ?? []).length).toBe(3);
     expect((cubes.match(/execution: \"applied\" as const/g) ?? []).length).toBe(3);
-    expect(cubes).toContain("reference fidelity was not evaluated");
+    expect(cubes).toContain("Reference fidelity was not evaluated");
     expect(cubes).not.toContain("Corrected ${targets.length} Cubes");
     expect(cubes).toContain("does not mean the geometry was corrected visually");
   });
