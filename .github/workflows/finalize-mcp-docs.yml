@@ -26,6 +26,24 @@ jobs:
         working-directory: mcp
         run: bun install --frozen-lockfile
 
+      - name: Make generator whitespace-clean
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("mcp/build/docs.ts")
+          text = path.read_text()
+          old = '''  const htmlContent = await generateHtml(output);
+          await Bun.write(htmlPath, htmlContent);'''
+          new = '''  const htmlContent = (await generateHtml(output))
+            .replace(/[ \\t]+$/gm, "")
+            .trimEnd() + "\\n";
+          await Bun.write(htmlPath, htmlContent);'''
+          if text.count(old) != 1:
+              raise SystemExit("Expected docs HTML write block exactly once.")
+          path.write_text(text.replace(old, new, 1))
+          PY
+
       - name: Regenerate committed MCP docs
         working-directory: mcp
         run: bun run docs:build
@@ -46,11 +64,11 @@ jobs:
         working-directory: mcp
         run: bun run docs:check
 
-      - name: Commit generated docs only
+      - name: Commit generator and generated docs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mcp/docs/api.json mcp/docs/index.html
+          git add mcp/build/docs.ts mcp/docs/api.json mcp/docs/index.html
           git diff --cached --check
           if git diff --cached --quiet; then
             echo "Generated docs already fresh."
