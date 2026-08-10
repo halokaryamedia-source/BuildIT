@@ -34,7 +34,8 @@ Load every relevant domain specialist before a multi-domain task, but keep one d
 2. If no project exists and creation is requested, use `create_project`; BlockIT accepts only `bedrock`.
 3. Confirm the intended project is actually `bedrock`. Do not silently convert another format.
 4. Inspect only the state needed for the next decision:
-   - structure: `list_outline`, `find_elements_by_criteria`, `inspect_element`;
+   - Cube/Group structure: `list_outline`, `find_elements_by_criteria`, `inspect_element`;
+   - Locator/Null Object structure: `list_locator_elements`, then `inspect_element`;
    - textures/materials: `list_textures`, `get_texture`, `list_materials`, `get_material_info`;
    - animation: `inspect_animation`;
    - whole-form envelope: `inspect_model_bounds`.
@@ -45,6 +46,9 @@ Load every relevant domain specialist before a multi-domain task, but keep one d
 - For three or more material mutations, or any risky multi-step rework, create a `save_checkpoint` first when recovery value is meaningful.
 - Use `modify_cube` for one diagnosed Cube correction.
 - Use `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs.
+- Use `manage_locator` for native Bedrock Locator parent/position/rotation/`ignore_inherited_scale` authoring under an explicit Group/bone.
+- Use `manage_null_object` only for base Null Object parent/position authoring. Its IK metadata is inspectable but intentionally not mutated by this minimum capability owner.
+- Use existing `rename_element` / `remove_element` for Locator/Null Object rename/delete instead of inventing duplicate tool paths.
 - Do not use selection as an implicit mutation target when a tool supports explicit identity.
 - Do not compensate for a wrong primary form with extra detail, texture, or animation.
 - Use `undo`/`redo` rather than generic UI actions.
@@ -58,13 +62,14 @@ For reference-driven modelling:
 - use `capture_screenshot` only when the current editor view itself is useful;
 - successful capture or validator execution is observation evidence, not a resemblance PASS.
 
+For Locator/Null Object work, re-read the exact element with `inspect_element` after mutation. A Null Object is not interchangeable with a normal Locator: Blockbench uses a `_null_` locator-entry convention for Bedrock geometry round-trip while its IK metadata remains editor/animation state.
+
 ## Protected Native Capability Gaps
 
 If a request needs a native Bedrock capability that has no direct exposed authoring/inspection tool, **stop at the capability boundary rather than synthesizing a fake substitute**.
 
 Protected examples currently include direct authored-state owners for:
 
-- Locator / NullObject locators;
 - TextureMesh;
 - native visible bounding-box fields;
 - animation controllers;
