@@ -1,17 +1,5 @@
 <div class="mcp-panel">
     <details name="mcp_panel" open>
-        <summary>{{tl('mcp.panel.sessions')}} ({{sessions.length}})</summary>
-        <div v-if="sessions.length > 0">
-            <div v-for="session in sessions" :key="session.id" class="session-item" :title="session.id">
-                <span class="session-id">{{formatSessionId(session)}}</span>
-                <span class="session-time">{{formatTime(session.connectedAt)}}</span>
-            </div>
-        </div>
-        <div v-else class="no-sessions">
-            {{tl('mcp.sessions.no_clients')}}
-        </div>
-    </details>
-    <details name="mcp_panel">
         <summary>{{tl('mcp.panel.server')}}</summary>
         <dl>
             <dt>{{tl('mcp.server.name')}}</dt>
@@ -20,8 +8,8 @@
             <dd><a href="https://github.com/jasonjgardner/blockbench-mcp-plugin/releases/" target="_blank"
                     rel="noopener noreferrer">{{server.version}}</a>
             </dd>
-            <dt>{{tl('mcp.server.connected_clients')}}</dt>
-            <dd>{{sessions.length}}</dd>
+            <dt>Transport</dt>
+            <dd>{{server.transport}}</dd>
         </dl>
     </details>
     <details name="mcp_panel" @toggle="onToolsToggle">

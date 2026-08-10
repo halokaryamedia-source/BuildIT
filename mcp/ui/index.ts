@@ -1,8 +1,6 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
-import { sessionManager, type Session } from "@/lib/sessions";
 import { openToolTestDialog } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog } from "@/ui/promptPreviewDialog";
 import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
@@ -12,24 +10,22 @@ import panelCSS from "@/ui/panel.css";
 import template from "@/ui/panel.html";
 
 let panel: Panel | undefined;
-let unsubscribe: (() => void) | undefined;
 let overrideListener: (() => void) | undefined;
 
 export function uiSetup({
-  server,
   tools,
   resources,
   prompts,
 }: {
-  server: McpServer;
   tools: Record<string, IMCPTool>;
   resources: Record<string, IMCPResource>;
   prompts: Record<string, IMCPPrompt>;
 }) {
   Blockbench.addCSS(panelCSS);
 
-  // Setup the status bar
-  statusBarSetup(server);
+  // Stateless HTTP has no durable MCP client session to display. The status bar
+  // represents the local server surface only, not a fabricated connection count.
+  statusBarSetup();
 
   panel = new Panel("mcp_panel", {
     id: "mcp_panel",
@@ -39,41 +35,24 @@ export function uiSetup({
     resizable: true,
     component: {
       mounted() {
-        // Subscribe to session changes
-        // @ts-ignore
-        const vm = this;
-        unsubscribe = sessionManager.subscribe((sessions: Session[]) => {
-          vm.sessions = sessions.map((s: Session) => ({
-            id: s.id,
-            connectedAt: s.connectedAt,
-            lastActivity: s.lastActivity,
-            clientName: s.clientName,
-            clientVersion: s.clientVersion,
-          }));
-          vm.server.connected = sessions.length > 0;
-        });
-
         // Listen for override changes to refresh badge state
+        // @ts-ignore - Vue component context
+        const vm = this;
         const handler = () => vm.$forceUpdate();
         document.addEventListener(PROMPT_OVERRIDE_CHANGED, handler);
         overrideListener = () => document.removeEventListener(PROMPT_OVERRIDE_CHANGED, handler);
       },
       beforeDestroy() {
-        if (unsubscribe) {
-          unsubscribe();
-          unsubscribe = undefined;
-        }
         if (overrideListener) {
           overrideListener();
           overrideListener = undefined;
         }
       },
       data: () => ({
-        sessions: [] as Array<{ id: string; connectedAt: Date; lastActivity: Date; clientName?: string; clientVersion?: string }>,
         server: {
-          connected: false,
           name: "Blockbench MCP",
           version: VERSION,
+          transport: "Streamable HTTP (stateless)",
         },
         tools: Object.values(tools).map((tool) => ({
           name: tool.name,
@@ -93,7 +72,6 @@ export function uiSetup({
           status: prompt.status,
           argumentCount: Object.keys(prompt.arguments).length,
         })),
-        // Filter states
         toolsFilter: {
           search: "",
           showExperimental: true,
@@ -112,9 +90,7 @@ export function uiSetup({
           const { tools, toolsFilter } = this;
           const searchLower = toolsFilter.search.toLowerCase();
           return tools.filter((tool: { name: string; status: string }) => {
-            // Check status filter (stable always visible, experimental based on toggle)
             if (tool.status === "experimental" && !toolsFilter.showExperimental) return false;
-            // Check search filter (name only)
             if (searchLower && !tool.name.toLowerCase().includes(searchLower)) return false;
             return true;
           });
@@ -133,32 +109,18 @@ export function uiSetup({
           const { prompts, promptsFilter } = this;
           const searchLower = promptsFilter.search.toLowerCase();
           return prompts.filter((prompt: { name: string; status: string }) => {
-            // Check status filter (stable always visible, experimental based on toggle)
             if (prompt.status === "experimental" && !promptsFilter.showExperimental) return false;
-            // Check search filter (name only)
             if (searchLower && !prompt.name.toLowerCase().includes(searchLower)) return false;
             return true;
           });
         },
       },
       methods: {
-        // Expose tl() to Vue template
         tl(key: string, variables?: string | number | (string | number)[]): string {
           return tl(key, variables);
         },
         getDisplayName(toolName: string): string {
           return toolName.replace("blockbench_", "");
-        },
-        formatSessionId(session: { id: string; clientName?: string; clientVersion?: string }): string {
-          if (session.clientName) {
-            return session.clientVersion
-              ? `${session.clientName} v${session.clientVersion}`
-              : session.clientName;
-          }
-          return session.id.slice(0, 8) + "...";
-        },
-        formatTime(date: Date): string {
-          return new Date(date).toLocaleTimeString();
         },
         openToolTest(toolName: string): void {
           openToolTestDialog(toolName);

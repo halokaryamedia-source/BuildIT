@@ -6,7 +6,6 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
-import { createServer } from "@/server/server";
 import { tools, prompts, registerMcpProfile } from "@/server/tools";
 import {
   MCP_EXTENDED_FAMILIES_SETTING_ID,
@@ -16,14 +15,12 @@ import { resources } from "@/server";
 import { uiSetup, uiTeardown } from "@/ui";
 import { settingsSetup, settingsTeardown } from "@/ui/settings";
 import { setupI18n } from "@/ui/i18n";
-import { sessionManager } from "@/lib/sessions";
 import { initPromptLoader } from "@/lib/promptLoader";
-import type { NetServer, SessionTransports } from "@/server/net";
+import type { NetServer } from "@/server/net";
 import createNetServer from "@/server/net";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
-let sessionTransports: SessionTransports | null = null;
 
 BBPlugin.register("mcp", {
   version: VERSION,
@@ -52,9 +49,7 @@ BBPlugin.register("mcp", {
       return;
     }
 
-    // Initialize internationalization before any UI
     setupI18n();
-
     settingsSetup();
 
     // Bedrock Entity remains the default registration truth. The optional
@@ -75,35 +70,16 @@ BBPlugin.register("mcp", {
       console.error("[MCP] Prompt loader initialization failed:", err);
     }
 
-    // Create TCP server to handle HTTP requests
-    const toFiniteNumber = (raw: unknown, fallback: number): number => {
-      const n = Number(raw);
-      return Number.isFinite(n) ? n : fallback;
-    };
-    const sessionTimeoutMin = toFiniteNumber(
-      Settings.get("mcp_session_timeout"),
-      30
-    );
-    const sseHeartbeatSec = toFiniteNumber(
-      Settings.get("mcp_sse_heartbeat"),
-      15
-    );
-    [httpServer, sessionTransports] = createNetServer(net, {
+    // P1.4 default transport is request-owned/stateless Streamable HTTP on
+    // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
+    // configured at plugin lifecycle level.
+    httpServer = createNetServer(net, {
       port: Number(Settings.get("mcp_port") || 3000),
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
       host: "127.0.0.1",
-      keepAlive: {
-        sseHeartbeatIntervalMs: Math.max(0, sseHeartbeatSec) * 1000,
-      },
-      sessionConfig: {
-        inactivityTimeoutMs: Math.max(1, sessionTimeoutMin) * 60 * 1000,
-      },
     });
 
-    // Create a reference server for UI display purposes
-    const referenceServer = createServer();
     uiSetup({
-      server: referenceServer,
       tools,
       resources,
       prompts,
@@ -111,21 +87,10 @@ BBPlugin.register("mcp", {
   },
 
   onunload() {
-    // Close HTTP server
     if (httpServer) {
       httpServer.close();
       httpServer = null;
     }
-
-    // Close all session transports
-    const values = Array.from(sessionTransports?.values() ?? []);
-    for (const session of values) {
-      session.transport.close();
-    }
-    sessionTransports?.clear();
-
-    // Clear all sessions
-    sessionManager.clear();
 
     uiTeardown();
     settingsTeardown();

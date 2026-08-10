@@ -8,7 +8,6 @@ export function settingsSetup() {
   settings.push(
     new Setting("mcp_instructions", {
       name: tl("mcp.settings.instructions_name"),
-      // https://github.com/punkpeye/fastmcp?tab=readme-ov-file#providing-instructions
       description: tl("mcp.settings.instructions_desc"),
       type: "text",
       value:
@@ -50,26 +49,6 @@ export function settingsSetup() {
       value: false,
       category,
       icon: "extension",
-    }),
-    new Setting("mcp_session_timeout", {
-      name: tl("mcp.settings.session_timeout_name"),
-      description: tl("mcp.settings.session_timeout_desc"),
-      type: "number",
-      value: 30,
-      min: 1,
-      max: 1440,
-      category,
-      icon: "timer",
-    }),
-    new Setting("mcp_sse_heartbeat", {
-      name: tl("mcp.settings.sse_heartbeat_name"),
-      description: tl("mcp.settings.sse_heartbeat_desc"),
-      type: "number",
-      value: 15,
-      min: 0,
-      max: 600,
-      category,
-      icon: "favorite",
     })
   );
 }
