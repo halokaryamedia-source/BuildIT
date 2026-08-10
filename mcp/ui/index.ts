@@ -2,8 +2,6 @@ import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
 import {
-  PRODUCT_BUILD_CHANNEL,
-  PRODUCT_BUILD_REVISION,
   PRODUCT_NAME,
   PRODUCT_REPOSITORY,
 } from "@/lib/productIdentity";
@@ -64,8 +62,6 @@ export function uiSetup({
           name: PRODUCT_NAME,
           version: VERSION,
           repositoryUrl: PRODUCT_REPOSITORY,
-          build: PRODUCT_BUILD_REVISION,
-          channel: PRODUCT_BUILD_CHANNEL,
           profile,
           endpoint: `127.0.0.1:${Settings.get("mcp_port") || 3000}${Settings.get("mcp_endpoint") || "/bb-mcp"}`,
           transport: "Streamable HTTP (stateless JSON)",
