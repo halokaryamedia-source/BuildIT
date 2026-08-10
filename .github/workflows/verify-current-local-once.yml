@@ -1,0 +1,64 @@
+name: Verify Current Local Once
+
+on:
+  push:
+    paths:
+      - ".github/workflows/verify-current-local-once.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp
+
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies from lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        id: typecheck
+        continue-on-error: true
+        run: bun run typecheck
+
+      - name: Contract tests
+        id: tests
+        continue-on-error: true
+        run: bun run test
+
+      - name: Production build
+        id: build
+        continue-on-error: true
+        run: bun run build
+
+      - name: Generated docs freshness
+        id: docs
+        continue-on-error: true
+        run: bun run docs:check
+
+      - name: Report verification result
+        if: always()
+        env:
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          DOCS_OUTCOME: ${{ steps.docs.outcome }}
+        run: |
+          printf 'TYPECHECK=%s\nTESTS=%s\nBUILD=%s\nDOCS=%s\n' \
+            "$TYPECHECK_OUTCOME" "$TESTS_OUTCOME" "$BUILD_OUTCOME" "$DOCS_OUTCOME"
+          test "$TYPECHECK_OUTCOME" = success
+          test "$TESTS_OUTCOME" = success
+          test "$BUILD_OUTCOME" = success
