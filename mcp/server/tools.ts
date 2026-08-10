@@ -2,6 +2,11 @@
 /// <reference types="blockbench-types" />
 
 import { tools, prompts } from "@/lib/factories";
+import {
+  DEFAULT_MCP_REGISTRATION_PROFILE,
+  getRegistrationFamilies,
+  type McpRegistrationFamily,
+} from "@/lib/registrationProfile";
 
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
@@ -22,28 +27,40 @@ import { registerExportTools } from "./tools/export";
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
 
-// All registration functions - MUST be used to prevent tree-shaking
-const registrationFunctions = [
-  registerAnimationTools,
-  registerAnimationInspectionTools,
-  registerCameraTools,
-  registerCubesTools,
-  registerElementTools,
-  registerElementInspectionTools,
-  registerExportTools,
-  registerHistoryTools,
-  registerImportTools,
-  registerMaterialInstanceTools,
-  registerPaintTools,
-  registerProjectTools,
-  registerTextureTools,
-  registerUITools,
-  registerValidatorResources,
-];
+type RegistrationFunction = () => void;
 
-// Register the retained Bedrock Entity / cross-cutting tool surface immediately.
-for (const register of registrationFunctions) {
-  register();
+/**
+ * Registration ownership stays family-level. The profile selects which existing
+ * family registration functions are invoked; it does not introduce per-tool
+ * ACLs or a dynamic policy engine.
+ */
+const registrationFunctions: Record<
+  McpRegistrationFamily,
+  RegistrationFunction
+> = {
+  animation: registerAnimationTools,
+  animation_inspection: registerAnimationInspectionTools,
+  camera: registerCameraTools,
+  cubes: registerCubesTools,
+  elements: registerElementTools,
+  element_inspection: registerElementInspectionTools,
+  export: registerExportTools,
+  history: registerHistoryTools,
+  import: registerImportTools,
+  material_instances: registerMaterialInstanceTools,
+  paint: registerPaintTools,
+  project: registerProjectTools,
+  textures: registerTextureTools,
+  ui: registerUITools,
+  validator_resources: registerValidatorResources,
+};
+
+// Register exactly the default BlockIT Bedrock Entity profile at startup.
+// Generic import/UI fallback families remain compiled in source but are not
+// invoked by the default profile. P0.2 individual disabled flags still apply if
+// an explicit extended registration path invokes those families later.
+for (const family of getRegistrationFamilies(DEFAULT_MCP_REGISTRATION_PROFILE)) {
+  registrationFunctions[family]();
 }
 
 // Function to get tool count - called at runtime after registration
