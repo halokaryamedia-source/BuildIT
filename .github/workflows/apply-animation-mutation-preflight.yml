@@ -30,42 +30,54 @@ jobs:
           animation_path = Path("mcp/server/tools/animation.ts")
           text = animation_path.read_text(encoding="utf-8")
 
-          old_keyframes = '''  keyframes: z
-    .array(manageKeyframeDataSchema)
-    .describe("Keyframe data for the action."),'''
-          new_keyframes = '''  keyframes: z
-    .array(manageKeyframeDataSchema)
-    .min(1)
-    .describe("One or more keyframes for the action; empty mutation/selection requests are rejected."),'''
+          old_keyframes = "\n".join([
+              "  keyframes: z",
+              "    .array(manageKeyframeDataSchema)",
+              "    .describe(\"Keyframe data for the action.\"),",
+          ])
+          new_keyframes = "\n".join([
+              "  keyframes: z",
+              "    .array(manageKeyframeDataSchema)",
+              "    .min(1)",
+              "    .describe(\"One or more keyframes for the action; empty mutation/selection requests are rejected.\"),",
+          ])
           if text.count(old_keyframes) != 1:
               raise SystemExit("Unexpected manage_keyframes array shape")
           text = text.replace(old_keyframes, new_keyframes, 1)
 
-          old_timeline_tail = '''  range: animationTimelineRangeSchema
-    .optional()
-    .describe("Inclusive time range for select_range."),
-});'''
-          new_timeline_tail = '''  range: animationTimelineRangeSchema
-    .optional()
-    .describe("Inclusive time range for select_range."),
-}).refine(
-  (params) => params.action !== "loop" || params.loop_mode !== undefined,
-  {
-    message: "loop_mode is required for the loop action.",
-    path: ["loop_mode"],
-  }
-);'''
+          old_timeline_tail = "\n".join([
+              "  range: animationTimelineRangeSchema",
+              "    .optional()",
+              "    .describe(\"Inclusive time range for select_range.\"),",
+              "});",
+          ])
+          new_timeline_tail = "\n".join([
+              "  range: animationTimelineRangeSchema",
+              "    .optional()",
+              "    .describe(\"Inclusive time range for select_range.\"),",
+              "}).refine(",
+              "  (params) => params.action !== \"loop\" || params.loop_mode !== undefined,",
+              "  {",
+              "    message: \"loop_mode is required for the loop action.\",",
+              "    path: [\"loop_mode\"],",
+              "  }",
+              ");",
+          ])
           if text.count(old_timeline_tail) != 1:
               raise SystemExit("Unexpected animation timeline schema tail")
           text = text.replace(old_timeline_tail, new_timeline_tail, 1)
 
-          old_loop = '''        case "loop":
-          if (loop_mode && loop_mode !== animation.loop) {'''
-          new_loop = '''        case "loop":
-          if (loop_mode === undefined) {
-            throw new Error("Loop mode parameter required for loop action.");
-          }
-          if (loop_mode !== animation.loop) {'''
+          old_loop = "\n".join([
+              "        case \"loop\":",
+              "          if (loop_mode && loop_mode !== animation.loop) {",
+          ])
+          new_loop = "\n".join([
+              "        case \"loop\":",
+              "          if (loop_mode === undefined) {",
+              "            throw new Error(\"Loop mode parameter required for loop action.\");",
+              "          }",
+              "          if (loop_mode !== animation.loop) {",
+          ])
           if text.count(old_loop) != 1:
               raise SystemExit("Unexpected animation loop action shape")
           animation_path.write_text(text.replace(old_loop, new_loop, 1), encoding="utf-8")
@@ -73,31 +85,33 @@ jobs:
           test_path = Path("mcp/tests/animation-mutation-contract.test.ts")
           if test_path.exists():
               raise SystemExit("animation mutation contract test already exists")
-          test_path.write_text('''import { describe, expect, test } from "bun:test";
-import {
-  animationTimelineParameters,
-  manageKeyframesParameters,
-} from "@/server/tools/animation";
-
-describe("animation mutation contract", () => {
-  test("manage_keyframes rejects an empty target list", () => {
-    const result = manageKeyframesParameters.safeParse({
-      action: "create",
-      bone_name: "root",
-      channel: "rotation",
-      keyframes: [],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  test("timeline loop requires an explicit loop mode", () => {
-    expect(animationTimelineParameters.safeParse({ action: "loop" }).success).toBe(false);
-    expect(
-      animationTimelineParameters.safeParse({ action: "loop", loop_mode: "loop" }).success
-    ).toBe(true);
-  });
-});
-''', encoding="utf-8")
+          test_lines = [
+              'import { describe, expect, test } from "bun:test";',
+              'import {',
+              '  animationTimelineParameters,',
+              '  manageKeyframesParameters,',
+              '} from "@/server/tools/animation";',
+              '',
+              'describe("animation mutation contract", () => {',
+              '  test("manage_keyframes rejects an empty target list", () => {',
+              '    const result = manageKeyframesParameters.safeParse({',
+              '      action: "create",',
+              '      bone_name: "root",',
+              '      channel: "rotation",',
+              '      keyframes: [],',
+              '    });',
+              '    expect(result.success).toBe(false);',
+              '  });',
+              '',
+              '  test("timeline loop requires an explicit loop mode", () => {',
+              '    expect(animationTimelineParameters.safeParse({ action: "loop" }).success).toBe(false);',
+              '    expect(',
+              '      animationTimelineParameters.safeParse({ action: "loop", loop_mode: "loop" }).success',
+              '    ).toBe(true);',
+              '  });',
+              '});',
+          ]
+          test_path.write_text("\n".join(test_lines) + "\n", encoding="utf-8")
 
           next_path = Path("docs/knowledge/next-action.md")
           next_text = next_path.read_text(encoding="utf-8")
