@@ -47,6 +47,28 @@ jobs:
           PY
           python /tmp/p1_core_ownership.py
 
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("mcp/tests/p1-core-ownership.test.ts")
+          text = path.read_text()
+          replacements = {
+              'expect(cubes).toContain("resolveCoreCube(reference");': 'expect(cubes).toContain("resolveCoreCube, resolveCoreGroup, resolveCoreTexture");',
+              'expect(cubes).toContain("resolveCoreGroup(reference");': 'expect(cubes).toContain("return resolveCoreGroup(");',
+              'expect(cubes).toContain("resolveCoreTexture(reference");': 'expect(cubes).toContain("return resolveCoreTexture(");',
+              'expect(elements).toContain("resolveCoreGroup(reference");': 'expect(elements).toContain("resolveCoreGroup, resolveCoreTexture");',
+              'expect(elements).toContain("resolveCoreTexture(reference");': 'expect(elements).toContain("return resolveCoreTexture(");',
+              'expect(texture).toContain("resolveCoreCubeOrGroup(reference");': 'expect(texture).toContain("return resolveCoreCubeOrGroup(");',
+              'expect(animation).toContain("resolveCoreGroup(reference");': 'expect(animation).toContain("return resolveCoreGroup(");',
+              'expect(util).toContain("const texture = resolveCoreTexture(id,");': 'expect(util).toContain("const texture = resolveCoreTexture(");',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f"Expected assertion exactly once: {old}")
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+
       - name: Typecheck
         working-directory: mcp
         run: bun run typecheck
