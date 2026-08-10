@@ -78,6 +78,7 @@ BBPlugin.register("mcp", {
     [httpServer, sessionTransports] = createNetServer(net, {
       port: Number(Settings.get("mcp_port") || 3000),
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
+      host: "127.0.0.1",
       keepAlive: {
         sseHeartbeatIntervalMs: Math.max(0, sseHeartbeatSec) * 1000,
       },

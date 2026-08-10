@@ -61,12 +61,30 @@ function getStatusText (status: number): string {
     202: 'Accepted',
     204: 'No Content',
     400: 'Bad Request',
+    403: 'Forbidden',
     404: 'Not Found',
     405: 'Method Not Allowed',
     409: 'Conflict',
     500: 'Internal Server Error'
   }
   return texts[status] || 'Unknown'
+}
+
+function isAllowedLocalOrigin (origin: string): boolean {
+  try {
+    const parsed = new URL(origin)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+
+    const hostname = parsed.hostname.toLowerCase()
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '[::1]' ||
+      hostname === '::1'
+    )
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -97,6 +115,7 @@ export default function createNetServer (
   {
     port,
     endpoint,
+    host = '127.0.0.1',
     keepAlive = DEFAULT_KEEP_ALIVE,
     sessionConfig
   }: {
@@ -251,8 +270,27 @@ export default function createNetServer (
         const body = buffer.subarray(bodyStart, requestEnd).toString()
         buffer = buffer.subarray(requestEnd)
 
+        const origin = headers['origin']
+        if (origin !== undefined && !isAllowedLocalOrigin(origin)) {
+          sendResponse(
+            socket,
+            403,
+            { 'content-type': 'application/json' },
+            JSON.stringify({
+              jsonrpc: '2.0',
+              error: {
+                code: -32000,
+                message: 'Forbidden: invalid Origin header'
+              },
+              id: null
+            }),
+            headers['connection']
+          )
+          continue
+        }
+
         // Build Web Standard Request
-        const url = `http://localhost:${port}${path}`
+        const url = `http://${host}:${port}${path}`
         const webHeaders = new Headers()
         for (const [key, value] of Object.entries(headers)) {
           webHeaders.set(key, value)
@@ -624,8 +662,8 @@ export default function createNetServer (
     }
   })
 
-  httpServer.listen(port, () => {
-    console.log(`[MCP] Server listening on http://localhost:${port}${endpoint}`)
+  httpServer.listen(port, host, () => {
+    console.log(`[MCP] Server listening on http://${host}:${port}${endpoint}`)
   })
 
   httpServer.on('error', (err: Error) => {
