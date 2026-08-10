@@ -1,0 +1,103 @@
+name: Patch Retained Animation Types
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-animation-types.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+
+      - name: Apply exact Animation type patches
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("mcp/server/tools/animation.ts")
+          text = path.read_text()
+
+          def replace_once(old, new):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"expected exactly one match for {old!r}, found {count}")
+              text = text.replace(old, new, 1)
+
+          def replace_all(old, new):
+              global text
+              count = text.count(old)
+              if count < 1:
+                  raise SystemExit(f"expected at least one match for {old!r}")
+              text = text.replace(old, new)
+              if old in text:
+                  raise SystemExit(f"replacement incomplete for {old!r}")
+              print(f"replaced {count} occurrence(s): {old} -> {new}")
+
+          # Official Blockbench typings explicitly direct registry access through AnimationItem
+          # because the runtime Animation global collides with lib.dom Animation.
+          replace_all("Animation.selected", "AnimationItem.selected")
+          replace_all("Animation.all", "AnimationItem.all")
+
+          # ToolSpec intentionally erases concrete Zod generics for docs. Re-state the same
+          # runtime schema in each registration so execute() receives its real inferred type.
+          schema_by_index = {
+              0: "createAnimationParameters",
+              1: "manageKeyframesParameters",
+              2: "animationGraphEditorParameters",
+              3: "boneRiggingParameters",
+              4: "animationTimelineParameters",
+              5: "batchKeyframeOperationsParameters",
+              6: "animationCopyPasteParameters",
+          }
+          for index, schema in schema_by_index.items():
+              replace_once(
+                  f"...animationToolDocs[{index}],\n    async execute",
+                  f"...animationToolDocs[{index}],\n    parameters: {schema},\n    async execute",
+              )
+
+          # _Keyframe.flip accepts x/y/z, not numeric axis indexes.
+          replace_once(
+              '''            const axisIndex =
+              parameters.mirror_axis === "x"
+                ? 0
+                : parameters.mirror_axis === "y"
+                ? 1
+                : 2;
+            keyframes.forEach((kf: _Keyframe) => {
+              kf.flip(axisIndex);
+            });''',
+              '''            const mirrorAxis = parameters.mirror_axis;
+            if (!mirrorAxis) {
+              throw new Error("Mirror axis required for mirror operation.");
+            }
+            keyframes.forEach((kf: _Keyframe) => {
+              kf.flip(mirrorAxis);
+            });'''
+          )
+
+          # Clipboard data is local MCP state; define the channel collection at the read boundary.
+          replace_once(
+              "Object.entries(clipboardData.channels).forEach(",
+              "Object.entries(clipboardData.channels as Record<string, any[]>).forEach(",
+          )
+
+          path.write_text(text)
+          PY
+
+      - name: Commit retained Animation patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mcp/server/tools/animation.ts
+          git diff --cached --check
+          git commit -m "fix: align retained Bedrock Animation types"
+          git push origin Local
