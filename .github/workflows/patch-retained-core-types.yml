@@ -1,0 +1,126 @@
+name: Patch Retained Core Types
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-retained-core-types.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+
+      - name: Apply exact retained-core patches
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected exactly one match, found {count}")
+              p.write_text(text.replace(old, new, 1))
+
+          replace_exact(
+              "mcp/server/tools/camera.ts",
+              '''      if (angle.zoom !== undefined && preview.camera.isOrthographicCamera) {
+                preview.camera.zoom = angle.zoom;
+                preview.camera.updateProjectionMatrix();
+                preview.controls.update();
+              }''',
+              '''      if (angle.zoom !== undefined && preview.isOrtho) {
+                preview.camOrtho.zoom = angle.zoom;
+                preview.camOrtho.updateProjectionMatrix();
+                preview.controls.update();
+              }'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/cubes.ts",
+              '''    }> = updates.map((update) => {''',
+              '''    }> = updates.map((update: BatchUpdate) => {'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/element.ts",
+              '''function resolveUniqueDestructiveElement(reference: string): OutlinerElement {
+            const candidates = new Map<string, OutlinerElement>();''',
+              '''type ResolvedElement = OutlinerElement | Group;
+
+          function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
+            const candidates = new Map<string, ResolvedElement>();'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/element.ts",
+              '''          from: cube.from.map((v, i) => v + offset[i]),
+                    to: cube.to.map((v, i) => v + offset[i]),
+                    origin: cube.origin.map((v, i) => v + offset[i]),''',
+              '''          from: [
+                      cube.from[0] + offset[0],
+                      cube.from[1] + offset[1],
+                      cube.from[2] + offset[2],
+                    ],
+                    to: [
+                      cube.to[0] + offset[0],
+                      cube.to[1] + offset[1],
+                      cube.to[2] + offset[2],
+                    ],
+                    origin: [
+                      cube.origin[0] + offset[0],
+                      cube.origin[1] + offset[1],
+                      cube.origin[2] + offset[2],
+                    ],'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/element.ts",
+              '''          origin: group.origin.map((v, i) => v + offset[i]),''',
+              '''          origin: [
+                      group.origin[0] + offset[0],
+                      group.origin[1] + offset[1],
+                      group.origin[2] + offset[2],
+                    ],'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/element.ts",
+              '''      Undo.initEdit({ elements: [element], outliner: true, collections: [] });
+
+                try {
+                  element.extend({ name: new_name });''',
+              '''      Undo.initEdit({
+                  elements: element instanceof Group ? [] : [element],
+                  groups: element instanceof Group ? [element] : [],
+                  outliner: true,
+                  collections: [],
+                });
+
+                try {
+                  element.name = new_name;'''
+          )
+
+          replace_exact(
+              "mcp/server/tools/element.ts",
+              '''        el.select?.({ shiftKey: true });''',
+              '''        el.select?.(new MouseEvent("click", { shiftKey: true }));'''
+          )
+          PY
+
+      - name: Commit exact retained-core patches
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mcp/server/tools/camera.ts mcp/server/tools/cubes.ts mcp/server/tools/element.ts
+          git diff --cached --check
+          git commit -m "fix: align retained Bedrock core types"
+          git push origin Local
