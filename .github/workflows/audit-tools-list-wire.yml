@@ -1,0 +1,79 @@
+name: Audit MCP Tools List Wire Payload
+
+on:
+  push:
+    paths:
+      - ".github/workflows/audit-tools-list-wire.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure real stateless tools/list response
+        run: |
+          bun - <<'BUN'
+          import { createServer as createTcpServer } from 'node:net';
+          import './mcp/server/tools.ts';
+          import createNetServer from './mcp/server/net.ts';
+
+          const host = '127.0.0.1';
+          const endpoint = '/bb-mcp';
+          const protocolVersion = '2025-06-18';
+          const server = createNetServer({ createServer: (cb) => createTcpServer(cb) }, { port: 0, endpoint, host });
+          if (!server.listening) await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
+          const address = server.address();
+          if (!address || typeof address === 'string') throw new Error('Expected TCP address');
+          const base = `http://${host}:${address.port}${endpoint}`;
+          const post = async (body, withVersion = false) => {
+            const headers = new Headers({
+              accept: 'application/json, text/event-stream',
+              'content-type': 'application/json',
+              connection: 'close'
+            });
+            if (withVersion) headers.set('mcp-protocol-version', protocolVersion);
+            return fetch(base, { method: 'POST', headers, body: JSON.stringify(body) });
+          };
+          try {
+            const init = await post({ jsonrpc:'2.0', id:1, method:'initialize', params:{ protocolVersion, capabilities:{}, clientInfo:{ name:'wire-audit', version:'1' } } });
+            if (!init.ok) throw new Error(`initialize ${init.status}: ${await init.text()}`);
+            await init.text();
+            const list = await post({ jsonrpc:'2.0', id:2, method:'tools/list', params:{} }, true);
+            const text = await list.text();
+            if (!list.ok) throw new Error(`tools/list ${list.status}: ${text}`);
+            const body = JSON.parse(text);
+            const tools = body.result?.tools ?? [];
+            const encodedTools = JSON.stringify(tools);
+            const descriptionChars = tools.reduce((n, t) => n + (t.description?.length ?? 0), 0);
+            const schemaChars = tools.reduce((n, t) => n + JSON.stringify(t.inputSchema ?? {}).length, 0);
+            console.log('TOOLS_LIST_HTTP_BODY_CHARS', text.length);
+            console.log('TOOLS_ARRAY_CHARS', encodedTools.length);
+            console.log('TOOL_COUNT', tools.length);
+            console.log('TOOL_DESCRIPTION_CHARS', descriptionChars);
+            console.log('INPUT_SCHEMA_CHARS', schemaChars);
+            console.log('AVG_TOOL_CHARS', Math.round(encodedTools.length / Math.max(tools.length, 1)));
+            const rows = tools.map((t) => ({
+              name: t.name,
+              chars: JSON.stringify(t).length,
+              description: t.description?.length ?? 0,
+              schema: JSON.stringify(t.inputSchema ?? {}).length
+            })).sort((a,b) => b.chars - a.chars);
+            console.log('TOP_20');
+            for (const row of rows.slice(0,20)) console.log(JSON.stringify(row));
+          } finally {
+            server.closeActiveSockets();
+            if (server.listening) await new Promise((resolve) => server.close(() => resolve()));
+          }
+          BUN
