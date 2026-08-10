@@ -204,6 +204,44 @@ export function openPromptPreviewDialog(promptName: string) {
   const hasArgs = promptDef.argsSchema && Object.keys(promptDef.argsSchema).length > 0;
   const formConfig = hasArgs ? zodSchemaToFormConfig(promptDef.argsSchema!) : {};
 
+  async function generatePromptPreview(
+    formResult: Record<string, unknown>
+  ): Promise<void> {
+    // Filter out empty values for optional args
+    const args: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(formResult)) {
+      if (value !== "" && value !== undefined && value !== null) {
+        args[key] = value;
+      }
+    }
+
+    Blockbench.showQuickMessage(tl("mcp.dialog.generating_prompt"), 1000);
+
+    try {
+      const result = await promptDef.generate(args);
+
+      // MCP prompt content is a ContentBlock union, not text-only. Render text
+      // blocks directly and preserve other valid MCP content without guessing at
+      // fields that do not exist on their content type.
+      const content = result.messages
+        .map((msg) => {
+          const roleLabel = msg.role === "user"
+            ? tl("mcp.dialog.role_user")
+            : tl("mcp.dialog.role_assistant");
+          const renderedContent = msg.content.type === "text"
+            ? msg.content.text
+            : JSON.stringify(msg.content, null, 2);
+          return `[${roleLabel}]\n${renderedContent}`;
+        })
+        .join("\n\n---\n\n");
+
+      showPromptContentDialog(promptName, content);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      showPromptContentDialog(promptName, `Error: ${errorMessage}`, true);
+    }
+  }
+
   currentDialog = new Dialog({
     id: "mcp_prompt_preview",
     title: promptDef.title || promptName,
@@ -216,36 +254,8 @@ export function openPromptPreviewDialog(promptName: string) {
     buttons: [tl("mcp.dialog.generate_prompt"), tl("mcp.dialog.cancel")],
     confirmIndex: 0,
     cancelIndex: 1,
-    async onConfirm(formResult: Record<string, unknown>) {
-      // Filter out empty values for optional args
-      const args: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(formResult)) {
-        if (value !== "" && value !== undefined && value !== null) {
-          args[key] = value;
-        }
-      }
-
-      Blockbench.showQuickMessage(tl("mcp.dialog.generating_prompt"), 1000);
-
-      try {
-        const result = await promptDef.generate(args);
-
-        // Extract text content from messages
-        const content = result.messages
-          .map((msg) => {
-            const roleLabel = msg.role === "user" ? tl("mcp.dialog.role_user") : tl("mcp.dialog.role_assistant");
-            const text = typeof msg.content === "string"
-              ? msg.content
-              : msg.content.text;
-            return `[${roleLabel}]\n${text}`;
-          })
-          .join("\n\n---\n\n");
-
-        showPromptContentDialog(promptName, content);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        showPromptContentDialog(promptName, `Error: ${errorMessage}`, true);
-      }
+    onConfirm(formResult: Record<string, unknown>) {
+      void generatePromptPreview(formResult);
     },
   });
 
