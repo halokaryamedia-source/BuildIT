@@ -47,6 +47,20 @@ declare global {
     subsurface_value: number;
   }
 
+  /** Runtime Locator fields present in Blockbench's official locator type. */
+  interface Locator {
+    position: ArrayVector3;
+    rotation: ArrayVector3;
+    ignore_inherited_scale: boolean;
+    visibility: boolean;
+  }
+
+  /** Runtime Null Object fields omitted from the published declaration. */
+  interface NullObject {
+    ik_source: string;
+    visibility: boolean;
+  }
+
   /** Event fields read by Blockbench's native Painter stroke lifecycle. */
   interface BlockbenchRuntimePaintEvent {
     button?: number;
