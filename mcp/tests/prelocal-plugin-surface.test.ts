@@ -47,6 +47,21 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(readme).toContain("Do **not** use the upstream hosted");
   });
 
+  test("panel identity stays minimal without build fingerprint state", async () => {
+    const panel = await source("ui/panel.html");
+    const uiSource = await source("ui/index.ts");
+    const identitySource = await source("lib/productIdentity.ts");
+    const buildSource = await source("build/index.ts");
+
+    expect(panel).not.toContain("<dt>Build</dt>");
+    expect(uiSource).not.toContain("PRODUCT_BUILD_REVISION");
+    expect(uiSource).not.toContain("PRODUCT_BUILD_CHANNEL");
+    expect(identitySource).not.toContain("BUILD_REVISION");
+    expect(identitySource).not.toContain("BUILD_CHANNEL");
+    expect(buildSource).not.toContain("GITHUB_SHA");
+    expect(buildSource).not.toContain("BLOCKIT_BUILD_CHANNEL");
+  });
+
   test("panel count language reflects MCP exposure instead of visible filter count", async () => {
     const panel = await source("ui/panel.html");
     const uiSource = await source("ui/index.ts");
