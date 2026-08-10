@@ -7,7 +7,9 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 const MCP_URL = "http://127.0.0.1:3000/bb-mcp";
-const PROTOCOL_VERSION = "2025-11-25";
+// Current Codex legacy Streamable HTTP startup explicitly requests 2025-06-18.
+// The pinned TypeScript SDK v1.25.3 supports this revision alongside 2025-11-25.
+const PROTOCOL_VERSION = "2025-06-18";
 
 function createFixtureServer(): McpServer {
   const server = new McpServer({
