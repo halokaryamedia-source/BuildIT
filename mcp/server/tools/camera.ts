@@ -52,16 +52,31 @@ export const setCameraAngleParameters = z.object({
   zoom: z.number().positive().optional().describe("Orthographic camera zoom."),
 });
 
+const finiteFramingCoordinateSchema = z.number().finite();
+
 const explicitFramingSchema = z
   .object({
     mode: z.literal("explicit"),
-    min: z.tuple([z.number(), z.number(), z.number()]),
-    max: z.tuple([z.number(), z.number(), z.number()]),
+    min: z.tuple([
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+    ]),
+    max: z.tuple([
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+    ]),
   })
   .refine(
-    (value) => value.max.every((entry, axis) => entry > value.min[axis]),
+    (value) =>
+      value.max.every((entry, axis) => {
+        const span = entry - value.min[axis];
+        return span > 0 && Number.isFinite(span);
+      }),
     {
-      message: "Each explicit max axis must be greater than min.",
+      message:
+        "Each explicit max axis must be greater than min and produce a finite span.",
       path: ["max"],
     }
   );

@@ -216,6 +216,8 @@ No-loss wire cleanup also removes exact duplicate Cube correction aliases (`cube
 
 The final pre-local **Asset Authoring Usage Slimming** adds a dedicated asset-authoring fast path that skips repository-development boot context, `development-brief`, and unrelated specialists unless the active modelling decision needs them. The BlockIT orchestrator and modelling skill are compact operating contracts, coherent Cube/view batches are preferred where already justified, redundant post-mutation reads are avoided when a mutation already returns the required authored state, high-frequency JSON text is compact, and `export_model` defaults to metadata-only content return when writing to a filesystem path. No Bedrock capability/profile, visual gate, or local-proof requirement was removed.
 
+A bounded GitHub-only **canonical framing input hardening** now rejects non-finite explicit target-envelope coordinates and finite endpoints whose subtraction would produce a non-finite span before camera math runs. This closes an MCP boundary defect without changing canonical camera behavior, framing policy, or the local visual-proof requirement.
+
 **Proof boundary:** modelling-effectiveness CI tests are source/contract regression proof. They are not behavioral proof that Codex follows the workflow, and they are not visual proof that a live model resembles its reference.
 
 The next authoritative modelling-effectiveness step is:
