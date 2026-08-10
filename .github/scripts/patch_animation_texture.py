@@ -1,0 +1,255 @@
+from pathlib import Path
+import re
+
+
+def replace_once(text: str, old: str, new: str, label: str) -> str:
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f"{label}: expected one match, found {count}")
+    return text.replace(old, new, 1)
+
+
+# Animation: keep all Bedrock behavior, close remaining strict types.
+ap = Path("mcp/server/tools/animation.ts")
+a = ap.read_text()
+
+helper_anchor = 'type TransformChannel = "rotation" | "position" | "scale";'
+helper = '''type TransformChannel = "rotation" | "position" | "scale";
+
+function toArrayVector3(values: readonly number[]): ArrayVector3 {
+  if (values.length !== 3) {
+    throw new Error(`Expected exactly 3 vector components, got ${values.length}.`);
+  }
+  return [values[0], values[1], values[2]];
+}'''
+a = replace_once(a, helper_anchor, helper, "animation vector helper")
+a = a.replace(
+    '(candidate) => Math.abs(candidate.time - kf.time) < 0.001',
+    '(candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001',
+)
+
+for field in ["bezier_left_time", "bezier_left_value", "bezier_right_time", "bezier_right_value"]:
+    source_field = field.replace("bezier_", "")
+    a = a.replace(
+        f"keyframe.{field} = kf.bezier_handles.{source_field};",
+        f"keyframe.{field} = toArrayVector3(kf.bezier_handles.{source_field});",
+    )
+
+a = a.replace(
+    "const keyframes = animator[channel].filter((kf) => {",
+    "const keyframes = (animator[channel] as _Keyframe[]).filter((kf: _Keyframe) => {",
+)
+a = a.replace(
+    "keyframes.forEach((kf, index) => {",
+    "keyframes.forEach((kf: _Keyframe, index: number) => {",
+)
+a = replace_once(
+    a,
+    "origin: bone_data.origin ?? [0, 0, 0],\n              rotation: bone_data.rotation ?? [0, 0, 0],",
+    "origin: bone_data.origin ? toArrayVector3(bone_data.origin) : [0, 0, 0],\n              rotation: bone_data.rotation ? toArrayVector3(bone_data.rotation) : [0, 0, 0],",
+    "animation group vectors",
+)
+a = replace_once(
+    a,
+    "targetBone!.transferOrigin(bone_data.origin!);",
+    "targetBone!.transferOrigin(toArrayVector3(bone_data.origin!));",
+    "animation pivot vector",
+)
+a = replace_once(
+    a,
+    '''            let keyframes = animator[channel];
+            if (source.time_range) {
+              keyframes = keyframes.filter(
+                (kf) =>
+                  kf.time >= source.time_range.start &&
+                  kf.time <= source.time_range.end
+              );
+            }
+
+            copiedData.channels[channel] = keyframes.map((kf) => ({''',
+    '''            let keyframes = animator[channel] as _Keyframe[];
+            const timeRange = source.time_range;
+            if (timeRange) {
+              keyframes = keyframes.filter(
+                (kf: _Keyframe) =>
+                  kf.time >= timeRange.start &&
+                  kf.time <= timeRange.end
+              );
+            }
+
+            copiedData.channels[channel] = keyframes.map((kf: _Keyframe) => ({''',
+    "animation clipboard range",
+)
+ap.write_text(a)
+
+
+# Texture: keep Texture/PBR; remove only generic Mesh mixed branches.
+tp = Path("mcp/server/tools/texture.ts")
+t = tp.read_text()
+
+t = t.replace(
+    '"Required Cube, Mesh, or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported element types."',
+    '"Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types."',
+)
+t = t.replace(
+    '"Applies one explicit texture to one explicit Cube, Mesh, or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Mesh/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets retain the existing behavior of applying to all descendant Cubes/Meshes."',
+    '"Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface."',
+)
+
+resolver_pattern = re.compile(
+    r'type ApplyTextureElement = Cube \| Mesh \| Group;.*?function resolveApplyTextureTexture\(reference: string\): Texture \{',
+    re.S,
+)
+resolver_replacement = '''type ApplyTextureElement = Cube | Group;
+
+function applyTextureElementType(
+  element: ApplyTextureElement
+): "cube" | "group" {
+  return element instanceof Cube ? "cube" : "group";
+}
+
+function resolveApplyTextureElement(reference: string): ApplyTextureElement {
+  const candidates: ApplyTextureElement[] = [
+    ...(Cube.all ?? []),
+    ...(Group.all ?? []),
+  ];
+
+  const uuidMatch = candidates.find((element) => element.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = candidates.filter((element) => element.name === reference);
+  if (nameMatches.length === 1) return nameMatches[0];
+
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Element name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((element) => `${applyTextureElementType(element)} ${element.name} (${element.uuid})`)
+        .join(", ")}`
+    );
+  }
+
+  throw new Error(
+    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID before applying a texture.`
+  );
+}
+
+function resolveApplyTextureTexture(reference: string): Texture {'''
+t, count = resolver_pattern.subn(resolver_replacement, t, count=1)
+if count != 1:
+    raise SystemExit(f"texture resolver: expected one match, found {count}")
+
+apply_start = t.index("      // Resolve `id` to the concrete set of cubes/meshes to texture.")
+apply_end_marker = "      // Undo must capture the element face-texture state, not just outliner."
+apply_end = t.index(apply_end_marker, apply_start)
+new_apply = '''      // Resolve the target to concrete Bedrock Cube geometry.
+      // Group scopes recurse through Groups and collect descendant Cubes only.
+      const targets: Cube[] = [];
+      if (element instanceof Group) {
+        const collectDescendants = (group: Group) => {
+          for (const child of group.children ?? []) {
+            if (child instanceof Cube) {
+              targets.push(child);
+              continue;
+            }
+            if (child instanceof Group) collectDescendants(child);
+          }
+        };
+        collectDescendants(element);
+      } else {
+        targets.push(element);
+      }
+
+      if (targets.length === 0) {
+        throw new Error(`Element "${id}" resolved to no paintable Bedrock Cubes.`);
+      }
+
+      // Save prior direct selection so the call remains non-destructive to UI state.
+      const prevCubeSelection = [...Cube.selected];
+      const prevGroupSelection = [...Group.selected];
+
+'''
+t = t[:apply_start] + new_apply + t[apply_end:]
+
+selection_pattern = re.compile(
+    r'      try \{\n        try \{\n          // Replace selection with the resolved targets so Texture\.apply\(\).*?        Undo\.finishEdit\("Agent applied texture"\);',
+    re.S,
+)
+selection_replacement = '''      try {
+        try {
+          // Replace selection with exactly the resolved Cube targets so Texture.apply()
+          // cannot be affected by unrelated caller selection.
+          Cube.all.forEach((cube: Cube) => {
+            if (cube.selected) cube.unselect?.();
+          });
+          Group.selected.slice().forEach((group: Group) => group.unselect());
+
+          for (const target of targets) {
+            target.select?.(new MouseEvent("click", { shiftKey: true }));
+          }
+          updateSelection();
+
+          projectTexture.select();
+          Texture.selected?.apply(
+            applyTo === "none" ? false : applyTo === "all" ? true : "blank"
+          );
+          projectTexture.updateChangesAfterEdit();
+        } finally {
+          Cube.all.forEach((cube: Cube) => {
+            if (cube.selected) cube.unselect?.();
+          });
+          Group.selected.slice().forEach((group: Group) => group.unselect());
+
+          for (const cube of prevCubeSelection) {
+            cube.select?.(new MouseEvent("click", { shiftKey: true }));
+          }
+          for (const group of prevGroupSelection) {
+            group.markAsSelected(false);
+          }
+          updateSelection();
+        }
+
+        Undo.finishEdit("Agent applied texture");'''
+t, count = selection_pattern.subn(selection_replacement, t, count=1)
+if count != 1:
+    raise SystemExit(f"texture selection block: expected one match, found {count}")
+
+t = t.replace(
+    'return `Applied texture "${projectTexture.name}" to ${targets.length} element(s) scoped by "${id}" (${element instanceof Group ? "group" : element instanceof Cube ? "cube" : "mesh"}).`;',
+    'return `Applied texture "${projectTexture.name}" to ${targets.length} Bedrock Cube(s) scoped by "${id}" (${element instanceof Group ? "group" : "cube"}).`;',
+)
+
+schema_by_index = {
+    0: "createTextureParameters",
+    1: "applyTextureParameters",
+    2: "addTextureGroupParameters",
+    3: "listTexturesParameters",
+    4: "getTextureParameters",
+    5: "createPbrMaterialParameters",
+    6: "configureMaterialParameters",
+    7: "listMaterialsParameters",
+    8: "getMaterialInfoParameters",
+    9: "importTextureSetParameters",
+    10: "assignTextureChannelParameters",
+    11: "saveMaterialConfigParameters",
+    12: "activateTextureParameters",
+}
+for index, schema in schema_by_index.items():
+    old = f"...textureToolDocs[{index}],\n    async execute"
+    new = f"...textureToolDocs[{index}],\n    parameters: {schema},\n    async execute"
+    if old not in t:
+        raise SystemExit(f"texture schema {index}: registration pattern missing")
+    t = t.replace(old, new, 1)
+
+t = replace_once(
+    t,
+    '''      // @ts-ignore - fs module available via Blockbench
+      const fs = requireNativeModule("fs");
+      if (!fs.existsSync(path)) {''',
+    '''      const fs = requireNativeModule("fs");
+      if (!fs) {
+        throw new Error("File system access was denied. Cannot import texture_set.json.");
+      }
+      if (!fs.existsSync(path)) {''',
+    "texture fs guard",
+)
+tp.write_text(t)
