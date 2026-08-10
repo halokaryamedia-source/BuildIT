@@ -2,7 +2,11 @@ import { z } from "zod";
 import type { IMCPTool, IMCPPrompt, IMCPResource, StatusType } from "@/types";
 import { getServer } from "@/server/server";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
+import type {
+  GetPromptResult,
+  PromptArgument,
+  ToolAnnotations,
+} from "@modelcontextprotocol/sdk/types.js";
 
 /**
  * Declarative tool spec for documentation and registration.
@@ -91,16 +95,20 @@ const toolDefinitions: Record<string, ToolDefinition> = {};
  * The original complete schema is retained separately for runtime validation.
  */
 function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
-  const def = schema._def as { typeName?: string; schema?: z.ZodType; shape?: () => Record<string, z.ZodType> };
-  
+  const def = schema._def as {
+    typeName?: string;
+    schema?: z.ZodType;
+    shape?: () => Record<string, z.ZodType>;
+  };
+
   if (def.typeName === "ZodObject") {
     return def.shape?.() ?? {};
   }
-  
+
   if (def.typeName === "ZodEffects" && def.schema) {
     return extractShape(def.schema);
   }
-  
+
   return {};
 }
 
@@ -178,7 +186,7 @@ export function createTool<T extends z.ZodType>(
         const reportProgress: ToolContext["reportProgress"] = () => {};
 
         const context: ToolContext = { reportProgress };
-        const validatedArgs = await tool.parameters.parseAsync(args) as ToolArgs;
+        const validatedArgs = (await tool.parameters.parseAsync(args)) as ToolArgs;
         const result = await tool.execute(validatedArgs, context);
 
         // Normalize result to MCP CallToolResult format
@@ -261,7 +269,10 @@ export function registerToolsOnServer(server: unknown) {
         const reportProgress: ToolContext["reportProgress"] = () => {};
         const context: ToolContext = { reportProgress };
         const validatedArgs = await toolDef.parameterSchema.parseAsync(args);
-        const result = await toolDef.execute(validatedArgs as Record<string, unknown>, context);
+        const result = await toolDef.execute(
+          validatedArgs as Record<string, unknown>,
+          context
+        );
 
         if (typeof result === "string") {
           return {
@@ -292,13 +303,21 @@ interface ResourceDefinition {
     description?: string;
   };
   listCallback?: () => Promise<{
-    resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+    resources: Array<{
+      uri: string;
+      name: string;
+      description?: string;
+      mimeType?: string;
+    }>;
   }>;
   readCallback: (
     uri: URL,
     variables: Record<string, string>
   ) => Promise<{
-    contents: Array<{ uri: string; text: string; mimeType?: string } | { uri: string; blob: string; mimeType?: string }>;
+    contents: Array<
+      | { uri: string; text: string; mimeType?: string }
+      | { uri: string; blob: string; mimeType?: string }
+    >;
   }>;
 }
 
@@ -322,13 +341,21 @@ export function createResource(
     title?: string;
     description: string;
     listCallback?: () => Promise<{
-      resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+      resources: Array<{
+        uri: string;
+        name: string;
+        description?: string;
+        mimeType?: string;
+      }>;
     }>;
     readCallback: (
       uri: URL,
       variables: Record<string, string>
     ) => Promise<{
-      contents: Array<{ uri: string; text: string; mimeType?: string } | { uri: string; blob: string; mimeType?: string }>;
+      contents: Array<
+        | { uri: string; text: string; mimeType?: string }
+        | { uri: string; blob: string; mimeType?: string }
+      >;
     }>;
   }
 ) {
@@ -367,7 +394,10 @@ export function createResource(
           uri: URL,
           variables: Record<string, string | string[]>
         ) => Promise<{
-          contents: Array<{ uri: string; text: string; mimeType?: string } | { uri: string; blob: string; mimeType?: string }>;
+          contents: Array<
+            | { uri: string; text: string; mimeType?: string }
+            | { uri: string; blob: string; mimeType?: string }
+          >;
         }>
       ) => void;
     }
@@ -427,7 +457,10 @@ export function registerResourcesOnServer(server: unknown) {
         uri: URL,
         variables: Record<string, string | string[]>
       ) => Promise<{
-        contents: Array<{ uri: string; text: string; mimeType?: string } | { uri: string; blob: string; mimeType?: string }>;
+        contents: Array<
+          | { uri: string; text: string; mimeType?: string }
+          | { uri: string; blob: string; mimeType?: string }
+        >;
       }>
     ) => void;
   };
@@ -435,7 +468,9 @@ export function registerResourcesOnServer(server: unknown) {
   for (const [name, resourceDef] of Object.entries(resourceDefinitions)) {
     typedServer.registerResource(
       name,
-      new ResourceTemplate(resourceDef.uriTemplate, { list: resourceDef.listCallback }),
+      new ResourceTemplate(resourceDef.uriTemplate, {
+        list: resourceDef.listCallback,
+      }),
       resourceDef.metadata,
       async (uri: URL, variables: Record<string, string | string[]>) => {
         const normalizedVariables = Object.fromEntries(
@@ -461,15 +496,22 @@ interface PromptDefinition {
   title: string;
   description: string;
   argsSchema?: Record<string, z.ZodType>;
-  generate: (args: Record<string, unknown>) => Promise<{
-    messages: Array<{
-      role: "user" | "assistant";
-      content: { type: string; text: string };
-    }>;
-  }>;
+  generate: (args: Record<string, unknown>) => Promise<GetPromptResult>;
 }
 
 const promptDefinitions: Record<string, PromptDefinition> = {};
+
+function promptArgumentsFromShape(
+  shape: z.ZodRawShape | undefined
+): PromptArgument[] {
+  if (!shape) return [];
+
+  return Object.entries(shape).map(([name, field]) => ({
+    name,
+    description: field.description,
+    required: !field.isOptional(),
+  }));
+}
 
 /**
  * Creates a new MCP prompt and registers it with the server using the official SDK.
@@ -491,19 +533,7 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     argsSchema?: z.ZodObject<T>;
     generate?: (
       args: z.infer<z.ZodObject<T>>
-    ) =>
-      | {
-      messages: Array<{
-        role: "user" | "assistant";
-        content: { type: string; text: string };
-      }>;
-    }
-      | Promise<{
-          messages: Array<{
-            role: "user" | "assistant";
-            content: { type: string; text: string };
-          }>;
-        }>;
+    ) => GetPromptResult | Promise<GetPromptResult>;
   },
   status: IMCPPrompt["status"] = "stable",
   enabled: boolean = true
@@ -512,36 +542,50 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     throw new Error(`Prompt with name "${name}" already exists.`);
   }
 
+  const argsShape = prompt.argsSchema?.shape;
+
   // Store prompt definition for session reconstruction
-  if (enabled && prompt.generate && prompt.argsSchema) {
+  if (enabled && prompt.generate && argsShape) {
     const promptDef: PromptDefinition = {
       name,
       title: prompt.title || prompt.description,
       description: prompt.description,
-      argsSchema: prompt.argsSchema.shape,
-      generate: async (args: Record<string, unknown>) => {
-        const result = await prompt.generate!(args as z.infer<z.ZodObject<T>>);
-        return result;
-      },
+      argsSchema: argsShape,
+      generate: async (args: Record<string, unknown>) =>
+        prompt.generate!(args as z.infer<z.ZodObject<T>>),
     };
 
     promptDefinitions[name] = promptDef;
 
-    // Register with the singleton server
-    getServer().registerPrompt(
+    const server = getServer();
+    const registerPrompt = server.registerPrompt.bind(server) as unknown as (
+      promptName: string,
+      definition: {
+        title: string;
+        description: string;
+        argsSchema?: Record<string, z.ZodType>;
+      },
+      callback: (
+        args: Record<string, unknown>,
+        extra: unknown
+      ) => Promise<GetPromptResult>
+    ) => void;
+
+    registerPrompt(
       name,
       {
         title: promptDef.title,
         description: promptDef.description,
         argsSchema: promptDef.argsSchema,
       },
-      promptDef.generate
+      async (args: Record<string, unknown>, _extra: unknown) =>
+        promptDef.generate(args)
     );
   }
 
   prompts[name] = {
     name,
-    arguments: prompt.argsSchema?.shape || {},
+    arguments: promptArgumentsFromShape(argsShape),
     description: prompt.description,
     enabled,
     status,
@@ -570,12 +614,10 @@ export function registerPromptsOnServer(server: unknown) {
         description: string;
         argsSchema?: Record<string, z.ZodType>;
       },
-      callback: (args: Record<string, unknown>) => Promise<{
-        messages: Array<{
-          role: "user" | "assistant";
-          content: { type: string; text: string };
-        }>;
-      }>
+      callback: (
+        args: Record<string, unknown>,
+        extra: unknown
+      ) => Promise<GetPromptResult>
     ) => void;
   };
 
@@ -587,7 +629,8 @@ export function registerPromptsOnServer(server: unknown) {
         description: promptDef.description,
         argsSchema: promptDef.argsSchema,
       },
-      promptDef.generate
+      async (args: Record<string, unknown>, _extra: unknown) =>
+        promptDef.generate(args)
     );
   }
 }
