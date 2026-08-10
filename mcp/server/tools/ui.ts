@@ -1,9 +1,10 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
+import type { FormResultValue } from "blockbench-types/generated/interface/form";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { captureAppScreenshot } from "@/lib/util";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_EXPERIMENTAL } from "@/lib/constants";
 import { mouseButtonEnum, coordinateSchema } from "@/lib/zodObjects";
 
 // ============================================================================
@@ -81,6 +82,41 @@ export const fillDialogParametersSchema = z.object({
     ),
 });
 
+function parseJsonObject(value: string, label: string): Record<string, unknown> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw new Error(
+      `Invalid JSON in ${label}: ${error instanceof Error ? error.message : error}`
+    );
+  }
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`${label} must decode to a JSON object.`);
+  }
+
+  return parsed as Record<string, unknown>;
+}
+
+function eventInitFromJson(args: Record<string, unknown>): EventInit {
+  return {
+    bubbles: typeof args.bubbles === "boolean" ? args.bubbles : undefined,
+    cancelable: typeof args.cancelable === "boolean" ? args.cancelable : undefined,
+    composed: typeof args.composed === "boolean" ? args.composed : undefined,
+  };
+}
+
+function isFormResultValue(value: unknown): value is FormResultValue {
+  return (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    Array.isArray(value) ||
+    (typeof value === "object" && value !== null)
+  );
+}
+
 // ============================================================================
 // UI Tool Docs
 // ============================================================================
@@ -144,16 +180,8 @@ export function registerUITools() {
           outliner: true,
           collections: [],
         });
-        let parsedArgs: Record<string, unknown> = {};
-        if (args) {
-          try {
-            parsedArgs = JSON.parse(args);
-          } catch (e) {
-            throw new Error(
-              `Invalid JSON in confirmEvent: ${e instanceof Error ? e.message : e}`
-            );
-          }
-        }
+
+        const parsedArgs = args ? parseJsonObject(args, "confirmEvent") : {};
 
         if (!(action in BarItems)) {
           throw new Error(`Action "${action}" not found.`);
@@ -161,12 +189,10 @@ export function registerUITools() {
         const barItem = BarItems[action];
 
         if (barItem && barItem instanceof Action) {
-          const { event, ...rest } = parsedArgs;
-          barItem.trigger(
-            new Event(event || "click", {
-              ...rest,
-            })
-          );
+          const eventType = typeof parsedArgs.event === "string"
+            ? parsedArgs.event
+            : "click";
+          barItem.trigger(new Event(eventType, eventInitFromJson(parsedArgs)));
         }
 
         if (confirmDialog) {
@@ -267,25 +293,17 @@ export function registerUITools() {
         if (!Dialog.open) {
           Dialog.stack[Dialog.stack.length - 1]?.focus();
         }
-        let parsedValues: Record<string, unknown>;
-        try {
-          parsedValues = JSON.parse(values);
-        } catch (e) {
-          throw new Error(
-            `Invalid JSON in values: ${e instanceof Error ? e.message : e}`
-          );
+
+        const parsedValues = parseJsonObject(values, "values");
+        const keys = Object.keys(Dialog.open?.getFormResult() ?? {});
+        const valuesToFill: Record<string, FormResultValue> = {};
+
+        for (const [key, value] of Object.entries(parsedValues)) {
+          if (keys.includes(key) && isFormResultValue(value)) {
+            valuesToFill[key] = value;
+          }
         }
 
-        const keys = Object.keys(Dialog.open?.getFormResult() ?? {});
-        const valuesToFill = Object.entries(parsedValues).reduce(
-          (acc, [key, value]) => {
-            if (keys.includes(key)) {
-              acc[key as keyof FormResultValue] = value as FormResultValue;
-            }
-            return acc;
-          },
-          {} as Record<keyof FormResultValue, FormResultValue>
-        );
         Dialog.open?.setFormValues(valuesToFill, true);
 
         if (confirm) {
