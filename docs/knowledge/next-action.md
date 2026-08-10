@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_CORRECTION_ACCURACY_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_TOOL_ROUTING_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -200,13 +200,15 @@ The current source slice has hardened **P0 — cross-view / depth hallucination*
 
 The current source slice has hardened **P1 — correction accuracy** by linking diagnosis to exact authored state, a declared structural invariant, and deterministic before/after mutation effects.
 
+The current source slice has hardened **P1 — tool-choice / context friction** with a stage-gated normal geometry lane. Native Bedrock families remain available; specialist/convenience tools branch only when the active stage/intent requires them.
+
 The next bounded modelling problem is:
 
 ```text
-P1 — tool-choice / context friction
+P2 — texture and animation sequencing
 ```
 
-Audit whether Codex is still exposed to or encouraged to call irrelevant/redundant tools during normal create -> observe -> correct modelling. Prefer simplifying routing/descriptions over deleting native Bedrock capability. Do not reduce tool count merely for aesthetics.
+Audit whether surface-detail or animation work can still begin early enough to hide unresolved geometry, create sunk cost, or produce false completion confidence. Keep the solution stage-based and small: geometry validity must remain authoritative, but legitimate texture/animation tasks must not be blocked once their prerequisite state is actually ready.
 
 Preserve all existing validity rules: execution success is not visual approval, unsupported axes stay provisional/unverified, unresolved blockers stop mutation, and correction effects must match the declared invariant.
 

@@ -194,7 +194,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "duplicate_element",
     description:
-      "Duplicates one explicit Cube or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
+      "Duplicates one explicit Cube or Group target. Use this only after repetition/symmetry is already supported by the reference or model design; duplication is not a shortcut for deciding primary geometry. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -221,7 +221,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "select_all_of_type",
     description:
-      "Selects all Cubes or Groups of the requested type in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to rather than replace the current Cube/Group selection.",
+      "Selection/navigation helper for workflows that genuinely need editor selection, such as some texture/Paint operations. It is not a normal geometry-targeting path: `place_cube`, `modify_cube`, `modify_cubes_batch`, inspection, hierarchy, and destructive operations should use explicit identities instead. Optionally restrict to descendants of one explicit parent Group; missing or ambiguous scopes fail before selection changes.",
     annotations: {
       title: "Select All of Type",
       destructiveHint: true,
@@ -243,7 +243,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "get_selection",
     description:
-      "Returns the current Cube/Group selection state plus the active texture. Use this to verify explicit Bedrock Cuboid editing/texture targets without depending on generic Mesh selection.",
+      "Returns the current Cube/Group selection state plus the active texture. Use it only when current editor selection/active-texture state is itself relevant, especially texture/Paint work. Normal geometry inspection and mutation should prefer explicit UUIDs and `inspect_element` rather than consulting selection as modelling context.",
     annotations: {
       title: "Get Selection",
       readOnlyHint: true,

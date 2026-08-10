@@ -273,6 +273,40 @@ model view correctly reveals a mismatch
 
 Local modelling tests must still demonstrate that Codex uses these effects to make better corrections on real models. Source/CI proves the contract and deterministic structural metadata exist; it does not prove final visual improvement.
 
+## Problem #5 — Tool-Choice / Context Friction
+
+### Failure we must prevent
+
+```text
+Codex sees a broad Bedrock-capable MCP catalog
+-> treats available tools as equally relevant
+-> calls selection/duplicate/current-view/validator/specialist tools during unresolved geometry
+-> accumulates context and side work
+-> primary modelling decision becomes less explicit
+-> technical activity is mistaken for progress
+```
+
+### Root causes
+
+1. **Capability-equals-priority bias** — a tool being exposed can make it look appropriate for the current step.
+2. **Domain leakage** — texture/Paint/animation/material/Locator work can begin before geometry is accepted.
+3. **Convenience-tool substitution** — selection, duplication, current-view screenshots, checkpoints, or validators can replace explicit identity/reference reasoning.
+4. **Catalog exploration** — the agent may search for another tool instead of resolving the current modelling question with the existing core lane.
+
+### Implemented source solution
+
+No Bedrock registration family was removed and no new profile/gating framework was added. The normal workflow now has an explicit stage-gated geometry lane:
+
+```text
+project/orient -> build -> whole-form observe -> exact inspect -> bounded correct -> recover when needed -> finish
+```
+
+Specialist/native capabilities remain available but branch only when their actual stage/intent is active. Tool descriptions for current-view capture, duplication, selection, and history/checkpoints now state their branch-only role so the tool list itself does not present them as normal geometry steps.
+
+### Remaining proof
+
+Local Codex modelling tests must verify whether the routing materially reduces irrelevant tool calls and keeps geometry reasoning focused. If real runs still show repeated wrong-tool selection because the full exposed schema context itself is the blocker, record that evidence before considering narrower default exposure of proven generic convenience tools. Do not pre-emptively hide native Bedrock capability.
+
 ## Product Priority Rule
 
 Before future work, ask:

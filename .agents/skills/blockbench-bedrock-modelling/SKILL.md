@@ -84,6 +84,22 @@ individual geometry from those dimensions plus visible cross-view proportions.
 
 ## Procedure
 
+### Tool Lane Discipline
+
+For normal reference-driven modelling, keep the active execution set small. Use project/orientation discovery, Cube/Group authoring, deterministic whole-form observation, exact element inspection, bounded correction, recovery, and final export. Do not explore or invoke texture/Paint, animation, material-instance, Locator, selection, duplicate, validator, or export tools merely because they appear in the MCP catalog.
+
+A branch is justified only by the active modelling decision:
+
+- `duplicate_element` requires already-established repetition/symmetry; it must not generate a primary hypothesis by copying an arbitrary part;
+- selection tools are editor-state helpers, not geometry identity or modelling evidence;
+- `capture_screenshot` is secondary to `capture_model_views` for reference fidelity and is used only when the current editor view answers a question canonical views cannot;
+- validator output may reveal structural issues but never decides resemblance;
+- texture/Paint begins only after geometry is coherent enough for its gate;
+- animation begins only when requested and after required hierarchy/pivots are coherent;
+- export is a completion/artifact action, not a validation loop step.
+
+If no current decision requires a branch, stay in the geometry lane instead of searching for another tool that might make the model look more complete.
+
 ### 1. Check Reference Consistency And Coordinate Frame
 
 Before exact geometry:

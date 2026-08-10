@@ -142,8 +142,32 @@ For normal BlockIT model deliverables, `export_model` intentionally supports onl
 
 Bedrock animation/controller files belong to Blockbench's separate Bedrock AnimationCodec surface. Do not substitute arbitrary OBJ/glTF/model codecs for a Bedrock Entity deliverable.
 
-## Default boundaries
+## Stage-Gated Tool Routing
 
-For normal Bedrock Entity modelling, do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature tooling or Hytale tooling as shortcuts. Native Bedrock PBR/material-instance workflows are allowed when the asset actually requires them. Use those only for an explicit specialized request or a demonstrated blocker that the normal MCP surface cannot solve.
+The exposed MCP catalog is capability, not a checklist. For normal reference-driven geometry, prefer this lane and do not branch without a concrete stage/intent:
 
-Prefer `inspect_model_bounds` + `capture_model_views` for whole-form evidence, `inspect_element` for a diagnosed local target, exact UUIDs for normal mutation/hierarchy targets, and `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs. Prefer coarse whole-form reasoning over per-Cube improvisation, neutral Group defaults over invented transforms, bounded edits over patch churn, and meaningful reference/model comparisons over screenshot quotas.
+```text
+get_project_info / create_project
+list_outline / find_elements_by_criteria
+place_cube / add_group
+inspect_model_bounds / capture_model_views
+inspect_element -> modify_cube / modify_cubes_batch
+remove_element only for a diagnosed MERGE/REMOVE
+undo / save_checkpoint only when recovery value is real
+export_model only for a requested deliverable/artifact
+```
+
+Branch rules:
+
+- texture/UV/Paint/PBR/material-instance tools only when geometry has reached the appropriate gate and the surface task is active;
+- animation tools only when requested and required hierarchy/pivots are coherent;
+- Locator/Null Object tools only for a concrete native attachment/effect-point need;
+- selection tools only when current editor selection is genuinely required by the active workflow, never as geometry identity;
+- `duplicate_element` only after repetition/symmetry is already supported, never to invent primary form;
+- `capture_screenshot` only when the current editor view itself answers a question canonical `capture_model_views` cannot;
+- validator output is structural diagnostics and never resemblance approval;
+- export is not a validation step.
+
+Do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature tooling, or Hytale tooling as shortcuts. Native Bedrock PBR/material-instance workflows remain valid when the asset actually requires them.
+
+Prefer `inspect_model_bounds` + `capture_model_views` for whole-form evidence, `inspect_element` for a diagnosed local target, exact UUIDs for normal mutation/hierarchy targets, and `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs. If primary geometry is still FAIL/UNVERIFIED, do not switch domains merely to make the asset look more complete.

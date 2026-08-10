@@ -73,7 +73,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "get_undo_stack",
     description:
-      "Returns the current undo/redo history: the list of edit entries, the current index, and which entries are undone vs. applied. Use this to inspect available undo/redo operations and find named checkpoints.",
+      "Returns the current undo/redo history and named checkpoints. Use this for recovery/navigation when the workflow actually needs to undo or return to a checkpoint; it is not a normal modelling-observation step and should not be polled between successful bounded edits.",
     annotations: {
       title: "Get Undo Stack",
       readOnlyHint: true,
@@ -84,7 +84,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "save_checkpoint",
     description:
-      "Inserts a named marker into the undo history. The marker can later be located with `get_undo_stack` so the agent knows how many times to call `undo` to return to this state. Does not modify the project.",
+      "Inserts a named marker into the undo history for meaningful risky multi-step rework or a valuable recovery boundary. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Blockbench Undo. The marker can later be located with `get_undo_stack`. Does not modify model geometry.",
     annotations: {
       title: "Save Checkpoint",
       destructiveHint: false,

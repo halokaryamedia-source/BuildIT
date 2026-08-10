@@ -95,7 +95,8 @@ export const captureModelViewsParameters = z.object({
 export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_screenshot",
-    description: "Returns the image data of the current view.",
+    description:
+      "Returns the image data of the current editor view. This is a branch-only observation helper when that specific editor view carries evidence that canonical views cannot answer. For normal reference-driven geometry review, prefer `capture_model_views` so framing/orientation are deterministic.",
     annotations: {
       title: "Capture Screenshot",
       readOnlyHint: true,

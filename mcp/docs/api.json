@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T14:48:29.897Z",
+  "generatedAt": "2026-08-10T15:27:55.893Z",
   "tools": [
     {
       "name": "place_cube",
@@ -487,7 +487,7 @@
     {
       "name": "capture_screenshot",
       "title": "Capture Screenshot",
-      "description": "Returns the image data of the current view.",
+      "description": "Returns the image data of the current editor view. This is a branch-only observation helper when that specific editor view carries evidence that canonical views cannot answer. For normal reference-driven geometry review, prefer `capture_model_views` so framing/orientation are deterministic.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -1876,7 +1876,7 @@
     {
       "name": "duplicate_element",
       "title": "Duplicate Element",
-      "description": "Duplicates one explicit Cube or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
+      "description": "Duplicates one explicit Cube or Group target. Use this only after repetition/symmetry is already supported by the reference or model design; duplication is not a shortcut for deciding primary geometry. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2042,7 +2042,7 @@
     {
       "name": "select_all_of_type",
       "title": "Select All of Type",
-      "description": "Selects all Cubes or Groups of the requested type in the current project. Optionally restrict to descendants of one explicit parent Group; parent_group resolves UUID-first and by exact name only when unique, and missing or ambiguous scopes fail before selection changes. You may also add to rather than replace the current Cube/Group selection.",
+      "description": "Selection/navigation helper for workflows that genuinely need editor selection, such as some texture/Paint operations. It is not a normal geometry-targeting path: `place_cube`, `modify_cube`, `modify_cubes_batch`, inspection, hierarchy, and destructive operations should use explicit identities instead. Optionally restrict to descendants of one explicit parent Group; missing or ambiguous scopes fail before selection changes.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2123,7 +2123,7 @@
     {
       "name": "get_selection",
       "title": "Get Selection",
-      "description": "Returns the current Cube/Group selection state plus the active texture. Use this to verify explicit Bedrock Cuboid editing/texture targets without depending on generic Mesh selection.",
+      "description": "Returns the current Cube/Group selection state plus the active texture. Use it only when current editor selection/active-texture state is itself relevant, especially texture/Paint work. Normal geometry inspection and mutation should prefer explicit UUIDs and `inspect_element` rather than consulting selection as modelling context.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2557,7 +2557,7 @@
     {
       "name": "get_undo_stack",
       "title": "Get Undo Stack",
-      "description": "Returns the current undo/redo history: the list of edit entries, the current index, and which entries are undone vs. applied. Use this to inspect available undo/redo operations and find named checkpoints.",
+      "description": "Returns the current undo/redo history and named checkpoints. Use this for recovery/navigation when the workflow actually needs to undo or return to a checkpoint; it is not a normal modelling-observation step and should not be polled between successful bounded edits.",
       "status": "stable",
       "category": "History",
       "annotations": {
@@ -2587,7 +2587,7 @@
     {
       "name": "save_checkpoint",
       "title": "Save Checkpoint",
-      "description": "Inserts a named marker into the undo history. The marker can later be located with `get_undo_stack` so the agent knows how many times to call `undo` to return to this state. Does not modify the project.",
+      "description": "Inserts a named marker into the undo history for meaningful risky multi-step rework or a valuable recovery boundary. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Blockbench Undo. The marker can later be located with `get_undo_stack`. Does not modify model geometry.",
       "status": "experimental",
       "category": "History",
       "annotations": {

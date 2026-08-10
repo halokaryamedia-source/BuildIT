@@ -28,6 +28,37 @@ Use this skill before substantive BlockIT MCP asset work. It owns **workflow orc
 
 Load every relevant domain specialist before a multi-domain task, but keep one domain responsible for each decision.
 
+## Stage-Gated Tool Routing
+
+Do not treat the exposed MCP catalog as a checklist. Choose the smallest tool lane that answers the current modelling decision and stay in that lane until a concrete stage/intent requires branching.
+
+Normal **reference-driven geometry lane**:
+
+```text
+project        get_project_info / create_project
+orient/find    list_outline / find_elements_by_criteria
+build          place_cube / add_group
+whole-form     inspect_model_bounds / capture_model_views
+local correct  inspect_element -> modify_cube / modify_cubes_batch
+remove         remove_element only after MERGE/REMOVE diagnosis
+recover        undo; save_checkpoint only before meaningful risky multi-step rework
+finish         export_model only when a deliverable/explicit artifact is requested
+```
+
+Branch only when the task actually enters that domain:
+
+```text
+texture / UV / Paint / PBR / material_instance -> blockit-bedrock-texturing
+animation / keyframes / particle effects        -> blockit-bedrock-animation
+Locator / Null Object                           -> explicit attachment/effect need
+selection helpers                               -> only when an editor-selection workflow requires them
+duplicate_element                               -> only after repetition/symmetry is reference/design-backed
+capture_screenshot                              -> only when the current editor view itself is evidence
+validator resources                             -> structural diagnostics, never resemblance approval
+```
+
+Do not call specialist tools merely because they are available. Texture, Paint, animation, material-instance, Locator, selection, validator, and export work must not interrupt an unresolved primary-geometry `FAIL`/`UNVERIFIED` state.
+
 ## Preflight
 
 1. Call `get_project_info` before mutation when an existing project is open.
