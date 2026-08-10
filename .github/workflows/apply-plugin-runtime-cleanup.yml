@@ -1,0 +1,51 @@
+name: Apply Plugin Runtime Cleanup
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-plugin-runtime-cleanup.yml"
+      - "mcp/scripts/apply-plugin-runtime-cleanup.py"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Validate cleanup helper
+        run: python3 -m py_compile mcp/scripts/apply-plugin-runtime-cleanup.py
+      - name: Apply guarded cleanup
+        run: python3 mcp/scripts/apply-plugin-runtime-cleanup.py
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Tests
+        working-directory: mcp
+        run: bun run test
+      - name: Build
+        working-directory: mcp
+        run: bun run build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No plugin runtime cleanup changes"; exit 1; }
+          git commit -m "refactor: simplify BlockIT plugin runtime ownership"
+          git push origin HEAD:Local
