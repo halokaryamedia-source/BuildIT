@@ -1,0 +1,82 @@
+name: Retry Context Payload Cleanup
+
+on:
+  push:
+    paths:
+      - ".github/workflows/retry-context-payload-cleanup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Validate helpers
+        run: |
+          python3 -m py_compile mcp/scripts/apply-context-payload-cleanup.py
+          python3 -m py_compile mcp/scripts/finalize-context-payload-cleanup.py
+      - name: Apply bounded cleanup
+        run: |
+          python3 mcp/scripts/apply-context-payload-cleanup.py
+          python3 mcp/scripts/finalize-context-payload-cleanup.py
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Measure post-cleanup payload
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          api = json.loads(Path('mcp/docs/api.json').read_text(encoding='utf-8'))
+          tools = api.get('tools', [])
+          tool_chars = sum(len(json.dumps(tool, separators=(',', ':'))) for tool in tools)
+          prompt_chars = len(Path('mcp/prompts/bedrock_entity_workflow.md').read_text(encoding='utf-8'))
+          print('POST_TOOLS', len(tools))
+          print('POST_TOOL_JSON_CHARS', tool_chars)
+          print('POST_PROMPT_CHARS', prompt_chars)
+          print('POST_PROMPTS', len(api.get('prompts', [])))
+          print('POST_RESOURCES', len(api.get('resources', [])))
+          if len(tools) != 72:
+              raise SystemExit(f'Unexpected tool-count change: {len(tools)}')
+          if len(api.get('prompts', [])) != 3 or len(api.get('resources', [])) != 8:
+              raise SystemExit('Unexpected prompt/resource-count change')
+          if tool_chars >= 118000:
+              raise SystemExit(f'Tool metadata did not shrink enough: {tool_chars}')
+          if prompt_chars >= 10000:
+              raise SystemExit(f'Canonical prompt is still too large: {prompt_chars}')
+          PY
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit cleanup
+        run: |
+          git rm mcp/scripts/apply-context-payload-cleanup.py mcp/scripts/finalize-context-payload-cleanup.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No context/payload changes"; exit 1; }
+          git commit -m "refactor: reduce BlockIT MCP context payload"
+          git push origin HEAD:Local
