@@ -1,27 +1,16 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
+import type {
+  FormElementOptions,
+  InputFormConfig,
+} from "blockbench-types/generated/interface/form";
 import { getAllToolDefinitions } from "@/lib/factories";
-
-interface FormElementOptions {
-  label?: string;
-  description?: string;
-  type?: string;
-  value?: unknown;
-  placeholder?: string;
-  min?: number;
-  max?: number;
-  step?: number;
-  options?: Record<string, string>;
-  height?: number;
-}
-
-type InputFormConfig = Record<string, "_" | FormElementOptions>;
 
 /**
  * Extracts metadata from a Zod schema type
  */
 function getZodTypeMeta(zodType: z.ZodType): {
-  type: string;
+  type: FormElementOptions["type"];
   isOptional: boolean;
   isArray: boolean;
   description?: string;
@@ -79,7 +68,7 @@ function getZodTypeMeta(zodType: z.ZodType): {
   }
 
   // Map Zod types to form types
-  let type = "text";
+  let type: FormElementOptions["type"] = "text";
   switch (typeName) {
     case "ZodString":
       type = "text";
@@ -331,9 +320,8 @@ export function openToolTestDialog(toolName: string) {
     onButton(buttonIndex: number) {
       // Handle "Copy Input" button (index 1)
       if (buttonIndex === 1) {
-        // @ts-ignore - 'this' refers to the Dialog instance
         const dialog = this as Dialog;
-        const formResult = dialog.form?.result ?? {};
+        const formResult = dialog.form?.getResult() ?? {};
         const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
 
         const jsonData = JSON.stringify({
