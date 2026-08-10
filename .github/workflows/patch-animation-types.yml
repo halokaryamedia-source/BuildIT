@@ -21,6 +21,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("mcp/server/tools/animation.ts")
           text = path.read_text()
@@ -41,6 +42,12 @@ jobs:
               if old in text:
                   raise SystemExit(f"replacement incomplete for {old!r}")
               print(f"replaced {count} occurrence(s): {old} -> {new}")
+
+          def regex_once(pattern, replacement):
+              global text
+              text, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
+              if count != 1:
+                  raise SystemExit(f"expected exactly one regex match for {pattern!r}, found {count}")
 
           # Official Blockbench typings explicitly direct registry access through AnimationItem
           # because the runtime Animation global collides with lib.dom Animation.
@@ -65,16 +72,8 @@ jobs:
               )
 
           # _Keyframe.flip accepts x/y/z, not numeric axis indexes.
-          replace_once(
-              '''            const axisIndex =
-              parameters.mirror_axis === "x"
-                ? 0
-                : parameters.mirror_axis === "y"
-                ? 1
-                : 2;
-            keyframes.forEach((kf: _Keyframe) => {
-              kf.flip(axisIndex);
-            });''',
+          regex_once(
+              r'''(?m)^\s*const axisIndex =\s*\n\s*parameters\.mirror_axis === "x"\s*\n\s*\? 0\s*\n\s*: parameters\.mirror_axis === "y"\s*\n\s*\? 1\s*\n\s*: 2;\s*\n\s*keyframes\.forEach\(\(kf: _Keyframe\) => \{\s*\n\s*kf\.flip\(axisIndex\);\s*\n\s*\}\);''',
               '''            const mirrorAxis = parameters.mirror_axis;
             if (!mirrorAxis) {
               throw new Error("Mirror axis required for mirror operation.");
