@@ -1,24 +1,17 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
+import type {
+  FormElementOptions,
+  InputFormConfig,
+} from "blockbench-types/generated/interface/form";
 import { getAllPromptDefinitions } from "@/lib/factories";
 import { openPromptOverrideDialog } from "@/ui/promptOverrideDialog";
-
-interface FormElementOptions {
-  label?: string;
-  description?: string;
-  type?: string;
-  value?: unknown;
-  placeholder?: string;
-  options?: Record<string, string>;
-}
-
-type InputFormConfig = Record<string, "_" | FormElementOptions>;
 
 /**
  * Extracts metadata from a Zod schema type for form generation
  */
 function getZodTypeMeta(zodType: z.ZodType): {
-  type: string;
+  type: FormElementOptions["type"];
   isOptional: boolean;
   description?: string;
   defaultValue?: unknown;
@@ -53,7 +46,7 @@ function getZodTypeMeta(zodType: z.ZodType): {
   }
 
   // Map Zod types to form types
-  let type = "text";
+  let type: FormElementOptions["type"] = "text";
   switch (typeName) {
     case "ZodString":
       type = "text";
