@@ -9,14 +9,17 @@
 - `dist/`: Build output (`mcp.js`, maps, copied assets like `icon.svg`, `about.md`).
 - `docs/`: Auto-generated documentation (`api.json`, `index.html`, `style.css`).
 - `build/`: Build scripts (`index.ts`, `utils.ts`, `plugins.ts`, `docs.ts`, `docs-manifest.ts`).
+- `tests/`: Focused Bun contract tests for MCP registration/security behavior.
 
 ## Build, Test, and Development Commands
-- `bun install`: Install dependencies.
+- `bun install --frozen-lockfile`: Install exactly from the committed lockfile for verification.
 - `bun run dev`: Build once with sourcemaps.
 - `bun run dev:watch`: Rebuild on change (watch mode).
+- `bun run typecheck`: Run the full strict TypeScript gate (`tsc --noEmit`).
+- `bun run test`: Run the focused Bun contract tests.
 - `bun run build`: Minified production build to `dist/mcp.js`.
-- `bun run ./build.ts --clean`: Remove `dist/` before a fresh build.
 - `bun run docs:build`: Generate API documentation from Zod schemas to `docs/`.
+- `bun run docs:check`: Regenerate in a temporary comparison flow and fail if committed generated docs are stale.
 - `bun run docs:serve`: Serve the generated docs locally with Tailwind processing.
 - `bunx @modelcontextprotocol/inspector`: Launch MCP Inspector for local testing.
 
@@ -44,11 +47,12 @@ export const myToolDocs: ToolSpec[] = [
 ];
 ```
 
-2. **Register with `createTool()`** inside a `registerXxxTools()` function, spreading from the spec:
+2. **Register with `createTool()`** inside a `registerXxxTools()` function, spreading from the spec. When a broad `ToolSpec` spread would erase concrete Zod inference for `execute()`, restate the exact same `parameters` schema in the registration rather than weakening types:
 ```ts
 export function registerMyTools() {
   createTool(myToolDocs[0].name, {
     ...myToolDocs[0],
+    parameters: myToolParameters,
     async execute({ name }) {
       // Blockbench globals (Undo, Canvas, etc.) are safe here
       return `Hello, ${name}!`;
@@ -63,21 +67,25 @@ export function registerMyTools() {
 
 4. **Register in `server/tools.ts`**: Import and call your `registerXxxTools()` function.
 
-5. **Regenerate docs**: Run `bun run docs` to update `docs/api.json` and `docs/index.html`.
+5. **Regenerate docs**: Run `bun run docs:build` to update `docs/api.json` and `docs/index.html`, then verify with `bun run docs:check`.
 
 ### Critical Rule: No Blockbench Globals in Schemas
 
 Parameter schemas are imported at build time by the doc generator, which runs outside Blockbench. **Never use Blockbench runtime globals** (e.g., `BarItems`, `Formats`, `Plugins`) in schema construction. Use `z.string().describe("...")` instead of dynamic enums, and do runtime validation inside `execute()`.
+
+Blockbench runtime adapters must likewise be created inside registration/execution scope when merely importing the module is expected to work in Node/Bun documentation or test environments.
 
 ## Documentation System
 
 Documentation is auto-generated from Zod schemas at build time:
 
 - **`build/docs-manifest.ts`**: Imports all `toolDocs` arrays from tool files plus inline prompt/resource specs. This is the single source of truth for what appears in the docs.
-- **`build/docs.ts`**: Reads the manifest, converts Zod schemas to JSON Schema via `zod-to-json-schema`, and outputs `docs/api.json` (machine-readable) and `docs/index.html` (Tailwind-styled page).
+- **`build/docs.ts`**: Reads the manifest, converts Zod schemas to JSON Schema via `zod-to-json-schema`, and outputs `docs/api.json` (machine-readable) and `docs/index.html` (Tailwind-styled page). Generated HTML is normalized to avoid trailing-whitespace drift.
 - **`lib/factories.ts`**: Defines `ToolSpec`, `PromptSpec`, and `ResourceSpec` interfaces used by both tool files and the manifest.
 
-Prompt and resource specs are defined **inline in the manifest** (not imported from their source files) because `server/prompts.ts` uses Bun macros and `server/resources.ts` accesses Blockbench globals at module level.
+Prompt and resource specs are defined **inline in the manifest** (not imported from their source files) where source modules depend on runtime-only behavior.
+
+Generated `docs/api.json` and `docs/index.html` are authoritative only when `bun run docs:check` passes. Do not hand-edit generated tool entries to make freshness checks pass.
 
 ## Coding Style & Naming Conventions
 - Language: TypeScript (strict), ESNext modules, CJS output for the plugin.
@@ -86,17 +94,22 @@ Prompt and resource specs are defined **inline in the manifest** (not imported f
 - Keep UI text concise; avoid blocking calls in plugin lifecycle hooks.
 - Schema naming: `{camelCaseToolName}Parameters` (e.g., `placeCubeParameters`).
 - Docs array naming: `{domainName}ToolDocs` (e.g., `cubeToolDocs`).
+- Do not use `any`, `@ts-ignore`, or broad compatibility shims merely to silence retained Bedrock Entity type debt. Prefer official Blockbench/MCP contracts or a narrow evidence-backed runtime adapter.
 
 ## Testing Guidelines
-- Automated tests are not set up yet. For changes, provide manual verification steps.
-- Validate builds with Blockbench by loading `dist/mcp.js` and exercising changed tools/resources.
-- When adding tests, prefer Bun's test runner or Vitest; co-locate near source or use `tests/`.
+- The root `.github/workflows/mcp-verify.yml` is the repository gate for `mcp/**` changes.
+- Before marking MCP source work complete, the expected GitHub/package gates are: frozen-lockfile install, full typecheck, focused Bun tests, production build, and generated-doc freshness.
+- Focus automated tests on high-risk public contracts rather than broad low-value coverage. Current P0 fixtures cover schema refinement preservation, annotations, dangerous-default containment, and Origin rejection ordering.
+- GitHub tests do **not** replace local Blockbench proof. Validate runtime-sensitive changes by loading `dist/mcp.js` and exercising the affected tools/resources in Blockbench/MCP Inspector.
+- Keep static/source proof separate from listener binding, live Inspector behavior, Undo/Redo semantics, playback, save/reopen, export, and visual fidelity proof.
 
 ## Commit & Pull Request Guidelines
-- Commits: Use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`). Avoid vague "update"; be specific (e.g., `feat: add mesh selection tools`).
+- Commits: Use conventional prefixes (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`). Avoid vague "update"; be specific.
 - PRs: Include scope/summary, linked issues, screenshots/GIFs for UI changes, and steps to reproduce/test. Note any new tools, resources, settings, or breaking changes.
 
 ## Security & Configuration Tips
 - Server config lives in Blockbench Settings: MCP port and endpoint (defaults `:3000/bb-mcp`).
-- Do not commit secrets. Keep network calls behind tools; validate all inputs (use `zod`).
+- Default transport containment is loopback-only with present Origin validation; do not broaden network exposure without a separately reviewed authentication design.
+- `risky_eval` and `from_geo_json` are not default capabilities. Do not re-enable them indirectly through convenience registration.
+- Do not commit secrets. Keep network calls behind explicit tools; validate all inputs through the retained full Zod schema.
 - Keep bundle lean: add only necessary deps; prefer tree-shakeable utilities.
