@@ -539,7 +539,7 @@ export const animationToolDocs: ToolSpec[] = [
 
 function resolveAnimation(reference?: string) {
   if (reference === undefined) {
-    const selected = Animation.selected;
+    const selected = AnimationItem.selected;
     if (!selected) {
       throw new Error(
         "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
@@ -548,12 +548,12 @@ function resolveAnimation(reference?: string) {
     return selected;
   }
 
-  const uuidMatch = Animation.all.find(
+  const uuidMatch = AnimationItem.all.find(
     (animation) => animation.uuid === reference
   );
   if (uuidMatch) return uuidMatch;
 
-  const nameMatches = Animation.all.filter(
+  const nameMatches = AnimationItem.all.filter(
     (animation) => animation.name === reference
   );
   if (nameMatches.length === 1) return nameMatches[0];
@@ -619,6 +619,7 @@ createTool(
   animationToolDocs[0].name,
   {
     ...animationToolDocs[0],
+    parameters: createAnimationParameters,
     async execute({ name, loop, animation_length, bones, particle_effects }) {
       if (!Project) {
         throw new Error(
@@ -747,7 +748,7 @@ createTool(
         },
       });
       const animationUuidsBefore = new Set(
-        Animation.all.map((animation) => animation.uuid)
+        AnimationItem.all.map((animation) => animation.uuid)
       );
       let editStarted = false;
 
@@ -762,7 +763,7 @@ createTool(
         const createdAnimations = codecCreatedAnimations.filter(
           (animation) =>
             !animationUuidsBefore.has(animation.uuid) &&
-            Animation.all.includes(animation)
+            AnimationItem.all.includes(animation)
         );
         if (createdAnimations.length !== 1) {
           throw new Error(
@@ -818,7 +819,7 @@ createTool(
           structuredContent: result,
         };
       } catch (error) {
-        const createdDuringAttempt = Animation.all.filter(
+        const createdDuringAttempt = AnimationItem.all.filter(
           (animation) => !animationUuidsBefore.has(animation.uuid)
         );
         createdDuringAttempt.forEach((animation) => {
@@ -838,6 +839,7 @@ createTool(
   animationToolDocs[1].name,
   {
     ...animationToolDocs[1],
+    parameters: manageKeyframesParameters,
     async execute({ animation_id, action, bone_name, channel, keyframes }) {
       const animation = resolveAnimation(animation_id);
       const group = resolveRigGroup(bone_name);
@@ -860,7 +862,7 @@ createTool(
       };
 
       if (action === "select") {
-        if (animation !== Animation.selected) {
+        if (animation !== AnimationItem.selected) {
           throw new Error(
             `Cannot select keyframes from animation "${animation.name}" because it is not the selected Blockbench animation.`
           );
@@ -1008,6 +1010,7 @@ createTool(
   animationToolDocs[2].name,
   {
     ...animationToolDocs[2],
+    parameters: animationGraphEditorParameters,
     async execute({
       animation_id,
       bone_name,
@@ -1171,6 +1174,7 @@ createTool(
   animationToolDocs[3].name,
   {
     ...animationToolDocs[3],
+    parameters: boneRiggingParameters,
     async execute({ action, bone_data }) {
       let targetBone: Group | undefined;
       let parentBone: Group | "root" | undefined;
@@ -1376,8 +1380,9 @@ createTool(
   animationToolDocs[4].name,
   {
     ...animationToolDocs[4],
+    parameters: animationTimelineParameters,
     async execute({ action, time, length, fps, loop_mode, range }) {
-      const animation = Animation.selected;
+      const animation = AnimationItem.selected;
       if (!animation) {
         throw new Error("No animation selected.");
       }
@@ -1483,8 +1488,9 @@ createTool(
   animationToolDocs[5].name,
   {
     ...animationToolDocs[5],
+    parameters: batchKeyframeOperationsParameters,
     async execute({ selection, range, pattern, operation, parameters = {} }) {
-      if (!Animation.selected) {
+      if (!AnimationItem.selected) {
         throw new Error("No animation selected.");
       }
 
@@ -1557,15 +1563,13 @@ createTool(
               }
             });
           } else {
-            const axisIndex =
-              parameters.mirror_axis === "x"
-                ? 0
-                : parameters.mirror_axis === "y"
-                ? 1
-                : 2;
-            keyframes.forEach((kf: _Keyframe) => {
-              kf.flip(axisIndex);
-            });
+            const mirrorAxis = parameters.mirror_axis;
+  if (!mirrorAxis) {
+    throw new Error("Mirror axis required for mirror operation.");
+  }
+  keyframes.forEach((kf: _Keyframe) => {
+    kf.flip(mirrorAxis);
+  });
           }
 
           Undo.finishEdit(`Batch keyframe operation: ${operation}`);
@@ -1581,7 +1585,7 @@ createTool(
       }
 
       if (operation === "bake") {
-        const animation = Animation.selected;
+        const animation = AnimationItem.selected;
         const interval =
           parameters.bake_interval ?? 1 / animation.snapping;
         if (!Number.isFinite(interval) || interval <= 0) {
@@ -1687,7 +1691,7 @@ createTool(
       }
 
       if (operation === "scale") {
-        const animation = Animation.selected;
+        const animation = AnimationItem.selected;
         const pivot = parameters.scale_pivot ?? 0;
         const factor = parameters.scale_factor ?? 1;
         if (!Number.isFinite(pivot)) {
@@ -1838,6 +1842,7 @@ createTool(
   animationToolDocs[6].name,
   {
     ...animationToolDocs[6],
+    parameters: animationCopyPasteParameters,
     async execute({ action, source, target }) {
       // @ts-ignore
       if (!global.animationClipboard) {
@@ -1944,7 +1949,7 @@ createTool(
               animator = createdAnimator;
             }
 
-            Object.entries(clipboardData.channels).forEach(
+            Object.entries(clipboardData.channels as Record<string, any[]>).forEach(
               ([channel, keyframes]: [string, any[]]) => {
                 keyframes.forEach((kfData) => {
                   const values = [...kfData.values];
