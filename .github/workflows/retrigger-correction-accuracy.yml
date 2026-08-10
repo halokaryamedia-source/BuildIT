@@ -1,0 +1,26 @@
+name: Retrigger Correction Accuracy Hardening
+
+on:
+  push:
+    paths:
+      - ".github/workflows/retrigger-correction-accuracy.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  retrigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - name: Retrigger guarded hardening
+        run: |
+          printf '\n# retrigger after regression alignment\n' >> .github/workflows/apply-correction-accuracy-hardening.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/apply-correction-accuracy-hardening.yml
+          git commit -m "ci: rerun correction accuracy hardening"
+          git push origin HEAD:Local
