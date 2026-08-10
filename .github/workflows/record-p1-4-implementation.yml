@@ -1,0 +1,31 @@
+name: Record P1.4 Stateless Implementation
+
+on:
+  push:
+    paths:
+      - ".github/workflows/record-p1-4-implementation.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 0
+
+      - name: Apply implementation snapshot
+        run: python .github/p1_4_impl_record.py
+
+      - name: Commit implementation state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/knowledge/next-action.md docs/knowledge/reviews/mcp-transport-session-decision-2026-08-10.md
+          git diff --cached --check
+          git commit -m "docs: record MCP stateless v1 source completion"
+          git push origin Local
