@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T20:34:18.264Z",
+  "generatedAt": "2026-08-10T20:42:46.868Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4330,7 +4330,7 @@
     {
       "name": "create_pbr_material",
       "title": "Create PBR Material",
-      "description": "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.",
+      "description": "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4415,7 +4415,7 @@
     {
       "name": "configure_material",
       "title": "Configure Material",
-      "description": "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.",
+      "description": "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {

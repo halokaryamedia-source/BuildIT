@@ -2470,7 +2470,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Create PBR Material</p>
-      <p class="card-desc">Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.</p>
+      <p class="card-desc">Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2534,7 +2534,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Configure Material</p>
-      <p class="card-desc">Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.</p>
+      <p class="card-desc">Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T20:34:18.264Z from Zod schemas
+        Generated 2026-08-10T20:42:46.868Z from Zod schemas
       </footer>
     </main>
   </div>

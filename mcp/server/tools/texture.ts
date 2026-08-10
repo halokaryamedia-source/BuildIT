@@ -343,7 +343,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.",
+      "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -354,7 +354,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.",
+      "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
@@ -499,6 +499,28 @@ function resolveTextureToolMaterial(reference: string): TextureGroup {
   );
 }
 
+type PbrChannelAssignment = {
+  channel: z.infer<typeof pbrChannelEnum>;
+  texture?: Pick<Texture, "uuid" | "name">;
+};
+
+export function requireDistinctPbrChannelAssignments(
+  assignments: readonly PbrChannelAssignment[]
+): void {
+  const channelByTexture = new Map<string, string>();
+
+  for (const { channel, texture } of assignments) {
+    if (!texture) continue;
+
+    const previousChannel = channelByTexture.get(texture.uuid);
+    if (previousChannel && previousChannel !== channel) {
+      throw new Error(
+        `Texture "${texture.name}" (${texture.uuid}) cannot be assigned to both ${previousChannel} and ${channel} in one material operation. A Texture has one pbr_channel; use distinct textures per channel.`
+      );
+    }
+    channelByTexture.set(texture.uuid, channel);
+  }
+}
 // ============================================================================
 // Tool Registration
 // ============================================================================
@@ -801,6 +823,12 @@ export function registerTextureTools() {
         mer_texture !== undefined
           ? resolveCreatePbrMaterialTexture(mer_texture)
           : undefined;
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: colorTexture },
+        { channel: "normal", texture: normalTexture },
+        { channel: "height", texture: heightTexture },
+        { channel: "mer", texture: merTexture },
+      ]);
       const texturesToAdd = [
         colorTexture,
         normalTexture,
@@ -917,6 +945,12 @@ export function registerTextureTools() {
         mer_texture !== undefined && mer_texture !== "none"
           ? resolveConfigureMaterialTexture(mer_texture)
           : undefined;
+      requireDistinctPbrChannelAssignments([
+        { channel: "color", texture: colorTexture },
+        { channel: "normal", texture: normalTexture },
+        { channel: "height", texture: heightTexture },
+        { channel: "mer", texture: merTexture },
+      ]);
       const assignmentTextures = [
         colorTexture,
         normalTexture,
