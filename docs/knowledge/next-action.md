@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_PRELOCAL_SURFACE_HARDENING_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_LOCATOR_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -40,6 +40,11 @@ E  generic semantics narrowing                                 COMPLETE
 F  canonical Bedrock Entity MCP prompt                         COMPLETE
 G  repository-owned BlockIT agent skill stack                  COMPLETE
 H  BlockIT docs/install normalization                          COMPLETE
+
+Native Bedrock capability coverage:
+Locator authored state                                          SOURCE COMPLETE; LOCAL PROOF REQUIRED
+Null Object base parent/position state                          SOURCE COMPLETE; LOCAL PROOF REQUIRED
+Null Object IK metadata mutation                                DEFERRED — not Bedrock locator geometry
 
 P1.5       local end-to-end core acceptance                    BLOCKED ON LOCAL ENVIRONMENT
 ```
@@ -101,12 +106,39 @@ blockit-bedrock-entity-mcp
 
 Do not use upstream generic Mesh/Hytale/eval-oriented skills as the canonical BlockIT workflow.
 
+## Locator / Null Object Coverage
+
+Direct Locator/Null Object authored-state ownership now remains inside the existing Elements family; no new registration family or generic element framework was introduced.
+
+```text
+list_locator_elements   discover Locator / Null Object identity + parent
+inspect_element         inspect detailed authored state
+manage_locator          create/update Locator parent, position, rotation, ignore_inherited_scale
+manage_null_object      create/update Null Object parent + position
+rename_element          rename existing element
+remove_element          remove existing element
+```
+
+Mutation rules:
+
+```text
+Bedrock format only
+explicit Group/bone parent
+UUID-first target resolution
+exact unique name fallback only
+parent preflight before Undo
+one bounded Undo edit
+failure after open -> cancel/revert
+structured resulting state
+```
+
+Null Object is not treated as identical to a normal Locator. Blockbench Bedrock geometry round-trips it through a `_null_` locator entry. `ik_target`, `ik_source`, and `lock_ik_target_rotation` are inspectable editor/animation state but are intentionally not mutation fields in this minimum slice.
+
 ## Protected Native Capability Gaps
 
 The following remain Bedrock Entity product requirements even where direct MCP ownership is incomplete:
 
 ```text
-Locator / NullObject authoring and inspection
 TextureMesh authoring and inspection
 native Bedrock visible bounding-box fields
 animation controllers
@@ -135,18 +167,18 @@ project  → editable Blockbench .bbmodel
 
 Generic full-app screenshot and arbitrary editor-camera mutation are not part of the normal default workflow.
 
-`nodes://` remains temporarily available as broad observability while protected Locator/TextureMesh direct owners are still incomplete. Do not treat it as equivalent to authored native support.
+`nodes://` remains temporarily available as broad observability because TextureMesh still lacks a direct authored-state owner. Locator/Null Object coverage alone is not a reason to delete it yet.
 
 ## Next Allowed Step
 
-When the local Blockbench environment is available:
+If continuing non-local native-capability work before local Blockbench acceptance becomes available, the next bounded slice is:
 
-1. build branch `Local`;
-2. load `mcp/dist/mcp.js` in desktop Blockbench;
-3. verify plugin identity/version/profile/endpoint/transport and truthful exposed surface;
-4. verify loopback/origin/stateless behavior through the real endpoint;
-5. verify default vs extended family behavior and disabled dangerous tools;
-6. verify core Cube/Group/Texture/Paint/Animation operations in Blockbench;
-7. only after P1.4 local proof is accepted, proceed to P1.5.
+```text
+TextureMesh official-source audit and minimum direct authored-state coverage
+```
 
-Until then, do not expand the pre-local scope merely to keep working. Preserve the current boundary and avoid speculative framework work.
+Do not reintroduce the removed generic Mesh family as a shortcut; native Bedrock TextureMesh must be mapped from its own Blockbench source contract.
+
+When the local Blockbench environment is available, local acceptance still needs to verify the stateless endpoint plus actual Locator/Null Object create/update/inspect/rename/remove behavior and Bedrock save/reopen/export round-trip before the Locator slice is considered runtime-proven.
+
+P1.5 remains blocked until the required local acceptance boundary is available.
