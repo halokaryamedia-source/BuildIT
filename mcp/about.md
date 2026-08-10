@@ -6,7 +6,7 @@ BlockIT provides a Minecraft **Bedrock Entity-focused** Model Context Protocol s
 
 `http://127.0.0.1:3000/bb-mcp`
 
-The default transport is loopback-only, stateless Streamable HTTP with JSON responses. The BlockIT panel shows the loaded version, build revision/channel, active profile, endpoint, and truthful exposed surface counts.
+The default transport is loopback-only, stateless Streamable HTTP with JSON responses. The BlockIT panel shows the loaded version, active profile, endpoint, transport, and truthful exposed surface counts.
 
 ### Product boundary
 
