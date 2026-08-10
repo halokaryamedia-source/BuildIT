@@ -14,11 +14,11 @@ The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.5, P1.1, and P1.2 are complete for their source/repository boundaries. The active source boundary is now **P1.3 — core-only resolver/mutation/result consolidation**.
+P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. The active source boundary is now **P1.4 — transport/session simplification decision**.
 
 ## Current Status
 
-`MCP_P1_FAMILY_GATES_COMPLETE_CORE_OWNERSHIP_NEXT`
+`MCP_P1_CORE_OWNERSHIP_COMPLETE_TRANSPORT_DECISION_NEXT`
 
 Execution channel: **ChatGPT → GitHub**.  
 Working branch: **`Local` only**.  
@@ -455,6 +455,90 @@ The first P1.2 run correctly failed closed because one P1.1 source-reading test 
 
 Actual Blockbench setting persistence, plugin reload behavior, and real `tools/list` differences after opting into extended families remain `LOCAL PROOF REQUIRED`.
 
+# Completed P1.3 — Bedrock Core Identity / Result Ownership
+
+P1.3 consolidated only duplicated identity and continuation-result ownership inside the surviving Bedrock Entity core. It did not globally refactor gated legacy families and did not remove or gate any native Bedrock capability.
+
+## Verified source commit
+
+```text
+56967694c2f0a561d956c8e6e7eafa49f5463209
+refactor: consolidate Bedrock core identity ownership
+```
+
+Primary source owners changed:
+
+```text
+mcp/lib/coreIdentity.ts                 added
+mcp/lib/util.ts
+mcp/server/tools/cubes.ts
+mcp/server/tools/element.ts
+mcp/server/tools/texture.ts
+mcp/server/tools/animation.ts
+mcp/tests/p1-core-ownership.test.ts     added
+```
+
+Shared identity contract now covers the audited core identities:
+
+```text
+Cube       exact UUID -> exact unique name
+Group      exact UUID -> exact unique name
+Animation  exact UUID -> exact unique name
+Texture    exact UUID -> exact unique texture ID -> exact unique name
+```
+
+Explicit core mutation resolution does not prefix-match and does not silently select the first ambiguous name. Existing selection fallback is retained only where the public Animation helper already explicitly allowed selected-animation behavior. `create_animation` keeps its Bedrock AnimationCodec-specific case-insensitive bone-name validation local because that is codec semantics rather than generic identity resolution.
+
+The broader `element.ts` destructive resolver was intentionally **not** narrowed to Cube/Group because the native Bedrock Entity surface may include other Outliner element types such as Locator/TextureMesh; P1.3 does not trade native capability for resolver uniformity.
+
+Texture/PBR implementation was preserved. Repeated Texture lookup algorithms in Cube/Element/Texture/Paint-support paths now consume one strict Texture identity owner while TextureGroup/material semantics remain separate.
+
+Continuation result ownership was improved only for high-value identity-returning core mutations:
+
+```text
+place_cube   -> structured final Cube states
+modify_cube  -> structured final Cube state
+add_group    -> structured Group identity/state
+```
+
+Existing `modify_cubes_batch` and `create_animation` structured results remain intact. No mass result-format rewrite was performed.
+
+## Non-local executable proof
+
+Canonical workflow:
+
+```text
+MCP Verify
+run: 31372079399
+verified source commit: 56967694c2f0a561d956c8e6e7eafa49f5463209
+```
+
+Result:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+Bun contract tests          PASS — 20/20, 0 failures, 106 expect() calls
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+Generated source manifest remains unchanged at:
+
+```text
+69 tools across 12 categories
+3 documented prompts
+8 resources
+```
+
+Temporary GitHub-runner harnesses used to perform/test the non-local consolidation were removed after the canonical proof. The durable repository verification workflow remains `mcp-verify.yml`.
+
+## P1.3 proof boundary
+
+The non-local evidence proves TypeScript/build/test/doc consistency plus pure deterministic identity contracts. It does **not** prove live Blockbench mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, or end-to-end identity stability. Those remain `LOCAL PROOF REQUIRED`, primarily for P1.5 acceptance.
+
 # Current Work Order
 
 ```text
@@ -466,85 +550,78 @@ P0.5  generated-doc freshness                    COMPLETE
 
 P1.1  default Bedrock Entity registration profile COMPLETE
 P1.2  family gates                               COMPLETE
-P1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE
-P1.4  transport/session future decision
+P1.3  core-only resolver/mutation/result consolidation COMPLETE
+P1.4  transport/session future decision              ← ACTIVE NEXT SLICE
 P1.5  local end-to-end core acceptance
 
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P1.3 Core Ownership Consolidation Only
+# Next Step — P1.4 Transport / Session Decision Only
 
-Do not start P1.4 or later work in the same slice.
+Do not implement a transport migration before the decision is recorded, and do not start P1.5 in the same slice.
 
 ## Goal
 
-Consolidate deterministic identity, bounded mutation/rollback, and useful result ownership **only inside the surviving Bedrock Entity core**. Do not globally refactor gated or legacy source.
+Re-evaluate the MCP transport/session architecture against the **current official MCP protocol and TypeScript SDK state** plus the actual BlockIT client requirement, then choose the smallest supported direction before any source rewrite.
 
-## Required approach
+Because protocol/SDK status is time-sensitive, P1.4 must use current official primary sources rather than repository-era assumptions.
 
-1. Audit current callers before creating or reusing shared resolver helpers.
-2. Limit resolver consolidation to core identities where duplication is real:
+## Required research
 
-```text
-Cube
-Group
-Texture
-Animation
-```
-
-3. Normal explicit mutation identity must converge on:
+Re-check at execution time:
 
 ```text
-exact UUID first
-otherwise exact name only when unique
-ambiguous explicit target → fail
-missing explicit target → fail
-no UUID-prefix matching for mutation
-no silent root/default fallback
+current stable MCP protocol revision
+current stable @modelcontextprotocol/sdk / official TypeScript SDK line
+official Streamable HTTP requirements and security guidance
+current session semantics / deprecations
+Blockbench desktop runtime constraints
+actual BlockIT MCP client(s) that must remain supported
 ```
 
-4. Selection fallback remains allowed only for tools whose public contract explicitly states that they operate on selection.
-5. Core mutation paths should use the bounded pattern where applicable:
+## Required decision
+
+Choose and document exactly one:
 
 ```text
-preflight all external targets
-open one Undo transaction
-mutate
-finish
-failure after open → cancel/revert
+KEEP CURRENT MINIMAL
+SIMPLIFY ON CURRENT SDK LINE
+MIGRATE TO CURRENT STABLE SDK/PROTOCOL
 ```
 
-6. Consolidate result/readback shape only where it improves deterministic continuation. Prefer compact human-readable content plus stable structured data when identity/state matters.
-7. Preserve all current Bedrock Entity capability. Do not use consolidation as a reason to gate or delete TextureMesh, Locator, bounding-box, Animation, Paint/PBR, material-instance, history, camera/observation, export, or other audited Bedrock-relevant behavior.
-8. Do not refactor `import` / generic `ui` merely because they remain compiled under the explicit extended gate.
-9. Do not migrate MCP SDK/protocol, redesign transport, add authentication, or resume parked feature hardening in P1.3.
-10. Add focused regression tests for any new shared owner/contract and rerun the complete MCP Verify workflow.
-
-## Static acceptance
+For the chosen direction, explicitly classify whether these existing layers remain necessary:
 
 ```text
-shared resolver ownership exists only where audited core callers justify it
-core explicit mutations use deterministic identity rules
-bounded Undo/rollback ownership is consistent where consolidated
-core readback/result identity is sufficient for continuation
-no gated legacy family is globally refactored
-no native Bedrock capability is removed or silently gated
+TCP keepalive
+HTTP keep-alive
+SSE heartbeat
+MCP ping
+custom inactivity timeout
+protocol session IDs
+per-session server reconstruction
+custom HTTP parsing/dispatch
 ```
 
-## Executable acceptance
+Do not preserve transport complexity merely because it already exists. Do not remove compatibility required by the actual BlockIT client without evidence.
+
+## Non-goals
 
 ```text
-focused P1.3 regression tests PASS
-bun run typecheck               PASS
-bun run test                    PASS
-bun run build                   PASS
-bun run docs:check              PASS
-root MCP Verify                 PASS
+no modelling/tool feature work
+no Animation/Paint/Texture rewrite
+no authentication system unless a newly approved non-loopback requirement actually demands it
+no P1.5 local E2E execution yet
 ```
 
-Only after P1.3 is recorded may the active boundary advance to **P1.4 — transport/session simplification decision**.
+## Acceptance
 
-## Proof Boundary
+```text
+official current protocol/SDK evidence recorded
+actual supported client requirement recorded
+decision among keep/simplify/migrate recorded
+redundant vs required transport/session layers classified
+implementation boundary for any later transport change is explicit
+```
 
-GitHub Actions/package tests can prove source/build/contracts that do not require Blockbench globals. Actual mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, and end-to-end identity stability remain `LOCAL PROOF REQUIRED` where applicable.
+Only after this decision may P1.4 implementation proceed if the decision requires source changes. P1.5 remains the later local end-to-end acceptance boundary.
