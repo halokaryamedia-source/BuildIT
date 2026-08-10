@@ -20,6 +20,25 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - name: Repair temporary helper quoting
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("mcp/scripts/apply-minimum-evidence-cleanup.py")
+          text = p.read_text(encoding="utf-8")
+          for old in [
+              'completion claim."\n)',
+              'conflicting views require it."\n)',
+              'stage is actually reached."\n)',
+              'full-project validation ceremony."\n)',
+              'acceptance scenarios exercise them."\n)',
+          ]:
+              new = old.replace('."\n)', '."""\n)')
+              if old not in text:
+                  raise SystemExit(f"Missing helper repair target: {old}")
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding="utf-8")
+          PY
       - name: Apply guarded cleanup
         run: python3 mcp/scripts/apply-minimum-evidence-cleanup.py
       - name: Install
