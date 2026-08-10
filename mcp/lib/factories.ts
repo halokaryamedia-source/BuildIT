@@ -112,7 +112,7 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 }
 
 /**
- * Creates a new MCP tool and registers it with the server using the official SDK.
+ * Stores one MCP tool definition for request-owned server registration.
  * @param name - The tool name suffix (will be prefixed with "blockbench_").
  * @param tool - The tool configuration.
  * @param tool.description - The description of the tool.
@@ -155,7 +155,7 @@ export function createTool<T extends z.ZodType>(
 
   tools[name] = {
     name,
-    description: toolDef.title,
+    description: toolDef.description,
     enabled,
     status,
   };
@@ -267,7 +267,7 @@ interface ResourceDefinition {
 const resourceDefinitions: Record<string, ResourceDefinition> = {};
 
 /**
- * Creates a new MCP resource and registers it with the server using the official SDK.
+ * Stores one MCP resource definition for request-owned server registration.
  * @param name - The resource name.
  * @param config - The resource configuration.
  * @param config.uriTemplate - The URI template pattern (e.g., "nodes://{id}").
@@ -410,7 +410,7 @@ function promptArgumentsFromShape(
 }
 
 /**
- * Creates a new MCP prompt and registers it with the server using the official SDK.
+ * Stores one MCP prompt definition for request-owned server registration.
  * @param name - The prompt name
  * @param prompt - The prompt configuration.
  * @param prompt.description - The description of the prompt.

@@ -1,11 +1,11 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T17:12:51.268Z",
+  "generatedAt": "2026-08-10T18:52:09.443Z",
   "tools": [
     {
       "name": "place_cube",
       "title": "Place Cube",
-      "description": "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.",
+      "description": "Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -40,8 +40,8 @@
                           "type": "number"
                         }
                       ],
-                      "description": "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly.",
-                      "markdownDescription": "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly."
+                      "description": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise.",
+                      "markdownDescription": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise."
                     },
                     "from": {
                       "type": "array",
@@ -58,8 +58,8 @@
                           "type": "number"
                         }
                       ],
-                      "description": "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent.",
-                      "markdownDescription": "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+                      "description": "Required finite Cube start coordinates [x,y,z].",
+                      "markdownDescription": "Required finite Cube start coordinates [x,y,z]."
                     },
                     "to": {
                       "type": "array",
@@ -76,8 +76,8 @@
                           "type": "number"
                         }
                       ],
-                      "description": "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent.",
-                      "markdownDescription": "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+                      "description": "Required finite Cube end coordinates [x,y,z].",
+                      "markdownDescription": "Required finite Cube end coordinates [x,y,z]."
                     },
                     "rotation": {
                       "type": "array",
@@ -99,8 +99,8 @@
                         0,
                         0
                       ],
-                      "description": "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot.",
-                      "markdownDescription": "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot."
+                      "description": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin.",
+                      "markdownDescription": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
                     }
                   },
                   "required": [
@@ -111,18 +111,18 @@
                   "additionalProperties": false
                 },
                 "minItems": 1,
-                "description": "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot.",
-                "markdownDescription": "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
+                "description": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin.",
+                "markdownDescription": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
               },
               "texture": {
                 "type": "string",
-                "description": "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation.",
-                "markdownDescription": "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation."
+                "description": "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail.",
+                "markdownDescription": "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail."
               },
               "group": {
                 "type": "string",
-                "description": "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional.",
-                "markdownDescription": "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional."
+                "description": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.",
+                "markdownDescription": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
               },
               "faces": {
                 "anyOf": [
@@ -210,7 +210,7 @@
     {
       "name": "modify_cube",
       "title": "Modify Cube",
-      "description": "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. The result includes authored before/after state plus a deterministic `geometry_effect` summary (changed transform fields, center/size/origin/rotation deltas, visibility change) so the caller can verify that the structural effect matches the diagnosed correction invariant. A successful return still does not evaluate whether the Cube is visually correct or matches the reference.",
+      "description": "Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -225,8 +225,8 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target.",
-                "markdownDescription": "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target."
+                "description": "Required Cube UUID or unique exact name; selection is never an implicit target.",
+                "markdownDescription": "Required Cube UUID or unique exact name; selection is never an implicit target."
               },
               "name": {
                 "type": "string",
@@ -248,8 +248,8 @@
                     "type": "number"
                   }
                 ],
-                "description": "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite.",
-                "markdownDescription": "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite."
+                "description": "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform.",
+                "markdownDescription": "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform."
               },
               "from": {
                 "type": "array",
@@ -302,8 +302,8 @@
                     "type": "number"
                   }
                 ],
-                "description": "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot.",
-                "markdownDescription": "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot."
+                "description": "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot.",
+                "markdownDescription": "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
               },
               "autouv": {
                 "type": "string",
@@ -363,7 +363,7 @@
     {
       "name": "modify_cubes_batch",
       "title": "Modify Cubes Batch",
-      "description": "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. Each target result includes authored before/after state plus a deterministic `geometry_effect` summary so unintended structural side effects can be detected before visual approval. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
+      "description": "Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -383,8 +383,8 @@
                     "id": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element.",
-                      "markdownDescription": "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element."
+                      "description": "Exact Cube UUID; names and selection are not accepted for batch correction.",
+                      "markdownDescription": "Exact Cube UUID; names and selection are not accepted for batch correction."
                     },
                     "origin": {
                       "type": "array",
@@ -401,8 +401,8 @@
                           "type": "number"
                         }
                       ],
-                      "description": "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite.",
-                      "markdownDescription": "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite."
+                      "description": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite.",
+                      "markdownDescription": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite."
                     },
                     "from": {
                       "type": "array",
@@ -455,8 +455,8 @@
                           "type": "number"
                         }
                       ],
-                      "description": "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot.",
-                      "markdownDescription": "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot."
+                      "description": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot.",
+                      "markdownDescription": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
                     },
                     "visibility": {
                       "type": "boolean",
@@ -471,8 +471,8 @@
                 },
                 "minItems": 1,
                 "maxItems": 32,
-                "description": "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit.",
-                "markdownDescription": "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit."
+                "description": "1-32 explicit Cube transform/visibility updates applied in one Undo unit.",
+                "markdownDescription": "1-32 explicit Cube transform/visibility updates applied in one Undo unit."
               }
             },
             "required": [
@@ -607,7 +607,7 @@
     {
       "name": "capture_model_views",
       "title": "Capture Model Views",
-      "description": "Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, and returns actual MCP image content through Blockbench's offscreen screenshot preview so the active editor camera remains untouched. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.",
+      "description": "Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -756,8 +756,8 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10000,
-                "description": "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization.",
-                "markdownDescription": "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization."
+                "description": "Optional finite animation length in seconds (0..10000).",
+                "markdownDescription": "Optional finite animation length in seconds (0..10000)."
               },
               "bones": {
                 "type": "object",
@@ -769,8 +769,8 @@
                       "time": {
                         "type": "number",
                         "minimum": 0,
-                        "description": "Finite non-negative keyframe time in seconds.",
-                        "markdownDescription": "Finite non-negative keyframe time in seconds."
+                        "description": "Finite keyframe time in seconds (>=0).",
+                        "markdownDescription": "Finite keyframe time in seconds (>=0)."
                       },
                       "position": {
                         "type": "array",
@@ -779,8 +779,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import.",
-                        "markdownDescription": "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
+                        "description": "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space.",
+                        "markdownDescription": "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space."
                       },
                       "rotation": {
                         "type": "array",
@@ -789,8 +789,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import.",
-                        "markdownDescription": "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
+                        "description": "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space.",
+                        "markdownDescription": "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space."
                       },
                       "scale": {
                         "anyOf": [
@@ -806,8 +806,8 @@
                             "type": "number"
                           }
                         ],
-                        "description": "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged.",
-                        "markdownDescription": "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
+                        "description": "Finite scale [x,y,z] or uniform scalar.",
+                        "markdownDescription": "Finite scale [x,y,z] or uniform scalar."
                       }
                     },
                     "required": [
@@ -815,11 +815,11 @@
                     ],
                     "additionalProperties": false
                   },
-                  "description": "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time.",
-                  "markdownDescription": "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time."
+                  "description": "Transform keyframes at finite non-negative times; one value per channel per time.",
+                  "markdownDescription": "Transform keyframes at finite non-negative times; one value per channel per time."
                 },
-                "description": "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation.",
-                "markdownDescription": "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation."
+                "description": "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space.",
+                "markdownDescription": "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space."
               },
               "particle_effects": {
                 "type": "object",
@@ -831,24 +831,24 @@
                         "effect": {
                           "type": "string",
                           "minLength": 1,
-                          "description": "Required Bedrock particle effect identifier.",
-                          "markdownDescription": "Required Bedrock particle effect identifier."
+                          "description": "Bedrock particle effect identifier.",
+                          "markdownDescription": "Bedrock particle effect identifier."
                         },
                         "locator": {
                           "type": "string",
                           "minLength": 1,
-                          "description": "Optional Bedrock locator used to position the particle effect.",
-                          "markdownDescription": "Optional Bedrock locator used to position the particle effect."
+                          "description": "Optional Locator name for the particle.",
+                          "markdownDescription": "Optional Locator name for the particle."
                         },
                         "bind_to_actor": {
                           "type": "boolean",
-                          "description": "Optional Bedrock actor-binding flag. Omit for the native default behavior.",
-                          "markdownDescription": "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+                          "description": "Optional actor-binding flag; omit for native default.",
+                          "markdownDescription": "Optional actor-binding flag; omit for native default."
                         },
                         "pre_effect_script": {
                           "type": "string",
-                          "description": "Optional Molang script evaluated before the particle effect.",
-                          "markdownDescription": "Optional Molang script evaluated before the particle effect."
+                          "description": "Optional pre-effect Molang script.",
+                          "markdownDescription": "Optional pre-effect Molang script."
                         }
                       },
                       "required": [
@@ -864,24 +864,24 @@
                           "effect": {
                             "type": "string",
                             "minLength": 1,
-                            "description": "Required Bedrock particle effect identifier.",
-                            "markdownDescription": "Required Bedrock particle effect identifier."
+                            "description": "Bedrock particle effect identifier.",
+                            "markdownDescription": "Bedrock particle effect identifier."
                           },
                           "locator": {
                             "type": "string",
                             "minLength": 1,
-                            "description": "Optional Bedrock locator used to position the particle effect.",
-                            "markdownDescription": "Optional Bedrock locator used to position the particle effect."
+                            "description": "Optional Locator name for the particle.",
+                            "markdownDescription": "Optional Locator name for the particle."
                           },
                           "bind_to_actor": {
                             "type": "boolean",
-                            "description": "Optional Bedrock actor-binding flag. Omit for the native default behavior.",
-                            "markdownDescription": "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+                            "description": "Optional actor-binding flag; omit for native default.",
+                            "markdownDescription": "Optional actor-binding flag; omit for native default."
                           },
                           "pre_effect_script": {
                             "type": "string",
-                            "description": "Optional Molang script evaluated before the particle effect.",
-                            "markdownDescription": "Optional Molang script evaluated before the particle effect."
+                            "description": "Optional pre-effect Molang script.",
+                            "markdownDescription": "Optional pre-effect Molang script."
                           }
                         },
                         "required": [
@@ -893,8 +893,8 @@
                     }
                   ]
                 },
-                "description": "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects.",
-                "markdownDescription": "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
+                "description": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.",
+                "markdownDescription": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
               }
             },
             "required": [
@@ -1201,7 +1201,7 @@
     {
       "name": "bone_rigging",
       "title": "Bone Rigging",
-      "description": "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and uses Blockbench pivot transfer semantics so the pivot changes without intentionally moving the group's visual contents. mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
+      "description": "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1234,8 +1234,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred.",
-                    "markdownDescription": "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
+                    "description": "Create: new unique name. Other actions: Group UUID or unique exact name.",
+                    "markdownDescription": "Create: new unique name. Other actions: Group UUID or unique exact name."
                   },
                   "new_name": {
                     "type": "string",
@@ -1245,8 +1245,8 @@
                   },
                   "parent": {
                     "type": "string",
-                    "description": "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root).",
-                    "markdownDescription": "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root)."
+                    "description": "Parent Group UUID or unique exact name; required by parent, optional on create.",
+                    "markdownDescription": "Parent Group UUID or unique exact name; required by parent, optional on create."
                   },
                   "origin": {
                     "type": "array",
@@ -1255,8 +1255,8 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot.",
-                    "markdownDescription": "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot."
+                    "description": "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it.",
+                    "markdownDescription": "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it."
                   },
                   "rotation": {
                     "type": "array",
@@ -1265,16 +1265,16 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason.",
-                    "markdownDescription": "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason."
+                    "description": "Initial create rotation; omit for neutral zero rotation.",
+                    "markdownDescription": "Initial create rotation; omit for neutral zero rotation."
                   },
                   "children": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation.",
-                    "markdownDescription": "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation."
+                    "description": "Create-only child UUIDs or unique exact names; all are preflighted.",
+                    "markdownDescription": "Create-only child UUIDs or unique exact names; all are preflighted."
                   },
                   "ik_enabled": {
                     "type": "boolean",
@@ -1689,7 +1689,7 @@
     {
       "name": "inspect_animation",
       "title": "Inspect Authored Animation",
-      "description": "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed authored transform-channel keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+      "description": "Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1709,8 +1709,8 @@
               "bone": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator.",
-                "markdownDescription": "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator."
+                "description": "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes.",
+                "markdownDescription": "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes."
               }
             },
             "additionalProperties": false
@@ -1752,7 +1752,7 @@
     {
       "name": "add_group",
       "title": "Add Group",
-      "description": "Adds a Group with neutral origin/rotation defaults so callers are not forced to invent pivots or angles. An explicit parent is preflighted UUID-first (or by exact unique name) before mutation; missing or ambiguous parents fail instead of falling back. Use a non-zero origin/rotation only when a real joint, attachment, or transform relationship justifies it.",
+      "description": "Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -1775,8 +1775,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it.",
-                "markdownDescription": "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it.",
+                "description": "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it.",
+                "markdownDescription": "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it.",
                 "default": [
                   0,
                   0,
@@ -1790,8 +1790,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it.",
-                "markdownDescription": "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it.",
+                "description": "Initial Group rotation; omit for neutral zero rotation.",
+                "markdownDescription": "Initial Group rotation; omit for neutral zero rotation.",
                 "default": [
                   0,
                   0,
@@ -1801,8 +1801,8 @@
               "parent": {
                 "type": "string",
                 "default": "root",
-                "description": "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional.",
-                "markdownDescription": "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional."
+                "description": "Parent Group UUID or unique exact name; omit/use `root` for intentional root.",
+                "markdownDescription": "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
               },
               "visibility": {
                 "type": "boolean",
@@ -1876,7 +1876,7 @@
     {
       "name": "duplicate_element",
       "title": "Duplicate Element",
-      "description": "Duplicates one explicit Cube or Group target. Use this only after repetition/symmetry is already supported by the reference or model design; duplication is not a shortcut for deciding primary geometry. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
+      "description": "Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -1960,7 +1960,7 @@
     {
       "name": "find_elements_by_criteria",
       "title": "Find Elements by Criteria",
-      "description": "Searches the current Bedrock Cuboid modelling project for Cubes/Groups matching the given criteria. Supports name pattern matching (regex or substring), Cube/Group type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. Invalid/rejected name_pattern values fail instead of being silently ignored. Returns metadata and never modifies state.",
+      "description": "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -1974,8 +1974,8 @@
             "properties": {
               "name_pattern": {
                 "type": "string",
-                "description": "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored.",
-                "markdownDescription": "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored."
+                "description": "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
+                "markdownDescription": "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
               },
               "name_contains": {
                 "type": "string",
@@ -1995,8 +1995,8 @@
               },
               "parent_group": {
                 "type": "string",
-                "description": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search.",
-                "markdownDescription": "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search."
+                "description": "Optional parent Group UUID or unique exact name.",
+                "markdownDescription": "Optional parent Group UUID or unique exact name."
               },
               "min_size": {
                 "type": "array",
@@ -2005,8 +2005,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Minimum [x,y,z] size for cubes. Cubes smaller on any axis are excluded.",
-                "markdownDescription": "Minimum [x,y,z] size for cubes. Cubes smaller on any axis are excluded."
+                "description": "Minimum Cube size [x,y,z].",
+                "markdownDescription": "Minimum Cube size [x,y,z]."
               },
               "max_size": {
                 "type": "array",
@@ -2015,8 +2015,8 @@
                 },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Maximum [x,y,z] size for cubes. Cubes larger on any axis are excluded.",
-                "markdownDescription": "Maximum [x,y,z] size for cubes. Cubes larger on any axis are excluded."
+                "description": "Maximum Cube size [x,y,z].",
+                "markdownDescription": "Maximum Cube size [x,y,z]."
               },
               "selected_only": {
                 "type": "boolean",
@@ -2042,7 +2042,7 @@
     {
       "name": "select_all_of_type",
       "title": "Select All of Type",
-      "description": "Selection/navigation helper for workflows that genuinely need editor selection, such as some texture/Paint operations. It is not a normal geometry-targeting path: `place_cube`, `modify_cube`, `modify_cubes_batch`, inspection, hierarchy, and destructive operations should use explicit identities instead. Optionally restrict to descendants of one explicit parent Group; missing or ambiguous scopes fail before selection changes.",
+      "description": "Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2123,7 +2123,7 @@
     {
       "name": "get_selection",
       "title": "Get Selection",
-      "description": "Returns the current Cube/Group selection state plus the active texture. Use it only when current editor selection/active-texture state is itself relevant, especially texture/Paint work. Normal geometry inspection and mutation should prefer explicit UUIDs and `inspect_element` rather than consulting selection as modelling context.",
+      "description": "Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2445,7 +2445,7 @@
     {
       "name": "export_model",
       "title": "Export Bedrock Model",
-      "description": "Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.",
+      "description": "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`; optional filesystem write requires Blockbench permission. Other model codecs are rejected.",
       "status": "experimental",
       "category": "Export",
       "annotations": {
@@ -2471,13 +2471,13 @@
               "options": {
                 "type": "object",
                 "additionalProperties": {},
-                "description": "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options.",
-                "markdownDescription": "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options."
+                "description": "Optional compile options for the selected Bedrock/project codec.",
+                "markdownDescription": "Optional compile options for the selected Bedrock/project codec."
               },
               "path": {
                 "type": "string",
-                "description": "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only.",
-                "markdownDescription": "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only."
+                "description": "Optional absolute output path; requires Blockbench filesystem permission.",
+                "markdownDescription": "Optional absolute output path; requires Blockbench filesystem permission."
               },
               "max_content_length": {
                 "type": "integer",
@@ -4025,7 +4025,7 @@
     {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution, Cube/Group/texture counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
+      "description": "Returns read-only project identity/format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4046,7 +4046,7 @@
     {
       "name": "inspect_model_bounds",
       "title": "Inspect Model Bounds",
-      "description": "Returns raw rendered-current-pose bounds for visible Cube geometry in the active project: min/max/center, width-height-length, XZ footprint, Cube counts, and pose context. Uses Blockbench global Cube vertices so active Cube/group transforms are reflected. This is structural observation only: it does not compare against a target, score resemblance, recommend corrections, or return PASS/FAIL.",
+      "description": "Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4067,7 +4067,7 @@
     {
       "name": "create_texture",
       "title": "Create Texture",
-      "description": "Creates a new texture with the given name and size. When an explicit TextureGroup target is supplied, it resolves before mutation by exact UUID, otherwise an exact name must be unique; missing or ambiguous group targets fail before Undo or texture construction.",
+      "description": "Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4103,8 +4103,8 @@
               "group": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique.",
-                "markdownDescription": "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique."
+                "description": "Optional TextureGroup UUID or unique exact name.",
+                "markdownDescription": "Optional TextureGroup UUID or unique exact name."
               },
               "fill_color": {
                 "anyOf": [
@@ -4151,8 +4151,8 @@
                   "height",
                   "mer"
                 ],
-                "description": "PBR channel to use for the texture. Color, normal, height, or Metalness/Emissive/Roughness (MER) map.",
-                "markdownDescription": "PBR channel to use for the texture. Color, normal, height, or Metalness/Emissive/Roughness (MER) map."
+                "description": "PBR channel: color, normal, height, or MER.",
+                "markdownDescription": "PBR channel: color, normal, height, or MER."
               },
               "render_mode": {
                 "type": "string",
@@ -4163,8 +4163,8 @@
                   "layered"
                 ],
                 "default": "default",
-                "description": "Render mode for the texture. Default, emissive, additive, or layered.",
-                "markdownDescription": "Render mode for the texture. Default, emissive, additive, or layered."
+                "description": "Texture render mode.",
+                "markdownDescription": "Texture render mode."
               },
               "render_sides": {
                 "type": "string",
@@ -4190,7 +4190,7 @@
     {
       "name": "apply_texture",
       "title": "Apply Texture",
-      "description": "Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface.",
+      "description": "Applies one explicit Texture to a Cube or Group scope; Group targets affect descendant Cubes. Element/Texture references must resolve uniquely before mutation. Generic Mesh is outside the Bedrock Entity surface.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4205,14 +4205,14 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types.",
-                "markdownDescription": "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types."
+                "description": "Required Cube/Group UUID or unique exact name.",
+                "markdownDescription": "Required Cube/Group UUID or unique exact name."
               },
               "texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Required Texture UUID, exact ID, or unique exact name.",
+                "markdownDescription": "Required Texture UUID, exact ID, or unique exact name."
               },
               "applyTo": {
                 "type": "string",
@@ -4331,7 +4331,7 @@
     {
       "name": "create_pbr_material",
       "title": "Create PBR Material",
-      "description": "Creates a new PBR material (texture group with is_material=true). Optional channel texture references are resolved exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous supplied references fail before Undo or material creation. Uniform color, MER, and subsurface values remain supported.",
+      "description": "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4351,26 +4351,26 @@
               "color_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Optional color Texture UUID, exact ID, or unique exact name.",
+                "markdownDescription": "Optional color Texture UUID, exact ID, or unique exact name."
               },
               "normal_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Optional normal Texture UUID, exact ID, or unique exact name.",
+                "markdownDescription": "Optional normal Texture UUID, exact ID, or unique exact name."
               },
               "height_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Optional height Texture UUID, exact ID, or unique exact name.",
+                "markdownDescription": "Optional height Texture UUID, exact ID, or unique exact name."
               },
               "mer_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Optional MER Texture UUID, exact ID, or unique exact name.",
+                "markdownDescription": "Optional MER Texture UUID, exact ID, or unique exact name."
               },
               "color_value": {
                 "type": "array",
@@ -4416,7 +4416,7 @@
     {
       "name": "configure_material",
       "title": "Configure Material",
-      "description": "Configures one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous material targets fail before mutation. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
+      "description": "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4431,32 +4431,32 @@
               "material": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique.",
-                "markdownDescription": "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique."
+                "description": "Required material/TextureGroup UUID or unique exact name.",
+                "markdownDescription": "Required material/TextureGroup UUID or unique exact name."
               },
               "color_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+                "description": "Color Texture UUID/ID/unique name, or `none` for uniform color.",
+                "markdownDescription": "Color Texture UUID/ID/unique name, or `none` for uniform color."
               },
               "normal_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+                "description": "Normal Texture UUID/ID/unique name, or `none` to remove.",
+                "markdownDescription": "Normal Texture UUID/ID/unique name, or `none` to remove."
               },
               "height_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+                "description": "Height Texture UUID/ID/unique name, or `none` to remove.",
+                "markdownDescription": "Height Texture UUID/ID/unique name, or `none` to remove."
               },
               "mer_texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+                "description": "MER Texture UUID/ID/unique name, or `none` for uniform values.",
+                "markdownDescription": "MER Texture UUID/ID/unique name, or `none` for uniform values."
               },
               "color_value": {
                 "type": "array",
@@ -4585,7 +4585,7 @@
     {
       "name": "assign_texture_channel",
       "title": "Assign Texture Channel",
-      "description": "Assigns one explicit texture to a PBR channel within one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique. Missing or ambiguous material/texture targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
+      "description": "Assigns one explicit Texture to one PBR channel. Material/Texture references must resolve uniquely before Undo; existing textures on that channel are included in the edit.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {

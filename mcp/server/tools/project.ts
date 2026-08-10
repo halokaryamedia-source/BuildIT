@@ -35,7 +35,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "get_project_info",
     description:
-      "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution, Cube/Group/texture counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
+      "Returns read-only project identity/format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
     annotations: {
       title: "Get Project Info",
       readOnlyHint: true,
@@ -46,7 +46,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "inspect_model_bounds",
     description:
-      "Returns raw rendered-current-pose bounds for visible Cube geometry in the active project: min/max/center, width-height-length, XZ footprint, Cube counts, and pose context. Uses Blockbench global Cube vertices so active Cube/group transforms are reflected. This is structural observation only: it does not compare against a target, score resemblance, recommend corrections, or return PASS/FAIL.",
+      "Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.",
     annotations: {
       title: "Inspect Model Bounds",
       readOnlyHint: true,

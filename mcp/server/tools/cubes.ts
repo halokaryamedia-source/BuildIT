@@ -19,21 +19,21 @@ function hasNonZeroRotation(rotation?: readonly number[]): boolean {
 const placeCubeElementSchema = cubeSchema
   .extend({
     from: finiteVec3Schema.describe(
-      "Explicit authored Cube start coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+      "Required finite Cube start coordinates [x,y,z]."
     ),
     to: finiteVec3Schema.describe(
-      "Explicit authored Cube end coordinates. Required for initial placement; place_cube never supplies a default geometry extent."
+      "Required finite Cube end coordinates [x,y,z]."
     ),
     origin: finiteVec3Schema
       .optional()
       .describe(
-        "Intentional Cube pivot/origin. May be omitted for an unrotated Cube. A Cube with any non-zero rotation must provide origin explicitly."
+        "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise."
       ),
     rotation: finiteVec3Schema
       .optional()
       .default([0, 0, 0])
       .describe(
-        "Cube rotation in degrees. Non-zero rotation requires an explicit evidence-backed origin/pivot."
+        "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
       ),
   })
   .refine(
@@ -52,12 +52,12 @@ const cubeCorrectionUpdateSchema = z
       .string()
       .min(1)
       .describe(
-        "Exact Cube UUID. Names and selection are intentionally unsupported so a multi-Cube correction cannot silently target the wrong element."
+        "Exact Cube UUID; names and selection are not accepted for batch correction."
       ),
     origin: finiteVec3Schema
       .optional()
       .describe(
-        "New Cube pivot/origin. When origin is the only transform field in this update, the tool treats it as a pivot-only correction and preserves the Cube's visual position. When combined with from/to/rotation, it is treated as part of an authored geometry rewrite."
+        "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite."
       ),
     from: finiteVec3Schema
       .optional()
@@ -68,7 +68,7 @@ const cubeCorrectionUpdateSchema = z
     rotation: finiteVec3Schema
       .optional()
       .describe(
-        "New authored Cube rotation in degrees. If the target Cube is currently unrotated and this activates a non-zero rotation, origin must be supplied explicitly in the same update. A Cube that is already rotated may adjust rotation while reusing its existing pivot."
+        "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
       ),
     visibility: z
       .boolean()
@@ -93,19 +93,19 @@ export const placeCubeParameters = z.object({
     .array(placeCubeElementSchema)
     .min(1)
     .describe(
-      "Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot."
+      "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
     ),
   texture: z
     .string()
     .optional()
     .describe(
-      "Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation."
+      "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail."
     ),
   group: z
     .string()
     .optional()
     .describe(
-      "Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional."
+      "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
     ),
   faces: z
     .union([
@@ -143,13 +143,13 @@ export const modifyCubeParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target."
+      "Required Cube UUID or unique exact name; selection is never an implicit target."
     ),
   name: z.string().optional().describe("New name of the cube."),
   origin: finiteVec3Schema
     .optional()
     .describe(
-      "Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite."
+      "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform."
     ),
   from: finiteVec3Schema
     .optional()
@@ -160,7 +160,7 @@ export const modifyCubeParameters = z.object({
   rotation: finiteVec3Schema
     .optional()
     .describe(
-      "Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot."
+      "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
     ),
   autouv: z
     .enum(["0", "1", "2"])
@@ -209,7 +209,7 @@ export const modifyCubesBatchParameters = z.object({
       }
     )
     .describe(
-      "One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit."
+      "1-32 explicit Cube transform/visibility updates applied in one Undo unit."
     ),
 });
 
@@ -217,7 +217,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.",
+      "Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -228,7 +228,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. The result includes authored before/after state plus a deterministic `geometry_effect` summary (changed transform fields, center/size/origin/rotation deltas, visibility change) so the caller can verify that the structural effect matches the diagnosed correction invariant. A successful return still does not evaluate whether the Cube is visually correct or matches the reference.",
+      "Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -239,7 +239,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. Each target result includes authored before/after state plus a deterministic `geometry_effect` summary so unintended structural side effects can be detected before visual approval. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.",
+      "Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,

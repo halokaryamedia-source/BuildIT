@@ -80,7 +80,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Place Cube</p>
-      <p class="card-desc">Places one or more Cubes. Every new Cube must provide explicit finite from/to geometry extents; place_cube does not create a default [0,0,0]→[1,1,1] Cube when geometry was omitted. Unrotated Cubes may omit origin and use the neutral [0,0,0] value; any Cube with non-zero rotation must provide an explicit origin/pivot so a missing pivot cannot silently become [0,0,0]. If `group` is omitted or explicitly `root`, placement is at root. Any other supplied group must resolve by exact UUID or exact unique name before mutation; missing or ambiguous groups fail instead of silently falling back to root. If `texture` is omitted, existing default-texture behavior is preserved. A supplied texture resolves exact UUID first, then exact texture ID, then exact name only when unique; ambiguous or missing references fail before Undo/Cube creation. A successful return confirms only that authored Cube state was applied; it does not evaluate silhouette, proportion, placement quality, or reference fidelity.</p>
+      <p class="card-desc">Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -95,17 +95,17 @@ bun run build
       <td class="col-name">elements</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Array of Cubes to place. Every Cube requires explicit finite from/to extents. Unrotated Cubes may omit origin; every Cube with non-zero rotation must provide an explicit origin/pivot. <span class="param-meta">[minItems: 1]</span></td>
+      <td class="col-desc">Cubes to place. Each requires finite from/to; rotated Cubes also require origin. <span class="param-meta">[minItems: 1]</span></td>
     </tr><tr>
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional texture reference. Omit to keep the existing default-texture behavior. When supplied, UUID is preferred, then exact texture ID, then exact name only when unique; ambiguous or missing references are rejected before Cube creation.</td>
+      <td class="col-desc">Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail.</td>
     </tr><tr>
       <td class="col-name">group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Group UUID or exact unique name. Omit this field (or pass `root`) only when root placement is intentional.</td>
+      <td class="col-desc">Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.</td>
     </tr><tr>
       <td class="col-name">faces</td>
       <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[] | unknown | boolean | object[]</td>
@@ -124,7 +124,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Modify Cube</p>
-      <p class="card-desc">Modifies one explicit Cube target. `id` is required: UUID is resolved first, otherwise an exact name must be unique; editor selection is never used as an implicit mutation target. Ambiguous names fail instead of modifying multiple Cubes. An origin-only transform change uses Blockbench Cube.transferOrigin so pivot movement preserves visual position; origin combined with from/to/rotation is treated as an authored geometry rewrite. Activating non-zero rotation on a currently unrotated Cube requires explicit origin in the same request; later rotation adjustments may reuse the existing pivot. Auto UV setting: 0 = disabled, 1 = enabled, 2 = relative auto UV. The result includes authored before/after state plus a deterministic `geometry_effect` summary (changed transform fields, center/size/origin/rotation deltas, visibility change) so the caller can verify that the structural effect matches the diagnosed correction invariant. A successful return still does not evaluate whether the Cube is visually correct or matches the reference.</p>
+      <p class="card-desc">Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -139,7 +139,7 @@ bun run build
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required Cube target: exact UUID or exact unique name. UUID is preferred. Editor selection is not used as an implicit mutation target. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Required Cube UUID or unique exact name; selection is never an implicit target. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">name</td>
       <td class="col-type">string</td>
@@ -149,7 +149,7 @@ bun run build
       <td class="col-name">origin</td>
       <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Cube pivot/origin. If supplied without from/to/rotation, this is a pivot-only correction and visual position is preserved. If combined with from/to/rotation, origin is applied as part of the authored geometry rewrite. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">from</td>
       <td class="col-type">unknown[]</td>
@@ -164,7 +164,7 @@ bun run build
       <td class="col-name">rotation</td>
       <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Rotation of the Cube. If the target is currently unrotated and this activates a non-zero rotation, provide origin explicitly in the same request. Later rotation adjustments on an already-rotated Cube may reuse its existing pivot. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">autouv</td>
       <td class="col-type">&quot;0&quot; | &quot;1&quot; | &quot;2&quot;</td>
@@ -213,7 +213,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Modify Cubes Batch</p>
-      <p class="card-desc">Applies one coherent correction across several explicitly identified Cubes in a single recoverable Undo unit. Every target must be an exact Cube UUID and all targets are preflighted before mutation. Each Cube may receive different from/to/origin/rotation/visibility values. Per update, origin without from/to/rotation is a pivot-only transfer that preserves visual position; origin combined with geometry transform fields is an authored rewrite. Activating non-zero rotation on a currently unrotated target requires explicit origin in that update; already-rotated targets may adjust rotation while reusing their existing pivots. If any target fails preflight, the batch does not open Undo. If mutation fails after Undo starts, the edit is cancelled with changes reverted. This tool performs no visual judgement, planning, reparenting, UV work, or automatic correction. Each target result includes authored before/after state plus a deterministic `geometry_effect` summary so unintended structural side effects can be detected before visual approval. A successful return confirms only that the requested authored updates were applied; it does not mean the geometry was corrected visually.</p>
+      <p class="card-desc">Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -228,7 +228,7 @@ bun run build
       <td class="col-name">updates</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">One to 32 explicit per-Cube authored transform/visibility updates applied as one recoverable Undo unit. <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
+      <td class="col-desc">1-32 explicit Cube transform/visibility updates applied in one Undo unit. <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -337,7 +337,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Capture Model Views</p>
-      <p class="card-desc">Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, and returns actual MCP image content through Blockbench's offscreen screenshot preview so the active editor camera remains untouched. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.</p>
+      <p class="card-desc">Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -404,17 +404,17 @@ bun run build
       <td class="col-name">animation_length</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization. <span class="param-meta">[min: 0, max: 10000]</span></td>
+      <td class="col-desc">Optional finite animation length in seconds (0..10000). <span class="param-meta">[min: 0, max: 10000]</span></td>
     </tr><tr>
       <td class="col-name">bones</td>
       <td class="col-type">Record&lt;string, object[]&gt;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation.</td>
+      <td class="col-desc">Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space.</td>
     </tr><tr>
       <td class="col-name">particle_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects.</td>
+      <td class="col-desc">Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.</td>
     </tr></tbody>
     </table>
       </div>
@@ -536,7 +536,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Bone Rigging</p>
-      <p class="card-desc">Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and uses Blockbench pivot transfer semantics so the pivot changes without intentionally moving the group's visual contents. mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.</p>
+      <p class="card-desc">Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -712,7 +712,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Inspect Authored Animation</p>
-      <p class="card-desc">Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed authored transform-channel keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.</p>
+      <p class="card-desc">Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -732,7 +732,7 @@ bun run build
       <td class="col-name">bone</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -778,7 +778,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Add Group</p>
-      <p class="card-desc">Adds a Group with neutral origin/rotation defaults so callers are not forced to invent pivots or angles. An explicit parent is preflighted UUID-first (or by exact unique name) before mutation; missing or ambiguous parents fail instead of falling back. Use a non-zero origin/rotation only when a real joint, attachment, or transform relationship justifies it.</p>
+      <p class="card-desc">Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -798,17 +798,17 @@ bun run build
       <td class="col-name">origin</td>
       <td class="col-type">number[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">rotation</td>
       <td class="col-type">number[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Initial Group rotation; omit for neutral zero rotation. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">parent</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional. <span class="param-meta">(default: <code>&quot;root&quot;</code>)</span></td>
+      <td class="col-desc">Parent Group UUID or unique exact name; omit/use `root` for intentional root. <span class="param-meta">(default: <code>&quot;root&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">visibility</td>
       <td class="col-type">boolean</td>
@@ -876,7 +876,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Duplicate Element</p>
-      <p class="card-desc">Duplicates one explicit Cube or Group target. Use this only after repetition/symmetry is already supported by the reference or model design; duplication is not a shortcut for deciding primary geometry. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.</p>
+      <p class="card-desc">Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -949,7 +949,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Find Elements by Criteria</p>
-      <p class="card-desc">Searches the current Bedrock Cuboid modelling project for Cubes/Groups matching the given criteria. Supports name pattern matching (regex or substring), Cube/Group type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. Invalid/rejected name_pattern values fail instead of being silently ignored. Returns metadata and never modifies state.</p>
+      <p class="card-desc">Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -964,7 +964,7 @@ bun run build
       <td class="col-name">name_pattern</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored.</td>
+      <td class="col-desc">Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.</td>
     </tr><tr>
       <td class="col-name">name_contains</td>
       <td class="col-type">string</td>
@@ -979,17 +979,17 @@ bun run build
       <td class="col-name">parent_group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search.</td>
+      <td class="col-desc">Optional parent Group UUID or unique exact name.</td>
     </tr><tr>
       <td class="col-name">min_size</td>
       <td class="col-type">number[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Minimum [x,y,z] size for cubes. Cubes smaller on any axis are excluded. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Minimum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">max_size</td>
       <td class="col-type">number[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum [x,y,z] size for cubes. Cubes larger on any axis are excluded. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Maximum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">selected_only</td>
       <td class="col-type">boolean</td>
@@ -1013,7 +1013,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Select All of Type</p>
-      <p class="card-desc">Selection/navigation helper for workflows that genuinely need editor selection, such as some texture/Paint operations. It is not a normal geometry-targeting path: `place_cube`, `modify_cube`, `modify_cubes_batch`, inspection, hierarchy, and destructive operations should use explicit identities instead. Optionally restrict to descendants of one explicit parent Group; missing or ambiguous scopes fail before selection changes.</p>
+      <p class="card-desc">Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1086,7 +1086,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Get Selection</p>
-      <p class="card-desc">Returns the current Cube/Group selection state plus the active texture. Use it only when current editor selection/active-texture state is itself relevant, especially texture/Paint work. Normal geometry inspection and mutation should prefer explicit UUIDs and `inspect_element` rather than consulting selection as modelling context.</p>
+      <p class="card-desc">Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1188,7 +1188,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Export Bedrock Model</p>
-      <p class="card-desc">Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.</p>
+      <p class="card-desc">Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`; optional filesystem write requires Blockbench permission. Other model codecs are rejected.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1208,12 +1208,12 @@ bun run build
       <td class="col-name">options</td>
       <td class="col-type">Record&lt;string, unknown&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options.</td>
+      <td class="col-desc">Optional compile options for the selected Bedrock/project codec.</td>
     </tr><tr>
       <td class="col-name">path</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only.</td>
+      <td class="col-desc">Optional absolute output path; requires Blockbench filesystem permission.</td>
     </tr><tr>
       <td class="col-name">max_content_length</td>
       <td class="col-type">integer</td>
@@ -2244,7 +2244,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Get Project Info</p>
-      <p class="card-desc">Returns read-only project orientation: format id and display name, project name/UUID, texture resolution, Cube/Group/texture counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.</p>
+      <p class="card-desc">Returns read-only project identity/format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2258,7 +2258,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Inspect Model Bounds</p>
-      <p class="card-desc">Returns raw rendered-current-pose bounds for visible Cube geometry in the active project: min/max/center, width-height-length, XZ footprint, Cube counts, and pose context. Uses Blockbench global Cube vertices so active Cube/group transforms are reflected. This is structural observation only: it does not compare against a target, score resemblance, recommend corrections, or return PASS/FAIL.</p>
+      <p class="card-desc">Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2275,7 +2275,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Create Texture</p>
-      <p class="card-desc">Creates a new texture with the given name and size. When an explicit TextureGroup target is supplied, it resolves before mutation by exact UUID, otherwise an exact name must be unique; missing or ambiguous group targets fail before Undo or texture construction.</p>
+      <p class="card-desc">Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2310,7 +2310,7 @@ bun run build
       <td class="col-name">group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional TextureGroup UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">fill_color</td>
       <td class="col-type">number[] | string | string</td>
@@ -2325,12 +2325,12 @@ bun run build
       <td class="col-name">pbr_channel</td>
       <td class="col-type">&quot;color&quot; | &quot;normal&quot; | &quot;height&quot; | &quot;mer&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">PBR channel to use for the texture. Color, normal, height, or Metalness/Emissive/Roughness (MER) map.</td>
+      <td class="col-desc">PBR channel: color, normal, height, or MER.</td>
     </tr><tr>
       <td class="col-name">render_mode</td>
       <td class="col-type">&quot;default&quot; | &quot;emissive&quot; | &quot;additive&quot; | &quot;layered&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Render mode for the texture. Default, emissive, additive, or layered. <span class="param-meta">(default: <code>&quot;default&quot;</code>)</span></td>
+      <td class="col-desc">Texture render mode. <span class="param-meta">(default: <code>&quot;default&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">render_sides</td>
       <td class="col-type">&quot;auto&quot; | &quot;front&quot; | &quot;double&quot;</td>
@@ -2349,7 +2349,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Apply Texture</p>
-      <p class="card-desc">Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface.</p>
+      <p class="card-desc">Applies one explicit Texture to a Cube or Group scope; Group targets affect descendant Cubes. Element/Texture references must resolve uniquely before mutation. Generic Mesh is outside the Bedrock Entity surface.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2364,12 +2364,12 @@ bun run build
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Required Cube/Group UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Required Texture UUID, exact ID, or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">applyTo</td>
       <td class="col-type">&quot;all&quot; | &quot;blank&quot; | &quot;none&quot;</td>
@@ -2470,7 +2470,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Create PBR Material</p>
-      <p class="card-desc">Creates a new PBR material (texture group with is_material=true). Optional channel texture references are resolved exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous supplied references fail before Undo or material creation. Uniform color, MER, and subsurface values remain supported.</p>
+      <p class="card-desc">Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2490,22 +2490,22 @@ bun run build
       <td class="col-name">color_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional color Texture UUID, exact ID, or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">normal_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional normal Texture UUID, exact ID, or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">height_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional height Texture UUID, exact ID, or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">mer_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional MER Texture UUID, exact ID, or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">color_value</td>
       <td class="col-type">number[]</td>
@@ -2534,7 +2534,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Configure Material</p>
-      <p class="card-desc">Configures one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous material targets fail before mutation. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.</p>
+      <p class="card-desc">Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2549,27 +2549,27 @@ bun run build
       <td class="col-name">material</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Required material/TextureGroup UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">color_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Color Texture UUID/ID/unique name, or `none` for uniform color. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">normal_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Normal Texture UUID/ID/unique name, or `none` to remove. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">height_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Height Texture UUID/ID/unique name, or `none` to remove. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">mer_texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">MER Texture UUID/ID/unique name, or `none` for uniform values. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">color_value</td>
       <td class="col-type">number[]</td>
@@ -2670,7 +2670,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Assign Texture Channel</p>
-      <p class="card-desc">Assigns one explicit texture to a PBR channel within one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique. Missing or ambiguous material/texture targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.</p>
+      <p class="card-desc">Assigns one explicit Texture to one PBR channel. Material/Texture references must resolve uniquely before Undo; existing textures on that channel are included in the edit.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T17:12:51.268Z from Zod schemas
+        Generated 2026-08-10T18:52:09.443Z from Zod schemas
       </footer>
     </main>
   </div>

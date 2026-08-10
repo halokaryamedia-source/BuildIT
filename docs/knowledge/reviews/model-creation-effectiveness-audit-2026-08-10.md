@@ -403,3 +403,32 @@ Before future work, ask:
 > Does this change help Codex create, observe, diagnose, correct, texture, animate, or export a better Bedrock Entity model?
 
 If the answer is only "it makes the MCP more complete" or "Blockbench has this API", that is insufficient priority by itself.
+
+
+## Pre-Local Context & Payload Cleanup — 2026-08-11
+
+Measured generated baseline before cleanup:
+
+```text
+72 tools
+123,851 tool-metadata JSON characters
+18,249 tool-description characters
+40,850 schema-description characters
+19,808 canonical workflow-prompt characters
+```
+
+The hotspot audit showed that most removable prose cost was concentrated in `create_animation`, Cube mutation schemas/descriptions, bone rigging, PBR/material configuration, element search/group creation, and a few observation/export tools. The cleanup therefore trims only measured hotspots rather than rewriting all 72 tools.
+
+Bounded decisions:
+
+- preserve all existing Bedrock registration families and tool count;
+- keep runtime validation/refine logic unchanged;
+- keep execution-vs-visual-verdict and blocker semantics;
+- compact the canonical MCP prompt instead of duplicating specialist-skill detail;
+- use Resources as lazy browsing/context, not mandatory pre-tool reads;
+- remove raw Texture `source` from normal resource metadata because `get_texture` owns image retrieval;
+- make `validator://status` summary-only and keep detail in `validator://errors`, `validator://warnings`, and `validator://checks`;
+- keep `nodes://` unchanged until the protected TextureMesh gap has a direct authored-state owner;
+- annotation audit found every generated tool already exposes either `readOnlyHint` or an explicit `destructiveHint`, so no speculative annotation changes were made.
+
+This remains **source/contract and payload proof only**. Whether the smaller surface materially reduces Codex usage or wrong tool selection remains a Local behavioral measurement.

@@ -41,7 +41,7 @@ createPrompt(
 createPrompt("bedrock_entity_workflow", {
   title: "Minecraft Bedrock Entity Workflow",
   description:
-    "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+    "Compact BlockIT operating contract for Bedrock Entity creation: minimum evidence, primary-form/visual gates, bounded correction, downstream readiness, native capability boundaries, and Bedrock/.bbmodel export.",
   argsSchema: z.object({}),
   async generate() {
     const text = getPromptContent("bedrock_entity_workflow");

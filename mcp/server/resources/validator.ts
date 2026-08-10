@@ -149,7 +149,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Returns the current validation status including error/warning counts and a summary of all problems. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
+      "Returns validation counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
     async listCallback() {
       const totalProblems = Validator.errors.length + Validator.warnings.length;
       return {
@@ -166,9 +166,6 @@ export function registerValidatorResources() {
       };
     },
     async readCallback(uri) {
-      const errors = Validator.errors.map((e) => serializeProblem(e, true));
-      const warnings = Validator.warnings.map((w) => serializeProblem(w, false));
-
       return {
         contents: [
           {
@@ -176,14 +173,17 @@ export function registerValidatorResources() {
             text: JSON.stringify(
               {
                 summary: {
-                  totalProblems: errors.length + warnings.length,
-                  errorCount: errors.length,
-                  warningCount: warnings.length,
+                  totalProblems: Validator.errors.length + Validator.warnings.length,
+                  errorCount: Validator.errors.length,
+                  warningCount: Validator.warnings.length,
                   checkCount: Validator.checks.length,
                   triggers: Validator.triggers,
                 },
-                errors,
-                warnings,
+                detail_resources: {
+                  errors: "validator://errors",
+                  warnings: "validator://warnings",
+                  checks: "validator://checks",
+                },
               },
               null,
               2

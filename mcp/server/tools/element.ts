@@ -23,7 +23,7 @@ export const findElementsByCriteriaParameters = z.object({
     .string()
     .optional()
     .describe(
-      "Optional case-sensitive regex pattern for element names (e.g., '^arm_.*'). Omit or pass an empty string for no regex filter. An explicit invalid, oversized, or unsafe pattern is rejected instead of being ignored."
+      "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
     ),
   name_contains: z
     .string()
@@ -37,14 +37,14 @@ export const findElementsByCriteriaParameters = z.object({
     .string()
     .optional()
     .describe(
-      "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before search."
+      "Optional parent Group UUID or unique exact name."
     ),
   min_size: vector3Schema
     .optional()
-    .describe("Minimum [x,y,z] size for cubes. Cubes smaller on any axis are excluded."),
+    .describe("Minimum Cube size [x,y,z]."),
   max_size: vector3Schema
     .optional()
-    .describe("Maximum [x,y,z] size for cubes. Cubes larger on any axis are excluded."),
+    .describe("Maximum Cube size [x,y,z]."),
   selected_only: z
     .boolean()
     .optional()
@@ -100,20 +100,20 @@ export const addGroupParameters = z.object({
     .optional()
     .default([0, 0, 0])
     .describe(
-      "Authored Group pivot/origin. Omit for an organizational/non-articulated Group; provide a non-zero value only when a real joint, attachment, or transform center justifies it."
+      "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
     ),
   rotation: vector3Schema
     .optional()
     .default([0, 0, 0])
     .describe(
-      "Initial Group rotation. Omit for the neutral zero rotation; provide rotation only when the model/reference or required transform explicitly justifies it."
+      "Initial Group rotation; omit for neutral zero rotation."
     ),
   parent: z
     .string()
     .optional()
     .default("root")
     .describe(
-      "Exact parent Group UUID or exact unique name. Omit/pass `root` only when root parenting is intentional."
+      "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
     ),
   visibility: z.boolean().optional().default(true),
   autouv: autoUvEnum
@@ -172,7 +172,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "add_group",
     description:
-      "Adds a Group with neutral origin/rotation defaults so callers are not forced to invent pivots or angles. An explicit parent is preflighted UUID-first (or by exact unique name) before mutation; missing or ambiguous parents fail instead of falling back. Use a non-zero origin/rotation only when a real joint, attachment, or transform relationship justifies it.",
+      "Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.",
     annotations: {
       title: "Add Group",
       destructiveHint: true,
@@ -194,7 +194,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "duplicate_element",
     description:
-      "Duplicates one explicit Cube or Group target. Use this only after repetition/symmetry is already supported by the reference or model design; duplication is not a shortcut for deciding primary geometry. UUID is resolved first; an exact name is accepted only when unique. Ambiguous or unsupported element types fail before mutation. You may offset the duplicate or assign a new name.",
+      "Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -210,7 +210,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Searches the current Bedrock Cuboid modelling project for Cubes/Groups matching the given criteria. Supports name pattern matching (regex or substring), Cube/Group type filtering, scoping to a parent Group, cube size ranges, and selection scope. An explicit parent_group resolves UUID-first and by exact name only when unique. Invalid/rejected name_pattern values fail instead of being silently ignored. Returns metadata and never modifies state.",
+      "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
@@ -221,7 +221,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "select_all_of_type",
     description:
-      "Selection/navigation helper for workflows that genuinely need editor selection, such as some texture/Paint operations. It is not a normal geometry-targeting path: `place_cube`, `modify_cube`, `modify_cubes_batch`, inspection, hierarchy, and destructive operations should use explicit identities instead. Optionally restrict to descendants of one explicit parent Group; missing or ambiguous scopes fail before selection changes.",
+      "Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.",
     annotations: {
       title: "Select All of Type",
       destructiveHint: true,
@@ -243,7 +243,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "get_selection",
     description:
-      "Returns the current Cube/Group selection state plus the active texture. Use it only when current editor selection/active-texture state is itself relevant, especially texture/Paint work. Normal geometry inspection and mutation should prefer explicit UUIDs and `inspect_element` rather than consulting selection as modelling context.",
+      "Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.",
     annotations: {
       title: "Get Selection",
       readOnlyHint: true,

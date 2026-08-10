@@ -8,7 +8,7 @@ createResource("projects", {
   uriTemplate: "projects://{id}",
   title: "Blockbench Projects",
   description:
-    "Returns information about available projects in Blockbench. List URIs use the project's slugified name (e.g. `projects://my-character`) when unique, or `projects://<slug>~<uuid-prefix>` on collision. The read side also accepts the raw UUID or exact name. Use without an ID to list all projects.",
+    "Browse Blockbench project metadata by stable resource URI. Use focused project tools when a modelling decision needs current operational state rather than browsing context.",
   async listCallback() {
     const projects = ModelProject.all;
     if (!projects || projects.length === 0) {
@@ -99,7 +99,7 @@ createResource("nodes", {
   uriTemplate: "nodes://{id}",
   title: "Blockbench Nodes",
   description:
-    "Returns the current nodes in the Blockbench editor. List URIs use the node's slugified name (e.g. `nodes://head`) when unique, with a `~<uuid-prefix>` suffix added to disambiguate collisions. Reads also accept the raw UUID or exact name.",
+    "Broad read-only Blockbench node observability retained for native gaps such as TextureMesh. It is not a focused authored-state owner; prefer dedicated inspection tools when available.",
   async listCallback() {
     if (!Project?.nodes_3d) {
       return { resources: [] };
@@ -149,7 +149,7 @@ createResource("textures", {
   uriTemplate: "textures://{id}",
   title: "Blockbench Textures",
   description:
-    "Returns information about textures in the current Blockbench project. List URIs use the texture's slugified name (e.g. `textures://skin`) when unique, with a `~<uuid-prefix>` suffix added on collision. Reads also accept the raw UUID, short numeric `id`, or exact name.",
+    "Browse Texture metadata by URI. This resource does not return raw image/source payload; use `get_texture` when image data is actually needed.",
   async listCallback() {
     const textures = Project?.textures ?? [];
     if (textures.length === 0) {
@@ -198,7 +198,7 @@ createResource("textures", {
       visible: texture.visible ?? true,
       saved: texture.saved ?? false,
       selected: texture.selected ?? false,
-      source: texture.source || null,
+      has_source: Boolean(texture.source),
     });
 
     // If ID provided, find specific texture

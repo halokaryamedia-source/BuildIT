@@ -20,13 +20,13 @@ export const exportModelParameters = z.object({
     .record(z.unknown())
     .optional()
     .describe(
-      "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options."
+      "Optional compile options for the selected Bedrock/project codec."
     ),
   path: z
     .string()
     .optional()
     .describe(
-      "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only."
+      "Optional absolute output path; requires Blockbench filesystem permission."
     ),
   max_content_length: z
     .number()
@@ -55,7 +55,7 @@ export const exportToolDocs: ToolSpec[] = [
   {
     name: "export_model",
     description:
-      "Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.",
+      "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`; optional filesystem write requires Blockbench permission. Other model codecs are rejected.",
     annotations: {
       title: "Export Bedrock Model",
       destructiveHint: false,

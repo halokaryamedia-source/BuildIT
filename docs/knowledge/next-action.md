@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_PLUGIN_RUNTIME_CLEANUP_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_CONTEXT_PAYLOAD_CLEANUP_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -207,6 +207,8 @@ The current source slice has hardened **P2 — texture and animation sequencing*
 The final pre-local cleanup has hardened **Minimum Necessary Evidence**: bounds are conditional, specialists load lazily, checkpoints are risk-based, newly placed Cubes do not require per-Cube inspection, captures happen at meaningful gates/affected views only, simple Primary Form reasoning stays compact, and `UNVERIFIED` is not an automatic retry/search instruction. No runtime mode/profile/framework was added.
 
 The Blockbench plugin runtime has also been cleaned before local acceptance: definition factories no longer create/register an unused singleton MCP server, each POST remains request-owned, active TCP sockets have an explicit unload owner, UI CSS/dialog/settings handles are torn down deterministically, dead session/SSE/system-instructions settings were removed, prompt loading is bundled-Local plus user override only, and MCP/package identity now consistently reports BlockIT. No Bedrock capability family or stateless request architecture was removed.
+
+The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. Tool annotations were audited and already provide a read-vs-mutation hint across the full generated catalog, so no annotation churn was added. `nodes://` remains unchanged pending direct TextureMesh ownership.
 
 **Proof boundary:** modelling-effectiveness CI tests are source/contract regression proof. They are not behavioral proof that Codex follows the workflow, and they are not visual proof that a live model resembles its reference.
 

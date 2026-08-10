@@ -21,22 +21,22 @@ const bedrockParticleEffectSchema = z.object({
   effect: z
     .string()
     .min(1)
-    .describe("Required Bedrock particle effect identifier."),
+    .describe("Bedrock particle effect identifier."),
   locator: z
     .string()
     .min(1)
     .optional()
-    .describe("Optional Bedrock locator used to position the particle effect."),
+    .describe("Optional Locator name for the particle."),
   bind_to_actor: z
     .boolean()
     .optional()
     .describe(
-      "Optional Bedrock actor-binding flag. Omit for the native default behavior."
+      "Optional actor-binding flag; omit for native default."
     ),
   pre_effect_script: z
     .string()
     .optional()
-    .describe("Optional Molang script evaluated before the particle effect."),
+    .describe("Optional pre-effect Molang script."),
 });
 
 const bedrockParticleEffectsSchema = z
@@ -91,7 +91,7 @@ const bedrockParticleEffectsSchema = z
     });
   })
   .describe(
-    "Bedrock particle effects keyed by complete finite non-negative numeric timestamps. Distinct keys must not resolve to the same numeric time. Each timestamp accepts one particle object or a non-empty array of particle objects."
+    "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
   );
 
 const finiteCreateAnimationVector3Schema = z
@@ -103,22 +103,22 @@ const bedrockBoneKeyframeSchema = z.object({
     .number()
     .finite()
     .min(0)
-    .describe("Finite non-negative keyframe time in seconds."),
+    .describe("Finite keyframe time in seconds (>=0)."),
   position: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Blockbench-authored position [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
+      "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space."
     ),
   rotation: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Blockbench-authored rotation [x, y, z] with finite components. create_animation converts it to Bedrock file space before codec import."
+      "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space."
     ),
   scale: z
     .union([finiteCreateAnimationVector3Schema, z.number().finite()])
     .optional()
     .describe(
-      "Blockbench-authored finite scale as [x, y, z] or a uniform scalar. Bedrock coordinate conversion leaves scale unchanged."
+      "Finite scale [x,y,z] or uniform scalar."
     ),
 });
 
@@ -151,7 +151,7 @@ const bedrockBoneKeyframesSchema = z
     });
   })
   .describe(
-    "Transform keyframes with finite non-negative times. Different channels may share a time, but the same channel may be defined only once at each effective time."
+    "Transform keyframes at finite non-negative times; one value per channel per time."
   );
 
 export const createAnimationParameters = z.object({
@@ -167,12 +167,12 @@ export const createAnimationParameters = z.object({
     .max(10000)
     .optional()
     .describe(
-      "Optional animation length in seconds. Must be finite and within Blockbench's 0..10000 range; 0 is valid and omission-equivalent in Bedrock serialization."
+      "Optional finite animation length in seconds (0..10000)."
     ),
   bones: z
     .record(bedrockBoneKeyframesSchema)
     .describe(
-      "Keyframes keyed by exact Group UUID or a Group name that is unique under case-insensitive Bedrock animation matching. Transform values use authored Blockbench coordinate/sign space and are converted only for the internal Bedrock codec payload. Targets are canonicalized to the existing Group name before creation."
+      "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space."
     ),
   particle_effects: bedrockParticleEffectsSchema.optional(),
 });
@@ -264,7 +264,7 @@ export const boneRiggingParameters = z.object({
         .string()
         .min(1)
         .describe(
-          "For create: new unique bone name. For all other actions: exact Group UUID or exact unique Group name; UUID is preferred."
+          "Create: new unique name. Other actions: Group UUID or unique exact name."
         ),
       new_name: z
         .string()
@@ -275,23 +275,23 @@ export const boneRiggingParameters = z.object({
         .string()
         .optional()
         .describe(
-          "Exact parent Group UUID or exact unique Group name. Required by parent; optional on create (omitted means intentional root)."
+          "Parent Group UUID or unique exact name; required by parent, optional on create."
         ),
       origin: vector3Schema
         .optional()
         .describe(
-          "Pivot/origin. Required by set_pivot. On create, omit unless a real joint, attachment, or transform center justifies a non-zero pivot."
+          "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it."
         ),
       rotation: vector3Schema
         .optional()
         .describe(
-          "Initial bone rotation for create only. Omit for neutral zero rotation; do not invent an angle without a model/reference reason."
+          "Initial create rotation; omit for neutral zero rotation."
         ),
       children: z
         .array(z.string())
         .optional()
         .describe(
-          "For create only: exact Outliner element UUIDs or exact unique names to reparent into the new bone. Every child is preflighted before mutation."
+          "Create-only child UUIDs or unique exact names; all are preflighted."
         ),
       ik_enabled: z
         .boolean()
@@ -496,7 +496,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates/manipulates Group bones with action-specific preflight. Existing bone/parent/child targets use UUID-first or exact-unique-name resolution; missing/ambiguous targets fail before Undo. set_pivot requires an explicit origin and uses Blockbench pivot transfer semantics so the pivot changes without intentionally moving the group's visual contents. mirror requires an explicit axis. Mutation failure cancels/reverts the opened edit. This tool does not infer joints, pivots, rotations, or hierarchy from visual appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,

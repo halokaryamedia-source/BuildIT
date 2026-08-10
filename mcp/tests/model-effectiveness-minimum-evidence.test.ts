@@ -45,7 +45,7 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(profile).not.toContain("efficiency_mode");
     expect(profile).not.toContain("minimum_evidence");
     expect(next).toContain("Minimum Necessary Evidence");
-    expect(next).toContain("MCP_PLUGIN_RUNTIME_CLEANUP_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
+    expect(next).toContain("MCP_CONTEXT_PAYLOAD_CLEANUP_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
     expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
   });
 

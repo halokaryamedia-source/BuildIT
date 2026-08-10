@@ -33,7 +33,7 @@ export const createTextureParameters = z
       .min(1)
       .optional()
       .describe(
-        "Optional explicit TextureGroup target. Exact UUID is preferred; an exact name is accepted only when unique."
+        "Optional TextureGroup UUID or unique exact name."
       ),
     fill_color: colorSchema
       .optional()
@@ -47,13 +47,13 @@ export const createTextureParameters = z
     pbr_channel: pbrChannelEnum
       .optional()
       .describe(
-        "PBR channel to use for the texture. Color, normal, height, or Metalness/Emissive/Roughness (MER) map."
+        "PBR channel: color, normal, height, or MER."
       ),
     render_mode: renderModeEnum
       .optional()
       .default("default")
       .describe(
-        "Render mode for the texture. Default, emissive, additive, or layered."
+        "Texture render mode."
       ),
     render_sides: renderSidesEnum
       .optional()
@@ -83,12 +83,12 @@ export const applyTextureParameters = z.object({
   id: elementIdSchema
     .min(1)
     .describe(
-      "Required Cube or Group target. Exact UUID is preferred; an exact name is accepted only when unique across supported Bedrock Entity element types."
+      "Required Cube/Group UUID or unique exact name."
     ),
   texture: textureIdSchema
     .min(1)
     .describe(
-      "Required texture target. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Required Texture UUID, exact ID, or unique exact name."
     ),
   applyTo: z
     .enum(["all", "blank", "none"])
@@ -134,28 +134,28 @@ export const createPbrMaterialParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the color (albedo) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Optional color Texture UUID, exact ID, or unique exact name."
     ),
   normal_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the normal map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Optional normal Texture UUID, exact ID, or unique exact name."
     ),
   height_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the height/displacement map channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Optional height Texture UUID, exact ID, or unique exact name."
     ),
   mer_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the MER (Metalness/Emissive/Roughness) channel. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Optional MER Texture UUID, exact ID, or unique exact name."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
@@ -186,35 +186,35 @@ export const configureMaterialParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Required material/texture group target to configure. Exact UUID is preferred; an exact name is accepted only when unique."
+      "Required material/TextureGroup UUID or unique exact name."
     ),
   color_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the color channel, or 'none' to use uniform color. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+      "Color Texture UUID/ID/unique name, or `none` for uniform color."
     ),
   normal_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the normal map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+      "Normal Texture UUID/ID/unique name, or `none` to remove."
     ),
   height_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the height map, or 'none' to remove. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+      "Height Texture UUID/ID/unique name, or `none` to remove."
     ),
   mer_texture: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional explicit texture target for the MER channel, or 'none' to use uniform values. Non-'none' targets resolve exact UUID first, then exact texture ID, then exact name only when unique."
+      "MER Texture UUID/ID/unique name, or `none` for uniform values."
     ),
   color_value: z
     .array(z.number().min(0).max(255))
@@ -287,7 +287,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_texture",
     description:
-      "Creates a new texture with the given name and size. When an explicit TextureGroup target is supplied, it resolves before mutation by exact UUID, otherwise an exact name must be unique; missing or ambiguous group targets fail before Undo or texture construction.",
+      "Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.",
     annotations: {
       title: "Create Texture",
       destructiveHint: true,
@@ -299,7 +299,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "apply_texture",
     description:
-      "Applies one explicit texture to one explicit Cube or Group scope. Element identity resolves exact UUID first, otherwise an exact name must be unique across Cube/Group targets. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous targets fail before Undo/mutation. Group targets apply to descendant Cubes. Generic Mesh is intentionally outside the native Bedrock Entity surface.",
+      "Applies one explicit Texture to a Cube or Group scope; Group targets affect descendant Cubes. Element/Texture references must resolve uniquely before mutation. Generic Mesh is outside the Bedrock Entity surface.",
     annotations: {
       title: "Apply Texture",
       destructiveHint: true,
@@ -343,7 +343,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a new PBR material (texture group with is_material=true). Optional channel texture references are resolved exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous supplied references fail before Undo or material creation. Uniform color, MER, and subsurface values remain supported.",
+      "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation; uniform color, MER, and subsurface values are supported.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -354,7 +354,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous material targets fail before mutation. Omitted channel fields leave their assignments unchanged; the exact 'none' sentinel preserves the existing remove/uniform behavior. Other supplied channel targets resolve exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before Undo. Uniform color, MER, and subsurface values remain supported.",
+      "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
@@ -399,7 +399,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "assign_texture_channel",
     description:
-      "Assigns one explicit texture to a PBR channel within one explicit material/texture group. Material identity resolves exact UUID first, otherwise an exact name must be unique; texture identity resolves exactly once before mutation by exact UUID, then exact texture ID, then exact name only when unique. Missing or ambiguous material/texture targets fail before Undo. Undo capture includes the assignment target and any existing textures that will be reset from the requested channel.",
+      "Assigns one explicit Texture to one PBR channel. Material/Texture references must resolve uniquely before Undo; existing textures on that channel are included in the edit.",
     annotations: {
       title: "Assign Texture Channel",
       destructiveHint: true,

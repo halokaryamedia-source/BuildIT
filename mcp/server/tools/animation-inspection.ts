@@ -14,7 +14,7 @@ export const inspectAnimationParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Optional exact Group UUID or exact unique Group name. When omitted, returns Animation settings and existing bone-animator summaries. When provided, returns detailed authored transform-channel keyframes for that Group without creating an animator."
+      "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes."
     ),
 });
 
@@ -22,7 +22,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed authored transform-channel keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+      "Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,

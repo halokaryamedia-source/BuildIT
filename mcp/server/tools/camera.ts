@@ -129,7 +129,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures deterministic labeled 512×512 model views from the active project for direct reference comparison. Principal views are true axis-aligned orthographic; 3/4 views are stable perspective context views. Requires explicit front_direction, supports current-model or explicit target-envelope framing, and returns actual MCP image content through Blockbench's offscreen screenshot preview so the active editor camera remains untouched. This tool does not compare against a reference, score resemblance, infer front direction, repair geometry, or return PASS/FAIL.",
+      "Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
