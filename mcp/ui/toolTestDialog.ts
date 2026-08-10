@@ -285,6 +285,38 @@ export function openToolTestDialog(toolName: string) {
   const formConfig = zodSchemaToFormConfig(toolDef.inputSchema);
   const hasFields = Object.keys(formConfig).length > 0;
 
+  async function runToolTest(formResult: Record<string, unknown>): Promise<void> {
+    const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
+
+    // Show loading message
+    Blockbench.showQuickMessage(tl("mcp.dialog.running_tool"), 1000);
+
+    try {
+      const result = await toolDef.execute(args);
+
+      // Format result for display
+      let displayResult: unknown;
+      if (typeof result === "string") {
+        displayResult = result;
+      } else if (result && typeof result === "object" && "content" in result) {
+        displayResult = result.content.map((content) => {
+          if (content.type === "text") return content.text;
+          if (content.type === "image") {
+            return `[Image: ${content.mimeType}, ${content.data.slice(0, 50)}...]`;
+          }
+          return JSON.stringify(content);
+        }).join("\n");
+      } else {
+        displayResult = result;
+      }
+
+      showResultDialog(toolName, displayResult, false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      showResultDialog(toolName, `Error: ${errorMessage}`, true);
+    }
+  }
+
   currentDialog = new Dialog({
     id: "mcp_tool_test",
     title: toolDef.title || toolName,
@@ -320,35 +352,8 @@ export function openToolTestDialog(toolName: string) {
         return false;
       }
     },
-    async onConfirm(formResult: Record<string, unknown>) {
-      const args = hasFields ? parseFormResult(formResult, toolDef.inputSchema) : {};
-
-      // Show loading message
-      Blockbench.showQuickMessage(tl("mcp.dialog.running_tool"), 1000);
-
-      try {
-        const result = await toolDef.execute(args);
-
-        // Format result for display
-        let displayResult: unknown;
-        if (typeof result === "string") {
-          displayResult = result;
-        } else if (result && typeof result === "object" && "content" in result) {
-          const content = (result as { content: Array<{ type: string; text?: string; data?: string }> }).content;
-          displayResult = content.map((c) => {
-            if (c.type === "text") return c.text;
-            if (c.type === "image") return `[Image: ${c.data?.slice(0, 50)}...]`;
-            return JSON.stringify(c);
-          }).join("\n");
-        } else {
-          displayResult = result;
-        }
-
-        showResultDialog(toolName, displayResult, false);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        showResultDialog(toolName, `Error: ${errorMessage}`, true);
-      }
+    onConfirm(formResult: Record<string, unknown>) {
+      void runToolTest(formResult);
     },
   });
 
