@@ -539,7 +539,6 @@ createTool(cubeToolDocs[1].name, {
       before,
       after,
       geometry_effect: geometryEffect,
-      cube: after,
     };
     return {
       content: [
@@ -646,7 +645,6 @@ createTool(cubeToolDocs[2].name, {
       modified: targets.length,
       effective_geometry_targets: effectiveGeometryTargets,
       effects,
-      cubes: effects.map(({ after }) => after),
     };
 
     return {

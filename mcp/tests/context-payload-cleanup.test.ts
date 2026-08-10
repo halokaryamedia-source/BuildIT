@@ -55,7 +55,7 @@ describe("pre-local context and payload cleanup", () => {
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("context_mode");
-    expect(next).toContain("MCP_ASSET_AUTHORING_USAGE_SLIMMING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
+    expect(next).toContain("MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED");
     expect(next).toContain("`nodes://` remains unchanged");
   });
 });

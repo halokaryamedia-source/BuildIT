@@ -57,12 +57,23 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(orchestrator).toContain("Do not automatically re-read them with `inspect_element`");
   });
 
+  test("correction and recovery outputs do not repeat identical state payloads", async () => {
+    const cubes = await source("server/tools/cubes.ts");
+    const history = await source("server/tools/history.ts");
+    expect(cubes).not.toContain("cube: after,");
+    expect(cubes).not.toContain("cubes: effects.map(({ after }) => after)");
+    expect(cubes).toContain("before,");
+    expect(cubes).toContain("after,");
+    expect(cubes).toContain("geometry_effect");
+    expect(history).toContain("JSON.stringify(summarizeHistory(limit))");
+  });
+
   test("capability architecture is unchanged", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("asset_authoring_profile");
-    expect(next).toContain("MCP_ASSET_AUTHORING_USAGE_SLIMMING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED");
+    expect(next).toContain("MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED");
     expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
   });
 });

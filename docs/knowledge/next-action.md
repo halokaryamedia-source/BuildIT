@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_ASSET_AUTHORING_USAGE_SLIMMING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -209,6 +209,10 @@ The final pre-local cleanup has hardened **Minimum Necessary Evidence**: bounds 
 The Blockbench plugin runtime has also been cleaned before local acceptance: definition factories no longer create/register an unused singleton MCP server, each POST remains request-owned, active TCP sockets have an explicit unload owner, UI CSS/dialog/settings handles are torn down deterministically, dead session/SSE/system-instructions settings were removed, prompt loading is bundled-Local plus user override only, and MCP/package identity now consistently reports BlockIT. No Bedrock capability family or stateless request architecture was removed.
 
 The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. Tool annotations were audited and already provide a read-vs-mutation hint across the full generated catalog, so no annotation churn was added. `nodes://` remains unchanged pending direct TextureMesh ownership.
+
+The actual stateless MCP `tools/list` wire surface is now measured rather than inferred from generated docs: **65 enabled tools / 72,817 response characters**, including **48,119 characters of input schemas** and **11,786 characters of tool descriptions**. A geometry-only 15-tool lane would be much smaller, but it is **not** adopted as the default because it would remove texture/animation/Locator paths and therefore would not preserve the same end-to-end product result. The next large usage lever must be proven on the real Codex client as native lazy/deferred MCP tool loading (or an equivalent client-side mechanism) before BlockIT adds a custom router/profile.
+
+No-loss wire cleanup also removes exact duplicate Cube correction aliases (`cube = after` and batch `cubes = effects[].after`) and keeps recovery JSON compact while preserving the authoritative `before` / `after` / `geometry_effect` data.
 
 The final pre-local **Asset Authoring Usage Slimming** adds a dedicated asset-authoring fast path that skips repository-development boot context, `development-brief`, and unrelated specialists unless the active modelling decision needs them. The BlockIT orchestrator and modelling skill are compact operating contracts, coherent Cube/view batches are preferred where already justified, redundant post-mutation reads are avoided when a mutation already returns the required authored state, high-frequency JSON text is compact, and `export_model` defaults to metadata-only content return when writing to a filesystem path. No Bedrock capability/profile, visual gate, or local-proof requirement was removed.
 

@@ -169,9 +169,7 @@ export function registerHistoryTools() {
           requested: steps,
           undone,
           new_index: Undo.index,
-        },
-        null,
-        2
+        }
       );
     },
   }, historyToolDocs[0].status);
@@ -204,9 +202,7 @@ export function registerHistoryTools() {
           requested: steps,
           redone,
           new_index: Undo.index,
-        },
-        null,
-        2
+        }
       );
     },
   }, historyToolDocs[1].status);
@@ -214,7 +210,7 @@ export function registerHistoryTools() {
   createTool(historyToolDocs[2].name, {
     ...historyToolDocs[2],
     async execute({ limit }) {
-      return JSON.stringify(summarizeHistory(limit), null, 2);
+      return JSON.stringify(summarizeHistory(limit));
     },
   }, historyToolDocs[2].status);
 
@@ -235,9 +231,7 @@ export function registerHistoryTools() {
           label,
           index: Undo.index,
           total: Undo.history?.length ?? 0,
-        },
-        null,
-        2
+        }
       );
     },
   }, historyToolDocs[3].status);

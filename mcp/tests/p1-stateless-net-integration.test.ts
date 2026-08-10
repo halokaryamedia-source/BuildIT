@@ -13,10 +13,9 @@ const FIXTURE_TOOL = "p1_raw_net_echo_fixture";
 let server: NetServer;
 let baseUrl = "";
 
-// The raw-net integration test is deliberately transport-owned. Register one
-// runtime-independent MCP fixture through BlockIT's real factory registry rather
-// than importing the full Bedrock profile, whose Paint family correctly expects
-// live Blockbench globals such as Painter during registration.
+// This transport test keeps one tiny fixture so protocol assertions stay focused.
+// The full default registry is independently import-tested outside Blockbench;
+// runtime-only globals such as Painter are resolved only during tool execution.
 createTool(
   FIXTURE_TOOL,
   {
