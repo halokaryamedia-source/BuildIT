@@ -17,6 +17,9 @@ export type McpRegistrationFamily =
   | "ui"
   | "validator_resources";
 
+export const MCP_EXTENDED_FAMILIES_SETTING_ID =
+  "mcp_extended_families_enabled";
+
 /**
  * The normal BlockIT MCP product profile.
  *
@@ -56,6 +59,19 @@ export const EXTENDED_LEGACY_REGISTRATION_FAMILIES = [
 
 export const DEFAULT_MCP_REGISTRATION_PROFILE: McpRegistrationProfile =
   "bedrock_entity";
+
+/**
+ * Explicit extended-family opt-in. Only the literal boolean `true` promotes
+ * the registration profile; missing, malformed, or default setting values stay
+ * on the Bedrock Entity profile.
+ */
+export function resolveMcpRegistrationProfile(
+  extendedFamiliesEnabled: unknown
+): McpRegistrationProfile {
+  return extendedFamiliesEnabled === true
+    ? "extended"
+    : DEFAULT_MCP_REGISTRATION_PROFILE;
+}
 
 export function getRegistrationFamilies(
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE

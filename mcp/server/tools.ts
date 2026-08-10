@@ -6,6 +6,7 @@ import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   getRegistrationFamilies,
   type McpRegistrationFamily,
+  type McpRegistrationProfile,
 } from "@/lib/registrationProfile";
 
 // Import tool registration functions
@@ -55,13 +56,28 @@ const registrationFunctions: Record<
   validator_resources: registerValidatorResources,
 };
 
-// Register exactly the default BlockIT Bedrock Entity profile at startup.
-// Generic import/UI fallback families remain compiled in source but are not
-// invoked by the default profile. P0.2 individual disabled flags still apply if
-// an explicit extended registration path invokes those families later.
-for (const family of getRegistrationFamilies(DEFAULT_MCP_REGISTRATION_PROFILE)) {
-  registrationFunctions[family]();
+/**
+ * Tracks family registration within this plugin load so an explicit extended
+ * opt-in adds only the missing fallback families instead of attempting to
+ * register the Bedrock Entity core twice.
+ */
+const registeredFamilies = new Set<McpRegistrationFamily>();
+
+export function registerMcpProfile(
+  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
+): void {
+  for (const family of getRegistrationFamilies(profile)) {
+    if (registeredFamilies.has(family)) continue;
+
+    registrationFunctions[family]();
+    registeredFamilies.add(family);
+  }
 }
+
+// Register exactly the default BlockIT Bedrock Entity profile at module load.
+// The plugin onload path may explicitly opt in to the extended profile after
+// settings are initialized; registerMcpProfile() is idempotent per family.
+registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);
 
 // Function to get tool count - called at runtime after registration
 export function getToolCount(): number {

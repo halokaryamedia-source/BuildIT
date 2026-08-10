@@ -7,7 +7,11 @@
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
 import { createServer } from "@/server/server";
-import { tools, prompts } from "@/server/tools";
+import { tools, prompts, registerMcpProfile } from "@/server/tools";
+import {
+  MCP_EXTENDED_FAMILIES_SETTING_ID,
+  resolveMcpRegistrationProfile,
+} from "@/lib/registrationProfile";
 import { resources } from "@/server";
 import { uiSetup, uiTeardown } from "@/ui";
 import { settingsSetup, settingsTeardown } from "@/ui/settings";
@@ -52,6 +56,15 @@ BBPlugin.register("mcp", {
     setupI18n();
 
     settingsSetup();
+
+    // Bedrock Entity remains the default registration truth. The optional
+    // setting can only add the source-preserved generic import/UI families for
+    // this plugin load; registerMcpProfile() will not register core families twice.
+    registerMcpProfile(
+      resolveMcpRegistrationProfile(
+        Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
+      )
+    );
 
     // Local prompt content is bundled into the plugin and remains the default
     // authority. Optional CDN content is loaded only as fallback when enabled.

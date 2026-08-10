@@ -1,3 +1,5 @@
+import { MCP_EXTENDED_FAMILIES_SETTING_ID } from "@/lib/registrationProfile";
+
 const settings: Setting[] = [];
 
 export function settingsSetup() {
@@ -39,6 +41,15 @@ export function settingsSetup() {
       value: false,
       category,
       icon: "cloud_download",
+    }),
+    new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
+      name: "Extended MCP Families",
+      description:
+        "Explicitly expose the source-preserved generic import/UI fallback families on the next MCP plugin load. risky_eval and from_geo_json remain disabled.",
+      type: "toggle",
+      value: false,
+      category,
+      icon: "extension",
     }),
     new Setting("mcp_session_timeout", {
       name: tl("mcp.settings.session_timeout_name"),
