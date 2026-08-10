@@ -22,7 +22,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed rotation/position/scale keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
+      "Returns read-only authored Animation state for one deterministic Animation target. Output includes UUID/name/loop/length/snapping, summaries of existing BoneAnimators, authored particle-effect keyframes from an existing EffectAnimator, and—when `bone` is provided—detailed authored transform-channel keyframes with authored XYZ data points, interpolation, and Bezier vectors. Explicit Animation and Group names must be unique; UUID is preferred. This tool does not change selection, move the timeline, preview the model, or create missing animators.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,
@@ -42,7 +42,7 @@ type ParticleDataPoint = KeyframeDataPoint & {
 
 function resolveAnimation(reference?: string): _Animation {
   if (reference === undefined) {
-    const selected = Animation.selected;
+    const selected = AnimationItem.selected;
     if (!selected) {
       throw new Error(
         "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
@@ -51,12 +51,12 @@ function resolveAnimation(reference?: string): _Animation {
     return selected;
   }
 
-  const uuidMatch = Animation.all.find(
+  const uuidMatch = AnimationItem.all.find(
     (animation) => animation.uuid === reference
   );
   if (uuidMatch) return uuidMatch;
 
-  const nameMatches = Animation.all.filter(
+  const nameMatches = AnimationItem.all.filter(
     (animation) => animation.name === reference
   );
   if (nameMatches.length === 1) return nameMatches[0];
