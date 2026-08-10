@@ -1,3 +1,5 @@
+export {};
+
 const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 const PROTOCOL_VERSION = "2025-11-25";
 
