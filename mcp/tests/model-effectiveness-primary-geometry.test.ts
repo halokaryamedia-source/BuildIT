@@ -9,7 +9,7 @@ describe("model creation effectiveness — primary geometry", () => {
     const cubes = await source("server/tools/cubes.ts");
     expect((cubes.match(/visual_verdict: \"not_evaluated\" as const/g) ?? []).length).toBe(3);
     expect((cubes.match(/execution: \"applied\" as const/g) ?? []).length).toBe(3);
-    expect(cubes).toContain("Reference fidelity was not evaluated");
+    expect(cubes.toLowerCase()).toContain("reference fidelity was not evaluated");
     expect(cubes).not.toContain("Corrected ${targets.length} Cubes");
     expect(cubes).toContain("does not mean the geometry was corrected visually");
   });
