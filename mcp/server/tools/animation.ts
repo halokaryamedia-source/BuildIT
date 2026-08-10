@@ -788,7 +788,7 @@ createTool(
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify(result, null, 2),
+              text: JSON.stringify(result),
             },
           ],
           structuredContent: result,

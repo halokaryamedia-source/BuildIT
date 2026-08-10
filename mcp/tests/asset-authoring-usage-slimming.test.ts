@@ -70,6 +70,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     const files = await Promise.all([
       source("server/tools/element-inspection.ts"),
       source("server/tools/project.ts"),
+      source("server/tools/animation.ts"),
       source("server/tools/animation-inspection.ts"),
       source("server/tools/locators.ts"),
     ]);
