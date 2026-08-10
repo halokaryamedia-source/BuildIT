@@ -1,0 +1,178 @@
+name: Apply Canonical Framing Input Hardening
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-canonical-framing-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Harden explicit framing input contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          camera_path = Path('mcp/server/tools/camera.ts')
+          camera = camera_path.read_text(encoding='utf-8')
+          old = '''const explicitFramingSchema = z
+  .object({
+    mode: z.literal("explicit"),
+    min: z.tuple([z.number(), z.number(), z.number()]),
+    max: z.tuple([z.number(), z.number(), z.number()]),
+  })
+  .refine(
+    (value) => value.max.every((entry, axis) => entry > value.min[axis]),
+    {
+      message: "Each explicit max axis must be greater than min.",
+      path: ["max"],
+    }
+  );
+'''
+          new = '''const finiteFramingCoordinateSchema = z.number().finite();
+
+const explicitFramingSchema = z
+  .object({
+    mode: z.literal("explicit"),
+    min: z.tuple([
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+    ]),
+    max: z.tuple([
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+      finiteFramingCoordinateSchema,
+    ]),
+  })
+  .refine(
+    (value) =>
+      value.max.every((entry, axis) => {
+        const span = entry - value.min[axis];
+        return span > 0 && Number.isFinite(span);
+      }),
+    {
+      message:
+        "Each explicit max axis must be greater than min and produce a finite span.",
+      path: ["max"],
+    }
+  );
+'''
+          if camera.count(old) != 1:
+              raise SystemExit('Unexpected explicit framing schema shape')
+          camera_path.write_text(camera.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/camera-framing-contract.test.ts')
+          if test_path.exists():
+              raise SystemExit('camera framing contract test already exists')
+          test_path.write_text('''import { describe, expect, test } from "bun:test";
+import { captureModelViewsParameters } from "@/server/tools/camera";
+
+const baseInput = {
+  views: ["front"],
+  front_direction: "+z",
+} as const;
+
+describe("capture_model_views explicit framing contract", () => {
+  test("accepts a finite positive target envelope", () => {
+    const result = captureModelViewsParameters.safeParse({
+      ...baseInput,
+      framing: {
+        mode: "explicit",
+        min: [-16, 0, -8],
+        max: [16, 32, 8],
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("rejects invalid or non-finite framing math before camera runtime", () => {
+    const invalidFramings = [
+      {
+        mode: "explicit",
+        min: [0, 0, 0],
+        max: [Number.POSITIVE_INFINITY, 16, 16],
+      },
+      {
+        mode: "explicit",
+        min: [-1e308, 0, 0],
+        max: [1e308, 16, 16],
+      },
+      {
+        mode: "explicit",
+        min: [0, 0, 0],
+        max: [0, 16, 16],
+      },
+    ];
+
+    for (const framing of invalidFramings) {
+      const result = captureModelViewsParameters.safeParse({
+        ...baseInput,
+        framing,
+      });
+      expect(result.success).toBe(false);
+    }
+  });
+});
+''', encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          anchor = '''The final pre-local **Asset Authoring Usage Slimming** adds a dedicated asset-authoring fast path that skips repository-development boot context, `development-brief`, and unrelated specialists unless the active modelling decision needs them. The BlockIT orchestrator and modelling skill are compact operating contracts, coherent Cube/view batches are preferred where already justified, redundant post-mutation reads are avoided when a mutation already returns the required authored state, high-frequency JSON text is compact, and `export_model` defaults to metadata-only content return when writing to a filesystem path. No Bedrock capability/profile, visual gate, or local-proof requirement was removed.\n'''
+          note = '''\nA bounded GitHub-only **canonical framing input hardening** now rejects non-finite explicit target-envelope coordinates and finite endpoints whose subtraction would produce a non-finite span before camera math runs. This closes an MCP boundary defect without changing canonical camera behavior, framing policy, or the local visual-proof requirement.\n'''
+          if next_text.count(anchor) != 1:
+              raise SystemExit('Unexpected next-action insertion point')
+          next_path.write_text(next_text.replace(anchor, anchor + note, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit hardened contract and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-canonical-framing-contract.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: reject invalid canonical framing envelopes"
+          git push origin HEAD:Local
