@@ -47,6 +47,16 @@ declare global {
     subsurface_value: number;
   }
 
+  /** Event fields read by Blockbench's native Painter stroke lifecycle. */
+  interface BlockbenchRuntimePaintEvent {
+    button?: number;
+    shiftKey?: boolean;
+    ctrlOrCmd?: boolean;
+    pointerType?: string;
+    touches?: Array<{ touchType?: string }>;
+    [key: string]: unknown;
+  }
+
   /**
    * Small runtime-only Painter surface proven by Blockbench's official
    * `js/texturing/painter.js` implementation but omitted/read-only in the
@@ -58,14 +68,14 @@ declare global {
       x: number,
       y: number,
       uvTag: unknown,
-      event: Record<string, unknown>,
+      event: BlockbenchRuntimePaintEvent,
       data?: unknown
     ): void;
     movePaintTool(
       texture: Texture,
       x: number,
       y: number,
-      event: Record<string, unknown>,
+      event: BlockbenchRuntimePaintEvent,
       newFace?: boolean,
       uv?: unknown
     ): void;
@@ -74,28 +84,32 @@ declare global {
       texture: Texture,
       x: number,
       y: number,
-      event: Record<string, unknown>,
+      event: BlockbenchRuntimePaintEvent,
       uv?: unknown
     ): void;
     useGradientTool(
       texture: Texture,
       x: number,
       y: number,
-      event: Record<string, unknown>,
+      event: BlockbenchRuntimePaintEvent,
       uv?: unknown
     ): void;
     colorPicker(
       texture: Texture,
       x: number,
       y: number,
-      event: Record<string, unknown>
+      event: BlockbenchRuntimePaintEvent
     ): void;
     mirror_painting: boolean;
     lock_alpha: boolean;
     erase_mode: boolean;
-    mirror_painting_options: Record<string, unknown> & {
+    mirror_painting_options: {
+      x?: boolean;
+      y?: boolean;
+      z?: boolean;
       texture?: boolean;
       texture_center?: [number, number];
+      [key: string]: unknown;
     };
   }
 }
