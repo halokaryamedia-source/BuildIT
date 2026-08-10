@@ -97,4 +97,17 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(locatorSource).toContain("`_null_` locator entry");
     expect(locatorSource).toContain("IK fields remain Blockbench editor/animation state");
   });
+
+  test("canonical workflow moves Locator coverage out of the protected-gap list", async () => {
+    const prompt = await source("prompts/bedrock_entity_workflow.md");
+    const matrix = await source("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md");
+
+    expect(prompt).toContain("## Locator / Null Object authored state");
+    expect(prompt).toContain("`manage_locator`");
+    expect(prompt).toContain("`manage_null_object`");
+    expect(matrix).toContain("**Mapped / local proof required**");
+    expect(matrix).toContain("**Mapped base state / IK mutation deferred**");
+    expect(matrix).toContain("TextureMesh");
+    expect(matrix).toContain("**MCP GAP — protected**");
+  });
 });
