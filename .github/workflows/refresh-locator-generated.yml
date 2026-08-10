@@ -47,3 +47,4 @@ jobs:
           git diff --cached --quiet && { echo "No generated changes"; exit 1; }
           git commit -m "docs: refresh Locator MCP reference"
           git push origin HEAD:Local
+# rerun after Locator capability guard update
