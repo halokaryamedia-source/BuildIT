@@ -21,6 +21,18 @@ jobs:
       - name: Apply implementation snapshot
         run: python .github/p1_4_impl_record.py
 
+      - name: Normalize documentation EOF
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in [
+              "docs/knowledge/next-action.md",
+              "docs/knowledge/reviews/mcp-transport-session-decision-2026-08-10.md",
+          ]:
+              path = Path(name)
+              path.write_text(path.read_text().rstrip() + "\n")
+          PY
+
       - name: Commit implementation state
         run: |
           git config user.name "github-actions[bot]"
