@@ -26,6 +26,9 @@ jobs:
       - name: Apply guarded patch
         run: python .github/prelocal_plugin_surface_patch.py
 
+      - name: Show patched plugin metadata
+        run: nl -ba mcp/index.ts | sed -n '30,45p'
+
       - name: Install dependencies
         working-directory: mcp
         run: bun install --frozen-lockfile
