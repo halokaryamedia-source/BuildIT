@@ -14,11 +14,11 @@ The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. The P1.4 transport/session decision is recorded as **SIMPLIFY ON CURRENT SDK LINE**. The active source boundary is now **P1.4 implementation — stateless v1 Streamable HTTP simplification**.
+P0.1–P0.5 and P1.1–P1.3 are complete for their source/repository boundaries. P1.4 decision + stateless-v1 source implementation are complete and verified non-locally. The active boundary is now **P1.4 local transport proof only**; do not start P1.5 yet.
 
 ## Current Status
 
-`MCP_P1_TRANSPORT_DECISION_COMPLETE_STATELESS_V1_IMPLEMENTATION_NEXT`
+`MCP_P1_STATELESS_V1_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Execution channel: **ChatGPT → GitHub**.  
 Working branch: **`Local` only**.  
@@ -551,8 +551,8 @@ P0.5  generated-doc freshness                    COMPLETE
 P1.1  default Bedrock Entity registration profile COMPLETE
 P1.2  family gates                               COMPLETE
 P1.3  core-only resolver/mutation/result consolidation COMPLETE
-P1.4  transport/session simplification              DECISION COMPLETE / IMPLEMENTATION NEXT
-P1.5  local end-to-end core acceptance
+P1.4  transport/session simplification              SOURCE COMPLETE / LOCAL PROOF REQUIRED
+P1.5  local end-to-end core acceptance                  WAITING — DO NOT START YET
 
 P2.*  evidence-driven cleanup and parked product fixes
 ```
@@ -603,102 +603,91 @@ ADAPT      health/status UI so it does not claim nonexistent sessions
 
 No SDK v2 migration, 2026 draft adoption, authentication framework, Bedrock tool work, or broad HTTP-runtime rewrite is authorized by this decision.
 
-# Next Step — P1.4 Stateless v1 Implementation Only
+# Completed P1.4 Source — Stateless v1 Streamable HTTP
 
-Implement the recorded transport decision **non-local first**. Do not start P1.5 until the implementation has passed repository gates and the required local proof has been run.
-
-## Goal
-
-Replace the current sessionful/layered-liveness Streamable HTTP ownership with the smallest direct-Codex stateless v1 path while preserving loopback/Origin containment and all Bedrock Entity MCP registration behavior.
-
-## Intended implementation shape
+Verified source commit:
 
 ```text
-HTTP MCP request
-↓
-existing loopback / Origin / endpoint checks
-↓
-fresh request-owned McpServer
-↓
-register canonical enabled tools/resources/prompts
-↓
-fresh WebStandardStreamableHTTPServerTransport
-  sessionIdGenerator: undefined
-  enableJsonResponse: true
-↓
-handle request
-↓
-close/discard request-owned server + transport
+775a104a41fc703d6424409c8f71c862727548ae
+refactor: simplify MCP transport to stateless v1
 ```
 
-## Source scope to audit/change
+Implemented repository contract:
 
 ```text
-mcp/server/net.ts
-mcp/lib/sessions.ts
-mcp/index.ts
-mcp/ui/index.ts
-mcp/ui/statusBar.ts
-mcp/ui/settings.ts
-focused transport tests
+request-owned McpServer + WebStandardStreamableHTTPServerTransport
+sessionIdGenerator: undefined
+enableJsonResponse: true
+no Mcp-Session-Id routing
+no per-session transport/server map
+no sessionManager
+no MCP ping
+no SSE heartbeat
+no custom inactivity/session timeout
+GET default MCP endpoint -> 405 (no standalone SSE)
+DELETE default MCP endpoint -> 405 (no protocol sessions)
+loopback + present-Origin containment retained
+raw node:net HTTP owner retained
+ordinary HTTP keep-alive remains independent from MCP state
+session-shaped UI/settings removed
 ```
 
-`mcp/lib/sessions.ts` may be retired if no truthful non-session owner remains. Do not preserve it merely for historical client compatibility.
-
-The panel/status bar must not present a durable "connected session" when the transport is stateless. Prefer server-running / recent-request telemetry only if it has a real product use; otherwise remove the session-specific display cleanly rather than inventing another state system.
-
-## Must preserve
+Canonical non-local proof:
 
 ```text
-host default/bind = 127.0.0.1
-present invalid Origin rejected with 403 before MCP handling
-normal Bedrock Entity registration truth
-P0.2 disabled dangerous tools
-P1.1/P1.2 default + extended family gates
-P1.3 core identity/result ownership
-health/ready only if their returned state remains truthful
+MCP Verify
+run: 31374646462
+verified source: 775a104a41fc703d6424409c8f71c862727548ae
+
+install      PASS
+typecheck    PASS
+tests        PASS — 26/26, 148 expect() calls
+build        PASS
+docs:check   PASS
+aggregator   PASS
 ```
 
-## Explicit non-goals
+No SDK/package upgrade was required. `@modelcontextprotocol/sdk@1.25.3` remains the committed resolved SDK.
+
+# Next Step — P1.4 Local Stateless Transport Proof Only
+
+Do not start P1.5 yet.
+
+Use the real Blockbench desktop plugin and the actual Codex local client. This is verification, not a source redesign unless the real run exposes a concrete defect.
+
+Required proof sequence:
 
 ```text
-no SDK v2 migration
-no 2026-07-28 protocol adoption
-no auth/OAuth framework
-no Bedrock modelling/tool feature work
-no Animation/Paint/Texture rewrite
-no generic HTTP-framework migration
-no custom parser replacement unless the existing parser blocks the stateless implementation
+1. load/reload the current Local plugin build
+2. prove the OS listener is bound only to 127.0.0.1 on configured port
+3. connect Codex local directly to http://127.0.0.1:<port>/<endpoint>
+4. initialize successfully
+5. inspect real tools/list and confirm Bedrock default profile
+6. issue repeated independent requests with no server-issued Mcp-Session-Id
+7. execute at least one read-only MCP tool
+8. execute at least one bounded core mutation
+9. send a request with an invalid present Origin and record actual HTTP 403
+10. confirm Codex does not require a standalone GET/SSE stream for this path
+11. unload/reload plugin and confirm the listener closes/reopens cleanly
+12. inspect the running MCP panel/status bar and confirm it does not report fake protocol sessions
 ```
 
-Do not upgrade `@modelcontextprotocol/sdk` merely because newer v1 releases exist. If the installed `1.25.3` proves to block the documented stateless pattern, stop and make the dependency update an explicit evidence-backed subdecision rather than silently mixing it into the transport rewrite.
-
-## Non-local acceptance
+Record:
 
 ```text
-focused stateless transport tests PASS
-no session ID / ping / heartbeat / inactivity ownership remains in default path
-typecheck PASS
-full Bun tests PASS
-production build PASS
-generated docs freshness PASS
-root MCP Verify PASS
+Blockbench version
+Codex client surface/version if visible
+configured URL
+initialize result
+real tools/list result
+read-only call used/result
+mutation call used/result
+whether any Mcp-Session-Id was issued/required
+GET/SSE behavior observed
+Origin 403 evidence
+unload/reload result
+UI result
+actual defects
 ```
 
-## Local proof required before closing P1.4
-
-```text
-Blockbench plugin binds loopback
-Codex local connects directly by Streamable HTTP URL
-initialize succeeds
-real tools/list works
-repeated requests work without Mcp-Session-Id
-read-only tool call works
-bounded mutation works
-invalid present Origin still returns 403
-no unexpected standalone SSE dependency
-plugin unload/reload closes server cleanly
-UI does not report fake protocol sessions
-```
-
-Only after that local proof passes (or records an explicit blocking defect) may P1.4 close and P1.5 full Bedrock Entity end-to-end acceptance begin.
+If this focused transport proof passes, mark P1.4 complete and then begin P1.5 full Bedrock Entity create→observe→correct→texture→animate→history/export acceptance. If it fails, fix only the evidenced P1.4 blocker before advancing.

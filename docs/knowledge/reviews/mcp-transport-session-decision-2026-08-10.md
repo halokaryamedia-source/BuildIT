@@ -250,3 +250,98 @@ UI does not claim nonexistent protocol sessions
 ```
 
 Only after that proof should P1.4 be closed and P1.5 full Bedrock workflow acceptance begin.
+
+## Implemented non-local source slice
+
+Verified source commit:
+
+```text
+775a104a41fc703d6424409c8f71c862727548ae
+refactor: simplify MCP transport to stateless v1
+```
+
+The implementation realizes the recorded v1 stateless decision without an SDK/package upgrade:
+
+```text
+mcp/server/net.ts
+  fresh request-owned McpServer
+  canonical tools/resources/prompts registered per request
+  WebStandardStreamableHTTPServerTransport
+    sessionIdGenerator: undefined
+    enableJsonResponse: true
+  GET/DELETE default endpoint -> 405 (no standalone SSE/session termination)
+  loopback + Origin rejection retained
+  raw HTTP parser retained
+  ordinary HTTP/1.1 connection reuse retained without MCP session semantics
+  health output reports stateless/json mode, not session counts
+
+mcp/lib/sessions.ts
+  removed
+
+mcp/index.ts
+  session transport map/timer configuration removed
+  plugin lifecycle owns only the HTTP server
+
+mcp/ui/index.ts + mcp/ui/statusBar.ts + mcp/ui/panel.html
+  protocol-session list/count semantics removed
+  UI identifies transport as Streamable HTTP (stateless)
+  status bar no longer fabricates connected-client state
+
+mcp/ui/settings.ts
+  obsolete session-timeout and SSE-heartbeat settings removed
+```
+
+The transport parser also serializes request processing per raw socket so buffered HTTP requests are not handled concurrently by overlapping `data` callbacks. This is HTTP parser correctness inside the retained raw-net owner; it does not create protocol session state.
+
+Focused P1.4 contracts assert:
+
+```text
+stateless transport options are present
+session ID / ping / heartbeat / inactivity ownership is absent
+standalone SSE and session DELETE are not offered
+health output contains no session state
+plugin lifecycle contains no session transport ownership
+UI contains no durable session count/list
+Origin guard remains before stateless MCP dispatch
+```
+
+Canonical root verification:
+
+```text
+MCP Verify
+run: 31374646462
+verified head: 775a104a41fc703d6424409c8f71c862727548ae
+```
+
+Result:
+
+```text
+frozen-lockfile install     PASS
+full tsc --noEmit           PASS
+Bun contract tests          PASS — 26/26, 0 failures, 148 expect() calls
+production build            PASS
+generated docs freshness    PASS
+fail-closed aggregator      PASS
+workflow conclusion         SUCCESS
+```
+
+The committed package still resolves `@modelcontextprotocol/sdk@1.25.3`; non-local typecheck/test/build evidence did not require an SDK upgrade.
+
+### Remaining proof boundary
+
+P1.4 is **not complete yet**. The source/repository implementation is complete, but the following are still `LOCAL PROOF REQUIRED` in the real Blockbench desktop + Codex local environment:
+
+```text
+loopback listener actually binds
+Codex direct Streamable HTTP initialize
+real tools/list
+repeated requests without Mcp-Session-Id
+read-only tool call
+bounded mutation
+invalid present Origin -> actual 403
+no unexpected standalone SSE dependency
+plugin unload/reload
+UI truthfulness in the running plugin
+```
+
+Do not start P1.5 until that focused P1.4 local transport proof passes or records a concrete blocking defect.
