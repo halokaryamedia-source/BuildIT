@@ -21,558 +21,671 @@ def replace_once(path: str, old: str, new: str) -> None:
     write(path, text.replace(old, new, 1))
 
 
-# ---------------------------------------------------------------------------
-# E1. Project creation is a Bedrock Entity product operation, not a generic
-# Formats registry passthrough.
-# ---------------------------------------------------------------------------
-replace_once(
-    "mcp/server/tools/project.ts",
-    '''  format: z
-    .string()
-    .default("bedrock")
-    .describe(
-      "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models."
-    ),''',
-    '''  format: z
-    .literal("bedrock")
-    .optional()
-    .default("bedrock")
-    .describe(
-      "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
-    ),''',
-)
-replace_once(
-    "mcp/server/tools/project.ts",
-    '''    description:
-      "Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.",''',
-    '''    description:
-      "Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.",''',
-)
-replace_once(
-    "mcp/server/tools/project.ts",
-    '''    async execute({ name, format }) {
-      const created = newProject(Formats[format]);''',
-    '''    async execute({ name, format }) {
-      const created = newProject(Formats.bedrock);''',
-)
+def unlink_required(path: str) -> None:
+    target = ROOT / path
+    if not target.exists():
+        raise RuntimeError(f"required file missing before deletion: {path}")
+    target.unlink()
+
 
 # ---------------------------------------------------------------------------
-# E2. Generic Codecs export is narrowed to the two model outcomes BlockIT needs:
-# native Bedrock geometry JSON and editable .bbmodel. Bedrock AnimationCodec is
-# separate in official Blockbench source and is not routed through this tool.
+# F. One enabled MCP prompt authority: Minecraft Bedrock Entity only.
 # ---------------------------------------------------------------------------
 write(
-    "mcp/server/tools/export.ts",
-    '''/// <reference types="three" />
-/// <reference types="blockbench-types" />
-import { z } from "zod";
-import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+    "mcp/server/prompts.ts",
+    '''import { z } from "zod";
+import { createPrompt, prompts } from "@/lib/factories";
+import { getPromptContent } from "@/lib/promptLoader";
 
-export const BLOCKIT_MODEL_CODEC_IDS = ["bedrock", "project"] as const;
-const blockitModelCodecEnum = z.enum(BLOCKIT_MODEL_CODEC_IDS);
+// Maintainer/development guidance remains source-preserved but is not part of
+// the normal agent-facing BlockIT MCP prompt surface.
+createPrompt(
+  "blockbench_native_apis",
+  {
+    description:
+      "Maintainer-only Blockbench native API security/reference guidance. Disabled in the normal BlockIT Bedrock Entity MCP surface.",
+    argsSchema: z.object({}),
+    async generate() {
+      const text = getPromptContent("blockbench_native_apis");
+      return {
+        messages: [{ role: "user", content: { type: "text", text } }],
+      };
+    },
+  },
+  "stable",
+  false
+);
 
-export const listExportFormatsParameters = z.object({});
+createPrompt(
+  "blockbench_code_eval_safety",
+  {
+    description:
+      "Maintainer-only safety guidance for Blockbench code evaluation. Disabled together with risky_eval in the normal BlockIT Bedrock Entity MCP surface.",
+    argsSchema: z.object({}),
+    async generate() {
+      const text = getPromptContent("blockbench_code_eval_safety");
+      return {
+        messages: [{ role: "user", content: { type: "text", text } }],
+      };
+    },
+  },
+  "stable",
+  false
+);
 
-export const exportModelParameters = z.object({
-  codec_id: blockitModelCodecEnum
-    .optional()
-    .default("bedrock")
-    .describe(
-      "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`."
-    ),
-  options: z
-    .record(z.unknown())
-    .optional()
-    .describe(
-      "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options."
-    ),
-  path: z
-    .string()
-    .optional()
-    .describe(
-      "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only."
-    ),
-  max_content_length: z
-    .number()
-    .int()
-    .min(0)
-    .max(2_000_000)
-    .optional()
-    .default(100_000)
-    .describe(
-      "Maximum characters returned in `content`. Use 0 when only writing to disk."
-    ),
+createPrompt("bedrock_entity_workflow", {
+  title: "Minecraft Bedrock Entity Workflow",
+  description:
+    "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+  argsSchema: z.object({}),
+  async generate() {
+    const text = getPromptContent("bedrock_entity_workflow");
+    return {
+      messages: [{ role: "user", content: { type: "text", text } }],
+    };
+  },
 });
 
-export const exportToolDocs: ToolSpec[] = [
-  {
-    name: "list_export_formats",
-    description:
-      "Lists the model outputs intentionally exposed by BlockIT for an active Bedrock Entity project: native Bedrock geometry JSON (`bedrock`) and editable Blockbench project (`project`). It does not enumerate arbitrary registered Blockbench codecs. Bedrock animation files/controllers use Blockbench's separate AnimationCodec surface and are not represented as generic model codecs here.",
-    annotations: {
-      title: "List BlockIT Model Outputs",
-      readOnlyHint: true,
-    },
-    parameters: listExportFormatsParameters,
-    status: STATUS_STABLE,
-  },
-  {
-    name: "export_model",
-    description:
-      "Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.",
-    annotations: {
-      title: "Export Bedrock Model",
-      destructiveHint: false,
-      openWorldHint: true,
-    },
-    parameters: exportModelParameters,
-    status: STATUS_EXPERIMENTAL,
-  },
-];
-
-type BlockITCodec = {
-  id?: string;
-  name?: string;
-  extension?: string;
-  compile?: (opts?: unknown) => unknown;
-  getExportOptions?: () => Record<string, unknown>;
-  fileName?: () => string;
-  support_partial_export?: boolean;
-};
-
-function requireBedrockEntityProject(): void {
-  if (!Project) {
-    throw new Error(
-      "No project is open. Use `create_project` or open a Minecraft Bedrock Entity project first."
-    );
-  }
-
-  const formatId = (Format as { id?: string } | undefined)?.id;
-  if (formatId !== "bedrock") {
-    throw new Error(
-      `BlockIT model export requires the Minecraft Bedrock Entity format (bedrock); current format is ${formatId ?? "unknown"}.`
-    );
-  }
-}
-
-function codecRegistry(): Record<string, BlockITCodec> {
-  // @ts-ignore - Codecs is a Blockbench global registry.
-  return Codecs as Record<string, BlockITCodec>;
-}
-
-function toTextContent(raw: unknown): string {
-  if (raw === null || raw === undefined) return "";
-  if (typeof raw === "string") return raw;
-  if (raw instanceof ArrayBuffer) return `[binary: ${raw.byteLength} bytes]`;
-  if (typeof raw === "object") {
-    try {
-      return JSON.stringify(raw, null, 2);
-    } catch {
-      return String(raw);
-    }
-  }
-  return String(raw);
-}
-
-export function registerExportTools() {
-  createTool(
-    exportToolDocs[0].name,
-    {
-      ...exportToolDocs[0],
-      async execute() {
-        requireBedrockEntityProject();
-        const registry = codecRegistry();
-        const codecs = BLOCKIT_MODEL_CODEC_IDS.map((id) => {
-          const codec = registry[id];
-          return {
-            id,
-            name: codec?.name ?? id,
-            extension: codec?.extension ?? (id === "project" ? "bbmodel" : "json"),
-            available: !!codec,
-            has_compile: typeof codec?.compile === "function",
-            supports_partial_export: Boolean(codec?.support_partial_export),
-            purpose: id === "bedrock" ? "bedrock_geometry" : "editable_blockbench_project",
-          };
-        });
-
-        return JSON.stringify(
-          {
-            current_format: "bedrock",
-            count: codecs.length,
-            codecs,
-            note:
-              "Bedrock animation/controller files are owned by Blockbench's separate AnimationCodec and are not arbitrary model codec exports.",
-          },
-          null,
-          2
-        );
-      },
-    },
-    exportToolDocs[0].status
-  );
-
-  createTool(
-    exportToolDocs[1].name,
-    {
-      ...exportToolDocs[1],
-      async execute({ codec_id, options, path, max_content_length }) {
-        requireBedrockEntityProject();
-        const registry = codecRegistry();
-        const codec = registry[codec_id];
-
-        if (!codec) {
-          throw new Error(
-            `Required BlockIT codec "${codec_id}" is not registered in this Blockbench build.`
-          );
-        }
-        if (typeof codec.compile !== "function") {
-          throw new Error(
-            `BlockIT codec "${codec_id}" does not support programmatic compile().`
-          );
-        }
-
-        const effectiveOptions =
-          options ??
-          (typeof codec.getExportOptions === "function"
-            ? codec.getExportOptions()
-            : undefined);
-        const rawResult = codec.compile(effectiveOptions);
-
-        const isArrayBuffer = rawResult instanceof ArrayBuffer;
-        const isBinaryView =
-          ArrayBuffer.isView(rawResult) && !(rawResult instanceof DataView);
-        const binaryBuffer = isArrayBuffer
-          ? Buffer.from(rawResult as ArrayBuffer)
-          : isBinaryView
-            ? Buffer.from(
-                (rawResult as ArrayBufferView).buffer,
-                (rawResult as ArrayBufferView).byteOffset,
-                (rawResult as ArrayBufferView).byteLength
-              )
-            : null;
-
-        const text = binaryBuffer ? null : toTextContent(rawResult);
-        const byteLength = binaryBuffer
-          ? binaryBuffer.byteLength
-          : Buffer.byteLength(text ?? "", "utf8");
-        const encoding: "utf-8" | "base64" = binaryBuffer ? "base64" : "utf-8";
-
-        let wrote_to_path: string | null = null;
-        if (path) {
-          // @ts-ignore - requireNativeModule is a Blockbench desktop global.
-          const fs = requireNativeModule("fs", {
-            message: `BlockIT export_model requested write access to save ${codec_id} output to ${path}`,
-          });
-          if (!fs) {
-            throw new Error(
-              "File system access was denied. Omit `path` to receive the compiled content in the MCP response."
-            );
-          }
-          fs.writeFileSync(path, binaryBuffer ?? (text ?? ""));
-          wrote_to_path = path;
-        }
-
-        const fullContent = binaryBuffer
-          ? binaryBuffer.toString("base64")
-          : (text ?? "");
-        const truncated = fullContent.length > max_content_length;
-        const returnedContent =
-          max_content_length === 0
-            ? null
-            : truncated
-              ? fullContent.slice(0, max_content_length)
-              : fullContent;
-
-        const result = {
-          project_format: "bedrock" as const,
-          codec: {
-            id: codec_id,
-            name: codec.name ?? codec_id,
-            extension: codec.extension ?? null,
-          },
-          file_name:
-            typeof codec.fileName === "function" ? codec.fileName() : Project!.name,
-          byte_length: byteLength,
-          encoding,
-          wrote_to_path,
-          truncated,
-          content: returnedContent,
-        };
-
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
-          structuredContent: result,
-        };
-      },
-    },
-    exportToolDocs[1].status
-  );
-}
+export default prompts;
 ''',
 )
 
-# ---------------------------------------------------------------------------
-# E3. Full-app screenshot + arbitrary editor camera mutation are generic
-# Blockbench conveniences. Preserve definitions for source history, but default
-# them off. Canonical model observation remains exposed.
-# ---------------------------------------------------------------------------
-replace_once(
-    "mcp/server/tools/camera.ts",
-    '''  {
-    name: "capture_app_screenshot",
-    description: "Returns the image data of the Blockbench app.",''',
-    '''  {
-    name: "capture_app_screenshot",
+bedrock = read("mcp/prompts/bedrock.md")
+protected_section = '''## Protected Native Capability Gaps
+
+BlockIT preserves the Minecraft Bedrock Entity product boundary even when a native capability does not yet have a direct MCP authoring/inspection owner. Current protected examples include direct Locator/NullObject authoring, TextureMesh authoring, native visible bounding-box fields, animation controllers, sound/timeline animation effects, animated-texture authoring, and bone-binding expressions.
+
+When the user asks for one of these native capabilities and the current exposed MCP surface has no direct owner:
+
+- **do not emulate it with generic Mesh, arbitrary Cubes, UI clicks, code evaluation, or a different format;**
+- do not claim that a broad runtime resource such as `nodes://` is equivalent to authored native support;
+- preserve existing authored data when opening/re-exporting a project unless a proven tool intentionally edits it;
+- state the capability gap explicitly and keep the task bounded to supported operations;
+- treat the gap as implementation work to audit against official Blockbench Bedrock source, not as permission to remove the capability from BlockIT.
+
+Native Bedrock PBR and per-face `material_instance` are **not** gaps: use the dedicated texture/material and material-instance tools when the task requires them.
+
+## Export Boundary
+
+For normal BlockIT model deliverables, `export_model` intentionally supports only:
+
+- `bedrock` — native Minecraft Bedrock geometry JSON;
+- `project` — editable Blockbench `.bbmodel`.
+
+Bedrock animation/controller files belong to Blockbench's separate Bedrock AnimationCodec surface. Do not substitute arbitrary OBJ/glTF/model codecs for a Bedrock Entity deliverable.
+
+'''
+needle = "## Default boundaries\n"
+if bedrock.count(needle) != 1:
+    raise RuntimeError("bedrock prompt: default-boundaries marker missing")
+bedrock = bedrock.replace(needle, protected_section + needle, 1)
+bedrock = bedrock.replace(
+    "generic mesh/armature/PBR tooling, or Hytale tooling as shortcuts.",
+    "generic mesh/armature tooling or Hytale tooling as shortcuts. Native Bedrock PBR/material-instance workflows are allowed when the asset actually requires them.",
+)
+write("mcp/prompts/bedrock_entity_workflow.md", bedrock)
+
+for stale_prompt in [
+    "mcp/prompts/bedrock.md",
+    "mcp/prompts/bedrock_block.md",
+    "mcp/prompts/java_block.md",
+    "mcp/prompts/model_creation_geometry.md",
+    "mcp/prompts/model_creation_import.md",
+    "mcp/prompts/model_creation_programmatic.md",
+    "mcp/prompts/model_creation_ui.md",
+]:
+    unlink_required(stale_prompt)
+
+# Documentation manifest must describe the same prompt contract.
+docs_manifest = read("mcp/build/docs-manifest.ts")
+start = docs_manifest.index('  {\n    name: "model_creation_strategy",')
+end = docs_manifest.index("  },\n];\n\n// Resource specs", start) + len("  },")
+replacement = '''  {
+    name: "bedrock_entity_workflow",
+    title: "Minecraft Bedrock Entity Workflow",
     description:
-      "Source-preserved generic Blockbench full-application screenshot helper. It is disabled in the normal BlockIT Bedrock Entity surface; use `capture_model_views` or `capture_screenshot` for model evidence.",''',
+      "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+    argsSchema: z.object({}),
+    status: "stable",
+  },'''
+docs_manifest = docs_manifest[:start] + replacement + docs_manifest[end:]
+docs_manifest = docs_manifest.replace(
+    '"Returns the current validation status including error/warning counts and a summary of all problems.",',
+    '"Returns the current validation status. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",',
 )
-# Only the capture_app entry's Stable status occurs between that entry and set_camera.
-text = read("mcp/server/tools/camera.ts")
-marker = 'name: "capture_app_screenshot"'
-start = text.index(marker)
-next_marker = text.index('name: "set_camera_angle"', start)
-segment = text[start:next_marker]
-if segment.count("status: STATUS_STABLE") != 1:
-    raise RuntimeError("camera.ts: expected capture_app_screenshot to have one stable status")
-segment = segment.replace("status: STATUS_STABLE", "status: STATUS_EXPERIMENTAL", 1)
-write("mcp/server/tools/camera.ts", text[:start] + segment + text[next_marker:])
-replace_once(
-    "mcp/server/tools/camera.ts",
-    '''    name: "set_camera_angle",
-    description: "Sets the camera angle to the specified value.",''',
-    '''    name: "set_camera_angle",
-    description:
-      "Source-preserved generic editor-camera mutation helper. It is disabled in the normal BlockIT Bedrock Entity surface because `capture_model_views` provides deterministic observation without mutating the active editor camera.",''',
+docs_manifest = docs_manifest.replace(
+    '"Returns all current validation warnings with element references where available.",',
+    '"Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",',
 )
-replace_once(
-    "mcp/server/tools/camera.ts",
-    '''  }, cameraToolDocs[1].status);
-
-  createTool(cameraToolDocs[2].name,''',
-    '''  }, cameraToolDocs[1].status, false);
-
-  createTool(cameraToolDocs[2].name,''',
+docs_manifest = docs_manifest.replace(
+    '"Returns all current validation errors with element references where available.",',
+    '"Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",',
 )
+write("mcp/build/docs-manifest.ts", docs_manifest)
+
+# P1 registration regression now tracks the single enabled Bedrock prompt.
 replace_once(
-    "mcp/server/tools/camera.ts",
-    '''  }, cameraToolDocs[2].status);
-
-  createTool(cameraToolDocs[3].name,''',
-    '''  }, cameraToolDocs[2].status, false);
-
-  createTool(cameraToolDocs[3].name,''',
+    "mcp/tests/p1-registration-profile.test.ts",
+    '''    const strategyPrompt = source.indexOf('createPrompt("model_creation_strategy"');''',
+    '''    const strategyPrompt = source.indexOf('createPrompt("bedrock_entity_workflow"');''',
 )
 
 # ---------------------------------------------------------------------------
-# E4. Validator element links are inferred from message strings, not native
-# object references. Keep useful hints but label the evidence honestly.
-# ---------------------------------------------------------------------------
-replace_once(
-    "mcp/server/resources/validator.ts",
-    '''    actionNames: problem.buttons?.map((b) => b.name) ?? [],
-    elementRefs,
-  };''',
-    '''    actionNames: problem.buttons?.map((b) => b.name) ?? [],
-    elementRefs,
-    elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none",
-    elementRefsAuthoritative: false,
-  };''',
-)
-replace_once(
-    "mcp/server/resources/validator.ts",
-    '''      "Returns the current validation status including error/warning counts and a summary of all problems.",''',
-    '''      "Returns the current validation status including error/warning counts and a summary of all problems. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",''',
-)
-replace_once(
-    "mcp/server/resources/validator.ts",
-    '''      "Returns all current validation warnings with element references where available.",''',
-    '''      "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",''',
-)
-replace_once(
-    "mcp/server/resources/validator.ts",
-    '''      "Returns all current validation errors with element references where available.",''',
-    '''      "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",''',
-)
-
-# ---------------------------------------------------------------------------
-# E evidence record and capability-matrix update.
+# H. Generated/reference docs must identify BlockIT and must not install the
+# upstream hosted binary.
 # ---------------------------------------------------------------------------
 write(
-    "docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md",
-    '''# MCP Pre-Local Generic Semantics Audit
+    "mcp/docs/llms/install.md",
+    '''## BlockIT Local Installation
+
+Build the current `Local` branch and load the generated plugin file from this repository:
+
+```bash
+git checkout Local
+cd mcp
+bun install --frozen-lockfile
+bun run build
+```
+
+Then load `mcp/dist/mcp.js` as a local plugin in desktop Blockbench.
+
+For BlockIT validation, **do not install the hosted `jasonjgardner.github.io/blockbench-mcp-plugin` artifact**. That URL serves the upstream generic plugin and cannot prove this Bedrock Entity-focused fork.
+
+Default MCP URL after the BlockIT plugin is loaded:
+
+```text
+http://127.0.0.1:3000/bb-mcp
+```
+''',
+)
+replace_once(
+    "mcp/build/docs.ts",
+    '<title>Blockbench MCP Plugin — API Reference</title>',
+    '<title>BlockIT — Bedrock Entity MCP — API Reference</title>',
+)
+replace_once(
+    "mcp/build/docs.ts",
+    '<h1>Blockbench MCP</h1>',
+    '<h1>BlockIT — Bedrock Entity MCP</h1>',
+)
+replace_once(
+    "mcp/build/docs.ts",
+    '<h1>Blockbench MCP Plugin</h1>',
+    '<h1>BlockIT — Bedrock Entity MCP</h1>',
+)
+
+# ---------------------------------------------------------------------------
+# G. BlockIT-specific agent skill layer. Reuse the mature modelling specialist;
+# add MCP orchestration, texture/PBR/material-instance, and animation specialists.
+# ---------------------------------------------------------------------------
+write(
+    ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
+    '''---
+name: blockit-bedrock-entity-mcp
+description: Mandatory orchestrator for using the BlockIT MCP to create, revise, texture, animate, inspect, validate, or export Minecraft Bedrock Entity assets in Blockbench. Route modelling judgement to blockbench-bedrock-modelling, texture/Paint/PBR/material-instance work to blockit-bedrock-texturing, and animation work to blockit-bedrock-animation. Do not use generic Mesh, Hytale, risky evaluation, arbitrary UI automation, or non-Bedrock project formats as substitutes.
+---
+
+# BlockIT Bedrock Entity MCP
+
+Use this skill before substantive BlockIT MCP asset work. It owns **workflow orchestration and tool-surface discipline**, not the artistic judgement of the modelling specialist.
+
+## Product Boundary
+
+- Target Blockbench format: `bedrock` (Minecraft Bedrock Entity).
+- Normal geometry: Cubes/Cuboids organized by Groups/bones.
+- Preserve native Bedrock capabilities even when their direct MCP mapping is incomplete.
+- Generic Blockbench Mesh, Hytale, arbitrary project formats, and arbitrary model codecs are not compatibility requirements.
+- `risky_eval` and `from_geo_json` are quarantined; do not design a workflow around them.
+- `capture_app_screenshot` and arbitrary `set_camera_angle` are not normal BlockIT observation paths.
+
+## Route By Intent
+
+| Intent | Specialist |
+|---|---|
+| Whole-form interpretation, Cube geometry, hierarchy/pivot judgement, silhouette/proportion correction | `blockbench-bedrock-modelling` |
+| Texture creation/application, Paint, layers/selections, PBR TextureGroups, per-face material instances | `blockit-bedrock-texturing` |
+| Bedrock BoneAnimator transforms, keyframes, curves, rigs, particle effects, animation inspection | `blockit-bedrock-animation` |
+| Plugin/runtime implementation defect | `blockbench-runtime-development` |
+| MCP server/schema/registration implementation | `mcp-server-development` |
+
+Load every relevant domain specialist before a multi-domain task, but keep one domain responsible for each decision.
+
+## Preflight
+
+1. Call `get_project_info` before mutation when an existing project is open.
+2. If no project exists and creation is requested, use `create_project`; BlockIT accepts only `bedrock`.
+3. Confirm the intended project is actually `bedrock`. Do not silently convert another format.
+4. Inspect only the state needed for the next decision:
+   - structure: `list_outline`, `find_elements_by_criteria`, `inspect_element`;
+   - textures/materials: `list_textures`, `get_texture`, `list_materials`, `get_material_info`;
+   - animation: `inspect_animation`;
+   - whole-form envelope: `inspect_model_bounds`.
+5. Prefer exact UUIDs after discovery. Exact unique names are a convenience, not a durable identity contract.
+
+## Mutation Discipline
+
+- For three or more material mutations, or any risky multi-step rework, create a `save_checkpoint` first when recovery value is meaningful.
+- Use `modify_cube` for one diagnosed Cube correction.
+- Use `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs.
+- Do not use selection as an implicit mutation target when a tool supports explicit identity.
+- Do not compensate for a wrong primary form with extra detail, texture, or animation.
+- Use `undo`/`redo` rather than generic UI actions.
+
+## Observation Discipline
+
+For reference-driven modelling:
+
+- use `inspect_model_bounds` for structural envelope facts;
+- use `capture_model_views` for deterministic labeled views with explicit `front_direction`;
+- use `capture_screenshot` only when the current editor view itself is useful;
+- successful capture or validator execution is observation evidence, not a resemblance PASS.
+
+## Protected Native Capability Gaps
+
+If a request needs a native Bedrock capability that has no direct exposed authoring/inspection tool, **stop at the capability boundary rather than synthesizing a fake substitute**.
+
+Protected examples currently include direct authored-state owners for:
+
+- Locator / NullObject locators;
+- TextureMesh;
+- native visible bounding-box fields;
+- animation controllers;
+- sound/timeline animation effects;
+- animated-texture authoring;
+- bone-binding expressions.
+
+Do not emulate these with generic Mesh, arbitrary Cubes, `risky_eval`, UI clicks, or another model format. Existing data should be preserved where the normal project/Bedrock codecs preserve it. Record the gap for MCP implementation audit.
+
+## Texture And PBR Boundary
+
+Native Bedrock PBR and per-face `material_instance` are valid BlockIT capabilities. Route those tasks to `blockit-bedrock-texturing`; do not classify them as generic Mesh/PBR shortcuts.
+
+## Animation Boundary
+
+Route animation work to `blockit-bedrock-animation`. Particle effects are directly mapped today. Do not invent sound/timeline/controller authoring through generic actions when no direct owner exists.
+
+## Export
+
+Export only when the user wants a deliverable or an explicit validation artifact.
+
+`export_model` supports:
+
+- `bedrock` — native Minecraft Bedrock geometry JSON;
+- `project` — editable Blockbench `.bbmodel`.
+
+Do not ask for OBJ/glTF as an intermediate escape hatch for normal Bedrock Entity work. Bedrock animation/controller file ownership is separate from generic model export.
+
+## Completion
+
+A task is complete only when the relevant state is re-observed after mutation. For reference-driven geometry this means fresh visual comparison; for texture/animation work, use the domain specialist's verification checks. Never report live Blockbench proof from source/CI evidence alone.
+''',
+)
+
+write(
+    ".agents/skills/blockit-bedrock-texturing/SKILL.md",
+    '''---
+name: blockit-bedrock-texturing
+description: Specialist for Minecraft Bedrock Entity texture work through BlockIT MCP: texture creation/application, pixel painting, paint settings, layers/selections, PBR TextureGroup materials, channel assignment, and per-face material_instance metadata. Use after geometry is coherent or when revising an existing asset's surface. Do not use generic Mesh UV workflows.
+---
+
+# BlockIT Bedrock Texturing
+
+Own the **surface-authoring workflow** for a Bedrock Entity asset. Geometry and pivot judgement remain with `blockbench-bedrock-modelling`.
+
+## Start With Existing State
+
+Before changing an existing asset:
+
+1. `list_textures` to identify texture UUID/ID/name and active assignments.
+2. `get_texture` only when image evidence is needed.
+3. `list_materials` / `get_material_info` before changing PBR TextureGroups.
+4. `get_face_material_instances` or `list_material_instances` before changing per-face material metadata.
+5. Use explicit targets; prefer UUIDs once discovered.
+
+If the geometry is reference-driven and still structurally wrong, return to the modelling specialist before painting. Texture must not hide a broken primary form.
+
+## Texture Management
+
+Use the actual BlockIT texture tools:
+
+- `create_texture`
+- `list_textures`
+- `get_texture`
+- `activate_texture`
+- `apply_texture`
+- `add_texture_group`
+
+`apply_texture` targets Cube or Group scopes, not generic Mesh.
+
+## Paint
+
+Available Painter-backed operations include:
+
+- `paint_fill_tool`
+- `draw_shape_tool`
+- `gradient_tool`
+- `paint_with_brush`
+- `eraser_tool`
+- `color_picker_tool`
+- `copy_brush_tool`
+- `paint_settings`
+- `texture_selection`
+- `texture_layer_management`
+- brush preset create/load helpers
+
+These depend on Blockbench's live Painter runtime. Source/CI validation does not replace local rendered/runtime proof.
+
+Prefer bounded, deliberate pixel operations. Use pixel-perfect/mirroring only when the texture design supports it. Avoid procedural noise merely to make a surface look detailed.
+
+## Native Bedrock PBR
+
+PBR is part of Blockbench's native Bedrock format and is valid when the requested asset uses it.
+
+Use:
+
+- `create_pbr_material`
+- `configure_material`
+- `list_materials`
+- `get_material_info`
+- `assign_texture_channel`
+- `import_texture_set` only when importing an existing Bedrock texture-set is explicitly required
+- `save_material_config` only when a filesystem deliverable is requested
+
+Channel work may include color, normal, height, MER, and supported uniform values/subsurface fields. Inspect the existing material before replacing a channel.
+
+## Per-Face Material Instances
+
+`material_instance` is native Bedrock geometry face metadata and is **not the same thing as a PBR TextureGroup**.
+
+Use:
+
+- `get_face_material_instances`
+- `list_material_instances`
+- `set_face_material_instance`
+- `bulk_set_material_instances`
+- `clear_material_instances`
+
+For bulk mutation, preflight all Cube identities and face intent first. Do not assign arbitrary material-instance names as decoration when the pack/entity contract does not require them.
+
+## UV Boundary
+
+BlockIT removed the generic Mesh-only UV tool family. Do not use upstream instructions such as `auto_uv_mesh`, `set_mesh_uv`, or `rotate_mesh_uv`.
+
+Cube face/box-UV semantics remain a protected Bedrock capability. Use the Cube/texture fields exposed by the actual current tools, and do not claim full Cube UV authoring coverage where a direct tool contract is still partial.
+
+## Verification
+
+After a material surface change:
+
+- re-read the targeted texture/material/material-instance state;
+- use `get_texture` when pixel output itself matters;
+- use canonical model views when the surface must be judged on the model;
+- distinguish structural success from visual quality;
+- keep PBR appearance claims bounded because final RTX/in-game rendering is outside MCP source proof.
+''',
+)
+
+write(
+    ".agents/skills/blockit-bedrock-animation/SKILL.md",
+    '''---
+name: blockit-bedrock-animation
+description: Specialist for Minecraft Bedrock Entity animation through BlockIT MCP. Use for existing-animation inspection, BoneAnimator transforms, keyframes, graph interpolation, Group/bone rig changes, timeline playback/settings, batch/copy operations, and mapped particle effects. Preserve unsupported native controller/sound/timeline-effect capabilities as explicit gaps instead of emulating them.
+---
+
+# BlockIT Bedrock Animation
+
+Own animation execution only after the model hierarchy and pivots are suitable for the requested motion.
+
+## Preflight
+
+1. Confirm the active project format is `bedrock` with `get_project_info`.
+2. Use `list_outline` to identify Group/bone UUIDs.
+3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.
+4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.
+
+## Directly Mapped Animation Surface
+
+- `create_animation` — uses the current Bedrock AnimationCodec and accepts authored transform keyframes plus mapped particle effects.
+- `inspect_animation` — read-only authored Animation/BoneAnimator/keyframe/particle state.
+- `manage_keyframes` — create/edit/delete/select transform-channel keyframes.
+- `animation_graph_editor` — interpolation/Bezier curve adjustment.
+- `bone_rigging` — Group/bone structure and pivot operations with explicit targets.
+- `animation_timeline` — playback/time/length/FPS/loop controls.
+- `batch_keyframe_operations` — bounded multi-keyframe timing/value operations.
+- `animation_copy_paste` — copy/paste/mirror between explicit Group/Animation targets.
+
+Use Group UUIDs whenever possible. Bedrock animation import matches bone names case-insensitively, so duplicate/colliding names are a real determinism problem, not something to guess around.
+
+## Create Versus Edit
+
+For a new animation:
+
+- establish the intended motion and which bones participate;
+- verify pivots first;
+- keep transform values in the authored Blockbench space expected by the tool;
+- create the minimum keyframes needed for the motion;
+- inspect the created animation afterward.
+
+For an existing animation:
+
+- inspect first;
+- diagnose which bone/channel/time is wrong;
+- edit only the affected keyframes or curve range;
+- re-inspect and visually preview the affected motion.
+
+## Timeline Caution
+
+Do not make `animation_timeline.select_range` a dependency for core correctness until its live Blockbench lifecycle behavior is explicitly accepted locally. Prefer explicit keyframe/time ranges on the editing tools when available.
+
+## Mapped Effects
+
+Particle effects are currently mapped through `create_animation.particle_effects` and surfaced by `inspect_animation.effects`. Preserve Locator names referenced by particles; a particle locator string does not mean direct Locator authoring is implemented.
+
+## Protected Native Animation Gaps
+
+Blockbench Bedrock Entity natively supports more than the current direct MCP authoring surface. Keep these as explicit protected gaps when no direct tool exists:
+
+- animation controllers;
+- sound-effect keyframes;
+- timeline-effect keyframes;
+- direct Locator/NullObject authoring used by effects;
+- bone-binding expressions.
+
+Do not fake these with `risky_eval`, `trigger_action`, dialog filling, arbitrary UI clicks, or generic model export. If the requested deliverable requires one, report the current MCP gap and preserve existing authored data rather than silently substituting another feature.
+
+## Verification
+
+After animation mutation:
+
+- `inspect_animation` for authored-state continuity;
+- preview/play only as needed to inspect motion;
+- use canonical/model screenshots where pose silhouette or clipping matters;
+- verify attachment, transform arc, clipping, and return-to-neutral behavior relevant to the request;
+- do not claim in-game/controller behavior without the corresponding direct capability and local/game evidence.
+''',
+)
+
+write(
+    ".agents/skills/README.md",
+    '''# BuildIT Agent Skills
+
+This directory contains repository-owned skills. For normal Minecraft Bedrock Entity work through the BlockIT MCP, use the BlockIT routing below rather than the upstream generic `blockbench-mcp-project` skills verbatim.
+
+## Bedrock Entity authoring
+
+1. **`blockit-bedrock-entity-mcp`** — mandatory MCP workflow orchestrator for asset creation/modification/export.
+2. **`blockbench-bedrock-modelling`** — existing whole-form/Cuboid/hierarchy/pivot modelling specialist.
+3. **`blockit-bedrock-texturing`** — textures, Paint, PBR, material instances.
+4. **`blockit-bedrock-animation`** — Bedrock BoneAnimator/keyframe/effect workflow.
+
+Load the orchestrator first for substantive MCP work, then the domain skill(s) needed by the request.
+
+## Maintainer/development skills
+
+- `blockbench-runtime-development` — Blockbench plugin/runtime/API implementation defects.
+- `mcp-server-development` — MCP registration/schema/result/server implementation.
+- `bun-tooling` — Bun build/package tooling.
+- `typescript-type-safety` — TypeScript type-system issues.
+- `development-brief` — repository development planning/brief work.
+
+Maintainer skills are not a substitute for the Bedrock asset-authoring workflow.
+
+## Deliberate exclusions
+
+There is no BlockIT Hytale skill and no generic Mesh modelling skill. Native Bedrock `TextureMesh` remains a protected capability gap distinct from generic Blockbench `Mesh`; it must receive an official-source-backed direct mapping rather than reintroducing the generic Mesh workflow.
+''',
+)
+
+# Existing modelling specialist stays authoritative for form judgement, but its
+# routing must acknowledge native Bedrock PBR as an execution domain rather than
+# classifying it as out-of-product generic work.
+replace_once(
+    ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+    '''- unrelated engines, Hytale production, generic mesh sculpting, PBR pipelines,
+  or realistic rendering unless the product scope is explicitly changed.''',
+    '''- unrelated engines, Hytale production, generic mesh sculpting, or realistic
+  rendering; native Bedrock texture/PBR/material-instance execution routes to
+  `blockit-bedrock-texturing` after modelling judgement is settled.''',
+)
+replace_once(
+    ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+    '''This skill decides **what the model should become**. It does not own the
+Blockbench API/runtime mechanics used to apply those decisions.''',
+    '''This skill decides **what the model should become**. It does not own the
+Blockbench API/runtime mechanics used to apply those decisions. For actual MCP
+workflow orchestration, load `blockit-bedrock-entity-mcp`; route surface execution
+to `blockit-bedrock-texturing` and animation execution to
+`blockit-bedrock-animation` when those domains enter scope.''',
+)
+
+write(
+    "docs/knowledge/reviews/blockit-agent-skill-surface-2026-08-10.md",
+    '''# BlockIT Agent Skill Surface
 
 Updated: 2026-08-10
 
-## Scope
+## Decision
 
-This review narrows clearly generic semantics that remained inside otherwise-retained Bedrock Entity families. It is **not** a second capability deletion pass.
+Do not install or copy `jasonjgardner/blockbench-mcp-project` as the canonical BlockIT skill layer. It is useful upstream reference material, but it describes a broader generic Blockbench MCP surface than BlockIT now exposes by default.
 
-Official source basis: `JannisX11/blockbench` master as audited at commit `47e633e4a1338f957ee7baa0acbcf54da11e77df`.
+Upstream audit covered the published skills for generic Blockbench use, MCP overview, modelling, texturing, PBR, animation, Hytale, and plugin development.
 
-## Official source findings
+## Replacement map
 
-### Native Bedrock Entity format
+| Upstream skill | BlockIT treatment |
+|---|---|
+| `blockbench-use` | Replace with `blockit-bedrock-entity-mcp` orchestrator. |
+| `blockbench-mcp-overview` | Replace with the orchestrator + Bedrock capability surface matrix/current MCP docs. |
+| `blockbench-modeling` | Replace generic Mesh/Cube guidance with existing `blockbench-bedrock-modelling` specialist. |
+| `blockbench-texturing` | Replace Mesh-UV/generic guidance with `blockit-bedrock-texturing`. |
+| `blockbench-pbr-materials` | Fold native Bedrock PBR into `blockit-bedrock-texturing`; do not treat PBR as a separate generic product. |
+| `blockbench-animation` | Replace with `blockit-bedrock-animation`, which uses current BlockIT identity/inspection contracts and protected-gap rules. |
+| `blockbench-hytale` | Excluded from BlockIT product surface. |
+| `blockbench-development` / `blockbench-plugins` | Maintainer-only analogue is existing `blockbench-runtime-development`; not loaded for normal asset authoring. |
 
-`js/formats/bedrock/bedrock.js` defines the entity `ModelFormat` with:
+## Why the upstream orchestrator cannot be canonical here
 
-```text
-id: bedrock
-codec: bedrock
-animation_codec: bedrock AnimationCodec
-```
+Its generic workflow references capabilities that are intentionally outside or disabled in normal BlockIT, including generic Mesh/freeform paths, Hytale, broad formats, risky evaluation as a fallback, arbitrary export codecs, full-app/UI automation, and tool names removed with the generic Mesh UV surface.
 
-The same format explicitly enables native Bedrock features including Cube rotation/UV, bone rig, animated textures, animation files/controllers, bone binding expressions, locators, texture meshes, bounding boxes, and PBR.
+Keeping those instructions installed beside a Bedrock-only MCP would teach the agent to request tools the server no longer exposes, or worse, to treat quarantined/generic fallback paths as normal recovery behavior.
 
-### Model codecs
-
-The Bedrock geometry codec is `Codec('bedrock')` and compiles Minecraft `minecraft:geometry` JSON. The editable Blockbench project codec is independently `Codec('project')` with `.bbmodel` extension in `js/formats/bbmodel.js`.
-
-### Animation output ownership
-
-`js/formats/bedrock/bedrock_animation.js` defines `AnimationCodec('bedrock')`. Bedrock animation/controller file behavior therefore must not be inferred from, or removed by narrowing, the generic `Codecs` model-export registry.
-
-## E decisions
-
-### `create_project`
-
-**NARROW** to the native Bedrock Entity format only.
-
-Reason: arbitrary `Formats[format]` project creation is generic Blockbench behavior, while BlockIT's product boundary is Bedrock Entity. Existing/open Bedrock projects remain supported.
-
-### model export
-
-**NARROW** generic `Codecs` enumeration/execution to:
+## BlockIT authoring stack
 
 ```text
-bedrock  -> native Minecraft Bedrock geometry JSON
-project  -> editable Blockbench .bbmodel
+blockit-bedrock-entity-mcp        workflow/surface authority
+  ├─ blockbench-bedrock-modelling whole-form/Cuboid/hierarchy judgement
+  ├─ blockit-bedrock-texturing    texture/Paint/PBR/material_instance
+  └─ blockit-bedrock-animation    BoneAnimator/keyframes/mapped effects
 ```
 
-Do not interpret this as animation reduction; Bedrock animations/controllers are owned by the separate native AnimationCodec and remain protected capability targets.
+Maintainer-only skills remain separate.
 
-### camera helpers
+## Capability-gap rule
 
-Keep exposed:
+Skills must not hide native Bedrock gaps. Locator/NullObject, TextureMesh, native bounding-box fields, animation controllers, sound/timeline effects, animated-texture authoring, and bone-binding expressions remain protected when direct MCP ownership is incomplete.
 
-```text
-capture_screenshot
-capture_model_views
-```
-
-Default-disable but source-preserve:
-
-```text
-capture_app_screenshot
-set_camera_angle
-```
-
-Reason: full application capture and arbitrary active-camera mutation are generic UI/editor conveniences. Canonical Bedrock model observation already has a deterministic non-mutating owner.
-
-### validator references
-
-Keep validator resources, but mark regex-derived `elementRefs` as:
-
-```text
-elementRefsSource: message_heuristic | none
-elementRefsAuthoritative: false
-```
-
-A parser guess from localized/human-readable validator text is useful navigation context but not authored identity evidence.
-
-### `nodes://{id}`
-
-**DEFER — retain for now.**
-
-The resource is broad/generic, but direct BlockIT mappings for native Locator and TextureMesh authored state are still protected gaps. Removing the broad node observation route before those gaps are closed would reduce observability while pretending the product became cleaner. Audit and replace it only together with explicit Locator/TextureMesh inspection ownership.
-
-## Guardrail
-
-No change in this slice authorizes removal of Locator, TextureMesh, native bounding boxes, animated textures, animation controllers, sound/timeline effects, or bone binding expressions. Those remain protected by the capability matrix until their direct MCP mapping is audited.''',
+A future skill update may document those features **only after** the corresponding current BlockIT tool/resource contract is implemented and audited. Do not resurrect generic Mesh/UI/eval instructions to simulate them.
+''',
 )
 
+# Capability matrix now points to prompt/skill ownership while keeping gaps visible.
 matrix = read("docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md")
 matrix = matrix.replace(
-    '| Project format/orientation | `create_project`, `get_project_info` | **Mapped** | Normal project format is `bedrock`; later narrowing should prevent arbitrary format drift without removing Bedrock project creation. |',
-    '| Project format/orientation | `create_project`, `get_project_info` | **Mapped / narrowed** | `create_project` accepts the native `bedrock` Entity format only; arbitrary Blockbench format creation is outside the product tool. |',
-)
-matrix = matrix.replace(
-    '| Current-format Bedrock export | `list_export_formats`, `export_model` | **Available but broad** | Later audit should prefer current-format Bedrock outcomes while avoiding arbitrary-codec generic drift. |',
-    '| Bedrock model/project export | `list_export_formats`, `export_model` | **Mapped / narrowed** | Generic model-codec exposure is limited to native `bedrock` geometry JSON and editable `project` `.bbmodel`. Native Bedrock animation/controller output remains separately protected under AnimationCodec. |',
-)
-matrix = matrix.replace(
-    '| Canonical visual observation | `capture_model_views`, `capture_screenshot`, `inspect_model_bounds` | **Mapped BlockIT workflow support** | Product evidence helpers, not proof of resemblance by themselves. |',
-    '| Canonical visual observation | `capture_model_views`, `capture_screenshot`, `inspect_model_bounds` | **Mapped BlockIT workflow support** | Product evidence helpers, not proof of resemblance by themselves. Generic full-app capture and arbitrary active-camera mutation are default-disabled. |',
-)
-needle = '| Reference Models plugin integration | conditional `reference_models://{id}` | **Optional external integration** | Not a native Bedrock capability and must not affect baseline capability counts. |'
-if needle not in matrix:
-    raise RuntimeError("capability matrix reference-model row not found")
-matrix = matrix.replace(
-    needle,
-    '| Generic `nodes://{id}` observation | `Project.nodes_3d` resource | **Transitional / deferred** | Broad runtime-node observation is retained until explicit Locator/TextureMesh authored-state inspection closes those protected gaps; do not remove it first. |\n' + needle,
-)
-matrix = matrix.replace(
-    'Use this matrix to audit remaining broad semantics inside retained families: arbitrary project-format creation, arbitrary codec enumeration/export, generic camera/app UI helpers, generic resource object dumps, and Bedrock prompt/skill coverage for protected gaps. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.',
     'Project creation, model-codec breadth, generic camera/app helpers, and validator inference labeling were reviewed in `mcp-prelocal-generic-semantics-audit-2026-08-10.md`. Next, use this matrix to normalize Bedrock prompts/skills and to design direct authored-state coverage for protected gaps before replacing broad transitional resources. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.',
+    'Project creation, model-codec breadth, generic camera/app helpers, and validator inference labeling were reviewed in `mcp-prelocal-generic-semantics-audit-2026-08-10.md`. The canonical MCP prompt is now `bedrock_entity_workflow`, and the repository-owned skill routing is documented in `blockit-agent-skill-surface-2026-08-10.md`. Next capability work should design direct authored-state coverage for protected native gaps before replacing broad transitional resources. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.',
 )
 write("docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md", matrix)
 
+# README points at the concrete repository-owned skills after G is installed.
+readme = read("mcp/README.md")
+old = '''A BlockIT-specific skill pack is a separate pre-local hardening step and should be generated from the current capability matrix and actual MCP contract.'''
+new = '''Repository-owned BlockIT skills now live under `.agents/skills/`: use `blockit-bedrock-entity-mcp` as the MCP orchestrator, the existing `blockbench-bedrock-modelling` specialist for whole-form geometry judgement, `blockit-bedrock-texturing` for texture/Paint/PBR/material-instance work, and `blockit-bedrock-animation` for Bedrock animation.'''
+if readme.count(old) != 1:
+    raise RuntimeError("mcp README skill placeholder not found")
+write("mcp/README.md", readme.replace(old, new, 1))
+
 # ---------------------------------------------------------------------------
-# Focused regression proof.
+# Focused F/G/H regression proof.
 # ---------------------------------------------------------------------------
 write(
-    "mcp/tests/prelocal-generic-semantics.test.ts",
+    "mcp/tests/prelocal-prompt-skill-surface.test.ts",
     '''import { describe, expect, test } from "bun:test";
-import { createProjectParameters } from "@/server/tools/project";
-import {
-  BLOCKIT_MODEL_CODEC_IDS,
-  exportModelParameters,
-  listExportFormatsParameters,
-} from "@/server/tools/export";
+import { readdir } from "node:fs/promises";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("pre-local generic semantics narrowing", () => {
-  test("project creation accepts only the native Bedrock Entity format", () => {
-    expect(createProjectParameters.parse({ name: "entity" }).format).toBe("bedrock");
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(true);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
+describe("pre-local Bedrock prompt and skill surface", () => {
+  test("one enabled MCP workflow prompt is Bedrock Entity-only", async () => {
+    const prompts = await source("server/prompts.ts");
+    expect(prompts).toContain('createPrompt("bedrock_entity_workflow"');
+    expect(prompts).not.toContain('createPrompt("model_creation_strategy"');
+    expect(prompts).not.toContain('enum(["java_block", "bedrock", "bedrock_block"])');
+    expect(prompts).not.toContain('getPromptContent("model_creation_ui")');
   });
 
-  test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
-    expect(BLOCKIT_MODEL_CODEC_IDS).toEqual(["bedrock", "project"]);
-    expect(listExportFormatsParameters.parse({})).toEqual({});
-    expect(exportModelParameters.parse({}).codec_id).toBe("bedrock");
-    expect(exportModelParameters.safeParse({ codec_id: "project" }).success).toBe(true);
-    expect(exportModelParameters.safeParse({ codec_id: "obj" }).success).toBe(false);
-    expect(exportModelParameters.safeParse({ codec_id: "gltf" }).success).toBe(false);
+  test("bundled prompt content contains only canonical Bedrock workflow plus disabled maintainer references", async () => {
+    const files = (await readdir("prompts"))
+      .filter((name) => name.endsWith(".md"))
+      .sort();
+    expect(files).toEqual([
+      "bedrock_entity_workflow.md",
+      "blockbench_code_eval_safety.md",
+      "blockbench_native_apis.md",
+    ]);
+
+    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    expect(workflow).toContain("Protected Native Capability Gaps");
+    expect(workflow).toContain("Native Bedrock PBR and per-face `material_instance` are **not** gaps");
+    expect(workflow).toContain("`bedrock` — native Minecraft Bedrock geometry JSON");
   });
 
-  test("generic full-app capture and editor-camera mutation are default-disabled", async () => {
-    const camera = await source("server/tools/camera.ts");
-    expect(camera).toContain("cameraToolDocs[1].status, false");
-    expect(camera).toContain("cameraToolDocs[2].status, false");
-    expect(camera).toContain("capture_model_views");
+  test("BlockIT skill stack replaces generic upstream orchestration without duplicating modelling judgement", async () => {
+    const index = await source("../.agents/skills/README.md");
+    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+
+    expect(index).toContain("blockbench-bedrock-modelling");
+    expect(orchestrator).toContain("Protected Native Capability Gaps");
+    expect(orchestrator).toContain("`bedrock` — native Minecraft Bedrock geometry JSON");
+    expect(texturing).toContain("Per-Face Material Instances");
+    expect(texturing).not.toContain("auto_uv_mesh");
+    expect(animation).toContain("inspect_animation");
+    expect(animation).toContain("animation controllers");
+    expect(animation).toContain("Do not fake these with `risky_eval`");
   });
 
-  test("validator inferred element references declare their non-authoritative source", async () => {
-    const validator = await source("server/resources/validator.ts");
-    expect(validator).toContain('elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none"');
-    expect(validator).toContain("elementRefsAuthoritative: false");
+  test("generated-doc source is BlockIT-branded and install guidance does not offer the upstream hosted binary", async () => {
+    const docs = await source("build/docs.ts");
+    const install = await source("docs/llms/install.md");
+    expect(docs).toContain("BlockIT — Bedrock Entity MCP");
+    expect(install).toContain("do not install the hosted");
+    expect(install).not.toContain("- [Stable](https://jasonjgardner.github.io");
   });
-
-  test("generic nodes resource remains explicitly deferred until protected native gaps have owners", async () => {
-    const audit = await source("../docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md");
-    const matrix = await source("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md");
-    expect(audit).toContain("`nodes://{id}`");
-    expect(audit).toContain("DEFER — retain for now");
-    expect(matrix).toContain("Generic `nodes://{id}` observation");
-    expect(matrix).toContain("Transitional / deferred");
-  });
-});''',
+});
+''',
 )
 
-print("Pre-local generic semantics E patch applied.")
+print("Pre-local prompt/skill/documentation F-G-H patch applied.")
