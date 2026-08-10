@@ -422,8 +422,11 @@ export const paintToolDocs: ToolSpec[] = [
   },
 ];
 
+function getRuntimePainter(): BlockbenchRuntimePainter {
+  return Painter as unknown as BlockbenchRuntimePainter;
+}
+
 export function registerPaintTools() {
-  const runtimePainter = Painter as unknown as BlockbenchRuntimePainter;
   createTool(
     paintToolDocs[0].name,
     {
@@ -465,8 +468,8 @@ export function registerPaintTools() {
         BarItems.fill_tool.select();
 
         // Perform fill
-        runtimePainter.startPaintTool(texture, x, y, {}, { shiftKey: false });
-        runtimePainter.stopPaintTool();
+        getRuntimePainter().startPaintTool(texture, x, y, {}, { shiftKey: false });
+        getRuntimePainter().stopPaintTool();
 
         Undo.finishEdit("Fill tool");
         Canvas.updateAll();
@@ -521,9 +524,9 @@ export function registerPaintTools() {
         BarItems.draw_shape_tool.select();
 
         // Draw shape
-        runtimePainter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        runtimePainter.useShapeTool(texture, end.x, end.y, {});
-        runtimePainter.stopPaintTool();
+        getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        getRuntimePainter().useShapeTool(texture, end.x, end.y, {});
+        getRuntimePainter().stopPaintTool();
 
         Undo.finishEdit("Draw shape");
         Canvas.updateAll();
@@ -572,9 +575,9 @@ export function registerPaintTools() {
         BarItems.gradient_tool.select();
 
         // Apply gradient
-        runtimePainter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        runtimePainter.useGradientTool(texture, end.x, end.y, {});
-        runtimePainter.stopPaintTool();
+        getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        getRuntimePainter().useGradientTool(texture, end.x, end.y, {});
+        getRuntimePainter().stopPaintTool();
 
         Undo.finishEdit("Apply gradient");
         Canvas.updateAll();
@@ -594,7 +597,7 @@ export function registerPaintTools() {
         const texture = getAndActivateTexture(texture_id);
 
         // Pick color
-        runtimePainter.colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
+        getRuntimePainter().colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
 
         // Get the picked color
         const color = ColorPanel.get(false);
@@ -652,13 +655,13 @@ export function registerPaintTools() {
         BarItems.copy_brush.select();
 
         // Set source point (Ctrl+click equivalent)
-        runtimePainter.startPaintTool(texture, source.x, source.y, {}, {
+        getRuntimePainter().startPaintTool(texture, source.x, source.y, {}, {
           ctrlOrCmd: true,
         });
 
         // Apply at target point
-        runtimePainter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
-        runtimePainter.stopPaintTool();
+        getRuntimePainter().startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
+        getRuntimePainter().stopPaintTool();
 
         Undo.finishEdit("Copy brush");
         Canvas.updateAll();
@@ -714,15 +717,15 @@ export function registerPaintTools() {
 
           if (i === 0 || !connect_strokes) {
             // Start new stroke
-            runtimePainter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
+            getRuntimePainter().startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
           } else {
             // Continue stroke
-            runtimePainter.movePaintTool(texture, coord.x, coord.y, {});
+            getRuntimePainter().movePaintTool(texture, coord.x, coord.y, {});
           }
         }
 
         // Finish erasing
-        runtimePainter.stopPaintTool();
+        getRuntimePainter().stopPaintTool();
 
         Undo.finishEdit("Erase texture");
         Canvas.updateAll();
@@ -769,7 +772,7 @@ export function registerPaintTools() {
         // Mirror painting
         if (mirror_painting !== undefined) {
           setBarItemValue("mirror_painting", mirror_painting.enabled);
-          runtimePainter.mirror_painting = mirror_painting.enabled;
+          getRuntimePainter().mirror_painting = mirror_painting.enabled;
           appliedSettings.push(`Mirror painting: ${mirror_painting.enabled}`);
 
           if (
@@ -779,7 +782,7 @@ export function registerPaintTools() {
               mirror_painting.texture_center)
           ) {
             // @ts-ignore
-            const options = runtimePainter.mirror_painting_options;
+            const options = getRuntimePainter().mirror_painting_options;
             if (mirror_painting.axis) {
               mirror_painting.axis.forEach((axis) => {
                 options[axis] = true;
@@ -800,7 +803,7 @@ export function registerPaintTools() {
 
         // Lock alpha
         if (lock_alpha !== undefined) {
-          runtimePainter.lock_alpha = lock_alpha;
+          getRuntimePainter().lock_alpha = lock_alpha;
           appliedSettings.push(`Lock alpha: ${lock_alpha}`);
         }
 
@@ -813,7 +816,7 @@ export function registerPaintTools() {
         // Color erase mode
         if (color_erase_mode !== undefined) {
           setBarItemValue("color_erase_mode", color_erase_mode);
-          runtimePainter.erase_mode = color_erase_mode;
+          getRuntimePainter().erase_mode = color_erase_mode;
           appliedSettings.push(`Color erase mode: ${color_erase_mode}`);
         }
 
