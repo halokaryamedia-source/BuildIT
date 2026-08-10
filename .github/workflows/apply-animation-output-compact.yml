@@ -37,19 +37,23 @@ jobs:
 
           test_path = Path("mcp/tests/asset-authoring-usage-slimming.test.ts")
           test = test_path.read_text(encoding="utf-8")
-          old_files = '''    const files = await Promise.all([
-      source("server/tools/element-inspection.ts"),
-      source("server/tools/project.ts"),
-      source("server/tools/animation-inspection.ts"),
-      source("server/tools/locators.ts"),
-    ]);'''
-          new_files = '''    const files = await Promise.all([
-      source("server/tools/element-inspection.ts"),
-      source("server/tools/project.ts"),
-      source("server/tools/animation.ts"),
-      source("server/tools/animation-inspection.ts"),
-      source("server/tools/locators.ts"),
-    ]);'''
+          old_files = "\n".join([
+              "    const files = await Promise.all([",
+              "      source(\"server/tools/element-inspection.ts\"),",
+              "      source(\"server/tools/project.ts\"),",
+              "      source(\"server/tools/animation-inspection.ts\"),",
+              "      source(\"server/tools/locators.ts\"),",
+              "    ]);",
+          ])
+          new_files = "\n".join([
+              "    const files = await Promise.all([",
+              "      source(\"server/tools/element-inspection.ts\"),",
+              "      source(\"server/tools/project.ts\"),",
+              "      source(\"server/tools/animation.ts\"),",
+              "      source(\"server/tools/animation-inspection.ts\"),",
+              "      source(\"server/tools/locators.ts\"),",
+              "    ]);",
+          ])
           if test.count(old_files) != 1:
               raise SystemExit("Unexpected compact JSON regression file list")
           test_path.write_text(test.replace(old_files, new_files, 1), encoding="utf-8")
