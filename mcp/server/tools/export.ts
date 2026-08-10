@@ -130,17 +130,13 @@ export function registerExportTools() {
           };
         });
 
-        return JSON.stringify(
-          {
-            current_format: "bedrock",
-            count: codecs.length,
-            codecs,
-            note:
-              "Bedrock animation/controller files are owned by Blockbench's separate AnimationCodec and are not arbitrary model codec exports.",
-          },
-          null,
-          2
-        );
+        return JSON.stringify({
+          current_format: "bedrock",
+          count: codecs.length,
+          codecs,
+          note:
+            "Bedrock animation/controller files are owned by Blockbench's separate AnimationCodec and are not arbitrary model codec exports.",
+        });
       },
     },
     exportToolDocs[0].status
@@ -210,6 +206,8 @@ export function registerExportTools() {
         const fullContent = binaryBuffer
           ? binaryBuffer.toString("base64")
           : (text ?? "");
+        // A successful filesystem write already delivers the artifact. Avoid
+        // echoing large compiled content into model context unless requested.
         const effectiveMaxContentLength =
           max_content_length ?? (path ? 0 : 100_000);
         const truncated = fullContent.length > effectiveMaxContentLength;
@@ -237,7 +235,7 @@ export function registerExportTools() {
         };
 
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text" as const, text: JSON.stringify(result) }],
           structuredContent: result,
         };
       },
