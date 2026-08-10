@@ -34,7 +34,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "get_project_info",
     description:
-      "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution (texture_width/height), element counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
+      "Returns read-only project orientation: format id and display name, project name/UUID, texture resolution, Cube/Group/texture counts, and a summary of top-level groups. Prefer this over `risky_eval` for first-look inspection — no JavaScript execution required.",
     annotations: {
       title: "Get Project Info",
       readOnlyHint: true,
@@ -132,7 +132,6 @@ export function registerProjectTools() {
           },
           counts: {
             cubes: Cube.all.length,
-            meshes: Mesh.all.length,
             groups: Group.all.length,
             textures: Texture.all.length,
             outliner_elements: Outliner.elements.length,
