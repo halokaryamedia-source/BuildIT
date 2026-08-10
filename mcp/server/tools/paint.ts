@@ -422,11 +422,14 @@ export const paintToolDocs: ToolSpec[] = [
   },
 ];
 
+const runtimePainter = Painter as unknown as BlockbenchRuntimePainter;
+
 export function registerPaintTools() {
   createTool(
     paintToolDocs[0].name,
     {
       ...paintToolDocs[0],
+      parameters: paintFillToolParameters,
       async execute({
         texture_id,
         x,
@@ -446,7 +449,7 @@ export function registerPaintTools() {
 
         // Apply settings
         if (color) {
-          ColorPanel.set(color);
+          ColorPanel.set(color, false, false);
         }
         if (opacity !== undefined) {
           setBarItemValue("slider_brush_opacity", opacity);
@@ -463,8 +466,8 @@ export function registerPaintTools() {
         BarItems.fill_tool.select();
 
         // Perform fill
-        Painter.startPaintTool(texture, x, y, {}, { shiftKey: false });
-        Painter.stopPaintTool();
+        runtimePainter.startPaintTool(texture, x, y, {}, { shiftKey: false });
+        runtimePainter.stopPaintTool();
 
         Undo.finishEdit("Fill tool");
         Canvas.updateAll();
@@ -479,6 +482,7 @@ export function registerPaintTools() {
     paintToolDocs[1].name,
     {
       ...paintToolDocs[1],
+      parameters: drawShapeToolParameters,
       async execute({
         texture_id,
         shape,
@@ -498,7 +502,7 @@ export function registerPaintTools() {
 
         // Apply settings
         if (color) {
-          ColorPanel.set(color);
+          ColorPanel.set(color, false, false);
         }
         if (opacity !== undefined) {
           setBarItemValue("slider_brush_opacity", opacity);
@@ -518,9 +522,9 @@ export function registerPaintTools() {
         BarItems.draw_shape_tool.select();
 
         // Draw shape
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        Painter.useShapeTool(texture, end.x, end.y, {});
-        Painter.stopPaintTool();
+        runtimePainter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        runtimePainter.useShapeTool(texture, end.x, end.y, {});
+        runtimePainter.stopPaintTool();
 
         Undo.finishEdit("Draw shape");
         Canvas.updateAll();
@@ -535,6 +539,7 @@ export function registerPaintTools() {
     paintToolDocs[2].name,
     {
       ...paintToolDocs[2],
+      parameters: gradientToolParameters,
       async execute({
         texture_id,
         start,
@@ -552,9 +557,9 @@ export function registerPaintTools() {
         });
 
         // Apply settings
-        ColorPanel.set(start_color);
+        ColorPanel.set(start_color, false, false);
         // @ts-ignore
-        ColorPanel.set(end_color, true); // Set as secondary color
+        ColorPanel.set(end_color, true, false); // Set as secondary color
 
         if (opacity !== undefined) {
           setBarItemValue("slider_brush_opacity", opacity);
@@ -568,9 +573,9 @@ export function registerPaintTools() {
         BarItems.gradient_tool.select();
 
         // Apply gradient
-        Painter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        Painter.useGradientTool(texture, end.x, end.y, {});
-        Painter.stopPaintTool();
+        runtimePainter.startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+        runtimePainter.useGradientTool(texture, end.x, end.y, {});
+        runtimePainter.stopPaintTool();
 
         Undo.finishEdit("Apply gradient");
         Canvas.updateAll();
@@ -585,19 +590,20 @@ export function registerPaintTools() {
     paintToolDocs[3].name,
     {
       ...paintToolDocs[3],
+      parameters: colorPickerToolParameters,
       async execute({ texture_id, x, y, set_as_secondary, pick_opacity }) {
         const texture = getAndActivateTexture(texture_id);
 
         // Pick color
-        Painter.colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
+        runtimePainter.colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
 
         // Get the picked color
-        const color = ColorPanel.get();
+        const color = ColorPanel.get(false);
 
         if (pick_opacity) {
-          // Get pixel color with alpha
-          const pixelColor = Painter.getPixelColor(texture.ctx, x, y);
-          const opacity = Math.floor(pixelColor.getAlpha() * 255);
+          // Read the alpha byte directly from the active texture canvas.
+          const pixel = texture.ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+          const opacity = pixel[3];
 
           // Apply opacity to brush tools
           for (let id in BarItems) {
@@ -622,6 +628,7 @@ export function registerPaintTools() {
     paintToolDocs[4].name,
     {
       ...paintToolDocs[4],
+      parameters: copyBrushToolParameters,
       async execute({ texture_id, source, target, brush_size, opacity, mode }) {
         const texture = getAndActivateTexture(texture_id);
 
@@ -646,13 +653,13 @@ export function registerPaintTools() {
         BarItems.copy_brush.select();
 
         // Set source point (Ctrl+click equivalent)
-        Painter.startPaintTool(texture, source.x, source.y, {}, {
+        runtimePainter.startPaintTool(texture, source.x, source.y, {}, {
           ctrlOrCmd: true,
         });
 
         // Apply at target point
-        Painter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
-        Painter.stopPaintTool();
+        runtimePainter.startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
+        runtimePainter.stopPaintTool();
 
         Undo.finishEdit("Copy brush");
         Canvas.updateAll();
@@ -667,6 +674,7 @@ export function registerPaintTools() {
     paintToolDocs[5].name,
     {
       ...paintToolDocs[5],
+      parameters: eraserToolParameters,
       async execute({
         texture_id,
         coordinates,
@@ -707,15 +715,15 @@ export function registerPaintTools() {
 
           if (i === 0 || !connect_strokes) {
             // Start new stroke
-            Painter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
+            runtimePainter.startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
           } else {
             // Continue stroke
-            Painter.movePaintTool(texture, coord.x, coord.y, {});
+            runtimePainter.movePaintTool(texture, coord.x, coord.y, {});
           }
         }
 
         // Finish erasing
-        Painter.stopPaintTool();
+        runtimePainter.stopPaintTool();
 
         Undo.finishEdit("Erase texture");
         Canvas.updateAll();
@@ -730,6 +738,7 @@ export function registerPaintTools() {
     paintToolDocs[6].name,
     {
       ...paintToolDocs[6],
+      parameters: paintSettingsParameters,
       async execute({
         mirror_painting,
         lock_alpha,
@@ -761,7 +770,7 @@ export function registerPaintTools() {
         // Mirror painting
         if (mirror_painting !== undefined) {
           setBarItemValue("mirror_painting", mirror_painting.enabled);
-          Painter.mirror_painting = mirror_painting.enabled;
+          runtimePainter.mirror_painting = mirror_painting.enabled;
           appliedSettings.push(`Mirror painting: ${mirror_painting.enabled}`);
 
           if (
@@ -771,7 +780,7 @@ export function registerPaintTools() {
               mirror_painting.texture_center)
           ) {
             // @ts-ignore
-            const options = Painter.mirror_painting_options;
+            const options = runtimePainter.mirror_painting_options;
             if (mirror_painting.axis) {
               mirror_painting.axis.forEach((axis) => {
                 options[axis] = true;
@@ -792,7 +801,7 @@ export function registerPaintTools() {
 
         // Lock alpha
         if (lock_alpha !== undefined) {
-          Painter.lock_alpha = lock_alpha;
+          runtimePainter.lock_alpha = lock_alpha;
           appliedSettings.push(`Lock alpha: ${lock_alpha}`);
         }
 
@@ -805,7 +814,7 @@ export function registerPaintTools() {
         // Color erase mode
         if (color_erase_mode !== undefined) {
           setBarItemValue("color_erase_mode", color_erase_mode);
-          Painter.erase_mode = color_erase_mode;
+          runtimePainter.erase_mode = color_erase_mode;
           appliedSettings.push(`Color erase mode: ${color_erase_mode}`);
         }
 
@@ -849,6 +858,7 @@ export function registerPaintTools() {
     paintToolDocs[7].name,
     {
       ...paintToolDocs[7],
+      parameters: paintWithBrushParameters,
       async execute({
         texture_id,
         coordinates,
@@ -883,7 +893,7 @@ export function registerPaintTools() {
         BarItems.slider_brush_softness.value = softness;
         // @ts-ignore
         BarItems.brush_shape.value = shape;
-        ColorPanel.set(colorHex);
+        ColorPanel.set(colorHex, false, false);
 
         // Paint using Painter.edit() method
         texture.edit(
@@ -927,6 +937,7 @@ export function registerPaintTools() {
     paintToolDocs[8].name,
     {
       ...paintToolDocs[8],
+      parameters: createBrushPresetParameters,
       async execute({
         name,
         size,
@@ -965,10 +976,11 @@ export function registerPaintTools() {
     paintToolDocs[9].name,
     {
       ...paintToolDocs[9],
+      parameters: loadBrushPresetParameters,
       async execute({ preset_name }) {
         // @ts-ignore
         const preset = StateMemory.brush_presets.find(
-          (p) => p.name === preset_name
+          (p: { name: string }) => p.name === preset_name
         );
 
         if (!preset) {
@@ -988,6 +1000,7 @@ export function registerPaintTools() {
     paintToolDocs[10].name,
     {
       ...paintToolDocs[10],
+      parameters: textureSelectionParameters,
       async execute({ action, texture_id, coordinates, radius, mode }) {
         const texture = getAndActivateTexture(texture_id);
 
@@ -1094,78 +1107,94 @@ export function registerPaintTools() {
           return `Applied ${action} to texture "${texture.name}"`;
         }
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
         const selection = texture.selection;
 
-        switch (action) {
-          case "select_rectangle":
-            if (!coordinates) {
-              throw new Error("Coordinates required for rectangle selection.");
-            }
-            selection.clear();
-            selection.start_x = coordinates.x1;
-            selection.start_y = coordinates.y1;
-            selection.end_x = coordinates.x2;
-            selection.end_y = coordinates.y2;
-            selection.is_custom = false;
-            break;
+        const applyMask = (
+          predicate: (x: number, y: number) => boolean
+        ) => {
+          const previousOverride = selection.override;
+          selection.activate();
+          selection.setOverride(null);
+          const selectionArray = selection.array;
+          if (!selectionArray) {
+            throw new Error("Texture selection matrix is unavailable.");
+          }
 
-          case "select_ellipse":
-            if (!coordinates) {
-              throw new Error("Coordinates required for ellipse selection.");
-            }
-            selection.clear();
-            // Create elliptical selection
-            selection.is_custom = true;
-            const centerX = (coordinates.x1 + coordinates.x2) / 2;
-            const centerY = (coordinates.y1 + coordinates.y2) / 2;
-            const radiusX = Math.abs(coordinates.x2 - coordinates.x1) / 2;
-            const radiusY = Math.abs(coordinates.y2 - coordinates.y1) / 2;
+          if (previousOverride === true) selectionArray.fill(1);
+          if (previousOverride === false) selectionArray.fill(0);
 
-            for (
-              let x = Math.floor(centerX - radiusX);
-              x <= Math.ceil(centerX + radiusX);
-              x++
-            ) {
-              for (
-                let y = Math.floor(centerY - radiusY);
-                y <= Math.ceil(centerY + radiusY);
-                y++
-              ) {
-                const dx = (x - centerX) / radiusX;
-                const dy = (y - centerY) / radiusY;
-                if (dx * dx + dy * dy <= 1) {
-                  selection.set(x, y, true);
-                }
+          selection.forEachPixel((x, y, value, index) => {
+            const inside = predicate(x, y);
+            switch (mode) {
+              case "create":
+                selectionArray[index] = inside ? 1 : 0;
+                break;
+              case "add":
+                if (inside) selectionArray[index] = 1;
+                break;
+              case "subtract":
+                if (inside) selectionArray[index] = 0;
+                break;
+              case "intersect":
+                if (!inside) selectionArray[index] = 0;
+                break;
+            }
+          });
+        };
+
+        Undo.initSelection({ texture_selection: true });
+        try {
+          switch (action) {
+            case "select_rectangle": {
+              if (!coordinates) {
+                throw new Error("Coordinates required for rectangle selection.");
               }
+              const minX = Math.floor(Math.min(coordinates.x1, coordinates.x2));
+              const maxX = Math.ceil(Math.max(coordinates.x1, coordinates.x2));
+              const minY = Math.floor(Math.min(coordinates.y1, coordinates.y2));
+              const maxY = Math.ceil(Math.max(coordinates.y1, coordinates.y2));
+              applyMask((x, y) => x >= minX && x < maxX && y >= minY && y < maxY);
+              break;
             }
-            break;
 
-          case "select_all":
-            // `selection.selectAll()` doesn't exist on current Blockbench
-            // (`H.selectAll is not a function`). Emulate via a full-texture
-            // rectangular selection instead, matching what the UI does.
-            selection.clear();
-            selection.start_x = 0;
-            selection.start_y = 0;
-            selection.end_x = texture.width;
-            selection.end_y = texture.height;
-            selection.is_custom = false;
-            break;
+            case "select_ellipse": {
+              if (!coordinates) {
+                throw new Error("Coordinates required for ellipse selection.");
+              }
+              const centerX = (coordinates.x1 + coordinates.x2) / 2;
+              const centerY = (coordinates.y1 + coordinates.y2) / 2;
+              const radiusX = Math.abs(coordinates.x2 - coordinates.x1) / 2;
+              const radiusY = Math.abs(coordinates.y2 - coordinates.y1) / 2;
+              if (radiusX === 0 || radiusY === 0) {
+                throw new Error("Ellipse selection requires non-zero width and height.");
+              }
+              applyMask((x, y) => {
+                const dx = (x + 0.5 - centerX) / radiusX;
+                const dy = (y + 0.5 - centerY) / radiusY;
+                return dx * dx + dy * dy <= 1;
+              });
+              break;
+            }
 
-          case "clear_selection":
-            selection.clear();
-            break;
+            case "select_all":
+              selection.setOverride(true);
+              break;
+
+            case "clear_selection":
+              selection.clear();
+              break;
+
+            default:
+              throw new Error(`Unsupported texture selection action: ${action}`);
+          }
+
+          UVEditor.updateSelectionOutline();
+          Undo.finishSelection("Texture selection");
+        } catch (error) {
+          Undo.cancelSelection(true);
+          UVEditor.updateSelectionOutline();
+          throw error;
         }
-
-        // Update UI
-        UVEditor.vue.updateTexture();
-
-        Undo.finishEdit("Texture selection");
 
         return `Applied ${action} to texture "${texture.name}"`;
       },
@@ -1177,6 +1206,7 @@ export function registerPaintTools() {
     paintToolDocs[11].name,
     {
       ...paintToolDocs[11],
+      parameters: textureLayerManagementParameters,
       async execute({
         action,
         texture_id,
@@ -1438,6 +1468,8 @@ export function registerPaintTools() {
           BARS.updateConditions();
           return result;
         }
+
+        throw new Error(`Unsupported texture layer action: ${action}`);
       },
     },
     paintToolDocs[11].status
