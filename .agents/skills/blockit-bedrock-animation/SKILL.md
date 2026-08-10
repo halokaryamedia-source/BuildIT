@@ -14,6 +14,16 @@ Own animation execution only after the model hierarchy and pivots are suitable f
 3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.
 4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.
 
+## Animation Readiness Gate
+
+For end-to-end reference-driven creation, production animation begins only after the geometry baseline relevant to the requested motion is accepted and the participating Group/bone hierarchy and pivots are inspected and suitable. A material geometry `FAIL`, unresolved attachment, or pivot/hierarchy uncertainty that affects the motion returns to modelling before keyframe production. A required unresolved claim may become `BLOCKED`; do not animate around it.
+
+For an animation-only revision on an existing asset, the current geometry may be treated as the user-provided baseline when remodelling is outside scope. This does not certify the static model as reference-accurate. Inspect the participating bones/pivots and existing animation state needed for the requested motion.
+
+A small diagnostic pose/playback may be created before production animation when it is specifically testing a pivot, attachment, or transform direction. Keep it disposable and do not count it as animation progress or completion evidence.
+
+If material geometry, hierarchy, or pivots change after animation work starts, consider animation on the affected bones stale until re-inspected and previewed. Re-check keyframe values, transform arcs, attachments, clipping, and return-to-neutral behavior as applicable. Existing animation effort is never a reason to preserve a bad rig or geometry baseline.
+
 ## Directly Mapped Animation Surface
 
 - `create_animation` — uses the current Bedrock AnimationCodec and accepts authored transform keyframes plus mapped particle effects.

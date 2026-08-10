@@ -44,6 +44,16 @@ fresh texture visual gate
 
 Do not begin texture polish on a primary form that still fails geometry review.
 
+## Sequencing / Existing-Asset Boundary
+
+For end-to-end reference-driven creation, production texture work requires the complete geometry review to have `PASS` for the shape/surfaces the texture depends on. A material geometry `FAIL` returns to modelling. A required `UNVERIFIED` geometry claim must be resolved or reported `BLOCKED`; texture is not a way to make uncertainty look finished.
+
+For a texture-only task on an existing asset, current geometry may be accepted as the user-provided working baseline when geometry correction is outside scope. Do not turn that scope decision into a claim that the geometry matches a reference.
+
+A minimal placeholder/flat texture may be used early solely to make geometry readable. It stays provisional and must not receive production polish/detail or be counted as completion progress.
+
+If geometry changes after texture production begins, invalidate only the affected downstream assumptions and re-check them: Cube/face identity, UV layout, texture assignment, painted alignment, material instances, and PBR channel relationships as applicable. Sunk cost in texture work is not evidence that rejected geometry should be preserved.
+
 ## Style / Resolution
 
 Common Minecraft-style targets may include `16×16` or `32×32` visual density,

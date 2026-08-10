@@ -19,6 +19,16 @@ Before changing an existing asset:
 
 If the geometry is reference-driven and still structurally wrong, return to the modelling specialist before painting. Texture must not hide a broken primary form.
 
+## Texture Readiness Gate
+
+For end-to-end reference-driven creation, production texturing begins only after the complete geometry review has `PASS` for the surfaces/shape relationships the texture depends on. If a material geometry `FAIL` remains, return to modelling. If a required geometry claim is `UNVERIFIED`, resolve it or report `BLOCKED` instead of painting over the uncertainty.
+
+For a texture-only revision on an existing asset, treat the current geometry as the user-provided baseline unless geometry correction is explicitly in scope. Do not claim that baseline is reference-accurate merely because texturing can proceed.
+
+A minimal flat/placeholder texture may be used early when it is genuinely needed to see the model clearly. Mark it provisional; do not spend polish/detail effort on it and do not use it as evidence that the asset is close to finished.
+
+If geometry changes after production texture work starts, re-check only the affected downstream state: Cube/face identity, UV assumptions, texture assignment, material instances, painted alignment, and PBR channel relationships as applicable. Downstream sunk cost never justifies keeping geometry that the modelling gate has rejected.
+
 ## Texture Management
 
 Use the actual BlockIT texture tools:

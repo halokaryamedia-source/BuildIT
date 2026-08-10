@@ -361,13 +361,42 @@ invalidates the primary hypothesis returns to the primary loop.
 
 ## 15. UV / Texture
 
-Follow [06-texture-standard.md](06-texture-standard.md) only after geometry is
-coherent. Texture must not conceal geometry failure.
+For end-to-end reference-driven creation, production UV/texture work starts only
+after the complete geometry review is `PASS` for the surfaces/shape
+relationships it depends on. Texture must not conceal `FAIL` or convert a
+required `UNVERIFIED` geometry claim into apparent completion.
+
+A texture-only task on an existing asset may treat current geometry as the
+user-provided baseline when geometry correction is outside scope; this is not a
+retroactive geometry `PASS`. A flat/placeholder texture used only to improve
+visibility remains provisional and is not production surface progress.
+
+If material geometry changes after texture work begins, re-check affected UV,
+face/texture assignment, material-instance/PBR assumptions, and painted
+alignment. Do not keep rejected geometry because downstream texture work already
+exists.
+
+Follow [06-texture-standard.md](06-texture-standard.md).
 
 ## 16. Animation
 
-Only when required. Verify hierarchy, pivot arcs, clipping/detachment, intended
-motion, and return/neutral behavior as relevant.
+For end-to-end creation, production animation starts only after the geometry
+baseline needed by the requested motion is accepted and participating
+Group/bone hierarchy and pivots are inspected and suitable. Do not keyframe
+around a material geometry `FAIL`, unresolved attachment, or pivot/hierarchy
+blocker.
+
+An animation-only task on an existing asset may use the current geometry as its
+user-provided baseline without claiming static reference fidelity. A disposable
+diagnostic pose/playback is allowed only to test a pivot/attachment/transform
+relationship and is not animation completion evidence.
+
+If material geometry, hierarchy, or pivots change after animation begins,
+re-inspect and preview the affected animation state before completion. Existing
+keyframe effort never justifies preserving a bad rig or geometry baseline.
+
+When animation is required, verify hierarchy, pivot arcs, clipping/detachment,
+intended motion, and return/neutral behavior as relevant.
 
 ## 17. Final Validation / Save
 

@@ -307,6 +307,46 @@ Specialist/native capabilities remain available but branch only when their actua
 
 Local Codex modelling tests must verify whether the routing materially reduces irrelevant tool calls and keeps geometry reasoning focused. If real runs still show repeated wrong-tool selection because the full exposed schema context itself is the blocker, record that evidence before considering narrower default exposure of proven generic convenience tools. Do not pre-emptively hide native Bedrock capability.
 
+## Problem #6 — Texture / Animation Sequencing
+
+### Failure we must prevent
+
+```text
+geometry is still wrong or materially unverified
+-> texture polish or animation starts anyway
+-> the asset looks more finished and creates sunk cost
+-> Codex becomes less willing to rebuild the bad geometry/rig
+-> downstream technical success is mistaken for overall completion
+```
+
+A second failure mode is the opposite: a user asks only to texture/animate an existing asset, but the workflow unnecessarily reopens the entire modelling task and expands scope.
+
+### Root causes
+
+1. **Stage blur** — downstream tools are available before geometry dependencies are ready.
+2. **Finish bias** — texture detail and motion make an asset feel complete even when primary geometry evidence is unresolved.
+3. **Downstream sunk cost** — finished pixels/keyframes psychologically protect a bad scaffold or rig from rebuild.
+4. **Baseline confusion** — treating an existing asset as the working baseline can be misreported as a geometry-fidelity PASS.
+5. **Stale downstream state** — later geometry/hierarchy/pivot edits can invalidate UV/paint/material or animation assumptions without forcing re-check.
+
+### Implemented source solution
+
+No runtime readiness state, new profile, or tool gate was added because MCP tools cannot legitimately determine visual `PASS` on their own.
+
+The agent workflow now distinguishes:
+
+- **end-to-end creation** — production texture waits for complete geometry readiness; production animation waits for accepted geometry plus suitable participating hierarchy/pivots;
+- **existing-asset direct domain work** — current geometry can be a user-provided baseline without being certified as reference-accurate;
+- **temporary aids** — placeholder texture or diagnostic pose/playback may support observation/rig diagnosis but remain provisional/disposable and cannot count as completion;
+- **downstream invalidation** — material geometry/hierarchy/pivot changes make affected texture/animation assumptions stale until rechecked;
+- **sunk-cost rule** — existing texture/keyframes never justify preserving geometry/rig state rejected by the modelling gate.
+
+Material `FAIL` returns to modelling. A required downstream dependency that remains `UNVERIFIED` must be resolved or reported `BLOCKED`, not hidden under more production work.
+
+### Remaining proof
+
+Local end-to-end tests must show that Codex actually delays downstream production on a failing model, allows bounded existing-asset texture/animation tasks without inventing geometry approval, and revalidates affected downstream work after geometry/rig edits. Source/CI proves the sequencing contract exists; it does not prove live behaviour or visual quality.
+
 ## Product Priority Rule
 
 Before future work, ask:

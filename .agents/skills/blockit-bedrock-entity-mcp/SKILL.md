@@ -59,6 +59,28 @@ validator resources                             -> structural diagnostics, never
 
 Do not call specialist tools merely because they are available. Texture, Paint, animation, material-instance, Locator, selection, validator, and export work must not interrupt an unresolved primary-geometry `FAIL`/`UNVERIFIED` state.
 
+## Downstream Readiness Gate
+
+Do not let downstream work create false completion confidence.
+
+For an **end-to-end reference-driven asset**:
+
+- production texture/UV/PBR/material work starts only after the complete geometry review is `PASS` for the geometry that surface work depends on;
+- production animation starts only after the geometry baseline for the requested motion is accepted and the participating Group/bone hierarchy and pivots are inspected and suitable;
+- a material geometry `FAIL` returns to modelling before downstream production work;
+- a material geometry claim that remains `UNVERIFIED` and is required by the downstream work must be resolved or reported `BLOCKED`; do not cover it with texture or motion.
+
+For an **existing-asset texture-only or animation-only task**, the current model may be treated as the user-provided baseline when geometry fidelity is outside the requested scope. This does **not** upgrade that geometry to `PASS`. Inspect only the prerequisites needed by the requested domain, and report a concrete geometry/hierarchy blocker if one prevents valid work instead of silently expanding into speculative remodelling.
+
+Temporary aids are allowed only when their purpose is explicit:
+
+- a flat/placeholder texture may be used to make geometry readable during observation;
+- a small diagnostic pose/playback may be used to test a pivot or rig relationship.
+
+These aids are provisional/disposable and are never production texture/animation progress or completion evidence.
+
+If material geometry, hierarchy, or pivots change after downstream work has begun, revalidate the affected downstream state. Changed Cube surfaces can stale UV/texture/material assumptions; changed bones/pivots can stale animation keyframes, attachments, and motion arcs. Do not preserve wrong geometry merely because texture or animation work already exists.
+
 ## Preflight
 
 1. Call `get_project_info` before mutation when an existing project is open.

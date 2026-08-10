@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_MODEL_EFFECTIVENESS_TOOL_ROUTING_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
+`MCP_MODEL_EFFECTIVENESS_SEQUENCING_HARDENING_SOURCE_COMPLETE_LOCAL_PROOF_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -202,17 +202,25 @@ The current source slice has hardened **P1 — correction accuracy** by linking 
 
 The current source slice has hardened **P1 — tool-choice / context friction** with a stage-gated normal geometry lane. Native Bedrock families remain available; specialist/convenience tools branch only when the active stage/intent requires them.
 
-The next bounded modelling problem is:
+The current source slice has hardened **P2 — texture and animation sequencing**. End-to-end downstream production waits for the geometry/rig state it actually depends on; existing-asset texture-only/animation-only tasks may use current geometry as a baseline without inventing a geometry `PASS`; affected downstream work is revalidated after material geometry/hierarchy/pivot changes.
+
+The next authoritative modelling-effectiveness step is:
 
 ```text
-P2 — texture and animation sequencing
+LOCAL — reference-fidelity acceptance scenarios
 ```
 
-Audit whether surface-detail or animation work can still begin early enough to hide unresolved geometry, create sunk cost, or produce false completion confidence. Keep the solution stage-based and small: geometry validity must remain authoritative, but legitimate texture/animation tasks must not be blocked once their prerequisite state is actually ready.
+Use real Codex + Blockbench runs to test the product loop rather than adding another policy/tool abstraction:
 
-Preserve all existing validity rules: execution success is not visual approval, unsupported axes stay provisional/unverified, unresolved blockers stop mutation, and correction effects must match the declared invariant.
+1. difficult reference -> coarse primary geometry -> difference-first visual gate;
+2. front plausible / side-depth wrong -> `FAIL` or `UNVERIFIED`, never false full PASS;
+3. diagnosed local mismatch -> invariant-backed correction -> structural effect -> fresh visual proof;
+4. unresolved evidence/capability/correction loop -> explicit `BLOCKED` report;
+5. geometry `FAIL` -> no production texture/animation;
+6. accepted geometry -> texture -> animation when required -> affected downstream revalidation after any later material geometry/rig change;
+7. texture-only / animation-only existing-asset task -> bounded domain work without pretending the baseline geometry was reference-approved.
 
-Do not add TextureMesh, a planner, automatic image-to-Cuboid reconstruction, similarity scoring, or another modelling framework unless a concrete modelling requirement proves it is needed.
+If the local environment is unavailable, do **not** invent another modelling framework, readiness state machine, planner, scoring system, or capability slice merely to keep work moving. Continue non-local work only for a concrete source defect, failing existing gate, or explicit product requirement with direct modelling value.
 
 When the local Blockbench environment is available, local acceptance still needs to verify the stateless endpoint plus actual Locator/Null Object create/update/inspect/rename/remove behavior and Bedrock save/reopen/export round-trip before the Locator slice is considered runtime-proven.
 
