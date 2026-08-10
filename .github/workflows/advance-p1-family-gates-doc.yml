@@ -19,8 +19,13 @@ jobs:
           fetch-depth: 0
 
       - name: Advance next-action snapshot
+        env:
+          P12_B64: "IyBDb21wbGV0ZWQgUDEuMiDigJQgRXhwbGljaXQgRmFtaWx5IEdhdGVzCgpQMS4yIGNvbnZlcnRzIHRoZSBQMS4xIHNvdXJjZS1wcmVzZXJ2ZWQgYGV4dGVuZGVkYCBkaXN0aW5jdGlvbiBpbnRvIGEgcmVhbCBvcHQtaW4gd2l0aG91dCBpbnRyb2R1Y2luZyBhbiBBQ0wsIHJvbGUgc3lzdGVtLCBwb2xpY3kgRFNMLCBvciBkeW5hbWljIHBlcm1pc3Npb24gZW5naW5lLgoKIyMgU291cmNlIGNvbW1pdHMKCmBgYHRleHQKYjEyNmE5OTEyYTViOWMxM2Y5YmE4MzAwZGU1YTY1MGM0YWM3YWQ3OQpmZWF0OiBhZGQgZXhwbGljaXQgTUNQIGZhbWlseSBnYXRlcwoKODljODkzOTA2MWU0OGY0ZWQ2YjYzMThkNzlkNWJmNmZmOTRjMjlkMwp0ZXN0OiBhbGlnbiByZWdpc3RyYXRpb24gcHJvZmlsZSBjb250cmFjdCB3aXRoIGZhbWlseSBnYXRlcwpgYGAKCiMjIEdhdGUgY29udHJhY3QKClRoZSBleGlzdGluZyBCbG9ja2JlbmNoIGBTZXR0aW5nYCBtZWNoYW5pc20gbm93IG93bnMgb25lIHNtYWxsIG9wdC1pbjoKCmBgYHRleHQKbWNwX2V4dGVuZGVkX2ZhbWlsaWVzX2VuYWJsZWQKYGBgCgpDb250cmFjdDoKCmBgYHRleHQKZGVmYXVsdCB2YWx1ZSAgICAgICAgICAgICAgICAgICAgICAgICBmYWxzZQpsaXRlcmFsIGJvb2xlYW4gdHJ1ZSAgICAgICAgICAgICAgICAgIHNlbGVjdHMgZXh0ZW5kZWQgcHJvZmlsZQptaXNzaW5nL2ZhbHNlL3N0cmluZy1saWtlIHZhbHVlcyAgICAgIHJlbWFpbiBiZWRyb2NrX2VudGl0eQpleHRlbmRlZCBhZGRzICAgICAgICAgICAgICAgICAgICAgICAgIGltcG9ydCArIHVpIG9ubHkKYmVkcm9ja19lbnRpdHkgZmFtaWxpZXMgICAgICAgICAgICAgICB1bmNoYW5nZWQKYGBgCgpgcmVnaXN0ZXJNY3BQcm9maWxlKClgIHRyYWNrcyBhbHJlYWR5LXJlZ2lzdGVyZWQgZmFtaWxpZXMgYW5kIGlzIGlkZW1wb3RlbnQgcGVyIGZhbWlseS4gVGhlIGRlZmF1bHQgQmVkcm9jayBFbnRpdHkgcHJvZmlsZSBpcyBzdGlsbCByZWdpc3RlcmVkIGF0IG1vZHVsZSBsb2FkOyBhZnRlciBzZXR0aW5ncyBpbml0aWFsaXplLCBhbiBleHBsaWNpdCBleHRlbmRlZCBvcHQtaW4gYWRkcyBvbmx5IHRoZSBtaXNzaW5nIGZhbGxiYWNrIGZhbWlsaWVzIGJlZm9yZSBuZXR3b3JrIHN0YXJ0dXAuCgpUaGUgcmVjb25zdHJ1Y3RlZC1zZXNzaW9uIHBhdGggc3RpbGwgY29uc3VtZXMgdGhlIHNhbWUgY2Fub25pY2FsIGB0b29scy5lbmFibGVkYCAvIHN0b3JlZCB0b29sLWRlZmluaXRpb24gdHJ1dGggY3JlYXRlZCBieSB0aG9zZSBmYW1pbHkgcmVnaXN0cmF0aW9uIGZ1bmN0aW9ucy4gTm8gc2Vjb25kIHJlY29uc3RydWN0ZWQtc2Vzc2lvbiBwcm9maWxlIHRhYmxlIHdhcyBpbnRyb2R1Y2VkLgoKUDAuMiByZW1haW5zIGF1dGhvcml0YXRpdmUgaW5zaWRlIHRoZSBvcHRpb25hbCBmYWxsYmFjayBmYW1pbGllczoKCmBgYHRleHQKZnJvbV9nZW9fanNvbiAgZW5hYmxlZD1mYWxzZQpyaXNreV9ldmFsICAgICBlbmFibGVkPWZhbHNlCmBgYAoKVGhlcmVmb3JlIGVuYWJsaW5nIHRoZSBleHRlbmRlZCBmYW1pbGllcyBkb2VzIG5vdCBleHBvc2UgZWl0aGVyIGRhbmdlcm91cyB0b29sLgoKTm8gQW5pbWF0aW9uLCBQYWludCwgVGV4dHVyZSwgUEJSLCBtYXRlcmlhbC1pbnN0YW5jZSwgQ3ViZSwgaGlzdG9yeSwgZXhwb3J0LCBvciBwcm9qZWN0IGltcGxlbWVudGF0aW9uIGZpbGUgd2FzIGNoYW5nZWQgYnkgUDEuMi4gTmF0aXZlL3JlbGV2YW50IEJlZHJvY2sgY2FwYWJpbGl0eSByZW1haW5zIGluIHRoZSBub3JtYWwgYGJlZHJvY2tfZW50aXR5YCBmYW1pbHkgc2V0LgoKIyMgUDEuMiBmb2N1c2VkIHByb29mCgpUaGUgYWRkZWQgZmFtaWx5LWdhdGUgdGVzdHMgcHJvdmU6CgpgYGB0ZXh0CmV4dGVuZGVkIGZhbWlsaWVzIHJlcXVpcmUgZXhwbGljaXQgYm9vbGVhbiBvcHQtaW4KZXh0ZW5kZWQgYWRkcyBleGFjdGx5IGltcG9ydCArIHVpCnNldHRpbmcgZGVmYXVsdHMgb2ZmIGFuZCBpcyByZWFkIGJlZm9yZSBzZXJ2ZXIgc3RhcnR1cApwcm9maWxlIHJlZ2lzdHJhdGlvbiBpcyBpZGVtcG90ZW50IGJ5IGZhbWlseQpkYW5nZXJvdXMgdG9vbHMgcmVtYWluIGRpc2FibGVkIGluc2lkZSBvcHRlZC1pbiBmYWxsYmFjayBmYW1pbGllcwpzZXR0aW5nIGlkZW50aWZpZXIgaGFzIG9uZSBjYW5vbmljYWwgb3duZXIKYGBgCgpDYW5vbmljYWwgcm9vdCB3b3JrZmxvdzoKCmBgYHRleHQKTUNQIFZlcmlmeQpydW46IDMxMzY5NTUzOTA5CnZlcmlmaWVkIGhlYWQ6IDg5Yzg5MzkwNjFlNDhmNGVkNmI2MzE4ZDc5ZDViZjZmZjk0YzI5ZDMKYGBgCgpSZXN1bHQ6CgpgYGB0ZXh0CmZyb3plbi1sb2NrZmlsZSBpbnN0YWxsICAgICBQQVNTCmZ1bGwgdHNjIC0tbm9FbWl0ICAgICAgICAgICBQQVNTCkJ1biBjb250cmFjdCB0ZXN0cyAgICAgICAgICBQQVNTIOKAlCAxNC8xNCwgMCBmYWlsdXJlcywgODIgZXhwZWN0KCkgY2FsbHMKcHJvZHVjdGlvbiBidWlsZCAgICAgICAgICAgIFBBU1MKZ2VuZXJhdGVkIGRvY3MgZnJlc2huZXNzICAgIFBBU1MKZmFpbC1jbG9zZWQgYWdncmVnYXRvciAgICAgIFBBU1MKd29ya2Zsb3cgY29uY2x1c2lvbiAgICAgICAgIFNVQ0NFU1MKYGBgCgpUaGUgZmlyc3QgUDEuMiBydW4gY29ycmVjdGx5IGZhaWxlZCBjbG9zZWQgYmVjYXVzZSBvbmUgUDEuMSBzb3VyY2UtcmVhZGluZyB0ZXN0IGFzc2VydGVkIHRoZSBwcmV2aW91cyBsb29wIHN5bnRheCByYXRoZXIgdGhhbiB0aGUgcmVnaXN0cmF0aW9uIGludmFyaWFudC4gVGhlIGZvbGxvdy11cCB0ZXN0LW9ubHkgY29tbWl0IHVwZGF0ZWQgdGhhdCBhc3NlcnRpb24gdG8gdGhlIG5ldyBpZGVtcG90ZW50IHJlZ2lzdHJhciBjb250cmFjdDsgbm8gcnVudGltZSBiZWhhdmlvciB3YXMgd2Vha2VuZWQgdG8gbWFrZSB0aGUgdGVzdCBwYXNzLgoKQWN0dWFsIEJsb2NrYmVuY2ggc2V0dGluZyBwZXJzaXN0ZW5jZSwgcGx1Z2luIHJlbG9hZCBiZWhhdmlvciwgYW5kIHJlYWwgYHRvb2xzL2xpc3RgIGRpZmZlcmVuY2VzIGFmdGVyIG9wdGluZyBpbnRvIGV4dGVuZGVkIGZhbWlsaWVzIHJlbWFpbiBgTE9DQUwgUFJPT0YgUkVRVUlSRURgLgoK"
+          P13_B64: "IyBOZXh0IFN0ZXAg4oCUIFAxLjMgQ29yZSBPd25lcnNoaXAgQ29uc29saWRhdGlvbiBPbmx5CgpEbyBub3Qgc3RhcnQgUDEuNCBvciBsYXRlciB3b3JrIGluIHRoZSBzYW1lIHNsaWNlLgoKIyMgR29hbAoKQ29uc29saWRhdGUgZGV0ZXJtaW5pc3RpYyBpZGVudGl0eSwgYm91bmRlZCBtdXRhdGlvbi9yb2xsYmFjaywgYW5kIHVzZWZ1bCByZXN1bHQgb3duZXJzaGlwICoqb25seSBpbnNpZGUgdGhlIHN1cnZpdmluZyBCZWRyb2NrIEVudGl0eSBjb3JlKiouIERvIG5vdCBnbG9iYWxseSByZWZhY3RvciBnYXRlZCBvciBsZWdhY3kgc291cmNlLgoKIyMgUmVxdWlyZWQgYXBwcm9hY2gKCjEuIEF1ZGl0IGN1cnJlbnQgY2FsbGVycyBiZWZvcmUgY3JlYXRpbmcgb3IgcmV1c2luZyBzaGFyZWQgcmVzb2x2ZXIgaGVscGVycy4KMi4gTGltaXQgcmVzb2x2ZXIgY29uc29saWRhdGlvbiB0byBjb3JlIGlkZW50aXRpZXMgd2hlcmUgZHVwbGljYXRpb24gaXMgcmVhbDoKCmBgYHRleHQKQ3ViZQpHcm91cApUZXh0dXJlCkFuaW1hdGlvbgpgYGAKCjMuIE5vcm1hbCBleHBsaWNpdCBtdXRhdGlvbiBpZGVudGl0eSBtdXN0IGNvbnZlcmdlIG9uOgoKYGBgdGV4dApleGFjdCBVVUlEIGZpcnN0Cm90aGVyd2lzZSBleGFjdCBuYW1lIG9ubHkgd2hlbiB1bmlxdWUKYW1iaWd1b3VzIGV4cGxpY2l0IHRhcmdldCDihpIgZmFpbAptaXNzaW5nIGV4cGxpY2l0IHRhcmdldCDihpIgZmFpbApubyBVVUlELXByZWZpeCBtYXRjaGluZyBmb3IgbXV0YXRpb24Kbm8gc2lsZW50IHJvb3QvZGVmYXVsdCBmYWxsYmFjawpgYGAKCjQuIFNlbGVjdGlvbiBmYWxsYmFjayByZW1haW5zIGFsbG93ZWQgb25seSBmb3IgdG9vbHMgd2hvc2UgcHVibGljIGNvbnRyYWN0IGV4cGxpY2l0bHkgc3RhdGVzIHRoYXQgdGhleSBvcGVyYXRlIG9uIHNlbGVjdGlvbi4KNS4gQ29yZSBtdXRhdGlvbiBwYXRocyBzaG91bGQgdXNlIHRoZSBib3VuZGVkIHBhdHRlcm4gd2hlcmUgYXBwbGljYWJsZToKCmBgYHRleHQKcHJlZmxpZ2h0IGFsbCBleHRlcm5hbCB0YXJnZXRzCm9wZW4gb25lIFVuZG8gdHJhbnNhY3Rpb24KbXV0YXRlCmZpbmlzaApmYWlsdXJlIGFmdGVyIG9wZW4g4oaSIGNhbmNlbC9yZXZlcnQKYGBgCgo2LiBDb25zb2xpZGF0ZSByZXN1bHQvcmVhZGJhY2sgc2hhcGUgb25seSB3aGVyZSBpdCBpbXByb3ZlcyBkZXRlcm1pbmlzdGljIGNvbnRpbnVhdGlvbi4gUHJlZmVyIGNvbXBhY3QgaHVtYW4tcmVhZGFibGUgY29udGVudCBwbHVzIHN0YWJsZSBzdHJ1Y3R1cmVkIGRhdGEgd2hlbiBpZGVudGl0eS9zdGF0ZSBtYXR0ZXJzLgo3LiBQcmVzZXJ2ZSBhbGwgY3VycmVudCBCZWRyb2NrIEVudGl0eSBjYXBhYmlsaXR5LiBEbyBub3QgdXNlIGNvbnNvbGlkYXRpb24gYXMgYSByZWFzb24gdG8gZ2F0ZSBvciBkZWxldGUgVGV4dHVyZU1lc2gsIExvY2F0b3IsIGJvdW5kaW5nLWJveCwgQW5pbWF0aW9uLCBQYWludC9QQlIsIG1hdGVyaWFsLWluc3RhbmNlLCBoaXN0b3J5LCBjYW1lcmEvb2JzZXJ2YXRpb24sIGV4cG9ydCwgb3Igb3RoZXIgYXVkaXRlZCBCZWRyb2NrLXJlbGV2YW50IGJlaGF2aW9yLgo4LiBEbyBub3QgcmVmYWN0b3IgYGltcG9ydGAgLyBnZW5lcmljIGB1aWAgbWVyZWx5IGJlY2F1c2UgdGhleSByZW1haW4gY29tcGlsZWQgdW5kZXIgdGhlIGV4cGxpY2l0IGV4dGVuZGVkIGdhdGUuCjkuIERvIG5vdCBtaWdyYXRlIE1DUCBTREsvcHJvdG9jb2wsIHJlZGVzaWduIHRyYW5zcG9ydCwgYWRkIGF1dGhlbnRpY2F0aW9uLCBvciByZXN1bWUgcGFya2VkIGZlYXR1cmUgaGFyZGVuaW5nIGluIFAxLjMuCjEwLiBBZGQgZm9jdXNlZCByZWdyZXNzaW9uIHRlc3RzIGZvciBhbnkgbmV3IHNoYXJlZCBvd25lci9jb250cmFjdCBhbmQgcmVydW4gdGhlIGNvbXBsZXRlIE1DUCBWZXJpZnkgd29ya2Zsb3cuCgojIyBTdGF0aWMgYWNjZXB0YW5jZQoKYGBgdGV4dApzaGFyZWQgcmVzb2x2ZXIgb3duZXJzaGlwIGV4aXN0cyBvbmx5IHdoZXJlIGF1ZGl0ZWQgY29yZSBjYWxsZXJzIGp1c3RpZnkgaXQKY29yZSBleHBsaWNpdCBtdXRhdGlvbnMgdXNlIGRldGVybWluaXN0aWMgaWRlbnRpdHkgcnVsZXMKYm91bmRlZCBVbmRvL3JvbGxiYWNrIG93bmVyc2hpcCBpcyBjb25zaXN0ZW50IHdoZXJlIGNvbnNvbGlkYXRlZApjb3JlIHJlYWRiYWNrL3Jlc3VsdCBpZGVudGl0eSBpcyBzdWZmaWNpZW50IGZvciBjb250aW51YXRpb24Kbm8gZ2F0ZWQgbGVnYWN5IGZhbWlseSBpcyBnbG9iYWxseSByZWZhY3RvcmVkCm5vIG5hdGl2ZSBCZWRyb2NrIGNhcGFiaWxpdHkgaXMgcmVtb3ZlZCBvciBzaWxlbnRseSBnYXRlZApgYGAKCiMjIEV4ZWN1dGFibGUgYWNjZXB0YW5jZQoKYGBgdGV4dApmb2N1c2VkIFAxLjMgcmVncmVzc2lvbiB0ZXN0cyBQQVNTCmJ1biBydW4gdHlwZWNoZWNrICAgICAgICAgICAgICAgUEFTUwpidW4gcnVuIHRlc3QgICAgICAgICAgICAgICAgICAgIFBBU1MKYnVuIHJ1biBidWlsZCAgICAgICAgICAgICAgICAgICBQQVNTCmJ1biBydW4gZG9jczpjaGVjayAgICAgICAgICAgICAgUEFTUwpyb290IE1DUCBWZXJpZnkgICAgICAgICAgICAgICAgIFBBU1MKYGBgCgpPbmx5IGFmdGVyIFAxLjMgaXMgcmVjb3JkZWQgbWF5IHRoZSBhY3RpdmUgYm91bmRhcnkgYWR2YW5jZSB0byAqKlAxLjQg4oCUIHRyYW5zcG9ydC9zZXNzaW9uIHNpbXBsaWZpY2F0aW9uIGRlY2lzaW9uKiouCgojIyBQcm9vZiBCb3VuZGFyeQoKR2l0SHViIEFjdGlvbnMvcGFja2FnZSB0ZXN0cyBjYW4gcHJvdmUgc291cmNlL2J1aWxkL2NvbnRyYWN0cyB0aGF0IGRvIG5vdCByZXF1aXJlIEJsb2NrYmVuY2ggZ2xvYmFscy4gQWN0dWFsIG11dGF0aW9uIHNlbWFudGljcywgVW5kby9SZWRvIGJlaGF2aW9yLCByZW5kZXJlZCBzdGF0ZSwgc2F2ZS9yZW9wZW4gY29udGludWl0eSwgYW5kIGVuZC10by1lbmQgaWRlbnRpdHkgc3RhYmlsaXR5IHJlbWFpbiBgTE9DQUwgUFJPT0YgUkVRVUlSRURgIHdoZXJlIGFwcGxpY2FibGUuCg=="
         run: |
           python - <<'PY'
+          import base64
+          import os
           from pathlib import Path
 
           path = Path("docs/knowledge/next-action.md")
@@ -38,107 +43,14 @@ jobs:
               raise SystemExit("Expected P1.2 status exactly once")
           text = text.replace(old_status, new_status, 1)
 
-          p12_section = '''# Completed P1.2 — Explicit Family Gates
-
-P1.2 converts the P1.1 source-preserved `extended` distinction into a real opt-in without introducing an ACL, role system, policy DSL, or dynamic permission engine.
-
-## Source commits
-
-```text
-b126a9912a5b9c13f9ba8300de5a650c4ac7ad79
-feat: add explicit MCP family gates
-
-89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
-test: align registration profile contract with family gates
-```
-
-## Gate contract
-
-The existing Blockbench `Setting` mechanism now owns one small opt-in:
-
-```text
-mcp_extended_families_enabled
-```
-
-Contract:
-
-```text
-default value                         false
-literal boolean true                  selects extended profile
-missing/false/string-like values      remain bedrock_entity
-extended adds                         import + ui only
-bedrock_entity families               unchanged
-```
-
-`registerMcpProfile()` tracks already-registered families and is idempotent per family. The default Bedrock Entity profile is still registered at module load; after settings initialize, an explicit extended opt-in adds only the missing fallback families before network startup.
-
-The reconstructed-session path still consumes the same canonical `tools.enabled` / stored tool-definition truth created by those family registration functions. No second reconstructed-session profile table was introduced.
-
-P0.2 remains authoritative inside the optional fallback families:
-
-```text
-from_geo_json  enabled=false
-risky_eval     enabled=false
-```
-
-Therefore enabling the extended families does not expose either dangerous tool.
-
-No Animation, Paint, Texture, PBR, material-instance, Cube, history, export, or project implementation file was changed by P1.2. Native/relevant Bedrock capability remains in the normal `bedrock_entity` family set.
-
-## P1.2 focused proof
-
-The added family-gate tests prove:
-
-```text
-extended families require explicit boolean opt-in
-extended adds exactly import + ui
-setting defaults off and is read before server startup
-profile registration is idempotent by family
-dangerous tools remain disabled inside opted-in fallback families
-setting identifier has one canonical owner
-```
-
-Canonical root workflow:
-
-```text
-MCP Verify
-run: 31369553909
-verified head: 89c8939061e48f4ed6b6318d79d5bf6ff94c29d3
-```
-
-Result:
-
-```text
-frozen-lockfile install     PASS
-full tsc --noEmit           PASS
-Bun contract tests          PASS — 14/14, 0 failures, 82 expect() calls
-production build            PASS
-generated docs freshness    PASS
-fail-closed aggregator      PASS
-workflow conclusion         SUCCESS
-```
-
-The first P1.2 run correctly failed closed because one P1.1 source-reading test asserted the previous loop syntax rather than the registration invariant. The follow-up test-only commit updated that assertion to the new idempotent registrar contract; no runtime behavior was weakened to make the test pass.
-
-Actual Blockbench setting persistence, plugin reload behavior, and real `tools/list` differences after opting into extended families remain `LOCAL PROOF REQUIRED`.
-
-'''
-
+          p12_section = base64.b64decode(os.environ["P12_B64"]).decode()
           marker = "# Current Work Order\n"
           if text.count(marker) != 1:
               raise SystemExit("Expected Current Work Order marker exactly once")
           text = text.replace(marker, p12_section + marker, 1)
 
-          old_order = '''P1.1  default Bedrock Entity registration profile COMPLETE
-P1.2  family gates                               ← ACTIVE NEXT SLICE
-P1.3  core-only resolver/mutation/result consolidation
-P1.4  transport/session future decision
-P1.5  local end-to-end core acceptance'''
-          new_order = '''P1.1  default Bedrock Entity registration profile COMPLETE
-P1.2  family gates                               COMPLETE
-P1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE
-P1.4  transport/session future decision
-P1.5  local end-to-end core acceptance'''
+          old_order = "P1.1  default Bedrock Entity registration profile COMPLETE\nP1.2  family gates                               ← ACTIVE NEXT SLICE\nP1.3  core-only resolver/mutation/result consolidation\nP1.4  transport/session future decision\nP1.5  local end-to-end core acceptance"
+          new_order = "P1.1  default Bedrock Entity registration profile COMPLETE\nP1.2  family gates                               COMPLETE\nP1.3  core-only resolver/mutation/result consolidation ← ACTIVE NEXT SLICE\nP1.4  transport/session future decision\nP1.5  local end-to-end core acceptance"
           if text.count(old_order) != 1:
               raise SystemExit("Expected P1 work order block exactly once")
           text = text.replace(old_order, new_order, 1)
@@ -147,84 +59,7 @@ P1.5  local end-to-end core acceptance'''
           if text.count(next_marker) != 1:
               raise SystemExit("Expected P1.2 next-step marker exactly once")
           prefix = text.split(next_marker, 1)[0]
-
-          p13_next = '''# Next Step — P1.3 Core Ownership Consolidation Only
-
-Do not start P1.4 or later work in the same slice.
-
-## Goal
-
-Consolidate deterministic identity, bounded mutation/rollback, and useful result ownership **only inside the surviving Bedrock Entity core**. Do not globally refactor gated or legacy source.
-
-## Required approach
-
-1. Audit current callers before creating or reusing shared resolver helpers.
-2. Limit resolver consolidation to core identities where duplication is real:
-
-```text
-Cube
-Group
-Texture
-Animation
-```
-
-3. Normal explicit mutation identity must converge on:
-
-```text
-exact UUID first
-otherwise exact name only when unique
-ambiguous explicit target → fail
-missing explicit target → fail
-no UUID-prefix matching for mutation
-no silent root/default fallback
-```
-
-4. Selection fallback remains allowed only for tools whose public contract explicitly states that they operate on selection.
-5. Core mutation paths should use the bounded pattern where applicable:
-
-```text
-preflight all external targets
-open one Undo transaction
-mutate
-finish
-failure after open → cancel/revert
-```
-
-6. Consolidate result/readback shape only where it improves deterministic continuation. Prefer compact human-readable content plus stable structured data when identity/state matters.
-7. Preserve all current Bedrock Entity capability. Do not use consolidation as a reason to gate or delete TextureMesh, Locator, bounding-box, Animation, Paint/PBR, material-instance, history, camera/observation, export, or other audited Bedrock-relevant behavior.
-8. Do not refactor `import` / generic `ui` merely because they remain compiled under the explicit extended gate.
-9. Do not migrate MCP SDK/protocol, redesign transport, add authentication, or resume parked feature hardening in P1.3.
-10. Add focused regression tests for any new shared owner/contract and rerun the complete MCP Verify workflow.
-
-## Static acceptance
-
-```text
-shared resolver ownership exists only where audited core callers justify it
-core explicit mutations use deterministic identity rules
-bounded Undo/rollback ownership is consistent where consolidated
-core readback/result identity is sufficient for continuation
-no gated legacy family is globally refactored
-no native Bedrock capability is removed or silently gated
-```
-
-## Executable acceptance
-
-```text
-focused P1.3 regression tests PASS
-bun run typecheck               PASS
-bun run test                    PASS
-bun run build                   PASS
-bun run docs:check              PASS
-root MCP Verify                 PASS
-```
-
-Only after P1.3 is recorded may the active boundary advance to **P1.4 — transport/session simplification decision**.
-
-## Proof Boundary
-
-GitHub Actions/package tests can prove source/build/contracts that do not require Blockbench globals. Actual mutation semantics, Undo/Redo behavior, rendered state, save/reopen continuity, and end-to-end identity stability remain `LOCAL PROOF REQUIRED` where applicable.
-'''
-
+          p13_next = base64.b64decode(os.environ["P13_B64"]).decode()
           path.write_text(prefix + p13_next)
           PY
 
