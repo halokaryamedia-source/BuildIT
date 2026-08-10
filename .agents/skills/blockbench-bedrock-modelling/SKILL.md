@@ -9,7 +9,10 @@ Own the **modeller judgement** required to turn an approved Model Reference into
 a coherent, editable Minecraft Bedrock `.bbmodel`.
 
 This skill decides **what the model should become**. It does not own the
-Blockbench API/runtime mechanics used to apply those decisions.
+Blockbench API/runtime mechanics used to apply those decisions. For actual MCP
+workflow orchestration, load `blockit-bedrock-entity-mcp`; route surface execution
+to `blockit-bedrock-texturing` and animation execution to
+`blockit-bedrock-animation` when those domains enter scope.
 
 ## Use This Skill For
 
@@ -35,8 +38,9 @@ Blockbench API/runtime mechanics used to apply those decisions.
   `blockbench-runtime-development`;
 - Bun build/package behavior → `bun-tooling`;
 - TypeScript compiler/type-system failures → `typescript-type-safety`;
-- unrelated engines, Hytale production, generic mesh sculpting, PBR pipelines,
-  or realistic rendering unless the product scope is explicitly changed.
+- unrelated engines, Hytale production, generic mesh sculpting, or realistic
+  rendering; native Bedrock texture/PBR/material-instance execution routes to
+  `blockit-bedrock-texturing` after modelling judgement is settled.
 
 A modelling task can call working MCP tools without loading the runtime
 specialist. If modelling is blocked by a **proved Blockbench runtime/API defect**,

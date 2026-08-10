@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T11:10:36.756Z",
+  "generatedAt": "2026-08-10T11:22:59.982Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4630,38 +4630,16 @@
       "arguments": null
     },
     {
-      "name": "model_creation_strategy",
-      "title": "Model Creation Strategy",
-      "description": "Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.",
+      "name": "bedrock_entity_workflow",
+      "title": "Minecraft Bedrock Entity Workflow",
+      "description": "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
       "status": "stable",
       "arguments": {
-        "$ref": "#/definitions/model_creation_strategy",
+        "$ref": "#/definitions/bedrock_entity_workflow",
         "definitions": {
-          "model_creation_strategy": {
+          "bedrock_entity_workflow": {
             "type": "object",
-            "properties": {
-              "format": {
-                "type": "string",
-                "enum": [
-                  "java_block",
-                  "bedrock",
-                  "bedrock_block"
-                ],
-                "default": "bedrock",
-                "description": "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it.",
-                "markdownDescription": "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it."
-              },
-              "approach": {
-                "type": "string",
-                "enum": [
-                  "ui",
-                  "programmatic",
-                  "import"
-                ],
-                "description": "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required.",
-                "markdownDescription": "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required."
-              }
-            },
+            "properties": {},
             "additionalProperties": false
           }
         },
@@ -4697,7 +4675,7 @@
     {
       "name": "validator-status",
       "title": "Validator Status",
-      "description": "Returns the current validation status including error/warning counts and a summary of all problems.",
+      "description": "Returns the current validation status. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
       "uriTemplate": "validator://status"
     },
     {
@@ -4709,13 +4687,13 @@
     {
       "name": "validator-warnings",
       "title": "Validator Warnings",
-      "description": "Returns all current validation warnings with element references where available.",
+      "description": "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
       "uriTemplate": "validator://warnings"
     },
     {
       "name": "validator-errors",
       "title": "Validator Errors",
-      "description": "Returns all current validation errors with element references where available.",
+      "description": "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
       "uriTemplate": "validator://errors"
     }
   ]

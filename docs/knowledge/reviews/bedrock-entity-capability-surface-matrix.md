@@ -53,4 +53,4 @@ Primary evidence owners:
 
 ## Immediate follow-up
 
-Project creation, model-codec breadth, generic camera/app helpers, and validator inference labeling were reviewed in `mcp-prelocal-generic-semantics-audit-2026-08-10.md`. Next, use this matrix to normalize Bedrock prompts/skills and to design direct authored-state coverage for protected gaps before replacing broad transitional resources. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.
+Project creation, model-codec breadth, generic camera/app helpers, and validator inference labeling were reviewed in `mcp-prelocal-generic-semantics-audit-2026-08-10.md`. The canonical MCP prompt is now `bedrock_entity_workflow`, and the repository-owned skill routing is documented in `blockit-agent-skill-surface-2026-08-10.md`. Next capability work should design direct authored-state coverage for protected native gaps before replacing broad transitional resources. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.

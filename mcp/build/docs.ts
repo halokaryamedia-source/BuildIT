@@ -293,14 +293,14 @@ async function generateHtml(data: DocOutput): Promise<string> {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blockbench MCP Plugin — API Reference</title>
+  <title>BlockIT — Bedrock Entity MCP — API Reference</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="layout">
     <nav class="sidebar">
       <div class="sidebar-brand">
-        <h1>Blockbench MCP</h1>
+        <h1>BlockIT — Bedrock Entity MCP</h1>
         <p>v${version} — API Reference</p>
       </div>
 
@@ -321,7 +321,7 @@ async function generateHtml(data: DocOutput): Promise<string> {
 
     <main class="main">
       <header class="page-header">
-        <h1>Blockbench MCP Plugin</h1>
+        <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v${version}</p>
         <nav class="stats">
           <a href="#tools"><strong>${data.tools.length}</strong> tools (${stableCount} stable, ${experimentalCount} experimental)</a>

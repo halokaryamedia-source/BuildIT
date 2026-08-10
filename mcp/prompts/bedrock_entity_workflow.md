@@ -41,8 +41,31 @@ At a primary gate, answer concrete questions rather than writing generic praise:
 
 If the whole object is unrecognizable or multiple primary relationships are wrong together, rebuild/revise the primary hypothesis rather than micro-patching.
 
+## Protected Native Capability Gaps
+
+BlockIT preserves the Minecraft Bedrock Entity product boundary even when a native capability does not yet have a direct MCP authoring/inspection owner. Current protected examples include direct Locator/NullObject authoring, TextureMesh authoring, native visible bounding-box fields, animation controllers, sound/timeline animation effects, animated-texture authoring, and bone-binding expressions.
+
+When the user asks for one of these native capabilities and the current exposed MCP surface has no direct owner:
+
+- **do not emulate it with generic Mesh, arbitrary Cubes, UI clicks, code evaluation, or a different format;**
+- do not claim that a broad runtime resource such as `nodes://` is equivalent to authored native support;
+- preserve existing authored data when opening/re-exporting a project unless a proven tool intentionally edits it;
+- state the capability gap explicitly and keep the task bounded to supported operations;
+- treat the gap as implementation work to audit against official Blockbench Bedrock source, not as permission to remove the capability from BlockIT.
+
+Native Bedrock PBR and per-face `material_instance` are **not** gaps: use the dedicated texture/material and material-instance tools when the task requires them.
+
+## Export Boundary
+
+For normal BlockIT model deliverables, `export_model` intentionally supports only:
+
+- `bedrock` — native Minecraft Bedrock geometry JSON;
+- `project` — editable Blockbench `.bbmodel`.
+
+Bedrock animation/controller files belong to Blockbench's separate Bedrock AnimationCodec surface. Do not substitute arbitrary OBJ/glTF/model codecs for a Bedrock Entity deliverable.
+
 ## Default boundaries
 
-For normal Bedrock Entity modelling, do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature/PBR tooling, or Hytale tooling as shortcuts. Use those only for an explicit specialized request or a demonstrated blocker that the normal MCP surface cannot solve.
+For normal Bedrock Entity modelling, do **not** use `risky_eval`, `trigger_action`, `fill_dialog`, `emulate_clicks`, `capture_app_screenshot`, `from_geo_json`, generic mesh/armature tooling or Hytale tooling as shortcuts. Native Bedrock PBR/material-instance workflows are allowed when the asset actually requires them. Use those only for an explicit specialized request or a demonstrated blocker that the normal MCP surface cannot solve.
 
 Prefer `inspect_model_bounds` + `capture_model_views` for whole-form evidence, `inspect_element` for a diagnosed local target, exact UUIDs for normal mutation/hierarchy targets, and `modify_cubes_batch` only when one causal correction genuinely spans several explicit Cube UUIDs. Prefer coarse whole-form reasoning over per-Cube improvisation, neutral Group defaults over invented transforms, bounded edits over patch churn, and meaningful reference/model comparisons over screenshot quotas.

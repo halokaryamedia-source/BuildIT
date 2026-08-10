@@ -68,7 +68,7 @@ bun run verify:stateless-local
 
 The upstream `jasonjgardner/blockbench-mcp-project` skills are useful historical/reference material, but they describe a broader generic Blockbench MCP including Mesh, Hytale, risky evaluation, and other paths that are not the normal BlockIT Bedrock Entity workflow. Do not install them as the canonical BlockIT orchestration layer without adaptation.
 
-A BlockIT-specific skill pack is a separate pre-local hardening step and should be generated from the current capability matrix and actual MCP contract.
+Repository-owned BlockIT skills now live under `.agents/skills/`: use `blockit-bedrock-entity-mcp` as the MCP orchestrator, the existing `blockbench-bedrock-modelling` specialist for whole-form geometry judgement, `blockit-bedrock-texturing` for texture/Paint/PBR/material-instance work, and `blockit-bedrock-animation` for Bedrock animation.
 
 ## Upstream attribution
 

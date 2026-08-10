@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blockbench MCP Plugin — API Reference</title>
+  <title>BlockIT — Bedrock Entity MCP — API Reference</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="layout">
     <nav class="sidebar">
       <div class="sidebar-brand">
-        <h1>Blockbench MCP</h1>
+        <h1>BlockIT — Bedrock Entity MCP</h1>
         <p>v1.6.1 — API Reference</p>
       </div>
 
@@ -42,7 +42,7 @@
 
     <main class="main">
       <header class="page-header">
-        <h1>Blockbench MCP Plugin</h1>
+        <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
           <a href="#tools"><strong>69</strong> tools (29 stable, 40 experimental)</a>
@@ -52,11 +52,18 @@
       </header>
 
       <section id="install" class="doc-section">
-        <h2>Installation</h2>
-<ul>
-<li><a href="https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js">Stable</a></li>
-<li><a href="https://jasonjgardner.github.io/blockbench-mcp-plugin/nightly/mcp.js">Latest</a></li>
-</ul>
+        <h2>BlockIT Local Installation</h2>
+<p>Build the current <code>Local</code> branch and load the generated plugin file from this repository:</p>
+<pre><code class="language-bash">git checkout Local
+cd mcp
+bun install --frozen-lockfile
+bun run build
+</code></pre>
+<p>Then load <code>mcp/dist/mcp.js</code> as a local plugin in desktop Blockbench.</p>
+<p>For BlockIT validation, <strong>do not install the hosted <code>jasonjgardner.github.io/blockbench-mcp-plugin</code> artifact</strong>. That URL serves the upstream generic plugin and cannot prove this Bedrock Entity-focused fork.</p>
+<p>Default MCP URL after the BlockIT plugin is loaded:</p>
+<pre><code class="language-text">http://127.0.0.1:3000/bb-mcp
+</code></pre>
 
       </section>
 
@@ -2873,32 +2880,12 @@
     </div>
 <div class="card">
       <div class="card-header">
-        <h3 class="card-name">model_creation_strategy</h3>
+        <h3 class="card-name">bedrock_entity_workflow</h3>
         <div class="card-badges"><span class="badge badge-stable">stable</span></div>
       </div>
-      <p class="card-title">Model Creation Strategy</p>
-      <p class="card-desc">Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.</p>
-      <div class="overflow-x"><table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">format</td>
-      <td class="col-type">&quot;java_block&quot; | &quot;bedrock&quot; | &quot;bedrock_block&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">approach</td>
-      <td class="col-type">&quot;ui&quot; | &quot;programmatic&quot; | &quot;import&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required.</td>
-    </tr></tbody>
-    </table></div>
+      <p class="card-title">Minecraft Bedrock Entity Workflow</p>
+      <p class="card-desc">Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.</p>
+      <div class="overflow-x"><p class="empty-params">No parameters</p></div>
     </div>
       </section>
 
@@ -2942,7 +2929,7 @@
       </div>
       <p class="card-title">Validator Status</p>
       <p class="uri-template">validator://status</p>
-      <p class="card-desc">Returns the current validation status including error/warning counts and a summary of all problems.</p>
+      <p class="card-desc">Returns the current validation status. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.</p>
     </div>
 <div class="card">
       <div class="card-header">
@@ -2958,7 +2945,7 @@
       </div>
       <p class="card-title">Validator Warnings</p>
       <p class="uri-template">validator://warnings</p>
-      <p class="card-desc">Returns all current validation warnings with element references where available.</p>
+      <p class="card-desc">Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.</p>
     </div>
 <div class="card">
       <div class="card-header">
@@ -2966,12 +2953,12 @@
       </div>
       <p class="card-title">Validator Errors</p>
       <p class="uri-template">validator://errors</p>
-      <p class="card-desc">Returns all current validation errors with element references where available.</p>
+      <p class="card-desc">Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.</p>
     </div>
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T11:10:36.756Z from Zod schemas
+        Generated 2026-08-10T11:22:59.982Z from Zod schemas
       </footer>
     </main>
   </div>

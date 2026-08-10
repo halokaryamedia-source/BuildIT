@@ -72,7 +72,7 @@ describe("P1 Bedrock Entity registration profile", () => {
 
     const nativePrompt = source.indexOf('"blockbench_native_apis"');
     const evalPrompt = source.indexOf('"blockbench_code_eval_safety"');
-    const strategyPrompt = source.indexOf('createPrompt("model_creation_strategy"');
+    const strategyPrompt = source.indexOf('createPrompt("bedrock_entity_workflow"');
 
     expect(nativePrompt).toBeGreaterThan(-1);
     expect(evalPrompt).toBeGreaterThan(-1);

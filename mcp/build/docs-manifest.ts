@@ -52,25 +52,11 @@ export const promptDocs: PromptSpec[] = [
     status: "stable",
   },
   {
-    name: "model_creation_strategy",
-    title: "Model Creation Strategy",
+    name: "bedrock_entity_workflow",
+    title: "Minecraft Bedrock Entity Workflow",
     description:
-      "Goal-oriented guidance for creating or revising a Blockbench model. The default Bedrock Entity path prioritizes project orientation, whole-form Cuboid modelling, meaningful visual gates, targeted correction, then texture and animation only when required. UI automation, code evaluation, and geometry import are explicit fallback approaches, not peer default workflows.",
-    argsSchema: z.object({
-      format: z
-        .enum(["java_block", "bedrock", "bedrock_block"])
-        .optional()
-        .default("bedrock")
-        .describe(
-          "Target model format. Defaults to `bedrock` for Minecraft Bedrock Entity models; use another format only when the requested asset requires it."
-        ),
-      approach: z
-        .enum(["ui", "programmatic", "import"])
-        .optional()
-        .describe(
-          "Explicit fallback only. Omit for the normal goal-oriented modelling workflow. Use `ui`, `programmatic`, or `import` only when that specialized path is intentionally required."
-        ),
-    }),
+      "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+    argsSchema: z.object({}),
     status: "stable",
   },
 ];
@@ -110,7 +96,7 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Returns the current validation status including error/warning counts and a summary of all problems.",
+      "Returns the current validation status. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
   },
   {
     name: "validator-checks",
@@ -124,13 +110,13 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "validator://warnings",
     title: "Validator Warnings",
     description:
-      "Returns all current validation warnings with element references where available.",
+      "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
   },
   {
     name: "validator-errors",
     uriTemplate: "validator://errors",
     title: "Validator Errors",
     description:
-      "Returns all current validation errors with element references where available.",
+      "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
   },
 ];
