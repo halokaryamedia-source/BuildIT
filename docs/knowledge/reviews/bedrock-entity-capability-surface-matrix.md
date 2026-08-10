@@ -18,7 +18,7 @@ Primary evidence owners:
 
 | Bedrock Entity capability | Current BlockIT mapping | Surface status | Guardrail / next audit |
 |---|---|---|---|
-| Project format/orientation | `create_project`, `get_project_info` | **Mapped** | Normal project format is `bedrock`; later narrowing should prevent arbitrary format drift without removing Bedrock project creation. |
+| Project format/orientation | `create_project`, `get_project_info` | **Mapped / narrowed** | `create_project` accepts the native `bedrock` Entity format only; arbitrary Blockbench format creation is outside the product tool. |
 | Cube/Cuboid geometry | `place_cube`, `modify_cube`, `modify_cubes_batch`, `inspect_element`, `list_outline`, targeted find/filter tools | **Strong mapping** | Keep explicit geometry + UUID-first mutation ownership. |
 | Group hierarchy / bones | `add_group`, `bone_rigging`, `list_outline`, `inspect_element` | **Strong mapping** | Groups are Bedrock bones/organization; preserve pivot and parent semantics. |
 | Cube face UV / box UV / UV rotation | Cube face/UV fields in Cube tools + texture application | **Partial mapping** | Audit native `box_uv`, face UV rotation, mirror/offset semantics explicitly before any further UV reduction. Generic Mesh UV remains outside product scope. |
@@ -36,10 +36,11 @@ Primary evidence owners:
 | Native Bedrock bounding-box fields | `inspect_model_bounds` provides rendered Cube observation, not native bounding-box authoring | **Partial / semantic distinction** | Do not claim `inspect_model_bounds` covers Bedrock bounding-box capability; audit format fields separately. |
 | Animated textures | Texture metadata exposes frame information; dedicated authoring mapping not confirmed | **Partial / protected** | Native Bedrock format enables animated textures. Audit before surface reduction. |
 | Bone binding expression | No dedicated current mapping confirmed | **MCP GAP — protected** | Native Bedrock format enables bone binding expressions; preserve as audit target. |
-| Current-format Bedrock export | `list_export_formats`, `export_model` | **Available but broad** | Later audit should prefer current-format Bedrock outcomes while avoiding arbitrary-codec generic drift. |
+| Bedrock model/project export | `list_export_formats`, `export_model` | **Mapped / narrowed** | Generic model-codec exposure is limited to native `bedrock` geometry JSON and editable `project` `.bbmodel`. Native Bedrock animation/controller output remains separately protected under AnimationCodec. |
 | Undo / redo / checkpoints | history family | **Mapped** | Keep recoverability for bounded mutations. |
 | Validator evidence | validator status/check/warning/error resources | **Mapped support evidence** | Text-to-element references are heuristic unless backed by direct object identity; do not present inferred links as authoritative. |
-| Canonical visual observation | `capture_model_views`, `capture_screenshot`, `inspect_model_bounds` | **Mapped BlockIT workflow support** | Product evidence helpers, not proof of resemblance by themselves. |
+| Canonical visual observation | `capture_model_views`, `capture_screenshot`, `inspect_model_bounds` | **Mapped BlockIT workflow support** | Product evidence helpers, not proof of resemblance by themselves. Generic full-app capture and arbitrary active-camera mutation are default-disabled. |
+| Generic `nodes://{id}` observation | `Project.nodes_3d` resource | **Transitional / deferred** | Broad runtime-node observation is retained until explicit Locator/TextureMesh authored-state inspection closes those protected gaps; do not remove it first. |
 | Reference Models plugin integration | conditional `reference_models://{id}` | **Optional external integration** | Not a native Bedrock capability and must not affect baseline capability counts. |
 
 ## Surface semantics
@@ -52,4 +53,4 @@ Primary evidence owners:
 
 ## Immediate follow-up
 
-Use this matrix to audit remaining broad semantics inside retained families: arbitrary project-format creation, arbitrary codec enumeration/export, generic camera/app UI helpers, generic resource object dumps, and Bedrock prompt/skill coverage for protected gaps. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.
+Project creation, model-codec breadth, generic camera/app helpers, and validator inference labeling were reviewed in `mcp-prelocal-generic-semantics-audit-2026-08-10.md`. Next, use this matrix to normalize Bedrock prompts/skills and to design direct authored-state coverage for protected gaps before replacing broad transitional resources. Do not start deletion from tool names alone; trace every proposed reduction through official Blockbench Bedrock source first.

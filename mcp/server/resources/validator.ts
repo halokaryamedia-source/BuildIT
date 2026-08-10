@@ -118,6 +118,8 @@ function serializeProblem(problem: ValidatorProblem, isError: boolean) {
     hasActions: (problem.buttons?.length ?? 0) > 0,
     actionNames: problem.buttons?.map((b) => b.name) ?? [],
     elementRefs,
+    elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none",
+    elementRefsAuthoritative: false,
   };
 }
 
@@ -147,7 +149,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Returns the current validation status including error/warning counts and a summary of all problems.",
+      "Returns the current validation status including error/warning counts and a summary of all problems. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       const totalProblems = Validator.errors.length + Validator.warnings.length;
       return {
@@ -270,7 +272,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://warnings",
     title: "Validator Warnings",
     description:
-      "Returns all current validation warnings with element references where available.",
+      "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [
@@ -331,7 +333,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://errors",
     title: "Validator Errors",
     description:
-      "Returns all current validation errors with element references where available.",
+      "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [

@@ -105,17 +105,19 @@ export const cameraToolDocs: ToolSpec[] = [
   },
   {
     name: "capture_app_screenshot",
-    description: "Returns the image data of the Blockbench app.",
+    description:
+      "Source-preserved generic Blockbench full-application screenshot helper. It is disabled in the normal BlockIT Bedrock Entity surface; use `capture_model_views` or `capture_screenshot` for model evidence.",
     annotations: {
       title: "Capture App Screenshot",
       readOnlyHint: true,
     },
     parameters: captureAppScreenshotParameters,
-    status: STATUS_STABLE,
+    status: STATUS_EXPERIMENTAL,
   },
   {
     name: "set_camera_angle",
-    description: "Sets the camera angle to the specified value.",
+    description:
+      "Source-preserved generic editor-camera mutation helper. It is disabled in the normal BlockIT Bedrock Entity surface because `capture_model_views` provides deterministic observation without mutating the active editor camera.",
     annotations: {
       title: "Set Camera Angle",
       destructiveHint: true,
@@ -394,7 +396,7 @@ export function registerCameraTools() {
     async execute() {
       return captureAppScreenshot();
     },
-  }, cameraToolDocs[1].status);
+  }, cameraToolDocs[1].status, false);
 
   createTool(cameraToolDocs[2].name, {
     ...cameraToolDocs[2],
@@ -411,7 +413,7 @@ export function registerCameraTools() {
       }
       return captureScreenshot();
     },
-  }, cameraToolDocs[2].status);
+  }, cameraToolDocs[2].status, false);
 
   createTool(cameraToolDocs[3].name, {
     ...cameraToolDocs[3],

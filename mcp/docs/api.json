@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T07:51:09.567Z",
+  "generatedAt": "2026-08-10T11:10:36.756Z",
   "tools": [
     {
       "name": "place_cube",
@@ -482,8 +482,8 @@
     {
       "name": "capture_app_screenshot",
       "title": "Capture App Screenshot",
-      "description": "Returns the image data of the Blockbench app.",
-      "status": "stable",
+      "description": "Source-preserved generic Blockbench full-application screenshot helper. It is disabled in the normal BlockIT Bedrock Entity surface; use `capture_model_views` or `capture_screenshot` for model evidence.",
+      "status": "experimental",
       "category": "Camera & Screenshots",
       "annotations": {
         "readOnlyHint": true
@@ -503,7 +503,7 @@
     {
       "name": "set_camera_angle",
       "title": "Set Camera Angle",
-      "description": "Sets the camera angle to the specified value.",
+      "description": "Source-preserved generic editor-camera mutation helper. It is disabled in the normal BlockIT Bedrock Entity surface because `capture_model_views` provides deterministic observation without mutating the active editor camera.",
       "status": "experimental",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -2142,8 +2142,8 @@
     },
     {
       "name": "list_export_formats",
-      "title": "List Export Formats",
-      "description": "Lists all registered export codecs with their id, display name, file extension, and whether they support compile/export. Use before `export_model` to pick a codec.",
+      "title": "List BlockIT Model Outputs",
+      "description": "Lists the model outputs intentionally exposed by BlockIT for an active Bedrock Entity project: native Bedrock geometry JSON (`bedrock`) and editable Blockbench project (`project`). It does not enumerate arbitrary registered Blockbench codecs. Bedrock animation files/controllers use Blockbench's separate AnimationCodec surface and are not represented as generic model codecs here.",
       "status": "stable",
       "category": "Export",
       "annotations": {
@@ -2154,14 +2154,7 @@
         "definitions": {
           "list_export_formats": {
             "type": "object",
-            "properties": {
-              "only_current_format": {
-                "type": "boolean",
-                "default": false,
-                "description": "If true, only return codecs compatible with the current project's format.",
-                "markdownDescription": "If true, only return codecs compatible with the current project's format."
-              }
-            },
+            "properties": {},
             "additionalProperties": false
           }
         },
@@ -2170,8 +2163,8 @@
     },
     {
       "name": "export_model",
-      "title": "Export Model",
-      "description": "Compiles the current project through the named codec and returns the result as text. Optionally writes the compiled content to a filesystem path (requires user permission in Blockbench v5.0+). Use `list_export_formats` first to discover codec IDs.",
+      "title": "Export Bedrock Model",
+      "description": "Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.",
       "status": "experimental",
       "category": "Export",
       "annotations": {
@@ -2186,27 +2179,32 @@
             "properties": {
               "codec_id": {
                 "type": "string",
-                "description": "Codec ID to use for export (e.g., 'obj', 'gltf', 'project', 'bedrock'). If omitted, uses the current project format's codec. Use `list_export_formats` to see available IDs.",
-                "markdownDescription": "Codec ID to use for export (e.g., 'obj', 'gltf', 'project', 'bedrock'). If omitted, uses the current project format's codec. Use `list_export_formats` to see available IDs."
+                "enum": [
+                  "bedrock",
+                  "project"
+                ],
+                "default": "bedrock",
+                "description": "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`.",
+                "markdownDescription": "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`."
               },
               "options": {
                 "type": "object",
                 "additionalProperties": {},
-                "description": "Codec-specific export options. Defaults to the codec's configured export options.",
-                "markdownDescription": "Codec-specific export options. Defaults to the codec's configured export options."
+                "description": "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options.",
+                "markdownDescription": "Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options."
               },
               "path": {
                 "type": "string",
-                "description": "Absolute filesystem path to write the compiled model to. Requires user permission (Blockbench v5.0+ prompts for 'fs' access). If omitted, content is returned in the response only.",
-                "markdownDescription": "Absolute filesystem path to write the compiled model to. Requires user permission (Blockbench v5.0+ prompts for 'fs' access). If omitted, content is returned in the response only."
+                "description": "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only.",
+                "markdownDescription": "Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only."
               },
               "max_content_length": {
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2000000,
                 "default": 100000,
-                "description": "Maximum number of characters to include in the returned `content` field. Use 0 to omit content entirely (useful when only writing to disk). Larger values risk exceeding MCP context limits.",
-                "markdownDescription": "Maximum number of characters to include in the returned `content` field. Use 0 to omit content entirely (useful when only writing to disk). Larger values risk exceeding MCP context limits."
+                "description": "Maximum characters returned in `content`. Use 0 when only writing to disk.",
+                "markdownDescription": "Maximum characters returned in `content`. Use 0 when only writing to disk."
               }
             },
             "additionalProperties": false
@@ -3710,7 +3708,7 @@
     {
       "name": "create_project",
       "title": "Create Project",
-      "description": "Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.",
+      "description": "Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -3728,9 +3726,10 @@
               },
               "format": {
                 "type": "string",
+                "const": "bedrock",
                 "default": "bedrock",
-                "description": "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models.",
-                "markdownDescription": "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models."
+                "description": "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface.",
+                "markdownDescription": "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
               }
             },
             "required": [

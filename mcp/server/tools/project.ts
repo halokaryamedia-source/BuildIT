@@ -8,10 +8,11 @@ import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 export const createProjectParameters = z.object({
   name: z.string(),
   format: z
-    .string()
+    .literal("bedrock")
+    .optional()
     .default("bedrock")
     .describe(
-      "Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models."
+      "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
     ),
 });
 
@@ -22,7 +23,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.",
+      "Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.",
     annotations: {
       title: "Create Project",
       destructiveHint: true,
@@ -84,7 +85,7 @@ export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
     async execute({ name, format }) {
-      const created = newProject(Formats[format]);
+      const created = newProject(Formats.bedrock);
 
       if (!created) {
         throw new Error("Failed to create project.");

@@ -45,7 +45,7 @@
         <h1>Blockbench MCP Plugin</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
-          <a href="#tools"><strong>69</strong> tools (30 stable, 39 experimental)</a>
+          <a href="#tools"><strong>69</strong> tools (29 stable, 40 experimental)</a>
           <a href="#prompts"><strong>3</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -262,12 +262,12 @@
       <div class="card-header">
         <h3 class="card-name">capture_app_screenshot</h3>
         <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-experimental">experimental</span>
           <span class="badge badge-readonly">read-only</span>
         </div>
       </div>
       <p class="card-title">Capture App Screenshot</p>
-      <p class="card-desc">Returns the image data of the Blockbench app.</p>
+      <p class="card-desc">Source-preserved generic Blockbench full-application screenshot helper. It is disabled in the normal BlockIT Bedrock Entity surface; use `capture_model_views` or `capture_screenshot` for model evidence.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -281,7 +281,7 @@
         </div>
       </div>
       <p class="card-title">Set Camera Angle</p>
-      <p class="card-desc">Sets the camera angle to the specified value.</p>
+      <p class="card-desc">Source-preserved generic editor-camera mutation helper. It is disabled in the normal BlockIT Bedrock Entity surface because `capture_model_views` provides deterministic observation without mutating the active editor camera.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1124,25 +1124,10 @@
           <span class="badge badge-readonly">read-only</span>
         </div>
       </div>
-      <p class="card-title">List Export Formats</p>
-      <p class="card-desc">Lists all registered export codecs with their id, display name, file extension, and whether they support compile/export. Use before `export_model` to pick a codec.</p>
+      <p class="card-title">List BlockIT Model Outputs</p>
+      <p class="card-desc">Lists the model outputs intentionally exposed by BlockIT for an active Bedrock Entity project: native Bedrock geometry JSON (`bedrock`) and editable Blockbench project (`project`). It does not enumerate arbitrary registered Blockbench codecs. Bedrock animation files/controllers use Blockbench's separate AnimationCodec surface and are not represented as generic model codecs here.</p>
       <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">only_current_format</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">If true, only return codecs compatible with the current project's format. <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr></tbody>
-    </table>
+        <p class="empty-params">No parameters</p>
       </div>
     </div>
 <div id="tool-export_model" class="card tool-card">
@@ -1153,8 +1138,8 @@
           <span class="badge badge-openworld">open-world</span>
         </div>
       </div>
-      <p class="card-title">Export Model</p>
-      <p class="card-desc">Compiles the current project through the named codec and returns the result as text. Optionally writes the compiled content to a filesystem path (requires user permission in Blockbench v5.0+). Use `list_export_formats` first to discover codec IDs.</p>
+      <p class="card-title">Export Bedrock Model</p>
+      <p class="card-desc">Compiles an active Minecraft Bedrock Entity project as native Bedrock geometry JSON or editable `.bbmodel`. Arbitrary OBJ/glTF/other registered codecs are intentionally rejected. Optionally writes the result to a filesystem path after Blockbench permission approval.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1167,24 +1152,24 @@
       </thead>
       <tbody><tr>
       <td class="col-name">codec_id</td>
-      <td class="col-type">string</td>
+      <td class="col-type">&quot;bedrock&quot; | &quot;project&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Codec ID to use for export (e.g., 'obj', 'gltf', 'project', 'bedrock'). If omitted, uses the current project format's codec. Use `list_export_formats` to see available IDs.</td>
+      <td class="col-desc">BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">options</td>
       <td class="col-type">Record&lt;string, unknown&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Codec-specific export options. Defaults to the codec's configured export options.</td>
+      <td class="col-desc">Codec-specific compile options for the selected Bedrock/project codec. Defaults to the codec's configured export options.</td>
     </tr><tr>
       <td class="col-name">path</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Absolute filesystem path to write the compiled model to. Requires user permission (Blockbench v5.0+ prompts for 'fs' access). If omitted, content is returned in the response only.</td>
+      <td class="col-desc">Absolute filesystem path to write the compiled model to. Requires user permission in Blockbench. If omitted, content is returned in the MCP response only.</td>
     </tr><tr>
       <td class="col-name">max_content_length</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum number of characters to include in the returned `content` field. Use 0 to omit content entirely (useful when only writing to disk). Larger values risk exceeding MCP context limits. <span class="param-meta">(default: <code>100000</code>) [min: 0, max: 2000000]</span></td>
+      <td class="col-desc">Maximum characters returned in `content`. Use 0 when only writing to disk. <span class="param-meta">(default: <code>100000</code>) [min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2176,7 +2161,7 @@
         </div>
       </div>
       <p class="card-title">Create Project</p>
-      <p class="card-desc">Creates a new project with the given name and project type. Defaults to the Minecraft Bedrock Entity format (`bedrock`) when format is omitted.</p>
+      <p class="card-desc">Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2196,7 +2181,7 @@
       <td class="col-name">format</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Project format ID from Blockbench's Formats registry. Defaults to `bedrock` for Minecraft Bedrock Entity models. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
+      <td class="col-desc">BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2986,7 +2971,7 @@
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T07:51:09.567Z from Zod schemas
+        Generated 2026-08-10T11:10:36.756Z from Zod schemas
       </footer>
     </main>
   </div>

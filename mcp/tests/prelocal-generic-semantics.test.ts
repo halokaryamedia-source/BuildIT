@@ -1,0 +1,51 @@
+import { describe, expect, test } from "bun:test";
+import { createProjectParameters } from "@/server/tools/project";
+import {
+  BLOCKIT_MODEL_CODEC_IDS,
+  exportModelParameters,
+  listExportFormatsParameters,
+} from "@/server/tools/export";
+
+async function source(path: string): Promise<string> {
+  return Bun.file(path).text();
+}
+
+describe("pre-local generic semantics narrowing", () => {
+  test("project creation accepts only the native Bedrock Entity format", () => {
+    expect(createProjectParameters.parse({ name: "entity" }).format).toBe("bedrock");
+    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(true);
+    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
+    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
+  });
+
+  test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
+    expect(BLOCKIT_MODEL_CODEC_IDS).toEqual(["bedrock", "project"]);
+    expect(listExportFormatsParameters.parse({})).toEqual({});
+    expect(exportModelParameters.parse({}).codec_id).toBe("bedrock");
+    expect(exportModelParameters.safeParse({ codec_id: "project" }).success).toBe(true);
+    expect(exportModelParameters.safeParse({ codec_id: "obj" }).success).toBe(false);
+    expect(exportModelParameters.safeParse({ codec_id: "gltf" }).success).toBe(false);
+  });
+
+  test("generic full-app capture and editor-camera mutation are default-disabled", async () => {
+    const camera = await source("server/tools/camera.ts");
+    expect(camera).toContain("cameraToolDocs[1].status, false");
+    expect(camera).toContain("cameraToolDocs[2].status, false");
+    expect(camera).toContain("capture_model_views");
+  });
+
+  test("validator inferred element references declare their non-authoritative source", async () => {
+    const validator = await source("server/resources/validator.ts");
+    expect(validator).toContain('elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none"');
+    expect(validator).toContain("elementRefsAuthoritative: false");
+  });
+
+  test("generic nodes resource remains explicitly deferred until protected native gaps have owners", async () => {
+    const audit = await source("../docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md");
+    const matrix = await source("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md");
+    expect(audit).toContain("`nodes://{id}`");
+    expect(audit).toContain("DEFER — retain for now");
+    expect(matrix).toContain("Generic `nodes://{id}` observation");
+    expect(matrix).toContain("Transitional / deferred");
+  });
+});
