@@ -1,0 +1,75 @@
+name: Audit MCP Context Payload
+
+on:
+  push:
+    paths:
+      - ".github/workflows/audit-context-payload.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+      - name: Measure generated MCP payload
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          api = json.loads(Path('mcp/docs/api.json').read_text(encoding='utf-8'))
+
+          def description_chars(value):
+              if isinstance(value, dict):
+                  total = 0
+                  for key, child in value.items():
+                      if key in {'description', 'markdownDescription'} and isinstance(child, str):
+                          total += len(child)
+                      else:
+                          total += description_chars(child)
+                  return total
+              if isinstance(value, list):
+                  return sum(description_chars(item) for item in value)
+              return 0
+
+          rows = []
+          for tool in api.get('tools', []):
+              encoded = json.dumps(tool, separators=(',', ':'))
+              params = tool.get('parameters', {})
+              rows.append({
+                  'name': tool.get('name'),
+                  'total': len(encoded),
+                  'tool_desc': len(tool.get('description', '') or ''),
+                  'schema_desc': description_chars(params),
+                  'schema_total': len(json.dumps(params, separators=(',', ':'))),
+              })
+
+          print('TOOLS_TOTAL', len(rows))
+          print('TOOLS_JSON_CHARS', sum(row['total'] for row in rows))
+          print('TOOLS_DESCRIPTION_CHARS', sum(row['tool_desc'] for row in rows))
+          print('TOOLS_SCHEMA_DESCRIPTION_CHARS', sum(row['schema_desc'] for row in rows))
+          print('\nTOP_TOTAL')
+          for row in sorted(rows, key=lambda r: r['total'], reverse=True)[:20]:
+              print(f"{row['name']} total={row['total']} tool_desc={row['tool_desc']} schema_desc={row['schema_desc']} schema_total={row['schema_total']}")
+          print('\nTOP_DESCRIPTION')
+          for row in sorted(rows, key=lambda r: r['tool_desc'] + r['schema_desc'], reverse=True)[:20]:
+              print(f"{row['name']} prose={row['tool_desc'] + row['schema_desc']} tool_desc={row['tool_desc']} schema_desc={row['schema_desc']}")
+
+          prompts = api.get('prompts', [])
+          resources = api.get('resources', [])
+          print('\nPROMPT_METADATA_JSON_CHARS', len(json.dumps(prompts, separators=(',', ':'))))
+          print('RESOURCE_METADATA_JSON_CHARS', len(json.dumps(resources, separators=(',', ':'))))
+          for prompt in prompts:
+              print('PROMPT', prompt.get('name'), 'desc=', len(prompt.get('description', '') or ''))
+          for resource in resources:
+              print('RESOURCE', resource.get('name'), 'desc=', len(resource.get('description', '') or ''))
+
+          workflow = Path('mcp/prompts/bedrock_entity_workflow.md').read_text(encoding='utf-8')
+          print('\nCANONICAL_PROMPT_CHARS', len(workflow))
+          print('CANONICAL_PROMPT_WORDS', len(workflow.split()))
+          PY
