@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { z } from "zod";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 
 const MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 const PROTOCOL_VERSION = "2025-11-25";
@@ -12,18 +15,42 @@ function createFixtureServer(): McpServer {
     version: "1.0.0",
   });
 
-  server.registerTool(
-    "echo_fixture",
-    {
-      description: "P1.4 stateless protocol fixture",
-      inputSchema: {
-        value: z.string(),
+  // Keep this transport fixture at the protocol-handler layer instead of using
+  // McpServer.registerTool(). The latter's Zod-heavy generic inference can hit
+  // TypeScript's instantiation-depth limit in an otherwise tiny test fixture.
+  // These handlers still exercise the real SDK tools/list + tools/call protocol
+  // flow that the stateless transport must carry between independent POSTs.
+  server.server.registerCapabilities({ tools: {} });
+  server.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [
+      {
+        name: "echo_fixture",
+        description: "P1.4 stateless protocol fixture",
+        inputSchema: {
+          type: "object",
+          properties: {
+            value: { type: "string" },
+          },
+          required: ["value"],
+          additionalProperties: false,
+        },
       },
-    },
-    async ({ value }) => ({
+    ],
+  }));
+  server.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    if (request.params.name !== "echo_fixture") {
+      throw new Error(`Unexpected fixture tool: ${request.params.name}`);
+    }
+
+    const value = request.params.arguments?.value;
+    if (typeof value !== "string") {
+      throw new Error("echo_fixture requires a string value");
+    }
+
+    return {
       content: [{ type: "text" as const, text: value }],
-    })
-  );
+    };
+  });
 
   return server;
 }
