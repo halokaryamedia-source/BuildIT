@@ -8,19 +8,20 @@ This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
 
 ## Active Goal
 
-Stabilize and reduce the BlockIT MCP into a trustworthy **Minecraft Bedrock Entity** MCP before normal feature hardening resumes.
+Reduce the stabilized BlockIT MCP into a trustworthy **Minecraft Bedrock Entity** MCP while preserving every capability that genuinely belongs to Bedrock Entity.
 
 The product decision is explicit:
 
 > Preserve capability that belongs to Minecraft Bedrock Entity. Generic capability inherited from a broader Blockbench MCP does not need to remain merely for compatibility. Removal must be grounded in official Blockbench source so native Bedrock Entity capability is not deleted by mistake.
 
-P0.1–P0.5 are complete for their source/repository boundaries. The active source boundary is now **P1.1 — default Bedrock Entity registration profile**.
+P0.1–P0.5 and P1.1 are complete for their source/repository boundaries. The active source boundary is now **P1.2 — family gates**.
 
 ## Current Status
 
-`MCP_P0_COMPLETE_BEDROCK_DEFAULT_REGISTRATION_PROFILE_NEXT`
+`MCP_P1_DEFAULT_BEDROCK_PROFILE_COMPLETE_FAMILY_GATES_NEXT`
 
 Execution channel: **ChatGPT → GitHub**.  
+Working branch: **`Local` only**.  
 Live Blockbench/MCP behavior remains local proof where applicable.
 
 ## Governing Evidence
@@ -58,7 +59,8 @@ Minecraft Bedrock Entity
 Geometry: Cube/Cuboid only for BlockIT modelling
 Rig: Group hierarchy / Cuboid children
 Animation: Group/BoneAnimator
-Texture: minimum proven Bedrock Entity outcomes
+Texture/Paint/PBR: preserve all proven Bedrock Entity capability
+Observation: exact authored state + deterministic rendered views
 Execution: local desktop Blockbench service
 ```
 
@@ -88,6 +90,8 @@ current-format Bedrock export outcome
 
 Do not delete those merely to reduce registration breadth or implementation cost. `TextureMesh` is distinct from generic `Mesh`.
 
+P1 registration gating is an **exposure decision**, not permission to delete native Bedrock capability. If a native/optional Bedrock capability is later removed from the smallest default list, it must remain available through an intentional Bedrock-capable path unless a newer product/source audit explicitly approves removal.
+
 ## Capability already proved outside the native Bedrock Entity product
 
 Removed rather than type-hardened:
@@ -96,7 +100,7 @@ Removed rather than type-hardened:
 Hytale integration
 Generic Mesh MCP family
 Armature / ArmatureBone / vertex-weight family
-mesh-only MCP UV family
+generic-Mesh-only MCP UV family
 ```
 
 Cube UV remains owned by `mcp/server/tools/cubes.ts`.
@@ -146,7 +150,7 @@ fix: enforce MCP tool schemas and annotations
 
 The complete original Zod schema is retained and parsed before execution for initial and reconstructed-session registration. Supported MCP annotations are passed through both paths.
 
-Focused P0.4 contract tests prove top-level `.refine()` / `.superRefine()` rejection before tool logic and annotation preservation in isolated registration fixtures. Real MCP Inspector behavior remains local proof where applicable.
+Focused contract tests prove top-level `.refine()` / `.superRefine()` rejection before tool logic and annotation preservation in isolated registration fixtures. Real MCP Inspector behavior remains local proof where applicable.
 
 ## P0.4 — Engineering gate + retained typecheck
 
@@ -188,31 +192,20 @@ focused Bun contract tests  PASS — 4/4, 0 failures
 production build            PASS
 ```
 
-The only failure at that checkpoint was stale generated documentation, owned by P0.5.
-
 ## P0.5 — Generated-doc freshness
-
-Primary owners:
-
-```text
-mcp/build/docs.ts
-mcp/docs/api.json
-mcp/docs/index.html
-mcp/build/check-docs-freshness.ts
-```
 
 Generated documentation was rebuilt through the repository generator rather than hand-editing tool entries.
 
-The generator now normalizes trailing horizontal whitespace and final newline before writing `index.html`, making its checked-in output deterministic for repository freshness checks. No documentation layout, tool schema, registration behavior, or product capability was redesigned by this normalization.
+The generator normalizes trailing horizontal whitespace and final newline before writing `index.html`, making its checked-in output deterministic for repository freshness checks.
 
-Final generated reference commit:
+Final generated reference recorded by the completed P0 slice:
 
 ```text
 0842e25fdc9a152be2d47bcc9ec77659219ea1a4
 docs: refresh generated MCP reference
 ```
 
-Generation consistently reports:
+Generation reports:
 
 ```text
 69 tools across 12 categories
@@ -220,31 +213,163 @@ Generation consistently reports:
 8 resources
 ```
 
-The generated reference comes from the reduced current source surface: removed Hytale, generic Mesh, Armature, and mesh-only UV source families are not reintroduced; retained Cube/Animation/Texture/Paint/PBR-related ToolSpecs remain part of the current source manifest.
-
-### P0.5 final executable proof
-
-Canonical workflow:
+Canonical P0.5 verification recorded by the prior slice:
 
 ```text
 MCP Verify
 run: 31367549245
-verified commit: 0842e25fdc9a152be2d47bcc9ec77659219ea1a4
 ```
 
-Final outcome:
+with install/typecheck/tests/build/docs freshness/fail-closed aggregator all passing.
+
+# Completed P1.1 — Default Bedrock Entity Registration Profile
+
+P1.1 intentionally implemented the **smallest family-level profile mechanism**, not a dynamic ACL, permission engine, role model, or policy framework.
+
+## Source commits
+
+```text
+b54e5fd31f3ee153d595bacf55116cafd573de33
+feat: define Bedrock Entity MCP registration profile
+
+447792b82a7833e5fda29edcdbd48918238d90c9
+feat: apply Bedrock Entity MCP registration profile
+
+68b09f759e8edbfc071cc83ad61a732e0a5bed47
+feat: keep developer prompts out of Bedrock default
+
+97a29e24a5446016e0ce73b790c2274e7be16d3f
+test: lock Bedrock Entity default registration profile
+```
+
+Exact P1.1 source diff from the pre-slice head modifies only:
+
+```text
+mcp/lib/registrationProfile.ts       added
+mcp/server/tools.ts                  registration-root profile selection
+mcp/server/prompts.ts                developer/eval prompts disabled by default
+mcp/tests/p1-registration-profile.test.ts  added
+```
+
+No Animation, Cube, Texture, Paint, PBR, material-instance, history, camera, export, or project implementation file was removed or modified by P1.1.
+
+## Default registration profile
+
+Default profile name:
+
+```text
+bedrock_entity
+```
+
+Default registered families:
+
+```text
+animation
+animation_inspection
+camera
+cubes
+elements
+element_inspection
+export
+history
+material_instances
+paint
+project
+textures
+validator_resources
+```
+
+This intentionally keeps the audited Bedrock/native families available in the normal profile, including:
+
+```text
+Animation
+Paint
+PBR/Texture
+cube-face material_instance operations
+history/recoverability
+canonical camera/observation
+Bedrock export outcome
+```
+
+## Source-preserved generic fallback families
+
+Not invoked by the default profile:
+
+```text
+import
+ui
+```
+
+They remain source-compiled under the small `extended` profile definition for later explicit family-gate work. P1.1 does **not** introduce a user-facing extended-profile setting yet; that belongs to the P1.2 family-gate decision.
+
+P0.2 containment remains authoritative if those families are ever explicitly invoked:
+
+```text
+from_geo_json  enabled=false
+risky_eval     enabled=false
+```
+
+Therefore the extended family definition does not silently re-enable either dangerous tool.
+
+## Prompt default surface
+
+Default enabled prompt:
+
+```text
+model_creation_strategy
+```
+
+Developer/debug prompts are source-preserved but disabled from normal registration:
+
+```text
+blockbench_native_apis
+blockbench_code_eval_safety
+```
+
+This is registration truth through `createPrompt(..., enabled=false)`, not a documentation-only filter.
+
+## Registration equivalence
+
+Initial startup invokes only the families returned by:
+
+```text
+getRegistrationFamilies(DEFAULT_MCP_REGISTRATION_PROFILE)
+```
+
+The resulting enabled tool definitions remain the canonical input to `registerToolsOnServer()` for reconstructed-session servers. No separate reconstructed-session profile list was introduced, avoiding divergent registration ownership.
+
+## P1.1 executable proof
+
+Root workflow:
+
+```text
+MCP Verify
+run: 31368270648
+verified source head: 97a29e24a5446016e0ce73b790c2274e7be16d3f
+```
+
+Result:
 
 ```text
 frozen-lockfile install     PASS
 full tsc --noEmit           PASS
-focused Bun contract tests  PASS — 4/4, 0 failures
+Bun contract tests          PASS — 8/8, 0 failures, 59 expect() calls
 production build            PASS
 generated docs freshness    PASS
 fail-closed aggregator      PASS
 workflow conclusion         SUCCESS
 ```
 
-Temporary one-shot documentation refresh/verification workflows used to execute the generator on GitHub runners were removed after proof. The durable repository gate remains `.github/workflows/mcp-verify.yml`.
+P1-specific tests prove:
+
+```text
+default profile is bedrock_entity
+audited Bedrock families remain in default profile
+import/ui are absent from default profile
+extended profile adds exactly import + ui
+registration root consumes the explicit default profile
+developer/eval prompts are not default registered
+```
 
 # Current Work Order
 
@@ -255,8 +380,8 @@ P0.3  full-schema validation + real annotations  SOURCE COMPLETE / TARGETED REGR
 P0.4  typecheck/tests/root CI                     COMPLETE
 P0.5  generated-doc freshness                    COMPLETE
 
-P1.1  default Bedrock Entity registration profile ← ACTIVE NEXT SLICE
-P1.2  family gates
+P1.1  default Bedrock Entity registration profile COMPLETE
+P1.2  family gates                               ← ACTIVE NEXT SLICE
 P1.3  core-only resolver/mutation/result consolidation
 P1.4  transport/session future decision
 P1.5  local end-to-end core acceptance
@@ -264,47 +389,70 @@ P1.5  local end-to-end core acceptance
 P2.*  evidence-driven cleanup and parked product fixes
 ```
 
-# Next Step — P1.1 Default Bedrock Entity Registration Profile Only
+# Next Step — P1.2 Family Gates Only
 
-Do not start P1.2 or later work in the same slice.
+Do not start P1.3 or later work in the same slice.
 
 ## Goal
 
-Make the **default MCP registration surface** match the actual BlockIT product: Minecraft Bedrock Entity, while preserving every capability that is legitimately required by that Entity workflow.
-
-This is a registration/default-surface problem, not permission to delete native Bedrock capability.
+Turn the P1.1 registration distinction into explicit, reviewable **family gates** without creating a broad capability-policy framework and without deleting native Bedrock Entity capability.
 
 ## Required approach
 
-1. Inventory the currently registered tools/resources/prompts from source and the now-fresh generated manifest.
-2. Classify each remaining family against the official-source Bedrock capability audit and actual BlockIT Entity workflow.
-3. Preserve all native/relevant Bedrock Entity capability, including optional native capability already identified by the audit.
-4. Remove from the **default registered surface** only capability that is proven generic/non-Entity or legacy fallback.
-5. Prefer the smallest existing registration mechanism; do not introduce a broad capability-profile framework unless current source proves it is necessary.
-6. `risky_eval` and `from_geo_json` remain disabled.
-7. Do not use P1.1 to harden or redesign individual Animation, Paint, Texture, Cube, transport, resolver, or output implementations.
-8. Initial and reconstructed-session registration must expose an equivalent default surface.
-9. Add/adjust focused registration tests where needed to prove the default list rather than relying on documentation alone.
-10. Re-run the full P0 engineering gate after the P1.1 source change.
+1. Audit the existing P1.1 `bedrock_entity` + `extended` family split before adding any new switch.
+2. Keep family-level ownership; do not introduce per-tool ACLs, role systems, policy DSLs, or dynamic permission engines.
+3. Define how a non-default family becomes explicitly available when there is a real use case, using the smallest existing configuration mechanism.
+4. `import` and generic `ui` are the currently proven generic fallback families; they must remain non-default.
+5. `risky_eval` and `from_geo_json` remain individually disabled even when their containing family is opted in unless a separate future review explicitly changes that decision.
+6. Do **not** treat all optional Bedrock functionality as legacy merely because it is not needed in every workflow.
+7. Preserve source and availability for native/relevant Bedrock capability, especially:
 
-## Explicit preservation rule
+```text
+TextureMesh
+Locators
+Bounding boxes
+Paint
+PBR
+cube-face material_instance
+Animation effects/controllers
+```
 
-If there is doubt whether a capability belongs to Bedrock Entity, **do not remove or disable it until official Blockbench source/product evidence resolves the doubt**.
+8. Re-audit any candidate family before gating it away from the normal Entity profile. If there is doubt, keep it available until official-source/product evidence resolves the doubt.
+9. Initial and reconstructed-session registration must continue to derive from one registration truth.
+10. Add focused gate tests and rerun the complete MCP Verify workflow.
+
+## Important non-goal
+
+P1.2 is **not** a tool-count reduction contest. A smaller default list is a consequence of product scope, not the objective itself.
+
+Do not use P1.2 to:
+
+```text
+rewrite Animation
+rewrite Paint/Texture/PBR
+redesign export
+refactor all resolvers
+migrate MCP protocol/SDK
+add authentication
+resume parked feature work
+```
 
 ## Static acceptance
 
 ```text
-default registration surface is explicitly Bedrock Entity oriented
-all audited native/relevant Bedrock capability remains available
-proven non-Entity legacy surface is not default-registered
-initial and reconstructed registration remain equivalent
-no new broad profile/framework architecture without demonstrated need
+family gates are explicit and small
+bedrock_entity remains the default
+generic import/UI fallback requires explicit opt-in
+risky_eval/from_geo_json remain disabled
+native/relevant Bedrock capability remains available
+one registration truth feeds initial + reconstructed sessions
+no ACL/policy framework introduced
 ```
 
 ## Executable acceptance
 
 ```text
-focused default-registration tests PASS
+focused family-gate tests PASS
 bun run typecheck               PASS
 bun run test                    PASS
 bun run build                   PASS
@@ -312,10 +460,10 @@ bun run docs:check              PASS
 root MCP Verify                 PASS
 ```
 
-Only after P1.1 is recorded may the active boundary advance to **P1.2 — family gates**.
+Only after P1.2 is recorded may the active boundary advance to **P1.3 — core-only resolver/mutation/result consolidation**.
 
 ## Proof Boundary
 
 GitHub Actions/package tests prove source/build/generated-doc/registration contracts that do not require Blockbench globals.
 
-Actual OS listener state, live MCP Inspector behavior, Blockbench runtime behavior, Undo/Redo semantics, playback, export/save/reopen, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
+Actual OS listener state, live MCP Inspector behavior, Blockbench runtime behavior, Undo/Redo semantics, playback, export/save/reopen, optional-family opt-in behavior in the real plugin UI, and end-to-end modelling remain `LOCAL PROOF REQUIRED` where applicable.
