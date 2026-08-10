@@ -1,0 +1,134 @@
+name: Apply PBR Configure No-op Guard
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-pbr-configure-noop-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Reject identity-only material configure calls
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          texture_path = Path("mcp/server/tools/texture.ts")
+          text = texture_path.read_text(encoding="utf-8")
+          old_tail = "\n".join([
+              "  subsurface_value: z",
+              "    .number()",
+              "    .min(0)",
+              "    .max(255)",
+              "    .optional()",
+              "    .describe(\"Subsurface scattering value (0-255).\"),",
+              "});",
+          ])
+          new_tail = "\n".join([
+              "  subsurface_value: z",
+              "    .number()",
+              "    .min(0)",
+              "    .max(255)",
+              "    .optional()",
+              "    .describe(\"Subsurface scattering value (0-255).\"),",
+              "}).refine(",
+              "  (params) =>",
+              "    Object.entries(params).some(",
+              "      ([key, value]) => key !== \"material\" && value !== undefined",
+              "    ),",
+              "  {",
+              "    message:",
+              "      \"configure_material requires at least one authored field change in addition to material.\",",
+              "  }",
+              ");",
+          ])
+          if text.count(old_tail) != 1:
+              raise SystemExit("Unexpected configure material schema tail")
+          text = text.replace(old_tail, new_tail, 1)
+
+          old_description = "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call."
+          new_description = "Configures one explicit PBR material and requires at least one authored field change. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call."
+          if text.count(old_description) != 1:
+              raise SystemExit("Unexpected configure material tool description")
+          texture_path.write_text(text.replace(old_description, new_description, 1), encoding="utf-8")
+
+          test_path = Path("mcp/tests/pbr-channel-contract.test.ts")
+          test = test_path.read_text(encoding="utf-8")
+          old_import = "import { requireDistinctPbrChannelAssignments } from \"@/server/tools/texture\";"
+          new_import = "import { configureMaterialParameters, requireDistinctPbrChannelAssignments } from \"@/server/tools/texture\";"
+          if test.count(old_import) != 1:
+              raise SystemExit("Unexpected PBR test import")
+          test = test.replace(old_import, new_import, 1)
+          close_marker = "});\n"
+          addition = "\n".join([
+              "",
+              "  test(\"rejects configure calls with no authored change\", () => {",
+              "    expect(configureMaterialParameters.safeParse({ material: \"mat-1\" }).success).toBe(false);",
+              "    expect(",
+              "      configureMaterialParameters.safeParse({ material: \"mat-1\", subsurface_value: 0 }).success",
+              "    ).toBe(true);",
+              "  });",
+          ])
+          if test.count(close_marker) != 1:
+              raise SystemExit("Unexpected PBR test closing marker")
+          test_path.write_text(test.replace(close_marker, addition + "\n" + close_marker, 1), encoding="utf-8")
+
+          next_path = Path("docs/knowledge/next-action.md")
+          next_text = next_path.read_text(encoding="utf-8")
+          old_note = "A bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged."
+          new_note = "A bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo and rejects identity-only `configure_material` calls that contain no authored change. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged."
+          if next_text.count(old_note) != 1:
+              raise SystemExit("Unexpected PBR continuity note")
+          next_path.write_text(next_text.replace(old_note, new_note, 1), encoding="utf-8")
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit no-op guard and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-pbr-configure-noop-guard.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: reject no-op PBR material configuration"
+          git push origin HEAD:Local
