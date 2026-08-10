@@ -1,0 +1,97 @@
+name: Compact Create Animation Result Payload
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-animation-output-compact.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Compact create_animation text payload
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          animation_path = Path("mcp/server/tools/animation.ts")
+          text = animation_path.read_text(encoding="utf-8")
+          old = "              text: JSON.stringify(result, null, 2),"
+          new = "              text: JSON.stringify(result),"
+          if text.count(old) != 1:
+              raise SystemExit("Unexpected create_animation result serialization shape")
+          animation_path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          test_path = Path("mcp/tests/asset-authoring-usage-slimming.test.ts")
+          test = test_path.read_text(encoding="utf-8")
+          old_files = '''    const files = await Promise.all([
+      source("server/tools/element-inspection.ts"),
+      source("server/tools/project.ts"),
+      source("server/tools/animation-inspection.ts"),
+      source("server/tools/locators.ts"),
+    ]);'''
+          new_files = '''    const files = await Promise.all([
+      source("server/tools/element-inspection.ts"),
+      source("server/tools/project.ts"),
+      source("server/tools/animation.ts"),
+      source("server/tools/animation-inspection.ts"),
+      source("server/tools/locators.ts"),
+    ]);'''
+          if test.count(old_files) != 1:
+              raise SystemExit("Unexpected compact JSON regression file list")
+          test_path.write_text(test.replace(old_files, new_files, 1), encoding="utf-8")
+
+          next_path = Path("docs/knowledge/next-action.md")
+          next_text = next_path.read_text(encoding="utf-8")
+          old_note = "A bounded GitHub-only animation contract correction now preserves an explicitly accepted `animation_length: 0` when constructing the Bedrock animation payload, rejects empty `manage_keyframes` requests, and requires an explicit `loop_mode` for the timeline loop mutation. AnimationCodec behavior and playback semantics are unchanged."
+          new_note = "A bounded GitHub-only animation contract correction now preserves an explicitly accepted `animation_length: 0` when constructing the Bedrock animation payload, rejects empty `manage_keyframes` requests, requires an explicit `loop_mode` for the timeline loop mutation, and keeps the structured create result while compacting its duplicate text serialization. AnimationCodec behavior and playback semantics are unchanged."
+          if next_text.count(old_note) != 1:
+              raise SystemExit("Unexpected animation continuity note")
+          next_path.write_text(next_text.replace(old_note, new_note, 1), encoding="utf-8")
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit payload cleanup and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-animation-output-compact.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "refactor: compact create animation result payload"
+          git push origin HEAD:Local
