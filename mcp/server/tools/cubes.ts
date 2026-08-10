@@ -11,6 +11,30 @@ const finiteVec3Schema = z.tuple([
   z.number().finite(),
   z.number().finite(),
 ]);
+function hasFiniteCubeSpan(
+  from: readonly number[],
+  to: readonly number[]
+): boolean {
+  return (
+    from.length === 3 &&
+    to.length === 3 &&
+    from.every(Number.isFinite) &&
+    to.every(Number.isFinite) &&
+    to.every((entry, axis) => Number.isFinite(entry - from[axis]))
+  );
+}
+
+function requireFiniteCubeSpan(
+  from: readonly number[],
+  to: readonly number[],
+  context: string
+): void {
+  if (!hasFiniteCubeSpan(from, to)) {
+    throw new Error(
+      `${context} would produce a non-finite Cube size. Use finite from/to coordinates whose per-axis difference is also finite.`
+    );
+  }
+}
 
 function hasNonZeroRotation(rotation?: readonly number[]): boolean {
   return rotation?.some((value) => value !== 0) ?? false;
@@ -44,7 +68,12 @@ const placeCubeElementSchema = cubeSchema
         "A rotated Cube requires an explicit origin/pivot. Do not rely on an automatic [0,0,0] pivot for non-zero rotation.",
       path: ["origin"],
     }
-  );
+  )
+  .refine((element) => hasFiniteCubeSpan(element.from, element.to), {
+    message:
+      "Cube from/to must produce a finite per-axis size; finite endpoints that overflow during subtraction are rejected.",
+    path: ["to"],
+  });
 
 const cubeCorrectionUpdateSchema = z
   .object({
@@ -195,7 +224,21 @@ export const modifyCubeParameters = z.object({
     message:
       "modify_cube requires at least one authored field change in addition to id. Inspect the target and send the intended correction; an id-only request is not progress.",
   }
-);
+)
+.superRefine((update, ctx) => {
+  if (
+    update.from !== undefined &&
+    update.to !== undefined &&
+    !hasFiniteCubeSpan(update.from, update.to)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        "Cube from/to must produce a finite per-axis size; finite endpoints that overflow during subtraction are rejected.",
+      path: ["to"],
+    });
+  }
+});
 
 export const modifyCubesBatchParameters = z.object({
   updates: z
@@ -296,16 +339,21 @@ function requirePivotTransferMesh(cube: Cube): void {
 }
 
 function finalCubeState(cube: Cube) {
+  const from = [...cube.from] as [number, number, number];
+  const to = [...cube.to] as [number, number, number];
+  requireFiniteCubeSpan(from, to, `Cube ${cube.name} (${cube.uuid})`);
+  const size = [
+    to[0] - from[0],
+    to[1] - from[1],
+    to[2] - from[2],
+  ] as [number, number, number];
+
   return {
     uuid: cube.uuid,
     name: cube.name,
-    from: [...cube.from] as [number, number, number],
-    to: [...cube.to] as [number, number, number],
-    size: [
-      cube.to[0] - cube.from[0],
-      cube.to[1] - cube.from[1],
-      cube.to[2] - cube.from[2],
-    ] as [number, number, number],
+    from,
+    to,
+    size,
     origin: [...cube.origin] as [number, number, number],
     rotation: [...cube.rotation] as [number, number, number],
     visibility: cube.visibility !== false,
@@ -332,9 +380,9 @@ function vec3Equal(a: readonly number[], b: readonly number[]): boolean {
 
 function cubeStateCenter(state: CubeAuthoredState): [number, number, number] {
   return [
-    (state.from[0] + state.to[0]) / 2,
-    (state.from[1] + state.to[1]) / 2,
-    (state.from[2] + state.to[2]) / 2,
+    state.from[0] + state.size[0] / 2,
+    state.from[1] + state.size[1] / 2,
+    state.from[2] + state.size[2] / 2,
   ];
 }
 
@@ -480,6 +528,11 @@ createTool(cubeToolDocs[1].name, {
     cubes.forEach((cube) =>
       requireIntentionalRotationActivation(cube, rotation, origin)
     );
+    requireFiniteCubeSpan(
+      from ?? cubes[0].from,
+      to ?? cubes[0].to,
+      `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
+    );
 
     const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
     if (pivotOnly) {
@@ -583,6 +636,11 @@ createTool(cubeToolDocs[2].name, {
         cube,
         update.rotation,
         update.origin
+      );
+      requireFiniteCubeSpan(
+        update.from ?? cube.from,
+        update.to ?? cube.to,
+        `Cube ${cube.name} (${cube.uuid}) batch update`
       );
 
       const pivotOnly = isPivotOnlyCorrection(update);

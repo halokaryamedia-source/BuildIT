@@ -84,14 +84,21 @@ function parentInfo(
 }
 
 function cubeSize(cube: Cube): [number, number, number] {
-  return [
+  const size = [
     cube.to[0] - cube.from[0],
     cube.to[1] - cube.from[1],
     cube.to[2] - cube.from[2],
-  ];
+  ] as [number, number, number];
+  if (size.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite derived size; exact authored correction state cannot be reported safely.`
+    );
+  }
+  return size;
 }
 
 function inspectCube(cube: Cube) {
+  const size = cubeSize(cube);
   return {
     uuid: cube.uuid,
     name: cube.name,
@@ -100,11 +107,11 @@ function inspectCube(cube: Cube) {
     parent: parentInfo(cube),
     from: [...cube.from] as [number, number, number],
     to: [...cube.to] as [number, number, number],
-    size: cubeSize(cube),
+    size,
     center: [
-      (cube.from[0] + cube.to[0]) / 2,
-      (cube.from[1] + cube.to[1]) / 2,
-      (cube.from[2] + cube.to[2]) / 2,
+      cube.from[0] + size[0] / 2,
+      cube.from[1] + size[1] / 2,
+      cube.from[2] + size[2] / 2,
     ] as [number, number, number],
     origin: [...cube.origin] as [number, number, number],
     rotation: [...cube.rotation] as [number, number, number],

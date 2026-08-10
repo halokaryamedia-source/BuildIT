@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { modifyCubeParameters } from "@/server/tools/cubes";
+import { modifyCubeParameters, placeCubeParameters } from "@/server/tools/cubes";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -16,6 +16,20 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toThrow();
   });
 
+  test("Cube authoring rejects finite endpoints that produce non-finite size", () => {
+    expect(() =>
+      placeCubeParameters.parse({
+        elements: [{ name: "overflow", from: [-1e308, 0, 0], to: [1e308, 1, 1] }],
+      })
+    ).toThrow();
+    expect(() =>
+      modifyCubeParameters.parse({
+        id: "cube-1",
+        from: [-1e308, 0, 0],
+        to: [1e308, 1, 1],
+      })
+    ).toThrow();
+  });
   test("Cube correction results expose before/after structural effects", async () => {
     const cubes = await source("server/tools/cubes.ts");
     const inspection = await source("server/tools/element-inspection.ts");
@@ -28,6 +42,10 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(cubes).toContain("effective_geometry_targets");
     expect(cubes).not.toContain('Undo.finishEdit("Agent corrected multiple cubes")');
     expect(inspection).toContain("center: [");
+    expect(cubes).toContain("requireFiniteCubeSpan(");
+    expect(cubes).toContain("state.from[0] + state.size[0] / 2");
+    expect(inspection).toContain("cube.from[0] + size[0] / 2");
+    expect(inspection).toContain("non-finite derived size");
   });
 
   test("modelling workflow requires an invariant before numeric correction", async () => {
