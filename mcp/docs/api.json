@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T20:42:46.868Z",
+  "generatedAt": "2026-08-10T20:45:12.632Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4415,7 +4415,7 @@
     {
       "name": "configure_material",
       "title": "Configure Material",
-      "description": "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
+      "description": "Configures one explicit PBR material and requires at least one authored field change. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {

@@ -234,7 +234,16 @@ export const configureMaterialParameters = z.object({
     .max(255)
     .optional()
     .describe("Subsurface scattering value (0-255)."),
-});
+}).refine(
+  (params) =>
+    Object.entries(params).some(
+      ([key, value]) => key !== "material" && value !== undefined
+    ),
+  {
+    message:
+      "configure_material requires at least one authored field change in addition to material.",
+  }
+);
 
 export const listMaterialsParameters = z.object({});
 
@@ -354,7 +363,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures one explicit PBR material. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
+      "Configures one explicit PBR material and requires at least one authored field change. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
