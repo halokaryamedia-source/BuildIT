@@ -10,30 +10,6 @@ const OUTPUT_DIR = "./dist";
 const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
 const entryFile = resolve("./index.ts");
 
-function resolveBuildRevision(): string {
-  const githubSha = process.env.GITHUB_SHA?.trim();
-  if (githubSha) return githubSha.slice(0, 12);
-
-  try {
-    const result = Bun.spawnSync({
-      cmd: ["git", "rev-parse", "--short=12", "HEAD"],
-      stdout: "pipe",
-      stderr: "ignore",
-    });
-    if (result.exitCode === 0) {
-      const revision = new TextDecoder().decode(result.stdout).trim();
-      if (revision) return revision;
-    }
-  } catch {
-    // Source archives or constrained build environments may not have git.
-  }
-
-  return "local";
-}
-
-const buildRevision = resolveBuildRevision();
-const buildChannel = process.env.BLOCKIT_BUILD_CHANNEL?.trim() || "Local";
-
 async function cleanOutputDir() {
   try {
     const info = await stat(OUTPUT_DIR);
@@ -96,15 +72,13 @@ async function buildPlugin(): Promise<boolean> {
     define: {
       "process.env.NODE_ENV": isProduction ? '"production"' : '"development"',
       __DEV__: isProduction ? "false" : "true",
-      __BLOCKIT_BUILD_REVISION__: JSON.stringify(buildRevision),
-      __BLOCKIT_BUILD_CHANNEL__: JSON.stringify(buildChannel),
     },
     // Remove debugger statements in production
     drop: isProduction ? ["debugger"] : [],
   });
 
   if (!result.success) {
-    log.header(`${c.red}[Build] Failed${c.reset}`);
+    log.header("[Build] Failed");
     for (const message of result.logs) {
       log.error(String(message));
     }
