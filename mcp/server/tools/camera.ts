@@ -171,9 +171,9 @@ function boundsFromExplicit(
     max[2] - min[2],
   ];
   const center: Vec3 = [
-    (min[0] + max[0]) / 2,
-    (min[1] + max[1]) / 2,
-    (min[2] + max[2]) / 2,
+    min[0] + size[0] / 2,
+    min[1] + size[1] / 2,
+    min[2] + size[2] / 2,
   ];
 
   return {

@@ -7,6 +7,13 @@ const baseInput = {
 } as const;
 
 describe("capture_model_views explicit framing contract", () => {
+  test("uses overflow-safe midpoint math for accepted explicit envelopes", async () => {
+    const cameraSource = await Bun.file(new URL("../server/tools/camera.ts", import.meta.url)).text();
+    expect(cameraSource).toContain("min[0] + size[0] / 2");
+    expect(cameraSource).toContain("min[1] + size[1] / 2");
+    expect(cameraSource).toContain("min[2] + size[2] / 2");
+    expect(cameraSource).not.toContain("(min[0] + max[0]) / 2");
+  });
   test("accepts a finite positive target envelope", () => {
     const result = captureModelViewsParameters.safeParse({
       ...baseInput,
