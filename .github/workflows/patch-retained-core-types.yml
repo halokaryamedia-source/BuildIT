@@ -22,97 +22,89 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          def replace_exact(path, old, new):
+          def replace_once(path, old, new):
               p = Path(path)
               text = p.read_text()
               count = text.count(old)
               if count != 1:
-                  raise SystemExit(f"{path}: expected exactly one match, found {count}")
+                  raise SystemExit(f"{path}: expected exactly one match for {old!r}, found {count}")
               p.write_text(text.replace(old, new, 1))
 
-          replace_exact(
+          # Camera: official Preview API exposes isOrtho + camOrtho.
+          replace_once(
               "mcp/server/tools/camera.ts",
-              '''      if (angle.zoom !== undefined && preview.camera.isOrthographicCamera) {
-                preview.camera.zoom = angle.zoom;
-                preview.camera.updateProjectionMatrix();
-                preview.controls.update();
-              }''',
-              '''      if (angle.zoom !== undefined && preview.isOrtho) {
-                preview.camOrtho.zoom = angle.zoom;
-                preview.camOrtho.updateProjectionMatrix();
-                preview.controls.update();
-              }'''
+              "preview.camera.isOrthographicCamera",
+              "preview.isOrtho",
+          )
+          replace_once(
+              "mcp/server/tools/camera.ts",
+              "preview.camera.zoom = angle.zoom;",
+              "preview.camOrtho.zoom = angle.zoom;",
+          )
+          replace_once(
+              "mcp/server/tools/camera.ts",
+              "preview.camera.updateProjectionMatrix();",
+              "preview.camOrtho.updateProjectionMatrix();",
           )
 
-          replace_exact(
+          # Cube batch: retain full validation contract while typing the inferred item.
+          replace_once(
               "mcp/server/tools/cubes.ts",
-              '''    }> = updates.map((update) => {''',
-              '''    }> = updates.map((update: BatchUpdate) => {'''
+              "}> = updates.map((update) => {",
+              "}> = updates.map((update: BatchUpdate) => {",
           )
 
-          replace_exact(
+          # Element resolver must preserve all native Bedrock outliner elements plus Group.
+          replace_once(
               "mcp/server/tools/element.ts",
-              '''function resolveUniqueDestructiveElement(reference: string): OutlinerElement {
-            const candidates = new Map<string, OutlinerElement>();''',
-              '''type ResolvedElement = OutlinerElement | Group;
-
-          function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
-            const candidates = new Map<string, ResolvedElement>();'''
+              "function resolveUniqueDestructiveElement(reference: string): OutlinerElement {",
+              "type ResolvedElement = OutlinerElement | Group;\n\nfunction resolveUniqueDestructiveElement(reference: string): ResolvedElement {",
+          )
+          replace_once(
+              "mcp/server/tools/element.ts",
+              "const candidates = new Map<string, OutlinerElement>();",
+              "const candidates = new Map<string, ResolvedElement>();",
           )
 
-          replace_exact(
+          # Explicit 3-tuples satisfy Blockbench Cube/Group constructor contracts.
+          replace_once(
               "mcp/server/tools/element.ts",
-              '''          from: cube.from.map((v, i) => v + offset[i]),
-                    to: cube.to.map((v, i) => v + offset[i]),
-                    origin: cube.origin.map((v, i) => v + offset[i]),''',
-              '''          from: [
-                      cube.from[0] + offset[0],
-                      cube.from[1] + offset[1],
-                      cube.from[2] + offset[2],
-                    ],
-                    to: [
-                      cube.to[0] + offset[0],
-                      cube.to[1] + offset[1],
-                      cube.to[2] + offset[2],
-                    ],
-                    origin: [
-                      cube.origin[0] + offset[0],
-                      cube.origin[1] + offset[1],
-                      cube.origin[2] + offset[2],
-                    ],'''
+              "from: cube.from.map((v, i) => v + offset[i]),",
+              "from: [cube.from[0] + offset[0], cube.from[1] + offset[1], cube.from[2] + offset[2]],",
+          )
+          replace_once(
+              "mcp/server/tools/element.ts",
+              "to: cube.to.map((v, i) => v + offset[i]),",
+              "to: [cube.to[0] + offset[0], cube.to[1] + offset[1], cube.to[2] + offset[2]],",
+          )
+          replace_once(
+              "mcp/server/tools/element.ts",
+              "origin: cube.origin.map((v, i) => v + offset[i]),",
+              "origin: [cube.origin[0] + offset[0], cube.origin[1] + offset[1], cube.origin[2] + offset[2]],",
+          )
+          replace_once(
+              "mcp/server/tools/element.ts",
+              "origin: group.origin.map((v, i) => v + offset[i]),",
+              "origin: [group.origin[0] + offset[0], group.origin[1] + offset[1], group.origin[2] + offset[2]],",
           )
 
-          replace_exact(
+          # Group and OutlinerElement use different Undo aspects; direct name assignment is shared.
+          replace_once(
               "mcp/server/tools/element.ts",
-              '''          origin: group.origin.map((v, i) => v + offset[i]),''',
-              '''          origin: [
-                      group.origin[0] + offset[0],
-                      group.origin[1] + offset[1],
-                      group.origin[2] + offset[2],
-                    ],'''
+              "Undo.initEdit({ elements: [element], outliner: true, collections: [] });",
+              "Undo.initEdit({\n        elements: element instanceof Group ? [] : [element],\n        groups: element instanceof Group ? [element] : [],\n        outliner: true,\n        collections: [],\n      });",
+          )
+          replace_once(
+              "mcp/server/tools/element.ts",
+              "element.extend({ name: new_name });",
+              "element.name = new_name;",
           )
 
-          replace_exact(
+          # Cube.select expects a real Event in current official typings.
+          replace_once(
               "mcp/server/tools/element.ts",
-              '''      Undo.initEdit({ elements: [element], outliner: true, collections: [] });
-
-                try {
-                  element.extend({ name: new_name });''',
-              '''      Undo.initEdit({
-                  elements: element instanceof Group ? [] : [element],
-                  groups: element instanceof Group ? [element] : [],
-                  outliner: true,
-                  collections: [],
-                });
-
-                try {
-                  element.name = new_name;'''
-          )
-
-          replace_exact(
-              "mcp/server/tools/element.ts",
-              '''        el.select?.({ shiftKey: true });''',
-              '''        el.select?.(new MouseEvent("click", { shiftKey: true }));'''
+              'el.select?.({ shiftKey: true });',
+              'el.select?.(new MouseEvent("click", { shiftKey: true }));',
           )
           PY
 
