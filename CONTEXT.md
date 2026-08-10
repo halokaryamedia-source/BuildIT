@@ -3,14 +3,21 @@
 This is the stable context for the BlockIT/MCP-Blockbench workspace. Read this
 before detailed project notes. Keep it factual and compact.
 
-Last verified: 2026-08-09
+Last verified: 2026-08-10
 Stability: stable
 Owner: workspace agent
 
 ## Purpose
 
 BlockIT develops a Blockbench MCP plugin plus the workflow for AI-assisted
-Minecraft Bedrock modelling and MCP engineering.
+Minecraft Bedrock Entity modelling and MCP engineering.
+
+The **retained MCP product surface is Minecraft Bedrock Entity**. Generic
+Blockbench capability families, other game formats, and optional extension
+surfaces are not compatibility requirements merely because they existed in the
+inherited MCP. Capabilities proved unrelated to native Bedrock Entity may be
+removed rather than hardened. Removal must be grounded in official Blockbench
+source so native Bedrock capabilities are not deleted by mistake.
 
 The primary product goal is a clean, editable Blockbench `.bbmodel` that follows
 an approved visual modelling brief through the shortest evidence-backed workflow.
@@ -20,8 +27,16 @@ rules.
 
 For the active **Minecraft Bedrock Entity modelling path, geometry is Cube/Cuboid
 only**. Meshes, polygons, cylinders, free-form surfaces, and other non-Cuboid
-geometry are outside the modelling scope unless the product scope is explicitly
-changed. Existing generic MCP tools do not expand the Bedrock modelling contract.
+geometry are outside the BlockIT modelling scope unless the product scope is
+explicitly changed. Existing generic MCP tools do not expand the Bedrock
+modelling contract.
+
+Important format distinction: Blockbench's native Bedrock Entity format supports
+`TextureMesh`, which is **not** the generic `Mesh` element family. Generic Mesh
+support is not part of the retained BlockIT MCP surface. Native Bedrock features
+such as Group-as-bone hierarchy, Cube UV, locators, animation, textures/paint,
+and other format capabilities must not be removed solely because generic legacy
+families are being reduced.
 
 2D texture-editor operations such as rectangle/ellipse pixel selections are
 **texture-editing utilities, not model geometry primitives**. Their presence must
