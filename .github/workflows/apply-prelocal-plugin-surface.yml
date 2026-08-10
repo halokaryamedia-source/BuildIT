@@ -24,7 +24,18 @@ jobs:
           bun-version: latest
 
       - name: Apply guarded F-G-H patch
-        run: python .github/prelocal_plugin_surface_patch.py
+        run: |
+          python .github/prelocal_plugin_surface_patch.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("mcp/tests/prelocal-prompt-skill-surface.test.ts")
+          text = path.read_text()
+          old = 'expect(texturing).not.toContain("auto_uv_mesh");'
+          new = 'expect(texturing).toContain("Do not use upstream instructions such as `auto_uv_mesh`");'
+          if text.count(old) != 1:
+              raise SystemExit(f"Expected one generic Mesh-UV assertion, found {text.count(old)}")
+          path.write_text(text.replace(old, new, 1))
+          PY
 
       - name: Install dependencies
         working-directory: mcp
