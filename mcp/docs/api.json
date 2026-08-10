@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T18:52:09.443Z",
+  "generatedAt": "2026-08-10T19:18:14.312Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2483,9 +2483,8 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2000000,
-                "default": 100000,
-                "description": "Maximum characters returned in `content`. Use 0 when only writing to disk.",
-                "markdownDescription": "Maximum characters returned in `content`. Use 0 when only writing to disk."
+                "description": "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed.",
+                "markdownDescription": "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed."
               }
             },
             "additionalProperties": false

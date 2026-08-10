@@ -34,9 +34,8 @@ export const exportModelParameters = z.object({
     .min(0)
     .max(2_000_000)
     .optional()
-    .default(100_000)
     .describe(
-      "Maximum characters returned in `content`. Use 0 when only writing to disk."
+      "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed."
     ),
 });
 
@@ -211,12 +210,14 @@ export function registerExportTools() {
         const fullContent = binaryBuffer
           ? binaryBuffer.toString("base64")
           : (text ?? "");
-        const truncated = fullContent.length > max_content_length;
+        const effectiveMaxContentLength =
+          max_content_length ?? (path ? 0 : 100_000);
+        const truncated = fullContent.length > effectiveMaxContentLength;
         const returnedContent =
-          max_content_length === 0
+          effectiveMaxContentLength === 0
             ? null
             : truncated
-              ? fullContent.slice(0, max_content_length)
+              ? fullContent.slice(0, effectiveMaxContentLength)
               : fullContent;
 
         const result = {

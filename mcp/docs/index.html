@@ -1218,7 +1218,7 @@ bun run build
       <td class="col-name">max_content_length</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum characters returned in `content`. Use 0 when only writing to disk. <span class="param-meta">(default: <code>100000</code>) [min: 0, max: 2000000]</span></td>
+      <td class="col-desc">Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed. <span class="param-meta">[min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T18:52:09.443Z from Zod schemas
+        Generated 2026-08-10T19:18:14.312Z from Zod schemas
       </footer>
     </main>
   </div>

@@ -534,9 +534,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           counts,
           truncated_at_max_depth: truncated.length ? truncated : undefined,
           roots,
-        },
-        null,
-        2
+        }
       );
     },
   }, elementToolDocs[2].status);
@@ -688,9 +686,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           count: matches.length,
           truncated: matches.length >= limit,
           matches,
-        },
-        null,
-        2
+        }
       );
     },
   }, elementToolDocs[5].status);
@@ -730,9 +726,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           type,
           selected: targets.length,
           parent_group: parentScope?.name ?? null,
-        },
-        null,
-        2
+        }
       );
     },
   }, elementToolDocs[6].status);
@@ -766,9 +760,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           texture: { uuid: tex.uuid, name: tex.name },
           count: matches.length,
           matches,
-        },
-        null,
-        2
+        }
       );
     },
   }, elementToolDocs[7].status);
@@ -808,9 +800,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           cubes,
           groups,
           active_texture: activeTexture,
-        },
-        null,
-        2
+        }
       );
     },
   }, elementToolDocs[8].status);

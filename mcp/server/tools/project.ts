@@ -138,9 +138,7 @@ export function registerProjectTools() {
             outliner_elements: Outliner.elements.length,
           },
           root_groups: rootGroups,
-        },
-        null,
-        2
+        }
       );
     },
   }, projectToolDocs[1].status);
@@ -181,7 +179,7 @@ export function registerProjectTools() {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify(result, null, 2),
+            text: JSON.stringify(result),
           },
         ],
         structuredContent: result,
