@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/apply-model-effectiveness-verdict.yml"
+      - "mcp/scripts/apply-model-effectiveness-verdict.py"
 
 permissions:
   contents: write
