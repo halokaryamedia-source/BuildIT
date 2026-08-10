@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T11:22:59.982Z",
+  "generatedAt": "2026-08-10T13:22:49.704Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2112,7 +2112,7 @@
     {
       "name": "inspect_element",
       "title": "Inspect Authored Element",
-      "description": "Returns focused read-only authored state for one explicit Bedrock Cube or Group in the active project. Cube output includes parent, from/to/size, origin (pivot), rotation, and visibility. Group output includes parent, origin (pivot), rotation, visibility, and child count. Exact names must be unique; UUID is preferred. This tool does not infer whether placement/rotation/pivot is correct, does not modify selection or model state, and does not return visual PASS/FAIL.",
+      "description": "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2127,14 +2127,263 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria.",
-                "markdownDescription": "Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria."
+                "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool.",
+                "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool."
               }
             },
             "required": [
               "id"
             ],
             "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "list_locator_elements",
+      "title": "List Bedrock Locator Elements",
+      "description": "Lists authored Locator and Null Object elements in the active Minecraft Bedrock Entity project with identity, type, and parent Group. Use inspect_element for their detailed authored state.",
+      "status": "stable",
+      "category": "Elements",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/list_locator_elements",
+        "definitions": {
+          "list_locator_elements": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "manage_locator",
+      "title": "Manage Bedrock Locator",
+      "description": "Creates or updates a native Minecraft Bedrock Entity Locator under an explicit Group/bone. Create owns name, position, rotation, and ignore_inherited_scale. Update resolves the Locator UUID first, otherwise an exact name must be unique. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "status": "experimental",
+      "category": "Elements",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_locator",
+        "definitions": {
+          "manage_locator": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "const": "create"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Locator name.",
+                    "markdownDescription": "Locator name."
+                  },
+                  "parent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Required parent Group UUID or exact unique Group name.",
+                    "markdownDescription": "Required parent Group UUID or exact unique Group name."
+                  },
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z].",
+                    "default": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  "rotation": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z].",
+                    "default": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  "ignore_inherited_scale": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "action",
+                  "name",
+                  "parent"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "const": "update"
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Locator UUID or exact unique Locator name.",
+                    "markdownDescription": "Exact Locator UUID or exact unique Locator name."
+                  },
+                  "parent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional replacement parent Group UUID or exact unique Group name.",
+                    "markdownDescription": "Optional replacement parent Group UUID or exact unique Group name."
+                  },
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z]."
+                  },
+                  "rotation": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z]."
+                  },
+                  "ignore_inherited_scale": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "action",
+                  "id"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "manage_null_object",
+      "title": "Manage Bedrock Null Object",
+      "description": "Creates or updates a Blockbench Null Object used by the Bedrock Entity workflow. Bedrock geometry serialization round-trips it through a `_null_` locator entry, while IK fields remain Blockbench editor/animation state and are intentionally read-only in this minimum slice. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "status": "experimental",
+      "category": "Elements",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_null_object",
+        "definitions": {
+          "manage_null_object": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "const": "create"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Null Object name.",
+                    "markdownDescription": "Null Object name."
+                  },
+                  "parent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Required parent Group UUID or exact unique Group name.",
+                    "markdownDescription": "Required parent Group UUID or exact unique Group name."
+                  },
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z].",
+                    "default": [
+                      0,
+                      0,
+                      0
+                    ]
+                  }
+                },
+                "required": [
+                  "action",
+                  "name",
+                  "parent"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "const": "update"
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Null Object UUID or exact unique Null Object name.",
+                    "markdownDescription": "Exact Null Object UUID or exact unique Null Object name."
+                  },
+                  "parent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional replacement parent Group UUID or exact unique Group name.",
+                    "markdownDescription": "Optional replacement parent Group UUID or exact unique Group name."
+                  },
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "3D vector [x, y, z].",
+                    "markdownDescription": "3D vector [x, y, z]."
+                  }
+                },
+                "required": [
+                  "action",
+                  "id"
+                ],
+                "additionalProperties": false
+              }
+            ]
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"

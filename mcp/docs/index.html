@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(69)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(72)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(3)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -28,7 +28,7 @@
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(3)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
         <a href="#cat-animation" class="nav-link">Animation <span class="count">(8)</span></a>
-        <a href="#cat-elements" class="nav-link">Elements <span class="count">(10)</span></a>
+        <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
-          <a href="#tools"><strong>69</strong> tools (29 stable, 40 experimental)</a>
+          <a href="#tools"><strong>72</strong> tools (30 stable, 42 experimental)</a>
           <a href="#prompts"><strong>3</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -1100,7 +1100,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Inspect Authored Element</p>
-      <p class="card-desc">Returns focused read-only authored state for one explicit Bedrock Cube or Group in the active project. Cube output includes parent, from/to/size, origin (pivot), rotation, and visibility. Group output includes parent, origin (pivot), rotation, visibility, and child count. Exact names must be unique; UUID is preferred. This tool does not infer whether placement/rotation/pivot is correct, does not modify selection or model state, and does not return visual PASS/FAIL.</p>
+      <p class="card-desc">Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1115,9 +1115,51 @@ bun run build
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact Cube or Group UUID, or exact unique name. Prefer UUID after locating the element with list_outline or find_elements_by_criteria. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
+      </div>
+    </div>
+<div id="tool-list_locator_elements" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">list_locator_elements</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+      <p class="card-title">List Bedrock Locator Elements</p>
+      <p class="card-desc">Lists authored Locator and Null Object elements in the active Minecraft Bedrock Entity project with identity, type, and parent Group. Use inspect_element for their detailed authored state.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-manage_locator" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_locator</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Bedrock Locator</p>
+      <p class="card-desc">Creates or updates a native Minecraft Bedrock Entity Locator under an explicit Group/bone. Create owns name, position, rotation, and ignore_inherited_scale. Update resolves the Locator UUID first, otherwise an exact name must be unique. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-manage_null_object" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_null_object</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Bedrock Null Object</p>
+      <p class="card-desc">Creates or updates a Blockbench Null Object used by the Bedrock Entity workflow. Bedrock geometry serialization round-trips it through a `_null_` locator entry, while IK fields remain Blockbench editor/animation state and are intentionally read-only in this minimum slice. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
       </div>
     </div>
         </section>
@@ -2958,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T11:22:59.982Z from Zod schemas
+        Generated 2026-08-10T13:22:49.704Z from Zod schemas
       </footer>
     </main>
   </div>
