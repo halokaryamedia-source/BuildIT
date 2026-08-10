@@ -200,7 +200,8 @@ export const manageKeyframesParameters = z.object({
   channel: animationChannelEnum.describe("Animation channel to modify."),
   keyframes: z
     .array(manageKeyframeDataSchema)
-    .describe("Keyframe data for the action."),
+    .min(1)
+    .describe("One or more keyframes for the action; empty mutation/selection requests are rejected."),
 });
 
 export const animationGraphEditorParameters = z.object({
@@ -372,7 +373,13 @@ export const animationTimelineParameters = z.object({
   range: animationTimelineRangeSchema
     .optional()
     .describe("Inclusive time range for select_range."),
-});
+}).refine(
+  (params) => params.action !== "loop" || params.loop_mode !== undefined,
+  {
+    message: "loop_mode is required for the loop action.",
+    path: ["loop_mode"],
+  }
+);
 
 export const batchKeyframeOperationsParameters = z.object({
   selection: z
@@ -1419,7 +1426,10 @@ createTool(
           break;
 
         case "loop":
-          if (loop_mode && loop_mode !== animation.loop) {
+          if (loop_mode === undefined) {
+            throw new Error("Loop mode parameter required for loop action.");
+          }
+          if (loop_mode !== animation.loop) {
             runPersistentAnimationEdit("Change animation loop mode", () => {
               animation.setLoop(loop_mode, false);
             });

@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T20:45:12.632Z",
+  "generatedAt": "2026-08-10T20:49:20.651Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1048,8 +1048,9 @@
                   ],
                   "additionalProperties": false
                 },
-                "description": "Keyframe data for the action.",
-                "markdownDescription": "Keyframe data for the action."
+                "minItems": 1,
+                "description": "One or more keyframes for the action; empty mutation/selection requests are rejected.",
+                "markdownDescription": "One or more keyframes for the action; empty mutation/selection requests are rejected."
               }
             },
             "required": [
