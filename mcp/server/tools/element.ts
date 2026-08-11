@@ -64,8 +64,10 @@ export const findElementsByCriteriaParameters = z.object({
     .min(1)
     .max(1000)
     .optional()
-    .default(200)
-    .describe("Maximum number of results to return."),
+    .default(50)
+    .describe(
+      "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set."
+    ),
 }).superRefine((params, ctx) => {
   const minSize = params.min_size;
   const maxSize = params.max_size;
@@ -119,7 +121,7 @@ export const filterByMaterialParameters = z.object({
     .min(1)
     .max(1000)
     .optional()
-    .default(200)
+    .default(50)
     .describe("Maximum matching Cubes to return."),
 });
 
@@ -160,17 +162,19 @@ export const listOutlineParameters = z.object({
     .min(1)
     .max(32)
     .optional()
-    .default(32)
-    .describe("Maximum tree depth to traverse. Use a small value to summarize large projects."),
+    .default(8)
+    .describe(
+      "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed."
+    ),
   max_nodes: z
     .number()
     .int()
     .min(1)
     .max(5000)
     .optional()
-    .default(500)
+    .default(120)
     .describe(
-      "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated."
+      "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters."
     ),
 });
 
@@ -215,7 +219,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "list_outline",
     description:
-      "Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.",
+      "Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.",
     annotations: {
       title: "List Outline",
       readOnlyHint: true,
@@ -242,7 +246,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.",
+      "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
