@@ -10,7 +10,7 @@ Use format `bedrock`. Cubes are normal geometry; Groups are bones/organization w
 
 Keep validity strict and calls sparse. Use evidence only when it can change the next decision or prove an in-scope claim.
 
-- Do not inspect each new Cube or capture after every mutation.
+- Do not inspect each newly placed Cube or capture after every mutation.
 - Reuse known project/outline/resource state unless it may have changed.
 - `create_project` and path-writing `export_model` return lifecycle state. Do not immediately call `get_project_info` unless required fields are missing or external state may have changed.
 - Use `inspect_model_bounds` only for numeric envelope, scale, ground, displacement, or gross-placement questions. Otherwise skip it.
