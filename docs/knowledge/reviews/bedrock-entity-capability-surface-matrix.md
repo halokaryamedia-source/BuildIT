@@ -3,7 +3,7 @@
 Updated: 2026-08-11  
 Status: current capability guardrail; live integration remains subject to Local Acceptance
 
-This matrix prevents capability pruning from being mistaken for optimization. A native Bedrock capability that is missing or only partially mapped is a **protected gap**, not permission to replace it with generic Mesh/UI/risky-eval behavior.
+This matrix prevents capability pruning from being mistaken for optimization. Absence from the default route or a missing direct owner is **not evidence that the native Bedrock capability may be removed**. A native capability that is missing or partially mapped is a protected gap, not permission to replace it with generic Mesh/UI/risky-eval behavior.
 
 Primary current owners:
 
@@ -17,7 +17,7 @@ Primary current owners:
 
 | Bedrock Entity capability | Current BlockIT owner/mapping | Current state |
 |---|---|---|
-| Project format/lifecycle | `create_project`, `get_project_info`, `export_model` | mapped/narrowed; live persistence proof required |
+| Project format/lifecycle | `create_project`, `get_project_info`, `export_model` | mapped/narrowed; local persistence proof required |
 | Cube/Cuboid geometry | `place_cube`, `modify_cube`, `modify_cubes_batch`, `inspect_element` | strong mapping |
 | Group hierarchy/bones | `add_group`, rigging tools, outline/inspection | strong mapping |
 | Cube UV / box UV / face UV | Cube authoring state + texture workflow | retained Bedrock capability; do not replace with generic Mesh UV |
@@ -27,21 +27,21 @@ Primary current owners:
 | Per-face `material_instance` | material-instance family | mapped native Bedrock metadata |
 | Animation / BoneAnimator | animation create/inspect/keyframe/graph/batch/playback tools | mapped; live playback proof required |
 | Particle animation effects | mapped animation effect state | mapped where current source owns it |
-| Sound/timeline animation effects | no complete direct owner | **protected gap** |
-| Animation controllers | no direct current authoring owner | **protected gap** |
-| Locator | Elements-family Locator tools + inspection/rename/remove | mapped; live round-trip proof required |
-| Null Object base state | Elements-family Null Object tools + inspection/rename/remove | mapped base state; editor/IK extras are separate |
-| TextureMesh | no direct current authoring/inspection owner | **protected gap**; distinct from generic Mesh |
-| Native visible bounding-box fields | no direct full authored-state owner | **protected gap/partial**; `inspect_model_bounds` is observation, not field authoring |
-| Animated textures | partial metadata visibility, no complete authored workflow proven | **protected gap/partial** |
-| Bone binding expressions | no direct current owner | **protected gap** |
-| Editable project output | `export_model(codec_id=project)` | mapped; save/reopen live proof required |
+| Sound/timeline animation effects | no complete direct owner | **MCP GAP — protected** |
+| Animation controllers | no direct current authoring owner | **MCP GAP — protected** |
+| Locators | `manage_locator`, `list_locator_elements`, `inspect_element`, rename/remove | **Mapped / local proof required** |
+| Null Objects in Bedrock workflow | `manage_null_object`, `inspect_element`, rename/remove | **Mapped base state / IK mutation deferred** |
+| TextureMesh | no direct current authoring/inspection owner | **MCP GAP — protected**; distinct from generic Mesh |
+| Native Bedrock bounding-box fields | no direct full authored-state owner | **MCP GAP — protected**; `inspect_model_bounds` is observation, not field authoring |
+| Animated textures | partial metadata visibility, no complete authored workflow proven | **MCP GAP — protected** |
+| Bone binding expression | no direct current owner | **MCP GAP — protected** |
+| Editable project output | `export_model(codec_id=project)` | mapped; save/reopen local proof required |
 | Bedrock geometry output | `export_model(codec_id=bedrock)` | mapped/narrowed |
 | Export-format discovery | `list_export_formats` definition retained but default-disabled | not needed in normal authoring; codecs are explicit |
 | Undo/history | history + mutation transaction owners | mapped; live Blockbench Undo proof required |
 | Validator evidence | validator resources | support evidence only, never visual approval |
 | Canonical visual observation | `capture_model_views`, `inspect_model_bounds`, focused inspection | mapped BlockIT workflow support |
-| Broad `nodes://` observation | transitional resource | deferred while direct TextureMesh inspection remains absent |
+| Generic `nodes://{id}` observation | transitional resource | **Transitional / deferred** while direct TextureMesh inspection remains absent |
 | Reference Models integration | conditional resource | optional external integration, not baseline Bedrock capability |
 
 ## Default-surface semantics
@@ -74,11 +74,11 @@ Protected native gaps currently include:
 
 ```text
 TextureMesh direct authoring/inspection
-native visible bounding-box fields
-animation controllers
+Native Bedrock bounding-box fields
+Animation controllers
 animation sound/timeline effects
-animated-texture authoring
-bone-binding expressions
+Animated textures
+Bone binding expression
 ```
 
 When one becomes necessary, first reproduce the real workflow need and verify native Blockbench semantics. Do not reintroduce generic Mesh, arbitrary Cube substitutes, risky evaluation, UI automation, or another format as a shortcut.
