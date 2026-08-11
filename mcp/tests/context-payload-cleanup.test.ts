@@ -4,6 +4,7 @@ import { captureScreenshotParameters } from "@/server/tools/camera";
 import { elementInspectionToolDocs } from "@/server/tools/element-inspection";
 import {
   filterByMaterialParameters,
+  findElementsByCriteriaParameters,
   listOutlineParameters,
 } from "@/server/tools/element";
 import {
@@ -78,10 +79,15 @@ describe("context and payload cleanup", () => {
     );
   });
 
-  test("list_outline bounds breadth as well as depth", async () => {
+  test("list_outline defaults are compact while larger explicit bounds remain available", async () => {
     const parsed = listOutlineParameters.parse({});
-    expect(parsed.max_depth).toBe(32);
-    expect(parsed.max_nodes).toBe(500);
+    expect(parsed.max_depth).toBe(8);
+    expect(parsed.max_nodes).toBe(120);
+    expect(listOutlineParameters.parse({ max_depth: 32, max_nodes: 5000 })).toEqual({
+      include_cubes: true,
+      max_depth: 32,
+      max_nodes: 5000,
+    });
     expect(listOutlineParameters.safeParse({ max_nodes: 5001 }).success).toBe(false);
 
     const elements = await source("server/tools/element.ts");
@@ -111,8 +117,10 @@ describe("context and payload cleanup", () => {
     expect(materialReads).toContain("JSON.stringify(result)");
   });
 
-  test("element discovery reports truncation only after an extra match", async () => {
-    expect(filterByMaterialParameters.parse({ texture: "tex" }).limit).toBe(200);
+  test("element discovery defaults are compact and truncation remains explicit", async () => {
+    expect(findElementsByCriteriaParameters.parse({}).limit).toBe(50);
+    expect(findElementsByCriteriaParameters.parse({ limit: 1000 }).limit).toBe(1000);
+    expect(filterByMaterialParameters.parse({ texture: "tex" }).limit).toBe(50);
     expect(
       filterByMaterialParameters.safeParse({ texture: "tex", limit: 1001 }).success
     ).toBe(false);
@@ -192,18 +200,18 @@ describe("context and payload cleanup", () => {
     expect(block).not.toContain("destructiveHint: true");
   });
 
-  test("continuity stays compact after local acceptance and points to efficiency evidence", async () => {
+  test("continuity stays compact and keeps local execution deferred during static cleanup", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("context_mode");
     expect(next.length).toBeLessThan(8_000);
-    expect(next).toContain("LOCAL_ACCEPTANCE_COMPLETE");
+    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("LOCAL — run one fresh Codex efficiency trace");
-    expect(next).not.toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
+    expect(next).toContain("STATIC — continue source/context efficiency cleanup; no local run yet.");
+    expect(next).toContain("do **not**");
+    expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
-    expect(next).not.toContain("If continuing non-local work");
   });
 });
