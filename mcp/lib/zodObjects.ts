@@ -271,7 +271,7 @@ export const size2dSchema = z
 
 /** Cube element schema */
 export const cubeSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).describe("Non-empty Cube name."),
   origin: vector3Schema
     .optional()
     .default([0, 0, 0])

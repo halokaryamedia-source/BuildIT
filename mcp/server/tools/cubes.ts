@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { cubeSchema } from "@/lib/zodObjects";
+import { cubeSchema, faceEnum } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCube, resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 
@@ -139,8 +139,12 @@ export const placeCubeParameters = z.object({
   faces: z
     .union([
       z
-        .array(z.enum(["north", "south", "east", "west", "up", "down"]))
-        .describe("Array of faces to apply the texture to."),
+        .array(faceEnum)
+        .max(6)
+        .refine((faces) => new Set(faces).size === faces.length, {
+          message: "Each Cube face may appear at most once.",
+        })
+        .describe("Unique Cube faces to apply the texture to."),
       z
         .boolean()
         .optional()
@@ -150,15 +154,18 @@ export const placeCubeParameters = z.object({
       z
         .array(
           z.object({
-            face: z
-              .enum(["north", "south", "east", "west", "up", "down"])
-              .describe("Face to apply the texture to."),
+            face: faceEnum.describe("Face to apply the texture to."),
             uv: z
               .array(z.number()).length(4)
               .describe("Custom UV mapping for the face."),
           })
         )
-        .describe("Array of faces with custom UV mapping."),
+        .max(6)
+        .refine(
+          (entries) => new Set(entries.map((entry) => entry.face)).size === entries.length,
+          { message: "Each custom-UV Cube face may appear at most once." }
+        )
+        .describe("Unique Cube faces with custom UV mapping."),
     ])
     .optional()
     .default(true)
@@ -174,7 +181,7 @@ export const modifyCubeParameters = z.object({
     .describe(
       "Required Cube UUID or unique exact name; selection is never an implicit target."
     ),
-  name: z.string().optional().describe("New name of the cube."),
+  name: z.string().min(1).optional().describe("New non-empty Cube name."),
   origin: finiteVec3Schema
     .optional()
     .describe(

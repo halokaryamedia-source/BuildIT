@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T06:58:17.488Z",
+  "generatedAt": "2026-08-11T07:04:24.788Z",
   "tools": [
     {
       "name": "place_cube",
@@ -23,7 +23,10 @@
                   "type": "object",
                   "properties": {
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Non-empty Cube name.",
+                      "markdownDescription": "Non-empty Cube name."
                     },
                     "origin": {
                       "type": "array",
@@ -139,8 +142,9 @@
                         "down"
                       ]
                     },
-                    "description": "Array of faces to apply the texture to.",
-                    "markdownDescription": "Array of faces to apply the texture to."
+                    "maxItems": 6,
+                    "description": "Unique Cube faces to apply the texture to.",
+                    "markdownDescription": "Unique Cube faces to apply the texture to."
                   },
                   {
                     "anyOf": [
@@ -189,8 +193,9 @@
                       ],
                       "additionalProperties": false
                     },
-                    "description": "Array of faces with custom UV mapping.",
-                    "markdownDescription": "Array of faces with custom UV mapping."
+                    "maxItems": 6,
+                    "description": "Unique Cube faces with custom UV mapping.",
+                    "markdownDescription": "Unique Cube faces with custom UV mapping."
                   }
                 ],
                 "default": true,
@@ -230,8 +235,9 @@
               },
               "name": {
                 "type": "string",
-                "description": "New name of the cube.",
-                "markdownDescription": "New name of the cube."
+                "minLength": 1,
+                "description": "New non-empty Cube name.",
+                "markdownDescription": "New non-empty Cube name."
               },
               "origin": {
                 "type": "array",

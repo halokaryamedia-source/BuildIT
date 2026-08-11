@@ -16,6 +16,30 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toThrow();
   });
 
+  test("Cube identity and face inputs remain deterministic", () => {
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "", from: [0, 0, 0], to: [1, 1, 1] }],
+      }).success
+    ).toBe(false);
+    expect(modifyCubeParameters.safeParse({ id: "cube", name: "" }).success).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: ["north", "north"],
+      }).success
+    ).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: [
+          { face: "north", uv: [0, 0, 1, 1] },
+          { face: "north", uv: [1, 1, 2, 2] },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
   test("Cube authoring rejects finite endpoints that produce non-finite size", () => {
     expect(() =>
       placeCubeParameters.parse({
