@@ -1,21 +1,21 @@
 # Knowledge Dashboard
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this page as BlockIT's **current repository-memory index**. It is not mandatory context for ordinary asset authoring; root `AGENTS.md` decides the task route first.
 
 ## Current owners
 
 ```text
-agent/task routing            → AGENTS.md
-stable facts / terminology    → CONTEXT.md
+agent/task routing             → AGENTS.md
+stable facts / terminology     → CONTEXT.md
 active repository continuation → next-action.md
-local acceptance procedure    → operations/local-acceptance-runbook.md
-product/modelling policy      → docs/foundation/
-source ownership              → implementation-map.md
-durable decisions             → decision-log.md / decisions/
-review evidence               → reviews/review-graph.md
-future/non-active work        → operations/task-board.md
+completed local procedure      → operations/local-acceptance-runbook.md
+product/modelling policy       → docs/foundation/
+source ownership               → implementation-map.md
+durable decisions              → decision-log.md / decisions/
+review evidence                → reviews/review-graph.md
+future/non-active work         → operations/task-board.md
 ```
 
 ## Start here
@@ -33,12 +33,14 @@ Open project-memory notes only when an asset decision depends on repository stat
 ### Repository / plugin continuation
 
 1. [Agent Rules](../../AGENTS.md)
-2. [Workspace Context](../../CONTEXT.md) when stable facts matter
+2. [Workspace Context](../../CONTEXT.md) only when stable facts matter
 3. [Next Action](next-action.md)
-4. [Local Acceptance Runbook](operations/local-acceptance-runbook.md) when activated
-5. only the source/foundation/review owner needed by the active boundary
+4. affected source + nearest `AGENTS.md`
+5. one relevant specialist/foundation owner only when the active boundary needs it
 
-Do not scan every review, decision, or historical Git state by default.
+The [Local Acceptance Runbook](operations/local-acceptance-runbook.md) is a completed procedure. Read it only when reproducing an acceptance-specific failure or auditing that procedure; it is not default continuation boot.
+
+Do not scan every review, decision, task-board item, or historical Git state by default.
 
 ## Product snapshot
 
@@ -58,7 +60,7 @@ Approved reference
 
 Tool success is execution evidence, not visual approval. `BLOCKED` is valid when continuation would require guessing or repeated failed work.
 
-## Current pre-local baseline
+## Accepted baseline
 
 ```text
 62 enabled tools
@@ -69,18 +71,20 @@ Tool success is execution evidence, not visual approval. `BLOCKED` is valid when
 
 `export_model` is exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-Non-local source/contract/CI/documentation work is complete. Live Codex + Blockbench behavior is now the active evidence boundary.
+The first bounded Codex + Blockbench local acceptance pass is complete. Representative live runtime, authoring, playback, visual-routing, and persistence behavior is recorded in the [Validation Report](../foundation/validation-report.md).
+
+Current continuation is **efficiency evidence**, not another broad local acceptance pass. Static character counts are candidates only; a fresh Codex trace must establish client-visible schema/context/call cost before architecture changes.
 
 ## Knowledge spine
 
 - [Minimal Navigation](minimal-nav.md) — shortest task-aware route.
 - [Next Action](next-action.md) — one current repository-continuation state.
-- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — exact current local procedure.
 - [Implementation Map](implementation-map.md) — current source ownership/surface.
 - [Skill Activation Matrix](skills/activation-matrix.md) — skill selection.
 - [Skill Map](skills/skill-map.md) — current skill inventory/lineage.
 - [Source Map](sources/source-map.md) — source/authority bridge.
 - [Validation Report](../foundation/validation-report.md) — current proof status.
+- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — completed local procedure/history reference.
 - [Decision Log](decision-log.md) — durable decisions/reasons.
 - [Review Index](reviews/review-graph.md) — current meaning of review evidence.
 - [Task Board](operations/task-board.md) — future/non-active findings only.
@@ -92,7 +96,7 @@ Non-local source/contract/CI/documentation work is complete. Live Codex + Blockb
 | Task routing / proof discipline | `AGENTS.md` |
 | Stable facts | `CONTEXT.md` |
 | Current continuation | `next-action.md` |
-| Local test procedure | `operations/local-acceptance-runbook.md` |
+| Completed acceptance procedure | `operations/local-acceptance-runbook.md` |
 | Product/modelling policy | `../foundation/README.md` |
 | Reference preparation | `../foundation/04-reference-guide.md` |
 | Geometry / pivot | `../foundation/05-geometry-standard.md` |
@@ -107,7 +111,7 @@ Non-local source/contract/CI/documentation work is complete. Live Codex + Blockb
 ## Hygiene rules
 
 - `next-action.md` is the only active repository-task snapshot.
-- The local runbook owns procedure, not status.
+- Completed procedures own procedure/evidence, not current status.
 - Reviews own evidence; Git history owns obsolete implementation/planning detail.
 - Do not create manual changelog/plan/audit/template layers when an existing owner or Git history is sufficient.
 - Obsidian UI/workspace state is local and intentionally untracked.
