@@ -618,7 +618,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
     description:
-      "Creates a new animation from Blockbench-authored transform values using the current Bedrock AnimationCodec.",
+      "Creates a new Bedrock animation from authored transform values. Accepts a short name such as `walk` or canonical `animation.walk`; the Bedrock prefix is applied exactly once.",
     annotations: {
       title: "Create Animation",
       destructiveHint: true,
@@ -769,6 +769,9 @@ export function wouldCreateRigHierarchyCycle(
   }
 
   return false;
+}
+export function normalizeBedrockAnimationName(name: string): string {
+  return name.startsWith("animation.") ? name : `animation.${name}`;
 }
 export function countAnimationClipboardKeyframes(
   channels: Record<string, readonly unknown[]>
@@ -972,7 +975,7 @@ createTool(
         ...(particle_effects && { particle_effects }),
       };
 
-      const requestedAnimationName = `animation.${name}`;
+      const requestedAnimationName = normalizeBedrockAnimationName(name);
       const fileContent = JSON.stringify({
         format_version: "1.8.0",
         animations: {
