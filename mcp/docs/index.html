@@ -712,7 +712,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Inspect Authored Animation</p>
-      <p class="card-desc">Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.</p>
+      <p class="card-desc">Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -733,6 +733,11 @@ bun run build
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">include_effect_keyframes</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Include full particle-effect keyframes. Keep false for the normal summary path; enable only when effect timing/data is needed. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3000,7 +3005,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T06:05:42.648Z from Zod schemas
+        Generated 2026-08-11T06:17:32.673Z from Zod schemas
       </footer>
     </main>
   </div>

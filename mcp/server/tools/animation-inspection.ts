@@ -16,13 +16,20 @@ export const inspectAnimationParameters = z.object({
     .describe(
       "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes."
     ),
+  include_effect_keyframes: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      "Include full particle-effect keyframes. Keep false for the normal summary path; enable only when effect timing/data is needed."
+    ),
 });
 
 export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.",
+      "Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,
@@ -130,7 +137,7 @@ function normalizePreEffectScript(script: string | undefined): string | null {
   return script.match(/;$/) ? script : `${script};`;
 }
 
-function inspectParticleEffects(animation: _Animation) {
+function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean) {
   const existingEffects = animation.animators.effects;
   if (!existingEffects) {
     return {
@@ -139,7 +146,7 @@ function inspectParticleEffects(animation: _Animation) {
       particle: {
         keyframe_count: 0,
         particle_count: 0,
-        keyframes: [],
+        ...(includeKeyframes ? { keyframes: [] } : {}),
       },
     };
   }
@@ -178,7 +185,7 @@ function inspectParticleEffects(animation: _Animation) {
         (count, keyframe) => count + keyframe.particles.length,
         0
       ),
-      keyframes: inspectedKeyframes,
+      ...(includeKeyframes ? { keyframes: inspectedKeyframes } : {}),
     },
   };
 }
@@ -218,10 +225,10 @@ export function registerAnimationInspectionTools() {
     animationInspectionToolDocs[0].name,
     {
       ...animationInspectionToolDocs[0],
-      async execute({ animation_id, bone }) {
+      async execute({ animation_id, bone, include_effect_keyframes }) {
         const animation = resolveAnimation(animation_id);
         const boneAnimators = summarizeBoneAnimators(animation);
-        const effects = inspectParticleEffects(animation);
+        const effects = inspectParticleEffects(animation, include_effect_keyframes);
 
         let focusedBone = null;
         if (bone !== undefined) {

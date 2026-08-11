@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -47,6 +48,22 @@ describe("pre-local context and payload cleanup", () => {
     expect(statusSection).toContain('errors: "validator://errors"');
     expect(statusSection).not.toContain("const errors = Validator.errors.map");
     expect(statusSection).not.toContain("const warnings = Validator.warnings.map");
+  });
+
+  test("animation summary keeps particle-effect keyframes lazy by default", async () => {
+    expect(inspectAnimationParameters.parse({}).include_effect_keyframes).toBe(false);
+    expect(
+      inspectAnimationParameters.parse({ include_effect_keyframes: true })
+        .include_effect_keyframes
+    ).toBe(true);
+
+    const inspection = await source("server/tools/animation-inspection.ts");
+    expect(inspection).toContain(
+      "inspectParticleEffects(animation, include_effect_keyframes)"
+    );
+    expect(inspection).toContain(
+      "...(includeKeyframes ? { keyframes: inspectedKeyframes } : {})"
+    );
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {
