@@ -405,9 +405,9 @@ export function registerElementTools() {
       deleteGroups.push(element);
       element.forEachChild((child: any) => {
         if (child instanceof Group) {
-deleteGroups.push(child);
+          deleteGroups.push(child);
         } else {
-deleteElements.push(child as OutlinerElement);
+          deleteElements.push(child as OutlinerElement);
         }
       });
     } else {
@@ -421,7 +421,7 @@ deleteElements.push(child as OutlinerElement);
     const deleteAnimations: _Animation[] = AnimationItem.all.filter(
       (animation) =>
         Object.keys(animation.animators ?? {}).some((animatorUuid) =>
-deletedNodeUuids.has(animatorUuid)
+          deletedNodeUuids.has(animatorUuid)
         )
     );
 
