@@ -1,0 +1,96 @@
+name: Apply Keyframe Create Collision Guard V2
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-keyframe-create-collision-guard-v2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Reuse collision transform with scoped replaceOthers removal
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path(".github/workflows/apply-keyframe-create-collision-guard.yml").read_text(encoding="utf-8")
+          opener = "          python3 - <<'PY'\n"
+          closer = "          PY\n"
+          start = workflow.index(opener) + len(opener)
+          end = workflow.index(closer, start)
+          body = workflow[start:end]
+          script = "\n".join(
+              line[10:] if line.startswith("          ") else line
+              for line in body.splitlines()
+          ) + "\n"
+
+          old_guard = "\n".join([
+              'if text.count(old_replace) != 1:',
+              '    raise SystemExit("Unexpected replaceOthers create behavior")',
+              'text = text.replace(old_replace, "", 1)',
+          ])
+          new_guard = "\n".join([
+              'if text.count(old_replace) < 1:',
+              '    raise SystemExit("Expected replaceOthers create behavior was not found")',
+              '# The manage_keyframes create block was already matched uniquely above,',
+              '# and it is the first replaceOthers([]) call in animation.ts.',
+              'text = text.replace(old_replace, "", 1)',
+          ])
+          if script.count(old_guard) != 1:
+              raise SystemExit("Unexpected workflow replaceOthers guard shape")
+          script = script.replace(old_guard, new_guard, 1)
+          Path("/tmp/apply-keyframe-create-collision.py").write_text(script, encoding="utf-8")
+          PY
+          python3 /tmp/apply-keyframe-create-collision.py
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit collision guard and remove temporary workflows
+        run: |
+          git rm .github/workflows/apply-keyframe-create-collision-guard.yml
+          git rm .github/workflows/apply-keyframe-create-collision-guard-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: reject keyframe create collisions before mutation"
+          git push origin HEAD:Local
