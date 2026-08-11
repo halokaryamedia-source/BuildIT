@@ -1,0 +1,82 @@
+name: Measure Final MCP Tools List
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/measure-final-tools-list.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure pinned-SDK tools list
+        working-directory: mcp
+        run: |
+          cat > .measure-final.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+
+          const server = new McpServer({ name: "blockit-final-wire-audit", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+            enableJsonResponse: true,
+          });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: {
+                accept: "application/json, text/event-stream",
+                "content-type": "application/json",
+                "mcp-protocol-version": "2025-06-18",
+              },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const modify = tools.find((tool) => tool.name === "modify_cube");
+            const batch = tools.find((tool) => tool.name === "modify_cubes_batch");
+            const place = tools.find((tool) => tool.name === "place_cube");
+            console.log(JSON.stringify({
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              place_cube_schema_characters: JSON.stringify(place?.inputSchema ?? {}).length,
+              modify_cube_schema_characters: JSON.stringify(modify?.inputSchema ?? {}).length,
+              modify_cubes_batch_schema_characters: JSON.stringify(batch?.inputSchema ?? {}).length,
+              apply_texture_exposed: tools.some((tool) => tool.name === "apply_texture"),
+              filter_by_material_exposed: tools.some((tool) => tool.name === "filter_by_material"),
+            }));
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .measure-final.ts
+          rm .measure-final.ts
+      - name: Remove temporary measurement workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/measure-final-tools-list.yml
+          git commit -m 'chore: remove final tools-list audit'
+          git push origin HEAD:Local
