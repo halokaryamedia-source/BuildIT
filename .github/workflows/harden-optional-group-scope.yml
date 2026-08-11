@@ -1,0 +1,99 @@
+name: Harden Optional Group Scope
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-optional-group-scope.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Reject empty explicit group scopes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          element_path = Path('mcp/server/tools/element.ts')
+          text = element_path.read_text(encoding='utf-8')
+          pattern = 'parent_group: z\n    .string()\n    .optional()'
+          if text.count(pattern) != 2:
+              raise SystemExit(f'Expected 2 optional parent_group schemas, found {text.count(pattern)}')
+          text = text.replace(pattern, 'parent_group: z\n    .string()\n    .min(1)\n    .optional()')
+          old_helper = 'function resolveOptionalGroupScope(reference?: string): Group | null {\n  if (!reference) return null;'
+          new_helper = 'function resolveOptionalGroupScope(reference?: string): Group | null {\n  if (reference === undefined) return null;'
+          if text.count(old_helper) != 1:
+              raise SystemExit('Unexpected optional Group scope helper')
+          element_path.write_text(text.replace(old_helper, new_helper, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/p1-core-ownership.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          import_anchor = 'import { createAnimationParameters } from "@/server/tools/animation";\n'
+          addition = 'import {\n  findElementsByCriteriaParameters,\n  selectAllOfTypeParameters,\n} from "@/server/tools/element";\n'
+          if test.count(import_anchor) != 1:
+              raise SystemExit('Unexpected p1 core import anchor')
+          test = test.replace(import_anchor, import_anchor + addition, 1)
+          test_anchor = '  test("UUID wins before exact unique name and names never prefix-match", () => {\n'
+          new_test = '''  test("optional explicit Group scopes reject the empty string", () => {
+    expect(findElementsByCriteriaParameters.safeParse({ parent_group: "" }).success).toBe(false);
+    expect(findElementsByCriteriaParameters.safeParse({}).success).toBe(true);
+    expect(
+      selectAllOfTypeParameters.safeParse({ type: "cube", parent_group: "" }).success
+    ).toBe(false);
+    expect(selectAllOfTypeParameters.safeParse({ type: "cube" }).success).toBe(true);
+  });
+
+'''
+          if test.count(test_anchor) != 1:
+              raise SystemExit('Unexpected p1 core test anchor')
+          test_path.write_text(test.replace(test_anchor, new_test + test_anchor, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          anchor = '`duplicate_element` translation is now numerically preflighted before Undo. Offset components must be finite, and every Cube from/to/origin plus Group origin in the duplicated subtree must remain finite after translation; finite operands whose sum overflows are rejected. Unsupported non-Cube/Group descendants also fail before duplication starts. Copy naming and hierarchy semantics are unchanged.'
+          note = '\n\nOptional explicit Group scopes now reject the empty string for both `find_elements_by_criteria` and `select_all_of_type`. Only omission means no scope; an explicit empty value can no longer silently broaden discovery or selection to the full project. The shared Group resolver and scope behavior are otherwise unchanged.'
+          if next_text.count(anchor) != 1:
+              raise SystemExit('Continuity anchor not found')
+          next_path.write_text(next_text.replace(anchor, anchor + note, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified scope hardening and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-optional-group-scope.yml
+          git add mcp/server/tools/element.ts mcp/tests/p1-core-ownership.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: reject empty explicit group scopes'
+          git push origin HEAD:Local
