@@ -1,0 +1,119 @@
+name: Apply Animation Inspection Summary Bound
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/apply-animation-inspection-summary-bound.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply bounded inspection payload change
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/animation-inspection.ts')
+          text = source_path.read_text(encoding='utf-8')
+
+          schema_start = text.index('export const inspectAnimationParameters = z.object({')
+          schema_end = text.index('\n});', schema_start)
+          field = '''\n  include_effect_keyframes: z\n    .boolean()\n    .optional()\n    .default(false)\n    .describe(\n      "Include full particle-effect keyframes. Keep false for the normal summary path; enable only when effect timing/data is needed."\n    ),'''
+          if 'include_effect_keyframes:' in text[schema_start:schema_end]:
+              raise SystemExit('include_effect_keyframes already present')
+          text = text[:schema_end] + field + text[schema_end:]
+
+          text = text.replace(
+              'function inspectParticleEffects(animation: _Animation) {',
+              'function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean) {',
+              1,
+          )
+          text = text.replace(
+              '        keyframes: [],\n',
+              '        ...(includeKeyframes ? { keyframes: [] } : {}),\n',
+              1,
+          )
+          text = text.replace(
+              '      keyframes: inspectedKeyframes,\n',
+              '      ...(includeKeyframes ? { keyframes: inspectedKeyframes } : {}),\n',
+              1,
+          )
+          text = text.replace(
+              '      async execute({ animation_id, bone }) {',
+              '      async execute({ animation_id, bone, include_effect_keyframes }) {',
+              1,
+          )
+          text = text.replace(
+              '        const effects = inspectParticleEffects(animation);',
+              '        const effects = inspectParticleEffects(animation, include_effect_keyframes);',
+              1,
+          )
+          old_description = '      "Returns read-only authored Animation state: identity/settings, existing bone-animator and particle summaries, plus detailed transform keyframes when `bone` is supplied. UUID is preferred; explicit names must be unique. It does not change selection/timeline or create animators.",'
+          new_description = '      "Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.",'
+          if text.count(old_description) != 1:
+              raise SystemExit('Unexpected inspect_animation description shape')
+          text = text.replace(old_description, new_description, 1)
+          source_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          if 'inspectAnimationParameters' not in test:
+              test = test.replace(
+                  'import { describe, expect, test } from "bun:test";\n',
+                  'import { describe, expect, test } from "bun:test";\nimport { inspectAnimationParameters } from "@/server/tools/animation-inspection";\n',
+                  1,
+              )
+          marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
+          addition = '''  test("animation summary keeps particle-effect keyframes lazy by default", async () => {\n    expect(inspectAnimationParameters.parse({}).include_effect_keyframes).toBe(false);\n    expect(\n      inspectAnimationParameters.parse({ include_effect_keyframes: true })\n        .include_effect_keyframes\n    ).toBe(true);\n\n    const inspection = await source("server/tools/animation-inspection.ts");\n    expect(inspection).toContain(\n      "inspectParticleEffects(animation, include_effect_keyframes)"\n    );\n    expect(inspection).toContain(\n      "...(includeKeyframes ? { keyframes: inspectedKeyframes } : {})"\n    );\n  });\n\n'''
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected context payload test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. Tool annotations were audited and already provide a read-vs-mutation hint across the full generated catalog, so no annotation churn was added. `nodes://` remains unchanged pending direct TextureMesh ownership.'
+          addition = marker + '\n\n`inspect_animation` now follows the same summary-first rule for particle effects: normal inspection returns effect counts/animator summary without full effect keyframe payloads, while `include_effect_keyframes=true` explicitly opts into detailed particle timing/data. Focused bone transform-keyframe inspection is unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected context cleanup continuity marker')
+          next_path.write_text(next_text.replace(marker, addition, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-animation-inspection-summary-bound.yml
+          git add mcp/server/tools/animation-inspection.ts mcp/tests/context-payload-cleanup.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'refactor: make animation effect detail opt-in'
+          git push origin HEAD:Local
