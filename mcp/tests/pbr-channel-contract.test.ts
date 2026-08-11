@@ -3,9 +3,24 @@ import {
   configureMaterialParameters,
   hasExactTextureGroupNameCollision,
   requireDistinctPbrChannelAssignments,
+  requireMaterialConfigSavePostcondition,
 } from "@/server/tools/texture";
 
 describe("PBR channel identity preflight", () => {
+  test("material config save requires a confirmed native/file postcondition", async () => {
+    expect(() => requireMaterialConfigSavePostcondition(true, true, "/tmp/mat.texture_set.json")).not.toThrow();
+    expect(() => requireMaterialConfigSavePostcondition(false, true, "/tmp/mat.texture_set.json")).toThrow("save was not confirmed");
+    expect(() => requireMaterialConfigSavePostcondition(true, false, "/tmp/mat.texture_set.json")).toThrow("save was not confirmed");
+
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    const start = source.indexOf("createTool(textureToolDocs[11].name");
+    const end = source.indexOf("createTool(textureToolDocs[12].name", start);
+    const block = source.slice(start, end);
+    expect(block).toContain("textureGroup.material_config.save()");
+    expect(block).toContain("fs.existsSync(filePath)");
+    expect(block.indexOf("requireMaterialConfigSavePostcondition")).toBeLessThan(block.indexOf("return `Saved material config"));
+  });
+
   test("TextureGroup creation rejects exact name collisions", async () => {
     expect(hasExactTextureGroupNameCollision([{ name: "body" }], "body")).toBe(true);
     expect(hasExactTextureGroupNameCollision([{ name: "body" }], "Body")).toBe(false);

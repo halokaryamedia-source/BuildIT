@@ -2729,7 +2729,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Save Material Config</p>
-      <p class="card-desc">Saves one explicit material/texture group's texture_set.json file to disk (Bedrock format). Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before save behavior. Requires the color texture to have a valid file path.</p>
+      <p class="card-desc">Saves one explicit material/texture group's Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3020,7 +3020,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T07:53:15.783Z from Zod schemas
+        Generated 2026-08-11T08:12:15.246Z from Zod schemas
       </footer>
     </main>
   </div>

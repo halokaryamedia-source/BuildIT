@@ -434,7 +434,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "save_material_config",
     description:
-      "Saves one explicit material/texture group's texture_set.json file to disk (Bedrock format). Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before save behavior. Requires the color texture to have a valid file path.",
+      "Saves one explicit material/texture group's Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.",
     annotations: {
       title: "Save Material Config",
       destructiveHint: true,
@@ -533,6 +533,16 @@ export function hasExactTextureGroupNameCollision(
   requestedName: string
 ): boolean {
   return groups.some((group) => group.name === requestedName);
+}
+export function requireMaterialConfigSavePostcondition(
+  saved: boolean,
+  fileExists: boolean,
+  filePath: string
+): void {
+  if (saved && fileExists) return;
+  throw new Error(
+    `Material config save was not confirmed at "${filePath}". Ensure the color texture has a writable existing directory, then retry.`
+  );
 }
 export function requireDistinctPbrChannelAssignments(
   assignments: readonly PbrChannelAssignment[]
@@ -1262,7 +1272,17 @@ export function registerTextureTools() {
         );
       }
 
+      const fs = requireNativeModule("fs");
+      if (!fs) {
+        throw new Error("File system access was denied. Cannot save texture_set.json.");
+      }
+
       textureGroup.material_config.save();
+      requireMaterialConfigSavePostcondition(
+        textureGroup.material_config.saved === true,
+        fs.existsSync(filePath),
+        filePath
+      );
 
       return `Saved material config to "${filePath}"`;
     },
