@@ -34,46 +34,47 @@ jobs:
                   raise SystemExit('Unexpected TextureGroup helper anchor')
               source = source.replace(helper_anchor, helper + helper_anchor, 1)
 
-          add_start = source.index('  createTool(textureToolDocs[5].name')
-          add_end = source.index('  createTool(textureToolDocs[6].name', add_start)
+          add_start = source.index('  createTool(textureToolDocs[2].name')
+          add_end = source.index('  createTool(textureToolDocs[3].name', add_start)
           add_block = source[add_start:add_end]
-          add_anchor = '    async execute({ name, textures }) {\n'
-          add_preflight = '    async execute({ name, textures }) {\n      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup name "${name}" already exists. Use a distinct name so future material/group references remain deterministic.`);\n      }\n'
+          add_anchor = '    async execute({ name, textures, is_material }) {\n'
+          add_preflight = add_anchor + '      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup name "${name}" already exists. Use a distinct name so future material/group references remain deterministic.`);\n      }\n'
           if add_block.count(add_anchor) != 1:
               raise SystemExit('Unexpected add_texture_group execute shape')
           add_block = add_block.replace(add_anchor, add_preflight, 1)
           source = source[:add_start] + add_block + source[add_end:]
 
-          pbr_start = source.index('  createTool(textureToolDocs[6].name')
-          pbr_end = source.index('  createTool(textureToolDocs[7].name', pbr_start)
+          pbr_start = source.index('  createTool(textureToolDocs[5].name')
+          pbr_end = source.index('  createTool(textureToolDocs[6].name', pbr_start)
           pbr_block = source[pbr_start:pbr_end]
-          pbr_anchor = '    async execute({ name, color, normal, height, mer, material_config }) {\n'
-          pbr_preflight = '    async execute({ name, color, normal, height, mer, material_config }) {\n      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup/material name "${name}" already exists. Use a distinct name so future material references remain deterministic.`);\n      }\n'
+          pbr_anchor = '      subsurface_value,\n    }) {\n'
+          pbr_preflight = pbr_anchor + '      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup/material name "${name}" already exists. Use a distinct name so future material references remain deterministic.`);\n      }\n'
           if pbr_block.count(pbr_anchor) != 1:
               raise SystemExit('Unexpected create_pbr_material execute shape')
           pbr_block = pbr_block.replace(pbr_anchor, pbr_preflight, 1)
           source = source[:pbr_start] + pbr_block + source[pbr_end:]
 
-          old_add_desc = '      "Creates a TextureGroup and optionally assigns explicit Textures. Texture references must resolve by UUID, exact ID, or unique exact name before Undo.",'
-          new_add_desc = '      "Creates a uniquely named TextureGroup and optionally assigns explicit Textures. Exact TextureGroup name collisions and ambiguous Texture references fail before Undo.",'
+          old_add_desc = '      "Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.",'
+          new_add_desc = '      "Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.",'
           if source.count(old_add_desc) != 1:
               raise SystemExit('Unexpected add_texture_group description')
           source = source.replace(old_add_desc, new_add_desc, 1)
-          old_pbr_desc = '      "Creates a PBR material from existing explicit Texture channels. A resolved Texture may occupy only one requested PBR channel in the same call; cross-channel identity conflicts fail before Undo. Existing channel replacement behavior is unchanged.",'
-          new_pbr_desc = '      "Creates a uniquely named PBR material from explicit Texture channels. Exact material/TextureGroup name collisions and cross-channel Texture identity conflicts fail before Undo; existing channel replacement behavior is unchanged.",'
+
+          old_pbr_desc = '      "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.",'
+          new_pbr_desc = '      "Creates a uniquely named PBR material TextureGroup. Exact group-name collisions, ambiguous channel textures, and cross-channel Texture identity conflicts fail before Undo.",'
           if source.count(old_pbr_desc) != 1:
               raise SystemExit('Unexpected create_pbr_material description')
           source_path.write_text(source.replace(old_pbr_desc, new_pbr_desc, 1), encoding='utf-8')
 
           test_path = Path('mcp/tests/pbr-channel-contract.test.ts')
           test = test_path.read_text(encoding='utf-8')
-          old_import = '  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
-          new_import = '  hasExactTextureGroupNameCollision,\n  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
+          old_import = 'import { configureMaterialParameters, requireDistinctPbrChannelAssignments } from "@/server/tools/texture";'
+          new_import = 'import {\n  configureMaterialParameters,\n  hasExactTextureGroupNameCollision,\n  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
           if test.count(old_import) != 1:
               raise SystemExit('Unexpected PBR test import')
           test = test.replace(old_import, new_import, 1)
           marker = 'describe("PBR channel identity preflight", () => {'
-          addition = marker + '\n  test("TextureGroup creation rejects exact name collisions", async () => {\n    expect(\n      hasExactTextureGroupNameCollision(\n        [{ name: "body" }, { name: "detail" }],\n        "body"\n      )\n    ).toBe(true);\n    expect(\n      hasExactTextureGroupNameCollision([{ name: "body" }], "Body")\n    ).toBe(false);\n\n    const source = await Bun.file(\n      new URL("../server/tools/texture.ts", import.meta.url)\n    ).text();\n    const addStart = source.indexOf("createTool(textureToolDocs[5].name");\n    const addEnd = source.indexOf("createTool(textureToolDocs[6].name", addStart);\n    const addBlock = source.slice(addStart, addEnd);\n    expect(addBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(\n      addBlock.indexOf("Undo.initEdit")\n    );\n    const pbrStart = source.indexOf("createTool(textureToolDocs[6].name");\n    const pbrEnd = source.indexOf("createTool(textureToolDocs[7].name", pbrStart);\n    const pbrBlock = source.slice(pbrStart, pbrEnd);\n    expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(\n      pbrBlock.indexOf("Undo.initEdit")\n    );\n  });\n'
+          addition = marker + '\n  test("TextureGroup creation rejects exact name collisions", async () => {\n    expect(hasExactTextureGroupNameCollision([{ name: "body" }], "body")).toBe(true);\n    expect(hasExactTextureGroupNameCollision([{ name: "body" }], "Body")).toBe(false);\n\n    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();\n    const addStart = source.indexOf("createTool(textureToolDocs[2].name");\n    const addEnd = source.indexOf("createTool(textureToolDocs[3].name", addStart);\n    const addBlock = source.slice(addStart, addEnd);\n    expect(addBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(addBlock.indexOf("Undo.initEdit"));\n\n    const pbrStart = source.indexOf("createTool(textureToolDocs[5].name");\n    const pbrEnd = source.indexOf("createTool(textureToolDocs[6].name", pbrStart);\n    const pbrBlock = source.slice(pbrStart, pbrEnd);\n    expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(pbrBlock.indexOf("Undo.initEdit"));\n  });\n'
           if test.count(marker) != 1:
               raise SystemExit('Unexpected PBR describe marker')
           test_path.write_text(test.replace(marker, addition, 1), encoding='utf-8')
@@ -81,10 +82,10 @@ jobs:
           next_path = Path('docs/knowledge/next-action.md')
           next_text = next_path.read_text(encoding='utf-8')
           marker = 'A bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo and rejects identity-only `configure_material` calls that contain no authored change. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged.'
-          replacement = marker + '\n\nTextureGroup/PBR creation also now rejects an exact existing TextureGroup name before Undo. Native Blockbench does not uniquify TextureGroup names on `add()`, while BlockIT future references require an exact unique name; creation therefore cannot introduce an ambiguity that later tools cannot resolve. Case-only names remain distinct because the current TextureGroup resolver is case-sensitive.'
+          extra = '\n\nTextureGroup/PBR creation also rejects an exact existing TextureGroup name before Undo. Native Blockbench `TextureGroup.add()` does not uniquify names, while BlockIT later material/group lookup accepts a name only when exact and unique; create tools therefore cannot introduce a name ambiguity that later calls cannot resolve. Case-only names remain distinct because the current resolver is case-sensitive.'
           if next_text.count(marker) != 1:
               raise SystemExit('Unexpected PBR continuity paragraph')
-          next_path.write_text(next_text.replace(marker, replacement, 1), encoding='utf-8')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
           PY
       - name: Install from lockfile
         working-directory: mcp
