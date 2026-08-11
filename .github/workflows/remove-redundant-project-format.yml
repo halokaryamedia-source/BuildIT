@@ -28,19 +28,23 @@ jobs:
 
           path = Path('mcp/server/tools/project.ts')
           text = path.read_text(encoding='utf-8')
-          old_schema = '''export const createProjectParameters = z.object({
-  name: z.string().min(1).describe("Non-empty project name."),
-  format: z
-    .literal("bedrock")
-    .optional()
-    .default("bedrock")
-    .describe(
-      "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
-    ),
-});'''
-          new_schema = '''export const createProjectParameters = z.object({
-  name: z.string().min(1).describe("Non-empty project name."),
-}).strict();'''
+          old_schema = '\n'.join([
+              'export const createProjectParameters = z.object({',
+              '  name: z.string().min(1).describe("Non-empty project name."),',
+              '  format: z',
+              '    .literal("bedrock")',
+              '    .optional()',
+              '    .default("bedrock")',
+              '    .describe(',
+              '      "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."',
+              '    ),',
+              '});',
+          ])
+          new_schema = '\n'.join([
+              'export const createProjectParameters = z.object({',
+              '  name: z.string().min(1).describe("Non-empty project name."),',
+              '}).strict();',
+          ])
           if text.count(old_schema) != 1:
               raise SystemExit('Unexpected create_project schema')
           text = text.replace(old_schema, new_schema, 1)
@@ -50,18 +54,22 @@ jobs:
 
           test_path = Path('mcp/tests/prelocal-generic-semantics.test.ts')
           test = test_path.read_text(encoding='utf-8')
-          old_test = '''  test("project creation accepts only the native Bedrock Entity format", () => {
-    expect(createProjectParameters.parse({ name: "entity" }).format).toBe("bedrock");
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(true);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
-  });'''
-          new_test = '''  test("project creation has no redundant format selector", () => {
-    expect(createProjectParameters.parse({ name: "entity" })).toEqual({ name: "entity" });
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(false);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
-  });'''
+          old_test = '\n'.join([
+              '  test("project creation accepts only the native Bedrock Entity format", () => {',
+              '    expect(createProjectParameters.parse({ name: "entity" }).format).toBe("bedrock");',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(true);',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);',
+              '  });',
+          ])
+          new_test = '\n'.join([
+              '  test("project creation has no redundant format selector", () => {',
+              '    expect(createProjectParameters.parse({ name: "entity" })).toEqual({ name: "entity" });',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(false);',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);',
+              '    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);',
+              '  });',
+          ])
           if test.count(old_test) != 1:
               raise SystemExit('Unexpected create_project semantics test')
           test_path.write_text(test.replace(old_test, new_test, 1), encoding='utf-8')
