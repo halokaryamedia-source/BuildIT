@@ -161,6 +161,121 @@ Owner:
 
 The normal stage-gated lane names the intended operations directly (`create_project`, `place_cube`, `capture_model_views`, `inspect_element`, `modify_cube`, `export_model`, etc.) and loads texture/animation specialists only when their stage is active. This already supplies much better intent for native tool search than catalog exploration.
 
+## Default Tool Footprint Audit — 2026-08-11
+
+A bounded GitHub CI audit ranked the **default 65 enabled tools** by compact Zod-derived schema and description footprint. This ranking is diagnostic, not a replacement for the already measured live `tools/list` baseline: the CI serializer is close enough to locate hotspots but is not byte-identical to the MCP SDK wire representation.
+
+Known actual stateless `tools/list` baseline remains:
+
+```text
+65 enabled tools
+72,817 response characters
+48,119 input-schema characters
+11,786 tool-description characters
+```
+
+The ranking audit produced this compact approximation:
+
+```text
+65 tools
+51,357 schema characters
+13,146 description characters
+65,583 combined name/schema/description characters
+```
+
+### Category concentration
+
+| Category | Tools | Approx schema chars | Approx description chars |
+| --- | ---: | ---: | ---: |
+| Animation | 8 | 13,039 | 2,118 |
+| Paint Tools | 12 | 11,995 | 601 |
+| Elements | 13 | 7,443 | 3,464 |
+| Textures | 13 | 7,181 | 2,911 |
+| Cubes | 3 | 5,444 | 893 |
+| Material Instances | 5 | 2,387 | 654 |
+| Camera & Screenshots | 2 | 1,300 | 571 |
+| History | 4 | 996 | 854 |
+| Export | 2 | 947 | 563 |
+| Project | 3 | 625 | 517 |
+
+Animation + Paint account for **25,034 / 51,357 (~48.7%)** of the approximate schema footprint. Those are legitimate downstream Bedrock authoring capabilities, so their size is not evidence that they should be removed from the retained product surface.
+
+### Largest individual schema/description hotspots
+
+| Tool | Approx schema chars | Description chars before cleanup |
+| --- | ---: | ---: |
+| `create_animation` | 2,621 | 107 |
+| `place_cube` | 2,279 | 242 |
+| `bone_rigging` | 1,613 | 705 |
+| `modify_cube` | 1,780 | 300 |
+| `manage_keyframes` | 1,836 | 221 |
+| `batch_keyframe_operations` | 1,782 | 226 |
+| `animation_copy_paste` | 1,575 | 418 |
+| `animation_graph_editor` | 1,818 | 73 |
+| `modify_cubes_batch` | 1,385 | 351 |
+| `paint_settings` | 1,659 | 47 |
+
+Only two tool descriptions exceeded 400 characters. This slice shortens `bone_rigging` and `animation_copy_paste` while preserving routing and critical mutation-safety signals; detailed field requirements remain owned by their input schemas and runtime validation.
+
+The repeated-description scan found only one exact parameter description repeated at least three times: the selected-texture fallback sentence appears in ten Paint/Texture tools, representing at most about **531 repeated characters** beyond the first copy. Removing that field guidance would save little while making explicit-vs-selected texture routing less clear, so **no change is justified**.
+
+### Current official client controls
+
+The current official Codex configuration reference documents client-side MCP allow/deny controls:
+
+```text
+mcp_servers.<id>.enabled_tools
+mcp_servers.<id>.disabled_tools
+tool_output_token_limit
+```
+
+Official OpenAI Tool Search documentation also documents deferred MCP/tool loading and recommends clear high-level searchable surfaces; namespace guidance targets fewer than ten functions where namespaces are used. These are client/API mechanisms, not permission to add another BlockIT runtime profile or router without local evidence.
+
+References:
+
+```text
+https://developers.openai.com/codex/config-reference
+https://developers.openai.com/api/docs/guides/tools-tool-search
+```
+
+### Local A/B exposure diagnostic
+
+When local Codex proof becomes available, compare the normal full BlockIT surface against a **temporary client-side geometry allowlist** using Codex `enabled_tools`; do not commit the allowlist as the BlockIT default.
+
+Bounded geometry diagnostic lane:
+
+```text
+get_project_info
+create_project
+list_outline
+find_elements_by_criteria
+place_cube
+add_group
+capture_model_views
+inspect_model_bounds
+inspect_element
+modify_cube
+modify_cubes_batch
+remove_element
+undo
+save_checkpoint
+export_model
+```
+
+Use the same representative geometry task for both runs. Compare final reference-fidelity outcome first, then initial model-visible tool/schema footprint, wrong-tool selections, total tool calls, total tokens, latency, and retries. A smaller surface is an improvement only if the result remains equally valid. Then return to the full retained surface for representative texture/animation/Locator reachability so a geometry-only benchmark cannot accidentally become product policy.
+
+`tool_output_token_limit` may be evaluated as a history safety bound only after observing real tool outputs; do not set it pre-emptively because truncating inspection/correction evidence can reduce correctness.
+
+### Decision
+
+```text
+DO NOT mass-trim schemas that encode real Bedrock authoring inputs.
+DO NOT disable Animation/Paint/Texture/Locator merely because they dominate the catalog.
+DO NOT convert the geometry benchmark allowlist into a default MCP profile.
+DO trim clearly overlong tool descriptions when routing/safety meaning is preserved.
+DO use native/client-side exposure controls in local A/B proof before considering BlockIT-side routing architecture.
+```
+
 ## Local Decision
 
 For the current `Local` branch:
