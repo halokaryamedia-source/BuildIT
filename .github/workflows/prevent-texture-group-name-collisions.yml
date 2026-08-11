@@ -1,0 +1,116 @@
+name: Prevent TextureGroup Name Collisions
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/prevent-texture-group-name-collisions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Reject exact TextureGroup name collisions before mutation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/texture.ts')
+          source = source_path.read_text(encoding='utf-8')
+          helper_anchor = 'export function requireDistinctPbrChannelAssignments(\n'
+          helper = 'export function hasExactTextureGroupNameCollision(\n  groups: readonly { name: string }[],\n  requestedName: string\n): boolean {\n  return groups.some((group) => group.name === requestedName);\n}\n'
+          if 'hasExactTextureGroupNameCollision' not in source:
+              if source.count(helper_anchor) != 1:
+                  raise SystemExit('Unexpected TextureGroup helper anchor')
+              source = source.replace(helper_anchor, helper + helper_anchor, 1)
+
+          add_start = source.index('  createTool(textureToolDocs[5].name')
+          add_end = source.index('  createTool(textureToolDocs[6].name', add_start)
+          add_block = source[add_start:add_end]
+          add_anchor = '    async execute({ name, textures }) {\n'
+          add_preflight = '    async execute({ name, textures }) {\n      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup name "${name}" already exists. Use a distinct name so future material/group references remain deterministic.`);\n      }\n'
+          if add_block.count(add_anchor) != 1:
+              raise SystemExit('Unexpected add_texture_group execute shape')
+          add_block = add_block.replace(add_anchor, add_preflight, 1)
+          source = source[:add_start] + add_block + source[add_end:]
+
+          pbr_start = source.index('  createTool(textureToolDocs[6].name')
+          pbr_end = source.index('  createTool(textureToolDocs[7].name', pbr_start)
+          pbr_block = source[pbr_start:pbr_end]
+          pbr_anchor = '    async execute({ name, color, normal, height, mer, material_config }) {\n'
+          pbr_preflight = '    async execute({ name, color, normal, height, mer, material_config }) {\n      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {\n        throw new Error(`TextureGroup/material name "${name}" already exists. Use a distinct name so future material references remain deterministic.`);\n      }\n'
+          if pbr_block.count(pbr_anchor) != 1:
+              raise SystemExit('Unexpected create_pbr_material execute shape')
+          pbr_block = pbr_block.replace(pbr_anchor, pbr_preflight, 1)
+          source = source[:pbr_start] + pbr_block + source[pbr_end:]
+
+          old_add_desc = '      "Creates a TextureGroup and optionally assigns explicit Textures. Texture references must resolve by UUID, exact ID, or unique exact name before Undo.",'
+          new_add_desc = '      "Creates a uniquely named TextureGroup and optionally assigns explicit Textures. Exact TextureGroup name collisions and ambiguous Texture references fail before Undo.",'
+          if source.count(old_add_desc) != 1:
+              raise SystemExit('Unexpected add_texture_group description')
+          source = source.replace(old_add_desc, new_add_desc, 1)
+          old_pbr_desc = '      "Creates a PBR material from existing explicit Texture channels. A resolved Texture may occupy only one requested PBR channel in the same call; cross-channel identity conflicts fail before Undo. Existing channel replacement behavior is unchanged.",'
+          new_pbr_desc = '      "Creates a uniquely named PBR material from explicit Texture channels. Exact material/TextureGroup name collisions and cross-channel Texture identity conflicts fail before Undo; existing channel replacement behavior is unchanged.",'
+          if source.count(old_pbr_desc) != 1:
+              raise SystemExit('Unexpected create_pbr_material description')
+          source_path.write_text(source.replace(old_pbr_desc, new_pbr_desc, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/pbr-channel-contract.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          old_import = '  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
+          new_import = '  hasExactTextureGroupNameCollision,\n  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
+          if test.count(old_import) != 1:
+              raise SystemExit('Unexpected PBR test import')
+          test = test.replace(old_import, new_import, 1)
+          marker = 'describe("PBR channel identity preflight", () => {'
+          addition = marker + '\n  test("TextureGroup creation rejects exact name collisions", async () => {\n    expect(\n      hasExactTextureGroupNameCollision(\n        [{ name: "body" }, { name: "detail" }],\n        "body"\n      )\n    ).toBe(true);\n    expect(\n      hasExactTextureGroupNameCollision([{ name: "body" }], "Body")\n    ).toBe(false);\n\n    const source = await Bun.file(\n      new URL("../server/tools/texture.ts", import.meta.url)\n    ).text();\n    const addStart = source.indexOf("createTool(textureToolDocs[5].name");\n    const addEnd = source.indexOf("createTool(textureToolDocs[6].name", addStart);\n    const addBlock = source.slice(addStart, addEnd);\n    expect(addBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(\n      addBlock.indexOf("Undo.initEdit")\n    );\n    const pbrStart = source.indexOf("createTool(textureToolDocs[6].name");\n    const pbrEnd = source.indexOf("createTool(textureToolDocs[7].name", pbrStart);\n    const pbrBlock = source.slice(pbrStart, pbrEnd);\n    expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(\n      pbrBlock.indexOf("Undo.initEdit")\n    );\n  });\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected PBR describe marker')
+          test_path.write_text(test.replace(marker, addition, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo and rejects identity-only `configure_material` calls that contain no authored change. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged.'
+          replacement = marker + '\n\nTextureGroup/PBR creation also now rejects an exact existing TextureGroup name before Undo. Native Blockbench does not uniquify TextureGroup names on `add()`, while BlockIT future references require an exact unique name; creation therefore cannot introduce an ambiguity that later tools cannot resolve. Case-only names remain distinct because the current TextureGroup resolver is case-sensitive.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected PBR continuity paragraph')
+          next_path.write_text(next_text.replace(marker, replacement, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/prevent-texture-group-name-collisions.yml
+          git add mcp/server/tools/texture.ts mcp/tests/pbr-channel-contract.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: prevent TextureGroup name collisions'
+          git push origin HEAD:Local
