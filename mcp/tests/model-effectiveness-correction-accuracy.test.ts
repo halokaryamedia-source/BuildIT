@@ -4,8 +4,8 @@ import {
   modifyCubeParameters,
   modifyCubesBatchParameters,
   placeCubeParameters,
-  requireFiniteTranslatedElementVector3,
 } from "@/server/tools/cubes";
+import { requireFiniteTranslatedElementVector3 } from "@/server/tools/element";
 import {
   inspectElementParameters,
   requireFiniteInspectableVector3,
