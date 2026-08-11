@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T06:20:39.682Z",
+  "generatedAt": "2026-08-11T06:23:06.695Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4073,7 +4073,7 @@
     {
       "name": "create_texture",
       "title": "Create Texture",
-      "description": "Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.",
+      "description": "Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {

@@ -83,6 +83,23 @@ describe("pre-local context and payload cleanup", () => {
     expect(outline).toContain("returned_nodes: returnedNodes");
   });
 
+  test("texture creation returns metadata instead of implicit image bytes", async () => {
+    const texture = await source("server/tools/texture.ts");
+    const start = texture.indexOf("createTool(textureToolDocs[0].name");
+    const end = texture.indexOf("createTool(textureToolDocs[1].name", start);
+    const createBlock = texture.slice(start, end);
+    expect(createBlock).not.toContain("texture.getDataURL()");
+    expect(createBlock).toContain("structuredContent: result");
+    expect(createBlock).toContain("uuid: texture.uuid");
+    expect(createBlock).toContain("Use get_texture only when image evidence is needed");
+
+    const materialStart = texture.indexOf("createTool(textureToolDocs[7].name");
+    const materialEnd = texture.indexOf("createTool(textureToolDocs[9].name", materialStart);
+    const materialReads = texture.slice(materialStart, materialEnd);
+    expect(materialReads).not.toContain("JSON.stringify(result, null, 2)");
+    expect(materialReads).toContain("JSON.stringify(result)");
+  });
+
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");

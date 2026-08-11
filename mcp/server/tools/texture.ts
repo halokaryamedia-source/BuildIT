@@ -296,7 +296,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_texture",
     description:
-      "Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.",
+      "Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.",
     annotations: {
       title: "Create Texture",
       destructiveHint: true,
@@ -628,9 +628,28 @@ export function registerTextureTools() {
 
       Canvas.updateAll();
 
-      return imageContent({
-        url: texture.getDataURL(),
-      });
+      const result = {
+        texture: {
+          uuid: texture.uuid,
+          name: texture.name,
+          id: texture.id,
+          width: texture.width,
+          height: texture.height,
+          group: texture.group || null,
+          pbr_channel: texture.pbr_channel || null,
+          render_mode: texture.render_mode,
+          render_sides: texture.render_sides,
+        },
+      };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Created texture "${texture.name}" (${texture.uuid}). Use get_texture only when image evidence is needed.`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, textureToolDocs[0].status);
 
@@ -1081,7 +1100,7 @@ export function registerTextureTools() {
         };
       });
 
-      return JSON.stringify(result, null, 2);
+      return JSON.stringify(result);
     },
   }, textureToolDocs[7].status);
 
@@ -1123,7 +1142,7 @@ export function registerTextureTools() {
         texture_set_json: textureSetJson,
       };
 
-      return JSON.stringify(result, null, 2);
+      return JSON.stringify(result);
     },
   }, textureToolDocs[8].status);
 
