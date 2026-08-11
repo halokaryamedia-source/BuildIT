@@ -1,6 +1,6 @@
 # Minimal Navigation
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this note only when the task class is not already obvious from root `AGENTS.md`.
 
@@ -25,7 +25,7 @@ Source/docs/CI/MCP/plugin/repository maintenance:
 
 ```text
 AGENTS.md
-→ CONTEXT.md when stable facts matter
+→ CONTEXT.md only when stable facts matter
 → next-action.md when continuing current work
 → affected source + nearest AGENTS.md
 ```
@@ -34,13 +34,11 @@ For a create/change task, use `../../.agents/skills/development-brief/SKILL.md` 
 
 ## 2. Current Repository Continuation
 
-If `next-action.md` says local acceptance, read next:
+`next-action.md` owns the current step. Follow its active boundary directly.
 
-[Local Acceptance Runbook](operations/local-acceptance-runbook.md)
+The first Local Acceptance Runbook pass is complete. Read [Local Acceptance Runbook](operations/local-acceptance-runbook.md) only when `next-action.md` explicitly points back to an acceptance-specific procedure, a reproduced acceptance defect needs its classification rules, or historical procedure evidence is being audited.
 
-Then use `../../mcp/README.md` and `../../mcp/AGENTS.md` while executing the plugin/runtime checks.
-
-Do not replan from historical reviews before running the baseline described by the runbook.
+Do not load the runbook by ritual during normal continuation or asset authoring.
 
 ## 3. Open Only One Additional Owner When Needed
 
