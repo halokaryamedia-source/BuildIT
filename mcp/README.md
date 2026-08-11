@@ -66,7 +66,7 @@ Generic Mesh/Hytale paths, risky evaluation, and screen-coordinate UI automation
 
 ## Current default surface
 
-Pinned-SDK baseline:
+Pinned-SDK accepted baseline:
 
 ```text
 62 enabled tools
@@ -86,7 +86,15 @@ from_geo_json         disabled
 
 Bedrock Entity is native `single_texture`; active/default texture lifecycle remains available while generic raw per-face texture identity tools are not exposed by default.
 
-## Agent / local acceptance route
+These static character counts identify possible context-cost candidates; they do not prove model-visible token cost. Use `docs/knowledge/next-action.md` for the current efficiency evidence task.
+
+## Result efficiency
+
+When a tool returns machine-readable `structuredContent`, do not mirror the same full JSON again in `content.text`. The request-owned registration boundary compacts an exact single-text JSON mirror while preserving the structured payload, concise summaries, and image content.
+
+For filesystem export, verified path writes remain metadata-first and omit compiled artifact content by default unless the caller explicitly requests returned content.
+
+## Agent / continuation route
 
 Repository-owned skills live at root `.agents/skills/`, not under this package.
 
@@ -97,7 +105,7 @@ blockit-bedrock-entity-mcp
 → active modelling/texturing/animation specialist only
 ```
 
-For current repository continuation, use root `docs/knowledge/next-action.md`. The current local procedure is `docs/knowledge/operations/local-acceptance-runbook.md`.
+For repository/plugin continuation, use root `docs/knowledge/next-action.md`. The first bounded local acceptance procedure is complete; `docs/knowledge/operations/local-acceptance-runbook.md` is historical/procedural evidence and is not default continuation reading unless the current task specifically needs it.
 
 Do not use deleted nested `.github` prompts/instructions or standalone upstream guidance; root `AGENTS.md` and this package's `AGENTS.md` own current development rules.
 
@@ -125,6 +133,7 @@ Follow `AGENTS.md` in this directory:
 - full Zod input validation;
 - no Blockbench globals during schema construction;
 - `createTool` / existing factory patterns;
+- compact structured result contracts without duplicate machine-readable payloads;
 - smallest complete owner-specific change;
 - generated docs freshness;
 - local Blockbench proof for runtime/visual claims.
