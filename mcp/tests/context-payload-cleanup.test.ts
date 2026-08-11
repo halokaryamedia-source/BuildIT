@@ -4,6 +4,12 @@ import {
   filterByMaterialParameters,
   listOutlineParameters,
 } from "@/server/tools/element";
+import {
+  facesArrayOptionalSchema,
+  facesArrayWithDefaultSchema,
+  listMaterialInstancesParametersSchema,
+  materialInstanceAssignmentSchema,
+} from "@/server/tools/material-instances";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -124,6 +130,31 @@ describe("pre-local context and payload cleanup", () => {
     expect(materialBlock).toContain("async execute({ texture, include_face_keys, limit })");
     expect(materialBlock).toContain("let truncated = false");
     expect(materialBlock).toContain("truncated,");
+  });
+
+  test("material-instance discovery is summary-first and mutations reject empty face sets", async () => {
+    expect(facesArrayWithDefaultSchema.safeParse([]).success).toBe(false);
+    expect(facesArrayOptionalSchema.safeParse([]).success).toBe(false);
+    expect(
+      materialInstanceAssignmentSchema.safeParse({
+        cube_id: "cube-uuid",
+        faces: [],
+        material_name: "detail",
+      }).success
+    ).toBe(false);
+
+    const parsed = listMaterialInstancesParametersSchema.parse({});
+    expect(parsed.include_usages).toBe(false);
+    expect(parsed.usage_limit_per_instance).toBe(100);
+
+    const sourceText = await source("server/tools/material-instances.ts");
+    const start = sourceText.indexOf("materialInstanceToolDocs[2].name");
+    const end = sourceText.indexOf("materialInstanceToolDocs[3].name", start);
+    const listBlock = sourceText.slice(start, end);
+    expect(listBlock).toContain("entry.usage_count += 1");
+    expect(listBlock).toContain("include_usages && entry.usages.length < usage_limit_per_instance");
+    expect(listBlock).toContain("usages_truncated");
+    expect(listBlock).not.toContain("null, 2");
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {

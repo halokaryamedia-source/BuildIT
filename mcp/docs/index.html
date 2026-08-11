@@ -1421,7 +1421,7 @@ bun run build
       <td class="col-name">faces</td>
       <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Specific faces to get/clear material instances for. If not provided, returns/clears all faces.</td>
+      <td class="col-desc">Specific non-empty face set to get/clear. If omitted, uses all faces. <span class="param-meta">[minItems: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1460,7 +1460,7 @@ bun run build
       <td class="col-name">faces</td>
       <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Faces to set the material instance on. Defaults to all faces. <span class="param-meta">(default: <code>[&quot;north&quot;,&quot;south&quot;,&quot;east&quot;,&quot;west&quot;,&quot;up&quot;,&quot;down&quot;]</code>)</span></td>
+      <td class="col-desc">Faces to set the material instance on. Defaults to all faces. <span class="param-meta">(default: <code>[&quot;north&quot;,&quot;south&quot;,&quot;east&quot;,&quot;west&quot;,&quot;up&quot;,&quot;down&quot;]</code>) [minItems: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1474,9 +1474,29 @@ bun run build
         </div>
       </div>
       <p class="card-title">List Material Instances</p>
-      <p class="card-desc">Lists all unique material instance names used in the project. Returns the material instance names along with which cubes and faces use them.</p>
+      <p class="card-desc">Lists unique material-instance names and usage counts. Cube/face locations are opt-in with `include_usages=true` and bounded per instance to avoid dumping all face assignments by default.</p>
       <div class="overflow-x">
-        <p class="empty-params">No parameters</p>
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">include_usages</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Include Cube/face usage locations. Keep false for summary-only discovery. <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">usage_limit_per_instance</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Maximum usage locations returned per material instance when include_usages=true. <span class="param-meta">(default: <code>100</code>) [min: 1, max: 1000]</span></td>
+    </tr></tbody>
+    </table>
       </div>
     </div>
 <div id="tool-bulk_set_material_instances" class="card tool-card">
@@ -1537,7 +1557,7 @@ bun run build
       <td class="col-name">faces</td>
       <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Specific faces to clear. If not provided, clears all faces.</td>
+      <td class="col-desc">Specific faces to clear. If not provided, clears all faces. <span class="param-meta">[minItems: 1]</span></td>
     </tr><tr>
       <td class="col-name">all_cubes</td>
       <td class="col-type">boolean</td>
@@ -3015,7 +3035,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T06:27:42.130Z from Zod schemas
+        Generated 2026-08-11T06:29:30.962Z from Zod schemas
       </footer>
     </main>
   </div>

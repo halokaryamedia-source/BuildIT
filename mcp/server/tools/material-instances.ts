@@ -10,12 +10,27 @@ import { faceEnum, cubeIdOptionalSchema, cubeIdSchema } from "@/lib/zodObjects";
 // Material Instance Parameter Schemas
 // ============================================================================
 
-/** Empty parameters schema */
-export const emptyParametersSchema = z.object({});
+/** Parameters for bounded material-instance discovery */
+export const listMaterialInstancesParametersSchema = z.object({
+  include_usages: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe("Include Cube/face usage locations. Keep false for summary-only discovery."),
+  usage_limit_per_instance: z
+    .number()
+    .int()
+    .min(1)
+    .max(1000)
+    .optional()
+    .default(100)
+    .describe("Maximum usage locations returned per material instance when include_usages=true."),
+});
 
 /** Faces array with default to all faces */
 export const facesArrayWithDefaultSchema = z
   .array(faceEnum)
+  .min(1)
   .optional()
   .default(faceEnum.options)
   .describe("Faces to set the material instance on. Defaults to all faces.");
@@ -23,8 +38,9 @@ export const facesArrayWithDefaultSchema = z
 /** Faces array optional */
 export const facesArrayOptionalSchema = z
   .array(faceEnum)
+  .min(1)
   .optional()
-  .describe("Specific faces to get/clear material instances for. If not provided, returns/clears all faces.");
+  .describe("Specific non-empty face set to get/clear. If omitted, uses all faces.");
 
 /** Parameters for getting face material instances */
 export const getFaceMaterialInstancesParametersSchema = z.object({
@@ -50,7 +66,10 @@ export const setFaceMaterialInstanceParametersSchema = z.object({
 /** Single material instance assignment */
 export const materialInstanceAssignmentSchema = z.object({
   cube_id: cubeIdSchema,
-  faces: z.array(faceEnum).describe("Faces to set the material instance on."),
+  faces: z
+    .array(faceEnum)
+    .min(1)
+    .describe("Non-empty faces to set the material instance on."),
   material_name: z.string().describe("Material instance name to assign."),
 });
 
@@ -119,12 +138,12 @@ export const materialInstanceToolDocs: ToolSpec[] = [
   {
     name: "list_material_instances",
     description:
-      "Lists all unique material instance names used in the project. Returns the material instance names along with which cubes and faces use them.",
+      "Lists unique material-instance names and usage counts. Cube/face locations are opt-in with `include_usages=true` and bounded per instance to avoid dumping all face assignments by default.",
     annotations: {
       title: "List Material Instances",
       readOnlyHint: true,
     },
-    parameters: emptyParametersSchema,
+    parameters: listMaterialInstancesParametersSchema,
     status: STATUS_STABLE,
   },
   {
@@ -239,10 +258,11 @@ export function registerMaterialInstanceTools() {
     materialInstanceToolDocs[2].name,
     {
       ...materialInstanceToolDocs[2],
-      async execute() {
+      async execute({ include_usages, usage_limit_per_instance }) {
+        type MaterialUsage = { cube_name: string; cube_uuid: string; face: string };
         const materialMap: Record<
           string,
-          Array<{ cube_name: string; cube_uuid: string; face: string }>
+          { usage_count: number; usages: MaterialUsage[] }
         > = {};
 
         for (const cube of Cube.all) {
@@ -250,29 +270,38 @@ export function registerMaterialInstanceTools() {
             const face = cube.faces[faceDir];
             if (face && face.material_name) {
               if (!materialMap[face.material_name]) {
-                materialMap[face.material_name] = [];
+                materialMap[face.material_name] = { usage_count: 0, usages: [] };
               }
-              materialMap[face.material_name].push({
-                cube_name: cube.name,
-                cube_uuid: cube.uuid,
-                face: faceDir,
-              });
+              const entry = materialMap[face.material_name];
+              entry.usage_count += 1;
+              if (include_usages && entry.usages.length < usage_limit_per_instance) {
+                entry.usages.push({
+                  cube_name: cube.name,
+                  cube_uuid: cube.uuid,
+                  face: faceDir,
+                });
+              }
             }
           }
         }
 
         const materialInstances = Object.entries(materialMap).map(
-          ([name, usages]) => ({
+          ([name, entry]) => ({
             name,
-            usage_count: usages.length,
-            usages,
+            usage_count: entry.usage_count,
+            ...(include_usages
+              ? {
+                  usages: entry.usages,
+                  usages_truncated: entry.usage_count > entry.usages.length,
+                }
+              : {}),
           })
         );
 
         return JSON.stringify({
           total_unique_instances: materialInstances.length,
           material_instances: materialInstances,
-        }, null, 2);
+        });
       },
     },
     materialInstanceToolDocs[2].status
