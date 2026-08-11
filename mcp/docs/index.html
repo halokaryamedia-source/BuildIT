@@ -2661,7 +2661,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Import Texture Set</p>
-      <p class="card-desc">Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.</p>
+      <p class="card-desc">Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3020,7 +3020,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T08:12:15.246Z from Zod schemas
+        Generated 2026-08-11T08:15:16.216Z from Zod schemas
       </footer>
     </main>
   </div>

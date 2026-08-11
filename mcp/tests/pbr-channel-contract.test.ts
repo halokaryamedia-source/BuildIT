@@ -3,10 +3,29 @@ import {
   configureMaterialParameters,
   hasExactTextureGroupNameCollision,
   requireDistinctPbrChannelAssignments,
+  importedTextureGroupName,
+  isMinecraftTextureSetDocument,
   requireMaterialConfigSavePostcondition,
 } from "@/server/tools/texture";
 
 describe("PBR channel identity preflight", () => {
+  test("texture_set import preflight rejects non-texture-set documents and derives native group identity", async () => {
+    expect(isMinecraftTextureSetDocument({ "minecraft:texture_set": { color: "skin" } })).toBe(true);
+    expect(isMinecraftTextureSetDocument({ format_version: "1.16.100" })).toBe(false);
+    expect(isMinecraftTextureSetDocument({ "minecraft:texture_set": null })).toBe(false);
+    expect(importedTextureGroupName("/packs/skin.texture_set.json")).toBe("skin.png material");
+    expect(importedTextureGroupName("C:\\packs\\skin.texture_set.json")).toBe("skin.png material");
+
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    const start = source.indexOf("createTool(textureToolDocs[9].name");
+    const end = source.indexOf("createTool(textureToolDocs[10].name", start);
+    const block = source.slice(start, end);
+    expect(block).toContain("isMinecraftTextureSetDocument(document)");
+    expect(block).toContain("hasExactTextureGroupNameCollision(TextureGroup.all, expectedGroupName)");
+    expect(block).toContain("createdGroups.length !== 1");
+    expect(block.indexOf("isMinecraftTextureSetDocument(document)")).toBeLessThan(block.indexOf("importTextureSet({ path, name: fileName })"));
+  });
+
   test("material config save requires a confirmed native/file postcondition", async () => {
     expect(() => requireMaterialConfigSavePostcondition(true, true, "/tmp/mat.texture_set.json")).not.toThrow();
     expect(() => requireMaterialConfigSavePostcondition(false, true, "/tmp/mat.texture_set.json")).toThrow("save was not confirmed");

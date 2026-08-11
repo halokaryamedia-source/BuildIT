@@ -411,7 +411,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "import_texture_set",
     description:
-      "Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.",
+      "Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.",
     annotations: {
       title: "Import Texture Set",
       destructiveHint: true,
@@ -533,6 +533,16 @@ export function hasExactTextureGroupNameCollision(
   requestedName: string
 ): boolean {
   return groups.some((group) => group.name === requestedName);
+}
+export function isMinecraftTextureSetDocument(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const root = (value as Record<string, unknown>)["minecraft:texture_set"];
+  return Boolean(root && typeof root === "object" && !Array.isArray(root));
+}
+
+export function importedTextureGroupName(filePath: string): string {
+  const fileName = filePath.split(/[\/\\]/).pop() ?? filePath;
+  return fileName.replace(/\.texture_set\.json$/, ".png material");
 }
 export function requireMaterialConfigSavePostcondition(
   saved: boolean,
@@ -1202,11 +1212,47 @@ export function registerTextureTools() {
         throw new Error(`File not found: ${path}`);
       }
 
-      // Use Blockbench's importTextureSet function
-      // @ts-ignore - importTextureSet is globally available
-      importTextureSet({ path, name: path.split(/[\/\\]/).pop() });
+      const fileName = path.split(/[\/\\]/).pop() ?? path;
+      const expectedGroupName = importedTextureGroupName(path);
+      if (hasExactTextureGroupNameCollision(TextureGroup.all, expectedGroupName)) {
+        throw new Error(
+          `Import would create TextureGroup name "${expectedGroupName}", which already exists. Rename/remove the existing group or import a distinctly named texture_set.json.`
+        );
+      }
 
-      return `Imported texture set from "${path}". Check the textures panel for the new material.`;
+      const parseJson = (globalThis as typeof globalThis & {
+        autoParseJSON?: (data: string, feedback?: boolean | { file_path?: string }) => unknown;
+      }).autoParseJSON;
+      if (typeof parseJson !== "function") {
+        throw new Error("Blockbench JSON parser is unavailable. Cannot preflight texture_set.json safely.");
+      }
+      const document = parseJson(
+        fs.readFileSync(path, { encoding: "utf-8" }),
+        false
+      );
+      if (!isMinecraftTextureSetDocument(document)) {
+        throw new Error(
+          `File "${path}" is not a valid Minecraft texture_set document: expected an object-valued "minecraft:texture_set" root.`
+        );
+      }
+
+      const groupUuidsBefore = new Set(
+        TextureGroup.all.map((group: TextureGroup) => group.uuid)
+      );
+      // Native import owns its Undo boundary and image/channel loading behavior.
+      // @ts-ignore - importTextureSet is globally available
+      importTextureSet({ path, name: fileName });
+      const createdGroups = TextureGroup.all.filter(
+        (group: TextureGroup) => !groupUuidsBefore.has(group.uuid)
+      );
+      if (createdGroups.length !== 1) {
+        throw new Error(
+          `Native texture_set import created ${createdGroups.length} new TextureGroups; expected exactly 1.`
+        );
+      }
+      const [createdGroup] = createdGroups;
+
+      return `Imported texture set from "${path}" as material "${createdGroup.name}" (uuid: ${createdGroup.uuid}).`;
     },
   }, textureToolDocs[9].status);
 
