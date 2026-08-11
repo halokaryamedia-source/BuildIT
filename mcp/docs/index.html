@@ -2408,7 +2408,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Add Texture Group</p>
-      <p class="card-desc">Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.</p>
+      <p class="card-desc">Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2490,7 +2490,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Create PBR Material</p>
-      <p class="card-desc">Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.</p>
+      <p class="card-desc">Creates a uniquely named PBR material TextureGroup. Exact group-name collisions, ambiguous channel textures, and cross-channel Texture identity conflicts fail before Undo.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3020,7 +3020,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T07:42:06.542Z from Zod schemas
+        Generated 2026-08-11T07:50:23.694Z from Zod schemas
       </footer>
     </main>
   </div>

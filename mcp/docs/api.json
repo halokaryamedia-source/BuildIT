@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T07:42:06.542Z",
+  "generatedAt": "2026-08-11T07:50:23.694Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4285,7 +4285,7 @@
     {
       "name": "add_texture_group",
       "title": "Add Texture Group",
-      "description": "Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.",
+      "description": "Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4380,7 +4380,7 @@
     {
       "name": "create_pbr_material",
       "title": "Create PBR Material",
-      "description": "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.",
+      "description": "Creates a uniquely named PBR material TextureGroup. Exact group-name collisions, ambiguous channel textures, and cross-channel Texture identity conflicts fail before Undo.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {

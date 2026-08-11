@@ -334,7 +334,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "add_texture_group",
     description:
-      "Adds a new texture group with the given name. When an explicit texture list is provided, every target is resolved before mutation by exact UUID, then exact texture ID, then exact name only when unique; any missing or ambiguous entry fails the whole call before Undo or group creation.",
+      "Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.",
     annotations: {
       title: "Add Texture Group",
       destructiveHint: true,
@@ -367,7 +367,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a PBR material TextureGroup. Optional channel textures must resolve uniquely before mutation, and one Texture cannot occupy multiple PBR channels in the same call; uniform color, MER, and subsurface values are supported.",
+      "Creates a uniquely named PBR material TextureGroup. Exact group-name collisions, ambiguous channel textures, and cross-channel Texture identity conflicts fail before Undo.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -528,6 +528,12 @@ type PbrChannelAssignment = {
   texture?: Pick<Texture, "uuid" | "name">;
 };
 
+export function hasExactTextureGroupNameCollision(
+  groups: readonly { name: string }[],
+  requestedName: string
+): boolean {
+  return groups.some((group) => group.name === requestedName);
+}
 export function requireDistinctPbrChannelAssignments(
   assignments: readonly PbrChannelAssignment[]
 ): void {
@@ -766,6 +772,9 @@ export function registerTextureTools() {
     ...textureToolDocs[2],
     parameters: addTextureGroupParameters,
     async execute({ name, textures, is_material }) {
+      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {
+        throw new Error(`TextureGroup name "${name}" already exists. Use a distinct name so future material/group references remain deterministic.`);
+      }
       const textureList = textures?.map(resolveAddTextureGroupTexture) ?? [];
       const textureGroup = new TextureGroup({
         name,
@@ -850,6 +859,9 @@ export function registerTextureTools() {
       mer_value,
       subsurface_value,
     }) {
+      if (hasExactTextureGroupNameCollision(TextureGroup.all, name)) {
+        throw new Error(`TextureGroup/material name "${name}" already exists. Use a distinct name so future material references remain deterministic.`);
+      }
       const colorTexture =
         color_texture !== undefined
           ? resolveCreatePbrMaterialTexture(color_texture)

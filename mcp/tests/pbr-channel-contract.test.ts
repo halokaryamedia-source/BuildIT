@@ -1,7 +1,27 @@
 import { describe, expect, test } from "bun:test";
-import { configureMaterialParameters, requireDistinctPbrChannelAssignments } from "@/server/tools/texture";
+import {
+  configureMaterialParameters,
+  hasExactTextureGroupNameCollision,
+  requireDistinctPbrChannelAssignments,
+} from "@/server/tools/texture";
 
 describe("PBR channel identity preflight", () => {
+  test("TextureGroup creation rejects exact name collisions", async () => {
+    expect(hasExactTextureGroupNameCollision([{ name: "body" }], "body")).toBe(true);
+    expect(hasExactTextureGroupNameCollision([{ name: "body" }], "Body")).toBe(false);
+
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    const addStart = source.indexOf("createTool(textureToolDocs[2].name");
+    const addEnd = source.indexOf("createTool(textureToolDocs[3].name", addStart);
+    const addBlock = source.slice(addStart, addEnd);
+    expect(addBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(addBlock.indexOf("Undo.initEdit"));
+
+    const pbrStart = source.indexOf("createTool(textureToolDocs[5].name");
+    const pbrEnd = source.indexOf("createTool(textureToolDocs[6].name", pbrStart);
+    const pbrBlock = source.slice(pbrStart, pbrEnd);
+    expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(pbrBlock.indexOf("Undo.initEdit"));
+  });
+
   test("accepts distinct Texture identities across channels", () => {
     expect(() =>
       requireDistinctPbrChannelAssignments([
