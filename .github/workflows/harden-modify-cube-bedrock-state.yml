@@ -1,0 +1,433 @@
+name: Harden Modify Cube Bedrock State
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-modify-cube-bedrock-state.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Harden native Cube numeric and correction state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/cubes.ts')
+          text = path.read_text(encoding='utf-8')
+
+          vec_anchor = '\n'.join([
+              'const finiteVec3Schema = z.tuple([',
+              '  z.number().finite(),',
+              '  z.number().finite(),',
+              '  z.number().finite(),',
+              ']);',
+          ])
+          vec_replacement = vec_anchor + '\n' + '\n'.join([
+              'const finiteVec2Schema = z.tuple([',
+              '  z.number().finite(),',
+              '  z.number().finite(),',
+              ']);',
+          ])
+          if text.count(vec_anchor) != 1:
+              raise SystemExit('Unexpected finiteVec3 schema anchor')
+          text = text.replace(vec_anchor, vec_replacement, 1)
+
+          params_start = text.index('export const modifyCubeParameters = z.object({')
+          params_end = text.index('\n\nexport const modifyCubesBatchParameters', params_start)
+          params = text[params_start:params_end]
+          old_uv = '\n'.join([
+              '  uv_offset: z',
+              '    .array(z.number()).length(2)',
+              '    .optional()',
+              '    .describe("UV offset for the texture."),',
+          ])
+          new_uv = '\n'.join([
+              '  uv_offset: finiteVec2Schema',
+              '    .optional()',
+              '    .describe("Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."),',
+          ])
+          old_shade = '\n'.join([
+              '  shade: z',
+              '    .boolean()',
+              '    .optional()',
+              '    .describe("Whether to apply shading to the cube."),',
+          ])
+          old_inflate = '  inflate: z.number().optional().describe("Inflation amount for the cube."),'
+          new_inflate = '  inflate: z.number().finite().optional().describe("Finite Bedrock Cube inflation amount."),'
+          old_color = '\n'.join([
+              '  color: z',
+              '    .number()',
+              '    .optional()',
+              '    .describe("Single digit to represent a color from a palette."),',
+          ])
+          for old in [old_uv, old_shade, old_inflate, old_color]:
+              if params.count(old) != 1:
+                  raise SystemExit(f'Unexpected modify_cube schema block: {old[:36]}')
+          params = params.replace(old_uv, new_uv, 1)
+          params = params.replace(old_shade, '', 1)
+          params = params.replace(old_inflate, new_inflate, 1)
+          params = params.replace(old_color, '', 1)
+          if params.count('}).refine(') != 1:
+              raise SystemExit('Unexpected modify_cube refine boundary')
+          params = params.replace('}).refine(', '}).strict().refine(', 1)
+          text = text[:params_start] + params + text[params_end:]
+
+          old_desc = '      "Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.",'
+          new_desc = '      "Modifies one explicit Bedrock Cube transform/UV/inflate/visibility state. UUID is preferred; exact names must be unique. Generic Java-only shade/editor palette color controls are not accepted. Exact no-op requests fail before Undo; resulting state and `geometry_effect` record the authored change.",'
+          if text.count(old_desc) != 1:
+              raise SystemExit('Unexpected modify_cube description')
+          text = text.replace(old_desc, new_desc, 1)
+
+          state_start = text.index('function finalCubeState(cube: Cube) {')
+          state_end = text.index('\n\ntype CubeAuthoredState', state_start)
+          new_state = '\n'.join([
+              'function finalCubeState(cube: Cube) {',
+              '  const from = [...cube.from] as [number, number, number];',
+              '  const to = [...cube.to] as [number, number, number];',
+              '  requireFiniteCubeSpan(from, to, `Cube ${cube.name} (${cube.uuid})`);',
+              '  const size = [',
+              '    to[0] - from[0],',
+              '    to[1] - from[1],',
+              '    to[2] - from[2],',
+              '  ] as [number, number, number];',
+              '  const uvOffset = [...cube.uv_offset] as [number, number];',
+              '  if (uvOffset.length !== 2 || uvOffset.some((value) => !Number.isFinite(value))) {',
+              '    throw new Error(',
+              '      `Cube ${cube.name} (${cube.uuid}) has a non-finite box-UV offset and cannot be reported safely.`',
+              '    );',
+              '  }',
+              '  const inflate = cube.inflate ?? 0;',
+              '  if (!Number.isFinite(inflate)) {',
+              '    throw new Error(',
+              '      `Cube ${cube.name} (${cube.uuid}) has a non-finite inflate value and cannot be reported safely.`',
+              '    );',
+              '  }',
+              '',
+              '  return {',
+              '    uuid: cube.uuid,',
+              '    name: cube.name,',
+              '    from,',
+              '    to,',
+              '    size,',
+              '    origin: [...cube.origin] as [number, number, number],',
+              '    rotation: [...cube.rotation] as [number, number, number],',
+              '    inflate,',
+              '    box_uv: cube.box_uv,',
+              '    uv_offset: uvOffset,',
+              '    mirror_uv: cube.mirror_uv,',
+              '    autouv: cube.autouv,',
+              '    visibility: cube.visibility !== false,',
+              '  };',
+              '}',
+          ])
+          text = text[:state_start] + new_state + text[state_end:]
+
+          vec3_equal = '\n'.join([
+              'function vec3Equal(a: readonly number[], b: readonly number[]): boolean {',
+              '  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];',
+              '}',
+          ])
+          vec_equal_replacement = vec3_equal + '\n\n' + '\n'.join([
+              'function vec2Equal(a: readonly number[], b: readonly number[]): boolean {',
+              '  return a[0] === b[0] && a[1] === b[1];',
+              '}',
+          ])
+          if text.count(vec3_equal) != 1:
+              raise SystemExit('Unexpected vec3Equal helper')
+          text = text.replace(vec3_equal, vec_equal_replacement, 1)
+
+          effect_start = text.index('function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState) {')
+          effect_end = text.index('\n\nfunction resolveUniqueCube', effect_start)
+          new_effect = '\n'.join([
+              'function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState) {',
+              '  const changedFields: string[] = [];',
+              '  if (before.name !== after.name) changedFields.push("name");',
+              '  if (!vec3Equal(before.from, after.from)) changedFields.push("from");',
+              '  if (!vec3Equal(before.to, after.to)) changedFields.push("to");',
+              '  if (!vec3Equal(before.origin, after.origin)) changedFields.push("origin");',
+              '  if (!vec3Equal(before.rotation, after.rotation)) changedFields.push("rotation");',
+              '  if (before.inflate !== after.inflate) changedFields.push("inflate");',
+              '  if (before.box_uv !== after.box_uv) changedFields.push("box_uv");',
+              '  if (!vec2Equal(before.uv_offset, after.uv_offset)) changedFields.push("uv_offset");',
+              '  if (before.mirror_uv !== after.mirror_uv) changedFields.push("mirror_uv");',
+              '  if (before.autouv !== after.autouv) changedFields.push("autouv");',
+              '  if (before.visibility !== after.visibility) changedFields.push("visibility");',
+              '',
+              '  return {',
+              '    changed_fields: changedFields,',
+              '    center_delta: vec3Delta(cubeStateCenter(after), cubeStateCenter(before)),',
+              '    size_delta: vec3Delta(after.size, before.size),',
+              '    origin_delta: vec3Delta(after.origin, before.origin),',
+              '    rotation_delta: vec3Delta(after.rotation, before.rotation),',
+              '    inflate_delta: after.inflate - before.inflate,',
+              '    uv_offset_delta: [',
+              '      after.uv_offset[0] - before.uv_offset[0],',
+              '      after.uv_offset[1] - before.uv_offset[1],',
+              '    ] as [number, number],',
+              '    mirror_uv_changed: before.mirror_uv !== after.mirror_uv,',
+              '    autouv_changed: before.autouv !== after.autouv,',
+              '    visibility_changed: before.visibility !== after.visibility,',
+              '  };',
+              '}',
+              '',
+              'type ModifyCubeRequest = z.infer<typeof modifyCubeParameters>;',
+              '',
+              'function modifyCubeRequestWouldChange(',
+              '  cube: Cube,',
+              '  update: ModifyCubeRequest',
+              '): boolean {',
+              '  return (',
+              '    (update.name !== undefined && update.name !== cube.name) ||',
+              '    (update.origin !== undefined && !vec3Equal(update.origin, cube.origin)) ||',
+              '    (update.from !== undefined && !vec3Equal(update.from, cube.from)) ||',
+              '    (update.to !== undefined && !vec3Equal(update.to, cube.to)) ||',
+              '    (update.rotation !== undefined && !vec3Equal(update.rotation, cube.rotation)) ||',
+              '    (update.uv_offset !== undefined && !vec2Equal(update.uv_offset, cube.uv_offset)) ||',
+              '    (update.autouv !== undefined && Number(update.autouv) !== cube.autouv) ||',
+              '    (update.mirror_uv !== undefined && update.mirror_uv !== cube.mirror_uv) ||',
+              '    (update.inflate !== undefined && update.inflate !== (cube.inflate ?? 0)) ||',
+              '    (update.visibility !== undefined && update.visibility !== (cube.visibility !== false))',
+              '  );',
+              '}',
+          ])
+          text = text[:effect_start] + new_effect + text[effect_end:]
+
+          destructure_old = '\n'.join([
+              '    mirror_uv,',
+              '    shade,',
+              '    inflate,',
+              '    color,',
+              '    visibility,',
+          ])
+          destructure_new = '\n'.join([
+              '    mirror_uv,',
+              '    inflate,',
+              '    visibility,',
+          ])
+          if text.count(destructure_old) != 1:
+              raise SystemExit('Unexpected modify_cube execute destructuring')
+          text = text.replace(destructure_old, destructure_new, 1)
+
+          preflight_anchor = '\n'.join([
+              '    requireFiniteCubeSpan(',
+              '      from ?? cubes[0].from,',
+              '      to ?? cubes[0].to,',
+              '      `Cube ${cubes[0].name} (${cubes[0].uuid}) update`',
+              '    );',
+              '',
+              '    const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });',
+          ])
+          preflight_replacement = '\n'.join([
+              '    requireFiniteCubeSpan(',
+              '      from ?? cubes[0].from,',
+              '      to ?? cubes[0].to,',
+              '      `Cube ${cubes[0].name} (${cubes[0].uuid}) update`',
+              '    );',
+              '    if (!modifyCubeRequestWouldChange(cubes[0], {',
+              '      id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, visibility,',
+              '    })) {',
+              '      throw new Error(',
+              '        `modify_cube request for Cube ${cubes[0].name} (${cubes[0].uuid}) has no authored effect; every supplied value already matches current state.`',
+              '      );',
+              '    }',
+              '',
+              '    const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });',
+          ])
+          if text.count(preflight_anchor) != 1:
+              raise SystemExit('Unexpected modify_cube preflight anchor')
+          text = text.replace(preflight_anchor, preflight_replacement, 1)
+
+          old_spreads = '\n'.join([
+              '          ...(mirror_uv !== undefined ? { mirror_uv } : {}),',
+              '          ...(inflate !== undefined ? { inflate } : {}),',
+              '          ...(color !== undefined ? { color } : {}),',
+              '          ...(visibility !== undefined ? { visibility } : {}),',
+              '          ...(shade !== undefined ? { shade } : {}),',
+          ])
+          new_spreads = '\n'.join([
+              '          ...(mirror_uv !== undefined ? { mirror_uv } : {}),',
+              '          ...(inflate !== undefined ? { inflate } : {}),',
+              '          ...(visibility !== undefined ? { visibility } : {}),',
+          ])
+          if text.count(old_spreads) != 1:
+              raise SystemExit('Unexpected modify_cube extend fields')
+          path.write_text(text.replace(old_spreads, new_spreads, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/model-effectiveness-correction-accuracy.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '    expect(() =>\n      modifyCubeParameters.parse({ id: "cube-1", to: [Infinity, 1, 1] })\n    ).toThrow();'
+          extra = '\n'.join([
+              marker,
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", uv_offset: [0, Infinity] }).success).toBe(false);',
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", inflate: Infinity }).success).toBe(false);',
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", uv_offset: [4, 8] }).success).toBe(true);',
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", inflate: 0.25 }).success).toBe(true);',
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", shade: false }).success).toBe(false);',
+              '    expect(modifyCubeParameters.safeParse({ id: "cube-1", color: 2 }).success).toBe(false);',
+          ])
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected single-Cube mutation test marker')
+          test = test.replace(marker, extra, 1)
+
+          effect_marker = '    expect(cubes).toContain("rotation_delta");'
+          effect_extra = '\n'.join([
+              effect_marker,
+              '    expect(cubes).toContain("inflate_delta");',
+              '    expect(cubes).toContain("uv_offset_delta");',
+              '    expect(cubes).toContain("mirror_uv_changed");',
+              '    expect(cubes).toContain("autouv_changed");',
+              '    expect(cubes).toContain("modifyCubeRequestWouldChange");',
+              '    expect(cubes).toContain("has no authored effect");',
+          ])
+          if test.count(effect_marker) != 1:
+              raise SystemExit('Unexpected Cube effect test marker')
+          test = test.replace(effect_marker, effect_extra, 1)
+
+          source_marker = '    expect(cubes).not.toContain(\'Undo.finishEdit("Agent corrected multiple cubes")\');'
+          source_extra = '\n'.join([
+              source_marker,
+              '    const modifyStart = cubes.indexOf("export const modifyCubeParameters");',
+              '    const batchStart = cubes.indexOf("export const modifyCubesBatchParameters", modifyStart);',
+              '    const modifySchema = cubes.slice(modifyStart, batchStart);',
+              '    expect(modifySchema).toContain("uv_offset: finiteVec2Schema");',
+              '    expect(modifySchema).toContain("inflate: z.number().finite()");',
+              '    expect(modifySchema).toContain("}).strict().refine(");',
+              '    expect(modifySchema).not.toContain("shade:");',
+              '    expect(modifySchema).not.toContain("color:");',
+          ])
+          if test.count(source_marker) != 1:
+              raise SystemExit('Unexpected Cube source assertion marker')
+          test_path.write_text(test.replace(source_marker, source_extra, 1), encoding='utf-8')
+
+          audit_path = Path('docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md')
+          audit = audit_path.read_text(encoding='utf-8')
+          anchor = '### validator references\n'
+          section = '\n'.join([
+              '### `modify_cube` authored-state boundary',
+              '',
+              '**NARROW + HARDEN** single-Cube correction to state that is useful to Bedrock modelling.',
+              '',
+              'Bedrock geometry compilation serializes Cube `inflate`, box-UV `uv_offset`, and conditional UV mirror, while native Cube `shade` is Java-shading-feature state and editor palette `color` is not part of Bedrock geometry output. `modify_cube` therefore rejects generic `shade`/`color` inputs, requires finite `inflate`/`uv_offset`, and keeps UV authoring controls that can affect Bedrock UV state.',
+              '',
+              'The mutation result now owns the same state it can change: name, transform, inflate, box-UV context, UV offset, mirror, autouv, and visibility. Exact same-value requests fail before Undo instead of creating false progress. Batch correction scope is unchanged.',
+              '',
+          ])
+          if audit.count(anchor) != 1:
+              raise SystemExit('Unexpected generic semantics audit anchor')
+          audit_path.write_text(audit.replace(anchor, section + anchor, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Cube authoring inputs now keep identity and UV intent deterministic. Create/rename Cube names cannot be empty. `place_cube` no longer exposes generic per-Cube texture selection, `faces:false`, or face-name-only texture routing because Bedrock Entity is native `single_texture` and those paths either do not own effective texture selection or depend on ambient editor face state. Default UV intent inherits the project mode; explicit non-empty custom face UV rectangles require finite values and make only the new Cube per-face UV (`box_uv=false`). No arbitrary Cube-batch size cap, separate UV framework, or face-disable capability was added.'
+          extra = '\n\n`modify_cube` now matches the same Bedrock boundary: `uv_offset` and `inflate` must be finite, generic Java-only `shade` and editor palette `color` inputs are rejected, and exact same-value requests fail before Undo. Single-Cube before/after state and `geometry_effect.changed_fields` now include the Bedrock-relevant UV/inflate controls the tool can actually change, preventing successful UV/inflate edits from being misreported as “no geometry/visibility change”. Batch correction capability is unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected Cube continuity paragraph')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Measure callable tools-list
+        working-directory: mcp
+        run: |
+          cat > .measure-modify-cube.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+          const server = new McpServer({ name: "blockit-modify-cube-audit", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: { accept: "application/json, text/event-stream", "content-type": "application/json", "mcp-protocol-version": "2025-06-18" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const modify = tools.find((tool) => tool.name === "modify_cube");
+            const schema = JSON.stringify(modify?.inputSchema ?? {});
+            const metrics = {
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              modify_cube_schema_characters: schema.length,
+              modify_has_shade: schema.includes('"shade"'),
+              modify_has_color: schema.includes('"color"'),
+            };
+            console.log(JSON.stringify(metrics));
+            await Bun.write(".modify-cube-wire.json", JSON.stringify(metrics));
+            if (metrics.enabled_tools !== 63 || metrics.modify_has_shade || metrics.modify_has_color) throw new Error(`Unexpected modify_cube wire contract: ${JSON.stringify(metrics)}`);
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .measure-modify-cube.ts
+          rm .measure-modify-cube.ts
+
+      - name: Record wire measurement
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          metrics = json.loads(Path('mcp/.modify-cube-wire.json').read_text(encoding='utf-8'))
+          Path('mcp/.modify-cube-wire.json').unlink()
+
+          next_path = Path('docs/knowledge/next-action.md')
+          text = next_path.read_text(encoding='utf-8')
+          prefix = 'The actual stateless MCP `tools/list` wire surface is currently **63 enabled tools / '
+          start = text.find(prefix)
+          if start < 0:
+              raise SystemExit('Current 63-tool wire paragraph not found')
+          end = text.find('\n\n', start)
+          new = f"The actual stateless MCP `tools/list` wire surface is currently **{metrics['enabled_tools']} enabled tools / {metrics['response_characters']:,} response characters**, including **{metrics['input_schema_characters']:,} characters of input schemas** and **{metrics['description_characters']:,} characters of tool descriptions**. `place_cube` no longer exposes per-Cube texture selection, and `modify_cube` is now {metrics['modify_cube_schema_characters']:,} schema characters without generic `shade`/`color` controls. Historical wire totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture."
+          text = text[:start] + new + text[end:]
+          next_path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-modify-cube-bedrock-state.yml
+          git add mcp/server/tools/cubes.ts mcp/tests/model-effectiveness-correction-accuracy.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md docs/knowledge/next-action.md
+          git commit -m 'fix: align modify_cube with Bedrock authored state'
+          git push origin HEAD:Local
