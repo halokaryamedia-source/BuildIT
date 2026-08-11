@@ -243,7 +243,7 @@ function structuredResult(state: ReturnType<typeof locatorState> | ReturnType<ty
     content: [
       {
         type: "text" as const,
-        text: JSON.stringify(state, null, 2),
+        text: JSON.stringify(state),
       },
     ],
     structuredContent: state,
