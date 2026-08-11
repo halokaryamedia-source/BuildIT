@@ -1,5 +1,6 @@
 name: Finalize Codex Handoff
 
+# Retry after classifying documentation-audit.md as historical evidence.
 on:
   push:
     branches: [Local]
