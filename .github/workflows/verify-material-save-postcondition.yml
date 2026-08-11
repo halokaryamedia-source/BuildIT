@@ -1,0 +1,132 @@
+name: Verify Material Save Postcondition
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/verify-material-save-postcondition.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Require confirmed material config save
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/texture.ts')
+          source = source_path.read_text(encoding='utf-8')
+
+          helper_anchor = 'export function requireDistinctPbrChannelAssignments(\n'
+          helper = '\n'.join([
+            'export function requireMaterialConfigSavePostcondition(',
+            '  saved: boolean,',
+            '  fileExists: boolean,',
+            '  filePath: string',
+            '): void {',
+            '  if (saved && fileExists) return;',
+            '  throw new Error(',
+            '    `Material config save was not confirmed at "${filePath}". Ensure the color texture has a writable existing directory, then retry.`',
+            '  );',
+            '}',
+            '',
+          ])
+          if 'requireMaterialConfigSavePostcondition' not in source:
+              if source.count(helper_anchor) != 1:
+                  raise SystemExit('Unexpected PBR helper anchor')
+              source = source.replace(helper_anchor, helper + helper_anchor, 1)
+
+          old_desc = '      "Saves one explicit material/texture group\'s texture_set.json file to disk (Bedrock format). Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before save behavior. Requires the color texture to have a valid file path.",'
+          new_desc = '      "Saves one explicit material/texture group\'s Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.",'
+          if source.count(old_desc) != 1:
+              raise SystemExit('Unexpected save_material_config description')
+          source = source.replace(old_desc, new_desc, 1)
+
+          old_block = '\n'.join([
+            '      textureGroup.material_config.save();',
+            '',
+            '      return `Saved material config to "${filePath}"`;',
+          ])
+          new_block = '\n'.join([
+            '      const fs = requireNativeModule("fs");',
+            '      if (!fs) {',
+            '        throw new Error("File system access was denied. Cannot save texture_set.json.");',
+            '      }',
+            '',
+            '      textureGroup.material_config.save();',
+            '      requireMaterialConfigSavePostcondition(',
+            '        textureGroup.material_config.saved === true,',
+            '        fs.existsSync(filePath),',
+            '        filePath',
+            '      );',
+            '',
+            '      return `Saved material config to "${filePath}"`;',
+          ])
+          if source.count(old_block) != 1:
+              raise SystemExit('Unexpected save_material_config execution block')
+          source_path.write_text(source.replace(old_block, new_block, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/pbr-channel-contract.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          old_import = '  hasExactTextureGroupNameCollision,\n  requireDistinctPbrChannelAssignments,\n} from "@/server/tools/texture";'
+          new_import = '  hasExactTextureGroupNameCollision,\n  requireDistinctPbrChannelAssignments,\n  requireMaterialConfigSavePostcondition,\n} from "@/server/tools/texture";'
+          if old_import not in test:
+              old_import = 'import { configureMaterialParameters, requireDistinctPbrChannelAssignments } from "@/server/tools/texture";'
+              new_import = 'import { configureMaterialParameters, hasExactTextureGroupNameCollision, requireDistinctPbrChannelAssignments, requireMaterialConfigSavePostcondition } from "@/server/tools/texture";'
+          if test.count(old_import) != 1:
+              raise SystemExit('Unexpected PBR test import shape')
+          test = test.replace(old_import, new_import, 1)
+
+          marker = 'describe("PBR channel identity preflight", () => {'
+          addition = marker + '\n  test("material config save requires a confirmed native/file postcondition", async () => {\n    expect(() => requireMaterialConfigSavePostcondition(true, true, "/tmp/mat.texture_set.json")).not.toThrow();\n    expect(() => requireMaterialConfigSavePostcondition(false, true, "/tmp/mat.texture_set.json")).toThrow("save was not confirmed");\n    expect(() => requireMaterialConfigSavePostcondition(true, false, "/tmp/mat.texture_set.json")).toThrow("save was not confirmed");\n\n    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();\n    const start = source.indexOf("createTool(textureToolDocs[11].name");\n    const end = source.indexOf("createTool(textureToolDocs[12].name", start);\n    const block = source.slice(start, end);\n    expect(block).toContain("textureGroup.material_config.save()");\n    expect(block).toContain("fs.existsSync(filePath)");\n    expect(block.indexOf("requireMaterialConfigSavePostcondition")).toBeLessThan(block.indexOf("return `Saved material config"));\n  });\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected PBR test marker')
+          test_path.write_text(test.replace(marker, addition, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'TextureGroup/PBR creation also rejects an exact existing TextureGroup name before Undo. Native Blockbench `TextureGroup.add()` does not uniquify names, while BlockIT later material/group lookup accepts a name only when exact and unique; create tools therefore cannot introduce a name ambiguity that later calls cannot resolve. Case-only names remain distinct because the current resolver is case-sensitive.'
+          extra = '\n\n`save_material_config` now verifies the native save postcondition before reporting success: Blockbench must mark the material config saved and the target texture_set.json must exist. This prevents the MCP wrapper from claiming success when native save returns early, for example when the target directory is missing; native save ownership itself is unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected PBR continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/verify-material-save-postcondition.yml
+          git add mcp/server/tools/texture.ts mcp/tests/pbr-channel-contract.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: verify material config saves'
+          git push origin HEAD:Local
