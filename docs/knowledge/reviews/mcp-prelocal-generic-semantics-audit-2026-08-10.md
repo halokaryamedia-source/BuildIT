@@ -49,6 +49,8 @@ project  -> editable Blockbench .bbmodel
 
 Do not interpret this as animation reduction; Bedrock animations/controllers are owned by the separate native AnimationCodec and remain protected capability targets.
 
+`list_export_formats` is now **DEFAULT-DISABLED** from the normal callable surface. Its result only repeats the fixed `BLOCKIT_MODEL_CODEC_IDS` (`bedrock`, `project`) plus availability/compile metadata that `export_model` already validates at execution. The normal authoring skill calls `export_model` directly and does not consume the discovery tool. Source/catalog evidence is retained for maintainers; no export codec or artifact capability is removed.
+
 ### camera helpers
 
 Keep exposed:

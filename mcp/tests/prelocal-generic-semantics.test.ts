@@ -27,6 +27,15 @@ describe("pre-local generic semantics narrowing", () => {
     expect(exportModelParameters.safeParse({ codec_id: "gltf" }).success).toBe(false);
   });
 
+  test("fixed export-format discovery is default-disabled without removing export capability", async () => {
+    const exportSource = await source("server/tools/export.ts");
+    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(exportSource).toContain("exportToolDocs[0].status,\n    false");
+    expect(exportSource).toContain("BLOCKIT_MODEL_CODEC_IDS = [\"bedrock\", \"project\"]");
+    expect(exportSource).toContain("const codec = registry[codec_id]");
+    expect(skill).toContain("`export_model` supports:");
+    expect(skill).not.toContain("list_export_formats");
+  });
   test("generic full-app capture and editor-camera mutation are default-disabled", async () => {
     const camera = await source("server/tools/camera.ts");
     expect(camera).toContain("cameraToolDocs[1].status, false");

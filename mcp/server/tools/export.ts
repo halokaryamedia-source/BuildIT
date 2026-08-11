@@ -176,7 +176,8 @@ export function registerExportTools() {
         });
       },
     },
-    exportToolDocs[0].status
+    exportToolDocs[0].status,
+    false
   );
 
   createTool(
