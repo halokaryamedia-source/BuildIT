@@ -1,0 +1,92 @@
+name: Fix Texture Fill Alpha
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/fix-texture-fill-alpha.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Convert RGBA byte alpha to TinyColor alpha range
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          texture_path = Path('mcp/server/tools/texture.ts')
+          text = texture_path.read_text(encoding='utf-8')
+          old = '                a: Number(fill_color[3] ?? 255),'
+          new = '                a: Number(fill_color[3] ?? 255) / 255,'
+          if text.count(old) != 1:
+              raise SystemExit('Unexpected create_texture tuple alpha conversion')
+          texture_path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/asset-authoring-usage-slimming.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '  test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {'
+          addition = '\n'.join([
+              '  test("create_texture converts RGBA byte alpha to TinyColor alpha range", async () => {',
+              '    expect(',
+              '      createTextureParameters.safeParse({',
+              '        name: "translucent",',
+              '        fill_color: [255, 0, 0, 128],',
+              '        layer_name: "base",',
+              '      }).success',
+              '    ).toBe(true);',
+              '    const texture = await source("server/tools/texture.ts");',
+              '    expect(texture).toContain("a: Number(fill_color[3] ?? 255) / 255");',
+              '    expect(texture).not.toContain("a: Number(fill_color[3] ?? 255),");',
+              '  });',
+              '',
+          ])
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected asset-authoring test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = '`create_texture` pixel dimensions now require integer values within the existing 16..4096 range. Fractional pixel sizes are rejected at the MCP boundary; `create_project` is unchanged because it does not expose texture-dimension inputs, and no power-of-two restriction was added.'
+          extra = '\n\n`create_texture` RGBA tuple fill now converts the schema\'s 0..255 alpha byte to TinyColor\'s 0..1 alpha input. Previously any tuple alpha above 1 was normalized by TinyColor to fully opaque; hex/named color paths are unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected create_texture continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-texture-fill-alpha.yml
+          git add mcp/server/tools/texture.ts mcp/tests/asset-authoring-usage-slimming.test.ts docs/knowledge/next-action.md
+          git commit -m 'fix: preserve texture fill alpha'
+          git push origin HEAD:Local
