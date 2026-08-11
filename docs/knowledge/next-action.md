@@ -2,78 +2,79 @@
 
 Updated: 2026-08-12
 
-This is the **single active repository-continuation snapshot**. Root `AGENTS.md` still owns task routing.
+This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns task routing.
 
-## Active Goal
+## Current Goal
 
-Complete a **static pre-local efficiency cleanup** before any new Codex + Blockbench run.
+Hold the cleaned `Local` baseline stable until the user explicitly chooses the next product task or asks to begin a new local efficiency test.
 
-The user explicitly does **not** want another local run yet. Functional local acceptance already exists; the current phase is repository/source cleanup so the next local run happens only after the known static AI-slop and usage-waste boundaries have been reduced as far as source evidence safely allows.
+The user explicitly does **not** want another local Codex/Blockbench run yet. Functional local acceptance already exists, and the source-provable efficiency cleanup requested after that pass is now complete.
 
 ## Current Status
 
-`PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE`
+```text
+PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE
+```
 
 Working branch: **`Local` only**.
 
-Already completed in this cleanup:
+## Static Cleanup Completed
 
-- exact single-text JSON mirrors of `structuredContent` are compacted at the MCP reconstruction boundary;
-- concise text summaries, images, and canonical structured data are preserved;
-- regression coverage prevents the exact mirror from returning silently;
-- completed local-acceptance procedure is no longer default continuation context.
+### MCP result / output waste
 
-## In Scope Before The Next Local Run
+- exact single-text JSON mirrors of `structuredContent` are compacted centrally;
+- canonical structured data, meaningful text summaries, and images are preserved;
+- filesystem export remains metadata-first when a path already delivers the artifact;
+- regression coverage prevents exact structured/text duplication from returning silently.
 
-1. remove other source-provable response/output waste without weakening useful evidence;
-2. make high-frequency read/discovery defaults bounded and summary-first where source evidence already supports it;
-3. reduce repeated instruction ownership across root routing, asset orchestrator, specialists, and MCP workflow prompt while preserving one clear owner for every invariant;
-4. remove stale/current-state contradictions from active documentation and tests;
-5. improve client-facing schema clarity where this can be done without adding a router/profile or broadening capability;
-6. remove dead/duplicate repository guidance and generated-context paths that are not active product/runtime requirements;
-7. keep CI/static gates green after each bounded slice.
+### Read / discovery defaults
 
-## Do Not Do Yet
+- `get_project_info` uses a bounded top-level Group summary;
+- `list_outline` defaults to a compact hierarchy while larger explicit bounds remain available;
+- targeted element discovery defaults to 50 results while explicit larger limits remain available;
+- undo history defaults to 20 recent entries while deeper history remains explicitly available.
 
-Until static cleanup is exhausted, do **not**:
+### Context / instruction ownership
 
-- ask for or run another local Codex/Blockbench acceptance pass;
-- create a custom router/profile/readiness framework;
-- default-disable retained Bedrock Animation/Paint/Texture/Locator/material capability merely to reduce tool count;
-- infer token/latency savings that the client has not measured;
-- replace the current MCP/Blockbench transport or schema architecture;
-- reopen unrelated historical/deferred feature work.
+- root `AGENTS.md` owns routing/proof discipline only;
+- the asset orchestrator owns MCP lane/state reuse rather than modelling judgement;
+- modelling, texturing, and animation specialists own their domain decisions without repeated cross-domain procedure;
+- `CONTEXT.md` contains stable facts rather than active routing/procedure;
+- stale local-acceptance routing was removed from active docs.
 
-## Static Cleanup Rule
+### Runtime prompt / schema guidance
 
-Fix now when the waste is directly visible in source, for example:
+- runtime prompt bundle contains only callable `bedrock_entity_workflow`;
+- maintainer API/eval Markdown remains source reference and is not runtime-bundled;
+- Locator/Null Object create/update branch intent is explicit in client-facing descriptions;
+- current discriminated-union runtime validation is retained; no tool split/router was added.
 
-- duplicated payload representation;
-- oversized default reads with a clear smaller normal path;
-- repeated active instructions with an existing canonical owner;
-- stale continuation/status text;
-- ambiguous public descriptions that predictably invite invalid calls;
-- dead default surface entries or guidance already superseded by current product rules.
+### Regression / generated state
 
-Defer to the eventual local run when the claim depends on client behavior, for example:
+- static efficiency budgets lock instruction sizes, compact normal read defaults, 62 enabled tools, and a bounded default description surface;
+- generated MCP docs/runtime manifest are synchronized through their build owner;
+- capability count and retained Bedrock families were not reduced merely to make the catalog smaller.
 
-- whether Codex injects all 62 schemas or uses deferred search;
-- actual prompt/skill co-loading;
-- actual retry frequency;
-- image/token/latency cost in the client.
+## Intentionally Deferred Until A Future User-Requested Local Test
 
-## Continuation Boot
+Static source cannot establish:
 
-For this cleanup:
+- whether Codex injects all 62 schemas or uses native deferred/tool search;
+- actual prompt/skill co-loading behavior;
+- real token/context/latency savings;
+- actual invalid-call retry frequency;
+- image/context cost during realistic authoring.
 
-```text
-AGENTS.md
-→ this file
-→ affected source + nearest AGENTS.md
-→ one relevant specialist only when needed
-```
+These remain future evidence questions. Do not redesign registration architecture from static counts alone.
 
-Read `CONTEXT.md`, foundation docs, reviews, or the old local-acceptance runbook only when a concrete cleanup decision depends on them.
+## Do Not Reopen By Default
+
+- custom router/profile/readiness frameworks;
+- default-disabling retained Bedrock Animation/Paint/Texture/Locator/material capability;
+- mass schema trimming based only on size;
+- global arbitrary token/output limits;
+- completed local-acceptance procedure;
+- historical/deferred feature slices without a new reproduced defect or explicit product requirement.
 
 ## Protected Product Invariants
 
@@ -82,12 +83,24 @@ Read `CONTEXT.md`, foundation docs, reviews, or the old local-acceptance runbook
 - Visual gates remain `FAIL / UNVERIFIED / PASS`; `BLOCKED` remains valid.
 - Reuse fresh returned state before redundant reads.
 - Production texture/animation must not hide unresolved material geometry.
-- Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, or another format.
+- Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, Hytale, or another format.
+
+## Continuation Boot
+
+For future repository work:
+
+```text
+AGENTS.md
+→ this file
+→ CONTEXT.md only when stable facts matter
+→ affected source + nearest AGENTS.md
+→ one relevant specialist only when needed
+```
+
+The completed Local Acceptance Runbook is history/procedure only unless explicitly reactivated.
 
 ## Next Step
 
 ```text
-STATIC — continue source/context efficiency cleanup; no local run yet.
+WAIT — static cleanup complete; do not run local until the user explicitly requests testing or a new product task.
 ```
-
-The local efficiency trace becomes the final validation stage only after this static cleanup reaches a stable, CI-green boundary.
