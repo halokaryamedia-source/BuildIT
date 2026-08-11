@@ -1,0 +1,119 @@
+name: Harden Filesystem Import Path
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-filesystem-import-path.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Share and apply absolute filesystem path contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          util_path = Path('mcp/lib/util.ts')
+          util = util_path.read_text(encoding='utf-8')
+          anchor = 'import type { ToolContent } from "@modelcontextprotocol/sdk/types.js";\n'
+          helper = anchor + '\nexport function isAbsoluteFilesystemPath(value: string): boolean {\n  return (\n    value.startsWith("/") ||\n    /^[A-Za-z]:[\\\\/]/.test(value) ||\n    /^\\\\\\\\[^\\\\]+\\\\[^\\\\]+(?:\\\\|$)/.test(value)\n  );\n}\n'
+          if 'isAbsoluteFilesystemPath' not in util:
+              if util.count(anchor) != 1:
+                  raise SystemExit('Unexpected util import anchor')
+              util = util.replace(anchor, helper, 1)
+          util_path.write_text(util, encoding='utf-8')
+
+          export_path = Path('mcp/server/tools/export.ts')
+          export = export_path.read_text(encoding='utf-8')
+          import_anchor = 'import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";\n'
+          import_new = import_anchor + 'import { isAbsoluteFilesystemPath } from "@/lib/util";\n'
+          if 'isAbsoluteFilesystemPath' not in export:
+              if export.count(import_anchor) != 1:
+                  raise SystemExit('Unexpected export import anchor')
+              export = export.replace(import_anchor, import_new, 1)
+          helper_start = export.index('function isAbsoluteOutputPath(value: string): boolean {')
+          helper_end = export.index('\n}\n\nexport const exportModelParameters', helper_start) + 3
+          export = export[:helper_start] + export[helper_end:]
+          export = export.replace('.refine(isAbsoluteOutputPath, {', '.refine(isAbsoluteFilesystemPath, {', 1)
+          export_path.write_text(export, encoding='utf-8')
+
+          texture_path = Path('mcp/server/tools/texture.ts')
+          texture = texture_path.read_text(encoding='utf-8')
+          old_import = 'import { imageContent, getChannelTextureInfo } from "@/lib/util";'
+          new_import = 'import {\n  imageContent,\n  getChannelTextureInfo,\n  isAbsoluteFilesystemPath,\n} from "@/lib/util";'
+          if texture.count(old_import) != 1:
+              raise SystemExit('Unexpected texture util import')
+          texture = texture.replace(old_import, new_import, 1)
+          old_schema = 'export const importTextureSetParameters = z.object({\n  path: z\n    .string()\n    .describe(\n      "Path to the .texture_set.json file to import."\n    ),\n});'
+          new_schema = 'export const importTextureSetParameters = z.object({\n  path: z\n    .string()\n    .refine(isAbsoluteFilesystemPath, {\n      message:\n        "Texture-set import path must be absolute: use a POSIX `/...` path, a Windows drive path such as `C:\\\\...`, or a UNC path such as `\\\\\\\\server\\\\share\\\\...`.",\n    })\n    .describe("Absolute path to the .texture_set.json file to import."),\n});'
+          if texture.count(old_schema) != 1:
+              raise SystemExit('Unexpected import_texture_set path schema')
+          texture = texture.replace(old_schema, new_schema, 1)
+          old_error = '          "Path must end with \'.texture_set.json\'. Example: \'path/to/mytexture.texture_set.json\'"'
+          new_error = '          "Path must end with \'.texture_set.json\'. Example: \'/absolute/path/mytexture.texture_set.json\'"'
+          if texture.count(old_error) != 1:
+              raise SystemExit('Unexpected texture-set extension error')
+          texture_path.write_text(texture.replace(old_error, new_error, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/asset-authoring-usage-slimming.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          old_import = 'import { exportModelParameters } from "@/server/tools/export";'
+          new_import = old_import + '\nimport { importTextureSetParameters } from "@/server/tools/texture";'
+          if 'importTextureSetParameters' not in test:
+              if test.count(old_import) != 1:
+                  raise SystemExit('Unexpected asset usage import anchor')
+              test = test.replace(old_import, new_import, 1)
+          marker = '  test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {'
+          addition = '  test("filesystem import and export paths are deterministic", () => {\n    for (const path of [\n      "/tmp/material.texture_set.json",\n      "C:\\\\Exports\\\\material.texture_set.json",\n      "D:/Exports/material.texture_set.json",\n      "\\\\\\\\server\\\\share\\\\material.texture_set.json",\n    ]) {\n      expect(importTextureSetParameters.safeParse({ path }).success).toBe(true);\n    }\n    for (const path of [\n      "material.texture_set.json",\n      "textures/material.texture_set.json",\n      ".\\\\material.texture_set.json",\n      "C:material.texture_set.json",\n    ]) {\n      expect(importTextureSetParameters.safeParse({ path }).success).toBe(false);\n    }\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected asset usage test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A create-identity schema audit found that project, texture, TextureGroup/PBR material, and animation creation still accepted the empty string even though those values become later lookup identities. Those five create contracts now require a non-empty name, matching the existing Group/Locator/Null Object boundary. No new uniqueness, normalization, or naming framework was added.'
+          extra = '\n\nFilesystem path ownership is now consistent across model export and texture-set import: both require an absolute POSIX, Windows-drive, or UNC path before filesystem access. The shared check is a small pure helper reused by the two existing callers; no filesystem abstraction/framework was introduced.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected create identity continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-filesystem-import-path.yml
+          git add mcp/lib/util.ts mcp/server/tools/export.ts mcp/server/tools/texture.ts mcp/tests/asset-authoring-usage-slimming.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: require absolute texture set import paths'
+          git push origin HEAD:Local
