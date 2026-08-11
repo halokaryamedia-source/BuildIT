@@ -1,5 +1,5 @@
 name: "Clean Pre-local Slop"
-# Final retry after canonical prompt compaction.
+# Final verification after restoring canonical minimum-evidence wording.
 
 on:
   push:
