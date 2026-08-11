@@ -90,6 +90,14 @@ export const filterByMaterialParameters = z.object({
     .describe(
       "Include the list of cube face keys (e.g., 'north') that reference the texture."
     ),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(1000)
+    .optional()
+    .default(200)
+    .describe("Maximum matching Cubes to return."),
 });
 
 export const getSelectionParameters = z.object({});
@@ -242,7 +250,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "filter_by_material",
     description:
-      "Returns Cubes that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. Matching cube face keys are included when requested. This tool is read-only and does not activate, paint, or mutate textures.",
+      "Returns a bounded list of Cubes that reference one explicit texture. Texture identity resolves UUID/ID/unique exact name; matching face keys are optional and truncation is reported only when an additional match exists. Read-only; it does not activate, paint, or mutate textures.",
     annotations: {
       title: "Filter Elements by Material",
       readOnlyHint: true,
@@ -722,9 +730,9 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
       ];
 
       const matches: IElementMatch[] = [];
+      let truncated = false;
 
       for (const el of candidates) {
-        if (matches.length >= limit) break;
 
         const elType = getElementType(el);
         if (!elType) continue;
@@ -737,6 +745,10 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           if (exceedsBounds(cubeSize(el), min_size, max_size)) continue;
         }
 
+        if (matches.length >= limit) {
+          truncated = true;
+          break;
+        }
         matches.push({
           uuid: el.uuid,
           name: el.name,
@@ -748,7 +760,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
       return JSON.stringify(
         {
           count: matches.length,
-          truncated: matches.length >= limit,
+          truncated,
           matches,
         }
       );
@@ -797,9 +809,10 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
 
   createTool(elementToolDocs[7].name, {
     ...elementToolDocs[7],
-    async execute({ texture, include_face_keys }) {
+    async execute({ texture, include_face_keys, limit }) {
       const tex = resolveUniqueTextureForDiscovery(texture);
       const matches: IFilterByMaterialMatch[] = [];
+      let truncated = false;
 
       for (const cube of Cube.all) {
         const faceKeys: string[] = [];
@@ -810,6 +823,10 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           }
         }
         if (faceKeys.length > 0) {
+          if (matches.length >= limit) {
+            truncated = true;
+            break;
+          }
           matches.push({
             uuid: cube.uuid,
             name: cube.name,
@@ -823,6 +840,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
         {
           texture: { uuid: tex.uuid, name: tex.name },
           count: matches.length,
+          truncated,
           matches,
         }
       );

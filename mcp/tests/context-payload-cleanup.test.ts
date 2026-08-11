@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
-import { listOutlineParameters } from "@/server/tools/element";
+import {
+  filterByMaterialParameters,
+  listOutlineParameters,
+} from "@/server/tools/element";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -98,6 +101,29 @@ describe("pre-local context and payload cleanup", () => {
     const materialReads = texture.slice(materialStart, materialEnd);
     expect(materialReads).not.toContain("JSON.stringify(result, null, 2)");
     expect(materialReads).toContain("JSON.stringify(result)");
+  });
+
+  test("element discovery reports truncation only after an extra match", async () => {
+    expect(filterByMaterialParameters.parse({ texture: "tex" }).limit).toBe(200);
+    expect(
+      filterByMaterialParameters.safeParse({ texture: "tex", limit: 1001 }).success
+    ).toBe(false);
+
+    const elements = await source("server/tools/element.ts");
+    const findStart = elements.indexOf("createTool(elementToolDocs[5].name");
+    const findEnd = elements.indexOf("createTool(elementToolDocs[6].name", findStart);
+    const findBlock = elements.slice(findStart, findEnd);
+    expect(findBlock).toContain("let truncated = false");
+    expect(findBlock).toContain("if (matches.length >= limit) {");
+    expect(findBlock).toContain("truncated,");
+    expect(findBlock).not.toContain("truncated: matches.length >= limit");
+
+    const materialStart = elements.indexOf("createTool(elementToolDocs[7].name");
+    const materialEnd = elements.indexOf("createTool(elementToolDocs[8].name", materialStart);
+    const materialBlock = elements.slice(materialStart, materialEnd);
+    expect(materialBlock).toContain("async execute({ texture, include_face_keys, limit })");
+    expect(materialBlock).toContain("let truncated = false");
+    expect(materialBlock).toContain("truncated,");
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {
