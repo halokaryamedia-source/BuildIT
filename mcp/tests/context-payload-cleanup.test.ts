@@ -17,7 +17,7 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("pre-local context and payload cleanup", () => {
+describe("context and payload cleanup", () => {
   test("canonical workflow stays compact while preserving hard validity invariants", async () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
     expect(workflow.length).toBeLessThan(9_000);
@@ -192,18 +192,18 @@ describe("pre-local context and payload cleanup", () => {
     expect(block).not.toContain("destructiveHint: true");
   });
 
-  test("continuity stays compact and local-only after non-local readiness", async () => {
+  test("continuity stays compact after local acceptance and points to efficiency evidence", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("context_mode");
     expect(next.length).toBeLessThan(8_000);
-    expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
+    expect(next).toContain("LOCAL_ACCEPTANCE_COMPLETE");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("LOCAL — follow operations/local-acceptance-runbook.md");
+    expect(next).toContain("LOCAL — run one fresh Codex efficiency trace");
+    expect(next).not.toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
+    expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
     expect(next).not.toContain("If continuing non-local work");
-    expect(next).not.toContain("The current source slice has hardened");
   });
-
 });
