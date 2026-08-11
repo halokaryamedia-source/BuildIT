@@ -159,6 +159,8 @@ Locator and Null Object creation now share deterministic exact-name behavior: bo
 
 Locator/Null Object authored transforms now require finite 3D coordinates at the MCP boundary. Their resulting/read state also refuses to serialize a pre-existing non-finite position/rotation, preventing `JSON.stringify` from silently turning poisoned numeric state into `null`. Parent, Undo, serialization, and family ownership are unchanged.
 
+`inspect_element` now applies the same truthful numeric evidence rule across Cube, Group, Locator, and Null Object transforms. Pre-existing non-finite authored coordinates cause an explicit inspection error instead of being serialized as JSON `null`; identity resolution and inspection payload shape are otherwise unchanged.
+
 ## Protected Native Capability Gaps
 
 The following remain Bedrock Entity product requirements even where direct MCP ownership is incomplete:

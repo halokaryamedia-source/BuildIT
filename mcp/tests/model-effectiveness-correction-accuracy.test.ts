@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { modifyCubeParameters, placeCubeParameters } from "@/server/tools/cubes";
+import { requireFiniteInspectableVector3 } from "@/server/tools/element-inspection";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -40,6 +41,11 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toBe(false);
   });
 
+  test("focused element inspection refuses non-finite transform evidence", () => {
+    expect(requireFiniteInspectableVector3([1, 2, 3], "test")).toEqual([1, 2, 3]);
+    expect(() => requireFiniteInspectableVector3([Infinity, 0, 0], "test")).toThrow("non-finite authored transform");
+    expect(() => requireFiniteInspectableVector3([0, 0], "test")).toThrow("non-finite authored transform");
+  });
   test("Cube authoring rejects finite endpoints that produce non-finite size", () => {
     expect(() =>
       placeCubeParameters.parse({

@@ -83,11 +83,24 @@ function parentInfo(
     : null;
 }
 
+export function requireFiniteInspectableVector3(
+  values: readonly number[],
+  context: string
+): [number, number, number] {
+  if (values.length !== 3 || values.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `${context} contains a non-finite authored transform and cannot be reported safely.`
+    );
+  }
+  return [values[0], values[1], values[2]];
+}
 function cubeSize(cube: Cube): [number, number, number] {
+  const from = requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`);
+  const to = requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`);
   const size = [
-    cube.to[0] - cube.from[0],
-    cube.to[1] - cube.from[1],
-    cube.to[2] - cube.from[2],
+    to[0] - from[0],
+    to[1] - from[1],
+    to[2] - from[2],
   ] as [number, number, number];
   if (size.some((value) => !Number.isFinite(value))) {
     throw new Error(
@@ -105,16 +118,16 @@ function inspectCube(cube: Cube) {
     type: "cube" as const,
     authored_space: "blockbench_model" as const,
     parent: parentInfo(cube),
-    from: [...cube.from] as [number, number, number],
-    to: [...cube.to] as [number, number, number],
+    from: requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`),
+    to: requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`),
     size,
     center: [
       cube.from[0] + size[0] / 2,
       cube.from[1] + size[1] / 2,
       cube.from[2] + size[2] / 2,
     ] as [number, number, number],
-    origin: [...cube.origin] as [number, number, number],
-    rotation: [...cube.rotation] as [number, number, number],
+    origin: requireFiniteInspectableVector3(cube.origin, `Cube ${cube.name} (${cube.uuid}) origin`),
+    rotation: requireFiniteInspectableVector3(cube.rotation, `Cube ${cube.name} (${cube.uuid}) rotation`),
     visibility: cube.visibility !== false,
   };
 }
@@ -126,8 +139,8 @@ function inspectGroup(group: Group) {
     type: "group" as const,
     authored_space: "blockbench_model" as const,
     parent: parentInfo(group),
-    origin: [...group.origin] as [number, number, number],
-    rotation: [...group.rotation] as [number, number, number],
+    origin: requireFiniteInspectableVector3(group.origin, `Group ${group.name} (${group.uuid}) origin`),
+    rotation: requireFiniteInspectableVector3(group.rotation, `Group ${group.name} (${group.uuid}) rotation`),
     visibility: group.visibility !== false,
     children_count: group.children?.length ?? 0,
   };
@@ -140,8 +153,8 @@ function inspectLocator(locator: Locator) {
     type: "locator" as const,
     authored_space: "blockbench_model" as const,
     parent: parentInfo(locator),
-    position: [...locator.position] as [number, number, number],
-    rotation: [...locator.rotation] as [number, number, number],
+    position: requireFiniteInspectableVector3(locator.position, `Locator ${locator.name} (${locator.uuid}) position`),
+    rotation: requireFiniteInspectableVector3(locator.rotation, `Locator ${locator.name} (${locator.uuid}) rotation`),
     ignore_inherited_scale: locator.ignore_inherited_scale,
     visibility: locator.visibility !== false,
   };
@@ -154,7 +167,7 @@ function inspectNullObject(element: NullObject) {
     type: "null_object" as const,
     authored_space: "blockbench_model" as const,
     parent: parentInfo(element),
-    position: [...element.position] as [number, number, number],
+    position: requireFiniteInspectableVector3(element.position, `Null Object ${element.name} (${element.uuid}) position`),
     ik_target: element.ik_target || null,
     ik_source: element.ik_source || null,
     lock_ik_target_rotation: element.lock_ik_target_rotation,
