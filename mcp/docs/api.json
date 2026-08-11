@@ -1,11 +1,11 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T09:37:59.968Z",
+  "generatedAt": "2026-08-11T09:57:17.448Z",
   "tools": [
     {
       "name": "place_cube",
       "title": "Place Cube",
-      "description": "Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.",
+      "description": "Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -117,46 +117,19 @@
                 "description": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin.",
                 "markdownDescription": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
               },
-              "texture": {
-                "type": "string",
-                "description": "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail.",
-                "markdownDescription": "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail."
-              },
               "group": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.",
                 "markdownDescription": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
               },
               "faces": {
                 "anyOf": [
                   {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "north",
-                        "south",
-                        "east",
-                        "west",
-                        "up",
-                        "down"
-                      ]
-                    },
-                    "maxItems": 6,
-                    "description": "Unique Cube faces to apply the texture to.",
-                    "markdownDescription": "Unique Cube faces to apply the texture to."
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "not": {}
-                      },
-                      {
-                        "type": "boolean"
-                      }
-                    ],
-                    "description": "Whether to apply the texture to all faces. Set to `true` to enable auto UV mapping.",
-                    "markdownDescription": "Whether to apply the texture to all faces. Set to `true` to enable auto UV mapping."
+                    "type": "boolean",
+                    "const": true,
+                    "description": "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping.",
+                    "markdownDescription": "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping."
                   },
                   {
                     "type": "array",
@@ -173,8 +146,8 @@
                             "up",
                             "down"
                           ],
-                          "description": "Face to apply the texture to.",
-                          "markdownDescription": "Face to apply the texture to."
+                          "description": "Face whose per-face UV rectangle is overridden.",
+                          "markdownDescription": "Face whose per-face UV rectangle is overridden."
                         },
                         "uv": {
                           "type": "array",
@@ -183,8 +156,8 @@
                           },
                           "minItems": 4,
                           "maxItems": 4,
-                          "description": "Custom UV mapping for the face.",
-                          "markdownDescription": "Custom UV mapping for the face."
+                          "description": "Finite custom UV rectangle [u1,v1,u2,v2] for this face.",
+                          "markdownDescription": "Finite custom UV rectangle [u1,v1,u2,v2] for this face."
                         }
                       },
                       "required": [
@@ -193,14 +166,15 @@
                       ],
                       "additionalProperties": false
                     },
+                    "minItems": 1,
                     "maxItems": 6,
-                    "description": "Unique Cube faces with custom UV mapping.",
-                    "markdownDescription": "Unique Cube faces with custom UV mapping."
+                    "description": "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state.",
+                    "markdownDescription": "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state."
                   }
                 ],
                 "default": true,
-                "description": "Faces to apply the texture to. Set to `true` to enable auto UV mapping.",
-                "markdownDescription": "Faces to apply the texture to. Set to `true` to enable auto UV mapping."
+                "description": "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode.",
+                "markdownDescription": "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode."
               }
             },
             "required": [

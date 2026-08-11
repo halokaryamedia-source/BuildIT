@@ -187,6 +187,8 @@ Current actual stateless `tools/list` measurement after default-disabling generi
 
 A later Bedrock semantics audit also default-disabled `filter_by_material`, because it searched raw per-face `face.texture` identities that do not own effective texture selection in native `single_texture`. Current callable measurement after both containments: **63 tools / 73,149 response characters / 48,614 input-schema characters / 12,020 description characters**. Historical byte totals are retained as evidence, not compared as a controlled performance benchmark across different source states.
 
+After narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **63 tools**. Current wire size is **73,174 response characters / 48,551 input-schema characters / 12,108 description characters**, with `place_cube` at **2,531 schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target.
+
 The ranking audit produced this compact approximation:
 
 ```text

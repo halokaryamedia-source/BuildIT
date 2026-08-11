@@ -80,7 +80,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Place Cube</p>
-      <p class="card-desc">Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.</p>
+      <p class="card-desc">Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -97,20 +97,15 @@ bun run build
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Cubes to place. Each requires finite from/to; rotated Cubes also require origin. <span class="param-meta">[minItems: 1]</span></td>
     </tr><tr>
-      <td class="col-name">texture</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail.</td>
-    </tr><tr>
       <td class="col-name">group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.</td>
+      <td class="col-desc">Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">faces</td>
-      <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[] | unknown | boolean | object[]</td>
+      <td class="col-type">boolean | object[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Faces to apply the texture to. Set to `true` to enable auto UV mapping. <span class="param-meta">(default: <code>true</code>)</span></td>
+      <td class="col-desc">Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3020,7 +3015,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T09:37:59.968Z from Zod schemas
+        Generated 2026-08-11T09:57:17.448Z from Zod schemas
       </footer>
     </main>
   </div>

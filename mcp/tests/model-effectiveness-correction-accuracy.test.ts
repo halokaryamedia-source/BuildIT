@@ -27,6 +27,30 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(
       placeCubeParameters.safeParse({
         elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        texture: "legacy-per-cube-texture",
+      }).success
+    ).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: false,
+      }).success
+    ).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: ["north"],
+      }).success
+    ).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: [],
+      }).success
+    ).toBe(false);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
         faces: ["north", "north"],
       }).success
     ).toBe(false);
@@ -41,6 +65,30 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toBe(false);
   });
 
+  test("place_cube does not expose generic per-Cube texture selection or ambient face routing", async () => {
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: [{ face: "north", uv: [0, 0, 1, 1] }],
+      }).success
+    ).toBe(true);
+    expect(
+      placeCubeParameters.safeParse({
+        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],
+        faces: [{ face: "north", uv: [0, 0, Infinity, 1] }],
+      }).success
+    ).toBe(false);
+
+    const cubes = await source("server/tools/cubes.ts");
+    const start = cubes.indexOf("createTool(cubeToolDocs[0].name");
+    const end = cubes.indexOf("createTool(cubeToolDocs[1].name", start);
+    const block = cubes.slice(start, end);
+    expect(block).toContain("...(customFaceUvs ? { box_uv: false } : {})");
+    expect(block).toContain("cube.mapAutoUV()");
+    expect(block).not.toContain("cube.applyTexture(");
+    expect(cubes).not.toContain("resolvePlacementTexture");
+    expect(cubes).not.toContain("resolveCoreTexture");
+  });
   test("focused element inspection refuses non-finite transform evidence", () => {
     expect(requireFiniteInspectableVector3([1, 2, 3], "test")).toEqual([1, 2, 3]);
     expect(() => requireFiniteInspectableVector3([Infinity, 0, 0], "test")).toThrow("non-finite authored transform");

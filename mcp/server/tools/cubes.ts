@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { cubeSchema, faceEnum } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
-import { resolveCoreCube, resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
+import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";
 
 const finiteVec3Schema = z.tuple([
   z.number().finite(),
@@ -117,62 +117,56 @@ const cubeCorrectionUpdateSchema = z
     }
   );
 
-export const placeCubeParameters = z.object({
-  elements: z
-    .array(placeCubeElementSchema)
-    .min(1)
-    .describe(
-      "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
-    ),
-  texture: z
-    .string()
-    .optional()
-    .describe(
-      "Optional Texture UUID, exact ID, or unique exact name; unresolved/ambiguous references fail."
-    ),
-  group: z
-    .string()
-    .optional()
-    .describe(
-      "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
-    ),
-  faces: z
-    .union([
-      z
-        .array(faceEnum)
-        .max(6)
-        .refine((faces) => new Set(faces).size === faces.length, {
-          message: "Each Cube face may appear at most once.",
-        })
-        .describe("Unique Cube faces to apply the texture to."),
-      z
-        .boolean()
-        .optional()
-        .describe(
-          "Whether to apply the texture to all faces. Set to `true` to enable auto UV mapping."
-        ),
-      z
-        .array(
-          z.object({
-            face: faceEnum.describe("Face to apply the texture to."),
-            uv: z
-              .array(z.number()).length(4)
-              .describe("Custom UV mapping for the face."),
-          })
-        )
-        .max(6)
-        .refine(
-          (entries) => new Set(entries.map((entry) => entry.face)).size === entries.length,
-          { message: "Each custom-UV Cube face may appear at most once." }
-        )
-        .describe("Unique Cube faces with custom UV mapping."),
-    ])
-    .optional()
-    .default(true)
-    .describe(
-      "Faces to apply the texture to. Set to `true` to enable auto UV mapping."
-    ),
-});
+export const placeCubeParameters = z
+  .object({
+    elements: z
+      .array(placeCubeElementSchema)
+      .min(1)
+      .describe(
+        "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
+      ),
+    group: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
+      ),
+    faces: z
+      .union([
+        z
+          .literal(true)
+          .describe(
+            "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping."
+          ),
+        z
+          .array(
+            z.object({
+              face: faceEnum.describe("Face whose per-face UV rectangle is overridden."),
+              uv: z
+                .array(z.number().finite())
+                .length(4)
+                .describe("Finite custom UV rectangle [u1,v1,u2,v2] for this face."),
+            })
+          )
+          .min(1)
+          .max(6)
+          .refine(
+            (entries) =>
+              new Set(entries.map((entry) => entry.face)).size === entries.length,
+            { message: "Each custom-UV Cube face may appear at most once." }
+          )
+          .describe(
+            "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state."
+          ),
+      ])
+      .optional()
+      .default(true)
+      .describe(
+        "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode."
+      ),
+  })
+  .strict();
 
 export const modifyCubeParameters = z.object({
   id: z
@@ -267,7 +261,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.",
+      "Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -426,28 +420,14 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
   );
 }
 
-function resolvePlacementTexture(reference?: string): Texture | null {
-  if (reference === undefined) return Texture.getDefault() ?? null;
-  return resolveCoreTexture(
-    reference,
-    "Use list_textures to confirm the intended UUID or texture ID before placing Cubes."
-  );
-}
+
 
 export function registerCubesTools() {
 createTool(cubeToolDocs[0].name, {
   ...cubeToolDocs[0],
-  async execute({ elements, texture, faces, group }) {
-    // Resolve explicitly requested texture/hierarchy targets before opening Undo.
-    const projectTexture = resolvePlacementTexture(texture);
-
-    // Omitted group (or explicit "root") is the only intentional root fallback.
+  async execute({ elements, faces, group }) {
     const outlinerGroup = resolvePlacementGroup(group);
-
-    const autouv =
-      faces === true ||
-      (Array.isArray(faces) &&
-        faces.every((face) => typeof face === "string"));
+    const customFaceUvs = Array.isArray(faces);
 
     Undo.initEdit({
       elements: [],
@@ -459,27 +439,24 @@ createTool(cubeToolDocs[0].name, {
     try {
       cubes = elements.map((element: PlaceCubeElement) => {
         const cube = new Cube({
-          autouv: autouv ? 1 : 0,
+          autouv: customFaceUvs ? 0 : 1,
           name: element.name,
           from: element.from as [number, number, number],
           to: element.to as [number, number, number],
           origin: (element.origin ?? [0, 0, 0]) as [number, number, number],
           rotation: element.rotation as [number, number, number],
+          ...(customFaceUvs ? { box_uv: false } : {}),
         }).init();
 
         cube.addTo(outlinerGroup);
 
-        if (!autouv && Array.isArray(faces)) {
+        if (customFaceUvs) {
           faces.forEach(({ face, uv }) => {
             cube.faces[face].extend({
               uv: uv as [number, number, number, number],
             });
           });
-        } else if (projectTexture) {
-          cube.applyTexture(
-            projectTexture,
-            faces !== false ? faces : undefined
-          );
+        } else {
           cube.mapAutoUV();
         }
 
@@ -498,13 +475,14 @@ createTool(cubeToolDocs[0].name, {
       execution: "applied" as const,
       visual_verdict: "not_evaluated" as const,
       added: cubes.length,
+      uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,
       cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
     };
     return {
       content: [
         {
-type: "text" as const,
-text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"}. Execution succeeded; reference fidelity was not evaluated.`,
+          type: "text" as const,
+          text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}. Execution succeeded; reference fidelity was not evaluated.`,
         },
       ],
       structuredContent: result,

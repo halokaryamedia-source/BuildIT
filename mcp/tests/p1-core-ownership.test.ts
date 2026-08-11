@@ -128,9 +128,9 @@ describe("P1.3 core identity ownership", () => {
       readFile(new URL("../lib/util.ts", import.meta.url), "utf8"),
     ]);
 
-    expect(cubes).toContain("resolveCoreCube, resolveCoreGroup, resolveCoreTexture");
+    expect(cubes).toContain("resolveCoreCube, resolveCoreGroup");
     expect(cubes).toContain("return resolveCoreGroup(");
-    expect(cubes).toContain("return resolveCoreTexture(");
+    expect(cubes).not.toContain("resolveCoreTexture");
     expect(elements).toContain("resolveCoreGroup, resolveCoreTexture");
     expect(elements).toContain("return resolveCoreTexture(");
     expect(texture).toContain("return resolveCoreCubeOrGroup(");

@@ -81,6 +81,13 @@ Keeping `apply_texture` enabled would add one generic tool to Codex, duplicate a
 The retained implementation resolves one Texture but matches Cubes by raw `face.texture === texture.uuid/id`. Official Blockbench Bedrock Entity is `single_texture`, and native `Face.getTexture()` uses `Texture.getDefault()` for non-null faces in that format. Raw per-face texture identity therefore does not own effective Bedrock texture selection and can preserve stale/generic metadata after `apply_texture` is removed from the default surface.
 
 Normal Bedrock texture discovery remains `list_textures` + active/default texture state, while native per-face authored differentiation remains `material_instance`. Keeping `filter_by_material` callable would expose a misleading generic concept rather than a Bedrock capability.
+### `place_cube` texture / UV boundary
+
+**NARROW** inherited generic texture-routing semantics while preserving native Bedrock UV authoring.
+
+Official Bedrock Entity is `single_texture`. Native `CubeFace.texture` defaults non-null, `Cube.init()` binds non-null faces to `Texture.getDefault()` when available, and Bedrock per-face export uses only `face.texture !== null` to decide whether a UV face entry exists; it does not export a per-Cube texture UUID. `Cube.applyTexture()` with `faces === undefined` also consults ambient `UVEditor.face`.
+
+Therefore `place_cube` no longer accepts an explicit per-Cube texture selector, `faces:false`, or a face-name-only texture list. Default `true` keeps the project-inherited UV mode and native per-face auto mapping where applicable. Explicit custom `{face, uv}` entries are retained, require finite UV values, and create that Cube as `box_uv=false` so the requested per-face UV data is actually exportable. No separate UV mode framework or face-disable capability was added.
 ### validator references
 
 Keep validator resources, but mark regex-derived `elementRefs` as:
