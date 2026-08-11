@@ -201,7 +201,7 @@ describe("pre-local context and payload cleanup", () => {
     expect(next.length).toBeLessThan(8_000);
     expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("LOCAL — Codex + Blockbench acceptance");
+    expect(next).toContain("LOCAL — follow operations/local-acceptance-runbook.md");
     expect(next).not.toContain("If continuing non-local work");
     expect(next).not.toContain("The current source slice has hardened");
   });

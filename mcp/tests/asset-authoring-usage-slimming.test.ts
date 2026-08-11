@@ -18,9 +18,10 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("Do not route it through `development-brief`");
 
     const readme = await source("../README.md");
-    expect(readme).toContain("## Session Boot");
-    expect(readme).toContain("Task Class First");
-    expect(readme).toContain("Do not automatically load `CONTEXT.md`");
+    expect(readme).toContain("## Task Class First");
+    expect(readme).toContain("### Asset authoring");
+    expect(readme).toContain("Do not automatically load repository history");
+    expect(readme).toContain("local-acceptance-runbook.md");
     expect(readme).not.toContain("## Mandatory Session Boot");
   });
 

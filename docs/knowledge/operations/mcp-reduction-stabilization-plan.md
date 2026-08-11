@@ -1,8 +1,10 @@
 # MCP Reduction & Stabilization Plan
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
-Status: **Approved planning direction — source implementation not started**
+Status: **Historical/completed — the bounded non-local stabilization pass was implemented and this plan no longer controls current execution.**
+
+Current status is owned by `docs/knowledge/next-action.md`. Current local procedure is `docs/knowledge/operations/local-acceptance-runbook.md`. Keep the body below as implementation provenance; do not restart unchecked items solely because they remain in this historical plan.
 
 Governing evidence:
 
