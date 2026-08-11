@@ -1,0 +1,109 @@
+name: Sync Project Schema Wire Measurement
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/sync-project-schema-wire.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure and sync actual tools-list wire
+        working-directory: mcp
+        run: |
+          cat > .measure-project-wire.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+
+          const server = new McpServer({ name: "blockit-project-wire-audit", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+            enableJsonResponse: true,
+          });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: {
+                accept: "application/json, text/event-stream",
+                "content-type": "application/json",
+                "mcp-protocol-version": "2025-06-18",
+              },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const createProject = tools.find((tool) => tool.name === "create_project");
+            await Bun.write("../.project-wire-metrics.json", JSON.stringify({
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              create_project_schema_characters: JSON.stringify(createProject?.inputSchema ?? {}).length,
+            }));
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .measure-project-wire.ts
+          rm .measure-project-wire.ts
+          cd ..
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          metrics_path = Path('.project-wire-metrics.json')
+          m = json.loads(metrics_path.read_text())
+          metrics_path.unlink()
+
+          def n(value): return f'{value:,}'
+
+          next_path = Path('docs/knowledge/next-action.md')
+          text = next_path.read_text(encoding='utf-8')
+          pattern = re.compile(r'The actual stateless MCP `tools/list` wire surface is currently \*\*\d+ enabled tools / [\d,]+ response characters\*\*, including \*\*[\d,]+ characters of input schemas\*\* and \*\*[\d,]+ characters of tool descriptions\*\*\.')
+          replacement = f'The actual stateless MCP `tools/list` wire surface is currently **{m["enabled_tools"]} enabled tools / {n(m["response_characters"])} response characters**, including **{n(m["input_schema_characters"])} characters of input schemas** and **{n(m["description_characters"])} characters of tool descriptions**.'
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit('Could not replace current next-action wire measurement')
+          next_path.write_text(text, encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          pattern = re.compile(r'Final pinned-SDK measurement after the later `modify_cube` and batch-correction contract hardening: \*\*63 tools / [\d,]+ response characters / [\d,]+ input-schema characters / [\d,]+ description characters\*\*\. Current schema sizes are \*\*2,531\*\* for `place_cube`, \*\*1,471\*\* for `modify_cube`, and \*\*1,232\*\* for `modify_cubes_batch`; `apply_texture` and `filter_by_material` remain absent\. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence\.')
+          replacement = f'Final pinned-SDK measurement after the later Cube hardening and fixed `create_project.format` removal: **{m["enabled_tools"]} tools / {n(m["response_characters"])} response characters / {n(m["input_schema_characters"])} input-schema characters / {n(m["description_characters"])} description characters**. Current schema sizes are **2,531** for `place_cube`, **1,471** for `modify_cube`, **1,232** for `modify_cubes_batch`, and **{n(m["create_project_schema_characters"])}** for `create_project`; `apply_texture` and `filter_by_material` remain absent. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          review, count = pattern.subn(replacement, review, count=1)
+          if count != 1:
+              raise SystemExit('Could not replace final review wire measurement')
+          review_path.write_text(review, encoding='utf-8')
+          print(json.dumps(m))
+          PY
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit evidence and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/sync-project-schema-wire.yml
+          git add docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md
+          git commit -m 'docs: sync project schema wire measurement'
+          git push origin HEAD:Local
