@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T08:15:16.216Z",
+  "generatedAt": "2026-08-11T08:28:11.810Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2249,13 +2249,19 @@
                   },
                   "position": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z].",
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
                     "default": [
                       0,
                       0,
@@ -2264,13 +2270,19 @@
                   },
                   "rotation": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z].",
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
                     "default": [
                       0,
                       0,
@@ -2310,23 +2322,35 @@
                   },
                   "position": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z]."
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
                   },
                   "rotation": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z]."
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
                   },
                   "ignore_inherited_scale": {
                     "type": "boolean"
@@ -2379,13 +2403,19 @@
                   },
                   "position": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z].",
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
                     "default": [
                       0,
                       0,
@@ -2421,13 +2451,19 @@
                   },
                   "position": {
                     "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "3D vector [x, y, z].",
-                    "markdownDescription": "3D vector [x, y, z]."
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
                   }
                 },
                 "required": [

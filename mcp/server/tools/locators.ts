@@ -4,8 +4,12 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreGroup } from "@/lib/coreIdentity";
-import { vector3Schema } from "@/lib/zodObjects";
 
+const finiteLocatorVector3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
 const locatorCreateSchema = z
   .object({
     action: z.literal("create"),
@@ -14,8 +18,8 @@ const locatorCreateSchema = z
       .string()
       .min(1)
       .describe("Required parent Group UUID or exact unique Group name."),
-    position: vector3Schema.optional().default([0, 0, 0]),
-    rotation: vector3Schema.optional().default([0, 0, 0]),
+    position: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
+    rotation: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
     ignore_inherited_scale: z.boolean().optional().default(false),
   })
   .strict();
@@ -32,8 +36,8 @@ const locatorUpdateSchema = z
       .min(1)
       .optional()
       .describe("Optional replacement parent Group UUID or exact unique Group name."),
-    position: vector3Schema.optional(),
-    rotation: vector3Schema.optional(),
+    position: finiteLocatorVector3Schema.optional(),
+    rotation: finiteLocatorVector3Schema.optional(),
     ignore_inherited_scale: z.boolean().optional(),
   })
   .strict();
@@ -64,7 +68,7 @@ const nullObjectCreateSchema = z
       .string()
       .min(1)
       .describe("Required parent Group UUID or exact unique Group name."),
-    position: vector3Schema.optional().default([0, 0, 0]),
+    position: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
   })
   .strict();
 
@@ -80,7 +84,7 @@ const nullObjectUpdateSchema = z
       .min(1)
       .optional()
       .describe("Optional replacement parent Group UUID or exact unique Group name."),
-    position: vector3Schema.optional(),
+    position: finiteLocatorVector3Schema.optional(),
   })
   .strict();
 
@@ -211,14 +215,25 @@ function updatePreview(element: LocatorElement): void {
   Canvas.updateAll();
 }
 
+function finiteAuthoredVector3(
+  values: readonly number[],
+  context: string
+): [number, number, number] {
+  if (values.length !== 3 || values.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `${context} contains a non-finite authored transform and cannot be reported safely. Correct the project state before continuing.`
+    );
+  }
+  return [values[0], values[1], values[2]];
+}
 function locatorState(locator: Locator) {
   return {
     uuid: locator.uuid,
     name: locator.name,
     type: "locator" as const,
     parent: parentInfo(locator),
-    position: [...locator.position] as [number, number, number],
-    rotation: [...locator.rotation] as [number, number, number],
+    position: finiteAuthoredVector3(locator.position, `Locator ${locator.name} (${locator.uuid}) position`),
+    rotation: finiteAuthoredVector3(locator.rotation, `Locator ${locator.name} (${locator.uuid}) rotation`),
     ignore_inherited_scale: locator.ignore_inherited_scale,
     visibility: locator.visibility !== false,
   };
@@ -230,7 +245,7 @@ function nullObjectState(element: NullObject) {
     name: element.name,
     type: "null_object" as const,
     parent: parentInfo(element),
-    position: [...element.position] as [number, number, number],
+    position: finiteAuthoredVector3(element.position, `Null Object ${element.name} (${element.uuid}) position`),
     ik_target: element.ik_target || null,
     ik_source: element.ik_source || null,
     lock_ik_target_rotation: element.lock_ik_target_rotation,

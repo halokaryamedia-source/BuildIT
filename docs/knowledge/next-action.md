@@ -157,6 +157,8 @@ Null Object is not treated as identical to a normal Locator. Blockbench Bedrock 
 
 Locator and Null Object creation now share deterministic exact-name behavior: both reject an existing same-type exact name before Undo, matching their UUID-first / unique-exact-name resolvers. No cross-type naming restriction was added.
 
+Locator/Null Object authored transforms now require finite 3D coordinates at the MCP boundary. Their resulting/read state also refuses to serialize a pre-existing non-finite position/rotation, preventing `JSON.stringify` from silently turning poisoned numeric state into `null`. Parent, Undo, serialization, and family ownership are unchanged.
+
 ## Protected Native Capability Gaps
 
 The following remain Bedrock Entity product requirements even where direct MCP ownership is incomplete:
