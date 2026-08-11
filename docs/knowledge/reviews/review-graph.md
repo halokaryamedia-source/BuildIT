@@ -1,118 +1,92 @@
 # Review Index
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
-Use this note to understand **how historical reviews relate to current Local**.
-Review bodies are evidence captured at a point in time; do not rewrite their
-original findings just because later implementation changed.
+Use this note to understand **how historical reviews relate to current `Local`**. Review bodies are evidence captured at a point in time; they do not own current execution.
 
 ## Current Review Status
 
 | Review | Current meaning |
 |---|---|
-| [MCP Development Quality Audit](mcp-development-quality-audit.md) | **Active execution evidence / current priority.** Repository-wide audit found P0 security/contract/verification defects, P1 overdevelopment and excess public surface, and P2 maintenance debt. New MCP feature work and Animation micro-hardening are frozen pending a reduction/stabilization plan. |
-| [MCP Reference Fidelity Root Cause](mcp-reference-fidelity-root-cause.md) | **Active evidence.** Root cause confirmed: missing reference→spatial-hypothesis→visual-feedback loop; confirmed placement/rotation/pivot failure patterns. |
-| [Reference Fidelity Observation Contract](mcp-reference-fidelity-observation-contract.md) | **Design implemented in source.** `inspect_model_bounds` and `capture_model_views` now exist in Local; live Blockbench/image transport remains `LOCAL PROOF REQUIRED`. The review header reflects the earlier design-freeze moment. |
-| [MCP Geometry AI-Slop Audit](mcp-geometry-ai-slop-audit.md) | **Historical evidence, still relevant.** Demonstrated that technical Cube/contact PASS can coexist with visibly bad global form; findings are absorbed into current fidelity policy. |
-| [MCP Surface Curation](mcp-surface-curation.md) | **Historical architecture review, partially implemented/superseded.** Goal-oriented Bedrock prompt, observation tools, exact inspection, coherent batch correction, and targeting safety now exist. The newer MCP Development Quality Audit supersedes it for current reduction/stabilization priority. |
-| [Anti-Slop Skill Candidates](anti-slop-skill-candidates.md) | **Historical research.** Final skill architecture is now frozen to six root skills; do not treat candidate stacks as current routing. |
-| [Orca CLI MCP Audit](orca-cli-mcp-audit.md) | **Reference/history only.** Does not override current Local architecture. |
+| [MCP Development Quality Audit](mcp-development-quality-audit.md) | **Historical baseline, largely implemented/superseded.** Its stabilization/reduction findings drove the completed non-local pass. It no longer controls current execution order. |
+| [MCP Reference Fidelity Root Cause](mcp-reference-fidelity-root-cause.md) | **Active product evidence.** The core finding remains valid: technical placement success can coexist with visually wrong global form. |
+| [Reference Fidelity Observation Contract](mcp-reference-fidelity-observation-contract.md) | **Implemented in source; local proof required.** Observation/correction surfaces exist, but live camera/image/runtime behavior still needs acceptance. |
+| [MCP Geometry AI-Slop Audit](mcp-geometry-ai-slop-audit.md) | **Historical evidence, still relevant.** Demonstrates structural/tool PASS is not visual approval. |
+| [MCP Surface Curation](mcp-surface-curation.md) | **Historical/superseded.** Later Bedrock semantics audits changed the default surface; do not use its old `apply_texture`/generic recommendations as current truth. |
+| [MCP Pre-local Generic Semantics Audit](mcp-prelocal-generic-semantics-audit-2026-08-10.md) | **Implemented evidence.** Generic/redundant Bedrock-misaligned semantics were narrowed/contained before local acceptance. |
+| [BlockIT Agent Skill Surface](blockit-agent-skill-surface-2026-08-10.md) | **Implemented evidence.** Current asset route is orchestrator + modelling/texturing/animation specialists. |
+| [Codex Native Deferred MCP Tool Loading](codex-native-deferred-mcp-tool-loading-2026-08-11.md) | **Active local-evidence plan.** Source audit is complete; real Codex exposure/search behavior must now be measured locally. |
+| [Anti-Slop Skill Candidates](anti-slop-skill-candidates.md) | **Historical research.** Candidate stacks do not override the current nine repository-owned skill packages or task-class routing. |
+| [Orca CLI MCP Audit](orca-cli-mcp-audit.md) | **Reference/history only.** Does not override current `Local`. |
 | [Review Template](review-template.md) | Current reusable template. |
 
 ## Current Execution Gate
 
-The latest repository-wide audit changes the current priority from incremental
-Animation hardening to MCP reduction/stabilization planning:
+The active sequence is now:
 
 ```text
-recent focused source hardening retained
+non-local source/contract/CI cleanup COMPLETE
 ↓
-feature work frozen
+repository/documentation handoff aligned
 ↓
-make security + MCP contract enforcement real
+LOCAL — Codex + Blockbench acceptance
 ↓
-restore build/typecheck/test/docs proof
+reproduce/classify any live failure
 ↓
-reduce default tool surface to Bedrock Entity Core
+smallest evidence-backed fix only
 ↓
-consolidate duplicated legacy ownership only where justified
-↓
-run one local end-to-end Blockbench proof
-↓
-resume narrowly grounded feature hardening
+update proof state / next action
 ```
 
-Do **not** interpret the audit as permission for an immediate broad rewrite. The
-next owner is a separate P0→P2 stabilization plan.
+Current status: [Next Action](../next-action.md).  
+Current procedure: [Local Acceptance Runbook](../operations/local-acceptance-runbook.md).
 
-## Reference Fidelity Result Kept In Place
+Historical stabilization plans/reviews must not be reopened as current work merely because their body still contains unchecked or future-looking language from the date they were written.
 
-Earlier reviews converged on:
+## Reading Order For Local Acceptance
 
-```text
-not more mutation tools
-↓
-make whole-form reasoning explicit
-↓
-observe global envelope + stable model views
-↓
-separate GLOBAL vs LOCAL failure
-↓
-inspect exact authored local state
-↓
-apply causal bounded correction
-↓
-fail closed on ambiguous/default placement, rotation, and pivots
-```
-
-Those conclusions remain valid. Current source ownership is summarized in
-[Implementation Map](../implementation-map.md).
-
-## Reading Order For Current MCP Work
-
-1. [MCP Development Quality Audit](mcp-development-quality-audit.md)
-2. [Next Action](../next-action.md)
-3. [MCP Surface Curation](mcp-surface-curation.md) only for historical comparison
-4. [Implementation Map](../implementation-map.md)
-5. A future approved MCP Reduction & Stabilization Plan when it exists.
+1. [Next Action](../next-action.md)
+2. [Local Acceptance Runbook](../operations/local-acceptance-runbook.md)
+3. [Validation Report](../../foundation/validation-report.md)
+4. [MCP README](../../../mcp/README.md)
+5. [Codex Native Deferred MCP Tool Loading](codex-native-deferred-mcp-tool-loading-2026-08-11.md) only when interpreting exposure/search evidence
+6. Other reviews only when a reproduced failure needs their evidence
 
 ## Reading Order For Reference Fidelity Evidence
 
 1. [Root Cause](mcp-reference-fidelity-root-cause.md)
-2. [Observation Contract](mcp-reference-fidelity-observation-contract.md)
-3. [Reference Fidelity Decision](../decisions/reference-fidelity-loop.md)
-4. [Implementation Map](../implementation-map.md)
-5. [Next Action](../next-action.md) for current execution priority.
+2. [Reference Fidelity Decision](../decisions/reference-fidelity-loop.md)
+3. [Implementation Map](../implementation-map.md)
+4. [Validation Report](../../foundation/validation-report.md)
 
-Use the older Geometry AI-Slop and Surface Curation reviews only when their
-historical evidence/reasoning is needed.
+Use older Geometry AI-Slop/Surface Curation reviews only for historical reasoning.
 
 ## Status Rule
 
-A review may say `review ready`, `design frozen`, or similar because that was
-true when the evidence was written. **Current status is owned by this index,
-source, validation-report, and next-action — not by an old review header.**
+A review may say `active`, `design frozen`, `next`, or similar because that was true when written. **Current status is owned by source, this index, Validation Report, and `next-action.md`.**
+
+Do not rewrite old evidence to pretend it was produced today. Instead update this index when its current meaning changes.
 
 ## Review Labels
 
-- `active evidence` — current architecture still relies on the finding;
-- `active execution evidence` — finding directly controls current work order;
-- `implemented in source` — corresponding Local change now exists;
-- `historical` — retained for reasoning/provenance, not current task state;
-- `local proof required` — source exists but live behavior is not yet verified;
-- `superseded` — later decision/source replaced the old method.
+- `active product evidence` — finding still supports current product policy;
+- `active local-evidence plan` — review defines a question that now requires live proof;
+- `implemented evidence` — corresponding source/contract change exists;
+- `historical` — reasoning/provenance only;
+- `local proof required` — source exists but live behavior is unverified;
+- `superseded` — later source/decision replaced the old method/recommendation.
 
 ## Review Questions
 
-When adding a new review, answer:
+When adding a review, answer:
 
 - what concrete failure/decision is being reviewed;
-- what current source/policy owns it;
-- what evidence can disprove the conclusion;
-- what was implemented vs only proposed;
-- what should become a durable decision rather than remain review prose.
+- what current owner/source/policy controls it;
+- what evidence could disprove the conclusion;
+- what was implemented vs proposed;
+- what should move to a durable owner instead of remaining review prose.
 
 ## Parent
 
 - [Knowledge Dashboard](../index.md)
-- [Reference Fidelity Decision](../decisions/reference-fidelity-loop.md)
+- [Next Action](../next-action.md)

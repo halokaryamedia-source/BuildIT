@@ -2,15 +2,15 @@
 
 Updated: 2026-08-11
 
-This is the **single active-task snapshot**. New ChatGPT/Codex sessions read:
-
-`AGENTS.md` → `CONTEXT.md` → this note.
+This is the **single active repository-continuation snapshot**. It does not replace task-class routing in `AGENTS.md` and is not normal asset-authoring boot context.
 
 ## Active Goal
 
-Maintain BlockIT as a trustworthy **Minecraft Bedrock Entity MCP for Blockbench**. The primary product test is whether Codex can create or revise a clean, editable Bedrock Entity model that follows the approved reference without false visual approval, speculative geometry, or unnecessary MCP calls.
+Move BlockIT from non-local/source readiness into **bounded Codex + Blockbench local acceptance** without reopening speculative architecture work.
 
-Preserve capability that genuinely belongs to Bedrock Entity. Generic inherited Blockbench capability is not a compatibility requirement, while missing native Bedrock coverage remains a protected gap rather than deletion permission.
+The product question is now behavioral:
+
+> Can Codex use the current BlockIT surface to create/revise a Bedrock Entity model efficiently, make truthful visual decisions, and persist/export the result in real Blockbench?
 
 ## Current Status
 
@@ -18,22 +18,13 @@ Preserve capability that genuinely belongs to Bedrock Entity. Generic inherited 
 
 Working branch: **`Local` only**.
 
-The bounded non-local pass is complete. Source, contract, CI, generated-doc, official-source, and pinned-SDK evidence are ready; live Codex/Blockbench behavior is not yet proven. Do not add more GitHub-only architecture merely to continue activity. A new non-local change now requires a concrete source defect, failing gate, or explicit product requirement with new evidence.
+The non-local pass is complete. Current source/contract/CI/generated-doc evidence is ready; live Blockbench/MCP/client behavior is not yet proven.
 
-## Completed Non-local Boundary
+Do not start another GitHub-only cleanup/reduction slice merely because local acceptance has not run. A new source change now requires a concrete reproduced defect, failing gate, or explicit product requirement with new evidence.
 
-```text
-P0.1–P0.5  stabilization / engineering gates                    COMPLETE
-P1.1       default Bedrock Entity registration profile          COMPLETE
-P1.2       explicit family gates                                COMPLETE
-P1.3       identity + mutation-result ownership                 COMPLETE
-P1.4       stateless transport source/CI proof                  COMPLETE; LOCAL PROOF REQUIRED
-P1.5       end-to-end acceptance                                LOCAL PROOF REQUIRED
-```
+## Current Pre-local Baseline
 
-Pre-local work also completed the Bedrock-only prompt/skill stack, generic-semantics containment, project/export lifecycle hardening, numeric/discovery boundaries, minimum-evidence routing, context/payload cleanup, and source-level Locator/Null Object coverage.
-
-Current pinned-SDK default surface:
+Pinned-SDK default surface:
 
 ```text
 62 enabled tools
@@ -42,37 +33,80 @@ Current pinned-SDK default surface:
 11,800 tool-description characters
 ```
 
-`export_model` remains exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` remain absent from the default callable surface.
+Default containment remains:
 
-Detailed implementation history belongs in Git history and the relevant reviews, not in this file:
+```text
+export_model          exposed
+list_export_formats   not exposed
+apply_texture         not exposed
+filter_by_material    not exposed
+risky_eval            disabled
+from_geo_json         disabled
+```
 
-- `docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md`
-- `docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md`
-- `docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md`
-- `docs/knowledge/decision-log.md`
+Normal format/output boundary:
 
-## Stable Product Boundaries
+```text
+project format: bedrock
+model outputs: Bedrock geometry JSON + editable .bbmodel
+```
 
-- target format: `bedrock`;
-- normal geometry: Cubes/Cuboids organized by Groups/bones;
-- normal model outputs: Bedrock geometry JSON and editable `.bbmodel`;
-- default profile: `bedrock_entity`;
-- `risky_eval` and `from_geo_json` remain disabled;
-- generic fallback families remain explicit opt-in only;
-- canonical workflow prompt: `bedrock_entity_workflow`;
-- authoring routing: `blockit-bedrock-entity-mcp` → modelling / texturing / animation specialists;
-- tool success is execution evidence, never reference-fidelity proof;
-- visual gates use `FAIL / UNVERIFIED / PASS`; `BLOCKED` is valid when continuation would require guessing or repeated failed work;
-- production texture/animation must not hide unresolved geometry;
-- no custom tool router, geometry-only default profile, readiness state machine, scoring layer, or capability pruning without local evidence that the retained architecture is the blocker.
+Canonical authoring route:
 
-Locator and Null Object direct source ownership is implemented in the existing Elements family, but create/update/inspect/rename/remove plus save/reopen/export round-trip still require local proof.
+```text
+blockit-bedrock-entity-mcp
+├─ blockbench-bedrock-modelling
+├─ blockit-bedrock-texturing
+└─ blockit-bedrock-animation
+```
 
-`nodes://` remains transitional observability while TextureMesh lacks a direct owner. Protected native gaps remain TextureMesh direct authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated-texture authoring, and bone-binding expressions. Do not fake them with generic Mesh, arbitrary Cubes, UI automation, risky evaluation, or another format.
+Repository/plugin source changes use `development-brief` plus the smallest relevant engineering specialist.
+
+## Stable Product Invariants
+
+- Tool success is execution evidence, never reference-fidelity approval.
+- Visual gates use `FAIL / UNVERIFIED / PASS`; use `BLOCKED` when valid continuation requires guessing or repeated failed work.
+- Reuse fresh mutation/create result state before issuing redundant discovery/inspection reads.
+- Production texture/animation must not hide unresolved material geometry.
+- Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, or another format.
+- Do not add a custom router/profile/readiness framework before local evidence proves the retained architecture is the blocker.
+
+## Local Acceptance Owner
+
+Follow exactly:
+
+[`docs/knowledge/operations/local-acceptance-runbook.md`](operations/local-acceptance-runbook.md)
+
+Codex local should **not replan the repository from scratch**. For repository continuation it should read, in order:
+
+```text
+AGENTS.md
+→ CONTEXT.md
+→ this file
+→ operations/local-acceptance-runbook.md
+→ mcp/README.md + mcp/AGENTS.md when executing the plugin/runtime checks
+```
+
+Open foundation/source/review notes only when a specific acceptance failure needs that owner or evidence.
+
+## Required Local Acceptance Outcomes
+
+The runbook owns details, but completion must establish or explicitly fail/mark unverified:
+
+1. local plugin build/load + stateless endpoint;
+2. canonical Bedrock prompt/default surface and native Codex tool exposure/search behavior;
+3. representative project/Group/Cube observation and correction;
+4. reference-fidelity difference-first behavior, including a front-plausible/depth-wrong case;
+5. texture/Paint/PBR/material-instance reachability without relying on disabled `apply_texture`;
+6. animation create/inspect/keyframe/playback reachability;
+7. Locator + Null Object create/update/inspect/rename/remove behavior;
+8. `.bbmodel` save/reopen plus Bedrock export/persistence;
+9. efficiency trace: tool purpose, redundant reads/captures, retries, available latency/context data;
+10. explicit classification of every local failure before any source fix.
 
 ## Stopped / Deferred Source Slices
 
-Do not reopen these merely because local acceptance has not started:
+Do not reopen these during baseline local acceptance unless the live run produces genuinely new evidence that lands directly on that boundary:
 
 - animation action/input contract cleanup;
 - Paint cleanup;
@@ -81,35 +115,26 @@ Do not reopen these merely because local acceptance has not started:
 - generic Group identity consolidation;
 - `manage_keyframes create` collision slice.
 
-They require genuinely new evidence or an explicit product requirement. Likewise, do not pre-emptively set `tool_output_token_limit`, mass-trim real Bedrock schemas, or default-disable retained Animation/Paint/Texture/Locator capability.
+Likewise, do not pre-emptively set `tool_output_token_limit`, mass-trim real Bedrock schemas, or remove retained Animation/Paint/Texture/Locator capability.
 
 ## Evidence Boundary
 
-Source/CI proof does not establish live Blockbench behavior, model quality, or actual Codex call efficiency. The remaining questions require the real local client/runtime:
+Source/CI proof does not establish:
 
-- whether native Codex deferred/tool search materially reduces model-visible tool exposure while retained domains remain reachable;
-- which prompt/skills are actually co-loaded and whether context duplication occurs in practice;
-- whether duplicated text plus `structuredContent` can be reduced without losing client-visible evidence;
-- whether modelling follows the difference-first visual gate and stops false PASS / speculative correction loops;
-- whether save/reopen/export and Locator/Null Object round-trips are correct in Blockbench.
+- actual Blockbench camera/render/Undo behavior;
+- usable image delivery to Codex;
+- native deferred/tool-search exposure;
+- actual prompt/skill co-loading;
+- client handling of `structuredContent` vs text result duplication;
+- live visual convergence/reference fidelity;
+- save/reopen/export round-trip.
+
+Those are now local acceptance questions.
 
 ## Next Step
 
 ```text
-LOCAL — Codex + Blockbench acceptance
+LOCAL — follow operations/local-acceptance-runbook.md
 ```
 
-Run bounded acceptance, not another source redesign:
-
-1. record installed Codex version, active model/provider, Blockbench/BlockIT build, and endpoint;
-2. prove native deferred/tool-search exposure and representative geometry + texture + animation/Locator reachability;
-3. run a difficult reference through coarse primary geometry → difference-first visual gate;
-4. force a front-plausible / side-depth-wrong case and require `FAIL` or `UNVERIFIED`, never false full `PASS`;
-5. run one diagnosed local mismatch through invariant-backed correction → returned structural effect → fresh visual proof;
-6. verify unresolved evidence/capability/repeated-correction paths end as `BLOCKED` instead of speculative mutation;
-7. verify geometry `FAIL` prevents production texture/animation, then test accepted geometry → texture → animation sequencing;
-8. record tool calls by purpose, redundant reads/captures, retries, latency/context, and actual prompt/skill loading;
-9. A/B one high-frequency structured result only if the trace proves duplicated result text is material;
-10. verify stateless endpoint plus Locator/Null Object operations and Bedrock save/reopen/export round-trip.
-
-If the local environment is unavailable, stop here unless a concrete new source defect or explicit requirement appears.
+Start with the environment/baseline phase. Do not modify source during the baseline run; reproduce and classify a failure first.

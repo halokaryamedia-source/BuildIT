@@ -1,89 +1,68 @@
 # Documentation Audit
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-This note records the latest root `docs/` / Obsidian cleanup. It is an audit
-record, not normal boot context.
+This is an **audit record**, not normal Codex boot context. Current routing is owned by root `AGENTS.md`; current repository continuation by `next-action.md`.
 
 ## Audit Goal
 
-Ensure active documentation describes **current Local** rather than earlier skill
-recovery, upstream merge, pre-Reference-Fidelity, obsolete evidence labels, or an
-old Obsidian workspace state.
+Ensure active documentation describes current `Local` and gives Codex one deterministic handoff before live Blockbench acceptance.
 
-## Current Canonical Structure
+## Current Documentation Spine
 
 ```text
-AGENTS.md
-CONTEXT.md
+AGENTS.md                        task class / proof discipline
+CONTEXT.md                       stable facts and terminology
+README.md                        human repository entrypoint
 
 docs/
-├─ README.md
-├─ foundation/          durable policy
-└─ knowledge/           Obsidian vault
-   ├─ .obsidian/         vault UI/workspace configuration
-   ├─ index.md           dashboard
-   ├─ next-action.md     active task
-   ├─ decision-log.md
-   ├─ decisions/
-   ├─ modules/
-   ├─ reviews/
-   ├─ skills/
-   ├─ sources/
-   ├─ maintenance/
+├─ README.md                     docs entrypoint
+├─ foundation/
+│  ├─ README.md                  durable policy map
+│  └─ validation-report.md       current evidence state
+└─ knowledge/
+   ├─ index.md                   human/Obsidian dashboard
+   ├─ minimal-nav.md             shortest task-class-aware navigation
+   ├─ next-action.md             one active repository-continuation state
+   ├─ implementation-map.md      current source ownership/surface
+   ├─ skills/                    current skill inventory/routing
+   ├─ sources/                   authority bridge
+   ├─ reviews/                   historical evidence + current review index
    └─ operations/
+      ├─ local-acceptance-runbook.md  current local procedure
+      ├─ task-board.md                future/non-active work
+      └─ roadmap.md                   broad direction
 
-.agents/skills/          six canonical BlockIT skills
-mcp/                     runtime/plugin source
-workspace/               project/model data
+.agents/skills/                  nine current repository-owned skill packages
+mcp/                             active plugin/runtime source
+workspace/                       model/project packages and fixtures
 ```
 
-## Resolved Stale Claims
+## Resolved 2026-08-11 Stale Current-State Claims
 
-Corrected/removed current-state claims that referenced:
+The final pre-local documentation pass removed or reclassified active-current claims that still described an earlier repository state:
 
-- `mcp/workflow/skills/` as canonical skill root;
-- `mcp/.agents/skills/` as active skill ownership;
-- pending recovery of `blockbench-use`, `reference-generator`, or
-  `evidence-gate` skills;
-- `mcp-builder` as current MCP specialist;
-- nonexistent `mcp/workflow/presets/` project creation ownership;
-- generic “MCP implementation audit” as the next engineering phase;
-- default Cube geometry as acceptable initial modelling progress;
-- unchosen `[0,0,0]` pivot for newly rotated Cubes;
-- old validation status that omitted current fidelity instruments;
-- historical upstream source-selection/merge records presented as current
-  runtime direction;
-- `Needs Validation` as a catch-all status where current root evidence labels
-  (`LOCAL PROOF REQUIRED`, `UNKNOWN`, etc.) are more precise;
-- `code-review-graph` as a current review owner.
+- old “six-skill architecture” routing after the BlockIT authoring orchestrator/texturing/animation packages had become current owners;
+- retired `mcp/prompts/bedrock.md` references instead of `mcp/prompts/bedrock_entity_workflow.md`;
+- statements that local Blockbench testing was still deferred rather than the active next stage;
+- discovery docs that treated explicit empty Group/name filters as omission after those boundaries were hardened to reject empty values;
+- `apply_texture` and `filter_by_material` described as normal/default current tools after Bedrock semantics containment;
+- stale “next source audit” / paused-source wording superseded by later implementation;
+- the MCP reduction/stabilization plan presented as current execution order after its non-local work had been completed;
+- historical reviews/plans presented without a current index explaining whether they are active evidence, implemented, historical, or superseded.
 
-## Obsidian Workspace Cleanup
+## Current Skill Architecture
 
-The tracked `.obsidian/workspace.json` was also stale even though the Markdown
-vault had a configured dashboard concept.
+Asset authoring:
 
-Before refresh it opened:
+```text
+blockit-bedrock-entity-mcp
+├─ blockbench-bedrock-modelling
+├─ blockit-bedrock-texturing
+└─ blockit-bedrock-animation
+```
 
-`reviews/anti-slop-skill-candidates.md`
-
-and retained several obsolete/non-current history paths such as:
-
-- `rag-index.md`;
-- `vault-overview.md`;
-- `review-notes/`;
-- `graph/`;
-- `Untitled.canvas`.
-
-Current workspace now opens:
-
-`index.md` → **Knowledge Dashboard**
-
-and `lastOpenFiles` contains only current high-value vault notes.
-
-No other Obsidian appearance/plugin preferences were changed.
-
-## Current Skill Authority
+Repository/plugin development:
 
 ```text
 development-brief
@@ -91,136 +70,34 @@ mcp-server-development
 typescript-type-safety
 bun-tooling
 blockbench-runtime-development
-blockbench-bedrock-modelling
 ```
 
-Architecture is frozen. Reference generation is foundation workflow; evidence
-status belongs to root `AGENTS.md`.
+The packages are task-class/stage routed and are not a “load all nine” stack.
 
-## Current Fidelity Documentation
+## Current Local Handoff
 
-The active docs now agree on:
+Repository continuation now has one explicit path:
 
-- approved Modelling Brief, not pixel calibration;
-- cross-view consistency;
-- coordinate frame + target envelope;
-- Primary Form Hypothesis before exact primary transforms;
-- explicit finite `from/to` for initial Cube placement;
-- explicit pivot for new non-zero-rotation Cube;
-- strict Group/element identity targeting;
-- global rendered-bounds observation;
-- canonical model-view observation;
-- reference ↔ model primary visual gate;
-- GLOBAL failure rebuild vs LOCAL inspect/correct;
-- coherent exact-UUID multi-Cube correction;
-- Cube/Group pivot-transfer semantics;
-- structural evidence separated from visual approval;
-- local runtime effectiveness still `LOCAL PROOF REQUIRED`.
+```text
+AGENTS.md
+→ CONTEXT.md
+→ docs/knowledge/next-action.md
+→ docs/knowledge/operations/local-acceptance-runbook.md
+→ mcp/README.md + mcp/AGENTS.md
+```
 
-## Files Updated In This Refresh
+Ordinary asset authoring does not use this repository-continuation boot path; it follows root Task Class First routing.
 
-### Root / Foundation
+## Maintenance Rules
 
-- `docs/README.md`
-- `docs/foundation/README.md`
-- `docs/foundation/00-agent-policy.md`
-- `docs/foundation/01-project-overview.md`
-- `docs/foundation/02-product-requirements.md`
-- `docs/foundation/03-modelling-workflow.md`
-- `docs/foundation/04-reference-guide.md`
-- `docs/foundation/05-geometry-standard.md`
-- `docs/foundation/06-texture-standard.md`
-- `docs/foundation/07-visual-validation.md`
-- `docs/foundation/08-source-selection.md`
-- `docs/foundation/09-merge-map.md`
-- `docs/foundation/validation-report.md`
+- One note, one job.
+- `next-action.md` owns current status, not history.
+- The local acceptance runbook owns procedure, not status.
+- Reviews/plans retain historical evidence; current meaning belongs in indexes/status owners.
+- Generated `mcp/docs/` remains secondary to source.
+- Prefer removing stale routing to adding another state/planning layer.
+- Verify active Markdown links and source/path names during structural documentation changes.
 
-### Knowledge / Obsidian
+## Local Proof Boundary
 
-- `knowledge/.obsidian/workspace.json`
-- `knowledge/index.md`
-- `knowledge/next-action.md`
-- `knowledge/flow.md`
-- `knowledge/implementation-map.md`
-- `knowledge/glossary.md`
-- `knowledge/workspace-structure.md`
-- `knowledge/modules/module-map.md`
-- `knowledge/modules/mcp-ownership.md`
-- `knowledge/modules/skill-ownership.md`
-- `knowledge/sources/source-map.md`
-- `knowledge/reviews/review-graph.md`
-- `knowledge/maintenance/maintenance-flow.md`
-- `knowledge/decisions/open-spec-guide.md`
-- `knowledge/decisions/reference-fidelity-loop.md` (new)
-- `knowledge/operations/task-board.md`
-- `knowledge/operations/roadmap.md`
-- `knowledge/operations/change-log.md`
-- `knowledge/operations/context-boot-baseline.md`
-- `knowledge/operations/documentation-audit.md`
-
-## Audited / Retained Without Semantic Rewrite
-
-These notes are already aligned or are neutral templates/history and should not
-be rewritten merely to show a newer date:
-
-- `knowledge/minimal-nav.md`;
-- `knowledge/flows/development-flow.md`;
-- `knowledge/workspace-map.md`;
-- `knowledge/skills/skill-map.md`;
-- `knowledge/skills/activation-matrix.md`;
-- `knowledge/operations/README.md`;
-- `knowledge/decisions/obsidian-vault-layout.md`;
-- neutral decision/module/review/maintenance templates;
-- historical review bodies listed in `reviews/review-graph.md`.
-
-Obsidian `app.json`, `appearance.json`, `core-plugins.json`, and `graph.json` were
-also retained because no product/routing drift was found that required changing
-those UI preferences.
-
-## Historical Reviews
-
-Historical review bodies are intentionally **not rewritten into present-tense
-claims**. `reviews/review-graph.md` owns their current classification:
-
-- active evidence;
-- implemented in source;
-- historical/reference;
-- superseded;
-- local proof required.
-
-This preserves evidence while preventing an old review header from becoming
-current task state.
-
-## Historical Foundation Records
-
-`08-source-selection.md` and `09-merge-map.md` are explicitly marked historical
-adoption records. Current Local source is runtime authority.
-
-## Known Remaining Proof Boundary
-
-The docs and source now describe the intended architecture consistently, but this
-documentation refresh does not prove live Blockbench/MCP behavior.
-
-Source-implemented camera/image transport, bounds, Undo, pivot transfer,
-persistence, and end-to-end reference fidelity remain local-proof claims where
-applicable.
-
-See [Validation Report](../../foundation/validation-report.md).
-
-## Next Documentation Maintenance Trigger
-
-Run another broad root-doc audit only when one of these changes materially:
-
-- canonical skill architecture/path;
-- Reference Fidelity architecture;
-- major MCP source ownership;
-- local proof changes a capability evidence status;
-- workspace/package structure;
-- a note/path is removed or renamed.
-
-Do not full-rewrite the vault after every small source edit.
-
-## Parent
-
-- [Operations](README.md)
-- [Knowledge Dashboard](../index.md)
+This audit can establish documentation/source consistency only. It cannot establish live Codex/Blockbench behavior. The next runtime evidence is intentionally delegated to the Local Acceptance Runbook.

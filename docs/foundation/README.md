@@ -1,31 +1,29 @@
 # BlockIT Foundation
 
-Updated: 2026-08-08  
-Status: active product/modelling policy set
+Updated: 2026-08-11  
+Status: active durable product/modelling policy
 
-This folder owns **durable BlockIT policy**. Active task status does not belong
-here; use [`../knowledge/next-action.md`](../knowledge/next-action.md) for that.
+This folder owns **stable BlockIT policy**. Active repository state belongs in [`../knowledge/next-action.md`](../knowledge/next-action.md); local test procedure belongs in [`../knowledge/operations/local-acceptance-runbook.md`](../knowledge/operations/local-acceptance-runbook.md).
 
-## Current Product Direction
+## Product Direction
 
-BlockIT builds clean, editable Minecraft Bedrock Entity `.bbmodel` projects in
-Blockbench through MCP from an approved visual Modelling Brief.
+BlockIT creates clean, editable Minecraft Bedrock Entity `.bbmodel` projects in Blockbench through MCP from an approved visual Modelling Brief.
 
-The current quality problem and solution are explicit:
+Core rule:
 
 ```text
-technical Cube success ≠ visual correctness
+technical execution success ≠ visual correctness
 
 Reference
-→ whole-form spatial reasoning
-→ intentional Cube transforms
-→ structural + visual observation
-→ causal correction
-→ secondary structure only after primary form is sound
+→ whole-form reasoning
+→ intentional Cube/Group authored state
+→ minimum useful structural + visual observation
+→ difference-first judgement
+→ causal correction / rebuild
+→ downstream texture/animation only after prerequisites are sound
 ```
 
-The modelling flow must prevent assumption-driven Cube placement, arbitrary
-rotation, and arbitrary pivot/origin authoring.
+The product must prevent assumption-driven geometry, arbitrary rotation/pivots, false visual approval, and generic-format shortcuts that bypass native Bedrock ownership.
 
 ## Document Map
 
@@ -33,82 +31,86 @@ rotation, and arbitrary pivot/origin authoring.
 
 - [00 — Agent Policy](00-agent-policy.md) — BlockIT-specific product constraints.
 - [01 — Project Overview](01-project-overview.md) — purpose, target user, success.
-- [02 — Product Requirements](02-product-requirements.md) — product scope and
-  definition of done.
+- [02 — Product Requirements](02-product-requirements.md) — product scope / definition of done.
 
 ### Reference / Modelling
 
-- [03 — Modelling Workflow](03-modelling-workflow.md) — canonical Reference
-  Fidelity Loop and production sequence.
-- [04 — Reference Guide](04-reference-guide.md) — Source Image → approved
-  five-view Modelling Brief.
-- [05 — Geometry Standard](05-geometry-standard.md) — Cuboid, proportion,
-  placement, rotation, pivot, hierarchy rules.
-- [06 — Texture Standard](06-texture-standard.md) — UV/texture rules after
-  geometry is coherent.
-- [07 — Visual Validation](07-visual-validation.md) — structural vs visual proof,
-  canonical visual gates, repair loop.
-
-### Source / Historical Adoption Records
-
-- [08 — Source Selection](08-source-selection.md) — historical upstream source
-  selection record. **Current Local source is now the runtime authority.**
-- [09 — Merge Map](09-merge-map.md) — historical adoption/merge boundary. Do not
-  use it to override current Local implementation.
+- [03 — Modelling Workflow](03-modelling-workflow.md) — durable Reference Fidelity production sequence.
+- [04 — Reference Guide](04-reference-guide.md) — Source Image/user intent → approved Modelling Brief.
+- [05 — Geometry Standard](05-geometry-standard.md) — Cube, proportion, placement, rotation, pivot, hierarchy rules.
+- [06 — Texture Standard](06-texture-standard.md) — UV/texture/PBR policy after geometry prerequisites are satisfied.
+- [07 — Visual Validation](07-visual-validation.md) — structural vs visual proof, difference-first gates, correction loop.
 
 ### Proof Status
 
-- [Validation Report](validation-report.md) — current capability/evidence matrix:
-  source implemented vs official support vs local runtime proof still required.
+- [Validation Report](validation-report.md) — current source/official/local evidence matrix and pre-local baseline.
 
-## Current Runtime-Facing Fidelity Instruments
+### Historical Adoption Records
 
-Current Local source contains the following fidelity-oriented surfaces; live
-Blockbench proof is tracked separately in the validation report:
+- [08 — Source Selection](08-source-selection.md)
+- [09 — Merge Map](09-merge-map.md)
 
-- `inspect_model_bounds` — rendered global Cube envelope facts;
-- `capture_model_views` — named canonical model images;
-- `inspect_element` — exact authored Cube/Group state;
-- `modify_cubes_batch` — coherent exact-UUID multi-Cube correction;
-- strict `place_cube` targeting and explicit initial `from/to` extents;
-- explicit pivot requirement for newly rotated Cubes;
-- pivot-only Cube correction through `Cube.transferOrigin()`;
-- safer Group creation and `bone_rigging` pivot/parent targeting.
+These explain earlier upstream adoption only. Current `Local` source is runtime authority.
 
-These tools provide observation/execution. They do **not** decide resemblance or
-supply automatic visual `PASS`.
+## Current Runtime-Facing Capability Groups
+
+Current `Local` source includes Bedrock-oriented ownership for:
+
+- project lifecycle and Bedrock/project export;
+- Cube/Group authoring and bounded correction;
+- structural bounds and named model-view observation;
+- exact element inspection/discovery;
+- texture/Painter/PBR/material-instance work;
+- animation/keyframe/timeline/rig-related execution;
+- Locator / Null Object authored-state operations;
+- bounded history/recovery and validation resources.
+
+`apply_texture` and `filter_by_material` are intentionally not default-callable for current Bedrock semantics. Generic Mesh/Hytale/risky-eval behavior is not a substitute for missing native Bedrock ownership.
+
+These surfaces provide execution/observation. They do **not** decide resemblance automatically.
 
 ## Task-Specific Read Rule
 
 | Need | Read |
 |---|---|
 | Product constraint | `00-agent-policy.md` |
-| Product scope | `01-project-overview.md`, then `02-product-requirements.md` if needed |
+| Product scope | `01-project-overview.md`, then `02-product-requirements.md` when needed |
 | Model construction sequence | `03-modelling-workflow.md` |
 | Reference preparation | `04-reference-guide.md` |
-| Cube / rotation / pivot / hierarchy decision | `05-geometry-standard.md` |
-| UV / texture | `06-texture-standard.md` |
+| Cube / rotation / pivot / hierarchy | `05-geometry-standard.md` |
+| UV / texture / surface policy | `06-texture-standard.md` |
 | Visual evidence / acceptance | `07-visual-validation.md` |
-| Current capability proof status | `validation-report.md` |
+| Current source-vs-live proof state | `validation-report.md` |
+| Exact local acceptance procedure | `../knowledge/operations/local-acceptance-runbook.md` |
 
-Do not read the whole folder for every task.
+Do not read the entire folder for every task.
 
-## Policy Rules
+## Evidence Boundary
+
+Source/CI and official-source evidence may establish contracts/semantics, but live claims still require the target environment. Current remaining runtime evidence is owned by the local acceptance runbook.
+
+Use only:
+
+```text
+CURRENT-PROJECT VERIFIED
+OFFICIALLY VERIFIED
+LOCAL PROOF REQUIRED
+UNSUPPORTED
+UNKNOWN
+```
+
+## Policy Maintenance
 
 - Stable product/model rules belong here.
-- Current source/runtime behavior can invalidate an old assumption; reconcile it
-  instead of layering exceptions.
-- Visual policy is allowed to be stricter than Blockbench itself. A rule can be
-  **BlockIT product policy** even when it is not a universal Blockbench rule.
-- A runtime claim requires runtime evidence; static GitHub work cannot prove live
-  Blockbench behavior.
-- Historical review/source-selection notes remain useful evidence but do not
-  override current policy/source.
+- Current runtime/source behavior can invalidate an old assumption; reconcile rather than layering exceptions.
+- BlockIT policy may intentionally be stricter than generic Blockbench behavior.
+- A runtime/visual claim requires runtime/visual evidence.
+- Historical reviews/source-selection records cannot override current policy/source.
 
-## Bridge To The Obsidian Vault
+## Bridge To Repository Memory
 
 - [Knowledge Dashboard](../knowledge/index.md)
 - [Next Action](../knowledge/next-action.md)
+- [Local Acceptance Runbook](../knowledge/operations/local-acceptance-runbook.md)
 - [Implementation Map](../knowledge/implementation-map.md)
-- [Decision Log](../knowledge/decision-log.md)
-- [Review Status](../knowledge/reviews/review-graph.md)
+- [Review Index](../knowledge/reviews/review-graph.md)

@@ -1,82 +1,82 @@
 # BlockIT Docs
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-This folder is the human-readable documentation layer for BlockIT. It is split
-between durable product/modelling policy and the repo-local Obsidian knowledge
-vault.
+This folder is the human-readable documentation layer for BlockIT. Root `AGENTS.md` owns task-class routing; these docs provide durable product policy and repository memory.
+
+## Start With The Task Class
+
+### Asset authoring
+
+For normal Bedrock Entity creation/revision/texture/animation/export, do **not** boot the whole documentation vault. Follow root `AGENTS.md`:
+
+```text
+current request/reference
+→ blockit-bedrock-entity-mcp
+→ only the active modelling/texturing/animation specialist
+```
+
+Open a foundation/knowledge note only when a specific asset decision depends on that policy, capability boundary, or repository state.
+
+### Repository / plugin work
+
+For source/docs/CI/MCP/plugin work:
+
+```text
+AGENTS.md
+→ CONTEXT.md when stable facts matter
+→ docs/knowledge/next-action.md when continuing current work
+→ affected owner/source
+```
+
+The current continuation is local acceptance. When `next-action.md` points there, use:
+
+[Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md)
 
 ## Obsidian
 
-Open `docs/knowledge/` as the Obsidian vault. The main landing note is:
+Open `docs/knowledge/` as the repo-local Obsidian vault. Human landing note:
 
 - [Knowledge Dashboard](knowledge/index.md)
 
-The vault is intentionally repository-backed: chat history is useful context,
-but repository notes and source remain the authority.
-
-## Fast Reading Order
-
-For a new ChatGPT/Codex session:
-
-1. [`AGENTS.md`](../AGENTS.md) — agent rules, proof boundary, skill budget.
-2. [`CONTEXT.md`](../CONTEXT.md) — stable project facts and terminology.
-3. [Next Action](knowledge/next-action.md) — the single active task snapshot.
-4. Open only the foundation/source note that owns the current boundary.
-
-For a human browsing in Obsidian, start from the dashboard and follow the links
-for Product, Current Implementation, Decisions, Reviews, or Operations.
-
-## Current Product Architecture
-
-The current modelling control loop is:
-
-```text
-Approved Modelling Brief
-↓
-Cross-view consistency
-↓
-Coordinate frame + target envelope
-↓
-Primary Form Hypothesis
-↓
-Explicit coarse Cube extents / intentional rotation+pivot
-↓
-inspect_model_bounds
-↓
-capture_model_views
-↓
-Reference ↔ model comparison
-↓
-GLOBAL failure → revise/rebuild hypothesis
-LOCAL failure  → inspect_element → causal correction
-↓
-Secondary geometry / hierarchy / pivots
-↓
-Texture / optional animation / final proof
-```
-
-This loop exists to prevent the proven failure mode where technically valid or
-attached Cubes are mistaken for visual correctness.
+Repository notes and current `Local` source are authority; chat history is supporting context only.
 
 ## Document Roles
 
 | Area | Role | Authority |
 |---|---|---|
-| [Foundation](foundation/README.md) | durable product, modelling, reference, geometry, texture, and visual-validation policy | policy source of truth |
-| [Knowledge](knowledge/index.md) | Obsidian navigation, continuity, decisions, ownership, reviews, operations | project-memory/navigation |
-| [Next Action](knowledge/next-action.md) | current goal/status/blocker/next step only | active-task snapshot |
-| [Implementation Map](knowledge/implementation-map.md) | what current Local source already implements | repository/source map |
-| [Validation Report](foundation/validation-report.md) | source-backed vs local-proof-required capability matrix | proof-status reference |
+| [Foundation](foundation/README.md) | durable product, modelling, reference, geometry, texture, visual-validation policy | durable policy |
+| [Knowledge](knowledge/index.md) | continuity, source/skill maps, decisions, reviews, operations | repository memory/navigation |
+| [Next Action](knowledge/next-action.md) | one active repository continuation state | current status |
+| [Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md) | exact Codex + Blockbench acceptance procedure | active procedure only when selected by next-action |
+| [Implementation Map](knowledge/implementation-map.md) | current Local source ownership/surface | current source map |
+| [Validation Report](foundation/validation-report.md) | source/official/local proof state | proof-status reference |
 | `mcp/docs/` | generated MCP API documentation | generated output; secondary to source |
+
+## Current Product Architecture
+
+```text
+Approved Modelling Brief
+→ Primary Form Hypothesis
+→ coarse Cube/Group form
+→ minimum structural + corresponding visual evidence
+→ difference-first FAIL / UNVERIFIED / PASS
+→ local causal correction or global rebuild
+→ secondary structure after primary PASS
+→ texture/PBR when required
+→ animation when required
+→ final validation
+→ save/export
+```
+
+Tool success, valid coordinates, hierarchy, validator output, or file persistence do not issue visual approval.
 
 ## Status Language
 
-- **Active policy** — approved BlockIT rule; it may still depend on runtime proof.
-- **Historical review/record** — kept for reasoning/history; current status is
-  shown by dashboard/review indexes rather than rewriting the original evidence.
-- **LOCAL PROOF REQUIRED** — source/design is sufficient to proceed, but live
-  Blockbench/MCP behavior has not yet been proven in the local environment.
+- `CURRENT-PROJECT VERIFIED` — proven in the current target environment.
+- `OFFICIALLY VERIFIED` — supported by authoritative upstream source/docs; local integration may still need proof.
+- `LOCAL PROOF REQUIRED` — source/contract exists, live environment proof pending.
+- `UNSUPPORTED` — evidence says not to rely on the method.
+- `UNKNOWN` — evidence is insufficient/conflicting.
 
-Do not interpret a successful tool call, valid coordinates, hierarchy, or saved
-file as visual approval.
+Historical reviews/plans retain their captured evidence. Use the Review Index, Validation Report, current source, and `next-action.md` to interpret them today.

@@ -1,255 +1,116 @@
 # Skill Map
 
-Use this note for skill availability/location. Use
-[Activation Matrix](activation-matrix.md) for routing.
+Updated: 2026-08-11
 
-## Repository-Wide Skills
+Use this note for the **current repository-owned skill inventory and location**. Use [Activation Matrix](activation-matrix.md) for routing. Historical recovery detail lives in reviews/decision history rather than this current map.
 
-Codex is launched from root `BuildIT`, so project-wide skills belong under
-`.agents/skills/`.
+## Canonical Skill Root
+
+Codex runs from root `BuildIT`; all repository-owned skills live under:
+
+`/.agents/skills/`
+
+There are nine current packages, but they are **not loaded together**.
+
+## Asset Authoring
 
 | Skill | Canonical path | Function |
 |---|---|---|
-| `development-brief` | `.agents/skills/development-brief/SKILL.md` | mandatory Developing front door: request normalization, Dual POV, execution channel, input/output contract, acceptance, proof budget, final contract gate |
-| `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP server/public contract: tools/resources/prompts, input schemas/validation, registration, result semantics, annotations, transport/session behavior |
-| `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary: compiler type errors, inference/generics/narrowing, declarations, public type contracts, compile-time module typing |
-| `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun-specific build/tooling boundary: `Bun.build`, build plugins, Bun APIs used by Local, scripts, bunx, dependencies/lockfile |
-| `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench runtime/plugin boundary: lifecycle, embedded UI/component behavior, settings, globals/APIs, Undo/Canvas, runtime permissions, mutation mechanics, events/cleanup |
-| `blockbench-bedrock-modelling` | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | Minecraft Bedrock modeller judgement: approved reference → whole-form Cuboid model, proportions/silhouette, hierarchy/pivots, UV/texture scope, required animation, visual completion |
+| `blockit-bedrock-entity-mcp` | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | lightweight Bedrock authoring orchestrator; chooses smallest active lane/evidence |
+| `blockbench-bedrock-modelling` | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | whole-form Cube/Group modelling judgement, hierarchy/pivots, difference-first visual validation, correction |
+| `blockit-bedrock-texturing` | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | texture/Painter/PBR/material-instance execution and surface verification |
+| `blockit-bedrock-animation` | `.agents/skills/blockit-bedrock-animation/SKILL.md` | Bedrock animation inspection/creation, keyframes, timeline/playback, mapped effects |
 
-## Recovered Lineage
+Normal asset work loads the orchestrator, then only the specialist needed by the current stage.
 
-### `blockbench-use` → `blockbench-bedrock-modelling`
+## Repository / Plugin Development
 
-**Decision:** `RECOVER + RENAME + SLIM`.
+| Skill | Canonical path | Function |
+|---|---|---|
+| `development-brief` | `.agents/skills/development-brief/SKILL.md` | create/change front door: goal/method, scope, Build/Acceptance POV, acceptance, proof budget |
+| `mcp-server-development` | `.agents/skills/mcp-server-development/SKILL.md` | MCP public/input/result/registration/transport contract |
+| `typescript-type-safety` | `.agents/skills/typescript-type-safety/SKILL.md` | TypeScript type-system boundary only |
+| `bun-tooling` | `.agents/skills/bun-tooling/SKILL.md` | Bun build/package/script/dependency behavior |
+| `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench plugin/runtime/API/UI/Undo/Canvas mechanics |
 
-The exact historical `blockbench-use` source was recovered from repository
-history. It was a mandatory Blockbench MCP orchestrator that routed many
-sub-skills, including modelling, texturing, animation, PBR, Hytale, and plugin
-work, with broad pre-flight/checkpoint behavior.
+`blockbench-bedrock-modelling` may also be the repository-development specialist when a source/policy change is specifically about modelling judgement rather than runtime mechanics.
 
-That orchestration model is not restored. `development-brief` plus this
-activation matrix already own routing, and Developing allows at most one useful
-specialist.
+## Architecture Rule
 
-The useful capability is recovered as `blockbench-bedrock-modelling`, focused on
-**what Bedrock model should be built and whether it is visually coherent**.
+Task class determines the stack:
 
-Historical generic `blockbench-modeling` guidance was also inspected. Mesh,
-sphere/cylinder/freeform workflows and generic tool catalogs were not recovered
-because Local product policy is Minecraft Bedrock Entity + Cuboid-first and
-runtime/tool availability is source/session truth.
+```text
+Asset authoring
+→ blockit-bedrock-entity-mcp
+→ modelling OR texturing OR animation specialist as needed
 
-The following historical behavior is explicitly not restored:
+Repository create/change
+→ development-brief
+→ at most one engineering specialist when useful
+```
 
-- load-all-relevant-skills orchestration;
-- generic Hytale/PBR/mesh routing;
-- mandatory `list_outline + list_textures` pre-flight;
-- checkpoint after a fixed mutation count;
-- historical first-Cube/support/contact/section construction rules;
-- screenshot quotas or structural success as visual approval.
+Do not infer the old “six-skill” architecture from historical notes; the authoring orchestrator/texturing/animation packages were added later and are current `Local` owners.
 
-### Reference Generator lineage → foundation workflow
+## Reference Generator Boundary
 
-**Decision:** `RECOVER AS WORKFLOW; NO ROOT SKILL`.
+Reference generation is intentionally not a root Codex skill.
 
-The proven historical skill is
-`engines/chatgpt/skills/blockbench-reference-studio/SKILL.md` on `Rework`. Its
-history begins with the ChatGPT Blockbench reference skill and later evolves from
-a multi-sheet package into a single Reference Visual workflow. No repository
-history was found for `.agents/skills/reference-generator/` or
-`.agents/skills/blockbench-reference-generator/`, so those names are not treated
-as historical package identities.
-
-The useful capability is Source Image/user intent → one Minecraft/Blockbench
-five-view Modelling Brief → user approval → modelling handoff. Its canonical
-owner is now:
+Source Image/user intent → approved multi-view Modelling Brief belongs to:
 
 `docs/foundation/04-reference-guide.md`
 
-It is intentionally **not** copied into `.agents/skills/` because the generation
-step belongs to an image-capable ChatGPT/Reference Generator surface, while the
-root skill directory is the project-wide Codex discovery surface. Codex consumes
-the approved brief through `blockbench-bedrock-modelling`.
+Codex consumes the approved reference through the asset-authoring route.
 
-Preserved from the historical Reference Studio:
+## Retired / Superseded Names
 
-- Source Image owns target identity; Golden Sample owns presentation/construction
-  language only;
-- generated subject must read as intentionally buildable Minecraft/Blockbench
-  Cuboid construction, not smooth realism with pixel skin;
-- the same subject/construction must stay coherent across views;
-- one Draft plus at most one evidence-driven targeted correction;
-- generation and modelling remain separate responsibilities.
-
-Not recovered:
-
-- four-sheet/multi-sheet packages;
-- schema/manifest 3.3 contracts, hashes, crop/region contracts, writer leases,
-  deterministic diagnosis metadata, or production-state machinery;
-- three routine approval gates;
-- mandatory ZIP/package ceremony;
-- image-derived Cube transforms or geometry authority.
-
-If a dedicated ChatGPT skill is packaged again in the future, derive it from
-`04-reference-guide.md` and keep it specific to that image-capable surface rather
-than creating a duplicate root Codex skill.
-
-### Evidence-gate lineage → root evidence baseline
-
-**Decision:** `MERGE + DROP AS SKILL`.
-
-No tracked `.agents/skills/evidence-gate/SKILL.md` history exists in Rework. The
-actual useful behavior was recovered from the earlier Minecraft Production
-Reality Core's evidence-gate rules, not from a standalone project skill.
-
-The valuable distinction is evidence quality for a material claim:
-
-- `CURRENT-PROJECT VERIFIED`;
-- `OFFICIALLY VERIFIED`;
-- `LOCAL PROOF REQUIRED` (simplified from historical `PROTOTYPE REQUIRED` for the
-  current ChatGPT→GitHub / Codex-local workflow);
-- `UNSUPPORTED`;
-- `UNKNOWN`.
-
-Canonical owner: root `AGENTS.md` under **Evidence Status Escalation**.
-
-No standalone skill is created because the remaining behavior already belongs to
-baseline proof, root-cause, and independent-judgment rules. Historical
-`SIMULATION REQUIRED` is not retained as another status: when the literal method
-is unsupported but the user goal is still achievable, Independent Judgment owns
-rejecting/redirecting the method to the smallest supported alternative.
-
-Evidence labels are conditional. Routine work must not be burdened with status
-ceremony when its proof is already clear.
-
-## Retired / Merged Skills
-
-### `mcp-builder`
-
-Replaced by focused `mcp-server-development`. Generic Python/FastMCP,
-external-API scaffolding, pagination defaults, mandatory evaluation suite, and
-evaluation scripts were removed.
-
-### `typescript-expert`
-
-Replaced by `typescript-type-safety`. Normal `.ts` implementation does not load
-a TypeScript specialist; only genuine type-system problems do.
-
-### `zod`
-
-Merged into `mcp-server-development`. BlockIT uses Zod as the MCP input-schema
-mechanism, so a separate schema skill would split one semantic owner.
-
-### `bun-development`
-
-Replaced by `bun-tooling`. The useful Bun-specific build/tooling knowledge was
-retained while generic project scaffolding, unrelated Bun APIs, Node→Bun
-migration, and generic performance advice were removed.
-
-### `blockbench-plugins`
-
-Replaced by `blockbench-runtime-development`.
-
-The old skill mixed generic plugin tutorials, custom format/codec scaffolding,
-UI examples, model API mechanics, and modelling-adjacent wording. BlockIT only
-needs a focused runtime specialist for the existing MCP plugin.
-
-Both duplicate packages were retired:
-
-- `mcp/.agents/skills/blockbench-plugins/`
-- `mcp/.github/skills/blockbench-plugins/`
-
-Generic plugin templates and copied API/event/element reference packs were not
-moved into the new skill. Local source, installed Blockbench typings, and live
-Blockbench behavior are the stronger authorities.
-
-`blockbench-runtime-development` owns **how Blockbench runtime operations work**.
-`blockbench-bedrock-modelling` owns **what model should be built and whether the
-result is visually/model-wise correct**.
-
-### Nested `skill-creator`
-
-Dropped as a repository skill. It was a generic authoring toolkit with no
-BlockIT-only behavior. Use the available global/user `skill-creator` capability
-when a skill itself is created or materially revised; do not keep another
-repository copy solely for availability.
-
-### `vue-best-practices`
-
-Merged into `blockbench-runtime-development` and retired as a separate skill.
-Local reactive UI is embedded in Blockbench runtime surfaces, not a standalone
-Vue application domain.
-
-Do not recreate or route to retired `mcp-builder`, `typescript-expert`, `zod`,
-`bun-development`, `blockbench-plugins`, nested `skill-creator`,
-`vue-best-practices`, historical `blockbench-use`, or conceptual
-`evidence-gate` skill packages.
-
-Do not create a root `reference-generator` skill unless a future requirement
-proves that Codex itself must own reference generation rather than consume the
-approved Modelling Brief.
-
-## Legacy Nested Skill Locations
-
-There are currently **no active skills** under `mcp/.agents/skills/` or
-`mcp/.github/skills/`.
-
-Those paths are legacy locations, not active project-wide skill roots. Do not
-repopulate them merely to match historical layout.
-
-## Recovery Status
-
-The planned recovery pass is complete. There are no remaining historical skill
-names queued for automatic recovery.
-
-A future capability is added only when current work proves a distinct owner and
-value that is not already covered by baseline policy, a foundation workflow, or
-an existing specialist.
-
-The old `mcp/workflow/skills/` path is stale and must not be recreated merely to
-match historical notes.
-
-## Global / User Skills
-
-Global/user skills such as `ponytail`, `grilling`, `domain-modeling`,
-`codebase-design`, `diagnosing-bugs`, `tdd`, `research`, `code-review`, and
-`skill-creator` are not copied into BuildIT solely to increase the skill count.
-Use them only when the activation matrix says their distinct function is needed.
-
-## Skill Audit Rule
-
-For each skill/capability, decide one of:
+Do not route to or recreate these as current project skills:
 
 ```text
-KEEP    → clear unique function and name
-RENAME  → function useful, name misleading
-MERGE   → useful behavior overlaps another owner
-MOVE    → function belongs at a different repository scope
-DROP    → no distinct value after baseline rules/other skills
-RECOVER → trusted source exists but canonical Local capability is missing
+mcp-builder
+typescript-expert
+zod
+bun-development
+blockbench-plugins
+historical blockbench-use
+generic blockbench-modeling Mesh workflow
+reference-generator as root Codex skill
+evidence-gate as standalone skill
+Hytale/generic Mesh authoring skill stacks
+nested skill-creator copy
 ```
 
-A recovered capability may remain a baseline/foundation/workflow instead of
-becoming a skill when that is the smaller correct owner.
+Historical nested roots are also inactive:
 
-Judge the capability by its actual trigger/function, not by its upstream name.
-Preserve upstream lineage in the decision record when a rename/merge/recovery
-occurs.
+```text
+mcp/.agents/skills/
+mcp/.github/skills/
+mcp/workflow/skills/
+```
 
-## External Complements
+## Why The Current Authoring Split Exists
 
-These are not extra default skills:
+The current asset-authoring split prevents a broad generic Blockbench skill from mixing unrelated product domains:
 
-| Complement | Role |
-|---|---|
-| Karpathy-inspired guidelines | absorbed into root anti-slop behavior |
-| CodeGraph | optional cross-file navigation accelerator |
-| GSD Core discussion discipline | conditional high-impact requirement discovery |
+```text
+orchestrator     → lane/evidence discipline
+modelling        → what form should exist / visual judgement
+texturing        → surface authoring
+animation        → motion/keyframes
+```
 
-Claude-Mem is not adopted. Repository-owned continuity remains authoritative.
+Detailed evidence for this change is retained in:
+
+- `docs/knowledge/reviews/blockit-agent-skill-surface-2026-08-10.md`
+- `docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md`
+- `docs/knowledge/decision-log.md`
+
+Those reviews explain lineage; this file owns the current inventory.
+
+## Skill Change Rule
+
+A new/renamed/merged skill requires a current demonstrated reusable ownership gap. Do not add a package just to preserve historical names, mirror upstream, or increase discoverability.
 
 ## Parent
 
-- [Knowledge Dashboard](../index.md)
 - [Activation Matrix](activation-matrix.md)
+- [Knowledge Dashboard](../index.md)

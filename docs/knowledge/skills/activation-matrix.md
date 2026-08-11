@@ -1,137 +1,112 @@
 # Skill Activation Matrix
 
-Use this note only to choose the **smallest correct owner**. Detailed procedure
-lives in the selected `SKILL.md`; proof/evidence/anti-slop behavior lives in root
-`AGENTS.md`.
+Updated: 2026-08-11
 
-## Default Budget
+Use this note only to choose the **smallest correct skill owner**. Root `AGENTS.md` decides task class first; detailed procedure lives in the selected `SKILL.md`.
 
-| Mode | Default |
-|---|---|
-| Plan | `ponytail`; add a specialist only for a real domain/module decision |
-| Developing | mandatory `development-brief` + **at most one** specialist |
-| Maintenance | `ponytail` + smallest diagnostic/specialist owning the failure |
+## 1. Asset Authoring Route
 
-Do not load a framework/language skill merely because that technology appears in
-the implementation.
+Use when the user wants to create, revise, inspect, texture, animate, validate, or export a Bedrock Entity asset and is **not** asking to change repository/plugin source.
 
-## Developing Front Door
+Start with:
 
-Every create/change task starts with:
+`/.agents/skills/blockit-bedrock-entity-mcp/SKILL.md`
+
+Then load only the active domain specialist:
+
+| Active decision | Specialist | Examples |
+|---|---|---|
+| whole form / Cube geometry / hierarchy / pivots / visual correction | `blockbench-bedrock-modelling` | reference interpretation, primary masses, silhouette/depth, local causal correction, visual gate |
+| texture / Paint / PBR / material instance | `blockit-bedrock-texturing` | create/read/activate texture, pixel editing, TextureGroups, PBR channels, per-face material metadata |
+| animation / keyframes / playback / mapped effects | `blockit-bedrock-animation` | inspect/create animation, BoneAnimator transforms, timeline, batch/copy operations, animation-facing rig checks |
+
+A long end-to-end asset task may move from modelling → texturing → animation as stages become active. Do not preload all specialists at the beginning.
+
+Do **not** route ordinary asset authoring through `development-brief`, repository history, or engineering skills.
+
+## 2. Repository / Plugin Development Route
+
+Use for source, docs, CI, plugin/MCP implementation, architecture, or repository maintenance.
+
+Every non-trivial create/change task starts with:
 
 `/.agents/skills/development-brief/SKILL.md`
 
-It owns goal/method separation, execution-channel detection, development
-necessity, Build/Acceptance POVs, minimal scope, 2-5 acceptance criteria, proof
-budget, specialist selection, and final contract re-check.
+Add at most one engineering specialist when it materially helps the proved boundary:
 
-## Canonical Specialist Routing
-
-| Primary semantic owner | Skill | Trigger examples | Do not select merely because… |
+| Semantic owner | Skill | Trigger examples | Do not select merely because… |
 |---|---|---|---|
-| MCP public/protocol/input contract | `mcp-server-development` | tools/resources/prompts, Zod MCP input semantics, registration, results/errors, annotations, transport/session | implementation is TypeScript/Bun or calls Blockbench |
+| MCP public/schema/result/registration/transport contract | `mcp-server-development` | Zod MCP inputs, tool/resource/prompt registration, annotations, result semantics, transport/endpoint contract | implementation is TypeScript/Bun or calls Blockbench |
+| Blockbench runtime/API/lifecycle mechanics | `blockbench-runtime-development` | plugin lifecycle, UI/settings, globals, Undo/Canvas, runtime mutation mechanics, events/cleanup | an MCP tool manipulates a model |
+| modeller judgement / modelling policy | `blockbench-bedrock-modelling` | source/policy change about whole-form modelling, pivots, visual validity, correction semantics | Blockbench API is used to execute it |
 | TypeScript type system | `typescript-type-safety` | inference, generics, unions/narrowing, declarations, unsafe assertions, compiler type contract | file ends in `.ts` |
-| Bun build/tooling | `bun-tooling` | `Bun.build`, build plugins, Bun APIs, scripts, `bunx`, dependencies/lockfile | command starts with `bun` |
-| Blockbench execution mechanics | `blockbench-runtime-development` | lifecycle, UI, permissions, globals/APIs, Undo/Canvas, mutation mechanics, events/cleanup | an MCP tool happens to manipulate a model |
-| Bedrock model judgement | `blockbench-bedrock-modelling` | whole-form Cuboids, silhouette/proportion, hierarchy/pivots, geometry-vs-texture, UV/texture scope, required animation, visual correction | Blockbench APIs are used to execute the modelling decision |
+| Bun build/package/tooling | `bun-tooling` | `Bun.build`, Bun APIs, scripts, dependency/lockfile/build behavior | command starts with `bun` |
 
-Canonical paths:
+If no specialist adds distinct procedure, use `development-brief` alone.
 
-```text
-.agents/skills/development-brief/SKILL.md
-.agents/skills/mcp-server-development/SKILL.md
-.agents/skills/typescript-type-safety/SKILL.md
-.agents/skills/bun-tooling/SKILL.md
-.agents/skills/blockbench-runtime-development/SKILL.md
-.agents/skills/blockbench-bedrock-modelling/SKILL.md
-```
+## 3. Boundary Resolution
 
-## Boundary Resolution
-
-When more than one technology appears, choose by the **proved cause/contract**:
+Choose by the behavior that would still be wrong if implementation technology changed:
 
 ```text
-MCP input/result/tool semantics wrong
+MCP input/result/registration semantics wrong
 → mcp-server-development
 
 MCP contract correct, Blockbench API/lifecycle operation wrong
 → blockbench-runtime-development
 
-Operation executes correctly, model shape/visual result wrong
+Operation executes correctly, model judgement/policy wrong
 → blockbench-bedrock-modelling
 
-Domain behavior is correct but compiler typing itself fails
+Domain behavior correct, compiler typing itself wrong
 → typescript-type-safety
 
-Domain behavior is correct but Bun build/package behavior fails
+Domain behavior correct, Bun build/package behavior wrong
 → bun-tooling
 ```
 
-Do not stack two specialists to solve one boundary. If investigation proves a
-second independent problem, finish/reframe the first boundary before switching
-owner.
+Do not stack multiple engineering specialists for one causal boundary. If a second independent defect appears, finish/reframe the first boundary before switching owner.
 
-## Reference Preparation Is Not A Root Skill
+## 4. Current Local Acceptance Route
 
-Source Image/user intent → five-view Modelling Brief is owned by:
+Local acceptance is repository continuation, not ordinary asset authoring.
+
+When `docs/knowledge/next-action.md` points to local acceptance:
+
+```text
+AGENTS.md
+→ CONTEXT.md
+→ next-action.md
+→ operations/local-acceptance-runbook.md
+```
+
+Do not select an engineering specialist during the baseline merely because local tools are available. Reproduce/classify a failure first; then select the specialist that owns the demonstrated failure.
+
+## 5. Reference Preparation Is Not A Root Skill
+
+Source Image/user intent → approved Modelling Brief is owned by:
 
 `docs/foundation/04-reference-guide.md`
 
-Run that workflow on an image-capable ChatGPT/Reference Generator surface.
-Codex consumes the approved brief through `blockbench-bedrock-modelling`.
+Run it on an image-capable surface. Codex consumes the approved brief through the asset-authoring route.
 
-Do not create a root `reference-generator` skill unless a future requirement
-proves Codex itself must own image generation.
+## 6. Evidence Is Not A Skill
 
-## Evidence Is Not A Skill
+Material uncertainty uses root `AGENTS.md` evidence labels:
 
-Material support/feasibility/compatibility/runtime uncertainty uses root
-`AGENTS.md` Evidence Status Escalation:
+```text
+CURRENT-PROJECT VERIFIED
+OFFICIALLY VERIFIED
+LOCAL PROOF REQUIRED
+UNSUPPORTED
+UNKNOWN
+```
 
-- `CURRENT-PROJECT VERIFIED`
-- `OFFICIALLY VERIFIED`
-- `LOCAL PROOF REQUIRED`
-- `UNSUPPORTED`
-- `UNKNOWN`
+Routine work does not need ceremonial tagging.
 
-This does not consume the specialist slot and is not applied ceremonially to
-routine work.
+## 7. Retired / External Helpers
 
-## Conditional Helpers
-
-Use only when their distinct function is needed:
-
-- `grilling` — adversarial challenge before commitment;
-- `code-review` — independent critique after implementation when useful;
-- lightweight GSD-style discovery — unresolved high-impact requirement;
-- `diagnosing-bugs` — reproducible failure where diagnosis procedure adds value;
-- `tdd` — behavior/regression where test-first materially reduces risk;
-- `research` — external primary-source facts;
-- `domain-modeling` — domain terminology/ownership genuinely unclear;
-- `codebase-design` — module/interface ownership genuinely unclear;
-- CodeGraph — optional broad source-navigation accelerator, never proof;
-- OpenSpec — only a genuine cross-cutting contract/migration/multi-phase change.
-
-None are default ceremony.
-
-## Skill Authoring
-
-Use the available global/user `skill-creator` only when a skill itself is being
-created or materially revised. Do not keep a duplicate generic repository copy.
-
-## Location And Freeze Rule
-
-- `.agents/skills/` is the only canonical repository-wide skill root.
-- `mcp/.agents/skills/` and `mcp/.github/skills/` are retired legacy locations.
-- `mcp/workflow/skills/` is stale and must not be recreated.
-- The current six-skill architecture is **frozen after the final consolidation
-  review**. Do not rename, merge, split, or add another skill unless current work
-  proves a distinct owner/capability that cannot be represented cleanly by the
-  existing baseline, foundation workflow, or one specialist.
-
-## Retired Names
-
-Do not route to or recreate:
+Do not route current work to retired project packages such as:
 
 ```text
 mcp-builder
@@ -139,23 +114,28 @@ typescript-expert
 zod
 bun-development
 blockbench-plugins
-vue-best-practices
-nested skill-creator
-historical blockbench-use orchestrator
-conceptual evidence-gate skill
+historical blockbench-use
+conceptual evidence-gate
+generic Mesh/Hytale authoring stacks
 ```
 
-Historical names are lineage only.
+Global/user helpers may be used only when their distinct function is actually available and needed; they are not repository assumptions or default routing requirements.
+
+## 8. Location / Change Rule
+
+- `.agents/skills/` is the only canonical repository-owned skill root.
+- Do not repopulate `mcp/.agents/skills/`, `mcp/.github/skills/`, or `mcp/workflow/skills/`.
+- Do not add/rename/merge/split skills without a current reusable ownership gap that existing owners cannot represent cleanly.
 
 ## Final Routing Check
 
-Before loading a specialist ask:
+Before loading a skill ask:
 
 ```text
-What exact behavior/contract is wrong?
-Which owner would still be wrong if implementation language/framework changed?
-Does this skill add domain procedure beyond AGENTS + development-brief?
-Can one specialist cover the boundary without stacking?
+Is this asset authoring or repository/plugin work?
+What exact decision/behavior is active?
+Which current owner adds procedure that AGENTS alone does not provide?
+Am I loading context because it changes the decision, or by ritual?
 ```
 
-If no specialist adds material value, use `development-brief` alone.
+If the answer to the last question is “ritual”, do not load it.

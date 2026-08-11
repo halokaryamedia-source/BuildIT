@@ -1,56 +1,56 @@
 # Skill Ownership
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-All canonical repository-wide BlockIT skills live at root:
+All canonical repository-owned BlockIT skills live under:
 
 `/.agents/skills/`
 
-Codex is launched from root `BuildIT`, so this is the only active project skill
-root.
+Task-class routing is owned by root `AGENTS.md`. This note records ownership, not active task state.
 
-## Frozen Canonical Set
+## Asset Authoring Skills
 
 | Skill | Responsibility |
 |---|---|
-| `development-brief` | mandatory Developing front door: goal/method separation, execution channel, Build/Acceptance POV, scope, acceptance, proof budget |
-| `mcp-server-development` | MCP tools/resources/prompts, public input/result contracts, schema/registration/session semantics |
-| `typescript-type-safety` | TypeScript type-system failures only |
-| `bun-tooling` | Bun-owned build/tooling/scripts/dependency behavior |
-| `blockbench-runtime-development` | Blockbench API/lifecycle/UI/Undo/Canvas/runtime mechanics |
-| `blockbench-bedrock-modelling` | modeller judgement: reference → coherent Bedrock Cuboid form, hierarchy/pivots, texture/animation scope, visual correction |
+| `blockit-bedrock-entity-mcp` | lightweight Bedrock asset orchestrator; chooses the smallest modelling/texturing/animation lane and minimum necessary evidence |
+| `blockbench-bedrock-modelling` | whole-form Cube/Group judgement, silhouette/proportion, hierarchy/pivots, difference-first visual validation, causal correction |
+| `blockit-bedrock-texturing` | texture creation/read/activation, Painter, PBR TextureGroups, material instances, surface verification |
+| `blockit-bedrock-animation` | Bedrock animation inspection/creation, BoneAnimator transforms, keyframes, timeline/playback, mapped effects, rig-related animation execution |
 
-The architecture is frozen. Do not add/rename/merge/split another skill unless
-current work proves a distinct reusable ownership gap.
+Normal asset authoring starts with the orchestrator and loads only the active domain specialist(s) as the workflow reaches that stage. It does **not** route through `development-brief` merely because MCP is used.
 
-## Routing Rule
+## Repository / Plugin Development Skills
 
-Developing work uses:
+| Skill | Responsibility |
+|---|---|
+| `development-brief` | repository create/change front door: goal/method separation, scope, Build/Acceptance POV, acceptance criteria, proof budget |
+| `mcp-server-development` | MCP tools/resources/prompts, public input/result/schema/registration/transport contracts |
+| `typescript-type-safety` | genuine TypeScript type-system problems only |
+| `bun-tooling` | Bun-owned build/package/script/dependency behavior |
+| `blockbench-runtime-development` | Blockbench API/lifecycle/UI/settings/Undo/Canvas/runtime mechanics |
+
+`blockbench-bedrock-modelling` may also be selected for repository changes whose semantic owner is modelling judgement/policy rather than runtime mechanics.
+
+Repository Developing work uses:
 
 ```text
 development-brief
-+ at most one specialist when it adds real domain procedure
++ at most one engineering specialist when it materially helps the proved boundary
 ```
 
-Do not stack skills because multiple technologies happen to appear in one file.
-Choose the semantic owner of the actual wrong behavior/contract.
-
-Detailed routing lives in [Skill Activation Matrix](../skills/activation-matrix.md).
+Do not stack engineering specialists just because one file contains MCP + TypeScript + Blockbench code.
 
 ## Reference Generation
 
-Reference generation is intentionally **not** a root Codex skill.
-
-Source Image → five-view Modelling Brief belongs to:
+Reference generation is intentionally not another root Codex skill. Source Image/user intent → approved Modelling Brief belongs to:
 
 `docs/foundation/04-reference-guide.md`
 
-on an image-capable surface. Codex consumes the approved Modelling Brief through
-`blockbench-bedrock-modelling`.
+Codex consumes the approved brief through the asset-authoring route.
 
 ## Evidence Status
 
-Evidence classification is also **not** a skill. Root `AGENTS.md` owns:
+Evidence classification is root `AGENTS.md` behavior, not a skill:
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -60,11 +60,9 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Do not recreate an `evidence-gate` package.
-
 ## Retired / Historical Skill Locations
 
-The following are not active skill roots:
+Not active skill roots:
 
 ```text
 mcp/.agents/skills/
@@ -72,18 +70,16 @@ mcp/.github/skills/
 mcp/workflow/skills/
 ```
 
-Do not repopulate them merely to preserve old structure.
+Historical names such as `mcp-builder`, `typescript-expert`, `zod`, `bun-development`, `blockbench-plugins`, old `blockbench-use`, generic Mesh/Hytale skill stacks, and conceptual `evidence-gate` are not current routing targets.
 
-Historical names such as `mcp-builder`, `typescript-expert`, `zod`,
-`bun-development`, `blockbench-plugins`, `blockbench-use`,
-`reference-generator`, or `evidence-gate` are lineage/superseded concepts, not
-current routing targets.
+Do not recreate retired packages unless a new explicit requirement proves a distinct current owner/capability gap.
 
 ## Canonical Detail
 
-- [Skill Map](../skills/skill-map.md) — full lineage and retired names.
+- [Skill Map](../skills/skill-map.md) — current inventory + concise lineage.
 - [Activation Matrix](../skills/activation-matrix.md) — current routing rules.
-- [Agent Rules](../../../AGENTS.md) — mode/proof/skill-budget baseline.
+- [Agent Rules](../../../AGENTS.md) — task class/proof/anti-slop baseline.
+- [BlockIT Skill Surface Review](../reviews/blockit-agent-skill-surface-2026-08-10.md) — historical evidence for the authoring-skill expansion.
 
 ## Parent
 

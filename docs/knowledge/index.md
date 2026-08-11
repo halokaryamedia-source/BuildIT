@@ -1,159 +1,149 @@
 # Knowledge Dashboard
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-Use this page as the main Obsidian landing note for BlockIT.
+Use this page as the main human/Obsidian navigation note. It is **not** a mandatory read for ordinary asset authoring; root `AGENTS.md` owns task-class routing.
 
 ## Mission
 
-Keep project memory current, auditable, easy to resume, and separated by
-responsibility:
+Keep repository memory current, source-backed, and separated by responsibility:
 
 ```text
-stable rules      → docs/foundation/
-current task      → next-action.md
-durable decisions → decision-log.md / decisions/
-source ownership  → implementation-map.md
-review evidence   → reviews/
-future work       → operations/task-board.md
+agent/task routing → AGENTS.md
+stable facts       → CONTEXT.md
+current repository continuation → next-action.md
+local acceptance procedure       → operations/local-acceptance-runbook.md
+durable policy     → docs/foundation/
+source ownership   → implementation-map.md
+durable decisions  → decision-log.md / decisions/
+review evidence    → reviews/
+future/non-active work → operations/task-board.md
 ```
-
-Repository state is authority. Chat history is supporting context only.
 
 ## Start Here
 
-### For a new ChatGPT / Codex session
+### Asset authoring
+
+Do not boot the full knowledge vault. Follow root `AGENTS.md`:
+
+```text
+current request/reference
+→ blockit-bedrock-entity-mcp
+→ only the active modelling/texturing/animation specialist
+```
+
+Open repository memory only when the asset decision depends on repository state, a protected capability boundary, or a conflicting product rule.
+
+### Repository / plugin continuation
+
+Read:
 
 1. [Agent Rules](../../AGENTS.md)
-2. [Workspace Context](../../CONTEXT.md)
+2. [Workspace Context](../../CONTEXT.md) when stable facts matter
 3. [Next Action](next-action.md)
-4. Open only the foundation/source note that owns the active boundary.
-5. [Skill Activation Matrix](skills/activation-matrix.md) only when specialist
-   selection is needed.
+4. If the next step is local acceptance: [Local Acceptance Runbook](operations/local-acceptance-runbook.md)
+5. Only the source/foundation/review owner needed by the active boundary
 
-### For a human browsing in Obsidian
-
-- **What is BlockIT?** → [Project Overview](../foundation/01-project-overview.md)
-- **How does modelling work now?** → [Modelling Workflow](../foundation/03-modelling-workflow.md)
-- **What is implemented?** → [Implementation Map](implementation-map.md)
-- **What are we doing next?** → [Next Action](next-action.md)
-- **Why did we choose this architecture?** → [Decision Log](decision-log.md) and
-  [Reference Fidelity Decision](decisions/reference-fidelity-loop.md)
-- **What did earlier audits find?** → [Review Index](reviews/review-graph.md)
-- **What still needs future work?** → [Task Board](operations/task-board.md)
+Do not broad-scan the vault by default.
 
 ## Current Product Snapshot
 
-The active modelling architecture is the **Reference Fidelity Loop**:
+BlockIT is a Bedrock Entity-focused MCP/workflow. The modelling loop is:
 
 ```text
 Approved Modelling Brief
-↓
-Cross-view consistency
-↓
-Coordinate frame + target envelope
-↓
-Primary Form Hypothesis
-↓
-Explicit coarse Cube extents
-+ intentional rotation/pivot when required
-↓
-inspect_model_bounds
-↓
-capture_model_views
-↓
-Reference ↔ model comparison
-↓
-GLOBAL failure → revise/rebuild hypothesis
-LOCAL failure  → inspect_element → causal correction
-↓
-Secondary geometry / hierarchy / pivots
-↓
-Texture / optional animation / final proof
+→ Primary Form Hypothesis
+→ coarse Cube/Group form
+→ minimum useful structural/visual evidence
+→ difference-first FAIL / UNVERIFIED / PASS
+→ local causal correction or global rebuild
+→ secondary structure after primary PASS
+→ texture/PBR when required
+→ animation when required
+→ final validation
+→ .bbmodel / Bedrock export
 ```
 
-The governing rule is simple:
+Tool success is execution evidence, not visual approval. `BLOCKED` is a valid workflow outcome when continuation would require guessing or repeated failed work.
 
-> A Cube existing, attaching, validating, or being saved is structural evidence,
-> not visual approval.
+## Current Pre-local State
 
-## Current Local Source State
+Non-local source/CI cleanup is complete. Live Codex + Blockbench acceptance is now the active boundary.
 
-Source already contains the main fidelity instruments and safety boundaries:
+Current pinned-SDK default surface:
 
-- `inspect_model_bounds` — whole rendered Cube envelope facts;
-- `capture_model_views` — stable named visual observations;
-- `inspect_element` — exact authored Cube/Group state;
-- `modify_cubes_batch` — coherent exact-UUID multi-Cube correction;
-- strict `place_cube` parent targeting;
-- explicit finite `from/to` required for new Cubes;
-- explicit pivot required for a newly placed non-zero-rotation Cube;
-- existing Cube zero→non-zero rotation activation requires explicit origin before mutation, while already-rotated Cubes may reuse their existing pivot;
-- pivot-only Cube correction through `Cube.transferOrigin()`;
-- stricter Group creation and `bone_rigging` targeting/pivot semantics.
+```text
+62 enabled tools
+72,775 tools/list response characters
+48,674 input-schema characters
+11,800 tool-description characters
+```
 
-These are **source implemented**. Live Blockbench/MCP behavior remains
-`LOCAL PROOF REQUIRED` until a local proof is intentionally run.
+`list_export_formats`, `apply_texture`, and `filter_by_material` are intentionally absent from the default callable surface. `export_model` remains exposed.
 
 ## Knowledge Spine
 
-- [Minimal Nav](minimal-nav.md) — shortest boot path.
-- [Next Action](next-action.md) — single active goal/status/next step.
+- [Minimal Navigation](minimal-nav.md) — shortest task-class-aware boot path.
+- [Next Action](next-action.md) — one active repository continuation state.
+- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — exact local execution procedure.
+- [Implementation Map](implementation-map.md) — current source ownership/surface.
+- [Skill Activation Matrix](skills/activation-matrix.md) — current skill routing.
+- [Skill Map](skills/skill-map.md) — current nine-skill inventory and concise lineage.
+- [Source Map](sources/source-map.md) — source/authority bridge.
+- [Validation Report](../foundation/validation-report.md) — current proof-status matrix.
+- [Review Index](reviews/review-graph.md) — current meaning of historical reviews.
 - [Decision Log](decision-log.md) — durable decisions and superseded rules.
-- [Flow](flow.md) — agent work routing.
-- [Workspace Map](workspace-map.md) — top-level repository map.
-- [Workspace Structure](workspace-structure.md) — current project-data layout.
-- [Implementation Map](implementation-map.md) — source ownership and implemented
-  fidelity surfaces.
-- [Skill Map](skills/skill-map.md) — frozen six-skill architecture and lineage.
-- [Source Map](sources/source-map.md) — current source/authority bridge.
-- [Glossary](glossary.md) — canonical terminology.
-- [Reviews](reviews/review-graph.md) — historical evidence plus current review
-  status.
-- [Operations](operations/README.md) — backlog/roadmap/audit/history.
+- [Operations](operations/README.md) — runbook/backlog/roadmap/history.
+
+## Current Skill Inventory
+
+All repository-owned skills live under `../../.agents/skills/`.
+
+Asset authoring:
+
+```text
+blockit-bedrock-entity-mcp
+blockbench-bedrock-modelling
+blockit-bedrock-texturing
+blockit-bedrock-animation
+```
+
+Repository/plugin development:
+
+```text
+development-brief
+mcp-server-development
+typescript-type-safety
+bun-tooling
+blockbench-runtime-development
+```
+
+Do not route to retired nested skill roots under `mcp/`.
 
 ## Retrieval Map
 
 | Need | Start here |
 |---|---|
-| Agent rules / proof boundary | `AGENTS.md` |
-| Stable project facts | `CONTEXT.md` |
-| Current work | `next-action.md` |
+| Task routing / proof discipline | `AGENTS.md` |
+| Stable facts / terminology | `CONTEXT.md` |
+| Current repository continuation | `next-action.md` |
+| Local test procedure | `operations/local-acceptance-runbook.md` |
 | Product/modelling policy | `../foundation/README.md` |
 | Reference preparation | `../foundation/04-reference-guide.md` |
-| Geometry / rotation / pivot rules | `../foundation/05-geometry-standard.md` |
+| Geometry/rotation/pivot policy | `../foundation/05-geometry-standard.md` |
 | Visual acceptance | `../foundation/07-visual-validation.md` |
-| Current implementation | `implementation-map.md` |
-| MCP runtime | `../../mcp/README.md` + affected source |
+| Current source ownership | `implementation-map.md` |
+| MCP build/runtime | `../../mcp/README.md` + affected source |
 | Skill routing | `skills/activation-matrix.md` |
-| Historical audit/reasoning | `reviews/review-graph.md` |
+| Current proof status | `../foundation/validation-report.md` |
+| Historical evidence | `reviews/review-graph.md` |
 | Future/non-active work | `operations/task-board.md` |
-
-## Canonical Skill Location
-
-All repository-wide BlockIT skills live under:
-
-`../../.agents/skills/`
-
-There are exactly six canonical skills. `mcp/.agents/skills/`,
-`mcp/.github/skills/`, and the old `mcp/workflow/skills/` path are not active
-skill roots.
-
-Reference generation is a foundation workflow, not another root skill. Evidence
-status is root `AGENTS.md` behavior, not an `evidence-gate` skill.
 
 ## Continuity Rules
 
-- `next-action.md` is the only active-task snapshot.
-- Do not copy active status into every dashboard/review/module note.
-- Historical review notes may retain the state they recorded; use the Review
-  Index to understand whether their recommendations were later implemented or
-  superseded.
-- Before ending material work, update the canonical owner whose state changed.
+- `next-action.md` is the only active repository-task snapshot.
+- The local acceptance runbook owns procedure, not current status.
+- Historical reviews/plans keep their captured evidence but do not control current execution.
+- Before ending material work, update only the canonical owner whose state changed.
 - Verify a path exists before creating a replacement for an old/stale path.
-
-## Vault Maintenance Rule
-
-One note, one job. Prefer updating an existing owner to creating another layer.
-If a note becomes historical, mark/index it as historical rather than rewriting
-its evidence as though it was produced today.
+- Prefer deleting stale routing to adding another documentation layer.

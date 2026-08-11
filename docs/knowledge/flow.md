@@ -1,100 +1,108 @@
 # Flow
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-Use this note as the single **agent work-routing** map. Product modelling flow is
-owned by `docs/foundation/03-modelling-workflow.md`.
+Use this note as the repository **work-routing** map. Product modelling procedure is owned by `docs/foundation/03-modelling-workflow.md`; local acceptance procedure is owned by `operations/local-acceptance-runbook.md`.
 
-## Agent Routing Flow
+## Task-Class Routing
 
 ```mermaid
 flowchart TD
-    A[User request] --> B[Boot repository memory<br/>AGENTS → CONTEXT → next-action]
-    B --> C{Work mode}
+    A[User request] --> B{Task class?}
 
-    C -->|Plan| P[Ponytail<br/>Discovery only if high-impact ambiguity remains]
-    C -->|Developing| D[development-brief<br/>goal/method → authority → Build/Acceptance POV → scope/proof]
-    C -->|Maintenance| M[Ponytail<br/>+ smallest useful diagnostic/specialist]
+    B -->|Asset authoring| C[Current request/reference]
+    C --> O[blockit-bedrock-entity-mcp]
+    O --> D{Active domain?}
+    D -->|Geometry / form / pivots| M[blockbench-bedrock-modelling]
+    D -->|Texture / Paint / PBR| T[blockit-bedrock-texturing]
+    D -->|Animation / keyframes| N[blockit-bedrock-animation]
+    M --> X[BlockIT MCP + minimum necessary evidence]
+    T --> X
+    N --> X
 
-    D --> N{Development needed?}
-    N -- No --> NC[Reuse / explain / no-change + minimum proof]
-    N -- Yes --> I[Inspect current owner + affected boundary]
-    P --> I
-    M --> I
-
-    I --> K{Cause/scope grounded?}
-    K -- No --> X[UNKNOWN / LOCAL PROOF REQUIRED<br/>or user-facing Terhenti/Perlu pemeriksaan]
-    K -- Yes --> S{One specialist adds real value?}
-    S -- Yes --> SP[Load one semantic owner]
-    S -- No --> CH[Smallest complete change]
-    SP --> CH
-
-    CH --> V[Minimum useful proof]
-    NC --> G
-    V --> G{Developing?}
-    G -- Yes --> AP[Acceptance POV + original-scope gate]
-    G -- No --> Q{Material uncertainty/critique needed?}
-    AP --> Q
-
-    Q -- Yes --> E[Conditional critique or AGENTS evidence-status escalation]
-    Q -- No --> F{Evidence sufficient for claimed status?}
-    E --> F
-    F -- No --> PR[Perlu pemeriksaan / exact remaining proof]
-    F -- Yes --> OK[Selesai]
-    OK --> U[Update next-action / decision / owner only if state changed]
+    B -->|Repository / plugin| R[AGENTS + relevant CONTEXT / next-action]
+    R --> L{Current continuation is local acceptance?}
+    L -->|Yes| LA[Local Acceptance Runbook]
+    L -->|No| DB[development-brief for create/change work]
+    DB --> S{One engineering specialist needed?}
+    S -->|Yes| SP[smallest semantic owner]
+    S -->|No| I[smallest complete change]
+    SP --> I
+    LA --> P[baseline runtime proof before source edits]
+    P --> F{Failure reproduced?}
+    F -->|No| E[record PASS / UNVERIFIED]
+    F -->|Yes| C2[classify exact owner]
+    C2 --> I
+    I --> V[minimum useful proof]
+    V --> U[update canonical state owner only]
 ```
 
-## Developing Owner Budget
+## Asset Authoring Rule
+
+Do not treat asset creation as repository Developing merely because it uses MCP tools. Normal asset work does not automatically load `CONTEXT.md`, `next-action.md`, `development-brief`, or the engineering review stack.
+
+The orchestrator owns lane selection; specialists own domain procedure.
+
+## Repository / Plugin Rule
+
+For source/docs/CI/MCP/plugin changes:
 
 ```text
 development-brief
-+ at most one useful specialist
++ at most one engineering specialist when it adds material domain procedure
 ```
 
-Select by semantic owner, not implementation language:
+Choose by semantic owner:
 
-- MCP public/input/result contract → `mcp-server-development`;
-- Blockbench runtime/API/mutation mechanics → `blockbench-runtime-development`;
-- Bedrock model judgement/visual result → `blockbench-bedrock-modelling`;
-- TypeScript type-system issue → `typescript-type-safety`;
-- Bun build/tooling issue → `bun-tooling`.
+- MCP public/schema/result/registration/transport contract → `mcp-server-development`;
+- Blockbench API/lifecycle/UI/Undo/runtime mechanics → `blockbench-runtime-development`;
+- modelling policy/model judgement → `blockbench-bedrock-modelling`;
+- TypeScript type-system failure → `typescript-type-safety`;
+- Bun build/package/tooling failure → `bun-tooling`.
 
-## Conditional Escalations
+Do not stack specialists because multiple technologies appear in one file.
 
-Only when needed:
+## Current Local Acceptance Route
 
-- GSD-style discovery — unresolved high-impact requirement after repo inspection;
-- `grilling` — adversarial plan/decision challenge;
-- `code-review` — independent implementation critique;
-- CodeGraph — optional navigation accelerator, never proof;
-- OpenSpec — genuine cross-cutting contract/migration/multi-phase work;
-- root evidence labels — `CURRENT-PROJECT VERIFIED`, `OFFICIALLY VERIFIED`,
-  `LOCAL PROOF REQUIRED`, `UNSUPPORTED`, `UNKNOWN`.
+When `next-action.md` points to local acceptance:
 
-None are default ceremony.
+```text
+AGENTS.md
+→ CONTEXT.md
+→ next-action.md
+→ operations/local-acceptance-runbook.md
+→ mcp/README.md + mcp/AGENTS.md
+```
 
-## Product Modelling Shortcut
+The baseline local run is evidence collection, not an invitation to redesign source. Reproduce/classify a failure before editing.
 
-For the current Bedrock architecture, use:
+## Evidence Rule
 
-- [Modelling Workflow](../foundation/03-modelling-workflow.md)
-- [Reference Fidelity Decision](decisions/reference-fidelity-loop.md)
-- [Implementation Map](implementation-map.md)
+Use the cheapest evidence that can falsify the current claim. Source/CI proof cannot upgrade a live Blockbench, visual, persistence, or client-exposure claim.
 
-Do not duplicate the modelling flow into this routing note.
+Material statuses remain:
+
+```text
+CURRENT-PROJECT VERIFIED
+OFFICIALLY VERIFIED
+LOCAL PROOF REQUIRED
+UNSUPPORTED
+UNKNOWN
+```
 
 ## Continuity
 
-New session:
+- active repository status → `next-action.md`;
+- local acceptance procedure → `operations/local-acceptance-runbook.md`;
+- durable reason → decision log/decision owner;
+- future/non-active work → task board.
 
-`AGENTS.md` → `CONTEXT.md` → `next-action.md`
-
-Update only the canonical owner whose state actually changed. Chat history is not
-the task tracker.
+Do not duplicate current status into reviews, roadmap, or history notes.
 
 ## Related
 
+- [Minimal Navigation](minimal-nav.md)
 - [Development Flow](flows/development-flow.md)
-- [Maintenance Flow](maintenance/maintenance-flow.md)
 - [Skill Activation Matrix](skills/activation-matrix.md)
+- [Implementation Map](implementation-map.md)
 - [Knowledge Dashboard](index.md)

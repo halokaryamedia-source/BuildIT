@@ -1,40 +1,59 @@
 # Minimal Navigation
 
-Use this as the single boot navigation index for every new BuildIT session.
+Updated: 2026-08-11
 
-## Resume First
+Use this note only when the task class is not already obvious from root `AGENTS.md`.
 
-1. `AGENTS.md` — working rules and authority.
-2. Root [`CONTEXT.md`](../../CONTEXT.md) — stable facts and terminology.
-3. [Next Action](next-action.md) — one active goal, current state, blocker/proof
-   status, and next step.
+## 1. Classify The Request First
 
-Do **not** ask the user to reconstruct previous chats before reading these three
-owners.
+### Asset authoring
 
-## Then, Only If Needed
+Creating/revising/inspecting/texturing/animating/exporting a Bedrock Entity asset without changing repository/plugin source:
 
-- [Decision Log](decision-log.md) — read only the relevant durable decision when
-  the active task depends on its reason or a conflict must be resolved.
-- [Foundation README](../foundation/README.md) — open only the product/modelling
-  rule relevant to the task.
-- [Activation Matrix](skills/activation-matrix.md) — open only when selecting a
-  workflow/skill.
-- [Workspace Map](workspace-map.md) — use when ownership/location is unclear.
-- affected source/module docs — only after identifying the active boundary.
+```text
+AGENTS.md
+→ current request/reference
+→ .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+→ only the active domain specialist
+```
 
-For Developing, the repository-wide front door is
-`../../.agents/skills/development-brief/SKILL.md`.
+Do **not** automatically load `CONTEXT.md`, `next-action.md`, development history, or all foundation notes.
 
-## Continuity Rule
+### Repository / plugin work
 
-Chat history and product memory may help, but repository state is authoritative.
-Before ending material work, update `next-action.md` when goal/status/blocker/
-proof/next-step changed; record durable reasoning in the decision log rather
-than duplicating task history across notes.
+Source/docs/CI/MCP/plugin/repository maintenance:
+
+```text
+AGENTS.md
+→ CONTEXT.md when stable facts matter
+→ next-action.md when continuing current work
+→ affected source + nearest AGENTS.md
+```
+
+For a create/change task, use `../../.agents/skills/development-brief/SKILL.md` and at most one relevant engineering specialist unless a genuinely independent boundary is proved.
+
+## 2. Current Repository Continuation
+
+If `next-action.md` says local acceptance, read next:
+
+[Local Acceptance Runbook](operations/local-acceptance-runbook.md)
+
+Then use `../../mcp/README.md` and `../../mcp/AGENTS.md` while executing the plugin/runtime checks.
+
+Do not replan from historical reviews before running the baseline described by the runbook.
+
+## 3. Open Only One Additional Owner When Needed
+
+- [Foundation README](../foundation/README.md) — product/modelling policy.
+- [Implementation Map](implementation-map.md) — current source ownership.
+- [Activation Matrix](skills/activation-matrix.md) — skill choice.
+- [Validation Report](../foundation/validation-report.md) — current evidence status.
+- [Source Map](sources/source-map.md) — authority/path lookup.
+- [Review Index](reviews/review-graph.md) — only when historical evidence is needed.
+- [Task Board](operations/task-board.md) — future/non-active work only.
 
 ## Stop Rule
 
-- If the answer is not in the boot context, open one relevant source next.
-- Do not broad-scan the vault, archive, generated output, dependencies, or old
-  chats by default.
+- Do not broad-scan the vault, generated output, historical branches, dependencies, or old chats by default.
+- If the current owner answers the question, stop reading.
+- If a material claim is not provable in the current execution channel, record the exact remaining proof instead of inventing it.

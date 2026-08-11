@@ -1,28 +1,35 @@
 # Module Map
 
-Updated: 2026-08-08
+Updated: 2026-08-11
 
-This note maps the current Local repository at a working level.
+This note maps current `Local` repository ownership. It is not an active-task tracker.
 
 ## Current Areas
 
 ```text
 BuildIT/
-├─ .agents/skills/       canonical BlockIT skills
+├─ .agents/skills/       canonical repository-owned skills
 ├─ docs/
 │  ├─ foundation/        durable product/modelling policy
-│  └─ knowledge/         Obsidian project-memory vault
-├─ mcp/                  Blockbench MCP plugin/runtime source
-└─ workspace/            active/saved Blockbench project data
+│  └─ knowledge/         continuity, maps, reviews, operations, decisions
+├─ mcp/                  BlockIT Blockbench MCP plugin/runtime source
+└─ workspace/            model/project packages and fixtures
 ```
 
-## Boundary Rules
+## `.agents/skills/`
 
-### `.agents/skills/`
+Only canonical repository-owned skill root.
 
-The only canonical repository-wide skill root.
+Asset authoring:
 
-Current frozen set:
+```text
+blockit-bedrock-entity-mcp
+blockbench-bedrock-modelling
+blockit-bedrock-texturing
+blockit-bedrock-animation
+```
+
+Repository/plugin development:
 
 ```text
 development-brief
@@ -30,86 +37,71 @@ mcp-server-development
 typescript-type-safety
 bun-tooling
 blockbench-runtime-development
-blockbench-bedrock-modelling
 ```
 
-Do not recreate skills under old nested locations merely for compatibility.
+Do not recreate skills under historical nested `mcp/` locations.
 
-### `docs/foundation/`
+## `docs/foundation/`
 
-Owns stable product and modelling policy:
+Owns stable product/modelling policy:
 
 - product requirements;
 - reference preparation;
-- Reference Fidelity modelling flow;
-- geometry / rotation / pivot standards;
-- texture standards;
-- visual validation and proof boundary.
+- whole-form modelling sequence;
+- Cube/rotation/pivot/hierarchy rules;
+- texture/PBR policy;
+- visual validation/proof boundary;
+- current capability evidence matrix in `validation-report.md`.
 
-It does not own daily implementation status.
+It does not own active task status.
 
-### `docs/knowledge/`
+## `docs/knowledge/`
 
-Owns repository memory for Obsidian:
+Owns repository memory:
 
-- `index.md` — dashboard;
-- `next-action.md` — active task snapshot;
-- `decision-log.md` / `decisions/` — durable reasoning;
-- `implementation-map.md` / `modules/` — ownership;
-- `reviews/` — evidence/history;
-- `operations/` — backlog, roadmap, audit, change history.
+- `index.md` — dashboard/navigation;
+- `next-action.md` — active repository continuation;
+- `operations/local-acceptance-runbook.md` — local acceptance procedure;
+- `decision-log.md` / `decisions/` — durable reasons;
+- `implementation-map.md` / `modules/` / `sources/` — current ownership;
+- `skills/` — current skill inventory/routing;
+- `reviews/` — historical evidence + current review index;
+- `operations/task-board.md` — future/non-active work.
 
-### `mcp/`
+## `mcp/`
 
-Owns current plugin/runtime implementation. Important subareas:
+Owns the current plugin/runtime implementation:
 
-- `index.ts` — plugin entry/lifecycle wiring;
-- `server/` — MCP server/tools/resources/prompts;
-- `lib/` — shared runtime/factory/schema helpers;
+- `index.ts` — plugin lifecycle wiring;
+- `server/` — MCP server, tools, resources, prompts;
+- `server/tools/` — project/geometry/element/camera/texture/paint/material-instance/animation/export tools;
+- `lib/` — factories, shared schemas/identity/runtime helpers;
 - `ui/` — Blockbench settings/panel UI;
-- `build/` — build/docs generation;
-- `prompts/` — bundled prompt source;
-- `docs/` — generated MCP API docs;
+- `build/` — plugin/docs/prompt-manifest generation;
+- `prompts/bedrock_entity_workflow.md` — canonical bundled Bedrock workflow prompt;
+- `docs/` — generated MCP API docs, secondary to source;
 - `dist/` — generated plugin output.
 
-There is **no current `mcp/workflow/` module**.
+There is no current `mcp/workflow/` owner.
 
-### `workspace/`
+## `workspace/`
 
-Owns model/project data only:
-
-- `workspace/active/` — current model packages;
-- `workspace/saved/` — completed/saved packages.
-
-See [Workspace Structure](../workspace-structure.md) for the actual current
-layout. Do not invent a preset/script owner that does not exist in Local.
-
-## Historical / Retired Paths
-
-These are not current owners:
-
-```text
-mcp/workflow/
-mcp/workflow/skills/
-mcp/.agents/skills/
-mcp/.github/skills/
-```
-
-Historical notes may mention them as lineage. Current code or documentation must
-not route new work there.
+Owns model/project data only. Do not make fixture layout into product/runtime policy.
 
 ## Before Creating A New Module/Note
 
 Ask:
 
-1. Does an existing owner already cover this responsibility?
-2. Is this stable product policy (`foundation`) or working memory (`knowledge`)?
-3. Is this runtime behavior (`mcp`) or per-project data (`workspace`)?
-4. Is the new file needed now, or would it duplicate an existing note?
+1. Does a current owner already cover the responsibility?
+2. Is this stable policy, current status, procedure, evidence, or runtime behavior?
+3. Would the new file reduce retrieval ambiguity or create another layer?
+4. Is it needed for the current task rather than speculative future work?
 
-## Parent
+Prefer updating an existing owner. The local acceptance runbook is the single procedural exception for the active runtime-proof stage.
 
-- [Knowledge Dashboard](../index.md)
+## Related
+
 - [Implementation Map](../implementation-map.md)
 - [MCP Ownership](mcp-ownership.md)
 - [Skill Ownership](skill-ownership.md)
+- [Workspace Map](../workspace-map.md)
