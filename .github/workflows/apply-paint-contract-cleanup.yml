@@ -40,13 +40,15 @@ jobs:
               raise SystemExit('Unexpected brush coordinate schema')
           text = text.replace(brush_anchor, brush_new, 1)
 
-          paint_schema_start = text.index('export const paintSettingsParameters = z.object({')
-          paint_schema_end = text.index('\n});\n\nexport const paintWithBrushParameters', paint_schema_start)
-          paint_schema = text[paint_schema_start:paint_schema_end + 4]
-          if '.refine(' in paint_schema:
+          schema_start = text.index('export const paintSettingsParameters = z.object({')
+          schema_end = text.index('\n});\n\nexport const paintWithBrushParameters', schema_start)
+          schema = text[schema_start:schema_end + 4]
+          if '.refine(' in schema:
               raise SystemExit('paint_settings already refined')
-          refined = paint_schema[:-2] + '.refine(\n  (params) => Object.values(params).some((value) => value !== undefined),\n  { message: "paint_settings requires at least one setting change." }\n);'
-          text = text[:paint_schema_start] + refined + text[paint_schema_end + 4:]
+          if not schema.endswith('});\n'):
+              raise SystemExit('Unexpected paint_settings schema ending')
+          refined = schema[:-3] + '}).refine(\n  (params) => Object.values(params).some((value) => value !== undefined),\n  { message: "paint_settings requires at least one setting change." }\n);\n'
+          text = text[:schema_start] + refined + text[schema_end + 4:]
 
           old_annotation = '    annotations: {\n      title: "Color Picker Tool",\n      readOnlyHint: true,\n    },'
           new_annotation = '    annotations: {\n      title: "Color Picker Tool",\n      destructiveHint: false,\n    },'
