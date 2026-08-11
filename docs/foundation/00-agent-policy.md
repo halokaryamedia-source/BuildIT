@@ -2,7 +2,7 @@
 
 **Status:** Active Policy  
 **Version:** 1.2  
-**Updated:** 2026-08-08
+**Updated:** 2026-08-11
 
 ## Purpose
 
@@ -141,7 +141,7 @@ Reject:
 
 ## Source Boundary
 
-Use the matching owner:
+Use the matching current owner:
 
 - [Project Overview](01-project-overview.md)
 - [Product Requirements](02-product-requirements.md)
@@ -152,5 +152,6 @@ Use the matching owner:
 - [Visual Validation](07-visual-validation.md)
 - [Validation Report](validation-report.md)
 
-Historical [Source Selection](08-source-selection.md) / [Merge Map](09-merge-map.md)
-remain provenance records, not current runtime authority.
+Historical upstream source-selection/merge provenance is retained in Git history
+and indexed review evidence. It is not current Foundation policy and must not
+control current runtime decisions.
