@@ -624,7 +624,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Batch Keyframe Operations</p>
-      <p class="card-desc">Performs batch operations on multiple keyframes at once.</p>
+      <p class="card-desc">Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -673,7 +673,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Animation Copy/Paste</p>
-      <p class="card-desc">Copies and pastes animation data between bones or animations.</p>
+      <p class="card-desc">Copies and pastes animation data between bones or animations. Copy requires at least one matching keyframe and paste rejects an empty clipboard before Undo.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-10T20:49:20.651Z from Zod schemas
+        Generated 2026-08-11T03:58:06.582Z from Zod schemas
       </footer>
     </main>
   </div>

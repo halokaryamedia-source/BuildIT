@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-10T20:49:20.651Z",
+  "generatedAt": "2026-08-11T03:58:06.582Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1414,7 +1414,7 @@
     {
       "name": "batch_keyframe_operations",
       "title": "Batch Keyframe Operations",
-      "description": "Performs batch operations on multiple keyframes at once.",
+      "description": "Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1465,14 +1465,15 @@
                 "properties": {
                   "interval": {
                     "type": "number",
-                    "description": "Time interval between keyframes.",
-                    "markdownDescription": "Time interval between keyframes."
+                    "exclusiveMinimum": 0,
+                    "description": "Finite positive time interval between keyframes.",
+                    "markdownDescription": "Finite positive time interval between keyframes."
                   },
                   "offset": {
                     "type": "number",
                     "default": 0,
-                    "description": "Time offset for the pattern.",
-                    "markdownDescription": "Time offset for the pattern."
+                    "description": "Finite time offset for the pattern.",
+                    "markdownDescription": "Finite time offset for the pattern."
                   }
                 },
                 "required": [
@@ -1500,8 +1501,8 @@
                 "properties": {
                   "offset_time": {
                     "type": "number",
-                    "description": "Time offset to apply.",
-                    "markdownDescription": "Time offset to apply."
+                    "description": "Finite time offset to apply.",
+                    "markdownDescription": "Finite time offset to apply."
                   },
                   "offset_values": {
                     "type": "array",
@@ -1510,18 +1511,18 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Value offset to apply.",
-                    "markdownDescription": "Value offset to apply."
+                    "description": "Finite value offset [x,y,z] to apply.",
+                    "markdownDescription": "Finite value offset [x,y,z] to apply."
                   },
                   "scale_factor": {
                     "type": "number",
-                    "description": "Scale factor for time or values.",
-                    "markdownDescription": "Scale factor for time or values."
+                    "description": "Finite scale factor for keyframe time.",
+                    "markdownDescription": "Finite scale factor for keyframe time."
                   },
                   "scale_pivot": {
                     "type": "number",
-                    "description": "Pivot point for scaling.",
-                    "markdownDescription": "Pivot point for scaling."
+                    "description": "Finite pivot point for scaling.",
+                    "markdownDescription": "Finite pivot point for scaling."
                   },
                   "mirror_axis": {
                     "type": "string",
@@ -1536,8 +1537,8 @@
                   "bake_interval": {
                     "type": "number",
                     "exclusiveMinimum": 0,
-                    "description": "Strictly positive interval in seconds for baking keyframes.",
-                    "markdownDescription": "Strictly positive interval in seconds for baking keyframes."
+                    "description": "Strictly positive finite interval in seconds for baking keyframes.",
+                    "markdownDescription": "Strictly positive finite interval in seconds for baking keyframes."
                   }
                 },
                 "additionalProperties": false,
@@ -1557,7 +1558,7 @@
     {
       "name": "animation_copy_paste",
       "title": "Animation Copy/Paste",
-      "description": "Copies and pastes animation data between bones or animations.",
+      "description": "Copies and pastes animation data between bones or animations. Copy requires at least one matching keyframe and paste rejects an empty clipboard before Undo.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1602,13 +1603,14 @@
                         "scale"
                       ]
                     },
+                    "minItems": 1,
                     "default": [
                       "rotation",
                       "position",
                       "scale"
                     ],
-                    "description": "Channels to copy.",
-                    "markdownDescription": "Channels to copy."
+                    "description": "One or more animation channels to copy.",
+                    "markdownDescription": "One or more animation channels to copy."
                   },
                   "time_range": {
                     "type": "object",
@@ -1656,8 +1658,8 @@
                   "time_offset": {
                     "type": "number",
                     "default": 0,
-                    "description": "Time offset for pasted keyframes.",
-                    "markdownDescription": "Time offset for pasted keyframes."
+                    "description": "Finite time offset for pasted keyframes.",
+                    "markdownDescription": "Finite time offset for pasted keyframes."
                   },
                   "mirror_axis": {
                     "type": "string",

@@ -381,48 +381,107 @@ export const animationTimelineParameters = z.object({
   }
 );
 
-export const batchKeyframeOperationsParameters = z.object({
-  selection: z
-    .enum(["all", "selected", "range", "pattern"])
-    .default("selected")
-    .describe("Which keyframes to operate on."),
-  range: timeRangeSchema.optional().describe("Time range for keyframe selection."),
-  pattern: z
-    .object({
-      interval: z.number().describe("Time interval between keyframes."),
-      offset: z
-        .number()
-        .optional()
-        .default(0)
-        .describe("Time offset for the pattern."),
-    })
-    .optional()
-    .describe("Pattern-based selection."),
-  operation: z
-    .enum(["offset", "scale", "reverse", "mirror", "smooth", "bake"])
-    .describe("Operation to perform on keyframes."),
-  parameters: z
-    .object({
-      offset_time: z.number().optional().describe("Time offset to apply."),
-      offset_values: vector3Schema.optional().describe("Value offset to apply."),
-      scale_factor: z
-        .number()
-        .optional()
-        .describe("Scale factor for time or values."),
-      scale_pivot: z
-        .number()
-        .optional()
-        .describe("Pivot point for scaling."),
-      mirror_axis: axisEnum.optional().describe("Axis to mirror values across."),
-      bake_interval: z
-        .number()
-        .positive()
-        .optional()
-        .describe("Strictly positive interval in seconds for baking keyframes."),
-    })
-    .optional()
-    .describe("Operation-specific parameters."),
-});
+export const batchKeyframeOperationsParameters = z
+  .object({
+    selection: z
+      .enum(["all", "selected", "range", "pattern"])
+      .default("selected")
+      .describe("Which keyframes to operate on."),
+    range: timeRangeSchema.optional().describe("Time range for keyframe selection."),
+    pattern: z
+      .object({
+        interval: z
+          .number()
+          .finite()
+          .positive()
+          .describe("Finite positive time interval between keyframes."),
+        offset: z
+          .number()
+          .finite()
+          .optional()
+          .default(0)
+          .describe("Finite time offset for the pattern."),
+      })
+      .optional()
+      .describe("Pattern-based selection."),
+    operation: z
+      .enum(["offset", "scale", "reverse", "mirror", "smooth", "bake"])
+      .describe("Operation to perform on keyframes."),
+    parameters: z
+      .object({
+        offset_time: z.number().finite().optional().describe("Finite time offset to apply."),
+        offset_values: finiteCreateAnimationVector3Schema
+          .optional()
+          .describe("Finite value offset [x,y,z] to apply."),
+        scale_factor: z
+          .number()
+          .finite()
+          .optional()
+          .describe("Finite scale factor for keyframe time."),
+        scale_pivot: z
+          .number()
+          .finite()
+          .optional()
+          .describe("Finite pivot point for scaling."),
+        mirror_axis: axisEnum.optional().describe("Axis to mirror values across."),
+        bake_interval: z
+          .number()
+          .finite()
+          .positive()
+          .optional()
+          .describe("Strictly positive finite interval in seconds for baking keyframes."),
+      })
+      .optional()
+      .describe("Operation-specific parameters."),
+  })
+  .superRefine((params, ctx) => {
+    if (params.selection === "range" && params.range === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["range"],
+        message: "range is required when selection=range."
+      });
+    }
+    if (params.selection === "pattern" && params.pattern === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pattern"],
+        message: "pattern is required when selection=pattern."
+      });
+    }
+
+    const operationParameters = params.parameters;
+    if (params.operation === "mirror" && operationParameters?.mirror_axis === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["parameters", "mirror_axis"],
+        message: "mirror_axis is required for the mirror operation."
+      });
+    }
+
+    if (params.operation === "offset") {
+      const timeDelta = operationParameters?.offset_time ?? 0;
+      const valueDelta = operationParameters?.offset_values ?? [0, 0, 0];
+      if (timeDelta === 0 && valueDelta.every((value) => value === 0)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["parameters"],
+          message: "offset requires a non-zero offset_time or offset_values change."
+        });
+      }
+    }
+
+    if (params.operation === "scale") {
+      const factor = operationParameters?.scale_factor;
+      if (factor === undefined || factor === 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["parameters", "scale_factor"],
+          message: "scale requires an explicit scale_factor other than 1."
+        });
+      }
+    }
+  });
 
 export const animationCopyPasteParameters = z.object({
   action: z
@@ -437,9 +496,10 @@ export const animationCopyPasteParameters = z.object({
       bone: z.string().describe("Exact source Group UUID or exact unique Group name."),
       channels: z
         .array(animationChannelEnum)
+        .min(1)
         .optional()
         .default(["rotation", "position", "scale"])
-        .describe("Channels to copy."),
+        .describe("One or more animation channels to copy."),
       time_range: timeRangeSchema
         .optional()
         .describe(
@@ -457,9 +517,10 @@ export const animationCopyPasteParameters = z.object({
       bone: z.string().describe("Exact target Group UUID or exact unique Group name."),
       time_offset: z
         .number()
+        .finite()
         .optional()
         .default(0)
-        .describe("Time offset for pasted keyframes."),
+        .describe("Finite time offset for pasted keyframes."),
       mirror_axis: axisEnum.optional().describe("Axis to mirror across for mirror_paste."),
     })
     .optional()
@@ -524,7 +585,7 @@ export const animationToolDocs: ToolSpec[] = [
   },
   {
     name: "batch_keyframe_operations",
-    description: "Performs batch operations on multiple keyframes at once.",
+    description: "Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.",
     annotations: {
       title: "Batch Keyframe Operations",
       destructiveHint: true,
@@ -535,7 +596,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_copy_paste",
     description:
-      "Copies and pastes animation data between bones or animations.",
+      "Copies and pastes animation data between bones or animations. Copy requires at least one matching keyframe and paste rejects an empty clipboard before Undo.",
     annotations: {
       title: "Animation Copy/Paste",
       destructiveHint: true,
@@ -589,6 +650,14 @@ function resolveRigElement(reference: string): OutlinerElement {
   );
 }
 
+export function countAnimationClipboardKeyframes(
+  channels: Record<string, readonly unknown[]>
+): number {
+  return Object.values(channels).reduce(
+    (count, keyframes) => count + keyframes.length,
+    0
+  );
+}
 export function registerAnimationTools() {
 createTool(
   animationToolDocs[0].name,
@@ -1875,6 +1944,15 @@ createTool(
             }));
           });
 
+          const copiedKeyframeCount = countAnimationClipboardKeyframes(
+            copiedData.channels
+          );
+          if (copiedKeyframeCount === 0) {
+            throw new Error(
+              `No keyframes matched the requested channels/time range for "${source.bone}". Clipboard was not changed.`
+            );
+          }
+
           // @ts-ignore
           global.animationClipboard = copiedData;
 
@@ -1900,6 +1978,11 @@ createTool(
 
           // @ts-ignore
           const clipboardData = global.animationClipboard;
+          if (countAnimationClipboardKeyframes(clipboardData.channels) === 0) {
+            throw new Error(
+              "Animation clipboard contains no keyframe data. Copy a non-empty animation range first."
+            );
+          }
           const mirrorAxis =
             action === "mirror_paste" ? target.mirror_axis || "x" : null;
           const axisIndex =
