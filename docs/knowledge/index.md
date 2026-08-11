@@ -59,7 +59,11 @@ Approved reference
 
 Tool success is execution evidence, not visual approval. `BLOCKED` is valid when continuation would require guessing or repeated failed work.
 
-## Accepted baseline
+## Accepted functional baseline
+
+The first bounded Codex + Blockbench acceptance pass is complete. Representative live behavior is recorded in the [Validation Report](../foundation/validation-report.md).
+
+Historical acceptance measurement:
 
 ```text
 62 enabled tools
@@ -68,11 +72,13 @@ Tool success is execution evidence, not visual approval. `BLOCKED` is valid when
 11,800 tool-description characters
 ```
 
-`export_model` is exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
+Those character counts are historical, not current token measurements. `export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-The first bounded Codex + Blockbench acceptance pass is complete. Representative live behavior is recorded in the [Validation Report](../foundation/validation-report.md).
+## Current continuation
 
-**Current continuation is static pre-local efficiency cleanup.** Source-provable waste is reduced first; another Codex/Blockbench run is deferred until that cleanup is stable and CI-green. Client-only questions such as schema injection, prompt co-loading, and actual token/latency cost remain future validation questions rather than reasons to change architecture now.
+**Static pre-local efficiency cleanup is complete.** The cleaned source/docs/generated baseline is held stable. Another Codex/Blockbench run is **not active** and must not start until the user explicitly requests testing or a new product task requires it.
+
+Client-only questions such as schema injection, prompt co-loading, actual retries, and token/latency cost remain future evidence questions, not reasons for more speculative architecture work now.
 
 ## Knowledge spine
 
