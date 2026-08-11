@@ -52,8 +52,8 @@ Front PASS is not full 3D PASS when side/depth evidence is missing or fails. Bou
 
 For one bounded mismatch:
 
-1. reuse exact returned authored state when sufficient; otherwise call `inspect_element` once;
-2. diagnose one cause: `TRANSLATE`, `RESIZE`, `ROTATE`, `REATTACH`, `SPLIT`, `MERGE/REMOVE`, or genuinely missing `ADD MASS`;
+1. Reuse fresh exact authored state already returned for that target when sufficient; otherwise call `inspect_element` once;
+2. diagnose one cause: `TRANSLATE`, `RESIZE`, `ROTATE`, hierarchy `REATTACH`, `SPLIT`, `MERGE/REMOVE`, or genuinely missing `ADD MASS`;
 3. state the target UUID(s), intended change, invariant, and expected structural effect;
 4. use `modify_cube` or one coherent `modify_cubes_batch`;
 5. verify returned `geometry_effect`;
@@ -68,6 +68,8 @@ TRANSLATE preserves size; RESIZE names its fixed center/face/contact; ROTATE use
 Secondary geometry follows primary-form `PASS`. Production texture waits for dependent geometry to `PASS`; production animation waits for an accepted baseline and suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; required unresolved `UNVERIFIED` becomes `BLOCKED`.
 
 Existing-asset texture/animation-only work may use current geometry as the user baseline without certifying reference accuracy. Revalidate only downstream state affected by later upstream changes.
+
+## Locator / Null Object authored state
 
 Locator/Null Object discovery uses `list_locator_elements`; focused state uses `inspect_element`; authored create/update uses `manage_locator` / `manage_null_object`.
 
