@@ -577,7 +577,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. Create/rename preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -663,6 +663,11 @@ function resolveRigElement(reference: string): OutlinerElement {
   );
 }
 
+export function deriveMirroredRigName(name: string): string {
+  if (name.includes("left")) return name.replace("left", "right");
+  if (name.includes("right")) return name.replace("right", "left");
+  return `${name}_mirrored`;
+}
 export function hasCaseInsensitiveRigNameCollision(
   groups: readonly { uuid: string; name: string }[],
   requestedName: string,
@@ -1265,6 +1270,7 @@ createTool(
       let parentBone: Group | "root" | undefined;
       let childElements: OutlinerElement[] = [];
       let ikTarget: Group | undefined;
+      let mirroredBoneName: string | undefined;
 
       switch (action) {
         case "create":
@@ -1376,6 +1382,17 @@ createTool(
               "mirror_axis is required for mirror. No implicit axis is assumed."
             );
           }
+          mirroredBoneName = deriveMirroredRigName(targetBone.name);
+          if (
+            hasCaseInsensitiveRigNameCollision(
+              Group.all,
+              mirroredBoneName
+            )
+          ) {
+            throw new Error(
+              `Mirroring "${targetBone.name}" would create bone name "${mirroredBoneName}", which collides case-insensitively with an existing Group. Rename the conflicting bone or source before mirroring.`
+            );
+          }
           break;
       }
 
@@ -1456,11 +1473,7 @@ createTool(
             createdGroup = mirroredBone;
             const axisIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
             mirroredBone.origin[axisIndex] *= -1;
-            mirroredBone.name = targetBone!.name.includes("left")
-              ? targetBone!.name.replace("left", "right")
-              : targetBone!.name.includes("right")
-              ? targetBone!.name.replace("right", "left")
-              : targetBone!.name + "_mirrored";
+            mirroredBone.name = mirroredBoneName!;
             result = `Mirrored bone "${targetBone!.name}" across ${axis} axis`;
             break;
           }

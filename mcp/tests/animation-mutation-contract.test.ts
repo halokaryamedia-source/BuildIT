@@ -5,6 +5,7 @@ import {
   batchKeyframeOperationsParameters,
   boneRiggingParameters,
   countAnimationClipboardKeyframes,
+  deriveMirroredRigName,
   hasCaseInsensitiveRigNameCollision,
   manageKeyframesParameters,
   wouldCreateRigHierarchyCycle,
@@ -155,5 +156,16 @@ describe("animation mutation contract", () => {
     expect(source).toContain("hasCaseInsensitiveRigNameCollision(Group.all, bone_data.name)");
     expect(source).toContain("bone_data.new_name === targetBone.name");
     expect(source).not.toContain("group.name === bone_data.new_name");
+  });
+
+  test("mirror derives its bone name before mutation so identity collisions can be rejected", async () => {
+    expect(deriveMirroredRigName("left_arm")).toBe("right_arm");
+    expect(deriveMirroredRigName("right_leg")).toBe("left_leg");
+    expect(deriveMirroredRigName("head")).toBe("head_mirrored");
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("mirroredBoneName = deriveMirroredRigName(targetBone.name)");
+    expect(source).toContain("mirroredBone.name = mirroredBoneName!");
+    expect(source).not.toContain("mirroredBone.name = targetBone!.name.includes");
   });
 });
