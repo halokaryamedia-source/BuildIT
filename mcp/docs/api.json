@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T06:48:51.412Z",
+  "generatedAt": "2026-08-11T06:51:42.178Z",
   "tools": [
     {
       "name": "place_cube",
@@ -743,8 +743,9 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Name of the animation",
-                "markdownDescription": "Name of the animation"
+                "minLength": 1,
+                "description": "Non-empty animation name.",
+                "markdownDescription": "Non-empty animation name."
               },
               "loop": {
                 "type": "boolean",
@@ -4036,7 +4037,10 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1,
+                "description": "Non-empty project name.",
+                "markdownDescription": "Non-empty project name."
               },
               "format": {
                 "type": "string",
@@ -4114,7 +4118,10 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1,
+                "description": "Non-empty texture name.",
+                "markdownDescription": "Non-empty texture name."
               },
               "width": {
                 "type": "number",
@@ -4285,7 +4292,10 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1,
+                "description": "Non-empty TextureGroup name.",
+                "markdownDescription": "Non-empty TextureGroup name."
               },
               "textures": {
                 "type": "array",
@@ -4378,8 +4388,9 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Name of the material.",
-                "markdownDescription": "Name of the material."
+                "minLength": 1,
+                "description": "Non-empty material name.",
+                "markdownDescription": "Non-empty material name."
               },
               "color_texture": {
                 "type": "string",

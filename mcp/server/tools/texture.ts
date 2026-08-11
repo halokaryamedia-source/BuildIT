@@ -21,7 +21,7 @@ import {
 
 export const createTextureParameters = z
   .object({
-    name: z.string(),
+    name: z.string().min(1).describe("Non-empty texture name."),
     width: z.number().min(16).max(4096).default(16),
     height: z.number().min(16).max(4096).default(16),
     data: z
@@ -98,7 +98,7 @@ export const applyTextureParameters = z.object({
 });
 
 export const addTextureGroupParameters = z.object({
-  name: z.string(),
+  name: z.string().min(1).describe("Non-empty TextureGroup name."),
   textures: z
     .array(z.string().min(1))
     .min(1)
@@ -128,7 +128,7 @@ export const activateTextureParameters = z.object({
 });
 
 export const createPbrMaterialParameters = z.object({
-  name: z.string().describe("Name of the material."),
+  name: z.string().min(1).describe("Non-empty material name."),
   color_texture: z
     .string()
     .min(1)

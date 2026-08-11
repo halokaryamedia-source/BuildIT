@@ -1,4 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import { createProjectParameters } from "@/server/tools/project";
+import { createAnimationParameters } from "@/server/tools/animation";
+import {
+  addTextureGroupParameters,
+  createPbrMaterialParameters,
+  createTextureParameters,
+} from "@/server/tools/texture";
 import { readFile } from "node:fs/promises";
 import {
   resolveTextureIdentity,
@@ -14,6 +21,16 @@ const options = {
 };
 
 describe("P1.3 core identity ownership", () => {
+  test("identity-bearing create tools reject empty names", () => {
+    expect(createProjectParameters.safeParse({ name: "" }).success).toBe(false);
+    expect(createTextureParameters.safeParse({ name: "" }).success).toBe(false);
+    expect(addTextureGroupParameters.safeParse({ name: "" }).success).toBe(false);
+    expect(createPbrMaterialParameters.safeParse({ name: "" }).success).toBe(false);
+    expect(
+      createAnimationParameters.safeParse({ name: "", bones: {} }).success
+    ).toBe(false);
+  });
+
   test("UUID wins before exact unique name and names never prefix-match", () => {
     const items: Item[] = [
       { uuid: "cube-1", name: "arm" },

@@ -6,7 +6,7 @@ import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
 export const createProjectParameters = z.object({
-  name: z.string(),
+  name: z.string().min(1).describe("Non-empty project name."),
   format: z
     .literal("bedrock")
     .optional()

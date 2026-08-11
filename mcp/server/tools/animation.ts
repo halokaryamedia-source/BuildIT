@@ -154,7 +154,7 @@ const bedrockBoneKeyframesSchema = z
   );
 
 export const createAnimationParameters = z.object({
-  name: z.string().describe("Name of the animation"),
+  name: z.string().min(1).describe("Non-empty animation name."),
   loop: z
     .boolean()
     .default(false)
