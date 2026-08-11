@@ -3,6 +3,7 @@ import {
   animationCopyPasteParameters,
   animationTimelineParameters,
   batchKeyframeOperationsParameters,
+  boneRiggingParameters,
   countAnimationClipboardKeyframes,
   manageKeyframesParameters,
 } from "@/server/tools/animation";
@@ -86,5 +87,30 @@ describe("animation mutation contract", () => {
     expect(countAnimationClipboardKeyframes({})).toBe(0);
     expect(countAnimationClipboardKeyframes({ rotation: [], position: [] })).toBe(0);
     expect(countAnimationClipboardKeyframes({ rotation: [{ time: 0 }] })).toBe(1);
+  });
+
+  test("set_ik rejects empty updates while allowing target-only state preservation", async () => {
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "set_ik",
+        bone_data: { name: "arm" },
+      }).success
+    ).toBe(false);
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "set_ik",
+        bone_data: { name: "arm", ik_target: "hand_target" },
+      }).success
+    ).toBe(true);
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "set_ik",
+        bone_data: { name: "arm", ik_enabled: false },
+      }).success
+    ).toBe(true);
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("if (bone_data.ik_enabled !== undefined)");
+    expect(source).not.toContain("bone_data.ik_enabled ?? false");
   });
 });

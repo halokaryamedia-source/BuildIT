@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T03:58:06.582Z",
+  "generatedAt": "2026-08-11T03:59:50.651Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1202,7 +1202,7 @@
     {
       "name": "bone_rigging",
       "title": "Bone Rigging",
-      "description": "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "description": "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {

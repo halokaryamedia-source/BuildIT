@@ -307,6 +307,19 @@ export const boneRiggingParameters = z.object({
         .describe("Axis required by mirror; no implicit mirror axis is assumed."),
     })
     .describe("Bone configuration data."),
+}).superRefine((params, ctx) => {
+  if (
+    params.action === "set_ik" &&
+    params.bone_data.ik_enabled === undefined &&
+    params.bone_data.ik_target === undefined
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["bone_data"],
+      message:
+        "set_ik requires ik_enabled and/or ik_target; an empty IK update is not a mutation."
+    });
+  }
 });
 
 const animationTimelineRangeSchema = z
@@ -564,7 +577,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -1377,7 +1390,9 @@ createTool(
           }
 
           case "set_ik": {
-            targetBone!.ik_enabled = bone_data.ik_enabled ?? false;
+            if (bone_data.ik_enabled !== undefined) {
+              targetBone!.ik_enabled = bone_data.ik_enabled;
+            }
             if (ikTarget) {
               (targetBone! as Group & { ik_target?: string }).ik_target = ikTarget.uuid;
             }
