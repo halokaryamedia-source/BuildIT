@@ -5,7 +5,7 @@ async function text(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("pre-local Codex documentation handoff", () => {
+describe("Codex documentation handoff", () => {
   test("current repository-owned skill inventory is documented without stale six-skill routing", async () => {
     const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
@@ -39,7 +39,7 @@ describe("pre-local Codex documentation handoff", () => {
     expect(skillMap).not.toContain("exactly six canonical skills");
   });
 
-  test("current documentation routes repository continuation to one local acceptance runbook", async () => {
+  test("current documentation treats local acceptance as completed history rather than default boot", async () => {
     const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -49,7 +49,9 @@ describe("pre-local Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    expect(next).toContain("LOCAL — follow operations/local-acceptance-runbook.md");
+    expect(next).toContain("LOCAL — run one fresh Codex efficiency trace");
+    expect(next).toContain("completed procedure/history reference");
+    expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
     expect(runbook).toContain("Do not edit source while establishing the baseline");
     expect(runbook).toContain("Failure Classification Before Fix");
     expect(dashboard).toContain("Local Acceptance Runbook");
@@ -64,17 +66,21 @@ describe("pre-local Codex documentation handoff", () => {
     }
   });
 
-  test("current proof docs agree that runtime behavior is still local acceptance work", async () => {
-    const [validation, next, runbook] = await Promise.all([
+  test("current proof docs agree that functional acceptance is complete while efficiency remains evidence-driven", async () => {
+    const [validation, next, context, runbook] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
+      text("../CONTEXT.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
+    expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
     expect(validation).toContain("62 enabled tools");
-    expect(validation).toContain("LOCAL PROOF REQUIRED");
-    expect(next).toContain("Do not start another GitHub-only cleanup/reduction slice");
-    expect(runbook).toContain("Do not modify source until the failure is reproducible");
+    expect(validation).toContain("UNKNOWN");
+    expect(next).toContain("Functional local acceptance is complete");
+    expect(next).toContain("fresh Codex efficiency trace");
+    expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
+    expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
+    expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
   });
 });
