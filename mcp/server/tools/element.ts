@@ -34,6 +34,7 @@ export const findElementsByCriteriaParameters = z.object({
     .describe("Restrict to Cube or Group results."),
   parent_group: z
     .string()
+    .min(1)
     .optional()
     .describe(
       "Optional parent Group UUID or unique exact name."
@@ -70,6 +71,7 @@ export const selectAllOfTypeParameters = z.object({
     .describe("If true, add to current selection. If false, replace Cube/Group selection."),
   parent_group: z
     .string()
+    .min(1)
     .optional()
     .describe(
       "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes."
@@ -302,7 +304,7 @@ function resolveParentGroup(reference: string): Group | "root" {
 }
 
 function resolveOptionalGroupScope(reference?: string): Group | null {
-  if (!reference) return null;
+  if (reference === undefined) return null;
   return resolveCoreGroup(
     reference,
     "Use list_outline to confirm the intended Group UUID, or omit parent_group when no scope is intended."

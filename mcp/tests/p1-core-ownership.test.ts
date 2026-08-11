@@ -2,6 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { createProjectParameters } from "@/server/tools/project";
 import { createAnimationParameters } from "@/server/tools/animation";
 import {
+  findElementsByCriteriaParameters,
+  selectAllOfTypeParameters,
+} from "@/server/tools/element";
+import {
   addTextureGroupParameters,
   createPbrMaterialParameters,
   createTextureParameters,
@@ -59,6 +63,15 @@ describe("P1.3 core identity ownership", () => {
       expect(schema.safeParse("").success).toBe(false);
       expect(schema.safeParse("target").success).toBe(true);
     }
+  });
+
+  test("optional explicit Group scopes reject the empty string", () => {
+    expect(findElementsByCriteriaParameters.safeParse({ parent_group: "" }).success).toBe(false);
+    expect(findElementsByCriteriaParameters.safeParse({}).success).toBe(true);
+    expect(
+      selectAllOfTypeParameters.safeParse({ type: "cube", parent_group: "" }).success
+    ).toBe(false);
+    expect(selectAllOfTypeParameters.safeParse({ type: "cube" }).success).toBe(true);
   });
 
   test("UUID wins before exact unique name and names never prefix-match", () => {
