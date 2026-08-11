@@ -4,52 +4,37 @@ Last verified: 2026-08-12
 Stability: stable  
 Owner: workspace agent
 
-This file owns **stable project facts and terminology**. Active task state belongs in `docs/knowledge/next-action.md`.
+This file owns **stable project facts and terminology only**. Active work belongs in `docs/knowledge/next-action.md`; routing belongs in `AGENTS.md`.
 
-## Purpose
+## Product
 
-BlockIT is a Blockbench MCP plugin plus repository-owned workflow for AI-assisted Minecraft Bedrock Entity modelling and MCP engineering.
+BlockIT is a Blockbench MCP plugin plus repository workflow for AI-assisted Minecraft Bedrock Entity modelling and MCP engineering.
 
-The retained default product is **Minecraft Bedrock Entity**. Generic inherited Blockbench capability, other formats, and optional fallback families are not compatibility requirements merely because upstream code contains them. Native Bedrock capability must not be removed just to reduce tool count.
+The retained default product is **Minecraft Bedrock Entity** (`bedrock`). Normal authored geometry is Cube/Cuboid based and organized by Groups/bones. Native Bedrock `TextureMesh` is distinct from generic Blockbench `Mesh`; generic Mesh/Hytale capability is not a compatibility requirement merely because upstream code contains it.
 
-The primary outcome is a clean, editable `.bbmodel` that follows an approved visual Modelling Brief through the shortest evidence-backed workflow. A valid file, successful tool call, or correct coordinates are not proof of visual resemblance.
-
-For active Bedrock modelling, normal geometry is Cube/Cuboid based. Native Bedrock `TextureMesh` is distinct from generic Blockbench `Mesh`; generic Mesh workflows are outside the normal BlockIT modelling route, while missing direct `TextureMesh` ownership remains a protected capability gap.
-
-## Execution Channels
-
-- **ChatGPT → GitHub** — repository inspection, documentation/source changes, CI/static proof, and preparation for local runtime checks.
-- **Codex local from root `BuildIT`** — targeted shell/MCP/Blockbench/runtime/visual proof.
-
-The repository—not chat history—is project memory. Repository/plugin continuation resumes from `AGENTS.md`, this file when stable facts matter, and `docs/knowledge/next-action.md`.
-
-Normal asset authoring is different: root `AGENTS.md` routes directly to the BlockIT asset orchestrator and only the active domain specialist; it does not automatically load repository continuity/history.
+Primary asset output is a clean editable `.bbmodel`; Bedrock geometry JSON is the runtime geometry export. Successful tool/file/coordinate output is not proof of visual resemblance to the approved reference.
 
 ## Stable Terms
 
-**Source Image** — original input used to understand target identity; not geometry data.
+- **Source Image** — original visual input; not geometry data.
+- **Modelling Brief** — approved multi-view guide for form, proportions, landmarks, contacts, orientation, and style; not a per-Cube blueprint.
+- **Requested Dimensions** — user-approved target dimensions; `1 block = 16 Blockbench units` per axis.
+- **Reference Package** — Modelling Brief plus compact metadata and optional supporting references.
+- **Blockbench Model** — reviewed editable `.bbmodel`.
+- **Reference Generator** — image-capable Source Image/user intent → approved Modelling Brief workflow; policy owner `docs/foundation/04-reference-guide.md`.
+- **MCP Modelling** — approved reference → Blockbench model workflow; modelling judgement and MCP execution have separate owners.
 
-**Modelling Brief** — approved multi-view visual guide for silhouette, visible proportions, landmarks, contacts, orientation, and style. It is not a pixel-calibrated Cube blueprint.
+## Repository Shape
 
-**Requested Dimensions** — user-supplied/approved target dimensions. Bedrock modelling uses `1 block = 16 Blockbench units` on each axis.
+```text
+.agents/skills/    canonical repository-owned skills
+docs/foundation/  durable product/modelling policy
+docs/knowledge/   continuity, decisions, ownership maps, historical evidence indexes
+mcp/              BlockIT plugin/runtime/build/tests/generated API docs
+workspace/        model/project packages and fixtures
+```
 
-**Reference Package** — Modelling Brief plus compact metadata and optional source/supporting references.
-
-**Blockbench Model** — reviewed editable `.bbmodel`.
-
-**Reference Generator** — image-capable workflow from user intent/Source Image to an approved Modelling Brief. Policy owner: `docs/foundation/04-reference-guide.md`.
-
-**MCP Modelling** — approved reference → model workflow. Modelling judgement belongs to the modelling specialist; MCP/runtime code supplies execution mechanics.
-
-## Stable Repository Structure
-
-- `.agents/skills/` — only canonical repository-owned skill root;
-- `mcp/` — active BlockIT plugin/runtime source, build, UI, tools, resources, prompts, tests, and generated API documentation;
-- `workspace/` — model/project packages and fixtures;
-- `docs/foundation/` — durable product/modelling/reference/texture/validation policy;
-- `docs/knowledge/` — continuity, decisions, source maps, skill routing, reviews, and operations.
-
-Retired/stale skill locations must not be recreated by default:
+Retired skill roots must not be recreated by default:
 
 ```text
 mcp/.agents/skills/
@@ -57,76 +42,55 @@ mcp/.github/skills/
 mcp/workflow/skills/
 ```
 
-## Current Skill Architecture
-
-There are nine repository-owned skill packages, grouped by task class rather than loaded together.
-
-### Asset authoring
+There are **nine repository-owned skill packages**:
 
 ```text
-blockit-bedrock-entity-mcp        orchestration / smallest active lane
-blockbench-bedrock-modelling      whole-form Cube/Group judgement + visual correction
-blockit-bedrock-texturing         texture / Paint / PBR / material_instance
-blockit-bedrock-animation         BoneAnimator / keyframes / mapped effects
+asset:       blockit-bedrock-entity-mcp
+             blockbench-bedrock-modelling
+             blockit-bedrock-texturing
+             blockit-bedrock-animation
+
+engineering: development-brief
+             mcp-server-development
+             blockbench-runtime-development
+             typescript-type-safety
+             bun-tooling
 ```
 
-### Repository / plugin development
-
-```text
-development-brief                 change-task contract / scope / acceptance / proof
-mcp-server-development            MCP public/input/result/registration/transport contract
-typescript-type-safety            TypeScript type-system problems
-bun-tooling                       Bun build/package/tooling problems
-blockbench-runtime-development    Blockbench API/lifecycle/UI/Undo/runtime mechanics
-```
-
-`blockbench-bedrock-modelling` can also be the repository-development specialist when the source change is specifically about modelling judgement or visual/model policy.
-
-Do not add/rename/merge/split skills merely because old documentation used another layout. A new skill requires a current reusable ownership gap that cannot be represented cleanly by the existing owners.
-
-## Sources Of Truth
-
-1. current user instruction — task intent;
-2. current `Local` source + relevant runtime/visual proof — actual behavior;
-3. root/nearest `AGENTS.md` — agent behavior and proof discipline;
-4. `docs/foundation/` — durable product/modelling policy;
-5. `docs/knowledge/next-action.md` — active repository continuation state;
-6. this file — stable facts;
-7. decision/review history — rationale/evidence only.
-
-When sources materially conflict, resolve authority or report the missing evidence; never choose silently.
+The activation matrix owns selection detail; this file records only the stable inventory.
 
 ## MCP Architecture Facts
 
-BlockIT runs inside desktop Blockbench and exposes a loopback MCP endpoint. Tool schemas/docs must be constructible outside Blockbench, so schema modules cannot depend on Blockbench runtime globals. Runtime-only validation belongs inside execution.
+BlockIT runs inside desktop Blockbench and exposes a loopback MCP endpoint. Tool schemas/docs must construct outside Blockbench, so build-time schema modules cannot depend on Blockbench runtime globals; runtime-only checks belong in execution.
 
-Current default product surface is Bedrock-focused; optional generic fallback families are explicit opt-in. `risky_eval` and `from_geo_json` remain disabled. The accepted default surface is 62 enabled tools; current measurements and any efficiency work belong in `docs/knowledge/next-action.md` and `docs/foundation/validation-report.md`.
+The normal surface is Bedrock-focused with generic fallback families explicitly opt-in. `risky_eval` and `from_geo_json` remain disabled. The accepted baseline has **62 enabled tools**; active efficiency measurements belong in the validation/next-action owners rather than here.
 
-## Engineering Invariants
+Supported ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export. Protected direct-ownership gaps include TextureMesh authoring, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, and bone-binding expressions.
 
-- Inspect the current owner/callers before shared changes.
-- Prefer the minimum complete solution; reuse/extend before creating abstractions.
-- Validate untrusted MCP input at the boundary.
-- Keep Blockbench globals out of build-time schemas.
-- Generated docs/output are secondary to source and must be regenerated through their owner.
-- Use minimum useful proof; never claim runtime/visual evidence not actually obtained.
-- Stop repeated failed directions after two attempts without genuinely new evidence.
-- A fixture or named model never becomes generic runtime policy by accident.
-- Do not duplicate large machine-readable MCP results across equivalent response representations.
+## Execution Channels
 
-## Accepted Baseline
+- **ChatGPT → GitHub** — repository/source/docs/CI/static proof; no invented Blockbench runtime evidence.
+- **Codex local** — shell/MCP/Blockbench/runtime/visual proof only when explicitly active and materially required.
 
-The first bounded Codex + Blockbench local acceptance pass completed on 2026-08-12. It established representative live proof for runtime transport, geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
+## Accepted Functional Baseline
 
-That functional acceptance does **not** prove optimal Codex context/usage efficiency. Tool-catalog refresh/deferred-search behavior, prompt/skill co-loading, and material client cost of result representations remain evidence questions. Active efficiency or product work must be taken from `docs/knowledge/next-action.md`; do not restart the completed acceptance run merely because this file is read.
+The first bounded Codex + Blockbench local acceptance pass completed on 2026-08-12. It established representative live proof for stateless transport, geometry/correction/Undo, difference-first reference behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
+
+That acceptance does not prove optimal Codex context/usage behavior. Active cleanup/testing state must be read from `docs/knowledge/next-action.md`; do not infer a new local run from this historical baseline.
+
+## Engineering Facts
+
+- Untrusted MCP input is validated at the boundary.
+- Generated docs/output are secondary to source and regenerated through their owner.
+- Current source + relevant proof owns behavior; historical reviews/decisions own rationale, not active execution order.
+- Named fixtures/samples never become generic runtime rules by accident.
+- Large machine-readable MCP data should not be duplicated across equivalent response representations.
 
 ## Navigation
 
-- Agent/task routing: `AGENTS.md`
-- Active repository state: `docs/knowledge/next-action.md`
-- Historical/completed local acceptance procedure: `docs/knowledge/operations/local-acceptance-runbook.md`
-- Knowledge dashboard: `docs/knowledge/index.md`
-- Foundation entrypoint: `docs/foundation/README.md`
-- MCP runtime/build instructions: `mcp/README.md` and `mcp/AGENTS.md`
-- Skill routing: `docs/knowledge/skills/activation-matrix.md`
-- Current source ownership: `docs/knowledge/implementation-map.md`
+- routing → `AGENTS.md`
+- active continuation → `docs/knowledge/next-action.md`
+- source ownership → `docs/knowledge/implementation-map.md`
+- proof status → `docs/foundation/validation-report.md`
+- product policy → `docs/foundation/`
+- MCP engineering → `mcp/README.md` + `mcp/AGENTS.md`
