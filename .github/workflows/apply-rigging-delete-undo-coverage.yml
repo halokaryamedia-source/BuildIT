@@ -1,0 +1,207 @@
+name: Apply Rig Delete Undo Coverage
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-rigging-delete-undo-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Capture full rig delete Undo state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          animation_path = Path("mcp/server/tools/animation.ts")
+          text = animation_path.read_text(encoding="utf-8")
+
+          old_locals = "\n".join([
+              "      let childElements: OutlinerElement[] = [];",
+              "      let ikTarget: Group | undefined;",
+              "      let mirroredBoneName: string | undefined;",
+          ])
+          new_locals = "\n".join([
+              "      let childElements: OutlinerElement[] = [];",
+              "      let deleteElements: OutlinerElement[] = [];",
+              "      let deleteGroups: Group[] = [];",
+              "      let deleteAnimations: _Animation[] = [];",
+              "      let ikTarget: Group | undefined;",
+              "      let mirroredBoneName: string | undefined;",
+          ])
+          if text.count(old_locals) != 1:
+              raise SystemExit("Unexpected bone rigging local state")
+          text = text.replace(old_locals, new_locals, 1)
+
+          old_delete_preflight = "\n".join([
+              "        case \"unparent\":",
+              "        case \"delete\":",
+              "          targetBone = resolveRigGroup(bone_data.name);",
+              "          break;",
+          ])
+          new_delete_preflight = "\n".join([
+              "        case \"unparent\":",
+              "          targetBone = resolveRigGroup(bone_data.name);",
+              "          break;",
+              "",
+              "        case \"delete\": {",
+              "          targetBone = resolveRigGroup(bone_data.name);",
+              "          deleteGroups = [targetBone];",
+              "          targetBone.forEachChild((element: any) => {",
+              "            if (element instanceof Group) {",
+              "              deleteGroups.push(element);",
+              "            } else {",
+              "              deleteElements.push(element as OutlinerElement);",
+              "            }",
+              "          });",
+              "          const deleteGroupUuids = new Set(",
+              "            deleteGroups.map((group) => group.uuid)",
+              "          );",
+              "          deleteAnimations = AnimationItem.all.filter((animation) =>",
+              "            Object.keys(animation.animators ?? {}).some((animatorUuid) =>",
+              "              deleteGroupUuids.has(animatorUuid)",
+              "            )",
+              "          );",
+              "          break;",
+              "        }",
+          ])
+          if text.count(old_delete_preflight) != 1:
+              raise SystemExit("Unexpected delete preflight shape")
+          text = text.replace(old_delete_preflight, new_delete_preflight, 1)
+
+          old_undo = "\n".join([
+              "      Undo.initEdit({",
+              "        outliner: true,",
+              "        elements: childElements,",
+              "        groups: targetBone ? [targetBone] : [],",
+              "      });",
+          ])
+          new_undo = "\n".join([
+              "      const undoElements = action === \"delete\" ? deleteElements : childElements;",
+              "      const undoGroups =",
+              "        action === \"delete\" ? deleteGroups : targetBone ? [targetBone] : [];",
+              "      Undo.initEdit({",
+              "        outliner: true,",
+              "        elements: undoElements,",
+              "        groups: undoGroups,",
+              "        ...(action === \"delete\"",
+              "          ? { selection: true, animations: deleteAnimations }",
+              "          : {}),",
+              "      });",
+          ])
+          if text.count(old_undo) != 1:
+              raise SystemExit("Unexpected bone rigging Undo init shape")
+          text = text.replace(old_undo, new_undo, 1)
+
+          old_delete_mutation = "\n".join([
+              "          case \"delete\": {",
+              "            targetBone!.remove();",
+              "            result = `Deleted bone \"${targetBone!.name}\"`;",
+              "            break;",
+              "          }",
+          ])
+          new_delete_mutation = "\n".join([
+              "          case \"delete\": {",
+              "            const deletedBoneName = targetBone!.name;",
+              "            targetBone!.remove(false);",
+              "            // Mirror Blockbench's native Group.remove(true) Undo contract:",
+              "            // the deleted object lists represent an empty post-edit state.",
+              "            deleteElements.length = 0;",
+              "            deleteGroups.length = 0;",
+              "            result = `Deleted bone \"${deletedBoneName}\"`;",
+              "            break;",
+              "          }",
+          ])
+          if text.count(old_delete_mutation) != 1:
+              raise SystemExit("Unexpected bone delete mutation shape")
+          text = text.replace(old_delete_mutation, new_delete_mutation, 1)
+
+          old_description = "      \"Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.\"," 
+          new_description = "      \"Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; delete snapshots descendant Groups/elements and every affected animation before recursive removal; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation.\"," 
+          if text.count(old_description) != 1:
+              raise SystemExit("Unexpected bone rigging description")
+          animation_path.write_text(text.replace(old_description, new_description, 1), encoding="utf-8")
+
+          test_path = Path("mcp/tests/animation-mutation-contract.test.ts")
+          test = test_path.read_text(encoding="utf-8")
+          addition = "\n".join([
+              "",
+              "  test(\"bone delete Undo covers descendants and affected animations before recursive removal\", async () => {",
+              "    const source = await Bun.file(\"server/tools/animation.ts\").text();",
+              "    expect(source).toContain(\"deleteGroups = [targetBone]\");",
+              "    expect(source).toContain(\"targetBone.forEachChild((element: any) =>\");",
+              "    expect(source).toContain(\"const deleteGroupUuids = new Set(\");",
+              "    expect(source).toContain(\"deleteAnimations = AnimationItem.all.filter\");",
+              "    expect(source).toContain(\"animations: deleteAnimations\");",
+              "    expect(source).toContain(\"targetBone!.remove(false)\");",
+              "    expect(source).toContain(\"deleteElements.length = 0\");",
+              "    expect(source).toContain(\"deleteGroups.length = 0\");",
+              "    expect(source).not.toContain(\"targetBone!.remove();\");",
+              "  });",
+          ])
+          close_marker = "});\n"
+          position = test.rfind(close_marker)
+          if position == -1:
+              raise SystemExit("Animation mutation test closing marker not found")
+          test = test[:position] + addition + "\n" + test[position:]
+          test_path.write_text(test, encoding="utf-8")
+
+          next_path = Path("docs/knowledge/next-action.md")
+          next_text = next_path.read_text(encoding="utf-8")
+          old_note = "A bounded GitHub-only rigging contract correction now rejects empty `set_ik` updates, prevents target-only IK edits from implicitly forcing `ik_enabled=false`, rejects parent operations whose self/descendant/existing parent chain would create or extend a hierarchy cycle before Undo, rejects bone-create child adoption when a requested child is the chosen parent/ancestor of that parent, and keeps create/rename/mirror bone identities unique under the case-insensitive matching used by Bedrock animation import. Mirror derives and validates its intended counterpart name before duplication; exact no-op renames are rejected while case-only self renames remain valid. Omitted `ik_enabled` preserves the existing authored state. IK target resolution and local runtime proof requirements are unchanged."
+          new_note = "A bounded GitHub-only rigging contract correction now rejects empty `set_ik` updates, prevents target-only IK edits from implicitly forcing `ik_enabled=false`, rejects parent operations whose self/descendant/existing parent chain would create or extend a hierarchy cycle before Undo, rejects bone-create child adoption when a requested child is the chosen parent/ancestor of that parent, snapshots all descendant Groups/elements plus animations targeting any deleted Group before recursive bone delete, and keeps create/rename/mirror bone identities unique under the case-insensitive matching used by Bedrock animation import. Mirror derives and validates its intended counterpart name before duplication; exact no-op renames are rejected while case-only self renames remain valid. Omitted `ik_enabled` preserves the existing authored state. IK target resolution and local runtime proof requirements are unchanged."
+          if next_text.count(old_note) != 1:
+              raise SystemExit("Unexpected rigging continuity note")
+          next_path.write_text(next_text.replace(old_note, new_note, 1), encoding="utf-8")
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit delete Undo coverage and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-rigging-delete-undo-coverage.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: capture full rig delete Undo state"
+          git push origin HEAD:Local
