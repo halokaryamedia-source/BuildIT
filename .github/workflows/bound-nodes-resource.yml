@@ -28,88 +28,67 @@ jobs:
           path = Path('mcp/server/resources.ts')
           text = path.read_text(encoding='utf-8')
           anchor = '// Register projects resource using the factory pattern\n'
-          helpers = '''function finiteVector3(value: unknown, fallback: [number, number, number]): [number, number, number] {
-  if (Array.isArray(value) && value.length >= 3) {
-    const values = value.slice(0, 3).map(Number);
-    if (values.every(Number.isFinite)) return values as [number, number, number];
-  }
-  if (value && typeof value === "object") {
-    const candidate = value as { x?: unknown; y?: unknown; z?: unknown; toArray?: () => unknown[] };
-    if (typeof candidate.toArray === "function") {
-      const values = candidate.toArray().slice(0, 3).map(Number);
-      if (values.every(Number.isFinite)) return values as [number, number, number];
-    }
-    const values = [candidate.x, candidate.y, candidate.z].map(Number);
-    if (values.every(Number.isFinite)) return values as [number, number, number];
-  }
-  return fallback;
-}
-
-function previewNodeSummary(node: any) {
-  const geometry = node.geometry as
-    | { type?: string; attributes?: { position?: { count?: number } }; index?: { count?: number } }
-    | undefined;
-  const children = Array.isArray(node.children) ? node.children : [];
-  return {
-    uuid: typeof node.uuid === "string" ? node.uuid : null,
-    element_uuid: typeof node.name === "string" ? node.name : null,
-    type: typeof node.type === "string" ? node.type : null,
-    visible: node.visible !== false,
-    position: finiteVector3(node.position, [0, 0, 0]),
-    rotation: finiteVector3(node.rotation, [0, 0, 0]),
-    scale: finiteVector3(node.scale, [1, 1, 1]),
-    child_count: children.length,
-    child_ids: children.slice(0, 32).map((child: any) =>
-      typeof child?.name === "string" ? child.name : typeof child?.uuid === "string" ? child.uuid : "unknown"
-    ),
-    children_truncated: children.length > 32 || undefined,
-    geometry: geometry
-      ? {
-          type: geometry.type ?? null,
-          vertex_count: geometry.attributes?.position?.count ?? 0,
-          index_count: geometry.index?.count ?? 0,
-        }
-      : null,
-  };
-}
-
-function authoredTextureMeshState(elementUuid: string | null) {
-  if (!elementUuid) return null;
-  const element = (Outliner?.elements ?? []).find(
-    (candidate: OutlinerElement) => candidate.uuid === elementUuid && candidate.type === "texture_mesh"
-  ) as
-    | (OutlinerElement & {
-        texture_name?: string;
-        origin?: unknown;
-        local_pivot?: unknown;
-        rotation?: unknown;
-        scale?: unknown;
-        visibility?: boolean;
-        locked?: boolean;
-        parent?: unknown;
-      })
-    | undefined;
-  if (!element) return null;
-  const parent = element.parent as { uuid?: string; name?: string } | string | undefined;
-  return {
-    uuid: element.uuid,
-    name: element.name,
-    type: "texture_mesh" as const,
-    texture_name: element.texture_name ?? "",
-    origin: finiteVector3(element.origin, [0, 0, 0]),
-    local_pivot: finiteVector3(element.local_pivot, [0, 0, 0]),
-    rotation: finiteVector3(element.rotation, [0, 0, 0]),
-    scale: finiteVector3(element.scale, [1, 1, 1]),
-    visibility: element.visibility !== false,
-    locked: element.locked === true,
-    parent:
-      parent && typeof parent === "object"
-        ? { uuid: parent.uuid ?? null, name: parent.name ?? null }
-        : parent ?? "root",
-  };
-}
-
-'''
+          helpers = '\n'.join([
+            'function finiteVector3(value: unknown, fallback: [number, number, number]): [number, number, number] {',
+            '  if (Array.isArray(value) && value.length >= 3) {',
+            '    const values = value.slice(0, 3).map(Number);',
+            '    if (values.every(Number.isFinite)) return values as [number, number, number];',
+            '  }',
+            '  if (value && typeof value === "object") {',
+            '    const candidate = value as { x?: unknown; y?: unknown; z?: unknown; toArray?: () => unknown[] };',
+            '    if (typeof candidate.toArray === "function") {',
+            '      const values = candidate.toArray().slice(0, 3).map(Number);',
+            '      if (values.every(Number.isFinite)) return values as [number, number, number];',
+            '    }',
+            '    const values = [candidate.x, candidate.y, candidate.z].map(Number);',
+            '    if (values.every(Number.isFinite)) return values as [number, number, number];',
+            '  }',
+            '  return fallback;',
+            '}',
+            '',
+            'function previewNodeSummary(node: any) {',
+            '  const geometry = node.geometry as { type?: string; attributes?: { position?: { count?: number } }; index?: { count?: number } } | undefined;',
+            '  const children = Array.isArray(node.children) ? node.children : [];',
+            '  return {',
+            '    uuid: typeof node.uuid === "string" ? node.uuid : null,',
+            '    element_uuid: typeof node.name === "string" ? node.name : null,',
+            '    type: typeof node.type === "string" ? node.type : null,',
+            '    visible: node.visible !== false,',
+            '    position: finiteVector3(node.position, [0, 0, 0]),',
+            '    rotation: finiteVector3(node.rotation, [0, 0, 0]),',
+            '    scale: finiteVector3(node.scale, [1, 1, 1]),',
+            '    child_count: children.length,',
+            '    child_ids: children.slice(0, 32).map((child: any) => typeof child?.name === "string" ? child.name : typeof child?.uuid === "string" ? child.uuid : "unknown"),',
+            '    children_truncated: children.length > 32 || undefined,',
+            '    geometry: geometry ? {',
+            '      type: geometry.type ?? null,',
+            '      vertex_count: geometry.attributes?.position?.count ?? 0,',
+            '      index_count: geometry.index?.count ?? 0,',
+            '    } : null,',
+            '  };',
+            '}',
+            '',
+            'function authoredTextureMeshState(elementUuid: string | null) {',
+            '  if (!elementUuid) return null;',
+            '  const element = (Outliner?.elements ?? []).find((candidate: OutlinerElement) => candidate.uuid === elementUuid && candidate.type === "texture_mesh") as (OutlinerElement & { texture_name?: string; origin?: unknown; local_pivot?: unknown; rotation?: unknown; scale?: unknown; visibility?: boolean; locked?: boolean; parent?: unknown }) | undefined;',
+            '  if (!element) return null;',
+            '  const parent = element.parent as { uuid?: string; name?: string } | string | undefined;',
+            '  return {',
+            '    uuid: element.uuid,',
+            '    name: element.name,',
+            '    type: "texture_mesh" as const,',
+            '    texture_name: element.texture_name ?? "",',
+            '    origin: finiteVector3(element.origin, [0, 0, 0]),',
+            '    local_pivot: finiteVector3(element.local_pivot, [0, 0, 0]),',
+            '    rotation: finiteVector3(element.rotation, [0, 0, 0]),',
+            '    scale: finiteVector3(element.scale, [1, 1, 1]),',
+            '    visibility: element.visibility !== false,',
+            '    locked: element.locked === true,',
+            '    parent: parent && typeof parent === "object" ? { uuid: parent.uuid ?? null, name: parent.name ?? null } : parent ?? "root",',
+            '  };',
+            '}',
+            '',
+          ])
           if 'function previewNodeSummary' not in text:
               if text.count(anchor) != 1:
                   raise SystemExit('Unexpected resources helper anchor')
@@ -121,35 +100,8 @@ function authoredTextureMeshState(elementUuid: string | null) {
               raise SystemExit('Unexpected nodes resource description')
           text = text.replace(old_desc, new_desc, 1)
 
-          old_read = '''    const { position, rotation, scale, ...rest } = node;
-    return {
-      contents: [
-        {
-          uri: uri.href,
-          text: JSON.stringify({
-            ...rest,
-            position: position.toArray(),
-            rotation: rotation.toArray(),
-            scale: scale.toArray(),
-          }),
-          mimeType: "application/json",
-        },
-      ],
-    };'''
-          new_read = '''    const preview = previewNodeSummary(node);
-    const textureMesh = authoredTextureMeshState(preview.element_uuid);
-    return {
-      contents: [
-        {
-          uri: uri.href,
-          text: JSON.stringify({
-            preview,
-            authored_texture_mesh: textureMesh ?? undefined,
-          }),
-          mimeType: "application/json",
-        },
-      ],
-    };'''
+          old_read = '    const { position, rotation, scale, ...rest } = node;\n    return {\n      contents: [\n        {\n          uri: uri.href,\n          text: JSON.stringify({\n            ...rest,\n            position: position.toArray(),\n            rotation: rotation.toArray(),\n            scale: scale.toArray(),\n          }),\n          mimeType: "application/json",\n        },\n      ],\n    };'
+          new_read = '    const preview = previewNodeSummary(node);\n    const textureMesh = authoredTextureMeshState(preview.element_uuid);\n    return {\n      contents: [\n        {\n          uri: uri.href,\n          text: JSON.stringify({\n            preview,\n            authored_texture_mesh: textureMesh ?? undefined,\n          }),\n          mimeType: "application/json",\n        },\n      ],\n    };'
           if text.count(old_read) != 1:
               raise SystemExit('Unexpected nodes raw serialization shape')
           path.write_text(text.replace(old_read, new_read, 1), encoding='utf-8')
@@ -157,22 +109,7 @@ function authoredTextureMeshState(elementUuid: string | null) {
           test_path = Path('mcp/tests/prelocal-generic-semantics.test.ts')
           test = test_path.read_text(encoding='utf-8')
           marker = '  test("generic nodes resource remains explicitly deferred until protected native gaps have owners", async () => {'
-          addition = '''  test("transitional nodes resource does not serialize raw THREE internals", async () => {
-    const resources = await source("server/resources.ts");
-    const start = resources.indexOf('createResource("nodes"');
-    const end = resources.indexOf('createResource("textures"', start);
-    const block = resources.slice(start, end);
-    expect(block).toContain("previewNodeSummary(node)");
-    expect(block).toContain("authoredTextureMeshState(preview.element_uuid)");
-    expect(block).toContain("authored_texture_mesh");
-    expect(block).not.toContain("...rest");
-    expect(resources).toContain("vertex_count");
-    expect(resources).toContain("children_truncated");
-    expect(resources).toContain('type: "texture_mesh" as const');
-    expect(resources).toContain("texture_name: element.texture_name");
-  });
-
-'''
+          addition = '  test("transitional nodes resource does not serialize raw THREE internals", async () => {\n    const resources = await source("server/resources.ts");\n    const start = resources.indexOf(\'createResource("nodes"\');\n    const end = resources.indexOf(\'createResource("textures"\', start);\n    const block = resources.slice(start, end);\n    expect(block).toContain("previewNodeSummary(node)");\n    expect(block).toContain("authoredTextureMeshState(preview.element_uuid)");\n    expect(block).toContain("authored_texture_mesh");\n    expect(block).not.toContain("...rest");\n    expect(resources).toContain("vertex_count");\n    expect(resources).toContain("children_truncated");\n    expect(resources).toContain(\'type: "texture_mesh" as const\');\n    expect(resources).toContain("texture_name: element.texture_name");\n  });\n\n'
           if test.count(marker) != 1:
               raise SystemExit('Unexpected generic semantics insertion point')
           test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
@@ -180,7 +117,7 @@ function authoredTextureMeshState(elementUuid: string | null) {
           audit_path = Path('docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md')
           audit = audit_path.read_text(encoding='utf-8')
           marker = 'The resource is broad/generic, but direct BlockIT mappings for native Locator and TextureMesh authored state are still protected gaps. Removing the broad node observation route before those gaps are closed would reduce observability while pretending the product became cleaner. Audit and replace it only together with explicit Locator/TextureMesh inspection ownership.'
-          replacement = 'The resource remains transitional while TextureMesh lacks a dedicated tool, but it no longer serializes arbitrary `THREE.Object3D` internals. After auditing native TextureMesh state, `nodes://{id}` now returns bounded preview transforms/geometry counts and, when the preview node maps to a TextureMesh element, the authored TextureMesh identity, texture name, transforms, visibility, lock, and parent. Locator already has a dedicated owner. Keep the resource until TextureMesh has a focused direct inspection/authoring owner; do not re-expand it into generic renderer-state dumping.'
+          replacement = 'The resource remains transitional while TextureMesh lacks a dedicated tool, but it no longer serializes arbitrary `THREE.Object3D` internals. After auditing native TextureMesh state, `nodes://{id}` returns bounded preview transforms/geometry counts and, when the preview maps to a TextureMesh element, authored TextureMesh identity, texture name, transforms, visibility, lock, and parent. Locator already has a dedicated owner. Keep the resource until TextureMesh has a focused direct owner; do not re-expand it into generic renderer-state dumping.'
           if audit.count(marker) != 1:
               raise SystemExit('Unexpected nodes audit paragraph')
           audit_path.write_text(audit.replace(marker, replacement, 1), encoding='utf-8')
@@ -195,11 +132,11 @@ function authoredTextureMeshState(elementUuid: string | null) {
 
           next_path = Path('docs/knowledge/next-action.md')
           next_text = next_path.read_text(encoding='utf-8')
-          marker = 'The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. Tool annotations were audited and already provide a read-vs-mutation hint across the full generated catalog, so no annotation churn was added. `nodes://` remains unchanged pending direct TextureMesh ownership.'
-          replacement = 'The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. `nodes://` remains transitional for the protected TextureMesh gap, but after official-source audit it now returns bounded preview metadata plus authored TextureMesh state instead of arbitrary `THREE.Object3D` internals. Tool annotations are kept truthful to read-vs-mutation behavior; no routing/profile framework was added.'
-          if next_text.count(marker) != 1:
+          old = 'The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. Tool annotations were audited and already provide a read-vs-mutation hint across the full generated catalog, so no annotation churn was added. `nodes://` remains unchanged pending direct TextureMesh ownership.'
+          new = 'The final pre-local **Context & Payload Cleanup** keeps the same capability surface while reducing duplicated agent-facing prose: the canonical workflow prompt is compact, measured metadata hotspots are shortened without removing input constraints, panel descriptions use real tool descriptions, Texture resources no longer return raw `source`, and validator status is summary-only with lazy detail resources. `nodes://` remains transitional for the protected TextureMesh gap, but after official-source audit it now returns bounded preview metadata plus authored TextureMesh state instead of arbitrary `THREE.Object3D` internals. Tool annotations are kept truthful to read-vs-mutation behavior; no routing/profile framework was added.'
+          if next_text.count(old) != 1:
               raise SystemExit('Unexpected next-action context cleanup paragraph')
-          next_path.write_text(next_text.replace(marker, replacement, 1), encoding='utf-8')
+          next_path.write_text(next_text.replace(old, new, 1), encoding='utf-8')
           PY
       - name: Install from lockfile
         working-directory: mcp
