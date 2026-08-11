@@ -28,14 +28,14 @@ Use this note to answer **where current `Local` behavior lives**. It is a source
 | `mcp/server/tools/` | authored model/project/texture/animation operations |
 | `mcp/lib/` | schemas, factories, runtime helpers, result normalization |
 | `mcp/ui/` | Blockbench panel/settings |
-| `mcp/prompts/` | bundled prompt sources |
-| `mcp/build/` | build/docs generation |
-| `mcp/tests/` | contract/integration regression gates |
+| `mcp/prompts/` | runtime workflow prompt + source-only maintainer references |
+| `mcp/build/` | build/docs/runtime-manifest generation |
+| `mcp/tests/` | contract/integration/static-efficiency regression gates |
 | `mcp/docs/` | generated API docs; secondary to source |
 
-## Current default MCP surface
+## Default MCP surface
 
-Accepted pinned-SDK baseline:
+Historical accepted pinned-SDK baseline:
 
 ```text
 62 enabled tools
@@ -53,13 +53,13 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-These are static measurements, not model-visible token measurements.
+The 62-tool capability count remains contract-locked. Current regression also caps the enabled description surface below 11,500 characters. Historical character counts above are not model-visible token measurements and are not presented as a fresh post-cleanup tools/list measurement.
 
 ## Bedrock authoring ownership
 
 ### Project / observation
 
-- `create_project`, `get_project_info` → Bedrock project/lifecycle state. `get_project_info` uses a bounded top-level Group summary.
+- `create_project`, `get_project_info` → Bedrock project/lifecycle state; project info uses a bounded top-level Group summary.
 - `inspect_model_bounds` → rendered Cube envelope evidence.
 - `capture_model_views` → bounded canonical model views.
 - `capture_screenshot` → current editor view only.
@@ -69,7 +69,7 @@ These are static measurements, not model-visible token measurements.
 - `place_cube` → finite Bedrock Cube creation.
 - `modify_cube`, `modify_cubes_batch` → correction with structural effects.
 - `add_group` → Group/bone creation.
-- `list_outline`, `find_elements_by_criteria`, `inspect_element` → bounded discovery/inspection. Normal defaults are intentionally compact and can be raised explicitly.
+- `list_outline`, `find_elements_by_criteria`, `inspect_element` → bounded discovery/inspection; normal defaults are compact and can be raised explicitly.
 - rename/remove/duplicate/history → utility/recovery paths.
 
 ### Texture / surface
@@ -87,35 +87,49 @@ Animation tools own identity, inspection, keyframes, graph/batch/copy operations
 
 ### Locator / Null Object
 
-Direct Elements-family ownership includes `list_locator_elements`, `manage_locator`, `manage_null_object`, `inspect_element`, `rename_element`, and `remove_element`.
+Direct Elements-family ownership includes `list_locator_elements`, `manage_locator`, `manage_null_object`, `inspect_element`, `rename_element`, and `remove_element`. Create/update branch intent is explicit in client-facing descriptions.
 
 ### MCP result representation
 
 `mcp/lib/factories.ts` owns request-owned result normalization. Exact single-text JSON mirrors of `structuredContent` are replaced by a short summary while canonical structured data, meaningful text, and images are preserved.
 
-## Static cleanup boundary
+### Runtime prompt surface
 
-Current repository work is **static pre-local efficiency cleanup**. Source-provable issues may be changed now, including duplicate payloads, oversized normal read defaults, stale/current-state contradictions, and repeated active instructions with an existing owner.
+Only `bedrock_entity_workflow` is registered and bundled as a runtime MCP prompt. Maintainer API/eval Markdown remains source reference and is excluded from the runtime manifest/docs prompt surface.
 
-Do **not** use this phase to infer or redesign around client-only behavior such as:
+## Completed Static Efficiency Hardening
 
-- whether all 62 schemas are injected;
-- deferred/native tool search behavior;
-- prompt/skill co-loading;
-- actual token/latency cost or retry frequency.
+Source-provable cleanup is complete for the current requested phase:
 
-Those become validation questions only after static cleanup is complete. No new local run is currently active.
+- duplicate result representation;
+- clearly oversized normal project/discovery/history defaults with preserved explicit larger bounds;
+- repeated active instruction ownership across routing/orchestrator/specialists/runtime prompt;
+- stale local-acceptance/current-state routing;
+- Locator/Null Object branch guidance;
+- disabled maintainer prompt bundling;
+- generated output synchronization;
+- regression budgets for instruction size/default surface growth.
+
+No new local run is active. Client-only behavior remains deliberately unmodified until the user explicitly requests testing:
+
+- all-schema injection vs deferred/native tool search;
+- actual prompt/skill co-loading;
+- real token/latency cost;
+- actual retry frequency;
+- realistic image/context cost.
+
+Do not add a router/profile or remove native capability from static speculation alone.
 
 ## Protected native gaps
 
 - TextureMesh direct authoring/inspection;
-- native visible bounding-box fields;
+- native Bedrock visible bounding-box fields;
 - animation controllers;
 - animation sound/timeline effects;
 - animated-texture authoring;
 - bone-binding expressions.
 
-Do not fake these with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, or another format.
+Do not fake these with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
 
 Current proof status: [Validation Report](../foundation/validation-report.md).  
 Current execution state: [Next Action](next-action.md).
