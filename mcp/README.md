@@ -2,7 +2,7 @@
 
 BlockIT is a Minecraft **Bedrock Entity-focused** MCP server/plugin that runs inside desktop Blockbench. `Local` is the current development authority.
 
-Do **not** validate BlockIT with the upstream hosted Jason J. Gardner plugin. That artifact is a different generic product surface.
+Do **not** use the upstream hosted Jason J. Gardner plugin when validating BlockIT. That artifact is a different generic product surface.
 
 ## Build / verify
 
@@ -131,7 +131,7 @@ Follow `AGENTS.md` in this directory:
 
 Do not introduce compatibility shims, duplicated project tools, new routers/profiles, or generic import/eval capability without a proved current need.
 
-## License / upstream attribution
+## License / Upstream attribution
 
 The repository is licensed under GPL-3.0-only; see root `../LICENSE`.
 
