@@ -37,6 +37,18 @@ describe("P1.3 core identity ownership", () => {
     ).toBe(false);
   });
 
+  test("authored texture pixel dimensions are integer-valued", () => {
+    expect(
+      createTextureParameters.safeParse({ name: "skin", width: 16.5, height: 16 }).success
+    ).toBe(false);
+    expect(
+      createTextureParameters.safeParse({ name: "skin", width: 16, height: 32.25 }).success
+    ).toBe(false);
+    expect(
+      createTextureParameters.safeParse({ name: "skin", width: 16, height: 32 }).success
+    ).toBe(true);
+  });
+
   test("required explicit references reject the empty string", () => {
     for (const schema of [
       elementIdSchema,

@@ -31,8 +31,8 @@ export function isDeterministicTextureSource(value: string): boolean {
 export const createTextureParameters = z
   .object({
     name: z.string().min(1).describe("Non-empty texture name."),
-    width: z.number().min(16).max(4096).default(16),
-    height: z.number().min(16).max(4096).default(16),
+    width: z.number().int().min(16).max(4096).default(16),
+    height: z.number().int().min(16).max(4096).default(16),
     data: z
       .string()
       .refine(isDeterministicTextureSource, {
