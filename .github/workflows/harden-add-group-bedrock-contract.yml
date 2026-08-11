@@ -1,0 +1,298 @@
+name: Harden Add Group Bedrock Contract
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-add-group-bedrock-contract.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Narrow add_group to Bedrock-authored state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/element.ts')
+          text = path.read_text(encoding='utf-8')
+          old = '''export const addGroupParameters = z.object({
+  name: z.string().min(1),
+  origin: vector3Schema
+    .optional()
+    .default([0, 0, 0])
+    .describe(
+      "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
+    ),
+  rotation: vector3Schema
+    .optional()
+    .default([0, 0, 0])
+    .describe(
+      "Initial Group rotation; omit for neutral zero rotation."
+    ),
+  parent: z
+    .string()
+    .optional()
+    .default("root")
+    .describe(
+      "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
+    ),
+  visibility: z.boolean().optional().default(true),
+  autouv: autoUvEnum
+    .optional()
+    .default("0")
+    .describe(
+      "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
+    ),
+  selected: z.boolean().optional().default(false),
+  shade: z.boolean().optional().default(false),
+});'''
+          new = '''const finiteGroupVector3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
+export const addGroupParameters = z
+  .object({
+    name: z.string().min(1).describe("Non-empty Bedrock Group/bone name."),
+    origin: finiteGroupVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe(
+        "Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
+      ),
+    rotation: finiteGroupVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe("Finite initial Bedrock bone rotation; omit for neutral zero rotation."),
+    parent: z
+      .string()
+      .optional()
+      .default("root")
+      .describe(
+        "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
+      ),
+  })
+  .strict();'''
+          if text.count(old) != 1:
+              raise SystemExit('Unexpected addGroupParameters block')
+          text = text.replace(old, new, 1)
+          old_desc = '"Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.",'
+          new_desc = '"Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",'
+          if text.count(old_desc) != 1:
+              raise SystemExit('Unexpected add_group description')
+          text = text.replace(old_desc, new_desc, 1)
+
+          old_exec = '''    async execute({
+      name,
+      origin,
+      rotation,
+      parent,
+      visibility,
+      autouv,
+      selected,
+      shade,
+    }) {'''
+          new_exec = '''    async execute({ name, origin, rotation, parent }) {'''
+          if text.count(old_exec) != 1:
+              raise SystemExit('Unexpected add_group execute signature')
+          text = text.replace(old_exec, new_exec, 1)
+          old_ctor = '''        group = new Group({
+          name,
+          origin,
+          rotation,
+          autouv: Number(autouv) as 0 | 1 | 2,
+          visibility: Boolean(visibility),
+          selected: Boolean(selected),
+          shade: Boolean(shade),
+        }).init();'''
+          new_ctor = '''        group = new Group({
+          name,
+          origin,
+          rotation,
+        }).init();'''
+          if text.count(old_ctor) != 1:
+              raise SystemExit('Unexpected add_group Group constructor')
+          text = text.replace(old_ctor, new_ctor, 1)
+          old_result = '''        group: {
+uuid: group.uuid,
+name: group.name,
+origin: [...group.origin],
+rotation: [...group.rotation],
+visibility: group.visibility !== false,
+parent: group.parent instanceof Group ? group.parent.uuid : "root",
+        },'''
+          new_result = '''        group: {
+          uuid: group.uuid,
+          name: group.name,
+          origin: [...group.origin],
+          rotation: [...group.rotation],
+          parent: group.parent instanceof Group ? group.parent.uuid : "root",
+        },'''
+          if text.count(old_result) != 1:
+              raise SystemExit('Unexpected add_group result block')
+          text = text.replace(old_result, new_result, 1)
+          old_content = '''        content: [
+{
+  type: "text" as const,
+  text: `Added Group ${group.name} (${group.uuid}).`,
+},
+        ],'''
+          new_content = '''        content: [
+          {
+            type: "text" as const,
+            text: `Added Group ${group.name} (${group.uuid}).`,
+          },
+        ],'''
+          if text.count(old_content) != 1:
+              raise SystemExit('Unexpected add_group content block')
+          text = text.replace(old_content, new_content, 1)
+          path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/prelocal-generic-semantics.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          import_anchor = 'import { createProjectParameters } from "@/server/tools/project";\n'
+          import_line = 'import { addGroupParameters } from "@/server/tools/element";\n'
+          if test.count(import_anchor) != 1:
+              raise SystemExit('Unexpected generic semantics import anchor')
+          test = test.replace(import_anchor, import_anchor + import_line, 1)
+          anchor = '  test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {\n'
+          block = '\n'.join([
+              '  test("add_group exposes only finite Bedrock bone create state", () => {',
+              '    expect(addGroupParameters.safeParse({ name: "body" }).success).toBe(true);',
+              '    expect(addGroupParameters.safeParse({ name: "body", origin: [0, Infinity, 0] }).success).toBe(false);',
+              '    expect(addGroupParameters.safeParse({ name: "body", rotation: [0, 0, -Infinity] }).success).toBe(false);',
+              '    for (const editorOnly of [',
+              '      { selected: true },',
+              '      { shade: false },',
+              '      { visibility: false },',
+              '      { autouv: "1" },',
+              '    ]) {',
+              '      expect(addGroupParameters.safeParse({ name: "body", ...editorOnly }).success).toBe(false);',
+              '    }',
+              '  });',
+              '',
+          ])
+          if test.count(anchor) != 1:
+              raise SystemExit('Unexpected generic semantics test anchor')
+          test_path.write_text(test.replace(anchor, block + anchor, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          anchor = '\n`modify_cube` now matches the same Bedrock boundary:'
+          note = '\n`add_group` now matches native Bedrock bone creation more closely: create accepts only name, finite pivot/origin, finite rotation, and explicit/root parent. Generic editor-only `selected`, `shade`, `visibility`, and Group Auto-UV propagation inputs were removed from this create boundary; structured result state now reports only created identity/transform/parent. Naming/duplicate policy and hierarchy behavior are unchanged.\n'
+          if next_text.count(anchor) != 1:
+              raise SystemExit('Unexpected next-action add_group anchor')
+          next_path.write_text(next_text.replace(anchor, note + anchor, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Measure final callable surface and sync evidence
+        working-directory: mcp
+        run: |
+          cat > .measure-add-group-wire.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+          const server = new McpServer({ name: "blockit-add-group-wire", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: { accept: "application/json, text/event-stream", "content-type": "application/json", "mcp-protocol-version": "2025-06-18" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const addGroup = tools.find((tool) => tool.name === "add_group");
+            await Bun.write("../.add-group-wire.json", JSON.stringify({
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              add_group_schema_characters: JSON.stringify(addGroup?.inputSchema ?? {}).length,
+            }));
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .measure-add-group-wire.ts
+          rm .measure-add-group-wire.ts
+          cd ..
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          mpath = Path('.add-group-wire.json')
+          m = json.loads(mpath.read_text())
+          mpath.unlink()
+          n = lambda v: f'{v:,}'
+
+          next_path = Path('docs/knowledge/next-action.md')
+          text = next_path.read_text(encoding='utf-8')
+          old_start = 'The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **62 enabled tools / 72,234 response characters**, including **48,129 characters of input schemas** and **11,804 characters of tool descriptions**.'
+          new_start = f'The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **{m["enabled_tools"]} enabled tools / {n(m["response_characters"])} response characters**, including **{n(m["input_schema_characters"])} characters of input schemas** and **{n(m["description_characters"])} characters of tool descriptions**.'
+          if text.count(old_start) != 1:
+              raise SystemExit('Unexpected next-action current wire line')
+          text = text.replace(old_start, new_start, 1)
+          marker = '`create_project` remains **212** schema characters;'
+          replacement = f'`create_project` remains **212** schema characters and `add_group` is **{n(m["add_group_schema_characters"])}**;'
+          if text.count(marker) != 1:
+              raise SystemExit('Unexpected next-action schema marker')
+          next_path.write_text(text.replace(marker, replacement, 1), encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          old = 'Final pinned-SDK measurement after the later Cube/project cleanup and redundant export-format discovery containment: **62 tools / 72,234 response characters / 48,129 input-schema characters / 11,804 description characters**. `create_project` remains **212** schema characters; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent while `export_model` remains exposed. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          new = f'Final pinned-SDK measurement after the later Cube/project/export cleanup and Bedrock `add_group` contract narrowing: **{m["enabled_tools"]} tools / {n(m["response_characters"])} response characters / {n(m["input_schema_characters"])} input-schema characters / {n(m["description_characters"])} description characters**. `create_project` remains **212** schema characters and `add_group` is **{n(m["add_group_schema_characters"])}**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent while `export_model` remains exposed. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          if review.count(old) != 1:
+              raise SystemExit('Unexpected deferred-loading final measurement line')
+          review_path.write_text(review.replace(old, new, 1), encoding='utf-8')
+          print(json.dumps(m))
+          PY
+
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified add_group hardening and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-add-group-bedrock-contract.yml
+          git add mcp/server/tools/element.ts mcp/tests/prelocal-generic-semantics.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md
+          git commit -m 'refactor: narrow add_group Bedrock contract'
+          git push origin HEAD:Local
