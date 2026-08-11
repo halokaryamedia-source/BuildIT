@@ -200,17 +200,19 @@ describe("context and payload cleanup", () => {
     expect(block).not.toContain("destructiveHint: true");
   });
 
-  test("continuity stays compact and keeps local execution deferred during static cleanup", async () => {
+  test("continuity stays compact after static cleanup and keeps local execution deferred", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("context_mode");
     expect(next.length).toBeLessThan(8_000);
-    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE");
+    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("STATIC — continue source/context efficiency cleanup; no local run yet.");
-    expect(next).toContain("do **not**");
+    expect(next).toContain(
+      "WAIT — static cleanup complete; do not run local until the user explicitly requests testing or a new product task."
+    );
+    expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
   });
