@@ -1,4 +1,5 @@
 name: Final Repo Hygiene
+# rerun after Foundation link repair
 
 on:
   push:
