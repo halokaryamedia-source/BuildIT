@@ -286,6 +286,8 @@ Optional explicit discovery name filters now follow the same omission boundary: 
 
 `find_elements_by_criteria` Cube-size filters now require finite components and reject contradictory per-axis `min_size > max_size` requests before discovery. Its `parent_group` wording, and the matching selection scope, now explicitly describe descendant-subtree behavior rather than implying direct-parent-only matching. Animation and texturing specialist preflight/verification also reuse lifecycle, identity, and mutation-returned state before issuing project/outline/material rereads; no cache, state tracker, capability gate, or new profile was added.
 
+Shared optional Texture/Animation/Cube identity inputs now require non-empty strings when explicitly supplied; only omission activates the documented selected/current fallback. This closes empty-string fallback broadening in `get_texture`/Painter and material-instance targeting while leaving the fallback capability intact. `create_texture.layer_name` is also non-empty when supplied, so `fill_color` requests cannot satisfy the layer-name requirement with a value runtime would skip. No identity framework or mutation redesign was added.
+
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.
 
 `select_all_of_type` now advertises `destructiveHint=false` because it only changes editor selection state and does not author model data. Selection behavior is unchanged; the metadata correction reduces unnecessary destructive-tool friction.

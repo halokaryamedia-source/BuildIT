@@ -172,8 +172,9 @@ export const meshIdSchema = z
 /** Optional texture ID with fallback to selected */
 export const textureIdOptionalSchema = z
   .string()
+  .min(1)
   .optional()
-  .describe("Texture ID or name. If not provided, uses selected texture.");
+  .describe("Non-empty Texture ID or name. Omit to use the selected/default texture.");
 
 /** Required texture ID */
 export const textureIdSchema = z
@@ -184,8 +185,9 @@ export const textureIdSchema = z
 /** Optional animation ID with fallback to current */
 export const animationIdOptionalSchema = z
   .string()
+  .min(1)
   .optional()
-  .describe("Animation UUID or name. If not provided, uses current animation.");
+  .describe("Non-empty Animation UUID or name. Omit to use the current animation where supported.");
 
 /** Optional group/bone ID */
 export const groupIdOptionalSchema = z
@@ -202,8 +204,9 @@ export const boneNameSchema = z
 /** Optional cube ID with fallback to selected */
 export const cubeIdOptionalSchema = z
   .string()
+  .min(1)
   .optional()
-  .describe("ID or name of the cube. If not provided, uses selected cube.");
+  .describe("Non-empty Cube UUID or name. Omit to use the selected Cube(s) where supported.");
 
 /** Required cube ID */
 export const cubeIdSchema = z

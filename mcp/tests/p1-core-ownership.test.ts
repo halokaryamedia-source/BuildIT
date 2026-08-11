@@ -12,9 +12,12 @@ import {
 } from "@/server/tools/texture";
 import { readFile } from "node:fs/promises";
 import {
+  animationIdOptionalSchema,
   boneNameSchema,
+  cubeIdOptionalSchema,
   cubeIdSchema,
   elementIdSchema,
+  textureIdOptionalSchema,
   textureIdSchema,
 } from "@/lib/zodObjects";
 import {
@@ -99,6 +102,20 @@ describe("P1.3 core identity ownership", () => {
       }).success
     ).toBe(false);
     expect(findElementsByCriteriaParameters.safeParse({ min_size: [4, 1, 2] }).success).toBe(true);
+  });
+
+  test("optional identity fallbacks require omission rather than empty references", () => {
+    for (const schema of [textureIdOptionalSchema, animationIdOptionalSchema, cubeIdOptionalSchema]) {
+      expect(schema.safeParse("").success).toBe(false);
+      expect(schema.safeParse(undefined).success).toBe(true);
+      expect(schema.safeParse("target").success).toBe(true);
+    }
+    expect(
+      createTextureParameters.safeParse({ name: "skin", fill_color: "#ffffff", layer_name: "" }).success
+    ).toBe(false);
+    expect(
+      createTextureParameters.safeParse({ name: "skin", fill_color: "#ffffff", layer_name: "base" }).success
+    ).toBe(true);
   });
 
   test("UUID wins before exact unique name and names never prefix-match", () => {

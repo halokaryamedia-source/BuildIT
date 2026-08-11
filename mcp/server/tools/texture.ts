@@ -53,9 +53,10 @@ export const createTextureParameters = z
       .describe("RGBA color to fill the texture, as tuple or HEX string."),
     layer_name: z
       .string()
+      .min(1)
       .optional()
       .describe(
-        "Name of the texture layer. Required if fill_color is set."
+        "Non-empty texture layer name. Required if fill_color is set."
       ),
     pbr_channel: pbrChannelEnum
       .optional()
