@@ -1,0 +1,100 @@
+name: Sync Duplicate Wire Measurement
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/sync-duplicate-wire.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure and sync current wire
+        working-directory: mcp
+        run: |
+          cat > .measure-duplicate-wire.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+          const server = new McpServer({ name: "blockit-duplicate-wire", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: { accept: "application/json, text/event-stream", "content-type": "application/json", "mcp-protocol-version": "2025-06-18" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const duplicate = tools.find((tool) => tool.name === "duplicate_element");
+            await Bun.write("../.duplicate-wire.json", JSON.stringify({
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              duplicate_element_schema_characters: JSON.stringify(duplicate?.inputSchema ?? {}).length,
+            }));
+          } finally { await server.close(); }
+          TS
+          bun .measure-duplicate-wire.ts
+          rm .measure-duplicate-wire.ts
+          cd ..
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          mpath = Path('.duplicate-wire.json')
+          m = json.loads(mpath.read_text())
+          mpath.unlink()
+          n = lambda v: f'{v:,}'
+
+          next_path = Path('docs/knowledge/next-action.md')
+          text = next_path.read_text(encoding='utf-8')
+          old_start = 'The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **62 enabled tools / 72,067 response characters**, including **47,966 characters of input schemas** and **11,800 characters of tool descriptions**.'
+          new_start = f'The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **{m["enabled_tools"]} enabled tools / {n(m["response_characters"])} response characters**, including **{n(m["input_schema_characters"])} characters of input schemas** and **{n(m["description_characters"])} characters of tool descriptions**.'
+          if text.count(old_start) != 1:
+              raise SystemExit('Unexpected next-action current wire line')
+          text = text.replace(old_start, new_start, 1)
+          old_schema = '`create_project` remains **212** schema characters and `add_group` is **758**;'
+          new_schema = f'`create_project` remains **212** schema characters, `add_group` is **758**, and `duplicate_element` is **{n(m["duplicate_element_schema_characters"])}**;'
+          if text.count(old_schema) != 1:
+              raise SystemExit('Unexpected next-action schema phrase')
+          next_path.write_text(text.replace(old_schema, new_schema, 1), encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          old = 'Final pinned-SDK measurement after the later Cube/project/export cleanup and Bedrock `add_group` contract narrowing: **62 tools / 72,067 response characters / 47,966 input-schema characters / 11,800 description characters**. `create_project` remains **212** schema characters and `add_group` is **758**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent while `export_model` remains exposed. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          new = f'Final pinned-SDK measurement after the later Cube/project/export cleanup, Bedrock `add_group` narrowing, and duplicate translation hardening: **{m["enabled_tools"]} tools / {n(m["response_characters"])} response characters / {n(m["input_schema_characters"])} input-schema characters / {n(m["description_characters"])} description characters**. `create_project` remains **212** schema characters, `add_group` is **758**, and `duplicate_element` is **{n(m["duplicate_element_schema_characters"])}**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent while `export_model` remains exposed. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          if review.count(old) != 1:
+              raise SystemExit('Unexpected deferred-loading final measurement line')
+          review_path.write_text(review.replace(old, new, 1), encoding='utf-8')
+          print(json.dumps(m))
+          PY
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit evidence and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/sync-duplicate-wire.yml
+          git add docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md
+          git commit -m 'docs: sync duplicate wire measurement'
+          git push origin HEAD:Local
