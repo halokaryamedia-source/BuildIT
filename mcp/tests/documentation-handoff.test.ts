@@ -36,10 +36,11 @@ describe("Codex documentation handoff", () => {
     expect(context).toContain("nine repository-owned skill packages");
     expect(activation).toContain("Asset Authoring Route");
     expect(activation).toContain("Repository / Plugin Development Route");
+    expect(activation).toContain("Local Acceptance Route — Only When Reactivated");
     expect(skillMap).not.toContain("exactly six canonical skills");
   });
 
-  test("current documentation defers another local run until static cleanup completes", async () => {
+  test("current documentation holds the cleaned baseline without starting another local run", async () => {
     const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -49,28 +50,29 @@ describe("Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE");
-    expect(next).toContain("no local run yet");
+    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
+    expect(next).toContain("do not run local until the user explicitly requests testing");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
-    expect(dashboard).toContain("static pre-local efficiency cleanup");
-    expect(dashboard).toContain("another Codex/Blockbench run is deferred");
+    expect(dashboard).toContain("Static pre-local efficiency cleanup is complete");
+    expect(dashboard).toContain("Another Codex/Blockbench run is **not active**");
     expect(operations).toContain("The first local acceptance pass is complete");
     expect(operations).not.toContain("mcp-reduction-stabilization-plan.md");
     expect(operations).not.toContain("roadmap.md");
+    expect(sourceMap).toContain("completed local procedure");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
     expect(implementation).toContain("62 enabled tools");
     expect(implementation).toContain("### MCP result representation");
-    expect(implementation).toContain("## Static cleanup boundary");
-    expect(implementation).toContain("No new local run is currently active");
+    expect(implementation).toContain("## Completed Static Efficiency Hardening");
+    expect(implementation).toContain("No new local run is active");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
       expect(currentDoc).not.toContain("mcp/prompts/bedrock.md");
     }
   });
 
-  test("current proof docs distinguish completed functional acceptance from current static cleanup", async () => {
+  test("current proof docs distinguish accepted live evidence from completed static hardening", async () => {
     const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
@@ -79,12 +81,13 @@ describe("Codex documentation handoff", () => {
     ]);
 
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
+    expect(validation).toContain("source/contract/CI hardening complete");
     expect(validation).toContain("62 enabled tools");
     expect(validation).toContain("UNKNOWN");
-    expect(next).toContain("static pre-local efficiency cleanup");
-    expect(next).toContain("The user explicitly does **not** want another local run yet");
+    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
+    expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
     expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
-    expect(implementation).toContain("Source-provable issues may be changed now");
+    expect(implementation).toContain("Source-provable cleanup is complete");
   });
 });
