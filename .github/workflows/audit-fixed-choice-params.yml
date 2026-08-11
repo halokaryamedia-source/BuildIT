@@ -1,0 +1,45 @@
+name: Audit Fixed Choice MCP Parameters
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/audit-fixed-choice-params.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - name: Scan fixed-choice schema parameters
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          patterns = [
+              ("literal_optional_default", re.compile(r'z\s*\.literal\([^\n]+\)(?:.|\n){0,220}?\.optional\(\)(?:.|\n){0,120}?\.default\([^\n]+\)', re.M)),
+              ("single_enum", re.compile(r'z\s*\.enum\(\[\s*[^,\]]+\s*\]\)', re.M)),
+          ]
+          for path in sorted(Path('mcp/server/tools').glob('*.ts')):
+              text = path.read_text(encoding='utf-8')
+              for label, pattern in patterns:
+                  for match in pattern.finditer(text):
+                      start = text.rfind('\n', 0, match.start()) + 1
+                      line = text.count('\n', 0, match.start()) + 1
+                      snippet = text[start:match.end()].replace('\n', ' ')
+                      print(f'{label}\t{path}:{line}\t{snippet[:500]}')
+          PY
+      - name: Remove temporary audit workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-fixed-choice-params.yml
+          git commit -m 'chore: remove fixed-choice parameter audit'
+          git push origin HEAD:Local
