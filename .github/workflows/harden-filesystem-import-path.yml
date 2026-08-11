@@ -27,7 +27,7 @@ jobs:
 
           util_path = Path('mcp/lib/util.ts')
           util = util_path.read_text(encoding='utf-8')
-          anchor = 'import type { ToolContent } from "@modelcontextprotocol/sdk/types.js";\n'
+          anchor = 'import { resolveCoreTexture } from "@/lib/coreIdentity";\n'
           helper = anchor + '\nexport function isAbsoluteFilesystemPath(value: string): boolean {\n  return (\n    value.startsWith("/") ||\n    /^[A-Za-z]:[\\\\/]/.test(value) ||\n    /^\\\\\\\\[^\\\\]+\\\\[^\\\\]+(?:\\\\|$)/.test(value)\n  );\n}\n'
           if 'isAbsoluteFilesystemPath' not in util:
               if util.count(anchor) != 1:
