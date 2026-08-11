@@ -5,6 +5,8 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
+const ROOT_GROUP_SUMMARY_LIMIT = 50;
+
 export const createProjectParameters = z.object({
   name: z.string().min(1).describe("Non-empty project name."),
 }).strict();
@@ -16,7 +18,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.",
+      "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.",
     annotations: {
       title: "Create Project",
       destructiveHint: true,
@@ -28,7 +30,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "get_project_info",
     description:
-      "Returns read-only project lifecycle identity/path/save state, format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
+      "Returns project lifecycle/format/resolution/counts plus a bounded top-level Group summary. Use list_outline only when hierarchy detail is actually needed.",
     annotations: {
       title: "Get Project Info",
       readOnlyHint: true,
@@ -39,7 +41,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "inspect_model_bounds",
     description:
-      "Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.",
+      "Returns rendered-current-pose Cube bounds, visibility counts, and pose context. Observation only; no visual PASS/FAIL.",
     annotations: {
       title: "Inspect Model Bounds",
       readOnlyHint: true,
@@ -73,7 +75,6 @@ function getPoseContext(): {
     timeline_time: timelineTime,
   };
 }
-
 
 function currentProjectLifecycle() {
   if (!Project) {
@@ -127,36 +128,50 @@ export function registerProjectTools() {
         );
       }
 
-      const format = Format as { id?: string; name?: string; display_name?: string } | undefined;
-
-      const rootGroups = Outliner.root
-        .filter((n): n is Group => n instanceof Group)
-        .map((g) => ({
-          name: g.name,
-          uuid: g.uuid,
-          children: g.children?.length ?? 0,
+      const format = Format as
+        | { id?: string; name?: string; display_name?: string }
+        | undefined;
+      const allRootGroups = Outliner.root.filter(
+        (node): node is Group => node instanceof Group
+      );
+      const rootGroups = allRootGroups
+        .slice(0, ROOT_GROUP_SUMMARY_LIMIT)
+        .map((group) => ({
+          name: group.name,
+          uuid: group.uuid,
+          children: group.children?.length ?? 0,
         }));
 
-      return JSON.stringify(
-        {
-          project: currentProjectLifecycle(),
-          format: {
-            id: format?.id ?? null,
-            name: format?.display_name ?? format?.name ?? null,
+      const result = {
+        project: currentProjectLifecycle(),
+        format: {
+          id: format?.id ?? null,
+          name: format?.display_name ?? format?.name ?? null,
+        },
+        resolution: {
+          texture_width: Project.texture_width ?? null,
+          texture_height: Project.texture_height ?? null,
+        },
+        counts: {
+          cubes: Cube.all.length,
+          groups: Group.all.length,
+          textures: Texture.all.length,
+          outliner_elements: Outliner.elements.length,
+          root_groups: allRootGroups.length,
+        },
+        root_groups: rootGroups,
+        root_groups_truncated: allRootGroups.length > rootGroups.length,
+      };
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Project ${result.project.name}: ${result.counts.cubes} Cubes, ${result.counts.groups} Groups, ${result.counts.textures} Textures.`,
           },
-          resolution: {
-            texture_width: Project.texture_width ?? null,
-            texture_height: Project.texture_height ?? null,
-          },
-          counts: {
-            cubes: Cube.all.length,
-            groups: Group.all.length,
-            textures: Texture.all.length,
-            outliner_elements: Outliner.elements.length,
-          },
-          root_groups: rootGroups,
-        }
-      );
+        ],
+        structuredContent: result,
+      };
     },
   }, projectToolDocs[1].status);
 
