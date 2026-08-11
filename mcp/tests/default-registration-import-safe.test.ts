@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { importToolDocs } from "@/server/tools/import";
+import { uiToolDocs } from "@/server/tools/ui";
 
 describe("default MCP registration is runtime-lazy", () => {
   test("default product registry reconstructs outside Blockbench with a bounded description surface", async () => {
@@ -7,10 +9,19 @@ describe("default MCP registration is runtime-lazy", () => {
     expect("Painter" in globalThis).toBe(false);
 
     const module = await import("../server/tools");
-    // Other contract tests deliberately register in-process fixture tools against
-    // the shared factory registry. They are test state, not the BlockIT product surface.
+    const extendedToolNames = new Set([
+      ...importToolDocs.map((tool) => tool.name),
+      ...uiToolDocs.map((tool) => tool.name),
+    ]);
+
+    // Other tests deliberately register fixture and extended-family tools in the
+    // shared process. Exclude those so this budget measures the default Bedrock
+    // product surface rather than mutable test state.
     const exposed = Object.values(module.tools).filter(
-      (tool) => tool.enabled && !tool.name.includes("fixture")
+      (tool) =>
+        tool.enabled &&
+        !tool.name.includes("fixture") &&
+        !extendedToolNames.has(tool.name)
     );
     const descriptionCharacters = exposed.reduce(
       (total, tool) => total + tool.description.length,
