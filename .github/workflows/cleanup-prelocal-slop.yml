@@ -1,0 +1,127 @@
+name: "Clean Pre-local Slop"
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/cleanup-prelocal-slop.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Apply cleanup script
+        run: python3 .github/scripts/cleanup_prelocal.py
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate prompt manifest
+        working-directory: mcp
+        run: bun run prompts:build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Verify cleanup boundaries
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          next_text = Path('docs/knowledge/next-action.md').read_text(encoding='utf-8')
+          prompt = Path('mcp/prompts/bedrock_entity_workflow.md').read_text(encoding='utf-8')
+          review = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md').read_text(encoding='utf-8')
+          if len(next_text) >= 8_000:
+              raise SystemExit(f'next-action too large: {len(next_text)}')
+          if len(prompt) >= 9_000:
+              raise SystemExit(f'prompt too large: {len(prompt)}')
+          if 'If continuing non-local work' in next_text or 'The current source slice has hardened' in next_text:
+              raise SystemExit('stale continuity/changelog prose remains')
+          if 'Current actual stateless `tools/list` measurement after' in review:
+              raise SystemExit('historical wire snapshot still labelled current')
+          print(f'next_action_chars={len(next_text)}')
+          print(f'prompt_chars={len(prompt)}')
+          PY
+          git diff --check
+
+      - name: Verify callable surface unchanged
+        working-directory: mcp
+        run: |
+          cat > .verify-cleanup-wire.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+          const server = new McpServer({ name: "cleanup-check", version: "1" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: { accept: "application/json, text/event-stream", "content-type": "application/json", "mcp-protocol-version": "2025-06-18" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const metrics = {
+              tools: tools.length,
+              response: raw.length,
+              schemas: tools.reduce((n, tool) => n + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              descriptions: tools.reduce((n, tool) => n + (tool.description ?? "").length, 0),
+            };
+            const expected = { tools: 62, response: 72775, schemas: 48674, descriptions: 11800 };
+            if (JSON.stringify(metrics) !== JSON.stringify(expected)) {
+              throw new Error(`Callable surface changed during cleanup: ${JSON.stringify(metrics)}`);
+            }
+            console.log(metrics);
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .verify-cleanup-wire.ts
+          rm .verify-cleanup-wire.ts
+
+      - name: Commit cleanup and remove helpers
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/cleanup-prelocal-slop.yml .github/scripts/cleanup_prelocal.py
+          git add docs/knowledge/next-action.md \
+            docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md \
+            .agents/skills/blockbench-bedrock-modelling/SKILL.md \
+            mcp/prompts/bedrock_entity_workflow.md mcp/prompts/manifest.json \
+            mcp/server/tools/element.ts \
+            mcp/tests/asset-authoring-usage-slimming.test.ts \
+            mcp/tests/context-payload-cleanup.test.ts \
+            mcp/tests/model-effectiveness-correction-accuracy.test.ts \
+            mcp/tests/model-effectiveness-cross-view-blocker.test.ts \
+            mcp/tests/model-effectiveness-minimum-evidence.test.ts \
+            mcp/tests/model-effectiveness-sequencing.test.ts \
+            mcp/tests/model-effectiveness-tool-routing.test.ts \
+            mcp/docs/api.json mcp/docs/index.html
+          git commit -m 'refactor: remove pre-local context and regression slop'
+          git push origin HEAD:Local
