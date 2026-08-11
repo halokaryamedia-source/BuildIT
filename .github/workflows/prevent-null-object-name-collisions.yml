@@ -1,0 +1,82 @@
+name: Prevent Null Object Name Collisions
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/prevent-null-object-name-collisions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Reject duplicate Null Object names before Undo
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/locators.ts')
+          source = source_path.read_text(encoding='utf-8')
+          start = source.index('  createTool(\n    locatorToolDocs[2].name')
+          block = source[start:]
+          anchor = '        if (args.action === "create") {\n          const parent = resolveParent(args.parent);\n'
+          replacement = anchor + '          if (NullObject.all.some((element) => element.name === args.name)) {\n            throw new Error(\n              `Null Object name "${args.name}" already exists. Null Object names must remain unique for deterministic references.`\n            );\n          }\n'
+          if block.count(anchor) != 1:
+              raise SystemExit('Unexpected manage_null_object create shape')
+          block = block.replace(anchor, replacement, 1)
+          source_path.write_text(source[:start] + block, encoding='utf-8')
+
+          test_path = Path('mcp/tests/bedrock-locator-coverage.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '  test("Null Object geometry round-trip distinction is documented", async () => {'
+          addition = '  test("Null Object creation rejects duplicate exact names before Undo", async () => {\n    const locatorSource = await source("server/tools/locators.ts");\n    const start = locatorSource.indexOf("locatorToolDocs[2].name");\n    const block = locatorSource.slice(start);\n    const collision = block.indexOf("NullObject.all.some");\n    const undo = block.indexOf("Undo.initEdit");\n    expect(collision).toBeGreaterThan(-1);\n    expect(undo).toBeGreaterThan(collision);\n    expect(block).toContain("must remain unique for deterministic references");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected locator coverage insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Null Object is not treated as identical to a normal Locator. Blockbench Bedrock geometry round-trips it through a `_null_` locator entry. `ik_target`, `ik_source`, and `lock_ik_target_rotation` are inspectable editor/animation state but are intentionally not mutation fields in this minimum slice.'
+          extra = '\n\nLocator and Null Object creation now share deterministic exact-name behavior: both reject an existing same-type exact name before Undo, matching their UUID-first / unique-exact-name resolvers. No cross-type naming restriction was added.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected Locator continuity paragraph')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/prevent-null-object-name-collisions.yml
+          git add mcp/server/tools/locators.ts mcp/tests/bedrock-locator-coverage.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: prevent Null Object name collisions'
+          git push origin HEAD:Local
