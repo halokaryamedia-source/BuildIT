@@ -1,0 +1,107 @@
+name: Avoid Redundant Project Lifecycle Rereads
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/avoid-redundant-project-reread.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Align project boot routing with returned lifecycle state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          prompt_path = Path('mcp/prompts/bedrock_entity_workflow.md')
+          prompt = prompt_path.read_text(encoding='utf-8')
+          evidence_anchor = '- Do not re-read project/outline/resource state already known unless it may have changed.\n'
+          evidence_note = '- `create_project` and path-writing `export_model` already return project lifecycle identity/path/saved state. Do not immediately call `get_project_info` after them unless required fields such as resolution/counts/root groups are missing or external state may have changed.\n'
+          if prompt.count(evidence_anchor) != 1:
+              raise SystemExit('Unexpected canonical prompt evidence anchor')
+          prompt = prompt.replace(evidence_anchor, evidence_anchor + evidence_note, 1)
+
+          old_lane = '''get_project_info → place_cube/Group build → capture_model_views
+          → inspect_element + modify_cube only on diagnosed mismatch
+          → downstream specialist only after prerequisite gate
+          → export_model only when requested'''
+          new_lane = '''project unknown/absent → get_project_info or create_project as appropriate
+          known/returned project state → place_cube/Group build → capture_model_views
+          → inspect_element + modify_cube only on diagnosed mismatch
+          → downstream specialist only after prerequisite gate
+          → export_model only when requested'''
+          if prompt.count(old_lane) != 1:
+              raise SystemExit('Unexpected canonical prompt tool-routing lane')
+          prompt_path.write_text(prompt.replace(old_lane, new_lane, 1), encoding='utf-8')
+
+          skill_path = Path('.agents/skills/blockit-bedrock-entity-mcp/SKILL.md')
+          skill = skill_path.read_text(encoding='utf-8')
+          skill_anchor = '- Do not re-read state this workflow just created or already knows unless it may have changed.\n'
+          skill_note = '- `create_project` and path-writing `export_model` already return lifecycle state. Do not immediately call `get_project_info` after them unless you need fields they do not return (resolution/counts/root groups) or external state may have changed.\n'
+          if skill.count(skill_anchor) != 1:
+              raise SystemExit('Unexpected authoring skill evidence anchor')
+          skill_path.write_text(skill.replace(skill_anchor, skill_anchor + skill_note, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/model-effectiveness-tool-routing.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          test_anchor = '    expect(modelling).toContain("Tool Lane Discipline");\n'
+          assertions = '''    expect(orchestrator).toContain("Do not immediately call `get_project_info`");
+              expect(workflow).toContain("Do not immediately call `get_project_info`");
+              expect(workflow).not.toContain("get_project_info → place_cube/Group build");
+              expect(workflow).toContain("project unknown/absent → get_project_info or create_project as appropriate");
+          '''
+          if test.count(test_anchor) != 1:
+              raise SystemExit('Unexpected tool-routing test anchor')
+          test_path.write_text(test.replace(test_anchor, assertions + test_anchor, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          next_anchor = '\n\n`create_texture` now follows the same deterministic filesystem rule for image-file inputs:'
+          next_note = '\n\nCanonical project boot routing now treats `get_project_info` as conditional rather than a ritual first call. `create_project` and path-writing `export_model` already return lifecycle identity/path/saved state, so an immediate follow-up project read is reserved for missing fields such as resolution/counts/root groups or evidence that external state changed. No cache, project-state tracker, or lifecycle framework was added.'
+          if next_text.count(next_anchor) != 1:
+              raise SystemExit('Unexpected next-action project-routing anchor')
+          next_path.write_text(next_text.replace(next_anchor, next_note + next_anchor, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit verified routing change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/avoid-redundant-project-reread.yml
+          git add -A
+          git commit -m 'docs: avoid redundant project lifecycle rereads'
+          git push origin HEAD:Local
