@@ -192,6 +192,16 @@ export const createPbrMaterialParameters = z.object({
     .describe(
       "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials."
     ),
+}).superRefine((params, ctx) => {
+  if (params.color_texture !== undefined && params.color_value !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["color_value"], message: "Choose either color_texture or color_value; native Bedrock export uses the texture when both exist." });
+  }
+  if (params.mer_texture !== undefined && params.mer_value !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["mer_value"], message: "Choose either mer_texture or mer_value; native Bedrock export uses the MER texture when both exist." });
+  }
+  if (params.normal_texture !== undefined && params.height_texture !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["height_texture"], message: "Choose normal_texture or height_texture, not both; native Bedrock export prefers normal when both exist." });
+  }
 });
 
 export const configureMaterialParameters = z.object({
@@ -256,7 +266,19 @@ export const configureMaterialParameters = z.object({
     message:
       "configure_material requires at least one authored field change in addition to material.",
   }
-);
+).superRefine((params, ctx) => {
+  if (params.color_texture !== undefined && params.color_texture !== "none" && params.color_value !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["color_value"], message: "Do not send color_value with an explicit color texture. Use color_texture=none when switching to uniform color." });
+  }
+  if (params.mer_texture !== undefined && params.mer_texture !== "none" && params.mer_value !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["mer_value"], message: "Do not send mer_value with an explicit MER texture. Use mer_texture=none when switching to uniform MER values." });
+  }
+  const hasNormalTexture = params.normal_texture !== undefined && params.normal_texture !== "none";
+  const hasHeightTexture = params.height_texture !== undefined && params.height_texture !== "none";
+  if (hasNormalTexture && hasHeightTexture) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["height_texture"], message: "Configure normal_texture or height_texture as the active depth source, not both in one call." });
+  }
+});
 
 export const listMaterialsParameters = z.object({});
 
@@ -367,7 +389,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a uniquely named PBR material TextureGroup. Exact group-name collisions, ambiguous channel textures, and cross-channel Texture identity conflicts fail before Undo.",
+      "Creates a uniquely named PBR material TextureGroup. Color and MER each accept one effective source (texture or uniform), and depth accepts normal or height; contradictory sources fail before Undo.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -378,7 +400,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures one explicit PBR material and requires at least one authored field change. Omitted channels stay unchanged; `none` removes/uses uniform values where supported. Material/Texture references must resolve uniquely before mutation, and one Texture cannot be assigned to multiple PBR channels in the same call.",
+      "Configures one explicit PBR material with at least one authored change. Explicit texture + uniform conflicts and simultaneous normal+height sources fail at the MCP boundary; `none` remains the explicit switch to uniform/remove behavior.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,

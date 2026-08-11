@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   configureMaterialParameters,
+  createPbrMaterialParameters,
   hasExactTextureGroupNameCollision,
   requireDistinctPbrChannelAssignments,
   importedTextureGroupName,
@@ -56,6 +57,19 @@ describe("PBR channel identity preflight", () => {
     expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(pbrBlock.indexOf("Undo.initEdit"));
   });
 
+  test("PBR source combinations match the effective native Bedrock compile branches", () => {
+    expect(createPbrMaterialParameters.safeParse({ name: "mat", color_texture: "color", color_value: [255, 255, 255, 255] }).success).toBe(false);
+    expect(createPbrMaterialParameters.safeParse({ name: "mat", mer_texture: "mer", mer_value: [1, 2, 3] }).success).toBe(false);
+    expect(createPbrMaterialParameters.safeParse({ name: "mat", normal_texture: "normal", height_texture: "height" }).success).toBe(false);
+    expect(createPbrMaterialParameters.safeParse({ name: "mat", color_value: [255, 255, 255, 255], height_texture: "height" }).success).toBe(true);
+
+    expect(configureMaterialParameters.safeParse({ material: "mat", color_texture: "color", color_value: [255, 255, 255, 255] }).success).toBe(false);
+    expect(configureMaterialParameters.safeParse({ material: "mat", color_texture: "none", color_value: [255, 255, 255, 255] }).success).toBe(true);
+    expect(configureMaterialParameters.safeParse({ material: "mat", mer_texture: "mer", mer_value: [1, 2, 3] }).success).toBe(false);
+    expect(configureMaterialParameters.safeParse({ material: "mat", mer_texture: "none", mer_value: [1, 2, 3] }).success).toBe(true);
+    expect(configureMaterialParameters.safeParse({ material: "mat", normal_texture: "normal", height_texture: "height" }).success).toBe(false);
+    expect(configureMaterialParameters.safeParse({ material: "mat", normal_texture: "normal", height_texture: "none" }).success).toBe(true);
+  });
   test("accepts distinct Texture identities across channels", () => {
     expect(() =>
       requireDistinctPbrChannelAssignments([
