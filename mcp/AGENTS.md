@@ -75,6 +75,18 @@ Parameter schemas are imported at build time by the doc generator, which runs ou
 
 Blockbench runtime adapters must likewise be created inside registration/execution scope when merely importing the module is expected to work in Node/Bun documentation or test environments.
 
+## Result Contract Efficiency
+
+`structuredContent` is the canonical machine-readable result when a tool provides structured state. Keep `content` useful but compact:
+
+- do **not** copy the same full JSON payload into both `content.text` and `structuredContent`;
+- use a short human-readable summary in `content.text` when it adds useful execution context;
+- image content and intentionally different explanatory text remain valid alongside `structuredContent`;
+- large compiled/exported artifact content should appear only once and should be omitted from model context after a verified filesystem write unless explicitly requested;
+- the request-owned registration boundary compacts an exact single-text JSON mirror automatically, but tool implementations should still prefer the compact contract directly.
+
+Do not remove authored state merely to shorten output. Reduce duplicate representation first; then use measured local evidence before changing legitimate result fields or global limits.
+
 ## Documentation System
 
 Documentation is auto-generated from Zod schemas at build time:
@@ -99,7 +111,7 @@ Generated `docs/api.json` and `docs/index.html` are authoritative only when `bun
 ## Testing Guidelines
 - The root `.github/workflows/mcp-verify.yml` is the repository gate for `mcp/**` changes.
 - Before marking MCP source work complete, the expected GitHub/package gates are: frozen-lockfile install, full typecheck, focused Bun tests, production build, and generated-doc freshness.
-- Focus automated tests on high-risk public contracts rather than broad low-value coverage. Current P0 fixtures cover schema refinement preservation, annotations, dangerous-default containment, and Origin rejection ordering.
+- Focus automated tests on high-risk public contracts rather than broad low-value coverage. Current P0 fixtures cover schema refinement preservation, annotations, dangerous-default containment, Origin rejection ordering, discriminated-union registration, and structured-result compaction.
 - GitHub tests do **not** replace local Blockbench proof. Validate runtime-sensitive changes by loading `dist/mcp.js` and exercising the affected tools/resources in Blockbench/MCP Inspector.
 - Keep static/source proof separate from listener binding, live Inspector behavior, Undo/Redo semantics, playback, save/reopen, export, and visual fidelity proof.
 
