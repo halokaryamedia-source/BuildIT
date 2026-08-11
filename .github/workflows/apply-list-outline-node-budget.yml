@@ -28,29 +28,11 @@ jobs:
           source_path = Path('mcp/server/tools/element.ts')
           text = source_path.read_text(encoding='utf-8')
 
-          schema_marker = '''  max_depth: z
-    .number()
-    .int()
-    .min(1)
-    .max(32)
-    .optional()
-    .default(32)
-    .describe("Maximum tree depth to traverse. Use a small value to summarize large projects."),
-'''
-          schema_addition = schema_marker + '''  max_nodes: z
-    .number()
-    .int()
-    .min(1)
-    .max(5000)
-    .optional()
-    .default(500)
-    .describe(
-      "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated."
-    ),
-'''
+          schema_marker = '  max_depth: z\n    .number()\n    .int()\n    .min(1)\n    .max(32)\n    .optional()\n    .default(32)\n    .describe("Maximum tree depth to traverse. Use a small value to summarize large projects."),\n'
+          schema_extra = '  max_nodes: z\n    .number()\n    .int()\n    .min(1)\n    .max(5000)\n    .optional()\n    .default(500)\n    .describe(\n      "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated."\n    ),\n'
           if text.count(schema_marker) != 1:
               raise SystemExit('Unexpected list_outline max_depth schema shape')
-          text = text.replace(schema_marker, schema_addition, 1)
+          text = text.replace(schema_marker, schema_marker + schema_extra, 1)
 
           old_desc = '      "Returns the Bedrock Cuboid modelling outline as a hierarchical Cube/Group tree. Each node reports { name, uuid, type (cube|group), children? }. Use `include_cubes=false` to get a group-only skeleton, or `max_depth` to bound very deep trees.",'
           new_desc = '      "Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.",'
@@ -58,73 +40,27 @@ jobs:
               raise SystemExit('Unexpected list_outline description shape')
           text = text.replace(old_desc, new_desc, 1)
 
-          text = text.replace(
-              '    async execute({ include_cubes, max_depth }) {',
-              '    async execute({ include_cubes, max_depth, max_nodes }) {',
-              1,
-          )
-          text = text.replace(
-              '      const truncated: string[] = [];\n\n      const nodeFor = (el: unknown, depth: number): IOutlineNode | null => {',
-              '      const truncated: string[] = [];\n      let returnedNodes = 0;\n      let nodeLimitReached = false;\n\n      const nodeFor = (el: unknown, depth: number): IOutlineNode | null => {',
-              1,
-          )
-          text = text.replace(
-              '        if (el instanceof Group) {\n          const node: IOutlineNode = {',
-              '        if (el instanceof Group) {\n          if (returnedNodes >= max_nodes) {\n            nodeLimitReached = true;\n            return null;\n          }\n          returnedNodes += 1;\n          const node: IOutlineNode = {',
-              1,
-          )
-          text = text.replace(
-              '          for (const child of el.children ?? []) {\n            const childNode = nodeFor(child, depth + 1);\n            if (childNode) node.children!.push(childNode);\n          }',
-              '          for (const child of el.children ?? []) {\n            const childNode = nodeFor(child, depth + 1);\n            if (childNode) node.children!.push(childNode);\n            if (nodeLimitReached) break;\n          }',
-              1,
-          )
-          text = text.replace(
-              '        if (el instanceof Cube) {\n          if (!include_cubes) return null;\n          return { name: el.name, uuid: el.uuid, type: "cube" };\n        }',
-              '        if (el instanceof Cube) {\n          if (!include_cubes) return null;\n          if (returnedNodes >= max_nodes) {\n            nodeLimitReached = true;\n            return null;\n          }\n          returnedNodes += 1;\n          return { name: el.name, uuid: el.uuid, type: "cube" };\n        }',
-              1,
-          )
-
-          old_roots = '''      const roots = Outliner.root
-        .map((el) => nodeFor(el, 0))
-        .filter((n): n is IOutlineNode => n !== null);
-'''
-          new_roots = '''      const roots: IOutlineNode[] = [];
-      for (const element of Outliner.root) {
-        const node = nodeFor(element, 0);
-        if (node) roots.push(node);
-        if (nodeLimitReached) break;
-      }
-'''
-          if text.count(old_roots) != 1:
-              raise SystemExit('Unexpected list_outline roots traversal shape')
-          text = text.replace(old_roots, new_roots, 1)
-
-          return_marker = '''          counts,
-          truncated_at_max_depth: truncated.length ? truncated : undefined,
-          roots,
-'''
-          return_replacement = '''          counts,
-          returned_nodes: returnedNodes,
-          max_nodes,
-          truncated_at_max_nodes: nodeLimitReached || undefined,
-          truncated_at_max_depth: truncated.length ? truncated : undefined,
-          roots,
-'''
-          if text.count(return_marker) != 1:
-              raise SystemExit('Unexpected list_outline result shape')
-          text = text.replace(return_marker, return_replacement, 1)
+          replacements = [
+              ('    async execute({ include_cubes, max_depth }) {', '    async execute({ include_cubes, max_depth, max_nodes }) {'),
+              ('      const truncated: string[] = [];\n\n      const nodeFor = (el: unknown, depth: number): IOutlineNode | null => {', '      const truncated: string[] = [];\n      let returnedNodes = 0;\n      let nodeLimitReached = false;\n\n      const nodeFor = (el: unknown, depth: number): IOutlineNode | null => {'),
+              ('        if (el instanceof Group) {\n          const node: IOutlineNode = {', '        if (el instanceof Group) {\n          if (returnedNodes >= max_nodes) {\n            nodeLimitReached = true;\n            return null;\n          }\n          returnedNodes += 1;\n          const node: IOutlineNode = {'),
+              ('          for (const child of el.children ?? []) {\n            const childNode = nodeFor(child, depth + 1);\n            if (childNode) node.children!.push(childNode);\n          }', '          for (const child of el.children ?? []) {\n            const childNode = nodeFor(child, depth + 1);\n            if (childNode) node.children!.push(childNode);\n            if (nodeLimitReached) break;\n          }'),
+              ('        if (el instanceof Cube) {\n          if (!include_cubes) return null;\n          return { name: el.name, uuid: el.uuid, type: "cube" };\n        }', '        if (el instanceof Cube) {\n          if (!include_cubes) return null;\n          if (returnedNodes >= max_nodes) {\n            nodeLimitReached = true;\n            return null;\n          }\n          returnedNodes += 1;\n          return { name: el.name, uuid: el.uuid, type: "cube" };\n        }'),
+              ('      const roots = Outliner.root\n        .map((el) => nodeFor(el, 0))\n        .filter((n): n is IOutlineNode => n !== null);\n', '      const roots: IOutlineNode[] = [];\n      for (const element of Outliner.root) {\n        const node = nodeFor(element, 0);\n        if (node) roots.push(node);\n        if (nodeLimitReached) break;\n      }\n'),
+              ('          counts,\n          truncated_at_max_depth: truncated.length ? truncated : undefined,\n          roots,\n', '          counts,\n          returned_nodes: returnedNodes,\n          max_nodes,\n          truncated_at_max_nodes: nodeLimitReached || undefined,\n          truncated_at_max_depth: truncated.length ? truncated : undefined,\n          roots,\n'),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit('Unexpected list_outline implementation shape')
+              text = text.replace(old, new, 1)
           source_path.write_text(text, encoding='utf-8')
 
           test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
           test = test_path.read_text(encoding='utf-8')
           if 'listOutlineParameters' not in test:
-              test = test.replace(
-                  'import { inspectAnimationParameters } from "@/server/tools/animation-inspection";\n',
-                  'import { inspectAnimationParameters } from "@/server/tools/animation-inspection";\nimport { listOutlineParameters } from "@/server/tools/element";\n',
-                  1,
-              )
+              test = test.replace('import { inspectAnimationParameters } from "@/server/tools/animation-inspection";\n', 'import { inspectAnimationParameters } from "@/server/tools/animation-inspection";\nimport { listOutlineParameters } from "@/server/tools/element";\n', 1)
           marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
-          addition = '''  test("list_outline bounds breadth as well as depth", async () => {\n    const parsed = listOutlineParameters.parse({});\n    expect(parsed.max_depth).toBe(32);\n    expect(parsed.max_nodes).toBe(500);\n    expect(listOutlineParameters.safeParse({ max_nodes: 5001 }).success).toBe(false);\n\n    const elements = await source("server/tools/element.ts");\n    const start = elements.indexOf("createTool(elementToolDocs[2].name");\n    const end = elements.indexOf("createTool(elementToolDocs[3].name", start);\n    const outline = elements.slice(start, end);\n    expect(outline).toContain("let returnedNodes = 0");\n    expect(outline).toContain("returnedNodes >= max_nodes");\n    expect(outline).toContain("truncated_at_max_nodes: nodeLimitReached || undefined");\n    expect(outline).toContain("returned_nodes: returnedNodes");\n  });\n\n'''
+          addition = '  test("list_outline bounds breadth as well as depth", async () => {\n    const parsed = listOutlineParameters.parse({});\n    expect(parsed.max_depth).toBe(32);\n    expect(parsed.max_nodes).toBe(500);\n    expect(listOutlineParameters.safeParse({ max_nodes: 5001 }).success).toBe(false);\n\n    const elements = await source("server/tools/element.ts");\n    const start = elements.indexOf("createTool(elementToolDocs[2].name");\n    const end = elements.indexOf("createTool(elementToolDocs[3].name", start);\n    const outline = elements.slice(start, end);\n    expect(outline).toContain("let returnedNodes = 0");\n    expect(outline).toContain("returnedNodes >= max_nodes");\n    expect(outline).toContain("truncated_at_max_nodes: nodeLimitReached || undefined");\n    expect(outline).toContain("returned_nodes: returnedNodes");\n  });\n\n'
           if test.count(marker) != 1:
               raise SystemExit('Unexpected context payload test insertion point')
           test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
@@ -132,10 +68,10 @@ jobs:
           next_path = Path('docs/knowledge/next-action.md')
           next_text = next_path.read_text(encoding='utf-8')
           marker = '`inspect_animation` now follows the same summary-first rule for particle effects: normal inspection returns effect counts/animator summary without full effect keyframe payloads, while `include_effect_keyframes=true` explicitly opts into detailed particle timing/data. Focused bone transform-keyframe inspection is unchanged.'
-          addition = marker + '\n\n`list_outline` now bounds breadth as well as depth: normal reads return at most 500 Cube/Group nodes, callers may explicitly raise the budget up to 5000, and `returned_nodes` / `truncated_at_max_nodes` make truncation explicit. `find_elements_by_criteria` remains the targeted continuation path; no pagination/resource framework was added.'
+          extra = '\n\n`list_outline` now bounds breadth as well as depth: normal reads return at most 500 Cube/Group nodes, callers may explicitly raise the budget up to 5000, and `returned_nodes` / `truncated_at_max_nodes` make truncation explicit. `find_elements_by_criteria` remains the targeted continuation path; no pagination/resource framework was added.'
           if next_text.count(marker) != 1:
               raise SystemExit('Unexpected animation inspection continuity marker')
-          next_path.write_text(next_text.replace(marker, addition, 1), encoding='utf-8')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
           PY
       - name: Install from lockfile
         working-directory: mcp
