@@ -168,61 +168,8 @@ export function getAndActivateTexture(id?: string): Texture {
 }
 
 // ============================================================================
-// Lookup Helpers with Actionable Error Messages
+// Texture-group / channel helpers
 // ============================================================================
-
-/**
- * Finds a group/bone by name and throws an actionable error if not found.
- * @param name - The name of the group/bone to find
- * @returns The found Group
- * @throws Error with suggestion to use list_outline
- */
-export function findGroupOrThrow(name: string): Group {
-  const group = Group.all.find((g: Group) => g.name === name);
-  if (!group) {
-    throw new Error(
-      `Bone/group "${name}" not found. Use the list_outline tool to see available groups and bones.`
-    );
-  }
-  return group;
-}
-
-/**
- * Finds an element by ID or name and throws an actionable error if not found.
- * Shared callers must still enforce their own supported Bedrock element type
- * after resolution (for example Cube-only material-instance operations).
- * @param id - The UUID or name of the element to find
- * @returns The found Outliner element or Group
- * @throws Error with suggestion to use list_outline
- */
-export function findElementOrThrow(id: string): OutlinerElement | Group {
-  const element =
-    Outliner.elements.find(
-      (el: OutlinerElement) => el.uuid === id || el.name === id
-    ) || Group.all.find((g: Group) => g.uuid === id || g.name === id);
-  if (!element) {
-    throw new Error(
-      `Element "${id}" not found. Use the list_outline tool to see available elements.`
-    );
-  }
-  return element;
-}
-
-/**
- * Finds a texture by ID, name, or UUID and throws an actionable error if not found.
- * @param id - The ID, name, or UUID of the texture to find
- * @returns The found Texture
- * @throws Error with suggestion to use list_textures
- */
-export function findTextureOrThrow(id: string): Texture {
-  const texture = getProjectTexture(id);
-  if (!texture) {
-    throw new Error(
-      `Texture "${id}" not found. Use the list_textures tool to see available textures.`
-    );
-  }
-  return texture;
-}
 
 /**
  * Helper to find a TextureGroup by name or UUID

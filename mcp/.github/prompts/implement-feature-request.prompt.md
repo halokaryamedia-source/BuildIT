@@ -90,7 +90,7 @@ For **Prompts**, use `createPrompt()` pattern.
 
 Based on the "Edge Cases & Error Handling" section:
 
-- Use helper functions like `findTextureOrThrow()`, `findElementOrThrow()` for lookups
+- Reuse `lib/coreIdentity.ts` resolvers for retained Cube/Group/Texture/Animation targets; UUID wins and explicit names must be unique
 - Throw descriptive errors with actionable suggestions
 - Validate inputs before performing operations
 
@@ -98,9 +98,9 @@ Based on the "Edge Cases & Error Handling" section:
 
 After implementation:
 
-1. Run `bun run build` to verify compilation
-2. Use `blockbench_risky_eval` to test the feature in Blockbench
-3. Verify the output matches the expected format from the issue
+1. Run the focused contract tests plus `bun run typecheck` and `bun run build`
+2. For runtime-sensitive behavior, use the normal MCP tool/Inspector path in Blockbench when local proof is available; do not re-enable quarantined risky evaluation for convenience
+3. Verify the output matches the expected contract and keep runtime/visual proof separate from CI proof
 
 ### 6. Reference Blockbench Source
 
