@@ -1,0 +1,101 @@
+name: Audit Pre-local Documentation
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/audit-prelocal-docs.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - name: Audit active documentation consistency
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          roots = [Path('README.md'), Path('CONTEXT.md'), Path('AGENTS.md'), Path('docs'), Path('.agents/skills')]
+          files = []
+          for root in roots:
+              if root.is_file():
+                  files.append(root)
+              elif root.exists():
+                  files.extend(p for p in root.rglob('*') if p.is_file() and p.suffix in {'.md', '.ts', '.json'})
+
+          patterns = {
+              'STALE_SKILL_COUNT': ['six canonical', 'six-skill', 'six skill', 'exactly six', 'current six-skill'],
+              'STALE_PROMPT_PATH': ['mcp/prompts/bedrock.md', 'prompts/bedrock.md'],
+              'STALE_LOCAL_DEFERRED': ['Local Blockbench testing is intentionally deferred', 'When local testing becomes the priority', 'proof deferred', 'local testing resumes'],
+              'STALE_DISCOVERY_SEMANTICS': ['omitted/empty scope means no Group scope', 'omitted/empty pattern means no regex filter'],
+              'STALE_DISABLED_TOOL_CURRENT': ['apply_texture', 'filter_by_material'],
+              'STALE_SOURCE_AUDIT': ['next active source audit', 'next active source', 'known source gap / paused'],
+              'ROUTING_GAPS': ['blockit-bedrock-entity-mcp', 'blockit-bedrock-texturing', 'blockit-bedrock-animation'],
+          }
+
+          for title, needles in patterns.items():
+              print(f'=== {title} ===')
+              for path in sorted(set(files)):
+                  try:
+                      lines = path.read_text(encoding='utf-8').splitlines()
+                  except UnicodeDecodeError:
+                      continue
+                  for line_no, line in enumerate(lines, 1):
+                      lower = line.lower()
+                      if any(n.lower() in lower for n in needles):
+                          print(f'{path}:{line_no}:{line.strip()}')
+
+          print('=== ACTIVE_DOC_SIZES ===')
+          active = [
+              Path('README.md'), Path('CONTEXT.md'), Path('AGENTS.md'),
+              Path('docs/knowledge/index.md'), Path('docs/knowledge/next-action.md'),
+              Path('docs/knowledge/implementation-map.md'),
+              Path('docs/knowledge/skills/activation-matrix.md'),
+              Path('docs/knowledge/skills/skill-map.md'),
+              Path('docs/knowledge/operations/task-board.md'),
+              Path('docs/knowledge/operations/roadmap.md'),
+              Path('docs/foundation/validation-report.md'),
+          ]
+          for path in active:
+              text = path.read_text(encoding='utf-8')
+              print(f'{path}: lines={len(text.splitlines())} chars={len(text)}')
+
+          print('=== MARKDOWN_LINK_CHECK_ACTIVE ===')
+          link_re = re.compile(r'\[[^\]]+\]\(([^)]+)\)')
+          broken = []
+          for path in active:
+              text = path.read_text(encoding='utf-8')
+              for target in link_re.findall(text):
+                  if '://' in target or target.startswith('#'):
+                      continue
+                  target_path = target.split('#', 1)[0]
+                  if not target_path:
+                      continue
+                  resolved = (path.parent / target_path).resolve()
+                  try:
+                      resolved.relative_to(Path.cwd().resolve())
+                  except ValueError:
+                      continue
+                  if not resolved.exists():
+                      broken.append((str(path), target))
+          for item in broken:
+              print(f'BROKEN {item[0]} -> {item[1]}')
+          print(f'broken_active_links={len(broken)}')
+          PY
+
+      - name: Remove audit helper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-prelocal-docs.yml
+          git commit -m 'ci: remove pre-local docs audit helper'
+          git push origin HEAD:Local
