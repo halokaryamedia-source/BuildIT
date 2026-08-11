@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
+import { captureScreenshotParameters } from "@/server/tools/camera";
 import { elementInspectionToolDocs } from "@/server/tools/element-inspection";
 import {
   filterByMaterialParameters,
@@ -165,6 +166,21 @@ describe("pre-local context and payload cleanup", () => {
     expect(description).toContain("exact names must be unique");
     expect(description).toContain("read-only");
     expect(description).toContain("PASS/FAIL");
+  });
+
+  test("capture_screenshot is current-view only and does not select projects", async () => {
+    expect(captureScreenshotParameters.parse({})).toEqual({});
+    const camera = await source("server/tools/camera.ts");
+    const util = await source("lib/util.ts");
+    const start = camera.indexOf("createTool(cameraToolDocs[0].name");
+    const end = camera.indexOf("createTool(cameraToolDocs[1].name", start);
+    const block = camera.slice(start, end);
+    expect(block).toContain("async execute()");
+    expect(block).toContain("captureScreenshot()");
+    expect(block).not.toContain("project");
+    expect(util).toContain("export function captureScreenshot()");
+    expect(util).not.toContain("ModelProject.all.find");
+    expect(util).not.toContain("selectedProject.select()");
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {

@@ -208,22 +208,9 @@ export function getChannelTextureInfo(textures: Texture[], channel: string) {
  * Captures a screenshot of the 3D preview canvas.
  * Uses Blockbench's native rendering pipeline for accurate capture.
  */
-export function captureScreenshot(project?: string) {
-  let selectedProject: ModelProject | undefined = Project || undefined;
-
-  if (!selectedProject || project !== undefined) {
-    selectedProject = ModelProject.all.find(
-      (p) => p.name === project || p.uuid === project || p.selected
-    );
-  }
-
-  if (!selectedProject) {
-    throw new Error("No project found in the Blockbench editor.");
-  }
-
-  // Select the project if needed
-  if (!selectedProject.selected) {
-    selectedProject.select();
+export function captureScreenshot() {
+  if (!Project) {
+    throw new Error("No active project found in the Blockbench editor.");
   }
 
   const preview = Preview.selected;

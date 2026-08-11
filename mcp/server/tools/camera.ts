@@ -38,9 +38,7 @@ interface CameraSpec {
   fov?: number;
 }
 
-export const captureScreenshotParameters = z.object({
-  project: z.string().optional().describe("Project name or UUID."),
-});
+export const captureScreenshotParameters = z.object({});
 
 export const captureAppScreenshotParameters = z.object({});
 
@@ -402,8 +400,8 @@ function poseContext(): {
 export function registerCameraTools() {
   createTool(cameraToolDocs[0].name, {
     ...cameraToolDocs[0],
-    async execute({ project }) {
-      return captureScreenshot(project);
+    async execute() {
+      return captureScreenshot();
     },
   }, cameraToolDocs[0].status);
 
