@@ -1,24 +1,24 @@
 # Next Action
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 This is the **single active repository-continuation snapshot**. It does not replace task-class routing in `AGENTS.md` and is not normal asset-authoring boot context.
 
 ## Active Goal
 
-Move BlockIT from non-local/source readiness into **bounded Codex + Blockbench local acceptance** without reopening speculative architecture work.
+Keep the locally accepted BlockIT baseline stable and wait for the next explicit product requirement.
 
-The product question is now behavioral:
-
-> Can Codex use the current BlockIT surface to create/revise a Bedrock Entity model efficiently, make truthful visual decisions, and persist/export the result in real Blockbench?
+The first bounded Codex + Blockbench local acceptance pass is complete.
 
 ## Current Status
 
-`NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED`
+`LOCAL_ACCEPTANCE_COMPLETE`
 
 Working branch: **`Local` only**.
 
-The non-local pass is complete. Current source/contract/CI/generated-doc evidence is ready; live Blockbench/MCP/client behavior is not yet proven.
+Live Blockbench proof now covers stateless MCP transport, representative geometry and correction/Undo, texture/Paint/PBR/material-instance reachability, animation create/inspect/timeline/playback, Locator and Null Object lifecycle, reference-fidelity refusal of a false 3D PASS, and `.bbmodel`/Bedrock export persistence.
+
+Two reproduced defects were fixed locally: discriminated-union tool schemas were advertised as empty objects, and `create_animation` did not select the created animation for timeline operations. The active Codex task retained a stale pre-reload tool catalog even though the live endpoint exposed the correct 62-tool surface; that is a client-task cache limitation, not an open BlockIT source defect.
 
 Repository hygiene is also complete: standalone-upstream/editor residue, duplicate planning layers, and tracked transient preview caches have been removed. Current source/runtime capability was not pruned by this cleanup.
 
@@ -73,13 +73,13 @@ Repository/plugin source changes use `development-brief` plus the smallest relev
 - Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, or another format.
 - Do not add a custom router/profile/readiness framework before local evidence proves the retained architecture is the blocker.
 
-## Local Acceptance Owner
+## Local Acceptance Evidence
 
-Follow exactly:
+Completed procedure:
 
 [`docs/knowledge/operations/local-acceptance-runbook.md`](operations/local-acceptance-runbook.md)
 
-Codex local should **not replan the repository from scratch**. For repository continuation it should read, in order:
+Future repository work should **not replan the repository from scratch**. Read, in order:
 
 ```text
 AGENTS.md
@@ -91,20 +91,20 @@ AGENTS.md
 
 Open foundation/source/review notes only when a specific acceptance failure needs that owner or evidence.
 
-## Required Local Acceptance Outcomes
+## Completed Local Acceptance Outcomes
 
-The runbook owns details, but completion must establish or explicitly fail/mark unverified:
+The local pass established:
 
 1. local plugin build/load + stateless endpoint;
-2. canonical Bedrock prompt/default surface and native Codex tool exposure/search behavior;
+2. canonical Bedrock prompt/default surface and representative domain reachability, with catalog-refresh behavior recorded `UNKNOWN`;
 3. representative project/Group/Cube observation and correction;
 4. reference-fidelity difference-first behavior, including a front-plausible/depth-wrong case;
 5. texture/Paint/PBR/material-instance reachability without relying on disabled `apply_texture`;
 6. animation create/inspect/keyframe/playback reachability;
 7. Locator + Null Object create/update/inspect/rename/remove behavior;
 8. `.bbmodel` save/reopen plus Bedrock export/persistence;
-9. efficiency trace: tool purpose, redundant reads/captures, retries, available latency/context data;
-10. explicit classification of every local failure before any source fix.
+9. sparse, purpose-driven calls with retries recorded only for concrete response/path mistakes;
+10. explicit classification of every local failure before source repair.
 
 ## Stopped / Deferred Source Slices
 
@@ -119,24 +119,14 @@ Do not reopen these during baseline local acceptance unless the live run produce
 
 Likewise, do not pre-emptively set `tool_output_token_limit`, mass-trim real Bedrock schemas, or remove retained Animation/Paint/Texture/Locator capability.
 
-## Evidence Boundary
+## Remaining Evidence Boundary
 
-Source/CI proof does not establish:
-
-- actual Blockbench camera/render/Undo behavior;
-- usable image delivery to Codex;
-- native deferred/tool-search exposure;
-- actual prompt/skill co-loading;
-- client handling of `structuredContent` vs text result duplication;
-- live visual convergence/reference fidelity;
-- save/reopen/export round-trip.
-
-Those are now local acceptance questions.
+The completed task did not establish native deferred/tool-search telemetry, prompt/skill co-loading telemetry, or whether text plus `structuredContent` duplication is materially costly. Keep those `UNKNOWN`; do not infer them from the stale task catalog.
 
 ## Next Step
 
 ```text
-LOCAL — follow operations/local-acceptance-runbook.md
+WAIT — no active source change; accept the next explicit user requirement.
 ```
 
-Start with the environment/baseline phase. Do not modify source during the baseline run; reproduce and classify a failure first.
+Do not reopen acceptance fixes or deferred slices without a new reproduced defect or explicit requirement.

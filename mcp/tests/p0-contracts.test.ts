@@ -170,6 +170,67 @@ describe("P0 MCP contract regressions", () => {
     });
   });
 
+  test("discriminated unions advertise their branch fields and retain full validation", async () => {
+    const capture = createCaptureServer();
+    const parameters = z
+      .discriminatedUnion("action", [
+        z.object({
+          action: z.literal("create"),
+          name: z.string(),
+          value: z.number().optional().default(1),
+        }),
+        z.object({
+          action: z.literal("update"),
+          id: z.string(),
+          value: z.number().optional(),
+        }),
+      ])
+      .superRefine((args, ctx) => {
+        if (args.action === "update" && args.value === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "update requires value",
+          });
+        }
+      });
+
+    let executions = 0;
+    createTool("p0_discriminated_union_contract_fixture", {
+      description: "P0 discriminated union contract fixture",
+      parameters,
+      async execute(args) {
+        executions += 1;
+        return args.action;
+      },
+    });
+
+    registerToolsOnServer(capture.server);
+    const registration = capture.registrations.get(
+      "p0_discriminated_union_contract_fixture"
+    );
+    expect(registration).toBeDefined();
+    if (!registration) throw new Error("Discriminated union fixture was not registered.");
+
+    expect(
+      Object.keys(registration.definition.inputSchema as Record<string, unknown>).sort()
+    ).toEqual(["action", "id", "name", "value"]);
+
+    await expectRejectedBeforeExecution(
+      registration.callback,
+      { action: "update", id: "fixture-id" },
+      () => executions
+    );
+
+    const result = await registration.callback(
+      { action: "create", name: "fixture" },
+      {}
+    );
+    expect(executions).toBe(1);
+    expect(result).toEqual({
+      content: [{ type: "text", text: "create" }],
+    });
+  });
+
   test("dangerous default tools remain disabled while other UI tools register", () => {
     const capture = createCaptureServer();
     registerUITools();

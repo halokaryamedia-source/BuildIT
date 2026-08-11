@@ -1,10 +1,10 @@
 # Task Board
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The active task is local acceptance and is intentionally **not duplicated here**. Procedure: [Local Acceptance Runbook](local-acceptance-runbook.md).
+The first local acceptance pass is complete. This board contains only future evidence-driven work.
 
 ## Waiting On Local Evidence
 
@@ -12,6 +12,7 @@ These are not source TODOs until the live run produces evidence.
 
 ### Native Codex exposure / context
 
+- [ ] In a fresh Codex task, confirm whether the catalog starts at the live 62-tool surface; the completed acceptance task retained a stale 94-tool catalog after restart.
 - [ ] If local trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest client-side exposure remedy before any BlockIT router/profile architecture.
 - [ ] If actual prompt/skill co-loading shows material duplicated context, consolidate only the duplicated owner proven by the trace.
 - [ ] If duplicated text + `structuredContent` is materially costly and client behavior is observable, A/B one high-frequency read tool before generalizing.
@@ -50,7 +51,7 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Post-Acceptance Maintenance
 
-- [ ] Update `docs/foundation/validation-report.md` with actual local proof states.
+- [x] Update `docs/foundation/validation-report.md` with actual local proof states.
 - [ ] Update the Review Index when a historical recommendation becomes implemented/superseded by local evidence.
 - [ ] Prune this board after a waiting item becomes irrelevant or active.
 - [ ] Periodically audit active docs for stale paths/skill names/current-state claims.

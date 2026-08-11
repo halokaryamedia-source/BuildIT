@@ -98,6 +98,7 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
     typeName?: string;
     schema?: z.ZodType;
     shape?: () => Record<string, z.ZodType>;
+    options?: z.ZodType[];
   };
 
   if (def.typeName === "ZodObject") {
@@ -106,6 +107,36 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 
   if (def.typeName === "ZodEffects" && def.schema) {
     return extractShape(def.schema);
+  }
+
+  if (def.typeName === "ZodDiscriminatedUnion" && def.options) {
+    const optionShapes = def.options.map(extractShape);
+    const fieldNames = new Set(optionShapes.flatMap((shape) => Object.keys(shape)));
+
+    return Object.fromEntries(
+      [...fieldNames].map((fieldName) => {
+        const variants = optionShapes
+          .map((shape) => shape[fieldName])
+          .filter((field): field is z.ZodType => field !== undefined);
+        const [first, second, ...rest] = variants;
+        if (!first) {
+          throw new Error(`Discriminated union field "${fieldName}" has no schema.`);
+        }
+
+        const field = second
+          ? z.union([first, second, ...rest] as [
+              z.ZodTypeAny,
+              z.ZodTypeAny,
+              ...z.ZodTypeAny[],
+            ])
+          : first;
+        const requiredInEveryOption =
+          variants.length === optionShapes.length &&
+          variants.every((variant) => !variant.isOptional());
+
+        return [fieldName, requiredInEveryOption ? field : field.optional()];
+      })
+    );
   }
 
   return {};

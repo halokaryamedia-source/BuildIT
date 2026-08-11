@@ -1016,6 +1016,13 @@ createTool(
           }
         });
 
+        createdAnimation.select();
+        if (AnimationItem.selected !== createdAnimation) {
+          throw new Error(
+            `Created animation "${createdAnimation.name}" could not be selected for timeline operations.`
+          );
+        }
+
         Undo.finishEdit("Create animation", {
           animations: createdAnimations,
         });

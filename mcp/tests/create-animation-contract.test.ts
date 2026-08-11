@@ -28,4 +28,17 @@ describe("create_animation contract", () => {
     expect(source).toContain("animation_length !== undefined && { animation_length }");
     expect(source).not.toContain("animation_length && { animation_length }");
   });
+
+  test("selects the created animation before completing the Undo edit", async () => {
+    const source = await Bun.file(new URL("../server/tools/animation.ts", import.meta.url)).text();
+    const createStart = source.indexOf("createTool(\n  animationToolDocs[0].name");
+    const createEnd = source.indexOf("createTool(\n  animationToolDocs[1].name", createStart);
+    const createBlock = source.slice(createStart, createEnd);
+
+    expect(createBlock).toContain("createdAnimation.select()");
+    expect(createBlock).toContain("AnimationItem.selected !== createdAnimation");
+    expect(createBlock.indexOf("createdAnimation.select()")).toBeLessThan(
+      createBlock.indexOf('Undo.finishEdit("Create animation"')
+    );
+  });
 });

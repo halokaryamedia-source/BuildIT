@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-11  
-**Scope:** current `Local` source, current foundation/skill policy, non-local CI/static proof, official-source-backed semantics, and remaining local acceptance gaps.
+**Updated:** 2026-08-12
+**Scope:** current `Local` source, foundation/skill policy, static gates, and completed Codex + Blockbench local acceptance evidence.
 
 This report answers **what level of evidence currently exists**. Active task status belongs in `docs/knowledge/next-action.md`; local test procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md`.
 
@@ -16,10 +16,10 @@ This report answers **what level of evidence currently exists**. Active task sta
 ## Current Overall Status
 
 ```text
-NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED
+LOCAL_ACCEPTANCE_COMPLETE
 ```
 
-Non-local source/contract/CI/documentation cleanup is complete. Live runtime, client exposure, visual behavior, and persistence remain the authoritative next evidence boundary.
+The bounded local pass is complete. Live runtime, representative authoring, truthful visual routing, playback, and persistence were exercised in Blockbench 5.1.6 against the loopback MCP endpoint.
 
 Final repository hygiene also removed standalone-upstream/editor residue, obsolete planning layers, and tracked transient workspace previews without changing the MCP callable surface.
 
@@ -57,14 +57,14 @@ from_geo_json         disabled
 | Explicit identities/scopes/filters fail closed where hardened | Active BlockIT policy |
 | Generic Mesh/Hytale/risky-eval shortcuts do not expand Bedrock scope | Active BlockIT policy |
 
-## Non-local Engineering Proof
+## Engineering Proof
 
 Current repository gates have passed for the pre-local source state:
 
 ```text
 frozen-lockfile install
 strict TypeScript typecheck
-159 Bun contract tests
+160 Bun contract tests after the schema repair
 production build
 prompt manifest generation
 generated MCP docs freshness
@@ -72,30 +72,44 @@ diff hygiene
 pinned-SDK tools/list measurement
 ```
 
-This is **source/contract/build proof**, not live Blockbench or Codex behavior proof.
+The later animation-selection repair additionally passed its 4 focused tests, strict typecheck, production build, and live `create_animation → set_time → play/pause` proof.
+
+## Local Acceptance Evidence — 2026-08-12
+
+| Area | Result | Evidence |
+|---|---|---|
+| Environment/runtime | `CURRENT-PROJECT VERIFIED` | Windows 11, Bun 1.3.11, Codex CLI 0.137.0, Blockbench 5.1.6, local `mcp/dist/mcp.js`, loopback stateless endpoint |
+| Default MCP surface | `CURRENT-PROJECT VERIFIED` | live endpoint exposed 62 tools and retained dangerous/default-off containment |
+| Codex task catalog refresh | `UNKNOWN` | this existing Codex task retained a stale 94-tool catalog after restart; direct live endpoint calls used the correct 62-tool runtime |
+| Geometry/correction | `CURRENT-PROJECT VERIFIED` | Group + 3 Cubes, inspection/bounds/views, one causal resize, Undo/Redo |
+| Reference-fidelity behavior | `CURRENT-PROJECT VERIFIED` | front-plausible/depth-wrong zebra fixture correctly remained `FAIL`; one diagnosed torso-depth correction did not become a false global PASS |
+| Texture/Paint/PBR/material instance | `CURRENT-PROJECT VERIFIED` | 16×16 texture, visible Painter edit, native PBR TextureGroup/color+MER, face material instance |
+| Animation | `CURRENT-PROJECT VERIFIED` | create/inspect/keyframes, automatic selection after repair, set-time and play/pause |
+| Locator/Null Object | `CURRENT-PROJECT VERIFIED` | create/update/inspect/rename/remove/Undo and no-op rejection |
+| Persistence/export | `CURRENT-PROJECT VERIFIED` | editable `.bbmodel` and Bedrock geometry JSON written; reopened file retained Cubes, texture, animation, Locator, and Null Object |
 
 ## Project / Lifecycle / Export
 
 | Capability | Source status | Live status |
 |---|---|---|
-| `create_project` fixed Bedrock product format | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| compact lifecycle state from create/info/export | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| path-writing export uses native lifecycle owner/postconditions | Source/contract verified + native semantics audited | `LOCAL PROOF REQUIRED` |
-| Bedrock geometry export + editable `.bbmodel` product codecs | Source/contract verified | `LOCAL PROOF REQUIRED` |
+| `create_project` fixed Bedrock product format | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
+| compact lifecycle state from create/info/export | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
+| path-writing export uses native lifecycle owner/postconditions | Source/contract verified + native semantics audited | `CURRENT-PROJECT VERIFIED` |
+| Bedrock geometry export + editable `.bbmodel` product codecs | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
 | existing Bedrock multi-model target is not silently clobbered through direct bypass | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| `.bbmodel` save/reopen fidelity | not provable non-locally | `LOCAL PROOF REQUIRED` |
+| `.bbmodel` save/reopen fidelity | not provable non-locally | `CURRENT-PROJECT VERIFIED` for the smoke fixture |
 
 ## Observation / Reference Fidelity
 
 | Capability | Source status | Live status |
 |---|---|---|
-| `inspect_model_bounds` finite structural envelope evidence | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| `capture_model_views` bounded named model-view evidence | Source/contract verified | `LOCAL PROOF REQUIRED` |
+| `inspect_model_bounds` finite structural envelope evidence | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
+| `capture_model_views` bounded named model-view evidence | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
 | `capture_screenshot` current-editor-view only | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| `inspect_element` focused authored state | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| difference-first `FAIL / UNVERIFIED / PASS` workflow | Prompt/skill/foundation contract verified | behavioral/visual `LOCAL PROOF REQUIRED` |
+| `inspect_element` focused authored state | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
+| difference-first `FAIL / UNVERIFIED / PASS` workflow | Prompt/skill/foundation contract verified | behavioral/visual `CURRENT-PROJECT VERIFIED` |
 | repeated same-cause correction stops as `BLOCKED` | Prompt/skill contract verified | behavioral `LOCAL PROOF REQUIRED` |
-| fresh returned state may avoid redundant `inspect_element` | Prompt/skill routing verified | efficiency `LOCAL PROOF REQUIRED` |
+| fresh returned state may avoid redundant `inspect_element` | Prompt/skill routing verified | efficiency `CURRENT-PROJECT VERIFIED` |
 
 A front-view match cannot certify 3D depth. The local acceptance run must include a front-plausible / side-depth-wrong case.
 
@@ -116,7 +130,7 @@ Current source/contract verification includes:
 - discovery `min_size` / `max_size` components are finite and ordered per axis;
 - optional explicit identities use omission—not empty strings—for documented current/selected fallback.
 
-Status: **source/contract verified; live Blockbench integration remains `LOCAL PROOF REQUIRED`.**
+Status: **source/contract and representative live Blockbench integration are `CURRENT-PROJECT VERIFIED`.**
 
 ## Texture / Paint / PBR
 
@@ -132,7 +146,7 @@ Current default Bedrock semantics:
 - RGBA tuple alpha is normalized correctly to TinyColor input semantics;
 - filesystem image inputs use deterministic absolute-path rules.
 
-Status: **source/contract verified; representative live texture/Paint/PBR/material-instance reachability remains `LOCAL PROOF REQUIRED`.**
+Status: **source/contract and representative live texture/Paint/PBR/material-instance reachability are `CURRENT-PROJECT VERIFIED`.**
 
 ## Animation / Rig
 
@@ -148,7 +162,7 @@ Current source/contract verification includes:
 
 Protected gaps still include direct animation controller ownership and unsupported sound/timeline-effect mappings.
 
-Status: **source/contract verified; live create/inspect/keyframe/playback behavior remains `LOCAL PROOF REQUIRED`.**
+Status: **source/contract and live create/inspect/keyframe/timeline/playback behavior are `CURRENT-PROJECT VERIFIED`.**
 
 ## Locator / Null Object
 
@@ -165,7 +179,7 @@ remove_element
 
 Source contracts include finite authored transforms, explicit parent/identity handling, and resulting state. Null Object remains distinct from normal Locator semantics.
 
-Status: **source/contract complete; live create/update/inspect/rename/remove and save/reopen/export round-trip remain `LOCAL PROOF REQUIRED`.**
+Status: **source/contract plus live create/update/inspect/rename/remove/Undo and `.bbmodel` reopen are `CURRENT-PROJECT VERIFIED`.**
 
 ## MCP Client / Tool Exposure
 
@@ -177,7 +191,7 @@ Source audit confirms the default registered surface remains 62 tools and the cu
 - real context/token/latency cost;
 - whether duplicated text + `structuredContent` is material to the client.
 
-Status: `LOCAL PROOF REQUIRED`.
+Status: live endpoint reachability is `CURRENT-PROJECT VERIFIED`; native catalog refresh behavior in this long-running Codex task remains `UNKNOWN` because its injected tool list stayed cached.
 
 Do not add a BlockIT custom router/profile based solely on static catalog size.
 
@@ -221,22 +235,10 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 - silently broadening an explicit invalid/empty discovery filter;
 - fixture-specific build rules promoted to generic product behavior.
 
-## Local Acceptance Required Now
+## Remaining Evidence Limits
 
 Procedure owner:
 
 [`docs/knowledge/operations/local-acceptance-runbook.md`](../knowledge/operations/local-acceptance-runbook.md)
 
-The local pass must cover:
-
-1. plugin build/load + stateless endpoint;
-2. native Codex exposure/search and representative domain reachability;
-3. Cube/Group observation/correction/Undo;
-4. difference-first reference-fidelity behavior;
-5. texture/Paint/PBR/material-instance reachability;
-6. animation reachability/playback;
-7. Locator/Null Object operations;
-8. `.bbmodel` save/reopen + Bedrock export persistence;
-9. observed efficiency/redundant-call trace.
-
-After the run, update this report with actual `CURRENT-PROJECT VERIFIED`, remaining `LOCAL PROOF REQUIRED`, `UNSUPPORTED`, or `UNKNOWN` states. Do not rewrite old reviews as if their historical evidence changed.
+Only Codex client telemetry/catalog-refresh behavior remains `UNKNOWN`; the completed task did not expose enough evidence to distinguish injected-schema caching from native deferred search. This does not justify a BlockIT router/profile change.
