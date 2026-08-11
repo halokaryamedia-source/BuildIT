@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T07:23:55.012Z",
+  "generatedAt": "2026-08-11T07:27:27.081Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2059,7 +2059,7 @@
       "status": "stable",
       "category": "Elements",
       "annotations": {
-        "destructiveHint": true
+        "destructiveHint": false
       },
       "parameters": {
         "$ref": "#/definitions/select_all_of_type",

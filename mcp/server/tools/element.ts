@@ -242,7 +242,7 @@ export const elementToolDocs: ToolSpec[] = [
       "Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.",
     annotations: {
       title: "Select All of Type",
-      destructiveHint: true,
+      destructiveHint: false,
     },
     parameters: selectAllOfTypeParameters,
     status: STATUS_STABLE,

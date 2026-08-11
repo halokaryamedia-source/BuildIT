@@ -183,6 +183,15 @@ describe("pre-local context and payload cleanup", () => {
     expect(util).not.toContain("selectedProject.select()");
   });
 
+  test("selection-only helper is not advertised as destructive model mutation", async () => {
+    const elements = await source("server/tools/element.ts");
+    const start = elements.indexOf('name: "select_all_of_type"');
+    const end = elements.indexOf('name: "filter_by_material"', start);
+    const block = elements.slice(start, end);
+    expect(block).toContain("destructiveHint: false");
+    expect(block).not.toContain("destructiveHint: true");
+  });
+
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const next = await source("../docs/knowledge/next-action.md");

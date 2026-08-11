@@ -244,6 +244,8 @@ Cube authoring inputs now keep identity and face writes deterministic: create/re
 
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.
 
+`select_all_of_type` now advertises `destructiveHint=false` because it only changes editor selection state and does not author model data. Selection behavior is unchanged; the metadata correction reduces unnecessary destructive-tool friction.
+
 Material-instance payload/mutation contracts are also bounded: empty face arrays are rejected before mutation, and `list_material_instances` now returns names + usage counts by default. Explicit `include_usages=true` returns at most 100 locations per instance by default (raiseable to 1000) with `usages_truncated` indicating omitted locations. No pagination/state framework was added.
 
 The actual stateless MCP `tools/list` wire surface is now measured rather than inferred from generated docs: **65 enabled tools / 72,817 response characters**, including **48,119 characters of input schemas** and **11,786 characters of tool descriptions**. A geometry-only 15-tool lane would be much smaller, but it is **not** adopted as the default because it would remove texture/animation/Locator paths and therefore would not preserve the same end-to-end product result. The next large usage lever must be proven on the real Codex client as native lazy/deferred MCP tool loading (or an equivalent client-side mechanism) before BlockIT adds a custom router/profile.
