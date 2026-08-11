@@ -2,102 +2,92 @@
 
 Updated: 2026-08-12
 
-This is the **single active repository-continuation snapshot**. It does not replace task-class routing in `AGENTS.md` and is not normal asset-authoring boot context.
+This is the **single active repository-continuation snapshot**. Root `AGENTS.md` still owns task routing.
 
 ## Active Goal
 
-Reduce **measured Codex/MCP context and call waste** without removing retained Minecraft Bedrock capability or introducing speculative routing architecture.
+Complete a **static pre-local efficiency cleanup** before any new Codex + Blockbench run.
 
-Functional local acceptance is complete. The current work is efficiency hardening and evidence collection, not another general Blockbench acceptance pass.
+The user explicitly does **not** want another local run yet. Functional local acceptance already exists; the current phase is repository/source cleanup so the next local run happens only after the known static AI-slop and usage-waste boundaries have been reduced as far as source evidence safely allows.
 
 ## Current Status
 
-`LOCAL_ACCEPTANCE_COMPLETE`
+`PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE`
 
 Working branch: **`Local` only**.
 
-Current source hardening now compacts an exact single-text JSON mirror of `structuredContent` at the MCP reconstruction boundary. This targets the demonstrated duplicate-result pattern used by high-frequency reads and `export_model` while preserving concise text summaries, images, and the canonical structured payload. A focused regression test was added; repository gates must remain the source of truth for static verification.
+Already completed in this cleanup:
 
-The completed local pass also proved representative geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation create/inspect/timeline/playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
+- exact single-text JSON mirrors of `structuredContent` are compacted at the MCP reconstruction boundary;
+- concise text summaries, images, and canonical structured data are preserved;
+- regression coverage prevents the exact mirror from returning silently;
+- completed local-acceptance procedure is no longer default continuation context.
 
-## Why Efficiency Is Still An Open Evidence Boundary
+## In Scope Before The Next Local Run
 
-The first local pass proved that BlockIT works, but it did not produce enough reproducible telemetry to prove that Codex usage is optimal.
+1. remove other source-provable response/output waste without weakening useful evidence;
+2. make high-frequency read/discovery defaults bounded and summary-first where source evidence already supports it;
+3. reduce repeated instruction ownership across root routing, asset orchestrator, specialists, and MCP workflow prompt while preserving one clear owner for every invariant;
+4. remove stale/current-state contradictions from active documentation and tests;
+5. improve client-facing schema clarity where this can be done without adding a router/profile or broadening capability;
+6. remove dead/duplicate repository guidance and generated-context paths that are not active product/runtime requirements;
+7. keep CI/static gates green after each bounded slice.
 
-Still unknown or insufficiently measured:
+## Do Not Do Yet
 
-- whether a **fresh Codex task** starts from the live 62-tool surface or retains/injects another catalog;
-- direct schema injection vs native deferred/tool search;
-- prompt/skill co-loading and duplicated instruction cost;
-- material context/token/latency impact of `content` plus `structuredContent` representations after compaction;
-- actual retry counts caused by ambiguous advertised schemas;
-- repeated image/read calls during a realistic authoring task.
+Until static cleanup is exhausted, do **not**:
 
-Do not infer these from the previous stale 94-tool task catalog.
+- ask for or run another local Codex/Blockbench acceptance pass;
+- create a custom router/profile/readiness framework;
+- default-disable retained Bedrock Animation/Paint/Texture/Locator/material capability merely to reduce tool count;
+- infer token/latency savings that the client has not measured;
+- replace the current MCP/Blockbench transport or schema architecture;
+- reopen unrelated historical/deferred feature work.
 
-## In Scope Now
+## Static Cleanup Rule
 
-1. keep exact duplicated structured/text payloads compact without losing machine-readable state;
-2. keep continuation documentation aligned so completed acceptance work is not reloaded by ritual;
-3. run one fresh Codex efficiency trace before changing registration architecture;
-4. use measured evidence to decide whether schema exposure, prompt ownership, or specific high-volume results need further reduction.
+Fix now when the waste is directly visible in source, for example:
 
-## Out Of Scope Without New Evidence
+- duplicated payload representation;
+- oversized default reads with a clear smaller normal path;
+- repeated active instructions with an existing canonical owner;
+- stale continuation/status text;
+- ambiguous public descriptions that predictably invite invalid calls;
+- dead default surface entries or guidance already superseded by current product rules.
 
-Do **not** pre-emptively:
+Defer to the eventual local run when the claim depends on client behavior, for example:
 
-- add a custom router/profile/readiness framework;
-- default-disable retained Animation/Paint/Texture/Locator/material capability to reduce tool count;
-- mass-trim legitimate schemas/descriptions;
-- set arbitrary output/token limits across all tools;
-- reopen completed local acceptance or deferred source slices;
-- replace current MCP/Blockbench architecture with another transport/schema/server stack.
+- whether Codex injects all 62 schemas or uses deferred search;
+- actual prompt/skill co-loading;
+- actual retry frequency;
+- image/token/latency cost in the client.
 
 ## Continuation Boot
 
-For repository/plugin continuation, read only what changes the current decision:
+For this cleanup:
 
 ```text
 AGENTS.md
-→ CONTEXT.md only when stable project facts matter
 → this file
 → affected source + nearest AGENTS.md
-→ one relevant specialist when needed
+→ one relevant specialist only when needed
 ```
 
-`docs/knowledge/operations/local-acceptance-runbook.md` is now a completed procedure/history reference. Do **not** load it by default unless reproducing an acceptance-specific failure or auditing that procedure.
-
-Normal asset authoring still follows the direct asset route in root `AGENTS.md`; it does not load repository continuation/history.
-
-## Efficiency Acceptance Evidence Needed
-
-Use a **fresh Codex task** against the current `Local` plugin and record only observable facts:
-
-| Evidence | Record |
-|---|---|
-| tool catalog | fresh visible/exposed count and whether 62 is current |
-| call trace | meaningful calls, purpose, redundant yes/no |
-| retries | invalid/ambiguous contract retries and cause |
-| result shape | whether structured result mirrors still duplicate client-visible payload |
-| context/tool search | direct injection/deferred search only when actually observable |
-| prompt/skills | which owners are actually loaded when observable |
-| images | views captured per gate/correction and unnecessary repeats |
-| latency/tokens | only values the client actually exposes |
-
-Do not fabricate token savings from character counts alone. Character measurements may identify candidates, but client-visible telemetry owns the efficiency claim.
+Read `CONTEXT.md`, foundation docs, reviews, or the old local-acceptance runbook only when a concrete cleanup decision depends on them.
 
 ## Protected Product Invariants
 
-- Tool success is execution evidence, never visual approval.
-- Visual gates remain `FAIL / UNVERIFIED / PASS`; `BLOCKED` remains valid when continuation requires guessing or repeated failed work.
-- Reuse fresh returned state before redundant discovery/inspection reads.
+- Minecraft Bedrock Entity remains the default product.
+- Tool success is execution evidence, not visual approval.
+- Visual gates remain `FAIL / UNVERIFIED / PASS`; `BLOCKED` remains valid.
+- Reuse fresh returned state before redundant reads.
 - Production texture/animation must not hide unresolved material geometry.
 - Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, or another format.
 
 ## Next Step
 
 ```text
-LOCAL — run one fresh Codex efficiency trace against the current Local plugin.
+STATIC — continue source/context efficiency cleanup; no local run yet.
 ```
 
-Use that trace to choose **one** next optimization boundary. Do not start with tool-count reduction or another architecture layer.
+The local efficiency trace becomes the final validation stage only after this static cleanup reaches a stable, CI-green boundary.
