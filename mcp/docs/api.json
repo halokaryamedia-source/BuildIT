@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T07:22:13.141Z",
+  "generatedAt": "2026-08-11T07:23:55.012Z",
   "tools": [
     {
       "name": "place_cube",
@@ -941,6 +941,7 @@
               },
               "bone_name": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Exact Group UUID or exact unique Group name to manage keyframes for.",
                 "markdownDescription": "Exact Group UUID or exact unique Group name to manage keyframes for."
               },
@@ -1078,6 +1079,7 @@
               },
               "bone_name": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Exact Group UUID or exact unique Group name to modify curves for.",
                 "markdownDescription": "Exact Group UUID or exact unique Group name to modify curves for."
               },
@@ -1736,6 +1738,7 @@
             "properties": {
               "id": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Exact element UUID or exact unique name. Ambiguous names are rejected before removal.",
                 "markdownDescription": "Exact element UUID or exact unique name. Ambiguous names are rejected before removal."
               }
@@ -1898,6 +1901,7 @@
             "properties": {
               "id": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication.",
                 "markdownDescription": "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
               },
@@ -1946,6 +1950,7 @@
             "properties": {
               "id": {
                 "type": "string",
+                "minLength": 1,
                 "description": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename.",
                 "markdownDescription": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename."
               },
@@ -2823,8 +2828,9 @@
                   "properties": {
                     "cube_id": {
                       "type": "string",
-                      "description": "ID or name of the cube.",
-                      "markdownDescription": "ID or name of the cube."
+                      "minLength": 1,
+                      "description": "Non-empty ID or name of the Cube.",
+                      "markdownDescription": "Non-empty ID or name of the Cube."
                     },
                     "faces": {
                       "type": "array",

@@ -8,6 +8,12 @@ import {
 } from "@/server/tools/texture";
 import { readFile } from "node:fs/promises";
 import {
+  boneNameSchema,
+  cubeIdSchema,
+  elementIdSchema,
+  textureIdSchema,
+} from "@/lib/zodObjects";
+import {
   resolveTextureIdentity,
   resolveUuidOrUniqueName,
 } from "@/lib/coreIdentity";
@@ -29,6 +35,18 @@ describe("P1.3 core identity ownership", () => {
     expect(
       createAnimationParameters.safeParse({ name: "", bones: {} }).success
     ).toBe(false);
+  });
+
+  test("required explicit references reject the empty string", () => {
+    for (const schema of [
+      elementIdSchema,
+      textureIdSchema,
+      boneNameSchema,
+      cubeIdSchema,
+    ]) {
+      expect(schema.safeParse("").success).toBe(false);
+      expect(schema.safeParse("target").success).toBe(true);
+    }
   });
 
   test("UUID wins before exact unique name and names never prefix-match", () => {

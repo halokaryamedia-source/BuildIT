@@ -234,6 +234,8 @@ A repository-wide caller audit then proved the old `findGroupOrThrow` / `findEle
 
 A create-identity schema audit found that project, texture, TextureGroup/PBR material, and animation creation still accepted the empty string even though those values become later lookup identities. Those five create contracts now require a non-empty name, matching the existing Group/Locator/Null Object boundary. No new uniqueness, normalization, or naming framework was added.
 
+Required explicit reference schemas now reject the empty string for element, texture, bone/group, and Cube targets. Optional current/selected fallbacks remain unchanged; the hardening only removes requests that could never identify a target.
+
 Filesystem path ownership is now consistent across model export and texture-set import: both require an absolute POSIX, Windows-drive, or UNC path before filesystem access. The shared check is a small pure helper reused by the two existing callers; no filesystem abstraction/framework was introduced.
 
 `create_texture` now follows the same deterministic filesystem rule for image-file inputs: inline `data:image/...` remains valid, while file inputs must resolve to an absolute POSIX/Windows/UNC path (directly or through `file://`). Relative paths and remote HTTP URLs are rejected before Blockbench file access.

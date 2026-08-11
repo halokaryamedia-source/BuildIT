@@ -155,7 +155,8 @@ export const timeRangeSchema = z.object({
 /** Required element ID or name */
 export const elementIdSchema = z
   .string()
-  .describe("ID or name of the element.");
+  .min(1)
+  .describe("Non-empty ID or name of the element.");
 
 /** Optional mesh ID with fallback to selected */
 export const meshIdOptionalSchema = z
@@ -177,7 +178,8 @@ export const textureIdOptionalSchema = z
 /** Required texture ID */
 export const textureIdSchema = z
   .string()
-  .describe("Texture ID or name.");
+  .min(1)
+  .describe("Non-empty Texture ID or name.");
 
 /** Optional animation ID with fallback to current */
 export const animationIdOptionalSchema = z
@@ -194,7 +196,8 @@ export const groupIdOptionalSchema = z
 /** Required bone name */
 export const boneNameSchema = z
   .string()
-  .describe("Name of the bone/group.");
+  .min(1)
+  .describe("Non-empty bone/group UUID or name.");
 
 /** Optional cube ID with fallback to selected */
 export const cubeIdOptionalSchema = z
@@ -205,7 +208,8 @@ export const cubeIdOptionalSchema = z
 /** Required cube ID */
 export const cubeIdSchema = z
   .string()
-  .describe("ID or name of the cube.");
+  .min(1)
+  .describe("Non-empty ID or name of the Cube.");
 
 /** Face keys array (optional) */
 export const faceKeysOptionalSchema = z
