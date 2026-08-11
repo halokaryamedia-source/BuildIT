@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -53,20 +53,23 @@ jobs:
         continue-on-error: true
         run: bun run docs:check
 
-      - name: Regenerate docs for synchronization artifact
+      - name: Regenerate generated MCP output
         if: always()
         run: bun run docs:build
 
-      - name: Upload generated docs synchronization artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mcp-generated-docs-${{ github.sha }}
-          path: |
-            mcp/docs/api.json
-            mcp/docs/index.html
-            mcp/prompts/manifest.json
-          if-no-files-found: error
+      - name: Commit generated MCP output once
+        if: github.event_name == 'push' && github.ref_name == 'Local'
+        working-directory: .
+        run: |
+          if git diff --quiet -- mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json; then
+            echo "Generated MCP output already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json
+          git commit -m "docs: sync generated MCP output"
+          git push origin HEAD:Local
 
       - name: Enforce verification result
         if: always()
