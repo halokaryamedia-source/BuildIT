@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified: 2026-08-11  
+Last verified: 2026-08-12  
 Stability: stable  
 Owner: workspace agent
 
@@ -18,7 +18,7 @@ For active Bedrock modelling, normal geometry is Cube/Cuboid based. Native Bedro
 
 ## Execution Channels
 
-- **ChatGPT → GitHub** — repository inspection, documentation/source changes, CI/static proof, and preparation for local acceptance.
+- **ChatGPT → GitHub** — repository inspection, documentation/source changes, CI/static proof, and preparation for local runtime checks.
 - **Codex local from root `BuildIT`** — targeted shell/MCP/Blockbench/runtime/visual proof.
 
 The repository—not chat history—is project memory. Repository/plugin continuation resumes from `AGENTS.md`, this file when stable facts matter, and `docs/knowledge/next-action.md`.
@@ -100,7 +100,7 @@ When sources materially conflict, resolve authority or report the missing eviden
 
 BlockIT runs inside desktop Blockbench and exposes a loopback MCP endpoint. Tool schemas/docs must be constructible outside Blockbench, so schema modules cannot depend on Blockbench runtime globals. Runtime-only validation belongs inside execution.
 
-Current default product surface is Bedrock-focused; optional generic fallback families are explicit opt-in. `risky_eval` and `from_geo_json` remain disabled. Current pre-local pinned-SDK default measurement is recorded in `docs/knowledge/next-action.md` and `docs/foundation/validation-report.md`.
+Current default product surface is Bedrock-focused; optional generic fallback families are explicit opt-in. `risky_eval` and `from_geo_json` remain disabled. The accepted default surface is 62 enabled tools; current measurements and any efficiency work belong in `docs/knowledge/next-action.md` and `docs/foundation/validation-report.md`.
 
 ## Engineering Invariants
 
@@ -112,24 +112,19 @@ Current default product surface is Bedrock-focused; optional generic fallback fa
 - Use minimum useful proof; never claim runtime/visual evidence not actually obtained.
 - Stop repeated failed directions after two attempts without genuinely new evidence.
 - A fixture or named model never becomes generic runtime policy by accident.
+- Do not duplicate large machine-readable MCP results across equivalent response representations.
 
-## Current Pre-local Boundary
+## Accepted Baseline
 
-The bounded non-local cleanup is complete. The next authoritative stage is **Codex + Blockbench local acceptance**, not more speculative GitHub-only redesign.
+The first bounded Codex + Blockbench local acceptance pass completed on 2026-08-12. It established representative live proof for runtime transport, geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
 
-Procedure owner:
-
-`docs/knowledge/operations/local-acceptance-runbook.md`
-
-Current state owner:
-
-`docs/knowledge/next-action.md`
+That functional acceptance does **not** prove optimal Codex context/usage efficiency. Tool-catalog refresh/deferred-search behavior, prompt/skill co-loading, and material client cost of result representations remain evidence questions. Active efficiency or product work must be taken from `docs/knowledge/next-action.md`; do not restart the completed acceptance run merely because this file is read.
 
 ## Navigation
 
 - Agent/task routing: `AGENTS.md`
 - Active repository state: `docs/knowledge/next-action.md`
-- Local acceptance procedure: `docs/knowledge/operations/local-acceptance-runbook.md`
+- Historical/completed local acceptance procedure: `docs/knowledge/operations/local-acceptance-runbook.md`
 - Knowledge dashboard: `docs/knowledge/index.md`
 - Foundation entrypoint: `docs/foundation/README.md`
 - MCP runtime/build instructions: `mcp/README.md` and `mcp/AGENTS.md`
