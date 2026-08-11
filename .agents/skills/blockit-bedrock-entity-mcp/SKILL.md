@@ -42,6 +42,7 @@ If no current decision requires a branch, stay in the geometry lane.
 Strict claims do not require ritual calls.
 
 - Do not re-read state this workflow just created or already knows unless it may have changed.
+- `create_project` and path-writing `export_model` already return lifecycle state. Do not immediately call `get_project_info` after them unless you need fields they do not return (resolution/counts/root groups) or external state may have changed.
 - Do not inspect every newly placed Cube. `inspect_element` is for a diagnosed target, ambiguous identity, or exact authored state needed for correction.
 - Do not capture after every mutation. Capture at a meaningful gate; after a local correction, capture only affected reference-corresponding view(s).
 - Use `inspect_model_bounds` only when approved numeric dimensions/envelope exist or scale, ground, displacement, or gross placement is the current question.

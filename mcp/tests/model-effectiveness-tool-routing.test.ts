@@ -19,6 +19,10 @@ describe("model creation effectiveness — tool routing", () => {
       expect(text).toContain("export_model");
       expect(text.toLowerCase()).toContain("stage");
     }
+    expect(orchestrator).toContain("Do not immediately call `get_project_info`");
+    expect(workflow).toContain("Do not immediately call `get_project_info`");
+    expect(workflow).not.toContain("get_project_info → place_cube/Group build");
+    expect(workflow).toContain("project unknown/absent → get_project_info or create_project as appropriate");
     expect(modelling).toContain("Tool Lane Discipline");
     expect(modelling).toContain("If no current decision requires a branch, stay in the geometry lane");
   });

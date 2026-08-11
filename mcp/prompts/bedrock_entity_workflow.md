@@ -12,6 +12,7 @@ Keep validity strict and calls sparse. Use a tool, inspection, capture, resource
 
 - Do not inspect each newly placed Cube or capture after every mutation.
 - Do not re-read project/outline/resource state already known unless it may have changed.
+- `create_project` and path-writing `export_model` already return project lifecycle identity/path/saved state. Do not immediately call `get_project_info` after them unless required fields such as resolution/counts/root groups are missing or external state may have changed.
 - Use `inspect_model_bounds` only for numeric envelope, scale, ground, displacement, or gross-placement questions. Otherwise skip it.
 - Capture only reference-corresponding views needed for the current gate; after a local correction, re-capture only affected view(s).
 - `UNVERIFIED` is not a retry command. Do not spend additional calls trying to remove UNVERIFIED unless the missing evidence can change the next decision and is plausibly obtainable.
@@ -116,7 +117,8 @@ Bedrock animation/controller files belong to the separate Bedrock AnimationCodec
 The catalog is capability, not a checklist. Stay in the smallest active lane:
 
 ```text
-get_project_info → place_cube/Group build → capture_model_views
+project unknown/absent → get_project_info or create_project as appropriate
+known/returned project state → place_cube/Group build → capture_model_views
 → inspect_element + modify_cube only on diagnosed mismatch
 → downstream specialist only after prerequisite gate
 → export_model only when requested
