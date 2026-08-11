@@ -1,5 +1,5 @@
 name: Final Repo Hygiene
-# final rerun with generated docs synchronization
+# final rerun: helper self-removal only
 
 on:
   push:
@@ -65,7 +65,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/final-repo-hygiene.yml
-          git rm .github/scripts/final_repo_hygiene.py
+          git rm -f .github/scripts/final_repo_hygiene.py
           git rm mcp/.verify-final-hygiene-wire.ts
           git add docs/foundation/validation-report.md docs/knowledge/next-action.md
           git add mcp/docs/api.json mcp/docs/index.html
