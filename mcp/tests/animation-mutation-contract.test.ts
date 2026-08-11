@@ -8,6 +8,7 @@ import {
   deriveMirroredRigName,
   hasCaseInsensitiveRigNameCollision,
   manageKeyframesParameters,
+  requireValidPlannedKeyframeTimes,
   resolveUniqueKeyframeMatchIndexes,
   wouldCreateRigHierarchyCycle,
 } from "@/server/tools/animation";
@@ -239,5 +240,25 @@ describe("animation mutation contract", () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     expect(source).toContain("interpolation: kf.interpolation ?? \"linear\"");
     expect(source).toContain("const targetKeyframes = action === \"create\" ? [] : resolveRequestedTargets()");
+  });
+
+  test("batch offset/scale plans stay inside native keyframe time bounds", async () => {
+    expect(() =>
+      requireValidPlannedKeyframeTimes([0, 1.5, 10000], "test")
+    ).not.toThrow();
+    expect(() => requireValidPlannedKeyframeTimes([-0.001], "test")).toThrow(
+      "0..10000"
+    );
+    expect(() => requireValidPlannedKeyframeTimes([10000.001], "test")).toThrow(
+      "0..10000"
+    );
+    expect(() =>
+      requireValidPlannedKeyframeTimes([1, 1], "test scale", true)
+    ).toThrow("collapse multiple selected keyframes");
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("keyframe.time + parameters.offset_time!");
+    expect(source).toContain("keyframe.time = plannedTimes[index]");
+    expect(source).toContain("\"Batch keyframe scale\",");
   });
 });

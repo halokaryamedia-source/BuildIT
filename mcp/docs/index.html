@@ -624,7 +624,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Batch Keyframe Operations</p>
-      <p class="card-desc">Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.</p>
+      <p class="card-desc">Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T04:26:28.692Z from Zod schemas
+        Generated 2026-08-11T04:29:16.074Z from Zod schemas
       </footer>
     </main>
   </div>

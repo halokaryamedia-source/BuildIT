@@ -672,7 +672,7 @@ export const animationToolDocs: ToolSpec[] = [
   },
   {
     name: "batch_keyframe_operations",
-    description: "Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.",
+    description: "Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.",
     annotations: {
       title: "Batch Keyframe Operations",
       destructiveHint: true,
@@ -815,6 +815,25 @@ export function resolveUniqueKeyframeMatchIndexes(
     claimedIndexes.add(matchedIndex);
     return matchedIndex;
   });
+}
+export function requireValidPlannedKeyframeTimes(
+  times: readonly number[],
+  context: string,
+  rejectExactDuplicates = false
+): void {
+  times.forEach((time, index) => {
+    if (!Number.isFinite(time) || time < 0 || time > 10000) {
+      throw new Error(
+        `${context} would place keyframe ${index} at invalid time ${time}; Blockbench authored keyframe time must stay within 0..10000 seconds.`
+      );
+    }
+  });
+
+  if (rejectExactDuplicates && new Set(times).size !== times.length) {
+    throw new Error(
+      `${context} would collapse multiple selected keyframes onto the same effective time. Use a different scale factor/pivot or reduce the selection.`
+    );
+  }
 }
 export function registerAnimationTools() {
 createTool(
@@ -1763,6 +1782,15 @@ createTool(
       }
 
       if (operation === "offset" || operation === "mirror") {
+        if (operation === "offset" && parameters.offset_time !== undefined) {
+          requireValidPlannedKeyframeTimes(
+            keyframes.map(
+              (keyframe: _Keyframe) => keyframe.time + parameters.offset_time!
+            ),
+            "Batch keyframe offset"
+          );
+        }
+
         Undo.initEdit({
           keyframes,
         });
@@ -1942,6 +1970,14 @@ createTool(
               ? [...keyframe.bezier_right_time]
               : undefined,
         }));
+        const plannedTimes = stretchStates.map(({ time }) =>
+          Timeline.snapTime(pivot + (time - pivot) * factor, animation)
+        );
+        requireValidPlannedKeyframeTimes(
+          plannedTimes,
+          "Batch keyframe scale",
+          true
+        );
 
         Undo.initEdit({
           animations: [animation],
@@ -1949,11 +1985,8 @@ createTool(
 
         try {
           stretchStates.forEach(
-            ({ keyframe, time, bezierLeftTime, bezierRightTime }) => {
-              keyframe.time = Timeline.snapTime(
-                pivot + (time - pivot) * factor,
-                animation
-              );
+            ({ keyframe, bezierLeftTime, bezierRightTime }, index) => {
+              keyframe.time = plannedTimes[index];
 
               if (bezierLeftTime && bezierRightTime) {
                 for (let axisIndex = 0; axisIndex < 3; axisIndex++) {

@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T04:26:28.692Z",
+  "generatedAt": "2026-08-11T04:29:16.074Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1404,7 +1404,7 @@
     {
       "name": "batch_keyframe_operations",
       "title": "Batch Keyframe Operations",
-      "description": "Performs bounded batch keyframe operations and rejects incomplete or effective no-op offset/scale requests before mutation.",
+      "description": "Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
