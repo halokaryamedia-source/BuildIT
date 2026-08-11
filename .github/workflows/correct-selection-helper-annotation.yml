@@ -1,0 +1,81 @@
+name: Correct Selection Helper Annotation
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/correct-selection-helper-annotation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Mark selection-only helper non-destructive
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/element.ts')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('    name: "select_all_of_type",')
+          end = text.index('  {\n    name: "filter_by_material",', start)
+          block = text[start:end]
+          if block.count('destructiveHint: true') != 1:
+              raise SystemExit('Unexpected select_all_of_type annotation')
+          block = block.replace('destructiveHint: true', 'destructiveHint: false', 1)
+          path.write_text(text[:start] + block + text[end:], encoding='utf-8')
+
+          test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
+          addition = '  test("selection-only helper is not advertised as destructive model mutation", async () => {\n    const elements = await source("server/tools/element.ts");\n    const start = elements.indexOf(\'name: "select_all_of_type"\');\n    const end = elements.indexOf(\'name: "filter_by_material"\', start);\n    const block = elements.slice(start, end);\n    expect(block).toContain("destructiveHint: false");\n    expect(block).not.toContain("destructiveHint: true");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected context payload test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = '`capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.'
+          extra = '\n\n`select_all_of_type` now advertises `destructiveHint=false` because it only changes editor selection state and does not author model data. Selection behavior is unchanged; the metadata correction reduces unnecessary destructive-tool friction.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected screenshot continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/correct-selection-helper-annotation.yml
+          git add mcp/server/tools/element.ts mcp/tests/context-payload-cleanup.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: mark selection helper non-destructive'
+          git push origin HEAD:Local
