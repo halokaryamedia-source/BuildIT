@@ -1,0 +1,91 @@
+name: Apply Texture Payload Slimming
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/apply-texture-payload-slimming.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply bounded texture payload changes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/texture.ts')
+          text = source_path.read_text(encoding='utf-8')
+
+          old_desc = '      "Creates a texture with explicit size/content options. An optional TextureGroup target must resolve by UUID or unique exact name before mutation.",'
+          new_desc = '      "Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.",'
+          if text.count(old_desc) != 1:
+              raise SystemExit('Unexpected create_texture description shape')
+          text = text.replace(old_desc, new_desc, 1)
+
+          old_return = '      return imageContent({\n        url: texture.getDataURL(),\n      });'
+          new_return = '      const result = {\n        texture: {\n          uuid: texture.uuid,\n          name: texture.name,\n          id: texture.id,\n          width: texture.width,\n          height: texture.height,\n          group: texture.group || null,\n          pbr_channel: texture.pbr_channel || null,\n          render_mode: texture.render_mode,\n          render_sides: texture.render_sides,\n        },\n      };\n      return {\n        content: [\n          {\n            type: "text" as const,\n            text: `Created texture "${texture.name}" (${texture.uuid}). Use get_texture only when image evidence is needed.`,\n          },\n        ],\n        structuredContent: result,\n      };'
+          if text.count(old_return) != 1:
+              raise SystemExit('Unexpected create_texture image return shape')
+          text = text.replace(old_return, new_return, 1)
+
+          if text.count('return JSON.stringify(result, null, 2);') < 2:
+              raise SystemExit('Expected pretty material result serializers not found')
+          text = text.replace('return JSON.stringify(result, null, 2);', 'return JSON.stringify(result);', 2)
+          source_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
+          addition = '  test("texture creation returns metadata instead of implicit image bytes", async () => {\n    const texture = await source("server/tools/texture.ts");\n    const start = texture.indexOf("createTool(textureToolDocs[0].name");\n    const end = texture.indexOf("createTool(textureToolDocs[1].name", start);\n    const createBlock = texture.slice(start, end);\n    expect(createBlock).not.toContain("texture.getDataURL()");\n    expect(createBlock).toContain("structuredContent: result");\n    expect(createBlock).toContain("uuid: texture.uuid");\n    expect(createBlock).toContain("Use get_texture only when image evidence is needed");\n\n    const materialStart = texture.indexOf("createTool(textureToolDocs[7].name");\n    const materialEnd = texture.indexOf("createTool(textureToolDocs[9].name", materialStart);\n    const materialReads = texture.slice(materialStart, materialEnd);\n    expect(materialReads).not.toContain("JSON.stringify(result, null, 2)");\n    expect(materialReads).toContain("JSON.stringify(result)");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected context payload test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = '`list_outline` now bounds breadth as well as depth: normal reads return at most 500 Cube/Group nodes, callers may explicitly raise the budget up to 5000, and `returned_nodes` / `truncated_at_max_nodes` make truncation explicit. `find_elements_by_criteria` remains the targeted continuation path; no pagination/resource framework was added.'
+          extra = '\n\nTexture mutation/read payload ownership is now clearer: `create_texture` returns compact resulting metadata instead of embedding the created image bytes, while `get_texture` remains the explicit image-evidence path. `list_materials` and `get_material_info` also use compact JSON text without changing their data. Paint/PBR behavior and texture capability are unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected outline continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-texture-payload-slimming.yml
+          git add mcp/server/tools/texture.ts mcp/tests/context-payload-cleanup.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'refactor: keep texture mutation metadata-first'
+          git push origin HEAD:Local
