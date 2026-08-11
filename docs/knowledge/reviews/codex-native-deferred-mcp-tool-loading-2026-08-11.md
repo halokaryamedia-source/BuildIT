@@ -215,7 +215,7 @@ Animation + Paint account for **25,034 / 51,357 (~48.7%)** of the approximate sc
 | `modify_cubes_batch` | 1,385 | 351 |
 | `paint_settings` | 1,659 | 47 |
 
-Only two tool descriptions exceeded 400 characters. This slice shortens `bone_rigging` and `animation_copy_paste` while preserving routing and critical mutation-safety signals; detailed field requirements remain owned by their input schemas and runtime validation.
+The first footprint ranking did not enumerate every description-length outlier, so the earlier inference that only two descriptions exceeded 400 characters was incorrect. A follow-up full-catalog description audit found `inspect_element` at 614 characters and `bone_rigging` at 410 after its first compaction; the next longest descriptions were below 400. `inspect_element` is a high-frequency geometry-lane read, so its description is now compacted while preserving target types, UUID/unique-name identity, correction-state purpose, read-only behavior, and the visual-verdict boundary. This correction changes the measurement conclusion, not the tool payload or capability.
 
 The repeated-description scan found only one exact parameter description repeated at least three times: the selected-texture fallback sentence appears in ten Paint/Texture tools, representing at most about **531 repeated characters** beyond the first copy. Removing that field guidance would save little while making explicit-vs-selected texture routing less clear, so **no change is justified**.
 

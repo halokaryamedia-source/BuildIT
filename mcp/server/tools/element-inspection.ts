@@ -17,7 +17,7 @@ export const elementInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_element",
     description:
-      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object in the active project. Cube output includes from/to, size, center, origin, rotation, parent, and visibility so a local correction can be derived from exact current authored state. Locator output includes parent, position, rotation, ignore_inherited_scale, and visibility. Null Object output includes parent, position, current IK editor references, lock_ik_target_rotation, and visibility. Exact names must be unique; UUID is preferred. This tool does not modify selection/model state or return visual PASS/FAIL.",
+      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object. UUID is preferred and exact names must be unique. Includes the type-specific transform, parent, and visibility state needed for precise correction; it does not modify selection/model state or return visual PASS/FAIL.",
     annotations: {
       title: "Inspect Authored Element",
       readOnlyHint: true,

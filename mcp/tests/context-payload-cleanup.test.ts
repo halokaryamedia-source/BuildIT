@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
+import { elementInspectionToolDocs } from "@/server/tools/element-inspection";
 import {
   filterByMaterialParameters,
   listOutlineParameters,
@@ -155,6 +156,15 @@ describe("pre-local context and payload cleanup", () => {
     expect(listBlock).toContain("include_usages && entry.usages.length < usage_limit_per_instance");
     expect(listBlock).toContain("usages_truncated");
     expect(listBlock).not.toContain("null, 2");
+  });
+
+  test("high-frequency inspect_element routing prose stays compact", () => {
+    const description = elementInspectionToolDocs[0].description;
+    expect(description.length).toBeLessThan(350);
+    expect(description).toContain("UUID is preferred");
+    expect(description).toContain("exact names must be unique");
+    expect(description).toContain("read-only");
+    expect(description).toContain("PASS/FAIL");
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {
