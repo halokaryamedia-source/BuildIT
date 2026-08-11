@@ -49,7 +49,7 @@ jobs:
 
           test_path = Path('mcp/tests/p1-core-ownership.test.ts')
           test = test_path.read_text(encoding='utf-8')
-          anchor = '    expect(texture).toContain("resolveCoreTexture(");\n'
+          anchor = '    expect(texture.match(/resolveCoreTexture\\(reference/g)?.length).toBeGreaterThanOrEqual(7);\n'
           addition = anchor + '    expect(texture).toContain("resolveCoreTextureGroup(");\n    expect(util).not.toContain("findTextureGroupOrThrow");\n'
           if test.count(anchor) != 1:
               raise SystemExit('Unexpected core ownership texture assertion anchor')
