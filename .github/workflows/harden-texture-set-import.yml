@@ -1,0 +1,163 @@
+name: Harden Texture Set Import
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-texture-set-import.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Preflight texture set content and resulting identity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/texture.ts')
+          source = source_path.read_text(encoding='utf-8')
+
+          helper_anchor = 'export function requireMaterialConfigSavePostcondition(\n'
+          helpers = '\n'.join([
+            'export function isMinecraftTextureSetDocument(value: unknown): boolean {',
+            '  if (!value || typeof value !== "object" || Array.isArray(value)) return false;',
+            '  const root = (value as Record<string, unknown>)["minecraft:texture_set"];',
+            '  return Boolean(root && typeof root === "object" && !Array.isArray(root));',
+            '}',
+            '',
+            'export function importedTextureGroupName(filePath: string): string {',
+            '  const fileName = filePath.split(/[\\/\\\\]/).pop() ?? filePath;',
+            '  return fileName.replace(/\\.texture_set\\.json$/, ".png material");',
+            '}',
+            '',
+          ])
+          if 'export function isMinecraftTextureSetDocument' not in source:
+              if source.count(helper_anchor) != 1:
+                  raise SystemExit('Unexpected texture helper insertion point')
+              source = source.replace(helper_anchor, helpers + helper_anchor, 1)
+
+          old_desc = '      "Imports a Minecraft Bedrock texture_set.json file and creates a PBR material with the associated textures.",'
+          new_desc = '      "Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.",'
+          if source.count(old_desc) != 1:
+              raise SystemExit('Unexpected import_texture_set description')
+          source = source.replace(old_desc, new_desc, 1)
+
+          old_block = '\n'.join([
+            '      // Use Blockbench\'s importTextureSet function',
+            '      // @ts-ignore - importTextureSet is globally available',
+            '      importTextureSet({ path, name: path.split(/[\\/\\\\]/).pop() });',
+            '',
+            '      return `Imported texture set from "${path}". Check the textures panel for the new material.`;',
+          ])
+          new_block = '\n'.join([
+            '      const fileName = path.split(/[\\/\\\\]/).pop() ?? path;',
+            '      const expectedGroupName = importedTextureGroupName(path);',
+            '      if (hasExactTextureGroupNameCollision(TextureGroup.all, expectedGroupName)) {',
+            '        throw new Error(',
+            '          `Import would create TextureGroup name "${expectedGroupName}", which already exists. Rename/remove the existing group or import a distinctly named texture_set.json.`',
+            '        );',
+            '      }',
+            '',
+            '      const parseJson = (globalThis as typeof globalThis & {',
+            '        autoParseJSON?: (data: string, feedback?: boolean | { file_path?: string }) => unknown;',
+            '      }).autoParseJSON;',
+            '      if (typeof parseJson !== "function") {',
+            '        throw new Error("Blockbench JSON parser is unavailable. Cannot preflight texture_set.json safely.");',
+            '      }',
+            '      const document = parseJson(',
+            '        fs.readFileSync(path, { encoding: "utf-8" }),',
+            '        false',
+            '      );',
+            '      if (!isMinecraftTextureSetDocument(document)) {',
+            '        throw new Error(',
+            '          `File "${path}" is not a valid Minecraft texture_set document: expected an object-valued "minecraft:texture_set" root.`',
+            '        );',
+            '      }',
+            '',
+            '      const groupUuidsBefore = new Set(',
+            '        TextureGroup.all.map((group: TextureGroup) => group.uuid)',
+            '      );',
+            '      // Native import owns its Undo boundary and image/channel loading behavior.',
+            '      // @ts-ignore - importTextureSet is globally available',
+            '      importTextureSet({ path, name: fileName });',
+            '      const createdGroups = TextureGroup.all.filter(',
+            '        (group: TextureGroup) => !groupUuidsBefore.has(group.uuid)',
+            '      );',
+            '      if (createdGroups.length !== 1) {',
+            '        throw new Error(',
+            '          `Native texture_set import created ${createdGroups.length} new TextureGroups; expected exactly 1.`',
+            '        );',
+            '      }',
+            '      const [createdGroup] = createdGroups;',
+            '',
+            '      return `Imported texture set from "${path}" as material "${createdGroup.name}" (uuid: ${createdGroup.uuid}).`;',
+          ])
+          if source.count(old_block) != 1:
+              raise SystemExit('Unexpected import_texture_set execution block')
+          source_path.write_text(source.replace(old_block, new_block, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/pbr-channel-contract.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          if 'isMinecraftTextureSetDocument' not in test.split('\n', 12)[0:12].__str__():
+              old_import = '  requireMaterialConfigSavePostcondition,\n} from "@/server/tools/texture";'
+              new_import = '  importedTextureGroupName,\n  isMinecraftTextureSetDocument,\n  requireMaterialConfigSavePostcondition,\n} from "@/server/tools/texture";'
+              if old_import not in test:
+                  old_import = 'import { configureMaterialParameters, hasExactTextureGroupNameCollision, requireDistinctPbrChannelAssignments, requireMaterialConfigSavePostcondition } from "@/server/tools/texture";'
+                  new_import = 'import { configureMaterialParameters, hasExactTextureGroupNameCollision, importedTextureGroupName, isMinecraftTextureSetDocument, requireDistinctPbrChannelAssignments, requireMaterialConfigSavePostcondition } from "@/server/tools/texture";'
+              if test.count(old_import) != 1:
+                  raise SystemExit('Unexpected PBR test import for texture_set hardening')
+              test = test.replace(old_import, new_import, 1)
+
+          marker = 'describe("PBR channel identity preflight", () => {'
+          addition = marker + '\n  test("texture_set import preflight rejects non-texture-set documents and derives native group identity", async () => {\n    expect(isMinecraftTextureSetDocument({ "minecraft:texture_set": { color: "skin" } })).toBe(true);\n    expect(isMinecraftTextureSetDocument({ format_version: "1.16.100" })).toBe(false);\n    expect(isMinecraftTextureSetDocument({ "minecraft:texture_set": null })).toBe(false);\n    expect(importedTextureGroupName("/packs/skin.texture_set.json")).toBe("skin.png material");\n    expect(importedTextureGroupName("C:\\\\packs\\\\skin.texture_set.json")).toBe("skin.png material");\n\n    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();\n    const start = source.indexOf("createTool(textureToolDocs[9].name");\n    const end = source.indexOf("createTool(textureToolDocs[10].name", start);\n    const block = source.slice(start, end);\n    expect(block).toContain("isMinecraftTextureSetDocument(document)");\n    expect(block).toContain("hasExactTextureGroupNameCollision(TextureGroup.all, expectedGroupName)");\n    expect(block).toContain("createdGroups.length !== 1");\n    expect(block.indexOf("isMinecraftTextureSetDocument(document)")).toBeLessThan(block.indexOf("importTextureSet({ path, name: fileName })"));\n  });\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected PBR test insertion marker')
+          test_path.write_text(test.replace(marker, addition, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = '`save_material_config` now verifies the native save postcondition before reporting success: Blockbench must mark the material config saved and the target texture_set.json must exist. This prevents the MCP wrapper from claiming success when native save returns early, for example when the target directory is missing; native save ownership itself is unchanged.'
+          extra = '\n\n`import_texture_set` now preflights content with Blockbench-compatible JSON parsing (including comments) and requires an object-valued `minecraft:texture_set` root before native import. It also rejects the exact TextureGroup name native import would collide with and verifies exactly one new TextureGroup appears, then returns that material identity. Native Undo and channel/image loading remain owned by Blockbench.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected material save continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-texture-set-import.yml
+          git add mcp/server/tools/texture.ts mcp/tests/pbr-channel-contract.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: preflight texture set imports'
+          git push origin HEAD:Local
