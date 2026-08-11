@@ -4,22 +4,22 @@ Updated: 2026-08-12
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The first local acceptance pass is complete. This board contains only future evidence-driven work.
+The first local acceptance pass is complete. The fresh Codex efficiency trace is now active in `next-action.md`, so it is intentionally not duplicated here.
 
-## Waiting On Local Evidence
+## Waiting On Efficiency Evidence
 
-These are not source TODOs until the live run produces evidence.
+These become source work only if the active fresh-task trace produces supporting evidence.
 
 ### Native Codex exposure / context
 
-- [ ] In a fresh Codex task, confirm whether the catalog starts at the live 62-tool surface; the completed acceptance task retained a stale 94-tool catalog after restart.
-- [ ] If local trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest client-side exposure remedy before any BlockIT router/profile architecture.
+- [ ] If the fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest client-side exposure remedy before any BlockIT router/profile architecture.
 - [ ] If actual prompt/skill co-loading shows material duplicated context, consolidate only the duplicated owner proven by the trace.
-- [ ] If duplicated text + `structuredContent` is materially costly and client behavior is observable, A/B one high-frequency read tool before generalizing.
+- [ ] If client-visible result telemetry still shows material duplication after exact JSON-mirror compaction, A/B one high-frequency read tool before generalizing.
+- [ ] If discriminated-union advertised schemas cause measurable invalid-call retries, improve branch visibility without weakening full runtime validation.
 
 ### Runtime / visual defects
 
-- [ ] Record any reproducible Blockbench/MCP runtime defect discovered by the acceptance run, classify its source owner, and fix only the demonstrated boundary.
+- [ ] Record any reproducible Blockbench/MCP runtime defect discovered after acceptance, classify its source owner, and fix only the demonstrated boundary.
 - [ ] Record any false visual `PASS`, speculative correction loop, or downstream sequencing failure that survives the current workflow rules.
 - [ ] Record save/reopen/export or Locator/Null Object persistence failures only after live reproduction.
 
@@ -70,7 +70,7 @@ Do not pre-emptively:
 
 ```text
 active work      → next-action.md
-active local procedure → local-acceptance-runbook.md
+completed local procedure → local-acceptance-runbook.md
 future work      → this board
 durable reason   → decision log / decision owner
 current proof state → foundation/validation-report.md
