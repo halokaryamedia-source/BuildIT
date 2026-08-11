@@ -258,6 +258,8 @@ Required explicit reference schemas now reject the empty string for element, tex
 
 Filesystem path ownership is now consistent across model export and texture-set import: both require an absolute POSIX, Windows-drive, or UNC path before filesystem access. The shared check is a small pure helper reused by the two existing callers; no filesystem abstraction/framework was introduced.
 
+`export_model` filesystem writes are now artifact-truthful as well: `.bbmodel` compilation temporarily uses the requested target as `Project.save_path` so native relative asset paths are computed against the destination and then restores editor state; existing Bedrock geometry files are refused instead of bypassing Blockbench's native multi-model overwrite/merge path; target extensions must match the selected codec; empty compiled output is rejected; and a synchronous write is reported only after the target is a regular file with the exact compiled byte size. No merge framework, hash/readback layer, or save-state abstraction was added.
+
 `create_texture` now follows the same deterministic filesystem rule for image-file inputs: inline `data:image/...` remains valid, while file inputs must resolve to an absolute POSIX/Windows/UNC path (directly or through `file://`). Relative paths and remote HTTP URLs are rejected before Blockbench file access.
 
 `create_texture` pixel dimensions now require integer values within the existing 16..4096 range. Fractional pixel sizes are rejected at the MCP boundary; `create_project` is unchanged because it does not expose texture-dimension inputs, and no power-of-two restriction was added.

@@ -60,10 +60,10 @@ export const exportToolDocs: ToolSpec[] = [
   {
     name: "export_model",
     description:
-      "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`; optional filesystem write requires Blockbench permission. Other model codecs are rejected.",
+      "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`. Filesystem writes require Blockbench permission, verify the written artifact, and refuse existing Bedrock geometry files rather than bypass native multi-model overwrite semantics.",
     annotations: {
       title: "Export Bedrock Model",
-      destructiveHint: false,
+      destructiveHint: true,
       openWorldHint: true,
     },
     parameters: exportModelParameters,
@@ -79,6 +79,15 @@ type BlockITCodec = {
   getExportOptions?: () => Record<string, unknown>;
   fileName?: () => string;
   support_partial_export?: boolean;
+};
+
+type ExportFilesystem = {
+  existsSync: (path: string) => boolean;
+  writeFileSync: (path: string, data: string | Buffer) => void;
+  statSync: (path: string) => {
+    isFile: () => boolean;
+    size: number;
+  };
 };
 
 function requireBedrockEntityProject(): void {
@@ -168,12 +177,52 @@ export function registerExportTools() {
           );
         }
 
+        let exportFs: ExportFilesystem | null = null;
+        if (path) {
+          const expectedExtension = (
+            codec.extension ?? (codec_id === "project" ? "bbmodel" : "json")
+          ).toLowerCase();
+          if (!path.toLowerCase().endsWith(`.${expectedExtension}`)) {
+            throw new Error(
+              `Export path for ${codec_id} must end in .${expectedExtension}; received ${path}.`
+            );
+          }
+
+          // @ts-ignore - requireNativeModule is a Blockbench desktop global.
+          exportFs = requireNativeModule("fs", {
+            message: `BlockIT export_model requested write access to save ${codec_id} output to ${path}`,
+          }) as ExportFilesystem | null;
+          if (!exportFs) {
+            throw new Error(
+              "File system access was denied. Omit `path` to receive the compiled content in the MCP response."
+            );
+          }
+          if (codec_id === "bedrock" && exportFs.existsSync(path)) {
+            throw new Error(
+              `Refusing to overwrite existing Bedrock geometry file ${path}. Native Blockbench uses codec overwrite/merge semantics for existing multi-model geometry files; export_model will not bypass that behavior. Choose a new path or use native Blockbench export/save for the existing file.`
+            );
+          }
+        }
+
         const effectiveOptions =
           options ??
           (typeof codec.getExportOptions === "function"
             ? codec.getExportOptions()
             : undefined);
-        const rawResult = codec.compile(effectiveOptions);
+
+        let rawResult: unknown;
+        if (codec_id === "project" && path) {
+          const previousSavePath = Project!.save_path;
+          try {
+            // Native bbmodel export compiles relative asset paths against the target file.
+            Project!.save_path = path;
+            rawResult = codec.compile(effectiveOptions);
+          } finally {
+            Project!.save_path = previousSavePath;
+          }
+        } else {
+          rawResult = codec.compile(effectiveOptions);
+        }
 
         const isArrayBuffer = rawResult instanceof ArrayBuffer;
         const isBinaryView =
@@ -193,19 +242,21 @@ export function registerExportTools() {
           ? binaryBuffer.byteLength
           : Buffer.byteLength(text ?? "", "utf8");
         const encoding: "utf-8" | "base64" = binaryBuffer ? "base64" : "utf-8";
+        if (byteLength === 0) {
+          throw new Error(
+            `BlockIT codec "${codec_id}" compiled an empty artifact; no file was written.`
+          );
+        }
 
         let wrote_to_path: string | null = null;
-        if (path) {
-          // @ts-ignore - requireNativeModule is a Blockbench desktop global.
-          const fs = requireNativeModule("fs", {
-            message: `BlockIT export_model requested write access to save ${codec_id} output to ${path}`,
-          });
-          if (!fs) {
+        if (path && exportFs) {
+          exportFs.writeFileSync(path, binaryBuffer ?? (text ?? ""));
+          const writtenStat = exportFs.statSync(path);
+          if (!writtenStat.isFile() || writtenStat.size !== byteLength) {
             throw new Error(
-              "File system access was denied. Omit `path` to receive the compiled content in the MCP response."
+              `Export write verification failed for ${path}: expected a regular file of ${byteLength} bytes, got ${writtenStat.isFile() ? `${writtenStat.size} bytes` : "a non-file target"}. The path may exist, but export_model will not report it as a verified artifact.`
             );
           }
-          fs.writeFileSync(path, binaryBuffer ?? (text ?? ""));
           wrote_to_path = path;
         }
 

@@ -1169,11 +1169,11 @@ bun run build
         <h3 class="card-name">export_model</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-openworld">open-world</span>
+          <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
         </div>
       </div>
       <p class="card-title">Export Bedrock Model</p>
-      <p class="card-desc">Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`; optional filesystem write requires Blockbench permission. Other model codecs are rejected.</p>
+      <p class="card-desc">Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`. Filesystem writes require Blockbench permission, verify the written artifact, and refuse existing Bedrock geometry files rather than bypass native multi-model overwrite semantics.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3005,7 +3005,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T10:13:20.272Z from Zod schemas
+        Generated 2026-08-11T10:33:40.627Z from Zod schemas
       </footer>
     </main>
   </div>

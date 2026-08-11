@@ -55,6 +55,27 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(exportModelParameters.parse({ path: "/tmp/model.json", max_content_length: 500 }).max_content_length).toBe(500);
   });
 
+  test("filesystem export preserves native target semantics and verifies writes", async () => {
+    const exportSource = await source("server/tools/export.ts");
+    expect(exportSource).toContain('destructiveHint: true');
+    expect(exportSource).toContain('codec_id === "bedrock" && exportFs.existsSync(path)');
+    expect(exportSource).toContain("const previousSavePath = Project!.save_path");
+    expect(exportSource).toContain("Project!.save_path = path;");
+    expect(exportSource).toContain("Project!.save_path = previousSavePath;");
+    expect(exportSource).toContain("byteLength === 0");
+    expect(exportSource).toContain("exportFs.statSync(path)");
+    expect(exportSource).toContain("!writtenStat.isFile() || writtenStat.size !== byteLength");
+    expect(exportSource).toContain("must end in .${expectedExtension}");
+
+    const existingGuard = exportSource.indexOf('codec_id === "bedrock" && exportFs.existsSync(path)');
+    const compileCall = exportSource.indexOf("codec.compile(effectiveOptions)");
+    const writeCall = exportSource.indexOf("exportFs.writeFileSync");
+    const statCall = exportSource.indexOf("exportFs.statSync(path)");
+    expect(existingGuard).toBeGreaterThan(-1);
+    expect(existingGuard).toBeLessThan(compileCall);
+    expect(writeCall).toBeGreaterThan(-1);
+    expect(writeCall).toBeLessThan(statCall);
+  });
   test("filesystem export path must be platform-absolute", () => {
     for (const path of [
       "/tmp/model.json",
