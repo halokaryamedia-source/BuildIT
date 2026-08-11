@@ -53,7 +53,7 @@ Front PASS is not full 3D PASS when side/depth evidence is missing or fails. Bou
 For one bounded mismatch:
 
 1. Reuse fresh exact authored state already returned for that target when sufficient; otherwise call `inspect_element` once;
-2. diagnose one cause: `TRANSLATE`, `RESIZE`, `ROTATE`, hierarchy `REATTACH`, `SPLIT`, `MERGE/REMOVE`, or genuinely missing `ADD MASS`;
+2. diagnose one cause: `TRANSLATE`, `RESIZE`, `ROTATE`, hierarchy REATTACH, `SPLIT`, `MERGE/REMOVE`, or genuinely missing `ADD MASS`;
 3. state the target UUID(s), intended change, invariant, and expected structural effect;
 4. use `modify_cube` or one coherent `modify_cubes_batch`;
 5. verify returned `geometry_effect`;
