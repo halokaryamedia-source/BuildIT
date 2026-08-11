@@ -143,6 +143,46 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 }
 
 /**
+ * Avoid sending the same machine-readable payload twice when a tool mirrors
+ * structuredContent as a single JSON text content item. Concise human summaries,
+ * images, and intentionally different text remain untouched.
+ */
+function compactMirroredStructuredContent(
+  toolName: string,
+  result: Exclude<ToolResult, string>
+): Exclude<ToolResult, string> {
+  if (result.structuredContent === undefined || result.content.length !== 1) {
+    return result;
+  }
+
+  const [contentItem] = result.content;
+  if (contentItem.type !== "text") {
+    return result;
+  }
+
+  let structuredJson: string | undefined;
+  try {
+    structuredJson = JSON.stringify(result.structuredContent);
+  } catch {
+    return result;
+  }
+
+  if (structuredJson === undefined || contentItem.text !== structuredJson) {
+    return result;
+  }
+
+  return {
+    ...result,
+    content: [
+      {
+        type: "text",
+        text: `${toolName} returned structured data.`,
+      },
+    ],
+  };
+}
+
+/**
  * Stores one MCP tool definition for request-owned server registration.
  * @param name - The exact MCP tool name.
  * @param tool - The tool configuration.
@@ -255,7 +295,7 @@ export function registerToolsOnServer(server: unknown) {
         }
 
         if (result && typeof result === "object" && "content" in result) {
-          return result;
+          return compactMirroredStructuredContent(name, result);
         }
 
         return {
