@@ -1,0 +1,90 @@
+name: Centralize TextureGroup Identity
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/centralize-texture-group-identity.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Verify legacy TextureGroup helper has no callers
+        run: |
+          matches="$(grep -R -n 'findTextureGroupOrThrow' mcp --exclude=util.ts --exclude-dir=node_modules || true)"
+          test -z "$matches" || { echo "$matches"; exit 1; }
+      - name: Centralize TextureGroup identity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          texture_path = Path('mcp/server/tools/texture.ts')
+          texture = texture_path.read_text(encoding='utf-8')
+          old_import = 'import { resolveCoreCubeOrGroup, resolveCoreTexture } from "@/lib/coreIdentity";'
+          new_import = 'import {\n  resolveCoreCubeOrGroup,\n  resolveCoreTexture,\n  resolveCoreTextureGroup,\n} from "@/lib/coreIdentity";'
+          if texture.count(old_import) != 1:
+              raise SystemExit('Unexpected texture coreIdentity import')
+          texture = texture.replace(old_import, new_import, 1)
+          start = texture.index('function resolveTextureToolMaterial(reference: string): TextureGroup {')
+          end = texture.index('\n}\n\ntype PbrChannelAssignment', start) + 3
+          replacement = 'function resolveTextureToolMaterial(reference: string): TextureGroup {\n  return resolveCoreTextureGroup(\n    reference,\n    "Use list_materials to confirm the intended material/TextureGroup UUID before mutation."\n  );\n}\n'
+          texture_path.write_text(texture[:start] + replacement + texture[end:], encoding='utf-8')
+
+          util_path = Path('mcp/lib/util.ts')
+          util = util_path.read_text(encoding='utf-8')
+          start = util.index('/**\n * Helper to find a TextureGroup by name or UUID\n */\nexport function findTextureGroupOrThrow')
+          end = util.index('/**\n * Helper to get texture info for a PBR channel\n */', start)
+          util_path.write_text(util[:start] + util[end:], encoding='utf-8')
+
+          test_path = Path('mcp/tests/p1-core-ownership.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          anchor = '    expect(texture).toContain("resolveCoreTexture(");\n'
+          addition = anchor + '    expect(texture).toContain("resolveCoreTextureGroup(");\n    expect(util).not.toContain("findTextureGroupOrThrow");\n'
+          if test.count(anchor) != 1:
+              raise SystemExit('Unexpected core ownership texture assertion anchor')
+          test_path.write_text(test.replace(anchor, addition, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A repository-wide caller audit then proved the old `findGroupOrThrow` / `findElementOrThrow` / `findTextureOrThrow` exports had no active MCP callers, so those ambiguous first-match helpers were removed instead of preserved as dead alternatives. The stale maintainer prompt now points new work to `coreIdentity` and no longer recommends quarantined risky evaluation.'
+          extra = '\n\nTextureGroup/material identity is now centralized on the same core resolver: the texture/PBR lane delegates to `resolveCoreTextureGroup`, and a caller audit proved the old first-match `findTextureGroupOrThrow` utility was dead before removal. UUID-first / unique-exact-name behavior is unchanged; duplicate identity implementations were removed rather than expanded.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected identity helper continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/centralize-texture-group-identity.yml
+          git add mcp/server/tools/texture.ts mcp/lib/util.ts mcp/tests/p1-core-ownership.test.ts docs/knowledge/next-action.md
+          git commit -m 'refactor: centralize TextureGroup identity'
+          git push origin HEAD:Local
