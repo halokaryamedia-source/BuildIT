@@ -471,293 +471,291 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
   );
 }
 
-
-
 export function registerCubesTools() {
-createTool(cubeToolDocs[0].name, {
-  ...cubeToolDocs[0],
-  async execute({ elements, faces, group }) {
-    const outlinerGroup = resolvePlacementGroup(group);
-    const customFaceUvs = Array.isArray(faces);
+  createTool(cubeToolDocs[0].name, {
+    ...cubeToolDocs[0],
+    async execute({ elements, faces, group }) {
+      const outlinerGroup = resolvePlacementGroup(group);
+      const customFaceUvs = Array.isArray(faces);
 
-    Undo.initEdit({
-      elements: [],
-      outliner: true,
-      collections: [],
-    });
+      Undo.initEdit({
+        elements: [],
+        outliner: true,
+        collections: [],
+      });
 
-    let cubes: Cube[];
-    try {
-      cubes = elements.map((element: PlaceCubeElement) => {
-        const cube = new Cube({
-          autouv: customFaceUvs ? 0 : 1,
-          name: element.name,
-          from: element.from as [number, number, number],
-          to: element.to as [number, number, number],
-          origin: (element.origin ?? [0, 0, 0]) as [number, number, number],
-          rotation: element.rotation as [number, number, number],
-          ...(customFaceUvs ? { box_uv: false } : {}),
-        }).init();
+      let cubes: Cube[];
+      try {
+        cubes = elements.map((element: PlaceCubeElement) => {
+          const cube = new Cube({
+            autouv: customFaceUvs ? 0 : 1,
+            name: element.name,
+            from: element.from as [number, number, number],
+            to: element.to as [number, number, number],
+            origin: (element.origin ?? [0, 0, 0]) as [number, number, number],
+            rotation: element.rotation as [number, number, number],
+            ...(customFaceUvs ? { box_uv: false } : {}),
+          }).init();
 
-        cube.addTo(outlinerGroup);
+          cube.addTo(outlinerGroup);
 
-        if (customFaceUvs) {
-          faces.forEach(({ face, uv }) => {
-            cube.faces[face].extend({
-              uv: uv as [number, number, number, number],
+          if (customFaceUvs) {
+            faces.forEach(({ face, uv }) => {
+              cube.faces[face].extend({
+                uv: uv as [number, number, number, number],
+              });
             });
-          });
-        } else {
-          cube.mapAutoUV();
-        }
+          } else {
+            cube.mapAutoUV();
+          }
 
-        return cube;
-      });
-
-      Undo.finishEdit("Agent placed cubes", { elements: cubes });
-    } catch (error) {
-      Undo.cancelEdit(true);
-      Canvas.updateAll();
-      throw error;
-    }
-
-    Canvas.updateAll();
-    const result = {
-      execution: "applied" as const,
-      visual_verdict: "not_evaluated" as const,
-      added: cubes.length,
-      uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,
-      cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
-    };
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}. Execution succeeded; reference fidelity was not evaluated.`,
-        },
-      ],
-      structuredContent: result,
-    };
-  },
-}, cubeToolDocs[0].status);
-
-createTool(cubeToolDocs[1].name, {
-  ...cubeToolDocs[1],
-  async execute({
-    id,
-    name,
-    origin,
-    from,
-    to,
-    rotation,
-    uv_offset,
-    autouv,
-    mirror_uv,
-    inflate,
-    visibility,
-  }) {
-    const cubes = [resolveUniqueCube(id)];
-    const before = finalCubeState(cubes[0]);
-
-    cubes.forEach((cube) =>
-      requireIntentionalRotationActivation(cube, rotation, origin)
-    );
-    requireFiniteCubeSpan(
-      from ?? cubes[0].from,
-      to ?? cubes[0].to,
-      `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
-    );
-    if (!modifyCubeRequestWouldChange(cubes[0], {
-      id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, visibility,
-    })) {
-      throw new Error(
-        `modify_cube request for Cube ${cubes[0].name} (${cubes[0].uuid}) has no authored effect; every supplied value already matches current state.`
-      );
-    }
-
-    const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
-    if (pivotOnly) {
-      cubes.forEach(requirePivotTransferMesh);
-    }
-
-    Undo.initEdit({
-      elements: cubes,
-      outliner: true,
-      collections: [],
-    });
-
-    try {
-      cubes.forEach((cube) => {
-        if (pivotOnly) {
-          cube.transferOrigin(origin as [number, number, number]);
-        }
-
-        cube.extend({
-          ...(name !== undefined ? { name } : {}),
-          ...(!pivotOnly && origin !== undefined
-            ? { origin: origin as [number, number, number] }
-            : {}),
-          ...(from !== undefined ? { from: from as [number, number, number] } : {}),
-          ...(to !== undefined ? { to: to as [number, number, number] } : {}),
-          ...(rotation !== undefined
-            ? { rotation: rotation as [number, number, number] }
-            : {}),
-          ...(uv_offset !== undefined
-            ? { uv_offset: uv_offset as [number, number] }
-            : {}),
-          ...(autouv !== undefined
-            ? { autouv: Number(autouv) as 0 | 1 | 2 }
-            : {}),
-          ...(mirror_uv !== undefined ? { mirror_uv } : {}),
-          ...(inflate !== undefined ? { inflate } : {}),
-          ...(visibility !== undefined ? { visibility } : {}),
+          return cube;
         });
-      });
 
-      Undo.finishEdit("Agent modified cubes");
-    } catch (error) {
-      Undo.cancelEdit(true);
-      Canvas.updateAll();
-      throw error;
-    }
-
-    Canvas.updateAll();
-    const after = finalCubeState(cubes[0]);
-    const geometryEffect = cubeGeometryEffect(before, after);
-    const result = {
-      execution: "applied" as const,
-      visual_verdict: "not_evaluated" as const,
-      modified: cubes.length,
-      before,
-      after,
-      geometry_effect: geometryEffect,
-    };
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text:
-            geometryEffect.changed_fields.length === 0
-              ? `Applied request to Cube ${cubes[0].name} (${cubes[0].uuid}), but no geometry/visibility field changed. This is not evidence of correction; reference fidelity was not evaluated.`
-              : `Applied authored update to Cube ${cubes[0].name} (${cubes[0].uuid}). Structural effect recorded; reference fidelity was not evaluated.`,
-        },
-      ],
-      structuredContent: result,
-    };
-  },
-}, cubeToolDocs[1].status);
-
-createTool(cubeToolDocs[2].name, {
-  ...cubeToolDocs[2],
-  async execute({ updates }) {
-    if (!Project) {
-      throw new Error(
-        "No project is open. Open or create the intended Bedrock project before modifying Cubes."
-      );
-    }
-
-    const targets: Array<{
-      cube: Cube;
-      update: BatchUpdate;
-      pivotOnly: boolean;
-      before: CubeAuthoredState;
-    }> = updates.map((update: BatchUpdate) => {
-      const cube = (Cube.all ?? []).find(
-        (candidate: Cube) => candidate.uuid === update.id
-      );
-      if (!cube) {
-        throw new Error(
-          `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
-        );
+        Undo.finishEdit("Agent placed cubes", { elements: cubes });
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      requireIntentionalRotationActivation(
-        cube,
-        update.rotation,
-        update.origin
+      Canvas.updateAll();
+      const result = {
+        execution: "applied" as const,
+        visual_verdict: "not_evaluated" as const,
+        added: cubes.length,
+        uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,
+        cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
+      };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}. Execution succeeded; reference fidelity was not evaluated.`,
+          },
+        ],
+        structuredContent: result,
+      };
+    },
+  }, cubeToolDocs[0].status);
+
+  createTool(cubeToolDocs[1].name, {
+    ...cubeToolDocs[1],
+    async execute({
+      id,
+      name,
+      origin,
+      from,
+      to,
+      rotation,
+      uv_offset,
+      autouv,
+      mirror_uv,
+      inflate,
+      visibility,
+    }) {
+      const cubes = [resolveUniqueCube(id)];
+      const before = finalCubeState(cubes[0]);
+
+      cubes.forEach((cube) =>
+        requireIntentionalRotationActivation(cube, rotation, origin)
       );
       requireFiniteCubeSpan(
-        update.from ?? cube.from,
-        update.to ?? cube.to,
-        `Cube ${cube.name} (${cube.uuid}) batch update`
+        from ?? cubes[0].from,
+        to ?? cubes[0].to,
+        `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
       );
-      if (!modifyCubeRequestWouldChange(cube, update)) {
+      if (!modifyCubeRequestWouldChange(cubes[0], {
+        id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, visibility,
+      })) {
         throw new Error(
-          `Batch update for Cube ${cube.name} (${cube.uuid}) has no authored effect; every supplied value already matches current state.`
+          `modify_cube request for Cube ${cubes[0].name} (${cubes[0].uuid}) has no authored effect; every supplied value already matches current state.`
         );
       }
 
-      const pivotOnly = isPivotOnlyCorrection(update);
+      const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
       if (pivotOnly) {
-        requirePivotTransferMesh(cube);
+        cubes.forEach(requirePivotTransferMesh);
       }
 
-      return { cube, update, pivotOnly, before: finalCubeState(cube) };
-    });
+      Undo.initEdit({
+        elements: cubes,
+        outliner: true,
+        collections: [],
+      });
 
-    Undo.initEdit({
-      elements: targets.map(({ cube }) => cube),
-      outliner: true,
-      collections: [],
-    });
+      try {
+        cubes.forEach((cube) => {
+          if (pivotOnly) {
+            cube.transferOrigin(origin as [number, number, number]);
+          }
 
-    try {
-      for (const { cube, update, pivotOnly } of targets) {
-        if (pivotOnly) {
-          cube.transferOrigin(update.origin as [number, number, number]);
-        }
-
-        cube.extend({
-          ...(!pivotOnly && update.origin !== undefined
-            ? { origin: update.origin }
-            : {}),
-          ...(update.from !== undefined ? { from: update.from } : {}),
-          ...(update.to !== undefined ? { to: update.to } : {}),
-          ...(update.rotation !== undefined ? { rotation: update.rotation } : {}),
-          ...(update.visibility !== undefined
-            ? { visibility: update.visibility }
-            : {}),
+          cube.extend({
+            ...(name !== undefined ? { name } : {}),
+            ...(!pivotOnly && origin !== undefined
+              ? { origin: origin as [number, number, number] }
+              : {}),
+            ...(from !== undefined ? { from: from as [number, number, number] } : {}),
+            ...(to !== undefined ? { to: to as [number, number, number] } : {}),
+            ...(rotation !== undefined
+              ? { rotation: rotation as [number, number, number] }
+              : {}),
+            ...(uv_offset !== undefined
+              ? { uv_offset: uv_offset as [number, number] }
+              : {}),
+            ...(autouv !== undefined
+              ? { autouv: Number(autouv) as 0 | 1 | 2 }
+              : {}),
+            ...(mirror_uv !== undefined ? { mirror_uv } : {}),
+            ...(inflate !== undefined ? { inflate } : {}),
+            ...(visibility !== undefined ? { visibility } : {}),
+          });
         });
+
+        Undo.finishEdit("Agent modified cubes");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
       }
 
-      Undo.finishEdit("Agent modified multiple cubes");
-    } catch (error) {
-      Undo.cancelEdit(true);
       Canvas.updateAll();
-      throw error;
-    }
-
-    Canvas.updateAll();
-    const effects = targets.map(({ cube, before }) => {
-      const after = finalCubeState(cube);
-      return {
-        uuid: cube.uuid,
-        name: cube.name,
+      const after = finalCubeState(cubes[0]);
+      const geometryEffect = cubeGeometryEffect(before, after);
+      const result = {
+        execution: "applied" as const,
+        visual_verdict: "not_evaluated" as const,
+        modified: cubes.length,
         before,
         after,
-        geometry_effect: cubeGeometryEffect(before, after),
+        geometry_effect: geometryEffect,
       };
-    });
-    const effectiveGeometryTargets = effects.filter(
-      ({ geometry_effect }) => geometry_effect.changed_fields.length > 0
-    ).length;
-    const result = {
-      execution: "applied" as const,
-      visual_verdict: "not_evaluated" as const,
-      modified: targets.length,
-      effective_geometry_targets: effectiveGeometryTargets,
-      effects,
-    };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text:
+              geometryEffect.changed_fields.length === 0
+                ? `Applied request to Cube ${cubes[0].name} (${cubes[0].uuid}), but no geometry/visibility field changed. This is not evidence of correction; reference fidelity was not evaluated.`
+                : `Applied authored update to Cube ${cubes[0].name} (${cubes[0].uuid}). Structural effect recorded; reference fidelity was not evaluated.`,
+          },
+        ],
+        structuredContent: result,
+      };
+    },
+  }, cubeToolDocs[1].status);
 
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: `Applied authored updates to ${targets.length} Cubes in one Undo unit; ${effectiveGeometryTargets} target(s) changed geometry/visibility. Structural effects recorded; reference fidelity was not evaluated.`,
-        },
-      ],
-      structuredContent: result,
-    };
-  },
-}, cubeToolDocs[2].status);
+  createTool(cubeToolDocs[2].name, {
+    ...cubeToolDocs[2],
+    async execute({ updates }) {
+      if (!Project) {
+        throw new Error(
+          "No project is open. Open or create the intended Bedrock project before modifying Cubes."
+        );
+      }
+
+      const targets: Array<{
+        cube: Cube;
+        update: BatchUpdate;
+        pivotOnly: boolean;
+        before: CubeAuthoredState;
+      }> = updates.map((update: BatchUpdate) => {
+        const cube = (Cube.all ?? []).find(
+          (candidate: Cube) => candidate.uuid === update.id
+        );
+        if (!cube) {
+          throw new Error(
+            `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
+          );
+        }
+
+        requireIntentionalRotationActivation(
+          cube,
+          update.rotation,
+          update.origin
+        );
+        requireFiniteCubeSpan(
+          update.from ?? cube.from,
+          update.to ?? cube.to,
+          `Cube ${cube.name} (${cube.uuid}) batch update`
+        );
+        if (!modifyCubeRequestWouldChange(cube, update)) {
+          throw new Error(
+            `Batch update for Cube ${cube.name} (${cube.uuid}) has no authored effect; every supplied value already matches current state.`
+          );
+        }
+
+        const pivotOnly = isPivotOnlyCorrection(update);
+        if (pivotOnly) {
+          requirePivotTransferMesh(cube);
+        }
+
+        return { cube, update, pivotOnly, before: finalCubeState(cube) };
+      });
+
+      Undo.initEdit({
+        elements: targets.map(({ cube }) => cube),
+        outliner: true,
+        collections: [],
+      });
+
+      try {
+        for (const { cube, update, pivotOnly } of targets) {
+          if (pivotOnly) {
+            cube.transferOrigin(update.origin as [number, number, number]);
+          }
+
+          cube.extend({
+            ...(!pivotOnly && update.origin !== undefined
+              ? { origin: update.origin }
+              : {}),
+            ...(update.from !== undefined ? { from: update.from } : {}),
+            ...(update.to !== undefined ? { to: update.to } : {}),
+            ...(update.rotation !== undefined ? { rotation: update.rotation } : {}),
+            ...(update.visibility !== undefined
+              ? { visibility: update.visibility }
+              : {}),
+          });
+        }
+
+        Undo.finishEdit("Agent modified multiple cubes");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
+      Canvas.updateAll();
+      const effects = targets.map(({ cube, before }) => {
+        const after = finalCubeState(cube);
+        return {
+          uuid: cube.uuid,
+          name: cube.name,
+          before,
+          after,
+          geometry_effect: cubeGeometryEffect(before, after),
+        };
+      });
+      const effectiveGeometryTargets = effects.filter(
+        ({ geometry_effect }) => geometry_effect.changed_fields.length > 0
+      ).length;
+      const result = {
+        execution: "applied" as const,
+        visual_verdict: "not_evaluated" as const,
+        modified: targets.length,
+        effective_geometry_targets: effectiveGeometryTargets,
+        effects,
+      };
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Applied authored updates to ${targets.length} Cubes in one Undo unit; ${effectiveGeometryTargets} target(s) changed geometry/visibility. Structural effects recorded; reference fidelity was not evaluated.`,
+          },
+        ],
+        structuredContent: result,
+      };
+    },
+  }, cubeToolDocs[2].status);
 }
