@@ -1,0 +1,204 @@
+name: Apply Codex Footprint Optimization
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/apply-codex-footprint-optimization.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply bounded description and audit continuity changes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          animation_path = Path('mcp/server/tools/animation.ts')
+          animation = animation_path.read_text(encoding='utf-8')
+
+          old_bone = '      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; delete snapshots descendant Groups/elements and every affected animation before recursive removal; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation.",'
+          new_bone = '      "Creates/edits Bedrock Group bones with explicit preflighted targets. Create/parent reject hierarchy cycles; create/rename/mirror enforce case-insensitive unique bone names; delete snapshots the subtree and affected animations. `set_pivot` needs origin, `mirror` needs an axis, and `set_ik` must author an IK change while target-only edits preserve enabled state. Missing/ambiguous targets fail before mutation.",'
+          old_copy = '      "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe; paste rejects an empty clipboard and preflights its own snapped times against the native 0..10000 range plus same-channel internal collapse before Undo; mirror_paste requires an explicit mirror axis. Existing-target overwrite semantics remain native paste behavior.",'
+          new_copy = '      "Copies/pastes animation data with action-specific source/target preflight. Copy requires matching keyframes; paste rejects an empty clipboard and invalid or internally colliding snapped times; `mirror_paste` requires an explicit axis. Existing-target overwrite keeps native paste behavior.",'
+
+          if animation.count(old_bone) != 1:
+              raise SystemExit('Unexpected bone_rigging description shape')
+          if animation.count(old_copy) != 1:
+              raise SystemExit('Unexpected animation_copy_paste description shape')
+          animation = animation.replace(old_bone, new_bone, 1).replace(old_copy, new_copy, 1)
+          animation_path.write_text(animation, encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          marker = '## Local Decision\n'
+          if review.count(marker) != 1:
+              raise SystemExit('Unexpected deferred-loading review structure')
+          section = '''## Default Tool Footprint Audit — 2026-08-11
+
+A bounded GitHub CI audit ranked the **default 65 enabled tools** by compact Zod-derived schema and description footprint. This ranking is diagnostic, not a replacement for the already measured live `tools/list` baseline: the CI serializer is close enough to locate hotspots but is not byte-identical to the MCP SDK wire representation.
+
+Known actual stateless `tools/list` baseline remains:
+
+```text
+65 enabled tools
+72,817 response characters
+48,119 input-schema characters
+11,786 tool-description characters
+```
+
+The ranking audit produced this compact approximation:
+
+```text
+65 tools
+51,357 schema characters
+13,146 description characters
+65,583 combined name/schema/description characters
+```
+
+### Category concentration
+
+| Category | Tools | Approx schema chars | Approx description chars |
+| --- | ---: | ---: | ---: |
+| Animation | 8 | 13,039 | 2,118 |
+| Paint Tools | 12 | 11,995 | 601 |
+| Elements | 13 | 7,443 | 3,464 |
+| Textures | 13 | 7,181 | 2,911 |
+| Cubes | 3 | 5,444 | 893 |
+| Material Instances | 5 | 2,387 | 654 |
+| Camera & Screenshots | 2 | 1,300 | 571 |
+| History | 4 | 996 | 854 |
+| Export | 2 | 947 | 563 |
+| Project | 3 | 625 | 517 |
+
+Animation + Paint account for **25,034 / 51,357 (~48.7%)** of the approximate schema footprint. Those are legitimate downstream Bedrock authoring capabilities, so their size is not evidence that they should be removed from the retained product surface.
+
+### Largest individual schema/description hotspots
+
+| Tool | Approx schema chars | Description chars before cleanup |
+| --- | ---: | ---: |
+| `create_animation` | 2,621 | 107 |
+| `place_cube` | 2,279 | 242 |
+| `bone_rigging` | 1,613 | 705 |
+| `modify_cube` | 1,780 | 300 |
+| `manage_keyframes` | 1,836 | 221 |
+| `batch_keyframe_operations` | 1,782 | 226 |
+| `animation_copy_paste` | 1,575 | 418 |
+| `animation_graph_editor` | 1,818 | 73 |
+| `modify_cubes_batch` | 1,385 | 351 |
+| `paint_settings` | 1,659 | 47 |
+
+Only two tool descriptions exceeded 400 characters. This slice shortens `bone_rigging` and `animation_copy_paste` while preserving routing and critical mutation-safety signals; detailed field requirements remain owned by their input schemas and runtime validation.
+
+The repeated-description scan found only one exact parameter description repeated at least three times: the selected-texture fallback sentence appears in ten Paint/Texture tools, representing at most about **531 repeated characters** beyond the first copy. Removing that field guidance would save little while making explicit-vs-selected texture routing less clear, so **no change is justified**.
+
+### Current official client controls
+
+The current official Codex configuration reference documents client-side MCP allow/deny controls:
+
+```text
+mcp_servers.<id>.enabled_tools
+mcp_servers.<id>.disabled_tools
+tool_output_token_limit
+```
+
+Official OpenAI Tool Search documentation also documents deferred MCP/tool loading and recommends clear high-level searchable surfaces; namespace guidance targets fewer than ten functions where namespaces are used. These are client/API mechanisms, not permission to add another BlockIT runtime profile or router without local evidence.
+
+References:
+
+```text
+https://developers.openai.com/codex/config-reference
+https://developers.openai.com/api/docs/guides/tools-tool-search
+```
+
+### Local A/B exposure diagnostic
+
+When local Codex proof becomes available, compare the normal full BlockIT surface against a **temporary client-side geometry allowlist** using Codex `enabled_tools`; do not commit the allowlist as the BlockIT default.
+
+Bounded geometry diagnostic lane:
+
+```text
+get_project_info
+create_project
+list_outline
+find_elements_by_criteria
+place_cube
+add_group
+capture_model_views
+inspect_model_bounds
+inspect_element
+modify_cube
+modify_cubes_batch
+remove_element
+undo
+save_checkpoint
+export_model
+```
+
+Use the same representative geometry task for both runs. Compare final reference-fidelity outcome first, then initial model-visible tool/schema footprint, wrong-tool selections, total tool calls, total tokens, latency, and retries. A smaller surface is an improvement only if the result remains equally valid. Then return to the full retained surface for representative texture/animation/Locator reachability so a geometry-only benchmark cannot accidentally become product policy.
+
+`tool_output_token_limit` may be evaluated as a history safety bound only after observing real tool outputs; do not set it pre-emptively because truncating inspection/correction evidence can reduce correctness.
+
+### Decision
+
+```text
+DO NOT mass-trim schemas that encode real Bedrock authoring inputs.
+DO NOT disable Animation/Paint/Texture/Locator merely because they dominate the catalog.
+DO NOT convert the geometry benchmark allowlist into a default MCP profile.
+DO trim clearly overlong tool descriptions when routing/safety meaning is preserved.
+DO use native/client-side exposure controls in local A/B proof before considering BlockIT-side routing architecture.
+```
+
+'''
+          review_path.write_text(review.replace(marker, section + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'The actual stateless MCP `tools/list` wire surface is now measured rather than inferred from generated docs: **65 enabled tools / 72,817 response characters**, including **48,119 characters of input schemas** and **11,786 characters of tool descriptions**. A geometry-only 15-tool lane would be much smaller, but it is **not** adopted as the default because it would remove texture/animation/Locator paths and therefore would not preserve the same end-to-end product result. The next large usage lever must be proven on the real Codex client as native lazy/deferred MCP tool loading (or an equivalent client-side mechanism) before BlockIT adds a custom router/profile.'
+          addition = marker + '\n\nA follow-up default-registration footprint ranking confirms that schema size is concentrated in real downstream capability rather than obvious metadata waste: Animation + Paint account for approximately **25,034 / 51,357 (~48.7%)** of the compact Zod-derived schema ranking. Only `bone_rigging` and `animation_copy_paste` were clear description-length outliers (>400 characters), so only those descriptions were compacted. Mass schema trimming, default capability removal, and a BlockIT-side geometry profile remain rejected; local A/B exposure proof should use Codex client-side `enabled_tools` against the unchanged full surface.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected next-action tools/list marker')
+          next_path.write_text(next_text.replace(marker, addition, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: |
+          test ! -e mcp/.audit-tool-footprint.ts
+          git diff --check
+          git status --short
+      - name: Commit verified footprint optimization and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-codex-footprint-optimization.yml
+          git add mcp/server/tools/animation.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md docs/knowledge/next-action.md
+          git commit -m 'refactor: reduce Codex tool exposure prose'
+          git push origin HEAD:Local
