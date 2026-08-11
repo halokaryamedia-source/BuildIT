@@ -1,0 +1,117 @@
+name: Avoid Redundant Identity Rediscovery
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/avoid-redundant-identity-rediscovery.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Align correction routing with fresh mutation state
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          modelling_path = Path('.agents/skills/blockbench-bedrock-modelling/SKILL.md')
+          modelling = modelling_path.read_text(encoding='utf-8')
+          old = 'Before a numeric local correction, use `inspect_element` once to obtain exact authored state, then declare the smallest **invariant**:'
+          new = 'Before a numeric local correction, establish exact current authored state. Reuse a fresh create/mutation result when it already contains the target UUID plus the fields needed for the correction and there is no reason to expect external change; otherwise use `inspect_element` once. Then declare the smallest **invariant**:'
+          if modelling.count(old) != 1:
+              raise SystemExit('Unexpected modelling correction-state rule')
+          modelling_path.write_text(modelling.replace(old, new, 1), encoding='utf-8')
+
+          prompt_path = Path('mcp/prompts/bedrock_entity_workflow.md')
+          prompt = prompt_path.read_text(encoding='utf-8')
+          old = '2. `inspect_element` before numeric correction and use the authored state it returns.'
+          new = '2. Establish exact current authored state. Reuse the fresh create/mutation result when it already contains the target UUID and required fields and state has not changed; otherwise call `inspect_element` once.'
+          if prompt.count(old) != 1:
+              raise SystemExit('Unexpected canonical prompt correction step')
+          prompt = prompt.replace(old, new, 1)
+          bullet_anchor = '- Do not re-read project/outline/resource state already known unless it may have changed.\n'
+          bullet = '- Created/mutated identity and authored state returned by `place_cube`, `add_group`, `manage_locator`, `manage_null_object`, `modify_cube`, or `modify_cubes_batch` are continuation evidence. Do not immediately rediscover/reinspect the same target unless required state is missing or may have changed.\n'
+          if prompt.count(bullet_anchor) != 1:
+              raise SystemExit('Unexpected canonical prompt minimum-evidence anchor')
+          prompt_path.write_text(prompt.replace(bullet_anchor, bullet_anchor + bullet, 1), encoding='utf-8')
+
+          orchestrator_path = Path('.agents/skills/blockit-bedrock-entity-mcp/SKILL.md')
+          orchestrator = orchestrator_path.read_text(encoding='utf-8')
+          anchor = '- Do not re-read state this workflow just created or already knows unless it may have changed.\n'
+          addition = '- `place_cube` and `add_group` already return created UUID/state. Continue with those identities; do not immediately call `list_outline`, `find_elements_by_criteria`, or `inspect_element` merely to rediscover the same new targets.\n'
+          if orchestrator.count(anchor) != 1:
+              raise SystemExit('Unexpected orchestrator reread anchor')
+          orchestrator_path.write_text(orchestrator.replace(anchor, anchor + addition, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/model-effectiveness-correction-accuracy.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          test_anchor = '    expect(modelling).toContain("An unintended center shift");\n'
+          assertions = '''    expect(modelling).toContain("Reuse a fresh create/mutation result");
+    expect(modelling).not.toContain("use `inspect_element` once to obtain exact authored state");
+    expect(workflow).toContain("Reuse the fresh create/mutation result");
+    expect(workflow).toContain("Created/mutated identity and authored state returned by `place_cube`");
+'''
+          if test.count(test_anchor) != 1:
+              raise SystemExit('Unexpected correction regression anchor')
+          test_path.write_text(test.replace(test_anchor, assertions + test_anchor, 1), encoding='utf-8')
+
+          routing_test_path = Path('mcp/tests/model-effectiveness-tool-routing.test.ts')
+          routing_test = routing_test_path.read_text(encoding='utf-8')
+          routing_anchor = '    expect(modelling).toContain("If no current decision requires a branch, stay in the geometry lane");\n'
+          routing_assertions = '''    expect(orchestrator).toContain("`place_cube` and `add_group` already return created UUID/state");
+    expect(orchestrator).toContain("do not immediately call `list_outline`, `find_elements_by_criteria`, or `inspect_element`");
+'''
+          if routing_test.count(routing_anchor) != 1:
+              raise SystemExit('Unexpected tool-routing regression anchor')
+          routing_test_path.write_text(routing_test.replace(routing_anchor, routing_anchor + routing_assertions, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          anchor = '`create_project` / `get_project_info` / `export_model` now expose one consistent compact project lifecycle view:'
+          idx = next_text.find(anchor)
+          if idx < 0:
+              raise SystemExit('Lifecycle continuity paragraph not found')
+          paragraph_end = next_text.find('\n\n', idx)
+          if paragraph_end < 0:
+              raise SystemExit('Lifecycle continuity paragraph end not found')
+          note = '\n\nFresh create/mutation results now also remain the canonical continuation evidence for identity/state: `place_cube`, `add_group`, Locator/Null Object management, and Cube correction results should be reused directly when they already contain the target UUID plus required authored fields. `list_outline`, `find_elements_by_criteria`, or `inspect_element` are conditional discovery/state reads, not mandatory post-mutation confirmation. No cache/session-state layer was added.'
+          next_path.write_text(next_text[:paragraph_end] + note + next_text[paragraph_end:], encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Generated docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified routing change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/avoid-redundant-identity-rediscovery.yml
+          git add .agents/skills/blockbench-bedrock-modelling/SKILL.md .agents/skills/blockit-bedrock-entity-mcp/SKILL.md mcp/prompts/bedrock_entity_workflow.md mcp/prompts/manifest.json mcp/tests/model-effectiveness-correction-accuracy.test.ts mcp/tests/model-effectiveness-tool-routing.test.ts docs/knowledge/next-action.md
+          git commit -m 'docs: reuse fresh mutation identity evidence'
+          git push origin HEAD:Local
