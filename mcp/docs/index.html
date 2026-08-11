@@ -847,7 +847,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">List Outline</p>
-      <p class="card-desc">Returns the Bedrock Cuboid modelling outline as a hierarchical Cube/Group tree. Each node reports { name, uuid, type (cube|group), children? }. Use `include_cubes=false` to get a group-only skeleton, or `max_depth` to bound very deep trees.</p>
+      <p class="card-desc">Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -868,6 +868,11 @@ bun run build
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Maximum tree depth to traverse. Use a small value to summarize large projects. <span class="param-meta">(default: <code>32</code>) [min: 1, max: 32]</span></td>
+    </tr><tr>
+      <td class="col-name">max_nodes</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated. <span class="param-meta">(default: <code>500</code>) [min: 1, max: 5000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3005,7 +3010,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T06:17:32.673Z from Zod schemas
+        Generated 2026-08-11T06:20:39.682Z from Zod schemas
       </footer>
     </main>
   </div>

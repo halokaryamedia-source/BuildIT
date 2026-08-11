@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
+import { listOutlineParameters } from "@/server/tools/element";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -64,6 +65,22 @@ describe("pre-local context and payload cleanup", () => {
     expect(inspection).toContain(
       "...(includeKeyframes ? { keyframes: inspectedKeyframes } : {})"
     );
+  });
+
+  test("list_outline bounds breadth as well as depth", async () => {
+    const parsed = listOutlineParameters.parse({});
+    expect(parsed.max_depth).toBe(32);
+    expect(parsed.max_nodes).toBe(500);
+    expect(listOutlineParameters.safeParse({ max_nodes: 5001 }).success).toBe(false);
+
+    const elements = await source("server/tools/element.ts");
+    const start = elements.indexOf("createTool(elementToolDocs[2].name");
+    const end = elements.indexOf("createTool(elementToolDocs[3].name", start);
+    const outline = elements.slice(start, end);
+    expect(outline).toContain("let returnedNodes = 0");
+    expect(outline).toContain("returnedNodes >= max_nodes");
+    expect(outline).toContain("truncated_at_max_nodes: nodeLimitReached || undefined");
+    expect(outline).toContain("returned_nodes: returnedNodes");
   });
 
   test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {

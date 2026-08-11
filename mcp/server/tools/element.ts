@@ -140,6 +140,16 @@ export const listOutlineParameters = z.object({
     .optional()
     .default(32)
     .describe("Maximum tree depth to traverse. Use a small value to summarize large projects."),
+  max_nodes: z
+    .number()
+    .int()
+    .min(1)
+    .max(5000)
+    .optional()
+    .default(500)
+    .describe(
+      "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated."
+    ),
 });
 
 export const duplicateElementParameters = z.object({
@@ -183,7 +193,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "list_outline",
     description:
-      "Returns the Bedrock Cuboid modelling outline as a hierarchical Cube/Group tree. Each node reports { name, uuid, type (cube|group), children? }. Use `include_cubes=false` to get a group-only skeleton, or `max_depth` to bound very deep trees.",
+      "Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.",
     annotations: {
       title: "List Outline",
       readOnlyHint: true,
@@ -519,7 +529,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
 
   createTool(elementToolDocs[2].name, {
     ...elementToolDocs[2],
-    async execute({ include_cubes, max_depth }) {
+    async execute({ include_cubes, max_depth, max_nodes }) {
       interface IOutlineNode {
         name: string;
         uuid: string;
@@ -528,9 +538,16 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
       }
 
       const truncated: string[] = [];
+      let returnedNodes = 0;
+      let nodeLimitReached = false;
 
       const nodeFor = (el: unknown, depth: number): IOutlineNode | null => {
         if (el instanceof Group) {
+          if (returnedNodes >= max_nodes) {
+            nodeLimitReached = true;
+            return null;
+          }
+          returnedNodes += 1;
           const node: IOutlineNode = {
             name: el.name,
             uuid: el.uuid,
@@ -545,19 +562,28 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
           for (const child of el.children ?? []) {
             const childNode = nodeFor(child, depth + 1);
             if (childNode) node.children!.push(childNode);
+            if (nodeLimitReached) break;
           }
           return node;
         }
         if (el instanceof Cube) {
           if (!include_cubes) return null;
+          if (returnedNodes >= max_nodes) {
+            nodeLimitReached = true;
+            return null;
+          }
+          returnedNodes += 1;
           return { name: el.name, uuid: el.uuid, type: "cube" };
         }
         return null;
       };
 
-      const roots = Outliner.root
-        .map((el) => nodeFor(el, 0))
-        .filter((n): n is IOutlineNode => n !== null);
+      const roots: IOutlineNode[] = [];
+      for (const element of Outliner.root) {
+        const node = nodeFor(element, 0);
+        if (node) roots.push(node);
+        if (nodeLimitReached) break;
+      }
 
       const counts = {
         groups: Group.all.length,
@@ -567,6 +593,9 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
       return JSON.stringify(
         {
           counts,
+          returned_nodes: returnedNodes,
+          max_nodes,
+          truncated_at_max_nodes: nodeLimitReached || undefined,
           truncated_at_max_depth: truncated.length ? truncated : undefined,
           roots,
         }
