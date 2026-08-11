@@ -63,6 +63,6 @@ Use **`BLOCKED`** when valid continuation requires unsupported evidence/capabili
 
 For end-to-end reference work, production texture waits for the geometry it depends on to pass; production animation waits for accepted participating geometry/hierarchy/pivots. Existing-asset texture-only or animation-only tasks may treat current geometry as the user baseline without certifying it.
 
-`export_model` owns Bedrock geometry JSON (`bedrock`) and editable `.bbmodel` (`project`). When writing a path, prefer metadata-only output unless returned file content is actually required.
+`export_model` supports: Bedrock geometry JSON (`bedrock`) and editable `.bbmodel` (`project`). When writing a path, prefer metadata-only output unless returned file content is actually required.
 
 Missing native capability must remain explicit rather than being emulated through generic Mesh, `risky_eval`, arbitrary UI automation, Hytale, or another format.
