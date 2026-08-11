@@ -189,7 +189,7 @@ A later Bedrock semantics audit also default-disabled `filter_by_material`, beca
 
 After narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **63 tools**. Current wire size is **73,174 response characters / 48,551 input-schema characters / 12,108 description characters**, with `place_cube` at **2,531 schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target.
 
-Final pinned-SDK measurement after the later `modify_cube` and batch-correction contract hardening: **63 tools / 73,037 response characters / 48,453 input-schema characters / 12,069 description characters**. Current schema sizes are **2,531** for `place_cube`, **1,471** for `modify_cube`, and **1,232** for `modify_cubes_batch`; `apply_texture` and `filter_by_material` remain absent. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.
+Final pinned-SDK measurement after the later Cube hardening and fixed `create_project.format` removal: **63 tools / 72,913 response characters / 48,214 input-schema characters / 12,185 description characters**. Current schema sizes are **2,531** for `place_cube`, **1,471** for `modify_cube`, **1,232** for `modify_cubes_batch`, and **212** for `create_project`; `apply_texture` and `filter_by_material` remain absent. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.
 
 The ranking audit produced this compact approximation:
 
