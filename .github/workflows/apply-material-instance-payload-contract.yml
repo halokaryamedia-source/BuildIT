@@ -1,0 +1,121 @@
+name: Apply Material Instance Payload Contract
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/apply-material-instance-payload-contract.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply bounded material-instance contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/material-instances.ts')
+          text = source_path.read_text(encoding='utf-8')
+
+          text = text.replace('  .array(faceEnum)\n  .optional()\n  .default(faceEnum.options)', '  .array(faceEnum)\n  .min(1)\n  .optional()\n  .default(faceEnum.options)', 1)
+          text = text.replace('  .array(faceEnum)\n  .optional()\n  .describe("Specific faces to get/clear material instances for. If not provided, returns/clears all faces.")', '  .array(faceEnum)\n  .min(1)\n  .optional()\n  .describe("Specific non-empty face set to get/clear. If omitted, uses all faces.")', 1)
+          assignment_marker = '  faces: z.array(faceEnum).describe("Faces to set the material instance on."),'
+          assignment_replacement = '  faces: z\n    .array(faceEnum)\n    .min(1)\n    .describe("Non-empty faces to set the material instance on."),'
+          if text.count(assignment_marker) != 1:
+              raise SystemExit('Unexpected assignment faces schema')
+          text = text.replace(assignment_marker, assignment_replacement, 1)
+
+          empty_marker = '/** Empty parameters schema */\nexport const emptyParametersSchema = z.object({});\n'
+          list_schema = '/** Parameters for bounded material-instance discovery */\nexport const listMaterialInstancesParametersSchema = z.object({\n  include_usages: z\n    .boolean()\n    .optional()\n    .default(false)\n    .describe("Include Cube/face usage locations. Keep false for summary-only discovery."),\n  usage_limit_per_instance: z\n    .number()\n    .int()\n    .min(1)\n    .max(1000)\n    .optional()\n    .default(100)\n    .describe("Maximum usage locations returned per material instance when include_usages=true."),\n});\n'
+          if text.count(empty_marker) != 1:
+              raise SystemExit('Unexpected empty material-instance schema')
+          text = text.replace(empty_marker, list_schema, 1)
+
+          text = text.replace('      "Lists all unique material instance names used in the project. Returns the material instance names along with which cubes and faces use them.",', '      "Lists unique material-instance names and usage counts. Cube/face locations are opt-in with `include_usages=true` and bounded per instance to avoid dumping all face assignments by default.",', 1)
+          text = text.replace('    parameters: emptyParametersSchema,', '    parameters: listMaterialInstancesParametersSchema,', 1)
+
+          start = text.index('  createTool(\n    materialInstanceToolDocs[2].name')
+          end = text.index('  createTool(\n    materialInstanceToolDocs[3].name', start)
+          block = text[start:end]
+          old_execute = '      async execute() {\n        const materialMap: Record<\n          string,\n          Array<{ cube_name: string; cube_uuid: string; face: string }>\n        > = {};'
+          new_execute = '      async execute({ include_usages, usage_limit_per_instance }) {\n        type MaterialUsage = { cube_name: string; cube_uuid: string; face: string };\n        const materialMap: Record<\n          string,\n          { usage_count: number; usages: MaterialUsage[] }\n        > = {};'
+          if block.count(old_execute) != 1:
+              raise SystemExit('Unexpected list_material_instances execute shape')
+          block = block.replace(old_execute, new_execute, 1)
+
+          old_loop = '              if (!materialMap[face.material_name]) {\n                materialMap[face.material_name] = [];\n              }\n              materialMap[face.material_name].push({\n                cube_name: cube.name,\n                cube_uuid: cube.uuid,\n                face: faceDir,\n              });'
+          new_loop = '              if (!materialMap[face.material_name]) {\n                materialMap[face.material_name] = { usage_count: 0, usages: [] };\n              }\n              const entry = materialMap[face.material_name];\n              entry.usage_count += 1;\n              if (include_usages && entry.usages.length < usage_limit_per_instance) {\n                entry.usages.push({\n                  cube_name: cube.name,\n                  cube_uuid: cube.uuid,\n                  face: faceDir,\n                });\n              }'
+          if block.count(old_loop) != 1:
+              raise SystemExit('Unexpected material usage collection shape')
+          block = block.replace(old_loop, new_loop, 1)
+
+          old_map = '        const materialInstances = Object.entries(materialMap).map(\n          ([name, usages]) => ({\n            name,\n            usage_count: usages.length,\n            usages,\n          })\n        );'
+          new_map = '        const materialInstances = Object.entries(materialMap).map(\n          ([name, entry]) => ({\n            name,\n            usage_count: entry.usage_count,\n            ...(include_usages\n              ? {\n                  usages: entry.usages,\n                  usages_truncated: entry.usage_count > entry.usages.length,\n                }\n              : {}),\n          })\n        );'
+          if block.count(old_map) != 1:
+              raise SystemExit('Unexpected material instance result mapping')
+          block = block.replace(old_map, new_map, 1)
+          block = block.replace('        }, null, 2);', '        });', 1)
+          text = text[:start] + block + text[end:]
+          source_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          import_anchor = 'import {\n  filterByMaterialParameters,\n  listOutlineParameters,\n} from "@/server/tools/element";\n'
+          import_add = import_anchor + 'import {\n  facesArrayOptionalSchema,\n  facesArrayWithDefaultSchema,\n  listMaterialInstancesParametersSchema,\n  materialInstanceAssignmentSchema,\n} from "@/server/tools/material-instances";\n'
+          if 'listMaterialInstancesParametersSchema' not in test:
+              if test.count(import_anchor) != 1:
+                  raise SystemExit('Unexpected context payload import anchor')
+              test = test.replace(import_anchor, import_add, 1)
+          marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
+          addition = '  test("material-instance discovery is summary-first and mutations reject empty face sets", async () => {\n    expect(facesArrayWithDefaultSchema.safeParse([]).success).toBe(false);\n    expect(facesArrayOptionalSchema.safeParse([]).success).toBe(false);\n    expect(\n      materialInstanceAssignmentSchema.safeParse({\n        cube_id: "cube-uuid",\n        faces: [],\n        material_name: "detail",\n      }).success\n    ).toBe(false);\n\n    const parsed = listMaterialInstancesParametersSchema.parse({});\n    expect(parsed.include_usages).toBe(false);\n    expect(parsed.usage_limit_per_instance).toBe(100);\n\n    const sourceText = await source("server/tools/material-instances.ts");\n    const start = sourceText.indexOf("materialInstanceToolDocs[2].name");\n    const end = sourceText.indexOf("materialInstanceToolDocs[3].name", start);\n    const listBlock = sourceText.slice(start, end);\n    expect(listBlock).toContain("entry.usage_count += 1");\n    expect(listBlock).toContain("include_usages && entry.usages.length < usage_limit_per_instance");\n    expect(listBlock).toContain("usages_truncated");\n    expect(listBlock).not.toContain("null, 2");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected context payload test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Material-instance Cube targeting now uses the shared core identity contract instead of the legacy first-match helper: explicit UUID wins, exact names must be unique, and ambiguous Cube names fail before read/mutation. The change is limited to material-instance tools; the generic legacy helper was not broadened without auditing its other callers.'
+          extra = '\n\nMaterial-instance payload/mutation contracts are also bounded: empty face arrays are rejected before mutation, and `list_material_instances` now returns names + usage counts by default. Explicit `include_usages=true` returns at most 100 locations per instance by default (raiseable to 1000) with `usages_truncated` indicating omitted locations. No pagination/state framework was added.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected material identity continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-material-instance-payload-contract.yml
+          git add mcp/server/tools/material-instances.ts mcp/tests/context-payload-cleanup.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'refactor: bound material instance payloads'
+          git push origin HEAD:Local
