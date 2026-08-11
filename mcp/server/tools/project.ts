@@ -35,7 +35,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "get_project_info",
     description:
-      "Returns read-only project identity/format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
+      "Returns read-only project lifecycle identity/path/save state, format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
     annotations: {
       title: "Get Project Info",
       readOnlyHint: true,
@@ -81,6 +81,22 @@ function getPoseContext(): {
   };
 }
 
+
+function currentProjectLifecycle() {
+  if (!Project) {
+    throw new Error("No project is open.");
+  }
+
+  return {
+    name: Project.name,
+    uuid: Project.uuid,
+    save_path: Project.save_path ?? null,
+    export_path: Project.export_path ?? null,
+    export_codec: Project.export_codec ?? null,
+    saved: Project.saved === true,
+  };
+}
+
 export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
@@ -92,8 +108,20 @@ export function registerProjectTools() {
       }
 
       Project!.name = name;
+      const result = {
+        project: currentProjectLifecycle(),
+        format: { id: format },
+      };
 
-      return `Created project with name "${name}" (UUID: ${Project?.uuid}) and format "${format}".`;
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Created Bedrock project "${result.project.name}" (${result.project.uuid}).`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, projectToolDocs[0].status);
 
@@ -118,11 +146,7 @@ export function registerProjectTools() {
 
       return JSON.stringify(
         {
-          project: {
-            name: Project.name,
-            uuid: Project.uuid,
-            save_path: (Project as { save_path?: string }).save_path ?? null,
-          },
+          project: currentProjectLifecycle(),
           format: {
             id: format?.id ?? null,
             name: format?.display_name ?? format?.name ?? null,

@@ -66,6 +66,10 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(exportSource).toContain("exportFs.statSync(path)");
     expect(exportSource).toContain("!writtenStat.isFile() || writtenStat.size !== byteLength");
     expect(exportSource).toContain("must end in .${expectedExtension}");
+    expect(exportSource).toContain("codec.afterSave(path)");
+    expect(exportSource).toContain("currentExportProjectLifecycle()");
+    expect(exportSource).toContain("lifecycle.export_codec === codec_id");
+    expect(exportSource).toContain("project: currentExportProjectLifecycle()");
 
     const existingGuard = exportSource.indexOf('codec_id === "bedrock" && exportFs.existsSync(path)');
     const compileCall = exportSource.indexOf("codec.compile(effectiveOptions)");

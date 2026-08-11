@@ -146,9 +146,10 @@ describe("P1.3 core identity ownership", () => {
   });
 
   test("identity-returning core mutations expose structured continuation state", async () => {
-    const [cubes, elements] = await Promise.all([
+    const [cubes, elements, project] = await Promise.all([
       readFile(new URL("../server/tools/cubes.ts", import.meta.url), "utf8"),
       readFile(new URL("../server/tools/element.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/tools/project.ts", import.meta.url), "utf8"),
     ]);
 
     expect(cubes).toContain("structuredContent: result");
@@ -159,5 +160,10 @@ describe("P1.3 core identity ownership", () => {
     expect(cubes).not.toContain("cube: after,");
     expect(elements).toContain("structuredContent: result");
     expect(elements).toContain("group: {");
+    expect(project).toContain("structuredContent: result");
+    expect(project).toContain("currentProjectLifecycle()");
+    expect(project).toContain("export_path: Project.export_path ?? null");
+    expect(project).toContain("export_codec: Project.export_codec ?? null");
+    expect(project).toContain("saved: Project.saved === true");
   });
 });

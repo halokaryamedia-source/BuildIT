@@ -78,6 +78,7 @@ type BlockITCodec = {
   compile?: (opts?: unknown) => unknown;
   getExportOptions?: () => Record<string, unknown>;
   fileName?: () => string;
+  afterSave?: (path: string) => void;
   support_partial_export?: boolean;
 };
 
@@ -103,6 +104,18 @@ function requireBedrockEntityProject(): void {
       `BlockIT model export requires the Minecraft Bedrock Entity format (bedrock); current format is ${formatId ?? "unknown"}.`
     );
   }
+}
+
+
+function currentExportProjectLifecycle() {
+  return {
+    name: Project!.name,
+    uuid: Project!.uuid,
+    save_path: Project!.save_path ?? null,
+    export_path: Project!.export_path ?? null,
+    export_codec: Project!.export_codec ?? null,
+    saved: Project!.saved === true,
+  };
 }
 
 function codecRegistry(): Record<string, BlockITCodec> {
@@ -257,6 +270,24 @@ export function registerExportTools() {
               `Export write verification failed for ${path}: expected a regular file of ${byteLength} bytes, got ${writtenStat.isFile() ? `${writtenStat.size} bytes` : "a non-file target"}. The path may exist, but export_model will not report it as a verified artifact.`
             );
           }
+          if (typeof codec.afterSave !== "function") {
+            throw new Error(
+              `Export artifact was written to ${path}, but codec "${codec_id}" has no native afterSave() lifecycle owner. Project path/save state was not reported as synchronized.`
+            );
+          }
+          codec.afterSave(path);
+          const lifecycle = currentExportProjectLifecycle();
+          const lifecycleMatches =
+            codec_id === "project"
+              ? lifecycle.save_path === path && lifecycle.saved
+              : lifecycle.export_path === path &&
+                lifecycle.export_codec === codec_id &&
+                lifecycle.saved;
+          if (!lifecycleMatches) {
+            throw new Error(
+              `Export artifact was written to ${path}, but native codec lifecycle state did not synchronize to that path.`
+            );
+          }
           wrote_to_path = path;
         }
 
@@ -287,6 +318,7 @@ export function registerExportTools() {
           byte_length: byteLength,
           encoding,
           wrote_to_path,
+          project: currentExportProjectLifecycle(),
           truncated,
           content: returnedContent,
         };
