@@ -14,12 +14,12 @@ This folder intentionally has a **small working surface**. Active status belongs
 ## Rule
 
 ```text
-active status / next step     → ../next-action.md
-completed local procedure     → local-acceptance-runbook.md
-future/non-active work        → task-board.md
-durable reason                → ../decision-log.md / decisions/
-current proof status          → ../../foundation/validation-report.md
-historical implementation     → Git history / reviews/
+active status / next step → ../next-action.md
+completed local procedure → local-acceptance-runbook.md
+future/non-active work → task-board.md
+durable reason → ../decision-log.md / decisions/
+current proof status → ../../foundation/validation-report.md
+historical implementation → Git history / reviews/
 ```
 
 Do not create another roadmap, manual changelog, execution bridge, documentation-audit tracker, or parallel plan unless a future requirement proves a distinct durable owner that these files cannot represent.
