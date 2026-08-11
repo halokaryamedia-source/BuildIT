@@ -1,0 +1,64 @@
+name: Final Repo Hygiene
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/final-repo-hygiene.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Verify repository hygiene and sync proof notes
+        run: python3 .github/scripts/final_repo_hygiene.py
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Verify callable wire unchanged
+        working-directory: mcp
+        run: bun .verify-final-hygiene-wire.ts
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit final hygiene state and remove helpers
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/final-repo-hygiene.yml
+          git rm .github/scripts/final_repo_hygiene.py
+          git rm mcp/.verify-final-hygiene-wire.ts
+          git add docs/foundation/validation-report.md docs/knowledge/next-action.md
+          git commit -m 'docs: finalize clean pre-local repository state'
+          git push origin HEAD:Local
