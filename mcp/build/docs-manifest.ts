@@ -38,25 +38,14 @@ export const toolManifest: CategoryGroup[] = [
   { category: "UI Interaction", tools: uiToolDocs },
 ];
 
-// Prompt specs defined inline — server/prompts.ts uses macros that complicate direct import
+// Only runtime-callable prompts belong in generated MCP API docs.
+// Maintainer/reference markdown under prompts/ remains source documentation.
 export const promptDocs: PromptSpec[] = [
-  {
-    name: "blockbench_native_apis",
-    description:
-      "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
-    status: "stable",
-  },
-  {
-    name: "blockbench_code_eval_safety",
-    description:
-      "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.",
-    status: "stable",
-  },
   {
     name: "bedrock_entity_workflow",
     title: "Minecraft Bedrock Entity Workflow",
     description:
-      "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+      "Compact BlockIT workflow for Bedrock Entity authoring: minimum evidence, visual gates, bounded correction, downstream readiness, protected native gaps, and Bedrock/.bbmodel export.",
     argsSchema: z.object({}),
     status: "stable",
   },
