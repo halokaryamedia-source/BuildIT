@@ -1,12 +1,10 @@
 # BlockIT — Bedrock Entity MCP
 
-BlockIT is a Minecraft **Bedrock Entity-focused** MCP server/plugin that runs inside desktop Blockbench. `Local` is the current development authority.
+BlockIT is a Minecraft **Bedrock Entity-focused** MCP server/plugin running inside desktop Blockbench. `Local` is the development authority.
 
-Do **not** use the upstream hosted Jason J. Gardner plugin when validating BlockIT. That artifact is a different generic product surface.
+Do **not** use the upstream hosted Jason J. Gardner plugin when validating BlockIT; it is a different generic product surface.
 
 ## Build / verify
-
-From this directory:
 
 ```bash
 bun install --frozen-lockfile
@@ -16,47 +14,27 @@ bun run build
 bun run docs:check
 ```
 
-Production output:
+Production plugin: `dist/mcp.js`.
 
-```text
-dist/mcp.js
-```
-
-Load that file as a local Blockbench plugin.
-
-Local stateless smoke, after the plugin is running:
+Runtime-only stateless smoke, when explicitly active:
 
 ```bash
 bun run verify:stateless-local
 ```
 
-## Endpoint
+## Endpoint / containment
 
-Default:
+Default endpoint: `http://127.0.0.1:3000/bb-mcp`.
 
-```text
-http://127.0.0.1:3000/bb-mcp
-```
-
-The server binds to loopback and uses request-owned stateless Streamable HTTP with JSON responses.
-
-Blockbench settings under **Settings → General**:
-
-- MCP Server Port
-- MCP Server Endpoint
-- Extended MCP Families — off by default
-
-Extended families expose only retained generic fallback families; individually quarantined tools such as `risky_eval` and `from_geo_json` remain disabled.
+The server is loopback-only and request-owned/stateless. Extended MCP Families are off by default; generic fallback families require explicit opt-in. `risky_eval` and `from_geo_json` remain individually disabled.
 
 ## Product boundary
 
-Normal BlockIT work targets Blockbench `bedrock` projects and preserves Bedrock-relevant capability:
+Normal `bedrock` capability includes:
 
-- Cube/Cuboid geometry;
-- Group/bone hierarchy and pivots;
-- deterministic project/element observation;
-- bounded visual model-view capture;
-- texture/Painter/PBR/material-instance workflows;
+- Cube/Cuboid geometry and Group/bone pivots;
+- bounded project/element/model-view observation;
+- texture/Painter/PBR/material instances;
 - Bedrock animation/BoneAnimator workflows;
 - Locator / Null Object authored state;
 - Undo/history;
@@ -64,9 +42,7 @@ Normal BlockIT work targets Blockbench `bedrock` projects and preserves Bedrock-
 
 Generic Mesh/Hytale paths, risky evaluation, and screen-coordinate UI automation are not normal Bedrock Entity authoring capability.
 
-## Current default surface
-
-Pinned-SDK accepted baseline:
+## Accepted default surface
 
 ```text
 62 enabled tools
@@ -84,64 +60,49 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-Bedrock Entity is native `single_texture`; active/default texture lifecycle remains available while generic raw per-face texture identity tools are not exposed by default.
+These are static baseline measurements, not model-visible token measurements. Current cleanup/testing state belongs in `docs/knowledge/next-action.md`.
 
-These static character counts identify possible context-cost candidates; they do not prove model-visible token cost. Use `docs/knowledge/next-action.md` for the current efficiency evidence task.
+## Result / context efficiency
 
-## Result efficiency
+- Exact single-text JSON mirrors of `structuredContent` are compacted at the request-owned registration boundary.
+- Meaningful text summaries and images remain intact.
+- Filesystem export is metadata-first when a verified path write already delivers the artifact.
+- Normal discovery/project/history reads use compact defaults with explicit larger bounds where supported.
+- Runtime prompt manifest contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only.
 
-When a tool returns machine-readable `structuredContent`, do not mirror the same full JSON again in `content.text`. The request-owned registration boundary compacts an exact single-text JSON mirror while preserving the structured payload, concise summaries, and image content.
+## Agent route
 
-For filesystem export, verified path writes remain metadata-first and omit compiled artifact content by default unless the caller explicitly requests returned content.
-
-## Agent / continuation route
-
-Repository-owned skills live at root `.agents/skills/`, not under this package.
-
-For normal asset authoring:
+Normal asset authoring:
 
 ```text
 blockit-bedrock-entity-mcp
 → active modelling/texturing/animation specialist only
 ```
 
-For repository/plugin continuation, use root `docs/knowledge/next-action.md`. The first bounded local acceptance procedure is complete; `docs/knowledge/operations/local-acceptance-runbook.md` is historical/procedural evidence and is not default continuation reading unless the current task specifically needs it.
-
-Do not use deleted nested `.github` prompts/instructions or standalone upstream guidance; root `AGENTS.md` and this package's `AGENTS.md` own current development rules.
+Repository/plugin continuation follows root `AGENTS.md` + `docs/knowledge/next-action.md` + affected source. The first local acceptance pass is complete; its runbook is not default continuation context.
 
 ## Source layout
 
 ```text
-index.ts             plugin entry/lifecycle
-server/              MCP server, transport, tools, resources, prompts
-lib/                 shared schemas/factories/runtime helpers
-ui/                  Blockbench panel/settings
-prompts/             bundled prompt sources
-build/               Bun build/docs tooling
-scripts/             deliberate local verification helpers
-tests/               contract/integration regressions
-docs/                generated API documentation
+index.ts      plugin entry/lifecycle
+server/       MCP server, transport, tools, resources, runtime prompt registration
+lib/          shared schemas/factories/runtime helpers
+ui/           Blockbench panel/settings
+prompts/      canonical runtime prompt + source-only maintainer references + generated runtime manifest
+build/        Bun build/docs/manifest tooling
+scripts/      deliberate verification helpers
+tests/        contract/integration regressions
+docs/         generated MCP API documentation
 ```
 
-`docs/api.json` and `docs/index.html` are generated outputs intentionally kept under version control and verified with `bun run docs:check`; do not hand-edit generated entries.
+`docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are generated through their build owners; do not hand-edit them to bypass freshness or runtime-manifest contracts.
 
-## Adding/changing MCP behavior
+## MCP engineering rules
 
-Follow `AGENTS.md` in this directory:
+Follow package `AGENTS.md`: strict TypeScript, complete Zod boundary validation, no Blockbench globals in build-time schemas, existing `createTool`/factory ownership, compact result contracts, smallest complete changes, generated-output freshness, loopback containment, and local proof only for claims that actually require runtime evidence.
 
-- strict TypeScript;
-- full Zod input validation;
-- no Blockbench globals during schema construction;
-- `createTool` / existing factory patterns;
-- compact structured result contracts without duplicate machine-readable payloads;
-- smallest complete owner-specific change;
-- generated docs freshness;
-- local Blockbench proof for runtime/visual claims.
+Do not add compatibility shims, duplicate project tools, new router/profile layers, or generic import/eval capability without a proved need.
 
-Do not introduce compatibility shims, duplicated project tools, new routers/profiles, or generic import/eval capability without a proved current need.
+## License / upstream
 
-## License / Upstream attribution
-
-The repository is licensed under GPL-3.0-only; see root `../LICENSE`.
-
-BlockIT's MCP implementation is derived from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Contributor attribution is also retained in `package.json`. BlockIT's product identity and Bedrock-focused defaults distinguish this fork from the upstream hosted plugin.
+GPL-3.0-only; see `../LICENSE`. Upstream attribution is retained while BlockIT's Bedrock-focused product surface and workflow remain project-owned.
