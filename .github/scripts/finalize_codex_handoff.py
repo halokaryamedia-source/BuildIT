@@ -58,7 +58,6 @@ active = [
     Path("docs/knowledge/operations/local-acceptance-runbook.md"),
     Path("docs/knowledge/operations/task-board.md"),
     Path("docs/knowledge/operations/roadmap.md"),
-    Path("docs/knowledge/operations/documentation-audit.md"),
     Path("docs/knowledge/reviews/review-graph.md"),
     Path("mcp/README.md"),
     Path("mcp/AGENTS.md"),
