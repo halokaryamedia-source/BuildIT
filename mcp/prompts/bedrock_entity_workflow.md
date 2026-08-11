@@ -1,46 +1,40 @@
 # Minecraft Bedrock Entity Workflow
 
-Create or revise a clean, editable Minecraft Bedrock **Entity** model in Blockbench.
-
-## Product boundary
-
-Use format `bedrock`. Cubes are normal geometry; Groups are bones/organization when needed. The approved reference is the modelling authority; tool success, coordinates, connectivity, or validator success are not visual proof. Preserve native Bedrock capability; never fake unsupported features with generic Mesh, UI automation, risky evaluation, or another format.
+Create or revise a clean editable Minecraft Bedrock **Entity** model in Blockbench. Use `bedrock`; Cubes are normal geometry and Groups are bones/organization. The approved reference is visual authority. Tool/file success is execution evidence, not resemblance approval.
 
 ## Minimum necessary evidence
 
-Keep validity strict and calls sparse. Use evidence only when it can change the next decision or prove an in-scope claim.
+Use evidence only when it can change the next decision or prove the current claim.
 
 - Do not inspect each newly placed Cube or capture after every mutation.
-- Reuse known project/outline/resource state unless it may have changed.
-- `create_project` and path-writing `export_model` return lifecycle state. Do not immediately call `get_project_info` unless required fields are missing or external state may have changed.
-- Use `inspect_model_bounds` only for numeric envelope, scale, ground, displacement, or gross-placement questions. Otherwise skip it.
-- Capture only reference-corresponding views needed for the gate; after local correction, re-capture only affected view(s).
-- `UNVERIFIED` is not a retry command. Do not spend additional calls trying to remove UNVERIFIED unless missing evidence can change the decision and is plausibly obtainable.
-- Load texture or animation specialist instructions only when that stage is reached.
+- Reuse returned project/identity/mutation state while it is fresh.
+- `create_project` and path-writing `export_model` return lifecycle state. Do not immediately call `get_project_info` unless required fields are missing or state may have changed externally.
+- Use `inspect_model_bounds` only for numeric envelope, scale, ground, displacement, or gross placement. Otherwise skip it.
+- Re-capture only the reference-corresponding views required by the current gate; after local correction, only affected views.
+- `UNVERIFIED` is not a retry command. Do not spend additional calls trying to remove UNVERIFIED unless obtainable evidence can change the decision.
+- Load/use texture or animation work only when that stage is active.
 
 ## Reference and primary form
 
-For an existing or uncertain project, use `get_project_info` and targeted discovery only as needed. Establish X=width, Y=height, Z=front/back length, `front_direction` when relevant, and material ground relationship.
+Material axis/placement/orientation/contact claims use:
 
 ```text
 SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-SUPPORTED is directly constrained; PROVISIONAL is a needed working value; CONFLICTING means relevant views disagree; UNAVAILABLE means unobservable. Do not transfer confidence between axes. A front-view match cannot certify depth. Never average material conflicts into invented geometry; unresolved primary-form conflict becomes `BLOCKED`. Before exact transforms, keep a compact Primary Form Hypothesis: primary masses, relative placement/orientation/contact, and material uncertainty only.
+SUPPORTED is directly constrained; PROVISIONAL is a required working value with incomplete evidence; CONFLICTING means relevant views disagree; UNAVAILABLE means it cannot be observed. **A front-view match cannot certify depth.** Never average a material cross-view conflict into invented geometry; unresolved material conflict becomes `BLOCKED`.
 
-## Build and primary gate
+Before exact transforms, keep a compact Primary Form Hypothesis: primary masses, relative size/placement/orientation/contact, supporting views, and material uncertainty.
 
-Build the minimum coarse whole form needed for recognizability. Each primary Cube represents a required mass or necessary orientation split. Use finite `from`/`to`; non-zero rotation needs an intentional pivot/origin; explicit Group/Texture references must resolve deterministically.
+Build the minimum coherent coarse whole form. Use finite `from`/`to`; non-zero rotation needs an intentional pivot/origin; explicit identities must resolve deterministically.
 
-A successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is **execution** evidence only. Results use `visual_verdict: not_evaluated`; authored state is not reference approval. Do not chain Cube placement based on previous tool success. Once primary masses are judgeable, **stop** placement and run the visual gate before secondary detail.
+A successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is **execution** evidence only. `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once primary masses are judgeable, stop primary placement and run the visual gate before secondary detail.
 
-An under-constrained extent remains a working hypothesis, not verified reference evidence, even after placement. Do not use rotation/detail to hide wrong size or placement; organizational Groups stay neutral unless a joint/attachment/transform reason requires otherwise.
+An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
 
-If numeric dimensions exist or scale/ground/gross placement is in doubt, use `inspect_model_bounds`; otherwise skip it. Use `capture_model_views` only for corresponding views needed by the current gate. Explicit framing is for an approved numeric envelope. Bounds/captures observe; they do not approve.
+## Difference-first visual gate
 
-## Difference-first visual verdict
-
-At each material gate compare reference ↔ model **difference-first**: applicable silhouette, primary proportions, mass placement, orientation/slope, and visible contacts.
+Compare corresponding reference ↔ model evidence **difference-first** for applicable silhouette, primary proportions, placement, orientation/slope, and visible contacts.
 
 ```text
 FAIL
@@ -48,67 +42,50 @@ UNVERIFIED
 PASS
 ```
 
-- **FAIL**: a critical/major mismatch is visible; name it and supporting view(s).
-- **UNVERIFIED**: required evidence is missing, ambiguous, conflicting, or unavailable.
-- **PASS**: fresh corresponding evidence shows no critical/major mismatch in applicable criteria.
+- **FAIL** — a critical/major mismatch is visible; name it and its supporting view.
+- **UNVERIFIED** — required evidence is missing, ambiguous, conflicting, or unavailable.
+- **PASS** — fresh corresponding evidence shows no critical/major mismatch in applicable supported criteria.
 
-A convincing front view is not a full 3D PASS when side/depth evidence is missing or fails. Missing evidence never becomes PASS by plausibility. If several primary relationships fail together or the object is not recognizable, revise the primary hypothesis instead of micro-patching it.
+Front PASS is not full 3D PASS when side/depth evidence is missing or fails. Bounds, hierarchy, coordinates, validators, or successful mutation cannot justify PASS.
 
-## Local correction accuracy
+## Local correction
 
-For a local mismatch on an otherwise sound form:
+For one bounded mismatch:
 
-1. Locate the exact target UUID only if needed.
-2. Reuse fresh exact authored state already returned for that target when sufficient; otherwise use `inspect_element` once before numeric correction.
-3. Diagnose one causal class: `TRANSLATE`, `RESIZE`, `ROTATE`, hierarchy `REATTACH`, `SPLIT`, `MERGE/REMOVE`, or `ADD MASS` only for genuinely missing visible volume.
-4. Declare the invariant and expected structural effect.
-5. Use `modify_cube` for one target or `modify_cubes_batch` for one coherent multi-Cube cause.
-6. Check returned `geometry_effect`.
-7. Re-capture only affected view(s).
+1. reuse exact returned authored state when sufficient; otherwise call `inspect_element` once;
+2. diagnose one cause: `TRANSLATE`, `RESIZE`, `ROTATE`, `REATTACH`, `SPLIT`, `MERGE/REMOVE`, or genuinely missing `ADD MASS`;
+3. state the target UUID(s), intended change, invariant, and expected structural effect;
+4. use `modify_cube` or one coherent `modify_cubes_batch`;
+5. verify returned `geometry_effect`;
+6. re-capture only affected view(s).
 
-Common invariants:
-- `TRANSLATE` → size fixed; center moves intentionally.
-- `RESIZE` → name changed axis and fixed anchor/center/contact.
-- `ROTATE` → do not rewrite size just to change angle; use a justified pivot.
-- hierarchy REATTACH → if no supported reparent owner exists, use `BLOCKED`; never fake hierarchy with coordinate movement.
+TRANSLATE preserves size; RESIZE names its fixed center/face/contact; ROTATE uses a justified pivot without rewriting size. A wrong structural effect or no effective change is not progress. If the **same causal correction direction fails twice without new evidence**, stop speculative mutation and use `BLOCKED`.
 
-A structurally wrong effect or no effective geometry/visibility change is not progress. If the same causal correction direction fails twice without new evidence, stop speculative mutation and use `BLOCKED`; revise the hypothesis only with new evidence.
+`BLOCKED` means valid continuation requires guessing, unavailable required capability/evidence, unresolved material conflict, or repeated failed work. Keep the last valid state and name what is required to continue.
 
-## BLOCKED is a workflow outcome
+## Downstream stages
 
-`FAIL / UNVERIFIED / PASS` describe visual evidence; `BLOCKED` means valid continuation would require guessing or repeated failed work. Use it for unresolved view conflict, required observation unavailable after one useful retry, repeated same-cause failure, unavailable required capability, or provisional geometry being presented as verified. Report the blocker, affected claim, bounded attempts, and evidence/decision/capability needed.
+Secondary geometry follows primary-form `PASS`. Production texture waits for dependent geometry to `PASS`; production animation waits for an accepted baseline and suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; required unresolved `UNVERIFIED` becomes `BLOCKED`.
 
-## Secondary geometry, texture, and animation
+Existing-asset texture/animation-only work may use current geometry as the user baseline without certifying reference accuracy. Revalidate only downstream state affected by later upstream changes.
 
-Secondary geometry follows primary-form `PASS`. Production texture waits for dependent geometry to `PASS`; production animation waits for an accepted baseline and suitable participating hierarchy/pivots. `FAIL` returns upstream and required unresolved `UNVERIFIED` becomes `BLOCKED`. Existing-asset texture/animation-only work may use current geometry as a user baseline without certifying it. Revalidate only downstream state affected by later geometry/hierarchy/pivot changes.
-
-## Locator / Null Object authored state
-
-Use `list_locator_elements` for discovery and `inspect_element` for focused state. `manage_locator` owns supported native Locator fields; `manage_null_object` owns supported Null Object parent/position. Rename/delete through `rename_element` / `remove_element`; never substitute arbitrary Cubes or UI automation.
+Locator/Null Object discovery uses `list_locator_elements`; focused state uses `inspect_element`; authored create/update uses `manage_locator` / `manage_null_object`.
 
 ## Protected Native Capability Gaps
 
-Protected gaps include TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated-texture authoring, and bone-binding expressions. If no direct owner exists, preserve authored data and state the gap; `nodes://` is observability, not authored native support. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+Protected gaps include TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated-texture authoring, and bone-binding expressions. Preserve authored data and state the gap instead of using generic Mesh, UI automation, `risky_eval`, Hytale, or another format. **Native Bedrock PBR and per-face `material_instance` are **not** gaps.**
 
-## Export boundary
+## Stage/tool routing
 
-- `bedrock` — native Minecraft Bedrock geometry JSON;
-- `project` — editable Blockbench `.bbmodel`.
-
-Bedrock animation/controller files belong to the separate Bedrock AnimationCodec surface; do not substitute arbitrary OBJ/glTF/model codecs.
-
-## Tool and resource routing
-
-The catalog is capability, not a checklist. Stay in the smallest active lane:
+The catalog is capability, not a checklist:
 
 ```text
 project unknown/absent → get_project_info or create_project as appropriate
-known/returned project state → place_cube/Group build → capture_model_views
-→ inspect_element + modify_cube only on diagnosed mismatch when exact state is not already known
-→ downstream specialist only after prerequisite gate
-→ export_model only when requested
+known project state → place_cube / add_group
+judgeable form → capture_model_views
+bounded mismatch → inspect_element only if needed → modify_cube / modify_cubes_batch
+downstream stage → active texture or animation specialist
+requested deliverable → export_model
 ```
 
-Use Resources when their URI data answers the question; use focused reads such as `inspect_element`, `inspect_animation`, or `get_texture` only when the decision needs their state/image data. Do not read overlapping Resource/Tool evidence merely for confirmation.
-
-Selection is for real selection workflows, duplication for established repetition/symmetry, validators for structural diagnostics, and checkpoints only when rollback value is meaningful. Do not use `risky_eval`, generic UI automation, generic Mesh/Hytale tooling, or another format as shortcuts.
+Use `inspect_animation`, `get_texture`, resources, selection, duplication, validators, checkpoints, or current-view screenshots only when their data changes the active decision. Do not read overlapping evidence merely for confirmation.
