@@ -98,11 +98,11 @@ MERGE/REMOVE   compensatory/unnecessary geometry
 ADD MASS       genuinely missing visible volume
 ```
 
-Reuse fresh exact authored state when sufficient; otherwise call `inspect_element` once. Before numeric correction state the target UUID(s), cause, current state, intended change, invariant, and expected structural effect.
+Reuse fresh exact authored state already returned for that target when sufficient; otherwise call `inspect_element` once. Before numeric correction state the target UUID(s), cause, current state, intended change, invariant, and expected structural effect.
 
 Examples: TRANSLATE preserves size; RESIZE names the changed axis and fixed anchor/center/contact; ROTATE uses a justified pivot without rewriting size.
 
-`modify_cube` / `modify_cubes_batch` return before/after plus `geometry_effect`. Reject an unintended center shift during a center-preserving resize, size change during TRANSLATE, extent change during ROTATE, or any no-effect mutation as progress.
+`modify_cube` / `modify_cubes_batch` return before/after plus `geometry_effect`. **An unintended center shift** during a center-preserving resize, size change during TRANSLATE, extent change during ROTATE, or any no-effect mutation means the correction is structurally wrong.
 
 Re-capture only affected views. If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
 
