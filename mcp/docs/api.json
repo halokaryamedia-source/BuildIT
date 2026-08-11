@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T16:55:40.491Z",
+  "generatedAt": "2026-08-11T20:00:44.266Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1810,7 +1810,7 @@
     {
       "name": "list_outline",
       "title": "List Outline",
-      "description": "Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.",
+      "description": "Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -1832,17 +1832,17 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 32,
-                "default": 32,
-                "description": "Maximum tree depth to traverse. Use a small value to summarize large projects.",
-                "markdownDescription": "Maximum tree depth to traverse. Use a small value to summarize large projects."
+                "default": 8,
+                "description": "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed.",
+                "markdownDescription": "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed."
               },
               "max_nodes": {
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 5000,
-                "default": 500,
-                "description": "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated.",
-                "markdownDescription": "Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated."
+                "default": 120,
+                "description": "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters.",
+                "markdownDescription": "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters."
               }
             },
             "additionalProperties": false
@@ -1948,7 +1948,7 @@
     {
       "name": "find_elements_by_criteria",
       "title": "Find Elements by Criteria",
-      "description": "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.",
+      "description": "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2035,9 +2035,9 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 1000,
-                "default": 200,
-                "description": "Maximum number of results to return.",
-                "markdownDescription": "Maximum number of results to return."
+                "default": 50,
+                "description": "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set.",
+                "markdownDescription": "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set."
               }
             },
             "additionalProperties": false
@@ -2122,7 +2122,7 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 1000,
-                "default": 200,
+                "default": 50,
                 "description": "Maximum matching Cubes to return.",
                 "markdownDescription": "Maximum matching Cubes to return."
               }
@@ -2191,7 +2191,7 @@
     {
       "name": "list_locator_elements",
       "title": "List Bedrock Locator Elements",
-      "description": "Lists authored Locator and Null Object elements in the active Minecraft Bedrock Entity project with identity, type, and parent Group. Use inspect_element for their detailed authored state.",
+      "description": "Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2212,7 +2212,7 @@
     {
       "name": "manage_locator",
       "title": "Manage Bedrock Locator",
-      "description": "Creates or updates a native Minecraft Bedrock Entity Locator under an explicit Group/bone. Create owns name, position, rotation, and ignore_inherited_scale. Update resolves the Locator UUID first, otherwise an exact name must be unique. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "description": "Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2228,19 +2228,21 @@
                 "properties": {
                   "action": {
                     "type": "string",
-                    "const": "create"
+                    "const": "create",
+                    "description": "Create branch: requires name and parent; do not send id.",
+                    "markdownDescription": "Create branch: requires name and parent; do not send id."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Locator name.",
-                    "markdownDescription": "Locator name."
+                    "description": "Required when action=create. Locator name; omit for update.",
+                    "markdownDescription": "Required when action=create. Locator name; omit for update."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required parent Group UUID or exact unique Group name.",
-                    "markdownDescription": "Required parent Group UUID or exact unique Group name."
+                    "description": "Required when action=create: parent Group UUID or exact unique name.",
+                    "markdownDescription": "Required when action=create: parent Group UUID or exact unique name."
                   },
                   "position": {
                     "type": "array",
@@ -2261,7 +2263,9 @@
                       0,
                       0,
                       0
-                    ]
+                    ],
+                    "description": "Create-only initial position; defaults to [0,0,0].",
+                    "markdownDescription": "Create-only initial position; defaults to [0,0,0]."
                   },
                   "rotation": {
                     "type": "array",
@@ -2282,11 +2286,15 @@
                       0,
                       0,
                       0
-                    ]
+                    ],
+                    "description": "Create-only initial rotation; defaults to [0,0,0].",
+                    "markdownDescription": "Create-only initial rotation; defaults to [0,0,0]."
                   },
                   "ignore_inherited_scale": {
                     "type": "boolean",
-                    "default": false
+                    "default": false,
+                    "description": "Create-only initial ignore_inherited_scale value.",
+                    "markdownDescription": "Create-only initial ignore_inherited_scale value."
                   }
                 },
                 "required": [
@@ -2301,19 +2309,21 @@
                 "properties": {
                   "action": {
                     "type": "string",
-                    "const": "update"
+                    "const": "update",
+                    "description": "Update branch: requires id plus at least one authored field; do not send name.",
+                    "markdownDescription": "Update branch: requires id plus at least one authored field; do not send name."
                   },
                   "id": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Exact Locator UUID or exact unique Locator name.",
-                    "markdownDescription": "Exact Locator UUID or exact unique Locator name."
+                    "description": "Required when action=update. Exact Locator UUID or exact unique name.",
+                    "markdownDescription": "Required when action=update. Exact Locator UUID or exact unique name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Optional replacement parent Group UUID or exact unique Group name.",
-                    "markdownDescription": "Optional replacement parent Group UUID or exact unique Group name."
+                    "description": "Update-only optional replacement parent Group UUID or exact unique name.",
+                    "markdownDescription": "Update-only optional replacement parent Group UUID or exact unique name."
                   },
                   "position": {
                     "type": "array",
@@ -2329,7 +2339,9 @@
                       {
                         "type": "number"
                       }
-                    ]
+                    ],
+                    "description": "Update-only optional replacement position.",
+                    "markdownDescription": "Update-only optional replacement position."
                   },
                   "rotation": {
                     "type": "array",
@@ -2345,10 +2357,14 @@
                       {
                         "type": "number"
                       }
-                    ]
+                    ],
+                    "description": "Update-only optional replacement rotation.",
+                    "markdownDescription": "Update-only optional replacement rotation."
                   },
                   "ignore_inherited_scale": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Update-only optional ignore_inherited_scale replacement.",
+                    "markdownDescription": "Update-only optional ignore_inherited_scale replacement."
                   }
                 },
                 "required": [
@@ -2366,7 +2382,7 @@
     {
       "name": "manage_null_object",
       "title": "Manage Bedrock Null Object",
-      "description": "Creates or updates a Blockbench Null Object used by the Bedrock Entity workflow. Bedrock geometry serialization round-trips it through a `_null_` locator entry, while IK fields remain Blockbench editor/animation state and are intentionally read-only in this minimum slice. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "description": "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain Blockbench editor/animation state and read-only in this tool. Rename/delete use rename_element/remove_element.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2382,19 +2398,21 @@
                 "properties": {
                   "action": {
                     "type": "string",
-                    "const": "create"
+                    "const": "create",
+                    "description": "Create branch: requires name and parent; do not send id.",
+                    "markdownDescription": "Create branch: requires name and parent; do not send id."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Null Object name.",
-                    "markdownDescription": "Null Object name."
+                    "description": "Required when action=create. Null Object name; omit for update.",
+                    "markdownDescription": "Required when action=create. Null Object name; omit for update."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required parent Group UUID or exact unique Group name.",
-                    "markdownDescription": "Required parent Group UUID or exact unique Group name."
+                    "description": "Required when action=create: parent Group UUID or exact unique name.",
+                    "markdownDescription": "Required when action=create: parent Group UUID or exact unique name."
                   },
                   "position": {
                     "type": "array",
@@ -2415,7 +2433,9 @@
                       0,
                       0,
                       0
-                    ]
+                    ],
+                    "description": "Create-only initial position; defaults to [0,0,0].",
+                    "markdownDescription": "Create-only initial position; defaults to [0,0,0]."
                   }
                 },
                 "required": [
@@ -2430,19 +2450,21 @@
                 "properties": {
                   "action": {
                     "type": "string",
-                    "const": "update"
+                    "const": "update",
+                    "description": "Update branch: requires id plus parent and/or position; do not send name.",
+                    "markdownDescription": "Update branch: requires id plus parent and/or position; do not send name."
                   },
                   "id": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Exact Null Object UUID or exact unique Null Object name.",
-                    "markdownDescription": "Exact Null Object UUID or exact unique Null Object name."
+                    "description": "Required when action=update. Exact Null Object UUID or exact unique name.",
+                    "markdownDescription": "Required when action=update. Exact Null Object UUID or exact unique name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Optional replacement parent Group UUID or exact unique Group name.",
-                    "markdownDescription": "Optional replacement parent Group UUID or exact unique Group name."
+                    "description": "Update-only optional replacement parent Group UUID or exact unique name.",
+                    "markdownDescription": "Update-only optional replacement parent Group UUID or exact unique name."
                   },
                   "position": {
                     "type": "array",
@@ -2458,7 +2480,9 @@
                       {
                         "type": "number"
                       }
-                    ]
+                    ],
+                    "description": "Update-only optional replacement position.",
+                    "markdownDescription": "Update-only optional replacement position."
                   }
                 },
                 "required": [
@@ -2548,7 +2572,7 @@
     {
       "name": "undo",
       "title": "Undo",
-      "description": "Undoes the most recent edit in the current project. Use `steps` to undo multiple edits in a single call. Returns the action(s) that were undone.",
+      "description": "Undoes recent edits. Use `steps` to undo multiple edits in one call; returns the actions undone.",
       "status": "stable",
       "category": "History",
       "annotations": {
@@ -2578,7 +2602,7 @@
     {
       "name": "redo",
       "title": "Redo",
-      "description": "Redoes the most recently undone edit. Use `steps` to redo multiple edits in a single call. Returns the action(s) that were redone.",
+      "description": "Redoes recently undone edits. Use `steps` to redo multiple edits in one call; returns the actions redone.",
       "status": "stable",
       "category": "History",
       "annotations": {
@@ -2608,7 +2632,7 @@
     {
       "name": "get_undo_stack",
       "title": "Get Undo Stack",
-      "description": "Returns the current undo/redo history and named checkpoints. Use this for recovery/navigation when the workflow actually needs to undo or return to a checkpoint; it is not a normal modelling-observation step and should not be polled between successful bounded edits.",
+      "description": "Returns bounded recent undo/redo history and checkpoints for actual recovery/navigation; it should not be polled between successful bounded edits.",
       "status": "stable",
       "category": "History",
       "annotations": {
@@ -2624,9 +2648,9 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 200,
-                "default": 50,
-                "description": "Maximum number of entries to return (most recent first).",
-                "markdownDescription": "Maximum number of entries to return (most recent first)."
+                "default": 20,
+                "description": "Maximum recent entries returned. Defaults to 20; increase explicitly for deeper recovery history.",
+                "markdownDescription": "Maximum recent entries returned. Defaults to 20; increase explicitly for deeper recovery history."
               }
             },
             "additionalProperties": false
@@ -2638,7 +2662,7 @@
     {
       "name": "save_checkpoint",
       "title": "Save Checkpoint",
-      "description": "Inserts a named marker into the undo history for meaningful risky multi-step rework or a valuable recovery boundary. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Blockbench Undo. The marker can later be located with `get_undo_stack`. Does not modify model geometry.",
+      "description": "Adds a named Undo marker before meaningful risky rework. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Undo.",
       "status": "experimental",
       "category": "History",
       "annotations": {
@@ -4072,7 +4096,7 @@
     {
       "name": "create_project",
       "title": "Create Project",
-      "description": "Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.",
+      "description": "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4104,7 +4128,7 @@
     {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns read-only project lifecycle identity/path/save state, format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.",
+      "description": "Returns project lifecycle/format/resolution/counts plus a bounded top-level Group summary. Use list_outline only when hierarchy detail is actually needed.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4125,7 +4149,7 @@
     {
       "name": "inspect_model_bounds",
       "title": "Inspect Model Bounds",
-      "description": "Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.",
+      "description": "Returns rendered-current-pose Cube bounds, visibility counts, and pose context. Observation only; no visual PASS/FAIL.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4985,23 +5009,9 @@
   ],
   "prompts": [
     {
-      "name": "blockbench_native_apis",
-      "title": "blockbench_native_apis",
-      "description": "Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.",
-      "status": "stable",
-      "arguments": null
-    },
-    {
-      "name": "blockbench_code_eval_safety",
-      "title": "blockbench_code_eval_safety",
-      "description": "Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.",
-      "status": "stable",
-      "arguments": null
-    },
-    {
       "name": "bedrock_entity_workflow",
       "title": "Minecraft Bedrock Entity Workflow",
-      "description": "Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.",
+      "description": "Compact BlockIT workflow for Bedrock Entity authoring: minimum evidence, visual gates, bounded correction, downstream readiness, protected native gaps, and Bedrock/.bbmodel export.",
       "status": "stable",
       "arguments": {
         "$ref": "#/definitions/bedrock_entity_workflow",

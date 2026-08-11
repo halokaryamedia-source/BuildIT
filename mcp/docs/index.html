@@ -19,7 +19,7 @@
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
         <a href="#tools" class="nav-link">Tools <span class="count">(72)</span></a>
-        <a href="#prompts" class="nav-link">Prompts <span class="count">(3)</span></a>
+        <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
 
@@ -46,7 +46,7 @@
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
           <a href="#tools"><strong>72</strong> tools (29 stable, 43 experimental)</a>
-          <a href="#prompts"><strong>3</strong> prompts</a>
+          <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
       </header>
@@ -802,7 +802,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Outline</p>
-      <p class="card-desc">Returns a bounded hierarchical Cube/Group outline. Use `include_cubes=false` for a group-only skeleton; `max_depth` limits depth and `max_nodes` limits total returned nodes. Truncation is reported so targeted search can continue without dumping the whole project.</p>
+      <p class="card-desc">Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -822,12 +822,12 @@ bun run docs:check
       <td class="col-name">max_depth</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum tree depth to traverse. Use a small value to summarize large projects. <span class="param-meta">(default: <code>32</code>) [min: 1, max: 32]</span></td>
+      <td class="col-desc">Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed. <span class="param-meta">(default: <code>8</code>) [min: 1, max: 32]</span></td>
     </tr><tr>
       <td class="col-name">max_nodes</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum Cube/Group nodes returned. Increase only when a larger hierarchy is actually needed; use targeted search when truncated. <span class="param-meta">(default: <code>500</code>) [min: 1, max: 5000]</span></td>
+      <td class="col-desc">Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters. <span class="param-meta">(default: <code>120</code>) [min: 1, max: 5000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -914,7 +914,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Find Elements by Criteria</p>
-      <p class="card-desc">Read-only Cube/Group search by name, type, parent scope, size range, or selection. Explicit parent scope must resolve uniquely; invalid regex is rejected. Returns metadata only.</p>
+      <p class="card-desc">Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -964,7 +964,7 @@ bun run docs:check
       <td class="col-name">limit</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum number of results to return. <span class="param-meta">(default: <code>200</code>) [min: 1, max: 1000]</span></td>
+      <td class="col-desc">Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set. <span class="param-meta">(default: <code>50</code>) [min: 1, max: 1000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1042,7 +1042,7 @@ bun run docs:check
       <td class="col-name">limit</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum matching Cubes to return. <span class="param-meta">(default: <code>200</code>) [min: 1, max: 1000]</span></td>
+      <td class="col-desc">Maximum matching Cubes to return. <span class="param-meta">(default: <code>50</code>) [min: 1, max: 1000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1099,7 +1099,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Bedrock Locator Elements</p>
-      <p class="card-desc">Lists authored Locator and Null Object elements in the active Minecraft Bedrock Entity project with identity, type, and parent Group. Use inspect_element for their detailed authored state.</p>
+      <p class="card-desc">Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1113,7 +1113,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Bedrock Locator</p>
-      <p class="card-desc">Creates or updates a native Minecraft Bedrock Entity Locator under an explicit Group/bone. Create owns name, position, rotation, and ignore_inherited_scale. Update resolves the Locator UUID first, otherwise an exact name must be unique. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.</p>
+      <p class="card-desc">Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1127,7 +1127,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Bedrock Null Object</p>
-      <p class="card-desc">Creates or updates a Blockbench Null Object used by the Bedrock Entity workflow. Bedrock geometry serialization round-trips it through a `_null_` locator entry, while IK fields remain Blockbench editor/animation state and are intentionally read-only in this minimum slice. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.</p>
+      <p class="card-desc">Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain Blockbench editor/animation state and read-only in this tool. Rename/delete use rename_element/remove_element.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1205,7 +1205,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Undo</p>
-      <p class="card-desc">Undoes the most recent edit in the current project. Use `steps` to undo multiple edits in a single call. Returns the action(s) that were undone.</p>
+      <p class="card-desc">Undoes recent edits. Use `steps` to undo multiple edits in one call; returns the actions undone.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1234,7 +1234,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Redo</p>
-      <p class="card-desc">Redoes the most recently undone edit. Use `steps` to redo multiple edits in a single call. Returns the action(s) that were redone.</p>
+      <p class="card-desc">Redoes recently undone edits. Use `steps` to redo multiple edits in one call; returns the actions redone.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1263,7 +1263,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Undo Stack</p>
-      <p class="card-desc">Returns the current undo/redo history and named checkpoints. Use this for recovery/navigation when the workflow actually needs to undo or return to a checkpoint; it is not a normal modelling-observation step and should not be polled between successful bounded edits.</p>
+      <p class="card-desc">Returns bounded recent undo/redo history and checkpoints for actual recovery/navigation; it should not be polled between successful bounded edits.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1278,7 +1278,7 @@ bun run docs:check
       <td class="col-name">limit</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum number of entries to return (most recent first). <span class="param-meta">(default: <code>50</code>) [min: 1, max: 200]</span></td>
+      <td class="col-desc">Maximum recent entries returned. Defaults to 20; increase explicitly for deeper recovery history. <span class="param-meta">(default: <code>20</code>) [min: 1, max: 200]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1292,7 +1292,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Save Checkpoint</p>
-      <p class="card-desc">Inserts a named marker into the undo history for meaningful risky multi-step rework or a valuable recovery boundary. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Blockbench Undo. The marker can later be located with `get_undo_stack`. Does not modify model geometry.</p>
+      <p class="card-desc">Adds a named Undo marker before meaningful risky rework. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Undo.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2200,7 +2200,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Project</p>
-      <p class="card-desc">Creates a new Minecraft Bedrock Entity project. The format is fixed to Blockbench's native `bedrock` ModelFormat; arbitrary Blockbench project formats are intentionally outside this product tool.</p>
+      <p class="card-desc">Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2229,7 +2229,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Project Info</p>
-      <p class="card-desc">Returns read-only project lifecycle identity/path/save state, format, texture resolution, Cube/Group/Texture counts, and top-level Group summaries.</p>
+      <p class="card-desc">Returns project lifecycle/format/resolution/counts plus a bounded top-level Group summary. Use list_outline only when hierarchy detail is actually needed.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2243,7 +2243,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Model Bounds</p>
-      <p class="card-desc">Returns rendered-current-pose Cube bounds, dimensions/footprint, visibility counts, and pose context. Structural observation only; it does not compare, score, recommend corrections, or return PASS/FAIL.</p>
+      <p class="card-desc">Returns rendered-current-pose Cube bounds, visibility counts, and pose context. Observation only; no visual PASS/FAIL.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2889,29 +2889,11 @@ bun run docs:check
         <h2 class="section-title">Prompts</h2>
         <div class="card">
       <div class="card-header">
-        <h3 class="card-name">blockbench_native_apis</h3>
-        <div class="card-badges"><span class="badge badge-stable">stable</span></div>
-      </div>
-
-      <p class="card-desc">Essential information about Blockbench v5.0 native API security model and requireNativeModule() usage. Use this when working with Node.js modules, file system access, or native APIs in Blockbench plugins.</p>
-      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
-    </div>
-<div class="card">
-      <div class="card-header">
-        <h3 class="card-name">blockbench_code_eval_safety</h3>
-        <div class="card-badges"><span class="badge badge-stable">stable</span></div>
-      </div>
-
-      <p class="card-desc">Critical safety guide for agents using code evaluation/execution tools with Blockbench v5.0+. Contains breaking changes, quick reference, common mistakes, and safe code patterns for native module usage.</p>
-      <div class="overflow-x"><p class="empty-params">No arguments</p></div>
-    </div>
-<div class="card">
-      <div class="card-header">
         <h3 class="card-name">bedrock_entity_workflow</h3>
         <div class="card-badges"><span class="badge badge-stable">stable</span></div>
       </div>
       <p class="card-title">Minecraft Bedrock Entity Workflow</p>
-      <p class="card-desc">Canonical BlockIT workflow guidance for creating or revising Minecraft Bedrock Entity models in Blockbench. Covers inspect-first Cuboid modelling, hierarchy/pivots, canonical visual gates, Bedrock texture/Paint/PBR/material-instance work, animation boundaries, protected native capability gaps, and Bedrock/.bbmodel export outcomes.</p>
+      <p class="card-desc">Compact BlockIT workflow for Bedrock Entity authoring: minimum evidence, visual gates, bounded correction, downstream readiness, protected native gaps, and Bedrock/.bbmodel export.</p>
       <div class="overflow-x"><p class="empty-params">No parameters</p></div>
     </div>
       </section>
@@ -2985,7 +2967,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T16:55:40.491Z from Zod schemas
+        Generated 2026-08-11T20:00:44.266Z from Zod schemas
       </footer>
     </main>
   </div>
