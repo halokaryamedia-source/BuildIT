@@ -1,85 +1,56 @@
 ---
 name: blockit-bedrock-animation
-description: Specialist for Minecraft Bedrock Entity animation through BlockIT MCP. Use for existing-animation inspection, BoneAnimator transforms, keyframes, graph interpolation, Group/bone rig changes, timeline playback/settings, batch/copy operations, and mapped particle effects. Preserve unsupported native controller/sound/timeline-effect capabilities as explicit gaps instead of emulating them.
+description: Minecraft Bedrock Entity animation specialist for authored animation inspection, BoneAnimator transforms, keyframes, graph interpolation, rig changes, timeline playback, batch/copy operations, and mapped particle effects. Preserve unsupported native controller/sound/timeline-effect capability as explicit gaps.
 ---
 
 # BlockIT Bedrock Animation
 
-Own animation execution only after the model hierarchy and pivots are suitable for the requested motion.
+Own animation execution after the geometry/hierarchy/pivots needed by the requested motion are suitable.
 
 ## Preflight
 
-1. Reuse project lifecycle/format state already returned by the current workflow. Call `get_project_info` only when the active project format/state is unknown, stale, or missing a field needed by the animation decision.
-2. Reuse known Group/bone UUIDs from creation/mutation/discovery results. Call `list_outline` only when a participating identity or hierarchy relationship is still unknown.
-3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.
-4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.
+1. Reuse project lifecycle/format state already returned. **Call `get_project_info` only when** active project state is unknown, stale, or missing a field needed by the animation decision.
+2. Reuse known Group/bone UUIDs. **Call `list_outline` only when** a participating identity or hierarchy relationship remains unknown.
+3. For an existing animation, use `inspect_animation` before mutation instead of inferring authored keyframes from screenshots.
+4. Route unclear pivot/hierarchy judgement back to `blockbench-bedrock-modelling`.
 
-## Animation Readiness Gate
+## Readiness
 
-For end-to-end reference-driven creation, production animation begins only after the geometry baseline relevant to the requested motion is accepted and the participating Group/bone hierarchy and pivots are inspected and suitable. A material geometry `FAIL`, unresolved attachment, or pivot/hierarchy uncertainty that affects the motion returns to modelling before keyframe production. A required unresolved claim may become `BLOCKED`; do not animate around it.
+For end-to-end reference work, production animation starts only after the relevant geometry baseline is accepted and the **participating Group/bone hierarchy and pivots** are suitable. A material geometry `FAIL`, attachment problem, or pivot uncertainty returns upstream; required unresolved evidence may become `BLOCKED`.
 
-For an animation-only revision on an existing asset, the current geometry may be treated as the user-provided baseline when remodelling is outside scope. This does not certify the static model as reference-accurate. Inspect the participating bones/pivots and existing animation state needed for the requested motion.
+For an animation-only revision on an **existing asset**, current geometry is the user-provided baseline when remodelling is outside scope. This **does not certify the static model as reference-accurate**. Inspect only participating bones/pivots and animation state required by the requested motion.
 
-A small diagnostic pose/playback may be created before production animation when it is specifically testing a pivot, attachment, or transform direction. Keep it disposable and do not count it as animation progress or completion evidence.
+A small diagnostic pose/playback may test pivot, attachment, or transform direction without counting as production progress. If material geometry/hierarchy/pivots later change, **consider animation on the affected bones stale** until the affected keyframes, arcs, attachments, clipping, and neutral return are rechecked.
 
-If material geometry, hierarchy, or pivots change after animation work starts, consider animation on the affected bones stale until re-inspected and previewed. Re-check keyframe values, transform arcs, attachments, clipping, and return-to-neutral behavior as applicable. Existing animation effort is never a reason to preserve a bad rig or geometry baseline.
+## Direct Animation Surface
 
-## Directly Mapped Animation Surface
+```text
+create_animation             create native Bedrock animation + mapped particles
+inspect_animation            authored animation/bone/keyframe/effect state
+manage_keyframes             create/edit/delete/select transform keyframes
+animation_graph_editor       interpolation / Bezier
+bone_rigging                 explicit Group/bone structure and pivots
+animation_timeline           playback/time/length/FPS/loop
+batch_keyframe_operations    bounded timing/value operations
+animation_copy_paste         explicit copy/paste/mirror
+```
 
-- `create_animation` — uses the current Bedrock AnimationCodec and accepts authored transform keyframes plus mapped particle effects.
-- `inspect_animation` — read-only authored Animation/BoneAnimator/keyframe/particle state.
-- `manage_keyframes` — create/edit/delete/select transform-channel keyframes.
-- `animation_graph_editor` — interpolation/Bezier curve adjustment.
-- `bone_rigging` — Group/bone structure and pivot operations with explicit targets.
-- `animation_timeline` — playback/time/length/FPS/loop controls.
-- `batch_keyframe_operations` — bounded multi-keyframe timing/value operations.
-- `animation_copy_paste` — copy/paste/mirror between explicit Group/Animation targets.
+Use Group UUIDs when possible. Duplicate/colliding bone names are a determinism problem; do not guess through them.
 
-Use Group UUIDs whenever possible. Bedrock animation import matches bone names case-insensitively, so duplicate/colliding names are a real determinism problem, not something to guess around.
+## Create / Edit
 
-## Create Versus Edit
+**New animation:** establish motion and participating bones, verify pivots, create only necessary keyframes, then inspect/preview the result.
 
-For a new animation:
+**Existing animation:** inspect first, diagnose the affected bone/channel/time, edit only that state, then re-inspect and preview the affected motion.
 
-- establish the intended motion and which bones participate;
-- verify pivots first;
-- keep transform values in the authored Blockbench space expected by the tool;
-- create the minimum keyframes needed for the motion;
-- inspect the created animation afterward.
+Do not make `animation_timeline.select_range` a core-correctness dependency until its lifecycle is explicitly supported; prefer explicit keyframe/time ranges on editing tools.
 
-For an existing animation:
+Particle effects are mapped through `create_animation.particle_effects` and inspected through `inspect_animation.effects`. Preserve referenced Locator names.
 
-- inspect first;
-- diagnose which bone/channel/time is wrong;
-- edit only the affected keyframes or curve range;
-- re-inspect and visually preview the affected motion.
+## Protected Gaps
 
-## Timeline Caution
-
-Do not make `animation_timeline.select_range` a dependency for core correctness until its live Blockbench lifecycle behavior is explicitly accepted locally. Prefer explicit keyframe/time ranges on the editing tools when available.
-
-## Mapped Effects
-
-Particle effects are currently mapped through `create_animation.particle_effects` and surfaced by `inspect_animation.effects`. Preserve Locator names referenced by particles; a particle locator string does not mean direct Locator authoring is implemented.
-
-## Protected Native Animation Gaps
-
-Blockbench Bedrock Entity natively supports more than the current direct MCP authoring surface. Keep these as explicit protected gaps when no direct tool exists:
-
-- animation controllers;
-- sound-effect keyframes;
-- timeline-effect keyframes;
-- direct Locator/NullObject authoring used by effects;
-- bone-binding expressions.
-
-Do not fake these with `risky_eval`, `trigger_action`, dialog filling, arbitrary UI clicks, or generic model export. If the requested deliverable requires one, report the current MCP gap and preserve existing authored data rather than silently substituting another feature.
+Direct MCP authoring still does not own animation controllers, sound-effect keyframes, timeline-effect keyframes, or bone-binding expressions. Do not fake these through `risky_eval`, generic UI actions, or unrelated export paths. Preserve existing authored data and state the gap when required.
 
 ## Verification
 
-After animation mutation:
-
-- `inspect_animation` for authored-state continuity;
-- preview/play only as needed to inspect motion;
-- use canonical/model screenshots where pose silhouette or clipping matters;
-- verify attachment, transform arc, clipping, and return-to-neutral behavior relevant to the request;
-- do not claim in-game/controller behavior without the corresponding direct capability and local/game evidence.
+After mutation, inspect authored continuity only where needed and preview only the relevant motion. Verify attachment, transform arc, clipping, and return-to-neutral for the request. Do not claim controller/in-game behavior without the corresponding direct capability and evidence.
