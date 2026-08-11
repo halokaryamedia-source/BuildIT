@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T04:08:27.218Z",
+  "generatedAt": "2026-08-11T04:26:28.692Z",
   "tools": [
     {
       "name": "place_cube",
@@ -910,7 +910,7 @@
     {
       "name": "manage_keyframes",
       "title": "Manage Keyframes",
-      "description": "Creates, deletes, or edits keyframes in the animation timeline for specific bones and channels.",
+      "description": "Creates, deletes, edits, or selects explicit keyframe targets for one bone/channel. Edit omission preserves existing interpolation; non-create actions require each requested time to resolve uniquely before Undo/selection.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -960,8 +960,9 @@
                   "properties": {
                     "time": {
                       "type": "number",
-                      "description": "Time in seconds for the keyframe.",
-                      "markdownDescription": "Time in seconds for the keyframe."
+                      "minimum": 0,
+                      "description": "Finite non-negative keyframe time in seconds.",
+                      "markdownDescription": "Finite non-negative keyframe time in seconds."
                     },
                     "values": {
                       "anyOf": [
@@ -971,16 +972,14 @@
                             "type": "number"
                           },
                           "minItems": 3,
-                          "maxItems": 3,
-                          "description": "3D vector [x, y, z].",
-                          "markdownDescription": "3D vector [x, y, z]."
+                          "maxItems": 3
                         },
                         {
                           "type": "number"
                         }
                       ],
-                      "description": "Values: [x,y,z] for position/rotation, number for uniform scale.",
-                      "markdownDescription": "Values: [x,y,z] for position/rotation, number for uniform scale."
+                      "description": "Finite [x,y,z] values, or a finite uniform scalar.",
+                      "markdownDescription": "Finite [x,y,z] values, or a finite uniform scalar."
                     },
                     "interpolation": {
                       "type": "string",
@@ -990,9 +989,8 @@
                         "bezier",
                         "step"
                       ],
-                      "default": "linear",
-                      "description": "Interpolation type for the keyframe.",
-                      "markdownDescription": "Interpolation type for the keyframe."
+                      "description": "Optional interpolation change. Omit on edit to preserve the existing interpolation.",
+                      "markdownDescription": "Optional interpolation change. Omit on edit to preserve the existing interpolation."
                     },
                     "bezier_handles": {
                       "type": "object",
@@ -1003,9 +1001,7 @@
                             "type": "number"
                           },
                           "minItems": 3,
-                          "maxItems": 3,
-                          "description": "3D vector [x, y, z].",
-                          "markdownDescription": "3D vector [x, y, z]."
+                          "maxItems": 3
                         },
                         "left_value": {
                           "type": "array",
@@ -1013,9 +1009,7 @@
                             "type": "number"
                           },
                           "minItems": 3,
-                          "maxItems": 3,
-                          "description": "3D vector [x, y, z].",
-                          "markdownDescription": "3D vector [x, y, z]."
+                          "maxItems": 3
                         },
                         "right_time": {
                           "type": "array",
@@ -1023,9 +1017,7 @@
                             "type": "number"
                           },
                           "minItems": 3,
-                          "maxItems": 3,
-                          "description": "3D vector [x, y, z].",
-                          "markdownDescription": "3D vector [x, y, z]."
+                          "maxItems": 3
                         },
                         "right_value": {
                           "type": "array",
@@ -1033,14 +1025,12 @@
                             "type": "number"
                           },
                           "minItems": 3,
-                          "maxItems": 3,
-                          "description": "3D vector [x, y, z].",
-                          "markdownDescription": "3D vector [x, y, z]."
+                          "maxItems": 3
                         }
                       },
                       "additionalProperties": false,
-                      "description": "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors.",
-                      "markdownDescription": "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors."
+                      "description": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles.",
+                      "markdownDescription": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles."
                     }
                   },
                   "required": [

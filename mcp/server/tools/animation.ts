@@ -14,7 +14,6 @@ import {
   timeRangeSchema,
   boneNameSchema,
   loopModeEnum,
-  keyframeDataSchema,
 } from "@/lib/zodObjects";
 
 const bedrockParticleEffectSchema = z.object({
@@ -177,32 +176,75 @@ export const createAnimationParameters = z.object({
   particle_effects: bedrockParticleEffectsSchema.optional(),
 });
 
-const manageKeyframeDataSchema = keyframeDataSchema.extend({
+const manageKeyframeDataSchema = z.object({
+  time: z
+    .number()
+    .finite()
+    .min(0)
+    .describe("Finite non-negative keyframe time in seconds."),
+  values: z
+    .union([finiteCreateAnimationVector3Schema, z.number().finite()])
+    .optional()
+    .describe("Finite [x,y,z] values, or a finite uniform scalar."),
+  interpolation: interpolationEnum
+    .optional()
+    .describe("Optional interpolation change. Omit on edit to preserve the existing interpolation."),
   bezier_handles: z
     .object({
-      left_time: vector3Schema.optional(),
-      left_value: vector3Schema.optional(),
-      right_time: vector3Schema.optional(),
-      right_value: vector3Schema.optional(),
+      left_time: finiteCreateAnimationVector3Schema.optional(),
+      left_value: finiteCreateAnimationVector3Schema.optional(),
+      right_time: finiteCreateAnimationVector3Schema.optional(),
+      right_value: finiteCreateAnimationVector3Schema.optional(),
     })
     .optional()
     .describe(
-      "Per-axis Bezier handle offsets [x,y,z] matching Blockbench keyframe vectors."
+      "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles."
     ),
 });
 
-export const manageKeyframesParameters = z.object({
-  animation_id: animationIdOptionalSchema,
-  action: z
-    .enum(["create", "delete", "edit", "select"])
-    .describe("Action to perform on keyframes."),
-  bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to manage keyframes for."),
-  channel: animationChannelEnum.describe("Animation channel to modify."),
-  keyframes: z
-    .array(manageKeyframeDataSchema)
-    .min(1)
-    .describe("One or more keyframes for the action; empty mutation/selection requests are rejected."),
-});
+export const manageKeyframesParameters = z
+  .object({
+    animation_id: animationIdOptionalSchema,
+    action: z
+      .enum(["create", "delete", "edit", "select"])
+      .describe("Action to perform on keyframes."),
+    bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to manage keyframes for."),
+    channel: animationChannelEnum.describe("Animation channel to modify."),
+    keyframes: z
+      .array(manageKeyframeDataSchema)
+      .min(1)
+      .describe("One or more keyframes for the action; empty mutation/selection requests are rejected."),
+  })
+  .superRefine((params, ctx) => {
+    params.keyframes.forEach((keyframe, index) => {
+      if (
+        params.action === "edit" &&
+        keyframe.values === undefined &&
+        keyframe.interpolation === undefined &&
+        keyframe.bezier_handles === undefined
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["keyframes", index],
+          message:
+            "edit requires values, interpolation, and/or Bezier handles in addition to the target time."
+        });
+      }
+
+      if (
+        (params.action === "create" || params.action === "edit") &&
+        keyframe.bezier_handles !== undefined &&
+        keyframe.interpolation !== "bezier"
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["keyframes", index, "interpolation"],
+          message:
+            "Bezier handles require interpolation=bezier so the authored handle change is effective."
+        });
+      }
+    });
+  });
 
 export const animationGraphEditorParameters = z.object({
   animation_id: animationIdOptionalSchema,
@@ -587,7 +629,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "manage_keyframes",
     description:
-      "Creates, deletes, or edits keyframes in the animation timeline for specific bones and channels.",
+      "Creates, deletes, edits, or selects explicit keyframe targets for one bone/channel. Edit omission preserves existing interpolation; non-create actions require each requested time to resolve uniquely before Undo/selection.",
     annotations: {
       title: "Manage Keyframes",
       destructiveHint: true,
@@ -735,6 +777,44 @@ export function countAnimationClipboardKeyframes(
     (count, keyframes) => count + keyframes.length,
     0
   );
+}
+export function resolveUniqueKeyframeMatchIndexes(
+  existingTimes: readonly number[],
+  requestedTimes: readonly number[],
+  tolerance = 0.001
+): number[] {
+  if (!Number.isFinite(tolerance) || tolerance <= 0) {
+    throw new Error("Keyframe match tolerance must be finite and greater than 0.");
+  }
+  if (!existingTimes.every(Number.isFinite) || !requestedTimes.every(Number.isFinite)) {
+    throw new Error("Keyframe matching requires finite existing and requested times.");
+  }
+
+  const claimedIndexes = new Set<number>();
+  return requestedTimes.map((requestedTime) => {
+    const matches: number[] = [];
+    existingTimes.forEach((existingTime, index) => {
+      if (Math.abs(existingTime - requestedTime) < tolerance) matches.push(index);
+    });
+
+    if (matches.length === 0) {
+      throw new Error(`No existing keyframe matches requested time ${requestedTime}.`);
+    }
+    if (matches.length > 1) {
+      throw new Error(
+        `Requested time ${requestedTime} ambiguously matches ${matches.length} existing keyframes.`
+      );
+    }
+
+    const matchedIndex = matches[0];
+    if (claimedIndexes.has(matchedIndex)) {
+      throw new Error(
+        `Multiple requested times resolve to the same existing keyframe near ${requestedTime}.`
+      );
+    }
+    claimedIndexes.add(matchedIndex);
+    return matchedIndex;
+  });
 }
 export function registerAnimationTools() {
 createTool(
@@ -983,29 +1063,34 @@ createTool(
         }
       };
 
+      const resolveRequestedTargets = (): _Keyframe[] => {
+        if (!existingAnimator || !existingAnimator[channel]?.length) {
+          throw new Error(`No keyframes found for ${group.name}.${channel}`);
+        }
+        const channelKeyframes = existingAnimator[channel] as _Keyframe[];
+        const matchedIndexes = resolveUniqueKeyframeMatchIndexes(
+          channelKeyframes.map((keyframe) => keyframe.time),
+          keyframes.map((keyframe) => keyframe.time)
+        );
+        return matchedIndexes.map((index) => channelKeyframes[index]);
+      };
+
       if (action === "select") {
         if (animation !== AnimationItem.selected) {
           throw new Error(
             `Cannot select keyframes from animation "${animation.name}" because it is not the selected Blockbench animation.`
           );
         }
-        if (!existingAnimator || !existingAnimator[channel]?.length) {
-          throw new Error(`No keyframes found for ${group.name}.${channel}`);
-        }
+        const targetKeyframes = resolveRequestedTargets();
 
         Undo.initSelection({ timeline: true });
         try {
           Timeline.unselect();
-          existingAnimator.select();
-          keyframes.forEach((kf) => {
-            const keyframe = existingAnimator[channel]?.find(
-              (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
-            );
-            if (keyframe) {
-              keyframe.selected = true;
-              if (!Timeline.selected.includes(keyframe)) {
-                Timeline.selected.push(keyframe);
-              }
+          existingAnimator!.select();
+          targetKeyframes.forEach((keyframe) => {
+            keyframe.selected = true;
+            if (!Timeline.selected.includes(keyframe)) {
+              Timeline.selected.push(keyframe);
             }
           });
           updateKeyframeSelection();
@@ -1017,12 +1102,10 @@ createTool(
         }
 
         Animator.preview();
-        return `Successfully performed ${action} on ${keyframes.length} keyframes for ${bone_name}.${channel}`;
+        return `Successfully performed ${action} on ${targetKeyframes.length} keyframes for ${bone_name}.${channel}`;
       }
 
-      if (action !== "create" && (!existingAnimator || !existingAnimator[channel]?.length)) {
-        throw new Error(`No keyframes found for ${group.name}.${channel}`);
-      }
+      const targetKeyframes = action === "create" ? [] : resolveRequestedTargets();
 
       Undo.initEdit({
         animations: [animation],
@@ -1047,7 +1130,7 @@ createTool(
                 channel,
                 data_points: [{}],
                 time: Timeline.snapTime(kf.time, animation),
-                interpolation: kf.interpolation,
+                interpolation: kf.interpolation ?? "linear",
               });
               if (!keyframe) {
                 throw new Error(`Channel "${channel}" is unavailable for ${group.name}.`);
@@ -1074,23 +1157,13 @@ createTool(
             break;
 
           case "delete":
-            keyframes.forEach((kf) => {
-              const keyframe = animator![channel]?.find(
-                (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
-              );
-              if (keyframe) {
-                keyframe.remove();
-              }
-            });
+            targetKeyframes.forEach((keyframe) => keyframe.remove());
             break;
 
           case "edit":
-            keyframes.forEach((kf) => {
-              const keyframe = animator![channel]?.find(
-                (candidate: _Keyframe) => Math.abs(candidate.time - kf.time) < 0.001
-              );
-              if (keyframe) {
-                applyValues(keyframe, kf.values);
+            keyframes.forEach((kf, index) => {
+              const keyframe = targetKeyframes[index];
+              applyValues(keyframe, kf.values);
                 if (kf.interpolation) {
                   keyframe.interpolation = kf.interpolation;
                 }
@@ -1108,7 +1181,6 @@ createTool(
                   if (kf.bezier_handles.right_value)
                     keyframe.bezier_right_value = toArrayVector3(kf.bezier_handles.right_value);
                 }
-              }
             });
             break;
         }

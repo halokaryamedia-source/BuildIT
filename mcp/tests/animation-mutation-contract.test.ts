@@ -8,6 +8,7 @@ import {
   deriveMirroredRigName,
   hasCaseInsensitiveRigNameCollision,
   manageKeyframesParameters,
+  resolveUniqueKeyframeMatchIndexes,
   wouldCreateRigHierarchyCycle,
 } from "@/server/tools/animation";
 
@@ -188,5 +189,55 @@ describe("animation mutation contract", () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     expect(source).toContain("action === \"mirror_paste\" ? target.mirror_axis! : null");
     expect(source).not.toContain("target.mirror_axis || \"x\"");
+  });
+
+  test("manage_keyframes preserves partial edit intent and validates target times", async () => {
+    const parsedEdit = manageKeyframesParameters.parse({
+      action: "edit",
+      bone_name: "root",
+      channel: "rotation",
+      keyframes: [{ time: 1, values: [10, 20, 30] }],
+    });
+    expect(parsedEdit.keyframes[0].interpolation).toBeUndefined();
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "edit",
+        bone_name: "root",
+        channel: "rotation",
+        keyframes: [{ time: 1 }],
+      }).success
+    ).toBe(false);
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "create",
+        bone_name: "root",
+        channel: "rotation",
+        keyframes: [{ time: -0.1, values: [0, 0, 0] }],
+      }).success
+    ).toBe(false);
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "edit",
+        bone_name: "root",
+        channel: "rotation",
+        keyframes: [{ time: 1, bezier_handles: { left_time: [-0.1, 0, 0] } }],
+      }).success
+    ).toBe(false);
+
+    expect(resolveUniqueKeyframeMatchIndexes([0, 1, 2], [1])).toEqual([1]);
+    expect(resolveUniqueKeyframeMatchIndexes([0, 1, 2], [1.0005])).toEqual([1]);
+    expect(() => resolveUniqueKeyframeMatchIndexes([0, 1, 2], [3])).toThrow(
+      "No existing keyframe matches requested time 3"
+    );
+    expect(() =>
+      resolveUniqueKeyframeMatchIndexes([1, 1.0005], [1.00025])
+    ).toThrow("ambiguously matches");
+    expect(() => resolveUniqueKeyframeMatchIndexes([1], [1, 1.0005])).toThrow(
+      "same existing keyframe"
+    );
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("interpolation: kf.interpolation ?? \"linear\"");
+    expect(source).toContain("const targetKeyframes = action === \"create\" ? [] : resolveRequestedTargets()");
   });
 });
