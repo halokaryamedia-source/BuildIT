@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
-          <a href="#tools"><strong>72</strong> tools (30 stable, 42 experimental)</a>
+          <a href="#tools"><strong>72</strong> tools (29 stable, 43 experimental)</a>
           <a href="#prompts"><strong>3</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -2364,12 +2364,12 @@ bun run build
       <div class="card-header">
         <h3 class="card-name">apply_texture</h3>
         <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-experimental">experimental</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
       <p class="card-title">Apply Texture</p>
-      <p class="card-desc">Applies one explicit Texture to a Cube or Group scope; Group targets affect descendant Cubes. Element/Texture references must resolve uniquely before mutation. Generic Mesh is outside the Bedrock Entity surface.</p>
+      <p class="card-desc">Legacy generic per-face Texture.apply wrapper. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and Blockbench hides per-face apply actions there; use activate_texture for the active/default texture.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3020,7 +3020,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T08:28:11.810Z from Zod schemas
+        Generated 2026-08-11T09:06:17.739Z from Zod schemas
       </footer>
     </main>
   </div>

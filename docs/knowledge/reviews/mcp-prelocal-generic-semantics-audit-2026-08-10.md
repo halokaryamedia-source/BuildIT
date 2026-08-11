@@ -67,6 +67,13 @@ set_camera_angle
 
 Reason: full application capture and arbitrary active-camera mutation are generic UI/editor conveniences. Canonical Bedrock model observation already has a deterministic non-mutating owner.
 
+### `apply_texture`
+
+**DEFAULT-DISABLE** the inherited generic per-face `Texture.apply()` wrapper.
+
+Official Blockbench Bedrock Entity source defines `id: bedrock` with `single_texture: true`. The native Texture menu exposes face/blank/element apply actions only when `!Format.single_texture`, and `Face.getTexture()` resolves `Texture.getDefault()` for non-null faces when `Format.single_texture` is active. BlockIT already exposes `activate_texture`, which explicitly selects the intended Texture and therefore owns the active/default working texture without per-face apply or nested Undo.
+
+Keeping `apply_texture` enabled would add one generic tool to Codex, duplicate active-texture intent, retain ambient face-selection semantics for one mode, and invoke native `Texture.apply()` inside an outer BlockIT Undo edit. None of those are required Bedrock Entity capability. Source/catalog evidence remains for maintainers, but the tool is not callable from the enabled Bedrock MCP surface.
 ### validator references
 
 Keep validator resources, but mark regex-derived `elementRefs` as:

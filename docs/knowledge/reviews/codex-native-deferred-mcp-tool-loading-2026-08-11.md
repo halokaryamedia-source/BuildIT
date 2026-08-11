@@ -163,9 +163,9 @@ The normal stage-gated lane names the intended operations directly (`create_proj
 
 ## Default Tool Footprint Audit — 2026-08-11
 
-A bounded GitHub CI audit ranked the **default 65 enabled tools** by compact Zod-derived schema and description footprint. This ranking is diagnostic, not a replacement for the already measured live `tools/list` baseline: the CI serializer is close enough to locate hotspots but is not byte-identical to the MCP SDK wire representation.
+A bounded GitHub CI audit originally ranked the **default 65 enabled tools** by compact Zod-derived schema and description footprint. That ranking is historical diagnostic evidence from before the later `apply_texture` containment; its category table is not rewritten as if it were a new measurement.
 
-Known actual stateless `tools/list` baseline remains:
+Historical actual stateless `tools/list` baseline before `apply_texture` containment:
 
 ```text
 65 enabled tools
@@ -173,6 +173,17 @@ Known actual stateless `tools/list` baseline remains:
 48,119 input-schema characters
 11,786 tool-description characters
 ```
+
+Current actual stateless `tools/list` measurement after default-disabling generic per-face `apply_texture`:
+
+```text
+64 enabled tools
+74,267 response characters
+49,240 input-schema characters
+12,298 tool-description characters
+```
+
+`activate_texture` remains exposed; `apply_texture` is absent from the callable tools list. This is a Bedrock semantics correction, not a geometry benchmark profile or arbitrary context cut.
 
 The ranking audit produced this compact approximation:
 
@@ -303,10 +314,10 @@ Use the actual Codex + Blockbench + BlockIT environment. The proof is intentiona
 codex debug trace-reduce <trace-bundle>
 ```
 
-6. Inspect the first model-facing request and prove that the full 65-tool BlockIT schema surface is not all sent as direct model-visible tool specifications when native search is active.
+6. Inspect the first model-facing request and prove that the full current 64-tool BlockIT schema surface is not all sent as direct model-visible tool specifications when native search is active.
 7. Inspect the subsequent request/runtime evidence and prove that a relevant BlockIT tool is discovered/loaded and then called successfully.
 8. Repeat only enough bounded discovery to prove retained reachability across the product path: geometry plus texture and either animation or Locator/Null Object. Do not run every tool.
-9. When practical, record the initial model-visible BlockIT tool-spec count/serialized size and compare it with the existing full `tools/list` baseline of 65 enabled tools / 72,817 response characters. Keep this as diagnostic evidence, not a permanent runtime metric.
+9. When practical, record the initial model-visible BlockIT tool-spec count/serialized size and compare it with the current full `tools/list` measurement of 64 enabled tools / 74,267 response characters. Keep this as diagnostic evidence, not a permanent runtime metric.
 
 ### PASS
 

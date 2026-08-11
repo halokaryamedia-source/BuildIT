@@ -11,5 +11,7 @@ describe("default MCP registration is runtime-lazy", () => {
     expect(exposed.length).toBeGreaterThan(0);
     expect(exposed.some((tool) => tool.name === "place_cube")).toBe(true);
     expect(exposed.some((tool) => tool.name === "paint_with_brush")).toBe(true);
+    expect(exposed.some((tool) => tool.name === "activate_texture")).toBe(true);
+    expect(exposed.some((tool) => tool.name === "apply_texture")).toBe(false);
   });
 });

@@ -34,6 +34,16 @@ describe("pre-local generic semantics narrowing", () => {
     expect(camera).toContain("capture_model_views");
   });
 
+  test("generic per-face texture apply is disabled for Bedrock single-texture authoring", async () => {
+    const texture = await source("server/tools/texture.ts");
+    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const audit = await source("../docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md");
+    expect(texture).toContain("textureToolDocs[1].status, false");
+    expect(texture).toContain("native Bedrock Entity is single_texture");
+    expect(skill).not.toContain("- `apply_texture`");
+    expect(skill).toContain("use `activate_texture` to choose the active/default working texture");
+    expect(audit).toContain("**DEFAULT-DISABLE** the inherited generic per-face `Texture.apply()` wrapper");
+  });
   test("validator inferred element references declare their non-authoritative source", async () => {
     const validator = await source("server/resources/validator.ts");
     expect(validator).toContain('elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none"');

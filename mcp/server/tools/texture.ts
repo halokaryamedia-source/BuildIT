@@ -323,13 +323,13 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "apply_texture",
     description:
-      "Applies one explicit Texture to a Cube or Group scope; Group targets affect descendant Cubes. Element/Texture references must resolve uniquely before mutation. Generic Mesh is outside the Bedrock Entity surface.",
+      "Legacy generic per-face Texture.apply wrapper. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and Blockbench hides per-face apply actions there; use activate_texture for the active/default texture.",
     annotations: {
       title: "Apply Texture",
       destructiveHint: true,
     },
     parameters: applyTextureParameters,
-    status: STATUS_STABLE,
+    status: STATUS_EXPERIMENTAL,
   },
   {
     name: "add_texture_group",
@@ -786,7 +786,7 @@ export function registerTextureTools() {
 
       return `Applied texture "${projectTexture.name}" to ${targets.length} Bedrock Cube(s) scoped by "${id}" (${element instanceof Group ? "group" : "cube"}).`;
     },
-  }, textureToolDocs[1].status);
+  }, textureToolDocs[1].status, false);
 
   createTool(textureToolDocs[2].name, {
     ...textureToolDocs[2],

@@ -37,10 +37,11 @@ Use the actual BlockIT texture tools:
 - `list_textures`
 - `get_texture`
 - `activate_texture`
-- `apply_texture`
 - `add_texture_group`
 
-`apply_texture` targets Cube or Group scopes, not generic Mesh.
+`apply_texture` is intentionally not enabled for Bedrock Entity. Native Bedrock Entity is a `single_texture` format, so use `activate_texture` to choose the active/default working texture. Use Painter operations for pixel changes and material-instance tools for native per-face material metadata.
+
+Do not route normal Bedrock work through generic per-face `Texture.apply()` semantics.
 
 ## Paint
 
