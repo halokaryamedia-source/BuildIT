@@ -5,6 +5,7 @@ import {
   batchKeyframeOperationsParameters,
   boneRiggingParameters,
   countAnimationClipboardKeyframes,
+  hasCaseInsensitiveRigNameCollision,
   manageKeyframesParameters,
   wouldCreateRigHierarchyCycle,
 } from "@/server/tools/animation";
@@ -136,5 +137,23 @@ describe("animation mutation contract", () => {
       ["b", "a"],
     ]);
     expect(wouldCreateRigHierarchyCycle("target", "a", corruptHierarchy)).toBe(true);
+  });
+
+  test("rig bone names reject case-insensitive collisions while allowing self case-only rename", async () => {
+    const groups = [
+      { uuid: "arm-id", name: "Arm" },
+      { uuid: "leg-id", name: "Leg" },
+    ];
+    expect(hasCaseInsensitiveRigNameCollision(groups, "arm")).toBe(true);
+    expect(hasCaseInsensitiveRigNameCollision(groups, "ARM")).toBe(true);
+    expect(
+      hasCaseInsensitiveRigNameCollision(groups, "arm", "arm-id")
+    ).toBe(false);
+    expect(hasCaseInsensitiveRigNameCollision(groups, "hand")).toBe(false);
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("hasCaseInsensitiveRigNameCollision(Group.all, bone_data.name)");
+    expect(source).toContain("bone_data.new_name === targetBone.name");
+    expect(source).not.toContain("group.name === bone_data.new_name");
   });
 });

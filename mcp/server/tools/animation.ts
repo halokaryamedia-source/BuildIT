@@ -577,7 +577,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. Create/rename preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -663,6 +663,17 @@ function resolveRigElement(reference: string): OutlinerElement {
   );
 }
 
+export function hasCaseInsensitiveRigNameCollision(
+  groups: readonly { uuid: string; name: string }[],
+  requestedName: string,
+  excludeUuid?: string
+): boolean {
+  const normalizedName = requestedName.toLowerCase();
+  return groups.some(
+    (group) =>
+      group.uuid !== excludeUuid && group.name.toLowerCase() === normalizedName
+  );
+}
 export function wouldCreateRigHierarchyCycle(
   targetUuid: string,
   candidateParentUuid: string,
@@ -1257,9 +1268,9 @@ createTool(
 
       switch (action) {
         case "create":
-          if (Group.all.some((group: Group) => group.name === bone_data.name)) {
+          if (hasCaseInsensitiveRigNameCollision(Group.all, bone_data.name)) {
             throw new Error(
-              `Bone name "${bone_data.name}" already exists. Use a unique bone name so future animation/rig targets stay unambiguous.`
+              `Bone name "${bone_data.name}" collides case-insensitively with an existing Group. Bedrock animation matching is case-insensitive; use a distinct bone name.`
             );
           }
           parentBone = bone_data.parent
@@ -1321,14 +1332,20 @@ createTool(
           if (!bone_data.new_name) {
             throw new Error("new_name is required for the rename action.");
           }
+          if (bone_data.new_name === targetBone.name) {
+            throw new Error(
+              `Bone "${targetBone.name}" already has that exact name; rename requires an authored name change.`
+            );
+          }
           if (
-            Group.all.some(
-              (group: Group) =>
-                group !== targetBone && group.name === bone_data.new_name
+            hasCaseInsensitiveRigNameCollision(
+              Group.all,
+              bone_data.new_name,
+              targetBone.uuid
             )
           ) {
             throw new Error(
-              `Bone name "${bone_data.new_name}" already exists. Choose a unique name.`
+              `Bone name "${bone_data.new_name}" collides case-insensitively with another Group. Bedrock animation matching is case-insensitive; choose a distinct name.`
             );
           }
           break;
