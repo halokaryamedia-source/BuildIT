@@ -1,0 +1,242 @@
+name: Harden Animation Action Contracts
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-animation-action-contracts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Reject invalid animation actions at MCP boundary
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/animation.ts')
+          text = path.read_text(encoding='utf-8')
+
+          graph_start = text.index('export const animationGraphEditorParameters = z.object({')
+          graph_end = text.index('\n\nexport const boneRiggingParameters', graph_start)
+          graph = text[graph_start:graph_end]
+          graph = graph.replace('.array(z.number())\n        .length(2)', '.array(z.number().finite())\n        .length(2)')
+          if graph.count('.array(z.number().finite())\n        .length(2)') != 2:
+              raise SystemExit('Unexpected animation graph control-point schema')
+          if not graph.endswith('});'):
+              raise SystemExit('Unexpected animation graph schema tail')
+          graph = graph[:-3] + '''}).superRefine((params, ctx) => {
+  if (params.action === "custom" && params.custom_curve === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["custom_curve"],
+      message: "custom_curve is required when action=custom."
+    });
+  }
+  if (params.custom_curve?.control_point_1[0] > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["custom_curve", "control_point_1", 0],
+      message: "The left Bezier handle time offset must be less than or equal to 0."
+    });
+  }
+  if (params.custom_curve?.control_point_2[0] < 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["custom_curve", "control_point_2", 0],
+      message: "The right Bezier handle time offset must be greater than or equal to 0."
+    });
+  }
+});'''
+          text = text[:graph_start] + graph + text[graph_end:]
+
+          rig_start = text.index('export const boneRiggingParameters = z.object({')
+          rig_end = text.index('\n\nconst animationTimelineRangeSchema', rig_start)
+          rig = text[rig_start:rig_end]
+          old_parent = '''      parent: z
+        .string()
+        .optional()'''
+          new_parent = '''      parent: z
+        .string()
+        .min(1)
+        .optional()'''
+          if rig.count(old_parent) != 1:
+              raise SystemExit('Unexpected rig parent schema')
+          rig = rig.replace(old_parent, new_parent, 1)
+          old_children = '      children: z\n        .array(z.string())\n        .optional()'
+          new_children = '      children: z\n        .array(z.string().min(1))\n        .optional()'
+          if rig.count(old_children) != 1:
+              raise SystemExit('Unexpected rig children schema')
+          rig = rig.replace(old_children, new_children, 1)
+          old_ik = '''      ik_target: z
+        .string()
+        .optional()'''
+          new_ik = '''      ik_target: z
+        .string()
+        .min(1)
+        .optional()'''
+          if rig.count(old_ik) != 1:
+              raise SystemExit('Unexpected rig IK target schema')
+          rig = rig.replace(old_ik, new_ik, 1)
+          text = text[:rig_start] + rig + text[rig_end:]
+
+          old_timeline_tail = '''}).refine(
+  (params) => params.action !== "loop" || params.loop_mode !== undefined,
+  {
+    message: "loop_mode is required for the loop action.",
+    path: ["loop_mode"],
+  }
+);'''
+          new_timeline_tail = '''}).superRefine((params, ctx) => {
+  if (params.action === "set_time" && params.time === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["time"], message: "time is required for set_time." });
+  }
+  if (params.action === "set_length" && params.length === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["length"], message: "length is required for set_length." });
+  }
+  if (params.action === "set_fps" && params.fps === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["fps"], message: "fps is required for set_fps." });
+  }
+  if (params.action === "loop" && params.loop_mode === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["loop_mode"], message: "loop_mode is required for loop." });
+  }
+  if (params.action === "select_range" && params.range === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["range"], message: "range is required for select_range." });
+  }
+});'''
+          if text.count(old_timeline_tail) != 1:
+              raise SystemExit('Unexpected animation timeline schema tail')
+          path.write_text(text.replace(old_timeline_tail, new_timeline_tail, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/animation-mutation-contract.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          import_anchor = '  animationCopyPasteParameters,\n'
+          if '  animationGraphEditorParameters,\n' not in test:
+              if test.count(import_anchor) != 1:
+                  raise SystemExit('Unexpected animation test import anchor')
+              test = test.replace(import_anchor, import_anchor + '  animationGraphEditorParameters,\n', 1)
+
+          old_timeline_test = '''  test("timeline loop requires an explicit loop mode", () => {
+    expect(animationTimelineParameters.safeParse({ action: "loop" }).success).toBe(false);
+    expect(
+      animationTimelineParameters.safeParse({ action: "loop", loop_mode: "loop" }).success
+    ).toBe(true);
+  });'''
+          new_timeline_test = '''  test("timeline actions require their action-specific inputs at schema boundary", () => {
+    expect(animationTimelineParameters.safeParse({ action: "set_time" }).success).toBe(false);
+    expect(animationTimelineParameters.safeParse({ action: "set_length" }).success).toBe(false);
+    expect(animationTimelineParameters.safeParse({ action: "set_fps" }).success).toBe(false);
+    expect(animationTimelineParameters.safeParse({ action: "loop" }).success).toBe(false);
+    expect(animationTimelineParameters.safeParse({ action: "select_range" }).success).toBe(false);
+    expect(animationTimelineParameters.safeParse({ action: "set_time", time: 0 }).success).toBe(true);
+    expect(animationTimelineParameters.safeParse({ action: "set_length", length: 0 }).success).toBe(true);
+    expect(animationTimelineParameters.safeParse({ action: "set_fps", fps: 20 }).success).toBe(true);
+    expect(animationTimelineParameters.safeParse({ action: "loop", loop_mode: "loop" }).success).toBe(true);
+    expect(animationTimelineParameters.safeParse({ action: "select_range", range: { start: 0, end: 1 } }).success).toBe(true);
+  });'''
+          if test.count(old_timeline_test) != 1:
+              raise SystemExit('Unexpected timeline contract test')
+          test = test.replace(old_timeline_test, new_timeline_test, 1)
+
+          marker = '  test("batch operations reject incomplete or effective no-op requests", () => {'
+          graph_test = '''  test("custom graph curves require finite directionally valid handles", () => {
+    expect(animationGraphEditorParameters.safeParse({ action: "custom", bone_name: "root", channel: "rotation" }).success).toBe(false);
+    expect(animationGraphEditorParameters.safeParse({
+      action: "custom", bone_name: "root", channel: "rotation",
+      custom_curve: { control_point_1: [-Infinity, 0], control_point_2: [0.2, 1] },
+    }).success).toBe(false);
+    expect(animationGraphEditorParameters.safeParse({
+      action: "custom", bone_name: "root", channel: "rotation",
+      custom_curve: { control_point_1: [0.1, 0], control_point_2: [0.2, 1] },
+    }).success).toBe(false);
+    expect(animationGraphEditorParameters.safeParse({
+      action: "custom", bone_name: "root", channel: "rotation",
+      custom_curve: { control_point_1: [-0.1, 0], control_point_2: [-0.2, 1] },
+    }).success).toBe(false);
+    expect(animationGraphEditorParameters.safeParse({
+      action: "custom", bone_name: "root", channel: "rotation",
+      custom_curve: { control_point_1: [-0.1, 0], control_point_2: [0.2, 1] },
+    }).success).toBe(true);
+  });
+
+'''
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected animation graph test insertion point')
+          test = test.replace(marker, graph_test + marker, 1)
+
+          ik_anchor = '''    expect(
+      boneRiggingParameters.safeParse({
+        action: "set_ik",
+        bone_data: { name: "arm", ik_target: "hand_target" },
+      }).success
+    ).toBe(true);'''
+          ik_extra = ik_anchor + '''
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "set_ik",
+        bone_data: { name: "arm", ik_target: "" },
+      }).success
+    ).toBe(false);
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "create",
+        bone_data: { name: "arm", parent: "" },
+      }).success
+    ).toBe(false);
+    expect(
+      boneRiggingParameters.safeParse({
+        action: "create",
+        bone_data: { name: "arm", children: [""] },
+      }).success
+    ).toBe(false);'''
+          if test.count(ik_anchor) != 1:
+              raise SystemExit('Unexpected set_ik test anchor')
+          test_path.write_text(test.replace(ik_anchor, ik_extra, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A bounded GitHub-only rigging contract correction now rejects empty `set_ik` updates, prevents target-only IK edits from implicitly forcing `ik_enabled=false`, rejects parent operations whose self/descendant/existing parent chain would create or extend a hierarchy cycle before Undo, rejects bone-create child adoption when a requested child is the chosen parent/ancestor of that parent, snapshots all descendant Groups/elements plus animations targeting any deleted Group before recursive bone delete, and keeps create/rename/mirror bone identities unique under the case-insensitive matching used by Bedrock animation import. Mirror derives and validates its intended counterpart name before duplication; exact no-op renames are rejected while case-only self renames remain valid. Omitted `ik_enabled` preserves the existing authored state. IK target resolution and local runtime proof requirements are unchanged.'
+          extra = '\n\nAnimation MCP input contracts now reject explicit empty rig parent/child/IK references before execution, so `parent: ""` cannot silently become root and `ik_target: ""` cannot masquerade as an IK update. Custom graph curves require finite handle coordinates, require `custom_curve` for the custom action, and enforce left/right handle time direction at the schema boundary. Timeline actions likewise require their action-specific fields in schema while retaining the existing runtime guards.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected animation continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-animation-action-contracts.yml
+          git add mcp/server/tools/animation.ts mcp/tests/animation-mutation-contract.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: harden animation action contracts'
+          git push origin HEAD:Local
