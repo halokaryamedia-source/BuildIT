@@ -208,6 +208,8 @@ The current source slice has hardened **P1 — correction accuracy** by linking 
 
 A bounded GitHub-only correction contract hardening now rejects Cube from/to combinations whose finite endpoints produce a non-finite derived size, preflights partial single/batch updates against current authored endpoints before Undo, and derives Cube centers from validated spans so inspection/mutation evidence cannot silently serialize overflow as `null`.
 
+`create_project` no longer exposes a redundant `format` input. The normal BlockIT project format is a fixed product invariant (`bedrock`), so the removed literal/default field never changed runtime behavior and only added schema/tool-call noise. Project creation still uses native `newProject(Formats.bedrock)` and returns `format.id = bedrock`.
+
 The current source slice has hardened **P1 — tool-choice / context friction** with a stage-gated normal geometry lane. Native Bedrock families remain available; specialist/convenience tools branch only when the active stage/intent requires them.
 
 The current source slice has hardened **P2 — texture and animation sequencing**. End-to-end downstream production waits for the geometry/rig state it actually depends on; existing-asset texture-only/animation-only tasks may use current geometry as a baseline without inventing a geometry `PASS`; affected downstream work is revalidated after material geometry/hierarchy/pivot changes.

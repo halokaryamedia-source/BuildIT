@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T11:13:17.454Z",
+  "generatedAt": "2026-08-11T11:22:01.251Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4052,13 +4052,6 @@
                 "minLength": 1,
                 "description": "Non-empty project name.",
                 "markdownDescription": "Non-empty project name."
-              },
-              "format": {
-                "type": "string",
-                "const": "bedrock",
-                "default": "bedrock",
-                "description": "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface.",
-                "markdownDescription": "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
               }
             },
             "required": [

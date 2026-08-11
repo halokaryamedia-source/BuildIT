@@ -7,14 +7,7 @@ import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
 export const createProjectParameters = z.object({
   name: z.string().min(1).describe("Non-empty project name."),
-  format: z
-    .literal("bedrock")
-    .optional()
-    .default("bedrock")
-    .describe(
-      "BlockIT creates Minecraft Bedrock Entity projects only. The accepted format ID is `bedrock`; other Blockbench formats are outside the normal product surface."
-    ),
-});
+}).strict();
 
 export const getProjectInfoParameters = z.object({});
 export const inspectModelBoundsParameters = z.object({});
@@ -100,7 +93,7 @@ function currentProjectLifecycle() {
 export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
-    async execute({ name, format }) {
+    async execute({ name }) {
       const created = newProject(Formats.bedrock);
 
       if (!created) {
@@ -110,7 +103,7 @@ export function registerProjectTools() {
       Project!.name = name;
       const result = {
         project: currentProjectLifecycle(),
-        format: { id: format },
+        format: { id: "bedrock" as const },
       };
 
       return {

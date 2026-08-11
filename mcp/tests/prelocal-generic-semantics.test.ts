@@ -11,9 +11,9 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local generic semantics narrowing", () => {
-  test("project creation accepts only the native Bedrock Entity format", () => {
-    expect(createProjectParameters.parse({ name: "entity" }).format).toBe("bedrock");
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(true);
+  test("project creation has no redundant format selector", () => {
+    expect(createProjectParameters.parse({ name: "entity" })).toEqual({ name: "entity" });
+    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(false);
     expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
     expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
   });
