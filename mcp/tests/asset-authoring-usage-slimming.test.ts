@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { exportModelParameters } from "@/server/tools/export";
-import { importTextureSetParameters } from "@/server/tools/texture";
+import {
+  createTextureParameters,
+  importTextureSetParameters,
+} from "@/server/tools/texture";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -89,6 +92,28 @@ describe("pre-local asset-authoring usage slimming", () => {
       "C:material.texture_set.json",
     ]) {
       expect(importTextureSetParameters.safeParse({ path }).success).toBe(false);
+    }
+  });
+
+  test("create_texture image file sources do not depend on Blockbench cwd", () => {
+    for (const data of [
+      "data:image/png;base64,AAAA",
+      "/tmp/texture.png",
+      "C:\\Textures\\skin.png",
+      "D:/Textures/skin.png",
+      "\\\\server\\share\\skin.png",
+      "file:///tmp/texture.png",
+      "file://C:/Textures/skin.png",
+    ]) {
+      expect(createTextureParameters.safeParse({ name: "skin", data }).success).toBe(true);
+    }
+    for (const data of [
+      "texture.png",
+      "textures/skin.png",
+      ".\\skin.png",
+      "https://example.com/skin.png",
+    ]) {
+      expect(createTextureParameters.safeParse({ name: "skin", data }).success).toBe(false);
     }
   });
 

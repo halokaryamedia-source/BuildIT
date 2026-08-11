@@ -23,6 +23,11 @@ import {
 // Texture Tool Parameter Schemas
 // ============================================================================
 
+export function isDeterministicTextureSource(value: string): boolean {
+  if (value.startsWith("data:image/")) return true;
+  return isAbsoluteFilesystemPath(value.replace(/^file:\/\//, ""));
+}
+
 export const createTextureParameters = z
   .object({
     name: z.string().min(1).describe("Non-empty texture name."),
@@ -30,8 +35,12 @@ export const createTextureParameters = z
     height: z.number().min(16).max(4096).default(16),
     data: z
       .string()
+      .refine(isDeterministicTextureSource, {
+        message:
+          "Texture data must be an image data URL or an absolute POSIX, Windows-drive, UNC, or file:// path.",
+      })
       .optional()
-      .describe("Path to the image file or data URL."),
+      .describe("Image data URL or deterministic absolute image file path."),
     group: z
       .string()
       .min(1)

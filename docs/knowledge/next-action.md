@@ -236,6 +236,8 @@ A create-identity schema audit found that project, texture, TextureGroup/PBR mat
 
 Filesystem path ownership is now consistent across model export and texture-set import: both require an absolute POSIX, Windows-drive, or UNC path before filesystem access. The shared check is a small pure helper reused by the two existing callers; no filesystem abstraction/framework was introduced.
 
+`create_texture` now follows the same deterministic filesystem rule for image-file inputs: inline `data:image/...` remains valid, while file inputs must resolve to an absolute POSIX/Windows/UNC path (directly or through `file://`). Relative paths and remote HTTP URLs are rejected before Blockbench file access.
+
 Cube authoring inputs now keep identity and face writes deterministic: create/rename Cube names cannot be empty, simple face lists contain at most the six native faces without duplicates, and custom-UV face lists cannot write the same face twice in one request. Empty face lists remain allowed because they are not inherently invalid authored geometry; no arbitrary Cube-batch size cap was added.
 
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.

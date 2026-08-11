@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T07:15:47.392Z",
+  "generatedAt": "2026-08-11T07:22:13.141Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4137,8 +4137,8 @@
               },
               "data": {
                 "type": "string",
-                "description": "Path to the image file or data URL.",
-                "markdownDescription": "Path to the image file or data URL."
+                "description": "Image data URL or deterministic absolute image file path.",
+                "markdownDescription": "Image data URL or deterministic absolute image file path."
               },
               "group": {
                 "type": "string",
