@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-12  
-**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, and post-acceptance static efficiency hardening.
+**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, and completed post-acceptance static efficiency hardening.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -21,7 +21,7 @@ LOCAL_ACCEPTANCE_COMPLETE
 
 The bounded functional pass completed on 2026-08-12 in Blockbench 5.1.6 against the loopback BlockIT endpoint. It is historical evidence for the accepted baseline; it is **not an instruction to run another local pass now**.
 
-Current post-acceptance work is static efficiency cleanup. Source/CI changes made after the live pass remain static proof until a future local run is explicitly requested.
+The requested post-acceptance static efficiency cleanup is also complete at source/contract/CI level. Those later changes remain static proof until a future local run is explicitly requested.
 
 ## Accepted Live Baseline — 2026-08-12
 
@@ -63,11 +63,11 @@ from_geo_json         disabled
 
 The accepted baseline passed frozen-lockfile install, strict TypeScript, Bun contract tests, production build, prompt generation, generated-doc freshness, and source hygiene. The animation-selection repair additionally passed focused tests and live `create_animation → set_time → play/pause` proof.
 
-Current static-efficiency work continues to use the same source gates. Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
+Post-acceptance static hardening uses the same source gates. Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
 
-## Post-Acceptance Static Hardening
+## Completed Post-Acceptance Static Hardening
 
-Current `Local` source now includes source-provable efficiency reductions:
+Current `Local` source includes source-provable efficiency reductions:
 
 - exact single-text JSON mirrors of `structuredContent` are compacted centrally while canonical structured data, meaningful text, and images remain;
 - `get_project_info` returns a bounded top-level Group summary;
@@ -75,9 +75,10 @@ Current `Local` source now includes source-provable efficiency reductions:
 - asset routing, orchestration, modelling, texturing, animation, and stable workspace context have clearer non-overlapping ownership;
 - runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
 - Locator/Null Object create/update branch intent is explicit in client-facing descriptions;
-- static efficiency budgets and regression tests prevent obvious payload/context expansion from returning silently.
+- generated MCP docs/runtime manifest are synchronized through their build owners;
+- static efficiency budgets lock instruction size, the 62-tool capability count, compact default reads, and a bounded enabled-description surface.
 
-Status: **source/contract/CI hardening only** until a future local run is explicitly started. Do not infer runtime token savings or client behavior from character reductions alone.
+Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer runtime token savings or client behavior from character reductions alone.
 
 ## Product / Lifecycle / Export
 
@@ -138,7 +139,7 @@ Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. N
 
 ## MCP Client / Efficiency Evidence Still Unknown
 
-The source still does **not** establish how a future fresh Codex task handles:
+Static source still does **not** establish how a future fresh Codex task handles:
 
 - direct schema injection vs native deferred/tool search;
 - actual prompt/skill co-loading;
@@ -175,4 +176,4 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Functional local acceptance is complete. Static efficiency cleanup is active. **No new local run is active or required by this document.** The completed runbook remains procedure/history only until `next-action.md` explicitly reactivates it.
+Functional local acceptance is complete. Requested static efficiency cleanup is complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests testing or a new product requirement.
