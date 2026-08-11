@@ -1,29 +1,43 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-12
-**Scope:** current `Local` source, foundation/skill policy, static gates, and completed Codex + Blockbench local acceptance evidence.
+**Updated:** 2026-08-12  
+**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, and post-acceptance static efficiency hardening.
 
-This report answers **what level of evidence currently exists**. Active task status belongs in `docs/knowledge/next-action.md`; local test procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md`.
+This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
 ## Evidence Labels
 
-- `CURRENT-PROJECT VERIFIED` — sufficient proof exists in the current target environment for the exact claim.
-- `OFFICIALLY VERIFIED` — authoritative upstream source/docs support the capability/semantics, but current-project live integration may still be unproven.
-- `LOCAL PROOF REQUIRED` — current source/contract exists, but live Codex/Blockbench proof is still required.
+- `CURRENT-PROJECT VERIFIED` — sufficient proof exists in the target environment for the exact claim.
+- `OFFICIALLY VERIFIED` — authoritative upstream evidence supports semantics, but current-project live integration may remain unproven.
+- `LOCAL PROOF REQUIRED` — source/contract exists but a live claim still needs local evidence.
 - `UNSUPPORTED` — available evidence shows the method should not be relied on.
-- `UNKNOWN` — insufficient/conflicting evidence.
+- `UNKNOWN` — evidence is insufficient or conflicting.
 
-## Current Overall Status
+## Functional Status
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
 ```
 
-The bounded local pass is complete. Live runtime, representative authoring, truthful visual routing, playback, and persistence were exercised in Blockbench 5.1.6 against the loopback MCP endpoint.
+The bounded functional pass completed on 2026-08-12 in Blockbench 5.1.6 against the loopback BlockIT endpoint. It is historical evidence for the accepted baseline; it is **not an instruction to run another local pass now**.
 
-Final repository hygiene also removed standalone-upstream/editor residue, obsolete planning layers, and tracked transient workspace previews without changing the MCP callable surface.
+Current post-acceptance work is static efficiency cleanup. Source/CI changes made after the live pass remain static proof until a future local run is explicitly requested.
 
-Current pinned-SDK default MCP baseline:
+## Accepted Live Baseline — 2026-08-12
+
+| Area | Result | Evidence |
+|---|---|---|
+| Environment/runtime | `CURRENT-PROJECT VERIFIED` | Windows 11, Bun 1.3.11, Codex CLI 0.137.0, Blockbench 5.1.6, local `mcp/dist/mcp.js`, loopback stateless endpoint |
+| Default MCP surface | `CURRENT-PROJECT VERIFIED` | live endpoint exposed **62 enabled tools** with dangerous/default-off containment retained |
+| Codex task catalog refresh | `UNKNOWN` | the long-running task retained a stale 94-tool catalog while direct live endpoint calls returned 62 |
+| Geometry/correction | `CURRENT-PROJECT VERIFIED` | Group + Cubes, focused inspection/bounds/views, causal resize, Undo/Redo |
+| Reference fidelity | `CURRENT-PROJECT VERIFIED` | front-plausible/depth-wrong fixture correctly remained `FAIL`; one local correction did not become false global PASS |
+| Texture/Paint/PBR/material instance | `CURRENT-PROJECT VERIFIED` | 16×16 texture, visible Painter edit, native PBR color+MER path, face material instance |
+| Animation | `CURRENT-PROJECT VERIFIED` | create/inspect/keyframes, selected created animation, timeline time and play/pause |
+| Locator / Null Object | `CURRENT-PROJECT VERIFIED` | create/update/inspect/rename/remove/Undo plus persistence in reopened project |
+| Persistence/export | `CURRENT-PROJECT VERIFIED` | editable `.bbmodel` and Bedrock geometry JSON written; reopened smoke fixture retained required state |
+
+Historical pinned-SDK measurement captured at that accepted baseline:
 
 ```text
 62 enabled tools
@@ -32,7 +46,9 @@ Current pinned-SDK default MCP baseline:
 11,800 tool-description characters
 ```
 
-Default containment:
+These character counts are **historical static measurements**, not current client token cost. Post-acceptance descriptions/schemas have changed, so do not present them as a fresh current measurement.
+
+Accepted default containment:
 
 ```text
 export_model          exposed
@@ -43,130 +59,71 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-## Product Policy Status
-
-| Policy | Status |
-|---|---|
-| Minecraft Bedrock Entity is the retained default product | Active BlockIT policy |
-| Approved reference/brief is visual authority | Active BlockIT policy |
-| Whole form precedes secondary detail | Active BlockIT policy |
-| Tool/validator/file success is not visual approval | Active BlockIT policy |
-| Visual gates use `FAIL / UNVERIFIED / PASS` | Active BlockIT policy |
-| `BLOCKED` is valid when continuation requires guessing/repeated failure | Active BlockIT policy |
-| Production texture/animation must not hide unresolved material geometry | Active BlockIT policy |
-| Explicit identities/scopes/filters fail closed where hardened | Active BlockIT policy |
-| Generic Mesh/Hytale/risky-eval shortcuts do not expand Bedrock scope | Active BlockIT policy |
-
 ## Engineering Proof
 
-Current repository gates have passed for the pre-local source state:
+The accepted baseline passed frozen-lockfile install, strict TypeScript, Bun contract tests, production build, prompt generation, generated-doc freshness, and source hygiene. The animation-selection repair additionally passed focused tests and live `create_animation → set_time → play/pause` proof.
 
-```text
-frozen-lockfile install
-strict TypeScript typecheck
-160 Bun contract tests after the schema repair
-production build
-prompt manifest generation
-generated MCP docs freshness
-diff hygiene
-pinned-SDK tools/list measurement
-```
+Current static-efficiency work continues to use the same source gates. Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
 
-The later animation-selection repair additionally passed its 4 focused tests, strict typecheck, production build, and live `create_animation → set_time → play/pause` proof.
+## Post-Acceptance Static Hardening
 
-## Local Acceptance Evidence — 2026-08-12
+Current `Local` source now includes source-provable efficiency reductions:
 
-| Area | Result | Evidence |
-|---|---|---|
-| Environment/runtime | `CURRENT-PROJECT VERIFIED` | Windows 11, Bun 1.3.11, Codex CLI 0.137.0, Blockbench 5.1.6, local `mcp/dist/mcp.js`, loopback stateless endpoint |
-| Default MCP surface | `CURRENT-PROJECT VERIFIED` | live endpoint exposed 62 tools and retained dangerous/default-off containment |
-| Codex task catalog refresh | `UNKNOWN` | this existing Codex task retained a stale 94-tool catalog after restart; direct live endpoint calls used the correct 62-tool runtime |
-| Geometry/correction | `CURRENT-PROJECT VERIFIED` | Group + 3 Cubes, inspection/bounds/views, one causal resize, Undo/Redo |
-| Reference-fidelity behavior | `CURRENT-PROJECT VERIFIED` | front-plausible/depth-wrong zebra fixture correctly remained `FAIL`; one diagnosed torso-depth correction did not become a false global PASS |
-| Texture/Paint/PBR/material instance | `CURRENT-PROJECT VERIFIED` | 16×16 texture, visible Painter edit, native PBR TextureGroup/color+MER, face material instance |
-| Animation | `CURRENT-PROJECT VERIFIED` | create/inspect/keyframes, automatic selection after repair, set-time and play/pause |
-| Locator/Null Object | `CURRENT-PROJECT VERIFIED` | create/update/inspect/rename/remove/Undo and no-op rejection |
-| Persistence/export | `CURRENT-PROJECT VERIFIED` | editable `.bbmodel` and Bedrock geometry JSON written; reopened file retained Cubes, texture, animation, Locator, and Null Object |
+- exact single-text JSON mirrors of `structuredContent` are compacted centrally while canonical structured data, meaningful text, and images remain;
+- `get_project_info` returns a bounded top-level Group summary;
+- `list_outline`, element discovery, and undo-history normal defaults are smaller while larger explicit bounds remain available;
+- asset routing, orchestration, modelling, texturing, animation, and stable workspace context have clearer non-overlapping ownership;
+- runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
+- Locator/Null Object create/update branch intent is explicit in client-facing descriptions;
+- static efficiency budgets and regression tests prevent obvious payload/context expansion from returning silently.
 
-## Project / Lifecycle / Export
+Status: **source/contract/CI hardening only** until a future local run is explicitly started. Do not infer runtime token savings or client behavior from character reductions alone.
 
-| Capability | Source status | Live status |
-|---|---|---|
-| `create_project` fixed Bedrock product format | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| compact lifecycle state from create/info/export | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| path-writing export uses native lifecycle owner/postconditions | Source/contract verified + native semantics audited | `CURRENT-PROJECT VERIFIED` |
-| Bedrock geometry export + editable `.bbmodel` product codecs | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| existing Bedrock multi-model target is not silently clobbered through direct bypass | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| `.bbmodel` save/reopen fidelity | not provable non-locally | `CURRENT-PROJECT VERIFIED` for the smoke fixture |
+## Product / Lifecycle / Export
+
+| Capability | Proof status |
+|---|---|
+| fixed Bedrock `create_project` product format | source + `CURRENT-PROJECT VERIFIED` live baseline |
+| lifecycle state from create/path export | source + `CURRENT-PROJECT VERIFIED` live baseline |
+| Bedrock geometry + editable `.bbmodel` codecs | source + `CURRENT-PROJECT VERIFIED` live baseline |
+| smoke `.bbmodel` save/reopen fidelity | `CURRENT-PROJECT VERIFIED` |
+| existing Bedrock multi-model overwrite/merge path | source protected; `LOCAL PROOF REQUIRED` for that exact live scenario |
 
 ## Observation / Reference Fidelity
 
-| Capability | Source status | Live status |
-|---|---|---|
-| `inspect_model_bounds` finite structural envelope evidence | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| `capture_model_views` bounded named model-view evidence | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| `capture_screenshot` current-editor-view only | Source/contract verified | `LOCAL PROOF REQUIRED` |
-| `inspect_element` focused authored state | Source/contract verified | `CURRENT-PROJECT VERIFIED` |
-| difference-first `FAIL / UNVERIFIED / PASS` workflow | Prompt/skill/foundation contract verified | behavioral/visual `CURRENT-PROJECT VERIFIED` |
-| repeated same-cause correction stops as `BLOCKED` | Prompt/skill contract verified | behavioral `LOCAL PROOF REQUIRED` |
-| fresh returned state may avoid redundant `inspect_element` | Prompt/skill routing verified | efficiency `CURRENT-PROJECT VERIFIED` |
+| Capability | Proof status |
+|---|---|
+| `inspect_model_bounds` | source + `CURRENT-PROJECT VERIFIED` representative live use |
+| `capture_model_views` | source + `CURRENT-PROJECT VERIFIED` representative live use |
+| `inspect_element` | source + `CURRENT-PROJECT VERIFIED` representative live use |
+| difference-first `FAIL / UNVERIFIED / PASS` | workflow + `CURRENT-PROJECT VERIFIED` adversarial live case |
+| reuse of fresh returned state | workflow/source + representative acceptance evidence |
+| `capture_screenshot` current-view branch | source verified; exact live branch remains `LOCAL PROOF REQUIRED` |
+| repeated same-cause correction → `BLOCKED` | contract/prompt verified; exact behavioral threshold remains `LOCAL PROOF REQUIRED` |
 
-A front-view match cannot certify 3D depth. The local acceptance run must include a front-plausible / side-depth-wrong case.
+A convincing front view cannot certify 3D depth.
 
-## Cube / Group / Discovery Safety
+## Geometry / Discovery Safety
 
-Current source/contract verification includes:
+Current contracts retain finite Cube extents, intentional rotation pivots, no-op rejection, bounded batch correction, deterministic identity resolution, bounded outline/discovery, finite ordered size filters, and explicit non-empty scopes/filters.
 
-- explicit finite Cube creation extents;
-- intentional origin/pivot for non-zero initial Cube rotation;
-- Bedrock-relevant Cube mutation state/effect reporting;
-- exact no-op rejection for single/batch Cube correction;
-- bounded multi-Cube mutation/preflight;
-- `add_group` limited to Bedrock-authored create fields with finite origin/rotation;
-- `duplicate_element` finite translation/overflow preflight;
-- bounded `list_outline` breadth/depth;
-- explicit `parent_group` values must be non-empty and scope descendants in that Group subtree;
-- explicit `name_pattern` / `name_contains` values must be non-empty;
-- discovery `min_size` / `max_size` components are finite and ordered per axis;
-- optional explicit identities use omission—not empty strings—for documented current/selected fallback.
-
-Status: **source/contract and representative live Blockbench integration are `CURRENT-PROJECT VERIFIED`.**
+Post-acceptance compact defaults do **not** remove the larger explicit discovery bounds.
 
 ## Texture / Paint / PBR
 
-Current default Bedrock semantics:
+Current Bedrock semantics retain native single-texture lifecycle, Painter pixel ownership, TextureGroup/PBR channels, and per-face `material_instance`. Generic `apply_texture` and raw `filter_by_material` remain outside the default Bedrock callable surface.
 
-- `create_texture`, `activate_texture`, `list_textures`, and `get_texture` own normal texture lifecycle/evidence;
-- Bedrock Entity is native `single_texture`; generic per-face `apply_texture` is not default-callable;
-- `filter_by_material` is not default-callable because raw `face.texture` identity does not own effective Bedrock texture selection;
-- Painter tools own pixel edits;
-- TextureGroup/PBR tools own native Bedrock channel/config state;
-- material-instance tools own native per-face `material_instance` metadata;
-- texture identity/size/group/channel/render metadata returned by mutation should be reused before redundant rereads;
-- RGBA tuple alpha is normalized correctly to TinyColor input semantics;
-- filesystem image inputs use deterministic absolute-path rules.
-
-Status: **source/contract and representative live texture/Paint/PBR/material-instance reachability are `CURRENT-PROJECT VERIFIED`.**
+Representative live reachability is `CURRENT-PROJECT VERIFIED` from the accepted pass; later instruction/result slimming is static-only proof.
 
 ## Animation / Rig
 
-Current source/contract verification includes:
+Current contracts retain normalized animation identity, zero-length handling, summary-first inspection, bounded keyframe/batch/copy operations, hierarchy/cycle safety, and selected-animation timeline continuity.
 
-- animation names normalize to one `animation.` prefix;
-- explicit zero animation length is preserved;
-- animation inspection is summary-first for effect keyframes;
-- keyframe/timeline/batch/copy-paste requests reject several empty/no-op/invalid-time states;
-- partial keyframe edits preserve omitted interpolation intent;
-- bone hierarchy/cycle/delete recovery boundaries are hardened;
-- animation specialist reuses known project/bone state before lifecycle/outline rereads.
-
-Protected gaps still include direct animation controller ownership and unsupported sound/timeline-effect mappings.
-
-Status: **source/contract and live create/inspect/keyframe/timeline/playback behavior are `CURRENT-PROJECT VERIFIED`.**
+Representative create/inspect/keyframe/timeline/playback is `CURRENT-PROJECT VERIFIED`. Controllers and unsupported sound/timeline-effect mappings remain protected gaps.
 
 ## Locator / Null Object
 
-Direct source ownership exists in the Elements family for:
+Direct ownership remains:
 
 ```text
 list_locator_elements
@@ -177,40 +134,21 @@ rename_element
 remove_element
 ```
 
-Source contracts include finite authored transforms, explicit parent/identity handling, and resulting state. Null Object remains distinct from normal Locator semantics.
+Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. Null Object remains distinct editor/animation state and round-trips through the Bedrock geometry `_null_` locator representation where supported.
 
-Status: **source/contract plus live create/update/inspect/rename/remove/Undo and `.bbmodel` reopen are `CURRENT-PROJECT VERIFIED`.**
+## MCP Client / Efficiency Evidence Still Unknown
 
-## MCP Client / Tool Exposure
-
-Source audit confirms the default registered surface remains 62 tools and the current agent routing supplies high-signal stage intent. What is **not** yet known is how the installed Codex client actually handles that catalog:
+The source still does **not** establish how a future fresh Codex task handles:
 
 - direct schema injection vs native deferred/tool search;
-- representative domain reachability;
 - actual prompt/skill co-loading;
-- real context/token/latency cost;
-- whether duplicated text + `structuredContent` is material to the client.
+- real token/context/latency cost;
+- retry frequency caused by advertised schema interpretation;
+- image/context cost during realistic authoring.
 
-Status: live endpoint reachability is `CURRENT-PROJECT VERIFIED`; native catalog refresh behavior in this long-running Codex task remains `UNKNOWN` because its injected tool list stayed cached.
-
-Do not add a BlockIT custom router/profile based solely on static catalog size.
-
-## Stopped / Deferred Source Slices
-
-These are not active source TODOs without new evidence:
-
-- animation action/input contract cleanup;
-- Paint cleanup;
-- material-instance mutation/read cleanup;
-- bounded `nodes://` serialization;
-- generic Group identity consolidation;
-- `manage_keyframes create` collision slice.
-
-A live local failure may provide new evidence, but baseline acceptance should not reopen them by default.
+These remain `UNKNOWN` until a future local efficiency run is explicitly requested. Do not add a BlockIT custom router/profile solely from static tool count.
 
 ## Protected Native Capability Gaps
-
-Still protected requirements when a real workflow needs them:
 
 ```text
 TextureMesh direct authoring/inspection
@@ -221,24 +159,20 @@ animated-texture authoring
 bone-binding expressions
 ```
 
-Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, or another format.
+Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
 
 ## Explicitly Unsupported As Modelling Authority
 
 - automatic image→Cuboid reconstruction as geometry truth;
 - SF3D/mesh decomposition as Bedrock geometry authority;
-- IoU/projection/similarity scores as automatic resemblance approval;
+- IoU/projection/similarity score as automatic resemblance approval;
 - successful Cube placement as visual approval;
 - screenshot-per-mutation or per-Cube approval quotas;
 - arbitrary fallback coordinates/pivots;
-- editor selection or first duplicate-name match as silent mutation identity;
-- silently broadening an explicit invalid/empty discovery filter;
+- selection or first duplicate-name match as silent destructive identity;
+- silently broadening invalid/empty discovery filters;
 - fixture-specific build rules promoted to generic product behavior.
 
-## Remaining Evidence Limits
+## Current Evidence Boundary
 
-Procedure owner:
-
-[`docs/knowledge/operations/local-acceptance-runbook.md`](../knowledge/operations/local-acceptance-runbook.md)
-
-Only Codex client telemetry/catalog-refresh behavior remains `UNKNOWN`; the completed task did not expose enough evidence to distinguish injected-schema caching from native deferred search. This does not justify a BlockIT router/profile change.
+Functional local acceptance is complete. Static efficiency cleanup is active. **No new local run is active or required by this document.** The completed runbook remains procedure/history only until `next-action.md` explicitly reactivates it.
