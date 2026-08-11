@@ -34,25 +34,29 @@ jobs:
               raise SystemExit('Unexpected assign_texture_channel description')
           text = text.replace(old_desc, new_desc, 1)
 
-          anchor = '''      const resetTextures = existingTextures.filter(
-        (existing: Texture) =>
-          existing.pbr_channel === channel && existing.uuid !== tex.uuid
-      );
-      const undoTextures = [tex, ...resetTextures].filter('''
-          replacement = '''      const resetTextures = existingTextures.filter(
-        (existing: Texture) =>
-          existing.pbr_channel === channel && existing.uuid !== tex.uuid
-      );
-      if (
-        tex.group === textureGroup.uuid &&
-        tex.pbr_channel === channel &&
-        resetTextures.length === 0
-      ) {
-        throw new Error(
-          `Texture "${tex.name}" is already the only ${channel} assignment on material "${textureGroup.name}"; no authored change is required.`
-        );
-      }
-      const undoTextures = [tex, ...resetTextures].filter('''
+          anchor = '\n'.join([
+              '      const resetTextures = existingTextures.filter(',
+              '        (existing: Texture) =>',
+              '          existing.pbr_channel === channel && existing.uuid !== tex.uuid',
+              '      );',
+              '      const undoTextures = [tex, ...resetTextures].filter(',
+          ])
+          replacement = '\n'.join([
+              '      const resetTextures = existingTextures.filter(',
+              '        (existing: Texture) =>',
+              '          existing.pbr_channel === channel && existing.uuid !== tex.uuid',
+              '      );',
+              '      if (',
+              '        tex.group === textureGroup.uuid &&',
+              '        tex.pbr_channel === channel &&',
+              '        resetTextures.length === 0',
+              '      ) {',
+              '        throw new Error(',
+              '          `Texture "${tex.name}" is already the only ${channel} assignment on material "${textureGroup.name}"; no authored change is required.`',
+              '        );',
+              '      }',
+              '      const undoTextures = [tex, ...resetTextures].filter(',
+          ])
           if text.count(anchor) != 1:
               raise SystemExit('Unexpected assign_texture_channel preflight anchor')
           path.write_text(text.replace(anchor, replacement, 1), encoding='utf-8')
