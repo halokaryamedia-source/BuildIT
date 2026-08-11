@@ -1,6 +1,6 @@
 # Skill Activation Matrix
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this note only to choose the **smallest correct skill owner**. Root `AGENTS.md` decides task class first; detailed procedure lives in the selected `SKILL.md`.
 
@@ -67,20 +67,20 @@ Domain behavior correct, Bun build/package behavior wrong
 
 Do not stack multiple engineering specialists for one causal boundary. If a second independent defect appears, finish/reframe the first boundary before switching owner.
 
-## 4. Current Local Acceptance Route
+## 4. Local Acceptance Route — Only When Reactivated
 
-Local acceptance is repository continuation, not ordinary asset authoring.
+Local acceptance is repository continuation, not ordinary asset authoring. The first bounded pass is complete and this route is **inactive unless `docs/knowledge/next-action.md` explicitly reactivates it**.
 
-When `docs/knowledge/next-action.md` points to local acceptance:
+When reactivated:
 
 ```text
 AGENTS.md
-→ CONTEXT.md
 → next-action.md
+→ CONTEXT.md only when stable facts matter
 → operations/local-acceptance-runbook.md
 ```
 
-Do not select an engineering specialist during the baseline merely because local tools are available. Reproduce/classify a failure first; then select the specialist that owns the demonstrated failure.
+During an acceptance baseline, reproduce/classify a failure before selecting the engineering specialist that owns it. Do not load this route by ritual during normal continuation or asset authoring.
 
 ## 5. Reference Preparation Is Not A Root Skill
 
