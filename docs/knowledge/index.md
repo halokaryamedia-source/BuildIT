@@ -2,29 +2,25 @@
 
 Updated: 2026-08-11
 
-Use this page as the main human/Obsidian navigation note. It is **not** a mandatory read for ordinary asset authoring; root `AGENTS.md` owns task-class routing.
+Use this page as BlockIT's **current repository-memory index**. It is not mandatory context for ordinary asset authoring; root `AGENTS.md` decides the task route first.
 
-## Mission
-
-Keep repository memory current, source-backed, and separated by responsibility:
+## Current owners
 
 ```text
-agent/task routing → AGENTS.md
-stable facts       → CONTEXT.md
-current repository continuation → next-action.md
-local acceptance procedure       → operations/local-acceptance-runbook.md
-durable policy     → docs/foundation/
-source ownership   → implementation-map.md
-durable decisions  → decision-log.md / decisions/
-review evidence    → reviews/
-future/non-active work → operations/task-board.md
+agent/task routing            → AGENTS.md
+stable facts / terminology    → CONTEXT.md
+active repository continuation → next-action.md
+local acceptance procedure    → operations/local-acceptance-runbook.md
+product/modelling policy      → docs/foundation/
+source ownership              → implementation-map.md
+durable decisions             → decision-log.md / decisions/
+review evidence               → reviews/review-graph.md
+future/non-active work        → operations/task-board.md
 ```
 
-## Start Here
+## Start here
 
 ### Asset authoring
-
-Do not boot the full knowledge vault. Follow root `AGENTS.md`:
 
 ```text
 current request/reference
@@ -32,45 +28,37 @@ current request/reference
 → only the active modelling/texturing/animation specialist
 ```
 
-Open repository memory only when the asset decision depends on repository state, a protected capability boundary, or a conflicting product rule.
+Open project-memory notes only when an asset decision depends on repository state or a protected capability/product boundary.
 
 ### Repository / plugin continuation
-
-Read:
 
 1. [Agent Rules](../../AGENTS.md)
 2. [Workspace Context](../../CONTEXT.md) when stable facts matter
 3. [Next Action](next-action.md)
-4. If the next step is local acceptance: [Local Acceptance Runbook](operations/local-acceptance-runbook.md)
-5. Only the source/foundation/review owner needed by the active boundary
+4. [Local Acceptance Runbook](operations/local-acceptance-runbook.md) when activated
+5. only the source/foundation/review owner needed by the active boundary
 
-Do not broad-scan the vault by default.
+Do not scan every review, decision, or historical Git state by default.
 
-## Current Product Snapshot
-
-BlockIT is a Bedrock Entity-focused MCP/workflow. The modelling loop is:
+## Product snapshot
 
 ```text
-Approved Modelling Brief
+Approved reference
 → Primary Form Hypothesis
 → coarse Cube/Group form
 → minimum useful structural/visual evidence
 → difference-first FAIL / UNVERIFIED / PASS
-→ local causal correction or global rebuild
-→ secondary structure after primary PASS
+→ causal correction or global rebuild
+→ secondary geometry/hierarchy/pivots after primary PASS
 → texture/PBR when required
 → animation when required
 → final validation
-→ .bbmodel / Bedrock export
+→ .bbmodel / Bedrock geometry export
 ```
 
-Tool success is execution evidence, not visual approval. `BLOCKED` is a valid workflow outcome when continuation would require guessing or repeated failed work.
+Tool success is execution evidence, not visual approval. `BLOCKED` is valid when continuation would require guessing or repeated failed work.
 
-## Current Pre-local State
-
-Non-local source/CI cleanup is complete. Live Codex + Blockbench acceptance is now the active boundary.
-
-Current pinned-SDK default surface:
+## Current pre-local baseline
 
 ```text
 62 enabled tools
@@ -79,71 +67,48 @@ Current pinned-SDK default surface:
 11,800 tool-description characters
 ```
 
-`list_export_formats`, `apply_texture`, and `filter_by_material` are intentionally absent from the default callable surface. `export_model` remains exposed.
+`export_model` is exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-## Knowledge Spine
+Non-local source/contract/CI/documentation work is complete. Live Codex + Blockbench behavior is now the active evidence boundary.
 
-- [Minimal Navigation](minimal-nav.md) — shortest task-class-aware boot path.
-- [Next Action](next-action.md) — one active repository continuation state.
-- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — exact local execution procedure.
+## Knowledge spine
+
+- [Minimal Navigation](minimal-nav.md) — shortest task-aware route.
+- [Next Action](next-action.md) — one current repository-continuation state.
+- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — exact current local procedure.
 - [Implementation Map](implementation-map.md) — current source ownership/surface.
-- [Skill Activation Matrix](skills/activation-matrix.md) — current skill routing.
-- [Skill Map](skills/skill-map.md) — current nine-skill inventory and concise lineage.
+- [Skill Activation Matrix](skills/activation-matrix.md) — skill selection.
+- [Skill Map](skills/skill-map.md) — current skill inventory/lineage.
 - [Source Map](sources/source-map.md) — source/authority bridge.
-- [Validation Report](../foundation/validation-report.md) — current proof-status matrix.
-- [Review Index](reviews/review-graph.md) — current meaning of historical reviews.
-- [Decision Log](decision-log.md) — durable decisions and superseded rules.
-- [Operations](operations/README.md) — runbook/backlog/roadmap/history.
+- [Validation Report](../foundation/validation-report.md) — current proof status.
+- [Decision Log](decision-log.md) — durable decisions/reasons.
+- [Review Index](reviews/review-graph.md) — current meaning of review evidence.
+- [Task Board](operations/task-board.md) — future/non-active findings only.
 
-## Current Skill Inventory
-
-All repository-owned skills live under `../../.agents/skills/`.
-
-Asset authoring:
-
-```text
-blockit-bedrock-entity-mcp
-blockbench-bedrock-modelling
-blockit-bedrock-texturing
-blockit-bedrock-animation
-```
-
-Repository/plugin development:
-
-```text
-development-brief
-mcp-server-development
-typescript-type-safety
-bun-tooling
-blockbench-runtime-development
-```
-
-Do not route to retired nested skill roots under `mcp/`.
-
-## Retrieval Map
+## Retrieval map
 
 | Need | Start here |
 |---|---|
 | Task routing / proof discipline | `AGENTS.md` |
-| Stable facts / terminology | `CONTEXT.md` |
-| Current repository continuation | `next-action.md` |
+| Stable facts | `CONTEXT.md` |
+| Current continuation | `next-action.md` |
 | Local test procedure | `operations/local-acceptance-runbook.md` |
 | Product/modelling policy | `../foundation/README.md` |
 | Reference preparation | `../foundation/04-reference-guide.md` |
-| Geometry/rotation/pivot policy | `../foundation/05-geometry-standard.md` |
+| Geometry / pivot | `../foundation/05-geometry-standard.md` |
 | Visual acceptance | `../foundation/07-visual-validation.md` |
-| Current source ownership | `implementation-map.md` |
-| MCP build/runtime | `../../mcp/README.md` + affected source |
+| Current implementation | `implementation-map.md` |
+| MCP runtime/build | `../../mcp/README.md` + affected source |
 | Skill routing | `skills/activation-matrix.md` |
 | Current proof status | `../foundation/validation-report.md` |
 | Historical evidence | `reviews/review-graph.md` |
-| Future/non-active work | `operations/task-board.md` |
+| Future work | `operations/task-board.md` |
 
-## Continuity Rules
+## Hygiene rules
 
 - `next-action.md` is the only active repository-task snapshot.
-- The local acceptance runbook owns procedure, not current status.
-- Historical reviews/plans keep their captured evidence but do not control current execution.
-- Before ending material work, update only the canonical owner whose state changed.
-- Verify a path exists before creating a replacement for an old/stale path.
-- Prefer deleting stale routing to adding another documentation layer.
+- The local runbook owns procedure, not status.
+- Reviews own evidence; Git history owns obsolete implementation/planning detail.
+- Do not create manual changelog/plan/audit/template layers when an existing owner or Git history is sufficient.
+- Obsidian UI/workspace state is local and intentionally untracked.
+- Prefer deleting stale routing over adding another documentation layer.

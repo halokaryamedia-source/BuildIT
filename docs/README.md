@@ -1,82 +1,47 @@
-# BlockIT Docs
+# BlockIT Documentation
 
-Updated: 2026-08-11
+This folder contains BlockIT's human/project documentation. Keep current execution easy to find and historical evidence out of the normal boot path.
 
-This folder is the human-readable documentation layer for BlockIT. Root `AGENTS.md` owns task-class routing; these docs provide durable product policy and repository memory.
+## Task-aware reading
 
-## Start With The Task Class
+Start with root [`AGENTS.md`](../AGENTS.md).
 
 ### Asset authoring
 
-For normal Bedrock Entity creation/revision/texture/animation/export, do **not** boot the whole documentation vault. Follow root `AGENTS.md`:
+Do not boot the documentation vault by default. Use the current request/reference, `blockit-bedrock-entity-mcp`, and only the active modelling/texturing/animation specialist.
 
-```text
-current request/reference
-→ blockit-bedrock-entity-mcp
-→ only the active modelling/texturing/animation specialist
-```
+### Repository / plugin continuation
 
-Open a foundation/knowledge note only when a specific asset decision depends on that policy, capability boundary, or repository state.
+Read only what the current boundary needs:
 
-### Repository / plugin work
+1. [`AGENTS.md`](../AGENTS.md)
+2. [`CONTEXT.md`](../CONTEXT.md) when stable facts matter
+3. [Next Action](knowledge/next-action.md)
+4. [Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md) when activated
+5. the specific source/foundation/review owner required by a reproduced problem
 
-For source/docs/CI/MCP/plugin work:
+Do not broad-read all reviews or old plans.
 
-```text
-AGENTS.md
-→ CONTEXT.md when stable facts matter
-→ docs/knowledge/next-action.md when continuing current work
-→ affected owner/source
-```
+## Documentation owners
 
-The current continuation is local acceptance. When `next-action.md` points there, use:
+| Area | Owns |
+|---|---|
+| [Foundation](foundation/README.md) | durable product, modelling, reference, geometry, texture, visual-validation policy |
+| [Knowledge Dashboard](knowledge/index.md) | current repository-memory navigation |
+| [Next Action](knowledge/next-action.md) | one active repository continuation state |
+| [Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md) | current local-test procedure |
+| [Implementation Map](knowledge/implementation-map.md) | current source ownership/surface |
+| [Validation Report](foundation/validation-report.md) | current evidence/proof status |
+| [Decision Log](knowledge/decision-log.md) | durable decisions/reasons |
+| [Review Index](knowledge/reviews/review-graph.md) | current meaning of historical reviews |
+| `mcp/docs/` | generated MCP API documentation; secondary to source |
 
-[Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md)
+## Knowledge-vault hygiene
 
-## Obsidian
+`docs/knowledge/` can be opened as an Obsidian vault. Obsidian UI/workspace configuration is intentionally **local and ignored**; repository truth is the Markdown content, not editor layout state.
 
-Open `docs/knowledge/` as the repo-local Obsidian vault. Human landing note:
+Keep one document per responsibility. Prefer removing stale routing or relying on Git history over adding another planning/changelog layer.
 
-- [Knowledge Dashboard](knowledge/index.md)
+## Current boundary
 
-Repository notes and current `Local` source are authority; chat history is supporting context only.
-
-## Document Roles
-
-| Area | Role | Authority |
-|---|---|---|
-| [Foundation](foundation/README.md) | durable product, modelling, reference, geometry, texture, visual-validation policy | durable policy |
-| [Knowledge](knowledge/index.md) | continuity, source/skill maps, decisions, reviews, operations | repository memory/navigation |
-| [Next Action](knowledge/next-action.md) | one active repository continuation state | current status |
-| [Local Acceptance Runbook](knowledge/operations/local-acceptance-runbook.md) | exact Codex + Blockbench acceptance procedure | active procedure only when selected by next-action |
-| [Implementation Map](knowledge/implementation-map.md) | current Local source ownership/surface | current source map |
-| [Validation Report](foundation/validation-report.md) | source/official/local proof state | proof-status reference |
-| `mcp/docs/` | generated MCP API documentation | generated output; secondary to source |
-
-## Current Product Architecture
-
-```text
-Approved Modelling Brief
-→ Primary Form Hypothesis
-→ coarse Cube/Group form
-→ minimum structural + corresponding visual evidence
-→ difference-first FAIL / UNVERIFIED / PASS
-→ local causal correction or global rebuild
-→ secondary structure after primary PASS
-→ texture/PBR when required
-→ animation when required
-→ final validation
-→ save/export
-```
-
-Tool success, valid coordinates, hierarchy, validator output, or file persistence do not issue visual approval.
-
-## Status Language
-
-- `CURRENT-PROJECT VERIFIED` — proven in the current target environment.
-- `OFFICIALLY VERIFIED` — supported by authoritative upstream source/docs; local integration may still need proof.
-- `LOCAL PROOF REQUIRED` — source/contract exists, live environment proof pending.
-- `UNSUPPORTED` — evidence says not to rely on the method.
-- `UNKNOWN` — evidence is insufficient/conflicting.
-
-Historical reviews/plans retain their captured evidence. Use the Review Index, Validation Report, current source, and `next-action.md` to interpret them today.
+Non-local source/contract/CI/documentation preparation is complete. Live Codex + Blockbench behavior remains `LOCAL PROOF REQUIRED` and is governed by the current Next Action + Local Acceptance Runbook.

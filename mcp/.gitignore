@@ -1,8 +1,0 @@
-node_modules
-dist/
-.claude
-nul
-
-# Generated Python cache
-__pycache__/
-*.pyc

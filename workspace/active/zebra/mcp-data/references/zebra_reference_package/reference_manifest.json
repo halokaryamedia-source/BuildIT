@@ -1,5 +1,6 @@
 {
-  "schema": "minecraft_model_reference",
+  "schema": "blockit_reference_fixture_v1",
+  "purpose": "local_acceptance_fixture",
   "asset": {
     "id": "zebra",
     "name": "Zebra",
@@ -9,14 +10,11 @@
     {
       "id": "zebra_source_image",
       "file": "source/zebra_source_image.webp",
-      "role": "SOURCE_IMAGE"
+      "role": "SOURCE_PROVENANCE"
     }
   ],
-  "model_reference": {
+  "approved_reference": {
     "file": "zebra_model_reference.webp",
-    "width_px": 1280,
-    "height_px": 720,
-    "format": "WEBP",
     "primary_view": "LEFT SIDE",
     "views": [
       "LEFT SIDE",
@@ -32,7 +30,7 @@
     "height_blocks": 2.0,
     "width_blocks": 0.9,
     "length_blocks": 2.6,
-    "geometry_units": {
+    "blockbench_units": {
       "height": 32.0,
       "width": 14.4,
       "length": 41.6
@@ -45,32 +43,8 @@
   },
   "pose": {
     "mode": "STATIC",
-    "description": "stable four-leg standing pose"
+    "description": "neutral standing pose"
   },
-  "visual_fit": {
-    "schema": "visual_fit_v1",
-    "coordinates": {
-      "reference_width_px": 1280,
-      "reference_height_px": 720,
-      "blockbench_units_per_block": 16,
-      "axis_convention": {
-        "width": "x",
-        "height": "y",
-        "length": "z",
-        "forward": "-z",
-        "left_side_camera": "x"
-      },
-      "front_three_quarter_side": "LEFT"
-    },
-    "view_crops": {
-      "LEFT SIDE": [146, 96, 468, 306],
-      "FRONT": [614, 96, 246, 306],
-      "BACK": [860, 96, 272, 306],
-      "TOP / FOOTPRINT": [146, 402, 509, 255],
-      "FRONT 3/4 PREVIEW": [655, 402, 477, 255]
-    }
-  },
-  "geometry_priorities": {
-    "texture_first": ["stripes", "eyes", "nostrils", "mouth"]
-  }
+  "required_animation": false,
+  "authority_note": "The approved reference is visual authority, not an exact Cube-transform or pixel-crop blueprint."
 }

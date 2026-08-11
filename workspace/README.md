@@ -1,10 +1,18 @@
 # Project Workspace
 
-`workspace/` is the root-level working area for Blockbench projects.
+`workspace/` contains intentional Blockbench model/reference packages. It is not a general cache directory.
 
-- `active/` contains projects currently being developed.
-- `saved/` contains projects that passed validation and are finished.
+- `active/` — models/fixtures still being worked on or used for bounded acceptance.
+- `saved/` — completed/validated packages.
 
-Each project contains its `.bbmodel` file directly, plus `export-data/` and `mcp-data/`.
-References and preview screenshots belong under `mcp-data/references/` and
-`mcp-data/cache/`; keep MCP cache and development metadata out of export data.
+A project may contain its `.bbmodel`, tracked reference/source assets, and export data that is intentionally part of the project.
+
+Transient MCP screenshots/previews under:
+
+```text
+workspace/**/mcp-data/cache/
+```
+
+are ignored and must not be committed as project memory. Git history/reviews own old experiments; current project README/reference package owns current intent.
+
+The existing Zebra package is an **optional local reference-fidelity acceptance fixture**, not a generic product template or mandatory active model.

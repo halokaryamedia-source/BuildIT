@@ -1,33 +1,29 @@
-# BlockIT Workspace
+# BlockIT
 
-BlockIT is an AI-assisted Minecraft Bedrock Entity modelling workspace. The agent reasons about an approved visual reference as a modeller, then uses the BlockIT Blockbench MCP as a focused execution, inspection, texture, animation, validation, and export interface.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The goal is a clean, editable `.bbmodel` that follows an approved visual reference through the shortest evidence-backed workflow.
 
-## Product Goal
+`Local` is the current product/development branch. `Rework` and `Sample` are reference/history only.
 
-Produce a clean, editable `.bbmodel` that follows the approved reference through the shortest evidence-backed workflow.
+## Start By Task Class
 
-The product is **object-agnostic**. Fixtures and Golden Samples may test the workflow but never become generic runtime rules.
-
-## Task Class First
-
-Start with [`AGENTS.md`](AGENTS.md). It owns session routing.
+Root [`AGENTS.md`](AGENTS.md) owns agent routing and proof discipline.
 
 ### Asset authoring
 
-For creating/revising a Bedrock Entity asset without changing repository/plugin source:
+For creating or revising a Bedrock Entity asset without changing repository/plugin source:
 
 ```text
-current request/reference
+current request / approved reference
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ only the active modelling/texturing/animation specialist
+→ only the active modelling, texturing, or animation specialist
 → BlockIT MCP
 ```
 
-Do not automatically load repository history, `CONTEXT.md`, `next-action.md`, or `development-brief` for ordinary asset authoring.
+Do not load repository history, `CONTEXT.md`, `next-action.md`, or development skills by default for ordinary asset authoring.
 
-### Repository / plugin work
+### Repository / plugin continuation
 
-For source, docs, CI, MCP/plugin implementation, or repository maintenance:
+For source, documentation, CI, MCP/plugin implementation, or repository maintenance:
 
 ```text
 AGENTS.md
@@ -37,31 +33,44 @@ AGENTS.md
 → development-brief for a create/change task
 ```
 
-The current continuation is **local Codex + Blockbench acceptance**. Use [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) when `next-action.md` points there.
+The current repository continuation is **Codex + Blockbench local acceptance**. When `next-action.md` activates it, use [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) as the single procedure.
 
-## Repository Is Project Memory
+## Product Boundary
 
-Do not reconstruct project state from chat history. Canonical owners are:
+Normal BlockIT work targets Blockbench format `bedrock`.
 
-- `AGENTS.md` — behavior, task routing, proof rules;
-- `CONTEXT.md` — stable facts and terminology;
-- `docs/knowledge/next-action.md` — single active continuation snapshot;
-- `docs/knowledge/operations/local-acceptance-runbook.md` — local acceptance procedure;
-- `docs/knowledge/decision-log.md` — durable decisions/reasons;
-- `docs/foundation/` — durable product/modelling policy;
-- current `Local` source + relevant proof — implementation truth.
+```text
+Approved reference
+→ whole-form interpretation
+→ primary Cube/Group geometry
+→ difference-first visual gate
+→ causal correction or global rebuild
+→ secondary geometry / hierarchy / pivots
+→ texture / PBR when required
+→ animation when required
+→ final validation
+→ .bbmodel / Bedrock geometry export
+```
+
+Tool success is execution evidence, not visual approval. Visual verdicts are `FAIL / UNVERIFIED / PASS`; use `BLOCKED` when valid continuation would require guessing or repeated failed work.
+
+Generic Mesh/Hytale workflows, risky evaluation, and editor-UI automation do not expand the default Bedrock Entity contract.
 
 ## Repository Map
 
-- `.agents/skills/` — canonical repository-owned skills;
-- `mcp/` — active Blockbench MCP plugin/runtime source, tools, prompts, resources, UI, build, and generated API docs;
-- `workspace/` — project/model packages and fixtures;
-- `docs/foundation/` — durable product, modelling, reference, texture, and visual-validation policy;
-- `docs/knowledge/` — continuity, source maps, skill routing, reviews, operations, and decisions.
+| Path | Purpose |
+|---|---|
+| `.agents/skills/` | repository-owned agent skills |
+| `mcp/` | BlockIT Blockbench MCP source, tests, build, generated API docs |
+| `workspace/` | model/reference packages and user fixtures |
+| `docs/foundation/` | durable product/modelling/reference policy |
+| `docs/knowledge/` | current continuity, source maps, decisions, reviews, operations |
+
+Project memory is repository-backed. Do not reconstruct current state from old chats when the canonical owner exists.
 
 ## Current Skill Surface
 
-Asset-authoring workflow:
+Asset authoring:
 
 ```text
 blockit-bedrock-entity-mcp
@@ -70,7 +79,7 @@ blockit-bedrock-entity-mcp
 └─ blockit-bedrock-animation
 ```
 
-Repository-maintenance specialists:
+Repository/plugin development:
 
 ```text
 development-brief
@@ -80,31 +89,52 @@ bun-tooling
 blockbench-runtime-development
 ```
 
-`blockbench-bedrock-modelling` may also be selected during repository work when the changed contract is specifically modelling judgement/policy.
+The packages are selected by task boundary; they are not a load-all stack.
 
-Retired nested skill roots under `mcp/` are not authorities and must not be repopulated.
+## MCP Development
 
-## Branch Roles
+From `mcp/`:
 
-- `Local` — current product/development authority.
-- `Rework` — historical architecture/reference material only.
-- `Sample` — external implementation/reference material only.
-
-Do not copy behavior from historical/reference branches unless a concrete `Local` failure proves the need.
-
-## Official Modelling Direction
-
-```text
-Approved Modelling Brief
-→ whole-form interpretation
-→ primary geometry
-→ difference-first visual gate
-→ secondary geometry / hierarchy / pivots
-→ full geometry review
-→ texture / PBR when required
-→ animation when required
-→ final validation
-→ save/export
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun run test
+bun run build
+bun run docs:check
 ```
 
-Tool success is execution evidence, not visual approval. Visual verdicts use `FAIL / UNVERIFIED / PASS`; use `BLOCKED` when valid continuation would require guessing or repeated failed work.
+Production plugin output is `mcp/dist/mcp.js`. Load that file locally in desktop Blockbench; do not use the upstream hosted plugin as proof of this repository.
+
+Default endpoint after the local plugin is loaded:
+
+```text
+http://127.0.0.1:3000/bb-mcp
+```
+
+See [`mcp/README.md`](mcp/README.md) for runtime details.
+
+## Current Pre-local Baseline
+
+```text
+62 enabled tools
+72,775 tools/list response characters
+48,674 input-schema characters
+11,800 tool-description characters
+```
+
+`export_model` remains exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are intentionally absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
+
+Live Codex/Blockbench behavior is still `LOCAL PROOF REQUIRED`; see [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
+
+## Workspace Hygiene
+
+- transient build output, editor state, Obsidian UI state, and MCP preview caches are ignored;
+- approved reference packages and intentional `.bbmodel` fixtures remain tracked;
+- historical implementation evidence belongs in Git history/reviews, not duplicate active plans;
+- generated MCP API docs remain tracked because `bun run docs:check` verifies freshness.
+
+## License / Upstream
+
+BlockIT is licensed under **GPL-3.0-only**; see [`LICENSE`](LICENSE).
+
+The MCP implementation is derived from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Upstream attribution is preserved while BlockIT's Bedrock-focused product surface, repository routing, and local validation procedure are maintained here.

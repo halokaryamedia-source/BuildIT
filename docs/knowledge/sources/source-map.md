@@ -2,76 +2,68 @@
 
 Updated: 2026-08-11
 
-This note connects repository memory to **current `Local` authorities**. It links owners; it does not duplicate source behavior.
+This note connects current documentation to repository authorities. It points to owners instead of copying their contents.
 
-## Authority Order
+## Authority order
 
 | Need | Current owner |
 |---|---|
-| Task routing / proof discipline | [`AGENTS.md`](../../../AGENTS.md) |
-| Stable workspace facts | [`CONTEXT.md`](../../../CONTEXT.md) |
-| Active repository continuation | [Next Action](../next-action.md) |
-| Local acceptance procedure | [Local Acceptance Runbook](../operations/local-acceptance-runbook.md) |
-| Product/modelling policy | [Foundation](../../foundation/README.md) |
-| Runtime implementation | [`mcp/`](../../../mcp/) source + relevant proof |
-| Canonical skills | [`/.agents/skills/`](../../../.agents/skills/) |
-| Current evidence status | [Validation Report](../../foundation/validation-report.md) |
-| Model/project packages | [`workspace/`](../../../workspace/) |
+| agent/task/proof rules | [`AGENTS.md`](../../../AGENTS.md) |
+| stable workspace facts | [`CONTEXT.md`](../../../CONTEXT.md) |
+| active repository continuation | [Next Action](../next-action.md) |
+| current local procedure | [Local Acceptance Runbook](../operations/local-acceptance-runbook.md) |
+| product/modelling policy | [Foundation](../../foundation/README.md) |
+| current runtime behavior | `mcp/` source + relevant proof |
+| current source ownership summary | [Implementation Map](../implementation-map.md) |
+| skill routing | [Activation Matrix](../skills/activation-matrix.md) |
+| project/reference packages | `workspace/` |
+| current evidence status | [Validation Report](../../foundation/validation-report.md) |
 
-## MCP Runtime Sources
+## MCP sources
 
 Start with:
 
-- [MCP README](../../../mcp/README.md) — build/load/endpoint/default product boundary;
-- [MCP Agent Rules](../../../mcp/AGENTS.md) — source engineering invariants;
-- `mcp/server/tools/` — tool behavior;
-- `mcp/lib/` — factories, shared schemas/identity/runtime helpers;
-- `mcp/prompts/bedrock_entity_workflow.md` — canonical bundled Bedrock authoring prompt;
-- `mcp/build/docs-manifest.ts` — generated API documentation ownership.
+- [MCP README](../../../mcp/README.md)
+- [MCP Agent Rules](../../../mcp/AGENTS.md)
+- `mcp/server/tools/` for tool behavior;
+- `mcp/lib/` for shared schemas/factories/helpers;
+- `mcp/prompts/bedrock_entity_workflow.md` for the enabled authoring workflow;
+- `mcp/build/docs-manifest.ts` for generated API ownership;
+- `mcp/tests/` for contract/integration regression ownership.
 
-Use [Implementation Map](../implementation-map.md) to locate the current owner before reading old review notes.
+Do not use deleted nested `mcp/.github/` prompts/instructions or upstream standalone-repo configuration as BlockIT authority.
 
-## Skill Source
+## Skills
 
-Current repository-owned skill inventory/routing:
-
-- [Skill Map](../skills/skill-map.md)
-- [Activation Matrix](../skills/activation-matrix.md)
-- [Skill README](../../../.agents/skills/README.md)
-
-Do not route new work to retired nested roots:
+All repository-owned skills live under:
 
 ```text
-mcp/.agents/skills/
-mcp/.github/skills/
-mcp/workflow/skills/
+.agents/skills/
 ```
 
-## Reference Source
+- [Skill Map](../skills/skill-map.md) — inventory and concise lineage.
+- [Activation Matrix](../skills/activation-matrix.md) — current routing.
 
-Source Image/user intent → approved Modelling Brief:
+## References / workspace
+
+Source Image/user intent → approved Modelling Brief policy:
 
 - [Reference Guide](../../foundation/04-reference-guide.md)
 
-Reference generation is not a root Codex skill. The approved brief is consumed by the BlockIT asset-authoring route.
+Intentional model/reference packages live under `workspace/`. Preview/cache output is local/transient and ignored.
 
-## Evidence / Review Sources
+## Decisions / reviews
 
-- [Validation Report](../../foundation/validation-report.md) — current source/CI/official/local-proof matrix.
-- [Review Index](../reviews/review-graph.md) — current meaning/status of historical reviews.
-- [Decision Log](../decision-log.md) — durable decisions/superseded rules.
-- [Deferred Tool Loading Review](../reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md) — local evidence questions for native Codex exposure/search.
-- [Reference Fidelity Root Cause](../reviews/mcp-reference-fidelity-root-cause.md) — evidence behind the current visual-feedback architecture.
+- [Decision Log](../decision-log.md) — durable why.
+- [Review Index](../reviews/review-graph.md) — current meaning of historical evidence.
+- [Capability Surface Matrix](../reviews/bedrock-entity-capability-surface-matrix.md) — protected native Bedrock mapping guardrail.
+- [Model Creation Effectiveness Audit](../reviews/model-creation-effectiveness-audit-2026-08-10.md) — reference-fidelity/tool-efficiency problem evidence.
 
-Historical review bodies may retain old tool names/surface recommendations. Current source, this map, the Review Index, Validation Report, and `next-action.md` determine current meaning.
+Historical Git revisions remain available for deleted plans, standalone-upstream files, or obsolete experiments. Do not keep duplicate active documents solely for provenance.
 
-## Historical Upstream Records
+## Use rule
 
-`docs/foundation/08-source-selection.md` and `09-merge-map.md` document historical adoption from upstream sources. `Rework` and `Sample` are reference/history, not current runtime authorities.
-
-## Use Rule
-
-Open only the owner relevant to the active question. A review, sample, old branch, generated file, or upstream repository can explain lineage but cannot override current `Local` source/policy without a new evidence-backed decision.
+Open only the source area needed by the current decision. Historical reviews, old branches, upstream repositories, or Git history may explain lineage but never silently override current `Local` source/policy.
 
 ## Parent
 

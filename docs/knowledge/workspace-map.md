@@ -2,94 +2,56 @@
 
 Updated: 2026-08-11
 
-Use this note as the top-level repository map. Root `AGENTS.md` still decides what should actually be loaded for the current task.
+Use this only when repository ownership/location is unclear.
 
-## Main Areas
+## Top-level areas
 
-- [Agent Rules](../../AGENTS.md) — task-class routing, proof discipline, anti-slop rules.
+- [Agent Rules](../../AGENTS.md) — task routing, proof discipline, anti-overdevelopment.
 - [Workspace Context](../../CONTEXT.md) — stable facts/terminology.
-- [Next Action](next-action.md) — single active repository-continuation snapshot.
-- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — current local execution procedure when activated by `next-action.md`.
+- [Next Action](next-action.md) — one active repository continuation state.
 - [Foundation](../foundation/README.md) — durable product/modelling/reference policy.
-- [Knowledge Dashboard](index.md) — project-memory navigation.
-- [Implementation Map](implementation-map.md) — current Local source ownership/surface.
-- [Skill Routing](skills/activation-matrix.md) — current skill selection.
-- [Validation Report](../foundation/validation-report.md) — current proof-status matrix.
-- [MCP](../../mcp/README.md) — active plugin/runtime/build instructions.
-- [Project Workspace](../../workspace/) — model/project data and fixtures.
+- [Knowledge Dashboard](index.md) — current documentation navigation.
+- [Implementation Map](implementation-map.md) — current source ownership/surface.
+- [Skill Map](skills/skill-map.md) — repository-owned skills.
+- [MCP](../../mcp/README.md) — active plugin/runtime source.
+- [Project Workspace](../../workspace/README.md) — model/reference packages and fixtures.
 
-## Canonical Skill Area
-
-All repository-owned skills live under:
-
-`../../.agents/skills/`
-
-Asset authoring:
+## Repository structure
 
 ```text
-blockit-bedrock-entity-mcp
-blockbench-bedrock-modelling
-blockit-bedrock-texturing
-blockit-bedrock-animation
+BuildIT/
+├─ .agents/skills/       repository-owned skills
+├─ .github/workflows/    repository CI only
+├─ docs/
+│  ├─ foundation/        durable current policy
+│  └─ knowledge/         current memory + reviews/decisions
+├─ mcp/                  BlockIT plugin/runtime/build/tests
+└─ workspace/            project/reference packages
 ```
 
-Repository/plugin development:
+Standalone-upstream/editor configuration does not belong under `mcp/`; GitHub/IDE/AI-client state is repository-root or local-only.
+
+## Skill root
+
+All project-owned skills live under:
 
 ```text
-development-brief
-mcp-server-development
-typescript-type-safety
-bun-tooling
-blockbench-runtime-development
+.agents/skills/
 ```
 
-Retired nested skill locations are not current owners:
+Nested historical skill/config roots under `mcp/` are not current authorities.
 
-```text
-mcp/.agents/skills/
-mcp/.github/skills/
-mcp/workflow/skills/
-```
+## Workspace rule
 
-Reference generation remains a foundation workflow under `docs/foundation/04-reference-guide.md`, not another root Codex skill.
+`workspace/active/` may contain intentional `.bbmodel` and approved reference fixtures. `workspace/**/mcp-data/cache/` is transient and ignored; do not commit screenshots/previews merely because an experiment generated them.
 
-## Area Shortcuts
+## Fast rule
 
-### `docs/`
-
-- `docs/foundation/README.md`
-- `docs/foundation/validation-report.md`
-- `docs/knowledge/index.md`
-- `docs/knowledge/minimal-nav.md`
-- `docs/knowledge/next-action.md`
-- `docs/knowledge/operations/local-acceptance-runbook.md`
-- `docs/knowledge/implementation-map.md`
-- `docs/knowledge/skills/activation-matrix.md`
-
-### `mcp/`
-
-- `mcp/README.md`
-- `mcp/AGENTS.md`
-- `mcp/index.ts`
-- `mcp/lib/`
-- `mcp/server/`
-- `mcp/ui/`
-- `mcp/prompts/bedrock_entity_workflow.md`
-
-### `workspace/`
-
-- `workspace/active/` — current model packages when used;
-- `workspace/saved/` — saved/completed packages when used.
-
-Do not invent a workspace owner/path that does not exist in current `Local`.
-
-## Fast Rule
-
-- Asset authoring uses the direct orchestrator path; do not boot repository history.
-- Repository continuation uses `AGENTS.md` → relevant `CONTEXT.md` → `next-action.md`.
-- Current local acceptance then follows the runbook.
-- If a documented path does not exist, verify before creating anything.
-- Generated output, dependencies, old branches, and chat history are not primary project memory.
+- start from `AGENTS.md`, not a broad repository scan;
+- use `next-action.md` only for repository continuation;
+- use the Local Acceptance Runbook when that continuation is active;
+- use Git history/reviews for provenance instead of restoring deleted planning layers;
+- verify a path/owner exists before creating a replacement.
 
 ## Parent
 

@@ -1,8 +1,16 @@
-# Active Projects
+# Active Projects / Fixtures
 
-Place projects currently being developed here. A project must have one package
-directory with the `.bbmodel` file directly, `export-data/`, and `mcp-data/`. References and
-preview cache belong inside `mcp-data/`.
+Keep only intentional project/reference packages here.
 
-Move a project to `workspace/saved/` only after its model and outputs pass the
-required validation.
+A package may contain:
+
+- its `.bbmodel` baseline/current project;
+- approved reference/source assets;
+- compact current package metadata;
+- deliberate export artifacts when they are part of the project contract.
+
+Do not commit generated preview/cache screenshots under `mcp-data/cache/`; that path is ignored.
+
+`zebra/` is currently retained as an **optional local acceptance reference fixture**. It must not become object-specific BlockIT runtime policy.
+
+Move a genuinely completed/validated package to `workspace/saved/` when appropriate.

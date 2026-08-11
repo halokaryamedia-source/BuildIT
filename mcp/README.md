@@ -1,32 +1,14 @@
 # BlockIT — Bedrock Entity MCP
 
-BlockIT is a Minecraft **Bedrock Entity-focused** MCP plugin/server running inside desktop Blockbench. Current product authority is repository `halokaryamedia-source/BuildIT`, branch `Local`.
+BlockIT is a Minecraft **Bedrock Entity-focused** MCP server/plugin that runs inside desktop Blockbench. `Local` is the current development authority.
 
-Do **not** use the upstream hosted Blockbench MCP binary as proof of BlockIT; it is a different product surface.
+Do **not** validate BlockIT with the upstream hosted Jason J. Gardner plugin. That artifact is a different generic product surface.
 
-## Current Local Acceptance Entry Point
+## Build / verify
 
-For the active repository-continuation task, Codex should follow:
-
-```text
-AGENTS.md
-→ CONTEXT.md
-→ docs/knowledge/next-action.md
-→ docs/knowledge/operations/local-acceptance-runbook.md
-→ this README + mcp/AGENTS.md
-```
-
-Do not replan from historical reviews before running the baseline acceptance procedure. The baseline collects evidence; source edits start only after a failure is reproduced and classified.
-
-Ordinary asset-authoring tasks are different: root `AGENTS.md` routes them directly through the BlockIT asset orchestrator and the active modelling/texturing/animation specialist without booting repository history.
-
-## Build Current Local Plugin
-
-From repository root:
+From this directory:
 
 ```bash
-git checkout Local
-cd mcp
 bun install --frozen-lockfile
 bun run typecheck
 bun run test
@@ -34,37 +16,57 @@ bun run build
 bun run docs:check
 ```
 
-Production plugin:
+Production output:
 
 ```text
-mcp/dist/mcp.js
+dist/mcp.js
 ```
 
 Load that file as a local Blockbench plugin.
 
-## MCP Endpoint
-
-Default endpoint:
-
-```text
-http://127.0.0.1:3000/bb-mcp
-```
-
-The current default path is loopback request-owned stateless Streamable HTTP with JSON responses. Settings are under Blockbench **Settings → General**:
-
-- MCP Server Port
-- MCP Server Endpoint
-- Extended MCP Families — **off for the baseline**
-
-With BlockIT running, local transport smoke:
+Local stateless smoke, after the plugin is running:
 
 ```bash
 bun run verify:stateless-local
 ```
 
-## Current Default Surface Baseline
+## Endpoint
 
-Pinned-SDK non-local measurement for the current pre-local source state:
+Default:
+
+```text
+http://127.0.0.1:3000/bb-mcp
+```
+
+The server binds to loopback and uses request-owned stateless Streamable HTTP with JSON responses.
+
+Blockbench settings under **Settings → General**:
+
+- MCP Server Port
+- MCP Server Endpoint
+- Extended MCP Families — off by default
+
+Extended families expose only retained generic fallback families; individually quarantined tools such as `risky_eval` and `from_geo_json` remain disabled.
+
+## Product boundary
+
+Normal BlockIT work targets Blockbench `bedrock` projects and preserves Bedrock-relevant capability:
+
+- Cube/Cuboid geometry;
+- Group/bone hierarchy and pivots;
+- deterministic project/element observation;
+- bounded visual model-view capture;
+- texture/Painter/PBR/material-instance workflows;
+- Bedrock animation/BoneAnimator workflows;
+- Locator / Null Object authored state;
+- Undo/history;
+- editable `.bbmodel` and Bedrock geometry export.
+
+Generic Mesh/Hytale paths, risky evaluation, and screen-coordinate UI automation are not normal Bedrock Entity authoring capability.
+
+## Current default surface
+
+Pinned-SDK baseline:
 
 ```text
 62 enabled tools
@@ -72,8 +74,6 @@ Pinned-SDK non-local measurement for the current pre-local source state:
 48,674 input-schema characters
 11,800 tool-description characters
 ```
-
-Expected default containment:
 
 ```text
 export_model          exposed
@@ -84,79 +84,55 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-Do not change this surface during the baseline merely because the raw count appears large. Local acceptance first measures how the installed Codex client actually exposes/searches the catalog.
+Bedrock Entity is native `single_texture`; active/default texture lifecycle remains available while generic raw per-face texture identity tools are not exposed by default.
 
-## Product Boundary
+## Agent / local acceptance route
 
-Normal BlockIT work targets Minecraft Bedrock Entity (`bedrock`). Retained product areas include:
+Repository-owned skills live at root `.agents/skills/`, not under this package.
 
-- Cube/Cuboid geometry and Group/bone hierarchy;
-- deterministic identity/discovery and authored-state inspection;
-- named model-view observation and structural bounds;
-- texture/Painter/PBR/material-instance capability;
-- Bedrock animation/BoneAnimator/keyframe/timeline capability;
-- Locator / Null Object authored-state operations;
-- Undo/history/recovery and product export outcomes.
-
-Generic Blockbench Mesh/Hytale/eval/UI-automation paths are not normal Bedrock capability. Native Bedrock `TextureMesh` is a distinct protected gap, not permission to re-enable generic Mesh modelling.
-
-## Agent-Facing Authoring Route
-
-Repository-owned skills live under root `.agents/skills/`:
+For normal asset authoring:
 
 ```text
-blockit-bedrock-entity-mcp        orchestrator
-├─ blockbench-bedrock-modelling  form / hierarchy / visual judgement
-├─ blockit-bedrock-texturing     texture / Paint / PBR / material_instance
-└─ blockit-bedrock-animation     animation / keyframes / playback / effects
+blockit-bedrock-entity-mcp
+→ active modelling/texturing/animation specialist only
 ```
 
-Canonical bundled MCP prompt:
+For current repository continuation, use root `docs/knowledge/next-action.md`. The current local procedure is `docs/knowledge/operations/local-acceptance-runbook.md`.
+
+Do not use deleted nested `.github` prompts/instructions or standalone upstream guidance; root `AGENTS.md` and this package's `AGENTS.md` own current development rules.
+
+## Source layout
 
 ```text
-mcp/prompts/bedrock_entity_workflow.md
+index.ts             plugin entry/lifecycle
+server/              MCP server, transport, tools, resources, prompts
+lib/                 shared schemas/factories/runtime helpers
+ui/                  Blockbench panel/settings
+prompts/             bundled prompt sources
+build/               Bun build/docs tooling
+scripts/             deliberate local verification helpers
+tests/               contract/integration regressions
+docs/                generated API documentation
 ```
 
-The catalog is capability, not a checklist. Reuse fresh returned state and keep reads/captures/specialist loads bounded to decisions that need them.
+`docs/api.json` and `docs/index.html` are generated outputs intentionally kept under version control and verified with `bun run docs:check`; do not hand-edit generated entries.
 
-## Local Acceptance
+## Adding/changing MCP behavior
 
-Exact procedure:
+Follow `AGENTS.md` in this directory:
 
-`docs/knowledge/operations/local-acceptance-runbook.md`
+- strict TypeScript;
+- full Zod input validation;
+- no Blockbench globals during schema construction;
+- `createTool` / existing factory patterns;
+- smallest complete owner-specific change;
+- generated docs freshness;
+- local Blockbench proof for runtime/visual claims.
 
-It covers:
+Do not introduce compatibility shims, duplicated project tools, new routers/profiles, or generic import/eval capability without a proved current need.
 
-- environment/build/plugin load;
-- stateless transport;
-- native Codex deferred/tool-search behavior;
-- deterministic Cube/Group smoke asset + correction/Undo;
-- texture/Painter/PBR/material-instance reachability;
-- animation reachability/playback;
-- Locator/Null Object operations;
-- `.bbmodel` save/reopen + Bedrock export;
-- a real approved-reference difference-first scenario;
-- efficiency/redundant-call trace;
-- failure classification before any source fix.
+## License / upstream attribution
 
-## Source Engineering Rules
+The repository is licensed under GPL-3.0-only; see root `../LICENSE`.
 
-See [`AGENTS.md`](AGENTS.md) in this directory before changing `mcp/**`.
-
-Expected source gates remain:
-
-```bash
-bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run build
-bun run docs:check
-```
-
-Generated `mcp/docs/api.json` and `mcp/docs/index.html` are secondary to source and must not be hand-edited to bypass freshness checks.
-
-GitHub/source checks do not replace live Blockbench proof for rendering, image transport, Undo, playback, persistence, or visual fidelity.
-
-## Upstream Attribution
-
-BlockIT's MCP implementation derives from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Upstream attribution/license remain preserved; BlockIT product identity and current `Local` source distinguish this Bedrock-focused fork from the upstream hosted plugin.
+BlockIT's MCP implementation is derived from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Contributor attribution is also retained in `package.json`. BlockIT's product identity and Bedrock-focused defaults distinguish this fork from the upstream hosted plugin.

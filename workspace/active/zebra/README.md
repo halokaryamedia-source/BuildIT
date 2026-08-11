@@ -1,52 +1,39 @@
-# Zebra Project
+# Zebra — Optional Local Acceptance Fixture
 
-This is the active Zebra Blockbench project.
+This package is retained only as a **reference-fidelity acceptance fixture** for BlockIT. It is not a product template and must not create Zebra-specific runtime rules.
 
-- `zebra.bbmodel`: native Blockbench project file.
-- `export-data/`: reserved for Minecraft Bedrock development output.
-- `mcp-data/`: Codex/MCP cache and project metadata.
-- `mcp-data/references/`: reference images and comparison packages.
-- `mcp-data/cache/`: preview screenshots and temporary MCP cache.
+## Files
 
-## Reference Generator Fixture
+- `zebra.bbmodel` — reset/editable Blockbench fixture project.
+- `mcp-data/references/zebra_reference_package/` — approved visual reference package and source provenance.
 
-The active reference package is:
+Transient MCP preview screenshots are intentionally not tracked; `mcp-data/cache/` is ignored.
 
-```text
-mcp-data/references/zebra_reference_package/
-```
+## Reference authority
 
-It uses the current five-view Model Reference baseline:
-
-- Left Side;
-- Front;
-- Back;
-- Top / Footprint;
-- Front 3/4 Preview.
-
-The package is a Zebra-only test fixture for MCP visual inspection. Its Model
-Reference remains a five-view source package, but the active geometry workflow
-uses only `SIDE` (mapped to `LEFT SIDE`) plus the section-declared `FRONT` or
-`BACK` crop. It is not a blueprint and does not provide automatic geometry
-approval.
-The original Source Image is provenance only. The Golden Sample is owned by
-`mcp/workflow/reference-generator/assets/golden_sample.webp` and defines only
-presentation and modelling density.
-
-Current target:
+Use:
 
 ```text
-Height: 2.0 blocks
-Width: 0.9 blocks
-Length: 2.6 blocks
-Texture Style: 32x32
-Pose: Neutral standing pose
-Animation: No
+mcp-data/references/zebra_reference_package/zebra_model_reference.webp
 ```
 
-No separate underside reference or Texture Reference is required for this
-fixture. The Blockbench project has been reset to an empty saved state. All
-previous geometry plans, unsaved cube drafts, visual `PASS` decisions, and
-construction notes are obsolete. The reference package is preserved as the
-only Zebra test input. A new modelling contract must be designed before
-geometry construction restarts.
+as the approved visual reference when this fixture is explicitly selected for Local Acceptance Fixture B.
+
+The original source image is provenance only. The reference constrains visual form; it does **not** prescribe exact Cube transforms, pivots, rotation values, or a fixed decomposition.
+
+Current target metadata:
+
+```text
+Height: 2.0 blocks / 32.0 Blockbench units
+Width:  0.9 blocks / 14.4 Blockbench units
+Length: 2.6 blocks / 41.6 Blockbench units
+Texture style: 32x32
+Pose: neutral standing
+Required animation: none
+```
+
+Historical H1–H12 geometry experiments, screenshots, and correction attempts are not current fixture authority. They remain recoverable through Git history if their provenance is ever needed.
+
+## Use rule
+
+Use this fixture only when the user/local acceptance run explicitly chooses it. The normal BlockIT workflow remains object-agnostic and governed by the approved reference, current Foundation policy, and modelling specialist.
