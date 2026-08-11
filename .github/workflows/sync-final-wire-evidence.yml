@@ -1,0 +1,50 @@
+name: Sync Final MCP Wire Evidence
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/sync-final-wire-evidence.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - name: Replace stale current wire metrics
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          old = 'The actual stateless MCP `tools/list` wire surface is currently **63 enabled tools / 73,073 response characters**, including **48,453 characters of input schemas** and **12,105 characters of tool descriptions**. `place_cube` no longer exposes per-Cube texture selection, and `modify_cube` is now 1,471 schema characters without generic `shade`/`color` controls. Historical wire totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture.'
+          new = 'The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **63 enabled tools / 73,037 response characters**, including **48,453 characters of input schemas** and **12,069 characters of tool descriptions**. `place_cube` is **2,531** schema characters, `modify_cube` is **1,471**, and `modify_cubes_batch` is **1,232**; `apply_texture` and `filter_by_material` remain absent from the callable surface. Historical wire totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture.'
+          if next_text.count(old) != 1:
+              raise SystemExit('Unexpected current next-action wire paragraph')
+          next_path.write_text(next_text.replace(old, new, 1), encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          anchor = 'After narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **63 tools**. Current wire size is **73,174 response characters / 48,551 input-schema characters / 12,108 description characters**, with `place_cube` at **2,531 schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target.'
+          extra = '\n\nFinal pinned-SDK measurement after the later `modify_cube` and batch-correction contract hardening: **63 tools / 73,037 response characters / 48,453 input-schema characters / 12,069 description characters**. Current schema sizes are **2,531** for `place_cube`, **1,471** for `modify_cube`, and **1,232** for `modify_cubes_batch`; `apply_texture` and `filter_by_material` remain absent. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.'
+          if review.count(anchor) != 1:
+              raise SystemExit('Unexpected deferred-loading measurement anchor')
+          review_path.write_text(review.replace(anchor, anchor + extra, 1), encoding='utf-8')
+          PY
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit evidence sync and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/sync-final-wire-evidence.yml
+          git add docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md
+          git commit -m 'docs: sync final MCP wire measurement'
+          git push origin HEAD:Local
