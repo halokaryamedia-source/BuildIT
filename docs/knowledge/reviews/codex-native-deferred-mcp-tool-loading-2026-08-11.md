@@ -174,7 +174,7 @@ Historical actual stateless `tools/list` baseline before `apply_texture` contain
 11,786 tool-description characters
 ```
 
-Current actual stateless `tools/list` measurement after default-disabling generic per-face `apply_texture`:
+Historical post-`apply_texture` stateless `tools/list` snapshot:
 
 ```text
 64 enabled tools
@@ -185,9 +185,9 @@ Current actual stateless `tools/list` measurement after default-disabling generi
 
 `activate_texture` remains exposed; `apply_texture` is absent from the callable tools list. This is a Bedrock semantics correction, not a geometry benchmark profile or arbitrary context cut.
 
-A later Bedrock semantics audit also default-disabled `filter_by_material`, because it searched raw per-face `face.texture` identities that do not own effective texture selection in native `single_texture`. Current callable measurement after both containments: **63 tools / 73,149 response characters / 48,614 input-schema characters / 12,020 description characters**. Historical byte totals are retained as evidence, not compared as a controlled performance benchmark across different source states.
+A later Bedrock semantics audit also default-disabled `filter_by_material`, because it searched raw per-face `face.texture` identities that do not own effective texture selection in native `single_texture`. Historical snapshot after both containments: **63 tools / 73,149 response characters / 48,614 input-schema characters / 12,020 description characters**. Historical byte totals are retained as evidence, not compared as a controlled performance benchmark across different source states.
 
-After narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **63 tools**. Current wire size is **73,174 response characters / 48,551 input-schema characters / 12,108 description characters**, with `place_cube` at **2,531 schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target.
+After narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **63 tools**. That historical wire snapshot was **73,174 response characters / 48,551 input-schema characters / 12,108 description characters**, with `place_cube` at **2,531 schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target.
 
 Final pinned-SDK measurement after the complete non-local pre-local cleanup: **62 tools / 72,775 response characters / 48,674 input-schema characters / 11,800 description characters**. `create_project` remains **212** schema characters, `add_group` is **758**, and `duplicate_element` is **539**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent while `export_model` remains exposed. This final line is the current-source measurement; earlier figures above are intentionally retained as historical source-state evidence.
 

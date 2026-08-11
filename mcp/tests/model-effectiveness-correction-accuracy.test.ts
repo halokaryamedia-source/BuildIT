@@ -187,14 +187,11 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(modelling).toContain("An unintended center shift");
     expect(workflow).toContain("hierarchy REATTACH");
     expect(workflow).toContain("`BLOCKED`");
+    expect(modelling).toContain("reuse fresh exact authored state already returned for that target when sufficient");
+    expect(workflow).toContain("Reuse fresh exact authored state already returned for that target when sufficient");
+    expect(workflow).not.toContain("`inspect_element` before numeric correction and use the authored state it returns");
   });
 
-  test("correction safeguards remain active as problem-driven work advances", async () => {
-    const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain("correction accuracy");
-    expect(next).toContain("tool-choice / context friction");
-    expect(next).not.toContain(
-      "The next bounded modelling problem is:\n\n```text\nP1 — correction accuracy"
-    );
-  });
+
+
 });

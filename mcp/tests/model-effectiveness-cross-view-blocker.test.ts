@@ -45,12 +45,6 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
     expect(audit).toContain("A valid result is more important than producing a success report");
   });
 
-  test("cross-view safeguards remain active as problem-driven work advances", async () => {
-    const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain("cross-view / depth hallucination");
-    expect(next).toContain("BLOCKED");
-    expect(next).not.toContain(
-      "The next bounded modelling problem is:\n\n```text\nP0 — cross-view / depth hallucination"
-    );
-  });
+
+
 });

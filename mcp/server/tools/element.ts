@@ -67,9 +67,12 @@ export const findElementsByCriteriaParameters = z.object({
     .default(200)
     .describe("Maximum number of results to return."),
 }).superRefine((params, ctx) => {
-  if (params.min_size === undefined || params.max_size === undefined) return;
-  params.min_size.forEach((minimum, axis) => {
-    if (minimum > params.max_size![axis]) {
+  const minSize = params.min_size;
+  const maxSize = params.max_size;
+  if (minSize === undefined || maxSize === undefined) return;
+
+  minSize.forEach((minimum, axis) => {
+    if (minimum > maxSize[axis]) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["max_size", axis],

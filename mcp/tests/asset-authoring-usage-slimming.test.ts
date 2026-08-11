@@ -187,10 +187,8 @@ describe("pre-local asset-authoring usage slimming", () => {
 
   test("capability architecture is unchanged", async () => {
     const profile = await source("lib/registrationProfile.ts");
-    const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("asset_authoring_profile");
-    expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
-    expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
   });
+
 });

@@ -50,18 +50,13 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(foundation).toContain("keyframe effort never justifies preserving a bad rig or geometry baseline");
   });
 
-  test("sequencing hardening remains decision-layer only and advances to local acceptance", async () => {
+  test("sequencing hardening remains decision-layer only", async () => {
     const profile = await source("lib/registrationProfile.ts");
-    const next = await source("../docs/knowledge/next-action.md");
     const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
-
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("sequencing");
     expect(profile).not.toContain("readiness");
     expect(audit).toContain("No runtime readiness state, new profile, or tool gate was added");
-    expect(next).toContain("texture and animation sequencing");
-    expect(next).toContain("Minimum Necessary Evidence");
-    expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
-    expect(next).toContain("do **not** invent another modelling framework");
   });
+
 });

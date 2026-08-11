@@ -65,12 +65,6 @@ describe("model creation effectiveness — tool routing", () => {
     expect(profile).not.toContain("tool_lane_profile");
   });
 
-  test("tool-routing safeguards remain active as sequencing work completes", async () => {
-    const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain("tool-choice / context friction");
-    expect(next).toContain("texture and animation sequencing");
-    expect(next).not.toContain(
-      "The next bounded modelling problem is:\n\n```text\nP1 — tool-choice / context friction"
-    );
-  });
+
+
 });

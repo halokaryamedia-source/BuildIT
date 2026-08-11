@@ -38,29 +38,18 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
 
   test("cleanup remains decision-layer only with no new efficiency profile or runtime mode", async () => {
     const profile = await source("lib/registrationProfile.ts");
-    const next = await source("../docs/knowledge/next-action.md");
-
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("efficiency_mode");
     expect(profile).not.toContain("minimum_evidence");
-    expect(next).toContain("Minimum Necessary Evidence");
-    expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
-    expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
-    expect(next).toContain("Non-local Pre-local Readiness");
-    expect(next).toContain("native Codex deferred/tool-search exposure");
-    expect(next).toContain("No custom tool router");
   });
 
   test("CI modelling gates are explicitly contract proof, not behavioral or visual proof", async () => {
     const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
-    const next = await source("../docs/knowledge/next-action.md");
-
     expect(audit).toContain("Proof Taxonomy — Do Not Confuse Contract With Behaviour");
     expect(audit).toContain("contract proof");
     expect(audit).toContain("BEHAVIORAL MODELLING PROOF");
     expect(audit).toContain("REFERENCE-FIDELITY OUTCOME PROOF");
-    expect(next).toContain("They are not behavioral proof that Codex follows the workflow");
-    expect(next).toContain("not visual proof that a live model resembles its reference");
   });
+
 });

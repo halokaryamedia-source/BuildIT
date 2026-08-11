@@ -110,7 +110,7 @@ ADD MASS       genuinely missing visible volume
 
 Do not default to adding a Cube.
 
-Before a numeric local correction, use `inspect_element` once to obtain exact authored state, then declare the smallest **invariant**:
+Before a numeric local correction, reuse fresh exact authored state already returned for that target when sufficient; otherwise use `inspect_element` once. Then declare the smallest **invariant**:
 
 ```text
 cause
