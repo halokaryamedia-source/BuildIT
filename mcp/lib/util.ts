@@ -1,5 +1,13 @@
 import { resolveCoreTexture } from "@/lib/coreIdentity";
 
+export function isAbsoluteFilesystemPath(value: string): boolean {
+  return (
+    value.startsWith("/") ||
+    /^[A-Za-z]:[\\/]/.test(value) ||
+    /^\\\\[^\\]+\\[^\\]+(?:\\|$)/.test(value)
+  );
+}
+
 /**
  * Helper function to create properly formatted image content for MCP responses.
  * Handles data URLs, base64 strings, and objects with url property.

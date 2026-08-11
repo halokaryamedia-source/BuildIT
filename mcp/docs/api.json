@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T06:51:42.178Z",
+  "generatedAt": "2026-08-11T06:58:17.488Z",
   "tools": [
     {
       "name": "place_cube",
@@ -4613,8 +4613,8 @@
             "properties": {
               "path": {
                 "type": "string",
-                "description": "Path to the .texture_set.json file to import.",
-                "markdownDescription": "Path to the .texture_set.json file to import."
+                "description": "Absolute path to the .texture_set.json file to import.",
+                "markdownDescription": "Absolute path to the .texture_set.json file to import."
               }
             },
             "required": [

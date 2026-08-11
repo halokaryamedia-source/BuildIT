@@ -2,7 +2,11 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { imageContent, getChannelTextureInfo } from "@/lib/util";
+import {
+  imageContent,
+  getChannelTextureInfo,
+  isAbsoluteFilesystemPath,
+} from "@/lib/util";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCubeOrGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import {
@@ -259,9 +263,11 @@ export const getMaterialInfoParameters = z.object({
 export const importTextureSetParameters = z.object({
   path: z
     .string()
-    .describe(
-      "Path to the .texture_set.json file to import."
-    ),
+    .refine(isAbsoluteFilesystemPath, {
+      message:
+        "Texture-set import path must be absolute: use a POSIX `/...` path, a Windows drive path such as `C:\\...`, or a UNC path such as `\\\\server\\share\\...`.",
+    })
+    .describe("Absolute path to the .texture_set.json file to import."),
 });
 
 export const assignTextureChannelParameters = z.object({
@@ -1153,7 +1159,7 @@ export function registerTextureTools() {
       // Validate path ends with texture_set.json
       if (!path.endsWith(".texture_set.json")) {
         throw new Error(
-          "Path must end with '.texture_set.json'. Example: 'path/to/mytexture.texture_set.json'"
+          "Path must end with '.texture_set.json'. Example: '/absolute/path/mytexture.texture_set.json'"
         );
       }
 

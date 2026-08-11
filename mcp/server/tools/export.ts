@@ -3,19 +3,13 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const BLOCKIT_MODEL_CODEC_IDS = ["bedrock", "project"] as const;
 const blockitModelCodecEnum = z.enum(BLOCKIT_MODEL_CODEC_IDS);
 
 export const listExportFormatsParameters = z.object({});
 
-function isAbsoluteOutputPath(value: string): boolean {
-  return (
-    value.startsWith("/") ||
-    /^[A-Za-z]:[\\/]/.test(value) ||
-    /^\\\\[^\\]+\\[^\\]+(?:\\|$)/.test(value)
-  );
-}
 
 export const exportModelParameters = z.object({
   codec_id: blockitModelCodecEnum
@@ -32,7 +26,7 @@ export const exportModelParameters = z.object({
     ),
   path: z
     .string()
-    .refine(isAbsoluteOutputPath, {
+    .refine(isAbsoluteFilesystemPath, {
       message:
         "Export path must be absolute: use a POSIX `/...` path, a Windows drive path such as `C:\\...`, or a UNC path such as `\\\\server\\share\\...`.",
     })

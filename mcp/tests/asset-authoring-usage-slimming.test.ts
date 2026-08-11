@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { exportModelParameters } from "@/server/tools/export";
+import { importTextureSetParameters } from "@/server/tools/texture";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -69,6 +70,25 @@ describe("pre-local asset-authoring usage slimming", () => {
       "C:model.json",
     ]) {
       expect(exportModelParameters.safeParse({ path }).success).toBe(false);
+    }
+  });
+
+  test("filesystem import and export paths are deterministic", () => {
+    for (const path of [
+      "/tmp/material.texture_set.json",
+      "C:\\Exports\\material.texture_set.json",
+      "D:/Exports/material.texture_set.json",
+      "\\\\server\\share\\material.texture_set.json",
+    ]) {
+      expect(importTextureSetParameters.safeParse({ path }).success).toBe(true);
+    }
+    for (const path of [
+      "material.texture_set.json",
+      "textures/material.texture_set.json",
+      ".\\material.texture_set.json",
+      "C:material.texture_set.json",
+    ]) {
+      expect(importTextureSetParameters.safeParse({ path }).success).toBe(false);
     }
   });
 
