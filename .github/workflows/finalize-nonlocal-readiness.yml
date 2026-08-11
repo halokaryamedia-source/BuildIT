@@ -91,10 +91,13 @@ jobs:
           metrics_path.unlink()
           def n(value): return f'{value:,}'
 
+          old_status_plain = 'MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED'
+          new_status_plain = 'NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED'
+
           next_path = Path('docs/knowledge/next-action.md')
           text = next_path.read_text(encoding='utf-8')
-          old_status = '`MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED`'
-          new_status = '`NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED`'
+          old_status = f'`{old_status_plain}`'
+          new_status = f'`{new_status_plain}`'
           if text.count(old_status) != 1:
             raise SystemExit('next-action current-status anchor changed')
           text = text.replace(old_status, new_status, 1)
@@ -135,20 +138,25 @@ jobs:
             raise SystemExit('deferred-loading review measurement anchor changed')
           review_path.write_text(review, encoding='utf-8')
 
+          status_files = []
+          for test_path in sorted(Path('mcp/tests').glob('*.test.ts')):
+            test = test_path.read_text(encoding='utf-8')
+            if old_status_plain not in test:
+              continue
+            test_path.write_text(test.replace(old_status_plain, new_status_plain), encoding='utf-8')
+            status_files.append(str(test_path))
+          if len(status_files) != 3:
+            raise SystemExit(f'Expected 3 stale readiness-status test files, found {status_files}')
+
           test_path = Path('mcp/tests/model-effectiveness-minimum-evidence.test.ts')
           test = test_path.read_text(encoding='utf-8')
-          old = 'expect(next).toContain("MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED");'
-          new = 'expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");'
-          if test.count(old) != 1:
-            raise SystemExit('readiness-status regression anchor changed')
-          test = test.replace(old, new, 1)
           local_anchor = '    expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");\n'
           local_checks = '''    expect(next).toContain("Non-local Pre-local Readiness");\n    expect(next).toContain("native Codex deferred/tool-search exposure");\n    expect(next).toContain("No custom tool router");\n'''
           if test.count(local_anchor) != 1:
             raise SystemExit('local-boundary regression anchor changed')
           test_path.write_text(test.replace(local_anchor, local_anchor + local_checks, 1), encoding='utf-8')
 
-          print(json.dumps(m, indent=2))
+          print(json.dumps({**m, 'updated_status_tests': status_files}, indent=2))
           PY
 
       - name: Typecheck
@@ -170,6 +178,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/finalize-nonlocal-readiness.yml
-          git add docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md mcp/tests/model-effectiveness-minimum-evidence.test.ts
+          git add docs/knowledge/next-action.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md mcp/tests/model-effectiveness-minimum-evidence.test.ts mcp/tests/context-payload-cleanup.test.ts mcp/tests/asset-authoring-usage-slimming.test.ts
           git commit -m 'docs: mark non-local pre-local readiness complete'
           git push origin HEAD:Local
