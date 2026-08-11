@@ -185,6 +185,8 @@ Current actual stateless `tools/list` measurement after default-disabling generi
 
 `activate_texture` remains exposed; `apply_texture` is absent from the callable tools list. This is a Bedrock semantics correction, not a geometry benchmark profile or arbitrary context cut.
 
+A later Bedrock semantics audit also default-disabled `filter_by_material`, because it searched raw per-face `face.texture` identities that do not own effective texture selection in native `single_texture`. Current callable measurement after both containments: **63 tools / 73,149 response characters / 48,614 input-schema characters / 12,020 description characters**. Historical byte totals are retained as evidence, not compared as a controlled performance benchmark across different source states.
+
 The ranking audit produced this compact approximation:
 
 ```text

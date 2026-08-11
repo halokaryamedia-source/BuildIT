@@ -44,6 +44,14 @@ describe("pre-local generic semantics narrowing", () => {
     expect(skill).toContain("use `activate_texture` to choose the active/default working texture");
     expect(audit).toContain("**DEFAULT-DISABLE** the inherited generic per-face `Texture.apply()` wrapper");
   });
+  test("raw per-face texture discovery is disabled for Bedrock single-texture authoring", async () => {
+    const elements = await source("server/tools/element.ts");
+    const start = elements.indexOf('name: "filter_by_material"');
+    const registration = elements.indexOf("elementToolDocs[7].status, false");
+    expect(start).toBeGreaterThan(-1);
+    expect(registration).toBeGreaterThan(start);
+    expect(elements).toContain("effective face texture comes from Texture.getDefault()");
+  });
   test("validator inferred element references declare their non-authoritative source", async () => {
     const validator = await source("server/resources/validator.ts");
     expect(validator).toContain('elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none"');

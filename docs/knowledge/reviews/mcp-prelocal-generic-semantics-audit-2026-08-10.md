@@ -74,6 +74,13 @@ Reason: full application capture and arbitrary active-camera mutation are generi
 Official Blockbench Bedrock Entity source defines `id: bedrock` with `single_texture: true`. The native Texture menu exposes face/blank/element apply actions only when `!Format.single_texture`, and `Face.getTexture()` resolves `Texture.getDefault()` for non-null faces when `Format.single_texture` is active. BlockIT already exposes `activate_texture`, which explicitly selects the intended Texture and therefore owns the active/default working texture without per-face apply or nested Undo.
 
 Keeping `apply_texture` enabled would add one generic tool to Codex, duplicate active-texture intent, retain ambient face-selection semantics for one mode, and invoke native `Texture.apply()` inside an outer BlockIT Undo edit. None of those are required Bedrock Entity capability. Source/catalog evidence remains for maintainers, but the tool is not callable from the enabled Bedrock MCP surface.
+### `filter_by_material`
+
+**DEFAULT-DISABLE** raw per-face texture discovery for Bedrock Entity.
+
+The retained implementation resolves one Texture but matches Cubes by raw `face.texture === texture.uuid/id`. Official Blockbench Bedrock Entity is `single_texture`, and native `Face.getTexture()` uses `Texture.getDefault()` for non-null faces in that format. Raw per-face texture identity therefore does not own effective Bedrock texture selection and can preserve stale/generic metadata after `apply_texture` is removed from the default surface.
+
+Normal Bedrock texture discovery remains `list_textures` + active/default texture state, while native per-face authored differentiation remains `material_instance`. Keeping `filter_by_material` callable would expose a misleading generic concept rather than a Bedrock capability.
 ### validator references
 
 Keep validator resources, but mark regex-derived `elementRefs` as:

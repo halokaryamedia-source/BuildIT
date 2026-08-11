@@ -250,7 +250,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "filter_by_material",
     description:
-      "Returns a bounded list of Cubes that reference one explicit texture. Texture identity resolves UUID/ID/unique exact name; matching face keys are optional and truncation is reported only when an additional match exists. Read-only; it does not activate, paint, or mutate textures.",
+      "Legacy generic raw face.texture discovery. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and effective face texture comes from Texture.getDefault(), not per-face texture identity.",
     annotations: {
       title: "Filter Elements by Material",
       readOnlyHint: true,
@@ -845,7 +845,7 @@ parent: group.parent instanceof Group ? group.parent.uuid : "root",
         }
       );
     },
-  }, elementToolDocs[7].status);
+  }, elementToolDocs[7].status, false);
 
   createTool(elementToolDocs[8].name, {
     ...elementToolDocs[8],
