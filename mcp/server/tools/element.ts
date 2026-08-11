@@ -161,7 +161,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "remove_element",
     description:
-      "Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
+      "Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.",
     annotations: {
       title: "Remove Element",
       destructiveHint: true,
@@ -395,29 +395,64 @@ function safeCompileRegex(pattern: string | undefined): RegExp | null {
 
 export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
-    ...elementToolDocs[0],
-    async execute({ id }) {
-      const element = resolveUniqueDestructiveElement(id);
+  ...elementToolDocs[0],
+  async execute({ id }) {
+    const element = resolveUniqueDestructiveElement(id);
+    const deleteElements: OutlinerElement[] = [];
+    const deleteGroups: Group[] = [];
 
-      Undo.initEdit({
-        elements: [],
-        outliner: true,
-        collections: [],
+    if (element instanceof Group) {
+      deleteGroups.push(element);
+      element.forEachChild((child: any) => {
+        if (child instanceof Group) {
+deleteGroups.push(child);
+        } else {
+deleteElements.push(child as OutlinerElement);
+        }
       });
+    } else {
+      deleteElements.push(element);
+    }
 
-      try {
+    const deletedNodeUuids = new Set([
+      ...deleteGroups.map((group) => group.uuid),
+      ...deleteElements.map((deletedElement) => deletedElement.uuid),
+    ]);
+    const deleteAnimations: _Animation[] = AnimationItem.all.filter(
+      (animation) =>
+        Object.keys(animation.animators ?? {}).some((animatorUuid) =>
+deletedNodeUuids.has(animatorUuid)
+        )
+    );
+
+    Undo.initEdit({
+      elements: deleteElements,
+      groups: deleteGroups,
+      outliner: true,
+      selection: true,
+      animations: deleteAnimations,
+      collections: [],
+    });
+
+    try {
+      if (element instanceof Group) {
+        element.remove(false);
+        deleteGroups.length = 0;
+      } else {
         element.remove();
-        Undo.finishEdit("Agent removed element");
-      } catch (error) {
-        Undo.cancelEdit(true);
-        Canvas.updateAll();
-        throw error;
       }
-
+      deleteElements.length = 0;
+      Undo.finishEdit("Agent removed element");
+    } catch (error) {
+      Undo.cancelEdit(true);
       Canvas.updateAll();
-      return `Removed element with ID ${id}`;
-    },
-  }, elementToolDocs[0].status);
+      throw error;
+    }
+
+    Canvas.updateAll();
+    return `Removed element with ID ${id}`;
+  },
+}, elementToolDocs[0].status);
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],

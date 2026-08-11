@@ -12,6 +12,11 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("do not automatically load");
     expect(agents).toContain("Asset authoring is not software **Developing**");
     expect(agents).toContain("Do not route it through `development-brief`");
+    const readme = await source("../README.md");
+expect(readme).toContain("## Session Boot");
+expect(readme).toContain("Task Class First");
+expect(readme).toContain("Do not automatically load `CONTEXT.md`");
+expect(readme).not.toContain("## Mandatory Session Boot");
   });
 
   test("normal authoring skill stack remains compact while hard gates stay present", async () => {

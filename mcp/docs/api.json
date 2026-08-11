@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T04:44:46.268Z",
+  "generatedAt": "2026-08-11T05:36:16.886Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1715,7 +1715,7 @@
     {
       "name": "remove_element",
       "title": "Remove Element",
-      "description": "Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
+      "description": "Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {

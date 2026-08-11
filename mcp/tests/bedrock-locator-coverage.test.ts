@@ -82,6 +82,28 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(locatorSource).toContain('formatId !== "bedrock"');
   });
 
+  test("generic remove_element snapshots direct or recursive deletion state before Undo", async () => {
+  const elementSource = await source("server/tools/element.ts");
+  const start = elementSource.indexOf("createTool(elementToolDocs[0].name");
+  const end = elementSource.indexOf("createTool(elementToolDocs[1].name", start);
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  const removeBlock = elementSource.slice(start, end);
+
+  expect(removeBlock).toContain("const deleteElements: OutlinerElement[] = [];");
+  expect(removeBlock).toContain("const deleteGroups: Group[] = [];");
+  expect(removeBlock).toContain("element.forEachChild");
+  expect(removeBlock).toContain("const deletedNodeUuids = new Set");
+  expect(removeBlock).toContain("animations: deleteAnimations");
+  expect(removeBlock).toContain("selection: true");
+  expect(removeBlock).toContain("element.remove(false)");
+  expect(removeBlock).toContain("deleteGroups.length = 0");
+  expect(removeBlock).toContain("deleteElements.length = 0");
+  expect(removeBlock.indexOf("const deleteAnimations")).toBeLessThan(
+    removeBlock.indexOf("Undo.initEdit({")
+  );
+});
+
   test("inspect_element exposes authored Locator and Null Object state", async () => {
     const inspection = await source("server/tools/element-inspection.ts");
     expect(inspection).toContain("...Locator.all");

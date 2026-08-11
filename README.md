@@ -89,19 +89,14 @@ Reference generation is owned by `docs/foundation/04-reference-guide.md` on an
 image-capable surface. Evidence-status escalation is owned by `AGENTS.md`.
 Neither is another root skill.
 
-## Mandatory Session Boot
+## Session Boot
 
-For both ChatGPT → GitHub and Codex local:
+Start with `AGENTS.md`; its **Task Class First** section is the canonical session-routing owner.
 
-1. read `AGENTS.md`;
-2. read `CONTEXT.md`;
-3. read `docs/knowledge/next-action.md`;
-4. read only the relevant foundation/source;
-5. for Developing, apply `.agents/skills/development-brief/SKILL.md`;
-6. load at most one specialist when it materially helps the active boundary.
+- **Asset authoring:** current request/reference -> BlockIT orchestrator -> one active domain specialist. Do not automatically load `CONTEXT.md`, `docs/knowledge/next-action.md`, or `development-brief`.
+- **Repository/plugin work:** load context/continuation only when relevant, then the affected source and nearest `AGENTS.md`; use `development-brief` for source changes.
 
-Do not broad-read the entire vault or ask the user to reconstruct old context
-before following this boot path.
+Do not broad-read the repository merely because Codex is running from its root.
 
 ## Branch Roles
 

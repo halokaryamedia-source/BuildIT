@@ -749,7 +749,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Remove Element</p>
-      <p class="card-desc">Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.</p>
+      <p class="card-desc">Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T04:44:46.268Z from Zod schemas
+        Generated 2026-08-11T05:36:16.886Z from Zod schemas
       </footer>
     </main>
   </div>
