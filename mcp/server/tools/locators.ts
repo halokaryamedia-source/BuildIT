@@ -12,33 +12,57 @@ const finiteLocatorVector3Schema = z.tuple([
 ]);
 const locatorCreateSchema = z
   .object({
-    action: z.literal("create"),
-    name: z.string().min(1).describe("Locator name."),
+    action: z
+      .literal("create")
+      .describe("Create branch: requires name and parent; do not send id."),
+    name: z
+      .string()
+      .min(1)
+      .describe("Required when action=create. Locator name; omit for update."),
     parent: z
       .string()
       .min(1)
-      .describe("Required parent Group UUID or exact unique Group name."),
-    position: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
-    rotation: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
-    ignore_inherited_scale: z.boolean().optional().default(false),
+      .describe("Required when action=create: parent Group UUID or exact unique name."),
+    position: finiteLocatorVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe("Create-only initial position; defaults to [0,0,0]."),
+    rotation: finiteLocatorVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe("Create-only initial rotation; defaults to [0,0,0]."),
+    ignore_inherited_scale: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe("Create-only initial ignore_inherited_scale value."),
   })
   .strict();
 
 const locatorUpdateSchema = z
   .object({
-    action: z.literal("update"),
+    action: z
+      .literal("update")
+      .describe("Update branch: requires id plus at least one authored field; do not send name."),
     id: z
       .string()
       .min(1)
-      .describe("Exact Locator UUID or exact unique Locator name."),
+      .describe("Required when action=update. Exact Locator UUID or exact unique name."),
     parent: z
       .string()
       .min(1)
       .optional()
-      .describe("Optional replacement parent Group UUID or exact unique Group name."),
-    position: finiteLocatorVector3Schema.optional(),
-    rotation: finiteLocatorVector3Schema.optional(),
-    ignore_inherited_scale: z.boolean().optional(),
+      .describe("Update-only optional replacement parent Group UUID or exact unique name."),
+    position: finiteLocatorVector3Schema
+      .optional()
+      .describe("Update-only optional replacement position."),
+    rotation: finiteLocatorVector3Schema
+      .optional()
+      .describe("Update-only optional replacement rotation."),
+    ignore_inherited_scale: z
+      .boolean()
+      .optional()
+      .describe("Update-only optional ignore_inherited_scale replacement."),
   })
   .strict();
 
@@ -62,29 +86,41 @@ export const manageLocatorParameters = z
 
 const nullObjectCreateSchema = z
   .object({
-    action: z.literal("create"),
-    name: z.string().min(1).describe("Null Object name."),
+    action: z
+      .literal("create")
+      .describe("Create branch: requires name and parent; do not send id."),
+    name: z
+      .string()
+      .min(1)
+      .describe("Required when action=create. Null Object name; omit for update."),
     parent: z
       .string()
       .min(1)
-      .describe("Required parent Group UUID or exact unique Group name."),
-    position: finiteLocatorVector3Schema.optional().default([0, 0, 0]),
+      .describe("Required when action=create: parent Group UUID or exact unique name."),
+    position: finiteLocatorVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe("Create-only initial position; defaults to [0,0,0]."),
   })
   .strict();
 
 const nullObjectUpdateSchema = z
   .object({
-    action: z.literal("update"),
+    action: z
+      .literal("update")
+      .describe("Update branch: requires id plus parent and/or position; do not send name."),
     id: z
       .string()
       .min(1)
-      .describe("Exact Null Object UUID or exact unique Null Object name."),
+      .describe("Required when action=update. Exact Null Object UUID or exact unique name."),
     parent: z
       .string()
       .min(1)
       .optional()
-      .describe("Optional replacement parent Group UUID or exact unique Group name."),
-    position: finiteLocatorVector3Schema.optional(),
+      .describe("Update-only optional replacement parent Group UUID or exact unique name."),
+    position: finiteLocatorVector3Schema
+      .optional()
+      .describe("Update-only optional replacement position."),
   })
   .strict();
 
@@ -109,7 +145,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "list_locator_elements",
     description:
-      "Lists authored Locator and Null Object elements in the active Minecraft Bedrock Entity project with identity, type, and parent Group. Use inspect_element for their detailed authored state.",
+      "Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.",
     annotations: {
       title: "List Bedrock Locator Elements",
       readOnlyHint: true,
@@ -120,7 +156,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "manage_locator",
     description:
-      "Creates or updates a native Minecraft Bedrock Entity Locator under an explicit Group/bone. Create owns name, position, rotation, and ignore_inherited_scale. Update resolves the Locator UUID first, otherwise an exact name must be unique. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.",
     annotations: {
       title: "Manage Bedrock Locator",
       destructiveHint: true,
@@ -131,7 +167,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "manage_null_object",
     description:
-      "Creates or updates a Blockbench Null Object used by the Bedrock Entity workflow. Bedrock geometry serialization round-trips it through a `_null_` locator entry, while IK fields remain Blockbench editor/animation state and are intentionally read-only in this minimum slice. Parent targets are preflighted before Undo. Rename/delete remain owned by rename_element/remove_element.",
+      "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. IK fields remain read-only; rename/delete use rename_element/remove_element.",
     annotations: {
       title: "Manage Bedrock Null Object",
       destructiveHint: true,
