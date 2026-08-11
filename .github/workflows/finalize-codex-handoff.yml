@@ -1,6 +1,6 @@
 name: Finalize Codex Handoff
 
-# Retry after classifying documentation-audit.md as historical evidence.
+# Final handoff verification after syncing historical audit and current regression owners.
 on:
   push:
     branches: [Local]
@@ -23,6 +23,8 @@ jobs:
           bun-version: latest
       - name: Patch and verify active documentation
         run: python3 .github/scripts/finalize_codex_handoff.py
+      - name: Sync handoff regression owners
+        run: python3 .github/scripts/finalize_codex_handoff_tests.py
       - name: Install from lockfile
         working-directory: mcp
         run: bun install --frozen-lockfile
@@ -49,7 +51,10 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/finalize-codex-handoff.yml
           git rm .github/scripts/finalize_codex_handoff.py
+          git rm .github/scripts/finalize_codex_handoff_tests.py
           git rm mcp/.verify-handoff-wire.ts
           git add docs/knowledge/operations/mcp-reduction-stabilization-plan.md
+          git add mcp/tests/asset-authoring-usage-slimming.test.ts
+          git add mcp/tests/context-payload-cleanup.test.ts
           git commit -m 'docs: finalize Codex local acceptance handoff'
           git push origin HEAD:Local
