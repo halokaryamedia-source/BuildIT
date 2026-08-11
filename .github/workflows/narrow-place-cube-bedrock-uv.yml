@@ -1,0 +1,367 @@
+name: Narrow Place Cube Bedrock UV
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/narrow-place-cube-bedrock-uv.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Narrow place_cube to native Bedrock UV ownership
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/cubes.ts')
+          text = path.read_text(encoding='utf-8')
+          old_import = 'import { resolveCoreCube, resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";'
+          new_import = 'import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";'
+          if text.count(old_import) != 1:
+              raise SystemExit('Unexpected cubes coreIdentity import')
+          text = text.replace(old_import, new_import, 1)
+
+          params_start = text.index('export const placeCubeParameters = z.object({')
+          params_end = text.index('\n\nexport const modifyCubeParameters', params_start)
+          new_params = '\n'.join([
+              'export const placeCubeParameters = z',
+              '  .object({',
+              '    elements: z',
+              '      .array(placeCubeElementSchema)',
+              '      .min(1)',
+              '      .describe(',
+              '        "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."',
+              '      ),',
+              '    group: z',
+              '      .string()',
+              '      .min(1)',
+              '      .optional()',
+              '      .describe(',
+              '        "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."',
+              '      ),',
+              '    faces: z',
+              '      .union([',
+              '        z',
+              '          .literal(true)',
+              '          .describe(',
+              '            "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping."',
+              '          ),',
+              '        z',
+              '          .array(',
+              '            z.object({',
+              '              face: faceEnum.describe("Face whose per-face UV rectangle is overridden."),',
+              '              uv: z',
+              '                .array(z.number().finite())',
+              '                .length(4)',
+              '                .describe("Finite custom UV rectangle [u1,v1,u2,v2] for this face."),',
+              '            })',
+              '          )',
+              '          .min(1)',
+              '          .max(6)',
+              '          .refine(',
+              '            (entries) =>',
+              '              new Set(entries.map((entry) => entry.face)).size === entries.length,',
+              '            { message: "Each custom-UV Cube face may appear at most once." }',
+              '          )',
+              '          .describe(',
+              '            "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state."',
+              '          ),',
+              '      ])',
+              '      .optional()',
+              '      .default(true)',
+              '      .describe(',
+              '        "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode."',
+              '      ),',
+              '  })',
+              '  .strict();',
+          ])
+          text = text[:params_start] + new_params + text[params_end:]
+
+          old_desc = '      "Places Cubes with explicit finite from/to. Non-zero rotation requires an explicit pivot. Supplied Group/Texture references must resolve uniquely before mutation. Success applies authored state only; visual/reference fidelity is not evaluated.",'
+          new_desc = '      "Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.",'
+          if text.count(old_desc) != 1:
+              raise SystemExit('Unexpected place_cube description')
+          text = text.replace(old_desc, new_desc, 1)
+
+          helper_start = text.index('function resolvePlacementTexture(reference?: string): Texture | null {')
+          helper_end = text.index('\n}\n\nexport function registerCubesTools()', helper_start) + 2
+          text = text[:helper_start] + text[helper_end:]
+
+          execute_start = text.index('createTool(cubeToolDocs[0].name, {')
+          execute_end = text.index('\n\ncreateTool(cubeToolDocs[1].name', execute_start)
+          new_execute = '\n'.join([
+              'createTool(cubeToolDocs[0].name, {',
+              '  ...cubeToolDocs[0],',
+              '  async execute({ elements, faces, group }) {',
+              '    const outlinerGroup = resolvePlacementGroup(group);',
+              '    const customFaceUvs = Array.isArray(faces);',
+              '',
+              '    Undo.initEdit({',
+              '      elements: [],',
+              '      outliner: true,',
+              '      collections: [],',
+              '    });',
+              '',
+              '    let cubes: Cube[];',
+              '    try {',
+              '      cubes = elements.map((element: PlaceCubeElement) => {',
+              '        const cube = new Cube({',
+              '          autouv: customFaceUvs ? 0 : 1,',
+              '          name: element.name,',
+              '          from: element.from as [number, number, number],',
+              '          to: element.to as [number, number, number],',
+              '          origin: (element.origin ?? [0, 0, 0]) as [number, number, number],',
+              '          rotation: element.rotation as [number, number, number],',
+              '          ...(customFaceUvs ? { box_uv: false } : {}),',
+              '        }).init();',
+              '',
+              '        cube.addTo(outlinerGroup);',
+              '',
+              '        if (customFaceUvs) {',
+              '          faces.forEach(({ face, uv }) => {',
+              '            cube.faces[face].extend({',
+              '              uv: uv as [number, number, number, number],',
+              '            });',
+              '          });',
+              '        } else {',
+              '          cube.mapAutoUV();',
+              '        }',
+              '',
+              '        return cube;',
+              '      });',
+              '',
+              '      Undo.finishEdit("Agent placed cubes", { elements: cubes });',
+              '    } catch (error) {',
+              '      Undo.cancelEdit(true);',
+              '      Canvas.updateAll();',
+              '      throw error;',
+              '    }',
+              '',
+              '    Canvas.updateAll();',
+              '    const result = {',
+              '      execution: "applied" as const,',
+              '      visual_verdict: "not_evaluated" as const,',
+              '      added: cubes.length,',
+              '      uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,',
+              '      cubes: cubes.map((cube: Cube) => finalCubeState(cube)),',
+              '    };',
+              '    return {',
+              '      content: [',
+              '        {',
+              '          type: "text" as const,',
+              '          text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}. Execution succeeded; reference fidelity was not evaluated.`,',
+              '        },',
+              '      ],',
+              '      structuredContent: result,',
+              '    };',
+              '  },',
+              '}, cubeToolDocs[0].status);',
+          ])
+          text = text[:execute_start] + new_execute + text[execute_end:]
+          path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/model-effectiveness-correction-accuracy.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          marker = '    expect(modifyCubeParameters.safeParse({ id: "cube", name: "" }).success).toBe(false);'
+          addition = '\n'.join([
+              marker,
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        texture: "legacy-per-cube-texture",',
+              '      }).success',
+              '    ).toBe(false);',
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        faces: false,',
+              '      }).success',
+              '    ).toBe(false);',
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        faces: ["north"],',
+              '      }).success',
+              '    ).toBe(false);',
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        faces: [],',
+              '      }).success',
+              '    ).toBe(false);',
+          ])
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected Cube contract test anchor')
+          test = test.replace(marker, addition, 1)
+
+          insert_marker = '  test("focused element inspection refuses non-finite transform evidence", () => {'
+          source_test = '\n'.join([
+              '  test("place_cube does not expose generic per-Cube texture selection or ambient face routing", async () => {',
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        faces: [{ face: "north", uv: [0, 0, 1, 1] }],',
+              '      }).success',
+              '    ).toBe(true);',
+              '    expect(',
+              '      placeCubeParameters.safeParse({',
+              '        elements: [{ name: "cube", from: [0, 0, 0], to: [1, 1, 1] }],',
+              '        faces: [{ face: "north", uv: [0, 0, Infinity, 1] }],',
+              '      }).success',
+              '    ).toBe(false);',
+              '',
+              '    const cubes = await source("server/tools/cubes.ts");',
+              '    const start = cubes.indexOf("createTool(cubeToolDocs[0].name");',
+              '    const end = cubes.indexOf("createTool(cubeToolDocs[1].name", start);',
+              '    const block = cubes.slice(start, end);',
+              '    expect(block).toContain("...(customFaceUvs ? { box_uv: false } : {})");',
+              '    expect(block).toContain("cube.mapAutoUV()");',
+              '    expect(block).not.toContain("cube.applyTexture(");',
+              '    expect(cubes).not.toContain("resolvePlacementTexture");',
+              '    expect(cubes).not.toContain("resolveCoreTexture");',
+              '  });',
+              '',
+          ])
+          if test.count(insert_marker) != 1:
+              raise SystemExit('Unexpected Cube source test insertion point')
+          test_path.write_text(test.replace(insert_marker, source_test + insert_marker, 1), encoding='utf-8')
+
+          audit_path = Path('docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md')
+          audit = audit_path.read_text(encoding='utf-8')
+          anchor = '### validator references\n'
+          section = '\n'.join([
+              '### `place_cube` texture / UV boundary',
+              '',
+              '**NARROW** inherited generic texture-routing semantics while preserving native Bedrock UV authoring.',
+              '',
+              'Official Bedrock Entity is `single_texture`. Native `CubeFace.texture` defaults non-null, `Cube.init()` binds non-null faces to `Texture.getDefault()` when available, and Bedrock per-face export uses only `face.texture !== null` to decide whether a UV face entry exists; it does not export a per-Cube texture UUID. `Cube.applyTexture()` with `faces === undefined` also consults ambient `UVEditor.face`.',
+              '',
+              'Therefore `place_cube` no longer accepts an explicit per-Cube texture selector, `faces:false`, or a face-name-only texture list. Default `true` keeps the project-inherited UV mode and native per-face auto mapping where applicable. Explicit custom `{face, uv}` entries are retained, require finite UV values, and create that Cube as `box_uv=false` so the requested per-face UV data is actually exportable. No separate UV mode framework or face-disable capability was added.',
+              '',
+          ])
+          if audit.count(anchor) != 1:
+              raise SystemExit('Unexpected generic semantics audit anchor')
+          audit_path.write_text(audit.replace(anchor, section + anchor, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Cube authoring inputs now keep identity and face writes deterministic: create/rename Cube names cannot be empty, simple face lists contain at most the six native faces without duplicates, and custom-UV face lists cannot write the same face twice in one request. Empty face lists remain allowed because they are not inherently invalid authored geometry; no arbitrary Cube-batch size cap was added.'
+          replacement = 'Cube authoring inputs now keep identity and UV intent deterministic. Create/rename Cube names cannot be empty. `place_cube` no longer exposes generic per-Cube texture selection, `faces:false`, or face-name-only texture routing because Bedrock Entity is native `single_texture` and those paths either do not own effective texture selection or depend on ambient editor face state. Default UV intent inherits the project mode; explicit non-empty custom face UV rectangles require finite values and make only the new Cube per-face UV (`box_uv=false`). No arbitrary Cube-batch size cap, separate UV framework, or face-disable capability was added.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected Cube continuity paragraph')
+          next_path.write_text(next_text.replace(marker, replacement, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Measure current callable tools-list
+        working-directory: mcp
+        run: |
+          cat > .measure-place-cube.ts <<'TS'
+          import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+          import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+          import { registerToolsOnServer } from "./lib/factories";
+          import "./server/tools";
+          const server = new McpServer({ name: "blockit-place-cube-audit", version: "1.0.0" });
+          registerToolsOnServer(server);
+          const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+          await server.connect(transport);
+          try {
+            const response = await transport.handleRequest(new Request("http://127.0.0.1:3000/bb-mcp", {
+              method: "POST",
+              headers: { accept: "application/json, text/event-stream", "content-type": "application/json", "mcp-protocol-version": "2025-06-18" },
+              body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+            }));
+            const raw = await response.text();
+            if (response.status !== 200) throw new Error(raw);
+            const parsed = JSON.parse(raw) as { result?: { tools?: Array<{ name?: string; description?: string; inputSchema?: unknown }> } };
+            const tools = parsed.result?.tools ?? [];
+            const place = tools.find((tool) => tool.name === "place_cube");
+            const placeSchema = JSON.stringify(place?.inputSchema ?? {});
+            const metrics = {
+              enabled_tools: tools.length,
+              response_characters: raw.length,
+              input_schema_characters: tools.reduce((sum, tool) => sum + JSON.stringify(tool.inputSchema ?? {}).length, 0),
+              description_characters: tools.reduce((sum, tool) => sum + (tool.description ?? "").length, 0),
+              place_cube_schema_characters: placeSchema.length,
+              place_cube_has_texture: placeSchema.includes('"texture"'),
+            };
+            console.log(JSON.stringify(metrics));
+            await Bun.write(".place-cube-wire.json", JSON.stringify(metrics));
+            if (metrics.enabled_tools !== 63 || metrics.place_cube_has_texture) throw new Error(`Unexpected place_cube wire contract: ${JSON.stringify(metrics)}`);
+          } finally {
+            await server.close();
+          }
+          TS
+          bun .measure-place-cube.ts
+          rm .measure-place-cube.ts
+
+      - name: Record current wire measurement
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          metrics = json.loads(Path('mcp/.place-cube-wire.json').read_text(encoding='utf-8'))
+          Path('mcp/.place-cube-wire.json').unlink()
+
+          next_path = Path('docs/knowledge/next-action.md')
+          text = next_path.read_text(encoding='utf-8')
+          prefix = 'The actual stateless MCP `tools/list` wire surface has been re-measured after Bedrock semantic containment: **63 enabled tools / '
+          start = text.find(prefix)
+          if start < 0:
+              raise SystemExit('Current 63-tool wire paragraph not found')
+          end = text.find('\n\n', start)
+          old = text[start:end]
+          new = f"The actual stateless MCP `tools/list` wire surface is currently **{metrics['enabled_tools']} enabled tools / {metrics['response_characters']:,} response characters**, including **{metrics['input_schema_characters']:,} characters of input schemas** and **{metrics['description_characters']:,} characters of tool descriptions**. `place_cube` itself is now {metrics['place_cube_schema_characters']:,} schema characters and no longer exposes a per-Cube `texture` field. Historical 65/64/63-tool byte totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture."
+          text = text[:start] + new + text[end:]
+          next_path.write_text(text, encoding='utf-8')
+
+          review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
+          review = review_path.read_text(encoding='utf-8')
+          anchor = 'Historical byte totals are retained as evidence, not compared as a controlled performance benchmark across different source states.'
+          extra = f"\n\nAfter narrowing `place_cube` to native Bedrock UV ownership, the callable surface remains **{metrics['enabled_tools']} tools**. Current wire size is **{metrics['response_characters']:,} response characters / {metrics['input_schema_characters']:,} input-schema characters / {metrics['description_characters']:,} description characters**, with `place_cube` at **{metrics['place_cube_schema_characters']:,} schema characters** and no per-Cube `texture` selector. This is semantic cleanup, not a new profile or tool-count optimization target."
+          if review.count(anchor) != 1:
+              raise SystemExit('Unexpected deferred-loading review measurement anchor')
+          review_path.write_text(review.replace(anchor, anchor + extra, 1), encoding='utf-8')
+          PY
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/narrow-place-cube-bedrock-uv.yml
+          git add mcp/server/tools/cubes.ts mcp/tests/model-effectiveness-correction-accuracy.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md docs/knowledge/next-action.md
+          git commit -m 'refactor: narrow place_cube Bedrock UV semantics'
+          git push origin HEAD:Local
