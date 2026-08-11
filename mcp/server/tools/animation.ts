@@ -577,7 +577,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -663,6 +663,23 @@ function resolveRigElement(reference: string): OutlinerElement {
   );
 }
 
+export function wouldCreateRigHierarchyCycle(
+  targetUuid: string,
+  candidateParentUuid: string,
+  parentByUuid: ReadonlyMap<string, string | null>
+): boolean {
+  let currentUuid: string | null = candidateParentUuid;
+  const visited = new Set<string>();
+
+  while (currentUuid !== null) {
+    if (currentUuid === targetUuid) return true;
+    if (visited.has(currentUuid)) return true;
+    visited.add(currentUuid);
+    currentUuid = parentByUuid.get(currentUuid) ?? null;
+  }
+
+  return false;
+}
 export function countAnimationClipboardKeyframes(
   channels: Record<string, readonly unknown[]>
 ): number {
@@ -1273,8 +1290,24 @@ createTool(
             );
           }
           parentBone = resolveRigGroup(bone_data.parent);
-          if (targetBone === parentBone) {
-            throw new Error("A bone cannot be parented to itself.");
+          const parentByUuid = new Map<string, string | null>(
+            Group.all.map((group: Group) =>
+              [
+                group.uuid,
+                group.parent instanceof Group ? group.parent.uuid : null,
+              ] as [string, string | null]
+            )
+          );
+          if (
+            wouldCreateRigHierarchyCycle(
+              targetBone.uuid,
+              parentBone.uuid,
+              parentByUuid
+            )
+          ) {
+            throw new Error(
+              `Cannot parent "${targetBone.name}" under "${parentBone.name}" because the requested hierarchy would create or extend a parent cycle.`
+            );
           }
           break;
 

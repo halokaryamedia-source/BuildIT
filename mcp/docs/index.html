@@ -536,7 +536,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Bone Rigging</p>
-      <p class="card-desc">Creates or edits Group bones with preflighted explicit targets. `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.</p>
+      <p class="card-desc">Creates or edits Group bones with preflighted explicit targets. `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T03:59:50.651Z from Zod schemas
+        Generated 2026-08-11T04:02:37.723Z from Zod schemas
       </footer>
     </main>
   </div>

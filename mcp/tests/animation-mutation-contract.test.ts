@@ -6,6 +6,7 @@ import {
   boneRiggingParameters,
   countAnimationClipboardKeyframes,
   manageKeyframesParameters,
+  wouldCreateRigHierarchyCycle,
 } from "@/server/tools/animation";
 
 describe("animation mutation contract", () => {
@@ -112,5 +113,28 @@ describe("animation mutation contract", () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     expect(source).toContain("if (bone_data.ik_enabled !== undefined)");
     expect(source).not.toContain("bone_data.ik_enabled ?? false");
+  });
+
+  test("rig parent preflight rejects self, descendant, and already-cyclic parent chains", () => {
+    const hierarchy = new Map<string, string | null>([
+      ["root-bone", null],
+      ["mid-bone", "root-bone"],
+      ["leaf-bone", "mid-bone"],
+    ]);
+    expect(
+      wouldCreateRigHierarchyCycle("root-bone", "root-bone", hierarchy)
+    ).toBe(true);
+    expect(
+      wouldCreateRigHierarchyCycle("root-bone", "leaf-bone", hierarchy)
+    ).toBe(true);
+    expect(
+      wouldCreateRigHierarchyCycle("leaf-bone", "root-bone", hierarchy)
+    ).toBe(false);
+
+    const corruptHierarchy = new Map<string, string | null>([
+      ["a", "b"],
+      ["b", "a"],
+    ]);
+    expect(wouldCreateRigHierarchyCycle("target", "a", corruptHierarchy)).toBe(true);
   });
 });
