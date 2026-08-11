@@ -33,8 +33,10 @@ export const getUndoStackParameters = z.object({
     .min(1)
     .max(200)
     .optional()
-    .default(50)
-    .describe("Maximum number of entries to return (most recent first)."),
+    .default(20)
+    .describe(
+      "Maximum recent entries returned. Defaults to 20; increase explicitly for deeper recovery history."
+    ),
 });
 
 export const saveCheckpointParameters = z.object({
@@ -51,7 +53,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "undo",
     description:
-      "Undoes the most recent edit in the current project. Use `steps` to undo multiple edits in a single call. Returns the action(s) that were undone.",
+      "Undoes recent edits. Use `steps` to undo multiple edits in one call; returns the actions undone.",
     annotations: {
       title: "Undo",
       destructiveHint: true,
@@ -62,7 +64,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "redo",
     description:
-      "Redoes the most recently undone edit. Use `steps` to redo multiple edits in a single call. Returns the action(s) that were redone.",
+      "Redoes recently undone edits. Use `steps` to redo multiple edits in one call; returns the actions redone.",
     annotations: {
       title: "Redo",
       destructiveHint: true,
@@ -73,7 +75,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "get_undo_stack",
     description:
-      "Returns the current undo/redo history and named checkpoints. Use this for recovery/navigation when the workflow actually needs to undo or return to a checkpoint; it is not a normal modelling-observation step and should not be polled between successful bounded edits.",
+      "Returns bounded recent undo/redo history and checkpoints for actual recovery/navigation; it should not be polled between successful bounded edits.",
     annotations: {
       title: "Get Undo Stack",
       readOnlyHint: true,
@@ -84,7 +86,7 @@ export const historyToolDocs: ToolSpec[] = [
   {
     name: "save_checkpoint",
     description:
-      "Inserts a named marker into the undo history for meaningful risky multi-step rework or a valuable recovery boundary. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Blockbench Undo. The marker can later be located with `get_undo_stack`. Does not modify model geometry.",
+      "Adds a named Undo marker before meaningful risky rework. Do not create a checkpoint after every Cube/edit; normal bounded edits already participate in Undo.",
     annotations: {
       title: "Save Checkpoint",
       destructiveHint: false,
