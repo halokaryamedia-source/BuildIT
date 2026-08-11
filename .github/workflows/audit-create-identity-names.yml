@@ -1,0 +1,63 @@
+name: Audit Create Identity Names
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/audit-create-identity-names.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Audit identity-bearing create names
+        working-directory: mcp
+        run: |
+          cat > .audit-create-names.ts <<'TS'
+          import { createProjectParameters } from "./server/tools/project.ts";
+          import {
+            createTextureParameters,
+            addTextureGroupParameters,
+            createPbrMaterialParameters,
+          } from "./server/tools/texture.ts";
+          import { createAnimationParameters } from "./server/tools/animation.ts";
+          import { addGroupParameters } from "./server/tools/element.ts";
+          import { manageLocatorParameters, manageNullObjectParameters } from "./server/tools/locators.ts";
+
+          const checks = [
+            ["create_project", createProjectParameters, { name: "" }],
+            ["create_texture", createTextureParameters, { name: "" }],
+            ["add_texture_group", addTextureGroupParameters, { name: "" }],
+            ["create_pbr_material", createPbrMaterialParameters, { name: "" }],
+            ["create_animation", createAnimationParameters, { name: "", bones: {} }],
+            ["add_group", addGroupParameters, { name: "" }],
+            ["manage_locator.create", manageLocatorParameters, { action: "create", name: "", parent: "bone" }],
+            ["manage_null_object.create", manageNullObjectParameters, { action: "create", name: "", parent: "bone" }],
+          ] as const;
+
+          for (const [name, schema, input] of checks) {
+            console.log(JSON.stringify({ tool: name, empty_name_accepted: schema.safeParse(input).success }));
+          }
+          TS
+          bun .audit-create-names.ts
+          rm .audit-create-names.ts
+      - name: Remove temporary audit workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-create-identity-names.yml
+          git commit -m 'chore: remove temporary create identity audit'
+          git push origin HEAD:Local
