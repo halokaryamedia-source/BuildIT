@@ -73,7 +73,7 @@ Locator/Null Object discovery uses `list_locator_elements`; focused state uses `
 
 ## Protected Native Capability Gaps
 
-Protected gaps include TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated-texture authoring, and bone-binding expressions. Preserve authored data and state the gap instead of using generic Mesh, UI automation, `risky_eval`, Hytale, or another format. **Native Bedrock PBR and per-face `material_instance` are **not** gaps.**
+Protected gaps include TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated-texture authoring, and bone-binding expressions. Preserve authored data and state the gap instead of using generic Mesh, UI automation, `risky_eval`, Hytale, or another format. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
