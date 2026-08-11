@@ -395,64 +395,64 @@ function safeCompileRegex(pattern: string | undefined): RegExp | null {
 
 export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
-  ...elementToolDocs[0],
-  async execute({ id }) {
-    const element = resolveUniqueDestructiveElement(id);
-    const deleteElements: OutlinerElement[] = [];
-    const deleteGroups: Group[] = [];
+    ...elementToolDocs[0],
+    async execute({ id }) {
+      const element = resolveUniqueDestructiveElement(id);
+      const deleteElements: OutlinerElement[] = [];
+      const deleteGroups: Group[] = [];
 
-    if (element instanceof Group) {
-      deleteGroups.push(element);
-      element.forEachChild((child: any) => {
-        if (child instanceof Group) {
-          deleteGroups.push(child);
-        } else {
-          deleteElements.push(child as OutlinerElement);
-        }
-      });
-    } else {
-      deleteElements.push(element);
-    }
-
-    const deletedNodeUuids = new Set([
-      ...deleteGroups.map((group) => group.uuid),
-      ...deleteElements.map((deletedElement) => deletedElement.uuid),
-    ]);
-    const deleteAnimations: _Animation[] = AnimationItem.all.filter(
-      (animation) =>
-        Object.keys(animation.animators ?? {}).some((animatorUuid) =>
-          deletedNodeUuids.has(animatorUuid)
-        )
-    );
-
-    Undo.initEdit({
-      elements: deleteElements,
-      groups: deleteGroups,
-      outliner: true,
-      selection: true,
-      animations: deleteAnimations,
-      collections: [],
-    });
-
-    try {
       if (element instanceof Group) {
-        element.remove(false);
-        deleteGroups.length = 0;
+        deleteGroups.push(element);
+        element.forEachChild((child: any) => {
+          if (child instanceof Group) {
+            deleteGroups.push(child);
+          } else {
+            deleteElements.push(child as OutlinerElement);
+          }
+        });
       } else {
-        element.remove();
+        deleteElements.push(element);
       }
-      deleteElements.length = 0;
-      Undo.finishEdit("Agent removed element");
-    } catch (error) {
-      Undo.cancelEdit(true);
-      Canvas.updateAll();
-      throw error;
-    }
 
-    Canvas.updateAll();
-    return `Removed element with ID ${id}`;
-  },
-}, elementToolDocs[0].status);
+      const deletedNodeUuids = new Set([
+        ...deleteGroups.map((group) => group.uuid),
+        ...deleteElements.map((deletedElement) => deletedElement.uuid),
+      ]);
+      const deleteAnimations: _Animation[] = AnimationItem.all.filter(
+        (animation) =>
+          Object.keys(animation.animators ?? {}).some((animatorUuid) =>
+            deletedNodeUuids.has(animatorUuid)
+          )
+      );
+
+      Undo.initEdit({
+        elements: deleteElements,
+        groups: deleteGroups,
+        outliner: true,
+        selection: true,
+        animations: deleteAnimations,
+        collections: [],
+      });
+
+      try {
+        if (element instanceof Group) {
+          element.remove(false);
+          deleteGroups.length = 0;
+        } else {
+          element.remove();
+        }
+        deleteElements.length = 0;
+        Undo.finishEdit("Agent removed element");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
+      Canvas.updateAll();
+      return `Removed element with ID ${id}`;
+    },
+  }, elementToolDocs[0].status);
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
