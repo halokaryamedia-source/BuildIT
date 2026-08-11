@@ -1,0 +1,96 @@
+name: Normalize Animation Name Prefix
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/normalize-animation-name-prefix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Normalize canonical Bedrock animation names
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/animation.ts')
+          source = source_path.read_text(encoding='utf-8')
+          desc_old = '      "Creates a new animation from Blockbench-authored transform values using the current Bedrock AnimationCodec.",'
+          desc_new = '      "Creates a new Bedrock animation from authored transform values. Accepts a short name such as `walk` or canonical `animation.walk`; the Bedrock prefix is applied exactly once.",'
+          if source.count(desc_old) != 1:
+              raise SystemExit('Unexpected create_animation description')
+          source = source.replace(desc_old, desc_new, 1)
+
+          helper_anchor = 'export function countAnimationClipboardKeyframes(\n'
+          helper = 'export function normalizeBedrockAnimationName(name: string): string {\n  return name.startsWith("animation.") ? name : `animation.${name}`;\n}\n'
+          if 'normalizeBedrockAnimationName' not in source:
+              if source.count(helper_anchor) != 1:
+                  raise SystemExit('Unexpected animation helper anchor')
+              source = source.replace(helper_anchor, helper + helper_anchor, 1)
+          old_request = '      const requestedAnimationName = `animation.${name}`;'
+          new_request = '      const requestedAnimationName = normalizeBedrockAnimationName(name);'
+          if source.count(old_request) != 1:
+              raise SystemExit('Unexpected animation name construction')
+          source_path.write_text(source.replace(old_request, new_request, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/create-animation-contract.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          old_import = 'import { createAnimationParameters } from "@/server/tools/animation";'
+          new_import = 'import {\n  createAnimationParameters,\n  normalizeBedrockAnimationName,\n} from "@/server/tools/animation";'
+          if test.count(old_import) != 1:
+              raise SystemExit('Unexpected create animation test import')
+          test = test.replace(old_import, new_import, 1)
+          marker = '  test("serializer preserves accepted zero instead of treating it as omitted", async () => {'
+          addition = '  test("Bedrock animation prefix is applied exactly once", async () => {\n    expect(normalizeBedrockAnimationName("walk")).toBe("animation.walk");\n    expect(normalizeBedrockAnimationName("animation.walk")).toBe("animation.walk");\n\n    const source = await Bun.file(new URL("../server/tools/animation.ts", import.meta.url)).text();\n    expect(source).toContain("normalizeBedrockAnimationName(name)");\n    expect(source).not.toContain("const requestedAnimationName = `animation.${name}`");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected create animation test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A bounded GitHub-only animation contract correction now preserves an explicitly accepted `animation_length: 0` when constructing the Bedrock animation payload, rejects empty `manage_keyframes` requests, preserves existing interpolation on partial keyframe edits, requires every edit/delete/select time to resolve to exactly one existing keyframe before mutation/selection, requires an explicit `loop_mode` for the timeline loop mutation, rejects incomplete/effective no-op batch offset/scale requests, preflights batch offset/scale times against the native 0..10000 authored-time range and prevents selected-keyframe collapse during scale, prevents empty animation copy/paste clipboard operations, requires action-specific copy/paste source/target state, removes the implicit X-axis fallback from `mirror_paste`, and preflights pasted data against the native authored-time range plus same-channel internal snapped-time collapse before Undo. Existing-target overwrite semantics are unchanged. The structured create result remains compact; AnimationCodec behavior and playback semantics are unchanged.'
+          replacement = marker[:-1] + ', and normalizes `create_animation` names so short `walk` and canonical `animation.walk` both produce exactly one `animation.` prefix. Existing-target overwrite semantics, AnimationCodec behavior, and playback semantics remain unchanged.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected animation continuity paragraph')
+          next_path.write_text(next_text.replace(marker, replacement, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/normalize-animation-name-prefix.yml
+          git add mcp/server/tools/animation.ts mcp/tests/create-animation-contract.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: normalize Bedrock animation names'
+          git push origin HEAD:Local
