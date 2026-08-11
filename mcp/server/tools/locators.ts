@@ -167,7 +167,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "manage_null_object",
     description:
-      "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. IK fields remain read-only; rename/delete use rename_element/remove_element.",
+      "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain read-only. Rename/delete use rename_element/remove_element.",
     annotations: {
       title: "Manage Bedrock Null Object",
       destructiveHint: true,
