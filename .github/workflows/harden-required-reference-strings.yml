@@ -1,0 +1,91 @@
+name: Harden Required Reference Strings
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-required-reference-strings.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Reject empty required target references
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/lib/zodObjects.ts')
+          text = path.read_text(encoding='utf-8')
+          replacements = [
+            ('export const elementIdSchema = z\n  .string()\n  .describe("ID or name of the element.");', 'export const elementIdSchema = z\n  .string()\n  .min(1)\n  .describe("Non-empty ID or name of the element.");'),
+            ('export const textureIdSchema = z\n  .string()\n  .describe("Texture ID or name.");', 'export const textureIdSchema = z\n  .string()\n  .min(1)\n  .describe("Non-empty Texture ID or name.");'),
+            ('export const boneNameSchema = z\n  .string()\n  .describe("Name of the bone/group.");', 'export const boneNameSchema = z\n  .string()\n  .min(1)\n  .describe("Non-empty bone/group UUID or name.");'),
+            ('export const cubeIdSchema = z\n  .string()\n  .describe("ID or name of the cube.");', 'export const cubeIdSchema = z\n  .string()\n  .min(1)\n  .describe("Non-empty ID or name of the Cube.");'),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit('Unexpected required reference schema shape')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/p1-core-ownership.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          import_anchor = 'import { readFile } from "node:fs/promises";\n'
+          import_add = import_anchor + 'import {\n  boneNameSchema,\n  cubeIdSchema,\n  elementIdSchema,\n  textureIdSchema,\n} from "@/lib/zodObjects";\n'
+          if 'elementIdSchema' not in test:
+              if test.count(import_anchor) != 1:
+                  raise SystemExit('Unexpected p1 ownership import anchor')
+              test = test.replace(import_anchor, import_add, 1)
+          marker = '  test("UUID wins before exact unique name and names never prefix-match", () => {'
+          addition = '  test("required explicit references reject the empty string", () => {\n    for (const schema of [\n      elementIdSchema,\n      textureIdSchema,\n      boneNameSchema,\n      cubeIdSchema,\n    ]) {\n      expect(schema.safeParse("").success).toBe(false);\n      expect(schema.safeParse("target").success).toBe(true);\n    }\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected p1 ownership test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'A create-identity schema audit found that project, texture, TextureGroup/PBR material, and animation creation still accepted the empty string even though those values become later lookup identities. Those five create contracts now require a non-empty name, matching the existing Group/Locator/Null Object boundary. No new uniqueness, normalization, or naming framework was added.'
+          extra = '\n\nRequired explicit reference schemas now reject the empty string for element, texture, bone/group, and Cube targets. Optional current/selected fallbacks remain unchanged; the hardening only removes requests that could never identify a target.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected create identity continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-required-reference-strings.yml
+          git add mcp/lib/zodObjects.ts mcp/tests/p1-core-ownership.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: reject empty required references'
+          git push origin HEAD:Local
