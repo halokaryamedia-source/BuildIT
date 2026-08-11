@@ -4,16 +4,16 @@ Updated: 2026-08-12
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The first local acceptance pass is complete. The current phase is static efficiency cleanup; **no fresh Codex/local trace is active yet**.
+The first local acceptance pass and the requested static efficiency cleanup are complete. **No fresh Codex/local trace is active.**
 
 ## Waiting On Future Efficiency Evidence
 
-These are not current source TODOs. Revisit only after static cleanup is complete and the user explicitly starts a new local efficiency run.
+These are not current source TODOs. Revisit only if the user explicitly starts a new local efficiency run or a new product requirement produces relevant evidence.
 
 ### Native Codex exposure / context
 
 - [ ] If a future fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest exposure remedy before any BlockIT router/profile architecture.
-- [ ] If actual prompt/skill co-loading still shows material duplicated context after the current ownership cleanup, consolidate only the proven duplicate.
+- [ ] If actual prompt/skill co-loading still shows material duplicated context after the ownership cleanup, consolidate only the proven duplicate.
 - [ ] If client-visible result telemetry still shows material duplication after exact JSON-mirror compaction, A/B one high-frequency result before generalizing.
 - [ ] If advertised discriminated-union schemas still cause measurable invalid-call retries after branch descriptions were clarified, improve branch visibility without weakening runtime validation.
 
@@ -47,11 +47,12 @@ Future implementation is demand-driven and must be backed by Blockbench Bedrock 
 - animated-texture authoring;
 - bone-binding expressions.
 
-Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, or another format.
+Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
 
 ## Post-Acceptance Maintenance
 
 - [x] Update `docs/foundation/validation-report.md` with actual local proof states.
+- [x] Complete the source-provable efficiency cleanup requested before the next test.
 - [ ] Update the Review Index only when historical recommendation status materially changes.
 - [ ] Prune this board when a waiting item becomes irrelevant or active.
 - [ ] Audit active docs for stale current-state claims when continuation changes.
