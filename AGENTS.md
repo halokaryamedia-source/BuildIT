@@ -1,86 +1,81 @@
 # Workspace Agent Routing
 
-This repository is project memory. Current user intent is the task authority; source and relevant proof own runtime truth.
+This repository is project memory. Current user intent owns the task; current source and relevant proof own behavior.
 
 ## Task Class First
 
-Choose the smallest route before loading more context.
+Choose the smallest route before loading context.
 
 ### Asset Authoring
 
-Use this route when the user wants to create, revise, texture, animate, inspect, validate, or export a Minecraft Bedrock Entity asset in Blockbench and is **not** asking to change repository/plugin source.
+Use when the user wants to create, revise, texture, animate, inspect, validate, or export a Minecraft Bedrock Entity asset without changing plugin/repository source.
 
-Fast path:
+```text
+current request/reference
+→ .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+→ only the active modelling/texturing/animation specialist
+→ BlockIT MCP
+```
 
-1. use the current user request/reference and any explicitly named workspace asset;
-2. load `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md`;
-3. load only the current domain specialist (`blockbench-bedrock-modelling`, `blockit-bedrock-texturing`, or `blockit-bedrock-animation`);
-4. use BlockIT MCP with minimum necessary evidence.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, engineering history, activation matrices, or all foundation docs. Load another owner only when the current asset decision depends on it.
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, the activation matrix, engineering history, or every foundation document. Read one of them only when the current asset decision actually depends on repository state, a protected capability boundary, an existing workspace package, or a conflicting product rule.
-
-Asset authoring is not software **Developing** merely because it creates or changes a model. Do not route it through `development-brief` unless the user is asking to change source/plugin behavior.
+Asset authoring is not software **Developing** merely because it changes a model. Do not route it through `development-brief` unless source/plugin behavior itself is being changed.
 
 ### Repository / Plugin Work
 
-Use this route for source, docs, MCP/plugin implementation, tests, CI, architecture, or repository maintenance.
+Use for source, docs, tests, CI, MCP/plugin behavior, architecture, or maintenance.
 
-Boot only what is needed:
+```text
+this file
+→ docs/knowledge/next-action.md when continuing active work
+→ CONTEXT.md only when stable facts matter
+→ affected source + nearest AGENTS.md
+→ .agents/skills/development-brief/SKILL.md for create/change work
+→ at most one relevant engineering specialist
+```
 
-1. `CONTEXT.md` for stable project facts when relevant;
-2. `docs/knowledge/next-action.md` for active continuation state when continuing project work;
-3. the affected source and nearest `AGENTS.md`;
-4. one relevant foundation/routing note only when needed.
-
-For a repository create/change task, use `.agents/skills/development-brief/SKILL.md`; add at most one engineering specialist unless a proved cross-domain blocker requires another owner. Maintenance uses the smallest diagnostic/specialist that owns the failure.
+Do not broad-scan reviews/foundation/history before a concrete boundary needs them.
 
 ## Source Precedence
 
-1. current user instruction — task intent;
-2. source + relevant runtime/visual proof — actual behavior;
-3. root/nearest `AGENTS.md` — agent behavior;
-4. `docs/foundation/` — product/modelling policy;
-5. `docs/knowledge/next-action.md` — active repository continuation state;
-6. `CONTEXT.md` — stable facts;
-7. decision log/history — rationale only.
+1. current user instruction;
+2. current source + relevant runtime/visual proof;
+3. root/nearest `AGENTS.md`;
+4. `docs/foundation/` policy;
+5. `docs/knowledge/next-action.md` active continuation;
+6. `CONTEXT.md` stable facts;
+7. decision/review history for rationale.
 
-If material sources conflict, resolve the authority or report the missing evidence; never choose silently.
+Resolve material conflicts explicitly; never choose a convenient source silently.
 
 ## Work Discipline
 
-- Inspect the current owner/caller/pattern before editing shared behavior.
-- Prefer the minimum complete solution; every changed line must trace to the goal.
-- Reuse/extend before creating files or abstractions.
+- Inspect the current owner/caller/pattern before shared changes.
+- Make the minimum complete change; reuse before creating another layer.
 - Do not broaden scope because adjacent issues are visible.
-- Do not add compatibility/fallback/framework layers without a proved need.
-- Do not turn fixtures, Golden Samples, or named objects into generic runtime rules.
+- No fallback/framework/profile/compatibility layer without proved need.
+- Fixtures and named assets are evidence, not generic product rules.
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid.
-- Never claim a check, runtime result, or visual approval that was not actually obtained.
+- Never claim a check, runtime result, or visual approval that was not obtained.
 
-## Execution Channels
+## Execution / Proof
 
-### ChatGPT → GitHub
+**ChatGPT → GitHub:** repository/source/docs/CI evidence only. Do not invent Blockbench runtime proof.
 
-Repository reads/writes are available. Do not assume local shell, Blockbench runtime, or live visual proof. Static/source work may prepare a runtime change; report remaining local proof rather than inventing it.
+**Codex local:** use shell/MCP/Blockbench only when the current claim actually requires it; do not run broad checks by ritual.
 
-### Codex Local
+Use the cheapest evidence that can falsify the claim:
 
-Use available shell/build/MCP/Blockbench capabilities only when they materially test the current claim. Do not run broad checks by ritual.
+- docs/routing → changed owner + relevant diff;
+- bounded source → affected contract/caller + targeted gate;
+- destructive/public contract → stronger regression proof;
+- Blockbench/UI/visual claim → live evidence;
+- local correction → affected state/view only unless it exposes a global issue.
 
-## Minimum Useful Proof
+Do not create tests, screenshots, reports, or builds merely to look rigorous. Source/CI proof never upgrades a live visual claim.
 
-Use the cheapest evidence that can falsify the likely failure, then stop when the in-scope claim has enough support.
-
-- text/docs/routing → exact changed owner + relevant diff;
-- bounded source change → affected source/callers/contracts and an existing targeted gate when informative;
-- public/destructive contract → stronger proof before full completion;
-- Blockbench/UI/visual claim → live/runtime/visual proof is required;
-- local correction → re-check only affected state/view unless it reveals a global problem.
-
-Do not create extra tests, screenshots, builds, fixtures, or reports merely to look rigorous. Source/CI proof never upgrades a live modelling claim.
-
-When a material support/runtime claim needs a label, use only:
+Evidence labels, only when materially useful:
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -90,53 +85,26 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Routine work does not need ceremonial status tagging.
+## Product Boundary
 
-## Asset-Authoring Invariants
+Minecraft Bedrock Entity (`bedrock`) is the retained default. Tool success is execution evidence, not visual fidelity. Reference-driven visual judgement uses `FAIL / UNVERIFIED / PASS`; `BLOCKED` is valid when continuation requires guessing or repeated failed work.
 
-- Target Minecraft Bedrock Entity (`bedrock`).
-- Tool success is execution evidence, not visual fidelity.
-- Use `FAIL / UNVERIFIED / PASS` for visual verdicts and `BLOCKED` when valid continuation would require guessing or looping.
-- Use the smallest relevant tool/view/evidence set.
-- Do not inspect every new Cube or capture after every mutation.
-- Do not start production texture/animation to hide unresolved geometry.
-- Preserve native Bedrock capability; do not fake gaps with generic Mesh, risky evaluation, UI automation, or another format.
+Detailed modelling judgement belongs to `blockbench-bedrock-modelling`; texture/PBR to `blockit-bedrock-texturing`; animation to `blockit-bedrock-animation`. Missing native capability must not be faked with generic Mesh, risky evaluation, UI automation, or another format.
 
-Detailed artistic judgement belongs to `blockbench-bedrock-modelling`; texture/PBR execution to `blockit-bedrock-texturing`; animation execution to `blockit-bedrock-animation`.
-
-## Repository Engineering Invariants
-
-For `mcp/**`, follow `mcp/AGENTS.md`: strict TypeScript, full Zod validation, schemas free of Blockbench runtime globals, `createTool` registration, generated docs freshness, loopback containment, and dangerous-default quarantine.
-
-Do not add commit/build fingerprint metadata to the product/runtime surface. Git owns revision history.
-
-## Communication
-
-Keep progress compact. Explain decisions, blockers, and final evidence; do not narrate every tool call.
-
-Final non-trivial report:
-
-```text
-Status: Selesai | Perlu pemeriksaan | Terhenti
-Hasil:
-Bukti:
-Batasan:
-Next step:
-```
-
-Use one next step.
+For `mcp/**`, `mcp/AGENTS.md` owns the engineering contract: strict TypeScript, Zod boundary validation, runtime-global separation, registration/result rules, generated docs, loopback containment, and dangerous-default quarantine.
 
 ## Canonical Owners
 
-- stable facts → `CONTEXT.md`;
-- active repository continuation → `docs/knowledge/next-action.md`;
-- durable rationale → `docs/knowledge/decision-log.md`;
-- product/modelling policy → `docs/foundation/`;
-- plugin/server behavior → `mcp/` source + proof;
-- asset orchestration → `.agents/skills/blockit-bedrock-entity-mcp/`;
-- modelling judgement → `.agents/skills/blockbench-bedrock-modelling/`;
-- texture/PBR → `.agents/skills/blockit-bedrock-texturing/`;
-- animation → `.agents/skills/blockit-bedrock-animation/`;
-- repository development contract → `.agents/skills/development-brief/`.
+- active continuation → `docs/knowledge/next-action.md`
+- stable facts → `CONTEXT.md`
+- product/modelling policy → `docs/foundation/`
+- durable rationale → `docs/knowledge/decision-log.md`
+- plugin/runtime → `mcp/` source + proof
+- asset orchestration → `.agents/skills/blockit-bedrock-entity-mcp/`
+- repository change contract → `.agents/skills/development-brief/`
 
 Do not recreate retired generic skills or parallel planning/state systems.
+
+## Communication
+
+Keep progress compact. Report decisions, proof, blockers, and one next step; do not narrate every call.
