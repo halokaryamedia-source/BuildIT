@@ -190,7 +190,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     const next = await source("../docs/knowledge/next-action.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("asset_authoring_profile");
-    expect(next).toContain("MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED");
+    expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
     expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
   });
 });

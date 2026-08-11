@@ -45,8 +45,11 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(profile).not.toContain("efficiency_mode");
     expect(profile).not.toContain("minimum_evidence");
     expect(next).toContain("Minimum Necessary Evidence");
-    expect(next).toContain("MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED");
+    expect(next).toContain("NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED");
     expect(next).toContain("LOCAL — reference-fidelity acceptance scenarios");
+    expect(next).toContain("Non-local Pre-local Readiness");
+    expect(next).toContain("native Codex deferred/tool-search exposure");
+    expect(next).toContain("No custom tool router");
   });
 
   test("CI modelling gates are explicitly contract proof, not behavioral or visual proof", async () => {

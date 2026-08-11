@@ -16,7 +16,7 @@ Product rule:
 
 ## Current Status
 
-`MCP_TOOL_EXPOSURE_WIRE_AUDIT_COMPLETE_LOCAL_DEFERRED_LOADING_PROOF_REQUIRED`
+`NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED`
 
 Working branch: **`Local` only**.
 
@@ -294,7 +294,7 @@ Shared optional Texture/Animation/Cube identity inputs now require non-empty str
 
 Material-instance payload/mutation contracts are also bounded: empty face arrays are rejected before mutation, and `list_material_instances` now returns names + usage counts by default. Explicit `include_usages=true` returns at most 100 locations per instance by default (raiseable to 1000) with `usages_truncated` indicating omitted locations. No pagination/state framework was added.
 
-The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **62 enabled tools / 72,249 response characters**, including **48,148 characters of input schemas** and **11,800 characters of tool descriptions**. `create_project` remains **212** schema characters, `add_group` is **758**, and `duplicate_element` is **539**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the callable surface while `export_model` remains exposed. Historical wire totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture.
+The final GitHub-only pinned-SDK `tools/list` measurement for the current source state is **62 enabled tools / 72,775 response characters**, including **48,674 characters of input schemas** and **11,800 characters of tool descriptions**. `create_project` remains **212** schema characters, `add_group` is **758**, and `duplicate_element` is **539**; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the callable surface while `export_model` remains exposed. Historical wire totals remain source-state evidence, not a controlled performance benchmark. The next large usage lever still requires real Codex native lazy/deferred MCP tool loading proof before any BlockIT router/profile architecture.
 
 `list_export_formats` is default-disabled from the normal Bedrock surface because its fixed codec enumeration duplicates `export_model.codec_id` and its runtime availability checks. `export_model` remains the artifact owner, so this removes discovery/tool-choice overhead without removing Bedrock geometry or `.bbmodel` export capability.
 
@@ -305,6 +305,14 @@ No-loss wire cleanup also removes exact duplicate Cube correction aliases (`cube
 The final pre-local **Asset Authoring Usage Slimming** adds a dedicated asset-authoring fast path that skips repository-development boot context, `development-brief`, and unrelated specialists unless the active modelling decision needs them. The BlockIT orchestrator and modelling skill are compact operating contracts, coherent Cube/view batches are preferred where already justified, redundant post-mutation reads are avoided when a mutation already returns the required authored state, high-frequency JSON text is compact, and `export_model` defaults to metadata-only content return when writing to a filesystem path. No Bedrock capability/profile, visual gate, or local-proof requirement was removed.
 
 A bounded GitHub-only **canonical framing numeric hardening** now rejects non-finite explicit target-envelope coordinates and finite endpoints whose subtraction would produce a non-finite span, derives explicit-envelope midpoints from validated spans, and applies the same finite-span/overflow-safe midpoint rule to rendered model bounds used by model framing. This closes the framing numeric boundary without changing canonical camera behavior, framing policy, or the local visual-proof requirement.
+
+## Non-local Pre-local Readiness
+
+The bounded repository-wide non-local audit is complete. Source-provable discovery numeric/range errors, omission-vs-empty identity fallbacks, project/animation/texturing redundant-preflight routing, Bedrock Group/create semantics, Cube/export lifecycle correctness, and default-surface containment have been addressed and verified. No additional source-only change is currently justified without reopening a stopped causal slice or inventing architecture.
+
+The remaining acceptance questions require local evidence: native Codex deferred/tool-search exposure and representative domain reachability; actual prompt/skill co-loading; whether duplicated text plus `structuredContent` can be reduced without losing client-visible evidence; live reference-fidelity/correction behavior; and Blockbench save/reopen/export plus Locator/Null Object runtime round-trip. Stopped Animation/Paint/material-instance/`nodes://` slices are not reopened by readiness status; they require genuinely new evidence or an explicit product requirement.
+
+No custom tool router, additional MCP profile, output framework, readiness state machine, or capability pruning was introduced.
 
 **Proof boundary:** modelling-effectiveness CI tests are source/contract regression proof. They are not behavioral proof that Codex follows the workflow, and they are not visual proof that a live model resembles its reference.
 
