@@ -352,6 +352,11 @@ export function registerLocatorTools() {
 
         if (args.action === "create") {
           const parent = resolveParent(args.parent);
+          if (NullObject.all.some((element) => element.name === args.name)) {
+            throw new Error(
+              `Null Object name "${args.name}" already exists. Null Object names must remain unique for deterministic references.`
+            );
+          }
           const edited: OutlinerElement[] = [];
           let element: NullObject | undefined;
           Undo.initEdit({ elements: edited, outliner: true });

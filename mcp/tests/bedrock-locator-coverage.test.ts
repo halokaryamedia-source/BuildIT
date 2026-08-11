@@ -114,6 +114,17 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(inspection).toContain("ik_source: element.ik_source || null");
   });
 
+  test("Null Object creation rejects duplicate exact names before Undo", async () => {
+    const locatorSource = await source("server/tools/locators.ts");
+    const start = locatorSource.indexOf("locatorToolDocs[2].name");
+    const block = locatorSource.slice(start);
+    const collision = block.indexOf("NullObject.all.some");
+    const undo = block.indexOf("Undo.initEdit");
+    expect(collision).toBeGreaterThan(-1);
+    expect(undo).toBeGreaterThan(collision);
+    expect(block).toContain("must remain unique for deterministic references");
+  });
+
   test("Null Object geometry round-trip distinction is documented", async () => {
     const locatorSource = await source("server/tools/locators.ts");
     expect(locatorSource).toContain("`_null_` locator entry");

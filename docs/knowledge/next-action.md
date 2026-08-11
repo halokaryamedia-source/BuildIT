@@ -155,6 +155,8 @@ structured resulting state
 
 Null Object is not treated as identical to a normal Locator. Blockbench Bedrock geometry round-trips it through a `_null_` locator entry. `ik_target`, `ik_source`, and `lock_ik_target_rotation` are inspectable editor/animation state but are intentionally not mutation fields in this minimum slice.
 
+Locator and Null Object creation now share deterministic exact-name behavior: both reject an existing same-type exact name before Undo, matching their UUID-first / unique-exact-name resolvers. No cross-type naming restriction was added.
+
 ## Protected Native Capability Gaps
 
 The following remain Bedrock Entity product requirements even where direct MCP ownership is incomplete:
