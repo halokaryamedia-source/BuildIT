@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this note to answer **where current `Local` behavior lives**. It is a source-ownership map, not a task tracker.
 
@@ -11,7 +11,7 @@ Use this note to answer **where current `Local` behavior lives**. It is a source
 | task routing / proof discipline | root `AGENTS.md` |
 | stable project facts | root `CONTEXT.md` |
 | current repository continuation | `docs/knowledge/next-action.md` |
-| local acceptance procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
+| completed local acceptance procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
 | product/modelling policy | `docs/foundation/` |
 | MCP public/runtime implementation | `mcp/` source + `mcp/AGENTS.md` |
 | asset orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
@@ -27,7 +27,7 @@ Use this note to answer **where current `Local` behavior lives**. It is a source
 | `mcp/index.ts` | plugin entry/lifecycle wiring |
 | `mcp/server/` | MCP server, transport, tools, resources, prompts |
 | `mcp/server/tools/` | authored model/project/texture/animation operations |
-| `mcp/lib/` | shared schemas/factories/runtime helpers |
+| `mcp/lib/` | shared schemas/factories/runtime helpers and request-owned result normalization |
 | `mcp/ui/` | Blockbench panel/settings |
 | `mcp/prompts/` | bundled prompt sources |
 | `mcp/build/` | build/docs generation |
@@ -36,7 +36,7 @@ Use this note to answer **where current `Local` behavior lives**. It is a source
 
 ## Current default MCP surface
 
-Pinned-SDK baseline:
+Pinned-SDK accepted baseline:
 
 ```text
 62 enabled tools
@@ -55,6 +55,8 @@ filter_by_material    not exposed
 risky_eval            disabled
 from_geo_json         disabled
 ```
+
+These character counts are static measurements, not proof of model-visible token cost.
 
 ## Current Bedrock authoring map
 
@@ -99,7 +101,13 @@ rename_element
 remove_element
 ```
 
-Live runtime and persistence remain local acceptance work.
+Representative live Locator/Null Object lifecycle and `.bbmodel` persistence were verified in the completed local acceptance pass.
+
+### MCP result representation
+
+`mcp/lib/factories.ts` owns request-owned registration and result normalization. When a tool returns `structuredContent` plus a single `content.text` entry containing the exact same compact JSON, the boundary keeps `structuredContent` and replaces the duplicate mirror with a short text summary. Concise non-duplicate text and image content remain unchanged.
+
+This removes duplicate representation without deleting legitimate authored fields or changing tool capability.
 
 ## Canonical runtime-facing prompt
 
@@ -122,7 +130,9 @@ Do not fake these with generic Mesh, arbitrary Cubes, risky evaluation, UI autom
 
 ## Proof boundary
 
-Static source/CI can prove contracts and ownership. It cannot prove live Blockbench rendering/Undo/playback, image delivery to Codex, native tool-search behavior, visual fidelity, or save/reopen/export persistence.
+Static source/CI proves contracts, ownership, buildability, and focused regressions. The completed local acceptance pass separately established representative live Blockbench rendering/Undo/playback, image delivery, reference-fidelity behavior, and save/reopen/export persistence.
+
+Client efficiency questions remain distinct: native tool-search/deferred exposure, prompt/skill co-loading, real context/token/latency cost, and fresh-task catalog behavior require a fresh Codex trace. Do not downgrade existing live product proof merely because those efficiency measurements are still `UNKNOWN`.
 
 Current proof status: [Validation Report](../foundation/validation-report.md).  
 Current execution state: [Next Action](next-action.md).
