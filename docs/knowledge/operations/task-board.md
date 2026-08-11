@@ -4,23 +4,23 @@ Updated: 2026-08-12
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The first local acceptance pass is complete. The fresh Codex efficiency trace is now active in `next-action.md`, so it is intentionally not duplicated here.
+The first local acceptance pass is complete. The current phase is static efficiency cleanup; **no fresh Codex/local trace is active yet**.
 
-## Waiting On Efficiency Evidence
+## Waiting On Future Efficiency Evidence
 
-These become source work only if the active fresh-task trace produces supporting evidence.
+These are not current source TODOs. Revisit only after static cleanup is complete and the user explicitly starts a new local efficiency run.
 
 ### Native Codex exposure / context
 
-- [ ] If the fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest client-side exposure remedy before any BlockIT router/profile architecture.
-- [ ] If actual prompt/skill co-loading shows material duplicated context, consolidate only the duplicated owner proven by the trace.
-- [ ] If client-visible result telemetry still shows material duplication after exact JSON-mirror compaction, A/B one high-frequency read tool before generalizing.
-- [ ] If discriminated-union advertised schemas cause measurable invalid-call retries, improve branch visibility without weakening full runtime validation.
+- [ ] If a future fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest exposure remedy before any BlockIT router/profile architecture.
+- [ ] If actual prompt/skill co-loading still shows material duplicated context after the current ownership cleanup, consolidate only the proven duplicate.
+- [ ] If client-visible result telemetry still shows material duplication after exact JSON-mirror compaction, A/B one high-frequency result before generalizing.
+- [ ] If advertised discriminated-union schemas still cause measurable invalid-call retries after branch descriptions were clarified, improve branch visibility without weakening runtime validation.
 
 ### Runtime / visual defects
 
-- [ ] Record any reproducible Blockbench/MCP runtime defect discovered after acceptance, classify its source owner, and fix only the demonstrated boundary.
-- [ ] Record any false visual `PASS`, speculative correction loop, or downstream sequencing failure that survives the current workflow rules.
+- [ ] Record any reproducible Blockbench/MCP runtime defect discovered after acceptance and fix only the demonstrated owner.
+- [ ] Record any false visual `PASS`, speculative correction loop, or downstream sequencing failure that survives current workflow rules.
 - [ ] Record save/reopen/export or Locator/Null Object persistence failures only after live reproduction.
 
 ## Deferred Source Slices — Require New Evidence
@@ -34,11 +34,11 @@ Do not reopen by default:
 - generic Group identity consolidation;
 - `manage_keyframes create` collision slice.
 
-These require genuinely new local evidence or an explicit product requirement.
+These require genuinely new evidence or an explicit product requirement.
 
 ## Protected Native Capability Gaps
 
-Future implementation is demand-driven and must be backed by official Blockbench Bedrock evidence:
+Future implementation is demand-driven and must be backed by Blockbench Bedrock evidence:
 
 - TextureMesh direct authoring/inspection;
 - native Bedrock visible bounding-box fields;
@@ -52,16 +52,16 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 ## Post-Acceptance Maintenance
 
 - [x] Update `docs/foundation/validation-report.md` with actual local proof states.
-- [ ] Update the Review Index when a historical recommendation becomes implemented/superseded by local evidence.
-- [ ] Prune this board after a waiting item becomes irrelevant or active.
-- [ ] Periodically audit active docs for stale paths/skill names/current-state claims.
+- [ ] Update the Review Index only when historical recommendation status materially changes.
+- [ ] Prune this board when a waiting item becomes irrelevant or active.
+- [ ] Audit active docs for stale current-state claims when continuation changes.
 
 ## Holds
 
 Do not pre-emptively:
 
 - add a custom tool router/profile/readiness framework;
-- set `tool_output_token_limit` without observed output distribution;
+- set global output/token limits without measured need;
 - mass-trim legitimate Animation/Paint schemas;
 - default-disable retained Bedrock capability solely to reduce tool count;
 - reopen historical plans as current execution order.
@@ -69,11 +69,11 @@ Do not pre-emptively:
 ## Rule
 
 ```text
-active work      → next-action.md
+active work               → next-action.md
 completed local procedure → local-acceptance-runbook.md
-future work      → this board
-durable reason   → decision log / decision owner
-current proof state → foundation/validation-report.md
+future evidence work      → this board
+durable reason            → decision owner / decision log
+current proof state       → foundation/validation-report.md
 ```
 
 Do not read this page during normal asset-authoring boot.
