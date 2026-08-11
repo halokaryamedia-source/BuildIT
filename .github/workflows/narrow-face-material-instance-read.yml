@@ -28,52 +28,56 @@ jobs:
 
           path = Path('mcp/server/tools/material-instances.ts')
           text = path.read_text(encoding='utf-8')
-          old_desc = '      "Gets material-instance metadata from Bedrock cube faces. Blockbench\'s Bedrock geometry codec preserves this field on per-face UV data.",'
+          old_desc = "      \"Gets material-instance metadata from Bedrock cube faces. Blockbench's Bedrock geometry codec preserves this field on per-face UV data.\","
           new_desc = '      "Gets native Bedrock material-instance names from explicit Cube faces. Texture selection is intentionally not reported here because Bedrock Entity is single_texture; use texture tools for active/default texture state.",'
           if text.count(old_desc) != 1:
               raise SystemExit('Unexpected get_face_material_instances description')
           text = text.replace(old_desc, new_desc, 1)
 
-          old_result = '''        const result: Record<string, { material_name: string; texture: string | null }> = {};
-
-        for (const faceDir of facesToCheck) {
-          const face = cube.faces[faceDir];
-          if (face) {
-            const faceTexture = face.getTexture();
-            result[faceDir] = {
-              material_name: face.material_name || "",
-              texture: face.texture
-                ? (faceTexture ? faceTexture.name : face.texture.toString())
-                : null,
-            };
-          }
-        }
-
-        return JSON.stringify({
-          cube: {
-            name: cube.name,
-            uuid: cube.uuid,
-          },
-          faces: result,
-        }, null, 2);'''
-          new_result = '''        const result: Record<string, { material_name: string }> = {};
-
-        for (const faceDir of facesToCheck) {
-          const face = cube.faces[faceDir];
-          if (face) {
-            result[faceDir] = {
-              material_name: face.material_name || "",
-            };
-          }
-        }
-
-        return JSON.stringify({
-          cube: {
-            name: cube.name,
-            uuid: cube.uuid,
-          },
-          faces: result,
-        });'''
+          old_result = '\n'.join([
+              '        const result: Record<string, { material_name: string; texture: string | null }> = {};',
+              '',
+              '        for (const faceDir of facesToCheck) {',
+              '          const face = cube.faces[faceDir];',
+              '          if (face) {',
+              '            const faceTexture = face.getTexture();',
+              '            result[faceDir] = {',
+              '              material_name: face.material_name || "",',
+              '              texture: face.texture',
+              '                ? (faceTexture ? faceTexture.name : face.texture.toString())',
+              '                : null,',
+              '            };',
+              '          }',
+              '        }',
+              '',
+              '        return JSON.stringify({',
+              '          cube: {',
+              '            name: cube.name,',
+              '            uuid: cube.uuid,',
+              '          },',
+              '          faces: result,',
+              '        }, null, 2);',
+          ])
+          new_result = '\n'.join([
+              '        const result: Record<string, { material_name: string }> = {};',
+              '',
+              '        for (const faceDir of facesToCheck) {',
+              '          const face = cube.faces[faceDir];',
+              '          if (face) {',
+              '            result[faceDir] = {',
+              '              material_name: face.material_name || "",',
+              '            };',
+              '          }',
+              '        }',
+              '',
+              '        return JSON.stringify({',
+              '          cube: {',
+              '            name: cube.name,',
+              '            uuid: cube.uuid,',
+              '          },',
+              '          faces: result,',
+              '        });',
+          ])
           if text.count(old_result) != 1:
               raise SystemExit('Unexpected face material read block')
           path.write_text(text.replace(old_result, new_result, 1), encoding='utf-8')
