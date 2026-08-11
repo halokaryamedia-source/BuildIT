@@ -498,19 +498,19 @@ export function registerElementTools() {
       Canvas.updateAll();
       const result = {
         group: {
-uuid: group.uuid,
-name: group.name,
-origin: [...group.origin],
-rotation: [...group.rotation],
-parent: group.parent instanceof Group ? group.parent.uuid : "root",
+          uuid: group.uuid,
+          name: group.name,
+          origin: [...group.origin],
+          rotation: [...group.rotation],
+          parent: group.parent instanceof Group ? group.parent.uuid : "root",
         },
       };
       return {
         content: [
-{
-  type: "text" as const,
-  text: `Added Group ${group.name} (${group.uuid}).`,
-},
+          {
+            type: "text" as const,
+            text: `Added Group ${group.name} (${group.uuid}).`,
+          },
         ],
         structuredContent: result,
       };
