@@ -1,0 +1,51 @@
+name: Audit Enabled Bedrock Surface
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/audit-enabled-bedrock-surface.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Print enabled catalog by family source
+        working-directory: mcp
+        run: |
+          cat > .audit-enabled.ts <<'TS'
+          import { tools, getEnabledToolDefinitions } from "./lib/factories";
+          import "./server/tools";
+
+          const defs = getEnabledToolDefinitions();
+          const enabled = Object.keys(defs).sort();
+          console.log(`ENABLED_COUNT=${enabled.length}`);
+          for (const name of enabled) {
+            const def = defs[name];
+            console.log(`${name}\t${def?.annotations?.readOnlyHint ? "read" : def?.annotations?.destructiveHint === false ? "state" : "mutation"}\t${def?.description ?? ""}`);
+          }
+          const disabled = Object.values(tools).filter((tool) => !tool.enabled).map((tool) => tool.name).sort();
+          console.log(`DISABLED=${disabled.join(",")}`);
+          TS
+          bun .audit-enabled.ts
+          rm .audit-enabled.ts
+      - name: Remove temporary audit workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-enabled-bedrock-surface.yml
+          git commit -m 'chore: remove temporary Bedrock surface audit'
+          git push origin HEAD:Local
