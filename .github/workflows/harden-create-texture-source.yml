@@ -1,0 +1,90 @@
+name: Harden Create Texture Source
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/harden-create-texture-source.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Reject working-directory-dependent image paths
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          texture_path = Path('mcp/server/tools/texture.ts')
+          texture = texture_path.read_text(encoding='utf-8')
+          schema_anchor = '// ============================================================================\n// Texture Tool Parameter Schemas\n// ============================================================================\n\n'
+          helper = schema_anchor + 'export function isDeterministicTextureSource(value: string): boolean {\n  if (value.startsWith("data:image/")) return true;\n  return isAbsoluteFilesystemPath(value.replace(/^file:\\/\\//, ""));\n}\n\n'
+          if 'isDeterministicTextureSource' not in texture:
+              if texture.count(schema_anchor) != 1:
+                  raise SystemExit('Unexpected texture schema anchor')
+              texture = texture.replace(schema_anchor, helper, 1)
+          old = '    data: z\n      .string()\n      .optional()\n      .describe("Path to the image file or data URL."),'
+          new = '    data: z\n      .string()\n      .refine(isDeterministicTextureSource, {\n        message:\n          "Texture data must be an image data URL or an absolute POSIX, Windows-drive, UNC, or file:// path.",\n      })\n      .optional()\n      .describe("Image data URL or deterministic absolute image file path."),'
+          if texture.count(old) != 1:
+              raise SystemExit('Unexpected create_texture data schema')
+          texture_path.write_text(texture.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('mcp/tests/asset-authoring-usage-slimming.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          old_import = 'import { importTextureSetParameters } from "@/server/tools/texture";'
+          new_import = 'import {\n  createTextureParameters,\n  importTextureSetParameters,\n} from "@/server/tools/texture";'
+          if test.count(old_import) != 1:
+              raise SystemExit('Unexpected asset usage texture import')
+          test = test.replace(old_import, new_import, 1)
+          marker = '  test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {'
+          addition = '  test("create_texture image file sources do not depend on Blockbench cwd", () => {\n    for (const data of [\n      "data:image/png;base64,AAAA",\n      "/tmp/texture.png",\n      "C:\\\\Textures\\\\skin.png",\n      "D:/Textures/skin.png",\n      "\\\\\\\\server\\\\share\\\\skin.png",\n      "file:///tmp/texture.png",\n      "file://C:/Textures/skin.png",\n    ]) {\n      expect(createTextureParameters.safeParse({ name: "skin", data }).success).toBe(true);\n    }\n    for (const data of [\n      "texture.png",\n      "textures/skin.png",\n      ".\\\\skin.png",\n      "https://example.com/skin.png",\n    ]) {\n      expect(createTextureParameters.safeParse({ name: "skin", data }).success).toBe(false);\n    }\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected asset usage insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Filesystem path ownership is now consistent across model export and texture-set import: both require an absolute POSIX, Windows-drive, or UNC path before filesystem access. The shared check is a small pure helper reused by the two existing callers; no filesystem abstraction/framework was introduced.'
+          extra = '\n\n`create_texture` now follows the same deterministic filesystem rule for image-file inputs: inline `data:image/...` remains valid, while file inputs must resolve to an absolute POSIX/Windows/UNC path (directly or through `file://`). Relative paths and remote HTTP URLs are rejected before Blockbench file access.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected filesystem continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/harden-create-texture-source.yml
+          git add mcp/server/tools/texture.ts mcp/tests/asset-authoring-usage-slimming.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'fix: reject relative texture image paths'
+          git push origin HEAD:Local
