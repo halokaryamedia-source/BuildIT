@@ -82,6 +82,25 @@ describe("P1.3 core identity ownership", () => {
     expect(findElementsByCriteriaParameters.safeParse({}).success).toBe(true);
   });
 
+  test("discovery Cube size bounds are finite and ordered", () => {
+    expect(
+      findElementsByCriteriaParameters.safeParse({
+        min_size: [0, 1, 2],
+        max_size: [3, 4, 5],
+      }).success
+    ).toBe(true);
+    expect(
+      findElementsByCriteriaParameters.safeParse({ min_size: [0, Number.POSITIVE_INFINITY, 2] }).success
+    ).toBe(false);
+    expect(
+      findElementsByCriteriaParameters.safeParse({
+        min_size: [4, 1, 2],
+        max_size: [3, 4, 5],
+      }).success
+    ).toBe(false);
+    expect(findElementsByCriteriaParameters.safeParse({ min_size: [4, 1, 2] }).success).toBe(true);
+  });
+
   test("UUID wins before exact unique name and names never prefix-match", () => {
     const items: Item[] = [
       { uuid: "cube-1", name: "arm" },

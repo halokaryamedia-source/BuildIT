@@ -9,12 +9,12 @@ Own the **surface-authoring workflow** for a Bedrock Entity asset. Geometry and 
 
 ## Start With Existing State
 
-Before changing an existing asset:
+Reuse identity/metadata already returned by the current workflow. For an existing or externally changed asset whose required state is not already known:
 
 1. `list_textures` to identify texture UUID/ID/name and active assignments.
 2. `get_texture` only when image evidence is needed.
-3. `list_materials` / `get_material_info` before changing PBR TextureGroups.
-4. `get_face_material_instances` or `list_material_instances` before changing per-face material metadata.
+3. `list_materials` / `get_material_info` before changing PBR TextureGroups when the required material state is not already known.
+4. `get_face_material_instances` or `list_material_instances` before changing per-face material metadata when those assignments are not already known.
 5. Use explicit targets; prefer UUIDs once discovered.
 
 If the geometry is reference-driven and still structurally wrong, return to the modelling specialist before painting. Texture must not hide a broken primary form.
@@ -103,8 +103,9 @@ Cube face/box-UV semantics remain a protected Bedrock capability. Use the Cube/t
 
 After a material surface change:
 
-- re-read the targeted texture/material/material-instance state;
-- use `get_texture` when pixel output itself matters;
+- reuse mutation-returned identity/metadata when it already proves the required authored state; do not re-list/re-read it only for confirmation;
+- `create_texture` already returns texture identity/size/group/channel/render metadata, so use `get_texture` only when pixel output itself matters;
+- use `get_material_info` or material-instance reads when the mutation result does not expose configuration/face state required for the completion claim;
 - use canonical model views when the surface must be judged on the model;
 - distinguish structural success from visual quality;
 - keep PBR appearance claims bounded because final RTX/in-game rendering is outside MCP source proof.

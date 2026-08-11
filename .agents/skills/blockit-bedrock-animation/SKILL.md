@@ -9,8 +9,8 @@ Own animation execution only after the model hierarchy and pivots are suitable f
 
 ## Preflight
 
-1. Confirm the active project format is `bedrock` with `get_project_info`.
-2. Use `list_outline` to identify Group/bone UUIDs.
+1. Reuse project lifecycle/format state already returned by the current workflow. Call `get_project_info` only when the active project format/state is unknown, stale, or missing a field needed by the animation decision.
+2. Reuse known Group/bone UUIDs from creation/mutation/discovery results. Call `list_outline` only when a participating identity or hierarchy relationship is still unknown.
 3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.
 4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.
 

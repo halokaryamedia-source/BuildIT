@@ -27,6 +27,18 @@ describe("model creation effectiveness — tool routing", () => {
     expect(modelling).toContain("If no current decision requires a branch, stay in the geometry lane");
   });
 
+  test("specialists reuse known state instead of forcing lifecycle and discovery rereads", async () => {
+    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+
+    expect(animation).toContain("Call `get_project_info` only when");
+    expect(animation).toContain("Call `list_outline` only when");
+    expect(animation).not.toContain("Confirm the active project format is `bedrock` with `get_project_info`");
+    expect(texturing).toContain("Reuse identity/metadata already returned by the current workflow");
+    expect(texturing).toContain("do not re-list/re-read it only for confirmation");
+    expect(texturing).toContain("`create_texture` already returns texture identity/size/group/channel/render metadata");
+  });
+
   test("convenience tools explain their branch-only role instead of competing with geometry identity/evidence", async () => {
     const [camera, elements, history] = await Promise.all([
       source("server/tools/camera.ts"),

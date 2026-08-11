@@ -939,17 +939,17 @@ bun run build
       <td class="col-name">parent_group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional parent Group UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional Group UUID or unique exact name whose descendant subtree scopes results. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">min_size</td>
-      <td class="col-type">number[]</td>
+      <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Minimum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Optional finite minimum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">max_size</td>
-      <td class="col-type">number[]</td>
+      <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Optional finite maximum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">selected_only</td>
       <td class="col-type">boolean</td>
@@ -998,7 +998,7 @@ bun run build
       <td class="col-name">parent_group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2980,7 +2980,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T12:50:19.977Z from Zod schemas
+        Generated 2026-08-11T13:21:24.596Z from Zod schemas
       </footer>
     </main>
   </div>

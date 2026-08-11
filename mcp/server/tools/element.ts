@@ -17,6 +17,12 @@ export const removeElementParameters = z.object({
 
 export const elementTypeEnum = z.enum(["cube", "group", "any"]);
 
+const finiteElementVector3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
 export const findElementsByCriteriaParameters = z.object({
   name_pattern: z
     .string()
@@ -39,14 +45,14 @@ export const findElementsByCriteriaParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Optional parent Group UUID or unique exact name."
+      "Optional Group UUID or unique exact name whose descendant subtree scopes results."
     ),
-  min_size: vector3Schema
+  min_size: finiteElementVector3Schema
     .optional()
-    .describe("Minimum Cube size [x,y,z]."),
-  max_size: vector3Schema
+    .describe("Optional finite minimum Cube size [x,y,z]."),
+  max_size: finiteElementVector3Schema
     .optional()
-    .describe("Maximum Cube size [x,y,z]."),
+    .describe("Optional finite maximum Cube size [x,y,z]."),
   selected_only: z
     .boolean()
     .optional()
@@ -60,6 +66,17 @@ export const findElementsByCriteriaParameters = z.object({
     .optional()
     .default(200)
     .describe("Maximum number of results to return."),
+}).superRefine((params, ctx) => {
+  if (params.min_size === undefined || params.max_size === undefined) return;
+  params.min_size.forEach((minimum, axis) => {
+    if (minimum > params.max_size![axis]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["max_size", axis],
+        message: `max_size[${axis}] must be greater than or equal to min_size[${axis}].`,
+      });
+    }
+  });
 });
 
 export const selectAllOfTypeParameters = z.object({
@@ -76,7 +93,7 @@ export const selectAllOfTypeParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes."
+      "Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes."
     ),
 });
 
@@ -104,12 +121,6 @@ export const filterByMaterialParameters = z.object({
 });
 
 export const getSelectionParameters = z.object({});
-
-const finiteElementVector3Schema = z.tuple([
-  z.number().finite(),
-  z.number().finite(),
-  z.number().finite(),
-]);
 
 export const addGroupParameters = z
   .object({
