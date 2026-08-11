@@ -75,6 +75,17 @@ describe("PBR channel identity preflight", () => {
     ).toThrow("cannot be assigned to both color and normal");
   });
 
+  test("assign texture channel rejects an exact no-op before Undo", async () => {
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    const start = source.indexOf("createTool(textureToolDocs[10].name");
+    const end = source.indexOf("createTool(textureToolDocs[11].name", start);
+    const block = source.slice(start, end);
+    expect(block).toContain("tex.group === textureGroup.uuid");
+    expect(block).toContain("tex.pbr_channel === channel");
+    expect(block).toContain("resetTextures.length === 0");
+    expect(block).toContain("no authored change is required");
+    expect(block.indexOf("resetTextures.length === 0")).toBeLessThan(block.indexOf("Undo.initEdit"));
+  });
   test("rejects configure calls with no authored change", () => {
     expect(configureMaterialParameters.safeParse({ material: "mat-1" }).success).toBe(false);
     expect(

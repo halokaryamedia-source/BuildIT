@@ -423,7 +423,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "assign_texture_channel",
     description:
-      "Assigns one explicit Texture to one PBR channel. Material/Texture references must resolve uniquely before Undo; existing textures on that channel are included in the edit.",
+      "Assigns one explicit Texture to one PBR channel. Material/Texture references resolve before Undo; exact no-op assignments are rejected, while existing competing textures on that channel remain part of the native edit behavior.",
     annotations: {
       title: "Assign Texture Channel",
       destructiveHint: true,
@@ -1267,6 +1267,15 @@ export function registerTextureTools() {
         (existing: Texture) =>
           existing.pbr_channel === channel && existing.uuid !== tex.uuid
       );
+      if (
+        tex.group === textureGroup.uuid &&
+        tex.pbr_channel === channel &&
+        resetTextures.length === 0
+      ) {
+        throw new Error(
+          `Texture "${tex.name}" is already the only ${channel} assignment on material "${textureGroup.name}"; no authored change is required.`
+        );
+      }
       const undoTextures = [tex, ...resetTextures].filter(
         (candidate, index, all) =>
           all.findIndex((item) => item.uuid === candidate.uuid) === index

@@ -214,6 +214,8 @@ The current source slice has hardened **P2 — texture and animation sequencing*
 
 A bounded GitHub-only PBR contract hardening now rejects one resolved Texture identity being assigned to multiple PBR channels in the same create/configure call before Undo and rejects identity-only `configure_material` calls that contain no authored change. Blockbench stores one `pbr_channel` per Texture, so sequential multi-channel assignment would otherwise leave only the last authored channel while the request could imply several succeeded. Existing channel replacement policy is unchanged.
 
+`assign_texture_channel` now also rejects the exact runtime no-op where the requested Texture is already in the target material/channel and no competing Texture on that channel requires an edit. The guard runs before Undo; native replacement behavior for real channel changes is unchanged.
+
 TextureGroup/PBR creation also rejects an exact existing TextureGroup name before Undo. Native Blockbench `TextureGroup.add()` does not uniquify names, while BlockIT later material/group lookup accepts a name only when exact and unique; create tools therefore cannot introduce a name ambiguity that later calls cannot resolve. Case-only names remain distinct because the current resolver is case-sensitive.
 
 `save_material_config` now verifies the native save postcondition before reporting success: Blockbench must mark the material config saved and the target texture_set.json must exist. This prevents the MCP wrapper from claiming success when native save returns early, for example when the target directory is missing; native save ownership itself is unchanged.
