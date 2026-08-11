@@ -55,11 +55,15 @@ describe("Codex documentation handoff", () => {
     expect(runbook).toContain("Do not edit source while establishing the baseline");
     expect(runbook).toContain("Failure Classification Before Fix");
     expect(dashboard).toContain("Local Acceptance Runbook");
+    expect(dashboard).toContain("Current continuation is **efficiency evidence**");
     expect(operations).toContain("historical implementation → Git history / reviews/");
+    expect(operations).toContain("The first local acceptance pass is complete");
     expect(operations).not.toContain("mcp-reduction-stabilization-plan.md");
     expect(operations).not.toContain("roadmap.md");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
     expect(implementation).toContain("62 enabled tools");
+    expect(implementation).toContain("### MCP result representation");
+    expect(implementation).toContain("fresh Codex trace");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
       expect(currentDoc).not.toContain("mcp/prompts/bedrock.md");
