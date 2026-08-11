@@ -4,7 +4,7 @@ BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built
 
 `Local` is the current product/development branch. `Rework` and `Sample` are reference/history only.
 
-## Start By Task Class
+## Task Class First
 
 Root [`AGENTS.md`](AGENTS.md) owns agent routing and proof discipline.
 
@@ -19,7 +19,7 @@ current request / approved reference
 → BlockIT MCP
 ```
 
-Do not load repository history, `CONTEXT.md`, `next-action.md`, or development skills by default for ordinary asset authoring.
+Do not automatically load repository history, `CONTEXT.md`, `next-action.md`, or development skills by default for ordinary asset authoring.
 
 ### Repository / plugin continuation
 
