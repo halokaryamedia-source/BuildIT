@@ -262,6 +262,8 @@ Filesystem path ownership is now consistent across model export and texture-set 
 
 `create_texture` pixel dimensions now require integer values within the existing 16..4096 range. Fractional pixel sizes are rejected at the MCP boundary; `create_project` is unchanged because it does not expose texture-dimension inputs, and no power-of-two restriction was added.
 
+`create_texture` RGBA tuple fill now converts the schema's 0..255 alpha byte to TinyColor's 0..1 alpha input. Previously any tuple alpha above 1 was normalized by TinyColor to fully opaque; hex/named color paths are unchanged.
+
 Cube authoring inputs now keep identity and face writes deterministic: create/rename Cube names cannot be empty, simple face lists contain at most the six native faces without duplicates, and custom-UV face lists cannot write the same face twice in one request. Empty face lists remain allowed because they are not inherently invalid authored geometry; no arbitrary Cube-batch size cap was added.
 
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.

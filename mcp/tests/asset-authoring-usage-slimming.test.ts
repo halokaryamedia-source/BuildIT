@@ -117,6 +117,18 @@ describe("pre-local asset-authoring usage slimming", () => {
     }
   });
 
+  test("create_texture converts RGBA byte alpha to TinyColor alpha range", async () => {
+    expect(
+      createTextureParameters.safeParse({
+        name: "translucent",
+        fill_color: [255, 0, 0, 128],
+        layer_name: "base",
+      }).success
+    ).toBe(true);
+    const texture = await source("server/tools/texture.ts");
+    expect(texture).toContain("a: Number(fill_color[3] ?? 255) / 255");
+    expect(texture).not.toContain("a: Number(fill_color[3] ?? 255),");
+  });
   test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {
     const files = await Promise.all([
       source("server/tools/element-inspection.ts"),

@@ -660,7 +660,7 @@ export function registerTextureTools() {
                 r: Number(fill_color[0]),
                 g: Number(fill_color[1]),
                 b: Number(fill_color[2]),
-                a: Number(fill_color[3] ?? 255),
+                a: Number(fill_color[3] ?? 255) / 255,
               })
               // @ts-ignore - tinycolor ok
               : tinycolor(fill_color);
