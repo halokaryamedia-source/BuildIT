@@ -2,7 +2,7 @@
 
 Updated: 2026-08-12
 
-Use this page as BlockIT's **current repository-memory index**. It is not mandatory context for ordinary asset authoring; root `AGENTS.md` decides the task route first.
+Use this page as BlockIT's **repository-memory index**. It is not mandatory context for ordinary asset authoring; root `AGENTS.md` decides the task route first.
 
 ## Current owners
 
@@ -28,19 +28,18 @@ current request/reference
 → only the active modelling/texturing/animation specialist
 ```
 
-Open project-memory notes only when an asset decision depends on repository state or a protected capability/product boundary.
+Do not load repository history or continuity notes unless the asset decision actually depends on repository state or a protected product/capability boundary.
 
 ### Repository / plugin continuation
 
-1. [Agent Rules](../../AGENTS.md)
-2. [Workspace Context](../../CONTEXT.md) only when stable facts matter
-3. [Next Action](next-action.md)
-4. affected source + nearest `AGENTS.md`
-5. one relevant specialist/foundation owner only when the active boundary needs it
+```text
+AGENTS.md
+→ next-action.md
+→ affected source + nearest AGENTS.md
+→ one additional owner only when needed
+```
 
-The [Local Acceptance Runbook](operations/local-acceptance-runbook.md) is a completed procedure. Read it only when reproducing an acceptance-specific failure or auditing that procedure; it is not default continuation boot.
-
-Do not scan every review, decision, task-board item, or historical Git state by default.
+Read `CONTEXT.md` only when stable facts matter. The [Local Acceptance Runbook](operations/local-acceptance-runbook.md) is completed procedure/history and is not default boot.
 
 ## Product snapshot
 
@@ -71,38 +70,33 @@ Tool success is execution evidence, not visual approval. `BLOCKED` is valid when
 
 `export_model` is exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-The first bounded Codex + Blockbench local acceptance pass is complete. Representative live runtime, authoring, playback, visual-routing, and persistence behavior is recorded in the [Validation Report](../foundation/validation-report.md).
+The first bounded Codex + Blockbench acceptance pass is complete. Representative live behavior is recorded in the [Validation Report](../foundation/validation-report.md).
 
-Current continuation is **efficiency evidence**, not another broad local acceptance pass. Static character counts are candidates only; a fresh Codex trace must establish client-visible schema/context/call cost before architecture changes.
+**Current continuation is static pre-local efficiency cleanup.** Source-provable waste is reduced first; another Codex/Blockbench run is deferred until that cleanup is stable and CI-green. Client-only questions such as schema injection, prompt co-loading, and actual token/latency cost remain future validation questions rather than reasons to change architecture now.
 
 ## Knowledge spine
 
+- [Next Action](next-action.md) — current repository continuation.
 - [Minimal Navigation](minimal-nav.md) — shortest task-aware route.
-- [Next Action](next-action.md) — one current repository-continuation state.
 - [Implementation Map](implementation-map.md) — current source ownership/surface.
 - [Skill Activation Matrix](skills/activation-matrix.md) — skill selection.
-- [Skill Map](skills/skill-map.md) — current skill inventory/lineage.
-- [Source Map](sources/source-map.md) — source/authority bridge.
 - [Validation Report](../foundation/validation-report.md) — current proof status.
-- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — completed local procedure/history reference.
-- [Decision Log](decision-log.md) — durable decisions/reasons.
-- [Review Index](reviews/review-graph.md) — current meaning of review evidence.
-- [Task Board](operations/task-board.md) — future/non-active findings only.
+- [Task Board](operations/task-board.md) — future/non-active findings.
+- [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — completed local procedure/history.
+- [Review Index](reviews/review-graph.md) — historical review evidence.
+
+Open the longer skill map, source map, decision log, or individual reviews only when the active decision needs them.
 
 ## Retrieval map
 
 | Need | Start here |
 |---|---|
 | Task routing / proof discipline | `AGENTS.md` |
-| Stable facts | `CONTEXT.md` |
 | Current continuation | `next-action.md` |
-| Completed acceptance procedure | `operations/local-acceptance-runbook.md` |
-| Product/modelling policy | `../foundation/README.md` |
-| Reference preparation | `../foundation/04-reference-guide.md` |
-| Geometry / pivot | `../foundation/05-geometry-standard.md` |
-| Visual acceptance | `../foundation/07-visual-validation.md` |
+| Stable facts | `CONTEXT.md` |
 | Current implementation | `implementation-map.md` |
 | MCP runtime/build | `../../mcp/README.md` + affected source |
+| Product/modelling policy | `../foundation/README.md` |
 | Skill routing | `skills/activation-matrix.md` |
 | Current proof status | `../foundation/validation-report.md` |
 | Historical evidence | `reviews/review-graph.md` |
@@ -112,7 +106,6 @@ Current continuation is **efficiency evidence**, not another broad local accepta
 
 - `next-action.md` is the only active repository-task snapshot.
 - Completed procedures own procedure/evidence, not current status.
-- Reviews own evidence; Git history owns obsolete implementation/planning detail.
-- Do not create manual changelog/plan/audit/template layers when an existing owner or Git history is sufficient.
-- Obsidian UI/workspace state is local and intentionally untracked.
-- Prefer deleting stale routing over adding another documentation layer.
+- Reviews own historical evidence; Git history owns obsolete implementation/planning detail.
+- Do not create another roadmap, changelog, audit tracker, or parallel planning layer when an existing owner is sufficient.
+- Prefer deleting stale routing over adding more routing prose.
