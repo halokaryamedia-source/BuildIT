@@ -39,7 +39,7 @@ describe("Codex documentation handoff", () => {
     expect(skillMap).not.toContain("exactly six canonical skills");
   });
 
-  test("current documentation treats local acceptance as completed history rather than default boot", async () => {
+  test("current documentation defers another local run until static cleanup completes", async () => {
     const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -49,42 +49,42 @@ describe("Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    expect(next).toContain("LOCAL — run one fresh Codex efficiency trace");
-    expect(next).toContain("completed procedure/history reference");
+    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_ACTIVE");
+    expect(next).toContain("no local run yet");
+    expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
-    expect(runbook).toContain("Do not edit source while establishing the baseline");
-    expect(runbook).toContain("Failure Classification Before Fix");
-    expect(dashboard).toContain("Local Acceptance Runbook");
-    expect(dashboard).toContain("Current continuation is **efficiency evidence**");
-    expect(operations).toContain("historical implementation → Git history / reviews/");
+    expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
+    expect(dashboard).toContain("static pre-local efficiency cleanup");
+    expect(dashboard).toContain("another Codex/Blockbench run is deferred");
     expect(operations).toContain("The first local acceptance pass is complete");
     expect(operations).not.toContain("mcp-reduction-stabilization-plan.md");
     expect(operations).not.toContain("roadmap.md");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
     expect(implementation).toContain("62 enabled tools");
     expect(implementation).toContain("### MCP result representation");
-    expect(implementation).toContain("fresh Codex trace");
+    expect(implementation).toContain("## Static cleanup boundary");
+    expect(implementation).toContain("No new local run is currently active");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
       expect(currentDoc).not.toContain("mcp/prompts/bedrock.md");
     }
   });
 
-  test("current proof docs agree that functional acceptance is complete while efficiency remains evidence-driven", async () => {
-    const [validation, next, context, runbook] = await Promise.all([
+  test("current proof docs distinguish completed functional acceptance from current static cleanup", async () => {
+    const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
       text("../CONTEXT.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+      text("../docs/knowledge/implementation-map.md"),
     ]);
 
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
     expect(validation).toContain("62 enabled tools");
     expect(validation).toContain("UNKNOWN");
-    expect(next).toContain("Functional local acceptance is complete");
-    expect(next).toContain("fresh Codex efficiency trace");
+    expect(next).toContain("static pre-local efficiency cleanup");
+    expect(next).toContain("The user explicitly does **not** want another local run yet");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
     expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
-    expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
+    expect(implementation).toContain("Source-provable issues may be changed now");
   });
 });
