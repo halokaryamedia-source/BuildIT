@@ -64,21 +64,14 @@ describe("P1 Bedrock Entity registration profile", () => {
     expect(source).not.toContain("registerImportTools,\n  registerUITools");
   });
 
-  test("developer and eval prompts are not default registered", async () => {
+  test("runtime prompt registry excludes maintainer-only references", async () => {
     const source = await readFile(
       new URL("../server/prompts.ts", import.meta.url),
       "utf8"
     );
 
-    const nativePrompt = source.indexOf('"blockbench_native_apis"');
-    const evalPrompt = source.indexOf('"blockbench_code_eval_safety"');
-    const strategyPrompt = source.indexOf('createPrompt("bedrock_entity_workflow"');
-
-    expect(nativePrompt).toBeGreaterThan(-1);
-    expect(evalPrompt).toBeGreaterThan(-1);
-    expect(strategyPrompt).toBeGreaterThan(-1);
-
-    expect(source.slice(nativePrompt, evalPrompt)).toContain('"stable",\n  false');
-    expect(source.slice(evalPrompt, strategyPrompt)).toContain('"stable",\n  false');
+    expect(source).toContain('createPrompt("bedrock_entity_workflow"');
+    expect(source).not.toContain('createPrompt("blockbench_native_apis"');
+    expect(source).not.toContain('createPrompt("blockbench_code_eval_safety"');
   });
 });
