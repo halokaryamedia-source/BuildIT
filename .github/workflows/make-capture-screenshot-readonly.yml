@@ -40,31 +40,8 @@ jobs:
 
           util_path = Path('mcp/lib/util.ts')
           util = util_path.read_text(encoding='utf-8')
-          old = '''export function captureScreenshot(project?: string) {
-  let selectedProject: ModelProject | undefined = Project || undefined;
-
-  if (!selectedProject || project !== undefined) {
-    selectedProject = ModelProject.all.find(
-      (p) => p.name === project || p.uuid === project || p.selected
-    );
-  }
-
-  if (!selectedProject) {
-    throw new Error("No project found in the Blockbench editor.");
-  }
-
-  // Select the project if needed
-  if (!selectedProject.selected) {
-    selectedProject.select();
-  }
-
-  const preview = Preview.selected;'''
-          new = '''export function captureScreenshot() {
-  if (!Project) {
-    throw new Error("No active project found in the Blockbench editor.");
-  }
-
-  const preview = Preview.selected;'''
+          old = 'export function captureScreenshot(project?: string) {\n  let selectedProject: ModelProject | undefined = Project || undefined;\n\n  if (!selectedProject || project !== undefined) {\n    selectedProject = ModelProject.all.find(\n      (p) => p.name === project || p.uuid === project || p.selected\n    );\n  }\n\n  if (!selectedProject) {\n    throw new Error("No project found in the Blockbench editor.");\n  }\n\n  // Select the project if needed\n  if (!selectedProject.selected) {\n    selectedProject.select();\n  }\n\n  const preview = Preview.selected;'
+          new = 'export function captureScreenshot() {\n  if (!Project) {\n    throw new Error("No active project found in the Blockbench editor.");\n  }\n\n  const preview = Preview.selected;'
           if util.count(old) != 1:
               raise SystemExit('Unexpected captureScreenshot helper shape')
           util_path.write_text(util.replace(old, new, 1), encoding='utf-8')
@@ -73,27 +50,12 @@ jobs:
           test = test_path.read_text(encoding='utf-8')
           if 'captureScreenshotParameters' not in test:
               anchor = 'import { inspectAnimationParameters } from "@/server/tools/animation-inspection";\n'
-              addition = anchor + 'import { captureScreenshotParameters } from "@/server/tools/camera";\n'
+              replacement = anchor + 'import { captureScreenshotParameters } from "@/server/tools/camera";\n'
               if test.count(anchor) != 1:
                   raise SystemExit('Unexpected payload cleanup import anchor')
-              test = test.replace(anchor, addition, 1)
+              test = test.replace(anchor, replacement, 1)
           marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
-          addition = '''  test("capture_screenshot is current-view only and does not select projects", async () => {
-    expect(captureScreenshotParameters.parse({})).toEqual({});
-    const camera = await source("server/tools/camera.ts");
-    const util = await source("lib/util.ts");
-    const start = camera.indexOf("createTool(cameraToolDocs[0].name");
-    const end = camera.indexOf("createTool(cameraToolDocs[1].name", start);
-    const block = camera.slice(start, end);
-    expect(block).toContain("async execute()");
-    expect(block).toContain("captureScreenshot()");
-    expect(block).not.toContain("project");
-    expect(util).toContain("export function captureScreenshot()");
-    expect(util).not.toContain("ModelProject.all.find");
-    expect(util).not.toContain("selectedProject.select()");
-  });
-
-'''
+          addition = '  test("capture_screenshot is current-view only and does not select projects", async () => {\n    expect(captureScreenshotParameters.parse({})).toEqual({});\n    const camera = await source("server/tools/camera.ts");\n    const util = await source("lib/util.ts");\n    const start = camera.indexOf("createTool(cameraToolDocs[0].name");\n    const end = camera.indexOf("createTool(cameraToolDocs[1].name", start);\n    const block = camera.slice(start, end);\n    expect(block).toContain("async execute()");\n    expect(block).toContain("captureScreenshot()");\n    expect(block).not.toContain("project");\n    expect(util).toContain("export function captureScreenshot()");\n    expect(util).not.toContain("ModelProject.all.find");\n    expect(util).not.toContain("selectedProject.select()");\n  });\n\n'
           if test.count(marker) != 1:
               raise SystemExit('Unexpected payload cleanup test insertion point')
           test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
@@ -101,7 +63,7 @@ jobs:
           next_path = Path('docs/knowledge/next-action.md')
           next_text = next_path.read_text(encoding='utf-8')
           marker = 'Cube authoring inputs now keep identity and face writes deterministic: create/rename Cube names cannot be empty, simple face lists contain at most the six native faces without duplicates, and custom-UV face lists cannot write the same face twice in one request. Empty face lists remain allowed because they are not inherently invalid authored geometry; no arbitrary Cube-batch size cap was added.'
-          extra = '\n\n`capture_screenshot` is now a truthful current-editor-view read: the unused project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.'
+          extra = '\n\n`capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.'
           if next_text.count(marker) != 1:
               raise SystemExit('Unexpected Cube continuity marker')
           next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
