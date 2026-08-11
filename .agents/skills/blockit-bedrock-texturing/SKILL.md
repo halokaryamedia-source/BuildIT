@@ -38,7 +38,7 @@ activate_texture
 add_texture_group      when grouping/material ownership is needed
 ```
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity work because native Bedrock Entity is `single_texture`. Use the active/default texture plus Painter operations; do not route through generic per-face `Texture.apply()` semantics.
+`apply_texture` is intentionally not enabled for normal Bedrock Entity work because native Bedrock Entity is `single_texture`; use `activate_texture` to choose the active/default working texture, then use Painter operations. Do not route through generic per-face `Texture.apply()` semantics.
 
 Painter tools own deliberate pixel edits (`paint_fill_tool`, shapes, gradient, brush, eraser, picker/copy, settings, selections/layers/presets). Use bounded operations; avoid procedural noise whose only purpose is to look detailed.
 
