@@ -1,0 +1,233 @@
+name: Apply Codex Removal and Boot Optimization
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-codex-removal-boot-optimization.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Apply bounded source and routing optimization
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          element_path = Path("mcp/server/tools/element.ts")
+          element = element_path.read_text(encoding="utf-8")
+
+          old_desc = '      "Removes one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",'
+          new_desc = '      "Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.",'
+          if element.count(old_desc) != 1:
+              raise SystemExit("Unexpected remove_element description shape")
+          element = element.replace(old_desc, new_desc, 1)
+
+          old_remove = '''    async execute({ id }) {
+              const element = resolveUniqueDestructiveElement(id);
+
+              Undo.initEdit({
+                elements: [],
+                outliner: true,
+                collections: [],
+              });
+
+              try {
+                element.remove();
+                Undo.finishEdit("Agent removed element");
+              } catch (error) {
+                Undo.cancelEdit(true);
+                Canvas.updateAll();
+                throw error;
+              }
+
+              Canvas.updateAll();
+              return `Removed element with ID ${id}`;
+            },'''.replace("              ", "      ")
+
+          new_remove = '''    async execute({ id }) {
+              const element = resolveUniqueDestructiveElement(id);
+              const deleteElements: OutlinerElement[] = [];
+              const deleteGroups: Group[] = [];
+
+              if (element instanceof Group) {
+                deleteGroups.push(element);
+                element.forEachChild((child: any) => {
+                  if (child instanceof Group) {
+                    deleteGroups.push(child);
+                  } else {
+                    deleteElements.push(child as OutlinerElement);
+                  }
+                });
+              } else {
+                deleteElements.push(element);
+              }
+
+              const deletedNodeUuids = new Set([
+                ...deleteGroups.map((group) => group.uuid),
+                ...deleteElements.map((deletedElement) => deletedElement.uuid),
+              ]);
+              const deleteAnimations: _Animation[] = AnimationItem.all.filter(
+                (animation) =>
+                  Object.keys(animation.animators ?? {}).some((animatorUuid) =>
+                    deletedNodeUuids.has(animatorUuid)
+                  )
+              );
+
+              Undo.initEdit({
+                elements: deleteElements,
+                groups: deleteGroups,
+                outliner: true,
+                selection: true,
+                animations: deleteAnimations,
+                collections: [],
+              });
+
+              try {
+                if (element instanceof Group) {
+                  element.remove(false);
+                  deleteGroups.length = 0;
+                } else {
+                  element.remove();
+                }
+                deleteElements.length = 0;
+                Undo.finishEdit("Agent removed element");
+              } catch (error) {
+                Undo.cancelEdit(true);
+                Canvas.updateAll();
+                throw error;
+              }
+
+              Canvas.updateAll();
+              return `Removed element with ID ${id}`;
+            },'''.replace("              ", "      ")
+
+          if element.count(old_remove) != 1:
+              raise SystemExit("Unexpected remove_element execute shape")
+          element_path.write_text(element.replace(old_remove, new_remove, 1), encoding="utf-8")
+
+          locator_test_path = Path("mcp/tests/bedrock-locator-coverage.test.ts")
+          locator_test = locator_test_path.read_text(encoding="utf-8")
+          marker = '  test("inspect_element exposes authored Locator and Null Object state", async () => {'
+          addition = '''  test("generic remove_element snapshots direct or recursive deletion state before Undo", async () => {
+              const elementSource = await source("server/tools/element.ts");
+              const start = elementSource.indexOf("createTool(elementToolDocs[0].name");
+              const end = elementSource.indexOf("createTool(elementToolDocs[1].name", start);
+              expect(start).toBeGreaterThan(-1);
+              expect(end).toBeGreaterThan(start);
+              const removeBlock = elementSource.slice(start, end);
+
+              expect(removeBlock).toContain("const deleteElements: OutlinerElement[] = [];");
+              expect(removeBlock).toContain("const deleteGroups: Group[] = [];");
+              expect(removeBlock).toContain("element.forEachChild");
+              expect(removeBlock).toContain("const deletedNodeUuids = new Set");
+              expect(removeBlock).toContain("animations: deleteAnimations");
+              expect(removeBlock).toContain("selection: true");
+              expect(removeBlock).toContain("element.remove(false)");
+              expect(removeBlock).toContain("deleteGroups.length = 0");
+              expect(removeBlock).toContain("deleteElements.length = 0");
+              expect(removeBlock.indexOf("const deleteAnimations")).toBeLessThan(
+                removeBlock.indexOf("Undo.initEdit({")
+              );
+            });
+
+          '''.replace("              ", "    ")
+          if locator_test.count(marker) != 1:
+              raise SystemExit("Unexpected locator test insertion marker")
+          locator_test_path.write_text(locator_test.replace(marker, addition + marker, 1), encoding="utf-8")
+
+          readme_path = Path("README.md")
+          readme = readme_path.read_text(encoding="utf-8")
+          start_marker = "## Mandatory Session Boot\n"
+          end_marker = "## Branch Roles\n"
+          start = readme.find(start_marker)
+          end = readme.find(end_marker, start)
+          if start == -1 or end == -1 or end <= start:
+              raise SystemExit("Unexpected README session boot section")
+          replacement = '''## Session Boot
+
+          Start with `AGENTS.md`; its **Task Class First** section is the canonical session-routing owner.
+
+          - **Asset authoring:** current request/reference -> BlockIT orchestrator -> one active domain specialist. Do not automatically load `CONTEXT.md`, `docs/knowledge/next-action.md`, or `development-brief`.
+          - **Repository/plugin work:** load context/continuation only when relevant, then the affected source and nearest `AGENTS.md`; use `development-brief` for source changes.
+
+          Do not broad-read the repository merely because Codex is running from its root.
+
+          '''.replace("          ", "")
+          readme_path.write_text(readme[:start] + replacement + readme[end:], encoding="utf-8")
+
+          usage_test_path = Path("mcp/tests/asset-authoring-usage-slimming.test.ts")
+          usage_test = usage_test_path.read_text(encoding="utf-8")
+          old_asserts = '''    expect(agents).toContain("Asset authoring is not software **Developing**");
+              expect(agents).toContain("Do not route it through `development-brief`");
+            });'''.replace("              ", "    ")
+          new_asserts = '''    expect(agents).toContain("Asset authoring is not software **Developing**");
+              expect(agents).toContain("Do not route it through `development-brief`");
+              const readme = await source("../README.md");
+              expect(readme).toContain("## Session Boot");
+              expect(readme).toContain("Task Class First");
+              expect(readme).toContain("Do not automatically load `CONTEXT.md`");
+              expect(readme).not.toContain("## Mandatory Session Boot");
+            });'''.replace("              ", "    ")
+          if usage_test.count(old_asserts) != 1:
+              raise SystemExit("Unexpected asset-authoring usage test shape")
+          usage_test_path.write_text(usage_test.replace(old_asserts, new_asserts, 1), encoding="utf-8")
+
+          next_path = Path("docs/knowledge/next-action.md")
+          next_text = next_path.read_text(encoding="utf-8")
+          rig_marker = "A bounded GitHub-only rigging contract correction now rejects empty `set_ik` updates, prevents target-only IK edits from implicitly forcing `ik_enabled=false`, rejects parent operations whose self/descendant/existing parent chain would create or extend a hierarchy cycle before Undo, rejects bone-create child adoption when a requested child is the chosen parent/ancestor of that parent, snapshots all descendant Groups/elements plus animations targeting any deleted Group before recursive bone delete, and keeps create/rename/mirror bone identities unique under the case-insensitive matching used by Bedrock animation import. Mirror derives and validates its intended counterpart name before duplication; exact no-op renames are rejected while case-only self renames remain valid. Omitted `ik_enabled` preserves the existing authored state. IK target resolution and local runtime proof requirements are unchanged."
+          replacement_marker = rig_marker + "\n\nGeneric `remove_element` now mirrors the same recovery boundary for explicit Group deletion: the full deleted subtree and any animation targeting a deleted node are captured before recursive removal, while direct element removal captures the explicit target. This changes recovery correctness only; registration and removal capability are unchanged."
+          if next_text.count(rig_marker) != 1:
+              raise SystemExit("Unexpected next-action rigging continuity marker")
+          next_path.write_text(next_text.replace(rig_marker, replacement_marker, 1), encoding="utf-8")
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Diff hygiene
+        run: git diff --check
+
+      - name: Commit verified optimization and remove temporary workflow
+        run: |
+          git rm .github/workflows/apply-codex-removal-boot-optimization.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No changes"; exit 1; }
+          git commit -m "fix: harden generic removal and asset boot routing"
+          git push origin HEAD:Local
