@@ -88,6 +88,13 @@ Normal Bedrock texture discovery remains `list_textures` + active/default textur
 Official Bedrock Entity is `single_texture`. Native `CubeFace.texture` defaults non-null, `Cube.init()` binds non-null faces to `Texture.getDefault()` when available, and Bedrock per-face export uses only `face.texture !== null` to decide whether a UV face entry exists; it does not export a per-Cube texture UUID. `Cube.applyTexture()` with `faces === undefined` also consults ambient `UVEditor.face`.
 
 Therefore `place_cube` no longer accepts an explicit per-Cube texture selector, `faces:false`, or a face-name-only texture list. Default `true` keeps the project-inherited UV mode and native per-face auto mapping where applicable. Explicit custom `{face, uv}` entries are retained, require finite UV values, and create that Cube as `box_uv=false` so the requested per-face UV data is actually exportable. No separate UV mode framework or face-disable capability was added.
+### `modify_cube` authored-state boundary
+
+**NARROW + HARDEN** single-Cube correction to state that is useful to Bedrock modelling.
+
+Bedrock geometry compilation serializes Cube `inflate`, box-UV `uv_offset`, and conditional UV mirror, while native Cube `shade` is Java-shading-feature state and editor palette `color` is not part of Bedrock geometry output. `modify_cube` therefore rejects generic `shade`/`color` inputs, requires finite `inflate`/`uv_offset`, and keeps UV authoring controls that can affect Bedrock UV state.
+
+The mutation result now owns the same state it can change: name, transform, inflate, box-UV context, UV offset, mirror, autouv, and visibility. Exact same-value requests fail before Undo instead of creating false progress. Batch correction scope is unchanged.
 ### validator references
 
 Keep validator resources, but mark regex-derived `elementRefs` as:

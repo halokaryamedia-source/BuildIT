@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T09:57:17.448Z",
+  "generatedAt": "2026-08-11T10:07:04.883Z",
   "tools": [
     {
       "name": "place_cube",
@@ -189,7 +189,7 @@
     {
       "name": "modify_cube",
       "title": "Modify Cube",
-      "description": "Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.",
+      "description": "Modifies one explicit Bedrock Cube transform/UV/inflate/visibility state. UUID is preferred; exact names must be unique. Generic Java-only shade/editor palette color controls are not accepted. Exact no-op requests fail before Undo; resulting state and `geometry_effect` record the authored change.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -297,33 +297,28 @@
               },
               "uv_offset": {
                 "type": "array",
-                "items": {
-                  "type": "number"
-                },
                 "minItems": 2,
                 "maxItems": 2,
-                "description": "UV offset for the texture.",
-                "markdownDescription": "UV offset for the texture."
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV.",
+                "markdownDescription": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."
               },
               "mirror_uv": {
                 "type": "boolean",
                 "description": "Whether to mirror the UVs.",
                 "markdownDescription": "Whether to mirror the UVs."
               },
-              "shade": {
-                "type": "boolean",
-                "description": "Whether to apply shading to the cube.",
-                "markdownDescription": "Whether to apply shading to the cube."
-              },
               "inflate": {
                 "type": "number",
-                "description": "Inflation amount for the cube.",
-                "markdownDescription": "Inflation amount for the cube."
-              },
-              "color": {
-                "type": "number",
-                "description": "Single digit to represent a color from a palette.",
-                "markdownDescription": "Single digit to represent a color from a palette."
+                "description": "Finite Bedrock Cube inflation amount.",
+                "markdownDescription": "Finite Bedrock Cube inflation amount."
               },
               "visibility": {
                 "type": "boolean",

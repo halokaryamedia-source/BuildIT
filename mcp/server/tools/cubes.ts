@@ -11,6 +11,10 @@ const finiteVec3Schema = z.tuple([
   z.number().finite(),
   z.number().finite(),
 ]);
+const finiteVec2Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+]);
 function hasFiniteCubeSpan(
   from: readonly number[],
   to: readonly number[]
@@ -198,25 +202,18 @@ export const modifyCubeParameters = z.object({
     .describe(
       "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
     ),
-  uv_offset: z
-    .array(z.number()).length(2)
+  uv_offset: finiteVec2Schema
     .optional()
-    .describe("UV offset for the texture."),
+    .describe("Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."),
   mirror_uv: z.boolean().optional().describe("Whether to mirror the UVs."),
-  shade: z
-    .boolean()
-    .optional()
-    .describe("Whether to apply shading to the cube."),
-  inflate: z.number().optional().describe("Inflation amount for the cube."),
-  color: z
-    .number()
-    .optional()
-    .describe("Single digit to represent a color from a palette."),
+
+  inflate: z.number().finite().optional().describe("Finite Bedrock Cube inflation amount."),
+
   visibility: z
     .boolean()
     .optional()
     .describe("Whether the cube is visible or not."),
-}).refine(
+}).strict().refine(
   (update) =>
     Object.entries(update).some(
       ([key, value]) => key !== "id" && value !== undefined
@@ -272,7 +269,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cube",
     description:
-      "Modifies one explicit Cube. UUID is preferred; an exact name must be unique and selection is never implicit. Origin-only uses pivot-transfer semantics; activating non-zero rotation requires origin. Returns before/after authored state and `geometry_effect`; visual/reference fidelity is not evaluated.",
+      "Modifies one explicit Bedrock Cube transform/UV/inflate/visibility state. UUID is preferred; exact names must be unique. Generic Java-only shade/editor palette color controls are not accepted. Exact no-op requests fail before Undo; resulting state and `geometry_effect` record the authored change.",
     annotations: {
       title: "Modify Cube",
       destructiveHint: true,
@@ -348,6 +345,18 @@ function finalCubeState(cube: Cube) {
     to[1] - from[1],
     to[2] - from[2],
   ] as [number, number, number];
+  const uvOffset = [...cube.uv_offset] as [number, number];
+  if (uvOffset.length !== 2 || uvOffset.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite box-UV offset and cannot be reported safely.`
+    );
+  }
+  const inflate = cube.inflate ?? 0;
+  if (!Number.isFinite(inflate)) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite inflate value and cannot be reported safely.`
+    );
+  }
 
   return {
     uuid: cube.uuid,
@@ -357,10 +366,14 @@ function finalCubeState(cube: Cube) {
     size,
     origin: [...cube.origin] as [number, number, number],
     rotation: [...cube.rotation] as [number, number, number],
+    inflate,
+    box_uv: cube.box_uv,
+    uv_offset: uvOffset,
+    mirror_uv: cube.mirror_uv,
+    autouv: cube.autouv,
     visibility: cube.visibility !== false,
   };
 }
-
 
 type CubeAuthoredState = ReturnType<typeof finalCubeState>;
 
@@ -379,6 +392,10 @@ function vec3Equal(a: readonly number[], b: readonly number[]): boolean {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
 
+function vec2Equal(a: readonly number[], b: readonly number[]): boolean {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
 function cubeStateCenter(state: CubeAuthoredState): [number, number, number] {
   return [
     state.from[0] + state.size[0] / 2,
@@ -389,10 +406,16 @@ function cubeStateCenter(state: CubeAuthoredState): [number, number, number] {
 
 function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState) {
   const changedFields: string[] = [];
+  if (before.name !== after.name) changedFields.push("name");
   if (!vec3Equal(before.from, after.from)) changedFields.push("from");
   if (!vec3Equal(before.to, after.to)) changedFields.push("to");
   if (!vec3Equal(before.origin, after.origin)) changedFields.push("origin");
   if (!vec3Equal(before.rotation, after.rotation)) changedFields.push("rotation");
+  if (before.inflate !== after.inflate) changedFields.push("inflate");
+  if (before.box_uv !== after.box_uv) changedFields.push("box_uv");
+  if (!vec2Equal(before.uv_offset, after.uv_offset)) changedFields.push("uv_offset");
+  if (before.mirror_uv !== after.mirror_uv) changedFields.push("mirror_uv");
+  if (before.autouv !== after.autouv) changedFields.push("autouv");
   if (before.visibility !== after.visibility) changedFields.push("visibility");
 
   return {
@@ -401,8 +424,35 @@ function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState)
     size_delta: vec3Delta(after.size, before.size),
     origin_delta: vec3Delta(after.origin, before.origin),
     rotation_delta: vec3Delta(after.rotation, before.rotation),
+    inflate_delta: after.inflate - before.inflate,
+    uv_offset_delta: [
+      after.uv_offset[0] - before.uv_offset[0],
+      after.uv_offset[1] - before.uv_offset[1],
+    ] as [number, number],
+    mirror_uv_changed: before.mirror_uv !== after.mirror_uv,
+    autouv_changed: before.autouv !== after.autouv,
     visibility_changed: before.visibility !== after.visibility,
   };
+}
+
+type ModifyCubeRequest = z.infer<typeof modifyCubeParameters>;
+
+function modifyCubeRequestWouldChange(
+  cube: Cube,
+  update: ModifyCubeRequest
+): boolean {
+  return (
+    (update.name !== undefined && update.name !== cube.name) ||
+    (update.origin !== undefined && !vec3Equal(update.origin, cube.origin)) ||
+    (update.from !== undefined && !vec3Equal(update.from, cube.from)) ||
+    (update.to !== undefined && !vec3Equal(update.to, cube.to)) ||
+    (update.rotation !== undefined && !vec3Equal(update.rotation, cube.rotation)) ||
+    (update.uv_offset !== undefined && !vec2Equal(update.uv_offset, cube.uv_offset)) ||
+    (update.autouv !== undefined && Number(update.autouv) !== cube.autouv) ||
+    (update.mirror_uv !== undefined && update.mirror_uv !== cube.mirror_uv) ||
+    (update.inflate !== undefined && update.inflate !== (cube.inflate ?? 0)) ||
+    (update.visibility !== undefined && update.visibility !== (cube.visibility !== false))
+  );
 }
 
 function resolveUniqueCube(reference: string): Cube {
@@ -502,9 +552,7 @@ createTool(cubeToolDocs[1].name, {
     uv_offset,
     autouv,
     mirror_uv,
-    shade,
     inflate,
-    color,
     visibility,
   }) {
     const cubes = [resolveUniqueCube(id)];
@@ -518,6 +566,13 @@ createTool(cubeToolDocs[1].name, {
       to ?? cubes[0].to,
       `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
     );
+    if (!modifyCubeRequestWouldChange(cubes[0], {
+      id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, visibility,
+    })) {
+      throw new Error(
+        `modify_cube request for Cube ${cubes[0].name} (${cubes[0].uuid}) has no authored effect; every supplied value already matches current state.`
+      );
+    }
 
     const pivotOnly = isPivotOnlyCorrection({ origin, from, to, rotation });
     if (pivotOnly) {
@@ -554,9 +609,7 @@ createTool(cubeToolDocs[1].name, {
             : {}),
           ...(mirror_uv !== undefined ? { mirror_uv } : {}),
           ...(inflate !== undefined ? { inflate } : {}),
-          ...(color !== undefined ? { color } : {}),
           ...(visibility !== undefined ? { visibility } : {}),
-          ...(shade !== undefined ? { shade } : {}),
         });
       });
 

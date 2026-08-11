@@ -15,6 +15,12 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(() =>
       modifyCubeParameters.parse({ id: "cube-1", to: [Infinity, 1, 1] })
     ).toThrow();
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", uv_offset: [0, Infinity] }).success).toBe(false);
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", inflate: Infinity }).success).toBe(false);
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", uv_offset: [4, 8] }).success).toBe(true);
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", inflate: 0.25 }).success).toBe(true);
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", shade: false }).success).toBe(false);
+    expect(modifyCubeParameters.safeParse({ id: "cube-1", color: 2 }).success).toBe(false);
   });
 
   test("Cube identity and face inputs remain deterministic", () => {
@@ -117,8 +123,22 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(cubes).toContain("size_delta");
     expect(cubes).toContain("origin_delta");
     expect(cubes).toContain("rotation_delta");
+    expect(cubes).toContain("inflate_delta");
+    expect(cubes).toContain("uv_offset_delta");
+    expect(cubes).toContain("mirror_uv_changed");
+    expect(cubes).toContain("autouv_changed");
+    expect(cubes).toContain("modifyCubeRequestWouldChange");
+    expect(cubes).toContain("has no authored effect");
     expect(cubes).toContain("effective_geometry_targets");
     expect(cubes).not.toContain('Undo.finishEdit("Agent corrected multiple cubes")');
+    const modifyStart = cubes.indexOf("export const modifyCubeParameters");
+    const batchStart = cubes.indexOf("export const modifyCubesBatchParameters", modifyStart);
+    const modifySchema = cubes.slice(modifyStart, batchStart);
+    expect(modifySchema).toContain("uv_offset: finiteVec2Schema");
+    expect(modifySchema).toContain("inflate: z.number().finite()");
+    expect(modifySchema).toContain("}).strict().refine(");
+    expect(modifySchema).not.toContain("shade:");
+    expect(modifySchema).not.toContain("color:");
     expect(inspection).toContain("center: [");
     expect(cubes).toContain("requireFiniteCubeSpan(");
     expect(cubes).toContain("state.from[0] + state.size[0] / 2");
