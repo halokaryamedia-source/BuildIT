@@ -21,6 +21,8 @@ NON_LOCAL_PRELOCAL_READINESS_COMPLETE_LOCAL_ACCEPTANCE_REQUIRED
 
 Non-local source/contract/CI/documentation cleanup is complete. Live runtime, client exposure, visual behavior, and persistence remain the authoritative next evidence boundary.
 
+Final repository hygiene also removed standalone-upstream/editor residue, obsolete planning layers, and tracked transient workspace previews without changing the MCP callable surface.
+
 Current pinned-SDK default MCP baseline:
 
 ```text
@@ -62,7 +64,7 @@ Current repository gates have passed for the pre-local source state:
 ```text
 frozen-lockfile install
 strict TypeScript typecheck
-156 Bun contract tests
+159 Bun contract tests
 production build
 prompt manifest generation
 generated MCP docs freshness

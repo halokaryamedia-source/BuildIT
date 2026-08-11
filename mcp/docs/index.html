@@ -52,18 +52,23 @@
       </header>
 
       <section id="install" class="doc-section">
-        <h2>BlockIT Local Installation</h2>
-<p>Build the current <code>Local</code> branch and load the generated plugin file from this repository:</p>
-<pre><code class="language-bash">git checkout Local
-cd mcp
-bun install --frozen-lockfile
+        <h2>Install BlockIT Locally</h2>
+<p>BlockIT must be validated from this repository's <strong><code>Local</code> branch</strong>. Do <strong>not</strong> use the upstream hosted Blockbench MCP plugin as proof of BlockIT; it is a different product surface.</p>
+<p>Build the local plugin from <code>mcp/</code>:</p>
+<pre><code class="language-bash">bun install --frozen-lockfile
+bun run typecheck
+bun run test
 bun run build
+bun run docs:check
 </code></pre>
-<p>Then load <code>mcp/dist/mcp.js</code> as a local plugin in desktop Blockbench.</p>
-<p>For BlockIT validation, <strong>do not install the hosted <code>jasonjgardner.github.io/blockbench-mcp-plugin</code> artifact</strong>. That URL serves the upstream generic plugin and cannot prove this Bedrock Entity-focused fork.</p>
-<p>Default MCP URL after the BlockIT plugin is loaded:</p>
+<p>Load the generated file in desktop Blockbench:</p>
+<pre><code class="language-text">mcp/dist/mcp.js
+</code></pre>
+<p>Default MCP endpoint after the plugin is running:</p>
 <pre><code class="language-text">http://127.0.0.1:3000/bb-mcp
 </code></pre>
+<p>Keep <strong>Extended MCP Families</strong> off for the normal Bedrock Entity baseline. <code>risky_eval</code> and <code>from_geo_json</code> remain disabled.</p>
+<p>For the current repository acceptance procedure, follow root <code>docs/knowledge/next-action.md</code> and <code>docs/knowledge/operations/local-acceptance-runbook.md</code>. This install fragment only owns local build/load guidance; it does not replace repository task routing.</p>
 
       </section>
 
@@ -2980,7 +2985,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T14:36:57.036Z from Zod schemas
+        Generated 2026-08-11T16:55:40.491Z from Zod schemas
       </footer>
     </main>
   </div>

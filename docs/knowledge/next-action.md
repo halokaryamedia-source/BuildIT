@@ -20,6 +20,8 @@ Working branch: **`Local` only**.
 
 The non-local pass is complete. Current source/contract/CI/generated-doc evidence is ready; live Blockbench/MCP/client behavior is not yet proven.
 
+Repository hygiene is also complete: standalone-upstream/editor residue, duplicate planning layers, and tracked transient preview caches have been removed. Current source/runtime capability was not pruned by this cleanup.
+
 Do not start another GitHub-only cleanup/reduction slice merely because local acceptance has not run. A new source change now requires a concrete reproduced defect, failing gate, or explicit product requirement with new evidence.
 
 ## Current Pre-local Baseline
