@@ -26,11 +26,11 @@ jobs:
       - name: Measure default tool footprint
         working-directory: mcp
         run: |
-          cat > /tmp/audit-tool-footprint.ts <<'TS'
+          cat > .audit-tool-footprint.ts <<'TS'
           import { zodToJsonSchema } from "zod-to-json-schema";
-          import "${GITHUB_WORKSPACE}/mcp/server/tools.ts";
-          import { getEnabledToolDefinitions } from "${GITHUB_WORKSPACE}/mcp/lib/factories.ts";
-          import { toolManifest } from "${GITHUB_WORKSPACE}/mcp/build/docs-manifest.ts";
+          import "./server/tools.ts";
+          import { getEnabledToolDefinitions } from "./lib/factories.ts";
+          import { toolManifest } from "./build/docs-manifest.ts";
 
           const defs = getEnabledToolDefinitions() as Record<string, any>;
           const categoryByName = new Map<string, string>();
@@ -110,7 +110,8 @@ jobs:
             console.log(JSON.stringify({ count: value.count, charsEach: value.chars, repeatedChars: value.chars * (value.count - 1), tools: [...value.tools], description }));
           }
           TS
-          bun /tmp/audit-tool-footprint.ts
+          bun .audit-tool-footprint.ts
+          rm .audit-tool-footprint.ts
       - name: Remove temporary audit workflow
         run: |
           git config user.name 'github-actions[bot]'
