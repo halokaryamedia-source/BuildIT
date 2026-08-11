@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T11:47:54.519Z",
+  "generatedAt": "2026-08-11T12:15:05.097Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1724,7 +1724,7 @@
     {
       "name": "add_group",
       "title": "Add Group",
-      "description": "Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.",
+      "description": "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -1738,66 +1738,61 @@
             "properties": {
               "name": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "description": "Non-empty Bedrock Group/bone name.",
+                "markdownDescription": "Non-empty Bedrock Group/bone name."
               },
               "origin": {
                 "type": "array",
-                "items": {
-                  "type": "number"
-                },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it.",
-                "markdownDescription": "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it.",
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
                 "default": [
                   0,
                   0,
                   0
-                ]
+                ],
+                "description": "Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it.",
+                "markdownDescription": "Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
               },
               "rotation": {
                 "type": "array",
-                "items": {
-                  "type": "number"
-                },
                 "minItems": 3,
                 "maxItems": 3,
-                "description": "Initial Group rotation; omit for neutral zero rotation.",
-                "markdownDescription": "Initial Group rotation; omit for neutral zero rotation.",
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
                 "default": [
                   0,
                   0,
                   0
-                ]
+                ],
+                "description": "Finite initial Bedrock bone rotation; omit for neutral zero rotation.",
+                "markdownDescription": "Finite initial Bedrock bone rotation; omit for neutral zero rotation."
               },
               "parent": {
                 "type": "string",
                 "default": "root",
                 "description": "Parent Group UUID or unique exact name; omit/use `root` for intentional root.",
                 "markdownDescription": "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
-              },
-              "visibility": {
-                "type": "boolean",
-                "default": true
-              },
-              "autouv": {
-                "type": "string",
-                "enum": [
-                  "0",
-                  "1",
-                  "2"
-                ],
-                "default": "0",
-                "description": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV.",
-                "markdownDescription": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
-              },
-              "selected": {
-                "type": "boolean",
-                "default": false
-              },
-              "shade": {
-                "type": "boolean",
-                "default": false
               }
             },
             "required": [

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createProjectParameters } from "@/server/tools/project";
+import { addGroupParameters } from "@/server/tools/element";
 import {
   BLOCKIT_MODEL_CODEC_IDS,
   exportModelParameters,
@@ -18,6 +19,19 @@ describe("pre-local generic semantics narrowing", () => {
     expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
   });
 
+  test("add_group exposes only finite Bedrock bone create state", () => {
+    expect(addGroupParameters.safeParse({ name: "body" }).success).toBe(true);
+    expect(addGroupParameters.safeParse({ name: "body", origin: [0, Infinity, 0] }).success).toBe(false);
+    expect(addGroupParameters.safeParse({ name: "body", rotation: [0, 0, -Infinity] }).success).toBe(false);
+    for (const editorOnly of [
+      { selected: true },
+      { shade: false },
+      { visibility: false },
+      { autouv: "1" },
+    ]) {
+      expect(addGroupParameters.safeParse({ name: "body", ...editorOnly }).success).toBe(false);
+    }
+  });
   test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
     expect(BLOCKIT_MODEL_CODEC_IDS).toEqual(["bedrock", "project"]);
     expect(listExportFormatsParameters.parse({})).toEqual({});

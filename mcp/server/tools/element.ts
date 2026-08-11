@@ -7,7 +7,6 @@ import { resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import {
   elementIdSchema,
   vector3Schema,
-  autoUvEnum,
 } from "@/lib/zodObjects";
 
 export const removeElementParameters = z.object({
@@ -102,37 +101,34 @@ export const filterByMaterialParameters = z.object({
 
 export const getSelectionParameters = z.object({});
 
-export const addGroupParameters = z.object({
-  name: z.string().min(1),
-  origin: vector3Schema
-    .optional()
-    .default([0, 0, 0])
-    .describe(
-      "Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
-    ),
-  rotation: vector3Schema
-    .optional()
-    .default([0, 0, 0])
-    .describe(
-      "Initial Group rotation; omit for neutral zero rotation."
-    ),
-  parent: z
-    .string()
-    .optional()
-    .default("root")
-    .describe(
-      "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
-    ),
-  visibility: z.boolean().optional().default(true),
-  autouv: autoUvEnum
-    .optional()
-    .default("0")
-    .describe(
-      "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
-    ),
-  selected: z.boolean().optional().default(false),
-  shade: z.boolean().optional().default(false),
-});
+const finiteGroupVector3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
+export const addGroupParameters = z
+  .object({
+    name: z.string().min(1).describe("Non-empty Bedrock Group/bone name."),
+    origin: finiteGroupVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe(
+        "Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
+      ),
+    rotation: finiteGroupVector3Schema
+      .optional()
+      .default([0, 0, 0])
+      .describe("Finite initial Bedrock bone rotation; omit for neutral zero rotation."),
+    parent: z
+      .string()
+      .optional()
+      .default("root")
+      .describe(
+        "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
+      ),
+  })
+  .strict();
 
 export const listOutlineParameters = z.object({
   include_cubes: z
@@ -190,7 +186,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "add_group",
     description:
-      "Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.",
+      "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
     annotations: {
       title: "Add Group",
       destructiveHint: true,
@@ -474,16 +470,7 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
-    async execute({
-      name,
-      origin,
-      rotation,
-      parent,
-      visibility,
-      autouv,
-      selected,
-      shade,
-    }) {
+    async execute({ name, origin, rotation, parent }) {
       const parentGroup = resolveParentGroup(parent);
 
       Undo.initEdit({
@@ -499,10 +486,6 @@ export function registerElementTools() {
           name,
           origin,
           rotation,
-          autouv: Number(autouv) as 0 | 1 | 2,
-          visibility: Boolean(visibility),
-          selected: Boolean(selected),
-          shade: Boolean(shade),
         }).init();
         group.addTo(parentGroup);
         Undo.finishEdit("Agent added group", { outliner: true, groups: [group] });
@@ -519,7 +502,6 @@ uuid: group.uuid,
 name: group.name,
 origin: [...group.origin],
 rotation: [...group.rotation],
-visibility: group.visibility !== false,
 parent: group.parent instanceof Group ? group.parent.uuid : "root",
         },
       };

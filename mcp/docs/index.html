@@ -753,7 +753,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Add Group</p>
-      <p class="card-desc">Adds a Group with neutral pivot/rotation defaults. Optional explicit parent must resolve uniquely before mutation; use non-zero pivot/rotation only for a real joint/attachment/transform reason.</p>
+      <p class="card-desc">Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -768,42 +768,22 @@ bun run build
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc"> <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Non-empty Bedrock Group/bone name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">origin</td>
-      <td class="col-type">number[]</td>
+      <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Group pivot/origin; omit for organizational Groups unless a joint/attachment needs it. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">rotation</td>
-      <td class="col-type">number[]</td>
+      <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Initial Group rotation; omit for neutral zero rotation. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Finite initial Bedrock bone rotation; omit for neutral zero rotation. <span class="param-meta">(default: <code>[0,0,0]</code>) [minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">parent</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Parent Group UUID or unique exact name; omit/use `root` for intentional root. <span class="param-meta">(default: <code>&quot;root&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">visibility</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>true</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">autouv</td>
-      <td class="col-type">&quot;0&quot; | &quot;1&quot; | &quot;2&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV. <span class="param-meta">(default: <code>&quot;0&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">selected</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">shade</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3000,7 +2980,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T11:47:54.519Z from Zod schemas
+        Generated 2026-08-11T12:15:05.097Z from Zod schemas
       </footer>
     </main>
   </div>
