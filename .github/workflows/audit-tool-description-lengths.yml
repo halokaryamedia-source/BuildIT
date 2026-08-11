@@ -1,0 +1,50 @@
+name: Audit Tool Description Lengths
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/audit-tool-description-lengths.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Measure all long descriptions
+        working-directory: mcp
+        run: |
+          cat > .audit-description-lengths.ts <<'TS'
+          import { toolManifest } from "./build/docs-manifest.ts";
+          const rows = toolManifest.flatMap(group => group.tools.map(tool => ({
+            category: group.category,
+            name: tool.name,
+            chars: tool.description.length,
+            description: tool.description,
+          }))).sort((a, b) => b.chars - a.chars);
+          console.log("=== DESCRIPTIONS >= 300 CHARS ===");
+          for (const row of rows.filter(row => row.chars >= 300)) console.log(JSON.stringify(row));
+          console.log("=== TOP 15 DESCRIPTION LENGTHS ===");
+          for (const row of rows.slice(0, 15)) console.log(JSON.stringify({ category: row.category, name: row.name, chars: row.chars }));
+          TS
+          bun .audit-description-lengths.ts
+          rm .audit-description-lengths.ts
+      - name: Remove temporary audit workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-tool-description-lengths.yml
+          git commit -m 'chore: remove temporary description audit'
+          git push origin HEAD:Local
