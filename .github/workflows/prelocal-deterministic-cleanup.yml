@@ -1,0 +1,156 @@
+name: "Pre-local Deterministic Cleanup"
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/prelocal-deterministic-cleanup.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Apply bounded pre-local cleanup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # 1) Discovery numeric correctness + truthful subtree wording.
+          element_path = Path('mcp/server/tools/element.ts')
+          text = element_path.read_text(encoding='utf-8')
+
+          enum_anchor = 'export const elementTypeEnum = z.enum(["cube", "group", "any"]);\n\n'
+          finite_block = '''const finiteElementVector3Schema = z.tuple([\n  z.number().finite(),\n  z.number().finite(),\n  z.number().finite(),\n]);\n\n'''
+          if text.count(enum_anchor) != 1:
+              raise SystemExit('element type enum anchor changed')
+          if text.count(finite_block) != 1:
+              raise SystemExit('finite element vector schema count changed')
+          text = text.replace(finite_block, '', 1)
+          text = text.replace(enum_anchor, enum_anchor + finite_block, 1)
+
+          text = text.replace(
+              '"Optional parent Group UUID or unique exact name."',
+              '"Optional Group UUID or unique exact name whose descendant subtree scopes results."',
+              1,
+          )
+          text = text.replace(
+              '"Exact parent Group UUID or exact unique name. Omit for no parent scope. Ambiguous or missing explicit scopes are rejected before selection changes."',
+              '"Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes."',
+              1,
+          )
+
+          min_old = '  min_size: vector3Schema\n    .optional()\n    .describe("Minimum Cube size [x,y,z]."),\n'
+          max_old = '  max_size: vector3Schema\n    .optional()\n    .describe("Maximum Cube size [x,y,z]."),\n'
+          if text.count(min_old) != 1 or text.count(max_old) != 1:
+              raise SystemExit('discovery size schema anchors changed')
+          text = text.replace(
+              min_old,
+              '  min_size: finiteElementVector3Schema\n    .optional()\n    .describe("Optional finite minimum Cube size [x,y,z]."),\n',
+              1,
+          )
+          text = text.replace(
+              max_old,
+              '  max_size: finiteElementVector3Schema\n    .optional()\n    .describe("Optional finite maximum Cube size [x,y,z]."),\n',
+              1,
+          )
+
+          find_end = '''  limit: z\n    .number()\n    .int()\n    .min(1)\n    .max(1000)\n    .optional()\n    .default(200)\n    .describe("Maximum number of results to return."),\n});\n\nexport const selectAllOfTypeParameters = z.object({'''
+          find_new = '''  limit: z\n    .number()\n    .int()\n    .min(1)\n    .max(1000)\n    .optional()\n    .default(200)\n    .describe("Maximum number of results to return."),\n}).superRefine((params, ctx) => {\n  if (params.min_size === undefined || params.max_size === undefined) return;\n  params.min_size.forEach((minimum, axis) => {\n    if (minimum > params.max_size![axis]) {\n      ctx.addIssue({\n        code: z.ZodIssueCode.custom,\n        path: ["max_size", axis],\n        message: `max_size[${axis}] must be greater than or equal to min_size[${axis}].`,\n      });\n    }\n  });\n});\n\nexport const selectAllOfTypeParameters = z.object({'''
+          if text.count(find_end) != 1:
+              raise SystemExit('find_elements closing anchor changed')
+          text = text.replace(find_end, find_new, 1)
+          element_path.write_text(text, encoding='utf-8')
+
+          # 2) Animation specialist: reuse known lifecycle/identity instead of ritual reads.
+          animation_skill_path = Path('.agents/skills/blockit-bedrock-animation/SKILL.md')
+          animation_skill = animation_skill_path.read_text(encoding='utf-8')
+          old_animation_preflight = '''## Preflight\n\n1. Confirm the active project format is `bedrock` with `get_project_info`.\n2. Use `list_outline` to identify Group/bone UUIDs.\n3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.\n4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.\n'''
+          new_animation_preflight = '''## Preflight\n\n1. Reuse project lifecycle/format state already returned by the current workflow. Call `get_project_info` only when the active project format/state is unknown, stale, or missing a field needed by the animation decision.\n2. Reuse known Group/bone UUIDs from creation/mutation/discovery results. Call `list_outline` only when a participating identity or hierarchy relationship is still unknown.\n3. For an existing animation, call `inspect_animation` before mutation. Use its authored transform channels/effect summary instead of inferring current keyframes from a screenshot.\n4. If pivot/hierarchy judgement is unclear, route the modelling decision to `blockbench-bedrock-modelling` before editing animation.\n'''
+          if animation_skill.count(old_animation_preflight) != 1:
+              raise SystemExit('animation specialist preflight anchor changed')
+          animation_skill_path.write_text(
+              animation_skill.replace(old_animation_preflight, new_animation_preflight, 1),
+              encoding='utf-8',
+          )
+
+          # 3) Texturing specialist: result-first verification instead of blanket re-read.
+          texturing_path = Path('.agents/skills/blockit-bedrock-texturing/SKILL.md')
+          texturing = texturing_path.read_text(encoding='utf-8')
+          old_start = '''## Start With Existing State\n\nBefore changing an existing asset:\n\n1. `list_textures` to identify texture UUID/ID/name and active assignments.\n2. `get_texture` only when image evidence is needed.\n3. `list_materials` / `get_material_info` before changing PBR TextureGroups.\n4. `get_face_material_instances` or `list_material_instances` before changing per-face material metadata.\n5. Use explicit targets; prefer UUIDs once discovered.\n'''
+          new_start = '''## Start With Existing State\n\nReuse identity/metadata already returned by the current workflow. For an existing or externally changed asset whose required state is not already known:\n\n1. `list_textures` to identify texture UUID/ID/name and active assignments.\n2. `get_texture` only when image evidence is needed.\n3. `list_materials` / `get_material_info` before changing PBR TextureGroups when the required material state is not already known.\n4. `get_face_material_instances` or `list_material_instances` before changing per-face material metadata when those assignments are not already known.\n5. Use explicit targets; prefer UUIDs once discovered.\n'''
+          if texturing.count(old_start) != 1:
+              raise SystemExit('texturing start-state anchor changed')
+          texturing = texturing.replace(old_start, new_start, 1)
+
+          old_verify = '''## Verification\n\nAfter a material surface change:\n\n- re-read the targeted texture/material/material-instance state;\n- use `get_texture` when pixel output itself matters;\n- use canonical model views when the surface must be judged on the model;\n- distinguish structural success from visual quality;\n- keep PBR appearance claims bounded because final RTX/in-game rendering is outside MCP source proof.\n'''
+          new_verify = '''## Verification\n\nAfter a material surface change:\n\n- reuse mutation-returned identity/metadata when it already proves the required authored state; do not re-list/re-read it only for confirmation;\n- `create_texture` already returns texture identity/size/group/channel/render metadata, so use `get_texture` only when pixel output itself matters;\n- use `get_material_info` or material-instance reads when the mutation result does not expose configuration/face state required for the completion claim;\n- use canonical model views when the surface must be judged on the model;\n- distinguish structural success from visual quality;\n- keep PBR appearance claims bounded because final RTX/in-game rendering is outside MCP source proof.\n'''
+          if texturing.count(old_verify) != 1:
+              raise SystemExit('texturing verification anchor changed')
+          texturing_path.write_text(texturing.replace(old_verify, new_verify, 1), encoding='utf-8')
+
+          # 4) Contract tests.
+          p1_path = Path('mcp/tests/p1-core-ownership.test.ts')
+          p1 = p1_path.read_text(encoding='utf-8')
+          p1_anchor = '  test("UUID wins before exact unique name and names never prefix-match", () => {\n'
+          p1_test = '''  test("discovery Cube size bounds are finite and ordered", () => {\n    expect(\n      findElementsByCriteriaParameters.safeParse({\n        min_size: [0, 1, 2],\n        max_size: [3, 4, 5],\n      }).success\n    ).toBe(true);\n    expect(\n      findElementsByCriteriaParameters.safeParse({ min_size: [0, Number.POSITIVE_INFINITY, 2] }).success\n    ).toBe(false);\n    expect(\n      findElementsByCriteriaParameters.safeParse({\n        min_size: [4, 1, 2],\n        max_size: [3, 4, 5],\n      }).success\n    ).toBe(false);\n    expect(findElementsByCriteriaParameters.safeParse({ min_size: [4, 1, 2] }).success).toBe(true);\n  });\n\n'''
+          if p1.count(p1_anchor) != 1:
+              raise SystemExit('p1 insertion anchor changed')
+          p1_path.write_text(p1.replace(p1_anchor, p1_test + p1_anchor, 1), encoding='utf-8')
+
+          routing_path = Path('mcp/tests/model-effectiveness-tool-routing.test.ts')
+          routing = routing_path.read_text(encoding='utf-8')
+          routing_anchor = '  test("convenience tools explain their branch-only role instead of competing with geometry identity/evidence", async () => {\n'
+          routing_test = '''  test("specialists reuse known state instead of forcing lifecycle and discovery rereads", async () => {\n    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");\n    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");\n\n    expect(animation).toContain("Call `get_project_info` only when");\n    expect(animation).toContain("Call `list_outline` only when");\n    expect(animation).not.toContain("Confirm the active project format is `bedrock` with `get_project_info`");\n    expect(texturing).toContain("Reuse identity/metadata already returned by the current workflow");\n    expect(texturing).toContain("do not re-list/re-read it only for confirmation");\n    expect(texturing).toContain("`create_texture` already returns texture identity/size/group/channel/render metadata");\n  });\n\n'''
+          if routing.count(routing_anchor) != 1:
+              raise SystemExit('routing insertion anchor changed')
+          routing_path.write_text(routing.replace(routing_anchor, routing_test + routing_anchor, 1), encoding='utf-8')
+
+          # 5) Continuity note.
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          anchor = 'Optional explicit discovery name filters now follow the same omission boundary: `find_elements_by_criteria.name_pattern` and `name_contains` reject the empty string, while omission still means no corresponding filter. Runtime checks also distinguish `undefined` from explicit empty input, so an empty filter cannot silently broaden discovery. Regex safety limits and matching semantics are otherwise unchanged.'
+          note = '\n\n`find_elements_by_criteria` Cube-size filters now require finite components and reject contradictory per-axis `min_size > max_size` requests before discovery. Its `parent_group` wording, and the matching selection scope, now explicitly describe descendant-subtree behavior rather than implying direct-parent-only matching. Animation and texturing specialist preflight/verification also reuse lifecycle, identity, and mutation-returned state before issuing project/outline/material rereads; no cache, state tracker, capability gate, or new profile was added.'
+          if next_text.count(anchor) != 1:
+              raise SystemExit('next-action continuity anchor changed')
+          next_path.write_text(next_text.replace(anchor, anchor + note, 1), encoding='utf-8')
+          PY
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit cleanup and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/prelocal-deterministic-cleanup.yml
+          git add mcp/server/tools/element.ts mcp/tests/p1-core-ownership.test.ts mcp/tests/model-effectiveness-tool-routing.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json .agents/skills/blockit-bedrock-animation/SKILL.md .agents/skills/blockit-bedrock-texturing/SKILL.md docs/knowledge/next-action.md
+          git commit -m 'fix: tighten pre-local discovery and routing'
+          git push origin HEAD:Local
