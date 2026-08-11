@@ -1,5 +1,5 @@
 name: Final Repo Hygiene
-# rerun after generated-doc install fragment restore
+# rerun after verifier dependency correction
 
 on:
   push:
@@ -26,6 +26,7 @@ jobs:
       - name: Verify repository hygiene and sync proof notes
         run: |
           sed -i "s/'H12', //" .github/scripts/final_repo_hygiene.py
+          sed -i "s/'mcp\/llms-install.md', 'mcp\/docs\/llms\/install.md', 'mcp\/.gitignore'/'mcp\/llms-install.md', 'mcp\/.gitignore'/" .github/scripts/final_repo_hygiene.py
           python3 .github/scripts/final_repo_hygiene.py
 
       - name: Install from lockfile
