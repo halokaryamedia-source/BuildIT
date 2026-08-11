@@ -673,7 +673,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Animation Copy/Paste</p>
-      <p class="card-desc">Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe, paste rejects an empty clipboard before Undo, and mirror_paste requires an explicit mirror axis.</p>
+      <p class="card-desc">Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe; paste rejects an empty clipboard and preflights its own snapped times against the native 0..10000 range plus same-channel internal collapse before Undo; mirror_paste requires an explicit mirror axis. Existing-target overwrite semantics remain native paste behavior.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3000,7 +3000,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T04:29:16.074Z from Zod schemas
+        Generated 2026-08-11T04:37:34.094Z from Zod schemas
       </footer>
     </main>
   </div>

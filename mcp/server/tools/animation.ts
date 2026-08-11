@@ -683,7 +683,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_copy_paste",
     description:
-      "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe, paste rejects an empty clipboard before Undo, and mirror_paste requires an explicit mirror axis.",
+      "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe; paste rejects an empty clipboard and preflights its own snapped times against the native 0..10000 range plus same-channel internal collapse before Undo; mirror_paste requires an explicit mirror axis. Existing-target overwrite semantics remain native paste behavior.",
     annotations: {
       title: "Animation Copy/Paste",
       destructiveHint: true,
@@ -834,6 +834,17 @@ export function requireValidPlannedKeyframeTimes(
       `${context} would collapse multiple selected keyframes onto the same effective time. Use a different scale factor/pivot or reduce the selection.`
     );
   }
+}
+export function requireValidPlannedPasteChannelTimes(
+  channels: Readonly<Record<string, readonly number[]>>
+): void {
+  Object.entries(channels).forEach(([channel, times]) => {
+    requireValidPlannedKeyframeTimes(
+      times,
+      `Animation paste ${channel} channel`,
+      true
+    );
+  });
 }
 export function registerAnimationTools() {
 createTool(
@@ -2209,6 +2220,17 @@ createTool(
               ? 2
               : -1;
           const timeOffset = target.time_offset ?? 0;
+          const plannedPasteTimesByChannel = Object.fromEntries(
+            Object.entries(
+              clipboardData.channels as Record<string, Array<{ time: number }>>
+            ).map(([channel, channelKeyframes]) => [
+              channel,
+              channelKeyframes.map((keyframe) =>
+                Timeline.snapTime(keyframe.time + timeOffset, tgtAnimation)
+              ),
+            ])
+          ) as Record<string, number[]>;
+          requireValidPlannedPasteChannelTimes(plannedPasteTimesByChannel);
 
           Undo.initEdit({
             animations: [tgtAnimation],
@@ -2228,7 +2250,7 @@ createTool(
 
             Object.entries(clipboardData.channels as Record<string, any[]>).forEach(
               ([channel, keyframes]: [string, any[]]) => {
-                keyframes.forEach((kfData) => {
+                keyframes.forEach((kfData, index) => {
                   const values = [...kfData.values];
 
                   if (
@@ -2238,10 +2260,8 @@ createTool(
                     values[axisIndex] *= -1;
                   }
 
-                  const targetTime = Timeline.snapTime(
-                    kfData.time + timeOffset,
-                    tgtAnimation
-                  );
+                  const targetTime = plannedPasteTimesByChannel[channel][index];
+
                   const keyframe = animator!.addKeyframe({
                     channel,
                     data_points: [

@@ -9,6 +9,7 @@ import {
   hasCaseInsensitiveRigNameCollision,
   manageKeyframesParameters,
   requireValidPlannedKeyframeTimes,
+  requireValidPlannedPasteChannelTimes,
   resolveUniqueKeyframeMatchIndexes,
   wouldCreateRigHierarchyCycle,
 } from "@/server/tools/animation";
@@ -260,5 +261,24 @@ describe("animation mutation contract", () => {
     expect(source).toContain("keyframe.time + parameters.offset_time!");
     expect(source).toContain("keyframe.time = plannedTimes[index]");
     expect(source).toContain("\"Batch keyframe scale\",");
+  });
+
+  test("paste planned times reject out-of-range and same-channel collapse before Undo", async () => {
+    expect(() =>
+      requireValidPlannedPasteChannelTimes({
+        rotation: [0, 1, 2],
+        position: [0.5, 1.5],
+      })
+    ).not.toThrow();
+    expect(() =>
+      requireValidPlannedPasteChannelTimes({ rotation: [10000.001] })
+    ).toThrow("0..10000");
+    expect(() =>
+      requireValidPlannedPasteChannelTimes({ rotation: [1, 1] })
+    ).toThrow("collapse multiple selected keyframes");
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("requireValidPlannedPasteChannelTimes(plannedPasteTimesByChannel)");
+    expect(source).toContain("plannedPasteTimesByChannel[channel][index]");
   });
 });

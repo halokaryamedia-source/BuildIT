@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T04:29:16.074Z",
+  "generatedAt": "2026-08-11T04:37:34.094Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1548,7 +1548,7 @@
     {
       "name": "animation_copy_paste",
       "title": "Animation Copy/Paste",
-      "description": "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe, paste rejects an empty clipboard before Undo, and mirror_paste requires an explicit mirror axis.",
+      "description": "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe; paste rejects an empty clipboard and preflights its own snapped times against the native 0..10000 range plus same-channel internal collapse before Undo; mirror_paste requires an explicit mirror axis. Existing-target overwrite semantics remain native paste behavior.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
