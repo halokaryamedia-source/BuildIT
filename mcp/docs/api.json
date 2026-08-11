@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T12:39:54.388Z",
+  "generatedAt": "2026-08-11T12:50:19.977Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1959,13 +1959,15 @@
             "properties": {
               "name_pattern": {
                 "type": "string",
-                "description": "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
-                "markdownDescription": "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
+                "minLength": 1,
+                "description": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
+                "markdownDescription": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
               },
               "name_contains": {
                 "type": "string",
-                "description": "Substring to match element names. Case-insensitive.",
-                "markdownDescription": "Substring to match element names. Case-insensitive."
+                "minLength": 1,
+                "description": "Optional non-empty substring to match element names. Case-insensitive.",
+                "markdownDescription": "Optional non-empty substring to match element names. Case-insensitive."
               },
               "type": {
                 "type": "string",

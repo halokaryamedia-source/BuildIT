@@ -20,14 +20,16 @@ export const elementTypeEnum = z.enum(["cube", "group", "any"]);
 export const findElementsByCriteriaParameters = z.object({
   name_pattern: z
     .string()
+    .min(1)
     .optional()
     .describe(
-      "Optional case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
+      "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
     ),
   name_contains: z
     .string()
+    .min(1)
     .optional()
-    .describe("Substring to match element names. Case-insensitive."),
+    .describe("Optional non-empty substring to match element names. Case-insensitive."),
   type: elementTypeEnum
     .optional()
     .default("any")
@@ -388,7 +390,10 @@ const MAX_REGEX_PATTERN_LENGTH = 512;
 const CATASTROPHIC_BACKTRACK_HEURISTIC = /\([^)]*[+*?][^)]*\)\s*[+*?{]/;
 
 function safeCompileRegex(pattern: string | undefined): RegExp | null {
-  if (!pattern) return null;
+  if (pattern === undefined) return null;
+  if (pattern.length === 0) {
+    throw new Error("name_pattern cannot be empty; omit it only when no regex filter is intended.");
+  }
   if (pattern.length > MAX_REGEX_PATTERN_LENGTH) {
     throw new Error(
       `name_pattern rejected: maximum length is ${MAX_REGEX_PATTERN_LENGTH} characters (got ${pattern.length}). Omit name_pattern only when no regex filter is intended.`
@@ -749,6 +754,9 @@ export function registerElementTools() {
       limit,
     }) {
       const regex = safeCompileRegex(name_pattern);
+      if (name_contains !== undefined && name_contains.length === 0) {
+        throw new Error("name_contains cannot be empty; omit it only when no substring filter is intended.");
+      }
       const needle = name_contains?.toLowerCase() ?? null;
       const parentScope = resolveOptionalGroupScope(parent_group);
 
@@ -766,7 +774,7 @@ export function registerElementTools() {
         if (!elType) continue;
         if (type !== "any" && elType !== type) continue;
         if (regex && !regex.test(el.name)) continue;
-        if (needle && !el.name.toLowerCase().includes(needle)) continue;
+        if (needle !== null && !el.name.toLowerCase().includes(needle)) continue;
         if (parentScope && !isDescendantOf(el, parentScope)) continue;
 
         if (el instanceof Cube && (min_size || max_size)) {

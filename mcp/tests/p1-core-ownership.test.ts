@@ -74,6 +74,14 @@ describe("P1.3 core identity ownership", () => {
     expect(selectAllOfTypeParameters.safeParse({ type: "cube" }).success).toBe(true);
   });
 
+  test("optional explicit discovery name filters reject empty strings", () => {
+    expect(findElementsByCriteriaParameters.safeParse({ name_pattern: "" }).success).toBe(false);
+    expect(findElementsByCriteriaParameters.safeParse({ name_contains: "" }).success).toBe(false);
+    expect(findElementsByCriteriaParameters.safeParse({ name_pattern: "arm.*" }).success).toBe(true);
+    expect(findElementsByCriteriaParameters.safeParse({ name_contains: "arm" }).success).toBe(true);
+    expect(findElementsByCriteriaParameters.safeParse({}).success).toBe(true);
+  });
+
   test("UUID wins before exact unique name and names never prefix-match", () => {
     const items: Item[] = [
       { uuid: "cube-1", name: "arm" },

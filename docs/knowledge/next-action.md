@@ -282,6 +282,8 @@ Cube authoring inputs now keep identity and UV intent deterministic. Create/rena
 
 Optional explicit Group scopes now reject the empty string for both `find_elements_by_criteria` and `select_all_of_type`. Only omission means no scope; an explicit empty value can no longer silently broaden discovery or selection to the full project. The shared Group resolver and scope behavior are otherwise unchanged.
 
+Optional explicit discovery name filters now follow the same omission boundary: `find_elements_by_criteria.name_pattern` and `name_contains` reject the empty string, while omission still means no corresponding filter. Runtime checks also distinguish `undefined` from explicit empty input, so an empty filter cannot silently broaden discovery. Regex safety limits and matching semantics are otherwise unchanged.
+
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.
 
 `select_all_of_type` now advertises `destructiveHint=false` because it only changes editor selection state and does not author model data. Selection behavior is unchanged; the metadata correction reduces unnecessary destructive-tool friction.
