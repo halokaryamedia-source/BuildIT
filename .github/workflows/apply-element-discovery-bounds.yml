@@ -1,0 +1,118 @@
+name: Apply Element Discovery Bounds
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/apply-element-discovery-bounds.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Apply discovery bounds and accurate truncation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('mcp/server/tools/element.ts')
+          text = source_path.read_text(encoding='utf-8')
+
+          filter_marker = '  include_face_keys: z\n    .boolean()\n    .optional()\n    .default(true)\n    .describe(\n      "Include the list of cube face keys (e.g., \'north\') that reference the texture."\n    ),\n'
+          filter_limit = '  limit: z\n    .number()\n    .int()\n    .min(1)\n    .max(1000)\n    .optional()\n    .default(200)\n    .describe("Maximum matching Cubes to return."),\n'
+          if text.count(filter_marker) != 1:
+              raise SystemExit('Unexpected filter_by_material schema shape')
+          text = text.replace(filter_marker, filter_marker + filter_limit, 1)
+
+          old_filter_desc = '      "Returns Cubes that reference one explicit texture. The texture reference resolves UUID first, then exact texture ID, then exact name only when unique; ambiguous IDs or names fail before discovery. Matching cube face keys are included when requested. This tool is read-only and does not activate, paint, or mutate textures.",'
+          new_filter_desc = '      "Returns a bounded list of Cubes that reference one explicit texture. Texture identity resolves UUID/ID/unique exact name; matching face keys are optional and truncation is reported only when an additional match exists. Read-only; it does not activate, paint, or mutate textures.",'
+          if text.count(old_filter_desc) != 1:
+              raise SystemExit('Unexpected filter_by_material description shape')
+          text = text.replace(old_filter_desc, new_filter_desc, 1)
+
+          find_start = text.index('  createTool(elementToolDocs[5].name')
+          find_end = text.index('  createTool(elementToolDocs[6].name', find_start)
+          find_block = text[find_start:find_end]
+          old_find = '      const matches: IElementMatch[] = [];\n\n      for (const el of candidates) {\n        if (matches.length >= limit) break;\n'
+          new_find = '      const matches: IElementMatch[] = [];\n      let truncated = false;\n\n      for (const el of candidates) {\n'
+          if find_block.count(old_find) != 1:
+              raise SystemExit('Unexpected find_elements loop shape')
+          find_block = find_block.replace(old_find, new_find, 1)
+          push_marker = '        matches.push({\n          uuid: el.uuid,\n          name: el.name,\n          type: elType,\n          parent: getParentName(el),\n        });'
+          push_replacement = '        if (matches.length >= limit) {\n          truncated = true;\n          break;\n        }\n        matches.push({\n          uuid: el.uuid,\n          name: el.name,\n          type: elType,\n          parent: getParentName(el),\n        });'
+          if find_block.count(push_marker) != 1:
+              raise SystemExit('Unexpected find_elements match push shape')
+          find_block = find_block.replace(push_marker, push_replacement, 1)
+          find_block = find_block.replace('          truncated: matches.length >= limit,', '          truncated,', 1)
+          text = text[:find_start] + find_block + text[find_end:]
+
+          filter_start = text.index('  createTool(elementToolDocs[7].name')
+          filter_end = text.index('  createTool(elementToolDocs[8].name', filter_start)
+          filter_block = text[filter_start:filter_end]
+          filter_block = filter_block.replace('    async execute({ texture, include_face_keys }) {', '    async execute({ texture, include_face_keys, limit }) {', 1)
+          filter_block = filter_block.replace('      const matches: IFilterByMaterialMatch[] = [];\n', '      const matches: IFilterByMaterialMatch[] = [];\n      let truncated = false;\n', 1)
+          filter_push = '        if (faceKeys.length > 0) {\n          matches.push({\n            uuid: cube.uuid,\n            name: cube.name,\n            type: "cube",\n            ...(include_face_keys ? { faces: faceKeys } : {}),\n          });\n        }'
+          filter_push_replacement = '        if (faceKeys.length > 0) {\n          if (matches.length >= limit) {\n            truncated = true;\n            break;\n          }\n          matches.push({\n            uuid: cube.uuid,\n            name: cube.name,\n            type: "cube",\n            ...(include_face_keys ? { faces: faceKeys } : {}),\n          });\n        }'
+          if filter_block.count(filter_push) != 1:
+              raise SystemExit('Unexpected filter_by_material push shape')
+          filter_block = filter_block.replace(filter_push, filter_push_replacement, 1)
+          filter_block = filter_block.replace('          count: matches.length,\n          matches,', '          count: matches.length,\n          truncated,\n          matches,', 1)
+          text = text[:filter_start] + filter_block + text[filter_end:]
+          source_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('mcp/tests/context-payload-cleanup.test.ts')
+          test = test_path.read_text(encoding='utf-8')
+          if 'filterByMaterialParameters' not in test:
+              test = test.replace('import { listOutlineParameters } from "@/server/tools/element";\n', 'import {\n  filterByMaterialParameters,\n  listOutlineParameters,\n} from "@/server/tools/element";\n', 1)
+          marker = '  test("context cleanup changes payload, not Bedrock capability/profile architecture", async () => {'
+          addition = '  test("element discovery reports truncation only after an extra match", async () => {\n    expect(filterByMaterialParameters.parse({ texture: "tex" }).limit).toBe(200);\n    expect(\n      filterByMaterialParameters.safeParse({ texture: "tex", limit: 1001 }).success\n    ).toBe(false);\n\n    const elements = await source("server/tools/element.ts");\n    const findStart = elements.indexOf("createTool(elementToolDocs[5].name");\n    const findEnd = elements.indexOf("createTool(elementToolDocs[6].name", findStart);\n    const findBlock = elements.slice(findStart, findEnd);\n    expect(findBlock).toContain("let truncated = false");\n    expect(findBlock).toContain("if (matches.length >= limit) {");\n    expect(findBlock).toContain("truncated,");\n    expect(findBlock).not.toContain("truncated: matches.length >= limit");\n\n    const materialStart = elements.indexOf("createTool(elementToolDocs[7].name");\n    const materialEnd = elements.indexOf("createTool(elementToolDocs[8].name", materialStart);\n    const materialBlock = elements.slice(materialStart, materialEnd);\n    expect(materialBlock).toContain("async execute({ texture, include_face_keys, limit })");\n    expect(materialBlock).toContain("let truncated = false");\n    expect(materialBlock).toContain("truncated,");\n  });\n\n'
+          if test.count(marker) != 1:
+              raise SystemExit('Unexpected context payload test insertion point')
+          test_path.write_text(test.replace(marker, addition + marker, 1), encoding='utf-8')
+
+          next_path = Path('docs/knowledge/next-action.md')
+          next_text = next_path.read_text(encoding='utf-8')
+          marker = 'Texture mutation/read payload ownership is now clearer: `create_texture` returns compact resulting metadata instead of embedding the created image bytes, while `get_texture` remains the explicit image-evidence path. `list_materials` and `get_material_info` also use compact JSON text without changing their data. Paint/PBR behavior and texture capability are unchanged.'
+          extra = '\n\nElement discovery now avoids misleading or unbounded result payloads: `find_elements_by_criteria` sets `truncated=true` only after a real extra match exists, and `filter_by_material` returns at most 200 matching Cubes by default (explicitly raisable to 1000) with the same accurate truncation signal. No cursor/pagination framework was added.'
+          if next_text.count(marker) != 1:
+              raise SystemExit('Unexpected texture continuity marker')
+          next_path.write_text(next_text.replace(marker, marker + extra, 1), encoding='utf-8')
+          PY
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Regenerate docs
+        working-directory: mcp
+        run: bun run docs:build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit verified change and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/apply-element-discovery-bounds.yml
+          git add mcp/server/tools/element.ts mcp/tests/context-payload-cleanup.test.ts mcp/docs/api.json mcp/docs/index.html mcp/prompts/manifest.json docs/knowledge/next-action.md
+          git commit -m 'refactor: bound element discovery payloads'
+          git push origin HEAD:Local
