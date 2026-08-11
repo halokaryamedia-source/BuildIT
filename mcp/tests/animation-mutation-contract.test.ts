@@ -301,4 +301,17 @@ describe("animation mutation contract", () => {
     expect(source).toContain("child.uuid,");
     expect(source).toContain("parentBone.uuid,");
   });
+
+  test("bone delete Undo covers descendants and affected animations before recursive removal", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("deleteGroups = [targetBone]");
+    expect(source).toContain("targetBone.forEachChild((element: any) =>");
+    expect(source).toContain("const deleteGroupUuids = new Set(");
+    expect(source).toContain("deleteAnimations = AnimationItem.all.filter");
+    expect(source).toContain("animations: deleteAnimations");
+    expect(source).toContain("targetBone!.remove(false)");
+    expect(source).toContain("deleteElements.length = 0");
+    expect(source).toContain("deleteGroups.length = 0");
+    expect(source).not.toContain("targetBone!.remove();");
+  });
 });

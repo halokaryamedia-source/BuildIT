@@ -651,7 +651,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; delete snapshots descendant Groups/elements and every affected animation before recursive removal; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -1403,6 +1403,9 @@ createTool(
       let targetBone: Group | undefined;
       let parentBone: Group | "root" | undefined;
       let childElements: OutlinerElement[] = [];
+      let deleteElements: OutlinerElement[] = [];
+      let deleteGroups: Group[] = [];
+      let deleteAnimations: _Animation[] = [];
       let ikTarget: Group | undefined;
       let mirroredBoneName: string | undefined;
 
@@ -1488,9 +1491,29 @@ createTool(
           break;
 
         case "unparent":
-        case "delete":
           targetBone = resolveRigGroup(bone_data.name);
           break;
+
+        case "delete": {
+          targetBone = resolveRigGroup(bone_data.name);
+          deleteGroups = [targetBone];
+          targetBone.forEachChild((element: any) => {
+            if (element instanceof Group) {
+              deleteGroups.push(element);
+            } else {
+              deleteElements.push(element as OutlinerElement);
+            }
+          });
+          const deleteGroupUuids = new Set(
+            deleteGroups.map((group) => group.uuid)
+          );
+          deleteAnimations = AnimationItem.all.filter((animation) =>
+            Object.keys(animation.animators ?? {}).some((animatorUuid) =>
+              deleteGroupUuids.has(animatorUuid)
+            )
+          );
+          break;
+        }
 
         case "rename":
           targetBone = resolveRigGroup(bone_data.name);
@@ -1555,10 +1578,16 @@ createTool(
           break;
       }
 
+      const undoElements = action === "delete" ? deleteElements : childElements;
+      const undoGroups =
+        action === "delete" ? deleteGroups : targetBone ? [targetBone] : [];
       Undo.initEdit({
         outliner: true,
-        elements: childElements,
-        groups: targetBone ? [targetBone] : [],
+        elements: undoElements,
+        groups: undoGroups,
+        ...(action === "delete"
+          ? { selection: true, animations: deleteAnimations }
+          : {}),
       });
 
       let result = "";
@@ -1598,8 +1627,13 @@ createTool(
           }
 
           case "delete": {
-            targetBone!.remove();
-            result = `Deleted bone "${targetBone!.name}"`;
+            const deletedBoneName = targetBone!.name;
+            targetBone!.remove(false);
+            // Mirror Blockbench's native Group.remove(true) Undo contract:
+            // the deleted object lists represent an empty post-edit state.
+            deleteElements.length = 0;
+            deleteGroups.length = 0;
+            result = `Deleted bone "${deletedBoneName}"`;
             break;
           }
 
