@@ -22,7 +22,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(workflow).toContain("participating hierarchy/pivots");
   });
 
-  test("existing-asset direct tasks do not invent geometry approval", async () => {
+  test("existing-asset direct tasks stay scoped without inventing geometry approval", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
@@ -31,22 +31,22 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       expect(text.toLowerCase().replaceAll("-", " ")).toContain("existing asset");
       expect(text.toLowerCase()).toContain("baseline");
     }
-    expect(orchestrator).toContain("does **not** upgrade that geometry to `PASS`");
+    expect(orchestrator).toContain("without certifying it");
     expect(texturing).toContain("Do not claim that baseline is reference-accurate");
     expect(animation).toContain("does not certify the static model as reference-accurate");
   });
 
-  test("temporary visibility/rig aids stay provisional and downstream state is invalidated after material upstream changes", async () => {
+  test("temporary aids and downstream invalidation stay with their domain owners", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
     const foundation = await source("../docs/foundation/03-modelling-workflow.md");
 
-    expect(orchestrator).toContain("flat/placeholder texture");
-    expect(orchestrator).toContain("diagnostic pose/playback");
-    expect(orchestrator).toContain("provisional/disposable");
+    expect(texturing).toContain("flat/placeholder texture");
     expect(texturing).toContain("re-check only the affected downstream state");
+    expect(animation).toContain("diagnostic pose/playback");
     expect(animation).toContain("consider animation on the affected bones stale");
+    expect(orchestrator).not.toContain("A flat/placeholder texture or diagnostic pose/playback");
     expect(foundation).toContain("keyframe effort never justifies preserving a bad rig or geometry baseline");
   });
 
@@ -58,5 +58,4 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(profile).not.toContain("readiness");
     expect(audit).toContain("No runtime readiness state, new profile, or tool gate was added");
   });
-
 });
