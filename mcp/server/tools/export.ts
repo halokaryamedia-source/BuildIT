@@ -123,6 +123,15 @@ function codecRegistry(): Record<string, BlockITCodec> {
   return Codecs as Record<string, BlockITCodec>;
 }
 
+
+function filesystemFileName(path: string): string {
+  return path.split(/[\\/]/).pop() || path;
+}
+
+function filesystemStem(path: string): string {
+  return filesystemFileName(path).replace(/\.[^.]+$/, "");
+}
+
 function toTextContent(raw: unknown): string {
   if (raw === null || raw === undefined) return "";
   if (typeof raw === "string") return raw;
@@ -226,12 +235,15 @@ export function registerExportTools() {
         let rawResult: unknown;
         if (codec_id === "project" && path) {
           const previousSavePath = Project!.save_path;
+          const previousName = Project!.name;
           try {
-            // Native bbmodel export compiles relative asset paths against the target file.
+            // Native bbmodel export compiles relative assets and project identity against the target file.
             Project!.save_path = path;
+            Project!.name = filesystemStem(path);
             rawResult = codec.compile(effectiveOptions);
           } finally {
             Project!.save_path = previousSavePath;
+            Project!.name = previousName;
           }
         } else {
           rawResult = codec.compile(effectiveOptions);
@@ -314,7 +326,11 @@ export function registerExportTools() {
             extension: codec.extension ?? null,
           },
           file_name:
-            typeof codec.fileName === "function" ? codec.fileName() : Project!.name,
+            path !== undefined
+              ? filesystemFileName(path)
+              : typeof codec.fileName === "function"
+                ? codec.fileName()
+                : Project!.name,
           byte_length: byteLength,
           encoding,
           wrote_to_path,

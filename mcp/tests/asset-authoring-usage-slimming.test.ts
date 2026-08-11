@@ -60,6 +60,10 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(exportSource).toContain('destructiveHint: true');
     expect(exportSource).toContain('codec_id === "bedrock" && exportFs.existsSync(path)');
     expect(exportSource).toContain("const previousSavePath = Project!.save_path");
+    expect(exportSource).toContain("const previousName = Project!.name");
+    expect(exportSource).toContain("Project!.name = filesystemStem(path)");
+    expect(exportSource).toContain("Project!.name = previousName");
+    expect(exportSource).toContain("? filesystemFileName(path)");
     expect(exportSource).toContain("Project!.save_path = path;");
     expect(exportSource).toContain("Project!.save_path = previousSavePath;");
     expect(exportSource).toContain("byteLength === 0");
