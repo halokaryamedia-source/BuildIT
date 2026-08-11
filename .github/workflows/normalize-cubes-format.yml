@@ -1,0 +1,71 @@
+name: Normalize Cube Tool Formatting
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - '.github/workflows/normalize-cubes-format.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Local
+          fetch-depth: 1
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Restore repository indentation in registerCubesTools
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('mcp/server/tools/cubes.ts')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace('\n\n\n\nexport function registerCubesTools() {\n', '\n\nexport function registerCubesTools() {\n', 1)
+          start_marker = 'export function registerCubesTools() {\n'
+          start = text.index(start_marker) + len(start_marker)
+          if not text.endswith('\n}\n'):
+              raise SystemExit('Unexpected cubes.ts final function boundary')
+          end = len(text) - len('}\n')
+          body = text[start:end]
+          if not body.startswith('createTool('):
+              raise SystemExit('registerCubesTools body is not in expected unindented state')
+          body = '\n'.join(('  ' + line) if line else '' for line in body.split('\n'))
+          path.write_text(text[:start] + body + text[end:], encoding='utf-8')
+          PY
+
+      - name: Prove formatting-only diff
+        run: git diff --ignore-all-space --exit-code -- mcp/server/tools/cubes.ts
+
+      - name: Install from lockfile
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Diff hygiene
+        run: git diff --check
+      - name: Commit formatting and remove workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/normalize-cubes-format.yml
+          git add mcp/server/tools/cubes.ts
+          git commit -m 'style: normalize Cube tool indentation'
+          git push origin HEAD:Local
