@@ -23,145 +23,26 @@ jobs:
       - name: Apply bounded description and audit continuity changes
         run: |
           python3 - <<'PY'
+          import base64
           from pathlib import Path
-
           animation_path = Path('mcp/server/tools/animation.ts')
           animation = animation_path.read_text(encoding='utf-8')
-
           old_bone = '      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; delete snapshots descendant Groups/elements and every affected animation before recursive removal; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation.",'
           new_bone = '      "Creates/edits Bedrock Group bones with explicit preflighted targets. Create/parent reject hierarchy cycles; create/rename/mirror enforce case-insensitive unique bone names; delete snapshots the subtree and affected animations. `set_pivot` needs origin, `mirror` needs an axis, and `set_ik` must author an IK change while target-only edits preserve enabled state. Missing/ambiguous targets fail before mutation.",'
           old_copy = '      "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe; paste rejects an empty clipboard and preflights its own snapped times against the native 0..10000 range plus same-channel internal collapse before Undo; mirror_paste requires an explicit mirror axis. Existing-target overwrite semantics remain native paste behavior.",'
           new_copy = '      "Copies/pastes animation data with action-specific source/target preflight. Copy requires matching keyframes; paste rejects an empty clipboard and invalid or internally colliding snapped times; `mirror_paste` requires an explicit axis. Existing-target overwrite keeps native paste behavior.",'
-
-          if animation.count(old_bone) != 1:
-              raise SystemExit('Unexpected bone_rigging description shape')
-          if animation.count(old_copy) != 1:
-              raise SystemExit('Unexpected animation_copy_paste description shape')
-          animation = animation.replace(old_bone, new_bone, 1).replace(old_copy, new_copy, 1)
-          animation_path.write_text(animation, encoding='utf-8')
+          if animation.count(old_bone) != 1 or animation.count(old_copy) != 1:
+              raise SystemExit('Unexpected animation tool description shape')
+          animation_path.write_text(animation.replace(old_bone, new_bone, 1).replace(old_copy, new_copy, 1), encoding='utf-8')
 
           review_path = Path('docs/knowledge/reviews/codex-native-deferred-mcp-tool-loading-2026-08-11.md')
           review = review_path.read_text(encoding='utf-8')
-          marker = '## Local Decision\n'
-          if review.count(marker) != 1:
+          review_marker = '## Local Decision\n'
+          section_b64 = 'IyMgRGVmYXVsdCBUb29sIEZvb3RwcmludCBBdWRpdCDigJQgMjAyNi0wOC0xMQoKQSBib3VuZGVkIEdpdEh1YiBDSSBhdWRpdCByYW5rZWQgdGhlICoqZGVmYXVsdCA2NSBlbmFibGVkIHRvb2xzKiogYnkgY29tcGFjdCBab2QtZGVyaXZlZCBzY2hlbWEgYW5kIGRlc2NyaXB0aW9uIGZvb3RwcmludC4gVGhpcyByYW5raW5nIGlzIGRpYWdub3N0aWMsIG5vdCBhIHJlcGxhY2VtZW50IGZvciB0aGUgYWxyZWFkeSBtZWFzdXJlZCBsaXZlIGB0b29scy9saXN0YCBiYXNlbGluZTogdGhlIENJIHNlcmlhbGl6ZXIgaXMgY2xvc2UgZW5vdWdoIHRvIGxvY2F0ZSBob3RzcG90cyBidXQgaXMgbm90IGJ5dGUtaWRlbnRpY2FsIHRvIHRoZSBNQ1AgU0RLIHdpcmUgcmVwcmVzZW50YXRpb24uCgpLbm93biBhY3R1YWwgc3RhdGVsZXNzIGB0b29scy9saXN0YCBiYXNlbGluZSByZW1haW5zOgoKYGBgdGV4dAo2NSBlbmFibGVkIHRvb2xzCjcyLDgxNyByZXNwb25zZSBjaGFyYWN0ZXJzCjQ4LDExOSBpbnB1dC1zY2hlbWEgY2hhcmFjdGVycwoxMSw3ODYgdG9vbC1kZXNjcmlwdGlvbiBjaGFyYWN0ZXJzCmBgYAoKVGhlIHJhbmtpbmcgYXVkaXQgcHJvZHVjZWQgdGhpcyBjb21wYWN0IGFwcHJveGltYXRpb246CgpgYGB0ZXh0CjY1IHRvb2xzCjUxLDM1NyBzY2hlbWEgY2hhcmFjdGVycwoxMywxNDYgZGVzY3JpcHRpb24gY2hhcmFjdGVycwo2NSw1ODMgY29tYmluZWQgbmFtZS9zY2hlbWEvZGVzY3JpcHRpb24gY2hhcmFjdGVycwpgYGAKCiMjIyBDYXRlZ29yeSBjb25jZW50cmF0aW9uCgp8IENhdGVnb3J5IHwgVG9vbHMgfCBBcHByb3ggc2NoZW1hIGNoYXJzIHwgQXBwcm94IGRlc2NyaXB0aW9uIGNoYXJzIHwKfCAtLS0gfCAtLS06IHwgLS0tOiB8IC0tLTogfAp8IEFuaW1hdGlvbiB8IDggfCAxMywwMzkgfCAyLDExOCB8CnwgUGFpbnQgVG9vbHMgfCAxMiB8IDExLDk5NSB8IDYwMSB8CnwgRWxlbWVudHMgfCAxMyB8IDcsNDQzIHwgMyw0NjQgfAp8IFRleHR1cmVzIHwgMTMgfCA3LDE4MSB8IDIsOTExIHwKfCBDdWJlcyB8IDMgfCA1LDQ0NCB8IDg5MyB8CnwgTWF0ZXJpYWwgSW5zdGFuY2VzIHwgNSB8IDIsMzg3IHwgNjU0IHwKfCBDYW1lcmEgJiBTY3JlZW5zaG90cyB8IDIgfCAxLDMwMCB8IDU3MSB8CnwgSGlzdG9yeSB8IDQgfCA5OTYgfCA4NTQgfAp8IEV4cG9ydCB8IDIgfCA5NDcgfCA1NjMgfAp8IFByb2plY3QgfCAzIHwgNjI1IHwgNTE3IHwKCkFuaW1hdGlvbiArIFBhaW50IGFjY291bnQgZm9yICoqMjUsMDM0IC8gNTEsMzU3ICh+NDguNyUpKiogb2YgdGhlIGFwcHJveGltYXRlIHNjaGVtYSBmb290cHJpbnQuIFRob3NlIGFyZSBsZWdpdGltYXRlIGRvd25zdHJlYW0gQmVkcm9jayBhdXRob3JpbmcgY2FwYWJpbGl0aWVzLCBzbyB0aGVpciBzaXplIGlzIG5vdCBldmlkZW5jZSB0aGF0IHRoZXkgc2hvdWxkIGJlIHJlbW92ZWQgZnJvbSB0aGUgcmV0YWluZWQgcHJvZHVjdCBzdXJmYWNlLgoKIyMjIExhcmdlc3QgaW5kaXZpZHVhbCBzY2hlbWEvZGVzY3JpcHRpb24gaG90c3BvdHMKCnwgVG9vbCB8IEFwcHJveCBzY2hlbWEgY2hhcnMgfCBEZXNjcmlwdGlvbiBjaGFycyBiZWZvcmUgY2xlYW51cCB8CnwgLS0tIHwgLS0tOiB8IC0tLTogfAp8IGBjcmVhdGVfYW5pbWF0aW9uYCB8IDIsNjIxIHwgMTA3IHwKfCBgcGxhY2VfY3ViZWAgfCAyLDI3OSB8IDI0MiB8CnwgYGJvbmVfcmlnZ2luZ2AgfCAxLDYxMyB8IDcwNSB8CnwgYG1vZGlmeV9jdWJlYCB8IDEsNzgwIHwgMzAwIHwKfCBgbWFuYWdlX2tleWZyYW1lc2AgfCAxLDgzNiB8IDIyMSB8CnwgYGJhdGNoX2tleWZyYW1lX29wZXJhdGlvbnNgIHwgMSw3ODIgfCAyMjYgfAp8IGBhbmltYXRpb25fY29weV9wYXN0ZWAgfCAxLDU3NSB8IDQxOCB8CnwgYGFuaW1hdGlvbl9ncmFwaF9lZGl0b3JgIHwgMSw4MTggfCA3MyB8CnwgYG1vZGlmeV9jdWJlc19iYXRjaGAgfCAxLDM4NSB8IDM1MSB8CnwgYHBhaW50X3NldHRpbmdzYCB8IDEsNjU5IHwgNDcgfAoKT25seSB0d28gdG9vbCBkZXNjcmlwdGlvbnMgZXhjZWVkZWQgNDAwIGNoYXJhY3RlcnMuIFRoaXMgc2xpY2Ugc2hvcnRlbnMgYGJvbmVfcmlnZ2luZ2AgYW5kIGBhbmltYXRpb25fY29weV9wYXN0ZWAgd2hpbGUgcHJlc2VydmluZyByb3V0aW5nIGFuZCBjcml0aWNhbCBtdXRhdGlvbi1zYWZldHkgc2lnbmFsczsgZGV0YWlsZWQgZmllbGQgcmVxdWlyZW1lbnRzIHJlbWFpbiBvd25lZCBieSB0aGVpciBpbnB1dCBzY2hlbWFzIGFuZCBydW50aW1lIHZhbGlkYXRpb24uCgpUaGUgcmVwZWF0ZWQtZGVzY3JpcHRpb24gc2NhbiBmb3VuZCBvbmx5IG9uZSBleGFjdCBwYXJhbWV0ZXIgZGVzY3JpcHRpb24gcmVwZWF0ZWQgYXQgbGVhc3QgdGhyZWUgdGltZXM6IHRoZSBzZWxlY3RlZC10ZXh0dXJlIGZhbGxiYWNrIHNlbnRlbmNlIGFwcGVhcnMgaW4gdGVuIFBhaW50L1RleHR1cmUgdG9vbHMsIHJlcHJlc2VudGluZyBhdCBtb3N0IGFib3V0ICoqNTMxIHJlcGVhdGVkIGNoYXJhY3RlcnMqKiBiZXlvbmQgdGhlIGZpcnN0IGNvcHkuIFJlbW92aW5nIHRoYXQgZmllbGQgZ3VpZGFuY2Ugd291bGQgc2F2ZSBsaXR0bGUgd2hpbGUgbWFraW5nIGV4cGxpY2l0LXZzLXNlbGVjdGVkIHRleHR1cmUgcm91dGluZyBsZXNzIGNsZWFyLCBzbyAqKm5vIGNoYW5nZSBpcyBqdXN0aWZpZWQqKi4KCiMjIyBDdXJyZW50IG9mZmljaWFsIGNsaWVudCBjb250cm9scwoKVGhlIGN1cnJlbnQgb2ZmaWNpYWwgQ29kZXggY29uZmlndXJhdGlvbiByZWZlcmVuY2UgZG9jdW1lbnRzIGNsaWVudC1zaWRlIE1DUCBhbGxvdy9kZW55IGNvbnRyb2xzOgoKYGBgdGV4dAptY3Bfc2VydmVycy48aWQ+LmVuYWJsZWRfdG9vbHMKbWNwX3NlcnZlcnMuPGlkPi5kaXNhYmxlZF90b29scwp0b29sX291dHB1dF90b2tlbl9saW1pdApgYGAKCk9mZmljaWFsIE9wZW5BSSBUb29sIFNlYXJjaCBkb2N1bWVudGF0aW9uIGFsc28gZG9jdW1lbnRzIGRlZmVycmVkIE1DUC90b29sIGxvYWRpbmcgYW5kIHJlY29tbWVuZHMgY2xlYXIgaGlnaC1sZXZlbCBzZWFyY2hhYmxlIHN1cmZhY2VzOyBuYW1lc3BhY2UgZ3VpZGFuY2UgdGFyZ2V0cyBmZXdlciB0aGFuIHRlbiBmdW5jdGlvbnMgd2hlcmUgbmFtZXNwYWNlcyBhcmUgdXNlZC4gVGhlc2UgYXJlIGNsaWVudC9BUEkgbWVjaGFuaXNtcywgbm90IHBlcm1pc3Npb24gdG8gYWRkIGFub3RoZXIgQmxvY2tJVCBydW50aW1lIHByb2ZpbGUgb3Igcm91dGVyIHdpdGhvdXQgbG9jYWwgZXZpZGVuY2UuCgpSZWZlcmVuY2VzOgoKYGBgdGV4dApodHRwczovL2RldmVsb3BlcnMub3BlbmFpLmNvbS9jb2RleC9jb25maWctcmVmZXJlbmNlCmh0dHBzOi8vZGV2ZWxvcGVycy5vcGVuYWkuY29tL2FwaS9kb2NzL2d1aWRlcy90b29scy10b29sLXNlYXJjaApgYGAKCiMjIyBMb2NhbCBBL0IgZXhwb3N1cmUgZGlhZ25vc3RpYwoKV2hlbiBsb2NhbCBDb2RleCBwcm9vZiBiZWNvbWVzIGF2YWlsYWJsZSwgY29tcGFyZSB0aGUgbm9ybWFsIGZ1bGwgQmxvY2tJVCBzdXJmYWNlIGFnYWluc3QgYSAqKnRlbXBvcmFyeSBjbGllbnQtc2lkZSBnZW9tZXRyeSBhbGxvd2xpc3QqKiB1c2luZyBDb2RleCBgZW5hYmxlZF90b29sc2A7IGRvIG5vdCBjb21taXQgdGhlIGFsbG93bGlzdCBhcyB0aGUgQmxvY2tJVCBkZWZhdWx0LgoKQm91bmRlZCBnZW9tZXRyeSBkaWFnbm9zdGljIGxhbmU6CgpgYGB0ZXh0CmdldF9wcm9qZWN0X2luZm8KY3JlYXRlX3Byb2plY3QKbGlzdF9vdXRsaW5lCmZpbmRfZWxlbWVudHNfYnlfY3JpdGVyaWEKcGxhY2VfY3ViZQphZGRfZ3JvdXAKY2FwdHVyZV9tb2RlbF92aWV3cwppbnNwZWN0X21vZGVsX2JvdW5kcwppbnNwZWN0X2VsZW1lbnQKbW9kaWZ5X2N1YmUKbW9kaWZ5X2N1YmVzX2JhdGNoCnJlbW92ZV9lbGVtZW50CnVuZG8Kc2F2ZV9jaGVja3BvaW50CmV4cG9ydF9tb2RlbApgYGAKClVzZSB0aGUgc2FtZSByZXByZXNlbnRhdGl2ZSBnZW9tZXRyeSB0YXNrIGZvciBib3RoIHJ1bnMuIENvbXBhcmUgZmluYWwgcmVmZXJlbmNlLWZpZGVsaXR5IG91dGNvbWUgZmlyc3QsIHRoZW4gaW5pdGlhbCBtb2RlbC12aXNpYmxlIHRvb2wvc2NoZW1hIGZvb3RwcmludCwgd3JvbmctdG9vbCBzZWxlY3Rpb25zLCB0b3RhbCB0b29sIGNhbGxzLCB0b3RhbCB0b2tlbnMsIGxhdGVuY3ksIGFuZCByZXRyaWVzLiBBIHNtYWxsZXIgc3VyZmFjZSBpcyBhbiBpbXByb3ZlbWVudCBvbmx5IGlmIHRoZSByZXN1bHQgcmVtYWlucyBlcXVhbGx5IHZhbGlkLiBUaGVuIHJldHVybiB0byB0aGUgZnVsbCByZXRhaW5lZCBzdXJmYWNlIGZvciByZXByZXNlbnRhdGl2ZSB0ZXh0dXJlL2FuaW1hdGlvbi9Mb2NhdG9yIHJlYWNoYWJpbGl0eSBzbyBhIGdlb21ldHJ5LW9ubHkgYmVuY2htYXJrIGNhbm5vdCBhY2NpZGVudGFsbHkgYmVjb21lIHByb2R1Y3QgcG9saWN5LgoKYHRvb2xfb3V0cHV0X3Rva2VuX2xpbWl0YCBtYXkgYmUgZXZhbHVhdGVkIGFzIGEgaGlzdG9yeSBzYWZldHkgYm91bmQgb25seSBhZnRlciBvYnNlcnZpbmcgcmVhbCB0b29sIG91dHB1dHM7IGRvIG5vdCBzZXQgaXQgcHJlLWVtcHRpdmVseSBiZWNhdXNlIHRydW5jYXRpbmcgaW5zcGVjdGlvbi9jb3JyZWN0aW9uIGV2aWRlbmNlIGNhbiByZWR1Y2UgY29ycmVjdG5lc3MuCgojIyMgRGVjaXNpb24KCmBgYHRleHQKRE8gTk9UIG1hc3MtdHJpbSBzY2hlbWFzIHRoYXQgZW5jb2RlIHJlYWwgQmVkcm9jayBhdXRob3JpbmcgaW5wdXRzLgpETyBOT1QgZGlzYWJsZSBBbmltYXRpb24vUGFpbnQvVGV4dHVyZS9Mb2NhdG9yIG1lcmVseSBiZWNhdXNlIHRoZXkgZG9taW5hdGUgdGhlIGNhdGFsb2cuCkRPIE5PVCBjb252ZXJ0IHRoZSBnZW9tZXRyeSBiZW5jaG1hcmsgYWxsb3dsaXN0IGludG8gYSBkZWZhdWx0IE1DUCBwcm9maWxlLgpETyB0cmltIGNsZWFybHkgb3ZlcmxvbmcgdG9vbCBkZXNjcmlwdGlvbnMgd2hlbiByb3V0aW5nL3NhZmV0eSBtZWFuaW5nIGlzIHByZXNlcnZlZC4KRE8gdXNlIG5hdGl2ZS9jbGllbnQtc2lkZSBleHBvc3VyZSBjb250cm9scyBpbiBsb2NhbCBBL0IgcHJvb2YgYmVmb3JlIGNvbnNpZGVyaW5nIEJsb2NrSVQtc2lkZSByb3V0aW5nIGFyY2hpdGVjdHVyZS4KYGBgCgo='
+          if review.count(review_marker) != 1:
               raise SystemExit('Unexpected deferred-loading review structure')
-          section = '''## Default Tool Footprint Audit — 2026-08-11
-
-A bounded GitHub CI audit ranked the **default 65 enabled tools** by compact Zod-derived schema and description footprint. This ranking is diagnostic, not a replacement for the already measured live `tools/list` baseline: the CI serializer is close enough to locate hotspots but is not byte-identical to the MCP SDK wire representation.
-
-Known actual stateless `tools/list` baseline remains:
-
-```text
-65 enabled tools
-72,817 response characters
-48,119 input-schema characters
-11,786 tool-description characters
-```
-
-The ranking audit produced this compact approximation:
-
-```text
-65 tools
-51,357 schema characters
-13,146 description characters
-65,583 combined name/schema/description characters
-```
-
-### Category concentration
-
-| Category | Tools | Approx schema chars | Approx description chars |
-| --- | ---: | ---: | ---: |
-| Animation | 8 | 13,039 | 2,118 |
-| Paint Tools | 12 | 11,995 | 601 |
-| Elements | 13 | 7,443 | 3,464 |
-| Textures | 13 | 7,181 | 2,911 |
-| Cubes | 3 | 5,444 | 893 |
-| Material Instances | 5 | 2,387 | 654 |
-| Camera & Screenshots | 2 | 1,300 | 571 |
-| History | 4 | 996 | 854 |
-| Export | 2 | 947 | 563 |
-| Project | 3 | 625 | 517 |
-
-Animation + Paint account for **25,034 / 51,357 (~48.7%)** of the approximate schema footprint. Those are legitimate downstream Bedrock authoring capabilities, so their size is not evidence that they should be removed from the retained product surface.
-
-### Largest individual schema/description hotspots
-
-| Tool | Approx schema chars | Description chars before cleanup |
-| --- | ---: | ---: |
-| `create_animation` | 2,621 | 107 |
-| `place_cube` | 2,279 | 242 |
-| `bone_rigging` | 1,613 | 705 |
-| `modify_cube` | 1,780 | 300 |
-| `manage_keyframes` | 1,836 | 221 |
-| `batch_keyframe_operations` | 1,782 | 226 |
-| `animation_copy_paste` | 1,575 | 418 |
-| `animation_graph_editor` | 1,818 | 73 |
-| `modify_cubes_batch` | 1,385 | 351 |
-| `paint_settings` | 1,659 | 47 |
-
-Only two tool descriptions exceeded 400 characters. This slice shortens `bone_rigging` and `animation_copy_paste` while preserving routing and critical mutation-safety signals; detailed field requirements remain owned by their input schemas and runtime validation.
-
-The repeated-description scan found only one exact parameter description repeated at least three times: the selected-texture fallback sentence appears in ten Paint/Texture tools, representing at most about **531 repeated characters** beyond the first copy. Removing that field guidance would save little while making explicit-vs-selected texture routing less clear, so **no change is justified**.
-
-### Current official client controls
-
-The current official Codex configuration reference documents client-side MCP allow/deny controls:
-
-```text
-mcp_servers.<id>.enabled_tools
-mcp_servers.<id>.disabled_tools
-tool_output_token_limit
-```
-
-Official OpenAI Tool Search documentation also documents deferred MCP/tool loading and recommends clear high-level searchable surfaces; namespace guidance targets fewer than ten functions where namespaces are used. These are client/API mechanisms, not permission to add another BlockIT runtime profile or router without local evidence.
-
-References:
-
-```text
-https://developers.openai.com/codex/config-reference
-https://developers.openai.com/api/docs/guides/tools-tool-search
-```
-
-### Local A/B exposure diagnostic
-
-When local Codex proof becomes available, compare the normal full BlockIT surface against a **temporary client-side geometry allowlist** using Codex `enabled_tools`; do not commit the allowlist as the BlockIT default.
-
-Bounded geometry diagnostic lane:
-
-```text
-get_project_info
-create_project
-list_outline
-find_elements_by_criteria
-place_cube
-add_group
-capture_model_views
-inspect_model_bounds
-inspect_element
-modify_cube
-modify_cubes_batch
-remove_element
-undo
-save_checkpoint
-export_model
-```
-
-Use the same representative geometry task for both runs. Compare final reference-fidelity outcome first, then initial model-visible tool/schema footprint, wrong-tool selections, total tool calls, total tokens, latency, and retries. A smaller surface is an improvement only if the result remains equally valid. Then return to the full retained surface for representative texture/animation/Locator reachability so a geometry-only benchmark cannot accidentally become product policy.
-
-`tool_output_token_limit` may be evaluated as a history safety bound only after observing real tool outputs; do not set it pre-emptively because truncating inspection/correction evidence can reduce correctness.
-
-### Decision
-
-```text
-DO NOT mass-trim schemas that encode real Bedrock authoring inputs.
-DO NOT disable Animation/Paint/Texture/Locator merely because they dominate the catalog.
-DO NOT convert the geometry benchmark allowlist into a default MCP profile.
-DO trim clearly overlong tool descriptions when routing/safety meaning is preserved.
-DO use native/client-side exposure controls in local A/B proof before considering BlockIT-side routing architecture.
-```
-
-'''
-          review_path.write_text(review.replace(marker, section + marker, 1), encoding='utf-8')
+          section = base64.b64decode(section_b64).decode('utf-8')
+          review_path.write_text(review.replace(review_marker, section + review_marker, 1), encoding='utf-8')
 
           next_path = Path('docs/knowledge/next-action.md')
           next_text = next_path.read_text(encoding='utf-8')
@@ -191,7 +72,6 @@ DO use native/client-side exposure controls in local A/B proof before considerin
         run: bun run docs:check
       - name: Diff hygiene
         run: |
-          test ! -e mcp/.audit-tool-footprint.ts
           git diff --check
           git status --short
       - name: Commit verified footprint optimization and remove workflow
