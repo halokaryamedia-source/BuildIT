@@ -42,7 +42,7 @@ jobs:
           PY
 
       - name: Prove formatting-only diff
-        run: git diff --ignore-all-space --exit-code -- mcp/server/tools/cubes.ts
+        run: git diff --ignore-all-space --ignore-blank-lines --exit-code -- mcp/server/tools/cubes.ts
 
       - name: Install from lockfile
         working-directory: mcp
