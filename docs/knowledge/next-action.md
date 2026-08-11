@@ -278,6 +278,8 @@ Cube authoring inputs now keep identity and UV intent deterministic. Create/rena
 
 `modify_cube` now matches the same Bedrock boundary: `uv_offset` and `inflate` must be finite, generic Java-only `shade` and editor palette `color` inputs are rejected, and exact same-value requests fail before Undo. Single-Cube before/after state and `geometry_effect.changed_fields` now include the Bedrock-relevant UV/inflate controls the tool can actually change, preventing successful UV/inflate edits from being misreported as “no geometry/visibility change”. Batch correction now applies the same actual-effect rule: each UUID remains unique, update objects are strict, and any same-value target rejects the whole batch before Undo. Batch geometry capability and the 32-target limit are unchanged.
 
+`duplicate_element` translation is now numerically preflighted before Undo. Offset components must be finite, and every Cube from/to/origin plus Group origin in the duplicated subtree must remain finite after translation; finite operands whose sum overflows are rejected. Unsupported non-Cube/Group descendants also fail before duplication starts. Copy naming and hierarchy semantics are unchanged.
+
 `capture_screenshot` is now a truthful current-editor-view read: the project selector was removed from its public schema and the helper no longer selects another ModelProject before capture. Canonical multi-view capture remains owned by `capture_model_views`; screenshot capability is preserved without a hidden state mutation.
 
 `select_all_of_type` now advertises `destructiveHint=false` because it only changes editor selection state and does not author model data. Selection behavior is unchanged; the metadata correction reduces unnecessary destructive-tool friction.

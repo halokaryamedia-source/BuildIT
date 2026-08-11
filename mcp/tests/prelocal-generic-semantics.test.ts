@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createProjectParameters } from "@/server/tools/project";
-import { addGroupParameters } from "@/server/tools/element";
+import { addGroupParameters, duplicateElementParameters, requireFiniteTranslatedElementVector3 } from "@/server/tools/element";
 import {
   BLOCKIT_MODEL_CODEC_IDS,
   exportModelParameters,
@@ -31,6 +31,16 @@ describe("pre-local generic semantics narrowing", () => {
     ]) {
       expect(addGroupParameters.safeParse({ name: "body", ...editorOnly }).success).toBe(false);
     }
+  });
+  test("duplicate_element rejects non-finite or overflowing translated coordinates", async () => {
+    expect(duplicateElementParameters.safeParse({ id: "cube", offset: [0, Infinity, 0] }).success).toBe(false);
+    expect(requireFiniteTranslatedElementVector3([1, 2, 3], [4, 5, 6], "test")).toEqual([5, 7, 9]);
+    expect(() => requireFiniteTranslatedElementVector3([1e308, 0, 0], [1e308, 0, 0], "test")).toThrow("non-finite authored coordinate");
+    const sourceText = await source("server/tools/element.ts");
+    const duplicateStart = sourceText.indexOf("createTool(elementToolDocs[3].name");
+    const duplicateBlock = sourceText.slice(duplicateStart, sourceText.indexOf("createTool(elementToolDocs[4].name", duplicateStart));
+    expect(duplicateBlock).toContain("preflightDuplicateTranslation(element, offset)");
+    expect(duplicateBlock.indexOf("preflightDuplicateTranslation(element, offset)")).toBeLessThan(duplicateBlock.indexOf("Undo.initEdit"));
   });
   test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
     expect(BLOCKIT_MODEL_CODEC_IDS).toEqual(["bedrock", "project"]);

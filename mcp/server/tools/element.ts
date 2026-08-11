@@ -101,7 +101,7 @@ export const filterByMaterialParameters = z.object({
 
 export const getSelectionParameters = z.object({});
 
-const finiteGroupVector3Schema = z.tuple([
+const finiteElementVector3Schema = z.tuple([
   z.number().finite(),
   z.number().finite(),
   z.number().finite(),
@@ -110,13 +110,13 @@ const finiteGroupVector3Schema = z.tuple([
 export const addGroupParameters = z
   .object({
     name: z.string().min(1).describe("Non-empty Bedrock Group/bone name."),
-    origin: finiteGroupVector3Schema
+    origin: finiteElementVector3Schema
       .optional()
       .default([0, 0, 0])
       .describe(
         "Finite Bedrock bone pivot/origin; omit for organizational Groups unless a joint/attachment needs it."
       ),
-    rotation: finiteGroupVector3Schema
+    rotation: finiteElementVector3Schema
       .optional()
       .default([0, 0, 0])
       .describe("Finite initial Bedrock bone rotation; omit for neutral zero rotation."),
@@ -160,7 +160,7 @@ export const duplicateElementParameters = z.object({
   id: elementIdSchema.describe(
     "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
   ),
-  offset: vector3Schema.optional().default([0, 0, 0]),
+  offset: finiteElementVector3Schema.optional().default([0, 0, 0]).describe("Finite translation offset [x,y,z] applied to the duplicated Cube/Group subtree."),
   newName: z.string().optional(),
 });
 
@@ -407,6 +407,48 @@ function safeCompileRegex(pattern: string | undefined): RegExp | null {
   }
 }
 
+export function requireFiniteTranslatedElementVector3(
+  values: readonly number[],
+  offset: readonly number[],
+  context: string
+): [number, number, number] {
+  if (values.length !== 3 || offset.length !== 3) {
+    throw new Error(`${context} must be a 3D vector before duplication.`);
+  }
+  const translated: [number, number, number] = [
+    values[0] + offset[0],
+    values[1] + offset[1],
+    values[2] + offset[2],
+  ];
+  if (translated.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `${context} plus the requested duplicate offset would produce a non-finite authored coordinate.`
+    );
+  }
+  return translated;
+}
+
+function preflightDuplicateTranslation(
+  element: unknown,
+  offset: readonly number[]
+): void {
+  if (element instanceof Cube) {
+    requireFiniteTranslatedElementVector3(element.from, offset, `Cube ${element.name} (${element.uuid}) from`);
+    requireFiniteTranslatedElementVector3(element.to, offset, `Cube ${element.name} (${element.uuid}) to`);
+    requireFiniteTranslatedElementVector3(element.origin, offset, `Cube ${element.name} (${element.uuid}) origin`);
+    return;
+  }
+  if (element instanceof Group) {
+    requireFiniteTranslatedElementVector3(element.origin, offset, `Group ${element.name} (${element.uuid}) origin`);
+    for (const child of element.children) {
+      preflightDuplicateTranslation(child, offset);
+    }
+    return;
+  }
+  throw new Error(
+    "The Bedrock Cuboid duplicate workflow supports only Cube/Group targets and Cube/Group descendants."
+  );
+}
 export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
     ...elementToolDocs[0],
@@ -644,6 +686,8 @@ export function registerElementTools() {
           `Group "${parent?.name ?? "(unknown)"}" contains an element type that the Bedrock Cuboid duplicate workflow does not clone.`
         );
       }
+
+      preflightDuplicateTranslation(element, offset);
 
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
       let dup: Cube | Group;
