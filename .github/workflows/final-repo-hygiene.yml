@@ -1,5 +1,5 @@
 name: Final Repo Hygiene
-# rerun after regression-owner sync
+# rerun after generated-doc install fragment restore
 
 on:
   push:
