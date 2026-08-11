@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T10:07:04.883Z",
+  "generatedAt": "2026-08-11T10:13:20.272Z",
   "tools": [
     {
       "name": "place_cube",
@@ -338,7 +338,7 @@
     {
       "name": "modify_cubes_batch",
       "title": "Modify Cubes Batch",
-      "description": "Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.",
+      "description": "Applies 1-32 unique UUID-targeted Cube corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; pivot, rotation, finite-span, and per-Cube before/after `geometry_effect` rules remain explicit. Execution success does not mean the geometry was corrected visually.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {

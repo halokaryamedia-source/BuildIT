@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { modifyCubeParameters, placeCubeParameters } from "@/server/tools/cubes";
+import { modifyCubeParameters, modifyCubesBatchParameters, placeCubeParameters } from "@/server/tools/cubes";
 import { requireFiniteInspectableVector3 } from "@/server/tools/element-inspection";
 
 async function source(path: string): Promise<string> {
@@ -100,6 +100,27 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(() => requireFiniteInspectableVector3([Infinity, 0, 0], "test")).toThrow("non-finite authored transform");
     expect(() => requireFiniteInspectableVector3([0, 0], "test")).toThrow("non-finite authored transform");
   });
+  test("batch Cube correction rejects duplicate/unsupported inputs at schema boundary", () => {
+    expect(
+      modifyCubesBatchParameters.safeParse({
+        updates: [
+          { id: "cube-1", from: [0, 0, 0] },
+          { id: "cube-1", to: [1, 1, 1] },
+        ],
+      }).success
+    ).toBe(false);
+    expect(
+      modifyCubesBatchParameters.safeParse({
+        updates: [{ id: "cube-1", from: [0, 0, 0], name: "unsupported" }],
+      }).success
+    ).toBe(false);
+    expect(
+      modifyCubesBatchParameters.safeParse({
+        updates: [{ id: "cube-1", visibility: false }],
+        extra: true,
+      }).success
+    ).toBe(false);
+  });
   test("Cube authoring rejects finite endpoints that produce non-finite size", () => {
     expect(() =>
       placeCubeParameters.parse({
@@ -128,6 +149,11 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(cubes).toContain("mirror_uv_changed");
     expect(cubes).toContain("autouv_changed");
     expect(cubes).toContain("modifyCubeRequestWouldChange");
+    const batchRuntimeStart = cubes.indexOf("createTool(cubeToolDocs[2].name");
+    const batchRuntime = cubes.slice(batchRuntimeStart);
+    expect(batchRuntime).toContain("!modifyCubeRequestWouldChange(cube, update)");
+    expect(batchRuntime).toContain("Batch update for Cube");
+    expect(batchRuntime.indexOf("!modifyCubeRequestWouldChange(cube, update)")).toBeLessThan(batchRuntime.indexOf("Undo.initEdit"));
     expect(cubes).toContain("has no authored effect");
     expect(cubes).toContain("effective_geometry_targets");
     expect(cubes).not.toContain('Undo.finishEdit("Agent corrected multiple cubes")');

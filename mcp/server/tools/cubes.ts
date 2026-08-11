@@ -108,6 +108,7 @@ const cubeCorrectionUpdateSchema = z
       .optional()
       .describe("New Cube visibility."),
   })
+  .strict()
   .refine(
     (update) =>
       update.origin !== undefined ||
@@ -252,7 +253,7 @@ export const modifyCubesBatchParameters = z.object({
     .describe(
       "1-32 explicit Cube transform/visibility updates applied in one Undo unit."
     ),
-});
+}).strict();
 
 export const cubeToolDocs: ToolSpec[] = [
   {
@@ -280,7 +281,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.",
+      "Applies 1-32 unique UUID-targeted Cube corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; pivot, rotation, finite-span, and per-Cube before/after `geometry_effect` rules remain explicit. Execution success does not mean the geometry was corrected visually.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -680,6 +681,11 @@ createTool(cubeToolDocs[2].name, {
         update.to ?? cube.to,
         `Cube ${cube.name} (${cube.uuid}) batch update`
       );
+      if (!modifyCubeRequestWouldChange(cube, update)) {
+        throw new Error(
+          `Batch update for Cube ${cube.name} (${cube.uuid}) has no authored effect; every supplied value already matches current state.`
+        );
+      }
 
       const pivotOnly = isPivotOnlyCorrection(update);
       if (pivotOnly) {

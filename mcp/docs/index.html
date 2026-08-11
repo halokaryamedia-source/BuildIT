@@ -198,7 +198,7 @@ bun run build
         </div>
       </div>
       <p class="card-title">Modify Cubes Batch</p>
-      <p class="card-desc">Applies 1-32 explicit UUID-targeted Cube corrections in one recoverable Undo unit after full preflight. Origin-only preserves visual position; activating non-zero rotation requires origin. Returns per-Cube before/after state and `geometry_effect`. It performs no planning or visual judgement; success does not mean the geometry was corrected visually.</p>
+      <p class="card-desc">Applies 1-32 unique UUID-targeted Cube corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; pivot, rotation, finite-span, and per-Cube before/after `geometry_effect` rules remain explicit. Execution success does not mean the geometry was corrected visually.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3005,7 +3005,7 @@ bun run build
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-11T10:07:04.883Z from Zod schemas
+        Generated 2026-08-11T10:13:20.272Z from Zod schemas
       </footer>
     </main>
   </div>
