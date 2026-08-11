@@ -62,11 +62,12 @@ describe("pre-local Bedrock prompt and skill surface", () => {
     expect(workflow).toContain("front view is not a full 3D PASS");
   });
 
-  test("generated-doc source is BlockIT-branded and install guidance does not offer the upstream hosted binary", async () => {
+  test("generated-doc source is BlockIT-branded and current README requires the local build", async () => {
     const docs = await source("build/docs.ts");
-    const install = await source("docs/llms/install.md");
+    const readme = await source("README.md");
     expect(docs).toContain("BlockIT — Bedrock Entity MCP");
-    expect(install).toContain("do not install the hosted");
-    expect(install).not.toContain("- [Stable](https://jasonjgardner.github.io");
+    expect(readme).toContain("Do **not** use the upstream hosted");
+    expect(readme).toContain("dist/mcp.js");
+    expect(readme).not.toContain("jasonjgardner.github.io/blockbench-mcp-plugin");
   });
 });
