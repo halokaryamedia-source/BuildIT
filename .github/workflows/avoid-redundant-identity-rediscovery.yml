@@ -58,11 +58,12 @@ jobs:
           test_path = Path('mcp/tests/model-effectiveness-correction-accuracy.test.ts')
           test = test_path.read_text(encoding='utf-8')
           test_anchor = '    expect(modelling).toContain("An unintended center shift");\n'
-          assertions = '''    expect(modelling).toContain("Reuse a fresh create/mutation result");
-    expect(modelling).not.toContain("use `inspect_element` once to obtain exact authored state");
-    expect(workflow).toContain("Reuse the fresh create/mutation result");
-    expect(workflow).toContain("Created/mutated identity and authored state returned by `place_cube`");
-'''
+          assertions = '\n'.join([
+              '    expect(modelling).toContain("Reuse a fresh create/mutation result");',
+              '    expect(modelling).not.toContain("use `inspect_element` once to obtain exact authored state");',
+              '    expect(workflow).toContain("Reuse the fresh create/mutation result");',
+              '    expect(workflow).toContain("Created/mutated identity and authored state returned by `place_cube`");',
+          ]) + '\n'
           if test.count(test_anchor) != 1:
               raise SystemExit('Unexpected correction regression anchor')
           test_path.write_text(test.replace(test_anchor, assertions + test_anchor, 1), encoding='utf-8')
@@ -70,9 +71,10 @@ jobs:
           routing_test_path = Path('mcp/tests/model-effectiveness-tool-routing.test.ts')
           routing_test = routing_test_path.read_text(encoding='utf-8')
           routing_anchor = '    expect(modelling).toContain("If no current decision requires a branch, stay in the geometry lane");\n'
-          routing_assertions = '''    expect(orchestrator).toContain("`place_cube` and `add_group` already return created UUID/state");
-    expect(orchestrator).toContain("do not immediately call `list_outline`, `find_elements_by_criteria`, or `inspect_element`");
-'''
+          routing_assertions = '\n'.join([
+              '    expect(orchestrator).toContain("`place_cube` and `add_group` already return created UUID/state");',
+              '    expect(orchestrator).toContain("do not immediately call `list_outline`, `find_elements_by_criteria`, or `inspect_element`");',
+          ]) + '\n'
           if routing_test.count(routing_anchor) != 1:
               raise SystemExit('Unexpected tool-routing regression anchor')
           routing_test_path.write_text(routing_test.replace(routing_anchor, routing_anchor + routing_assertions, 1), encoding='utf-8')
