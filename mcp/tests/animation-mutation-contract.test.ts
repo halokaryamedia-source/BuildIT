@@ -168,4 +168,25 @@ describe("animation mutation contract", () => {
     expect(source).toContain("mirroredBone.name = mirroredBoneName!");
     expect(source).not.toContain("mirroredBone.name = targetBone!.name.includes");
   });
+
+  test("copy/paste actions require their explicit source, target, and mirror axis", async () => {
+    expect(animationCopyPasteParameters.safeParse({ action: "copy" }).success).toBe(false);
+    expect(animationCopyPasteParameters.safeParse({ action: "paste" }).success).toBe(false);
+    expect(
+      animationCopyPasteParameters.safeParse({
+        action: "mirror_paste",
+        target: { bone: "arm" },
+      }).success
+    ).toBe(false);
+    expect(
+      animationCopyPasteParameters.safeParse({
+        action: "mirror_paste",
+        target: { bone: "arm", mirror_axis: "z" },
+      }).success
+    ).toBe(true);
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("action === \"mirror_paste\" ? target.mirror_axis! : null");
+    expect(source).not.toContain("target.mirror_axis || \"x\"");
+  });
 });

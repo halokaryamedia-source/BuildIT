@@ -538,6 +538,38 @@ export const animationCopyPasteParameters = z.object({
     })
     .optional()
     .describe("Target data for paste operation."),
+}).superRefine((params, ctx) => {
+  if (params.action === "copy" && params.source === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["source"],
+      message: "source is required for the copy action."
+    });
+  }
+
+  if (
+    (params.action === "paste" || params.action === "mirror_paste") &&
+    params.target === undefined
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["target"],
+      message: "target is required for paste and mirror_paste actions."
+    });
+  }
+
+  if (
+    params.action === "mirror_paste" &&
+    params.target !== undefined &&
+    params.target.mirror_axis === undefined
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["target", "mirror_axis"],
+      message:
+        "mirror_axis is required for mirror_paste; no implicit mirror axis is assumed."
+    });
+  }
 });
 
 export const animationToolDocs: ToolSpec[] = [
@@ -609,7 +641,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_copy_paste",
     description:
-      "Copies and pastes animation data between bones or animations. Copy requires at least one matching keyframe and paste rejects an empty clipboard before Undo.",
+      "Copies and pastes animation data between bones or animations with action-specific source/target preflight. Copy requires at least one matching keyframe, paste rejects an empty clipboard before Undo, and mirror_paste requires an explicit mirror axis.",
     annotations: {
       title: "Animation Copy/Paste",
       destructiveHint: true,
@@ -2062,7 +2094,7 @@ createTool(
             );
           }
           const mirrorAxis =
-            action === "mirror_paste" ? target.mirror_axis || "x" : null;
+            action === "mirror_paste" ? target.mirror_axis! : null;
           const axisIndex =
             mirrorAxis === "x"
               ? 0
