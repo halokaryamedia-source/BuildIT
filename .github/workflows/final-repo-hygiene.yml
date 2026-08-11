@@ -1,5 +1,5 @@
 name: Final Repo Hygiene
-# rerun after verifier dependency correction
+# final rerun with generated docs synchronization
 
 on:
   push:
@@ -45,6 +45,10 @@ jobs:
         working-directory: mcp
         run: bun run build
 
+      - name: Regenerate generated docs
+        working-directory: mcp
+        run: bun run docs:build
+
       - name: Docs freshness
         working-directory: mcp
         run: bun run docs:check
@@ -64,5 +68,6 @@ jobs:
           git rm .github/scripts/final_repo_hygiene.py
           git rm mcp/.verify-final-hygiene-wire.ts
           git add docs/foundation/validation-report.md docs/knowledge/next-action.md
+          git add mcp/docs/api.json mcp/docs/index.html
           git commit -m 'docs: finalize clean pre-local repository state'
           git push origin HEAD:Local
