@@ -281,4 +281,24 @@ describe("animation mutation contract", () => {
     expect(source).toContain("requireValidPlannedPasteChannelTimes(plannedPasteTimesByChannel)");
     expect(source).toContain("plannedPasteTimesByChannel[channel][index]");
   });
+
+  test("bone create child adoption rejects parent/ancestor cycles before Undo", async () => {
+    const hierarchy = new Map<string, string | null>([
+      ["root-bone", null],
+      ["mid-bone", "root-bone"],
+      ["leaf-bone", "mid-bone"],
+    ]);
+    expect(
+      wouldCreateRigHierarchyCycle("root-bone", "leaf-bone", hierarchy)
+    ).toBe(true);
+    expect(
+      wouldCreateRigHierarchyCycle("leaf-bone", "root-bone", hierarchy)
+    ).toBe(false);
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("const createParentByUuid = new Map<string, string | null>");
+    expect(source).toContain("child instanceof Group &&");
+    expect(source).toContain("child.uuid,");
+    expect(source).toContain("parentBone.uuid,");
+  });
 });

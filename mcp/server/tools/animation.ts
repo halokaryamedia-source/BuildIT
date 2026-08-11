@@ -651,7 +651,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
+      "Creates or edits Group bones with preflighted explicit targets. Create/rename/mirror preserve case-insensitive bone-name uniqueness required by Bedrock animation matching; create also rejects explicit child adoption that would cycle through its chosen parent; `parent` rejects self/descendant hierarchy cycles before Undo; `set_pivot` requires origin and preserves visual contents; `mirror` requires an axis and preflights its derived bone name; `set_ik` requires an explicit IK field and preserves the existing enabled state when only the target is changed. Missing/ambiguous targets fail before mutation. The tool does not infer joints, pivots, rotation, or hierarchy from appearance.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -1422,6 +1422,31 @@ createTool(
             childElements.length
           ) {
             throw new Error("children contains the same Outliner element more than once.");
+          }
+          if (parentBone instanceof Group) {
+            const createParentBone = parentBone;
+            const createParentByUuid = new Map<string, string | null>(
+              Group.all.map((group: Group) =>
+                [
+                  group.uuid,
+                  group.parent instanceof Group ? group.parent.uuid : null,
+                ] as [string, string | null]
+              )
+            );
+            childElements.forEach((child) => {
+              if (
+                child instanceof Group &&
+                wouldCreateRigHierarchyCycle(
+                  child.uuid,
+                  createParentBone.uuid,
+                  createParentByUuid
+                )
+              ) {
+                throw new Error(
+                  `Cannot create bone "${bone_data.name}" under "${createParentBone.name}" while adopting child Group "${child.name}" because that child is the parent itself, an ancestor of the parent, or the parent chain is already cyclic.`
+                );
+              }
+            });
           }
           if (bone_data.ik_enabled) {
             if (!bone_data.ik_target) {
