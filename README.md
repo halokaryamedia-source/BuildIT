@@ -1,16 +1,14 @@
 # BlockIT
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The goal is a clean, editable `.bbmodel` that follows an approved visual reference through the shortest evidence-backed workflow.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The product goal is a clean editable `.bbmodel` following an approved visual reference through the shortest evidence-backed workflow.
 
-`Local` is the current product/development branch. `Rework` and `Sample` are reference/history only.
+`Local` is the current product/development branch. Historical/reference branches are not current execution authority.
 
 ## Task Class First
 
-Root [`AGENTS.md`](AGENTS.md) owns agent routing and proof discipline.
+Root [`AGENTS.md`](AGENTS.md) owns routing and proof discipline.
 
 ### Asset authoring
-
-For creating or revising a Bedrock Entity asset without changing repository/plugin source:
 
 ```text
 current request / approved reference
@@ -19,77 +17,66 @@ current request / approved reference
 → BlockIT MCP
 ```
 
-Do not automatically load repository history, `CONTEXT.md`, `next-action.md`, or development skills by default for ordinary asset authoring.
+**Do not automatically load repository history**, `CONTEXT.md`, `next-action.md`, or development skills for ordinary asset authoring.
 
 ### Repository / plugin continuation
 
-For source, documentation, CI, MCP/plugin implementation, or repository maintenance:
-
 ```text
 AGENTS.md
-→ CONTEXT.md when stable project facts matter
-→ docs/knowledge/next-action.md when continuing current work
+→ docs/knowledge/next-action.md
+→ CONTEXT.md only when stable facts matter
 → affected source + nearest AGENTS.md
-→ development-brief for a create/change task
+→ development-brief for create/change work
 ```
 
-The current repository continuation is **Codex + Blockbench local acceptance**. When `next-action.md` activates it, use [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) as the single procedure.
+`docs/knowledge/next-action.md` is the only active continuation snapshot. [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) records the completed local acceptance procedure and is not default boot unless explicitly reactivated.
 
 ## Product Boundary
 
-Normal BlockIT work targets Blockbench format `bedrock`.
+Normal BlockIT work targets Blockbench `bedrock`:
 
 ```text
-Approved reference
-→ whole-form interpretation
-→ primary Cube/Group geometry
-→ difference-first visual gate
-→ causal correction or global rebuild
+approved reference
+→ primary Cube/Group form
+→ difference-first FAIL / UNVERIFIED / PASS
+→ bounded correction or global reframe
 → secondary geometry / hierarchy / pivots
-→ texture / PBR when required
+→ texture/PBR when required
 → animation when required
-→ final validation
+→ validation
 → .bbmodel / Bedrock geometry export
 ```
 
-Tool success is execution evidence, not visual approval. Visual verdicts are `FAIL / UNVERIFIED / PASS`; use `BLOCKED` when valid continuation would require guessing or repeated failed work.
-
-Generic Mesh/Hytale workflows, risky evaluation, and editor-UI automation do not expand the default Bedrock Entity contract.
+Tool success is execution evidence, not visual approval. `BLOCKED` is valid when continuation would require guessing or repeated failed work. Generic Mesh/Hytale workflows, risky evaluation, UI automation, or another format do not expand the Bedrock contract.
 
 ## Repository Map
 
 | Path | Purpose |
 |---|---|
-| `.agents/skills/` | repository-owned agent skills |
-| `mcp/` | BlockIT Blockbench MCP source, tests, build, generated API docs |
-| `workspace/` | model/reference packages and user fixtures |
-| `docs/foundation/` | durable product/modelling/reference policy |
-| `docs/knowledge/` | current continuity, source maps, decisions, reviews, operations |
+| `.agents/skills/` | repository-owned skills |
+| `mcp/` | BlockIT MCP source/build/tests/generated API docs |
+| `workspace/` | model/reference packages and fixtures |
+| `docs/foundation/` | durable product/modelling policy |
+| `docs/knowledge/` | continuity, ownership, decisions, reviews, operations |
 
-Project memory is repository-backed. Do not reconstruct current state from old chats when the canonical owner exists.
-
-## Current Skill Surface
-
-Asset authoring:
+## Skill Surface
 
 ```text
-blockit-bedrock-entity-mcp
-├─ blockbench-bedrock-modelling
-├─ blockit-bedrock-texturing
-└─ blockit-bedrock-animation
+asset authoring:
+  blockit-bedrock-entity-mcp
+  ├─ blockbench-bedrock-modelling
+  ├─ blockit-bedrock-texturing
+  └─ blockit-bedrock-animation
+
+repository development:
+  development-brief
+  mcp-server-development
+  blockbench-runtime-development
+  typescript-type-safety
+  bun-tooling
 ```
 
-Repository/plugin development:
-
-```text
-development-brief
-mcp-server-development
-typescript-type-safety
-bun-tooling
-blockbench-runtime-development
-```
-
-The packages are selected by task boundary; they are not a load-all stack.
+Select by current boundary; never load all skills by ritual.
 
 ## MCP Development
 
@@ -103,17 +90,21 @@ bun run build
 bun run docs:check
 ```
 
-Production plugin output is `mcp/dist/mcp.js`. Load that file locally in desktop Blockbench; do not use the upstream hosted plugin as proof of this repository.
+Production output is `mcp/dist/mcp.js`. **Do not use the upstream hosted** Blockbench MCP plugin as proof of BlockIT; load the repository build when runtime validation is explicitly active.
 
-Default endpoint after the local plugin is loaded:
+Default endpoint:
 
 ```text
 http://127.0.0.1:3000/bb-mcp
 ```
 
-See [`mcp/README.md`](mcp/README.md) for runtime details.
+See [`mcp/README.md`](mcp/README.md) for runtime/build details.
 
-## Current Pre-local Baseline
+## Accepted Functional Baseline
+
+The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, visual-routing behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
+
+Accepted default surface measurement:
 
 ```text
 62 enabled tools
@@ -122,19 +113,17 @@ See [`mcp/README.md`](mcp/README.md) for runtime details.
 11,800 tool-description characters
 ```
 
-`export_model` remains exposed. `list_export_formats`, `apply_texture`, and `filter_by_material` are intentionally absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
+`export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-Live Codex/Blockbench behavior is still `LOCAL PROOF REQUIRED`; see [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
+These static counts do not prove client token cost. Current cleanup/testing state belongs only in [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
 
-## Workspace Hygiene
+## Hygiene
 
-- transient build output, editor state, Obsidian UI state, and MCP preview caches are ignored;
-- approved reference packages and intentional `.bbmodel` fixtures remain tracked;
-- historical implementation evidence belongs in Git history/reviews, not duplicate active plans;
-- generated MCP API docs remain tracked because `bun run docs:check` verifies freshness.
+- generated MCP API docs are tracked and checked for freshness;
+- transient build/editor/preview state is ignored;
+- historical implementation belongs in Git/reviews, not duplicate active plans;
+- approved reference packages and intentional fixtures remain tracked.
 
 ## License / Upstream
 
-BlockIT is licensed under **GPL-3.0-only**; see [`LICENSE`](LICENSE).
-
-The MCP implementation is derived from the open-source Blockbench MCP work by Jason J. Gardner and contributors. Upstream attribution is preserved while BlockIT's Bedrock-focused product surface, repository routing, and local validation procedure are maintained here.
+GPL-3.0-only; see [`LICENSE`](LICENSE). BlockIT retains upstream attribution while its Bedrock-focused product surface and repository workflow remain project-owned.
