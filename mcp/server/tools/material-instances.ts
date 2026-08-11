@@ -2,7 +2,7 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { findElementOrThrow } from "@/lib/util";
+import { resolveCoreCube } from "@/lib/coreIdentity";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { faceEnum, cubeIdOptionalSchema, cubeIdSchema } from "@/lib/zodObjects";
 
@@ -29,7 +29,7 @@ export const facesArrayOptionalSchema = z
 /** Parameters for getting face material instances */
 export const getFaceMaterialInstancesParametersSchema = z.object({
   cube_id: cubeIdOptionalSchema.describe(
-    "ID or name of the cube. If not provided, uses the first selected cube."
+    "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
   ),
   faces: facesArrayOptionalSchema,
 });
@@ -37,7 +37,7 @@ export const getFaceMaterialInstancesParametersSchema = z.object({
 /** Parameters for setting face material instance */
 export const setFaceMaterialInstanceParametersSchema = z.object({
   cube_id: cubeIdOptionalSchema.describe(
-    "ID or name of the cube. If not provided, applies to all selected cubes."
+    "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
   ),
   material_name: z
     .string()
@@ -65,7 +65,7 @@ export const bulkSetMaterialInstancesParametersSchema = z.object({
 /** Parameters for clearing material instances */
 export const clearMaterialInstancesParametersSchema = z.object({
   cube_id: cubeIdOptionalSchema.describe(
-    "ID or name of the cube. If not provided, clears from all selected cubes."
+    "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
   ),
   faces: facesArrayOptionalSchema.describe(
     "Specific faces to clear. If not provided, clears all faces."
@@ -83,11 +83,10 @@ export const clearMaterialInstancesParametersSchema = z.object({
  * Helper to find a cube by ID or name
  */
 function findCubeOrThrow(id: string): Cube {
-  const element = findElementOrThrow(id);
-  if (!(element instanceof Cube)) {
-    throw new Error(`Element "${id}" is not a cube. Material instances are only supported on cube faces.`);
-  }
-  return element;
+  return resolveCoreCube(
+    id,
+    "Use list_outline or find_elements_by_criteria to confirm the intended Cube UUID before changing material instances."
+  );
 }
 
 // ============================================================================

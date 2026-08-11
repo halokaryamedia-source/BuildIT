@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T06:25:19.963Z",
+  "generatedAt": "2026-08-11T06:27:42.130Z",
   "tools": [
     {
       "name": "place_cube",
@@ -2677,8 +2677,8 @@
             "properties": {
               "cube_id": {
                 "type": "string",
-                "description": "ID or name of the cube. If not provided, uses the first selected cube.",
-                "markdownDescription": "ID or name of the cube. If not provided, uses the first selected cube."
+                "description": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube.",
+                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
               },
               "faces": {
                 "type": "array",
@@ -2720,8 +2720,8 @@
             "properties": {
               "cube_id": {
                 "type": "string",
-                "description": "ID or name of the cube. If not provided, applies to all selected cubes.",
-                "markdownDescription": "ID or name of the cube. If not provided, applies to all selected cubes."
+                "description": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes.",
+                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
               },
               "material_name": {
                 "type": "string",
@@ -2868,8 +2868,8 @@
             "properties": {
               "cube_id": {
                 "type": "string",
-                "description": "ID or name of the cube. If not provided, clears from all selected cubes.",
-                "markdownDescription": "ID or name of the cube. If not provided, clears from all selected cubes."
+                "description": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes.",
+                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
               },
               "faces": {
                 "type": "array",

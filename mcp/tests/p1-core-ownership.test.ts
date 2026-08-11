@@ -72,11 +72,12 @@ describe("P1.3 core identity ownership", () => {
   });
 
   test("retained core callers consume shared identity ownership", async () => {
-    const [cubes, elements, texture, animation, util] = await Promise.all([
+    const [cubes, elements, texture, animation, materialInstances, util] = await Promise.all([
       readFile(new URL("../server/tools/cubes.ts", import.meta.url), "utf8"),
       readFile(new URL("../server/tools/element.ts", import.meta.url), "utf8"),
       readFile(new URL("../server/tools/texture.ts", import.meta.url), "utf8"),
       readFile(new URL("../server/tools/animation.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/tools/material-instances.ts", import.meta.url), "utf8"),
       readFile(new URL("../lib/util.ts", import.meta.url), "utf8"),
     ]);
 
@@ -89,6 +90,8 @@ describe("P1.3 core identity ownership", () => {
     expect(texture.match(/resolveCoreTexture\(reference/g)?.length).toBeGreaterThanOrEqual(7);
     expect(animation).toContain("resolveCoreAnimation(reference, {");
     expect(animation).toContain("return resolveCoreGroup(");
+    expect(materialInstances).toContain("return resolveCoreCube(");
+    expect(materialInstances).not.toContain("findElementOrThrow");
     expect(util).toContain("const texture = resolveCoreTexture(");
   });
 
