@@ -66,6 +66,7 @@ The current verification workflow pins Bun **1.3.14** through root `.bun-version
 Current fresh result:
 
 ```text
+initialize instructions: 386 characters
 62 tools
 74,996 tools/list response characters
 74,952 tools-array characters
@@ -74,7 +75,7 @@ Current fresh result:
 per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
 ```
 
-Relative to the historical static measurement, description characters decreased while input-schema and total serialized characters increased. This is **not evidence of overall token/context savings**. Real client context, token use, latency, tool search, and co-loading remain `UNKNOWN` until a future user-requested local trace.
+Relative to the historical static measurement, description characters decreased while input-schema and total serialized characters increased. This is **not evidence of overall token/context savings**. Actual model-visible context and token use still require client evidence.
 
 The largest current serialized tool payloads are led by `place_cube`, `create_animation`, `manage_keyframes`, and `manage_locator`. This list is diagnostic only; size alone is not permission to remove capability or mass-trim legitimate schemas.
 
@@ -90,6 +91,28 @@ The isolated `tools/list` audit confirms both `manage_locator` and `manage_null_
 
 This is a known representation boundary, not a demonstrated runtime defect. Do not split tools or redesign registration without future evidence that clients materially miscall it.
 
+## Native Deferred MCP Discovery Compatibility
+
+Current upstream Codex source provides authoritative architectural evidence for deferred MCP discovery when tool search is available:
+
+```text
+MCP initialize + tools/list
+→ client-side MCP catalog
+→ MCP tools exposed as Deferred
+→ tool_search indexes/ranks deferred tools
+→ matching tool specs are loaded when needed
+```
+
+Evidence status for that architecture: `OFFICIALLY VERIFIED` from current upstream Codex source. Evidence status for the user's already-accepted local Codex CLI 0.137.0 session following that exact current path: `LOCAL PROOF REQUIRED`.
+
+Codex still runs `tools/list` to create/cache the local MCP catalog. Therefore the 74,996 serialized characters are not evidence that all 62 schemas enter every inference request.
+
+Current upstream Codex also maps regular MCP server `instructions` to its namespace description and includes namespace description, tool names/titles/descriptions, and top-level schema property names in MCP tool-search text. BuildIT now supplies one **386-character** capability-oriented initialization description from `mcp/server/server.ts` instead of leaving that namespace context empty or duplicating the full workflow prompt.
+
+The initialization description names the retained domains—project lifecycle, Cube/Group geometry, inspection/bounds/views, texture/Painter/PBR/material instances, animation/rigging/keyframes, Locator/Null Object, history/Undo/Redo, and Bedrock/.bbmodel export—so deferred search has compact routing context while all 62 capabilities remain available.
+
+No custom BuildIT router, extra registration profile, or multi-endpoint split was introduced.
+
 ## Engineering Proof
 
 The accepted baseline passed frozen-lockfile install, strict TypeScript, Bun contract tests, production build, prompt generation, generated-doc freshness, and source hygiene. The animation-selection repair additionally passed focused tests and live `create_animation → set_time → play/pause` proof.
@@ -98,12 +121,13 @@ Current GitHub-only verification additionally proves:
 
 - Bun 1.3.14 is read from `.bun-version` by CI;
 - the isolated default MCP measurement gate succeeds through the actual stateless HTTP path;
-- serialized-surface ceilings pass;
+- initialization returns the compact 386-character MCP server instructions;
+- serialized-surface ceilings pass while retaining exactly 62 default tools;
 - Locator create/update guidance survives into actual `tools/list` output;
 - active routing references resolve to existing canonical repository-owned skill packages;
 - typecheck, contract tests, production build, generated-doc freshness, and aggregate enforcement remain green.
 
-Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
+Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof or actual local model token measurements.
 
 ## Completed Post-Acceptance Static Hardening
 
@@ -115,13 +139,14 @@ Current `Local` source includes source-provable efficiency reductions:
 - `list_locator_elements` returns identity/type/parent discovery only; detailed Locator/Null Object authored state remains in `inspect_element` and mutation results;
 - asset routing, orchestration, modelling, texturing, animation, and stable workspace context have clearer non-overlapping ownership;
 - repository-development context is split across root routing, conditional `development-brief`, `mcp/AGENTS.md`, and at most one specialist; stale references to non-existent escalation skills were removed;
-- active skill routing now has an integrity regression gate;
+- active skill routing has an integrity regression gate;
 - runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
 - Locator/Null Object create/update branch intent is explicit and checked on the serialized MCP surface;
+- compact MCP server initialization instructions now support native deferred-tool discovery without capability deletion;
 - generated MCP docs/runtime manifest remain synchronized through their build owners;
 - static efficiency budgets lock instruction size, exact 62-tool capability count, compact default reads, and bounded serialized surface growth.
 
-Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer runtime token savings or client behavior from character measurements alone.
+Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer exact runtime token savings from architecture or character measurements alone.
 
 ## Product / Lifecycle / Export
 
@@ -182,17 +207,19 @@ remove_element
 
 Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. Null Object remains distinct editor/animation state and round-trips through the Bedrock geometry `_null_` locator representation where supported.
 
-## MCP Client / Efficiency Evidence Still Unknown
+## MCP Client / Efficiency Evidence Boundary
 
-Static/GitHub proof still does **not** establish how a future fresh Codex task handles:
+Current upstream architecture answers the former direct-vs-deferred design question: native Codex tool search is the intended deferred owner when available. A BuildIT custom router is therefore not justified by the 62-tool count alone.
 
-- direct schema injection vs native deferred/tool search;
+Still `UNKNOWN` / `LOCAL PROOF REQUIRED` for the user's installed client until a future explicitly requested local efficiency trace:
+
+- whether the installed Codex CLI/model combination uses the same current deferred path;
 - actual prompt/skill co-loading;
-- real token/context/latency cost;
-- retry frequency caused by advertised schema interpretation;
+- real model-visible token/context/latency cost;
+- retry frequency caused by tool search or advertised schema interpretation;
 - image/context cost during realistic authoring.
 
-These remain `UNKNOWN` until a future local efficiency run is explicitly requested. Do not add a BlockIT custom router/profile solely from static tool count or serialized character counts.
+For an older or non-tool-search client, a client-side `enabled_tools` allow-list may be a compatibility fallback, but it should not become the default because it hides capability rather than discovering it lazily.
 
 ## Protected Native Capability Gaps
 
@@ -221,4 +248,4 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Functional local acceptance is complete. Requested static efficiency cleanup and GitHub-only pretest hardening are complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests local testing or a new product requirement.
+Functional local acceptance is complete. Requested static efficiency cleanup, GitHub-only pretest hardening, and deferred-search compatibility hardening are complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests local testing or a new product requirement.
