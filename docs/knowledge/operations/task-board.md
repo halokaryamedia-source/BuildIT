@@ -4,7 +4,7 @@ Updated: 2026-08-12
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The first local acceptance pass and the requested static efficiency cleanup are complete. **No fresh Codex/local trace is active.**
+The first local acceptance pass, requested static efficiency cleanup, and P0–P4 routing/recovery/navigation hardening are complete. **No fresh Codex/local trace is active.**
 
 ## Waiting On Future Efficiency Evidence
 
@@ -12,7 +12,7 @@ These are not current source TODOs. Revisit only if the user explicitly starts a
 
 ### Native Codex exposure / context
 
-- [ ] If a future fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective, evaluate the smallest exposure remedy before any BlockIT router/profile architecture.
+- [ ] If a future fresh trace shows all 62 schemas are injected directly and native deferred/tool search is ineffective despite the current exact-name loading path, evaluate the smallest exposure remedy before any BlockIT router/profile architecture.
 - [ ] If actual prompt/skill co-loading still shows material duplicated context after the ownership cleanup, consolidate only the proven duplicate.
 - [ ] If client-visible result telemetry still shows material duplication after exact JSON-mirror compaction, A/B one high-frequency result before generalizing.
 - [ ] If advertised discriminated-union schemas still cause measurable invalid-call retries after branch descriptions were clarified, improve branch visibility without weakening runtime validation.
@@ -53,9 +53,10 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 - [x] Update `docs/foundation/validation-report.md` with actual local proof states.
 - [x] Complete the source-provable efficiency cleanup requested before the next test.
-- [ ] Update the Review Index only when historical recommendation status materially changes.
+- [x] Update the Review Index after local acceptance/P0–P4 materially changed the meaning of older reviews.
+- [x] Audit and synchronize active/current-state docs after P0–P4 so routing, proof, review meaning, and defect navigation agree.
 - [ ] Prune this board when a waiting item becomes irrelevant or active.
-- [ ] Audit active docs for stale current-state claims when continuation changes.
+- [ ] Re-audit active docs and the Review Index when continuation materially changes again.
 
 ## Holds
 
@@ -65,6 +66,7 @@ Do not pre-emptively:
 - set global output/token limits without measured need;
 - mass-trim legitimate Animation/Paint schemas;
 - default-disable retained Bedrock capability solely to reduce tool count;
+- expand the hot-path ownership index into a full dependency graph without a real defect demonstrating need;
 - reopen historical plans as current execution order.
 
 ## Rule

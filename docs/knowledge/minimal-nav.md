@@ -27,10 +27,13 @@ Source/docs/CI/MCP/plugin/repository maintenance:
 AGENTS.md
 → CONTEXT.md only when stable facts matter
 → next-action.md when continuing current work
+→ named MCP-tool defect? implementation-map.md Hot-Path Defect Index
 → affected source + nearest AGENTS.md
 ```
 
 For a create/change task, use `../../.agents/skills/development-brief/SKILL.md` and at most one relevant engineering specialist unless a genuinely independent boundary is proved.
+
+For a named MCP-tool defect, the Hot-Path Defect Index supplies the first source owner and primary regression owner. Inspect that pair before broad code search; expand only when the pair cannot explain the defect.
 
 ## 2. Current Repository Continuation
 
@@ -43,7 +46,7 @@ Do not load the runbook by ritual during normal continuation or asset authoring.
 ## 3. Open Only One Additional Owner When Needed
 
 - [Foundation README](../foundation/README.md) — product/modelling policy.
-- [Implementation Map](implementation-map.md) — current source ownership.
+- [Implementation Map](implementation-map.md) — current source ownership and named-tool defect first-stop index.
 - [Activation Matrix](skills/activation-matrix.md) — skill choice.
 - [Validation Report](../foundation/validation-report.md) — current evidence status.
 - [Source Map](sources/source-map.md) — authority/path lookup.
@@ -53,5 +56,5 @@ Do not load the runbook by ritual during normal continuation or asset authoring.
 ## Stop Rule
 
 - Do not broad-scan the vault, generated output, historical branches, dependencies, or old chats by default.
-- If the current owner answers the question, stop reading.
+- If the current owner—or the mapped hot-path source/test pair—answers the question, stop reading.
 - If a material claim is not provable in the current execution channel, record the exact remaining proof instead of inventing it.

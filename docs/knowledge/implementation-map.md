@@ -43,7 +43,9 @@ For a repository/plugin defect that names one of these tools, inspect the mapped
 
 | Tool(s) | Source owner | Primary regression owner |
 |---|---|---|
-| `create_project`, `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
+| `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
+| `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
+| `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -55,9 +57,10 @@ For a repository/plugin defect that names one of these tools, inspect the mapped
 | `create_animation` | `mcp/server/tools/animation.ts` | `mcp/tests/create-animation-contract.test.ts` |
 | `manage_keyframes`, `animation_graph_editor`, `bone_rigging`, `animation_timeline`, `batch_keyframe_operations`, `animation_copy_paste` | `mcp/server/tools/animation.ts` | `mcp/tests/animation-mutation-contract.test.ts` |
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
+| `get_undo_stack` | `mcp/server/tools/history.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
-Do not load every listed test. The mapped regression is the first falsification target for the named tool; adjacent tests are loaded only when the defect crosses that contract boundary.
+Do not load every listed test. The mapped regression is the first falsification target for the named tool; adjacent tests are loaded only when the defect crosses that contract boundary. `undo`/`redo` remain source-owned by `mcp/server/tools/history.ts`, but are intentionally not indexed until a real defect justifies a sufficiently specific primary regression owner.
 
 ## Default MCP Surface
 
@@ -106,6 +109,32 @@ BuildIT's owner for this compatibility is `mcp/server/server.ts`. It sends one c
 
 This design intentionally keeps all 62 Bedrock capabilities. No BuildIT custom search/router, additional MCP profile, or multi-endpoint domain split is currently justified.
 
+## Authoring Decision / Recovery Ownership
+
+The asset orchestrator owns a compact decision layer; it does not alter MCP registration/runtime architecture:
+
+```text
+intent + known state + stage
+→ deterministic semantic route
+→ exact tool already loaded? call directly
+→ otherwise exact-name native tool_search
+→ execute
+→ bounded recovery from existing failure signals
+```
+
+Current static retrieval evidence over 104 human-style cases:
+
+```text
+raw semantic stress:  Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
+exact-name routed:    Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
+```
+
+Top-8 presence is the routed correctness gate because the route already knows the exact selected tool and upstream search returns up to 8 matches. Installed-client/model behavior remains local proof, not inferred from this static proxy.
+
+Recovery maps existing validation, ambiguous/not-found identity, stale-known-reference, no-authored-effect, and unsupported-capability signals to bounded same-tool/focused recovery. It does not add a global error enum, result payload instructions, recovery engine, or another MCP layer.
+
+Repository/plugin debugging is separate: a named hot-path tool uses the table above before code search. That index never participates in normal asset authoring.
+
 ## Bedrock Authoring Ownership
 
 ### Project / observation
@@ -149,7 +178,7 @@ Only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as the runtime 
 
 Root `.bun-version` pins Bun **1.3.14** for the MCP verification workflow. `MCP Verify` owns frozen-lockfile install, typecheck, contract tests, isolated default-surface measurement, production build, generated-doc freshness, and aggregate enforcement.
 
-Active routing integrity is regression-tested against the canonical `.agents/skills/` inventory so active docs cannot silently route to missing repository-owned skills.
+Active routing integrity is regression-tested against the canonical `.agents/skills/` inventory so active docs cannot silently route to missing repository-owned skills. The hot-path defect index is also regression-checked so mapped source/test paths exist and actually own the named tools.
 
 ## Completed Static Efficiency Hardening
 
@@ -164,7 +193,9 @@ Active routing integrity is regression-tested against the canonical `.agents/ski
 - Locator/Null branch intent checked on the actual serialized MCP surface without tool/profile proliferation;
 - Bun toolchain pinned;
 - isolated serialized-surface measurement and regression ceilings added;
-- compact MCP server namespace instructions added for native deferred-tool discovery compatibility.
+- compact MCP server namespace instructions added for native deferred-tool discovery compatibility;
+- P0–P3 stage lock, exact-name deferred loading, and deterministic hot-path recovery prevent redundant discovery/search/retry loops without runtime router/framework changes;
+- P4 named-tool defect navigation maps high-value tools to a first source/test pair without becoming a full dependency graph.
 
 **No new local run is active.** Current upstream Codex source establishes native deferred MCP discovery when tool search is available. The remaining client-only questions are whether the user's installed Codex/model follows that current path and what the real token/latency, co-loading, retry, and image-context costs are. Do not add a router/profile or remove retained native capability without that future evidence.
 

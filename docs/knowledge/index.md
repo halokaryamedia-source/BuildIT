@@ -13,6 +13,7 @@ active repository continuation → next-action.md
 completed local procedure      → operations/local-acceptance-runbook.md
 product/modelling policy       → docs/foundation/
 source ownership               → implementation-map.md
+named MCP-tool defect          → implementation-map.md Hot-Path Defect Index
 durable decisions              → decision-log.md / decisions/
 review evidence                → reviews/review-graph.md
 future/non-active work         → operations/task-board.md
@@ -35,6 +36,7 @@ Do not load repository history or continuity notes unless the asset decision act
 ```text
 AGENTS.md
 → next-action.md
+→ named MCP-tool defect? implementation-map.md Hot-Path Defect Index
 → affected source + nearest AGENTS.md
 → one additional owner only when needed
 ```
@@ -76,15 +78,15 @@ Those character counts are historical, not current token measurements. `export_m
 
 ## Current continuation
 
-**Static pre-local efficiency cleanup is complete.** The cleaned source/docs/generated baseline is held stable. Another Codex/Blockbench run is **not active** and must not start until the user explicitly requests testing or a new product task requires it.
+**Static pre-local efficiency cleanup is complete.** P0–P4 follow-up hardening is also complete: stage-locked authoring, static discovery evaluation, exact-name deferred spec loading, bounded deterministic recovery, and a repository-only hot-path defect ownership index.
 
-Client-only questions such as schema injection, prompt co-loading, actual retries, and token/latency cost remain future evidence questions, not reasons for more speculative architecture work now.
+Another Codex/Blockbench run is **not active** and must not start until the user explicitly requests testing or a new product task requires it. Installed-client deferred-search parity, real model-visible token/latency cost, and runtime retry behavior remain future evidence questions—not reasons for more speculative routing/recovery architecture now.
 
 ## Knowledge spine
 
 - [Next Action](next-action.md) — current repository continuation.
 - [Minimal Navigation](minimal-nav.md) — shortest task-aware route.
-- [Implementation Map](implementation-map.md) — current source ownership/surface.
+- [Implementation Map](implementation-map.md) — current source ownership/surface plus named-tool defect first stops.
 - [Skill Activation Matrix](skills/activation-matrix.md) — skill selection.
 - [Validation Report](../foundation/validation-report.md) — current proof status.
 - [Task Board](operations/task-board.md) — future/non-active findings.
@@ -101,6 +103,7 @@ Open the longer skill map, source map, decision log, or individual reviews only 
 | Current continuation | `next-action.md` |
 | Stable facts | `CONTEXT.md` |
 | Current implementation | `implementation-map.md` |
+| Named MCP-tool defect | `implementation-map.md` → Hot-Path Defect Index |
 | MCP runtime/build | `../../mcp/README.md` + affected source |
 | Product/modelling policy | `../foundation/README.md` |
 | Skill routing | `skills/activation-matrix.md` |

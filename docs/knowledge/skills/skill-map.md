@@ -1,6 +1,6 @@
 # Skill Map
 
-Updated: 2026-08-11
+Updated: 2026-08-12
 
 Use this note for the **current repository-owned skill inventory and location**. Use [Activation Matrix](activation-matrix.md) for routing. Historical recovery detail lives in reviews/decision history rather than this current map.
 
@@ -16,12 +16,12 @@ There are nine current packages, but they are **not loaded together**.
 
 | Skill | Canonical path | Function |
 |---|---|---|
-| `blockit-bedrock-entity-mcp` | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | lightweight Bedrock authoring orchestrator; chooses smallest active lane/evidence |
+| `blockit-bedrock-entity-mcp` | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | Bedrock authoring orchestrator: intent/state/stage routing, exact-name deferred spec loading, bounded recovery, and minimum-evidence discipline |
 | `blockbench-bedrock-modelling` | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | whole-form Cube/Group modelling judgement, hierarchy/pivots, difference-first visual validation, correction |
 | `blockit-bedrock-texturing` | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | texture/Painter/PBR/material-instance execution and surface verification |
 | `blockit-bedrock-animation` | `.agents/skills/blockit-bedrock-animation/SKILL.md` | Bedrock animation inspection/creation, keyframes, timeline/playback, mapped effects |
 
-Normal asset work loads the orchestrator, then only the specialist needed by the current stage.
+Normal asset work loads the orchestrator, then only the specialist needed by the current stage. The orchestrator uses native `tool_search` only as deferred spec loading after a semantic route has already selected the exact tool; it is not a second router.
 
 ## Repository / Plugin Development
 
@@ -34,6 +34,8 @@ Normal asset work loads the orchestrator, then only the specialist needed by the
 | `blockbench-runtime-development` | `.agents/skills/blockbench-runtime-development/SKILL.md` | Blockbench plugin/runtime/API/UI/Undo/Canvas mechanics |
 
 `blockbench-bedrock-modelling` may also be the repository-development specialist when a source/policy change is specifically about modelling judgement rather than runtime mechanics.
+
+Named MCP-tool defects use the repository-only `docs/knowledge/implementation-map.md` Hot-Path Defect Index to locate the first source/test pair; that index is navigation, not another skill or runtime router.
 
 ## Architecture Rule
 
@@ -92,7 +94,7 @@ mcp/workflow/skills/
 The current asset-authoring split prevents a broad generic Blockbench skill from mixing unrelated product domains:
 
 ```text
-orchestrator     → lane/evidence discipline
+orchestrator     → route/state/recovery/evidence discipline
 modelling        → what form should exist / visual judgement
 texturing        → surface authoring
 animation        → motion/keyframes

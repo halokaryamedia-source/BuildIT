@@ -42,13 +42,25 @@ Normal `bedrock` capability includes:
 
 Generic Mesh/Hytale paths, risky evaluation, and screen-coordinate UI automation are not normal Bedrock Entity authoring capability.
 
-## Accepted default surface
+## Accepted baseline / current serialized proof
+
+Historical accepted measurement from the bounded local pass:
 
 ```text
 62 enabled tools
 72,775 tools/list response characters
 48,674 input-schema characters
 11,800 tool-description characters
+```
+
+Current isolated GitHub/CI `initialize → tools/list` measurement:
+
+```text
+62 tools
+74,996 tools/list response characters
+51,810 input-schema characters
+10,885 description characters
+initialize instructions: 386 characters
 ```
 
 ```text
@@ -60,7 +72,7 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-These are static baseline measurements, not model-visible token measurements. Current cleanup/testing state belongs in `docs/knowledge/next-action.md`.
+These are serialized surface measurements, not model-visible token measurements. Current cleanup/testing state belongs in `docs/knowledge/next-action.md`.
 
 ## Result / context efficiency
 
@@ -69,6 +81,9 @@ These are static baseline measurements, not model-visible token measurements. Cu
 - Filesystem export is metadata-first when a verified path write already delivers the artifact.
 - Normal discovery/project/history reads use compact defaults with explicit larger bounds where supported.
 - Runtime prompt manifest contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only.
+- MCP initialization supplies a compact 386-character namespace description while retaining all 62 default capabilities.
+
+Agent-side P0–P3 hardening is intentionally outside MCP runtime registration: authoring routes from intent + fresh state + stage, loads missing specs with exact-name native `tool_search`, and applies bounded recovery from existing failure signals. Do not move that orchestration into another MCP router/profile/error framework without new evidence.
 
 ## Agent route
 
@@ -77,9 +92,11 @@ Normal asset authoring:
 ```text
 blockit-bedrock-entity-mcp
 → active modelling/texturing/animation specialist only
+→ exact selected tool
+→ exact-name deferred spec loading only when needed
 ```
 
-Repository/plugin continuation follows root `AGENTS.md` + `docs/knowledge/next-action.md` + affected source. The first local acceptance pass is complete; its runbook is not default continuation context.
+Repository/plugin continuation follows root `AGENTS.md` + `docs/knowledge/next-action.md` + affected source. For a named hot-path MCP defect, use `docs/knowledge/implementation-map.md` Hot-Path Defect Index before broad code search. The first local acceptance pass is complete; its runbook is not default continuation context.
 
 ## Source layout
 

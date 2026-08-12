@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-12  
-**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, completed post-acceptance static efficiency hardening, and GitHub-only pretest verification.
+**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, completed post-acceptance static efficiency hardening, P0–P4 routing/recovery/navigation hardening, and GitHub-only verification.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -21,7 +21,7 @@ LOCAL_ACCEPTANCE_COMPLETE
 
 The bounded functional pass completed on 2026-08-12 in Blockbench 5.1.6 against the loopback BlockIT endpoint. It is historical evidence for the accepted baseline; it is **not an instruction to run another local pass now**.
 
-The requested post-acceptance static efficiency cleanup and follow-up GitHub-only pretest hardening are complete at source/contract/CI level. Those later changes remain static proof until a future local run is explicitly requested.
+The requested post-acceptance static efficiency cleanup and follow-up GitHub-only hardening are complete at source/contract/CI level. Those later changes remain static proof until a future local run is explicitly requested.
 
 ## Accepted Live Baseline — 2026-08-12
 
@@ -113,6 +113,34 @@ The initialization description names the retained domains—project lifecycle, C
 
 No custom BuildIT router, extra registration profile, or multi-endpoint split was introduced.
 
+## Current P0–P4 Static Efficiency Proof
+
+P0–P4 address decision/search/recovery/debugging loops without changing the retained 62-tool runtime surface:
+
+```text
+P0 stage lock
+DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
+
+P1 raw static retrieval proxy
+Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
+
+P2 exact-name routed loading proxy
+Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
+
+P3 bounded recovery
+validation / ambiguity / not-found / stale-known-reference / no-effect / capability mismatch
+→ repair only missing decision state; usually keep the selected tool
+
+P4 repository defect navigation
+named hot-path tool → mapped source owner + primary regression owner → broaden only if needed
+```
+
+P1/P2 use the same 104 human-style cases over 52 expected tools against all 62 default competitors. The routed correctness gate is Top-8 presence because the semantic route already knows the exact tool and upstream search returns up to 8 matches. These are static retrieval proxies, **not installed Codex/model behavioral proof**.
+
+P3 consumes existing source failure signals rather than adding a global error enum, result-level `next_action`, recovery engine, or another MCP layer. P4 is repository-only navigation and never participates in normal asset authoring.
+
+The hot-path index now includes project lifecycle, `inspect_model_bounds`, Cube correction, hierarchy/discovery, camera views, Locator/Null Object, texture/PBR, animation, bounded history inspection via `get_undo_stack`, and export first-stop mappings. Generic `undo`/`redo` are deliberately left out until a real defect justifies a sufficiently specific primary regression owner.
+
 ## Engineering Proof
 
 The accepted baseline passed frozen-lockfile install, strict TypeScript, Bun contract tests, production build, prompt generation, generated-doc freshness, and source hygiene. The animation-selection repair additionally passed focused tests and live `create_animation → set_time → play/pause` proof.
@@ -125,6 +153,8 @@ Current GitHub-only verification additionally proves:
 - serialized-surface ceilings pass while retaining exactly 62 default tools;
 - Locator create/update guidance survives into actual `tools/list` output;
 - active routing references resolve to existing canonical repository-owned skill packages;
+- deterministic authoring routing, exact-name deferred loading, and bounded recovery remain instruction-layer only;
+- the hot-path defect index maps existing source/test owners and does not become runtime routing;
 - typecheck, contract tests, production build, generated-doc freshness, and aggregate enforcement remain green.
 
 Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof or actual local model token measurements.
@@ -143,10 +173,14 @@ Current `Local` source includes source-provable efficiency reductions:
 - runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
 - Locator/Null Object create/update branch intent is explicit and checked on the serialized MCP surface;
 - compact MCP server initialization instructions now support native deferred-tool discovery without capability deletion;
+- P0 stage locking prevents known fresh state from falling back into discovery by ritual;
+- P1/P2 measure semantic collisions and use exact-name deferred spec loading instead of mass-editing descriptions or adding a custom router;
+- P3 maps common hot-path failures to bounded recovery without adding runtime recovery architecture;
+- P4 maps named tool defects to first source/test owners without broad repository search;
 - generated MCP docs/runtime manifest remain synchronized through their build owners;
 - static efficiency budgets lock instruction size, exact 62-tool capability count, compact default reads, and bounded serialized surface growth.
 
-Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer exact runtime token savings from architecture or character measurements alone.
+Status: **source/contract/CI hardening complete** for the requested pre-test cleanup and P0–P4 follow-up. Do not infer exact runtime token savings from architecture or character measurements alone.
 
 ## Product / Lifecycle / Export
 
@@ -209,14 +243,14 @@ Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. N
 
 ## MCP Client / Efficiency Evidence Boundary
 
-Current upstream architecture answers the former direct-vs-deferred design question: native Codex tool search is the intended deferred owner when available. A BuildIT custom router is therefore not justified by the 62-tool count alone.
+Current upstream architecture plus current static routing/retrieval evidence answers the former direct-vs-deferred design question: native Codex tool search is the intended deferred owner when available, and BuildIT's semantic route should use it to load an already-selected exact tool rather than creating another runtime router.
 
 Still `UNKNOWN` / `LOCAL PROOF REQUIRED` for the user's installed client until a future explicitly requested local efficiency trace:
 
 - whether the installed Codex CLI/model combination uses the same current deferred path;
 - actual prompt/skill co-loading;
 - real model-visible token/context/latency cost;
-- retry frequency caused by tool search or advertised schema interpretation;
+- actual retry frequency under exact-name loading and bounded recovery;
 - image/context cost during realistic authoring.
 
 For an older or non-tool-search client, a client-side `enabled_tools` allow-list may be a compatibility fallback, but it should not become the default because it hides capability rather than discovering it lazily.
@@ -248,4 +282,4 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Functional local acceptance is complete. Requested static efficiency cleanup, GitHub-only pretest hardening, and deferred-search compatibility hardening are complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests local testing or a new product requirement.
+Functional local acceptance is complete. Requested static efficiency cleanup, GitHub-only pretest hardening, native deferred-search compatibility work, P0–P4 decision/search/recovery/debug-navigation hardening, and current-state documentation synchronization are complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests local testing or a new product requirement.

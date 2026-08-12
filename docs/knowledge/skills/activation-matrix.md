@@ -28,6 +28,8 @@ Do **not** route ordinary asset authoring through `development-brief`, repositor
 
 Use for source, docs, CI, plugin/MCP implementation, architecture, or repository maintenance.
 
+If a reproduced defect names a mapped MCP tool, consult `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** first to identify the initial source owner + primary regression owner. This is bounded navigation only; it does not replace the development contract or authorize loading adjacent tests.
+
 Every non-trivial create/change task starts with:
 
 `/.agents/skills/development-brief/SKILL.md`

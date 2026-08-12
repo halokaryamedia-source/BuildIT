@@ -36,19 +36,22 @@ describe("Codex documentation handoff", () => {
     expect(activation).toContain("Asset Authoring Route");
     expect(activation).toContain("Repository / Plugin Development Route");
     expect(activation).toContain("Local Acceptance Route — Only When Reactivated");
+    expect(activation).toContain("Hot-Path Defect Index");
+    expect(skillMap).toContain("exact-name deferred spec loading");
     expect(skillMap).not.toContain("exactly six canonical skills");
     expect(developmentBrief).not.toContain("`grilling`");
     expect(developmentBrief).not.toContain("`code-review`");
   });
 
   test("current documentation holds the measured GitHub-only baseline without starting local", async () => {
-    const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
+    const [next, runbook, dashboard, operations, sourceMap, implementation, reviewGraph] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
       text("../docs/knowledge/index.md"),
       text("../docs/knowledge/operations/README.md"),
       text("../docs/knowledge/sources/source-map.md"),
       text("../docs/knowledge/implementation-map.md"),
+      text("../docs/knowledge/reviews/review-graph.md"),
     ]);
 
     expect(next.length).toBeLessThan(7_000);
@@ -60,26 +63,33 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("74,996 tools/list response characters");
     expect(next).toContain("51,810 input-schema characters");
     expect(next).toContain("10,885 description characters");
+    expect(next).toContain("Post-P4 Current-State Synchronization");
     expect(next).toContain("do not run local until the user explicitly requests testing");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
 
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(dashboard).toContain("Static pre-local efficiency cleanup is complete");
+    expect(dashboard).toContain("P0–P4 follow-up hardening is also complete");
     expect(dashboard).toContain("Another Codex/Blockbench run is **not active**");
     expect(operations).toContain("The first local acceptance pass is complete");
     expect(operations).not.toContain("mcp-reduction-stabilization-plan.md");
     expect(operations).not.toContain("roadmap.md");
     expect(sourceMap).toContain("completed local procedure");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
+    expect(sourceMap).toContain("Hot-Path Defect Index");
+    expect(sourceMap).toContain("Audit-time helper names are lineage");
     expect(implementation).toContain("Fresh GitHub/CI serialized measurement");
     expect(implementation).toContain("Deferred MCP Discovery Ownership");
+    expect(implementation).toContain("Authoring Decision / Recovery Ownership");
     expect(implementation).toContain("initialize instructions: 386 characters");
     expect(implementation).toContain("74,996 tools/list response characters");
     expect(implementation).toContain("### MCP result representation");
     expect(implementation).toContain("identity/type/parent discovery only");
     expect(implementation).toContain("active skill references regression-checked");
     expect(implementation).toContain("No new local run is active");
+    expect(reviewGraph).toContain("current-state documentation synchronization COMPLETE");
+    expect(reviewGraph).not.toContain("non-local source/contract/CI cleanup COMPLETE");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
       expect(currentDoc).not.toContain("mcp/prompts/bedrock.md");
@@ -97,9 +107,12 @@ describe("Codex documentation handoff", () => {
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("first-stop index, not exhaustive ownership");
     expect(implementation).toContain("Do not load every listed test");
+    expect(implementation).toContain("`undo`/`redo` remain source-owned");
 
     const mappings = [
-      { tools: ["create_project", "get_project_info"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
+      { tools: ["create_project"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
+      { tools: ["get_project_info"], source: "server/tools/project.ts", test: "tests/static-efficiency-budget.test.ts" },
+      { tools: ["inspect_model_bounds"], source: "server/tools/project.ts", test: "tests/rendered-model-bounds-numeric-safety.test.ts" },
       { tools: ["place_cube", "modify_cube", "modify_cubes_batch"], source: "server/tools/cubes.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
       { tools: ["add_group"], source: "server/tools/element.ts", test: "tests/p1-core-ownership.test.ts" },
       { tools: ["list_outline", "find_elements_by_criteria"], source: "server/tools/element.ts", test: "tests/context-payload-cleanup.test.ts" },
@@ -111,6 +124,7 @@ describe("Codex documentation handoff", () => {
       { tools: ["create_animation"], source: "server/tools/animation.ts", test: "tests/create-animation-contract.test.ts" },
       { tools: ["manage_keyframes", "animation_graph_editor", "bone_rigging", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"], source: "server/tools/animation.ts", test: "tests/animation-mutation-contract.test.ts" },
       { tools: ["inspect_animation"], source: "server/tools/animation-inspection.ts", test: "tests/context-payload-cleanup.test.ts" },
+      { tools: ["get_undo_stack"], source: "server/tools/history.ts", test: "tests/static-efficiency-budget.test.ts" },
       { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
     ];
 
@@ -141,6 +155,7 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
     expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
     expect(validation).toContain("Native Deferred MCP Discovery Compatibility");
+    expect(validation).toContain("Current P0–P4 Static Efficiency Proof");
     expect(validation).toContain("OFFICIALLY VERIFIED");
     expect(validation).toContain("initialize instructions: 386 characters");
     expect(validation).toContain("74,996 tools/list response characters");

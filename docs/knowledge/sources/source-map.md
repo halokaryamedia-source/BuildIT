@@ -15,6 +15,7 @@ This note connects current documentation to repository authorities. It points to
 | product/modelling policy | [Foundation](../../foundation/README.md) |
 | current runtime behavior | `mcp/` source + relevant proof |
 | current source ownership summary | [Implementation Map](../implementation-map.md) |
+| named MCP-tool defect first stop | [Implementation Map](../implementation-map.md) → Hot-Path Defect Index |
 | skill routing | [Activation Matrix](../skills/activation-matrix.md) |
 | project/reference packages | `workspace/` |
 | current evidence status | [Validation Report](../../foundation/validation-report.md) |
@@ -32,6 +33,8 @@ Start with only the source needed by the current decision:
 - `mcp/prompts/bedrock_entity_workflow.md` for the runtime authoring workflow;
 - `mcp/build/docs-manifest.ts` for generated API ownership;
 - `mcp/tests/` for contract/integration regression ownership.
+
+If a reproduced defect names a tool in the Hot-Path Defect Index, inspect its mapped source owner + primary regression owner before broader caller/helper/code search. The mapped test is a first falsification target, not a request to load the whole test suite.
 
 Do not use deleted nested `mcp/.github/` prompts/instructions or upstream standalone-repo configuration as BlockIT authority.
 
@@ -52,7 +55,7 @@ Intentional model/reference packages live under `workspace/`. Preview/cache outp
 
 ## Decisions / reviews
 
-- [Decision Log](../decision-log.md) — durable why.
+- [Decision Log](../decision-log.md) — durable why. Audit-time helper names are lineage; they never override current root/activation/next-action routing.
 - [Review Index](../reviews/review-graph.md) — current meaning of historical evidence.
 - [Capability Surface Matrix](../reviews/bedrock-entity-capability-surface-matrix.md) — protected native Bedrock mapping guardrail.
 - [Model Creation Effectiveness Audit](../reviews/model-creation-effectiveness-audit-2026-08-10.md) — historical reference-fidelity/tool-efficiency evidence.
@@ -61,7 +64,7 @@ Historical Git revisions remain available for obsolete implementation/planning d
 
 ## Use rule
 
-Open only the source area needed by the current decision. Historical reviews, old branches, upstream repositories, or Git history may explain lineage but never silently override current `Local` source/policy.
+Open only the source area needed by the current decision. Historical reviews, audit-time decision wording, old branches, upstream repositories, or Git history may explain lineage but never silently override current `Local` source/policy.
 
 ## Parent
 

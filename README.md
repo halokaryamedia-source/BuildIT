@@ -25,11 +25,14 @@ current request / approved reference
 AGENTS.md
 → docs/knowledge/next-action.md
 → CONTEXT.md only when stable facts matter
+→ named MCP-tool defect? implementation-map Hot-Path Defect Index
 → affected source + nearest AGENTS.md
 → development-brief for create/change work
 ```
 
 `docs/knowledge/next-action.md` is the only active continuation snapshot. [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) records the completed local acceptance procedure and is not default boot unless explicitly reactivated.
+
+For a named hot-path MCP defect, [`docs/knowledge/implementation-map.md`](docs/knowledge/implementation-map.md) supplies the first source owner + primary regression owner before broad code search.
 
 ## Product Boundary
 
@@ -76,7 +79,7 @@ repository development:
   bun-tooling
 ```
 
-Select by current boundary; never load all skills by ritual.
+Select by current boundary; never load all skills by ritual. The authoring orchestrator routes from intent + known state + stage, uses exact-name native deferred loading when a tool spec is missing, and applies bounded recovery without adding a custom runtime router.
 
 ## MCP Development
 
@@ -104,7 +107,7 @@ See [`mcp/README.md`](mcp/README.md) for runtime/build details.
 
 The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, visual-routing behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
 
-Accepted default surface measurement:
+Historical acceptance measurement:
 
 ```text
 62 enabled tools
@@ -113,16 +116,27 @@ Accepted default surface measurement:
 11,800 tool-description characters
 ```
 
+Current fresh GitHub/CI serialized surface:
+
+```text
+62 tools
+74,996 tools/list response characters
+51,810 input-schema characters
+10,885 description characters
+initialize instructions: 386 characters
+```
+
 `export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-These static counts do not prove client token cost. Current cleanup/testing state belongs only in [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
+These character counts do not prove client token cost. P0–P4 routing/deferred-loading/recovery/navigation hardening is static repository/CI evidence; installed Codex/model parity and real token/latency behavior remain local-proof questions only when explicitly needed. Current status belongs in [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
 
 ## Hygiene
 
 - generated MCP API docs are tracked and checked for freshness;
 - transient build/editor/preview state is ignored;
 - historical implementation belongs in Git/reviews, not duplicate active plans;
-- approved reference packages and intentional fixtures remain tracked.
+- approved reference packages and intentional fixtures remain tracked;
+- current-state docs must be synchronized when continuation changes instead of compensating with chat memory.
 
 ## License / Upstream
 
