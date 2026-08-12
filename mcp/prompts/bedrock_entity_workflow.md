@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create or revise an editable Minecraft Bedrock **Entity** model in Blockbench. Use `bedrock`; Cubes are geometry and Groups are bones/organization. Reference is visual authority; tool/file success is not resemblance approval.
+Create/revise an editable Bedrock **Entity** in Blockbench. Use `bedrock`; Cubes are geometry, Groups are bones/organization. Reference is visual authority; tool/file success is not resemblance approval.
 
 ## Minimum necessary evidence
 
@@ -80,6 +80,8 @@ TRANSLATE preserves size; RESIZE names its fixed center/face/contact; ROTATE pre
 
 Secondary geometry follows primary `PASS`. Production texture waits for dependent geometry to `PASS`; production animation waits for an accepted baseline and suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; required unresolved `UNVERIFIED` becomes `BLOCKED`. Existing-asset work may use current geometry as baseline without certifying reference accuracy.
 
+## Locator / Null Object authored state
+
 Locator/Null Object discovery uses `list_locator_elements`; focused state uses `inspect_element`; create/update uses `manage_locator` / `manage_null_object`.
 
 ## Protected Native Capability Gaps
@@ -99,4 +101,4 @@ downstream stage → active texture or animation specialist
 requested deliverable → export_model
 ```
 
-Use branch tools only when their data changes the active decision; do not read overlapping evidence merely for confirmation.
+Use branch tools only when their data changes the decision; do not read overlapping evidence merely for confirmation.

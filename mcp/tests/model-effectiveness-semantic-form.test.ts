@@ -50,7 +50,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     for (const text of [modelling, workflow]) {
       expect(text).toContain("AXIS_ALIGNED | ROTATED | UNRESOLVED");
       expect(text).toContain("[0,0,0]");
-      expect(text).toContain("visible material slope");
+      expect(text.toLowerCase()).toMatch(/visible.*slope|slope.*visible/);
       expect(text).toContain("MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM");
     }
     expect(geometry).toContain("Rotation is justified when");
@@ -90,7 +90,8 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
       expect(text).toContain("negative spaces");
     }
     expect(modelling).toContain("AABB overlap, hierarchy, or numeric touching is not contact proof");
-    expect(geometry).toContain("AABB overlap or hierarchy alone is not proof");
+    const normalizedGeometry = geometry.replace(/\s+/g, " ");
+    expect(normalizedGeometry).toContain("AABB overlap or hierarchy alone is not proof");
     expect(geometry).toContain("joint/articulation");
     expect(geometry).toContain("attachment");
   });

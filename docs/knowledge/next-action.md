@@ -50,6 +50,10 @@ P4  named hot-path defect → mapped source + primary regression first
 
 No custom MCP router, recovery engine, extra registration profile, server split, or capability pruning was added.
 
+## Post-P4 Current-State Synchronization
+
+Current routing, ownership, proof/navigation docs, README surfaces, and the bounded hot-path index were synchronized after P4. Historical reviews/runbooks remain provenance rather than current execution authority.
+
 ## P5 Semantic Form / Rotation / Contact Hardening
 
 Design input is historical failure evidence, especially Zebra audit `G-01`, `G-09`, and `G-11`: arbitrary transforms, disconnected-looking Cube-by-Cube construction, and visibly sloped masses left axis-aligned.
