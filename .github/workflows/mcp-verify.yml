@@ -60,6 +60,20 @@ jobs:
         continue-on-error: true
         run: bun run docs:check
 
+      - name: Regenerate docs for synchronization artifact
+        if: always()
+        run: bun run docs:build
+
+      - name: Upload generated docs synchronization artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-generated-docs-${{ github.sha }}
+          path: |
+            mcp/docs/api.json
+            mcp/docs/index.html
+          if-no-files-found: error
+
       - name: Enforce verification result
         if: always()
         env:
