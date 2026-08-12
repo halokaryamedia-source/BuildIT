@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-12  
-**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, and completed post-acceptance static efficiency hardening.
+**Scope:** current `Local` source, accepted Codex + Blockbench functional evidence, completed post-acceptance static efficiency hardening, and GitHub-only pretest verification.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -21,7 +21,7 @@ LOCAL_ACCEPTANCE_COMPLETE
 
 The bounded functional pass completed on 2026-08-12 in Blockbench 5.1.6 against the loopback BlockIT endpoint. It is historical evidence for the accepted baseline; it is **not an instruction to run another local pass now**.
 
-The requested post-acceptance static efficiency cleanup is also complete at source/contract/CI level. Those later changes remain static proof until a future local run is explicitly requested.
+The requested post-acceptance static efficiency cleanup and follow-up GitHub-only pretest hardening are complete at source/contract/CI level. Those later changes remain static proof until a future local run is explicitly requested.
 
 ## Accepted Live Baseline — 2026-08-12
 
@@ -46,7 +46,7 @@ Historical pinned-SDK measurement captured at that accepted baseline:
 11,800 tool-description characters
 ```
 
-These character counts are **historical static measurements**, not current client token cost. Post-acceptance descriptions/schemas have changed, so do not present them as a fresh current measurement.
+These historical character counts are not client token cost.
 
 Accepted default containment:
 
@@ -59,11 +59,51 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
+## Fresh GitHub-Only Serialized Surface Proof
+
+The current verification workflow pins Bun **1.3.14** through root `.bun-version` and runs `mcp/scripts/measure-default-surface.ts` in a fresh process. The script starts the real stateless HTTP owner on an ephemeral loopback port, performs `initialize → tools/list`, measures the serialized client-visible surface, then enforces bounded regression ceilings.
+
+Current fresh result:
+
+```text
+62 tools
+74,996 tools/list response characters
+74,952 tools-array characters
+51,810 input-schema characters
+10,885 description characters
+per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
+```
+
+Relative to the historical static measurement, description characters decreased while input-schema and total serialized characters increased. This is **not evidence of overall token/context savings**. Real client context, token use, latency, tool search, and co-loading remain `UNKNOWN` until a future user-requested local trace.
+
+The largest current serialized tool payloads are led by `place_cube`, `create_animation`, `manage_keyframes`, and `manage_locator`. This list is diagnostic only; size alone is not permission to remove capability or mass-trim legitimate schemas.
+
+### Advertised Locator branch schema
+
+The isolated `tools/list` audit confirms both `manage_locator` and `manage_null_object` currently advertise one flattened object shape where:
+
+- `action` is top-level-required;
+- create/update fields are present;
+- the `name` description says it is required when `action=create`;
+- the `id` description says it is required when `action=update`;
+- runtime calls still validate against the original discriminated-union Zod schema.
+
+This is a known representation boundary, not a demonstrated runtime defect. Do not split tools or redesign registration without future evidence that clients materially miscall it.
+
 ## Engineering Proof
 
 The accepted baseline passed frozen-lockfile install, strict TypeScript, Bun contract tests, production build, prompt generation, generated-doc freshness, and source hygiene. The animation-selection repair additionally passed focused tests and live `create_animation → set_time → play/pause` proof.
 
-Post-acceptance static hardening uses the same source gates. Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
+Current GitHub-only verification additionally proves:
+
+- Bun 1.3.14 is read from `.bun-version` by CI;
+- the isolated default MCP measurement gate succeeds through the actual stateless HTTP path;
+- serialized-surface ceilings pass;
+- Locator create/update guidance survives into actual `tools/list` output;
+- active routing references resolve to existing canonical repository-owned skill packages;
+- typecheck, contract tests, production build, generated-doc freshness, and aggregate enforcement remain green.
+
+Static gates prove contracts/build output only; they do not create new Blockbench visual/runtime proof.
 
 ## Completed Post-Acceptance Static Hardening
 
@@ -72,15 +112,16 @@ Current `Local` source includes source-provable efficiency reductions:
 - exact single-text JSON mirrors of `structuredContent` are compacted centrally while canonical structured data, meaningful text, and images remain;
 - `get_project_info` returns a bounded top-level Group summary;
 - `list_outline`, element discovery, and undo-history normal defaults are smaller while larger explicit bounds remain available;
-- `list_locator_elements` now returns identity/type/parent discovery only; detailed Locator/Null Object authored state remains in `inspect_element` and mutation results;
+- `list_locator_elements` returns identity/type/parent discovery only; detailed Locator/Null Object authored state remains in `inspect_element` and mutation results;
 - asset routing, orchestration, modelling, texturing, animation, and stable workspace context have clearer non-overlapping ownership;
 - repository-development context is split across root routing, conditional `development-brief`, `mcp/AGENTS.md`, and at most one specialist; stale references to non-existent escalation skills were removed;
+- active skill routing now has an integrity regression gate;
 - runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
-- Locator/Null Object create/update branch intent is explicit in client-facing descriptions;
-- generated MCP docs/runtime manifest are synchronized through their build owners;
-- static efficiency budgets lock authoring and repository-development instruction size, the 62-tool capability count, compact default reads, and a bounded enabled-description surface.
+- Locator/Null Object create/update branch intent is explicit and checked on the serialized MCP surface;
+- generated MCP docs/runtime manifest remain synchronized through their build owners;
+- static efficiency budgets lock instruction size, exact 62-tool capability count, compact default reads, and bounded serialized surface growth.
 
-Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer runtime token savings or client behavior from character reductions alone.
+Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer runtime token savings or client behavior from character measurements alone.
 
 ## Product / Lifecycle / Export
 
@@ -143,7 +184,7 @@ Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. N
 
 ## MCP Client / Efficiency Evidence Still Unknown
 
-Static source still does **not** establish how a future fresh Codex task handles:
+Static/GitHub proof still does **not** establish how a future fresh Codex task handles:
 
 - direct schema injection vs native deferred/tool search;
 - actual prompt/skill co-loading;
@@ -151,7 +192,7 @@ Static source still does **not** establish how a future fresh Codex task handles
 - retry frequency caused by advertised schema interpretation;
 - image/context cost during realistic authoring.
 
-These remain `UNKNOWN` until a future local efficiency run is explicitly requested. Do not add a BlockIT custom router/profile solely from static tool count.
+These remain `UNKNOWN` until a future local efficiency run is explicitly requested. Do not add a BlockIT custom router/profile solely from static tool count or serialized character counts.
 
 ## Protected Native Capability Gaps
 
@@ -180,4 +221,4 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Functional local acceptance is complete. Requested static efficiency cleanup is complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests testing or a new product requirement.
+Functional local acceptance is complete. Requested static efficiency cleanup and GitHub-only pretest hardening are complete. **No new local run is active or required by this document.** The cleaned baseline is held until the user explicitly requests local testing or a new product requirement.
