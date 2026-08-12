@@ -90,6 +90,7 @@ asset tool selection         ≠ repository/code search
 ## Minimum Necessary Evidence
 
 - **Do not inspect every newly placed Cube.** Inspect only diagnosed/ambiguous or numeric correction state.
+- Do not capture after every mutation; use meaningful visual gates.
 - **Use `inspect_model_bounds` only when** numeric envelope, scale, ground, displacement, or gross placement is the question.
 - `UNVERIFIED` is not a retry command. **Mutation count alone is not a checkpoint trigger.**
 
