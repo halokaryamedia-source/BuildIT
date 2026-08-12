@@ -22,11 +22,11 @@ describe("asset tool routing", () => {
 
     for (const intent of [
       "target identity unknown",
-      "hierarchy/parent structure",
+      "hierarchy question",
       "known existing Cube",
       "Locator/Null",
       "numeric envelope/scale/ground",
-      "visible shape/reference comparison",
+      "visible/reference comparison",
     ]) {
       expect(skill).toContain(intent);
     }
