@@ -29,6 +29,21 @@ describe("static efficiency budget", () => {
     expect(workflow.length).toBeLessThan(7_000);
   });
 
+  test("repository-development instruction owners stay bounded by responsibility", async () => {
+    const [packageRules, developmentBrief, mcpDevelopment] = await Promise.all([
+      source("AGENTS.md"),
+      source("../.agents/skills/development-brief/SKILL.md"),
+      source("../.agents/skills/mcp-server-development/SKILL.md"),
+    ]);
+
+    expect(packageRules.length).toBeLessThan(6_000);
+    expect(developmentBrief.length).toBeLessThan(5_000);
+    expect(mcpDevelopment.length).toBeLessThan(4_000);
+
+    expect(packageRules).toContain("Root `../AGENTS.md` owns repository routing");
+    expect(mcpDevelopment).toContain("`mcp/AGENTS.md` owns package-wide");
+  });
+
   test("normal discovery and recovery reads default to compact bounds", () => {
     const outline = listOutlineParameters.parse({});
     expect(outline.max_depth).toBe(8);
