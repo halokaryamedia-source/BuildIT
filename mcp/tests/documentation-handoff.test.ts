@@ -96,7 +96,7 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("51,810 input-schema characters");
     expect(validation).toContain("10,885 description characters");
     expect(validation).toContain("not evidence of overall token/context savings");
-    expect(validation).toContain("only `action` top-level-required");
+    expect(validation).toContain("`action` is top-level-required");
     expect(validation).toContain("active routing references resolve");
     expect(validation).toContain("UNKNOWN");
 
