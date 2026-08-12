@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "mcp/**"
+      - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
     paths:
       - "mcp/**"
+      - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
 
@@ -28,7 +30,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: ".bun-version"
 
       - name: Install dependencies from lockfile
         run: bun install --frozen-lockfile
@@ -42,6 +44,11 @@ jobs:
         id: tests
         continue-on-error: true
         run: bun run test
+
+      - name: Default MCP surface measurement
+        id: surface
+        continue-on-error: true
+        run: bun run measure:surface
 
       - name: Production build
         id: build
@@ -58,11 +65,12 @@ jobs:
         env:
           TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
           TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          SURFACE_OUTCOME: ${{ steps.surface.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           DOCS_OUTCOME: ${{ steps.docs.outcome }}
         run: |
           failed=0
-          for gate in TYPECHECK TESTS BUILD DOCS; do
+          for gate in TYPECHECK TESTS SURFACE BUILD DOCS; do
             outcome_var="${gate}_OUTCOME"
             outcome="${!outcome_var}"
             if [ "$outcome" != "success" ]; then
