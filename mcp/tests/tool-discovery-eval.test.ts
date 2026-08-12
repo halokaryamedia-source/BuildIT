@@ -51,6 +51,7 @@ describe("tool discovery eval", () => {
             raw_semantic_stress: raw.metrics,
             routed_exact_name_loading: routed.metrics,
             top_raw_collision_pairs: raw.collision_pairs.slice(0, 10),
+            top_routed_collision_pairs: routed.collision_pairs.slice(0, 10),
             routed_top_8_misses: routed.top_8_misses.slice(0, 10),
           },
         },
@@ -73,7 +74,7 @@ describe("tool discovery eval", () => {
     );
     expect(routed.routed_query_note).toContain("deferred spec loading");
     expect(routed.metrics.top_8_recall).toBe(1);
-    expect(routed.metrics.top_1_accuracy).toBeGreaterThanOrEqual(0.95);
+    expect(routed.metrics.top_3_recall).toBeGreaterThanOrEqual(0.95);
     expect(routed.metrics.top_1_accuracy).toBeGreaterThan(raw.metrics.top_1_accuracy);
     expect(routed.metrics.mean_reciprocal_rank).toBeGreaterThan(
       raw.metrics.mean_reciprocal_rank

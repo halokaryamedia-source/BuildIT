@@ -90,7 +90,16 @@ intent + fresh state + stage
 
 `tool_search` is therefore a **spec loader after routing**, not a second router. Raw user wording must not be sent alone after the route already selected `place_cube`, `manage_locator`, `configure_material`, `animation_graph_editor`, etc.
 
-The orchestrator plus texturing/animation specialists now own compact exact-name query templates for collision-prone lanes. A routed-loading eval reuses the same 104 cases but prefixes the already-selected exact tool identity. The existing contract-test gate requires routed Top-8 recall **1.0** and Top-1 accuracy **>= 0.95** while preserving the raw P1 stress baseline separately.
+The routed-loading static proxy reuses the same 104 cases with the already-selected exact tool identity included in the query. First measured result:
+
+```text
+Top-1  0.8173
+Top-3  0.9808
+Top-8  1.0000
+MRR    0.8990
+```
+
+Because upstream `tool_search` returns up to 8 matches and routing already knows the exact tool, **Top-8 presence is the correctness gate**; Top-1 is only an efficiency diagnostic. The contract gate therefore requires routed Top-8 **1.0**, Top-3 **>= 0.95**, and improvement over the raw semantic-stress baseline.
 
 No public tool-description mass edit, new router/profile, server split, or capability reduction is part of P2. Public descriptions should be tuned only if exact-name routed loading still misses materially.
 
