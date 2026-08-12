@@ -56,7 +56,7 @@ For every **required attachment**, state its **contact target/invariant** before
 
 ## Tool Lane Discipline / Primary Build
 
-Normal lane: grounded claims → Semantic Form → Primary Form Hypothesis → coherent Cubes/Groups → necessary views → exact inspect/correct for diagnosed mismatch.
+Normal lane: grounded claims → Semantic Form → Primary Form Hypothesis → coherent Cubes/Groups → necessary views → exact inspect/correct for diagnosed mismatch. **If no current decision requires a branch, stay in the geometry lane** instead of searching for completeness work.
 
 Use `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE` per material axis/placement/orientation/contact. **A convincing front silhouette does not validate depth.** Never average cross-view conflict into invented geometry; unresolved material conflict → **Enter the workflow `BLOCKED` state**.
 
@@ -86,7 +86,7 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact target state when sufficient; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, a size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
+**Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, a size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
 
 After fresh affected views, compare pre/post evidence for every materially affected claim/view:
 
