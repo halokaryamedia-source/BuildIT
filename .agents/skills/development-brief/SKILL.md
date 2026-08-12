@@ -1,108 +1,63 @@
 ---
 name: development-brief
-description: Mandatory front door for BlockIT Developing tasks. Ground the real goal in repository evidence, separate suggested method/fixture from the requirement, detect ChatGPT-to-GitHub vs Codex-local execution, decide whether development is needed, choose Build and Acceptance POVs, define minimal scope with 2-5 provable criteria and a proof budget, then hand off to at most one specialist. Re-check the same contract before completion. Use the fast path for trivial unambiguous changes. Do not use for Plan or Maintenance.
+description: Front door for BlockIT repository create/change tasks. Ground the actual requirement, separate suggested method/fixture from the goal, set minimal scope and 2-5 provable acceptance criteria, identify execution channel, then hand off to at most one relevant implementation specialist. Do not use for ordinary asset authoring.
 ---
 
 # Development Brief
 
-Turn a create/change request into the smallest grounded development contract.
-Root `AGENTS.md` already owns independent judgment, source precedence,
-root-cause gating, proof economy, evidence status, and anti-slop rules; apply
-those rules instead of duplicating them here.
+Turn a repository create/change request into the **smallest grounded development contract**. Root `AGENTS.md` owns source precedence, proof economy, evidence labels, communication, and general anti-slop discipline; do not duplicate them here.
 
-## Required Decisions
+## Load Only Needed Context
 
-Before implementation establish only what materially affects the task:
+Start with the current request and affected owner.
+
+- Read `docs/knowledge/next-action.md` only when continuing current repository work.
+- Read `CONTEXT.md` only when stable project facts materially affect the decision.
+- Read one relevant policy/decision/source owner only when needed to resolve scope or a conflict.
+- Do not load review history, task board, foundation set, or multiple specialists by ritual.
+
+## Development Contract
+
+Record only fields that affect implementation:
 
 ```text
 Goal:
-Suggested method (if any):
-Observed fixture/example (if any):
 Generic requirement:
+Suggested method / fixture (if any):
 Execution channel:
-Input authority:
-Expected output:
-Build POV:
+Input authority / expected output:
+Build owner:
 Acceptance POV:
-Interface constraints:
-In scope / Out of scope:
+In scope / out of scope:
 Acceptance criteria: 2-5
 Proof budget:
-Open high-impact decisions:
+Material unknowns:
 ```
 
-Omit fields that do not apply.
+A suggested implementation is not automatically the requirement. Samples, fixtures, and Golden Samples are evidence unless object-specific behavior is explicitly requested.
 
 ## Procedure
 
-1. **Ground the goal**
-   - Read the current request, `CONTEXT.md`, `next-action.md`, and only the
-     relevant policy/source.
-   - Separate fact, durable decision, assumption, and unknown.
-   - Treat a proposed solution as a method, not automatically as the requirement.
-   - Treat samples/fixtures/Golden Samples as evidence unless object-specific
-     behavior is explicitly requested.
+1. **Ground the requirement** — inspect the current owner/pattern and separate fact, assumption, unknown, and optional method.
+2. **Decide whether code/docs must change** — `No change required` is valid when current behavior already satisfies the goal.
+3. **Choose one build owner** — use this skill alone for trivial work; otherwise add at most one specialist whose domain procedure materially changes the implementation decision.
+4. **Set minimal proof** — define 2-5 acceptance criteria and use the cheapest evidence that can falsify them. `ChatGPT → GitHub` provides repository/static proof; local runtime/Blockbench proof is used only when actually available and requested by the active task.
+5. **Implement and re-check the same contract** — do not broaden scope because adjacent issues are visible. Before completion, verify goal, scope, criteria, and available proof against the original contract.
 
-2. **Detect the execution channel**
-   - `ChatGPT → GitHub`: repository preparation/static proof only.
-   - `Codex local`: targeted local build/runtime/Blockbench proof may be
-     available; verify availability before relying on it.
-   - Goal, scope, POVs, and acceptance criteria do not change between channels.
+## Owner Selection
 
-3. **Check whether development is necessary**
-   - Inspect the existing owner/pattern first.
-   - `No change required` is valid when current behavior already satisfies the
-     goal.
-
-4. **Choose the two POVs**
-   - **Build POV**: the expert/domain that owns the actual change.
-   - **Acceptance POV**: the downstream beneficiary that determines usefulness.
-   - Keep intermediate tools/APIs/agents as interface constraints rather than
-     extra personas.
-
-5. **Set minimal scope and proof**
-   - Define 2-5 acceptance criteria that can actually be disproved/proved.
-   - Use the root `AGENTS.md` minimum-useful-proof and evidence-status rules.
-   - Ask the user only for unresolved high-impact decisions that repository
-     inspection cannot answer.
-
-6. **Select implementation owner**
-   - Use this skill alone for trivial work.
-   - Otherwise add **at most one** specialist when its domain procedure adds
-     material value.
-   - Do not stack specialists to cover implementation languages/frameworks that
-     are only incidental to the real owner.
-
-7. **Implement and final-gate**
-   - Make the smallest complete change.
-   - Before `Selesai`, re-check the same goal, scope, acceptance criteria, and
-     available proof.
-   - Distinguish `implemented` from `verified` when a material local/runtime
-     claim still needs proof.
-
-## User-Facing Brief
-
-For non-trivial Developing work, keep the visible brief simple:
+Choose by primary semantic responsibility, not every technology present:
 
 ```text
-Tujuan:
-Cara berpikir:
-Hasil yang dituju:
-Tidak diubah:
-Cara memastikan benar:
+MCP public/schema/result/transport contract → mcp-server-development
+Blockbench API/lifecycle/UI/Undo mechanics   → blockbench-runtime-development
+TypeScript type-system problem              → typescript-type-safety
+Bun/build/package tooling                   → bun-tooling
+model/visual judgement                      → blockbench-bedrock-modelling
 ```
 
-For a trivial unambiguous change, one short line is enough.
+If no specialist adds material procedure, do not load one.
 
-## Escalation
+## Completion Boundary
 
-Use only when the concrete task needs it:
-
-- unresolved high-impact requirement → lightweight GSD-style discovery;
-- plan/decision needs adversarial challenge → `grilling`;
-- implemented change benefits from independent critique → `code-review`;
-- uncertain/disputed material evidence → root `AGENTS.md` evidence-status rules;
-- genuine cross-cutting contract/migration/multi-phase scope → documented
-  OpenSpec threshold.
-
-None are default ceremony.
+Report `implemented` separately from `verified` when required live evidence was not obtained. Do not invent another plan, persona, review layer, or escalation skill merely to make the task look more rigorous.
