@@ -1,17 +1,17 @@
 ---
 name: blockbench-reference-generator
-description: Turn an actual source image into one Minecraft / Blockbench multi-view reference image; user supplies the image + any known facts, and the skill builds the full brief internally.
+description: Turn a source image into one Minecraft / Blockbench multi-view reference; user supplies the image + known facts, and the skill builds the brief internally.
 ---
 
 # Blockbench Reference Generator
 
-Own **Source Image / user intent → one approved visual Modelling Brief image**. Design one plausible Cuboid model first, then show that same model from multiple views. Stop at the image.
+Own **Source Image / user intent → one approved visual Modelling Brief image**. Design one plausible Cuboid model first, then show that same model from multiple views.
 
 ## Simple User Contract
 
 User only needs to upload a usable source image, ask for a Minecraft / Blockbench reference, and optionally state facts they already know: asset name, target size/height, must-preserve feature, asymmetry.
 
-Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Missing optional facts use conservative image-grounded defaults. Ask only when the target itself is materially ambiguous and continuing would require guessing.
+Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Missing optional facts use conservative image-grounded defaults. Ask only when the target is materially ambiguous and continuing would require guessing.
 
 ## Automatic Internal Generation Brief
 
@@ -19,7 +19,7 @@ Silently enrich the simple request before generating.
 
 ### Identity
 
-Source image owns identity, recognizable silhouette, major proportions, attachments, markings/palette, asymmetry. Preserve defining features; do not invent hidden features from generic knowledge.
+Source image owns identity, silhouette, major proportions, attachments, markings/palette, asymmetry. Preserve defining features; do not invent hidden features from generic knowledge.
 
 ### Blockbench Construction Grammar
 
@@ -48,11 +48,11 @@ UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-LEFT = strict profile; FRONT/BACK = upright orthographic; TOP = true footprint; 3/4 = volume check. Add RIGHT SIDE only when material asymmetry requires it.
+LEFT = strict profile; FRONT/BACK = orthographic; TOP = true footprint; 3/4 = volume check. Add RIGHT SIDE only when asymmetry requires it.
 
 ### Presentation
 
-Use a clean Minecraft / Blockbench modelling sheet: neutral background, uncropped subject, restrained pixel texture, readable planar lighting, visible construction boundaries. No cinematic render. Shading may clarify planes but must not fake rounding, bevels, holes, or hidden geometry.
+Use a clean Minecraft / Blockbench modelling sheet: neutral background, uncropped subject, restrained pixel texture, planar lighting, visible construction boundaries. No cinematic render or shading that fakes rounding, bevels, holes, or hidden geometry.
 
 ## Buildability Visual Gate
 
@@ -77,6 +77,6 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Generate directly when the source is usable. Correct only one concrete visible/buildability defect; if still materially conflicting, report not ready instead of looping.
+Generate directly when the source is usable. Correct one concrete defect; if still materially conflicting, report not ready instead of looping.
 
-Return **one image only**. **Do not generate ZIPs**, manifests, production documents, or GitHub-sync state. After approval, hand the actual image + optional user facts to `blockbench-bedrock-modelling` / BlockIT MCP. Filename/path/summary is not visual evidence.
+Return **one image only**. **Do not generate ZIPs**, manifests, production documents, or GitHub-sync state. After approval, hand the actual image + user facts to `blockbench-bedrock-modelling` / BlockIT MCP. Filename/path/summary is not visual evidence.
