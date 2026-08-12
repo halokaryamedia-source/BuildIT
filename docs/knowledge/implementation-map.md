@@ -32,13 +32,14 @@ mcp/lib/              schemas/factories/identities/result normalization
 mcp/ui/               Blockbench panel/settings
 mcp/prompts/          one runtime workflow + source-only maintainer references
 mcp/build/            build/docs/runtime-manifest generation
+mcp/scripts/          isolated verification/measurement utilities
 mcp/tests/            contract/integration/static-efficiency gates
 mcp/docs/             generated API docs; secondary to source
 ```
 
 ## Default MCP Surface
 
-Accepted live capability baseline:
+Accepted live capability baseline remains:
 
 ```text
 62 enabled tools
@@ -50,7 +51,20 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-Historical accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. Those numbers predate later static slimming and are **not** current client-token measurements. Current regressions keep the 62-tool capability count and bound enabled description growth without claiming runtime token savings.
+Fresh GitHub/CI serialized measurement after static slimming:
+
+```text
+62 tools
+74,996 tools/list response characters
+74,952 tools-array characters
+51,810 input-schema characters
+10,885 description characters
+per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
+```
+
+The earlier accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. The current descriptions are smaller, while current schema and total serialized characters are larger. Neither measurement is a client token/context measurement.
+
+`mcp/scripts/measure-default-surface.ts` owns the isolated `initialize → tools/list` measurement. CI retains exactly 62 default tools and uses bounded serialized-surface ceilings with small headroom to catch accidental growth without treating character count as a product target.
 
 ## Bedrock Authoring Ownership
 
@@ -81,6 +95,8 @@ Animation tools own identity, summary/focused inspection, keyframes, graph/batch
 
 `list_locator_elements` is **identity/type/parent discovery only**. Detailed transforms, visibility, and Null Object IK read state belong to `inspect_element`; create/update state comes directly from `manage_locator` / `manage_null_object`. Rename/delete use generic element owners.
 
+The actual serialized `tools/list` contract for `manage_locator` / `manage_null_object` currently flattens branch fields into one object shape where only `action` is top-level-required. Branch intent remains client-visible through field descriptions (`name` required for create, `id` required for update), while the original discriminated-union Zod schema remains the runtime validation owner.
+
 ### MCP result representation
 
 `mcp/lib/factories.ts` owns request-level normalization. An exact single-text JSON mirror of `structuredContent` is replaced by a short text summary while canonical structured data, meaningful distinct text, and images remain.
@@ -89,19 +105,27 @@ Animation tools own identity, summary/focused inspection, keyframes, graph/batch
 
 Only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as the runtime workflow prompt. Maintainer API/eval Markdown remains source-only.
 
+### Toolchain / CI
+
+Root `.bun-version` pins Bun **1.3.14** for the MCP verification workflow. `MCP Verify` owns frozen-lockfile install, typecheck, contract tests, isolated default-surface measurement, production build, generated-doc freshness, and aggregate enforcement.
+
+Active routing integrity is regression-tested against the canonical `.agents/skills/` inventory so active docs cannot silently route to missing repository-owned skills.
+
 ## Completed Static Efficiency Hardening
 
-**Source-provable cleanup is complete** for the requested pre-local phase:
+**Source-provable cleanup and GitHub-only pretest hardening are complete** for the requested pre-local phase:
 
 - duplicate structured/text result mirrors removed centrally;
 - path export and discovery/read defaults made metadata/summary-first where source ownership proved the boundary;
 - project, outline/search, history, and Locator discovery no longer return avoidable normal-path detail;
 - asset instruction ownership split across routing/orchestrator/domain specialists;
 - repository-development context split across root routing, compact development brief, package rules, and at most one specialist;
-- stale/non-existent development routing removed;
+- stale/non-existent development routing removed and active skill references regression-checked;
 - runtime prompt bundle reduced to the one callable workflow;
-- Locator/Null branch intent clarified without tool/profile proliferation;
-- generated state synchronized and static efficiency budgets added.
+- Locator/Null branch intent checked on the actual serialized MCP surface without tool/profile proliferation;
+- generated state synchronized;
+- Bun toolchain pinned;
+- isolated serialized-surface measurement and regression ceilings added.
 
 **No new local run is active.** Client-only questions—schema injection/deferred search, real co-loading, token/latency cost, retry frequency, and realistic image-context cost—remain future evidence questions. Do not add a router/profile or remove retained native capability from static speculation alone.
 
