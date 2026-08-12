@@ -21,7 +21,7 @@ Reference Evidence Map → derived index only
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous/mirrored pairing → `UNVERIFIED`; unlike views cannot approve each other.
+Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
 
 ## Semantic form before coordinates
 
@@ -50,7 +50,7 @@ For every **required attachment**, identify **contact target/invariant** first. 
 
 Semantic Form says what exists/how parts relate; Primary Form Hypothesis says where/how large/how oriented. Keep relative size/placement, orientation + supporting claim/view(s), contact invariant, uncertainty.
 
-Build minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before detail. Under-constrained extent stays a working hypothesis; placement does not verify it.
+Build minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
 
 ## Difference-first visual gate
 

@@ -54,7 +54,7 @@ Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. `[0,0,0]` need
 
 For every **required attachment**, state its **contact target/invariant** before coordinates. Rotation preserves it; use an **attachment/joint pivot** when it owns the transform. **AABB overlap, hierarchy, or numeric touching is not contact proof**; paired views must show connection and intentional negative spaces stay open.
 
-## Primary Build
+## Tool Lane Discipline / Primary Build
 
 Normal lane: grounded claims → Semantic Form → Primary Form Hypothesis → coherent Cubes/Groups → necessary views → exact inspect/correct for diagnosed mismatch.
 
@@ -86,7 +86,7 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact target state when sufficient; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent.
+Reuse fresh exact target state when sufficient; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, a size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
 
 After fresh affected views, compare pre/post evidence for every materially affected claim/view:
 
