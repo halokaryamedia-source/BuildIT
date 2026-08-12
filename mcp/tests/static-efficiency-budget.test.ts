@@ -37,11 +37,16 @@ describe("static efficiency budget", () => {
     ]);
 
     expect(packageRules.length).toBeLessThan(6_000);
-    expect(developmentBrief.length).toBeLessThan(5_000);
+    expect(developmentBrief.length).toBeLessThan(4_000);
     expect(mcpDevelopment.length).toBeLessThan(4_000);
 
     expect(packageRules).toContain("Root `../AGENTS.md` owns repository routing");
     expect(mcpDevelopment).toContain("`mcp/AGENTS.md` owns package-wide");
+    expect(developmentBrief).toContain(
+      "Read `CONTEXT.md` only when stable project facts materially affect the decision."
+    );
+    expect(developmentBrief).not.toContain("`grilling`");
+    expect(developmentBrief).not.toContain("`code-review`");
   });
 
   test("normal discovery and recovery reads default to compact bounds", () => {
