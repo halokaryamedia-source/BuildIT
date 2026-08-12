@@ -4,11 +4,23 @@ on:
   push:
     paths:
       - "mcp/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "CONTEXT.md"
+      - ".agents/skills/**"
+      - "docs/knowledge/**"
+      - "docs/foundation/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
     paths:
       - "mcp/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "CONTEXT.md"
+      - ".agents/skills/**"
+      - "docs/knowledge/**"
+      - "docs/foundation/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
