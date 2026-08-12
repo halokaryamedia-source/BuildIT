@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-12
+Updated: 2026-08-13
 
 This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; accepted proof detail lives in `docs/foundation/validation-report.md`; source ownership lives in `implementation-map.md`.
 
@@ -77,26 +77,29 @@ pre-correction paired evidence
 
 A correction is progress only when its target mismatch is `IMPROVED` and no previously supported material claim/view becomes `REGRESSED`. `UNCHANGED`/`REGRESSED` is not progress; cross-view regression changes the diagnosis or reopens Primary Form rather than authorizing another patch. This is qualitative, not a numeric fidelity score.
 
-Model-facing evaluation integrity is also frozen without adding a new evaluator runtime:
+Model-facing evaluation integrity remains frozen without adding a new evaluator runtime. Candidate evaluation uses actual approved images plus independent expectations established before candidate output.
+
+## Active Reference Generator
+
+The previously documented reference-generation ownership gap is now resolved by the minimal pre-modelling skill:
+
+`/.agents/skills/blockbench-reference-generator/SKILL.md`
+
+Its boundary is deliberately small:
 
 ```text
-actual approved image to candidate
-+ target facts / normal workflow
-+ independent expectations established before candidate output
-→ evaluate only:
-   decomposition / coverage
-   cross-view consistency
-   spatial hypothesis quality
-   correction direction / convergence
+actual source image
+→ one Minecraft / Blockbench-style multi-view Modelling Brief image
+→ maximum one targeted correction
+→ user approval
+→ actual approved image handed to modelling
 ```
 
-The candidate must not receive the expected answer. Expectations may come from user-approved facts, pre-existing audited evidence, or another independently grounded source. The retained Zebra asset is evaluation evidence only, never a Zebra-specific product/runtime law.
-
-Targeted contract regression: `mcp/tests/model-effectiveness-fidelity-convergence.test.ts`.
+It does **not** call BlockIT MCP, generate geometry, create ZIP/manifest/production documents, use numeric fidelity scoring, or require target height/animation metadata. Durable policy remains `docs/foundation/04-reference-guide.md`.
 
 ## Evidence Boundary
 
-GitHub/CI can prove routing, semantic/reference-grounding instructions, qualitative convergence rules, rotation/pivot schema safety, recovery, source/test ownership, buildability, and regression integrity. It **cannot** prove the model interpreted an image correctly or that a generated model visually converges in practice. That remains model-facing/live evidence.
+GitHub/CI can prove routing, reference-generator scope, semantic/reference-grounding instructions, qualitative convergence rules, recovery, buildability, and regression integrity. It **cannot** prove generated reference-image quality, model image interpretation, or live Blockbench convergence. Those remain direct visual/model-facing evidence.
 
 ## Continuation Boot
 
@@ -115,8 +118,8 @@ AGENTS.md
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P0–P7 + POST-P4 CURRENT-STATE SYNC — IMPLEMENTED ON LOCAL.
-Proof budget for P7: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
+P0–P7 + MINIMAL REFERENCE GENERATOR ROUTE — IMPLEMENTED ON LOCAL.
+Proof budget: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-NEXT PROPOSED — do not add more geometry architecture. Geometry policy/guardrails are feature-complete for the current evidence. The remaining question is model-facing reference-understanding and real convergence quality; evaluate that only with actual images and independent expectations, without exposing a gold answer to the candidate.
+NEXT — use the Reference Generator on an image-capable task when requested. Do not add more reference packaging, scoring, manifests, or geometry architecture without a concrete failure proving the minimal route insufficient.
 ```

@@ -1,15 +1,21 @@
 # BuildIT Agent Skills
 
-This directory contains repository-owned skills. For normal Minecraft Bedrock Entity work through the BlockIT MCP, use the BlockIT routing below rather than the upstream generic `blockbench-mcp-project` skills verbatim.
+This directory contains repository-owned skills. Use root `AGENTS.md` + the Activation Matrix to select the smallest owner; do not load all skills together.
+
+## Reference preparation
+
+- **`blockbench-reference-generator`** — image-capable pre-modelling skill that turns an actual source image into one Minecraft / Blockbench-style multi-view Modelling Brief image. Image-only; no MCP, ZIP, manifest, or production-doc package.
+
+After user approval, pass the actual image to the normal Bedrock authoring route.
 
 ## Bedrock Entity authoring
 
 1. **`blockit-bedrock-entity-mcp`** — mandatory MCP workflow orchestrator for asset creation/modification/export.
-2. **`blockbench-bedrock-modelling`** — existing whole-form/Cuboid/hierarchy/pivot modelling specialist.
+2. **`blockbench-bedrock-modelling`** — whole-form/Cuboid/hierarchy/pivot modelling and actual-reference grounding specialist.
 3. **`blockit-bedrock-texturing`** — textures, Paint, PBR, material instances.
 4. **`blockit-bedrock-animation`** — Bedrock BoneAnimator/keyframe/effect workflow.
 
-Load the orchestrator first for substantive MCP work, then the domain skill(s) needed by the request.
+Load the orchestrator first for substantive MCP work, then only the domain skill needed by the current stage.
 
 ## Maintainer/development skills
 
@@ -19,7 +25,7 @@ Load the orchestrator first for substantive MCP work, then the domain skill(s) n
 - `typescript-type-safety` — TypeScript type-system issues.
 - `development-brief` — repository development planning/brief work.
 
-Maintainer skills are not a substitute for the Bedrock asset-authoring workflow.
+Maintainer skills are not substitutes for reference generation or Bedrock asset authoring.
 
 ## Deliberate exclusions
 

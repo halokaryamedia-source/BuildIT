@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified: 2026-08-12  
+Last verified: 2026-08-13  
 Stability: stable  
 Owner: workspace agent
 
@@ -17,18 +17,18 @@ Primary asset output is a clean editable `.bbmodel`; Bedrock geometry JSON is th
 ## Stable Terms
 
 - **Source Image** — original visual input; not geometry data.
-- **Modelling Brief** — approved multi-view guide for form, proportions, landmarks, contacts, orientation, and style; not a per-Cube blueprint.
+- **Modelling Brief Draft** — generated multi-view Minecraft / Blockbench-style reference image before approval.
+- **Modelling Brief** — approved multi-view image guide for form, proportions, landmarks, contacts, orientation, and style; not a per-Cube blueprint.
 - **Requested Dimensions** — user-approved target dimensions; `1 block = 16 Blockbench units` per axis.
-- **Reference Package** — Modelling Brief plus compact metadata and optional supporting references.
+- **Reference Generator** — image-capable Source Image/user intent → one approved Modelling Brief image workflow; active skill `.agents/skills/blockbench-reference-generator/`, policy owner `docs/foundation/04-reference-guide.md`.
 - **Blockbench Model** — reviewed editable `.bbmodel`.
-- **Reference Generator** — image-capable Source Image/user intent → approved Modelling Brief workflow; policy owner `docs/foundation/04-reference-guide.md`.
 - **MCP Modelling** — approved reference → Blockbench model workflow; modelling judgement and MCP execution have separate owners.
 
 ## Repository Shape
 
 ```text
 .agents/skills/    canonical repository-owned skills
-docs/foundation/  durable product/modelling policy
+docs/foundation/  durable product/reference/modelling policy
 docs/knowledge/   continuity, decisions, ownership maps, historical evidence indexes
 mcp/              BlockIT plugin/runtime/build/tests/generated API docs
 workspace/        model/project packages and fixtures
@@ -42,9 +42,11 @@ mcp/.github/skills/
 mcp/workflow/skills/
 ```
 
-There are **nine repository-owned skill packages**:
+There are **ten repository-owned skill packages**:
 
 ```text
+reference:   blockbench-reference-generator
+
 asset:       blockit-bedrock-entity-mcp
              blockbench-bedrock-modelling
              blockit-bedrock-texturing
@@ -67,8 +69,11 @@ The normal surface is Bedrock-focused with generic fallback families explicitly 
 
 Supported ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export. Protected direct-ownership gaps include TextureMesh authoring, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, and bone-binding expressions.
 
+Reference image generation is outside the MCP capability surface. It is an image-capable pre-modelling route and must not be simulated through generic MCP/UI tooling.
+
 ## Execution Channels
 
+- **Image-capable ChatGPT surface** — Source Image → Modelling Brief image generation/revision.
 - **ChatGPT → GitHub** — repository/source/docs/CI/static proof; no invented Blockbench runtime evidence.
 - **Codex local** — shell/MCP/Blockbench/runtime/visual proof only when explicitly active and materially required.
 
@@ -92,5 +97,5 @@ That acceptance does not prove optimal Codex context/usage behavior. Active clea
 - active continuation → `docs/knowledge/next-action.md`
 - source ownership → `docs/knowledge/implementation-map.md`
 - proof status → `docs/foundation/validation-report.md`
-- product policy → `docs/foundation/`
+- product/reference/modelling policy → `docs/foundation/`
 - MCP engineering → `mcp/README.md` + `mcp/AGENTS.md`

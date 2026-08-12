@@ -11,17 +11,26 @@ async function source(path: string): Promise<string> {
 
 describe("static efficiency budget", () => {
   test("active authoring instruction owners stay compact", async () => {
-    const [root, orchestrator, modelling, texturing, animation, workflow] =
-      await Promise.all([
-        source("../AGENTS.md"),
-        source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-        source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-        source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-        source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-        source("prompts/bedrock_entity_workflow.md"),
-      ]);
+    const [
+      root,
+      referenceGenerator,
+      orchestrator,
+      modelling,
+      texturing,
+      animation,
+      workflow,
+    ] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
     expect(root.length).toBeLessThan(5_000);
+    expect(referenceGenerator.length).toBeLessThan(4_000);
     expect(orchestrator.length).toBeLessThan(5_000);
     expect(modelling.length).toBeLessThan(8_000);
     expect(texturing.length).toBeLessThan(4_500);

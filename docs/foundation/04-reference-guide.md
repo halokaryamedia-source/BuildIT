@@ -1,21 +1,20 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 1.4  
-**Updated:** 2026-08-12
+**Version:** 1.5  
+**Updated:** 2026-08-13
 
 ## Purpose
 
-Define Source Image → approved visual Modelling Brief handoff for Minecraft
-Bedrock modelling.
+Define Source Image → approved visual Modelling Brief handoff for Minecraft Bedrock modelling.
 
-The reference should reduce ambiguity about identity, silhouette, proportion,
-major masses, visible contacts, orientation, and style. It must **not** become a
-pixel-calibrated Cube blueprint.
+The active image-generation owner is `.agents/skills/blockbench-reference-generator/SKILL.md`. This policy defines what a usable reference image means; it does not turn the generator into an MCP/geometry subsystem.
+
+The reference should reduce ambiguity about identity, silhouette, proportion, major masses, visible contacts, orientation, and style. It must **not** become a pixel-calibrated Cube blueprint.
 
 ## Core Principle
 
-The approved five-view image is a **visual Modelling Brief**.
+The approved multi-view image is a **visual Modelling Brief**.
 
 ```text
 Source Image / user intent
@@ -24,13 +23,12 @@ Modelling Brief Draft
 ↓
 user review / targeted correction when needed
 ↓
-Approved Modelling Brief
+Approved Modelling Brief image
 ↓
 Reference Fidelity modelling workflow
 ```
 
-Approval means the brief is useful enough to model from. It does not certify
-metric image consistency and does not approve Cube transforms.
+Approval means the brief is useful enough to model from. It does not certify metric image consistency and does not approve Cube transforms.
 
 ## Actual Image Evidence Boundary
 
@@ -49,32 +47,27 @@ Reference Evidence Map       → derived working index; never image authority
 
 ## Canonical Terms
 
-- **Source Image** — original user image(s); identity/provenance authority, not
-  direct geometry data.
-- **Golden Sample** — layout/lighting/presentation/construction-language example;
-  never target anatomy authority.
-- **Modelling Brief Draft** — generated five-view reference before approval.
-- **Modelling Brief** — approved visual guide consumed by modelling.
-- **Requested Dimensions** — approved numeric width/height/length target.
-- **Reference Package** — Modelling Brief + small metadata + optional Source
-  Images/support references.
+- **Source Image** — original user image(s); identity/provenance authority, not direct geometry data.
+- **Golden Sample** — layout/lighting/presentation/construction-language example; never target anatomy authority.
+- **Modelling Brief Draft** — generated multi-view reference image before approval.
+- **Modelling Brief** — approved visual image guide consumed by modelling.
+- **Requested Dimensions** — optional approved numeric width/height/length target.
 - **Reference Evidence Map** — run-local material claim index derived from the actual approved image; never a Cube blueprint or replacement for the image.
+
+The default Reference Generator deliverable is the **image only**. Small user-supplied target notes may accompany the handoff, but no ZIP/manifest/technical-document package is required.
 
 ## View Baseline
 
 Normal generated-reference baseline:
 
-- side;
-- front;
-- back;
-- top / footprint;
-- front 3/4 volume preview.
+```text
+UPPER: LEFT SIDE | FRONT | BACK
+LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
+```
 
-Orthographic views carry the main shape/proportion evidence. The 3/4 view helps
-read volume and identity; it is not metric calibration.
+Orthographic views carry the main shape/proportion evidence. The 3/4 view helps read volume and identity; it is not metric calibration.
 
-A different view set is allowed when the actual object requires it. Do not turn
-one Golden Sample's panels into permanent anatomy rules.
+Add RIGHT SIDE only when material asymmetry cannot be represented honestly without it. A different view set is allowed when the actual object requires it. Do not add views for completeness or turn one Golden Sample's panels into anatomy rules.
 
 ### View Pair Map
 
@@ -102,11 +95,9 @@ height ← front/back + side
 length ← side + top
 ```
 
-Placement/orientation should rely on the views that actually reveal that
-relationship.
+Placement/orientation should rely on the views that actually reveal that relationship.
 
-If primary-mass evidence materially conflicts across views, mark the reference
-`NOT READY / NEEDS REVIEW` rather than silently averaging contradictory shapes.
+If primary-mass evidence materially conflicts across views, mark the reference `NOT READY / NEEDS REVIEW` rather than silently averaging contradictory shapes.
 
 ## Reference Evidence Map
 
@@ -141,7 +132,7 @@ Do not let one strong view silently provide information about an axis it does no
 SUPPORTED    one or more relevant views directly constrain the claim
 PROVISIONAL  a working value is needed to build, but evidence is weak/incomplete
 CONFLICTING  relevant views materially disagree
-UNAVAILABLE  the required axis/relationship cannot be observed from the package
+UNAVAILABLE  the required axis/relationship cannot be observed from the image
 ```
 
 Typical evidence directions remain:
@@ -162,7 +153,7 @@ Rules:
 - `CONFLICTING` evidence **must not be averaged** into a fake compromise. If the conflict materially changes the primary form and the approved brief/user intent cannot resolve it, modelling is **BLOCKED** until the reference is clarified.
 - `UNAVAILABLE` evidence leaves the affected claim `UNVERIFIED`; do not invent hidden dimensions/features and then report them as matched.
 
-The goal is not to produce a large manifest. Keep only the small axis/relationship evidence map needed for current primary modelling decisions.
+Keep only the small axis/relationship evidence map needed for current primary modelling decisions.
 
 ## Dimensions
 
@@ -170,9 +161,7 @@ When dimensions are approved:
 
 `1 block = 16 Blockbench units`
 
-Use dimensions as the numeric whole-model target/envelope. Individual Cube
-transforms remain modeller decisions based on the target envelope + visible
-proportions.
+Use dimensions as the numeric whole-model target/envelope. Individual Cube transforms remain modeller decisions based on the target envelope + visible proportions.
 
 Never derive scale/transforms from:
 
@@ -182,6 +171,8 @@ Never derive scale/transforms from:
 - canvas/panel size;
 - perspective projection;
 - masks/mesh fitting/similarity score.
+
+Target dimensions are optional for reference generation unless the user explicitly requires a scale constraint.
 
 ## Golden Sample Rule
 
@@ -200,7 +191,7 @@ COPY THE CONSTRUCTION LANGUAGE AND QUALITY BAR.
 REPLACE THE SUBJECT.
 ```
 
-The Source Image/user intent owns target identity and recognizable features.
+The Source Image/user intent owns target identity and recognizable features. A Golden Sample is helpful evidence, not required runtime input when the active skill already contains the approved construction-language rules.
 
 ## Draft Quality Bar
 
@@ -213,15 +204,19 @@ A good generated Draft should show:
 - consistent construction and identity across views;
 - usable orthographic silhouettes;
 - coherent visible contacts;
-- a distinct 3/4 volume read.
+- important negative spaces preserved;
+- a distinct 3/4 volume read;
+- clean technical-board presentation with neutral readable lighting.
 
 Reject Drafts that are mainly:
 
 - smooth/realistic forms with pixelated skin;
 - generic voxel filters;
 - uniform Cube stacking;
+- micro-Cube clutter or arbitrary rotation noise;
 - inconsistent subjects between panels;
-- cropped/missing/ambiguous required views.
+- cropped/missing/ambiguous required views;
+- cinematic/environment presentation that hides construction.
 
 The Draft is a **buildable visual target**, not an exact Cube plan.
 
@@ -230,48 +225,44 @@ The Draft is a **buildable visual target**, not an exact Cube plan.
 Distinguish:
 
 - **hidden surface** of a known visible volume — may be completed consistently;
-- **hidden feature** such as an unseen protrusion/recess/attachment — do not
-  invent without evidence or user requirement.
+- **hidden feature** such as an unseen protrusion/recess/attachment — do not invent without evidence or user requirement.
 
-## Metadata
+## Optional Handoff Notes
 
-Keep the package small. Typical metadata:
+The image is the deliverable. Preserve only short user-supplied notes that materially affect downstream modelling, for example:
 
 ```text
-Model
-Target: Minecraft Bedrock Entity
-Approved reference image/file identity
-Requested dimensions (when relevant)
-Texture style: 16×16 / 32×32 / other requested style
-Animation: required / not required
-Additional notes
+Asset name (optional)
+Requested dimensions / target height (optional)
+Must-preserve visible feature (optional)
+Material asymmetry note (optional)
 ```
 
-A file path identifies which image must be attached/read; the path itself is not visual evidence. Do not ask the user for Cube counts, bones, pivots, UV layout, or MCP operations.
+Do not ask the user for Cube counts, bones, pivots, UV layout, animation plans, MCP operations, or package metadata to generate the reference image.
 
 ## Generation Budget
 
 Default:
 
 ```text
-five-view Draft       = maximum 1
-targeted correction   = maximum 1
+multi-view Draft       = maximum 1
+targeted correction    = maximum 1
 automatic alternatives = 0
 ```
 
-Create another Draft only for a concrete defect. Do not generate variants to
-simulate progress.
+Correct only a concrete visible defect. If one targeted correction still leaves a material conflict, mark the reference `NOT READY / NEEDS REVIEW`; do not generate variants to simulate progress.
 
-Do not revive the old multi-sheet/manifest/hash/ZIP machinery unless a future
-requirement proves it necessary.
+Do not revive the old multi-sheet/manifest/hash/ZIP machinery unless a future requirement proves it necessary.
 
 ## Reference Generator Boundary
 
-Reference generation belongs to an **image-capable ChatGPT/Reference Generator
-surface**, not a root Codex skill.
+Active owner:
 
-Codex consumes the approved Modelling Brief through the Bedrock modelling
-workflow. The approved image must still be supplied as actual multimodal evidence to the modelling model. If the active surface cannot inspect/generate the required image, do not fake a completed reference.
+`/.agents/skills/blockbench-reference-generator/SKILL.md`
+
+Reference generation belongs to an **image-capable surface** and returns **one Modelling Brief image only**. It does not call BlockIT MCP, author `.bbmodel` geometry, create Codex handoff packages, or emit Geometry/Texture/Animation/Validation documents.
+
+After user approval, Codex/BlockIT consumes the actual Modelling Brief image through the normal Bedrock modelling workflow. If the active surface cannot inspect/generate the required image, do not fake a completed reference.
 
 ## Handoff To Modelling
 
@@ -286,7 +277,7 @@ Reference Evidence Map
 ↓
 Semantic Form Contract
 ↓
-Coordinate frame + target envelope
+Coordinate frame + target envelope when supplied
 ↓
 Primary Form Hypothesis
 ↓
@@ -297,26 +288,24 @@ Structural + visual observation
 actual reference ↔ fresh model claim-locked comparison
 ```
 
-The Modelling Brief provides visual requirements. The modeller decides Cube
-count, exact transforms, hierarchy, pivots, UVs, texture, and optional animation.
+The Modelling Brief provides visual requirements. The modeller decides Cube count, exact transforms, hierarchy, pivots, UVs, texture, and optional animation.
 
-No package field may hard-code object-specific MCP profiles or geometry rules.
+No reference-generation rule may hard-code object-specific MCP profiles or geometry plans.
 
 ## Completion Criteria
 
 Reference is ready when:
 
-- target identity/style are clear;
-- the actual approved image is available to the modelling model;
+- target identity is clear and still recognizable;
+- construction reads as Minecraft / Blockbench Cuboid form rather than realistic/voxel-filter output;
 - required views describe one compatible object;
 - view pairing is resolvable;
-- whole-form primary masses/proportions are understandable;
-- requested dimensions are available when needed;
-- animation scope is known;
+- whole-form primary masses/proportions/contacts are understandable;
+- important asymmetry and negative spaces are represented when visible;
 - no unresolved major cross-view conflict remains;
-- user has approved the brief for modelling.
+- user has approved the image for modelling.
 
-Reference/package validity never proves final model fidelity.
+Reference validity never proves final model fidelity.
 
 ## Related
 

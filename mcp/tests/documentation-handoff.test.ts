@@ -14,6 +14,7 @@ describe("Codex documentation handoff", () => {
 
     expect(dirs).toEqual([
       "blockbench-bedrock-modelling",
+      "blockbench-reference-generator",
       "blockbench-runtime-development",
       "blockit-bedrock-animation",
       "blockit-bedrock-entity-mcp",
@@ -24,21 +25,28 @@ describe("Codex documentation handoff", () => {
       "typescript-type-safety",
     ]);
 
-    const [context, skillMap, activation, developmentBrief] = await Promise.all([
-      text("../CONTEXT.md"),
-      text("../docs/knowledge/skills/skill-map.md"),
-      text("../docs/knowledge/skills/activation-matrix.md"),
-      text("../.agents/skills/development-brief/SKILL.md"),
-    ]);
+    const [context, skillMap, activation, developmentBrief, referenceGenerator] =
+      await Promise.all([
+        text("../CONTEXT.md"),
+        text("../docs/knowledge/skills/skill-map.md"),
+        text("../docs/knowledge/skills/activation-matrix.md"),
+        text("../.agents/skills/development-brief/SKILL.md"),
+        text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      ]);
 
     for (const name of dirs) expect(skillMap).toContain(name);
-    expect(context).toContain("nine repository-owned skill packages");
+    expect(context).toContain("ten repository-owned skill packages");
     expect(activation).toContain("Asset Authoring Route");
+    expect(activation).toContain("Reference preparation");
     expect(activation).toContain("Repository / Plugin Development Route");
     expect(activation).toContain("Local Acceptance Route — Only When Reactivated");
     expect(activation).toContain("Hot-Path Defect Index");
     expect(skillMap).toContain("exact-name deferred spec loading");
+    expect(skillMap).toContain("blockbench-reference-generator");
     expect(skillMap).not.toContain("exactly six canonical skills");
+    expect(referenceGenerator).toContain("Return **one image only**");
+    expect(referenceGenerator).toContain("automatic variants   = 0");
+    expect(referenceGenerator).toContain("Do not generate ZIPs");
     expect(developmentBrief).not.toContain("`grilling`");
     expect(developmentBrief).not.toContain("`code-review`");
   });

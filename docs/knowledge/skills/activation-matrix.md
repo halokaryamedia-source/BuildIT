@@ -1,10 +1,22 @@
 # Skill Activation Matrix
 
-Updated: 2026-08-12
+Updated: 2026-08-13
 
 Use this note only to choose the **smallest correct skill owner**. Root `AGENTS.md` decides task class first; detailed procedure lives in the selected `SKILL.md`.
 
 ## 1. Asset Authoring Route
+
+### Reference preparation
+
+Use when the user wants to create or revise the **visual reference image itself** before Blockbench modelling.
+
+Start with:
+
+`/.agents/skills/blockbench-reference-generator/SKILL.md`
+
+This route is image-only and must run on an image-capable surface. It returns one approved visual Modelling Brief image; it does not load `blockit-bedrock-entity-mcp`, call BlockIT MCP, create geometry, or produce a technical package.
+
+### Blockbench asset authoring
 
 Use when the user wants to create, revise, inspect, texture, animate, validate, or export a Bedrock Entity asset and is **not** asking to change repository/plugin source.
 
@@ -16,13 +28,13 @@ Then load only the active domain specialist:
 
 | Active decision | Specialist | Examples |
 |---|---|---|
-| whole form / Cube geometry / hierarchy / pivots / visual correction | `blockbench-bedrock-modelling` | reference interpretation, primary masses, silhouette/depth, local causal correction, visual gate |
+| whole form / Cube geometry / hierarchy / pivots / visual correction | `blockbench-bedrock-modelling` | approved-reference interpretation, primary masses, silhouette/depth, local causal correction, visual gate |
 | texture / Paint / PBR / material instance | `blockit-bedrock-texturing` | create/read/activate texture, pixel editing, TextureGroups, PBR channels, per-face material metadata |
 | animation / keyframes / playback / mapped effects | `blockit-bedrock-animation` | inspect/create animation, BoneAnimator transforms, timeline, batch/copy operations, animation-facing rig checks |
 
 A long end-to-end asset task may move from modelling → texturing → animation as stages become active. Do not preload all specialists at the beginning.
 
-Do **not** route ordinary asset authoring through `development-brief`, repository history, or engineering skills.
+Do **not** route ordinary reference/asset authoring through `development-brief`, repository history, or engineering skills.
 
 ## 2. Repository / Plugin Development Route
 
@@ -40,7 +52,7 @@ Add at most one engineering specialist when it materially helps the proved bound
 |---|---|---|---|
 | MCP public/schema/result/registration/transport contract | `mcp-server-development` | Zod MCP inputs, tool/resource/prompt registration, annotations, result semantics, transport/endpoint contract | implementation is TypeScript/Bun or calls Blockbench |
 | Blockbench runtime/API/lifecycle mechanics | `blockbench-runtime-development` | plugin lifecycle, UI/settings, globals, Undo/Canvas, runtime mutation mechanics, events/cleanup | an MCP tool manipulates a model |
-| modeller judgement / modelling policy | `blockbench-bedrock-modelling` | source/policy change about whole-form modelling, pivots, visual validity, correction semantics | Blockbench API is used to execute it |
+| modeller/reference judgement policy | `blockbench-bedrock-modelling` | source/policy change about whole-form modelling, pivots, visual validity, correction semantics | Blockbench API is used to execute it |
 | TypeScript type system | `typescript-type-safety` | inference, generics, unions/narrowing, declarations, unsafe assertions, compiler type contract | file ends in `.ts` |
 | Bun build/package/tooling | `bun-tooling` | `Bun.build`, Bun APIs, scripts, dependency/lockfile/build behavior | command starts with `bun` |
 
@@ -51,6 +63,9 @@ If no specialist adds distinct procedure, use `development-brief` alone.
 Choose by the behavior that would still be wrong if implementation technology changed:
 
 ```text
+reference image generation/presentation wrong
+→ blockbench-reference-generator (asset route)
+
 MCP input/result/registration semantics wrong
 → mcp-server-development
 
@@ -84,13 +99,13 @@ AGENTS.md
 
 During an acceptance baseline, reproduce/classify a failure before selecting the engineering specialist that owns it. Do not load this route by ritual during normal continuation or asset authoring.
 
-## 5. Reference Preparation Is Not A Root Skill
+## 5. Reference Preparation Boundary
 
-Source Image/user intent → approved Modelling Brief is owned by:
+Source Image/user intent → approved Modelling Brief image is owned by:
 
-`docs/foundation/04-reference-guide.md`
+`/.agents/skills/blockbench-reference-generator/SKILL.md`
 
-Run it on an image-capable surface. Codex consumes the approved brief through the asset-authoring route.
+Durable policy remains `docs/foundation/04-reference-guide.md`. The generator is **image-only**: one board, no MCP execution, no ZIP/manifest/production-doc handoff. After user approval, supply the actual image to `blockbench-bedrock-modelling` through the normal asset-authoring route.
 
 ## 6. Evidence Is Not A Skill
 
@@ -134,7 +149,7 @@ Global/user helpers may be used only when their distinct function is actually av
 Before loading a skill ask:
 
 ```text
-Is this asset authoring or repository/plugin work?
+Is this reference preparation, Blockbench asset authoring, or repository/plugin work?
 What exact decision/behavior is active?
 Which current owner adds procedure that AGENTS alone does not provide?
 Am I loading context because it changes the decision, or by ritual?
