@@ -1,8 +1,8 @@
 # BlockIT — Visual Validation
 
 **Status:** Active Policy  
-**Version:** 1.3  
-**Updated:** 2026-08-08
+**Version:** 1.4  
+**Updated:** 2026-08-12
 
 ## Purpose
 
@@ -28,8 +28,31 @@ None of these proves resemblance by itself:
 - linked UV/texture data;
 - numeric similarity/IoU/projection score.
 
-Visual `PASS` requires fresh current-revision visual evidence compared directly
-with the active Modelling Brief.
+A material visual `PASS` requires **both the actual approved reference image and fresh current-revision model image evidence to be visible to the reviewing model in the active comparison context**.
+
+A filename/path/manifest, Reference Evidence Map, prose description, remembered reference, prior observation summary, or old model screenshot is not a substitute for those images.
+
+## Reference Claim / View Grounding
+
+Every material visual question should trace to the compact Reference Evidence Map derived from the actual approved image:
+
+```text
+claim_id | observable reference claim | supporting reference view(s) | evidence state
+```
+
+The map is navigation/cache for current reasoning, not independent visual proof. If the actual image contradicts a cached claim, the image wins and the claim must be re-grounded.
+
+Compare like with like through an explicit View Pair Map:
+
+```text
+REFERENCE FRONT ↔ MODEL front
+REFERENCE BACK  ↔ MODEL back
+REFERENCE SIDE  ↔ MODEL matching left/right
+REFERENCE TOP   ↔ MODEL top
+REFERENCE 3/4   ↔ MODEL matching front_left_3q/front_right_3q
+```
+
+View identity must be explicit. Ambiguous/mirrored front/back, left/right, or 3/4 pairing leaves the affected claim `UNVERIFIED`; **do not silently compare the closest-looking view**.
 
 ## Visual Verdict Contract
 
@@ -43,30 +66,33 @@ PASS
 
 ### FAIL
 
-Use when any critical or major mismatch is visible in an applicable criterion. The review must name the mismatch and the corresponding reference/model evidence.
+Use when any critical or major mismatch is visible in an applicable criterion. The review must name the `claim_id`, mismatch, and corresponding reference/model view evidence.
 
 ### UNVERIFIED
 
-Use when evidence needed for the claim is missing or insufficient. Examples include missing side/depth reference evidence, materially conflicting views, or an unavailable current model capture. Missing evidence is not a visual pass.
+Use when evidence needed for the claim is missing or insufficient. Examples include missing actual reference image, missing current model view, invalid/ambiguous View Pair Map, missing side/depth evidence, materially conflicting views, or unavailable capture. Missing evidence is not a visual pass.
 
 ### PASS
 
-Use only after fresh current-revision model images were directly compared with the corresponding reference view(s), a difference-first review checked the applicable silhouette/proportion/placement/orientation/contact criteria, and no critical or major mismatch was found.
+Use only after the **actual approved reference image and fresh current-revision model images were directly inspected together through the correct paired view(s)**, a difference-first review checked the applicable supported claim, and no critical/major mismatch was found.
 
 A claim may be narrower than the whole model. For example, a front silhouette can pass while depth remains UNVERIFIED. Do not upgrade a partial-view success into a full 3D PASS.
 
-### Difference-first review
+### Claim-locked difference-first review
 
-Before approval, actively search for mismatch in each relevant paired view:
+Before approval, actively search for mismatch in each relevant paired claim/view:
 
 ```text
-REFERENCE VIEW ↔ MODEL VIEW
-silhouette difference
-primary proportion difference
-primary placement difference
+claim_id
+REFERENCE VIEW ↔ CURRENT MODEL VIEW
+observable reference requirement
+silhouette / primary mass / count difference
+primary proportion / placement difference
 orientation / slope difference
-visible contact difference
+visible contact / topology difference
+negative-space difference when material
 severity: critical / major / minor / none
+verdict: FAIL | UNVERIFIED | PASS
 ```
 
 Only after this mismatch search may the reviewer choose PASS. Generic positive language is not a substitute for this comparison.
@@ -85,12 +111,18 @@ Examples:
 
 Structural evidence answers **what state exists**, not whether it looks right.
 
-### Visual Evidence
+### Reference Visual Evidence
+
+The **actual approved reference image** currently visible to the reviewing model. A path/manifest/metadata/text summary by itself is not visual evidence.
+
+### Model Visual Evidence
 
 Fresh model images from the current revision, in views that correspond to the
 reference question being evaluated.
 
 Visual evidence answers **whether the form reads correctly**.
+
+After a material geometry/pivot/hierarchy mutation, affected previous model views are stale until re-captured.
 
 ### Runtime Evidence
 
@@ -112,11 +144,11 @@ hide. It is not a visual validator.
 
 ### `capture_model_views`
 
-Produces named canonical model images for explicit front direction and stable
+Produces named canonical **model images** for explicit front direction and stable
 reference ↔ model comparison.
 
 Principal views are orthographic comparison evidence; 3/4 views are volume/
-readability context. Successful capture is not `PASS`.
+readability context. Successful capture is not `PASS`. It does not itself load/score the approved reference or judge resemblance.
 
 ### `inspect_element`
 
@@ -129,17 +161,7 @@ still remains `LOCAL PROOF REQUIRED` until tested locally.
 
 ## Reference ↔ Model View Pairing
 
-Compare like with like:
-
-```text
-REFERENCE FRONT ↔ MODEL FRONT
-REFERENCE SIDE  ↔ MODEL SIDE
-REFERENCE TOP   ↔ MODEL TOP
-REFERENCE 3/4   ↔ MODEL matching 3/4
-```
-
-View identity must be explicit. Do not silently compare mismatched front/back or
-left/right interpretations.
+Compare like with like using the View Pair Map. Do not silently compare mismatched front/back or left/right interpretations.
 
 Do not require every view after every mutation. Capture the smallest view set
 that can answer the current modelling question.
@@ -158,7 +180,7 @@ Do not promote the strongest-looking view to represent the whole 3D model. For e
 
 ### Blocked validation
 
-`BLOCKED` is not a visual quality grade. It means a valid visual verdict cannot currently be reached without missing evidence, resolving a material reference conflict, or restoring a required runtime capability.
+`BLOCKED` is not a visual quality grade. It means a valid visual verdict cannot currently be reached without guessing because the actual approved image is unavailable, view pairing cannot be resolved, material reference evidence conflicts, required observation/capability is unavailable, or repeated failed work has exhausted the bounded correction direction.
 
 When blocked, stop speculative corrections and report:
 
@@ -186,18 +208,21 @@ Matching bounds remain **structural evidence only**.
 
 ## Gate 1 — Primary Whole Form
 
-Before secondary/detail work, check:
+Before secondary/detail work, check grounded material claims for:
 
 - recognizability;
+- required primary masses/landmarks/counts;
 - global silhouette;
 - major proportions;
 - primary mass placement;
 - important orientation/slopes;
-- major visible contacts.
+- major visible contacts/topology;
+- important negative spaces/separations.
 
 For a material mismatch, identify:
 
 ```text
+claim_id
 failed criterion
 responsible mass/relationship when known
 observed mismatch
@@ -214,19 +239,20 @@ Reject/rebuild the primary scaffold when:
 
 - the intended object is not recognizable;
 - several primary relationships fail together;
+- semantic decomposition itself omitted/misread material parts;
 - repair would require detail/compensating geometry to hide a wrong whole form.
 
-Do not micro-patch a globally wrong scaffold because work has already been spent
-on it.
+If decomposition is wrong, return to Semantic Form against actual reference claims. If decomposition is sound but spatial relationships are globally wrong, return to Primary Form Hypothesis. Do not micro-patch a globally wrong scaffold because work has already been spent on it.
 
 ## Gate 2 — Complete Geometry
 
-After secondary geometry/hierarchy/pivots, review applicable criteria:
+After secondary geometry/hierarchy/pivots, review applicable supported claims:
 
 - silhouette/proportions across the declared reference views;
-- required major parts and orientation;
+- required major parts/counts and orientation;
 - depth/footprint where reference evidence exists;
 - coherent visible attachments;
+- important negative spaces;
 - rotations that correspond to visible form/motion;
 - meaningful pivots corresponding to actual transform/joint/attachment needs;
 - no arbitrary distant pivot;
@@ -259,27 +285,27 @@ A static pivot that creates an implausible motion arc is not approved.
 
 ## Gate 5 — Final Review
 
-Use evidence from the **current saved/release candidate**. Do not reuse older
-screenshots after material geometry/pivot/hierarchy/texture/animation changes.
+Use the **actual approved reference image plus evidence from the current saved/release candidate**. Do not reuse older model screenshots after material geometry/pivot/hierarchy/texture/animation changes.
 
 ## Visual Repair Loop
 
 ```text
-Fresh paired reference/model evidence
+actual reference image + fresh paired current model evidence
 ↓
-Name concrete mismatch
+claim_id + concrete mismatch
 ↓
 GLOBAL or LOCAL?
 
 GLOBAL
-→ revise/rebuild Primary Form Hypothesis
+→ revise Semantic Form when decomposition is wrong
+→ otherwise revise/rebuild Primary Form Hypothesis
 
 LOCAL
 → locate exact UUID
-→ inspect_element
+→ inspect_element only if fresh exact state unavailable
 → choose causal correction
 → mutate bounded relationship
-→ fresh affected view(s)
+→ fresh affected paired view(s)
 ```
 
 ### Causal Correction
@@ -298,7 +324,7 @@ the correction.
 
 For a material rotation, answer:
 
-- Which reference/form/motion evidence justifies the angle?
+- Which grounded reference/form/motion claim justifies the angle?
 - Is the rotated mass improving the intended silhouette rather than compensating
   for wrong placement/size?
 - Is the rotation simpler/more coherent than an unnecessary stepped
@@ -307,6 +333,8 @@ For a material rotation, answer:
 
 A newly created non-zero-rotation Cube must have an intentional explicit pivot;
 this source-level safety does not itself prove the pivot is visually correct.
+
+A visible material slope left axis-aligned is `FAIL` unless the approved construction language intentionally requires a stepped form.
 
 ## Pivot Review
 
@@ -368,8 +396,7 @@ More screenshots are not automatically more proof.
 
 ## Completion Rule
 
-Visual `PASS` is valid only when current-revision images were actually inspected
-against the relevant criteria.
+Visual `PASS` is valid only when the **actual approved reference image and fresh current-revision model image(s)** were actually inspected against the relevant grounded claim/view criteria.
 
 Invalid approval justifications include:
 
@@ -382,6 +409,8 @@ bounds match
 hierarchy is valid
 rotation/pivot values exist
 validator has no error
+similarity/IoU/projection score is high
+reference path/manifest/summary says it should match
 ```
 
 ## Execution-Channel Boundary
@@ -389,7 +418,7 @@ validator has no error
 ### ChatGPT → GitHub
 
 May review/change source/docs and establish static contracts. Cannot claim live
-Blockbench visual/runtime success.
+Blockbench visual/runtime success or model image-understanding accuracy.
 
 ### Codex Local
 
@@ -397,7 +426,7 @@ Blockbench + MCP is the final environment for proof requiring actual image
 transport, camera behavior, model appearance, animation, Undo, or persistence.
 
 If that proof is unavailable, report `LOCAL PROOF REQUIRED` / user-facing
-`Perlu pemeriksaan` rather than inventing a substitute.
+`Perlu pemeriksaan` rather than inventing a substitute. If the approved reference image itself is unavailable to the reviewing model, reference-driven visual authoring/approval is `BLOCKED` rather than memory-based.
 
 ## Related
 

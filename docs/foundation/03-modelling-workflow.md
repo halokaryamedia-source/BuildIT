@@ -1,8 +1,8 @@
 # BlockIT — Modelling Workflow
 
 **Status:** Active Policy  
-**Version:** 1.3  
-**Updated:** 2026-08-08
+**Version:** 1.4  
+**Updated:** 2026-08-12
 
 ## Purpose
 
@@ -20,9 +20,13 @@ Reference preparation belongs to [04-reference-guide.md](04-reference-guide.md).
 ```text
 Understand request
 ↓
-Approved Modelling Brief
+actual approved Modelling Brief image available to the modelling model
 ↓
-Cross-view consistency
+Cross-view consistency + View Pair Map
+↓
+Reference Evidence Map (grounded claim_id(s))
+↓
+Semantic Form Contract
 ↓
 Coordinate frame + target envelope
 ↓
@@ -36,14 +40,15 @@ inspect_model_bounds only when numeric envelope/scale/ground evidence is relevan
 ↓
 capture_model_views using only reference-corresponding views needed for the gate
 ↓
-Reference ↔ model primary visual gate
+actual reference + fresh model images → claim-locked primary visual gate
 ↓
 GLOBAL failure?
-  ├─ yes → revise/rebuild Primary Form Hypothesis
+  ├─ decomposition wrong → revise Semantic Form Contract
+  ├─ spatial hypothesis wrong → revise/rebuild Primary Form Hypothesis
   └─ no
       ↓
 LOCAL failure?
-  ├─ yes → inspect_element → causal correction → fresh affected views
+  ├─ yes → inspect_element only if needed → causal correction → fresh affected views
   └─ no
       ↓
 Secondary geometry / hierarchy / pivots
@@ -76,7 +81,7 @@ local correction -> affected view/state only
 UNVERIFIED -> preserve uncertainty unless more evidence is both material and obtainable
 ```
 
-A global failure still reopens the whole-form hypothesis. A genuinely local failure should not trigger a full-project validation ceremony.
+A global failure still reopens the owning whole-form hypothesis. A genuinely local failure should not trigger a full-project validation ceremony.
 
 ## 1. Understand Request
 
@@ -94,15 +99,18 @@ professional modelling terminology.
 
 ## 2. Review The Approved Modelling Brief
 
+Reference-driven geometry requires the **actual approved reference image to be visible to the model doing the geometry reasoning**. A filename, filesystem path, manifest, `ASSET_REFERENCE.md`, textual summary, previous observation, or memory is context only and is not visual evidence. If the actual image cannot be inspected, stop as `BLOCKED` rather than reconstructing it from prose or generic object knowledge.
+
 Read the reference as one coherent 3D object.
 
 Check:
 
 - recognizable target identity;
 - compatible front/side/top/etc. views;
-- primary masses;
+- primary masses and identity-critical landmarks;
+- required counts/symmetry or deliberate asymmetry;
 - silhouette/proportion relationships;
-- important visible contacts;
+- important visible contacts/topology and negative spaces;
 - important slopes/orientation;
 - declared numeric dimensions when available.
 
@@ -110,6 +118,20 @@ Do not average materially conflicting views into guessed coordinates. If a
 required axis is underdetermined, mark uncertainty.
 
 Reference pixels are not metric calibration.
+
+### View Pair Map
+
+Before a reference view can approve a model view, map its identity explicitly to the matching canonical `capture_model_views` view. Ambiguous front/back, left/right, mirrored orientation, or 3/4 side remains `UNVERIFIED`; do not silently compare the closest-looking view.
+
+### Reference Evidence Map
+
+For only material decisions, derive compact claims from the actual image:
+
+```text
+claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+```
+
+Kinds may cover identity, mass/landmark, count/symmetry, topology/contact, orientation, negative space, or representation. Claims describe what is actually visible; no Cube coordinates, pixel calibration, hidden-feature invention, or generic object knowledge belong here. The map is a derived working index and never replaces the actual image.
 
 ## 3. Establish Coordinate Frame + Target Envelope
 
@@ -128,19 +150,37 @@ When numeric dimensions exist, establish the overall target envelope.
 
 Do not silently swap/mirror front/back after authoring begins.
 
-## 4. Form A Primary Form Hypothesis
+## 4. Form Semantic Form + Primary Form Hypothesis
 
-Before exact Cube numbers, reason about each important primary mass:
+Before exact Cube numbers, form a compact **Semantic Form Contract** linked to grounded `claim_id`s:
+
+```text
+identity / recognizability
+primary masses + must-exist reason
+identity-critical landmarks
+required count / symmetry or deliberate asymmetry
+topology: what attaches to what
+important negative spaces / separations
+representation: geometry | texture | animation | omit
+material evidence state
+```
+
+A semantic label such as `head`, `body`, `handle`, or `tail` never authorizes exact coordinates. Every primary Cube must implement a grounded mass/landmark or justified split/relationship; no orphan/filler Cube exists merely because a gap can be filled.
+
+Then reason about each important primary mass spatially:
 
 ```text
 role
 relative size
 relative center/placement
-orientation/slope when material
-major contact/attachment
-supporting reference view(s)
+orientation: AXIS_ALIGNED | ROTATED | UNRESOLVED
+pivot role when rotated
+major contact/attachment invariant
+supporting claim_id(s) / reference view(s)
 uncertainty
 ```
+
+`AXIS_ALIGNED` requires image support; `[0,0,0]` is not a default answer. A visible material slope requires `ROTATED` unless the approved construction language intentionally uses a stepped form. `ROTATED` requires an intentional pivot role (`MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`). Material `UNRESOLVED` orientation becomes `BLOCKED` when choosing one would be guessing.
 
 This may use qualitative/normalized proportions. Keep it as a compact working note for simple assets and expand it only when complexity/ambiguity requires more evidence tracking. It is **not**:
 
@@ -184,7 +224,7 @@ For rotation:
 
 ```text
 rotation = [0,0,0]
-→ origin may remain neutral/omitted
+→ valid only when the orientation decision is AXIS_ALIGNED
 
 non-zero initial rotation
 → explicit intentional origin/pivot required
@@ -199,12 +239,15 @@ For hierarchy:
 
 ### Geometry rules
 
-- every primary Cube implements a known mass or necessary split;
-- derive exact extents from the spatial hypothesis and reference evidence;
-- prefer axis-aligned geometry when it explains the mass;
-- rotate only for a visible slope/orientation or required motion;
+- every primary Cube implements a grounded known mass/landmark or necessary split;
+- derive exact extents from the whole-form spatial hypothesis and reference evidence;
+- prefer axis-aligned geometry only when it explains the supported mass;
+- rotate for a supported visible slope/orientation or required motion;
+- preserve required contact invariants and intentional negative spaces;
 - do not add detail or compensating geometry;
 - do not treat overlap/contact/tool success as approval.
+
+A successful mutation is execution evidence only. Once primary masses are judgeable, stop primary placement and run the gate before secondary/detail work.
 
 ## 7. Inspect Global Structural Envelope
 
@@ -227,22 +270,39 @@ Use:
 `capture_model_views`
 
 Capture only reference-corresponding named views needed to answer the current
-question. Principal views are orthographic comparison evidence; 3/4 views add
+claim(s). Principal views are orthographic comparison evidence; 3/4 views add
 volume/readability context.
 
 When numeric target bounds exist, explicit-envelope framing should be used so
 auto-framing cannot hide gross scale/offset problems.
 
+A material visual verdict requires the **actual approved reference image and fresh current-revision model image(s) visible in the same comparison context**. A Reference Evidence Map, path, manifest, prose summary, memory, or older model capture cannot produce `PASS`.
+
+Review each material claim difference-first:
+
+```text
+claim_id
+reference view
+current model view
+observable difference
+severity
+FAIL | UNVERIFIED | PASS
+```
+
 Check:
 
 - recognizability;
+- required primary masses/landmarks/counts;
 - whole silhouette;
 - major proportions;
 - primary mass placement;
 - important orientation/slopes;
-- visible primary contacts.
+- topology/visible contacts;
+- important negative spaces.
 
 The screenshot tool is observation only. A successful capture is not `PASS`.
+
+After material mutation, affected prior model views are stale until re-captured. If the approved image is no longer actually available to the reviewing model, remain `UNVERIFIED/BLOCKED`.
 
 ## 9. Classify Failure Before Correcting
 
@@ -251,14 +311,15 @@ The screenshot tool is observation only. A successful capture is not `PASS`.
 Examples:
 
 - target is not recognizable;
+- chosen semantic decomposition misses/wrongly represents required primary parts;
 - whole silhouette is wrong;
 - multiple major mass proportions/placements/orientations fail together.
 
 Action:
 
 ```text
-reject current primary scaffold
-→ revise/rebuild Primary Form Hypothesis
+decomposition wrong → revise Semantic Form Contract against actual reference claims
+spatial whole-form wrong → revise/rebuild Primary Form Hypothesis
 ```
 
 Do not preserve a bad blockout because many Cubes exist.
@@ -270,10 +331,10 @@ Whole form is sound, but one bounded relationship is wrong.
 Action:
 
 1. locate exact UUID;
-2. `inspect_element` to read current authored state;
+2. reuse fresh authored state or `inspect_element` once;
 3. classify the cause;
 4. mutate only the responsible relationship;
-5. capture fresh affected view(s).
+5. capture fresh affected paired view(s).
 
 ## 10. Causal Correction Vocabulary
 
@@ -284,7 +345,7 @@ ROTATE       orientation/slope wrong
 REATTACH     contact/parent wrong
 SPLIT        one mass genuinely needs separate orientation/volume
 MERGE/REMOVE unnecessary/compensating geometry
-ADD MASS     a genuinely missing visible volume
+ADD MASS     a genuinely missing grounded visible volume
 ```
 
 Do not default to adding another Cube.
@@ -335,6 +396,8 @@ For a material Group pivot change:
 
 Do not choose/copy arbitrary distant pivots.
 
+For required attached masses, a rotation must preserve the declared contact invariant; technical overlap/hierarchy alone is not visual attachment proof.
+
 ## 12. Correction Stop Rule
 
 After a correction, re-observe the smallest view set that tests the diagnosis.
@@ -343,14 +406,14 @@ If the same correction direction fails twice without new evidence:
 
 ```text
 stop patching
-→ revise the hypothesis
+→ revise the owning hypothesis or report BLOCKED
 ```
 
 ## 13. Secondary Geometry / Hierarchy / Pivots
 
 Only after primary form passes:
 
-- add geometry that materially improves silhouette/attachment/motion/detail;
+- add geometry that materially improves grounded silhouette/attachment/motion/detail;
 - add hierarchy for actual organization/articulation needs;
 - keep non-articulated organizational Groups neutral rather than inventing
   transforms;
@@ -359,21 +422,21 @@ Only after primary form passes:
 
 ## 14. Complete Geometry Review
 
-Review the complete declared reference view set needed for the asset.
+Review the complete material claim/view set needed for the asset using actual reference + fresh model evidence.
 
 Check:
 
 - silhouette/proportions across views;
-- required major parts;
+- required major parts/counts;
 - footprint/depth where visible;
-- visible contact quality;
-- unnecessary/intersecting/inverted geometry;
+- visible contact quality and negative spaces;
 - rotations with no form/motion reason;
 - arbitrary/distant pivots;
+- unnecessary/intersecting/inverted geometry;
 - hierarchy/pivots required for editability/motion.
 
 A genuinely local issue reopens only affected relationships. A finding that
-invalidates the primary hypothesis returns to the primary loop.
+invalidates decomposition returns to Semantic Form; one that invalidates spatial whole form returns to Primary Form Hypothesis.
 
 ## 15. UV / Texture
 
@@ -423,7 +486,7 @@ Keep proof types separate:
 - animation proof;
 - persistence/reopen proof.
 
-Do not substitute static source inspection for live Blockbench proof.
+Final visual claims require the actual approved reference image + fresh current release-candidate model evidence. Do not substitute static source inspection for live Blockbench proof.
 
 Save `.bbmodel` through the current verified operation when save is in scope.
 Claim reopen fidelity only when actually tested.
@@ -432,16 +495,19 @@ Claim reopen fidelity only when actually tested.
 
 Reject:
 
-- Cube creation as progress without intentional extents;
+- reference-driven authoring/approval without the actual approved image;
+- path/manifest/prose/memory treated as visual evidence;
+- mismatched/ambiguous reference↔model view pairing;
+- Cube creation as progress without intentional grounded extents;
 - placement because a Cube can touch/fit somewhere;
 - support-first/section-first/per-Cube universal plans;
-- arbitrary multi-axis rotation;
+- arbitrary multi-axis rotation or default zero rotation despite visible slope;
 - default/distant pivot on a rotated part;
 - detail added before primary form is coherent;
 - compensating Cubes used to hide primary errors;
-- structural/tool success reported as resemblance;
+- structural/tool success or fluent review reported as resemblance;
 - similarity/IoU/projection/SF3D authority;
-- repeated micro-patching without a new hypothesis.
+- repeated micro-patching without a new hypothesis/evidence.
 
 ## Related
 

@@ -11,13 +11,13 @@ Current `Local` source ownership only. Active task state belongs in `next-action
 | task routing / proof discipline | root `AGENTS.md` |
 | stable project facts | root `CONTEXT.md` |
 | active continuation | `docs/knowledge/next-action.md` |
-| product/modelling policy | `docs/foundation/` |
+| product/modelling/reference policy | `docs/foundation/` |
 | MCP package invariants | `mcp/AGENTS.md` |
 | MCP public/runtime source | `mcp/` |
 | repository change contract | `.agents/skills/development-brief/` |
 | MCP public-contract decisions | `.agents/skills/mcp-server-development/` |
 | asset orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
-| modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
+| modelling/reference-grounding judgement | `.agents/skills/blockbench-bedrock-modelling/` |
 | texture/PBR | `.agents/skills/blockit-bedrock-texturing/` |
 | animation | `.agents/skills/blockit-bedrock-animation/` |
 | completed local procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
@@ -39,7 +39,7 @@ mcp/docs/             generated API docs; secondary to source
 
 ## Hot-Path Defect Index
 
-For a repository/plugin defect that names one of these tools, inspect the mapped **source owner + primary regression owner first**. This is a **first-stop index, not exhaustive ownership**; expand to callers, shared helpers, or code search only when the mapped pair cannot explain the defect.
+For a repository/plugin defect that names one of these tools, inspect the mapped **source owner + primary regression owner first**. This is a **first-stop index, not exhaustive ownership**; expand to callers/shared helpers/code search only when the mapped pair cannot explain the defect.
 
 | Tool(s) | Source owner | Primary regression owner |
 |---|---|---|
@@ -60,7 +60,7 @@ For a repository/plugin defect that names one of these tools, inspect the mapped
 | `get_undo_stack` | `mcp/server/tools/history.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
-Do not load every listed test. The mapped regression is the first falsification target for the named tool; adjacent tests are loaded only when the defect crosses that contract boundary. `undo`/`redo` remain source-owned by `mcp/server/tools/history.ts`, but are intentionally not indexed until a real defect justifies a sufficiently specific primary regression owner.
+Do not load every listed test. The mapped regression is the first falsification target for the named tool; adjacent tests load only when the defect crosses that contract boundary. `undo`/`redo` remain source-owned by `mcp/server/tools/history.ts`, but are intentionally not indexed until a real defect justifies a sufficiently specific primary regression owner.
 
 ## Default MCP Surface
 
@@ -88,13 +88,13 @@ initialize instructions: 386 characters
 per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
 ```
 
-The earlier accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. Current descriptions are smaller, while current schema and total serialized characters are larger. Neither measurement is a client token/context measurement.
+Earlier accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. Current descriptions are smaller while schema/total serialized characters are larger. Neither is a client token/context measurement.
 
-`mcp/scripts/measure-default-surface.ts` owns the isolated `initialize → tools/list` measurement. CI retains exactly 62 default tools and uses bounded serialized-surface ceilings plus a 700-character initialization-instructions ceiling.
+`mcp/scripts/measure-default-surface.ts` owns the isolated measurement. CI retains exactly 62 default tools and bounded serialized-surface/instructions ceilings.
 
 ## Deferred MCP Discovery Ownership
 
-Current upstream Codex provides the desired usage architecture when tool search is available:
+Current upstream Codex provides the desired architecture when tool search is available:
 
 ```text
 MCP catalog
@@ -103,101 +103,127 @@ MCP catalog
 → matching tool spec loaded when needed
 ```
 
-Codex still performs MCP initialization and `tools/list` to build/cache its client-side catalog; that catalog size is therefore not equivalent to model context size. The current Codex MCP adapter uses regular MCP server instructions as the namespace description, and its tool-search text includes tool names, titles/descriptions, namespace description, and top-level schema property names.
+Codex still performs MCP initialization/`tools/list` for its client-side catalog; catalog size is not model context size. BuildIT's compatibility owner is `mcp/server/server.ts`, which sends compact `MCP_SERVER_INSTRUCTIONS`. Runtime workflow remains separately owned by `mcp/prompts/bedrock_entity_workflow.md`.
 
-BuildIT's owner for this compatibility is `mcp/server/server.ts`. It sends one compact `MCP_SERVER_INSTRUCTIONS` capability summary during initialization. The runtime workflow remains separately owned by `mcp/prompts/bedrock_entity_workflow.md`; the 6k workflow prompt is not copied into initialization.
-
-This design intentionally keeps all 62 Bedrock capabilities. No BuildIT custom search/router, additional MCP profile, or multi-endpoint domain split is currently justified.
+All 62 Bedrock capabilities remain. No BuildIT custom router, additional profile, or multi-endpoint split is justified by current evidence.
 
 ## Authoring Decision / Recovery Ownership
 
-The asset orchestrator owns a compact decision layer; it does not alter MCP registration/runtime architecture:
+The asset orchestrator owns a compact decision layer, not MCP registration architecture:
 
 ```text
 intent + known state + stage
 → deterministic semantic route
-→ exact tool already loaded? call directly
+→ exact tool loaded? call
 → otherwise exact-name native tool_search
 → execute
 → bounded recovery from existing failure signals
 ```
 
-Current static retrieval evidence over 104 human-style cases:
+Static retrieval evidence over 104 human-style cases:
 
 ```text
-raw semantic stress:  Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
-exact-name routed:    Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
+raw semantic stress: Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
+exact-name routed:   Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
 ```
 
-Top-8 presence is the routed correctness gate because the route already knows the exact selected tool and upstream search returns up to 8 matches. Installed-client/model behavior remains local proof, not inferred from this static proxy.
+Top-8 presence is routed correctness gate because route already knows the exact tool and upstream search returns up to 8 matches. Installed-client/model behavior remains local proof. Recovery maps validation, ambiguous/not-found identity, stale-known-reference, no-authored-effect, and unsupported capability to bounded same-tool/focused recovery; no global error enum/recovery engine is added.
 
-Recovery maps existing validation, ambiguous/not-found identity, stale-known-reference, no-authored-effect, and unsupported-capability signals to bounded same-tool/focused recovery. It does not add a global error enum, result payload instructions, recovery engine, or another MCP layer.
+Repository debugging is separate: named hot-path tools use the table above before code search.
 
-Repository/plugin debugging is separate: a named hot-path tool uses the table above before code search. That index never participates in normal asset authoring.
+## Reference Grounding / Modelling Ownership
+
+Reference-driven geometry now has explicit evidence ownership before exact Cube numbers:
+
+```text
+actual approved image visible to modelling model
+→ docs/foundation/04-reference-guide.md
+→ Reference Evidence Map (derived claim_id index)
+→ View Pair Map (reference label → canonical model view)
+→ Semantic Form Contract
+→ Primary Form Hypothesis
+→ MCP geometry tools
+→ capture_model_views
+→ actual reference + fresh current model view(s)
+→ claim-locked difference-first verdict
+```
+
+Ownership rules:
+
+- user brief/approved target → target identity/function;
+- actual approved reference image → visible form;
+- approved dimensions → numeric whole-model envelope;
+- `.agents/skills/blockbench-bedrock-modelling/SKILL.md` → semantic decomposition, orientation/pivot/contact, claim/view-grounded modelling judgement;
+- `mcp/prompts/bedrock_entity_workflow.md` → compact runtime workflow;
+- `mcp/server/tools/camera.ts::capture_model_views` → deterministic labeled **model** images only; it does not read/score the reference or return PASS/FAIL;
+- `docs/foundation/07-visual-validation.md` → claim-locked visual verdict contract.
+
+A Reference Evidence Map is decision state derived from the actual image, not a persisted runtime model, tool schema, or second source of visual truth. Filename/path/manifest/prose/memory is routing/context only. If actual approved image or valid View Pair Map is unavailable, material reference-driven authoring/approval remains `UNVERIFIED/BLOCKED` rather than guessing.
+
+P5/P6 add no image→Cube planner, similarity/IoU/projection authority, vision scorer, self-reported semantic `place_cube` fields, registration profile, or runtime evaluator framework. Static CI proves these contracts exist; it cannot prove model vision accuracy.
 
 ## Bedrock Authoring Ownership
 
 ### Project / observation
 
-- `create_project`, `get_project_info` → lifecycle/project summary; root Group output is bounded.
+- `create_project`, `get_project_info` → lifecycle/project summary; root Group output bounded.
 - `inspect_model_bounds` → rendered Cube envelope evidence.
-- `capture_model_views` → bounded canonical views.
+- `capture_model_views` → bounded canonical **model** views.
 - `capture_screenshot` → current editor view only.
 
 ### Geometry / hierarchy
 
-- `place_cube`, `add_group` → Cube/Group authoring.
+- `place_cube`, `add_group` → Cube/Group authoring after grounded modelling decisions.
 - `modify_cube`, `modify_cubes_batch` → bounded mutation with `geometry_effect`.
-- `list_outline`, `find_elements_by_criteria` → compact-default discovery with explicit larger bounds.
+- `list_outline`, `find_elements_by_criteria` → compact-default discovery.
 - `inspect_element` → focused authored state.
 - rename/remove/duplicate/history → utility/recovery.
 
 ### Texture / surface
 
-`create_texture`, `activate_texture`, `list_textures`, `get_texture`, Painter, TextureGroup/PBR, and material-instance tools own native Bedrock surface work. Generic `apply_texture` and raw `filter_by_material` are not default Bedrock callable concepts.
+`create_texture`, `activate_texture`, `list_textures`, `get_texture`, Painter, TextureGroup/PBR, and material-instance tools own native Bedrock surface work. Generic `apply_texture` and raw `filter_by_material` are not default callable concepts.
 
 ### Animation
 
-Animation tools own identity, summary/focused inspection, keyframes, graph/batch/copy operations, rigging, and mapped playback/timeline controls. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
+Animation tools own identity, summary/focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
 
 ### Locator / Null Object
 
-`list_locator_elements` is **identity/type/parent discovery only**. Detailed transforms, visibility, and Null Object IK read state belong to `inspect_element`; create/update state comes directly from `manage_locator` / `manage_null_object`. Rename/delete use generic element owners.
+`list_locator_elements` is **identity/type/parent discovery only**. Detailed transforms/visibility/Null IK read state belong to `inspect_element`; create/update state comes from `manage_locator` / `manage_null_object`.
 
-The actual serialized `tools/list` contract for `manage_locator` / `manage_null_object` currently flattens branch fields into one object shape where only `action` is top-level-required. Branch intent remains client-visible through field descriptions (`name` required for create, `id` required for update), while the original discriminated-union Zod schema remains the runtime validation owner.
+Advertised Locator/Null branch schema remains flattened with only `action` top-level-required; field descriptions expose create/update intent while original Zod schema owns runtime validation.
 
 ### MCP result representation
 
-`mcp/lib/factories.ts` owns request-level normalization. An exact single-text JSON mirror of `structuredContent` is replaced by a short text summary while canonical structured data, meaningful distinct text, and images remain.
+`mcp/lib/factories.ts` owns request-level normalization. An exact single-text JSON mirror of `structuredContent` becomes a short text summary while canonical structured data, meaningful distinct text, and images remain.
 
 ### Runtime prompt surface
 
-Only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as the runtime workflow prompt. Maintainer API/eval Markdown remains source-only.
+Only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as runtime workflow. Maintainer Markdown remains source-only.
 
 ### Toolchain / CI
 
-Root `.bun-version` pins Bun **1.3.14** for the MCP verification workflow. `MCP Verify` owns frozen-lockfile install, typecheck, contract tests, isolated default-surface measurement, production build, generated-doc freshness, and aggregate enforcement.
+Root `.bun-version` pins Bun **1.3.14**. `MCP Verify` owns frozen install, typecheck, contract tests, default-surface measurement, production build, generated-doc freshness, and aggregate enforcement.
 
-Active routing integrity is regression-tested against the canonical `.agents/skills/` inventory so active docs cannot silently route to missing repository-owned skills. The hot-path defect index is also regression-checked so mapped source/test paths exist and actually own the named tools.
+Active routing integrity is regression-tested against canonical `.agents/skills/` inventory; **active skill references regression-checked**. The hot-path defect index is also checked for actual source/test ownership.
 
-## Completed Static Efficiency Hardening
+## Completed Static Efficiency / Modelling Hardening
 
-**Source-provable cleanup and GitHub-only pretest hardening are complete** for the requested pre-local phase:
+**Source-provable cleanup and GitHub-only pretest hardening are complete** for the requested non-local phase:
 
 - duplicate structured/text result mirrors removed centrally;
 - path export and discovery/read defaults made metadata/summary-first where source ownership proved the boundary;
-- project, outline/search, history, and Locator discovery no longer return avoidable normal-path detail;
-- asset and repository-development context split across existing owners rather than ritual co-loading;
-- stale/non-existent development routing removed and active skill references regression-checked;
-- runtime prompt bundle reduced to the one callable workflow;
-- Locator/Null branch intent checked on the actual serialized MCP surface without tool/profile proliferation;
-- Bun toolchain pinned;
-- isolated serialized-surface measurement and regression ceilings added;
-- compact MCP server namespace instructions added for native deferred-tool discovery compatibility;
-- P0–P3 stage lock, exact-name deferred loading, and deterministic hot-path recovery prevent redundant discovery/search/retry loops without runtime router/framework changes;
-- P4 named-tool defect navigation maps high-value tools to a first source/test pair without becoming a full dependency graph.
+- project/outline/search/history/Locator normal reads bounded;
+- asset and repository-development context split across existing owners;
+- stale/missing routing removed and active references checked;
+- runtime prompt bundle reduced to one callable workflow;
+- Bun toolchain pinned and serialized-surface ceilings added;
+- P0–P3 stage lock, exact-name deferred loading, and deterministic recovery prevent discovery/search/retry loops;
+- P4 named-tool navigation maps high-value defects to first source/test pair;
+- P5 semantic-form/orientation/pivot/contact hardening prevents semantic labels and zero-rotation defaults from silently authorizing geometry;
+- P6 requires actual reference image evidence, claim IDs, explicit view pairing, and fresh claim-locked reference↔model comparison before material visual approval.
 
-**No new local run is active.** Current upstream Codex source establishes native deferred MCP discovery when tool search is available. The remaining client-only questions are whether the user's installed Codex/model follows that current path and what the real token/latency, co-loading, retry, and image-context costs are. Do not add a router/profile or remove retained native capability without that future evidence.
+**No new local run is active.** Remaining client/model questions include installed deferred-search parity, real token/latency/image-context cost, and whether model vision correctly interprets actual references. Do not add a router/profile/scorer or remove retained capability without evidence.
 
 ## Protected Native Gaps
 
@@ -207,8 +233,3 @@ Active routing integrity is regression-tested against the canonical `.agents/ski
 - animation sound/timeline effects;
 - animated-texture authoring;
 - bone-binding expressions.
-
-Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
-
-Current proof: [Validation Report](../foundation/validation-report.md).  
-Current continuation: [Next Action](next-action.md).

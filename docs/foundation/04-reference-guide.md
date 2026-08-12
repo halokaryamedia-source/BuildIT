@@ -1,8 +1,8 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 1.3  
-**Updated:** 2026-08-08
+**Version:** 1.4  
+**Updated:** 2026-08-12
 
 ## Purpose
 
@@ -32,6 +32,21 @@ Reference Fidelity modelling workflow
 Approval means the brief is useful enough to model from. It does not certify
 metric image consistency and does not approve Cube transforms.
 
+## Actual Image Evidence Boundary
+
+For reference-driven modelling, the **actual approved reference image must be available as multimodal input to the model performing geometry reasoning and visual comparison**. A filename, filesystem path, manifest, package metadata, textual description, previous observation summary, or memory may identify/contextualize the reference but is not visual evidence.
+
+If the active modelling model cannot actually inspect the approved image, do not reconstruct visible form from prose or generic object knowledge. Material reference-driven geometry/approval is `BLOCKED` until the image is available.
+
+Keep authority separate:
+
+```text
+user brief / approved target → target identity + requested function
+approved reference image     → visible form
+approved numeric dimensions  → whole-model scale/envelope
+Reference Evidence Map       → derived working index; never image authority
+```
+
 ## Canonical Terms
 
 - **Source Image** — original user image(s); identity/provenance authority, not
@@ -43,6 +58,7 @@ metric image consistency and does not approve Cube transforms.
 - **Requested Dimensions** — approved numeric width/height/length target.
 - **Reference Package** — Modelling Brief + small metadata + optional Source
   Images/support references.
+- **Reference Evidence Map** — run-local material claim index derived from the actual approved image; never a Cube blueprint or replacement for the image.
 
 ## View Baseline
 
@@ -59,6 +75,20 @@ read volume and identity; it is not metric calibration.
 
 A different view set is allowed when the actual object requires it. Do not turn
 one Golden Sample's panels into permanent anatomy rules.
+
+### View Pair Map
+
+Before any reference view can approve a model view, map the reference label/orientation to the matching canonical `capture_model_views` view:
+
+```text
+REFERENCE FRONT ↔ MODEL front
+REFERENCE BACK  ↔ MODEL back
+REFERENCE SIDE  ↔ MODEL matching left/right
+REFERENCE TOP   ↔ MODEL top
+REFERENCE 3/4   ↔ MODEL matching front_left_3q/front_right_3q
+```
+
+The sheet's actual orientation owns the mapping. Ambiguous/mirrored front/back, left/right, or 3/4 side remains `UNVERIFIED`; do not compare whichever view looks most convenient.
 
 ## Cross-View Consistency
 
@@ -77,6 +107,31 @@ relationship.
 
 If primary-mass evidence materially conflicts across views, mark the reference
 `NOT READY / NEEDS REVIEW` rather than silently averaging contradictory shapes.
+
+## Reference Evidence Map
+
+Before exact geometry, derive only the **material observable claims** needed for current modelling decisions:
+
+```text
+claim_id
+kind: identity | mass | landmark | count | topology/contact | orientation | negative_space | representation
+observable claim
+supporting reference view(s)
+evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+```
+
+Run-local IDs may look like `mass:torso`, `orientation:neck`, `contact:neck_torso`, `count:legs`, `negative_space:handle_opening`.
+
+Rules:
+
+- claim text describes what is visible, not what the object “usually” has;
+- user-provided identity/function may clarify intent, but generic world knowledge cannot invent hidden form;
+- no Cube coordinates/count/pivot plan belongs in this map;
+- no pixel-derived dimension is promoted to model space;
+- material Semantic Form decisions should trace to one or more claim IDs;
+- unresolved material claims remain provisional/unverified or `BLOCKED`; they are not filled with confidence.
+
+The map is a compact decision aid, not another manifest ceremony. If the actual image changes or contradicts the map, re-ground the affected claim; the image remains authority.
 
 ## Axis Evidence States
 
@@ -104,7 +159,7 @@ Rules:
 - A front view may support width/height but cannot by itself certify depth.
 - A perspective 3/4 view may help interpret volume but must not override clearer orthographic evidence.
 - `PROVISIONAL` values may be used for a coarse working blockout when necessary, but they remain hypotheses and cannot become verified merely because Blockbench accepted the Cube.
-- `CONFLICTING` evidence must not be averaged into a fake compromise. If the conflict materially changes the primary form and the approved brief/user intent cannot resolve it, modelling is **BLOCKED** until the reference is clarified.
+- `CONFLICTING` evidence **must not be averaged** into a fake compromise. If the conflict materially changes the primary form and the approved brief/user intent cannot resolve it, modelling is **BLOCKED** until the reference is clarified.
 - `UNAVAILABLE` evidence leaves the affected claim `UNVERIFIED`; do not invent hidden dimensions/features and then report them as matched.
 
 The goal is not to produce a large manifest. Keep only the small axis/relationship evidence map needed for current primary modelling decisions.
@@ -185,13 +240,14 @@ Keep the package small. Typical metadata:
 ```text
 Model
 Target: Minecraft Bedrock Entity
+Approved reference image/file identity
 Requested dimensions (when relevant)
 Texture style: 16×16 / 32×32 / other requested style
 Animation: required / not required
 Additional notes
 ```
 
-Do not ask the user for Cube counts, bones, pivots, UV layout, or MCP operations.
+A file path identifies which image must be attached/read; the path itself is not visual evidence. Do not ask the user for Cube counts, bones, pivots, UV layout, or MCP operations.
 
 ## Generation Budget
 
@@ -215,15 +271,20 @@ Reference generation belongs to an **image-capable ChatGPT/Reference Generator
 surface**, not a root Codex skill.
 
 Codex consumes the approved Modelling Brief through the Bedrock modelling
-workflow. If the active surface cannot inspect/generate the required image, do
-not fake a completed reference.
+workflow. The approved image must still be supplied as actual multimodal evidence to the modelling model. If the active surface cannot inspect/generate the required image, do not fake a completed reference.
 
 ## Handoff To Modelling
 
 The approved reference feeds:
 
 ```text
-Cross-view consistency
+actual approved image available
+↓
+View Pair Map + Cross-view consistency
+↓
+Reference Evidence Map
+↓
+Semantic Form Contract
 ↓
 Coordinate frame + target envelope
 ↓
@@ -233,7 +294,7 @@ Explicit coarse primary Cubes
 ↓
 Structural + visual observation
 ↓
-Reference ↔ model comparison
+actual reference ↔ fresh model claim-locked comparison
 ```
 
 The Modelling Brief provides visual requirements. The modeller decides Cube
@@ -246,7 +307,9 @@ No package field may hard-code object-specific MCP profiles or geometry rules.
 Reference is ready when:
 
 - target identity/style are clear;
+- the actual approved image is available to the modelling model;
 - required views describe one compatible object;
+- view pairing is resolvable;
 - whole-form primary masses/proportions are understandable;
 - requested dimensions are available when needed;
 - animation scope is known;

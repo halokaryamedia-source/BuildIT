@@ -56,40 +56,45 @@ Current routing, ownership, proof/navigation docs, README surfaces, and the boun
 
 ## P5 Semantic Form / Rotation / Contact Hardening
 
-Design input is historical failure evidence, especially Zebra audit `G-01`, `G-09`, and `G-11`: arbitrary transforms, disconnected-looking Cube-by-Cube construction, and visibly sloped masses left axis-aligned.
+Historical Zebra failures `G-01`, `G-09`, `G-11` drove the current pre-coordinate semantic form, explicit orientation state, pivot-role, and contact-invariant rules. Semantic labels do not authorize coordinates; `[0,0,0]` rotation is not a default modelling answer; required attached masses preserve a declared contact relation.
 
-Implemented in the modelling specialist + runtime workflow:
+## P6 Actual Reference Grounding / Claim-Locked Comparison
+
+Design input is the remaining historical false-review evidence, especially `G-06`, `G-17`, `G-21`, `G-22`, `G-23`: fluent review could replace truth, model/reference evidence was insufficiently paired, semantic items were unnamed, and criterion outcomes were too free-form.
+
+Implemented contract:
 
 ```text
-REFERENCE
-→ Semantic Form Contract
-   identity / primary masses / must-exist reason
-   landmarks / count-symmetry / topology
-   negative spaces / representation / evidence state
-→ per-mass orientation: AXIS_ALIGNED | ROTATED | UNRESOLVED
-→ required contact target/invariant
-→ Primary Form Hypothesis
-→ exact from/to/origin/rotation
-→ AUTHOR
+actual approved reference image visible to the model
+→ Reference Evidence Map
+   claim_id + observable claim + supporting reference view(s) + evidence state
+→ View Pair Map
+   reference label → matching canonical capture_model_views view
+→ Semantic Form Contract links material items to grounded claim_id(s)
+→ Primary Form Hypothesis / authoring
+→ fresh current model view(s)
+→ claim-locked reference ↔ model difference-first verdict
 ```
 
 Rules:
 
-- semantic labels never authorize coordinates;
-- each primary Cube maps to a declared mass/landmark or justified split; no orphan/filler Cube;
-- `[0,0,0]` rotation is not a default modelling answer: material slopes require `ROTATED`, while material `UNRESOLVED` orientation becomes `BLOCKED`;
-- rotated masses require explicit pivot/origin plus a transform role (`MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`);
-- required attachments declare contact target/invariant before coordinates; rotating an attached mass must preserve that relationship;
-- technical overlap/hierarchy/touching remains structural evidence only; paired visual evidence owns contact validity;
-- no self-reported semantic fields were added to `place_cube`; the MCP server cannot validate whether prose reasoning is visually true.
+- user brief/target owns identity/function; approved image owns visible form; approved dimensions own numeric envelope;
+- filename/path/manifest/ASSET_REFERENCE/prose summary/prior observation/memory is not image evidence;
+- if the actual approved image cannot be inspected, reference-driven authoring is `BLOCKED` rather than reconstructed from generic object knowledge;
+- ambiguous/mirrored view pairing remains `UNVERIFIED`; unlike views cannot approve each other;
+- a material `PASS` requires actual approved reference image + fresh current-revision model image in the active comparison context;
+- claim review uses `claim_id`, paired views, observed difference, and `FAIL / UNVERIFIED / PASS` rather than generic positive prose;
+- after material mutation, affected model image evidence is stale until re-captured;
+- Reference Evidence Map is a derived working index, never authority over the actual image;
+- similarity/IoU/projection scores remain non-authoritative; no vision scorer, image→Cube planner, runtime profile, or self-reported semantic field was added.
 
-Targeted contract regression is `mcp/tests/model-effectiveness-semantic-form.test.ts`. It ties the new rules back to historical failures and preserves the existing structural non-zero-rotation→explicit-pivot guard.
+Targeted contract regression: `mcp/tests/model-effectiveness-reference-grounding.test.ts`.
 
-**Proof boundary:** this is repository/contract hardening. It proves the system is instructed to reason before placement and that structural rotation safety remains enforced. It does **not** prove Codex/model object understanding or final reference fidelity without a model-facing/live evaluation.
+**Proof boundary:** repository/CI can prove this fail-closed grounding contract exists. It cannot prove the model interpreted a reference correctly; that remains model-facing evidence. The intended anti-slop behavior is therefore not “guess better” but “no material geometry/PASS without actual image evidence; uncertainty stays explicit or blocks.”
 
 ## Evidence Boundary
 
-GitHub/CI can prove routing, semantic-form instructions, rotation/pivot schema safety, recovery, mapped source/test ownership, buildability, and regression integrity. Installed model decisions, image understanding, live Blockbench appearance, and actual object-quality improvement remain unproven by static CI.
+GitHub/CI can prove routing, semantic/reference-grounding instructions, rotation/pivot schema safety, recovery, mapped source/test ownership, buildability, and regression integrity. Installed model decisions, image understanding, live Blockbench appearance, and actual object-quality improvement remain unproven by static CI.
 
 ## Continuation Boot
 
@@ -108,8 +113,8 @@ AGENTS.md
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P0–P5 + POST-P4 CURRENT-STATE SYNC — IMPLEMENTED ON LOCAL.
-Proof budget for P5: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
+P0–P6 + POST-P4 CURRENT-STATE SYNC — IMPLEMENTED ON LOCAL.
+Proof budget for P6: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-NEXT PROPOSED — evaluate semantic object understanding without local Blockbench only if a real model-facing non-local evaluation path can be made honest. Do not create a fake benchmark that merely tests its own expected answers, and do not claim static prompt assertions prove object understanding.
+NEXT PROPOSED — only pursue a model-facing non-local reference-understanding evaluation if it can use actual images plus independently grounded expectations. Do not create a circular benchmark whose expected answer is authored by the same model being evaluated, and do not claim prompt/source assertions prove image understanding.
 ```
