@@ -53,13 +53,59 @@ describe("asset tool routing", () => {
     expect(skill).toContain("deferred spec loading after routing");
     expect(skill).toContain("exact selected tool name");
     expect(skill).toContain("never send raw user wording alone");
-    expect(skill).toContain('place_cube create new Bedrock Cube geometry');
+    expect(skill).toContain("place_cube create new Bedrock Cube geometry");
     expect(skill).toContain("one precise native `tool_search`");
     expect(skill).toContain("reformulate once");
     expect(skill).toContain("a second miss is `BLOCKED`");
     expect(skill).toContain("Do not issue multiple exploratory tool searches");
     expect(skill).not.toContain("route_tool(");
     expect(skill).not.toContain("find_best_blockit_tool");
+  });
+
+  test("hot-path failures recover without reopening tool selection", async () => {
+    const [skill, factories, identity, cubes, locators] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("lib/factories.ts"),
+      source("lib/coreIdentity.ts"),
+      source("server/tools/cubes.ts"),
+      source("server/tools/locators.ts"),
+    ]);
+
+    for (const term of [
+      "## Deterministic Recovery",
+      "INVALID_INPUT",
+      "TARGET_AMBIGUOUS",
+      "TARGET_NOT_FOUND",
+      "STALE_STATE",
+      "NO_EFFECT",
+      "CAPABILITY_MISMATCH",
+      "Failure does not reopen tool selection by default",
+      "repair args; same tool; no search",
+      "focused identity lookup; same tool",
+      "one focused refresh; same tool",
+      "never resend",
+      "reroute once or BLOCKED",
+    ]) expect(skill).toContain(term);
+
+    const registration = factories.slice(
+      factories.indexOf("export function registerToolsOnServer")
+    );
+    expect(registration.indexOf("parameterSchema.parseAsync(args)")).toBeGreaterThan(-1);
+    expect(registration.indexOf("parameterSchema.parseAsync(args)")).toBeLessThan(
+      registration.indexOf("toolDef.execute(")
+    );
+
+    expect(identity).toContain('is ambiguous. Use an exact UUID.');
+    expect(identity).toContain('not found.');
+    expect(cubes).toContain("has no authored effect");
+    expect(locators).toContain("require the Minecraft Bedrock Entity format");
+
+    for (const forbidden of [
+      "RecoveryEngine",
+      "ErrorRouter",
+      "RecoveryProfile",
+      "RecoveryGraph",
+    ]) expect(skill).not.toContain(forbidden);
   });
 
   test("texturing and animation specialists route directly and load the selected spec by exact name", async () => {
@@ -105,5 +151,6 @@ describe("asset tool routing", () => {
     expect(profile).not.toContain("authoring_stage");
     expect(profile).not.toContain("decision_loop");
     expect(profile).not.toContain("routing_state");
+    expect(profile).not.toContain("recovery_profile");
   });
 });

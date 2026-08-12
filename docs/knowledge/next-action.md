@@ -12,22 +12,15 @@ PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE
 
 Working branch: **`Local` only**.
 
-The user explicitly does **not** want another local Codex/Blockbench run yet. Repository/static work must use the smallest relevant proof; do not manually rerun broad or unrelated tests when the existing CI gate already covers the changed contract.
+The user explicitly does **not** want another local Codex/Blockbench run yet. Repository/static work must use the smallest relevant proof; do not manually rerun broad or unrelated tests when existing CI covers the changed contract.
 
 ## Cleaned Baseline
 
-Static hardening retains the audited Bedrock capability while reducing avoidable work:
-
-- exact JSON mirrors of `structuredContent` are compacted centrally;
-- project/outline/search/history/Locator discovery use bounded summary-first defaults;
-- mutation-returned identity/state is reused instead of confirmation reads;
-- asset authoring bypasses repository-development history/context unless source work is actually needed;
-- runtime prompt bundle contains only `bedrock_entity_workflow`;
-- generated state and active skill references remain source-owned and regression-checked.
+Retained Bedrock capability already uses compact structured results, bounded summary-first reads, returned-state reuse, asset/repository routing separation, one runtime prompt (`bedrock_entity_workflow`), and regression-checked generated/skill ownership.
 
 ## GitHub-Only Pretest Hardening
 
-The workflow pins Bun **1.3.14** and measures a real isolated `initialize → tools/list` path.
+Bun is pinned to **1.3.14**; isolated `initialize → tools/list` proof remains:
 
 ```text
 62 tools
@@ -41,8 +34,6 @@ These are serialized surface measurements, not client token/context measurements
 
 ## Native Deferred MCP Discovery
 
-Current upstream Codex establishes the intended architecture when tool search is available:
-
 ```text
 MCP initialize + tools/list
 → client-side deferred catalog
@@ -50,47 +41,45 @@ MCP initialize + tools/list
 → matching tool specs loaded when needed
 ```
 
-**native deferred MCP tool search exists**; BuildIT therefore does not add a custom MCP router. Current upstream uses BM25 with a default search limit of 8. MCP search text includes tool identity, title/description, namespace description, and top-level input-schema property names.
-
-BuildIT keeps compact **386 characters** initialization instructions and all 62 retained default capabilities.
+**native deferred MCP tool search exists**. Upstream search uses BM25 with default limit 8 over tool identity, title/description, namespace description, and top-level input-schema property names. BuildIT keeps **386 characters** initialization instructions and all 62 retained default capabilities; no custom MCP router is added.
 
 ## P0 Decision-Loop Hardening
 
-Implemented on `Local`:
+Implemented:
 
 ```text
 DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
 ```
 
-Fresh known identity/state cannot regress to discovery without a stale/ambiguous reason. Texturing and animation route directly from intent + known state. Unchanged intent gets one search plus at most one reformulation; redundant discovery/readback/re-search and repeated same-direction correction stop.
+Fresh identity/state does not regress to discovery without a stale/ambiguous reason. Unchanged intent gets one search plus at most one reformulation; redundant discovery/readback/re-search and repeated same-direction correction stop.
 
 ## P1 Tool Discovery Eval
 
-Implemented as a **static retrieval proxy**, not local Codex proof:
+Static proxy only; installed-client/model behavior remains `LOCAL PROOF REQUIRED`.
 
-- 104 human-style cases cover 52 high-value/ambiguous expected tools against all 62 enabled default tools;
-- raw semantic-stress baseline: Top-1 **0.5096**, Top-3 **0.7981**, Top-8 **0.9231**, MRR **0.6652**;
-- reports collision pairs and Top-8 misses;
-- exact installed-client/model behavior remains `LOCAL PROOF REQUIRED`.
+```text
+104 cases / 52 expected tools / 62 competitors
+raw Top-1 0.5096
+raw Top-3 0.7981
+raw Top-8 0.9231
+raw MRR   0.6652
+```
 
-The raw baseline is diagnostic. It must not become a reason to mass-edit descriptions if normal authoring already knows the selected tool before deferred loading.
+Raw semantic search is diagnostic, not a reason to mass-edit tool descriptions.
 
 ## P2 Exact-Name Deferred Spec Loading
 
-Implemented on `Local` as the cheaper response to P1 collisions:
+Implemented:
 
 ```text
-intent + fresh state + stage
-→ deterministic semantic route selects exact tool
+semantic route selects exact tool
 → exact spec loaded? call directly
-→ otherwise tool_search("<exact_tool_name> <semantic action>")
-→ one reformulation keeps the same exact tool name
+→ else tool_search("<exact_tool_name> <semantic action>")
+→ one reformulation keeps the same exact name
 → second miss = BLOCKED
 ```
 
-`tool_search` is therefore a **spec loader after routing**, not a second router. Raw user wording must not be sent alone after the route already selected `place_cube`, `manage_locator`, `configure_material`, `animation_graph_editor`, etc.
-
-The routed-loading static proxy reuses the same 104 cases with the already-selected exact tool identity included in the query. First measured result:
+Routed static proxy:
 
 ```text
 Top-1  0.8173
@@ -99,13 +88,26 @@ Top-8  1.0000
 MRR    0.8990
 ```
 
-Because upstream `tool_search` returns up to 8 matches and routing already knows the exact tool, **Top-8 presence is the correctness gate**; Top-1 is only an efficiency diagnostic. The contract gate therefore requires routed Top-8 **1.0**, Top-3 **>= 0.95**, and improvement over the raw semantic-stress baseline.
+Because native search returns up to 8 matches and the route already knows the target, Top-8 presence is the correctness gate; Top-1 is diagnostic.
 
-No public tool-description mass edit, new router/profile, server split, or capability reduction is part of P2. Public descriptions should be tuned only if exact-name routed loading still misses materially.
+## P3 Deterministic Hot-Path Recovery
+
+Implemented as a **decision contract over existing failure signals**, not a recovery framework.
+
+```text
+validation/schema failure → INVALID_INPUT    → repair args; same tool; no search
+ambiguous target          → TARGET_AMBIGUOUS → resolve exact UUID once; same tool
+not-found unknown ref     → TARGET_NOT_FOUND → focused identity lookup; same tool
+known UUID now not found  → STALE_STATE      → one focused refresh; same tool
+no authored effect        → NO_EFFECT        → diagnose/change payload; never resend
+unsupported capability    → CAPABILITY_MISMATCH → reroute once if supported, else BLOCKED
+```
+
+Current source already exposes the required signals: Zod validates before execute; shared identity resolution distinguishes ambiguous/not-found; Cube correction rejects no-authored-effect requests; format/capability failures are explicit. Recovery therefore does not add result payload fields, an error router, global error enum, profile, server split, or another MCP layer.
 
 ## Evidence Boundary
 
-GitHub/CI can prove routing text, static proxy retrieval, buildability, generated-doc freshness, and regression integrity. It cannot prove the user's installed Codex/model makes the same search choice or establish real latency/token savings.
+GitHub/CI can prove routing/recovery text, source failure signals, static retrieval, buildability, and regression integrity. It cannot prove installed Codex/model decisions, live Blockbench behavior, latency, or real token savings.
 
 ## Continuation Boot
 
@@ -123,8 +125,8 @@ AGENTS.md
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P2 EXACT-NAME DEFERRED SPEC LOADING — IMPLEMENTED ON LOCAL.
+P3 DETERMINISTIC HOT-PATH RECOVERY — IMPLEMENTED ON LOCAL.
 Proof budget: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-NEXT PROPOSED — deterministic error recovery for the highest-frequency tools only. Start from observed failure classes (invalid input, missing/ambiguous target, stale state, no-effect/capability mismatch); do not build a global recovery framework, tool→source index, router/profile/server split, or local Codex/Blockbench run without separate approval.
+NEXT PROPOSED — stop adding runtime routing/recovery architecture unless new evidence exposes a gap. If repository/plugin defect work is the next efficiency target, consider a small tool→source→test ownership index only with separate approval; otherwise WAIT for the next product task or explicit local proof request.
 ```
