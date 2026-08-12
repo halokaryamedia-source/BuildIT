@@ -1,6 +1,6 @@
 ---
 name: blockbench-reference-generator
-description: Turn a source image into one Minecraft / Blockbench multi-view reference; user supplies the image + known facts, and the skill builds the brief internally.
+description: Source image → one Minecraft / Blockbench multi-view reference; user supplies image + known facts, skill builds the brief internally.
 ---
 
 # Blockbench Reference Generator
@@ -11,7 +11,7 @@ Own **Source Image / user intent → one approved visual Modelling Brief image**
 
 User only needs to upload a usable source image, ask for a Minecraft / Blockbench reference, and optionally state facts they already know: asset name, target size/height, must-preserve feature, asymmetry.
 
-Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Missing optional facts use conservative image-grounded defaults. Ask only when the target is materially ambiguous and continuing would require guessing.
+Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Missing optional facts use image-grounded defaults. Ask only when the target is materially ambiguous and continuing would require guessing.
 
 ## Automatic Internal Generation Brief
 
