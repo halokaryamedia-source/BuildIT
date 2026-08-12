@@ -1,6 +1,6 @@
 ---
 name: blockbench-reference-generator
-description: Turn an actual source image into one Minecraft / Blockbench multi-view reference image. User supplies the image and any facts they know; the skill builds the full generation brief internally.
+description: Turn an actual source image into one Minecraft / Blockbench multi-view reference image; user supplies the image + any known facts, and the skill builds the full brief internally.
 ---
 
 # Blockbench Reference Generator
@@ -15,15 +15,15 @@ Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, U
 
 ## Automatic Internal Generation Brief
 
-Silently enrich the simple request with these rules before generating.
+Silently enrich the simple request before generating.
 
 ### Identity
 
-Source image owns identity, recognizable silhouette, major proportions, attachments, markings/palette, and asymmetry. Preserve defining features; do not invent hidden features from generic knowledge.
+Source image owns identity, recognizable silhouette, major proportions, attachments, markings/palette, asymmetry. Preserve defining features; do not invent hidden features from generic knowledge.
 
 ### Blockbench Construction Grammar
 
-Every material visible form must resolve to:
+Every material visible form resolves to:
 
 ```text
 CUBOID
@@ -33,7 +33,7 @@ MULTI_CUBOID_MASS
 TEXTURE_ONLY
 ```
 
-`CUBOID` when axis-aligned form is enough. `ROTATED_CUBOID` only for visible slope/orientation with plausible attachment. Use stepped/multi-Cuboid form for taper, curve-like silhouette, or compound volume. `TEXTURE_ONLY` for detail that does not change silhouette/real volume.
+`CUBOID` when axis-aligned form is enough. `ROTATED_CUBOID` only for visible slope/orientation with plausible attachment. Use stepped/multi-Cuboid form for taper, curve-like silhouette, compound volume. `TEXTURE_ONLY` when detail does not change silhouette/real volume.
 
 **Never lazy-voxelize.** Do not uniformly stack many equal/small Cubes. Prefer fewer, larger, purposeful primary masses plus only necessary secondary forms; avoid micro-Cube clutter.
 
@@ -41,20 +41,18 @@ Do not imply cone, wedge, sphere, smooth bevel, melted join, curved/deforming so
 
 ### Single-Model Cross-View Lock
 
-Lock one conceptual model before rendering: primary masses, **major segmentation**, orientation, attachments/separations, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**.
-
-Default board:
+Lock one conceptual model: primary masses, **major segmentation**, orientation, attachments/separations, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**.
 
 ```text
 UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-LEFT = strict profile facing left; FRONT/BACK = upright orthographic; TOP = true footprint; 3/4 = volume check. Add RIGHT SIDE only when material asymmetry requires it.
+LEFT = strict profile; FRONT/BACK = upright orthographic; TOP = true footprint; 3/4 = volume check. Add RIGHT SIDE only when material asymmetry requires it.
 
 ### Presentation
 
-Create a clean Minecraft / Blockbench modelling sheet, not a cinematic render: neutral background, uncropped subject, restrained pixel-art texture, readable planar lighting, visible construction boundaries. Shading may clarify planes but must not fake rounding, bevels, holes, or hidden geometry.
+Use a clean Minecraft / Blockbench modelling sheet: neutral background, uncropped subject, restrained pixel texture, readable planar lighting, visible construction boundaries. No cinematic render. Shading may clarify planes but must not fake rounding, bevels, holes, or hidden geometry.
 
 ## Buildability Visual Gate
 
@@ -74,9 +72,9 @@ Unsupported primitive, lazy voxel stack, floating rotated part, hidden boundary,
 ## Budget / Output
 
 ```text
-first draft = maximum 1
-targeted correction = maximum 1
-automatic variants = 0
+first draft          = maximum 1
+targeted correction  = maximum 1
+automatic variants   = 0
 ```
 
 Generate directly when the source is usable. Correct only one concrete visible/buildability defect; if still materially conflicting, report not ready instead of looping.
