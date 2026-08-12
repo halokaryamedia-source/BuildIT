@@ -55,6 +55,8 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
     expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
     expect(next).toContain("GitHub-Only Pretest Hardening");
+    expect(next).toContain("Native Deferred MCP Discovery");
+    expect(next).toContain("386 characters");
     expect(next).toContain("74,996 tools/list response characters");
     expect(next).toContain("51,810 input-schema characters");
     expect(next).toContain("10,885 description characters");
@@ -71,6 +73,8 @@ describe("Codex documentation handoff", () => {
     expect(sourceMap).toContain("completed local procedure");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
     expect(implementation).toContain("Fresh GitHub/CI serialized measurement");
+    expect(implementation).toContain("Deferred MCP Discovery Ownership");
+    expect(implementation).toContain("initialize instructions: 386 characters");
     expect(implementation).toContain("74,996 tools/list response characters");
     expect(implementation).toContain("### MCP result representation");
     expect(implementation).toContain("identity/type/parent discovery only");
@@ -82,7 +86,7 @@ describe("Codex documentation handoff", () => {
     }
   });
 
-  test("proof docs separate accepted live evidence from fresh static serialization proof", async () => {
+  test("proof docs separate accepted live evidence from current deferred-search architecture", async () => {
     const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
@@ -92,15 +96,19 @@ describe("Codex documentation handoff", () => {
 
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
     expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
+    expect(validation).toContain("Native Deferred MCP Discovery Compatibility");
+    expect(validation).toContain("OFFICIALLY VERIFIED");
+    expect(validation).toContain("initialize instructions: 386 characters");
     expect(validation).toContain("74,996 tools/list response characters");
     expect(validation).toContain("51,810 input-schema characters");
     expect(validation).toContain("10,885 description characters");
     expect(validation).toContain("not evidence of overall token/context savings");
     expect(validation).toContain("`action` is top-level-required");
     expect(validation).toContain("active routing references resolve");
-    expect(validation).toContain("UNKNOWN");
+    expect(validation).toContain("LOCAL PROOF REQUIRED");
 
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
+    expect(next).toContain("native deferred MCP tool search exists");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
     expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
     expect(implementation).toContain("Source-provable cleanup and GitHub-only pretest hardening are complete");
