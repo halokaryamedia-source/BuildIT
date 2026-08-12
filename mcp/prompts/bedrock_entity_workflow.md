@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
+Create/revise a Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
 
 ## Minimum necessary evidence
 
@@ -17,7 +17,7 @@ approved dimensions → numeric envelope
 Reference Evidence Map → derived index only
 ```
 
-Ground material claims only:
+Ground material claims:
 
 ```text
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
