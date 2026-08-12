@@ -4,11 +4,11 @@ Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bon
 
 ## Minimum necessary evidence
 
-**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh returned state. `create_project`/path `export_model` return lifecycle state; **Do not immediately call `get_project_info`** unless required fields are missing or external state may have changed. Use `inspect_model_bounds` only for envelope/scale/ground/displacement; **Otherwise skip it**. Re-capture only affected paired views. **Do not spend additional calls trying to remove UNVERIFIED** unless obtainable evidence changes the decision.
+**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh returned state. `create_project`/path `export_model` return lifecycle state; **Do not immediately call `get_project_info`** unless required fields are missing/external state changed. Use `inspect_model_bounds` only for envelope/scale/ground/displacement; **Otherwise skip it**. Re-capture only affected paired views. **Do not spend additional calls trying to remove UNVERIFIED** unless obtainable evidence changes the decision.
 
 ## Actual reference grounding
 
-Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/text summary/prior observation/memory **is not image evidence**. If the image cannot be inspected, `BLOCKED`; never reconstruct form from prose or generic object knowledge.
+Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/text summary/prior observation/memory **is not image evidence**. If unavailable, `BLOCKED`; never reconstruct form from prose/generic object knowledge.
 
 ```text
 user brief/target → identity/function
@@ -17,13 +17,13 @@ approved dimensions → numeric envelope
 Reference Evidence Map → derived index only
 ```
 
-Ground only material claims:
+Ground material claims only:
 
 ```text
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-No coordinates, pixel calibration, or hidden-feature invention. Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
+No coordinates, pixel calibration, hidden-feature invention. Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
 
 ## Semantic form before coordinates
 
@@ -42,9 +42,9 @@ material evidence state
 
 A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark or justified split/relationship; **no orphan/filler Cube**. `PROVISIONAL` may support a coarse non-contradictory hypothesis; placement never verifies it.
 
-Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. `[0,0,0]` needs image support; a **visible material slope** requires `ROTATED` plus explicit origin/pivot and role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`, not silent axis alignment.
+Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. `[0,0,0]` needs image support. A **visible material slope** requires `ROTATED` plus explicit origin/pivot and role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
-For every **required attachment**, identify **contact target/invariant** first. Rotation preserves it; use an **attachment/joint pivot** when that owns the transform. Numeric overlap/hierarchy is not contact proof; intentional negative spaces stay open.
+For every **required attachment**, identify **contact target/invariant** first. Rotation preserves it; use an **attachment/joint pivot** when that owns the transform. Numeric overlap/hierarchy is not contact proof; negative spaces stay open.
 
 ## Primary form / authoring
 
@@ -52,11 +52,11 @@ For every **required attachment**, identify **contact target/invariant** first. 
 
 Semantic Form says what exists/how parts relate. Primary Form Hypothesis says where/how large/how oriented; keep relative size/placement, orientation + supporting claim/view(s), contact invariant, uncertainty.
 
-Build the minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin; identities resolve deterministically. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once primary masses are judgeable, stop before secondary detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
+Build minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin; identities resolve deterministically. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
 
 ## Difference-first visual gate
 
-Material verdict requires the **actual approved reference image plus fresh current-revision model image(s) visible in the same comparison context**. Path/manifest/map/prose/memory/stale capture cannot approve.
+Material verdict requires **actual approved reference image plus fresh current-revision model image(s) visible in the same comparison context**. Path/manifest/map/prose/memory/stale capture cannot approve.
 
 ```text
 claim_id | reference view | current model view | observed difference | FAIL | UNVERIFIED | PASS
@@ -73,13 +73,12 @@ Front PASS is not full 3D PASS when side/depth evidence is missing/fails. Bounds
 1. **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once.
 2. Diagnose `TRANSLATE`, `RESIZE`, `ROTATE`, **hierarchy REATTACH**, `SPLIT`, `MERGE/REMOVE`, or grounded `ADD MASS`.
 3. State target UUID(s), intended change, invariant, expected structural effect.
-4. `modify_cube` or coherent `modify_cubes_batch`.
-5. Verify `geometry_effect`.
-6. Re-capture only affected paired view(s).
+4. `modify_cube` or coherent `modify_cubes_batch`; verify `geometry_effect`.
+5. Re-capture affected paired view(s).
 
-TRANSLATE preserves size; RESIZE names fixed center/face/contact; ROTATE preserves `from/to/size`, uses declared pivot role, preserves required attachment. Wrong/no structural effect is not progress. If the **same causal correction direction fails twice without new evidence**, stop speculative mutation and use `BLOCKED`.
+TRANSLATE preserves size; RESIZE names fixed center/face/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. Wrong/no structural effect is not progress. If the **same causal correction direction fails twice without new evidence**, stop speculative mutation and use `BLOCKED`.
 
-Wrong decomposition → revise Semantic Form; correct parts but wrong whole spatial relation → revise Primary Form Hypothesis. `BLOCKED` means continuation requires guessing because reference/pairing/evidence/capability is missing/conflicting or correction stopped converging.
+Wrong decomposition → Semantic Form; wrong whole spatial relation → Primary Form Hypothesis. `BLOCKED` means reference/pairing/evidence/capability is missing/conflicting or correction stopped converging.
 
 ## Downstream stages
 
@@ -91,7 +90,7 @@ Locator/Null Object discovery uses `list_locator_elements`; focused state uses `
 
 ## Protected Native Capability Gaps
 
-TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, bone-binding expressions remain gaps. Do not fake them with Mesh/UI automation/`risky_eval`/another format. **Native Bedrock PBR and per-face `material_instance` are **not** gaps**.
+TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, bone-binding expressions remain gaps. Do not fake them with Mesh/UI automation/`risky_eval`/another format. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
