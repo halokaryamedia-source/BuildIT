@@ -54,7 +54,8 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
       expect(text).toContain("MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM");
     }
     expect(geometry).toContain("Rotation is justified when");
-    expect(geometry).toContain("visible slope/orientation");
+    expect(geometry.toLowerCase()).toContain("visibly");
+    expect(geometry).toContain("orientation/slope");
     expect(geometry).toContain("any non-zero rotation");
     expect(geometry).toContain("explicit origin/pivot required");
 
