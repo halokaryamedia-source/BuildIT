@@ -110,9 +110,9 @@ describe("model creation effectiveness — actual reference grounding", () => {
       source("server/tools/cubes.ts"),
     ]);
 
-    expect(normalized(modelling)).toContain("similarity/iou/projection scores");
+    expect(normalized(modelling)).toMatch(/similarity\/iou\/projection score(?:s)?/);
     expect(normalized(modelling)).toContain("cannot justify pass");
-    expect(normalized(validation)).toContain("numeric similarity/iou/projection scores");
+    expect(normalized(validation)).toMatch(/numeric similarity\/iou\/projection score(?:s)?/);
     expect(normalized(validation)).toContain("none of these proves resemblance by itself");
     expect(profile).not.toContain("reference_grounding");
     expect(profile).not.toContain("vision_gate");
