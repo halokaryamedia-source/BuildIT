@@ -3,6 +3,7 @@ import { createConnection, createServer as createTcpServer, type AddressInfo } f
 import { z } from "zod";
 import { createTool } from "@/lib/factories";
 import createNetServer, { type NetServer } from "@/server/net";
+import { MCP_SERVER_INSTRUCTIONS } from "@/server/server";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
@@ -159,6 +160,44 @@ describe("P1.4 raw-net stateless integration", () => {
     expect((body.error as { message?: string }).message).toContain("invalid Origin");
   });
 
+  test("initialize exposes compact capability-oriented namespace instructions", async () => {
+    const initializeResponse = await postMcp({
+      jsonrpc: "2.0",
+      id: 100,
+      method: "initialize",
+      params: {
+        protocolVersion: PROTOCOL_VERSION,
+        capabilities: {},
+        clientInfo: { name: "p1-instructions-fixture", version: "1.0.0" },
+      },
+    });
+
+    expect(initializeResponse.status).toBe(200);
+    const initializeBody = await bodyJson(initializeResponse);
+    const result = initializeBody.result as {
+      protocolVersion?: string;
+      instructions?: string;
+    };
+    expect(result.protocolVersion).toBe(PROTOCOL_VERSION);
+    expect(result.instructions).toBe(MCP_SERVER_INSTRUCTIONS);
+    expect(MCP_SERVER_INSTRUCTIONS.length).toBeLessThan(700);
+
+    const instructions = MCP_SERVER_INSTRUCTIONS.toLowerCase();
+    for (const term of [
+      "bedrock",
+      "cube",
+      "texture",
+      "pbr",
+      "animation",
+      "keyframe",
+      "locator",
+      "history",
+      "export",
+    ]) {
+      expect(instructions).toContain(term);
+    }
+  });
+
   test("initialize, tools/list and tools/call pass through the real raw HTTP parser without sessions", async () => {
     const initializeResponse = await postMcp({
       jsonrpc: "2.0",
@@ -223,7 +262,6 @@ describe("P1.4 raw-net stateless integration", () => {
         .content
     ).toEqual([{ type: "text", text: "raw-net-ok" }]);
   });
-
 
   test("active keep-alive sockets can be closed deterministically", async () => {
     const address = server.address();
