@@ -41,7 +41,7 @@ describe("Codex documentation handoff", () => {
     expect(developmentBrief).not.toContain("`code-review`");
   });
 
-  test("current documentation holds a compact cleaned baseline without starting local", async () => {
+  test("current documentation holds the measured GitHub-only baseline without starting local", async () => {
     const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -51,11 +51,14 @@ describe("Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    expect(next.length).toBeLessThan(4_500);
+    expect(next.length).toBeLessThan(7_000);
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
+    expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
+    expect(next).toContain("GitHub-Only Pretest Hardening");
+    expect(next).toContain("74,996 tools/list response characters");
+    expect(next).toContain("51,810 input-schema characters");
+    expect(next).toContain("10,885 description characters");
     expect(next).toContain("do not run local until the user explicitly requests testing");
-    expect(next).toContain("`list_locator_elements` is identity/type/parent discovery only");
-    expect(next).toContain("repository-development instructions are also split by owner");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
 
@@ -67,11 +70,11 @@ describe("Codex documentation handoff", () => {
     expect(operations).not.toContain("roadmap.md");
     expect(sourceMap).toContain("completed local procedure");
     expect(sourceMap).toContain("mcp/prompts/bedrock_entity_workflow.md");
-    expect(implementation).toContain("62 enabled tools");
+    expect(implementation).toContain("Fresh GitHub/CI serialized measurement");
+    expect(implementation).toContain("74,996 tools/list response characters");
     expect(implementation).toContain("### MCP result representation");
-    expect(implementation).toContain("## Completed Static Efficiency Hardening");
     expect(implementation).toContain("identity/type/parent discovery only");
-    expect(implementation).toContain("repository-development context");
+    expect(implementation).toContain("active skill references regression-checked");
     expect(implementation).toContain("No new local run is active");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
@@ -79,7 +82,7 @@ describe("Codex documentation handoff", () => {
     }
   });
 
-  test("proof docs distinguish accepted live evidence from completed static hardening", async () => {
+  test("proof docs separate accepted live evidence from fresh static serialization proof", async () => {
     const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
@@ -88,15 +91,18 @@ describe("Codex documentation handoff", () => {
     ]);
 
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
-    expect(validation).toContain("source/contract/CI hardening complete");
-    expect(validation).toContain("62 enabled tools");
+    expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
+    expect(validation).toContain("74,996 tools/list response characters");
+    expect(validation).toContain("51,810 input-schema characters");
+    expect(validation).toContain("10,885 description characters");
+    expect(validation).toContain("not evidence of overall token/context savings");
+    expect(validation).toContain("only `action` top-level-required");
+    expect(validation).toContain("active routing references resolve");
     expect(validation).toContain("UNKNOWN");
-    expect(validation).toContain("`list_locator_elements` now returns identity/type/parent discovery only");
-    expect(validation).toContain("stale references to non-existent escalation skills were removed");
+
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
-    expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
     expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
-    expect(implementation).toContain("Source-provable cleanup is complete");
+    expect(implementation).toContain("Source-provable cleanup and GitHub-only pretest hardening are complete");
   });
 });
