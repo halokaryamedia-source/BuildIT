@@ -1,11 +1,11 @@
 ---
 name: blockit-bedrock-entity-mcp
-description: Compact BlockIT Bedrock Entity asset router. Decide from intent + known state; call a loaded exact tool or one precise native tool_search. Never search repository files for normal asset tool selection.
+description: Compact BlockIT Bedrock Entity asset router. Decide from intent + known state; call a loaded exact tool or one precise native tool_search. Never repo-search for normal asset tool selection.
 ---
 
 # BlockIT Bedrock Entity MCP
 
-Use for **asset authoring**, not plugin/repository development. Target Blockbench `bedrock`.
+Use for **asset authoring**, not plugin/repository development. Target `bedrock`.
 
 ## Fast Routing Contract
 
@@ -15,7 +15,7 @@ Normal asset work must not begin by searching repository files/source/docs, skil
 intent + known state/UUIDs + stage
 → select route
 → loaded exact tool: call it; else one precise native tool_search
-→ execute → reuse returned state
+→ execute → reuse state
 ```
 
 Do not use Graphify, Obsidian, GitHub/code search, or broad file discovery to choose a normal asset tool. A reproduced MCP/plugin defect becomes repository work.
@@ -55,14 +55,14 @@ capture_model_views  → "capture canonical model views"
 inspect_model_bounds → "inspect model bounds scale ground displacement"
 ```
 
-For texture/animation/Locator include the exact action (`create/edit/inspect/list/update`), not only the domain. If the exact tool spec is already loaded, skip search. Do not issue multiple exploratory tool searches when one precise search returns the intended tool.
+For texture/animation/Locator include exact action (`create/edit/inspect/list/update`), not only the domain. If the exact tool spec is already loaded, skip search. Do not issue multiple exploratory tool searches when one precise search returns the intended tool.
 
 ## State Shortcuts
 
 - Known UUID/identity → skip discovery unless stale/ambiguous.
 - Fresh create/mutation state → skip immediate readback.
-- `modify_cube` / `modify_cubes_batch` return before/after + `geometry_effect`; continue from it.
-- Locator/Null mutations return resulting state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale/inconsistent.
+- `modify_cube` / `modify_cubes_batch` return before/after + `geometry_effect`; reuse it.
+- Locator/Null mutations return state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale/inconsistent.
 - Create/path export returns lifecycle state. **Do not immediately call `get_project_info`** unless missing fields/external change matter.
 - Known tool spec already loaded → call it; do not repeat `tool_search` on a new turn.
 
@@ -85,11 +85,9 @@ texture/Paint/PBR/material_instance  → blockit-bedrock-texturing
 animation/keyframes/particles        → blockit-bedrock-animation
 ```
 
-Do not load a specialist merely to discover a selected tool name.
-
 ## Minimum Necessary Evidence
 
-- **Do not inspect every newly placed Cube.** Inspect only a diagnosed/ambiguous target or numeric correction state.
+- **Do not inspect every newly placed Cube.** Inspect only diagnosed/ambiguous or numeric correction state.
 - Do not capture after every mutation; use meaningful visual gates.
 - **Use `inspect_model_bounds` only when** numeric envelope, scale, ground, displacement, or gross placement is the question.
 - `UNVERIFIED` is not a retry command. Mutation count alone is not a checkpoint trigger.
@@ -97,13 +95,11 @@ Do not load a specialist merely to discover a selected tool name.
 
 ## Visual / Blocker Boundary
 
-Reference fidelity belongs to `blockbench-bedrock-modelling`: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade the verdict.
-
-Use **`BLOCKED`** when continuation requires unsupported evidence/capability or repeated speculative correction. **Do not continue speculative mutation** merely to avoid a blocker.
+Reference fidelity belongs to modelling: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Use **`BLOCKED`** for unsupported evidence/capability or repeated speculative correction. **Do not continue speculative mutation** merely to avoid a blocker.
 
 ## Downstream / Export
 
-Production texture waits for dependent geometry to pass; production animation waits for accepted participating geometry/hierarchy/pivots.
+Production texture waits for dependent geometry to pass; production animation waits for accepted geometry/hierarchy/pivots. **Existing asset** texture/animation-only work may treat current geometry as user baseline without certifying it.
 
 `export_model` supports:
 - Bedrock geometry JSON (`bedrock`);
