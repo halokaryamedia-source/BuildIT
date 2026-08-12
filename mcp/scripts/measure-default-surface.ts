@@ -12,6 +12,7 @@ const PROTOCOL_VERSION = "2025-06-18";
 // These are regression ceilings with small headroom, not token-usage targets.
 const SURFACE_BUDGET = {
   tool_count: 62,
+  initialize_instructions_chars: 700,
   tools_list_response_chars: 79_000,
   input_schema_chars: 54_500,
   description_chars: 11_500,
@@ -28,6 +29,7 @@ type ListedTool = {
 type JsonRpcBody = {
   result?: {
     protocolVersion?: string;
+    instructions?: string;
     tools?: ListedTool[];
   };
   error?: {
@@ -44,6 +46,7 @@ type BranchSchemaSummary = {
 
 type SurfaceMetrics = {
   protocol_version: string;
+  initialize_instructions_chars: number;
   tool_count: number;
   tools_list_response_chars: number;
   tools_array_chars: number;
@@ -120,6 +123,14 @@ function assertWithinSurfaceBudget(metrics: SurfaceMetrics): void {
   if (metrics.tool_count !== SURFACE_BUDGET.tool_count) {
     failures.push(
       `tool_count=${metrics.tool_count} expected exactly ${SURFACE_BUDGET.tool_count}`
+    );
+  }
+  if (
+    metrics.initialize_instructions_chars >
+    SURFACE_BUDGET.initialize_instructions_chars
+  ) {
+    failures.push(
+      `initialize_instructions_chars=${metrics.initialize_instructions_chars} exceeds ${SURFACE_BUDGET.initialize_instructions_chars}`
     );
   }
   if (
@@ -225,6 +236,10 @@ async function main(): Promise<void> {
         `Unexpected MCP protocol version: ${initialized.json.result?.protocolVersion ?? "missing"}`
       );
     }
+    const initializeInstructions = initialized.json.result?.instructions ?? "";
+    if (!initializeInstructions.trim()) {
+      throw new Error("MCP initialize must expose compact namespace instructions.");
+    }
 
     const listed = await postMcp(
       baseUrl,
@@ -268,6 +283,7 @@ async function main(): Promise<void> {
 
     const metrics: SurfaceMetrics = {
       protocol_version: PROTOCOL_VERSION,
+      initialize_instructions_chars: initializeInstructions.length,
       tool_count: tools.length,
       tools_list_response_chars: listed.text.length,
       tools_array_chars: JSON.stringify(tools).length,
