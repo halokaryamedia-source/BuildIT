@@ -9,6 +9,19 @@ function normalized(text: string): string {
 }
 
 describe("reference generator buildability contract", () => {
+  test("simple user input is automatically enriched without an intake questionnaire", async () => {
+    const skill = normalized(
+      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
+    );
+    expect(skill).toContain("simple user contract");
+    expect(skill).toContain("upload a usable source image");
+    expect(skill).toContain("optionally state facts they already know");
+    expect(skill).toContain("do not expose a long prompt/questionnaire");
+    expect(skill).toContain("automatic internal generation brief");
+    expect(skill).toContain("silently enrich the simple request");
+    expect(skill).toContain("generate directly when the source is usable");
+  });
+
   test("reference generation uses an explicit Blockbench construction grammar", async () => {
     const skill = await source("../.agents/skills/blockbench-reference-generator/SKILL.md");
     for (const primitive of [
@@ -25,6 +38,8 @@ describe("reference generator buildability contract", () => {
     }
     expect(lower).toContain("geometry standard wins");
     expect(lower).toContain("simplify it while preserving identity");
+    expect(lower).toContain("never lazy-voxelize");
+    expect(lower).toContain("prefer fewer, larger, purposeful primary masses");
   });
 
   test("all generated views are locked to one conceptual model", async () => {
