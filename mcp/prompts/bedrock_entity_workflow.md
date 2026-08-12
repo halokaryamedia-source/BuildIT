@@ -10,14 +10,7 @@ Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bon
 
 Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/text summary/prior observation/memory **is not image evidence**. If unavailable, `BLOCKED`; never reconstruct form from prose/generic object knowledge.
 
-```text
-user brief/target → identity/function
-approved image → visible form
-approved dimensions → numeric envelope
-Reference Evidence Map → derived index only
-```
-
-Ground material claims only:
+Use the image for visible form, approved dimensions for numeric envelope, and a derived **Reference Evidence Map** only as an index:
 
 ```text
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
@@ -50,7 +43,7 @@ For every **required attachment**, identify **contact target/invariant** first. 
 
 **A front-view match cannot certify depth.** Never average material cross-view conflict into invented geometry; unresolved conflict → `BLOCKED`.
 
-Semantic Form says what exists/how parts relate. Primary Form Hypothesis says where/how large/how oriented; keep relative size/placement, orientation + supporting claim/view(s), contact invariant, uncertainty.
+Semantic Form says what exists/how parts relate; Primary Form Hypothesis says where/how large/how oriented. Keep relative size/placement, orientation + supporting claim/view(s), contact invariant, uncertainty.
 
 Build minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin; identities resolve deterministically. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
 
@@ -64,7 +57,7 @@ claim_id | reference view | current model view | observed difference | FAIL | UN
 
 Review **difference-first**: recognizability, masses/landmarks/counts, silhouette/proportion, placement, orientation/slope, topology/contact, negative spaces.
 
-`FAIL` = critical/major mismatch + claim/paired view. `UNVERIFIED` = image evidence/pairing missing, ambiguous, conflicting, unavailable. `PASS` = fresh paired evidence has no critical/major mismatch for supported claim.
+`FAIL` = critical/major mismatch + claim/paired view. `UNVERIFIED` = evidence/pairing missing, ambiguous, conflicting, unavailable. `PASS` = fresh paired evidence has no critical/major mismatch for supported claim.
 
 Front PASS is not full 3D PASS when side/depth evidence is missing/fails. Bounds, hierarchy, coordinates, validators, tool success, similarity/IoU/projection scores, or fluent review text cannot justify PASS. Visible material slope left axis-aligned is `FAIL` unless intentionally stepped. After material mutation, affected model views are **stale** until re-captured; if approved image disappears, reload it or stay `UNVERIFIED/BLOCKED`.
 
@@ -81,7 +74,7 @@ Wrong decomposition → Semantic Form; wrong whole spatial relation → Primary 
 
 ## Downstream stages
 
-Secondary geometry follows primary `PASS`. Production texture waits for dependent **geometry** to `PASS`; production animation waits for accepted baseline and suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; required unresolved `UNVERIFIED` → `BLOCKED`. Existing-asset work may use current geometry as baseline without certifying reference accuracy.
+Secondary geometry follows primary `PASS`. Production texture waits for dependent **geometry** to `PASS`; production animation waits for suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; unresolved required `UNVERIFIED` → `BLOCKED`. Existing-asset work may use current geometry as baseline without certifying reference accuracy.
 
 ## Locator / Null Object authored state
 
@@ -89,7 +82,7 @@ Locator/Null Object discovery uses `list_locator_elements`; focused state uses `
 
 ## Protected Native Capability Gaps
 
-TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, bone-binding expressions remain gaps. Do not fake them with Mesh/UI automation/`risky_eval`/another format. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, sound/timeline effects, animated textures, bone-binding expressions remain gaps. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
@@ -98,8 +91,6 @@ project unknown/absent → get_project_info or create_project as appropriate
 known project → grounded reference → Semantic Form + Primary Form → place_cube / add_group
 judgeable form → capture_model_views
 bounded mismatch → inspect_element only if needed → modify_cube / modify_cubes_batch
-downstream stage → active texture or animation specialist
+downstream → active texture or animation specialist
 requested deliverable → export_model
 ```
-
-Use branch tools only when their data changes the decision; do not read overlapping evidence for confirmation.
