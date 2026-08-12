@@ -19,6 +19,8 @@ current request/reference
 
 For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, engineering history, activation matrices, or all foundation docs. Load another owner only when the current asset decision depends on it.
 
+Normal asset tool selection must also **not search repository files/source/docs first**. The BlockIT orchestrator skill decides from current intent + known returned state, then calls a known loaded tool directly or uses one precise native `tool_search` query. Repository/code search is reserved for an actual plugin/source question or reproduced defect.
+
 Asset authoring is not software **Developing** merely because it changes a model. Do not route it through `development-brief` unless source/plugin behavior itself is being changed.
 
 ### Repository / Plugin Work
