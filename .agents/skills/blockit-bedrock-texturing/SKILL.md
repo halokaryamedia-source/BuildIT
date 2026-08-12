@@ -32,7 +32,7 @@ Known identity skips list/discovery. `get_texture` is only for pixel/image evide
 
 ## Deferred Spec Loading
 
-After routing, load a missing spec with `<exact_tool_name> <specific action>`; never raw user wording alone.
+After routing, load a missing spec with the **exact tool name** + specific action; never raw user wording alone.
 
 ```text
 get_texture            → "get_texture read texture image pixels"
