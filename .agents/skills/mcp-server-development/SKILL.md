@@ -1,93 +1,59 @@
 ---
 name: mcp-server-development
-description: Specialist for the BlockIT MCP server and public contract boundary. Use when a Developing task changes MCP tools, resources, prompts, input schemas/validation, server registration, request/result contracts, annotations, Streamable HTTP transport, session lifecycle, or MCP protocol behavior. Follow the existing TypeScript/Bun/official-SDK architecture instead of scaffolding a generic MCP server. Do not use for a TypeScript type-system-only issue, Bun tooling issue, Blockbench runtime/API issue, or Bedrock modelling task unless the MCP public contract itself is the primary change.
+description: Specialist for BlockIT MCP public contracts: tools/resources/prompts, input schemas, result shapes, registration, annotations, Streamable HTTP transport, and MCP protocol behavior. Use when that client-facing boundary is the primary change; package invariants remain owned by mcp/AGENTS.md.
 ---
 
 # MCP Server Development
 
-Own the **MCP protocol/server and input-contract boundary** for BlockIT. Preserve
-the current repository architecture and make the smallest contract change
-required by the active `development-brief`.
+Own **client-visible MCP semantics**. The active `development-brief` defines goal/scope; `mcp/AGENTS.md` owns package-wide schema/runtime/result/docs/security rules. Do not repeat those rules here.
 
-## Boundary
+## Use This Owner For
 
-Use this skill for:
+- tool/resource/prompt public registration and descriptions;
+- accepted/rejected input, defaults, optionality, refinements, and protocol errors;
+- result/`structuredContent` contract decisions;
+- MCP annotations;
+- request-owned registration/reconstruction;
+- Streamable HTTP / MCP protocol/session behavior;
+- SDK compatibility where the MCP boundary itself changes.
 
-- MCP tool/resource/prompt registration and public descriptions;
-- MCP input schemas, accepted/rejected values, defaults, optionality, and refinements;
-- MCP request/result shape and structured output decisions;
-- tool annotations and protocol-facing error behavior;
-- server reconstruction/registration behavior;
-- Streamable HTTP transport and MCP session lifecycle;
-- MCP SDK/protocol compatibility.
+Route elsewhere when the primary semantic owner is:
 
-Adjacent owners:
+```text
+TypeScript type system        → typescript-type-safety
+Bun/build/package tooling     → bun-tooling
+Blockbench API/Undo/UI/runtime→ blockbench-runtime-development
+visual/model judgement        → blockbench-bedrock-modelling
+```
 
-- TypeScript type-system problems → `typescript-type-safety`;
-- Bun/package/build tooling → `bun-tooling`;
-- Blockbench lifecycle/UI/globals/mutation mechanics →
-  `blockbench-runtime-development`;
-- model shape/proportion/visual judgement → `blockbench-bedrock-modelling`.
+Do not stack those specialists merely because the implementation uses their technologies.
 
-When several technologies are present, use this skill only when the **primary
-semantic owner is the MCP public contract**. Do not stack specialists merely
-because the implementation also uses TypeScript, Bun, or Blockbench APIs.
+## Decision Procedure
 
-## Local Architecture First
+1. **Name the exact client-visible contract.** State what a caller currently sees/accepts and what must change.
+2. **Prove ownership.** Distinguish an MCP contract defect from an underlying Blockbench/runtime, TypeScript, Bun, or modelling problem.
+3. **Inspect the narrow owner.** Start with affected source/direct callers; inspect `lib/factories.ts`, shared schemas, registration profile, or `server/net.ts` only when the contract touches them.
+4. **Make the smallest contract change.** Reuse current factories/Zod/official SDK architecture. Do not add pagination, profiles, fallback APIs, transports, formats, or abstractions unless the requirement actually needs them.
+5. **Keep advertised and runtime semantics aligned.** Required/optional/default/refinement behavior, branch intent, annotations, descriptions, errors, and result shape must tell the same story as execution.
+6. **Update generated/public ownership through its source.** Never patch generated docs as the implementation.
+7. **Use the proof budget from root/development-brief.** Static contract proof is not live Blockbench or visual proof.
 
-Inspect only what is relevant:
+## Efficiency Checks
 
-1. `mcp/AGENTS.md`;
-2. the affected MCP source and direct registration/callers;
-3. `mcp/lib/factories.ts` for tool/resource/prompt registration;
-4. `mcp/lib/zodObjects.ts` for shared input schemas;
-5. `mcp/server/net.ts` and session code only for transport/session work;
-6. `mcp/package.json` only when dependency/build context matters.
+When the task is about AI/Codex usage, prefer source-provable waste first:
 
-BlockIT already uses TypeScript + Bun, the official
-`@modelcontextprotocol/sdk`, repository registration factories, Zod for MCP
-input schemas, and a repository-specific Streamable HTTP/session implementation.
+- duplicated equivalent result representations;
+- summary tools returning detail owned by focused reads;
+- stale/duplicated public descriptions or prompt content;
+- unnecessarily broad defaults where a larger explicit bound already exists.
 
-Do not replace those with Python/FastMCP, Express scaffolding, stdio, another
-schema library, another transport, or a new server layout without a proved
-migration requirement.
-
-## Input Contract Rules
-
-- Validate external/MCP input at the boundary.
-- Make optional/default/nullability/refinement semantics match real execution.
-- Reuse shared schemas before creating near-duplicates.
-- Derive TypeScript types from the schema when that keeps one contract owner.
-- Keep untrusted data `unknown` until validated.
-- Avoid duplicate validation unless each check proves a distinct invariant.
-- Keep schema construction free of Blockbench globals; docs/build import schemas
-  outside Blockbench.
-- Put live-Blockbench validation inside execution.
-- Keep protocol-facing errors specific and actionable.
-
-Zod is an implementation mechanism inside this owner, not a separate specialist.
-
-## Procedure
-
-1. Identify the exact client-visible MCP contract that must change.
-2. Prove the problem is MCP-owned rather than TypeScript/Bun/Blockbench/modelling-owned.
-3. Inspect the existing factory/schema/registration/session owner and direct impact.
-4. Make the smallest shared contract change; do not add capabilities, fallbacks,
-   pagination, abstractions, or formats without a demonstrated need.
-5. Update the source manifest/spec/schema when the public MCP surface changed;
-   do not hand-edit generated docs.
-6. Apply root `AGENTS.md` minimum-proof rules for the active execution channel.
-
-## Anti-Slop Boundary
-
-- Do not build a generic MCP server inside the existing Blockbench MCP project.
-- Do not implement broad API coverage when one focused operation solves the need.
-- Do not create a separate schema skill for ordinary MCP Zod work.
-- Do not replace working transport/session/schema architecture without evidence.
-- A valid schema or successful MCP call is not proof of Blockbench visual quality.
+Do **not** infer model-visible token cost from character count alone, remove retained capability solely to lower tool count, or build a custom router/profile without client evidence.
 
 ## Completion
 
-Return to `development-brief` and confirm the intended MCP contract changed,
-unrelated behavior stayed outside scope, public descriptions/results match the
-implementation, and any unavailable live proof is reported rather than inferred.
+Return to the same development brief and confirm:
+
+- the intended MCP contract changed and unrelated contracts did not;
+- public schema/description/result semantics match implementation;
+- required generated state/gates are current;
+- any live/runtime evidence still unavailable is reported rather than inferred.
