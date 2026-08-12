@@ -61,15 +61,25 @@ MCP initialize + tools/list
 
 This means the full 74,996-character `tools/list` response is a **client/catalog serialization cost**, not proof that all 62 schemas are placed in every model turn.
 
-BuildIT now supports that path more deliberately. `mcp/server/server.ts` sends a compact capability-oriented MCP `instructions` string during initialization. Current measured size is **386 characters**. Codex maps regular MCP server instructions to the model-visible namespace description and uses namespace description, tool names/descriptions, and schema property names in MCP tool-search text.
+BuildIT sends a compact **386-character** capability-oriented MCP initialization description so native deferred search has useful namespace context without embedding the 6k workflow prompt.
 
-The namespace description covers the retained authoring domains—project lifecycle, Cube/Group geometry, focused inspection/bounds/views, texture/Painter/PBR/material instances, animation/rigging/keyframes, Locator/Null Object, history/Undo/Redo, and Bedrock/.bbmodel export—without embedding the 6k workflow prompt into initialization.
+No custom MCP router, new registration profile, server split, or tool deletion was added. All 62 default capabilities remain available.
 
-No custom router, new registration profile, or tool deletion was added. All 62 default capabilities remain available for clients that can discover them.
+Normal asset routing is now deterministic in the existing compact `blockit-bedrock-entity-mcp` orchestrator:
+
+```text
+intent + known returned state / UUIDs + authoring stage
+→ select semantic route
+→ exact tool already loaded: call it
+→ otherwise: one precise native tool_search
+→ execute → reuse returned state
+```
+
+For ordinary asset tool selection, do **not** search repository files/source/docs or invoke Graphify/Obsidian. Repository search starts only for an actual plugin/source task or reproduced defect. Routing/skill/doc changes now trigger MCP Verify automatically.
 
 ## Evidence Boundary
 
-Upstream Codex behavior now resolves the architecture question: **native deferred MCP tool search exists and is the preferred owner rather than a BuildIT router**. What remains unverified without a future local run is the exact behavior of the user's installed Codex version/model and the resulting real token/context/latency numbers.
+Upstream Codex behavior resolves the architecture question: **native deferred MCP tool search is the preferred retrieval owner rather than a BuildIT MCP router**. What remains unverified without a future local run is the exact behavior of the installed Codex version/model and real token/context/latency numbers.
 
 Do not redesign these from static guessing:
 
@@ -99,5 +109,5 @@ The completed Local Acceptance Runbook is history/procedure only unless explicit
 ## Next Step
 
 ```text
-WAIT — deferred-search compatibility is GitHub/CI-ready; do not run local until the user explicitly requests testing or a new product task requires it.
+WAIT — deferred search + deterministic asset routing are GitHub/CI-ready; do not run local until the user explicitly requests testing or a new product task requires it.
 ```
