@@ -6,7 +6,7 @@ async function text(path: string): Promise<string> {
 }
 
 describe("Codex documentation handoff", () => {
-  test("current repository-owned skill inventory is documented without stale six-skill routing", async () => {
+  test("current repository-owned skill inventory is documented without stale routing", async () => {
     const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -24,23 +24,24 @@ describe("Codex documentation handoff", () => {
       "typescript-type-safety",
     ]);
 
-    const [context, skillMap, activation] = await Promise.all([
+    const [context, skillMap, activation, developmentBrief] = await Promise.all([
       text("../CONTEXT.md"),
       text("../docs/knowledge/skills/skill-map.md"),
       text("../docs/knowledge/skills/activation-matrix.md"),
+      text("../.agents/skills/development-brief/SKILL.md"),
     ]);
 
-    for (const name of dirs) {
-      expect(skillMap).toContain(name);
-    }
+    for (const name of dirs) expect(skillMap).toContain(name);
     expect(context).toContain("nine repository-owned skill packages");
     expect(activation).toContain("Asset Authoring Route");
     expect(activation).toContain("Repository / Plugin Development Route");
     expect(activation).toContain("Local Acceptance Route — Only When Reactivated");
     expect(skillMap).not.toContain("exactly six canonical skills");
+    expect(developmentBrief).not.toContain("`grilling`");
+    expect(developmentBrief).not.toContain("`code-review`");
   });
 
-  test("current documentation holds the cleaned baseline without starting another local run", async () => {
+  test("current documentation holds a compact cleaned baseline without starting local", async () => {
     const [next, runbook, dashboard, operations, sourceMap, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -50,10 +51,14 @@ describe("Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
+    expect(next.length).toBeLessThan(4_500);
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
     expect(next).toContain("do not run local until the user explicitly requests testing");
+    expect(next).toContain("`list_locator_elements` is identity/type/parent discovery only");
+    expect(next).toContain("repository-development instructions are also split by owner");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
+
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(dashboard).toContain("Static pre-local efficiency cleanup is complete");
     expect(dashboard).toContain("Another Codex/Blockbench run is **not active**");
@@ -65,6 +70,8 @@ describe("Codex documentation handoff", () => {
     expect(implementation).toContain("62 enabled tools");
     expect(implementation).toContain("### MCP result representation");
     expect(implementation).toContain("## Completed Static Efficiency Hardening");
+    expect(implementation).toContain("identity/type/parent discovery only");
+    expect(implementation).toContain("repository-development context");
     expect(implementation).toContain("No new local run is active");
 
     for (const currentDoc of [next, dashboard, sourceMap, implementation]) {
@@ -72,7 +79,7 @@ describe("Codex documentation handoff", () => {
     }
   });
 
-  test("current proof docs distinguish accepted live evidence from completed static hardening", async () => {
+  test("proof docs distinguish accepted live evidence from completed static hardening", async () => {
     const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/next-action.md"),
@@ -84,6 +91,8 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("source/contract/CI hardening complete");
     expect(validation).toContain("62 enabled tools");
     expect(validation).toContain("UNKNOWN");
+    expect(validation).toContain("`list_locator_elements` now returns identity/type/parent discovery only");
+    expect(validation).toContain("stale references to non-existent escalation skills were removed");
     expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
     expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
