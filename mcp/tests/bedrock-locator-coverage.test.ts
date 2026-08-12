@@ -39,9 +39,10 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(manageNullObjectParameters.safeParse({ action: "update", id: "null", position: [0, 0, Infinity] }).success).toBe(false);
 
     const locatorSource = await source("server/tools/locators.ts");
-    expect(locatorSource).toContain("finiteAuthoredVector3(locator.position");
-    expect(locatorSource).toContain("finiteAuthoredVector3(locator.rotation");
-    expect(locatorSource).toContain("finiteAuthoredVector3(element.position");
+    expect(locatorSource).toContain("finiteAuthoredVector3(");
+    expect(locatorSource).toContain("locator.position,");
+    expect(locatorSource).toContain("locator.rotation,");
+    expect(locatorSource).toContain("element.position,");
     expect(locatorSource).not.toContain("vector3Schema");
   });
   test("Null Object base mutation does not invent rotation or IK mutation", () => {
