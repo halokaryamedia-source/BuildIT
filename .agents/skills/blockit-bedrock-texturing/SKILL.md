@@ -9,7 +9,7 @@ Own surface authoring only. Geometry/pivot judgement remains with `blockbench-be
 
 ## Direct Routing
 
-Decide from intent + known state before any discovery. Reuse returned UUID/metadata.
+Decide from intent + known state before any discovery. **Reuse identity/metadata already returned by the current workflow.**
 
 ```text
 texture missing                         → create_texture
@@ -47,9 +47,9 @@ For a texture-only revision on an **existing asset**, current geometry is the us
 
 A flat/placeholder texture may be provisional for visibility, but do not polish it as fake progress. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships as applicable.
 
-## Bedrock Boundaries
+## Native Bedrock PBR
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; use `activate_texture` plus Painter operations rather than generic per-face `Texture.apply()` semantics.
+`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; **use `activate_texture` to choose the active/default working texture**, then use Painter operations rather than generic per-face `Texture.apply()` semantics.
 
 `material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools are outside BlockIT Bedrock Entity; do not claim direct Cube UV coverage beyond current Cube/texture contracts.
 

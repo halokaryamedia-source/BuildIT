@@ -23,7 +23,7 @@ explicit copy/paste/mirror            → animation_copy_paste
 mapped particle effects               → create_animation / inspect_animation effects
 ```
 
-Reuse known Group/bone UUIDs. `get_project_info` is only for unknown/stale lifecycle state; `list_outline` is only for unknown participating identity/hierarchy. Duplicate/colliding bone names are a determinism problem; do not guess through them.
+Reuse known Group/bone UUIDs. **Call `get_project_info` only when** lifecycle state is unknown/stale or a needed field is missing. **Call `list_outline` only when** participating identity/hierarchy is unknown. Duplicate/colliding bone names are a determinism problem; do not guess through them.
 
 ## Stage / Anti-Loop
 
