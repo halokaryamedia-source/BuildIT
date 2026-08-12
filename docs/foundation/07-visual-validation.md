@@ -1,7 +1,7 @@
 # BlockIT — Visual Validation
 
 **Status:** Active Policy  
-**Version:** 1.4  
+**Version:** 1.5  
 **Updated:** 2026-08-12
 
 ## Purpose
@@ -304,8 +304,10 @@ LOCAL
 → locate exact UUID
 → inspect_element only if fresh exact state unavailable
 → choose causal correction
+→ retain relevant pre-correction paired evidence
 → mutate bounded relationship
 → fresh affected paired view(s)
+→ qualitative fidelity delta
 ```
 
 ### Causal Correction
@@ -319,6 +321,18 @@ Do not default to adding another Cube.
 For one multi-Cube relationship, `modify_cubes_batch` may execute different
 exact-UUID corrections as one recoverable operation. It does not plan or judge
 the correction.
+
+### Fidelity Delta / Convergence
+
+A local correction must prove direction, not merely mutation activity. Compare the relevant fresh pre-correction evidence with fresh post-correction evidence for every materially affected supported claim/view:
+
+```text
+IMPROVED | UNCHANGED | REGRESSED
+```
+
+A correction counts as progress only when the target mismatch is `IMPROVED` and no previously supported material claim/view is `REGRESSED`. `UNCHANGED` or `REGRESSED` is not progress. If one paired view improves while another material paired view regresses, reject that correction direction; change the causal diagnosis or reopen the owning Primary Form Hypothesis rather than patching around the regression.
+
+This is a qualitative difference-first delta, not a scalar similarity score. Do not aggregate view outcomes into a numeric fidelity score or let one improved view cancel a material regression elsewhere.
 
 ## Rotation Review
 

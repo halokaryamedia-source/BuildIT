@@ -60,41 +60,43 @@ Historical Zebra failures `G-01`, `G-09`, `G-11` drove the current pre-coordinat
 
 ## P6 Actual Reference Grounding / Claim-Locked Comparison
 
-Design input is the remaining historical false-review evidence, especially `G-06`, `G-17`, `G-21`, `G-22`, `G-23`: fluent review could replace truth, model/reference evidence was insufficiently paired, semantic items were unnamed, and criterion outcomes were too free-form.
+Reference-driven authoring now requires the actual approved image in active multimodal context. Material decisions trace through a Reference Evidence Map + View Pair Map into Semantic Form, and material `PASS` requires the actual approved reference plus fresh current model evidence. Path/manifest/prose/memory cannot substitute; ambiguous or missing evidence stays `UNVERIFIED/BLOCKED`.
 
-Implemented contract:
+No vision scorer, image→Cube planner, runtime profile, or self-reported semantic field was added.
+
+## P7 Fidelity Convergence / Evaluation Integrity
+
+Historical `G-24`/`G-25` correction failures showed that a technically valid correction could still be another guessed transform. P7 adds one bounded rule:
 
 ```text
-actual approved reference image visible to the model
-→ Reference Evidence Map
-   claim_id + observable claim + supporting reference view(s) + evidence state
-→ View Pair Map
-   reference label → matching canonical capture_model_views view
-→ Semantic Form Contract links material items to grounded claim_id(s)
-→ Primary Form Hypothesis / authoring
-→ fresh current model view(s)
-→ claim-locked reference ↔ model difference-first verdict
+pre-correction paired evidence
+→ causal correction
+→ fresh affected paired evidence
+→ IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Rules:
+A correction is progress only when its target mismatch is `IMPROVED` and no previously supported material claim/view becomes `REGRESSED`. `UNCHANGED`/`REGRESSED` is not progress; cross-view regression changes the diagnosis or reopens Primary Form rather than authorizing another patch. This is qualitative, not a numeric fidelity score.
 
-- user brief/target owns identity/function; approved image owns visible form; approved dimensions own numeric envelope;
-- filename/path/manifest/ASSET_REFERENCE/prose summary/prior observation/memory is not image evidence;
-- if the actual approved image cannot be inspected, reference-driven authoring is `BLOCKED` rather than reconstructed from generic object knowledge;
-- ambiguous/mirrored view pairing remains `UNVERIFIED`; unlike views cannot approve each other;
-- a material `PASS` requires actual approved reference image + fresh current-revision model image in the active comparison context;
-- claim review uses `claim_id`, paired views, observed difference, and `FAIL / UNVERIFIED / PASS` rather than generic positive prose;
-- after material mutation, affected model image evidence is stale until re-captured;
-- Reference Evidence Map is a derived working index, never authority over the actual image;
-- similarity/IoU/projection scores remain non-authoritative; no vision scorer, image→Cube planner, runtime profile, or self-reported semantic field was added.
+Model-facing evaluation integrity is also frozen without adding a new evaluator runtime:
 
-Targeted contract regression: `mcp/tests/model-effectiveness-reference-grounding.test.ts`.
+```text
+actual approved image to candidate
++ target facts / normal workflow
++ independent expectations established before candidate output
+→ evaluate only:
+   decomposition / coverage
+   cross-view consistency
+   spatial hypothesis quality
+   correction direction / convergence
+```
 
-**Proof boundary:** repository/CI can prove this fail-closed grounding contract exists. It cannot prove the model interpreted a reference correctly; that remains model-facing evidence. The intended anti-slop behavior is therefore not “guess better” but “no material geometry/PASS without actual image evidence; uncertainty stays explicit or blocks.”
+The candidate must not receive the expected answer. Expectations may come from user-approved facts, pre-existing audited evidence, or another independently grounded source. The retained Zebra asset is evaluation evidence only, never a Zebra-specific product/runtime law.
+
+Targeted contract regression: `mcp/tests/model-effectiveness-fidelity-convergence.test.ts`.
 
 ## Evidence Boundary
 
-GitHub/CI can prove routing, semantic/reference-grounding instructions, rotation/pivot schema safety, recovery, mapped source/test ownership, buildability, and regression integrity. Installed model decisions, image understanding, live Blockbench appearance, and actual object-quality improvement remain unproven by static CI.
+GitHub/CI can prove routing, semantic/reference-grounding instructions, qualitative convergence rules, rotation/pivot schema safety, recovery, source/test ownership, buildability, and regression integrity. It **cannot** prove the model interpreted an image correctly or that a generated model visually converges in practice. That remains model-facing/live evidence.
 
 ## Continuation Boot
 
@@ -113,8 +115,8 @@ AGENTS.md
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P0–P6 + POST-P4 CURRENT-STATE SYNC — IMPLEMENTED ON LOCAL.
-Proof budget for P6: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
+P0–P7 + POST-P4 CURRENT-STATE SYNC — IMPLEMENTED ON LOCAL.
+Proof budget for P7: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-NEXT PROPOSED — only pursue a model-facing non-local reference-understanding evaluation if it can use actual images plus independently grounded expectations. Do not create a circular benchmark whose expected answer is authored by the same model being evaluated, and do not claim prompt/source assertions prove image understanding.
+NEXT PROPOSED — do not add more geometry architecture. Geometry policy/guardrails are feature-complete for the current evidence. The remaining question is model-facing reference-understanding and real convergence quality; evaluate that only with actual images and independent expectations, without exposing a gold answer to the candidate.
 ```

@@ -5,13 +5,12 @@ description: Bedrock Entity judgement for actual-reference grounding, Semantic F
 
 # Blockbench Bedrock Modelling
 
-Own **what must exist, how primary masses relate, and whether geometry is grounded enough to continue**. MCP mechanics stay in the orchestrator; texture/animation execution stay in their specialists.
+Own **what must exist, how primary masses relate, and whether geometry is grounded enough to continue**. MCP mechanics stay in the orchestrator.
 
 ## Minimum Necessary Evidence
 
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable whole form, then gate it.
-- Re-observe only affected relationships/views after local correction.
 - Bounds are for envelope/scale/ground/displacement. **Otherwise skip the bounds call.**
 - `UNVERIFIED` does not automatically require more calls.
 
@@ -32,7 +31,7 @@ Ground only material claims:
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-No exact transforms, pixel calibration, hidden-feature invention, or object stereotypes. Build a **View Pair Map** from each used reference label to matching canonical `capture_model_views` view. Ambiguous front/back, left/right, mirrored, or 3/4 pairing stays `UNVERIFIED`; unlike views cannot approve each other.
+Build a **View Pair Map** from each used reference label to matching canonical `capture_model_views` view. Ambiguous front/back, left/right, mirrored, or 3/4 pairing stays `UNVERIFIED`; unlike views cannot approve each other.
 
 ## Semantic Form / Orientation / Contact Gate
 
@@ -55,9 +54,9 @@ Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. `[0,0,0]` need
 
 For every **required attachment**, state its **contact target/invariant** before coordinates. Rotation preserves it; use an **attachment/joint pivot** when it owns the transform. **AABB overlap, hierarchy, or numeric touching is not contact proof**; paired views must show connection and intentional negative spaces stay open.
 
-## Tool Lane Discipline / Primary Build
+## Primary Build
 
-Normal lane: grounded claims → Semantic Form → Primary Form Hypothesis → coherent Cubes/Groups → necessary views → exact inspect/correct only for diagnosed mismatch → downstream after its gate. **If no current decision requires a branch, stay in the geometry lane** instead of searching for completeness work.
+Normal lane: grounded claims → Semantic Form → Primary Form Hypothesis → coherent Cubes/Groups → necessary views → exact inspect/correct for diagnosed mismatch.
 
 Use `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE` per material axis/placement/orientation/contact. **A convincing front silhouette does not validate depth.** Never average cross-view conflict into invented geometry; unresolved material conflict → **Enter the workflow `BLOCKED` state**.
 
@@ -77,9 +76,9 @@ Search **difference-first** for recognizability, required masses/landmarks/count
 
 `FAIL` = critical/major mismatch; name claim + paired view. `UNVERIFIED` = image evidence/pairing missing, ambiguous, conflicting, unavailable. `PASS` = fresh paired evidence shows no critical/major mismatch for supported claim.
 
-Front PASS is not full 3D PASS when depth/side evidence is missing/fails. Tool success, coordinates, bounds, hierarchy, validators, scalar similarity/IoU/projection scores, or fluent review text **cannot justify PASS**. Visible material slope left axis-aligned is `FAIL` unless intentionally stepped. After material mutation, affected model views are **stale** until re-captured. If approved image disappears from context, reload it or stay `UNVERIFIED/BLOCKED`. Wrong decomposition → Semantic Form; otherwise revise Primary Form instead of micro-patching.
+Front PASS is not full 3D PASS when depth/side evidence is missing/fails. Tool success, coordinates, bounds, hierarchy, validators, scalar similarity/IoU/projection scores, or fluent review text **cannot justify PASS**. Visible material slope left axis-aligned is `FAIL` unless intentionally stepped. After material mutation, affected model views are **stale** until re-captured. If approved image disappears, reload it or stay `UNVERIFIED/BLOCKED`. Wrong decomposition → Semantic Form; otherwise revise Primary Form instead of micro-patching.
 
-## Local Correction Contract
+## Local Correction / Convergence
 
 ```text
 TRANSLATE placement | RESIZE extent | ROTATE orientation
@@ -87,9 +86,17 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-**Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving resize, size change during TRANSLATE, extent change during ROTATE, broken contact invariant, or no-effect means structurally wrong correction.
+Reuse fresh exact target state when sufficient; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent.
 
-Re-capture only affected views. If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
+After fresh affected views, compare pre/post evidence for every materially affected claim/view:
+
+```text
+IMPROVED | UNCHANGED | REGRESSED
+```
+
+A correction is progress only when the target mismatch is `IMPROVED` and no previously supported material claim/view is `REGRESSED`. `UNCHANGED`/`REGRESSED` is not progress. A fix that helps one view while materially regressing another is rejected; change causal diagnosis or reopen Primary Form rather than patch around it. This delta is qualitative, never a similarity score.
+
+If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
 
 ## BLOCKED / Completion
 
