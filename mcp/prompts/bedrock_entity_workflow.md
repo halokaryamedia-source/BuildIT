@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bones/organization. Tool/file success is execution evidence, not resemblance approval.
+Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
 
 ## Minimum necessary evidence
 
@@ -10,13 +10,20 @@ Create/revise an editable Bedrock **Entity**. Cubes are geometry; Groups are bon
 
 Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/text summary/prior observation/memory **is not image evidence**. If unavailable, `BLOCKED`; never reconstruct form from prose/generic object knowledge.
 
-Use the image for visible form, approved dimensions for numeric envelope, and a derived **Reference Evidence Map** only as an index:
+```text
+user brief/target → identity/function
+approved image → visible form
+approved dimensions → numeric envelope
+Reference Evidence Map → derived index only
+```
+
+Ground material claims only:
 
 ```text
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-No coordinates/pixel calibration/hidden-feature invention. Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
+Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
 
 ## Semantic form before coordinates
 
