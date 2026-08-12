@@ -51,9 +51,10 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-Fresh GitHub/CI serialized measurement after static slimming:
+Fresh GitHub/CI serialized measurement:
 
 ```text
+initialize instructions: 386 characters
 62 tools
 74,996 tools/list response characters
 74,952 tools-array characters
@@ -62,9 +63,26 @@ Fresh GitHub/CI serialized measurement after static slimming:
 per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
 ```
 
-The earlier accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. The current descriptions are smaller, while current schema and total serialized characters are larger. Neither measurement is a client token/context measurement.
+The earlier accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. Current descriptions are smaller, while current schema and total serialized characters are larger. Neither measurement is a client token/context measurement.
 
-`mcp/scripts/measure-default-surface.ts` owns the isolated `initialize → tools/list` measurement. CI retains exactly 62 default tools and uses bounded serialized-surface ceilings with small headroom to catch accidental growth without treating character count as a product target.
+`mcp/scripts/measure-default-surface.ts` owns the isolated `initialize → tools/list` measurement. CI retains exactly 62 default tools and uses bounded serialized-surface ceilings plus a 700-character initialization-instructions ceiling.
+
+## Deferred MCP Discovery Ownership
+
+Current upstream Codex provides the desired usage architecture when tool search is available:
+
+```text
+MCP catalog
+→ Deferred exposure
+→ Codex tool_search
+→ matching tool spec loaded when needed
+```
+
+Codex still performs MCP initialization and `tools/list` to build/cache its client-side catalog; that catalog size is therefore not equivalent to model context size. The current Codex MCP adapter uses regular MCP server instructions as the namespace description, and its tool-search text includes tool names, titles/descriptions, namespace description, and top-level schema property names.
+
+BuildIT's owner for this compatibility is `mcp/server/server.ts`. It sends one compact `MCP_SERVER_INSTRUCTIONS` capability summary during initialization. The runtime workflow remains separately owned by `mcp/prompts/bedrock_entity_workflow.md`; the 6k workflow prompt is not copied into initialization.
+
+This design intentionally keeps all 62 Bedrock capabilities. No BuildIT custom search/router, additional MCP profile, or multi-endpoint domain split is currently justified.
 
 ## Bedrock Authoring Ownership
 
@@ -118,16 +136,15 @@ Active routing integrity is regression-tested against the canonical `.agents/ski
 - duplicate structured/text result mirrors removed centrally;
 - path export and discovery/read defaults made metadata/summary-first where source ownership proved the boundary;
 - project, outline/search, history, and Locator discovery no longer return avoidable normal-path detail;
-- asset instruction ownership split across routing/orchestrator/domain specialists;
-- repository-development context split across root routing, compact development brief, package rules, and at most one specialist;
+- asset and repository-development context split across existing owners rather than ritual co-loading;
 - stale/non-existent development routing removed and active skill references regression-checked;
 - runtime prompt bundle reduced to the one callable workflow;
 - Locator/Null branch intent checked on the actual serialized MCP surface without tool/profile proliferation;
-- generated state synchronized;
 - Bun toolchain pinned;
-- isolated serialized-surface measurement and regression ceilings added.
+- isolated serialized-surface measurement and regression ceilings added;
+- compact MCP server namespace instructions added for native deferred-tool discovery compatibility.
 
-**No new local run is active.** Client-only questions—schema injection/deferred search, real co-loading, token/latency cost, retry frequency, and realistic image-context cost—remain future evidence questions. Do not add a router/profile or remove retained native capability from static speculation alone.
+**No new local run is active.** Current upstream Codex source establishes native deferred MCP discovery when tool search is available. The remaining client-only questions are whether the user's installed Codex/model follows that current path and what the real token/latency, co-loading, retry, and image-context costs are. Do not add a router/profile or remove retained native capability without that future evidence.
 
 ## Protected Native Gaps
 
