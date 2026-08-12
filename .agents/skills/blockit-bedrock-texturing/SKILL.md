@@ -30,6 +30,22 @@ material_instance read/set/bulk/clear   → dedicated material-instance tool
 
 Known identity skips list/discovery. `get_texture` is only for pixel/image evidence, not confirmation. Painter intent must name the actual action (fill/shape/gradient/brush/erase/pick/copy/settings/layer/selection/preset), not merely "paint".
 
+## Deferred Spec Loading
+
+After routing selects the exact texture/Paint/PBR tool, a missing spec is loaded with **exact tool name + short action**, never raw user wording alone.
+
+```text
+get_texture            → "get_texture read texture image pixels"
+activate_texture       → "activate_texture set active working texture"
+configure_material     → "configure_material edit existing PBR material"
+assign_texture_channel → "assign_texture_channel assign PBR texture channel"
+color_picker_tool      → "color_picker_tool sample pixel color texture"
+texture_selection      → "texture_selection rectangle invert texture selection"
+clear_material_instances → "clear_material_instances clear cube face material instances"
+```
+
+For any other routed Painter/material-instance tool, use the same rule: `<exact_tool_name> <specific action>`. If the spec is already loaded, call it directly.
+
 ## Stage / Anti-Loop
 
 Use the parent stage lock: `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.

@@ -25,6 +25,22 @@ mapped particle effects               → create_animation / inspect_animation e
 
 Reuse known Group/bone UUIDs. **Call `get_project_info` only when** lifecycle state is unknown/stale or a needed field is missing. **Call `list_outline` only when** participating identity/hierarchy is unknown. Duplicate/colliding bone names are a determinism problem; do not guess through them.
 
+## Deferred Spec Loading
+
+After routing selects the animation tool, load a missing spec with **exact tool name + short animation action**; do not send raw user wording alone.
+
+```text
+inspect_animation          → "inspect_animation inspect authored animation keyframes"
+manage_keyframes           → "manage_keyframes create edit transform keyframes"
+animation_graph_editor     → "animation_graph_editor interpolation Bezier easing"
+bone_rigging               → "bone_rigging edit reparent pivot bone rig"
+animation_timeline         → "animation_timeline playback time loop animation"
+batch_keyframe_operations  → "batch_keyframe_operations batch offset scale keyframes"
+animation_copy_paste       → "animation_copy_paste copy mirror paste keyframes"
+```
+
+If the exact spec is already loaded, call it directly. A search reformulation keeps the same exact selected tool name; it does not reopen tool selection.
+
 ## Stage / Anti-Loop
 
 Use the parent stage lock: `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.

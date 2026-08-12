@@ -53,11 +53,18 @@ Texture/Paint/PBR → `blockit-bedrock-texturing`. Animation/keyframe/rig → `b
 
 ## Search Intent Templates
 
-If the exact tool spec is already loaded, skip search. Otherwise use **one precise native `tool_search`**. If it misses, reformulate once for the same intent; a second miss is `BLOCKED`, not permission for broad/repository search.
+`tool_search` is **deferred spec loading after routing**, not a second semantic router. If the exact tool spec is already loaded, skip search. Otherwise the query must begin with the **exact selected tool name**, followed by a short semantic action; never send raw user wording alone.
 
-Examples: `modify_cube` → "modify one existing Bedrock Cube transform"; `list_outline` → "list Bedrock Cube Group hierarchy".
+```text
+place_cube         → "place_cube create new Bedrock Cube geometry"
+modify_cube        → "modify_cube modify one existing Bedrock Cube transform"
+modify_cubes_batch → "modify_cubes_batch batch modify known Bedrock Cubes"
+list_outline       → "list_outline list Bedrock Cube Group hierarchy"
+manage_locator     → "manage_locator create update Bedrock Locator"
+export_model       → "export_model export Bedrock geometry bbmodel"
+```
 
-For texture/animation/Locator include exact action (`create/edit/inspect/list/update`). **Do not issue multiple exploratory tool searches**. Validation failure keeps the selected tool unless identity/state became unknown/stale.
+Use **one precise native `tool_search`**. If it misses, reformulate once while retaining the exact selected tool name; a second miss is `BLOCKED`. Do not issue multiple exploratory tool searches. Validation failure keeps the selected tool unless identity/state became unknown/stale.
 
 ## State Shortcuts / Anti-Loop
 
