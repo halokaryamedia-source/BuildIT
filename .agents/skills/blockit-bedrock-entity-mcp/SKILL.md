@@ -96,7 +96,7 @@ Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade 
 
 ## Downstream / Export
 
-Production texture/animation waits for accepted dependencies. **Existing asset** texture/animation-only work may use current geometry as user baseline without certifying it.
+production texture/animation waits for accepted dependencies. **Existing asset** texture/animation-only work may use current geometry as user baseline without certifying it.
 
 `export_model` supports:
 - Bedrock geometry JSON (`bedrock`);
