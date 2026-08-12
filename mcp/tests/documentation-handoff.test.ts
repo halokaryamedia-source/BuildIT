@@ -86,6 +86,50 @@ describe("Codex documentation handoff", () => {
     }
   });
 
+  test("named MCP-tool defects have a bounded source and primary-test index", async () => {
+    const [root, implementation] = await Promise.all([
+      text("../AGENTS.md"),
+      text("../docs/knowledge/implementation-map.md"),
+    ]);
+
+    expect(root).toContain("Hot-Path Defect Index");
+    expect(root).toContain("docs/knowledge/implementation-map.md");
+    expect(implementation).toContain("## Hot-Path Defect Index");
+    expect(implementation).toContain("first-stop index, not exhaustive ownership");
+    expect(implementation).toContain("Do not load every listed test");
+
+    const mappings = [
+      { tools: ["create_project", "get_project_info"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
+      { tools: ["place_cube", "modify_cube", "modify_cubes_batch"], source: "server/tools/cubes.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
+      { tools: ["add_group"], source: "server/tools/element.ts", test: "tests/p1-core-ownership.test.ts" },
+      { tools: ["list_outline", "find_elements_by_criteria"], source: "server/tools/element.ts", test: "tests/context-payload-cleanup.test.ts" },
+      { tools: ["inspect_element"], source: "server/tools/element-inspection.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
+      { tools: ["capture_model_views"], source: "server/tools/camera.ts", test: "tests/camera-framing-contract.test.ts" },
+      { tools: ["list_locator_elements", "manage_locator", "manage_null_object"], source: "server/tools/locators.ts", test: "tests/bedrock-locator-coverage.test.ts" },
+      { tools: ["create_texture", "list_textures", "get_texture", "activate_texture"], source: "server/tools/texture.ts", test: "tests/context-payload-cleanup.test.ts" },
+      { tools: ["create_pbr_material", "configure_material", "assign_texture_channel"], source: "server/tools/texture.ts", test: "tests/pbr-channel-contract.test.ts" },
+      { tools: ["create_animation"], source: "server/tools/animation.ts", test: "tests/create-animation-contract.test.ts" },
+      { tools: ["manage_keyframes", "animation_graph_editor", "bone_rigging", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"], source: "server/tools/animation.ts", test: "tests/animation-mutation-contract.test.ts" },
+      { tools: ["inspect_animation"], source: "server/tools/animation-inspection.ts", test: "tests/context-payload-cleanup.test.ts" },
+      { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
+    ];
+
+    for (const mapping of mappings) {
+      const repoSource = `mcp/${mapping.source}`;
+      const repoTest = `mcp/${mapping.test}`;
+      const row = implementation
+        .split("\n")
+        .find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
+      expect(row).toBeDefined();
+      expect(row).toContain(`\`${repoSource}\``);
+      expect(row).toContain(`\`${repoTest}\``);
+      expect(await Bun.file(mapping.source).exists()).toBe(true);
+      expect(await Bun.file(mapping.test).exists()).toBe(true);
+      const sourceText = await text(mapping.source);
+      for (const tool of mapping.tools) expect(sourceText).toContain(tool);
+    }
+  });
+
   test("proof docs separate accepted live evidence from current deferred-search architecture", async () => {
     const [validation, next, context, implementation] = await Promise.all([
       text("../docs/foundation/validation-report.md"),

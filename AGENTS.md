@@ -1,6 +1,6 @@
 # Workspace Agent Routing
 
-This repository is project memory. Current user intent owns the task; current source and relevant proof own behavior.
+Current intent owns the task; current source and relevant proof own behavior.
 
 ## Task Class First
 
@@ -25,7 +25,7 @@ Asset authoring is not software **Developing** merely because it changes a model
 
 ### Repository / Plugin Work
 
-Use for source, docs, tests, CI, MCP/plugin behavior, architecture, or maintenance.
+Use for source/docs/tests/CI/MCP/plugin/architecture/maintenance.
 
 ```text
 this file
@@ -36,7 +36,7 @@ this file
 → at most one relevant engineering specialist
 ```
 
-Do not broad-scan reviews/foundation/history before a concrete boundary needs them.
+Named MCP-tool defect: use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before code search; otherwise avoid broad scans.
 
 ## Source Precedence
 

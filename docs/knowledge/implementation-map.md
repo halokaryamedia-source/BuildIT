@@ -37,6 +37,28 @@ mcp/tests/            contract/integration/static-efficiency gates
 mcp/docs/             generated API docs; secondary to source
 ```
 
+## Hot-Path Defect Index
+
+For a repository/plugin defect that names one of these tools, inspect the mapped **source owner + primary regression owner first**. This is a **first-stop index, not exhaustive ownership**; expand to callers, shared helpers, or code search only when the mapped pair cannot explain the defect.
+
+| Tool(s) | Source owner | Primary regression owner |
+|---|---|---|
+| `create_project`, `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
+| `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
+| `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
+| `inspect_element` | `mcp/server/tools/element-inspection.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
+| `list_locator_elements`, `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
+| `create_texture`, `list_textures`, `get_texture`, `activate_texture` | `mcp/server/tools/texture.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
+| `create_pbr_material`, `configure_material`, `assign_texture_channel` | `mcp/server/tools/texture.ts` | `mcp/tests/pbr-channel-contract.test.ts` |
+| `create_animation` | `mcp/server/tools/animation.ts` | `mcp/tests/create-animation-contract.test.ts` |
+| `manage_keyframes`, `animation_graph_editor`, `bone_rigging`, `animation_timeline`, `batch_keyframe_operations`, `animation_copy_paste` | `mcp/server/tools/animation.ts` | `mcp/tests/animation-mutation-contract.test.ts` |
+| `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
+| `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
+
+Do not load every listed test. The mapped regression is the first falsification target for the named tool; adjacent tests are loaded only when the defect crosses that contract boundary.
+
 ## Default MCP Surface
 
 Accepted live capability baseline remains:

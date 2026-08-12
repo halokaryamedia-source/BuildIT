@@ -105,9 +105,23 @@ unsupported capability    → CAPABILITY_MISMATCH → reroute once if supported,
 
 Current source already exposes the required signals: Zod validates before execute; shared identity resolution distinguishes ambiguous/not-found; Cube correction rejects no-authored-effect requests; format/capability failures are explicit. Recovery therefore does not add result payload fields, an error router, global error enum, profile, server split, or another MCP layer.
 
+## P4 Hot-Path Defect Ownership Index
+
+Implemented as a **repository-only first-stop index**, not runtime routing.
+
+```text
+named MCP-tool defect
+→ docs/knowledge/implementation-map.md Hot-Path Defect Index
+→ mapped source owner + primary regression owner
+→ inspect those first
+→ broaden to caller/helper/code search only if they cannot explain the defect
+```
+
+The index covers the highest-value project, Cube, hierarchy/discovery, camera, Locator, texture/PBR, animation, and export tools. It is intentionally not a 62-tool dependency graph. The mapped regression is the first falsification target, not a command to load every adjacent test.
+
 ## Evidence Boundary
 
-GitHub/CI can prove routing/recovery text, source failure signals, static retrieval, buildability, and regression integrity. It cannot prove installed Codex/model decisions, live Blockbench behavior, latency, or real token savings.
+GitHub/CI can prove routing/recovery/ownership text, source/test paths, static retrieval, buildability, and regression integrity. It cannot prove installed Codex/model decisions, live Blockbench behavior, latency, or real token savings.
 
 ## Continuation Boot
 
@@ -115,6 +129,7 @@ GitHub/CI can prove routing/recovery text, source failure signals, static retrie
 AGENTS.md
 → this file
 → CONTEXT.md only if stable facts change the decision
+→ named MCP-tool defect? implementation-map Hot-Path Defect Index
 → affected source + nearest AGENTS.md
 → development-brief
 → at most one relevant specialist
@@ -125,8 +140,8 @@ AGENTS.md
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P3 DETERMINISTIC HOT-PATH RECOVERY — IMPLEMENTED ON LOCAL.
+P4 HOT-PATH DEFECT OWNERSHIP INDEX — IMPLEMENTED ON LOCAL.
 Proof budget: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-NEXT PROPOSED — stop adding runtime routing/recovery architecture unless new evidence exposes a gap. If repository/plugin defect work is the next efficiency target, consider a small tool→source→test ownership index only with separate approval; otherwise WAIT for the next product task or explicit local proof request.
+NEXT PROPOSED — WAIT for the next product/defect task or an explicit local-proof request. Do not add more routing/recovery architecture or expand the ownership index without a real defect showing that the current bounded path is insufficient.
 ```
