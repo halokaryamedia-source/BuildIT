@@ -1,29 +1,29 @@
 ---
 name: blockbench-reference-generator
-description: Source image → one Minecraft / Blockbench multi-view reference; user supplies image + known facts, skill builds the brief internally.
+description: Source image → one Minecraft / Blockbench multi-view reference; user supplies image + known facts, skill handles the rest.
 ---
 
 # Blockbench Reference Generator
 
-Own **Source Image / user intent → one approved visual Modelling Brief image**. Design one plausible Cuboid model first, then show that same model from multiple views.
+Create **one buildable Minecraft / Blockbench reference image** from the user's source image. Think in this order: **preserve subject → design one Cuboid model → show that same model in all views → reject unbuildable/sloppy output**.
 
 ## Simple User Contract
 
-User only needs to upload a usable source image, ask for a Minecraft / Blockbench reference, and optionally state facts they already know: asset name, target size/height, must-preserve feature, asymmetry.
+User only needs to **upload a usable source image**, ask for a Minecraft / Blockbench reference, and **optionally state facts they already know**: asset name, target size/height, must-preserve feature, asymmetry.
 
-Do not expose a long prompt/questionnaire. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Missing optional facts use image-grounded defaults. Ask only when the target is materially ambiguous and continuing would require guessing.
+**Do not expose a long prompt/questionnaire.** Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Use image-grounded defaults when optional facts are absent. Ask only if the target itself is materially ambiguous.
 
 ## Automatic Internal Generation Brief
 
-Silently enrich the simple request before generating.
+**Silently enrich the simple request** with these priorities.
 
-### Identity
+### 1. Preserve the subject
 
-Source image owns identity, silhouette, major proportions, attachments, markings/palette, asymmetry. Preserve defining features; do not invent hidden features from generic knowledge.
+Source image owns identity, silhouette, major proportions, attachments, markings/palette, and asymmetry. Preserve defining features. Do not invent hidden structure from generic knowledge.
 
-### Blockbench Construction Grammar
+### 2. Design a Blockbench model, not a voxel filter
 
-Every material visible form resolves to:
+Every material form must resolve to:
 
 ```text
 CUBOID
@@ -33,15 +33,15 @@ MULTI_CUBOID_MASS
 TEXTURE_ONLY
 ```
 
-`CUBOID` when axis-aligned form is enough. `ROTATED_CUBOID` only for visible slope/orientation with plausible attachment. Use stepped/multi-Cuboid form for taper, curve-like silhouette, compound volume. `TEXTURE_ONLY` when detail does not change silhouette/real volume.
+Use `CUBOID` when axis-aligned form works. Use `ROTATED_CUBOID` only for a visible slope/orientation with plausible attachment. Use stepped/multi-Cuboid form for taper, curve-like silhouette, or compound volume. Use `TEXTURE_ONLY` when detail does not change silhouette/real volume.
 
-**Never lazy-voxelize.** Do not uniformly stack many equal/small Cubes. Prefer fewer, larger, purposeful primary masses plus only necessary secondary forms; avoid micro-Cube clutter.
+**Never lazy-voxelize.** Do not stack many equal/small Cubes to imitate the source. **Prefer fewer, larger, purposeful primary masses** plus only necessary secondary forms; avoid micro-Cube clutter.
 
 Do not imply cone, wedge, sphere, smooth bevel, melted join, curved/deforming solid, or shading-created fake geometry. If needed, **simplify it while preserving identity**. **Geometry Standard wins** over a smoother-looking Golden Sample.
 
-### Single-Model Cross-View Lock
+### 3. Single-Model Cross-View Lock
 
-Lock one conceptual model: primary masses, **major segmentation**, orientation, attachments/separations, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**.
+Lock one conceptual model before rendering: primary masses, **major segmentation**, orientation, attachments/separations, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**.
 
 ```text
 UPPER: LEFT SIDE | FRONT | BACK
@@ -50,22 +50,22 @@ LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 
 LEFT = strict profile; FRONT/BACK = orthographic; TOP = true footprint; 3/4 = volume check. Add RIGHT SIDE only when asymmetry requires it.
 
-### Presentation
+### 4. Present it like a modelling reference
 
-Use a clean Minecraft / Blockbench modelling sheet: neutral background, uncropped subject, restrained pixel texture, planar lighting, visible construction boundaries. No cinematic render or shading that fakes rounding, bevels, holes, or hidden geometry.
+Use a clean neutral sheet, uncropped subject, restrained pixel texture, readable planar lighting, and visible construction boundaries. No cinematic render. Shading must not fake rounding, bevels, holes, or hidden geometry.
 
 ## Buildability Visual Gate
 
 Before returning, verify:
 
-1. major silhouette uses the allowed grammar;
-2. masses/boundaries read without shading tricks;
-3. taper/curve-like parts are **visibly segmented, not smooth solids**;
-4. **rotated parts are simple, purposeful, visibly attached**;
-5. openings are true negative space;
-6. surface detail did not become geometry clutter;
-7. SIDE/FRONT/BACK/TOP/3Q keep compatible segmentation/proportions;
-8. target remains recognizable and uncropped.
+- silhouette is explainable by the allowed grammar;
+- masses/boundaries are readable;
+- taper/curve-like parts are **visibly segmented, not smooth solids**;
+- **rotated parts are simple, purposeful, visibly attached**;
+- openings are true negative space;
+- surface detail did not become geometry clutter;
+- SIDE/FRONT/BACK/TOP/3Q keep compatible segmentation/proportions;
+- target remains recognizable and uncropped.
 
 Unsupported primitive, lazy voxel stack, floating rotated part, hidden boundary, or cross-view drift = **NOT READY**. **Do not produce numeric buildability/fidelity/view scores**.
 
@@ -77,6 +77,6 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Generate directly when the source is usable. Correct one concrete defect; if still materially conflicting, report not ready instead of looping.
+**Generate directly when the source is usable.** Correct one concrete defect; if still materially conflicting, report not ready instead of looping.
 
-Return **one image only**. **Do not generate ZIPs**, manifests, production documents, or GitHub-sync state. After approval, hand the actual image + user facts to `blockbench-bedrock-modelling` / BlockIT MCP. Filename/path/summary is not visual evidence.
+Return **one image only**. **Do not generate ZIPs**, manifests, production documents, or GitHub-sync state. After approval, hand the actual image + user facts to `blockbench-bedrock-modelling` / BlockIT MCP.
