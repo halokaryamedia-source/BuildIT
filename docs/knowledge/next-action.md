@@ -61,7 +61,7 @@ MCP initialize + tools/list
 
 This means the full 74,996-character `tools/list` response is a **client/catalog serialization cost**, not proof that all 62 schemas are placed in every model turn.
 
-BuildIT sends a compact **386-character** capability-oriented MCP initialization description so native deferred search has useful namespace context without embedding the 6k workflow prompt.
+BuildIT sends a compact MCP initialization description: **386 characters**. This gives native deferred search useful namespace context without embedding the 6k workflow prompt.
 
 No custom MCP router, new registration profile, server split, or tool deletion was added. All 62 default capabilities remain available.
 
@@ -79,7 +79,7 @@ For ordinary asset tool selection, do **not** search repository files/source/doc
 
 ## Evidence Boundary
 
-Upstream Codex behavior resolves the architecture question: **native deferred MCP tool search is the preferred retrieval owner rather than a BuildIT MCP router**. What remains unverified without a future local run is the exact behavior of the installed Codex version/model and real token/context/latency numbers.
+Upstream Codex behavior resolves the architecture question: **native deferred MCP tool search exists** and is the preferred retrieval owner rather than a BuildIT MCP router. What remains unverified without a future local run is the exact behavior of the installed Codex version/model and real token/context/latency numbers.
 
 Do not redesign these from static guessing:
 
