@@ -33,7 +33,7 @@ For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/kn
 
 Normal asset tool selection must **not search repository files/source/docs first**. Route from intent + known state, then call a loaded tool or one precise native `tool_search`. Repository/code search is for source/plugin work or reproduced defects.
 
-Asset authoring is not software **Developing** merely because it changes a model. Reference generation is also not repository development. Use `development-brief` only when repository/plugin behavior changes.
+Asset authoring is not software **Developing** merely because it changes a model. Reference generation is also not repository development. Do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ### Repository / Plugin Work
 
