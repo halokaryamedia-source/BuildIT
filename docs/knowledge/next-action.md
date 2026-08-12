@@ -12,112 +12,108 @@ PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE
 
 Working branch: **`Local` only**.
 
-The user explicitly does **not** want another local Codex/Blockbench run yet. Functional local acceptance already exists. Source-provable cleanup and the follow-up GitHub-only pretest hardening are complete and CI-green.
+The user explicitly does **not** want another local Codex/Blockbench run yet. Functional local acceptance already exists. Repository/static work must use the smallest relevant proof; do not manually rerun broad or unrelated tests when the existing CI gate already covers the changed contract.
 
 ## Cleaned Baseline
 
-Current static hardening covers:
+Current static hardening retains the audited Bedrock capability while reducing avoidable context/work:
 
-- duplicate MCP result representation: exact JSON mirrors of `structuredContent` are compacted centrally;
-- metadata-first filesystem export after verified path writes;
-- compact normal defaults for project hierarchy, outline/search, and undo-history reads while explicit larger bounds remain available;
-- `list_locator_elements` is identity/type/parent discovery only; `inspect_element` owns detailed Locator/Null Object state;
-- asset-authoring and repository-development instructions are split by their existing owners instead of being co-loaded by ritual;
-- `CONTEXT.md` is stable facts only; stale local-acceptance/current-state routing is removed;
-- runtime prompt bundle contains only callable `bedrock_entity_workflow`; maintainer API/eval Markdown is source-only;
-- active skill routing is regression-checked against the canonical `.agents/skills/` packages;
-- generated state remains source-owned and freshness-checked.
+- exact JSON mirrors of `structuredContent` are compacted centrally;
+- project/outline/search/history/Locator discovery use bounded summary-first defaults;
+- mutation-returned identity/state is reused instead of confirmation reads;
+- asset authoring bypasses repository-development history/context unless source work is actually needed;
+- runtime prompt bundle contains only `bedrock_entity_workflow`;
+- generated state and active skill references remain source-owned and regression-checked.
 
 ## GitHub-Only Pretest Hardening
 
-The verification workflow pins Bun through root `.bun-version` at **1.3.14** and runs an isolated real `initialize → tools/list` measurement through the current stateless HTTP path.
-
-Fresh serialized default-surface baseline:
+The workflow pins Bun **1.3.14** and measures a real isolated `initialize → tools/list` path.
 
 ```text
 62 tools
 74,996 tools/list response characters
-74,952 tools-array characters
 51,810 input-schema characters
 10,885 description characters
-per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
+initialize instructions: 386 characters
 ```
 
-Compared with the historical accepted static measurement, descriptions are smaller but schema and total serialized characters are larger. These are **serialization measurements, not token/context measurements**. Do not claim overall client savings from these character counts.
-
-CI guards the fresh surface with small regression headroom while retaining exactly 62 default tools. Actual serialized Locator schemas are also checked: `manage_locator` and `manage_null_object` expose all relevant fields with only `action` top-level-required; `name`/`id` descriptions preserve create/update requirements while runtime validation keeps the original discriminated union.
+These are serialized surface measurements, not client token/context measurements. Do not claim overall token savings from them.
 
 ## Native Deferred MCP Discovery
 
-Current upstream Codex source establishes the intended efficient path when tool search is available:
+Current upstream Codex establishes the intended architecture when tool search is available:
 
 ```text
 MCP initialize + tools/list
-→ catalog retained client-side
-→ MCP tools registered as deferred
-→ tool_search ranks/searches deferred tools
-→ only matching tool specs are loaded for model use
+→ client-side deferred catalog
+→ tool_search
+→ matching tool specs loaded when needed
 ```
 
-This means the full 74,996-character `tools/list` response is a **client/catalog serialization cost**, not proof that all 62 schemas are placed in every model turn.
+**native deferred MCP tool search exists**; BuildIT therefore does not add a custom MCP router. Current upstream uses BM25 with a default search limit of 8. MCP search text includes tool identity, title/description, namespace description, and top-level input-schema property names.
 
-BuildIT sends a compact MCP initialization description: **386 characters**. This gives native deferred search useful namespace context without embedding the 6k workflow prompt.
+BuildIT keeps compact **386 characters** initialization instructions and all 62 retained default capabilities.
 
-No custom MCP router, new registration profile, server split, or tool deletion was added. All 62 default capabilities remain available.
-
-Normal asset routing is deterministic in the compact `blockit-bedrock-entity-mcp` orchestrator:
+Normal authoring route:
 
 ```text
-intent + known returned state / UUIDs + authoring stage
-→ select semantic route
-→ exact tool already loaded: call it
-→ otherwise: one precise native tool_search
+intent + fresh known state / UUIDs + stage
+→ exact loaded tool: call directly
+→ otherwise one precise tool_search
 → execute → reuse returned state
 ```
 
-For ordinary asset tool selection, do **not** search repository files/source/docs or invoke Graphify/Obsidian. Repository search starts only for an actual plugin/source task or reproduced defect. Routing/skill/doc changes trigger MCP Verify automatically.
+Do not use repository search, Graphify, or Obsidian for ordinary asset tool selection.
+
+## P0 Decision-Loop Hardening
+
+Implemented on `Local`:
+
+```text
+DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
+```
+
+- fresh known identity/state cannot regress to discovery without a stale/ambiguous reason;
+- texturing and animation route directly from intent + known state;
+- unchanged intent gets one precise `tool_search` plus at most one reformulation;
+- redundant discovery/readback/re-search and repeated same-direction correction are stopped.
+
+## P1 Tool Discovery Eval
+
+Implemented as a **static retrieval proxy**, not local Codex proof:
+
+- `mcp/scripts/evaluate-tool-discovery.ts` builds the default 62-tool search corpus from current tool metadata using the upstream Codex MCP search fields;
+- 104 curated human-style intent cases cover 52 high-value/ambiguous expected tools while every enabled default tool remains a ranking competitor;
+- reports Top-1 accuracy, Top-3 recall, Top-8 recall, mean reciprocal rank, recurring Top-1 collision pairs, and Top-8 misses;
+- ranking is a dependency-free BM25 proxy pinned to the inspected upstream Codex source revision; exact installed-client tokenizer/ranking remains `LOCAL PROOF REQUIRED`;
+- the regression is exercised inside the existing `bun test` contract gate, so CI does **not** add a second discovery-eval run.
+
+The first purpose of this eval is measurement. Do not tune descriptions to an invented target before reading the emitted collision baseline.
 
 ## Evidence Boundary
 
-Upstream Codex behavior resolves the architecture question: **native deferred MCP tool search exists** and is the preferred retrieval owner rather than a BuildIT MCP router. What remains unverified without a future local run is the exact behavior of the installed Codex version/model and real token/context/latency numbers.
+GitHub/CI can prove corpus construction, curated cases, deterministic proxy metrics, buildability, and regression integrity. It cannot prove the user's installed Codex/model makes the same search choice, nor real latency/token behavior.
 
-Do not redesign these from static guessing:
-
-- actual prompt/skill co-loading in the installed client;
-- real token/context/latency savings;
-- actual invalid-call retry frequency;
-- realistic image/context cost;
-- whether an older/non-tool-search client needs a restricted `enabled_tools` compatibility configuration.
-
-Also do not pre-emptively add another router/profile/readiness framework, split the MCP server into many endpoints, mass-trim legitimate schemas, impose arbitrary global output limits, or default-disable retained Bedrock Animation/Paint/Texture/Locator/material capability merely to reduce counts.
+Do not pre-emptively add a router/profile/server split, disable retained tools, or add another search framework because of a static proxy result.
 
 ## Continuation Boot
 
-For a future repository task, load only what changes the decision:
-
 ```text
 AGENTS.md
-→ this file when continuing current work
-→ CONTEXT.md only when stable facts matter
+→ this file
+→ CONTEXT.md only if stable facts change the decision
 → affected source + nearest AGENTS.md
-→ development-brief for a create/change task
+→ development-brief
 → at most one relevant specialist
 ```
-
-The completed Local Acceptance Runbook is history/procedure only unless explicitly reactivated.
 
 ## Next Step
 
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-P0 DECISION-LOOP HARDENING — IMPLEMENTED ON LOCAL:
-1. Authoring stage lock: DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE; fresh known state cannot regress to discovery.
-2. Texturing + animation use direct intent/state routing inside their lazy-loaded specialists.
-3. Unchanged intent gets one precise tool_search + at most one reformulation; a second miss becomes BLOCKED.
-4. Anti-loop rules stop redundant discovery/readback/re-search and repeated same-direction correction.
+P1 TOOL DISCOVERY EVAL — IMPLEMENTED ON LOCAL.
+Proof budget: one normal MCP Verify run only; no manual broad reruns unless a relevant gate fails.
 
-Acceptance/proof budget: one normal MCP Verify run for this commit. Do not manually rerun broad or unrelated tests unless a relevant gate fails.
-
-NEXT PROPOSED (NOT STARTED) — P1 TOOL DISCOVERY EVAL. Do not start discovery-eval, error-recovery framework, tool→source/test index, router/profile/server split, or local Codex/Blockbench work until the user approves the next step.
+NEXT PROPOSED — review the emitted P1 collision baseline. If recurring semantic collisions are material, tune only those tool descriptions/search terms and add a measured floor from the observed baseline. Do not mass-edit descriptions, add a custom router/profile/server split, start the error-recovery framework, or run local Codex/Blockbench without separate approval.
 ```
