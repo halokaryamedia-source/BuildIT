@@ -2,49 +2,46 @@
 
 Updated: 2026-08-12
 
-Use this note to answer **where current `Local` behavior lives**. It is a source-ownership map, not a task tracker.
+Current `Local` source ownership only. Active task state belongs in `next-action.md`; historical rationale belongs in reviews/decisions.
 
-## Primary owners
+## Primary Owners
 
-| Boundary | Current owner |
+| Boundary | Owner |
 |---|---|
 | task routing / proof discipline | root `AGENTS.md` |
 | stable project facts | root `CONTEXT.md` |
-| current repository continuation | `docs/knowledge/next-action.md` |
-| completed local procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
+| active continuation | `docs/knowledge/next-action.md` |
 | product/modelling policy | `docs/foundation/` |
-| MCP public/runtime implementation | `mcp/` source + `mcp/AGENTS.md` |
+| MCP package invariants | `mcp/AGENTS.md` |
+| MCP public/runtime source | `mcp/` |
+| repository change contract | `.agents/skills/development-brief/` |
+| MCP public-contract decisions | `.agents/skills/mcp-server-development/` |
 | asset orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
 | modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
 | texture/PBR | `.agents/skills/blockit-bedrock-texturing/` |
 | animation | `.agents/skills/blockit-bedrock-animation/` |
+| completed local procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
 
-## MCP source areas
+## MCP Source Areas
 
-| Area | Owns |
-|---|---|
-| `mcp/index.ts` | plugin entry/lifecycle wiring |
-| `mcp/server/` | MCP server, transport, tools, resources, prompts |
-| `mcp/server/tools/` | authored model/project/texture/animation operations |
-| `mcp/lib/` | schemas, factories, runtime helpers, result normalization |
-| `mcp/ui/` | Blockbench panel/settings |
-| `mcp/prompts/` | runtime workflow prompt + source-only maintainer references |
-| `mcp/build/` | build/docs/runtime-manifest generation |
-| `mcp/tests/` | contract/integration/static-efficiency regression gates |
-| `mcp/docs/` | generated API docs; secondary to source |
+```text
+mcp/index.ts          plugin lifecycle
+mcp/server/           transport/tools/resources/prompts
+mcp/server/tools/     authored operations
+mcp/lib/              schemas/factories/identities/result normalization
+mcp/ui/               Blockbench panel/settings
+mcp/prompts/          one runtime workflow + source-only maintainer references
+mcp/build/            build/docs/runtime-manifest generation
+mcp/tests/            contract/integration/static-efficiency gates
+mcp/docs/             generated API docs; secondary to source
+```
 
-## Default MCP surface
+## Default MCP Surface
 
-Historical accepted pinned-SDK baseline:
+Accepted live capability baseline:
 
 ```text
 62 enabled tools
-72,775 tools/list response characters
-48,674 input-schema characters
-11,800 tool-description characters
-```
-
-```text
 export_model          exposed
 list_export_formats   not exposed
 apply_texture         not exposed
@@ -53,74 +50,62 @@ risky_eval            disabled
 from_geo_json         disabled
 ```
 
-The 62-tool capability count remains contract-locked. Current regression also caps the enabled description surface below 11,500 characters. Historical character counts above are not model-visible token measurements and are not presented as a fresh post-cleanup tools/list measurement.
+Historical accepted static measurement was 72,775 tools/list characters, 48,674 input-schema characters, and 11,800 description characters. Those numbers predate later static slimming and are **not** current client-token measurements. Current regressions keep the 62-tool capability count and bound enabled description growth without claiming runtime token savings.
 
-## Bedrock authoring ownership
+## Bedrock Authoring Ownership
 
 ### Project / observation
 
-- `create_project`, `get_project_info` → Bedrock project/lifecycle state; project info uses a bounded top-level Group summary.
+- `create_project`, `get_project_info` → lifecycle/project summary; root Group output is bounded.
 - `inspect_model_bounds` → rendered Cube envelope evidence.
-- `capture_model_views` → bounded canonical model views.
+- `capture_model_views` → bounded canonical views.
 - `capture_screenshot` → current editor view only.
 
 ### Geometry / hierarchy
 
-- `place_cube` → finite Bedrock Cube creation.
-- `modify_cube`, `modify_cubes_batch` → correction with structural effects.
-- `add_group` → Group/bone creation.
-- `list_outline`, `find_elements_by_criteria`, `inspect_element` → bounded discovery/inspection; normal defaults are compact and can be raised explicitly.
-- rename/remove/duplicate/history → utility/recovery paths.
+- `place_cube`, `add_group` → Cube/Group authoring.
+- `modify_cube`, `modify_cubes_batch` → bounded mutation with `geometry_effect`.
+- `list_outline`, `find_elements_by_criteria` → compact-default discovery with explicit larger bounds.
+- `inspect_element` → focused authored state.
+- rename/remove/duplicate/history → utility/recovery.
 
 ### Texture / surface
 
-- `create_texture`, `activate_texture`, `list_textures`, `get_texture` → Bedrock single-texture lifecycle/evidence.
-- Painter tools → pixel edits.
-- TextureGroup/PBR tools → native PBR state.
-- material-instance tools → per-face `material_instance` metadata.
-
-Generic `apply_texture` and raw `filter_by_material` are not default Bedrock callable concepts.
+`create_texture`, `activate_texture`, `list_textures`, `get_texture`, Painter, TextureGroup/PBR, and material-instance tools own native Bedrock surface work. Generic `apply_texture` and raw `filter_by_material` are not default Bedrock callable concepts.
 
 ### Animation
 
-Animation tools own identity, inspection, keyframes, graph/batch/copy operations, rigging, and playback/timeline controls where mapped. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
+Animation tools own identity, summary/focused inspection, keyframes, graph/batch/copy operations, rigging, and mapped playback/timeline controls. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
 
 ### Locator / Null Object
 
-Direct Elements-family ownership includes `list_locator_elements`, `manage_locator`, `manage_null_object`, `inspect_element`, `rename_element`, and `remove_element`. Create/update branch intent is explicit in client-facing descriptions.
+`list_locator_elements` is **identity/type/parent discovery only**. Detailed transforms, visibility, and Null Object IK read state belong to `inspect_element`; create/update state comes directly from `manage_locator` / `manage_null_object`. Rename/delete use generic element owners.
 
 ### MCP result representation
 
-`mcp/lib/factories.ts` owns request-owned result normalization. Exact single-text JSON mirrors of `structuredContent` are replaced by a short summary while canonical structured data, meaningful text, and images are preserved.
+`mcp/lib/factories.ts` owns request-level normalization. An exact single-text JSON mirror of `structuredContent` is replaced by a short text summary while canonical structured data, meaningful distinct text, and images remain.
 
 ### Runtime prompt surface
 
-Only `bedrock_entity_workflow` is registered and bundled as a runtime MCP prompt. Maintainer API/eval Markdown remains source reference and is excluded from the runtime manifest/docs prompt surface.
+Only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as the runtime workflow prompt. Maintainer API/eval Markdown remains source-only.
 
 ## Completed Static Efficiency Hardening
 
-Source-provable cleanup is complete for the current requested phase:
+**Source-provable cleanup is complete** for the requested pre-local phase:
 
-- duplicate result representation;
-- clearly oversized normal project/discovery/history defaults with preserved explicit larger bounds;
-- repeated active instruction ownership across routing/orchestrator/specialists/runtime prompt;
-- stale local-acceptance/current-state routing;
-- Locator/Null Object branch guidance;
-- disabled maintainer prompt bundling;
-- generated output synchronization;
-- regression budgets for instruction size/default surface growth.
+- duplicate structured/text result mirrors removed centrally;
+- path export and discovery/read defaults made metadata/summary-first where source ownership proved the boundary;
+- project, outline/search, history, and Locator discovery no longer return avoidable normal-path detail;
+- asset instruction ownership split across routing/orchestrator/domain specialists;
+- repository-development context split across root routing, compact development brief, package rules, and at most one specialist;
+- stale/non-existent development routing removed;
+- runtime prompt bundle reduced to the one callable workflow;
+- Locator/Null branch intent clarified without tool/profile proliferation;
+- generated state synchronized and static efficiency budgets added.
 
-No new local run is active. Client-only behavior remains deliberately unmodified until the user explicitly requests testing:
+**No new local run is active.** Client-only questions—schema injection/deferred search, real co-loading, token/latency cost, retry frequency, and realistic image-context cost—remain future evidence questions. Do not add a router/profile or remove retained native capability from static speculation alone.
 
-- all-schema injection vs deferred/native tool search;
-- actual prompt/skill co-loading;
-- real token/latency cost;
-- actual retry frequency;
-- realistic image/context cost.
-
-Do not add a router/profile or remove native capability from static speculation alone.
-
-## Protected native gaps
+## Protected Native Gaps
 
 - TextureMesh direct authoring/inspection;
 - native Bedrock visible bounding-box fields;
@@ -129,7 +114,7 @@ Do not add a router/profile or remove native capability from static speculation 
 - animated-texture authoring;
 - bone-binding expressions.
 
-Do not fake these with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
+Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
 
-Current proof status: [Validation Report](../foundation/validation-report.md).  
-Current execution state: [Next Action](next-action.md).
+Current proof: [Validation Report](../foundation/validation-report.md).  
+Current continuation: [Next Action](next-action.md).
