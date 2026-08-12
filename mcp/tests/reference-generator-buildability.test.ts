@@ -58,7 +58,7 @@ describe("reference generator buildability contract", () => {
     expect(skill).toContain("automatic variants = 0");
     expect(skill).toContain("do not generate zips");
     expect(skill).not.toContain("place_cube");
-    expect(skill).not.toContain("from:");
-    expect(skill).not.toContain("to:");
+    expect(skill).not.toContain("[x,y,z]");
+    expect(skill).not.toContain("cube coordinates");
   });
 });
