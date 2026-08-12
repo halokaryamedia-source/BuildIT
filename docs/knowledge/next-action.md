@@ -65,7 +65,7 @@ BuildIT sends a compact MCP initialization description: **386 characters**. This
 
 No custom MCP router, new registration profile, server split, or tool deletion was added. All 62 default capabilities remain available.
 
-Normal asset routing is now deterministic in the existing compact `blockit-bedrock-entity-mcp` orchestrator:
+Normal asset routing is deterministic in the compact `blockit-bedrock-entity-mcp` orchestrator:
 
 ```text
 intent + known returned state / UUIDs + authoring stage
@@ -75,7 +75,7 @@ intent + known returned state / UUIDs + authoring stage
 → execute → reuse returned state
 ```
 
-For ordinary asset tool selection, do **not** search repository files/source/docs or invoke Graphify/Obsidian. Repository search starts only for an actual plugin/source task or reproduced defect. Routing/skill/doc changes now trigger MCP Verify automatically.
+For ordinary asset tool selection, do **not** search repository files/source/docs or invoke Graphify/Obsidian. Repository search starts only for an actual plugin/source task or reproduced defect. Routing/skill/doc changes trigger MCP Verify automatically.
 
 ## Evidence Boundary
 
@@ -111,11 +111,13 @@ The completed Local Acceptance Runbook is history/procedure only unless explicit
 ```text
 WAIT LOCAL — do not run local until the user explicitly requests testing.
 
-NEXT GITHUB/CI TASK — P0 DECISION-LOOP HARDENING:
-1. Lock authoring stage: DISCOVER → AUTHOR → VERIFY → CORRECT → DONE; known fresh state must not regress to discovery.
-2. Make texturing + animation route directly from intent + known state.
-3. Allow one precise tool_search + at most one reformulation per unchanged intent.
-4. Add anti-loop guards for redundant discovery, readback, re-search, and same-direction retry.
+P0 DECISION-LOOP HARDENING — IMPLEMENTED ON LOCAL:
+1. Authoring stage lock: DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE; fresh known state cannot regress to discovery.
+2. Texturing + animation use direct intent/state routing inside their lazy-loaded specialists.
+3. Unchanged intent gets one precise tool_search + at most one reformulation; a second miss becomes BLOCKED.
+4. Anti-loop rules stop redundant discovery/readback/re-search and repeated same-direction correction.
 
-Do not start discovery-eval, error-recovery framework, tool→source/test index, router/profile/server split, or local Codex/Blockbench work in this step.
+Acceptance/proof budget: one normal MCP Verify run for this commit. Do not manually rerun broad or unrelated tests unless a relevant gate fails.
+
+NEXT PROPOSED (NOT STARTED) — P1 TOOL DISCOVERY EVAL. Do not start discovery-eval, error-recovery framework, tool→source/test index, router/profile/server split, or local Codex/Blockbench work until the user approves the next step.
 ```

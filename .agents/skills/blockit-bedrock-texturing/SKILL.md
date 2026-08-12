@@ -1,70 +1,60 @@
 ---
 name: blockit-bedrock-texturing
-description: Minecraft Bedrock Entity texture specialist for texture lifecycle, Painter operations, native PBR TextureGroups/channels, and per-face material_instance metadata. Use after dependent geometry is coherent or for a scoped existing-asset surface revision.
+description: Minecraft Bedrock Entity texture specialist for texture lifecycle, Painter, native PBR TextureGroups/channels, and material_instance metadata.
 ---
 
 # BlockIT Bedrock Texturing
 
 Own surface authoring only. Geometry/pivot judgement remains with `blockbench-bedrock-modelling`.
 
-## Start With Existing State
+## Direct Routing
 
-**Reuse identity/metadata already returned by the current workflow.** Read only missing state:
+Decide from intent + known state before any discovery. Reuse returned UUID/metadata.
 
-- `list_textures` for texture identity when unknown;
-- `get_texture` only when pixel/image evidence matters;
-- `list_materials` / `get_material_info` when PBR state is unknown;
-- material-instance reads when face assignments are unknown.
+```text
+texture missing                         → create_texture
+texture identity unknown                → list_textures
+pixels/image evidence required          → get_texture
+set active/default working texture      → activate_texture
+group/material ownership needed         → add_texture_group
+bounded pixel edit                      → exact Painter tool
+new native PBR material                 → create_pbr_material
+known existing PBR material edit        → configure_material
+PBR identity unknown                    → list_materials
+known material detail required          → get_material_info
+assign color/normal/height/MER channel   → assign_texture_channel
+explicit existing texture-set import    → import_texture_set
+filesystem material deliverable         → save_material_config
+material_instance read/set/bulk/clear   → dedicated material-instance tool
+```
 
-Prefer explicit UUIDs after discovery.
+Known identity skips list/discovery. `get_texture` is only for pixel/image evidence, not confirmation. Painter intent must name the actual action (fill/shape/gradient/brush/erase/pick/copy/settings/layer/selection/preset), not merely "paint".
+
+## Stage / Anti-Loop
+
+Use the parent stage lock: `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
+
+- Surface `DISCOVER` happens only when texture/material/face identity needed by the next action is unknown/stale.
+- After mutation, reuse returned state; **do not re-list/re-read it only for confirmation**.
+- If verification finds a bounded surface mismatch, correct that surface state then verify the affected appearance; do not restart broad discovery.
+- A tool validation failure keeps the selected capability unless identity/state is actually stale/unknown.
 
 ## Readiness
 
-For end-to-end reference work, production texturing starts after the geometry it depends on has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED` rather than being painted over.
+For end-to-end reference work, production texturing starts after dependent geometry has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED` rather than being painted over.
 
 For a texture-only revision on an **existing asset**, current geometry is the user-provided baseline unless geometry correction is in scope. **Do not claim that baseline is reference-accurate** merely because texturing can proceed.
 
-A flat/placeholder texture may be provisional when needed for visibility, but do not polish it as fake progress. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships as applicable.
+A flat/placeholder texture may be provisional for visibility, but do not polish it as fake progress. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships as applicable.
 
-## Texture / Paint
+## Bedrock Boundaries
 
-Normal texture lifecycle:
+`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; use `activate_texture` plus Painter operations rather than generic per-face `Texture.apply()` semantics.
 
-```text
-create_texture
-list_textures          only when identity is unknown
-get_texture            only for image evidence
-activate_texture
-add_texture_group      when grouping/material ownership is needed
-```
+`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools are outside BlockIT Bedrock Entity; do not claim direct Cube UV coverage beyond current Cube/texture contracts.
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity work because native Bedrock Entity is `single_texture`; use `activate_texture` to choose the active/default working texture, then use Painter operations. Do not route through generic per-face `Texture.apply()` semantics.
-
-Painter tools own deliberate pixel edits (`paint_fill_tool`, shapes, gradient, brush, eraser, picker/copy, settings, selections/layers/presets). Use bounded operations; avoid procedural noise whose only purpose is to look detailed.
-
-## Native Bedrock PBR
-
-Use native PBR only when the asset requires it:
-
-```text
-create_pbr_material
-configure_material
-list_materials / get_material_info
-assign_texture_channel
-import_texture_set      only for an explicit existing texture-set import
-save_material_config   only for a filesystem deliverable
-```
-
-Inspect existing material state before replacing channels. Keep color/normal/height/MER identity deterministic.
-
-## Material Instances / UV Boundary
-
-`material_instance` is native Bedrock face metadata, distinct from a PBR TextureGroup. Use the dedicated read/set/bulk/clear tools with explicit Cube/face intent.
-
-Generic Mesh UV tools are outside BlockIT Bedrock Entity. Do not claim direct Cube UV coverage beyond the fields actually exposed by current Cube/texture contracts.
+Inspect existing PBR state before replacing channels. Keep color/normal/height/MER identity deterministic.
 
 ## Verification
 
-After a surface mutation, reuse returned state and **do not re-list/re-read it only for confirmation**. **`create_texture` already returns texture identity/size/group/channel/render metadata**; call `get_texture` only when pixels themselves must be judged.
-
-Read material/material-instance state only when the mutation result does not prove the completion claim. Use model views only when appearance on geometry matters, and keep RTX/in-game appearance claims bounded to evidence actually available.
+`create_texture` already returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output does not prove the completion claim. Use model views only when appearance on geometry matters, and keep RTX/in-game claims bounded to available evidence.

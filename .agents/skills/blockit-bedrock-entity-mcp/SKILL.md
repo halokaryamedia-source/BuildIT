@@ -1,6 +1,6 @@
 ---
 name: blockit-bedrock-entity-mcp
-description: BlockIT Bedrock Entity asset router. Decide from intent + known state; call a loaded exact tool or one precise native tool_search. Never repo-search for normal tool selection.
+description: BlockIT Bedrock Entity asset router. Decide from intent + known state + stage; call a loaded tool or one precise native tool_search.
 ---
 
 # BlockIT Bedrock Entity MCP
@@ -9,16 +9,25 @@ Use for **asset authoring**, not plugin/repository development. Target `bedrock`
 
 ## Fast Routing Contract
 
-Normal asset work must not begin by searching repository files/source/docs, skill maps, or all MCP tools. This skill is the routing authority for the first tool decision.
+Normal asset work must not begin by searching repository files/source/docs or skill maps. This skill is the routing authority for the first tool decision.
 
 ```text
-intent + known state/UUIDs + stage
-→ select route
-→ loaded tool: call it; else one precise native tool_search
+intent + known state/UUIDs + stage → route
+→ loaded tool or one precise native tool_search
 → execute → reuse state
 ```
 
-Do not use Graphify, Obsidian, GitHub/code search, or broad file discovery to choose a normal asset tool. A reproduced MCP/plugin defect becomes repository work.
+Do not use Graphify, Obsidian, GitHub/code search, or broad file discovery to choose a normal asset tool.
+
+## Authoring Stage Lock
+
+Decision state only:
+
+```text
+DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
+```
+
+`DISCOVER` only for required unknown/stale state; known fresh state must not regress there. `AUTHOR` reuses mutation output. `VERIFY` gets only decision-changing evidence. `CORRECT` requires a diagnosed cause/invariant and returns to `VERIFY`. `DONE` stops until scope/evidence changes.
 
 ## Tool Lane Discipline
 
@@ -40,47 +49,32 @@ recover change                → undo / redo
 file deliverable              → export_model
 ```
 
-Texture/Paint/PBR/material instance → texturing specialist. Animation/keyframe/rig → animation specialist. Do not search alternatives after intent + state selects a route.
+Texture/Paint/PBR → `blockit-bedrock-texturing`. Animation/keyframe/rig → `blockit-bedrock-animation`. Do not search alternatives after intent + state selects a route.
 
 ## Search Intent Templates
 
-```text
-place_cube         → "create new Bedrock Cube geometry"
-modify_cube        → "modify one existing Bedrock Cube transform"
-modify_cubes_batch → "batch modify several known Bedrock Cubes"
-find_elements...   → "find Bedrock Cube or Group by criteria"
-inspect_element    → "inspect one known Bedrock element authored state"
-list_outline       → "list Bedrock Cube Group hierarchy"
-```
+If the exact tool spec is already loaded, skip search. Otherwise use **one precise native `tool_search`**. If it misses, reformulate once for the same intent; a second miss is `BLOCKED`, not permission for broad/repository search.
 
-For texture/animation/Locator include exact action (`create/edit/inspect/list/update`), not only the domain. If the exact tool spec is already loaded, skip search. Do not issue multiple exploratory tool searches when one precise search returns the intended tool.
+Examples: `modify_cube` → "modify one existing Bedrock Cube transform"; `list_outline` → "list Bedrock Cube Group hierarchy".
 
-## State Shortcuts
+For texture/animation/Locator include exact action (`create/edit/inspect/list/update`). **Do not issue multiple exploratory tool searches**. Validation failure keeps the selected tool unless identity/state became unknown/stale.
+
+## State Shortcuts / Anti-Loop
 
 - Known UUID/identity → skip discovery unless stale/ambiguous.
-- Fresh create/mutation state → skip immediate readback; reuse returned state/`geometry_effect`.
+- Fresh mutation → skip readback; reuse returned state/`geometry_effect`.
 - Locator/Null mutations return state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale/inconsistent.
 - Create/path export returns lifecycle state. **Do not immediately call `get_project_info`** unless missing fields/external change matter.
 - Known tool spec already loaded → call it; do not repeat `tool_search` on a new turn.
+- Failed/no-effect correction → never repeat the same payload; diagnose first. Same causal direction failing twice without new evidence → `BLOCKED`.
 
 ```text
-existing geometry correction ≠ place_cube
 known target UUID            ≠ discovery
-focused detail               ≠ list_outline
 geometry targeting           ≠ get_selection
-visual fidelity              ≠ bounds alone
 asset tool selection         ≠ repository/code search
 ```
 
-## Specialist Loading
-
-**Load specialists lazily** only when judgement changes the decision:
-
-```text
-geometry/hierarchy/pivots → blockbench-bedrock-modelling
-texture/Paint/PBR         → blockit-bedrock-texturing
-animation/keyframes       → blockit-bedrock-animation
-```
+**Load specialists lazily** only when needed: geometry → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
 
 ## Minimum Necessary Evidence
 
@@ -92,7 +86,7 @@ animation/keyframes       → blockit-bedrock-animation
 
 ## Visual / Blocker Boundary
 
-Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Use **`BLOCKED`** for unsupported evidence/capability or repeated speculative correction. **Do not continue speculative mutation** merely to avoid a blocker.
+Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Use **`BLOCKED`** for unsupported capability/evidence, exhausted search, or repeated speculative correction. **Do not continue speculative mutation** merely to avoid a blocker.
 
 ## Downstream / Export
 
@@ -102,4 +96,4 @@ production texture/animation waits for accepted dependencies. **Existing asset**
 - Bedrock geometry JSON (`bedrock`);
 - editable `.bbmodel` (`project`).
 
-Prefer metadata-only path output unless content is required. Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
+Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
