@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise a Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
+Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
 
 ## Minimum necessary evidence
 
