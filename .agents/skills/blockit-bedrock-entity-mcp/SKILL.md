@@ -25,7 +25,7 @@ Do not use Graphify, Obsidian, GitHub/code search, or broad file discovery for n
 DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
 ```
 
-`DISCOVER` is only for required unknown/stale state; **known fresh state must not regress** there. Reuse mutation output; verify only decision-changing evidence; correction needs a diagnosed cause/invariant.
+`DISCOVER` only for required unknown/stale state; **known fresh state must not regress** there. Reuse mutation output; verify only decision-changing evidence.
 
 ## Tool Lane Discipline
 
@@ -51,24 +51,21 @@ Texture/Paint/PBR → `blockit-bedrock-texturing`. Animation/keyframe/rig → `b
 
 ## Search Intent Templates
 
-`tool_search` is **deferred spec loading after routing**, not a second router. If the **exact tool spec is already loaded, skip search**. Otherwise query with the **exact selected tool name** plus a short action; **never send raw user wording alone**.
+`tool_search` is **deferred spec loading after routing**, not a second router. If the **exact tool spec is already loaded, skip search**. Otherwise use the **exact selected tool name** + short action; **never send raw user wording alone**.
 
 ```text
-place_cube         → "place_cube create new Bedrock Cube geometry"
-modify_cube        → "modify_cube modify one existing Bedrock Cube transform"
-modify_cubes_batch → "modify_cubes_batch batch modify known Bedrock Cubes"
-list_outline       → "list_outline list Bedrock Cube Group hierarchy"
-manage_locator     → "manage_locator create update Bedrock Locator"
-export_model       → "export_model export Bedrock geometry bbmodel"
+place_cube     → "place_cube create new Bedrock Cube geometry"
+modify_cube    → "modify_cube modify one existing Bedrock Cube transform"
+manage_locator → "manage_locator create update Bedrock Locator"
 ```
 
-Use **one precise native `tool_search`**. If it misses, **reformulate once** while keeping the exact tool name; **a second miss is `BLOCKED`**. Do not issue multiple exploratory tool searches. Validation failure keeps the selected tool unless state became unknown/stale.
+Use **one precise native `tool_search`**. If it misses, **reformulate once** with the same exact tool name; **a second miss is `BLOCKED`**. Do not issue multiple exploratory tool searches.
 
 ## State Shortcuts / Anti-Loop
 
 - Known UUID/identity → skip discovery unless stale/ambiguous.
 - Fresh mutation → skip readback; reuse returned state/`geometry_effect`.
-- Locator/Null mutations return state; do not auto-read with `inspect_element` unless insufficient/stale/inconsistent.
+- Locator/Null mutations return state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale/inconsistent.
 - Create/path export returns lifecycle state; **Do not immediately call `get_project_info`** unless missing fields/external change matter.
 - Known tool spec already loaded → call it; do not repeat `tool_search` on a new turn.
 - Failed/no-effect correction → never repeat the same payload; diagnose first. Same direction failing twice without new evidence → `BLOCKED`.
@@ -79,21 +76,26 @@ geometry targeting           ≠ get_selection
 asset tool selection         ≠ repository/code search
 ```
 
-Load specialists lazily: geometry → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
+**Load specialists lazily**: geometry → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
 
 ## Minimum Necessary Evidence
 
 - **Do not inspect every newly placed Cube.** Inspect only diagnosed/ambiguous or numeric correction state.
 - Do not capture after every mutation; use meaningful visual gates.
 - **Use `inspect_model_bounds` only when** numeric envelope, scale, ground, displacement, or gross placement is the question.
-- `UNVERIFIED` is not a retry command; batch only one coherent decision over known targets.
+- `UNVERIFIED` is not a retry command. **Mutation count alone is not a checkpoint trigger.**
+- Batch only one coherent decision over known targets.
 
 ## Visual / Blocker Boundary
 
-Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Use **`BLOCKED`** for unsupported capability/evidence, exhausted search, or repeated speculative correction.
+Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Use **`BLOCKED`** for unsupported capability/evidence, exhausted search, or repeated speculative correction. **Do not continue speculative mutation** merely to avoid a blocker.
 
 ## Downstream / Export
 
 production texture/animation waits for accepted dependencies. **Existing asset** texture/animation-only work may use current geometry as user baseline without certifying it.
 
-`export_model` supports Bedrock geometry JSON (`bedrock`) and editable `.bbmodel` (`project`). Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
+`export_model` supports:
+- Bedrock geometry JSON (`bedrock`);
+- editable `.bbmodel` (`project`).
+
+Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
