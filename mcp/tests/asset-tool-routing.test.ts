@@ -24,7 +24,7 @@ describe("asset tool routing", () => {
       "target identity unknown",
       "hierarchy/parent structure",
       "known existing Cube",
-      "Locator/Null Object identity unknown",
+      "Locator/Null",
       "numeric envelope/scale/ground",
       "visible shape/reference comparison",
     ]) {
