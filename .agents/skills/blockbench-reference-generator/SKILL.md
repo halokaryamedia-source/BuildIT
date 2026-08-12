@@ -1,34 +1,29 @@
 ---
 name: blockbench-reference-generator
-description: Generate one Minecraft / Blockbench multi-view reference.
+description: Generate one Minecraft / Blockbench reference image.
 ---
 
 # Blockbench Reference Generator
 
-Create **one buildable Minecraft / Blockbench reference image**.
-
-Priority: **identity → buildability → same-model consistency → Minecraft presentation → polish**.
+Create **one Minecraft / Blockbench reference image**. Hard constraints: **buildable Cuboid construction** + **one consistent model across every view**. Preserve source identity within them.
 
 ## Simple User Contract
 
-User only needs to **upload a usable source image**, ask for a Minecraft / Blockbench reference, and **optionally state facts they already know**: name, size/height, must-preserve feature, asymmetry.
-
-**Do not expose a long prompt/questionnaire.** Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata. Without dimensions, never invent numeric scale from pixels. Ask only if materially ambiguous.
+User only needs to **upload a usable source image**; extra facts are optional. Do not expose a long questionnaire. Never ask for Cube counts, pivots, UVs, animation, MCP tools, or package data. Without dimensions, preserve visual proportions only; never infer numeric scale from pixels. Ask only if ambiguity changes identity/buildability.
 
 ## Automatic Internal Generation Brief
 
-**Silently enrich the simple request**.
+### 1. Subject
 
-### 1. Preserve subject
+Isolate the intended subject; ignore hands, stands, scenery, shadows, supports, and unrelated objects unless required.
 
-Source controls identity, silhouette, proportions, visible attachments, markings/palette, asymmetry. Normalize perspective; lens distortion is not geometry.
+Preserve silhouette, proportions, attachments, intrinsic colors/markings, known asymmetry. Normalize perspective; lens distortion is not geometry. Highlights/reflections/shadows/AO are not markings.
 
-For unseen sides, continue visible masses/colors/known attachments into a coherent 3D object. Do not invent hidden features/asymmetry. Use one neutral pose across panels.
+Unseen sides may continue known major masses only. Do not mirror/invent side-specific markings, damage, holes, protrusions, accessories, attachments, or asymmetry. Keep one fixed state; articulated subjects use neutral stance. Do not blend conflicting sources.
 
-### 2. Build Blockbench form, not voxelized sculpture
+### 2. Blockbench construction
 
-Every material form resolves to:
-
+Every visible form resolves to:
 ```text
 CUBOID
 ROTATED_CUBOID
@@ -37,41 +32,30 @@ MULTI_CUBOID_MASS
 TEXTURE_ONLY
 ```
 
-These are **rectangular model parts with varied width/height/depth, not Minecraft world blocks or equal-sized voxels**.
+Use **rectangular parts with varied dimensions**, not world blocks/equal voxels. Axis-align when enough; rotate only for slope and plausible attachment. Curves/tapers use **a few large meaningful segments**—never one smooth primitive or unit-Cube staircase. Surface-only color/pattern stays texture-only.
 
-`CUBOID` = axis-aligned. `ROTATED_CUBOID` = visible slope with plausible attachment. Stepped/multi-Cuboid = taper/curve-like form. `TEXTURE_ONLY` = surface detail without silhouette/volume.
-
-**Never lazy-voxelize.** Do not stack many equal/small Cubes. **Prefer fewer, larger, purposeful primary masses** plus needed secondary forms; retain small identity/silhouette-critical geometry.
-
-Do not imply cone, wedge, sphere, smooth bevel, melted join, curved/deforming solid, or shading-created fake geometry. If needed, **simplify it while preserving identity**. **Geometry Standard wins** over a smoother-looking Golden Sample.
+**Never lazy-voxelize.** Prefer fewer purposeful primary masses plus needed secondary forms; retain identity/silhouette-critical small parts. No smooth cone/wedge/sphere/bevel/melted/deforming solid. Boundaries come from real steps/plane changes/rotations/intersections, not fake seam lines.
 
 ### 3. Single-Model Cross-View Lock
 
-Lock one model: **major segmentation**, orientation, attachments/separations, **important negative spaces**, part count, markings, pose, asymmetry. **All panels show that same model**; **do not redesign panels independently**.
+Lock geometry, **major segmentation**, part count, state/pose, markings, attachments, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**. Orthographic panels keep **same scale, center, and ground/baseline**.
 
 ```text
 UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-LEFT SIDE = strict left profile, facing left. FRONT/BACK = orthographic. TOP = true top-down orthographic same-model view, not a flat diagram. 3/4 = volume check. Add RIGHT SIDE only for asymmetry.
+LEFT = strict left profile, facing left. FRONT/BACK = orthographic. TOP = true top-down orthographic same 3D model, not flat diagram. 3/4 = eye-level front-left, near-orthographic/weak perspective, no wide-angle. RIGHT only for visible/user-stated asymmetry.
 
 ### 4. Presentation
 
-Neutral modelling sheet; uncropped subject; restrained pixel texture; planar lighting. No cinematic render, Blockbench UI/gizmos/grid/wireframe/bounds, or Minecraft gameplay/UI. No shading that fakes geometry. Only view labels may appear.
+Neutral sheet; uncropped subject; low-noise Minecraft pixel texture, simple colors, neutral planar lighting. No cinematic scene, Blockbench UI/gizmos/grid/wireframe/bounds, gameplay UI, baked photo lighting, random speckle/dithering, or fake-geometry shading. Only view labels may appear.
 
 ## Buildability Visual Gate
 
-After the first image exists, inspect the **generated board**. Before returning, verify:
+If inspectable, inspect the **actual generated board**: buildable segmentation; no smooth primitive/voxel staircase; real boundaries; attached rotations; true negative spaces; correct views; same scale/state/parts/markings/proportions; recognizable uncropped target.
 
-- readable masses/boundaries; allowed grammar;
-- taper/curve-like parts are **visibly segmented, not smooth solids**;
-- **rotated parts are simple, purposeful, visibly attached**;
-- true negative space; no lazy voxel stack/clutter;
-- SIDE/FRONT/BACK/TOP/3Q keep compatible segmentation, part count, pose, markings, proportions;
-- correct orientation; recognizable uncropped target.
-
-Unsupported primitive, lazy voxel stack, floating rotated part, hidden boundary, wrong view, or cross-view drift = **NOT READY**. **Do not produce numeric buildability/fidelity/view scores**.
+Material defect = **NOT READY** → one targeted correction. If not inspectable, do not claim the visual gate passed; user review is first visual proof. **Do not produce numeric buildability/fidelity/view scores**.
 
 ## Budget / Output
 
@@ -81,6 +65,6 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-**Generate directly when the source is usable.** Correct one concrete defect found in the generated board; if conflicting, report not ready instead of looping.
+**Generate directly when the source is usable.** Keep user dimensions/must-preserve facts for modelling handoff; do not print unless requested.
 
-Return **one image only**. **Do not generate ZIPs** or other non-image deliverables.
+Return **one image only**. **Do not generate ZIPs** or other deliverables.

@@ -9,87 +9,75 @@ function normalized(text: string): string {
 }
 
 describe("reference generator buildability contract", () => {
-  test("simple user input is automatically enriched without an intake questionnaire", async () => {
-    const skill = normalized(
-      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
-    );
+  test("simple user input is enriched without technical intake", async () => {
+    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("simple user contract");
     expect(skill).toContain("upload a usable source image");
-    expect(skill).toContain("optionally state facts they already know");
-    expect(skill).toContain("do not expose a long prompt/questionnaire");
+    expect(skill).toContain("extra facts are optional");
+    expect(skill).toContain("do not expose a long questionnaire");
     expect(skill).toContain("automatic internal generation brief");
-    expect(skill).toContain("silently enrich the simple request");
     expect(skill).toContain("generate directly when the source is usable");
   });
 
-  test("reference generation uses an explicit Blockbench construction grammar", async () => {
-    const skill = await source("../.agents/skills/blockbench-reference-generator/SKILL.md");
+  test("Blockbench grammar prevents voxel-stack and smooth-primitive shortcuts", async () => {
+    const raw = await source("../.agents/skills/blockbench-reference-generator/SKILL.md");
     for (const primitive of [
       "CUBOID",
       "ROTATED_CUBOID",
       "STEPPED_CUBOIDS",
       "MULTI_CUBOID_MASS",
       "TEXTURE_ONLY",
-    ]) expect(skill).toContain(primitive);
+    ]) expect(raw).toContain(primitive);
 
-    const lower = normalized(skill);
-    for (const unsupported of ["cone", "wedge", "sphere", "smooth bevel"]) {
-      expect(lower).toContain(unsupported);
-    }
-    expect(lower).toContain("geometry standard wins");
-    expect(lower).toContain("simplify it while preserving identity");
-    expect(lower).toContain("never lazy-voxelize");
-    expect(lower).toContain("prefer fewer, larger, purposeful primary masses");
+    const skill = normalized(raw);
+    expect(skill).toContain("hard constraints");
+    expect(skill).toContain("buildable cuboid construction");
+    expect(skill).toContain("not world blocks/equal voxels");
+    expect(skill).toContain("never lazy-voxelize");
+    expect(skill).toContain("few large meaningful segments");
+    expect(skill).toContain("never one smooth primitive or unit-cube staircase");
+    expect(skill).toContain("not fake seam lines");
+    expect(skill).not.toContain("geometry standard wins");
+    expect(skill).not.toContain("golden sample");
   });
 
-  test("image-facing rules resolve common generation ambiguity", async () => {
-    const skill = normalized(
-      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
-    );
-    expect(skill).toContain("identity → buildability → same-model consistency");
-    expect(skill).toContain("never invent numeric scale from pixels");
-    expect(skill).toContain("lens distortion is not geometry");
-    expect(skill).toContain("do not invent hidden features/asymmetry");
-    expect(skill).toContain("one neutral pose across panels");
-    expect(skill).toContain("not minecraft world blocks or equal-sized voxels");
-    expect(skill).toContain("true top-down orthographic same-model view, not a flat diagram");
-    expect(skill).toContain("blockbench ui/gizmos/grid/wireframe/bounds");
-    expect(skill).toContain("only view labels may appear");
-    expect(skill).toContain("after the first image exists");
+  test("source interpretation excludes photographic and hidden-detail hallucination", async () => {
+    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
+    expect(skill).toContain("ignore hands, stands, scenery, shadows, supports");
+    expect(skill).toContain("normalize perspective; lens distortion is not geometry");
+    expect(skill).toContain("highlights/reflections/shadows/ao are not markings");
+    expect(skill).toContain("do not mirror/invent side-specific");
+    expect(skill).toContain("do not blend conflicting sources");
+    expect(skill).toContain("never infer numeric scale from pixels");
   });
 
-  test("all generated views are locked to one conceptual model", async () => {
-    const skill = normalized(
-      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
-    );
+  test("all views stay one model at comparable presentation scale", async () => {
+    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("single-model cross-view lock");
     expect(skill).toContain("all panels show that same model");
     expect(skill).toContain("do not redesign panels independently");
-    expect(skill).toContain("major segmentation");
-    expect(skill).toContain("important negative spaces");
+    expect(skill).toContain("same scale, center, and ground/baseline");
+    expect(skill).toContain("true top-down orthographic same 3d model, not flat diagram");
+    expect(skill).toContain("near-orthographic/weak perspective, no wide-angle");
   });
 
-  test("buildability gate fails closed instead of using visual plausibility or scores", async () => {
-    const skill = normalized(
-      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
-    );
-    expect(skill).toContain("buildability visual gate");
-    expect(skill).toContain("visibly segmented, not smooth solids");
-    expect(skill).toContain("rotated parts are simple, purposeful, visibly attached");
-    expect(skill).toContain("unsupported primitive");
+  test("presentation and visual gate reject image-generator artifacts", async () => {
+    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
+    expect(skill).toContain("blockbench ui/gizmos/grid/wireframe/bounds");
+    expect(skill).toContain("random speckle/dithering");
+    expect(skill).toContain("only view labels may appear");
+    expect(skill).toContain("actual generated board");
+    expect(skill).toContain("if not inspectable, do not claim the visual gate passed");
     expect(skill).toContain("not ready");
     expect(skill).toContain("do not produce numeric buildability/fidelity/view scores");
   });
 
-  test("hardening remains image-only and does not become a geometry planner", async () => {
-    const skill = normalized(
-      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
-    );
+  test("hardening remains image-only and bounded", async () => {
+    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("return **one image only**");
     expect(skill).toContain("automatic variants = 0");
     expect(skill).toContain("do not generate zips");
     expect(skill).not.toContain("place_cube");
-    expect(skill).not.toContain("[x,y,z]");
     expect(skill).not.toContain("cube coordinates");
   });
 });
