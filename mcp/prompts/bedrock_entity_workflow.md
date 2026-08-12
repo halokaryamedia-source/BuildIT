@@ -68,7 +68,7 @@ Front PASS is not full 3D PASS when side/depth evidence is missing/fails. Bounds
 
 ## Local correction / convergence
 
-1. Reuse fresh target state; otherwise `inspect_element` once.
+1. **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once.
 2. Diagnose `TRANSLATE`, `RESIZE`, `ROTATE`, **hierarchy REATTACH**, `SPLIT`, `MERGE/REMOVE`, or grounded `ADD MASS`.
 3. State target UUID(s), intended change, invariant, expected structural + visible effect.
 4. Mutate; verify `geometry_effect`; re-capture affected paired view(s).
