@@ -42,6 +42,22 @@ describe("reference generator buildability contract", () => {
     expect(lower).toContain("prefer fewer, larger, purposeful primary masses");
   });
 
+  test("image-facing rules resolve common generation ambiguity", async () => {
+    const skill = normalized(
+      await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
+    );
+    expect(skill).toContain("identity → buildability → same-model consistency");
+    expect(skill).toContain("never invent numeric scale from pixels");
+    expect(skill).toContain("lens distortion is not geometry");
+    expect(skill).toContain("do not invent hidden features/asymmetry");
+    expect(skill).toContain("one neutral pose across panels");
+    expect(skill).toContain("not minecraft world blocks or equal-sized voxels");
+    expect(skill).toContain("true top-down orthographic same-model view, not a flat diagram");
+    expect(skill).toContain("blockbench ui/gizmos/grid/wireframe/bounds");
+    expect(skill).toContain("only view labels may appear");
+    expect(skill).toContain("after the first image exists");
+  });
+
   test("all generated views are locked to one conceptual model", async () => {
     const skill = normalized(
       await source("../.agents/skills/blockbench-reference-generator/SKILL.md")
