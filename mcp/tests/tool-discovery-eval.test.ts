@@ -1,21 +1,44 @@
 import { describe, expect, test } from "bun:test";
-import {
-  CODEX_TOOL_SEARCH_REFERENCE,
-  TOOL_DISCOVERY_CASES,
-  assertToolDiscoveryEvalIntegrity,
-  evaluateToolDiscovery,
-} from "../scripts/evaluate-tool-discovery";
+
+type ToolDiscoveryReport = {
+  proxy_note: string;
+  upstream_reference: {
+    commit: string;
+    default_limit: number;
+  };
+  enabled_tool_count: number;
+  expected_tool_count: number;
+  case_count: number;
+  missing_expected_tools: string[];
+  metrics: {
+    top_1_accuracy: number;
+    top_3_recall: number;
+    top_8_recall: number;
+    mean_reciprocal_rank: number;
+  };
+  collision_pairs: unknown[];
+  top_8_misses: unknown[];
+};
 
 describe("tool discovery eval", () => {
-  test("measures curated MCP intent retrieval without claiming local Codex proof", () => {
-    const report = evaluateToolDiscovery();
-    assertToolDiscoveryEvalIntegrity(report);
+  test("measures curated MCP intent retrieval in a clean default-profile process", () => {
+    const result = Bun.spawnSync({
+      cmd: [process.execPath, "run", "./scripts/evaluate-tool-discovery.ts"],
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+
+    const stdout = result.stdout.toString();
+    const stderr = result.stderr.toString();
+    expect(result.exitCode, stderr || stdout).toBe(0);
+
+    const report = JSON.parse(stdout) as ToolDiscoveryReport;
 
     console.log(
       JSON.stringify(
         {
           tool_discovery_eval: {
-            upstream_commit: CODEX_TOOL_SEARCH_REFERENCE.commit,
+            upstream_commit: report.upstream_reference.commit,
             enabled_tools: report.enabled_tool_count,
             expected_tools: report.expected_tool_count,
             cases: report.case_count,
@@ -29,7 +52,8 @@ describe("tool discovery eval", () => {
       )
     );
 
-    expect(TOOL_DISCOVERY_CASES).toHaveLength(104);
+    expect(report.case_count).toBe(104);
+    expect(report.expected_tool_count).toBe(52);
     expect(report.enabled_tool_count).toBe(62);
     expect(report.missing_expected_tools).toEqual([]);
     expect(report.upstream_reference.default_limit).toBe(8);
