@@ -13,6 +13,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "measure:surface": "bun run ./scripts/measure-default-surface.ts",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",
     "prompts:build": "bun run ./build/generate-manifest.ts",
     "dev": "bun run prompts:build && bun run ./build --sourcemap",
