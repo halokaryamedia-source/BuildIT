@@ -5,37 +5,49 @@ description: Generate one Minecraft / Blockbench-style multi-view reference imag
 
 # Blockbench Reference Generator
 
-Own **Source Image / user intent → one approved visual Modelling Brief image**. Stop at the image; downstream geometry belongs to modelling + BlockIT MCP.
+Own **Source Image / user intent → one approved visual Modelling Brief image**. Design one plausible Cuboid model first, then show that same model from multiple views. Stop at the image; geometry execution belongs downstream.
 
-## Input
+## Input / Authority
 
 Required: actual usable source image visible to the image-capable model.
 
-Optional: asset name, approximate target dimensions/height, must-preserve visible feature, material asymmetry note. Continue with safe defaults when absent. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata.
+Optional: asset name, target dimensions/height, must-preserve feature, asymmetry note. Do not ask for Cube counts, pivots, UVs, animation, MCP tools, or package metadata.
 
-## Authority
+- Source image owns identity, recognizable features, major proportions, attachments, markings/palette, asymmetry.
+- Minecraft / Blockbench rules own construction language/presentation.
+- Golden Samples are style evidence only; Geometry Standard wins if a sample looks smoother than buildable Cuboid form.
+- Do not invent hidden features from generic object knowledge.
 
-- **Source image** owns identity, recognizable features, major visible proportions, attachments, markings/palette family, and asymmetry.
-- Minecraft / Blockbench rules own construction language and board presentation only.
-- A Golden Sample, when available, is style/quality evidence only; never copy its anatomy, proportions, segmentation, or subject details.
+## Blockbench Construction Grammar
 
-Do not invent hidden features from generic object knowledge. Complete only hidden surfaces needed to make already-visible volumes coherent.
+Every material visible form must resolve to:
 
-## Construction Language
+```text
+CUBOID
+ROTATED_CUBOID
+STEPPED_CUBOIDS
+MULTI_CUBOID_MASS
+TEXTURE_ONLY
+```
 
-The subject must read as a Blockbench-buildable Cuboid model:
+Use `CUBOID` when axis-aligned form is enough. `ROTATED_CUBOID` needs a visible slope/orientation and plausible attachment. Use stepped/multi-Cuboid form for taper, curve-like silhouette, or compound volume. Use `TEXTURE_ONLY` when detail does not change silhouette/real volume.
 
-- clear intentional primary masses;
-- secondary masses only when visually useful;
-- varied rectangular Cuboid dimensions;
-- stepped silhouette transitions;
-- limited purposeful rotation where visible angled form requires it;
-- readable contacts, separations, and important negative spaces;
-- crisp Minecraft/pixel-art presentation with neutral lighting.
+Do not imply cone, wedge, sphere, smooth bevel, melted join, curved/deforming solid, or shading-created fake geometry. If a feature cannot be expressed clearly with the grammar, simplify it while preserving identity. Keep segmentation, contacts, and negative spaces readable.
 
-Reject realistic forms with pixelated skin, generic voxel filters, uniform Cube piles, micro-Cube clutter, arbitrary rotations, cinematic/PBR scenery, logos/watermarks, UV/pivot/hierarchy overlays, or extra sheets.
+## Single-Model Cross-View Lock
 
-## Board Layout
+Before rendering, lock one conceptual model's:
+
+```text
+primary masses
+major segmentation
+orientation
+attachments / separations
+important negative spaces
+material asymmetry
+```
+
+All panels show that same model. Material segmentation, slope, attachment, and proportion must remain compatible; do not redesign panels independently.
 
 Default:
 
@@ -44,27 +56,24 @@ UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-- LEFT SIDE: strict profile facing left.
-- FRONT/BACK: upright orthographic, consistent displayed scale.
-- TOP: true top-down footprint; front/head points left when meaningful.
-- FRONT-LEFT 3/4: distinct volume/readability view.
-- Every panel shows the **same model**; only camera changes.
+LEFT = strict profile facing left. FRONT/BACK = upright orthographic. TOP = true footprint. 3/4 = volume check. Add RIGHT SIDE only when asymmetry requires it.
 
-Add RIGHT SIDE only when material asymmetry cannot be represented honestly without it. Do not add views for completeness.
+## Buildability Visual Gate
 
-## Internal QA
+Before returning, check:
 
-Before returning the image, check only material issues:
+1. Every major silhouette is explainable by the allowed grammar.
+2. Primary masses/construction boundaries read without shading tricks.
+3. Taper/curve-like parts are visibly segmented, not smooth solids.
+4. Rotated parts are simple, purposeful, visibly attached.
+5. Important openings are true negative space.
+6. Surface-only detail did not become micro-Cube clutter.
+7. SIDE/FRONT/BACK/TOP/3Q share compatible segmentation/proportions.
+8. Subject is uncropped and recognizable.
 
-1. recognizable as the source target;
-2. clearly Minecraft / Blockbench Cuboid construction;
-3. readable primary masses/proportions;
-4. visible slopes use stepped form or purposeful rotation;
-5. required attachments connect and important gaps remain open;
-6. all views show one coherent uncropped model without orientation drift;
-7. board is clean enough for modelling.
+Unsupported primitive, floating rotated part, hidden boundary, or cross-view drift = **NOT READY**.
 
-Do not produce numeric fidelity/view scores or claim metric calibration.
+Do not produce numeric buildability/fidelity/view scores or claim metric calibration.
 
 ## Generation Budget
 
@@ -74,19 +83,19 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Correct only a concrete visible defect. If one targeted correction still leaves a material conflict, report the reference as not ready instead of looping.
+Correct only the concrete buildability defect. If one correction still leaves a material conflict, report not ready instead of looping.
 
 ## Output / Handoff
 
 Return **one image only**. Do not generate ZIPs, manifests, Geometry/Texture/Animation/Validation documents, production-context files, or GitHub-sync state.
 
-After user approval:
+After approval:
 
 ```text
 actual approved reference image
-+ optional short target notes already supplied
++ optional short target notes
 → blockbench-bedrock-modelling
 → BlockIT MCP authoring
 ```
 
-The approved image is visual evidence; a filename/path/summary is not a substitute. If the active surface cannot inspect or generate the image, report that boundary instead of faking completion.
+The image is visual evidence; filename/path/summary is not a substitute. If the surface cannot inspect/generate it, report that boundary instead of faking completion.
