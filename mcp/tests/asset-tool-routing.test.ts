@@ -17,20 +17,18 @@ describe("asset tool routing", () => {
     expect(skill).toContain("Do not use Graphify, Obsidian, GitHub/code search");
   });
 
-  test("semantic routes distinguish common competing tools without loading their schemas", async () => {
+  test("semantic routes distinguish common competing capabilities without embedding schemas", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
-    for (const route of [
-      "create new Cube geometry",
-      "correct one known existing Cube",
-      "coherent correction over several known Cubes",
-      "target identity unknown; attributes/name/scope known",
-      "hierarchy/parent structure is the question",
-      "exact state of one known target needed",
+    for (const intent of [
+      "target identity unknown",
+      "hierarchy/parent structure",
+      "known existing Cube",
       "Locator/Null Object identity unknown",
-      "create/update known Locator/Null Object",
+      "numeric envelope/scale/ground",
+      "visible shape/reference comparison",
     ]) {
-      expect(skill).toContain(route);
+      expect(skill).toContain(intent);
     }
 
     for (const tool of [
