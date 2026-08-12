@@ -201,6 +201,24 @@ function parentInfo(
     : null;
 }
 
+function locatorSummary(locator: Locator) {
+  return {
+    uuid: locator.uuid,
+    name: locator.name,
+    type: "locator" as const,
+    parent: parentInfo(locator),
+  };
+}
+
+function nullObjectSummary(element: NullObject) {
+  return {
+    uuid: element.uuid,
+    name: element.name,
+    type: "null_object" as const,
+    parent: parentInfo(element),
+  };
+}
+
 function resolveParent(reference: string): Group {
   return resolveCoreGroup(
     reference,
@@ -262,14 +280,18 @@ function finiteAuthoredVector3(
   }
   return [values[0], values[1], values[2]];
 }
+
 function locatorState(locator: Locator) {
   return {
-    uuid: locator.uuid,
-    name: locator.name,
-    type: "locator" as const,
-    parent: parentInfo(locator),
-    position: finiteAuthoredVector3(locator.position, `Locator ${locator.name} (${locator.uuid}) position`),
-    rotation: finiteAuthoredVector3(locator.rotation, `Locator ${locator.name} (${locator.uuid}) rotation`),
+    ...locatorSummary(locator),
+    position: finiteAuthoredVector3(
+      locator.position,
+      `Locator ${locator.name} (${locator.uuid}) position`
+    ),
+    rotation: finiteAuthoredVector3(
+      locator.rotation,
+      `Locator ${locator.name} (${locator.uuid}) rotation`
+    ),
     ignore_inherited_scale: locator.ignore_inherited_scale,
     visibility: locator.visibility !== false,
   };
@@ -277,11 +299,11 @@ function locatorState(locator: Locator) {
 
 function nullObjectState(element: NullObject) {
   return {
-    uuid: element.uuid,
-    name: element.name,
-    type: "null_object" as const,
-    parent: parentInfo(element),
-    position: finiteAuthoredVector3(element.position, `Null Object ${element.name} (${element.uuid}) position`),
+    ...nullObjectSummary(element),
+    position: finiteAuthoredVector3(
+      element.position,
+      `Null Object ${element.name} (${element.uuid}) position`
+    ),
     ik_target: element.ik_target || null,
     ik_source: element.ik_source || null,
     lock_ik_target_rotation: element.lock_ik_target_rotation,
@@ -289,7 +311,9 @@ function nullObjectState(element: NullObject) {
   };
 }
 
-function structuredResult(state: ReturnType<typeof locatorState> | ReturnType<typeof nullObjectState>) {
+function structuredResult(
+  state: ReturnType<typeof locatorState> | ReturnType<typeof nullObjectState>
+) {
   return {
     content: [
       {
@@ -308,8 +332,8 @@ export function registerLocatorTools() {
       ...locatorToolDocs[0],
       async execute() {
         requireBedrockEntityProject();
-        const locators = Locator.all.map(locatorState);
-        const nullObjects = NullObject.all.map(nullObjectState);
+        const locators = Locator.all.map(locatorSummary);
+        const nullObjects = NullObject.all.map(nullObjectSummary);
         const result = {
           count: locators.length + nullObjects.length,
           locators,
@@ -368,7 +392,8 @@ export function registerLocatorTools() {
         }
 
         const locator = resolveLocator(args.id);
-        const parent = args.parent !== undefined ? resolveParent(args.parent) : undefined;
+        const parent =
+          args.parent !== undefined ? resolveParent(args.parent) : undefined;
         Undo.initEdit({ elements: [locator], outliner: true });
         try {
           if (parent) locator.addTo(parent);
@@ -430,7 +455,8 @@ export function registerLocatorTools() {
         }
 
         const element = resolveNullObject(args.id);
-        const parent = args.parent !== undefined ? resolveParent(args.parent) : undefined;
+        const parent =
+          args.parent !== undefined ? resolveParent(args.parent) : undefined;
         Undo.initEdit({ elements: [element], outliner: true });
         try {
           if (parent) element.addTo(parent);
