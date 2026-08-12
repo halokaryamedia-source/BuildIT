@@ -35,6 +35,13 @@ type JsonRpcBody = {
   };
 };
 
+type BranchSchemaSummary = {
+  required: string[];
+  properties: string[];
+  name_description: string | null;
+  id_description: string | null;
+};
+
 type SurfaceMetrics = {
   protocol_version: string;
   tool_count: number;
@@ -48,6 +55,7 @@ type SurfaceMetrics = {
     p95: number;
     max: number;
   };
+  branch_schema_audit: Record<string, BranchSchemaSummary>;
   largest_tools: Array<{
     name: string;
     payload_chars: number;
@@ -61,6 +69,49 @@ function percentile(values: number[], fraction: number): number {
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.max(0, Math.ceil(fraction * sorted.length) - 1);
   return sorted[index] ?? 0;
+}
+
+function summarizeBranchSchema(
+  tools: ListedTool[],
+  toolName: string
+): BranchSchemaSummary {
+  const tool = tools.find((candidate) => candidate.name === toolName);
+  if (!tool) {
+    throw new Error(`Expected ${toolName} on the default MCP surface.`);
+  }
+
+  const schema = (tool.inputSchema ?? {}) as {
+    required?: string[];
+    properties?: Record<string, { description?: string }>;
+  };
+  const properties = schema.properties ?? {};
+
+  return {
+    required: [...(schema.required ?? [])].sort(),
+    properties: Object.keys(properties).sort(),
+    name_description: properties.name?.description ?? null,
+    id_description: properties.id?.description ?? null,
+  };
+}
+
+function assertAdvertisedBranchGuidance(
+  audit: Record<string, BranchSchemaSummary>
+): void {
+  for (const [toolName, summary] of Object.entries(audit)) {
+    if (!summary.required.includes("action")) {
+      throw new Error(`${toolName} tools/list schema must require action.`);
+    }
+    if (!summary.name_description?.includes("Required when action=create")) {
+      throw new Error(
+        `${toolName} tools/list schema lost create-branch guidance on name.`
+      );
+    }
+    if (!summary.id_description?.includes("Required when action=update")) {
+      throw new Error(
+        `${toolName} tools/list schema lost update-branch guidance on id.`
+      );
+    }
+  }
 }
 
 function assertWithinSurfaceBudget(metrics: SurfaceMetrics): void {
@@ -208,6 +259,13 @@ async function main(): Promise<void> {
     });
 
     const payloadSizes = rows.map((row) => row.payload_chars);
+    const branchSchemaAudit = Object.fromEntries(
+      ["manage_locator", "manage_null_object"].map((toolName) => [
+        toolName,
+        summarizeBranchSchema(tools, toolName),
+      ])
+    );
+
     const metrics: SurfaceMetrics = {
       protocol_version: PROTOCOL_VERSION,
       tool_count: tools.length,
@@ -227,12 +285,14 @@ async function main(): Promise<void> {
         p95: percentile(payloadSizes, 0.95),
         max: payloadSizes.length > 0 ? Math.max(...payloadSizes) : 0,
       },
+      branch_schema_audit: branchSchemaAudit,
       largest_tools: [...rows]
         .sort((a, b) => b.payload_chars - a.payload_chars || a.name.localeCompare(b.name))
         .slice(0, 10),
     };
 
     console.log(JSON.stringify(metrics, null, 2));
+    assertAdvertisedBranchGuidance(metrics.branch_schema_audit);
     assertWithinSurfaceBudget(metrics);
   } finally {
     if (server.listening) {
