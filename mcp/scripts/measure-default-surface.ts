@@ -1,10 +1,22 @@
 import "@/server/tools";
 import { createServer as createTcpServer, type AddressInfo } from "node:net";
-import createNetServer, { type NetServer } from "@/server/net";
+import createNetServer from "@/server/net";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
+
+// Fresh isolated tools/list baseline measured on 2026-08-12 after the static
+// efficiency cleanup: 62 tools, 74,996 response chars, 51,810 input-schema
+// chars, 10,885 description chars, 3,034 max per-tool payload chars.
+// These are regression ceilings with small headroom, not token-usage targets.
+const SURFACE_BUDGET = {
+  tool_count: 62,
+  tools_list_response_chars: 79_000,
+  input_schema_chars: 54_500,
+  description_chars: 11_500,
+  max_tool_payload_chars: 3_200,
+} as const;
 
 type ListedTool = {
   name?: string;
@@ -23,11 +35,72 @@ type JsonRpcBody = {
   };
 };
 
+type SurfaceMetrics = {
+  protocol_version: string;
+  tool_count: number;
+  tools_list_response_chars: number;
+  tools_array_chars: number;
+  input_schema_chars: number;
+  description_chars: number;
+  per_tool_payload_chars: {
+    p50: number;
+    p90: number;
+    p95: number;
+    max: number;
+  };
+  largest_tools: Array<{
+    name: string;
+    payload_chars: number;
+    input_schema_chars: number;
+    description_chars: number;
+  }>;
+};
+
 function percentile(values: number[], fraction: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.max(0, Math.ceil(fraction * sorted.length) - 1);
   return sorted[index] ?? 0;
+}
+
+function assertWithinSurfaceBudget(metrics: SurfaceMetrics): void {
+  const failures: string[] = [];
+
+  if (metrics.tool_count !== SURFACE_BUDGET.tool_count) {
+    failures.push(
+      `tool_count=${metrics.tool_count} expected exactly ${SURFACE_BUDGET.tool_count}`
+    );
+  }
+  if (
+    metrics.tools_list_response_chars >
+    SURFACE_BUDGET.tools_list_response_chars
+  ) {
+    failures.push(
+      `tools_list_response_chars=${metrics.tools_list_response_chars} exceeds ${SURFACE_BUDGET.tools_list_response_chars}`
+    );
+  }
+  if (metrics.input_schema_chars > SURFACE_BUDGET.input_schema_chars) {
+    failures.push(
+      `input_schema_chars=${metrics.input_schema_chars} exceeds ${SURFACE_BUDGET.input_schema_chars}`
+    );
+  }
+  if (metrics.description_chars > SURFACE_BUDGET.description_chars) {
+    failures.push(
+      `description_chars=${metrics.description_chars} exceeds ${SURFACE_BUDGET.description_chars}`
+    );
+  }
+  if (
+    metrics.per_tool_payload_chars.max >
+    SURFACE_BUDGET.max_tool_payload_chars
+  ) {
+    failures.push(
+      `max_tool_payload_chars=${metrics.per_tool_payload_chars.max} exceeds ${SURFACE_BUDGET.max_tool_payload_chars}`
+    );
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`Default MCP surface regression:\n- ${failures.join("\n- ")}`);
+  }
 }
 
 async function postMcp(
@@ -135,7 +208,7 @@ async function main(): Promise<void> {
     });
 
     const payloadSizes = rows.map((row) => row.payload_chars);
-    const metrics = {
+    const metrics: SurfaceMetrics = {
       protocol_version: PROTOCOL_VERSION,
       tool_count: tools.length,
       tools_list_response_chars: listed.text.length,
@@ -160,6 +233,7 @@ async function main(): Promise<void> {
     };
 
     console.log(JSON.stringify(metrics, null, 2));
+    assertWithinSurfaceBudget(metrics);
   } finally {
     if (server.listening) {
       await new Promise<void>((resolve, reject) => {
