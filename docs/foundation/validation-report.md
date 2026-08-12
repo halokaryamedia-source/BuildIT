@@ -72,11 +72,13 @@ Current `Local` source includes source-provable efficiency reductions:
 - exact single-text JSON mirrors of `structuredContent` are compacted centrally while canonical structured data, meaningful text, and images remain;
 - `get_project_info` returns a bounded top-level Group summary;
 - `list_outline`, element discovery, and undo-history normal defaults are smaller while larger explicit bounds remain available;
+- `list_locator_elements` now returns identity/type/parent discovery only; detailed Locator/Null Object authored state remains in `inspect_element` and mutation results;
 - asset routing, orchestration, modelling, texturing, animation, and stable workspace context have clearer non-overlapping ownership;
+- repository-development context is split across root routing, conditional `development-brief`, `mcp/AGENTS.md`, and at most one specialist; stale references to non-existent escalation skills were removed;
 - runtime prompt bundling contains only the callable `bedrock_entity_workflow`; maintainer reference Markdown remains source-only;
 - Locator/Null Object create/update branch intent is explicit in client-facing descriptions;
 - generated MCP docs/runtime manifest are synchronized through their build owners;
-- static efficiency budgets lock instruction size, the 62-tool capability count, compact default reads, and a bounded enabled-description surface.
+- static efficiency budgets lock authoring and repository-development instruction size, the 62-tool capability count, compact default reads, and a bounded enabled-description surface.
 
 Status: **source/contract/CI hardening complete** for the requested pre-test cleanup. Do not infer runtime token savings or client behavior from character reductions alone.
 
@@ -108,7 +110,7 @@ A convincing front view cannot certify 3D depth.
 
 Current contracts retain finite Cube extents, intentional rotation pivots, no-op rejection, bounded batch correction, deterministic identity resolution, bounded outline/discovery, finite ordered size filters, and explicit non-empty scopes/filters.
 
-Post-acceptance compact defaults do **not** remove the larger explicit discovery bounds.
+Post-acceptance compact defaults do **not** remove the larger explicit discovery bounds. Locator/Null Object list discovery is summary-only; focused authored transforms/IK/visibility remain available through the existing detailed owner rather than being duplicated in the list path.
 
 ## Texture / Paint / PBR
 
@@ -134,6 +136,8 @@ inspect_element
 rename_element
 remove_element
 ```
+
+`list_locator_elements` owns only compact identity/type/parent discovery. `inspect_element` owns focused detailed authored state; `manage_locator` / `manage_null_object` return their resulting detailed mutation state so an immediate confirmation read is not required.
 
 Representative lifecycle plus `.bbmodel` reopen is `CURRENT-PROJECT VERIFIED`. Null Object remains distinct editor/animation state and round-trips through the Bedrock geometry `_null_` locator representation where supported.
 
