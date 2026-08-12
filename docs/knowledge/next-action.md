@@ -109,5 +109,13 @@ The completed Local Acceptance Runbook is history/procedure only unless explicit
 ## Next Step
 
 ```text
-WAIT — deferred search + deterministic asset routing are GitHub/CI-ready; do not run local until the user explicitly requests testing or a new product task requires it.
+WAIT LOCAL — do not run local until the user explicitly requests testing.
+
+NEXT GITHUB/CI TASK — P0 DECISION-LOOP HARDENING:
+1. Lock authoring stage: DISCOVER → AUTHOR → VERIFY → CORRECT → DONE; known fresh state must not regress to discovery.
+2. Make texturing + animation route directly from intent + known state.
+3. Allow one precise tool_search + at most one reformulation per unchanged intent.
+4. Add anti-loop guards for redundant discovery, readback, re-search, and same-direction retry.
+
+Do not start discovery-eval, error-recovery framework, tool→source/test index, router/profile/server split, or local Codex/Blockbench work in this step.
 ```
