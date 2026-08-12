@@ -22,8 +22,7 @@ Current static hardening covers:
 - metadata-first filesystem export after verified path writes;
 - compact normal defaults for project hierarchy, outline/search, and undo-history reads while explicit larger bounds remain available;
 - `list_locator_elements` is identity/type/parent discovery only; `inspect_element` owns detailed Locator/Null Object state;
-- asset-authoring instructions are split by owner: routing → orchestrator → one active domain specialist;
-- repository-development instructions are split by owner: root routing → compact development brief → package rules → at most one specialist;
+- asset-authoring and repository-development instructions are split by their existing owners instead of being co-loaded by ritual;
 - `CONTEXT.md` is stable facts only; stale local-acceptance/current-state routing is removed;
 - runtime prompt bundle contains only callable `bedrock_entity_workflow`; maintainer API/eval Markdown is source-only;
 - active skill routing is regression-checked against the canonical `.agents/skills/` packages;
@@ -31,7 +30,7 @@ Current static hardening covers:
 
 ## GitHub-Only Pretest Hardening
 
-The verification workflow now pins Bun through root `.bun-version` at **1.3.14** and runs an isolated real `initialize → tools/list` measurement through the current stateless HTTP path.
+The verification workflow pins Bun through root `.bun-version` at **1.3.14** and runs an isolated real `initialize → tools/list` measurement through the current stateless HTTP path.
 
 Fresh serialized default-surface baseline:
 
@@ -46,21 +45,41 @@ per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
 
 Compared with the historical accepted static measurement, descriptions are smaller but schema and total serialized characters are larger. These are **serialization measurements, not token/context measurements**. Do not claim overall client savings from these character counts.
 
-CI now guards the fresh surface with small regression headroom while retaining exactly 62 default tools.
+CI guards the fresh surface with small regression headroom while retaining exactly 62 default tools. Actual serialized Locator schemas are also checked: `manage_locator` and `manage_null_object` expose all relevant fields with only `action` top-level-required; `name`/`id` descriptions preserve create/update requirements while runtime validation keeps the original discriminated union.
 
-Actual serialized Locator schemas were also checked. `manage_locator` and `manage_null_object` expose all relevant fields with only `action` top-level-required; their `name` and `id` field descriptions preserve explicit `action=create` / `action=update` requirements. Runtime validation still uses the original discriminated-union schema. Do not split tools or redesign registration solely to make the static JSON Schema prettier.
+## Native Deferred MCP Discovery
 
-## Deliberately Not Changed From Static Guessing
+Current upstream Codex source establishes the intended efficient path when tool search is available:
 
-Do not redesign these until a future user-requested local trace supplies client evidence:
+```text
+MCP initialize + tools/list
+→ catalog retained client-side
+→ MCP tools registered as deferred
+→ tool_search ranks/searches deferred tools
+→ only matching tool specs are loaded for model use
+```
 
-- whether Codex injects all 62 schemas or uses deferred/native tool search;
-- actual prompt/skill co-loading;
+This means the full 74,996-character `tools/list` response is a **client/catalog serialization cost**, not proof that all 62 schemas are placed in every model turn.
+
+BuildIT now supports that path more deliberately. `mcp/server/server.ts` sends a compact capability-oriented MCP `instructions` string during initialization. Current measured size is **386 characters**. Codex maps regular MCP server instructions to the model-visible namespace description and uses namespace description, tool names/descriptions, and schema property names in MCP tool-search text.
+
+The namespace description covers the retained authoring domains—project lifecycle, Cube/Group geometry, focused inspection/bounds/views, texture/Painter/PBR/material instances, animation/rigging/keyframes, Locator/Null Object, history/Undo/Redo, and Bedrock/.bbmodel export—without embedding the 6k workflow prompt into initialization.
+
+No custom router, new registration profile, or tool deletion was added. All 62 default capabilities remain available for clients that can discover them.
+
+## Evidence Boundary
+
+Upstream Codex behavior now resolves the architecture question: **native deferred MCP tool search exists and is the preferred owner rather than a BuildIT router**. What remains unverified without a future local run is the exact behavior of the user's installed Codex version/model and the resulting real token/context/latency numbers.
+
+Do not redesign these from static guessing:
+
+- actual prompt/skill co-loading in the installed client;
 - real token/context/latency savings;
 - actual invalid-call retry frequency;
-- realistic image/context cost.
+- realistic image/context cost;
+- whether an older/non-tool-search client needs a restricted `enabled_tools` compatibility configuration.
 
-Also do not pre-emptively add a router/profile/readiness framework, mass-trim legitimate schemas, impose arbitrary global output limits, or default-disable retained Bedrock Animation/Paint/Texture/Locator/material capability merely to reduce counts.
+Also do not pre-emptively add another router/profile/readiness framework, split the MCP server into many endpoints, mass-trim legitimate schemas, impose arbitrary global output limits, or default-disable retained Bedrock Animation/Paint/Texture/Locator/material capability merely to reduce counts.
 
 ## Continuation Boot
 
@@ -80,5 +99,5 @@ The completed Local Acceptance Runbook is history/procedure only unless explicit
 ## Next Step
 
 ```text
-WAIT — GitHub-only pretest hardening complete; do not run local until the user explicitly requests testing or a new product task requires it.
+WAIT — deferred-search compatibility is GitHub/CI-ready; do not run local until the user explicitly requests testing or a new product task requires it.
 ```
