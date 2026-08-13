@@ -7,7 +7,7 @@ This is the **single active repository-continuation snapshot**. Root `AGENTS.md`
 ## Status
 
 ```text
-PLACE_CUBE_CREATION_COMPLETENESS_IMPLEMENTED_AWAITING_VERIFY
+PLACE_CUBE_CREATION_COMPLETENESS_PHASE3_COMPLETE
 ```
 
 Working branch: **`Local` only**.
@@ -25,14 +25,15 @@ P6     actual-reference grounding + claim/view locking
 P7     qualitative correction convergence + evaluation integrity
 REF    assisted intake + pre-generation readiness + buildable multi-view reference
 PRO-1  representation reasoning + transform ownership + primary hierarchy timing + identity-weighted detail
-PRO-2  bounded authoring-expressiveness validation
+PRO-2  bounded professional-sample authoring-expressiveness validation
+PRO-3  place_cube per-element parent + initial inflate creation completeness
 ```
 
 No P8 architecture, professional preset framework, asset classifier, geometry planner, automatic rig generator, new registration profile, router, scorer, or recovery system was added.
 
-## Phase 3 Implemented
+## Phase 3 Result
 
-The existing `place_cube` public contract now accepts two optional per-element authored fields:
+The existing `place_cube` contract now accepts two optional per-element authored fields:
 
 ```text
 element.group
@@ -42,7 +43,7 @@ element.inflate
   finite Bedrock Cube inflation authored during creation
 ```
 
-Compatibility is preserved:
+Compatibility remains:
 
 ```text
 element.group supplied → explicit per-Cube parent
@@ -50,34 +51,51 @@ element.group omitted  → existing top-level group default
 both omitted            → root, same existing behavior
 ```
 
-Execution behavior:
+Execution contract:
 
-- top-level and per-element explicit Group references are resolved before `Undo.initEdit`;
-- one missing/ambiguous explicit parent fails the request before mutation;
-- known finite `inflate` is sent to the native Cube constructor instead of requiring a follow-up `modify_cube`;
-- current rotation/pivot, UV, Undo, identity, result, and `visual_verdict: not_evaluated` behavior remains owned by the same tool;
-- no new Cube tool or modelling mode was introduced.
+- top-level and per-element explicit Group references resolve before `Undo.initEdit`;
+- one missing/ambiguous explicit parent fails the whole request before mutation;
+- known finite `inflate` is authored in the native Cube constructor rather than requiring a follow-up correction call;
+- rotation/pivot, UV, Undo, identity, result, and `visual_verdict: not_evaluated` remain owned by the same existing tool;
+- no new Cube tool or modelling mode exists.
 
-Targeted regression coverage lives in:
+Targeted regression owner:
 
 `mcp/tests/place-cube-creation-completeness.test.ts`
 
-It protects schema compatibility, finite inflate, pre-Undo parent preflight, the existing three-tool Cube family, and the absence of professional preset/profile/planner behavior.
+## Verified Repository / CI State
 
-## Generated Docs
+The bounded Phase 3 gate passed before final cleanup:
 
-Because this environment does not provide the repository's Bun execution stack directly, generated docs were regenerated **through the repository owner command `bun run docs:build` on GitHub Actions**, not hand-edited.
+```text
+TypeScript                  PASS
+contract tests              212 PASS / 0 FAIL
+default MCP surface         PASS
+production build            PASS
+generated docs freshness    PASS
+```
 
-The temporary generation workflow was removed immediately after producing the owner-generated artifacts. It is not part of the retained product/workflow surface.
+Fresh serialized surface:
 
-Generated changes are limited to:
+```text
+initialize instructions:       386 characters
+tool count:                     62
+tools/list response:            75,129 characters
+tools array:                    75,085 characters
+input schemas:                  52,105 characters
+descriptions:                   10,723 characters
+per-tool payload max:           3,167 characters
+place_cube payload:             3,167 characters
+retained per-tool ceiling:      3,200 characters
+```
 
-- `mcp/docs/api.json`: nested `place_cube.elements[].group` and `inflate` schema plus generation timestamp;
-- `mcp/docs/index.html`: generation timestamp only because the HTML view renders top-level parameter rows.
+These are serialized-character measurements, not token measurements.
+
+Generated API docs were produced through the repository owner commands, not hand-edited. All temporary Phase 3 helper workflows/scripts were removed; only the normal `MCP Verify` workflow remains.
 
 ## Explicitly Out Of Scope
 
-Do not add without separate evidence:
+Do not add without new reproduced evidence:
 
 - mirror-UV creation optimization;
 - per-Cube texture selection;
@@ -87,35 +105,46 @@ Do not add without separate evidence:
 - professional detail profile;
 - hierarchy-depth target;
 - automatic geometry planner;
-- object-specific rules from the professional samples.
+- object-specific rules from professional samples.
 
-## Verification Boundary
+The professional samples have now justified **one** source-contract expansion (`place_cube` creation completeness). They do not currently justify another MCP surface expansion.
 
-The implementation and owner-generated docs are present. Phase 3 is **not complete until the existing `MCP Verify` gate passes on the retained branch state**:
+## Evidence Boundary
 
-```text
-bun install --frozen-lockfile
-→ typecheck
-→ test
-→ measure:surface
-→ build
-→ docs:check
-```
+`CURRENT-PROJECT VERIFIED` for repository/CI semantics:
 
-GitHub/static proof can establish contract/source/generated-doc consistency after that gate. It still cannot establish live Blockbench rendering, actual runtime parent placement, visual quality, or real authoring-call reduction.
+- Phase 1 reasoning contracts;
+- Phase 2 bottleneck evidence;
+- Phase 3 schema/source behavior as statically expressed;
+- pre-Undo parent preflight ordering;
+- finite initial inflate schema;
+- backward-compatible top-level parent contract;
+- generated-doc consistency;
+- current surface budgets/build/tests.
 
-Those remain `LOCAL PROOF REQUIRED` if a later user scope explicitly activates runtime acceptance.
+`LOCAL PROOF REQUIRED`:
+
+- installed Blockbench behavior of mixed-parent `place_cube` batches;
+- actual native persistence of initial `inflate` in a live project;
+- measured reduction in real authoring calls;
+- whether stronger reasoning creates visibly more professional models;
+- end-to-end representative professional-style authoring quality.
 
 ## Continuation Boot
 
 ```text
 AGENTS.md
 → this file
-→ affected mcp owner + mcp/AGENTS.md
-→ development-brief
-→ mcp-server-development when public MCP semantics change
+→ flow.md only when detailed sequence matters
+→ affected owner + nearest AGENTS.md
+→ development-brief for repository changes
+→ at most one relevant specialist
 ```
 
 ## Next Step
 
-Run/inspect the existing **MCP Verify** workflow on the retained Phase 3 state. If it passes, close Phase 3 and record the next bounded modelling-quality step. If it fails, fix only the demonstrated contract/build regression; do not broaden scope.
+```text
+NO FURTHER SOURCE EXPANSION FROM SAMPLE EVIDENCE
+```
+
+The next meaningful quality step is a **representative real authoring acceptance run** using the stronger reasoning + current MCP surface. That requires explicit reactivation of local Codex/Blockbench proof. Until then, `No change required` is the correct repository result; do not add another tool, preset, batching layer, or modelling mode merely because the professional samples contain more authored features.
