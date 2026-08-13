@@ -69,7 +69,7 @@ ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 
 For a minor discrepancy choose consistently: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest recognizable Blockbench-buildable interpretation**. Minor means it does not change identity, primary mass/required count, topology/attachment, important negative space, buildability, or identity-critical texture/material information. Do not average drift.
 
-Use the simplest construction that preserves visible requirements; examples are not presets. **Form-defining hierarchy may belong in the primary blockout; neutral organization stays downstream.** Professional samples remain learning evidence only.
+Use the simplest construction that preserves visible requirements; examples are not presets. **Form/contact/articulation-defining hierarchy may belong in the primary blockout; neutral organization stays downstream.** Professional samples remain learning evidence only.
 
 For local correction:
 
