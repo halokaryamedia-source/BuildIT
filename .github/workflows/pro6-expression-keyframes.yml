@@ -1,4 +1,5 @@
 name: PRO-6 Expression Keyframes
+# bounded non-local verification only
 
 on:
   push:
