@@ -56,10 +56,10 @@ describe("Codex documentation handoff", () => {
 
     expect(next.length).toBeLessThan(7_000);
     expect(next).toContain("Working branch: **`Local` only**");
-    expect(next).toContain("PRO-1");
-    expect(next).toContain("PRO-2");
+    expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
     expect(next).toContain("## Next Step");
-    expect(next).toContain("LOCAL PROOF REQUIRED");
+    expect(next).toContain("NO LOCAL RUN ACTIVE");
+    expect(next).toContain("direct/local proof");
     expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
