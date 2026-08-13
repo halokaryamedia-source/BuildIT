@@ -119,7 +119,8 @@ describe("reference generator buildability contract", () => {
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("../docs/foundation/04-reference-guide.md"),
     ]);
-    for (const text of [normalized(skill), normalized(guide)]) {
+    for (const rawText of [skill, guide]) {
+      const text = normalized(rawText).replaceAll("**", "");
       expect(text).toContain("stable natural neutral stance");
       expect(text).toContain("explicitly requests another pose");
       expect(text).toContain("does not automatically become the modelling pose");
