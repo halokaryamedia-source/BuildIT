@@ -24,10 +24,12 @@ If work switches into workflow/repository hardening, earlier generation permissi
 **Generation is output, not discovery.** Lock an Internal Generation Brief:
 
 - identity, silhouette, major masses/features, contacts/asymmetry;
-- one **source-nearest anchor orientation**;
+- one **source-nearest orthographic anchor**: the canonical orthographic orientation closest to and best supported by the Source Image;
 - the **smallest orthographic core** needed to constrain width, height, depth, key attachments and negative spaces;
 - for articulated subjects: pose state, limb/appendage count, attachment/support where relevant;
 - identity-critical articulated features: visible root, overall direction/bend, terminal state.
+
+The original Source Image remains visual authority regardless of whether its camera angle is side, front, 3/4, elevated, or perspective. The generated anchor is orthographic; it does not copy source lens distortion or make a source 3/4 panel into generated structural authority.
 
 `READY` means no material ambiguity can still change identity, major form, pose/articulation, chosen orthographic core, or buildability.
 
@@ -44,7 +46,9 @@ A targeted correction fixes a concrete visual defect; it cannot replace missing 
 
 ### Subject
 
-Isolate the subject; ignore unrelated hands, stands, scenery, shadows, or supports. Preserve silhouette, proportions, visible attachments, intrinsic markings/colors, and known asymmetry. Normalize perspective; lens distortion is not geometry. Unknown hidden form stays conservative; do not blend conflicting sources.
+Isolate the subject; ignore unrelated hands, stands, scenery, shadows, or supports. Preserve proportions, visible attachments, intrinsic markings/colors, known asymmetry, and **identity-bearing silhouette / major-mass relationships**. Normalize perspective; lens distortion is not geometry.
+
+When pose is intentionally normalized, do **not** preserve pose-dependent gait/limb silhouette merely to imitate the Source Image. Source identity remains authority; the locked modelling pose owns limb configuration. Unknown hidden form stays conservative; do not blend conflicting sources.
 
 ### Pose & Articulation
 
@@ -54,9 +58,9 @@ For grounded load-bearing subjects, default to a **stable natural neutral stance
 
 Preserve the same requested/observable pose state and limb phase across shown views without inventing hidden joint precision. Preserve limb/appendage count, plausible attachment, direction/proportion, terminal part, support/contact when needed, near/far separation, and important negative spaces.
 
-For each identity-critical articulated feature, preserve the same visible **root → direction/bend → terminal state** across views. Projection may change appearance; state may not change.
+For each **identity-critical articulated** feature, preserve the same visible **root → direction/bend → terminal** state across views. Projection may change appearance; state may not change.
 
-**No duplicated, missing, merged, floating, relocated, or independently re-posed limbs/appendages.** Orthographic views own structural truth.
+**No duplicated, missing, merged, floating, relocated, or independently re-posed limbs/appendages.** Orthographic views own generated structural truth.
 
 ### Blockbench Construction
 
@@ -66,12 +70,13 @@ Use varied rectangular parts, not equal world-block voxels. Rotate only for visi
 
 ### Orthographic Core Lock
 
-This is **not a fixed five-panel turnaround**. Use the **smallest mutually compatible orthographic view set** that constrains the model.
+This is **not a fixed five-panel turnaround**. Use the **smallest mutually compatible orthographic view set** that still constrains every material structure needed for modelling.
 
-1. Choose the source-nearest anchor orientation first.
+1. Choose the source-nearest orthographic anchor first.
 2. Add only views needed to constrain missing axes or identity-critical structure.
 3. Every added view must fit the same locked mass/pose/attachment relationships.
-4. If another view requires contradictory invention, **omit that view and report the limitation** rather than fabricating coherence.
+4. If an optional view requires contradictory invention, **omit that view** rather than fabricate coherence.
+5. Omission is valid only if the remaining core still constrains all material structure. If removing the view makes the model materially underconstrained, stop at **NEEDS REVIEW** instead of approving an incomplete core.
 
 Typical core may be:
 
@@ -85,8 +90,8 @@ ANCHOR SIDE/FRONT
 This is guidance, not a fixed template.
 
 - SIDE/FRONT/BACK shown together keep comparable scale and coherent ground relation when grounded.
-- TOP, when included, is a true **top-down projection of the same locked structure**. Preserve footprint, mass placement, appendage roots, limb locations, and negative spaces.
-- **3/4 is not part of the default initial core.** Add it only after the orthographic core is coherent and only when it resolves real volume ambiguity or the user asks. It is diagnostic, never structural authority.
+- TOP, when included, is a true top-down projection of the same locked structure. Preserve footprint, mass placement, appendage roots, limb locations, and negative spaces.
+- **3/4 is not part of the default initial core.** A **generated** 3/4 may be added only after the orthographic core is coherent and only when it resolves real volume ambiguity or the user asks. It is **diagnostic, never structural authority**. This does not reduce the authority of an original Source Image captured from 3/4.
 
 Do not add views for completeness.
 
@@ -100,13 +105,13 @@ Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral pla
 
 Review the actual board in this order:
 
-1. **anchor fidelity** — source-nearest view preserves identity and major silhouette;
-2. **orthographic coherence** — every shown view fits the same mass/pose/attachment relationships;
+1. **anchor fidelity** — source-nearest orthographic anchor preserves identity-bearing silhouette and major-mass proportions; normalized pose may legitimately change gait/limb silhouette;
+2. **orthographic coherence** — every shown view fits the same mass/pose/attachment relationships and the remaining core is sufficiently constrained;
 3. **articulation lock** — limbs and identity-critical articulated features keep one state;
 4. **support/naturalness** — stable support without accidental gait, floating parts, or forced robotic symmetry;
 5. **construction/readability** — buildable, recognizable, uncropped target.
 
-A material projection mismatch, articulated-feature drift, pose/support conflict, or cross-view redesign is **NOT READY / NEEDS REVIEW** regardless of attractiveness. Do not average conflicting shapes or use numeric scores.
+A material projection mismatch, articulated-feature drift, pose/support conflict, underconstrained required structure, or cross-view redesign is **NOT READY / NEEDS REVIEW** regardless of attractiveness. Do not average conflicting shapes or use numeric scores.
 
 ## Targeted Correction
 
@@ -117,16 +122,20 @@ A structural cross-view failure is a **board-level defect**. For the one allowed
 - name failed invariants;
 - regenerate the **whole shown core from the same locked structure**, never patch one panel independently;
 - preserve relationships that already passed;
-- remove an unnecessary problematic view rather than inventing structure solely to keep a fixed layout.
+- **remove an unnecessary problematic view** only when the remaining core stays sufficiently constrained; otherwise stop at NEEDS REVIEW.
 
 The correction still requires the Execution Consent Gate. If material conflict remains, stop at **NOT READY / NEEDS REVIEW**.
 
 ## Budget / Output
+
+For one **unchanged Internal Generation Brief / review cycle**:
 
 ```text
 first draft          = maximum 1
 targeted correction  = maximum 1
 automatic variants   = 0
 ```
+
+A materially new user-approved source, pose, target, or requirement starts a new review cycle. Do not start a new cycle automatically to bypass a failed correction.
 
 Return **one image only** and stop for user review/approval. Only after approval may the actual approved image + retained nonvisual facts go to modelling. **Do not generate ZIPs**.
