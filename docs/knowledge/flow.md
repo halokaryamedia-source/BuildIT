@@ -75,9 +75,9 @@ AGENTS.md
 ## 5. Evidence Boundary
 
 ```text
-ChatGPT → GitHub         = source/docs/static/CI evidence
+ChatGPT → GitHub          = source/docs/static/CI evidence
 image-capable preparation = generated-reference visual evidence
-Codex local / Blockbench = installed-client/runtime/model-facing evidence
+Codex local / Blockbench  = installed-client/runtime/model-facing evidence
 ```
 
 Source/CI proof never becomes live visual/runtime proof.
@@ -93,6 +93,6 @@ local acceptance procedure  → operations/local-acceptance-runbook.md only when
 historical rationale        → Git history / GitHub issues and PRs
 ```
 
-Files retained under `knowledge/reviews/`, `knowledge/decisions/`, or `knowledge/skills/` solely for regression compatibility are test-support only, not current owners.
+The tiny files that remain under `knowledge/reviews/` and `knowledge/decisions/` are compatibility/regression support only; they are not current product or navigation owners.
 
 Do not create another roadmap, review index, decision log, duplicate flow owner, or parallel planning state.

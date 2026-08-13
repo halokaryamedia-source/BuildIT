@@ -47,7 +47,7 @@ docs/foundation/validation-report.md           proof state
 operations/local-acceptance-runbook.md          local procedure, inactive
 ```
 
-Any compact files retained under `docs/knowledge/reviews/`, `decisions/`, `skills/`, or `docs/foundation/03-modelling-workflow.md` exist only because the current regression suite reads them. They are **test-support fixtures/indexes**, not product/navigation owners. Full historical versions remain in Git history.
+The two tiny legacy-looking files that remain under `docs/knowledge/reviews/` and `docs/knowledge/decisions/`, plus `docs/foundation/03-modelling-workflow.md`, are compatibility/regression support for current links/tests; they are not product/navigation owners. Full historical versions remain in Git history.
 
 ## Verification Boundary
 
