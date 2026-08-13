@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REFERENCE_HARDENING_SIMPLIFICATION_PENDING_STATIC_VERIFY
+REFERENCE_HARDENING_SIMPLIFICATION_STATIC_VERIFIED
 ```
 
 Working branch: **`Local` only**.
@@ -53,10 +53,9 @@ Generated-reference quality requires direct review of the actual Draft; static p
 ## Next Step
 
 ```text
-1. finish official static verification for this simplification pass
-2. PRE-LOCAL A — generate ONE fresh elephant Modelling Brief from the original source only
-3. audit pose / limb / cross-view integrity
-4. user approval
+PRE-LOCAL A — generate ONE fresh elephant Modelling Brief from the original source only
+→ audit pose / limb / cross-view integrity
+→ user approval
 ```
 
 Do not start Blockbench/Codex local acceptance before the new reference is approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before loading it into Blockbench.
