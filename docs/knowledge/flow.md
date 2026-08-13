@@ -4,7 +4,7 @@ Updated: 2026-08-14
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns task routing.
 
-## 1. Choose The Route
+## 1. Route
 
 ```text
 REFERENCE PREPARATION → blockbench-reference-generator
@@ -13,66 +13,68 @@ REPOSITORY WORK       → next-action.md → affected owner → development-brie
 LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
 ```
 
-A route change matters. **Repository/policy hardening never silently continues into image generation.** After hardening/verification, stop and report; reference execution requires a fresh explicit user instruction.
+A route change matters. Repository/policy hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; reference execution requires a fresh explicit user instruction.
 
 ## 2. Reference Preparation
 
 ```text
 SOURCE IMAGE + USER INTENT
-→ split VISUAL TARGET from NONVISUAL HANDOFF CONSTRAINTS
-→ ASSISTED INTAKE
+→ VISUAL TARGET + NONVISUAL HANDOFF CONSTRAINTS
 → INTERNAL GENERATION BRIEF
+→ SOURCE-NEAREST ANCHOR ORIENTATION
 → stable/readable POSE + ARTICULATED-FEATURE STATE when applicable
-→ SINGLE-MODEL PROJECTION LOCK
+→ SMALLEST ORTHOGRAPHIC CORE
+   → only views needed to constrain missing axes / key structure
+   → omit a view if it requires contradictory invention
+   → 3/4 is not default initial-core content
 → PRE-GENERATION READINESS
-   ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
+   ├─ NOT READY → clarify once → still material? NEEDS REVIEW; DO NOT GENERATE
    └─ READY → EXECUTION CONSENT GATE
-              ├─ no fresh explicit user generation instruction
-              │    → STOP; WAIT FOR USER
-              └─ fresh explicit user generation instruction
-                   → GENERATE ONE CLEAN DRAFT
-                   → panel/view labels only by default; no title/header/note
+              ├─ no fresh explicit generation instruction → STOP; WAIT FOR USER
+              └─ fresh explicit instruction → GENERATE ONE CLEAN CORE DRAFT
+                   → panel/view labels only; no title/header/note by default
                    → VISUAL GATE:
-                        projection coherence
+                        anchor fidelity
+                        orthographic coherence
                         articulation lock
                         support/naturalness
                         construction/readability
                    ├─ PASS → USER APPROVAL
                    └─ MATERIAL DEFECT
                         → one BOARD-LEVEL TARGETED CORRECTION
-                        → correction also requires fresh explicit execution consent
-                        → original Source + locked Brief remain authority
-                        → regenerate the whole board, never patch one view independently
-                        → re-run VISUAL GATE
+                        → fresh execution consent again
+                        → Source + locked Brief remain authority
+                        → regenerate whole shown core; never patch one panel
+                        → remove unnecessary conflicting view rather than invent structure
                         → still material? NEEDS REVIEW; STOP
-→ ACTUAL APPROVED REFERENCE IMAGE + relevant HANDOFF CONSTRAINTS
+→ ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 ```
 
-For articulated subjects choose the most structurally readable stable pose unless another state is explicitly required. Grounded load-bearing subjects normally use a stable natural neutral stance, but do not force perfect bilateral alignment merely because it is easier to generate.
+Grounded load-bearing subjects normally use a stable natural neutral stance without forced bilateral alignment. Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across shown views.
 
-Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across views. A multi-view board is several projections of one locked structural interpretation, not several independently designed images. TOP is a true top-down projection of that same structure; a material TOP mismatch is a board-level defect.
+Reference preparation no longer assumes a fixed five-view board. Use the **smallest orthographic core that materially constrains the model**. TOP/BACK are conditional. 3/4 is diagnostic and only added after orthographic coherence or by explicit user request.
 
-Nonvisual facts such as target scale/height stay outside the image by default and are passed in active modelling task context. Generation is output, not discovery. Durable policy: `docs/foundation/04-reference-guide.md`.
+Nonvisual scale/height/use facts stay outside image pixels. Durable policy: `docs/foundation/04-reference-guide.md`.
 
 ## 3. Bedrock Authoring
 
 ```text
-ACTUAL APPROVED REFERENCE IMAGE + MATERIAL HANDOFF CONSTRAINTS
-→ VIEW PAIR MAP + REFERENCE EVIDENCE MAP
+ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
+→ VIEW PAIR MAP for views actually present
+→ REFERENCE EVIDENCE MAP
 → SEMANTIC FORM
 → CONSTRUCTION + TRANSFORM OWNERSHIP
 → CONTACT / ATTACHMENT INVARIANTS
-→ CROSS-VIEW CONSISTENCY
 → PRIMARY FORM HYPOTHESIS
 → PRIMARY BLOCKOUT: COARSE CUBES + REQUIRED PRIMARY GROUPS/PIVOTS
-→ STRUCTURAL OBSERVATION + CANONICAL MODEL VIEWS
+→ CANONICAL MODEL VIEWS
 → CLAIM-LOCKED REFERENCE ↔ MODEL COMPARISON
 → FAIL | UNVERIFIED | PASS
 ```
 
-Use the simplest construction that preserves the visible requirement. Solid, sheet-like, layered, segmented, and texture-only forms are reasoning examples, **not presets**. Shared orientation/contact/attachment/articulation may be Group/Bone transform ownership. Form-defining hierarchy may belong in the primary blockout; neutral organization waits downstream.
+Use the simplest construction that preserves visible requirements; examples are not presets. Professional samples remain learning evidence only.
 
-For local failure:
+For local correction:
 
 ```text
 exact target state
@@ -81,46 +83,35 @@ exact target state
 → IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Only after primary form passes: **identity-weighted** secondary geometry → texture/PBR if required → animation if required → final validation/export.
-
-Professional samples are learning evidence only; never generic presets or count targets.
+Only after primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export.
 
 ## 4. Repository Work
 
 ```text
 AGENTS.md
 → next-action.md when continuing
-→ CONTEXT.md only if stable facts matter
-→ implementation-map Hot-Path Defect Index for named MCP defects
-→ affected source + nearest AGENTS.md
+→ affected owner + nearest AGENTS.md
 → development-brief
-→ at most one engineering specialist
 → smallest complete change
 → minimum useful proof
 → STOP AND REPORT
 ```
 
-Completing repository work does **not** consume or infer permission for a different execution route such as image generation or local Blockbench testing.
+Repository proof never becomes permission for image generation or local Blockbench execution.
 
-## 5. Evidence Boundary
+## 5. Evidence / Continuity
 
 ```text
 ChatGPT → GitHub          = source/docs/static/CI evidence
 image-capable preparation = generated-reference visual evidence
 Codex local / Blockbench  = installed-client/runtime/model-facing evidence
+
+current continuation       → next-action.md
+stable facts               → CONTEXT.md
+current proof state        → foundation/validation-report.md
+current source ownership   → implementation-map.md
+local acceptance procedure → operations/local-acceptance-runbook.md when reactivated
+historical rationale       → Git history / GitHub issues and PRs
 ```
 
-Source/CI proof never becomes live visual/runtime proof, and proof completion never becomes execution consent.
-
-## 6. Continuity Owners
-
-```text
-current continuation        → next-action.md
-stable facts                → CONTEXT.md
-current proof state         → foundation/validation-report.md
-current source ownership    → implementation-map.md
-local acceptance procedure  → operations/local-acceptance-runbook.md only when reactivated
-historical rationale        → Git history / GitHub issues and PRs
-```
-
-Do not create another roadmap, review index, decision log, duplicate flow owner, or parallel planning state.
+Do not create duplicate roadmap, review index, decision log, flow owner, or parallel planning state.
