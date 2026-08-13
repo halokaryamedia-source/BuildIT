@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-PROFESSIONAL_ANIMATION_SOUND_EFFECTS_PRO7_IMPLEMENTED_AWAITING_VERIFY
+PROFESSIONAL_ANIMATION_SOUND_EFFECTS_PRO7_COMPLETE
 ```
 
 Working branch: **`Local` only**.
@@ -40,6 +40,14 @@ Scalar number/string values use the existing uniform-keyframe path; three-compon
 
 `create_animation` intentionally remains numeric-only because it owns a separate codec/file-space conversion path. Expression support there is not required for the bounded gap.
 
+## PRO-7 Contract
+
+`create_animation.sound_effects` authors bounded Bedrock sound events by unique finite non-negative timestamp. Each event requires a non-empty Bedrock `effect` identifier and may carry an optional Locator name. Multiple sound events at one timestamp remain a non-empty array under that one timestamp.
+
+`inspect_animation.effects.sound` reports sound keyframe/event counts by default and returns authored `effect` / optional `locator` data when `include_effect_keyframes=true`.
+
+The local audio-preview `file` path is intentionally **not** part of the BlockIT sound contract because Blockbench uses it for editor preview while Bedrock compilation owns `effect` / `locator`. Existing-animation direct sound mutation remains deferred; no `manage_sound_keyframes` tool or media subsystem was added.
+
 ## Still Deferred
 
 ```text
@@ -55,25 +63,26 @@ Do not fake them with `risky_eval`, generic UI automation, arbitrary numeric bak
 
 ```text
 typecheck                     PASS
-contract tests                PASS
+contract tests                216 PASS / 0 FAIL
 default MCP surface           PASS
 production build              PASS
 generated docs freshness      PASS
 ```
 
-Fresh serialized surface:
+Fresh serialized surface after PRO-7:
 
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,926 characters
-tools array:                    75,882 characters
-input schemas:                  52,842 characters
-descriptions:                   10,783 characters
-per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
+tools/list response:            76,320 characters
+tools array:                    76,276 characters
+input schemas:                  53,364 characters
+descriptions:                   10,655 characters
+per-tool payload:               p50 1,062 / p90 2,149 / p95 2,268 / max 3,167
+create_animation payload:       3,126 characters
 ```
 
-These are serialized characters, not model-visible token measurements.
+These are serialized characters, not model-visible token measurements. The existing max per-tool ceiling remains 3,200; it was not raised for PRO-7.
 
 ## Verification Boundary
 
@@ -83,10 +92,12 @@ Required retained GitHub gate:
 frozen install → typecheck → tests → measure:surface → build → docs:check
 ```
 
-Normal `MCP Verify` is the retained-state authority; a docs-only continuation commit may trigger it after temporary helper cleanup.
-
-Static/CI proof can establish schema/type/result/docs consistency only. Native expression persistence, preview evaluation, Bedrock export semantics, and visual motion quality remain `LOCAL PROOF REQUIRED` if local testing is later reactivated.
+Normal `MCP Verify` is the retained-state authority. Static/CI proof can establish schema/type/result/docs consistency only. Native sound persistence/playback/export behavior, Molang persistence/evaluation, and visual motion quality remain `LOCAL PROOF REQUIRED` if local testing is later reactivated.
 
 ## Next Step
 
-After PRO-7 verification, continue **non-local** with `ANIMATION_CONTROLLER_GAP_PRIORITIZATION`. Controllers are sample-evidenced but materially larger than keyframe closure; first determine whether a bounded existing native owner is sufficient. If not, defer rather than add a framework. Do not start local testing.
+```text
+NON-LOCAL NEXT — ANIMATION_CONTROLLER_GAP_PRIORITIZATION
+```
+
+Controllers are sample-evidenced but materially larger than expression/sound keyframe closure. Inspect the native controller owner and supplied controller structures before changing source. If a bounded extension of an existing owner is not sufficient, **defer** rather than add a controller framework. Do not start local testing.
