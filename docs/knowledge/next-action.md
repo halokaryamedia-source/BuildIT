@@ -110,7 +110,7 @@ descriptions:                   10,712 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
-These are serialized characters, not model-visible token measurements.
+These are serialized characters, not model-visible token measurements. The normal `MCP Verify` workflow remains the retained CI owner and is re-triggered after temporary forensic helpers are removed.
 
 ## Evidence Boundary
 
