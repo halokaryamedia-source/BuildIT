@@ -14,9 +14,12 @@ USER REQUEST
 │  → AI-assisted intake resolution
 │     zero-question default; resolve visible facts; leave optional unknowns unset
 │     one compact clarification round only if material ambiguity remains
-│  → blockbench-reference-generator
+│  → internal generation brief
+│  → PRE-GENERATION READINESS GATE
+│     READY     → blockbench-reference-generator
+│     NOT READY → clarify within existing limit → still material? NEEDS REVIEW; do not generate
 │  → one buildable multi-view Modelling Brief image
-│  → maximum one targeted correction
+│  → maximum one targeted visual correction
 │  → user approval
 │
 ├─ ASSET AUTHORING
@@ -53,8 +56,16 @@ SOURCE IMAGE / USER INTENT
    optional unknown → leave unset
    material unresolved ambiguity → one compact clarification round
 → INTERNAL GENERATION BRIEF
+→ PRE-GENERATION READINESS GATE
+   target identity + material visible form + required views + buildable interpretation understood?
+   ├─ READY → continue
+   └─ NOT READY → do not generate
+                  → use remaining clarification allowance
+                  → still material? NEEDS REVIEW
 → REFERENCE GENERATOR
 → MODELLING BRIEF DRAFT
+→ VISUAL GATE
+   concrete visual defect only → maximum one targeted correction
 → USER APPROVAL
 → ACTUAL APPROVED REFERENCE IMAGE
 → VIEW PAIR MAP
@@ -86,7 +97,7 @@ only after primary form passes
 → .bbmodel / Bedrock geometry export
 ```
 
-For reference intake, user uncertainty is not automatically a blocker: AI should resolve what the image clearly supports and leave irrelevant optional facts unset. It must not invent dimensions or hidden features merely to complete an intake. If one material ambiguity remains after the single clarification round, stop at `NEEDS REVIEW`.
+For reference preparation, **generation is output, not discovery**. User uncertainty is not automatically a blocker: AI resolves what the image clearly supports and leaves irrelevant optional facts unset. But material understanding must be complete before generation. Do not render a speculative Draft and use the correction pass to decide what the target should have been.
 
 `UNCHANGED`/`REGRESSED` is not modelling progress. Do not stack compensating patches. Tool success is execution evidence, not visual approval.
 
