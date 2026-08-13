@@ -30,7 +30,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Apply bounded CI repairs
-        run: python3 .github/scripts/phase3_ci_repair.py
+        run: |
+          python3 .github/scripts/phase3_ci_repair.py
+          python3 .github/scripts/phase3_ci_repair_followup.py
 
       - name: Regenerate tracked prompt and API artifacts
         working-directory: mcp
@@ -62,6 +64,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add AGENTS.md mcp/server/tools/cubes.ts mcp/prompts/bedrock_entity_workflow.md mcp/prompts/manifest.json mcp/docs/api.json mcp/docs/index.html mcp/tests/context-payload-cleanup.test.ts mcp/tests/documentation-handoff.test.ts mcp/tests/reference-generator-buildability.test.ts mcp/tests/asset-authoring-usage-slimming.test.ts
+          git add AGENTS.md mcp/server/tools/cubes.ts mcp/prompts/bedrock_entity_workflow.md mcp/prompts/manifest.json mcp/docs/api.json mcp/docs/index.html mcp/tests/context-payload-cleanup.test.ts mcp/tests/documentation-handoff.test.ts mcp/tests/reference-generator-buildability.test.ts mcp/tests/asset-authoring-usage-slimming.test.ts mcp/tests/static-efficiency-budget.test.ts
           git commit -m "fix: restore Phase 3 verification contracts"
           git push origin HEAD:Local
