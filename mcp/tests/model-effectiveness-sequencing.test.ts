@@ -69,7 +69,9 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("sequencing");
     expect(profile).not.toContain("readiness");
-    expect(validation).toContain("P5–P7");
+    expect(validation).toContain("## P5 —");
+    expect(validation).toContain("## P6 —");
+    expect(validation).toContain("## P7 — Fidelity Convergence / Evaluation Integrity");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
   });
 });
