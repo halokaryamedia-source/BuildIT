@@ -272,7 +272,7 @@ Native Bedrock texture lifecycle, Painter, TextureGroup/PBR, and per-face `mater
 
 Current contracts retain animation identity, summary/focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` now accepts finite numeric values or explicit authored Molang transform strings and preserves strings without BlockIT evaluation. `create_animation` intentionally remains numeric-only. Representative create/inspect/keyframe/timeline/playback remains the accepted live baseline; the new expression path is source/CI proof only.
 
-Controllers and unsupported sound/timeline-effect mappings remain protected gaps.
+`create_animation`/`inspect_animation` own bounded new-animation sound-effect authoring/inspection. Existing-animation sound/timeline mutation and controllers remain protected gaps.
 
 ## Locator / Null Object
 
@@ -295,7 +295,7 @@ Representative lifecycle + `.bbmodel` reopen is accepted `CURRENT-PROJECT VERIFI
 TextureMesh direct authoring/inspection
 native Bedrock visible bounding-box fields
 animation controllers
-animation sound/timeline effects
+existing-animation sound/timeline-effect mutation
 animated-texture authoring
 bone-binding expressions
 ```

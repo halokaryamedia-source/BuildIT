@@ -354,7 +354,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Animation</p>
-      <p class="card-desc">Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.</p>
+      <p class="card-desc">Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -390,6 +390,11 @@ bun run docs:check
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.</td>
+    </tr><tr>
+      <td class="col-name">sound_effects</td>
+      <td class="col-type">Record&lt;string, object | object[]&gt;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Sound effects by unique non-negative timestamp; one effect or non-empty array.</td>
     </tr></tbody>
     </table>
       </div>
@@ -687,7 +692,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Authored Animation</p>
-      <p class="card-desc">Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.</p>
+      <p class="card-desc">Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2967,7 +2972,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-13T10:45:30.345Z from Zod schemas
+        Generated 2026-08-13T11:06:27.756Z from Zod schemas
       </footer>
     </main>
   </div>

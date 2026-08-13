@@ -93,6 +93,47 @@ const bedrockParticleEffectsSchema = z
     "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
   );
 
+const bedrockSoundEffectSchema = z.object({
+  effect: z.string().min(1).describe("Bedrock sound effect ID."),
+  locator: z.string().min(1).optional().describe("Optional sound Locator name."),
+});
+
+const bedrockSoundEffectsSchema = z
+  .record(z.union([bedrockSoundEffectSchema, z.array(bedrockSoundEffectSchema).min(1)]))
+  .superRefine((soundEffects, ctx) => {
+    const effectiveTimes = new Map<number, string>();
+    Object.keys(soundEffects).forEach((timestamp) => {
+      const normalizedTimestamp = timestamp.trim();
+      const numericTime = Number(normalizedTimestamp);
+      const codecTime = Number.parseFloat(normalizedTimestamp);
+      if (
+        normalizedTimestamp.length === 0 ||
+        !Number.isFinite(numericTime) ||
+        !Number.isFinite(codecTime) ||
+        numericTime !== codecTime ||
+        numericTime < 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [timestamp],
+          message: `Sound timestamp "${timestamp}" must be a complete finite non-negative numeric value.`,
+        });
+        return;
+      }
+      const previousTimestamp = effectiveTimes.get(numericTime);
+      if (previousTimestamp !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [timestamp],
+          message: `Sound timestamps "${previousTimestamp}" and "${timestamp}" resolve to the same effective time ${numericTime}. Use one timestamp per effective time.`,
+        });
+        return;
+      }
+      effectiveTimes.set(numericTime, timestamp);
+    });
+  })
+  .describe("Sound effects by unique non-negative timestamp; one effect or non-empty array.");
+
 const finiteCreateAnimationVector3Schema = z
   .array(z.number().finite())
   .length(3);
@@ -190,6 +231,7 @@ export const createAnimationParameters = z.object({
       "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space."
     ),
   particle_effects: bedrockParticleEffectsSchema.optional(),
+  sound_effects: bedrockSoundEffectsSchema.optional(),
 });
 
 const manageKeyframeDataSchema = z.object({
@@ -634,7 +676,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
     description:
-      "Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.",
+      "Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.",
     annotations: {
       title: "Create Animation",
       destructiveHint: true,
@@ -871,7 +913,7 @@ createTool(
   {
     ...animationToolDocs[0],
     parameters: createAnimationParameters,
-    async execute({ name, loop, animation_length, bones, particle_effects }) {
+    async execute({ name, loop, animation_length, bones, particle_effects, sound_effects }) {
       if (!Project) {
         throw new Error(
           "No project is open. Open or create the intended Bedrock Entity project before creating an animation."
@@ -989,6 +1031,7 @@ createTool(
           })
         ),
         ...(particle_effects && { particle_effects }),
+        ...(sound_effects && { sound_effects }),
       };
 
       const requestedAnimationName = normalizeBedrockAnimationName(name);
@@ -1054,6 +1097,12 @@ createTool(
               0
             )
           : 0;
+        const requestedSoundEffectCount = sound_effects
+          ? Object.values(sound_effects).reduce(
+              (count, soundOrSounds) => count + (Array.isArray(soundOrSounds) ? soundOrSounds.length : 1),
+              0
+            )
+          : 0;
         const result = {
           animation: {
             uuid: createdAnimation.uuid,
@@ -1065,6 +1114,7 @@ createTool(
           requested_name: requestedAnimationName,
           requested_bone_count: Object.keys(bones).length,
           requested_particle_effect_count: requestedParticleEffectCount,
+          requested_sound_effect_count: requestedSoundEffectCount,
         };
 
         return {

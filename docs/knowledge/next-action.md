@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-PROFESSIONAL_ANIMATION_EXPRESSION_KEYFRAMES_PRO6_COMPLETE
+PROFESSIONAL_ANIMATION_SOUND_EFFECTS_PRO7_IMPLEMENTED_AWAITING_VERIFY
 ```
 
 Working branch: **`Local` only**.
@@ -27,6 +27,7 @@ PRO-3  place_cube parent + initial inflate completeness
 PRO-4  geometry/texturing/animation forensic audit
 PRO-5  modify_cubes_batch Box-UV parity
 PRO-6  manage_keyframes explicit Molang transform-string preservation
+PRO-7  create_animation + inspect_animation Bedrock sound-effect closure
 ```
 
 No P8 architecture, preset/profile, evaluator, planner, controller framework, new tool family, or local test was added.
@@ -43,7 +44,7 @@ Scalar number/string values use the existing uniform-keyframe path; three-compon
 
 ```text
 animation controllers
-sound-effect keyframes
+existing-animation sound-effect mutation
 timeline-effect keyframes
 bone-binding expressions
 ```
@@ -88,4 +89,4 @@ Static/CI proof can establish schema/type/result/docs consistency only. Native e
 
 ## Next Step
 
-After PRO-6 verification, continue **non-local** with `SOUND_EFFECT_KEYFRAME_GAP_PRIORITIZATION`. Inspect whether the existing `EffectAnimator`/keyframe contract can support sound authoring narrowly. If it requires unrelated media/runtime framework expansion, defer it. Do not start local testing.
+After PRO-7 verification, continue **non-local** with `ANIMATION_CONTROLLER_GAP_PRIORITIZATION`. Controllers are sample-evidenced but materially larger than keyframe closure; first determine whether a bounded existing native owner is sufficient. If not, defer rather than add a framework. Do not start local testing.

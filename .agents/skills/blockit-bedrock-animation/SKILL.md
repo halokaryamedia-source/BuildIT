@@ -20,7 +20,7 @@ Group/bone structure or pivot edit    → bone_rigging
 playback/time/length/FPS/loop         → animation_timeline
 coherent multi-key timing/value edit  → batch_keyframe_operations
 explicit copy/paste/mirror            → animation_copy_paste
-mapped particles                      → create_animation / inspect_animation effects
+mapped particles / sounds             → create_animation / inspect_animation effects
 ```
 
 Reuse known Group/bone UUIDs. **Call `get_project_info` only when** lifecycle state is unknown/stale or a needed field is missing. **Call `list_outline` only when** participating identity/hierarchy is unknown. Never guess through duplicate bone names.
@@ -62,11 +62,11 @@ batch_keyframe_operations
 animation_copy_paste
 ```
 
-Do not make `animation_timeline.select_range` a core-correctness dependency; prefer explicit keyframe/time ranges. Particle effects use `create_animation.particle_effects` and `inspect_animation.effects`; preserve Locator names.
+Do not make `animation_timeline.select_range` a core-correctness dependency; prefer explicit keyframe/time ranges. Particle/sound effects use `create_animation` effect maps and `inspect_animation.effects`; preserve authored effect IDs and Locator names.
 
 ## Protected Gaps
 
-Direct MCP authoring still does not own animation controllers, sound/timeline-effect keyframes, or bone-binding expressions. Do not route them through `risky_eval` or generic UI actions.
+New-animation sound effects are owned by `create_animation`; direct sound/timeline-effect mutation on an existing animation, animation controllers, and bone-binding expressions remain protected gaps. Do not route them through `risky_eval` or generic UI actions.
 
 ## Verification
 

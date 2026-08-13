@@ -29,6 +29,32 @@ describe("create_animation contract", () => {
     expect(source).not.toContain("animation_length && { animation_length }");
   });
 
+  test("accepts bounded Bedrock sound effect maps without a new tool", async () => {
+    expect(createAnimationParameters.safeParse({
+      name: "sound_test",
+      bones: {},
+      sound_effects: {
+        "0": { effect: "start" },
+        "0.5": [{ effect: "loop" }, { effect: "accent", locator: "mouth" }],
+      },
+    }).success).toBe(true);
+    expect(createAnimationParameters.safeParse({
+      name: "bad_sound",
+      bones: {},
+      sound_effects: { "0": { effect: "" } },
+    }).success).toBe(false);
+    expect(createAnimationParameters.safeParse({
+      name: "bad_time",
+      bones: {},
+      sound_effects: { "0": { effect: "a" }, "0.0": { effect: "b" } },
+    }).success).toBe(false);
+
+    const source = await Bun.file("server/tools/animation.ts").text();
+    expect(source).toContain("...(sound_effects && { sound_effects })");
+    expect(source).toContain("requested_sound_effect_count");
+    expect(source).not.toContain("manage_sound_keyframes");
+  });
+
   test("selects the created animation before completing the Undo edit", async () => {
     const source = await Bun.file(new URL("../server/tools/animation.ts", import.meta.url)).text();
     const createStart = source.indexOf("createTool(\n  animationToolDocs[0].name");

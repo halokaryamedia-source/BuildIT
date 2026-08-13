@@ -29,7 +29,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.",
+      "Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,
@@ -40,7 +40,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
 ];
 
 type TransformChannel = "rotation" | "position" | "scale";
-type ParticleDataPoint = KeyframeDataPoint & {
+type EffectDataPoint = KeyframeDataPoint & {
   effect?: string;
   locator?: string;
   bind_to_actor?: boolean;
@@ -148,6 +148,11 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
         particle_count: 0,
         ...(includeKeyframes ? { keyframes: [] } : {}),
       },
+      sound: {
+        keyframe_count: 0,
+        sound_count: 0,
+        ...(includeKeyframes ? { keyframes: [] } : {}),
+      },
     };
   }
   if (!(existingEffects instanceof EffectAnimator)) {
@@ -163,13 +168,24 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     uuid: keyframe.uuid,
     time: keyframe.time,
     particles: keyframe.data_points.map((dataPoint) => {
-      const particle = dataPoint as ParticleDataPoint;
+      const particle = dataPoint as EffectDataPoint;
       return {
         effect: particle.effect || null,
         locator: particle.locator || null,
         bind_to_actor: particle.bind_to_actor === false ? false : null,
         pre_effect_script: normalizePreEffectScript(particle.script),
       };
+    }),
+  }));
+  const soundKeyframes = ((existingEffects.sound as _Keyframe[] | undefined) ?? [])
+    .slice()
+    .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
+  const inspectedSoundKeyframes = soundKeyframes.map((keyframe) => ({
+    uuid: keyframe.uuid,
+    time: keyframe.time,
+    sounds: keyframe.data_points.map((dataPoint) => {
+      const sound = dataPoint as EffectDataPoint;
+      return { effect: sound.effect || null, locator: sound.locator || null };
     }),
   }));
 
@@ -186,6 +202,14 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedKeyframes } : {}),
+    },
+    sound: {
+      keyframe_count: inspectedSoundKeyframes.length,
+      sound_count: inspectedSoundKeyframes.reduce(
+        (count, keyframe) => count + keyframe.sounds.length,
+        0
+      ),
+      ...(includeKeyframes ? { keyframes: inspectedSoundKeyframes } : {}),
     },
   };
 }

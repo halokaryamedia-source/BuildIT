@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T10:45:30.345Z",
+  "generatedAt": "2026-08-13T11:06:27.756Z",
   "tools": [
     {
       "name": "place_cube",
@@ -739,7 +739,7 @@
     {
       "name": "create_animation",
       "title": "Create Animation",
-      "description": "Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.",
+      "description": "Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.",
       "status": "stable",
       "category": "Animation",
       "annotations": {
@@ -906,6 +906,61 @@
                 },
                 "description": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.",
                 "markdownDescription": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
+              },
+              "sound_effects": {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "effect": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Bedrock sound effect ID.",
+                          "markdownDescription": "Bedrock sound effect ID."
+                        },
+                        "locator": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Optional sound Locator name.",
+                          "markdownDescription": "Optional sound Locator name."
+                        }
+                      },
+                      "required": [
+                        "effect"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "effect": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Bedrock sound effect ID.",
+                            "markdownDescription": "Bedrock sound effect ID."
+                          },
+                          "locator": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Optional sound Locator name.",
+                            "markdownDescription": "Optional sound Locator name."
+                          }
+                        },
+                        "required": [
+                          "effect"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  ]
+                },
+                "description": "Sound effects by unique non-negative timestamp; one effect or non-empty array.",
+                "markdownDescription": "Sound effects by unique non-negative timestamp; one effect or non-empty array."
               }
             },
             "required": [
@@ -1715,7 +1770,7 @@
     {
       "name": "inspect_animation",
       "title": "Inspect Authored Animation",
-      "description": "Returns read-only Animation identity/settings plus bone and particle summaries. Supply `bone` for detailed transform keyframes; set `include_effect_keyframes=true` only when full particle-effect timing/data is needed. UUID is preferred; explicit names must be unique.",
+      "description": "Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {

@@ -281,7 +281,7 @@ Texture, Painter, TextureGroup/PBR, and material-instance tools own native Bedro
 
 ### Animation
 
-Animation tools own identity, focused inspection, numeric or explicit Molang transform keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` preserves Molang strings without evaluating them. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
+Animation tools own identity, focused inspection, numeric or explicit Molang transform keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` preserves Molang strings without evaluating them. New-animation sound effects are owned by `create_animation`/`inspect_animation`; controllers and existing-animation sound/timeline mutation remain protected gaps.
 
 ### Locator / Null Object
 
@@ -325,6 +325,6 @@ Remaining direct/model-facing evidence includes installed deferred-search parity
 - TextureMesh direct authoring/inspection;
 - native Bedrock visible bounding-box fields;
 - animation controllers;
-- animation sound/timeline effects;
+- existing-animation sound/timeline-effect mutation;
 - animated-texture authoring;
 - bone-binding expressions.

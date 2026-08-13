@@ -74,6 +74,8 @@ describe("context and payload cleanup", () => {
     expect(inspection).toContain(
       "inspectParticleEffects(animation, include_effect_keyframes)"
     );
+    expect(inspection).toContain("sound_count");
+    expect(inspection).toContain("existingEffects.sound");
     expect(inspection).toContain(
       "...(includeKeyframes ? { keyframes: inspectedKeyframes } : {})"
     );

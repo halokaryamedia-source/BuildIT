@@ -88,7 +88,7 @@ Use `list_locator_elements` for discovery, `inspect_element` for focused state, 
 
 ## Protected Native Capability Gaps
 
-Molang strings use `manage_keyframes`; MCP never evaluates them. TextureMesh, visible bounds, controllers, sound/timeline effects, animated textures, and bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+Molang strings use `manage_keyframes`; MCP never evaluates them. TextureMesh, visible bounds, controllers, existing-animation sound/timeline mutation, animated textures, and bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
