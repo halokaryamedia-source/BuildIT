@@ -86,7 +86,7 @@ REFERENCE TOP   ↔ MODEL top
 REFERENCE 3/4   ↔ MODEL matching 3/4 when explicitly present
 ```
 
-Ambiguous pairing remains `UNVERIFIED`. Original Source Image evidence remains separately available regardless of camera angle.
+**Ambiguous front/back, left/right, or 3/4 pairing remains `UNVERIFIED`.** Original Source Image evidence remains separately available regardless of camera angle.
 
 ## Reference Evidence Map
 
