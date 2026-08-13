@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-11T20:04:37.002Z",
+  "generatedAt": "2026-08-13T09:35:53.774Z",
   "tools": [
     {
       "name": "place_cube",
@@ -104,6 +104,17 @@
                       ],
                       "description": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin.",
                       "markdownDescription": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
+                    },
+                    "group": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group.",
+                      "markdownDescription": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group."
+                    },
+                    "inflate": {
+                      "type": "number",
+                      "description": "Optional finite Bedrock Cube inflation authored at creation.",
+                      "markdownDescription": "Optional finite Bedrock Cube inflation authored at creation."
                     }
                   },
                   "required": [
