@@ -8,9 +8,9 @@ Use this page as BlockIT's **repository-memory index**. It is not mandatory cont
 
 ```text
 agent/task routing             → AGENTS.md
+full current task/product flow → flow.md
 stable facts / terminology     → CONTEXT.md
 active repository continuation → next-action.md
-compact current flow           → flow.md
 product/reference/modelling    → docs/foundation/
 source/skill ownership         → implementation-map.md
 named MCP-tool defect          → implementation-map.md Hot-Path Defect Index
@@ -27,8 +27,9 @@ completed local procedure      → operations/local-acceptance-runbook.md
 ```text
 source image / user intent
 → blockbench-reference-generator
-→ one approved Modelling Brief image
 ```
+
+The skill owns assisted intake → internal brief → pre-generation readiness → Draft → visual gate → user approval. **Do not generate before readiness passes.** For the full sequence, use [Flow](flow.md).
 
 Do not call BlockIT MCP merely to create the reference.
 
@@ -48,39 +49,29 @@ Do not load repository history/continuity notes unless the asset decision actual
 AGENTS.md
 → next-action.md
 → CONTEXT.md only when stable facts matter
-→ named MCP-tool defect? implementation-map.md Hot-Path Defect Index
+→ named MCP-tool defect? implementation-map Hot-Path Defect Index
 → affected source + nearest AGENTS.md
 → development-brief for create/change work
 ```
 
 The Local Acceptance Runbook is completed procedure/history and is not default boot.
 
-## Product Snapshot
+## Current Product Shape
+
+Keep the mental model simple:
 
 ```text
-SOURCE IMAGE / USER INTENT
-→ Reference Generator
-→ Modelling Brief Draft
-→ user approval
-→ ACTUAL APPROVED REFERENCE IMAGE
-→ View Pair Map + Reference Evidence Map
-→ Semantic Form Contract
-→ Primary Form Hypothesis
-→ coarse Cube/Group form
-→ minimum useful structural evidence
-→ actual reference + fresh model views
-→ claim-locked difference-first FAIL / UNVERIFIED / PASS
-→ causal correction or global hypothesis rebuild
-→ fresh affected evidence
-→ IMPROVED / UNCHANGED / REGRESSED
-→ secondary geometry/hierarchy/pivots after primary PASS
-→ texture/PBR when required
-→ animation when required
-→ final validation
-→ .bbmodel / Bedrock geometry export
+PREPARE REFERENCE
+→ understand first, then generate, then approve
+
+AUTHOR MODEL
+→ actual approved image, grounded primary form, difference-first review
+
+FINISH ASSET
+→ secondary structure, surface/motion if needed, validation, export
 ```
 
-Tool success is execution evidence, not visual approval. Reference path/manifest/prose/memory is not a substitute for actual image evidence. `BLOCKED` is valid when continuation would require guessing or repeated failed work.
+Detailed flow belongs only in [Flow](flow.md). Tool success is execution evidence, not visual approval. Reference path/manifest/prose/memory is not a substitute for actual image evidence.
 
 ## Accepted Functional Baseline
 
@@ -107,40 +98,33 @@ P0–P4  stage/routing/deferred-loading/recovery/defect navigation
 P5     semantic form / orientation / pivot / contact
 P6     actual-reference grounding + claim/view locking
 P7     qualitative correction convergence + evaluation integrity
-REF    minimal Reference Generator route + buildability/cross-view contract
+REF    assisted intake + pre-generation readiness + buildable reference route
 ```
 
-The current repository synchronization aligns routing, ownership, proof, review meaning, and the public documentation surface to that state.
-
-No Codex/Blockbench local run is active. Remaining direct-evidence questions include:
-
-- Reference Generator visual output quality;
-- installed-client deferred-search parity;
-- actual model-visible token/latency/image-context cost;
-- whether the modelling model correctly interprets actual references;
-- whether P5–P7 improve real end-to-end modelling behavior.
+No Codex/Blockbench local run is active. Remaining direct-evidence questions include generated-reference quality, installed-client deferred-search parity, actual model-visible token/latency/image-context cost, and P5–P7 model-facing effectiveness.
 
 These are evidence questions, not reasons for speculative router/profile/scorer architecture.
 
 ## Knowledge Spine
 
-- [Next Action](next-action.md) — current repository continuation.
-- [Flow](flow.md) — compact task/product flow.
+- [Flow](flow.md) — **single detailed current flow**.
+- [Next Action](next-action.md) — active repository continuation.
 - [Minimal Navigation](minimal-nav.md) — shortest task-aware route.
 - [Implementation Map](implementation-map.md) — source/skill ownership + named-tool first stops.
-- [Skill Activation Matrix](skills/activation-matrix.md) — skill selection.
+- [Skill Activation Matrix](skills/activation-matrix.md) — specialist selection only.
 - [Validation Report](../foundation/validation-report.md) — current proof status.
 - [Task Board](operations/task-board.md) — future/non-active findings.
 - [Local Acceptance Runbook](operations/local-acceptance-runbook.md) — completed local procedure/history.
-- [Review Index](reviews/review-graph.md) — current meaning of historical review evidence.
+- [Review Index](reviews/review-graph.md) — current meaning of historical evidence.
 
 Open longer maps/decision history/reviews only when the active decision needs them.
 
 ## Hygiene Rules
 
+- `flow.md` is the only detailed current flow owner.
 - `next-action.md` is the only active repository-task snapshot.
 - Completed procedures own procedure/evidence, not current status.
 - Reviews own historical evidence; Git history owns obsolete implementation/planning detail.
-- Current source + current policy outrank older decision/review wording when a later decision superseded it.
-- Do not create another roadmap, changelog, audit tracker, or parallel planning layer when an existing owner is sufficient.
+- Current source + current policy outrank superseded historical wording.
+- Do not create another roadmap, changelog, audit tracker, or parallel planning layer.
 - Prefer deleting stale routing over adding more routing prose.
