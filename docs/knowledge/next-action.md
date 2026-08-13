@@ -7,7 +7,7 @@ Root `AGENTS.md` owns routing; `flow.md` owns detailed sequence; `docs/foundatio
 ## Status
 
 ```text
-REFERENCE_ORTHOGRAPHIC_BOUNDARY_CLARIFICATION_STATIC_VERIFIED
+REFERENCE_MINECRAFT_FIRST_FIVE_PREVIEW_STATIC_VERIFIED
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
@@ -16,38 +16,45 @@ Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
 Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
 
-## Clarified Reference Contract
+## Current Reference Contract
 
-The orthographic-core strategy remains. This pass removes five ambiguities:
+The reference goal is no longer exact reconstruction. It is a **recognizable, Minecraft-appropriate, Blockbench-buildable Geometry + Texture reference**.
 
 ```text
-SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
-→ original Source remains authority at any camera angle
-→ generated anchor normalizes camera projection
-
-POSE NORMALIZATION
-→ preserve identity-bearing silhouette / major masses
-→ do not preserve source gait silhouette when modelling pose intentionally changes
-
-VIEW OMISSION
-→ omit optional contradictory view only if remaining core stays sufficiently constrained
-→ otherwise NEEDS REVIEW
-
-3/4 DISTINCTION
-→ original Source 3/4 remains visual authority
-→ generated 3/4 is diagnostic, never structural authority
-
-GENERATION BUDGET
-→ scoped per unchanged Internal Generation Brief / review cycle
-→ materially changed user-approved source/pose/target/requirement may start a new cycle
-→ never auto-open a new cycle just to retry
+SOURCE + USER INTENT
+→ MINECRAFT-FIRST GEOMETRY + TEXTURE
+→ FIVE-PREVIEW COVERAGE BOARD
+   UPPER: SIDE | FRONT | BACK
+   LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
+→ minor drift allowed
+→ material contradiction blocks
+→ USER APPROVAL
 ```
+
+Five previews provide broad modelling evidence, not five exact technical drawings. Geometry prioritizes major recognizable form, topology/attachment, negative spaces, and Blockbench buildability. Texture prioritizes Minecraft-readable palette/material regions/part separation/identity-critical markings rather than pixel-perfect copying.
+
+Downstream MCP uses discrepancy triage:
+
+```text
+MINOR
+→ choose ONE CANONICAL MINECRAFT INTERPRETATION
+→ explicit user requirement
+→ original Source evidence
+→ best-supported approved reference view(s)
+→ simplest recognizable Blockbench-buildable interpretation
+→ continue consistently
+
+MATERIAL
+→ CONFLICTING / BLOCKED
+```
+
+Minor curl/angle/contour/overlap/shade/marking drift is not a blocker by itself. Do not average drift. Material conflicts remain blockers, and cross-view regression remains rejected.
 
 These are generic reference rules, not elephant/quadruped presets.
 
 ## Current Candidate / Evidence
 
-The elephant source remains source authority. Existing generated boards are **NOT APPROVED** and remain defect evidence only. Retained Handoff Constraint: `target Minecraft height ≈ 2 × player height`, outside image pixels unless explicitly requested visible.
+The current elephant Source Image remains source authority. The previous three-preview result demonstrated that a non-identical but Minecraft-buildable interpretation can be acceptable, but **no five-preview board has yet been generated and approved under the new contract**.
 
 ## Execution / Proof Boundary
 
@@ -57,7 +64,7 @@ hardening / audit / docs / CI
 → WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-CI or this file never authorizes image generation. Future image quality, installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED` where applicable.
+CI or this file never authorizes image generation. Future generated-image quality, installed-plugin freshness, runtime MCP exposure, P5–P7 model-facing effectiveness, and final visual quality remain `LOCAL PROOF REQUIRED` where applicable.
 
 ## Next Step
 
@@ -66,4 +73,4 @@ WAIT — DO NOT GENERATE
 → WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-Do not start Blockbench/Codex local acceptance before a future reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before Blockbench local acceptance.
+When explicitly requested, generate one fresh five-preview reference using the current Source Image and evaluate it with Minecraft-first Geometry + Texture criteria. Do not start Blockbench/Codex local acceptance before a future reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before local acceptance.
