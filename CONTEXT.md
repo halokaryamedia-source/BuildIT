@@ -1,101 +1,54 @@
 # BlockIT Workspace Context
 
 Last verified: 2026-08-13  
-Stability: stable  
-Owner: workspace agent
+Stability: stable
 
-This file owns **stable project facts and terminology only**. Active work belongs in `docs/knowledge/next-action.md`; routing belongs in `AGENTS.md`.
+This file owns stable project facts only. Active work belongs in `docs/knowledge/next-action.md`; routing belongs in `AGENTS.md`.
 
 ## Product
 
-BlockIT is a Blockbench MCP plugin plus repository workflow for AI-assisted Minecraft Bedrock Entity modelling and MCP engineering.
+BlockIT is a local Blockbench MCP workflow for AI-assisted Minecraft Bedrock Entity modelling. Default format is `bedrock`; visible geometry is normally Cube/Cuboid based and organized by Groups/bones.
 
-The retained default product is **Minecraft Bedrock Entity** (`bedrock`). Normal authored geometry is Cube/Cuboid based and organized by Groups/bones. Native Bedrock `TextureMesh` is distinct from generic Blockbench `Mesh`; generic Mesh/Hytale capability is not a compatibility requirement merely because upstream code contains it.
-
-Primary asset output is a clean editable `.bbmodel`; Bedrock geometry JSON is the runtime geometry export. Successful tool/file/coordinate output is not proof of visual resemblance to the approved reference.
+Primary output is an editable `.bbmodel`; Bedrock geometry JSON is the runtime geometry export. Tool/file/coordinate success is not proof of visual resemblance.
 
 ## Stable Terms
 
-- **Source Image** — original visual input; not geometry data.
-- **Modelling Brief Draft** — generated multi-view Minecraft / Blockbench-style reference image before approval.
-- **Modelling Brief** — approved multi-view image guide for form, proportions, landmarks, contacts, orientation, and style; not a per-Cube blueprint.
-- **Requested Dimensions** — user-approved target dimensions; `1 block = 16 Blockbench units` per axis.
-- **Reference Generator** — image-capable Source Image/user intent → one approved Modelling Brief image workflow; active skill `.agents/skills/blockbench-reference-generator/`, policy owner `docs/foundation/04-reference-guide.md`.
-- **Blockbench Model** — reviewed editable `.bbmodel`.
-- **MCP Modelling** — approved reference → Blockbench model workflow; modelling judgement and MCP execution have separate owners.
+- Source Image — original visual input, not geometry data.
+- Modelling Brief Draft — generated multi-view reference before approval.
+- Modelling Brief — approved visual guide, not a per-Cube blueprint.
+- Requested Dimensions — user-approved target dimensions; `1 block = 16 Blockbench units`.
 
 ## Repository Shape
 
 ```text
-.agents/skills/    canonical repository-owned skills
-docs/foundation/  durable product/reference/modelling policy
-docs/knowledge/   continuity, decisions, ownership maps, historical evidence indexes
-mcp/              BlockIT plugin/runtime/build/tests/generated API docs
-workspace/        model/project packages and fixtures
+.agents/skills/    canonical skills
+docs/foundation/  durable current policy
+docs/knowledge/   current flow, continuation, ownership, local procedure + tiny test-support indexes
+mcp/              plugin/runtime/build/tests/generated API docs
+workspace/        reusable acceptance fixtures
 ```
 
-Retired skill roots must not be recreated by default:
+There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; compact skill indexes under `docs/knowledge/skills/` are secondary/test support only.
 
-```text
-mcp/.agents/skills/
-mcp/.github/skills/
-mcp/workflow/skills/
-```
+## MCP Facts
 
-There are **ten repository-owned skill packages**:
+BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The accepted default surface has **62 enabled tools**. Generic fallback families are opt-in; `risky_eval` and `from_geo_json` remain disabled.
 
-```text
-reference:   blockbench-reference-generator
+Current ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation including Molang transform strings, bounded new-animation sound events and read-only AnimationController/state inspection, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export.
 
-asset:       blockit-bedrock-entity-mcp
-             blockbench-bedrock-modelling
-             blockit-bedrock-texturing
-             blockit-bedrock-animation
+Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions remain protected gaps.
 
-engineering: development-brief
-             mcp-server-development
-             blockbench-runtime-development
-             typescript-type-safety
-             bun-tooling
-```
+## Evidence Boundary
 
-The activation matrix owns selection detail; this file records only the stable inventory.
+The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
 
-## MCP Architecture Facts
-
-BlockIT runs inside desktop Blockbench and exposes a loopback MCP endpoint. Tool schemas/docs must construct outside Blockbench, so build-time schema modules cannot depend on Blockbench runtime globals; runtime-only checks belong in execution.
-
-The normal surface is Bedrock-focused with generic fallback families explicitly opt-in. `risky_eval` and `from_geo_json` remain disabled. The accepted baseline has **62 enabled tools**; active efficiency measurements belong in the validation/next-action owners rather than here.
-
-Supported ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation (including authored Molang transform strings, bounded new-animation sound events, and read-only AnimationController/state inspection), Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export. Protected direct-ownership gaps include TextureMesh authoring, native visible bounding-box fields, animation controller creation/mutation, existing-animation direct sound/timeline-effect mutation, animated textures, and bone-binding expressions.
-
-Reference image generation is outside the MCP capability surface. It is an image-capable pre-modelling route and must not be simulated through generic MCP/UI tooling.
-
-## Execution Channels
-
-- **Image-capable ChatGPT surface** — Source Image → Modelling Brief image generation/revision.
-- **ChatGPT → GitHub** — repository/source/docs/CI/static proof; no invented Blockbench runtime evidence.
-- **Codex local** — shell/MCP/Blockbench/runtime/visual proof only when explicitly active and materially required.
-
-## Accepted Functional Baseline
-
-The first bounded Codex + Blockbench local acceptance pass completed on 2026-08-12. It established representative live proof for stateless transport, geometry/correction/Undo, difference-first reference behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
-
-That acceptance does not prove optimal Codex context/usage behavior. Active cleanup/testing state must be read from `docs/knowledge/next-action.md`; do not infer a new local run from this historical baseline.
-
-## Engineering Facts
-
-- Untrusted MCP input is validated at the boundary.
-- Generated docs/output are secondary to source and regenerated through their owner.
-- Current source + relevant proof owns behavior; historical reviews/decisions own rationale, not active execution order.
-- Named fixtures/samples never become generic runtime rules by accident.
-- Large machine-readable MCP data should not be duplicated across equivalent response representations.
+Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, and experiments.
 
 ## Navigation
 
 - routing → `AGENTS.md`
-- active continuation → `docs/knowledge/next-action.md`
+- flow → `docs/knowledge/flow.md`
+- continuation → `docs/knowledge/next-action.md`
 - source ownership → `docs/knowledge/implementation-map.md`
-- proof status → `docs/foundation/validation-report.md`
-- product/reference/modelling policy → `docs/foundation/`
-- MCP engineering → `mcp/README.md` + `mcp/AGENTS.md`
+- proof state → `docs/foundation/validation-report.md`
+- local acceptance → `docs/knowledge/operations/local-acceptance-runbook.md` only when reactivated
