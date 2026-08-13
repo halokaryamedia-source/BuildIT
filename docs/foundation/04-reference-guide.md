@@ -1,7 +1,7 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 1.6  
+**Version:** 1.7  
 **Updated:** 2026-08-13
 
 ## Purpose
@@ -19,8 +19,12 @@ The approved multi-view image is a **visual Modelling Brief**.
 ```text
 Source Image / user intent
 ↓
-AI-Assisted Intake Resolution when needed
+AI-Assisted Intake Resolution (usually silent)
 ↓
+Internal Generation Brief
+↓
+Pre-Generation Readiness Gate
+↓ READY
 Modelling Brief Draft
 ↓
 user review / targeted correction when needed
@@ -30,7 +34,7 @@ Approved Modelling Brief image
 Reference Fidelity modelling workflow
 ```
 
-Approval means the brief is useful enough to model from. It does not certify metric image consistency and does not approve Cube transforms.
+**Generation is output, not discovery.** The AI must understand and complete the material target definition before the first image-generation call. Approval means the resulting brief is useful enough to model from; it does not certify metric image consistency and does not approve Cube transforms.
 
 ## Actual Image Evidence Boundary
 
@@ -51,6 +55,7 @@ Reference Evidence Map       → derived working index; never image authority
 
 - **Source Image** — original user image(s); identity/provenance authority, not direct geometry data.
 - **Golden Sample** — layout/lighting/presentation/construction-language example; never target anatomy authority.
+- **Internal Generation Brief** — AI-resolved pre-generation understanding of the subject, visible form, required views, and buildable construction language; not a user-facing form or Cube blueprint.
 - **Modelling Brief Draft** — generated multi-view reference image before approval.
 - **Modelling Brief** — approved visual image guide consumed by modelling.
 - **Requested Dimensions** — optional approved numeric width/height/length target.
@@ -91,6 +96,31 @@ Rules:
 If a material ambiguity remains, ask in **one compact round with at most three material items**. For each item: explain the issue simply, state what the image appears to show, and give one recommended interpretation. Alternatives are included only when they materially change the target. The user may answer simply with **use your recommendation**.
 
 If identity/buildability is still materially unresolved after that round, return `NEEDS REVIEW` instead of guessing or opening another questionnaire loop.
+
+## Pre-Generation Readiness Gate
+
+The AI must finish understanding **before** producing a Draft. A usable source image alone is not sufficient if material target ambiguity remains.
+
+Before the first generation call, the Internal Generation Brief must be sufficient to lock:
+
+- intended subject / identity;
+- material visible silhouette and major masses;
+- defining visible features and important negative spaces;
+- visible attachments/contacts and visible asymmetry;
+- current/neutral pose or state needed for one coherent subject;
+- required view set;
+- Blockbench/Cuboid construction interpretation for one consistent model across views.
+
+Optional values may remain unset. `READY` means only that **no unresolved material ambiguity could still change identity, major form, required visible features, or buildability**.
+
+```text
+material understanding complete?
+├─ YES → READY → generate one Draft
+└─ NO  → use the existing one-round clarification budget
+         → still material? NEEDS REVIEW → do not generate
+```
+
+Do not use image generation to discover the target, compare speculative alternatives, or postpone unresolved intake decisions until after rendering. The single targeted correction after generation is for a **concrete visual defect against an already-ready Internal Generation Brief**, not for missing pre-generation understanding.
 
 ## View Baseline
 
@@ -286,7 +316,7 @@ targeted correction    = maximum 1
 automatic alternatives = 0
 ```
 
-Correct only a concrete visible defect. If one targeted correction still leaves a material conflict, mark the reference `NOT READY / NEEDS REVIEW`; do not generate variants to simulate progress.
+Generation starts only after the Pre-Generation Readiness Gate passes. Correct only a concrete visible defect in the ready target. If one targeted correction still leaves a material conflict, mark the reference `NOT READY / NEEDS REVIEW`; do not generate variants to simulate progress.
 
 Do not revive the old multi-sheet/manifest/hash/ZIP machinery unless a future requirement proves it necessary.
 
