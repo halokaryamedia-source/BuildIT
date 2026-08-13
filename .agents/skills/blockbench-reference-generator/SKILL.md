@@ -7,78 +7,68 @@ description: Generate one Minecraft / Blockbench reference image.
 
 Create **one Minecraft / Blockbench reference image**. Hard constraints: **buildable Cuboid construction** + **one consistent model across every view**. Preserve source identity.
 
-## Simple User Contract
+## User Contract
 
-The user only needs to **upload a usable source image**; extra facts are optional. Do not expose a long questionnaire or ask for Cube counts, pivots, UVs, animation, MCP tools, or package data. Without approved dimensions, preserve visual proportions only; never infer numeric scale from pixels.
+The user only needs a usable source image; extra facts are optional. Do not expose a long questionnaire or ask for Cube counts, pivots, UVs, animation, MCP tools. Never infer numeric scale from pixels. Prefer **zero clarification**.
 
-Prefer **zero clarification**.
+Resolve in order: explicit user fact → directly visible fact → leave optional unknowns unset → one compact clarification round only for material ambiguity. Do not repeat questions the user cannot answer. If needed, ask at most **three material items**, explain plainly, give one recommended interpretation, and allow **use your recommendation**. A recommendation is a working interpretation, not a user fact.
 
-## AI-Assisted Intake Resolution
+Never invent hidden features, unseen asymmetry/attachments, or hidden joint precision. Unresolved material ambiguity → **NEEDS REVIEW**.
 
-Resolve in order: explicit user fact → directly visible fact → **leave optional unknowns unset** → one compact clarification round only for material ambiguity.
+## Pre-Generation Readiness
 
-Do not repeat a question the user cannot answer. If clarification is required, use **one compact round** with at most **three material items**; explain plainly, state what the source appears to show, give one recommendation, and allow **use your recommendation**. A recommendation is a **working interpretation**, **not a user-provided fact**.
+**Generation is output, not discovery.** Before generation, lock an Internal Generation Brief:
 
-Never infer numeric dimensions/scale from pixels. Never invent hidden features, unseen asymmetry, unseen attachments, or hidden joint precision. If material ambiguity remains, return **NEEDS REVIEW**.
+- identity, silhouette, major masses, defining visible features, contacts/asymmetry;
+- required views + Blockbench construction interpretation;
+- when articulated: one readable pose state, limb/appendage count, attachment regions, support/contact when relevant;
+- identity-critical articulated features such as trunk, tail, antenna, jaw, wing, hinged part, or tool: visible root, overall direction/bend, and terminal state.
 
-## Pre-Generation Readiness Gate
-
-**Generation is output, not discovery.** Build an Internal Generation Brief first and lock subject/identity, material silhouette/masses/features, visible contacts/asymmetry, required views/construction interpretation, and—when articulated—one readable pose state plus required limb/appendage count, attachment regions, and support/contact when applicable.
-
-`READY` means **no unresolved material ambiguity** can still change identity, major form, required visible feature, pose integrity, or buildability.
+`READY` means no material ambiguity can still change identity, major form, visible feature, pose/articulation integrity, projection consistency, or buildability.
 
 ```text
 READY → generate once
-NOT READY → clarify within existing one-round budget
+NOT READY → one clarification round
 still material → NEEDS REVIEW; do not generate
 ```
 
-The single targeted correction is only for a **concrete visual defect** in an already-ready brief; it cannot compensate for **missing pre-generation understanding**. Generate only after the Pre-Generation Readiness Gate passes.
+A targeted correction fixes a **concrete visual defect** in an already-ready brief; it cannot replace missing understanding.
 
-## Automatic Internal Generation Brief
+## Internal Generation Brief
 
 ### 1. Subject
 
-Isolate the subject; ignore hands, stands, scenery, shadows, supports, and unrelated objects unless required. Preserve silhouette, proportions, visible attachments, intrinsic colors/markings, and known asymmetry. Normalize perspective; lens distortion is not geometry. Highlights/reflections/shadows/AO are not markings.
+Isolate the subject; ignore unrelated hands, stands, scenery, shadows, or supports. Preserve silhouette, proportions, visible attachments, intrinsic markings/colors, and asymmetry. Normalize perspective; lens distortion is not geometry.
 
-Unseen sides may continue known major masses only. Do not mirror/invent side-specific features or unobserved articulation. Do not blend conflicting sources.
+Unseen sides may continue known major masses only. Do not invent side-specific form or unobserved articulation. Do not blend conflicting sources.
 
-### 2. Pose & Articulation Integrity
+### 2. Pose & Articulation
 
-Choose the **most structurally readable stable pose** unless the user explicitly requests another state.
+Choose the **most structurally readable stable pose** unless the user explicitly requires another state.
 
-For grounded load-bearing subjects, default to a **stable natural neutral stance**. A dynamic source pose does not automatically become the modelling pose. Neutral need not be robotic or perfectly mirrored.
+For grounded load-bearing subjects, default to a **stable natural neutral stance**. A dynamic source pose does not automatically become the modelling pose. Neutral need not be robotic or perfectly mirrored. **Do not force bilateral alignment merely to make generation easier**; use only plausible natural offset while keeping support stable.
 
-If another pose is required, preserve the same **requested/observable pose state and limb phase** across every view. Do not invent hidden joint precision that the source does not establish.
+If another pose is required, preserve the same **requested/observable pose state and limb phase** across every view. Do not invent hidden joint precision.
 
-Preserve required limb/appendage identity/count, plausible attachment, coherent direction/proportion, terminal part, support/contact when applicable, near/far separation, and important negative spaces. Grounded load-bearing feet/supports use one coherent ground plane.
+Preserve limb/appendage identity/count, plausible attachment, coherent direction/proportion, terminal part, support/contact when needed, near/far separation, and important negative spaces. Grounded supports use one coherent ground plane.
 
-**No duplicated, missing, merged, floating, relocated, or independently re-posed limbs.** Orthographic views own structural pose truth; the 3/4 view must not redesign anatomy, attachment, limb placement, or pose state.
+For each identity-critical articulated feature, preserve the same visible **root → direction/bend → terminal state** across views. Projection may change its appearance; the feature state may not change.
+
+**No duplicated, missing, merged, floating, relocated, or independently re-posed limbs/appendages.** Orthographic views own structural truth; 3/4 may not redesign anatomy, attachment, limb placement, or articulated state.
 
 ### 3. Blockbench Construction
 
-Choose the **simplest Blockbench-buildable representation that preserves the visible requirement**. Common reasoning examples include:
+Choose the **simplest Blockbench-buildable representation that preserves the visible requirement**. Cuboids, rotated/stepped masses, plane-like Cubes, layered/inflated forms, linked segments, and texture-only treatment are examples—not exhaustive categories, presets, or asset rules.
 
-```text
-CUBOID
-ROTATED_CUBOID
-STEPPED_CUBOIDS
-MULTI_CUBOID_MASS
-PLANE_LIKE_CUBE
-LAYERED_OR_INFLATED_FORM
-LINKED_SEGMENTS
-TEXTURE_ONLY
-```
+Use varied rectangular parts, not equal world-block voxels. Rotate only for visible slope, attachment, or articulation. Curves/tapers use **few large meaningful segments**—never a smooth primitive or unit-Cube staircase. Surface-only pattern can remain texture-only.
 
-These are **reasoning examples, not exhaustive categories, presets, or asset-class rules**.
+**Never lazy-voxelize.** Prefer purposeful primary masses plus identity-critical detail. Do not fake smooth form with Cuboid clutter.
 
-Use varied rectangular parts, **not world blocks/equal voxels**. Axis-align when enough; rotate only for visible slope, attachment, or articulation. Curves/tapers use **few large meaningful segments**—never one smooth primitive or unit-Cube staircase. Surface-only color/pattern can stay texture-only.
+### 4. Single-Model Projection Lock
 
-**Never lazy-voxelize.** Prefer purposeful primary masses plus identity-critical detail. Do not fake smooth primitives with Cuboid clutter. Boundaries come from real steps/plane changes/rotations/intersections, **not fake seam lines**.
+Do not design five images independently. Treat the board as **five projections of one locked structural interpretation**.
 
-### 4. Single-Model Cross-View Lock
-
-Lock geometry, major segmentation, part/limb count, pose state/limb phase, markings, attachments, negative spaces, and asymmetry. **All panels show that same model**; **do not redesign panels independently**.
+Lock major-mass relationships, part/limb count, pose/limb phase, critical articulated-feature state, markings, attachments, negative spaces, and asymmetry. Before generation, verify that the same relationships can explain every required view without contradiction.
 
 Default board:
 
@@ -87,24 +77,43 @@ UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-- LEFT = strict left profile; FRONT/BACK = orthographic.
-- SIDE/FRONT/BACK keep comparable scale, center, and one coherent ground baseline when grounded.
-- TOP = **true top-down orthographic same 3D model, not flat diagram**; preserve footprint, center, proportions, placement, and negative spaces rather than inventing a ground baseline.
-- 3/4 = eye-level front-left, **near-orthographic/weak perspective, no wide-angle**; preserve the same structure, pose state, and support relation.
+- LEFT = strict profile; FRONT/BACK = orthographic.
+- SIDE/FRONT/BACK keep comparable scale, center, and coherent ground baseline when grounded.
+- TOP = **true top-down projection of the same locked structure**, not an independent diagram. Preserve footprint, mass placement, appendage roots, limb locations, and negative spaces. If hidden detail is unknown, keep it conservative instead of inventing structure.
+- 3/4 = eye-level front-left, near-orthographic/weak perspective, no wide-angle; preserve the same structure, pose, and support relation.
 
-Use a **different view set only when the actual object's geometry/asymmetry requires it**. Do not add views for completeness.
+Use another view set only when the object actually requires it. Do not add views for completeness.
 
 ### 5. Presentation / Handoff
 
-Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral planar lighting. No cinematic scene, **Blockbench UI/gizmos/grid/wireframe/bounds**, gameplay UI, baked-photo lighting, **random speckle/dithering**, or fake-geometry shading. **Only view labels may appear** by default.
+Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral planar lighting. No cinematic scene, Blockbench UI/gizmos/grid/wireframe/bounds, gameplay UI, baked-photo lighting, random speckle/dithering, or fake-geometry shading. **Only view labels may appear** by default.
 
-Nonvisual constraints such as dimensions/scale or target use stay **outside the image** as compact handoff context unless the user explicitly asks to render them. Do not turn them into captions, manifests, or extra panels.
+Nonvisual constraints such as target scale/dimensions/use stay **outside the image** as compact handoff context unless explicitly requested visible. Do not create captions, manifests, or extra panels for them.
 
-## Buildability Visual Gate
+## Visual Gate
 
-If inspectable, inspect the **actual generated board**: same model/pose across views; required count/attachment/support/separation; truthful orthographic/TOP views; buildable segmentation; consistent scale/state/markings/proportions; recognizable uncropped target.
+If inspectable, review the actual board in this order:
 
-A material pose, limb, attachment, support/contact, or cross-view conflict is **NOT READY / NEEDS REVIEW** regardless of attractiveness. Do not average conflicting shapes. If not inspectable, do not claim the visual gate passed. **Do not produce numeric buildability/fidelity/view scores**.
+1. **projection coherence** — SIDE/FRONT/BACK/TOP all fit the same structure;
+2. **articulation lock** — limbs and identity-critical articulated features keep one state across views;
+3. **support/naturalness** — stable support without accidental gait, floating parts, or forced robotic symmetry;
+4. **construction/readability** — buildable segmentation, consistent proportions/markings, recognizable uncropped target.
+
+A material TOP mismatch, articulated-feature drift, pose/limb/support conflict, or cross-view redesign is **NOT READY / NEEDS REVIEW** regardless of attractiveness. Do not average conflicting shapes. If not inspectable, do not claim the gate passed. Do not produce numeric scores.
+
+## Targeted Correction
+
+A structural cross-view failure is a **board-level defect**, even if one panel exposes it.
+
+For the one allowed correction:
+
+- Source Image + locked Internal Generation Brief remain authority;
+- failed Draft is defect evidence, not geometry authority;
+- name failing invariants explicitly;
+- regenerate the **whole board from the same locked structure**; never patch one view independently;
+- preserve relationships that already passed; reject a correction that fixes one panel by redesigning another.
+
+If material conflict remains, stop at **NOT READY / NEEDS REVIEW**; do not generate more variants.
 
 ## Budget / Output
 
@@ -114,4 +123,4 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Return **one image only** as the Modelling Brief Draft and stop for **user review / approval**. Only after user approval may the **actual approved image** plus retained nonvisual handoff facts go to modelling. **Do not generate ZIPs** or other deliverables.
+Return **one image only** as the Modelling Brief Draft and stop for user review/approval. Only after approval may the actual approved image + retained nonvisual facts go to modelling.
