@@ -1,0 +1,77 @@
+name: Professional Sample Forensic CI
+
+on:
+  push:
+    branches:
+      - Local
+    paths:
+      - ".github/workflows/professional-sample-forensic-ci.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-finalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: Install dependencies
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Apply bounded forensic improvements
+        run: python3 .github/scripts/professional_sample_forensic_patch.py
+
+      - name: Regenerate prompt and API owners
+        working-directory: mcp
+        run: |
+          bun run prompts:build
+          bun run docs:build
+
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+
+      - name: Contract tests before metrics
+        working-directory: mcp
+        run: bun run test
+
+      - name: Measure default MCP surface
+        working-directory: mcp
+        run: bun run measure:surface | tee /tmp/professional-surface.log
+
+      - name: Synchronize measured proof docs
+        run: python3 .github/scripts/professional_sample_forensic_finalize.py
+
+      - name: Contract tests after proof sync
+        working-directory: mcp
+        run: bun run test
+
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+
+      - name: Generated docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+
+      - name: Commit retained state and remove helpers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/professional-sample-forensic-ci.yml
+          git rm .github/scripts/professional_sample_forensic_patch.py
+          git rm .github/scripts/professional_sample_forensic_finalize.py
+          git add -A
+          git commit -m "feat: apply professional sample forensic improvements"
+          git push origin HEAD:Local
