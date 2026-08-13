@@ -41,7 +41,7 @@ Load a missing spec by **exact tool name** + action; otherwise call it directly.
 
 For end-to-end reference work, production texturing starts after dependent geometry has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED`.
 
-For a texture-only revision on an **existing asset**, use current geometry as baseline without claiming reference accuracy. A **flat/placeholder texture** may be provisional. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channels.
+For a texture-only revision on an **existing asset**, use current geometry as baseline. **Do not claim that baseline is reference-accurate** merely because texturing can proceed. A **flat/placeholder texture** may be provisional. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channels.
 
 ## Minecraft-First Reference Texture
 
@@ -71,4 +71,4 @@ Logical project UV resolution and bitmap pixel dimensions are separate facts; do
 
 ## Verification
 
-`create_texture` returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output cannot prove completion. Use model views when appearance matters; keep RTX/in-game claims bounded to evidence.
+`create_texture` already returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output cannot prove completion. Use model views when appearance matters; keep RTX/in-game claims bounded to evidence.
