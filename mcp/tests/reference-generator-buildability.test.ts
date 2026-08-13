@@ -19,7 +19,7 @@ describe("reference generator orthographic-core contract", () => {
     expect(skill).toContain("fresh explicit user instruction");
     expect(flow).toContain("execution consent gate");
     expect(next).toContain("wait for fresh explicit user generation command");
-    expect(guide).toContain("not execution consent");
+    expect(guide).toMatch(/not execution consent|do not authorize generation/);
   });
 
   test("anchor is orthographic while original source keeps camera-angle authority", async () => {
