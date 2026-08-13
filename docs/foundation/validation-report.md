@@ -17,7 +17,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_ORTHOGRAPHIC_CORE_AND_PRO1_PRO8_STATIC_VERIFIED
+NON_LOCAL_P0_P7_REFERENCE_ORTHOGRAPHIC_BOUNDARIES_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
@@ -56,26 +56,27 @@ Semantic form precedes exact transforms and visible relationships own constructi
 
 ## P6 — Actual Reference Grounding / Claim-Locked Comparison
 
-Reference-driven approval requires the actual approved reference image plus fresh current-revision model evidence. Path/prose/memory is not image evidence. Difference-first comparison remains the approval contract.
+Reference-driven approval requires the **actual approved reference image** plus fresh current-revision model evidence. Path/prose/memory is not image evidence. Difference-first comparison remains the approval contract.
 
 ## P7 — Fidelity Convergence / Evaluation Integrity
 
 Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Evaluation is qualitative and evidence-bound, not a scalar similarity score. Real convergence remains `LOCAL PROOF REQUIRED`.
 
-## Reference Generator — Orthographic Core + Execution Contract
+## Reference Generator — Orthographic Core + Clarified Boundaries
 
 Current reference preparation requires:
 
 ```text
 source image + user intent
 → Internal Generation Brief
-→ SOURCE-NEAREST ANCHOR
+→ SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
 → stable/readable pose + identity-critical articulated-feature state
 → SMALLEST ORTHOGRAPHIC CORE
-   → only views needed to constrain missing axes / key structure
+   → only evidence-bearing views
    → TOP/BACK conditional
-   → 3/4 diagnostic, not default structural authority
-   → omit an unjustified conflicting view rather than fabricate coherence
+   → generated 3/4 diagnostic, not structural authority
+   → optional conflicting view may be omitted only if remaining core stays sufficiently constrained
+   → otherwise NEEDS REVIEW
 → Pre-Generation Readiness
 → EXECUTION CONSENT GATE
    ├─ fresh explicit user generation instruction → one Draft/correction
@@ -90,19 +91,19 @@ source image + user intent
 → actual approved reference image + relevant Handoff Constraints
 ```
 
-The default is no longer a fixed five-panel turnaround. The **source-nearest anchor** owns identity/silhouette fidelity, then the **smallest orthographic core** adds only evidence-bearing views needed to constrain the model. TOP and BACK are conditional. 3/4 is diagnostic and only added after orthographic coherence or by explicit request; it is never structural authority.
+Five ambiguity closures are now part of the generic contract:
 
-If an extra view can only be produced by inventing contradictory structure, omitting the view and reporting the limitation is preferred over fabricated cross-view consistency. This reduces pressure on the image model to produce several loosely related 2D interpretations merely to satisfy a fixed layout.
+- **Anchor:** the generated anchor is orthographic, while the original Source Image remains visual authority regardless of its camera angle; perspective/lens distortion is normalized rather than copied.
+- **Pose normalization:** preserve identity-bearing silhouette and major-mass relationships, not source gait/limb silhouette when the approved modelling pose intentionally changes.
+- **View omission:** an optional contradictory view may be removed only when the remaining core still sufficiently constrains every material structure; otherwise the board remains `NEEDS REVIEW`.
+- **3/4:** an original Source Image photographed from 3/4 remains evidence authority; only a generated 3/4 panel is diagnostic and never structural authority.
+- **Generation budget:** one Draft + at most one targeted correction applies per unchanged Internal Generation Brief/review cycle. A materially changed user-approved source/pose/target/requirement may start a new cycle, but the system never auto-opens a new cycle merely to retry failure.
 
-Pose/articulation rules remain relational rather than anatomy presets: grounded neutral stance stays naturally plausible rather than mechanically aligned, and identity-critical articulated features preserve visible root/direction-or-bend/terminal state across shown views.
+Pose/articulation rules remain relational, not anatomy presets. Structural correction stays board-level: original Source Image + locked Brief remain authority; failed Draft is defect evidence, not geometry authority; the whole shown core is regenerated rather than patching one panel.
 
-A structural cross-view defect remains board-level. During the one allowed correction, the original Source Image + locked Internal Generation Brief remain authority; the failed Draft is defect evidence, not geometry authority; the whole shown core is regenerated rather than patching one panel independently.
+Repository/policy hardening, audit completion, CI success, or `next-action.md` never authorizes image generation. Only panel/view labels appear by default; scale/height/use facts remain Handoff Constraints outside image pixels.
 
-Repository/policy hardening, audit completion, CI success, or `next-action.md` never authorizes image generation by itself. After hardening the workflow stops and waits for a fresh explicit user instruction.
-
-Only panel/view labels appear by default. Scale/height/use facts remain Handoff Constraints outside image pixels. No anatomy engine, pose planner, fixed view preset, manifest/package, new MCP tool, runtime profile, or scoring system was added.
-
-Static tests do not certify future generated-image quality. Actual Draft quality and approval remain direct image-capable evidence.
+No anatomy engine, pose planner, fixed view preset, manifest/package, new MCP tool, runtime profile, or scoring system was added. Static tests do not certify future generated-image quality; actual Draft quality and approval require direct image-capable evidence.
 
 ## Professional Sample Forensics — Static / Non-Local
 
@@ -120,7 +121,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **211 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
+Current GitHub proof: **213 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
 
 Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
@@ -157,4 +158,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated orthographic-core Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated clarified orthographic-core Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
