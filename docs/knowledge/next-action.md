@@ -12,6 +12,8 @@ REFERENCE_ORTHOGRAPHIC_CORE_HARDENING_STATIC_VERIFIED
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
+**Do not claim live Blockbench/model-quality improvement without actual runtime proof.**
+
 Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
 
 ## Current Reference Contract
