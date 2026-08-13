@@ -16,7 +16,7 @@ describe("reference generator buildability contract", () => {
     expect(skill).toContain("extra facts are optional");
     expect(skill).toContain("do not expose a long questionnaire");
     expect(skill).toContain("automatic internal generation brief");
-    expect(skill).toContain("generate directly when the source is usable");
+    expect(skill).toContain("generate only after the pre-generation readiness gate passes");
   });
 
   test("AI resolves unknowns before asking and keeps clarification bounded", async () => {
@@ -47,6 +47,29 @@ describe("reference generator buildability contract", () => {
     expect(lowerGuide).toContain("optional unknowns remain unset");
     expect(lowerGuide).toContain("at most three material items");
     expect(lowerGuide).toContain("explain unfamiliar concepts in plain language");
+  });
+
+  test("generation cannot start before material understanding is ready", async () => {
+    const [skill, guide, flow] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+
+    for (const text of [normalized(skill), normalized(guide)]) {
+      expect(text).toContain("pre-generation readiness gate");
+      expect(text).toContain("generation is output, not discovery");
+      expect(text).toContain("internal generation brief");
+      expect(text).toContain("no unresolved material ambiguity");
+      expect(text).toContain("do not generate");
+      expect(text).toContain("concrete visual defect");
+      expect(text).toContain("missing pre-generation understanding");
+    }
+
+    const lowerFlow = normalized(flow);
+    expect(lowerFlow).toContain("internal generation brief");
+    expect(lowerFlow).toContain("pre-generation readiness gate");
+    expect(lowerFlow).toContain("not ready → do not generate");
   });
 
   test("Blockbench grammar prevents voxel-stack and smooth-primitive shortcuts", async () => {
