@@ -10,6 +10,8 @@ PRELOCAL_PLUGIN_FRESHNESS_READY
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
+Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
+
 Current source contract is static-verified: Minecraft-first Geometry + Texture, five-preview default for future references, minor reference drift may be resolved into one canonical Minecraft interpretation, and unresolved material contradiction remains `BLOCKED`.
 
 ## Local Handoff
@@ -41,6 +43,14 @@ The existing elephant reference was accepted as sufficient for a Minecraft/Block
 MINOR → one canonical Minecraft interpretation → continue
 MATERIAL → CONFLICTING / BLOCKED
 ```
+
+Reference generation remains a separate execution boundary:
+
+```text
+WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
+```
+
+Local plugin freshness and Fixture A do not grant image-generation permission.
 
 ## Next Step
 
