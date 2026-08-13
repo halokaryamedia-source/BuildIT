@@ -1108,7 +1108,7 @@ createTool(
         values: number | string | Array<number | string> | undefined
       ) => {
         if (values === undefined) return;
-        if (typeof values === "number") {
+        if (typeof values === "number" || typeof values === "string") {
           keyframe.uniform = true;
           keyframe.set("x", values);
         } else {

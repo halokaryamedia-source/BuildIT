@@ -26,6 +26,7 @@ non-empty scalar Molang string
 ```
 
 String values are passed to native keyframe state unchanged. BlockIT does not parse or evaluate them. Whitespace-only strings are rejected.
+Scalar number/string values use the existing uniform-keyframe path; three-component arrays remain per-axis values.
 
 `create_animation` remains numeric-only. Bezier-handle arrays remain numeric-only.
 

@@ -64,6 +64,7 @@ describe("animation mutation contract", () => {
       Bun.file("server/tools/animation-inspection.ts").text(),
     ]);
     expect(animationSource).toContain("values: number | string | Array<number | string> | undefined");
+    expect(animationSource).toContain('typeof values === "number" || typeof values === "string"');
     expect(animationSource).not.toContain("MolangParser.parse(");
     expect(animationSource).not.toContain("risky_eval");
     expect(inspectionSource).toContain("keyframe.getArray(index)");
