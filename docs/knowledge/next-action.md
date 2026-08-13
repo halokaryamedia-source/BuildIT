@@ -7,7 +7,7 @@ This is the **single active repository-continuation snapshot**. Root `AGENTS.md`
 ## Status
 
 ```text
-NON_LOCAL_ASSISTED_REFERENCE_INTAKE_IMPLEMENTED
+NON_LOCAL_PRE_GENERATION_READINESS_GATE_IMPLEMENTED
 ```
 
 Working branch: **`Local` only**.
@@ -81,9 +81,12 @@ Boundary:
 
 ```text
 actual source image / user intent
-→ AI-assisted intake resolution when needed
-→ one buildable Minecraft / Blockbench multi-view Modelling Brief Draft
-→ maximum one targeted correction
+→ AI-assisted intake resolution
+→ internal generation brief
+→ PRE-GENERATION READINESS GATE
+   ├─ READY → generate one Modelling Brief Draft
+   └─ NOT READY → bounded clarification → still material? NEEDS REVIEW; no generation
+→ maximum one targeted visual correction
 → user review / approval
 → actual approved image handed to modelling
 ```
@@ -92,7 +95,7 @@ The generator is image-only. It does not call BlockIT MCP, generate geometry, cr
 
 ## Assisted Intake Resolution
 
-The non-local contract now makes AI assistance explicit without adding a questionnaire or intake framework:
+The non-local contract keeps AI assistance simple and bounded:
 
 ```text
 explicit user fact      → preserve as constraint
@@ -105,15 +108,33 @@ still materially unclear→ NEEDS REVIEW
 Rules:
 
 - zero clarification is the default;
-- when the user says they do not know, AI first tries to resolve from the actual image/request instead of repeating the question;
+- when the user says they do not know, AI first resolves what the actual image/request safely supports instead of repeating the question;
 - numeric dimensions, hidden features, unseen asymmetry, and unseen attachments are never invented to complete intake;
 - clarification is limited to one round with at most three material items, written in plain language with one recommended interpretation;
 - the user may simply accept the recommendation;
 - AI recommendations remain working interpretations until the user accepts them.
 
-`docs/foundation/04-reference-guide.md` remains the durable policy owner. `mcp/tests/reference-generator-buildability.test.ts` protects the assisted-intake boundary together with the existing buildability, cross-view, approval, and bounded-output contracts.
+## Pre-Generation Readiness
 
-No form schema, intake state machine, new MCP tool, manifest, package, or additional planning document was added.
+**Generation is output, not discovery.** Before the first image-generation call, the AI must already understand enough to define one coherent target.
+
+The Internal Generation Brief must resolve:
+
+- intended subject / identity;
+- material visible silhouette and major masses;
+- defining visible features / important negative spaces;
+- visible attachments/contacts and asymmetry;
+- current/neutral pose or state;
+- required view set;
+- Blockbench/Cuboid construction interpretation.
+
+Optional values such as numeric dimensions may remain unset. `READY` means no unresolved material ambiguity could still change identity, major form, required visible features, or buildability.
+
+Do **not** generate a Draft first and reason about the target afterward. Do **not** use the one targeted correction to repair missing intake understanding. That correction exists only for a concrete visual defect against an already-ready brief.
+
+`docs/foundation/04-reference-guide.md` remains the durable policy owner. `mcp/tests/reference-generator-buildability.test.ts` protects assisted intake + pre-generation readiness together with existing buildability, cross-view, approval, and bounded-output contracts.
+
+No form schema, intake state machine, new MCP tool, manifest, package, additional planner, or P8 architecture was added.
 
 ## Evidence Boundary
 
@@ -123,6 +144,7 @@ GitHub/static proof can establish:
 - P0–P7 instruction/contracts;
 - Reference Generator scope/buildability/approval contract;
 - assisted-intake/no-guessing/clarification contract;
+- pre-generation readiness/generation-order contract;
 - regression/static integrity;
 - default serialized MCP surface.
 
@@ -131,6 +153,7 @@ It cannot establish:
 - generated reference-image quality;
 - whether a specific generated board actually preserves the source;
 - whether real users find a clarification understandable;
+- whether a real image-capable model applies the readiness gate correctly;
 - actual image handoff into a local modelling candidate;
 - model image-understanding accuracy;
 - installed Codex deferred-search parity;
@@ -155,12 +178,20 @@ AGENTS.md
 NON-LOCAL NEXT — REAL IMAGE ACCEPTANCE
 
 Provide one usable real source image on an image-capable surface.
-Run blockbench-reference-generator once.
 
-Acceptance should exercise both paths naturally:
-- normal clear image → ideally zero clarification;
-- if the user genuinely does not know an optional/material fact → verify the AI resolves, leaves unset, or asks one useful bounded clarification instead of guessing.
+BEFORE GENERATION:
+1. inspect the actual source image + user request;
+2. resolve missing material information with Assisted Intake Resolution;
+3. form the Internal Generation Brief;
+4. apply the Pre-Generation Readiness Gate;
+5. only if READY, call blockbench-reference-generator once.
 
+If NOT READY:
+- use the remaining one compact clarification round when applicable;
+- if still materially unclear, return NEEDS REVIEW;
+- do not generate a speculative Draft.
+
+AFTER GENERATION:
 Inspect the actual produced board against the existing Reference Guide:
 1. source identity / recognizable silhouette preserved;
 2. buildable Cuboid construction, not smooth/voxel-filter slop;
@@ -170,7 +201,7 @@ Inspect the actual produced board against the existing Reference Guide:
 6. hidden features / photographic artifacts are not invented as geometry;
 7. no unresolved material cross-view conflict remains.
 
-If one concrete visual defect exists, allow maximum one targeted correction.
+If the ready brief produced one concrete visual defect, allow maximum one targeted correction.
 Then stop for user approval.
 
 Do not start Blockbench/Codex local modelling in this scope.
