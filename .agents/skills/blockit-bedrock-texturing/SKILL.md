@@ -32,10 +32,10 @@ Known identity skips list/discovery. `get_texture` is for pixel/image evidence, 
 
 ## Deferred Spec Loading / Stage
 
-If an exact spec is missing, load it with the **exact selected tool name** + action; if loaded, call it directly. Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
+If a spec is missing, load it by **exact tool name** + action; if loaded, call it directly. Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
 - `DISCOVER` only when texture/material/face identity required next is unknown/stale.
-- Reuse mutation output; do not re-list/re-read only for confirmation.
+- Reuse mutation output; **do not re-list/re-read it only for confirmation**.
 - Bounded surface mismatch → correct that state, then verify affected appearance.
 - Validation failure keeps the selected capability unless identity/state became stale/unknown.
 
@@ -45,7 +45,7 @@ For end-to-end reference work, production texturing starts after dependent geome
 
 For texture-only revision on an existing asset, current geometry is the user-provided baseline unless geometry correction is in scope. Do not claim that baseline is reference-accurate merely because texturing can proceed.
 
-A flat/placeholder texture may be provisional for visibility. If geometry changes after production texturing begins, re-check only affected Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships.
+A flat/placeholder texture may be provisional for visibility. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships.
 
 ## Minecraft-First Reference Texture
 
@@ -63,7 +63,7 @@ Prefer Minecraft-readable pixel treatment over photoreal micro-detail, dense noi
 
 A **minor reference discrepancy**—small shade/noise differences or slight non-critical marking placement drift—does not block texturing. Choose one canonical surface interpretation consistently: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest Minecraft-readable texture**.
 
-Only a material surface contradiction affecting identity-critical marking, required material region/channel, part separation, or intended Minecraft readability becomes `BLOCKED`. Do not average conflicting material evidence into an invented compromise.
+Only a material surface contradiction affecting identity-critical marking, required material region/channel, part separation, or intended Minecraft readability becomes `BLOCKED`. **Do not average conflicting material evidence** into an invented compromise.
 
 ## Native Bedrock PBR / UV
 
