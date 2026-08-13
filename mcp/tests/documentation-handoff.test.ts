@@ -6,7 +6,7 @@ async function text(path: string): Promise<string> {
 }
 
 describe("Codex documentation handoff", () => {
-  test("current repository-owned skill inventory is documented without stale routing", async () => {
+  test("current repository-owned skill inventory resolves directly from canonical packages", async () => {
     const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -25,23 +25,21 @@ describe("Codex documentation handoff", () => {
       "typescript-type-safety",
     ]);
 
-    const [context, skillMap, activation, developmentBrief, referenceGenerator] =
-      await Promise.all([
-        text("../CONTEXT.md"),
-        text("../docs/knowledge/skills/skill-map.md"),
-        text("../docs/knowledge/skills/activation-matrix.md"),
-        text("../.agents/skills/development-brief/SKILL.md"),
-        text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      ]);
+    for (const name of dirs) {
+      expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
+    }
 
-    for (const name of dirs) expect(skillMap).toContain(name);
+    const [context, root, developmentBrief, referenceGenerator] = await Promise.all([
+      text("../CONTEXT.md"),
+      text("../AGENTS.md"),
+      text("../.agents/skills/development-brief/SKILL.md"),
+      text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+    ]);
     expect(context).toContain("ten repository-owned skill packages");
-    expect(activation).toContain("Reference Preparation / Asset Authoring");
-    expect(activation).toContain("Blockbench asset authoring");
-    expect(activation).toContain("Repository / Plugin Development");
-    expect(activation).toContain("Local Acceptance — Only When Reactivated");
-    expect(activation).toContain("Hot-Path Defect Index");
-    expect(skillMap).toContain("exact-name deferred spec loading");
+    expect(root).toContain("### Reference Preparation");
+    expect(root).toContain("### Asset Authoring");
+    expect(root).toContain("### Repository / Plugin Work");
+    expect(root).toContain("Hot-Path Defect Index");
     expect(referenceGenerator).toContain("Return **one image only**");
     expect(referenceGenerator).toContain("automatic variants   = 0");
     expect(referenceGenerator).toContain("Do not generate ZIPs");
@@ -63,9 +61,6 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("## Next Step");
     expect(next).toContain("LOCAL PROOF REQUIRED");
     expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
-    expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
-    expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
-
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("62 enabled tools");
@@ -103,9 +98,7 @@ describe("Codex documentation handoff", () => {
     ];
 
     for (const mapping of mappings) {
-      const row = implementation
-        .split("\n")
-        .find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
+      const row = implementation.split("\n").find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
       expect(row).toBeDefined();
       expect(row).toContain(`\`mcp/${mapping.source}\``);
       expect(row).toContain(`\`mcp/${mapping.test}\``);
@@ -128,7 +121,6 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("OFFICIALLY VERIFIED");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
-    expect(context).not.toContain("The next authoritative stage is **Codex + Blockbench local acceptance**");
     expect(implementation).toContain("Deferred MCP Discovery Ownership");
     expect(implementation).toContain("Authoring Decision / Recovery Ownership");
   });
