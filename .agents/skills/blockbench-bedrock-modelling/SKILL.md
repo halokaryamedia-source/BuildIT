@@ -57,7 +57,7 @@ For every **required attachment**, state its **contact target/invariant** before
 
 ## Tool Lane Discipline / Primary Build
 
-Normal lane: grounded claims → Semantic Form → construction + transform ownership → Primary Form → coherent primary Cubes/Groups → necessary views → diagnosed correction.
+**If no current decision requires a branch, stay in the geometry lane.** Normal lane: grounded claims → Semantic Form → construction + transform ownership → Primary Form → coherent primary Cubes/Groups → necessary views → diagnosed correction.
 
 Triage cross-view differences before conflict. A **minor reference discrepancy** does not change identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Resolve it with **one canonical interpretation**:
 
