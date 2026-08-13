@@ -1,6 +1,6 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-13  
+**Updated:** 2026-08-14  
 **Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, hardened Reference Generator, and professional PRO-1–PRO-8 static closures.
 
 This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`.
@@ -17,7 +17,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_PROJECTION_HARDENED_AND_PRO1_PRO8_STATIC_VERIFIED
+NON_LOCAL_P0_P7_REFERENCE_EXECUTION_GATED_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
@@ -62,9 +62,9 @@ Reference-driven approval requires the actual approved reference image plus fres
 
 Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Evaluation is qualitative and evidence-bound, not a scalar similarity score. Real convergence remains `LOCAL PROOF REQUIRED`.
 
-## Reference Generator — Single-Model Projection Contract
+## Reference Generator — Projection + Execution Contract
 
-Current reference preparation now requires:
+Current reference preparation requires:
 
 ```text
 source image + user intent
@@ -73,22 +73,25 @@ source image + user intent
 → identity-critical articulated-feature state lock
 → SINGLE-MODEL PROJECTION LOCK
 → Pre-Generation Readiness
-→ one Draft
+→ EXECUTION CONSENT GATE
+   ├─ fresh explicit user generation instruction → one Draft/correction
+   └─ no fresh instruction → STOP; WAIT FOR USER
 → visual gate:
    projection coherence
    articulation lock
    support/naturalness
    construction/readability
-→ one board-level targeted correction when needed
 → user approval
 → actual approved reference image + relevant Handoff Constraints
 ```
 
-The multi-view board is treated as several projections of one locked structural interpretation, not independently designed panels. TOP must be a true top-down projection of the same structure. Identity-critical articulated features preserve visible root/direction-or-bend/terminal state across views. Grounded neutral stance must remain naturally plausible rather than being forced into robotic bilateral alignment.
+Repository/policy hardening, audit completion, CI success, or `next-action.md` never authorizes image generation by itself. If work switches into hardening, earlier generation permission is consumed; after verification the workflow stops and waits for a fresh explicit user execution instruction.
+
+The multi-view board remains several projections of one locked structural interpretation. TOP is a true top-down projection of the same structure. Identity-critical articulated features preserve visible root/direction-or-bend/terminal state across views. Grounded neutral stance stays naturally plausible instead of being forced into robotic bilateral alignment.
 
 A structural cross-view defect is board-level. During the one allowed correction, the original Source Image + locked Internal Generation Brief remain authority; the failed Draft is defect evidence, not geometry authority; the whole board is regenerated rather than patching one panel independently.
 
-Construction remains reasoning-based rather than an exhaustive taxonomy/preset system. Scale/height/use facts remain Handoff Constraints outside image pixels by default. No anatomy engine, pose planner, manifest/package, new MCP tool, runtime profile, or scoring system was added.
+Only panel/view labels appear by default. Titles, headers, subtitles, explanatory notes, dimensions, scale and target-use facts remain outside image pixels unless explicitly requested. Construction remains reasoning-based rather than an exhaustive taxonomy/preset system. No anatomy engine, pose planner, manifest/package, new MCP tool, runtime profile, or scoring system was added.
 
 Static tests do not certify future generated-image quality. Actual Draft quality and approval remain direct image-capable evidence.
 
@@ -108,7 +111,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **212 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
+Current GitHub proof: **214 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
 
 Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
@@ -145,4 +148,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + single-model projection-hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated, single-model-projection Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
