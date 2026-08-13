@@ -14,6 +14,8 @@ Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source c
 
 Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, and persistence remain **LOCAL PROOF REQUIRED**.
 
+**Do not claim live Blockbench/model-quality improvement without actual runtime proof.**
+
 ## Local Handoff
 
 Single procedure owner: `docs/knowledge/operations/local-acceptance-runbook.md`.
