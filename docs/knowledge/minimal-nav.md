@@ -2,30 +2,29 @@
 
 Updated: 2026-08-13
 
-Use this note only when the task class is not already obvious from root `AGENTS.md`.
+Use this note only when the task class is not already obvious from root `AGENTS.md`. For the full current sequence, use [Flow](flow.md); do not reconstruct it from multiple docs.
 
-## 1. Classify The Request First
+## 1. Pick The Smallest Route
 
 ### Reference preparation
 
 Creating/revising the visual reference before Blockbench modelling:
 
 ```text
-AGENTS.md
-→ source image / current request
+source image / current request
 → .agents/skills/blockbench-reference-generator/SKILL.md
-→ one approved Modelling Brief image
 ```
 
-Do not load BlockIT MCP or repository-development skills just to generate the reference. Open `docs/foundation/04-reference-guide.md` only when durable reference policy changes the decision.
+The skill owns assisted intake, internal brief, pre-generation readiness, one Draft, bounded visual correction, and user approval. **Do not generate before readiness passes.** Do not load BlockIT MCP or repository-development skills for this route.
+
+Open [Reference Guide](../foundation/04-reference-guide.md) only when durable policy is needed.
 
 ### Asset authoring
 
-Creating/revising/inspecting/texturing/animating/exporting a Bedrock Entity asset without changing repository/plugin source:
+Creating/revising/inspecting/texturing/animating/exporting a Bedrock Entity without changing repository/plugin source:
 
 ```text
-AGENTS.md
-→ current request + actual approved reference image when reference-driven
+current request + actual approved reference image when reference-driven
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 → only the active domain specialist
 ```
@@ -40,35 +39,31 @@ Source/docs/CI/MCP/plugin/repository maintenance:
 AGENTS.md
 → next-action.md when continuing current work
 → CONTEXT.md only when stable facts matter
-→ named MCP-tool defect? implementation-map.md Hot-Path Defect Index
+→ named MCP-tool defect? implementation-map Hot-Path Defect Index
 → affected source + nearest AGENTS.md
-→ development-brief for create/change work
+→ development-brief
 → at most one relevant engineering specialist
 ```
 
-For a named MCP-tool defect, the Hot-Path Defect Index supplies the first source owner and primary regression owner. Inspect that pair before broad code search; expand only when the pair cannot explain the defect.
+For a named MCP-tool defect, inspect the mapped source owner + primary regression owner before broad code search.
 
-## 2. Current Repository Continuation
+## 2. Local Acceptance
 
-`next-action.md` owns the current step. Follow its active boundary directly.
+The first Local Acceptance pass is complete. Read [Local Acceptance Runbook](operations/local-acceptance-runbook.md) only when `next-action.md` explicitly reactivates local acceptance, a reproduced acceptance defect needs its classification rules, or historical procedure evidence is being audited.
 
-The first Local Acceptance Runbook pass is complete. Read [Local Acceptance Runbook](operations/local-acceptance-runbook.md) only when `next-action.md` explicitly reactivates local acceptance, a reproduced acceptance defect needs its classification rules, or historical procedure evidence is being audited.
+## 3. One Additional Owner At Most
 
-Do not load the runbook by ritual during normal continuation, reference preparation, or asset authoring.
-
-## 3. Open Only One Additional Owner When Needed
-
-- [Foundation README](../foundation/README.md) — product/reference/modelling policy.
-- [Reference Guide](../foundation/04-reference-guide.md) — reference preparation/grounding contract.
-- [Implementation Map](implementation-map.md) — current source/skill ownership and named-tool defect first-stop index.
-- [Activation Matrix](skills/activation-matrix.md) — skill choice.
-- [Validation Report](../foundation/validation-report.md) — current evidence status.
+- [Flow](flow.md) — full current sequence.
+- [Reference Guide](../foundation/04-reference-guide.md) — durable reference policy.
+- [Implementation Map](implementation-map.md) — ownership / named-tool first stops.
+- [Activation Matrix](skills/activation-matrix.md) — specialist choice.
+- [Validation Report](../foundation/validation-report.md) — proof state.
 - [Source Map](sources/source-map.md) — authority/path lookup.
-- [Review Index](reviews/review-graph.md) — only when historical evidence is needed.
+- [Review Index](reviews/review-graph.md) — historical evidence only.
 - [Task Board](operations/task-board.md) — future/non-active work only.
 
 ## Stop Rule
 
+- If the current owner answers the decision, stop reading.
 - Do not broad-scan the vault, generated output, historical branches, dependencies, or old chats by default.
-- If the current owner—or the mapped hot-path source/test pair—answers the question, stop reading.
-- If a material claim is not provable in the current execution channel, record the exact remaining proof instead of inventing it.
+- If the current execution channel cannot prove a material claim, record the missing proof instead of inventing it.
