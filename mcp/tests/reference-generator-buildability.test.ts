@@ -22,70 +22,77 @@ describe("reference generator orthographic-core contract", () => {
     expect(guide).toContain("not execution consent");
   });
 
-  test("generation uses a source-nearest anchor and smallest orthographic core", async () => {
+  test("anchor is orthographic while original source keeps camera-angle authority", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
     ]);
+    for (const text of [skill, guide, flow]) expect(text).toContain("source-nearest orthographic anchor");
+    for (const text of [skill, guide]) {
+      expect(text).toContain("source image remains");
+      expect(text).toContain("3/4");
+      expect(text).toMatch(/normalizes (?:camera )?projection|normalize[s]? perspective/);
+    }
+  });
 
-    expect(skill).toContain("source-nearest anchor");
+  test("orthographic core is minimal but cannot become materially underconstrained", async () => {
+    const [skill, guide, flow] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/knowledge/flow.md"),
+    ]);
     expect(skill).toContain("smallest orthographic core");
     expect(skill).toContain("not a fixed five-panel turnaround");
-
-    expect(guide).toContain("source-nearest anchor");
     expect(guide).toMatch(/smallest orthographic core|smallest mutually compatible orthographic view set/);
-    expect(guide).toContain("not a fixed five-panel turnaround");
-
-    for (const text of [skill, guide]) {
-      expect(text).toContain("omit that view");
-      expect(text).toContain("invent");
+    for (const text of [skill, guide, flow]) {
+      expect(text).toContain("sufficiently constrained");
+      expect(text).toContain("needs review");
     }
-
-    expect(flow).toContain("source-nearest anchor orientation");
-    expect(flow).toContain("smallest orthographic core");
   });
 
-  test("TOP and BACK are conditional while 3/4 is not default structural authority", async () => {
+  test("pose normalization preserves identity rather than source gait silhouette", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
     ]);
-    for (const text of [skill, guide]) {
-      expect(text).toContain("top only when");
-      expect(text).toContain("back only when");
-      expect(text).toContain("3/4 is not part of the default initial core");
-      expect(text).toContain("diagnostic");
-      expect(text).toContain("never structural authority");
+    for (const text of [skill, guide, flow]) {
+      expect(text).toContain("identity-bearing silhouette");
+      expect(text).toContain("gait");
     }
-    expect(flow).toContain("top/back are conditional");
-    expect(flow).toContain("3/4 is diagnostic");
-  });
-
-  test("pose and articulated-feature state remain relational across shown views", async () => {
-    const [skill, guide] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-    ]);
     for (const text of [skill, guide]) {
       expect(text).toContain("stable natural neutral stance");
       expect(text).toContain("bilateral alignment");
       expect(text).toContain("hidden joint precision");
-      expect(text).toContain("identity-critical articulated");
-      expect(text).toContain("direction/bend");
-      expect(text).toContain("terminal");
-      expect(text).toContain("duplicated");
-      expect(text).toContain("floating");
     }
   });
 
-  test("visual gate prioritizes anchor fidelity before cross-view coherence", async () => {
+  test("generated 3/4 is diagnostic without demoting a 3/4 source image", async () => {
+    const [skill, guide, flow] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/knowledge/flow.md"),
+    ]);
+    for (const text of [skill, guide]) {
+      expect(text).toContain("3/4 is not part of the default initial core");
+      expect(text).toContain("generated");
+      expect(text).toContain("diagnostic");
+      expect(text).toContain("never structural authority");
+      expect(text).toContain("source image");
+    }
+    expect(flow).toContain("original source image photographed from 3/4 remains visual authority");
+  });
+
+  test("articulated feature state and visual gate remain relational", async () => {
     const [skill, guide] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
     ]);
     for (const text of [skill, guide]) {
+      expect(text).toContain("identity-critical articulated");
+      expect(text).toContain("direction/bend");
+      expect(text).toContain("terminal");
       expect(text).toContain("anchor fidelity");
       expect(text).toContain("orthographic coherence");
       expect(text).toContain("articulation lock");
@@ -94,7 +101,7 @@ describe("reference generator orthographic-core contract", () => {
     }
   });
 
-  test("one correction remains board-level but may remove an unjustified view", async () => {
+  test("one correction stays board-level and cannot hide missing required evidence", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
@@ -108,10 +115,25 @@ describe("reference generator orthographic-core contract", () => {
       expect(text).toContain("remove an unnecessary problematic view");
     }
     expect(flow).toContain("regenerate whole shown core");
-    expect(flow).toContain("remove unnecessary conflicting view");
   });
 
-  test("presentation, construction and generation budget remain bounded", async () => {
+  test("generation budget is per unchanged brief cycle and never auto-retries", async () => {
+    const [skill, guide, flow] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/knowledge/flow.md"),
+    ]);
+    for (const text of [skill, guide, flow]) {
+      expect(text).toContain("unchanged internal generation brief / review cycle");
+      expect(text).toMatch(/new cycle|starts a new cycle|begins a new review cycle/);
+      expect(text).toMatch(/never start one automatically|must not open a new cycle automatically|do not start a new cycle automatically/);
+    }
+    expect(skill).toContain("first draft = maximum 1");
+    expect(skill).toContain("targeted correction = maximum 1");
+    expect(skill).toContain("automatic variants = 0");
+  });
+
+  test("presentation and construction remain bounded", async () => {
     const [skill, guide] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
@@ -122,8 +144,5 @@ describe("reference generator orthographic-core contract", () => {
       expect(text).toContain("only panel/view labels may appear by default");
       expect(text).toContain("outside the image");
     }
-    expect(skill).toContain("first draft = maximum 1");
-    expect(skill).toContain("targeted correction = maximum 1");
-    expect(skill).toContain("automatic variants = 0");
   });
 });
