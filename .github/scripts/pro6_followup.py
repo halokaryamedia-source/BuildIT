@@ -12,7 +12,7 @@ def replace_once(path: str, old: str, new: str) -> None:
 replace_once(
     ".agents/skills/blockit-bedrock-animation/SKILL.md",
     "Professional motion has no keyframe/FPS/Bezier target. Choose timing, interpolation, loop, and bones from the motion. `manage_keyframes` preserves explicit Molang transform strings; never evaluate or guess-bake them.",
-    "Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Choose timing/loop/bones from the motion. For expression-valued transform keyframes, `manage_keyframes` preserves explicit Molang strings; never evaluate or guess-bake them.",
+    "Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Choose timing/loop/bones from the motion. For expression-valued transform keyframes, `manage_keyframes` preserves explicit Molang strings. Do not fake expression motion by guess-baking numeric keys.",
 )
 replace_once(
     ".agents/skills/blockit-bedrock-animation/SKILL.md",
