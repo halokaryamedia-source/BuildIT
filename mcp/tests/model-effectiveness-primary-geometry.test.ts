@@ -32,12 +32,10 @@ describe("model creation effectiveness — primary geometry", () => {
   test("under-constrained geometry remains provisional rather than becoming success-by-placement", async () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
 
     expect(modelling).toContain("provisional working extent");
     expect(workflow).toContain("working hypothesis, not verified reference evidence");
-    expect(audit).toContain("Execution-success bias");
-    expect(audit).toContain("Success chaining");
-    expect(audit).toContain("Premature detail");
+    expect(modelling).toContain("Do not continue with another Cube merely because the previous placement succeeded");
+    expect(workflow).toContain("Do not chain Cube placement based on previous tool success");
   });
 });
