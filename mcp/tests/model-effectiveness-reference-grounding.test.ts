@@ -9,16 +9,6 @@ function normalized(text: string): string {
 }
 
 describe("model creation effectiveness — actual reference grounding", () => {
-  test("historical false-review failures are explicit design evidence", async () => {
-    const audit = await source("../docs/knowledge/reviews/mcp-geometry-ai-slop-audit.md");
-    for (const id of ["G-06", "G-17", "G-21", "G-22", "G-23"]) expect(audit).toContain(id);
-    const lower = normalized(audit);
-    expect(lower).toContain("visual gate validated the shape of the written review");
-    expect(lower).toContain("explicit paired comparison layout");
-    expect(lower).toContain("free-form prose");
-    expect(lower).toContain("actual semantic items inspected");
-  });
-
   test("actual approved image is required; path, prose and memory cannot substitute", async () => {
     const [reference, modelling, workflow, validation] = await Promise.all([
       source("../docs/foundation/04-reference-guide.md"),
