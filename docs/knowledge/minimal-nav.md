@@ -1,10 +1,23 @@
 # Minimal Navigation
 
-Updated: 2026-08-12
+Updated: 2026-08-13
 
 Use this note only when the task class is not already obvious from root `AGENTS.md`.
 
 ## 1. Classify The Request First
+
+### Reference preparation
+
+Creating/revising the visual reference before Blockbench modelling:
+
+```text
+AGENTS.md
+→ source image / current request
+→ .agents/skills/blockbench-reference-generator/SKILL.md
+→ one approved Modelling Brief image
+```
+
+Do not load BlockIT MCP or repository-development skills just to generate the reference. Open `docs/foundation/04-reference-guide.md` only when durable reference policy changes the decision.
 
 ### Asset authoring
 
@@ -12,7 +25,7 @@ Creating/revising/inspecting/texturing/animating/exporting a Bedrock Entity asse
 
 ```text
 AGENTS.md
-→ current request/reference
+→ current request + actual approved reference image when reference-driven
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 → only the active domain specialist
 ```
@@ -25,13 +38,13 @@ Source/docs/CI/MCP/plugin/repository maintenance:
 
 ```text
 AGENTS.md
-→ CONTEXT.md only when stable facts matter
 → next-action.md when continuing current work
+→ CONTEXT.md only when stable facts matter
 → named MCP-tool defect? implementation-map.md Hot-Path Defect Index
 → affected source + nearest AGENTS.md
+→ development-brief for create/change work
+→ at most one relevant engineering specialist
 ```
-
-For a create/change task, use `../../.agents/skills/development-brief/SKILL.md` and at most one relevant engineering specialist unless a genuinely independent boundary is proved.
 
 For a named MCP-tool defect, the Hot-Path Defect Index supplies the first source owner and primary regression owner. Inspect that pair before broad code search; expand only when the pair cannot explain the defect.
 
@@ -39,14 +52,15 @@ For a named MCP-tool defect, the Hot-Path Defect Index supplies the first source
 
 `next-action.md` owns the current step. Follow its active boundary directly.
 
-The first Local Acceptance Runbook pass is complete. Read [Local Acceptance Runbook](operations/local-acceptance-runbook.md) only when `next-action.md` explicitly points back to an acceptance-specific procedure, a reproduced acceptance defect needs its classification rules, or historical procedure evidence is being audited.
+The first Local Acceptance Runbook pass is complete. Read [Local Acceptance Runbook](operations/local-acceptance-runbook.md) only when `next-action.md` explicitly reactivates local acceptance, a reproduced acceptance defect needs its classification rules, or historical procedure evidence is being audited.
 
-Do not load the runbook by ritual during normal continuation or asset authoring.
+Do not load the runbook by ritual during normal continuation, reference preparation, or asset authoring.
 
 ## 3. Open Only One Additional Owner When Needed
 
-- [Foundation README](../foundation/README.md) — product/modelling policy.
-- [Implementation Map](implementation-map.md) — current source ownership and named-tool defect first-stop index.
+- [Foundation README](../foundation/README.md) — product/reference/modelling policy.
+- [Reference Guide](../foundation/04-reference-guide.md) — reference preparation/grounding contract.
+- [Implementation Map](implementation-map.md) — current source/skill ownership and named-tool defect first-stop index.
 - [Activation Matrix](skills/activation-matrix.md) — skill choice.
 - [Validation Report](../foundation/validation-report.md) — current evidence status.
 - [Source Map](sources/source-map.md) — authority/path lookup.

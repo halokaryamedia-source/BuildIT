@@ -1,6 +1,6 @@
 # BlockIT
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The product goal is a clean editable `.bbmodel` following an approved visual reference through the shortest evidence-backed workflow.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The product goal is a clean editable `.bbmodel` that follows an approved visual reference through the shortest evidence-backed workflow.
 
 `Local` is the current product/development branch. Historical/reference branches are not current execution authority.
 
@@ -8,16 +8,31 @@ BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built
 
 Root [`AGENTS.md`](AGENTS.md) owns routing and proof discipline.
 
-### Asset authoring
+### Reference preparation
+
+Use when the user wants to create or revise the visual reference before modelling:
 
 ```text
-current request / approved reference
+source image / user intent
+→ .agents/skills/blockbench-reference-generator/SKILL.md
+→ one Minecraft / Blockbench multi-view Modelling Brief image
+→ user approval
+```
+
+This route is **image-only**. It does not call BlockIT MCP, author geometry, or create ZIP/manifest/production packages.
+
+### Asset authoring
+
+After a reference is approved:
+
+```text
+current request + actual approved reference image
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 → only the active modelling, texturing, or animation specialist
 → BlockIT MCP
 ```
 
-**Do not automatically load repository history**, `CONTEXT.md`, `next-action.md`, or development skills for ordinary asset authoring.
+Do not automatically load repository history, `CONTEXT.md`, `next-action.md`, or development skills for ordinary asset authoring.
 
 ### Repository / plugin continuation
 
@@ -30,41 +45,51 @@ AGENTS.md
 → development-brief for create/change work
 ```
 
-`docs/knowledge/next-action.md` is the only active continuation snapshot. [`docs/knowledge/operations/local-acceptance-runbook.md`](docs/knowledge/operations/local-acceptance-runbook.md) records the completed local acceptance procedure and is not default boot unless explicitly reactivated.
+`docs/knowledge/next-action.md` is the only active repository-continuation snapshot. The Local Acceptance Runbook is completed procedure/history and is inactive unless explicitly reactivated.
 
-For a named hot-path MCP defect, [`docs/knowledge/implementation-map.md`](docs/knowledge/implementation-map.md) supplies the first source owner + primary regression owner before broad code search.
-
-## Product Boundary
-
-Normal BlockIT work targets Blockbench `bedrock`:
+## Product Flow
 
 ```text
-approved reference
-→ primary Cube/Group form
-→ difference-first FAIL / UNVERIFIED / PASS
-→ bounded correction or global reframe
-→ secondary geometry / hierarchy / pivots
-→ texture/PBR when required
-→ animation when required
-→ validation
+SOURCE IMAGE / USER INTENT
+→ REFERENCE GENERATOR
+→ MODELLING BRIEF DRAFT
+→ USER APPROVAL
+→ ACTUAL APPROVED REFERENCE IMAGE
+→ VIEW PAIR MAP + REFERENCE EVIDENCE MAP
+→ SEMANTIC FORM
+→ PRIMARY FORM HYPOTHESIS
+→ COARSE CUBE/GROUP AUTHORING
+→ STRUCTURAL + CANONICAL MODEL OBSERVATION
+→ CLAIM-LOCKED REFERENCE ↔ MODEL REVIEW
+→ FAIL | UNVERIFIED | PASS
+→ if local failure: causal correction
+→ IMPROVED | UNCHANGED | REGRESSED
+→ if global/regressed: revise hypothesis instead of stacking patches
+→ SECONDARY GEOMETRY / HIERARCHY / PIVOTS
+→ TEXTURE/PBR WHEN REQUIRED
+→ ANIMATION WHEN REQUIRED
+→ FINAL VALIDATION
 → .bbmodel / Bedrock geometry export
 ```
 
-Tool success is execution evidence, not visual approval. `BLOCKED` is valid when continuation would require guessing or repeated failed work. Generic Mesh/Hytale workflows, risky evaluation, UI automation, or another format do not expand the Bedrock contract.
+Tool success is execution evidence, not visual approval. A filename/path/manifest/prose summary is not visual evidence. `BLOCKED` is valid when continuation would require guessing.
 
 ## Repository Map
 
 | Path | Purpose |
 |---|---|
-| `.agents/skills/` | repository-owned skills |
+| `.agents/skills/` | canonical repository-owned skills |
 | `mcp/` | BlockIT MCP source/build/tests/generated API docs |
 | `workspace/` | model/reference packages and fixtures |
-| `docs/foundation/` | durable product/modelling policy |
+| `docs/foundation/` | durable product/reference/modelling policy |
 | `docs/knowledge/` | continuity, ownership, decisions, reviews, operations |
 
 ## Skill Surface
 
 ```text
+reference preparation:
+  blockbench-reference-generator
+
 asset authoring:
   blockit-bedrock-entity-mcp
   ├─ blockbench-bedrock-modelling
@@ -79,7 +104,7 @@ repository development:
   bun-tooling
 ```
 
-Select by current boundary; never load all skills by ritual. The authoring orchestrator routes from intent + known state + stage, uses exact-name native deferred loading when a tool spec is missing, and applies bounded recovery without adding a custom runtime router.
+Select by the current boundary; never load all skills by ritual.
 
 ## MCP Development
 
@@ -93,7 +118,7 @@ bun run build
 bun run docs:check
 ```
 
-Production output is `mcp/dist/mcp.js`. **Do not use the upstream hosted** Blockbench MCP plugin as proof of BlockIT; load the repository build when runtime validation is explicitly active.
+Production output is `mcp/dist/mcp.js`. Do not use the upstream hosted Blockbench MCP plugin as proof of BlockIT; load the repository build when runtime validation is explicitly active.
 
 Default endpoint:
 
@@ -103,18 +128,9 @@ http://127.0.0.1:3000/bb-mcp
 
 See [`mcp/README.md`](mcp/README.md) for runtime/build details.
 
-## Accepted Functional Baseline
+## Current Accepted State
 
-The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, visual-routing behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
-
-Historical acceptance measurement:
-
-```text
-62 enabled tools
-72,775 tools/list response characters
-48,674 input-schema characters
-11,800 tool-description characters
-```
+The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
 
 Current fresh GitHub/CI serialized surface:
 
@@ -128,15 +144,17 @@ initialize instructions: 386 characters
 
 `export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-These character counts do not prove client token cost. P0–P4 routing/deferred-loading/recovery/navigation hardening is static repository/CI evidence; installed Codex/model parity and real token/latency behavior remain local-proof questions only when explicitly needed. Current status belongs in [`docs/knowledge/next-action.md`](docs/knowledge/next-action.md).
+**P0–P7 and the minimal Reference Generator route are implemented on `Local`.** P0–P4 efficiency/routing, P5 semantic-form/contact, P6 actual-reference grounding, P7 qualitative convergence/evaluation-integrity, and Reference Generator buildability are repository/static contracts unless a specific accepted live baseline applies.
+
+Installed Codex deferred-search parity, actual model-visible token/latency/image-context cost, Reference Generator image quality, and P5–P7 model-facing effectiveness remain direct/local evidence questions when explicitly activated. Character counts are not token measurements.
 
 ## Hygiene
 
 - generated MCP API docs are tracked and checked for freshness;
 - transient build/editor/preview state is ignored;
 - historical implementation belongs in Git/reviews, not duplicate active plans;
-- approved reference packages and intentional fixtures remain tracked;
-- current-state docs must be synchronized when continuation changes instead of compensating with chat memory.
+- current-state docs must be synchronized when continuation changes;
+- do not add routers/profiles/scorers/packaging without a concrete failure proving the minimal path insufficient.
 
 ## License / Upstream
 

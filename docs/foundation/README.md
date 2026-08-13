@@ -1,18 +1,21 @@
 # BlockIT Foundation
 
-Updated: 2026-08-12  
-Status: active product/modelling policy
+Updated: 2026-08-13  
+Status: active product/reference/modelling policy
 
-This folder contains **durable current BlockIT policy**. Active task state belongs in [`../knowledge/next-action.md`](../knowledge/next-action.md); local test procedure belongs in [`../knowledge/operations/local-acceptance-runbook.md`](../knowledge/operations/local-acceptance-runbook.md).
+This folder contains **durable current BlockIT policy**. Active task state belongs in [`../knowledge/next-action.md`](../knowledge/next-action.md); future/non-active evidence work belongs in the Task Board; local acceptance procedure belongs in the completed Local Acceptance Runbook.
 
 ## Product Direction
 
-BlockIT builds clean editable Minecraft Bedrock Entity `.bbmodel` projects in Blockbench through MCP from an approved visual reference/Modelling Brief.
+BlockIT builds clean editable Minecraft Bedrock Entity `.bbmodel` projects from an approved visual Modelling Brief. Reference preparation and MCP modelling are deliberately separate.
 
 ```text
-technical tool success ≠ visual correctness
+SOURCE IMAGE / USER INTENT
+→ Reference Generator
+→ one buildable multi-view Modelling Brief Draft
+→ user approval
 
-actual approved reference image available
+ACTUAL APPROVED REFERENCE IMAGE
 → explicit view pairing + grounded observable claim IDs
 → Semantic Form: what exists/how parts relate
 → Primary Form: where/how large/how oriented
@@ -21,10 +24,11 @@ actual approved reference image available
 → actual reference + fresh model views
 → claim-locked difference-first verdict
 → causal correction or semantic/spatial rebuild
+→ IMPROVED | UNCHANGED | REGRESSED
 → downstream surface/motion only after geometry is sound
 ```
 
-Filename/path/manifest/prose/memory is not visual evidence. If the actual approved image cannot be inspected for a material reference-driven decision, use `UNVERIFIED/BLOCKED` instead of guessing.
+Technical tool success is not visual correctness. Filename/path/manifest/prose/memory is not visual evidence. If the actual approved image cannot be inspected for a material reference-driven decision, use `UNVERIFIED/BLOCKED` instead of guessing.
 
 ## Current Policy Set
 
@@ -34,15 +38,34 @@ Filename/path/manifest/prose/memory is not visual evidence. If the actual approv
 | [01 — Project Overview](01-project-overview.md) | purpose, target user, success definition |
 | [02 — Product Requirements](02-product-requirements.md) | scope and definition of done |
 | [03 — Modelling Workflow](03-modelling-workflow.md) | actual-reference-grounded production sequence |
-| [04 — Reference Guide](04-reference-guide.md) | Source Image/user intent → approved image + evidence/view grounding |
+| [04 — Reference Guide](04-reference-guide.md) | Source Image/user intent → approved Modelling Brief + evidence/view grounding |
 | [05 — Geometry Standard](05-geometry-standard.md) | Cube, proportion, placement, rotation, pivot, hierarchy rules |
 | [06 — Texture Standard](06-texture-standard.md) | UV/texture policy after geometry is coherent |
-| [07 — Visual Validation](07-visual-validation.md) | claim/view-grounded structural vs visual proof + repair loop |
+| [07 — Visual Validation](07-visual-validation.md) | claim/view-grounded structural vs visual proof + convergence loop |
 | [Validation Report](validation-report.md) | current source/official/local-proof status |
 
 Historical source-selection/merge records remain Git/review evidence, not current policy.
 
-## Runtime-facing instruments
+## Reference Generator Boundary
+
+Active image-generation owner:
+
+```text
+/.agents/skills/blockbench-reference-generator/SKILL.md
+```
+
+It owns:
+
+```text
+source image / user intent
+→ one Minecraft / Blockbench multi-view reference image
+→ maximum one targeted correction
+→ user approval
+```
+
+It does **not** own MCP execution, Cube transforms, ZIP/manifest packaging, numeric fidelity scoring, or final model approval. After approval, the actual image must be supplied to the modelling surface.
+
+## Runtime-facing Instruments
 
 Current `Local` source includes:
 
@@ -54,9 +77,23 @@ Current `Local` source includes:
 - direct Locator / Null Object state operations;
 - retained Bedrock texture/Paint/PBR/material-instance + animation capability.
 
-These provide observation/execution, not automatic reference loading, anatomy inference, or resemblance approval. The approved reference must be supplied/visible to the modelling model through the active multimodal input path; `capture_model_views` returns model evidence only.
+These provide observation/execution, not automatic reference loading, anatomy inference, or resemblance approval.
 
-## Read only what the task needs
+## Current Hardening State
+
+Repository/static contracts are implemented through:
+
+```text
+P0–P4  stage/routing/deferred-loading/recovery/defect navigation
+P5     semantic form / rotation / pivot / contact
+P6     actual-reference grounding + claim/view locking
+P7     qualitative correction convergence + evaluation integrity
+REF    minimal Reference Generator buildability/cross-view contract
+```
+
+Static source/CI can prove these contracts exist. It cannot prove image-generator quality, installed-client behavior, model image understanding, or live Blockbench convergence.
+
+## Read Only What The Task Needs
 
 | Need | Read |
 |---|---|
@@ -71,7 +108,7 @@ These provide observation/execution, not automatic reference loading, anatomy in
 
 Do not read the whole folder for routine work.
 
-## Policy rules
+## Policy Rules
 
 - Stable product/model rules belong here; implementation status does not.
 - Current source/runtime evidence can supersede old assumptions; reconcile rather than layer exceptions.
