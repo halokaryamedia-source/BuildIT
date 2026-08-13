@@ -26,7 +26,7 @@ Reference Evidence Map → derived index only
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Build a **View Pair Map** to matching `capture_model_views` views; ambiguous pairing stays `UNVERIFIED`.
+Build a **View Pair Map**; ambiguous front/back, left/right, mirrored, or 3/4 pairing stays `UNVERIFIED`.
 
 ## Semantic Form / Construction / Transform Gate
 
