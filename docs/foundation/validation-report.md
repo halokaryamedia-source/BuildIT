@@ -17,7 +17,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_SIMPLIFIED_AND_PRO1_PRO8_STATIC_VERIFIED
+NON_LOCAL_P0_P7_REFERENCE_PROJECTION_HARDENED_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
@@ -62,25 +62,33 @@ Reference-driven approval requires the actual approved reference image plus fres
 
 Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Evaluation is qualitative and evidence-bound, not a scalar similarity score. Real convergence remains `LOCAL PROOF REQUIRED`.
 
-## Reference Generator — Simplified Static Contract
+## Reference Generator — Single-Model Projection Contract
 
-Current reference preparation requires:
+Current reference preparation now requires:
 
 ```text
 source image + user intent
 → Internal Generation Brief
-→ most structurally readable stable pose when articulated
-→ grounded load-bearing subjects: natural neutral stance by default
-→ Pre-Generation Readiness Gate
-→ one clean multi-view Draft
-→ direct visual review
+→ stable/readable pose
+→ identity-critical articulated-feature state lock
+→ SINGLE-MODEL PROJECTION LOCK
+→ Pre-Generation Readiness
+→ one Draft
+→ visual gate:
+   projection coherence
+   articulation lock
+   support/naturalness
+   construction/readability
+→ one board-level targeted correction when needed
 → user approval
-→ approved image + relevant nonvisual Handoff Constraints
+→ actual approved reference image + relevant Handoff Constraints
 ```
 
-The pose rule is relational, not an anatomy template. Requested/observable pose state is preserved across views without inventing hidden joint precision. Ground/support requirements apply only when structurally relevant. Orthographic views own structural pose truth; TOP preserves footprint/placement rather than pretending to share a side-view ground baseline; 3/4 cannot redesign anatomy or pose.
+The multi-view board is treated as several projections of one locked structural interpretation, not independently designed panels. TOP must be a true top-down projection of the same structure. Identity-critical articulated features preserve visible root/direction-or-bend/terminal state across views. Grounded neutral stance must remain naturally plausible rather than being forced into robotic bilateral alignment.
 
-Construction patterns are examples rather than an exhaustive taxonomy or preset system. The board contains view labels only by default; scale/height/use facts remain Handoff Constraints outside image pixels. No planner, anatomy schema, manifest, package, or new MCP capability was added.
+A structural cross-view defect is board-level. During the one allowed correction, the original Source Image + locked Internal Generation Brief remain authority; the failed Draft is defect evidence, not geometry authority; the whole board is regenerated rather than patching one panel independently.
+
+Construction remains reasoning-based rather than an exhaustive taxonomy/preset system. Scale/height/use facts remain Handoff Constraints outside image pixels by default. No anatomy engine, pose planner, manifest/package, new MCP tool, runtime profile, or scoring system was added.
 
 Static tests do not certify future generated-image quality. Actual Draft quality and approval remain direct image-capable evidence.
 
@@ -100,7 +108,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **213 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
+Current GitHub proof: **212 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
 
 Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
@@ -137,4 +145,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + simplified hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + single-model projection-hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
