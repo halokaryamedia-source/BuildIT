@@ -1,19 +1,21 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 2.3  
+**Version:** 2.4  
 **Updated:** 2026-08-14
 
 ## Purpose
 
 Own the durable Source Image → approved Modelling Brief semantics. Operational generation belongs to `.agents/skills/blockbench-reference-generator/SKILL.md`; this file is not a second prompt or MCP subsystem.
 
+The goal is a **recognizable, Minecraft-appropriate, Blockbench-buildable interpretation**, not exact real-world reconstruction.
+
 ## Authority / Evidence
 
 ```text
 user brief / approved target   → identity + requested function
 original Source Image           → source-visible evidence regardless of camera angle
-actual approved reference image → generated visible form + approved modelling pose/state
+actual approved reference image → Minecraft-oriented geometry + texture guidance
 approved numeric dimensions     → whole-model scale/envelope
 Handoff Constraints             → material nonvisual facts outside image
 Reference Evidence Map          → derived working index; never image authority
@@ -21,62 +23,70 @@ Reference Evidence Map          → derived working index; never image authority
 
 The **actual approved reference image** and material original Source Image evidence must be available as multimodal input when used for geometry reasoning. **A path itself is not visual evidence.** A manifest, prose summary, or memory is context only. If relevant image evidence cannot be inspected, material reference-driven geometry/approval is `BLOCKED`.
 
-Default deliverable is the image only. Handoff Constraints are task context, not a ZIP/manifest/package.
-
 ## Execution / Readiness
 
 Audit, policy work, CI, or `next-action.md` do **not** authorize generation. After hardening/verification, stop and report; resume only after a **fresh explicit user instruction**.
 
-Prefer zero clarification. Never infer numeric dimensions from pixels or invent hidden features, asymmetry, attachments, articulation, or hidden joint precision. **Generation is output, not discovery.** `READY` requires no unresolved material ambiguity in identity, major form, pose/articulation, required orthographic coverage, or buildability.
+Prefer zero clarification. Never infer numeric dimensions from pixels or invent identity-changing hidden structure. **Generation is output, not discovery.** `READY` requires no unresolved ambiguity that could materially change identity, primary geometry, required topology/attachment, Minecraft buildability, or identity-critical texture information.
+
+## Minecraft-First Fidelity
+
+Reference fidelity is **identity-first and buildability-first**, not pixel-copy-first.
+
+### Geometry
+
+Preserve recognizable silhouette, major masses, defining part count, attachments/topology, important negative spaces, and identity-critical features. Prefer the simplest Blockbench-buildable form that preserves those requirements. Exact anatomy, contour, pose, or engineering-grade projection is not required when a simpler Minecraft interpretation remains recognizable.
+
+### Texture
+
+Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure. Prefer Minecraft-readable pixel treatment over photoreal micro-detail, dense noise, wrinkles, or baked lighting.
+
+Minor shade/noise/marking drift between previews is acceptable when identity and material reading remain clear.
 
 ## Pose / Articulation
 
-Use the most structurally readable stable pose unless another state is required. Grounded load-bearing subjects default to a **stable natural neutral stance**; a dynamic source pose does not automatically become the modelling pose, and neutral does not mean forced bilateral alignment.
+Use the most structurally readable stable pose unless another state is required. Grounded load-bearing subjects default to a stable natural neutral stance; a dynamic source pose does not automatically become the modelling pose, and neutral does not mean forced bilateral alignment.
 
-When pose is normalized, preserve **identity-bearing silhouette and major-mass proportion**, not source gait/limb silhouette. Source identity remains authority; the approved modelling pose owns limb configuration.
+When pose is normalized, preserve **identity-bearing silhouette and major-mass proportion**, not source gait/limb silhouette. Identity-critical articulated features should preserve visible **root → direction/bend → terminal** intent, but a small terminal-angle/curl discrepancy is minor when it does not change identity, attachment, buildability, or the intended Minecraft form.
 
-Across generated views preserve observable pose/limb phase, limb/appendage count, plausible attachment, support/contact, near/far separation and important negative spaces. Identity-critical articulated features preserve visible **root → direction/bend → terminal** state. Duplicated, missing, merged, floating, relocated, or independently re-posed limbs/appendages are invalid.
+Duplicated/missing required parts, changed part count, incompatible attachment/topology, or structurally different major masses are material defects.
 
-## Construction
+## Five-Preview Coverage Board
 
-Use the **simplest Blockbench-buildable representation that preserves the visible requirement**. Cuboids, rotated/stepped masses, plane-like Cubes, layered/inflated forms, linked segments, and texture-only treatment are examples, not presets. Do not lazy-voxelize, substitute smooth primitives, or turn sample Cube counts into rules.
-
-## Orthographic Core
-
-A board is the **smallest mutually compatible orthographic view set** that constrains every material structure, not a fixed five-panel turnaround.
-
-Choose a **source-nearest orthographic anchor**: the canonical orthographic direction closest to and best supported by the Source Image. The original Source Image remains authority even when captured from 3/4, elevated, or perspective; the generated anchor normalizes camera projection instead of copying lens distortion.
-
-Add only views needed for missing axes, attachments, asymmetry, footprint, or important negative spaces. If an optional view requires contradictory invention, omit it only when the remaining core stays **sufficiently constrained**. If omission makes the reference materially underconstrained, the result is `NEEDS REVIEW`.
-
-Typical guidance, not a template:
+Default reference output provides broad modelling coverage:
 
 ```text
-ANCHOR SIDE/FRONT
-+ perpendicular orthographic view
-+ TOP only when footprint/depth materially matters
-+ BACK only when rear structure materially matters
+UPPER: SIDE | FRONT | BACK
+LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
 ```
 
-TOP, when included, is a true top-down projection of the same structure. **3/4 is not part of the default initial core.** A **generated** 3/4 is diagnostic, never structural authority; this does not reduce the authority of an original Source Image photographed from 3/4.
+Use the same source-supported LEFT/RIGHT side for SIDE and FRONT-SIDE 3/4 and label it explicitly when known. The source-nearest orthographic view is the anchor.
 
-## Visual Gate / Correction
+- SIDE / FRONT / BACK / TOP provide orthographic construction evidence.
+- TOP provides footprint/depth guidance; engineering-perfect projection is not required.
+- generated 3/4 is supplemental readability evidence and never overrides stronger orthographic/source evidence.
+- five previews are broad evidence for one intended Minecraft model, **not five exact technical drawings**.
 
-Review in order:
+Minor cross-view drift—small curl/angle changes, slight contour differences, overlap differences, shade changes, or marking placement drift—does not invalidate an otherwise recognizable and buildable reference.
 
-1. **Anchor fidelity** — source identity, identity-bearing silhouette and major masses; normalized pose may change gait/limb silhouette.
-2. **Orthographic coherence** — one structure and remaining coverage stays sufficiently constrained.
-3. **Articulation lock**.
-4. Support / naturalness.
-5. Construction / readability.
+A discrepancy is **material** only when it changes identity, primary mass/required part count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Material conflicts **must not be averaged** into invented geometry.
 
-Material projection mismatch, articulated drift, pose/support conflict, materially underconstrained core, or cross-view redesign is `NOT READY / NEEDS REVIEW`. Material conflicts **must not be averaged** into a fake compromise. Do not replace qualitative review with numeric scores.
+## Canonical Interpretation Downstream
 
-A structural cross-view failure is a **board-level defect**. For the one allowed correction, original Source Image + locked Internal Generation Brief remain authority; failed Draft is defect evidence, **not geometry authority**; regenerate the **whole shown orthographic core**, never one panel independently. **Remove an unnecessary problematic view** only when the remaining core stays sufficiently constrained; otherwise stop at `NEEDS REVIEW`.
+Minor reference imperfections are resolved during modelling/texturing by selecting **one canonical Minecraft interpretation** and using it consistently. Preference order:
+
+```text
+explicit user requirement
+→ original Source Image evidence
+→ best-supported approved reference view(s)
+→ simplest recognizable Blockbench-buildable interpretation
+```
+
+This is judgement, not a new score/profile/manifest. Minor drift is not `BLOCKED`. Only unresolved **material** contradiction becomes `CONFLICTING` / `BLOCKED`.
 
 ## View Pair Map
 
-Map only generated views actually present:
+Map generated views actually present:
 
 ```text
 REFERENCE FRONT ↔ MODEL front
@@ -100,17 +110,13 @@ supporting reference view(s)
 evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Claim text describes what is visible, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here.
+**Claim text describes what is visible**, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here. Minor preview variation does not need a separate claim unless it changes a material decision.
 
-## Dimensions / Image Content
-
-When dimensions are approved: `1 block = 16 Blockbench units`; use them as whole-model target/envelope, not per-Cube transforms. Never derive scale/transforms from pixels, masks, perspective, mesh fitting, or similarity scores.
+## Image Content / Completion
 
 Target dimensions normally remain **Handoff Constraints outside the image**. **Only panel/view labels may appear by default.** No board title/header/subtitle/note/status/scale/dimensions/target-use text unless explicitly requested.
 
-## Completion / Generation Budget
-
-A Draft is acceptable only when identity, orthographic-core coherence, pose/articulation integrity, buildability, present-view pairing, primary masses/contacts and important negative spaces are usable and the user approves the image.
+A Draft is acceptable when it is recognizable, geometry-buildable, texture-useful, free of material contradiction, and user-approved. It does **not** need to be 100% identical to the source.
 
 For one **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic alternatives. A materially new user-approved source, pose, target, or requirement begins a new review cycle; the system must not open a new cycle automatically merely to retry a failed correction.
 
