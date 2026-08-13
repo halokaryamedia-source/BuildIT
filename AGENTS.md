@@ -13,17 +13,22 @@ Use when the user wants to create/revise the **reference image itself** before B
 ```text
 source image / user intent
 → .agents/skills/blockbench-reference-generator/SKILL.md
-→ one approved visual Modelling Brief image
+→ assisted intake + internal brief
+→ pre-generation readiness
+   ├─ READY → generate Draft → visual gate → user approval
+   └─ NOT READY → bounded clarification → still material? NEEDS REVIEW
 ```
 
-Run only on an image-capable surface. Do not load the MCP authoring orchestrator or call BlockIT MCP just to prepare the reference. After approval, hand the actual image to modelling.
+Run only on an image-capable surface. **Generation is output, not discovery:** do not generate a speculative Draft before material identity/form/buildability are understood. Do not load the MCP authoring orchestrator or call BlockIT MCP just to prepare the reference. After approval, hand the actual image to modelling.
+
+Detailed current sequence: `docs/knowledge/flow.md`. Durable reference policy: `docs/foundation/04-reference-guide.md`.
 
 ### Asset Authoring
 
 Use for Minecraft Bedrock Entity create/revise/inspect/texture/animate/validate/export work that does not change repository/plugin source.
 
 ```text
-current request / approved reference
+current request / actual approved reference
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 → only the active modelling/texturing/animation specialist
 → BlockIT MCP
@@ -101,6 +106,7 @@ For `mcp/**`, `mcp/AGENTS.md` owns strict TypeScript/Zod/runtime/registration/re
 
 ## Canonical Owners
 
+- task/product flow → `docs/knowledge/flow.md`
 - active continuation → `docs/knowledge/next-action.md`
 - stable facts → `CONTEXT.md`
 - product/reference/modelling policy → `docs/foundation/`
