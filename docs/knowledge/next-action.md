@@ -7,7 +7,7 @@ Root `AGENTS.md` owns routing; `flow.md` owns detailed sequence; `docs/foundatio
 ## Status
 
 ```text
-REFERENCE_ORTHOGRAPHIC_CORE_HARDENING_STATIC_VERIFIED
+REFERENCE_ORTHOGRAPHIC_BOUNDARY_CLARIFICATION_PENDING_STATIC_VERIFY
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
@@ -16,45 +16,38 @@ Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
 Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
 
-## Current Reference Contract
+## Clarified Reference Contract
 
-A fixed five-view turnaround is no longer the default because observed generations produced loosely related 2D interpretations rather than one reliably constrained structure.
+The orthographic-core strategy remains. This pass only removes five ambiguities:
 
 ```text
-source + user intent
-→ Internal Generation Brief
-→ SOURCE-NEAREST ANCHOR
-→ pose + articulated-feature lock
-→ SMALLEST ORTHOGRAPHIC CORE
-   → only evidence-bearing views
-   → TOP/BACK conditional
-   → 3/4 diagnostic, not default structural authority
-   → omit a conflicting optional view rather than invent structure
-→ readiness
-→ EXECUTION CONSENT GATE
-→ authorized Core Draft/correction
-→ anchor fidelity
-→ orthographic coherence
-→ articulation lock
-→ support/naturalness
-→ construction/readability
-→ user approval
+SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
+→ original Source remains authority at any camera angle
+→ generated anchor normalizes camera projection
+
+POSE NORMALIZATION
+→ preserve identity-bearing silhouette / major masses
+→ do not preserve source gait silhouette when modelling pose intentionally changes
+
+VIEW OMISSION
+→ omit optional contradictory view only if remaining core stays materially sufficient
+→ otherwise NEEDS REVIEW
+
+3/4 DISTINCTION
+→ original Source 3/4 remains visual authority
+→ generated 3/4 is diagnostic, never structural authority
+
+GENERATION BUDGET
+→ scoped per unchanged Internal Generation Brief / review cycle
+→ materially changed user-approved source/pose/target/requirement may start a new cycle
+→ never auto-open a new cycle just to retry
 ```
 
-This is generic policy, not an elephant/quadruped preset.
+These are generic reference rules, not elephant/quadruped presets.
 
 ## Current Candidate / Evidence
 
-The elephant source remains source authority. Existing generated boards are **NOT APPROVED** and are defect evidence only.
-
-```text
-TOP / FOOTPRINT       → inconsistent across board
-trunk articulation    → state/curl drift
-neutral stance        → overly mechanical alignment
-fixed five-view board → encouraged independent panel interpretation
-```
-
-Retained Handoff Constraint: `target Minecraft height ≈ 2 × player height`. It stays outside image pixels unless explicitly requested visible.
+The elephant source remains source authority. Existing generated boards are **NOT APPROVED** and remain defect evidence only. Retained Handoff Constraint: `target Minecraft height ≈ 2 × player height`, outside image pixels unless explicitly requested visible.
 
 ## Execution / Proof Boundary
 
@@ -64,12 +57,14 @@ hardening / audit / docs / CI
 → WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-CI or this file never authorizes image generation. Orthographic-core behavior is static-verified; future image quality, installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED` where applicable.
+CI or this file never authorizes image generation. Future image quality, installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED` where applicable.
 
 ## Next Step
 
 ```text
-WAIT — DO NOT GENERATE
+1. finish official static verification for these reference clarifications
+2. STOP AND REPORT
+3. WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-After a future reference is explicitly approved, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before Blockbench local acceptance.
+Do not start Blockbench/Codex local acceptance before a future reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before Blockbench local acceptance.
