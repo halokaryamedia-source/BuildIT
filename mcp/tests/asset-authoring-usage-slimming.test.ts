@@ -18,10 +18,10 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("Do not route it through `development-brief`");
 
     const readme = await source("../README.md");
-    expect(readme).toContain("## Start By Task");
-    expect(readme).toContain("### Asset authoring");
-    expect(readme).toContain("Do not automatically load repository history");
-    expect(readme).toContain("Local Acceptance Runbook");
+    expect(readme).toContain("## Current Documentation Owners");
+    expect(readme).toContain("Root `AGENTS.md` owns routing");
+    expect(readme).toContain("docs/knowledge/operations/local-acceptance-runbook.md");
+    expect(readme).not.toContain("## Start By Task");
     expect(readme).not.toContain("## Mandatory Session Boot");
   });
 
@@ -85,6 +85,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(writeCall).toBeGreaterThan(-1);
     expect(writeCall).toBeLessThan(statCall);
   });
+
   test("filesystem export path must be platform-absolute", () => {
     for (const path of [
       "/tmp/model.json",
@@ -159,6 +160,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(texture).toContain("a: Number(fill_color[3] ?? 255) / 255");
     expect(texture).not.toContain("a: Number(fill_color[3] ?? 255),");
   });
+
   test("high-frequency read outputs use compact JSON and locator mutation does not require redundant read", async () => {
     const files = await Promise.all([
       source("server/tools/element-inspection.ts"),
@@ -191,5 +193,4 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("asset_authoring_profile");
   });
-
 });
