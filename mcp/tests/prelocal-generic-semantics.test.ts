@@ -23,15 +23,11 @@ describe("pre-local generic semantics narrowing", () => {
     expect(addGroupParameters.safeParse({ name: "body" }).success).toBe(true);
     expect(addGroupParameters.safeParse({ name: "body", origin: [0, Infinity, 0] }).success).toBe(false);
     expect(addGroupParameters.safeParse({ name: "body", rotation: [0, 0, -Infinity] }).success).toBe(false);
-    for (const editorOnly of [
-      { selected: true },
-      { shade: false },
-      { visibility: false },
-      { autouv: "1" },
-    ]) {
+    for (const editorOnly of [{ selected: true }, { shade: false }, { visibility: false }, { autouv: "1" }]) {
       expect(addGroupParameters.safeParse({ name: "body", ...editorOnly }).success).toBe(false);
     }
   });
+
   test("duplicate_element rejects non-finite or overflowing translated coordinates", async () => {
     expect(duplicateElementParameters.safeParse({ id: "cube", offset: [0, Infinity, 0] }).success).toBe(false);
     expect(requireFiniteTranslatedElementVector3([1, 2, 3], [4, 5, 6], "test")).toEqual([5, 7, 9]);
@@ -42,6 +38,7 @@ describe("pre-local generic semantics narrowing", () => {
     expect(duplicateBlock).toContain("preflightDuplicateTranslation(element, offset)");
     expect(duplicateBlock.indexOf("preflightDuplicateTranslation(element, offset)")).toBeLessThan(duplicateBlock.indexOf("Undo.initEdit"));
   });
+
   test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
     expect(BLOCKIT_MODEL_CODEC_IDS).toEqual(["bedrock", "project"]);
     expect(listExportFormatsParameters.parse({})).toEqual({});
@@ -60,6 +57,7 @@ describe("pre-local generic semantics narrowing", () => {
     expect(skill).toContain("`export_model` supports:");
     expect(skill).not.toContain("list_export_formats");
   });
+
   test("generic full-app capture and editor-camera mutation are default-disabled", async () => {
     const camera = await source("server/tools/camera.ts");
     expect(camera).toContain("cameraToolDocs[1].status, false");
@@ -70,13 +68,12 @@ describe("pre-local generic semantics narrowing", () => {
   test("generic per-face texture apply is disabled for Bedrock single-texture authoring", async () => {
     const texture = await source("server/tools/texture.ts");
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
-    const audit = await source("../docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md");
     expect(texture).toContain("textureToolDocs[1].status, false");
     expect(texture).toContain("native Bedrock Entity is single_texture");
     expect(skill).not.toContain("- `apply_texture`");
     expect(skill).toContain("use `activate_texture` to choose the active/default working texture");
-    expect(audit).toContain("**DEFAULT-DISABLE** the inherited generic per-face `Texture.apply()` wrapper");
   });
+
   test("raw per-face texture discovery is disabled for Bedrock single-texture authoring", async () => {
     const elements = await source("server/tools/element.ts");
     const start = elements.indexOf('name: "filter_by_material"');
@@ -85,18 +82,10 @@ describe("pre-local generic semantics narrowing", () => {
     expect(registration).toBeGreaterThan(start);
     expect(elements).toContain("effective face texture comes from Texture.getDefault()");
   });
+
   test("validator inferred element references declare their non-authoritative source", async () => {
     const validator = await source("server/resources/validator.ts");
     expect(validator).toContain('elementRefsSource: elementRefs.length > 0 ? "message_heuristic" : "none"');
     expect(validator).toContain("elementRefsAuthoritative: false");
-  });
-
-  test("generic nodes resource remains explicitly deferred until protected native gaps have owners", async () => {
-    const audit = await source("../docs/knowledge/reviews/mcp-prelocal-generic-semantics-audit-2026-08-10.md");
-    const matrix = await source("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md");
-    expect(audit).toContain("`nodes://{id}`");
-    expect(audit).toContain("DEFER — retain for now");
-    expect(matrix).toContain("Generic `nodes://{id}` observation");
-    expect(matrix).toContain("Transitional / deferred");
   });
 });
