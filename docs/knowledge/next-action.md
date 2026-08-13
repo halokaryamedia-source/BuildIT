@@ -44,7 +44,7 @@ Scalar number/string values use the existing uniform-keyframe path; three-compon
 
 `create_animation.sound_effects` authors bounded Bedrock sound events by unique finite non-negative timestamp. Each event requires a non-empty Bedrock `effect` identifier and may carry an optional Locator name. Multiple sound events at one timestamp remain a non-empty array under that one timestamp.
 
-`inspect_animation.effects.sound` reports sound keyframe/event counts by default and returns authored `effect` / optional `locator` data when `include_effect_keyframes=true`.
+`inspect_animation.effects.sound` reports sound keyframe/event counts by default and returns authored `effect` / optional `locator` data when `include_effect_keyframes=true`. The public flag description is synchronized to particle **and sound** effect detail.
 
 The local audio-preview `file` path is intentionally **not** part of the BlockIT sound contract because Blockbench uses it for editor preview while Bedrock compilation owns `effect` / `locator`. Existing-animation direct sound mutation remains deferred; no `manage_sound_keyframes` tool or media subsystem was added.
 
