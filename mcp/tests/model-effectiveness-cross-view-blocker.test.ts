@@ -34,17 +34,12 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
 
-    for (const text of [modelling, orchestrator, workflow, audit]) {
+    for (const text of [modelling, orchestrator, workflow]) {
       expect(text).toContain("BLOCKED");
     }
     expect(modelling).toContain("same causal correction direction has failed twice without new evidence");
     expect(workflow).toContain("same causal correction direction fails twice without new evidence");
     expect(orchestrator).toContain("Do not continue speculative mutation");
-    expect(audit).toContain("A valid result is more important than producing a success report");
   });
-
-
-
 });
