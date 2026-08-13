@@ -122,7 +122,7 @@ describe("reference generator buildability contract", () => {
     for (const text of [normalized(skill), normalized(guide)]) {
       expect(text).toContain("stable natural neutral stance");
       expect(text).toContain("explicitly requests another pose");
-      expect(text).toContain("dynamic source pose");
+      expect(text).toContain("does not automatically become the modelling pose");
       expect(text).toContain("exact pose");
       expect(text).toContain("limb phase");
     }
