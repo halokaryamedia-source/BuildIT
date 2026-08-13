@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-13  
-**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7, Reference Generator, professional geometry/texturing/animation sample forensics, bounded Box-UV batch parity, and current-state synchronization.
+**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7, Reference Generator, professional sample forensics, Box-UV batch parity, authored Molang transform-string keyframes, and current-state synchronization.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -57,10 +57,10 @@ Current verification pins Bun **1.3.14** and measures the isolated `initialize �
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,474 characters
-tools array:                    75,430 characters
-input schemas:                  52,461 characters
-descriptions:                   10,712 characters
+tools/list response:            75,926 characters
+tools array:                    75,882 characters
+input schemas:                  52,842 characters
+descriptions:                   10,783 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
@@ -270,7 +270,7 @@ Native Bedrock texture lifecycle, Painter, TextureGroup/PBR, and per-face `mater
 
 ## Animation / Rig
 
-Current contracts retain animation identity, summary/focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. Representative create/inspect/keyframe/timeline/playback is accepted live baseline.
+Current contracts retain animation identity, summary/focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` now accepts finite numeric values or explicit authored Molang transform strings and preserves strings without BlockIT evaluation. `create_animation` intentionally remains numeric-only. Representative create/inspect/keyframe/timeline/playback remains the accepted live baseline; the new expression path is source/CI proof only.
 
 Controllers and unsupported sound/timeline-effect mappings remain protected gaps.
 
@@ -315,7 +315,7 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Current non-local source/contracts are synchronized through **P0–P7 + the minimal Reference Generator route + professional modelling Phase 1–3**.
+Current non-local source/contracts are synchronized through **P0–P7 + the minimal Reference Generator route + professional PRO-1–PRO-6**.
 
 No local run is active. Remaining direct/model-facing questions are intentionally unresolved until explicitly activated:
 

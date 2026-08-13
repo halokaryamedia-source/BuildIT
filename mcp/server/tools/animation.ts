@@ -97,6 +97,22 @@ const finiteCreateAnimationVector3Schema = z
   .array(z.number().finite())
   .length(3);
 
+const molangTransformStringSchema = z
+  .string()
+  .refine((value) => value.trim().length > 0, {
+    message: "Molang transform strings must contain a non-whitespace authored value.",
+  })
+  .describe("Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.");
+
+const manageTransformValueSchema = z.union([
+  z.number().finite(),
+  molangTransformStringSchema,
+]);
+
+const manageTransformVector3Schema = z
+  .array(manageTransformValueSchema)
+  .length(3);
+
 const bedrockBoneKeyframeSchema = z.object({
   time: z
     .number()
@@ -183,9 +199,9 @@ const manageKeyframeDataSchema = z.object({
     .min(0)
     .describe("Finite non-negative keyframe time in seconds."),
   values: z
-    .union([finiteCreateAnimationVector3Schema, z.number().finite()])
+    .union([manageTransformVector3Schema, manageTransformValueSchema])
     .optional()
-    .describe("Finite [x,y,z] values, or a finite uniform scalar."),
+    .describe("Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT."),
   interpolation: interpolationEnum
     .optional()
     .describe("Optional interpolation change. Omit on edit to preserve the existing interpolation."),
@@ -618,7 +634,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
     description:
-      "Creates a new Bedrock animation from authored transform values. Accepts a short name such as `walk` or canonical `animation.walk`; the Bedrock prefix is applied exactly once.",
+      "Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.",
     annotations: {
       title: "Create Animation",
       destructiveHint: true,
@@ -629,7 +645,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "manage_keyframes",
     description:
-      "Creates, deletes, edits, or selects explicit keyframe targets for one bone/channel. Edit omission preserves existing interpolation; non-create actions require each requested time to resolve uniquely before Undo/selection.",
+      "Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.",
     annotations: {
       title: "Manage Keyframes",
       destructiveHint: true,
@@ -1089,7 +1105,7 @@ createTool(
 
       const applyValues = (
         keyframe: _Keyframe,
-        values: number | number[] | undefined
+        values: number | string | Array<number | string> | undefined
       ) => {
         if (values === undefined) return;
         if (typeof values === "number") {

@@ -354,7 +354,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Animation</p>
-      <p class="card-desc">Creates a new Bedrock animation from authored transform values. Accepts a short name such as `walk` or canonical `animation.walk`; the Bedrock prefix is applied exactly once.</p>
+      <p class="card-desc">Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -403,7 +403,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Keyframes</p>
-      <p class="card-desc">Creates, deletes, edits, or selects explicit keyframe targets for one bone/channel. Edit omission preserves existing interpolation; non-create actions require each requested time to resolve uniquely before Undo/selection.</p>
+      <p class="card-desc">Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2967,7 +2967,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-13T10:26:32.445Z from Zod schemas
+        Generated 2026-08-13T10:45:30.345Z from Zod schemas
       </footer>
     </main>
   </div>

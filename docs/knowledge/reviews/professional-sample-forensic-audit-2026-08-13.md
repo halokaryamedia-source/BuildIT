@@ -388,3 +388,20 @@ professional presets / asset classes
 - animation expression/controller/sound runtime behavior if those capabilities are ever implemented.
 
 No local Codex/Blockbench test is activated by this audit.
+
+---
+
+## Follow-up — PRO-6 Expression Keyframes
+
+The 361 non-numeric transform-axis strings were rechecked separately from numeric strings. They include `math.*`, `query.*` / `q.*`, `variable.*` / `v.*`, `this`, and conditional expressions. Current Blockbench keyframe state natively stores transform components as Molang-capable values.
+
+BlockIT therefore resolves this gap narrowly through existing `manage_keyframes` create/edit state:
+
+```text
+finite number             → authored numeric value
+non-empty Molang string   → preserve authored string
+BlockIT evaluation        → never
+create_animation strings  → still rejected; initial codec payload remains numeric-only
+```
+
+This is not a Molang parser/evaluator and does not add a tool. `inspect_animation` already reads keyframe arrays without coercing expression strings. Animation controllers and sound/timeline-effect keyframes remain separate gaps.

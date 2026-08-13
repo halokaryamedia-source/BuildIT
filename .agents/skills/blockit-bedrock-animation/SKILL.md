@@ -47,7 +47,7 @@ For animation-only revision on an **existing asset**, current geometry is the us
 
 A small **diagnostic pose/playback** may test pivot, attachment, or transform direction. If material geometry/hierarchy/pivots change, **consider animation on the affected bones stale** until affected keyframes, arcs, attachments, clipping, and neutral return are rechecked.
 
-Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Choose interpolation, snapping/FPS, loop mode, and participating bones from the motion; coordinated semantic motion matters more than dense keys.
+Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Choose timing/loop/bones from the motion. For expression-valued transform keyframes, `manage_keyframes` preserves explicit Molang strings. Do not fake expression motion by guess-baking numeric keys.
 
 ## Direct Animation Surface
 
@@ -66,7 +66,7 @@ Do not make `animation_timeline.select_range` a core-correctness dependency; pre
 
 ## Protected Gaps
 
-Direct MCP authoring still does not own animation controllers, sound-effect keyframes, timeline-effect keyframes, expression-valued transform keyframes, or bone-binding expressions. Do not fake expression motion by baking arbitrary dense numeric keys, and do not route these gaps through `risky_eval` or generic UI actions.
+Direct MCP authoring still does not own animation controllers, sound/timeline-effect keyframes, or bone-binding expressions. Do not route them through `risky_eval` or generic UI actions.
 
 ## Verification
 

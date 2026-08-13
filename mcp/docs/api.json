@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T10:26:32.445Z",
+  "generatedAt": "2026-08-13T10:45:30.345Z",
   "tools": [
     {
       "name": "place_cube",
@@ -739,7 +739,7 @@
     {
       "name": "create_animation",
       "title": "Create Animation",
-      "description": "Creates a new Bedrock animation from authored transform values. Accepts a short name such as `walk` or canonical `animation.walk`; the Bedrock prefix is applied exactly once.",
+      "description": "Creates a new Bedrock animation from finite numeric transform values. Accepts `walk` or canonical `animation.walk`; the Bedrock prefix is applied once. Use manage_keyframes for explicit Molang transform strings.",
       "status": "stable",
       "category": "Animation",
       "annotations": {
@@ -921,7 +921,7 @@
     {
       "name": "manage_keyframes",
       "title": "Manage Keyframes",
-      "description": "Creates, deletes, edits, or selects explicit keyframe targets for one bone/channel. Edit omission preserves existing interpolation; non-create actions require each requested time to resolve uniquely before Undo/selection.",
+      "description": "Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -982,17 +982,35 @@
                         {
                           "type": "array",
                           "items": {
-                            "type": "number"
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "description": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.",
+                                "markdownDescription": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it."
+                              }
+                            ]
                           },
                           "minItems": 3,
                           "maxItems": 3
                         },
                         {
-                          "type": "number"
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "string",
+                              "description": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.",
+                              "markdownDescription": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it."
+                            }
+                          ]
                         }
                       ],
-                      "description": "Finite [x,y,z] values, or a finite uniform scalar.",
-                      "markdownDescription": "Finite [x,y,z] values, or a finite uniform scalar."
+                      "description": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT.",
+                      "markdownDescription": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT."
                     },
                     "interpolation": {
                       "type": "string",

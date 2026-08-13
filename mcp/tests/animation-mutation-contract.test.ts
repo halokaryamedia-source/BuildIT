@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   animationCopyPasteParameters,
   animationTimelineParameters,
+  createAnimationParameters,
   batchKeyframeOperationsParameters,
   boneRiggingParameters,
   countAnimationClipboardKeyframes,
@@ -23,6 +24,49 @@ describe("animation mutation contract", () => {
       keyframes: [],
     });
     expect(result.success).toBe(false);
+  });
+
+  test("manage_keyframes preserves explicit Molang transform strings without widening create_animation", async () => {
+    const expression = "math.sin(query.life_time*180)*2";
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "create",
+        bone_name: "root",
+        channel: "rotation",
+        keyframes: [{ time: 0, values: [expression, 0, "-variable.attack_body_rot_y"] }],
+      }).success
+    ).toBe(true);
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "edit",
+        bone_name: "root",
+        channel: "scale",
+        keyframes: [{ time: 1, values: expression }],
+      }).success
+    ).toBe(true);
+    expect(
+      manageKeyframesParameters.safeParse({
+        action: "create",
+        bone_name: "root",
+        channel: "rotation",
+        keyframes: [{ time: 0, values: ["   ", 0, 0] }],
+      }).success
+    ).toBe(false);
+    expect(
+      createAnimationParameters.safeParse({
+        name: "expression_probe",
+        bones: { root: [{ time: 0, rotation: [expression, 0, 0] }] },
+      }).success
+    ).toBe(false);
+
+    const [animationSource, inspectionSource] = await Promise.all([
+      Bun.file("server/tools/animation.ts").text(),
+      Bun.file("server/tools/animation-inspection.ts").text(),
+    ]);
+    expect(animationSource).toContain("values: number | string | Array<number | string> | undefined");
+    expect(animationSource).not.toContain("MolangParser.parse(");
+    expect(animationSource).not.toContain("risky_eval");
+    expect(inspectionSource).toContain("keyframe.getArray(index)");
   });
 
   test("timeline loop requires an explicit loop mode", () => {

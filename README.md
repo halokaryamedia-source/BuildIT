@@ -127,16 +127,19 @@ See [`mcp/README.md`](mcp/README.md) for runtime/build details.
 
 The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
 
-r tools
-75,474 tools/list response characters
-52,461 input-schema characters
-10,712 description characters
+Fresh GitHub/CI serialized surface:
+
+```text
+62 tools
+75,926 tools/list response characters
+52,842 input-schema characters
+10,783 description characters
 initialize instructions: 386 characters
 ```
 
 `export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-**P0–P7, assisted Reference Generator intake/readiness, and professional modelling Phase 1–3 contracts are implemented on `Local` unless a specific accepted live baseline applies.** Installed Codex deferred-search parity, actual model-visible token/latency/image-context cost, generated-reference quality, and P5–P7 model-facing effectiveness remain direct/local evidence questions when explicitly activated.
+**P0–P7, assisted Reference Generator intake/readiness, and professional PRO-1–PRO-6 contracts are implemented on `Local` unless a specific accepted live baseline applies.** Installed Codex deferred-search parity, actual model-visible token/latency/image-context cost, generated-reference quality, and P5–P7 model-facing effectiveness remain direct/local evidence questions when explicitly activated.
 
 Character counts are not token measurements.
 

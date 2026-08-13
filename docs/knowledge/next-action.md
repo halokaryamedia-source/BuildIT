@@ -2,139 +2,86 @@
 
 Updated: 2026-08-13
 
-This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; `flow.md` owns detailed task/product sequence; `docs/foundation/validation-report.md` owns proof state.
+Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `flow.md` owns detailed product sequence; `docs/foundation/validation-report.md` owns proof state.
 
 ## Status
 
 ```text
-PROFESSIONAL_SAMPLE_FORENSIC_AUDIT_AND_UV_BATCH_PARITY_COMPLETE
+PROFESSIONAL_ANIMATION_EXPRESSION_KEYFRAMES_PRO6_COMPLETE
 ```
 
 Working branch: **`Local` only**.
 
-The user explicitly does **not** want a local Codex/Blockbench test yet. `NO LOCAL RUN ACTIVE`.
-
-Professional `.bbmodel` samples remain learning evidence only. They never become presets, asset classes, anatomy rules, target Cube/keyframe counts, UV templates, hierarchy-depth targets, copied transforms, or complexity targets.
+The user explicitly does **not** want local Codex/Blockbench testing yet. `NO LOCAL RUN ACTIVE`. Professional samples remain learning evidence, never presets/templates/count targets.
 
 Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
 ## Retained State
 
 ```text
-P0–P4  routing / deferred loading / bounded recovery / defect navigation
-P5     semantic form / orientation / pivot / contact
-P6     actual-reference grounding + claim/view locking
-P7     qualitative correction convergence + evaluation integrity
-REF    assisted intake + pre-generation readiness
-PRO-1  representation + transform ownership + primary hierarchy + identity-weighted detail
-PRO-2  professional authoring expressiveness validation
-PRO-3  place_cube per-element parent + initial inflate
-PRO-4  nine-sample geometry / texturing / animation forensic audit
-PRO-5  existing modify_cubes_batch Box-UV parity
+P0–P7  existing routing / grounding / convergence contracts
+REF    assisted reference intake/readiness
+PRO-1  professional construction reasoning
+PRO-2  authoring expressiveness validation
+PRO-3  place_cube parent + initial inflate completeness
+PRO-4  geometry/texturing/animation forensic audit
+PRO-5  modify_cubes_batch Box-UV parity
+PRO-6  manage_keyframes explicit Molang transform-string preservation
 ```
 
-No P8 architecture, professional preset/profile, asset classifier, auto-packer, geometry planner, rig generator, router, scorer, or new authoring mode was added.
+No P8 architecture, preset/profile, evaluator, planner, controller framework, new tool family, or local test was added.
 
-## Forensic Result
+## PRO-6 Contract
 
-### Geometry
+`manage_keyframes` create/edit may author finite numbers or non-empty Molang strings in transform values. Strings are preserved into native `_Keyframe` state; BlockIT never evaluates them. `inspect_animation` already returns authored `getArray()` values.
 
-Current reasoning already covers the important professional patterns. Added only two missing semantics:
+`create_animation` intentionally remains numeric-only because it owns a separate codec/file-space conversion path. Expression support there is not required for the bounded gap.
 
-- `inflate` sign/magnitude is a local layer relationship, not a positive/fixed preset;
-- required non-visible effect/hold/attachment anchors are Locator intent, not hidden placeholder Cubes.
-
-No new geometry tool is justified.
-
-### Texturing / UV
-
-Across the supplied samples:
+## Still Deferred
 
 ```text
-538 / 538 Cubes use Box UV
-538 / 538 final Cubes use autouv = 0
-516 / 538 store explicit uv_offset
-134 / 538 use mirror_uv
-```
-
-Professional Box-UV layout is therefore intentional authored state. `modify_cubes_batch` now has parity with the existing single-Cube fields:
-
-```text
-uv_offset
-mirror_uv
-autouv
-```
-
-This remains one existing tool. No UV planner/packer, packing score, texture preset, or generic per-Cube texture selector was added.
-
-The samples also prove that logical project UV resolution may differ from bitmap dimensions. That observation alone does **not** justify a new project-resolution field; exact creation ownership remains unproven.
-
-### Animation
-
-Five of nine samples are static. The four animated samples contain 103 clips, 21 controllers, 3,516 keyframes, and overwhelmingly linear interpolation. Therefore professional quality does not imply dense curves, one FPS, one loop mode, or a keyframe target.
-
-Static evidence also proves three direct production gaps:
-
-```text
-expression-valued transform keyframes
-sound-effect keyframes
 animation controllers
+sound-effect keyframes
+timeline-effect keyframes
+bone-binding expressions
 ```
 
-They are **DEFERRED**, not implemented here. Do not fake expression motion by arbitrary dense numeric baking. Mapped particle effects remain already supported.
+Do not fake them with `risky_eval`, generic UI automation, arbitrary numeric baking, or a new framework.
 
-Full evidence: `docs/knowledge/reviews/professional-sample-forensic-audit-2026-08-13.md`.
-
-## CI / Surface Proof
-
-The retained repository gate must pass:
+## Verified GitHub / CI State
 
 ```text
-frozen install
-→ typecheck
-→ tests
-→ measure:surface
-→ build
-→ docs:check
+typecheck                     PASS
+contract tests                PASS
+default MCP surface           PASS
+production build              PASS
+generated docs freshness      PASS
 ```
 
-Fresh serialized metrics after PRO-5:
+Fresh serialized surface:
 
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,474 characters
-tools array:                    75,430 characters
-input schemas:                  52,461 characters
-descriptions:                   10,712 characters
+tools/list response:            75,926 characters
+tools array:                    75,882 characters
+input schemas:                  52,842 characters
+descriptions:                   10,783 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
-These are serialized characters, not model-visible token measurements. The normal `MCP Verify` workflow remains the retained CI owner and is re-triggered after temporary forensic helpers are removed.
+These are serialized characters, not model-visible token measurements.
 
-## Evidence Boundary
+## Verification Boundary
 
-`CURRENT-PROJECT VERIFIED` after CI for source/static semantics: forensic counts, current reasoning/policy, Box-UV batch schema/execution contract, generated docs, and surface/build/test gates.
+Required retained GitHub gate:
 
-`LOCAL PROOF REQUIRED` remains for native Blockbench persistence/visual behavior, real call reduction, and whether the revised reasoning creates visibly better models.
+```text
+frozen install → typecheck → tests → measure:surface → build → docs:check
+```
 
-## Explicitly Deferred
-
-Do not implement without a separate bounded requirement:
-
-- animation controllers;
-- sound/timeline-effect keyframes;
-- expression-valued transform keyframes;
-- new project logical-UV resolution control;
-- UV auto-packer / UV-density score;
-- PBR expansion from these samples;
-- Group batch creation / rig generator;
-- professional presets or asset classes.
+Static/CI proof can establish schema/type/result/docs consistency only. Native expression persistence, preview evaluation, Bedrock export semantics, and visual motion quality remain `LOCAL PROOF REQUIRED` if local testing is later reactivated.
 
 ## Next Step
 
-```text
-NON-LOCAL NEXT — ANIMATION GAP PRIORITIZATION
-```
-
-Inspect the three sample-evidenced animation gaps **one at a time**, starting with expression-valued transform keyframes. Determine whether an existing keyframe contract can support it narrowly and safely. If it requires an evaluator/controller framework, defer it. Do not start local Codex/Blockbench acceptance until the user explicitly reactivates it.
+After PRO-6 verification, continue **non-local** with `SOUND_EFFECT_KEYFRAME_GAP_PRIORITIZATION`. Inspect whether the existing `EffectAnimator`/keyframe contract can support sound authoring narrowly. If it requires unrelated media/runtime framework expansion, defer it. Do not start local testing.

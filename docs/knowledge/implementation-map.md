@@ -122,10 +122,10 @@ Fresh GitHub/CI serialized measurement:
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,474 characters
-tools array:                    75,430 characters
-input schemas:                  52,461 characters
-descriptions:                   10,712 characters
+tools/list response:            75,926 characters
+tools array:                    75,882 characters
+input schemas:                  52,842 characters
+descriptions:                   10,783 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
@@ -281,7 +281,7 @@ Texture, Painter, TextureGroup/PBR, and material-instance tools own native Bedro
 
 ### Animation
 
-Animation tools own identity, focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
+Animation tools own identity, focused inspection, numeric or explicit Molang transform keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` preserves Molang strings without evaluating them. Controllers and unsupported sound/timeline-effect authoring remain protected gaps.
 
 ### Locator / Null Object
 
@@ -310,12 +310,15 @@ REF    minimal Reference Generator buildability/cross-view route
 PRO-1  professional representation/transform/hierarchy/detail reasoning
 PRO-2  professional-sample authoring-expressiveness validation
 PRO-3  place_cube per-element parent + initial inflate creation completeness
+PRO-4  nine-sample geometry/texturing/animation forensic audit
+PRO-5  modify_cubes_batch Box-UV parity
+PRO-6  manage_keyframes authored Molang transform-string support
 DOC    current-state synchronization
 ```
 
 No local run is active.
 
-Remaining direct/model-facing evidence includes installed deferred-search parity, real token/latency/image-context cost, Reference Generator visual quality, actual-image handoff, and P5–P7 model-facing effectiveness.
+Remaining direct/model-facing evidence includes installed deferred-search parity, real token/latency/image-context cost, Reference Generator visual quality, actual-image handoff, P5–P7 model-facing effectiveness, and live expression-keyframe persistence/preview/export behavior.
 
 ## Protected Native Gaps
 
