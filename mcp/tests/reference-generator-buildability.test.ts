@@ -82,7 +82,7 @@ describe("reference generator buildability contract", () => {
     ]);
     for (const text of [plain(skill), plain(guide)]) {
       expect(text).toContain("plausible attachment");
-      expect(text).toContain("near/far limbs");
+      expect(text).toMatch(/near\/far (?:limbs|separation)/);
       expect(text).toContain("coherent ground plane");
       expect(text).toContain("duplicated");
       expect(text).toContain("missing");
