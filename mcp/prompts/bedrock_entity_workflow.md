@@ -1,31 +1,27 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones/organization.
+Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
 
 ## Minimum necessary evidence
 
-**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. `create_project`/path `export_model` return lifecycle state; **Do not immediately call `get_project_info`** unless needed. `inspect_model_bounds` is only for envelope/scale/ground/displacement; **Otherwise skip it**. Re-capture affected paired views only. **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision.
+**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. `create_project`/path `export_model` return lifecycle state; **Do not immediately call `get_project_info`** unless needed. `inspect_model_bounds` is only for envelope/scale/ground/displacement; **Otherwise skip it**. **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision.
 
 ## Actual reference grounding
 
-Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/summary/memory **is not image evidence**. If unavailable, `BLOCKED`; never reconstruct form from prose/generic object knowledge.
+Reference-driven authoring requires the **actual approved reference image visible in active multimodal context**. Path/summary/memory **is not image evidence**. If unavailable, `BLOCKED`; never reconstruct form from prose.
 
 ```text
 user brief/target → identity/function
 approved image → visible form
 approved dimensions → numeric envelope
-Reference Evidence Map → derived index only
+Reference Evidence Map → claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-```text
-claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
-```
-
-Build a **View Pair Map** from reference labels to matching canonical `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`; unlike views cannot approve each other.
+Build a **View Pair Map** to matching `capture_model_views` views. Ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`.
 
 ## Semantic form before coordinates
 
-Before exact `from/to/origin/rotation`, form a **Semantic Form Contract** linked to grounded `claim_id`s:
+Before exact `from/to/origin/rotation`, form a **Semantic Form Contract** linked to `claim_id`s:
 
 ```text
 identity / recognizability
@@ -38,59 +34,61 @@ representation: geometry | texture | animation | omit
 material evidence state
 ```
 
-A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark or justified split/relationship; **no orphan/filler Cube**. `PROVISIONAL` may support a non-contradictory coarse hypothesis; placement never verifies it.
+A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark or justified split; **no orphan/filler Cube**. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
+
+Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, **not presets or asset classes**. Use volume for silhouette; plane-like geometry for sheet-like form; `inflate` for layer separation; linked segments for meaningful bends, never unit-Cube staircasing.
+
+Decide **transform ownership** before rotation. Shared orientation/attachment/articulation should be Group/Bone-owned; local rigid slope can stay Cube-owned. Form/contact/articulation-defining Group/pivots belong in primary blockout; neutral organization may wait.
 
 Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. `[0,0,0]` needs image support. A **visible material slope** requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
-For every **required attachment**, identify **contact target/invariant** first. Rotation preserves it; use an **attachment/joint pivot** when it owns the transform. Numeric overlap/hierarchy is not contact proof; negative spaces stay open.
+For every **required attachment**, identify **contact target/invariant** first. Use an **attachment/joint pivot** when it owns the transform. Numeric overlap/hierarchy is not contact proof; negative spaces stay open.
 
 ## Primary form / authoring
 
-**A front-view match cannot certify depth.** Never average material cross-view conflict into invented geometry; unresolved conflict → `BLOCKED`.
+**A front-view match cannot certify depth.** Never average cross-view conflict; unresolved conflict → `BLOCKED`.
 
-Semantic Form says what exists/how parts relate; Primary Form Hypothesis says where/how large/how oriented. Keep relative size/placement, orientation + supporting claim/view(s), contact invariant, uncertainty.
+Semantic Form says what exists/how parts relate; Primary Form Hypothesis says where/how large/how oriented. Keep placement/size, claims/views, transform owner, contact invariant, uncertainty.
 
-Build minimum coherent form with finite `from/to`; non-zero rotation needs intentional pivot/origin. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
+Build minimum coherent form with finite `from/to`, required primary Groups/pivots, and intentional transforms. Non-zero Cube rotation needs pivot/origin. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. An under-constrained extent remains a **working hypothesis, not verified reference evidence** after placement.
+
+After primary `PASS`, use **identity-weighted detail**: add secondary geometry only where silhouette, recognizability, contact/layering, or motion benefits.
 
 ## Difference-first visual gate
 
-Material verdict requires **actual approved reference image plus fresh current-revision model image(s) visible in the same comparison context**. Path/manifest/map/prose/memory/stale capture cannot approve.
+Material verdict requires **actual approved reference image plus fresh current-revision model image(s) visible in the same comparison context**. Path/prose/memory/stale capture cannot approve.
 
 ```text
 claim_id | reference view | current model view | observed difference | FAIL | UNVERIFIED | PASS
 ```
 
-Review **difference-first**: recognizability, masses/landmarks/counts, silhouette/proportion, placement, orientation/slope, topology/contact, negative spaces.
+Review **difference-first**: recognizability, masses/counts, silhouette/proportion, placement, orientation, contact, negative spaces.
 
-`FAIL` = critical/major mismatch. `UNVERIFIED` = evidence/pairing missing, ambiguous, conflicting, unavailable. `PASS` = fresh paired evidence has no critical/major mismatch for supported claim.
+`FAIL` = major mismatch. `UNVERIFIED` = evidence missing/ambiguous/conflicting. `PASS` = fresh paired evidence has no critical/major mismatch for supported claim.
 
-Front PASS is not full 3D PASS when side/depth evidence is missing/fails. Bounds, hierarchy, coordinates, validators, tool success, similarity/IoU/projection scores, or fluent review text cannot justify PASS. Visible material slope left axis-aligned is `FAIL` unless intentionally stepped. After material mutation, affected model views are **stale** until re-captured; if approved image disappears, reload it or stay `UNVERIFIED/BLOCKED`.
+Front PASS is not full 3D PASS when depth evidence is missing/fails. Bounds, hierarchy, coordinates, tool success, similarity/IoU/projection scores, or fluent review cannot justify PASS. Material mutation makes affected views stale.
 
 ## Local correction / convergence
 
 1. **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once.
 2. Diagnose `TRANSLATE`, `RESIZE`, `ROTATE`, **hierarchy REATTACH**, `SPLIT`, `MERGE/REMOVE`, or grounded `ADD MASS`.
-3. State target UUID(s), intended change, invariant, expected structural + visible effect.
-4. Mutate; verify `geometry_effect`; re-capture affected paired view(s).
-5. Compare pre/post evidence per affected claim/view: `IMPROVED | UNCHANGED | REGRESSED`.
+3. State target UUID(s), change, invariant, expected effect.
+4. Mutate; verify `geometry_effect`; re-capture affected view(s).
+5. Compare: `IMPROVED | UNCHANGED | REGRESSED`.
 
-Progress requires the target mismatch `IMPROVED` and no previously supported material claim/view `REGRESSED`. `UNCHANGED`/`REGRESSED` is not progress; change diagnosis or reopen Primary Form instead of patching around cross-view regression. The delta is qualitative, not a score.
+Progress requires the mismatch `IMPROVED` and no previously supported material claim/view `REGRESSED`. `UNCHANGED`/`REGRESSED` is not progress; change diagnosis or reopen Primary Form instead of patching around cross-view regression. The delta is **qualitative, not a score**.
 
-TRANSLATE preserves size; RESIZE names fixed center/face/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. Wrong/no structural effect is not progress. If the **same causal correction direction fails twice without new evidence**, stop speculative mutation and use `BLOCKED`.
+TRANSLATE preserves size; RESIZE names fixed center/face/contact; ROTATE preserves `from/to/size`, pivot role, attachment. Wrong/no structural effect is not progress. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
 
-Wrong decomposition → Semantic Form; wrong whole relation → Primary Form Hypothesis.
+Wrong decomposition → Semantic Form; wrong whole relation → Primary Form.
 
 ## Downstream stages
 
-Secondary geometry follows primary `PASS`. Production texture waits for dependent **geometry** to `PASS`; production animation waits for suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; unresolved required `UNVERIFIED` → `BLOCKED`.
+Primary-form-defining hierarchy/pivots may exist before primary `PASS`; secondary geometry and neutral organization wait. Production texture waits for dependent **geometry** to `PASS`; production animation waits for suitable **participating hierarchy/pivots**. Material `FAIL` returns upstream; unresolved required `UNVERIFIED` → `BLOCKED`.
 
-## Locator / Null Object authored state
+## Capability boundary
 
-Locator/Null Object discovery uses `list_locator_elements`; focused state uses `inspect_element`; create/update uses `manage_locator` / `manage_null_object`.
-
-## Protected Native Capability Gaps
-
-TextureMesh authoring/inspection, native visible bounding-box fields, animation controllers, sound/timeline effects, animated textures, bone-binding expressions remain gaps. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+TextureMesh, visible bounding-box fields, animation controllers/effects, animated textures, and bone-binding expressions remain native gaps; do not fake them.
 
 ## Stage/tool routing
 

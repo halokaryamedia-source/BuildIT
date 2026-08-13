@@ -48,12 +48,7 @@ ASSISTED INTAKE
 INTERNAL GENERATION BRIEF
 ↓
 PRE-GENERATION READINESS
-material identity + visible form + required views + buildable interpretation understood?
-├─ NOT READY
-│  → use remaining clarification allowance
-│  → still material? NEEDS REVIEW
-│  → DO NOT GENERATE
-│
+├─ NOT READY → remaining clarification → still material? NEEDS REVIEW; DO NOT GENERATE
 └─ READY
    ↓
    GENERATE ONE MODELLING BRIEF DRAFT
@@ -67,16 +62,7 @@ material identity + visible form + required views + buildable interpretation und
    ACTUAL APPROVED REFERENCE IMAGE
 ```
 
-Rules that keep this path simple:
-
-- **generation is output, not discovery**;
-- zero clarification is preferred;
-- do not force optional values to exist;
-- do not invent numeric scale, hidden features, unseen asymmetry, or unseen attachments;
-- do not use the correction pass to fix missing pre-generation understanding;
-- after one bounded clarification round, unresolved material ambiguity becomes `NEEDS REVIEW`.
-
-Detailed generation behavior lives only in `.agents/skills/blockbench-reference-generator/SKILL.md`; durable policy lives in `docs/foundation/04-reference-guide.md`.
+Generation is output, not discovery. Do not invent hidden features or pixel-derived scale. Detailed generation behavior lives in `.agents/skills/blockbench-reference-generator/SKILL.md`; durable policy lives in `docs/foundation/04-reference-guide.md`.
 
 ## 3. Post-Approval Bedrock Authoring
 
@@ -89,13 +75,22 @@ VIEW PAIR MAP + REFERENCE EVIDENCE MAP
 ↓
 SEMANTIC FORM
 ↓
+CONSTRUCTION DECISION
+- choose the simplest construction that preserves the visible requirement
+- solid / sheet-like / layered / segmented / texture-only are reasoning patterns,
+  not presets or asset classes
+↓
+TRANSFORM OWNERSHIP
+- local rigid transform → Cube when appropriate
+- shared semantic orientation / attachment / articulation → Group/Bone
+↓
 CROSS-VIEW CONSISTENCY
 ↓
 COORDINATE FRAME + TARGET ENVELOPE when supplied
 ↓
 PRIMARY FORM HYPOTHESIS
 ↓
-COARSE PRIMARY CUBES / GROUPS
+COARSE PRIMARY CUBES + REQUIRED PRIMARY GROUPS/PIVOTS
 ↓
 STRUCTURAL OBSERVATION + CANONICAL MODEL VIEWS
 ↓
@@ -104,9 +99,11 @@ CLAIM-LOCKED REFERENCE ↔ MODEL COMPARISON
 FAIL | UNVERIFIED | PASS
 ```
 
-If the failure is **global**, revise Semantic Form / Primary Form Hypothesis instead of preserving a bad scaffold.
+A hierarchy/pivot that defines primary form, attachment, articulation, segment continuity, or transform ownership belongs in the primary blockout. Neutral organization does not.
 
-If the failure is **local**:
+If failure is **global**, revise Semantic Form / Primary Form Hypothesis instead of preserving a bad scaffold.
+
+If failure is **local**:
 
 ```text
 reuse / inspect exact target state
@@ -120,14 +117,16 @@ reuse / inspect exact target state
 Only after primary form passes:
 
 ```text
-secondary geometry / hierarchy / pivots
+identity-weighted secondary geometry / neutral organization
 → texture/PBR when required
 → animation when required
 → final validation
 → .bbmodel / Bedrock geometry export
 ```
 
-Tool success is execution evidence, not visual approval.
+Secondary complexity concentrates where silhouette, recognizability, contact/layering, or motion benefits. Do not distribute detail uniformly just to look professional.
+
+Professional samples are **learning evidence only**. Their specific anatomy, node counts, naming, rotations, UV coordinates, hierarchy depth, or complexity must never become a runtime preset or generic modelling law.
 
 ## 4. Repository / Plugin Work
 
@@ -178,7 +177,7 @@ durable reason              → decision-log / decision note
 historical evidence meaning → reviews/review-graph.md
 ```
 
-Do not create another roadmap or duplicate flow owner.
+Do not create another roadmap, duplicate flow owner, sample-preset system, or parallel planning state.
 
 ## Related
 
@@ -186,4 +185,5 @@ Do not create another roadmap or duplicate flow owner.
 - [Minimal Navigation](minimal-nav.md)
 - [Skill Activation Matrix](skills/activation-matrix.md)
 - [Reference Guide](../foundation/04-reference-guide.md)
+- [Geometry Standard](../foundation/05-geometry-standard.md)
 - [Validation Report](../foundation/validation-report.md)

@@ -2,19 +2,21 @@
 
 Updated: 2026-08-13
 
-This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; `flow.md` owns the detailed current sequence; `docs/foundation/validation-report.md` owns proof detail.
+This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; `flow.md` owns the detailed current sequence; `docs/foundation/validation-report.md` owns accepted proof detail.
 
 ## Status
 
 ```text
-NON_LOCAL_FLOW_CONSOLIDATION_COMPLETE
+PROFESSIONAL_MODELLING_REASONING_HARDENING_IN_PROGRESS
 ```
 
 Working branch: **`Local` only**.
 
-Current user scope is **non-local**. Do not run Codex local, Blockbench, MCP runtime acceptance, or other local proof unless the user explicitly reactivates it.
+Current scope is **repository/static improvement informed by professional `.bbmodel` samples**. The samples are evidence of useful modelling decisions; they are not presets, asset classes, anatomy rules, target Cube counts, or required hierarchy shapes.
 
-## Current Accepted State
+Do not run Codex local / Blockbench runtime acceptance or claim live modelling-quality improvement unless the active user scope explicitly reactivates local proof.
+
+## Retained Accepted State
 
 ```text
 P0–P4  routing / deferred loading / bounded recovery / defect navigation
@@ -24,98 +26,107 @@ P7     qualitative correction convergence + evaluation integrity
 REF    assisted intake + pre-generation readiness + buildable multi-view reference
 ```
 
-No custom router, recovery engine, extra registration profile, server split, vision scorer, image→Cube planner, intake framework, or P8 architecture was added.
+No P8 architecture, professional preset framework, asset classifier, geometry planner, automatic rig generator, new registration profile, router, scorer, or recovery system is being added.
 
-Detailed MCP surface/proof numbers remain in `docs/foundation/validation-report.md`; they are intentionally not duplicated here.
+## Current Priority
 
-## Canonical Reference Route
-
-```text
-SOURCE IMAGE + USER INTENT
-↓
-ASSISTED INTAKE
-- preserve explicit user facts
-- resolve clear visible facts
-- leave optional unknowns unset
-- one compact clarification round only if material
-↓
-INTERNAL GENERATION BRIEF
-↓
-PRE-GENERATION READINESS
-├─ NOT READY → bounded clarification → still material? NEEDS REVIEW; NO GENERATION
-└─ READY → generate one Modelling Brief Draft
-↓
-VISUAL GATE
-- maximum one targeted correction for a concrete visual defect only
-↓
-USER APPROVAL
-↓
-ACTUAL APPROVED REFERENCE IMAGE
-```
-
-**Generation is output, not discovery.** Do not generate a Draft to discover what the target should be, and do not use the correction pass to repair missing pre-generation understanding.
-
-## Flow Consolidation Completed
-
-The current documentation hierarchy is now deliberately simple:
+Improve the **existing modelling judgement** before adding tool surface:
 
 ```text
-AGENTS.md
-→ choose task class
+1. REPRESENTATION REASONING
+   choose the simplest construction that preserves the visible requirement
 
-flow.md
-→ single detailed current task/product flow
+2. TRANSFORM OWNERSHIP
+   decide whether a transform belongs to one Cube or a semantic Group/Bone
 
-selected SKILL.md
-→ procedure for the active owner
+3. PRIMARY HIERARCHY TIMING
+   form/contact/articulation-defining Groups/pivots may be part of primary blockout
 
-foundation policy
-→ only when durable rules are needed
+4. IDENTITY-WEIGHTED DETAIL
+   secondary complexity concentrates only where it materially improves the asset
 
-next-action.md
-→ active repository continuation only
+5. ONLY THEN — TOOL EXPRESSIVENESS AUDIT
+   change MCP source only when the improved reasoning exposes a concrete execution mismatch
 ```
 
-Entry points (`README.md`, `docs/README.md`, `knowledge/index.md`, `minimal-nav.md`, `activation-matrix.md`) now use short routes and point to the canonical owner instead of duplicating the full production sequence.
+Items 1–4 are decision-layer improvements. They must not become user-facing option sets, persisted construction schemas, fixture profiles, or hard-coded sample behavior.
+
+## Phase 1 Development Contract
+
+```text
+Goal:
+Improve professional modelling decisions without increasing product complexity.
+
+Generic requirement:
+The modeller must choose representation, transform ownership, required primary
+hierarchy, and detail allocation from the actual reference evidence.
+
+Evidence source:
+Professional sample .bbmodel files supplied by the user.
+They demonstrate possibilities; they do not define universal anatomy or workflow order.
+
+Build owner:
+blockbench-bedrock-modelling + existing canonical flow/geometry policy.
+
+In scope:
+- active modelling skill;
+- runtime Bedrock workflow prompt;
+- current flow;
+- durable geometry policy;
+- narrow regression protection against preset/fixture hard-coding.
+
+Out of scope:
+- object/category presets;
+- fixed complexity/detail targets;
+- auto rig/geometry planner;
+- new profile/router/framework;
+- batch Group creation;
+- local Blockbench acceptance;
+- source-tool expansion before a concrete contract mismatch is shown.
+
+Acceptance:
+1. representation choice is explicit but remains object-agnostic;
+2. shared semantic transforms can be Group/Bone-owned;
+3. required transform hierarchy can be primary rather than forced downstream;
+4. secondary detail is identity-weighted rather than uniformly increased;
+5. current instruction surface stays compact.
+```
+
+## Source Capability Boundary
+
+Current MCP already supports finite/zero-span Cube geometry, explicit Cube rotation+pivot, Groups with parent/origin/rotation, Locators, and post-create Cube `inflate`/UV mutation. Those capabilities should be reused before adding another tool.
+
+One **possible** later mismatch is `place_cube` creation expressiveness (for example initial layer/UV state or many known parents), but this is not approved work merely because professional samples use those states. First prove the improved reasoning needs a lower-friction source path in actual authoring.
 
 ## Evidence Boundary
 
-GitHub/static proof can establish current routing, assisted-intake/readiness contracts, and documentation consistency. It cannot establish:
+GitHub/static proof can establish:
 
-- generated reference-image quality;
-- whether a real image-capable model applies readiness correctly;
-- whether a specific Draft preserves the source;
-- actual image handoff into local modelling;
-- installed Codex/model-facing behavior;
-- live P5–P7 modelling effectiveness.
+- updated modelling/flow contracts;
+- absence of new preset/profile/planner fields;
+- source capability ownership;
+- regression/static consistency that is actually checked.
+
+It cannot establish:
+
+- that a model now looks professionally authored;
+- live Group/Cube transform behavior in Blockbench;
+- reduced real authoring calls;
+- improved reference fidelity in an installed model-facing run.
+
+Those remain `LOCAL PROOF REQUIRED` if/when explicitly activated.
 
 ## Continuation Boot
 
 ```text
 AGENTS.md
 → this file
-→ flow.md only when the detailed sequence matters
-→ CONTEXT.md only if stable facts matter
-→ named MCP-tool defect? implementation-map Hot-Path Defect Index
+→ flow.md when detailed sequence matters
 → affected owner + nearest AGENTS.md
-→ development-brief for repository create/change
+→ development-brief for repository change
 → at most one relevant specialist
 ```
 
 ## Next Step
 
-```text
-NON-LOCAL NEXT — REAL IMAGE ACCEPTANCE
-
-1. provide one usable real source image on an image-capable surface;
-2. complete Assisted Intake + Internal Generation Brief;
-3. pass Pre-Generation Readiness BEFORE any generation call;
-4. generate one Draft only when READY;
-5. inspect the actual board against the Reference Guide;
-6. allow at most one targeted visual correction when a concrete defect exists;
-7. stop for user approval.
-```
-
-If pre-generation understanding remains materially unclear after the bounded clarification round, return `NEEDS REVIEW` and do not generate.
-
-Do not start Blockbench/Codex local modelling in this scope. Do not add P8/new architecture unless real-image acceptance exposes a concrete failure that the current minimal route cannot resolve.
+Finish Phase 1 reasoning synchronization and static protection. Then audit the existing normal MCP surface against those stronger decisions. **Only implement a source-tool change when a concrete mismatch remains after reuse of existing capability.**
