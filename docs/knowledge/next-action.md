@@ -7,7 +7,7 @@ This is the **single active repository-continuation snapshot**. Root `AGENTS.md`
 ## Status
 
 ```text
-NON_LOCAL_CURRENT_STATE_SYNC_COMPLETE
+NON_LOCAL_REFERENCE_ACCEPTANCE_CONTRACT_COMPLETE
 ```
 
 Working branch: **`Local` only**.
@@ -83,30 +83,22 @@ Boundary:
 actual source image / user intent
 → one buildable Minecraft / Blockbench multi-view Modelling Brief Draft
 → maximum one targeted correction
-→ user approval
+→ user review / approval
 → actual approved image handed to modelling
 ```
 
 The generator is image-only. It does not call BlockIT MCP, generate geometry, create ZIP/manifest/production packages, or use numeric fidelity scoring.
 
-## Current-State Synchronization
+## Non-Local Acceptance Contract
 
-The following current surfaces are now aligned to P0–P7 + Reference Generator:
+The static contract now explicitly aligns the generator skill with `docs/foundation/04-reference-guide.md` on two previously implicit boundaries:
 
-```text
-root README
-docs entrypoint
-foundation README
-flow / minimal navigation
-knowledge dashboard
-implementation ownership
-validation/proof state
-review current meaning
-future task board
-this continuation snapshot
-```
+1. the five-view board is the **default**, not an unconditional anatomy rule; use a different view set only when the actual object's geometry/asymmetry requires it for an honest representation;
+2. generator output is a **Modelling Brief Draft** and must stop for user review/approval before the actual approved image can be handed to modelling.
 
-Historical reviews/decision entries remain provenance. Where an older decision conflicts with current source—most notably the 2026-08-08 foundation-only Reference Generator decision—current source/current routing is authoritative and the Review Index marks the old decision superseded.
+The regression owner `mcp/tests/reference-generator-buildability.test.ts` now locks those boundaries together with existing buildability, hidden-feature, cross-view, presentation, and bounded-output rules.
+
+No second acceptance checklist/document was added; the Reference Guide remains the quality/completion owner.
 
 ## Evidence Boundary
 
@@ -114,13 +106,14 @@ GitHub/static proof can establish:
 
 - current routing/ownership;
 - P0–P7 instruction/contracts;
-- Reference Generator scope/buildability contract;
+- Reference Generator scope/buildability/approval contract;
 - regression/static integrity;
 - default serialized MCP surface.
 
 It cannot establish:
 
 - generated reference-image quality;
+- whether a specific generated board actually preserves the source;
 - actual image handoff into a local modelling candidate;
 - model image-understanding accuracy;
 - installed Codex deferred-search parity;
@@ -142,14 +135,23 @@ AGENTS.md
 ## Next Step
 
 ```text
-NON-LOCAL NEXT
+NON-LOCAL NEXT — REAL IMAGE ACCEPTANCE
 
-Use the Reference Generator on a real image-capable task when requested.
-Evaluate the produced board against the existing Reference Guide:
-identity, buildable Cuboid construction, cross-view same-model consistency,
-correct view/orientation, no hidden-feature hallucination, and no lazy voxelization.
+Provide one usable real source image on an image-capable surface.
+Run blockbench-reference-generator once.
+Inspect the actual produced board against the existing Reference Guide:
+
+1. source identity / recognizable silhouette preserved;
+2. buildable Cuboid construction, not smooth/voxel-filter slop;
+3. all views represent one compatible model;
+4. view orientation/scale/grounding are coherent;
+5. visible attachments, asymmetry, contacts, and negative spaces are preserved;
+6. hidden features / photographic artifacts are not invented as geometry;
+7. no unresolved material cross-view conflict remains.
+
+If one concrete defect exists, allow maximum one targeted correction.
+Then stop for user approval.
 
 Do not start Blockbench/Codex local modelling in this scope.
-Do not add P8/new architecture unless a concrete non-local or later local failure
-proves the current minimal route insufficient.
+Do not add P8/new architecture unless this real-image acceptance exposes a concrete failure that the current minimal route cannot resolve.
 ```

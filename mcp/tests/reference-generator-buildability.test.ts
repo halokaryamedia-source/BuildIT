@@ -61,15 +61,46 @@ describe("reference generator buildability contract", () => {
     expect(skill).toContain("near-orthographic/weak perspective, no wide-angle");
   });
 
+  test("default view board may change only when the actual object requires it", async () => {
+    const [skill, guide] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+    ]);
+    const lowerSkill = normalized(skill);
+    const lowerGuide = normalized(guide);
+
+    expect(lowerSkill).toContain("default board");
+    expect(lowerSkill).toContain("different view set only when the actual object's geometry/asymmetry requires it");
+    expect(lowerSkill).toContain("do not add views for completeness");
+    expect(lowerGuide).toContain("a different view set is allowed when the actual object requires it");
+    expect(lowerGuide).toContain("do not add views for completeness");
+  });
+
   test("presentation and visual gate reject image-generator artifacts", async () => {
     const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("blockbench ui/gizmos/grid/wireframe/bounds");
     expect(skill).toContain("random speckle/dithering");
     expect(skill).toContain("only view labels may appear");
     expect(skill).toContain("actual generated board");
+    expect(skill).toContain("not ready / needs review");
+    expect(skill).toContain("do not average conflicting shapes");
     expect(skill).toContain("if not inspectable, do not claim the visual gate passed");
-    expect(skill).toContain("not ready");
     expect(skill).toContain("do not produce numeric buildability/fidelity/view scores");
+  });
+
+  test("draft stops for user approval before modelling handoff", async () => {
+    const [skill, guide] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+    ]);
+    const lowerSkill = normalized(skill);
+    const lowerGuide = normalized(guide);
+
+    expect(lowerSkill).toContain("modelling brief draft");
+    expect(lowerSkill).toContain("stop for user review / approval");
+    expect(lowerSkill).toContain("only after user approval");
+    expect(lowerSkill).toContain("actual approved image");
+    expect(lowerGuide).toContain("user has approved the image for modelling");
   });
 
   test("hardening remains image-only and bounded", async () => {

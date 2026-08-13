@@ -40,12 +40,16 @@ Use **rectangular parts with varied dimensions**, not world blocks/equal voxels.
 
 Lock geometry, **major segmentation**, part count, state/pose, markings, attachments, **important negative spaces**, asymmetry. **All panels show that same model**; **do not redesign panels independently**. Orthographic panels keep **same scale, center, and ground/baseline**.
 
+Default board:
+
 ```text
 UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
 LEFT = strict left profile, facing left. FRONT/BACK = orthographic. TOP = true top-down orthographic same 3D model, not flat diagram. 3/4 = eye-level front-left, near-orthographic/weak perspective, no wide-angle. RIGHT only for visible/user-stated asymmetry.
+
+Use a **different view set only when the actual object's geometry/asymmetry requires it to represent the subject honestly**. Do not add views for completeness.
 
 ### 4. Presentation
 
@@ -55,7 +59,7 @@ Neutral sheet; uncropped subject; low-noise Minecraft pixel texture, simple colo
 
 If inspectable, inspect the **actual generated board**: buildable segmentation; no smooth primitive/voxel staircase; real boundaries; attached rotations; true negative spaces; correct views; same scale/state/parts/markings/proportions; recognizable uncropped target.
 
-Material defect = **NOT READY** → one targeted correction. If not inspectable, do not claim the visual gate passed; user review is first visual proof. **Do not produce numeric buildability/fidelity/view scores**.
+Material defect = **NOT READY** → one targeted correction. If material cross-view conflict still remains after that correction, return **NOT READY / NEEDS REVIEW**; do not average conflicting shapes or redesign panels independently. If not inspectable, do not claim the visual gate passed; user review is first visual proof. **Do not produce numeric buildability/fidelity/view scores**.
 
 ## Budget / Output
 
@@ -67,4 +71,4 @@ automatic variants   = 0
 
 **Generate directly when the source is usable.** Keep user dimensions/must-preserve facts for modelling handoff; do not print unless requested.
 
-Return **one image only**. **Do not generate ZIPs** or other deliverables.
+Return **one image only** as the Modelling Brief Draft. Stop for **user review / approval**. Only after user approval may the actual approved image plus already-supplied target facts be handed to modelling. **Do not generate ZIPs** or other deliverables.
