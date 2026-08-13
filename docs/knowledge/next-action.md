@@ -2,75 +2,53 @@
 
 Updated: 2026-08-14
 
-Root `AGENTS.md` owns routing; `flow.md` owns detailed sequence; `docs/foundation/validation-report.md` owns proof state.
-
 ## Status
 
 ```text
-REFERENCE_MINECRAFT_FIRST_FIVE_PREVIEW_STATIC_VERIFIED
+PRELOCAL_PLUGIN_FRESHNESS_READY
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
-**Do not claim live Blockbench/model-quality improvement without actual runtime proof.**
+Current source contract is static-verified: Minecraft-first Geometry + Texture, five-preview default for future references, minor reference drift may be resolved into one canonical Minecraft interpretation, and unresolved material contradiction remains `BLOCKED`.
 
-Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
+## Local Handoff
 
-## Current Reference Contract
-
-The reference goal is no longer exact reconstruction. It is a **recognizable, Minecraft-appropriate, Blockbench-buildable Geometry + Texture reference**.
+Use `docs/knowledge/operations/local-acceptance-runbook.md` as the single procedure owner.
 
 ```text
-SOURCE + USER INTENT
-→ MINECRAFT-FIRST GEOMETRY + TEXTURE
-→ FIVE-PREVIEW COVERAGE BOARD
-   UPPER: SIDE | FRONT | BACK
-   LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
-→ minor drift allowed
-→ material contradiction blocks
-→ USER APPROVAL
+current Local
+→ clean working tree + exact HEAD
+→ MCP static gate
+→ fresh build
+→ record mcp/dist/mcp.js SHA-256
+→ load the exact local BlockIT build
+→ restart Blockbench
+→ reconnect MCP client
+→ verify endpoint + 62-tool default surface
+→ verify:stateless-local
+→ Fixture A
+→ persistence/export
+→ Fixture B
+→ efficiency trace
 ```
 
-Five previews provide broad modelling evidence, not five exact technical drawings. Geometry prioritizes major recognizable form, topology/attachment, negative spaces, and Blockbench buildability. Texture prioritizes Minecraft-readable palette/material regions/part separation/identity-critical markings rather than pixel-perfect copying.
+Package/plugin version alone is not freshness proof. CI cannot prove which local plugin file Blockbench actually loaded.
 
-Downstream MCP uses discrepancy triage:
+The existing elephant reference was accepted as sufficient for a Minecraft/Blockbench interpretation. Fixture B may use it only when the **actual approved image is visible to the local modelling context**. Do not regenerate merely to satisfy the new five-preview default. If an approved reference lacks a material axis, that claim stays `UNVERIFIED / BLOCKED`.
 
 ```text
-MINOR
-→ choose ONE CANONICAL MINECRAFT INTERPRETATION
-→ explicit user requirement
-→ original Source evidence
-→ best-supported approved reference view(s)
-→ simplest recognizable Blockbench-buildable interpretation
-→ continue consistently
-
-MATERIAL
-→ CONFLICTING / BLOCKED
+MINOR → one canonical Minecraft interpretation → continue
+MATERIAL → CONFLICTING / BLOCKED
 ```
-
-Minor curl/angle/contour/overlap/shade/marking drift is not a blocker by itself. Do not average drift. Material conflicts remain blockers, and cross-view regression remains rejected.
-
-These are generic reference rules, not elephant/quadruped presets.
-
-## Current Candidate / Evidence
-
-The current elephant Source Image remains source authority. The previous three-preview result demonstrated that a non-identical but Minecraft-buildable interpretation can be acceptable, but **no five-preview board has yet been generated and approved under the new contract**.
-
-## Execution / Proof Boundary
-
-```text
-hardening / audit / docs / CI
-→ STOP AND REPORT
-→ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
-```
-
-CI or this file never authorizes image generation. Future generated-image quality, installed-plugin freshness, runtime MCP exposure, P5–P7 model-facing effectiveness, and final visual quality remain `LOCAL PROOF REQUIRED` where applicable.
 
 ## Next Step
 
 ```text
-WAIT — DO NOT GENERATE
-→ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
+LOCAL MACHINE
+→ run runbook sections 3–4
+→ prove exact HEAD + dist/mcp.js hash + loaded BlockIT file
+→ then begin Fixture A
 ```
 
-When explicitly requested, generate one fresh five-preview reference using the current Source Image and evaluate it with Minecraft-first Geometry + Texture criteria. Do not start Blockbench/Codex local acceptance before a future reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before local acceptance.
+Do not change source during preparation unless a reproducible local failure identifies a concrete owner. No speculative cleanup, new tools, profiles, routers, or compatibility layers.
