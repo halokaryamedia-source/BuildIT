@@ -7,7 +7,7 @@ This is the **single active repository-continuation snapshot**. Root `AGENTS.md`
 ## Status
 
 ```text
-NON_LOCAL_REFERENCE_ACCEPTANCE_CONTRACT_COMPLETE
+NON_LOCAL_ASSISTED_REFERENCE_INTAKE_IMPLEMENTED
 ```
 
 Working branch: **`Local` only**.
@@ -81,6 +81,7 @@ Boundary:
 
 ```text
 actual source image / user intent
+→ AI-assisted intake resolution when needed
 → one buildable Minecraft / Blockbench multi-view Modelling Brief Draft
 → maximum one targeted correction
 → user review / approval
@@ -89,16 +90,30 @@ actual source image / user intent
 
 The generator is image-only. It does not call BlockIT MCP, generate geometry, create ZIP/manifest/production packages, or use numeric fidelity scoring.
 
-## Non-Local Acceptance Contract
+## Assisted Intake Resolution
 
-The static contract now explicitly aligns the generator skill with `docs/foundation/04-reference-guide.md` on two previously implicit boundaries:
+The non-local contract now makes AI assistance explicit without adding a questionnaire or intake framework:
 
-1. the five-view board is the **default**, not an unconditional anatomy rule; use a different view set only when the actual object's geometry/asymmetry requires it for an honest representation;
-2. generator output is a **Modelling Brief Draft** and must stop for user review/approval before the actual approved image can be handed to modelling.
+```text
+explicit user fact      → preserve as constraint
+clear visible fact      → AI may resolve from the source image
+optional unknown        → leave unset
+material ambiguity      → one compact clarification round
+still materially unclear→ NEEDS REVIEW
+```
 
-The regression owner `mcp/tests/reference-generator-buildability.test.ts` now locks those boundaries together with existing buildability, hidden-feature, cross-view, presentation, and bounded-output rules.
+Rules:
 
-No second acceptance checklist/document was added; the Reference Guide remains the quality/completion owner.
+- zero clarification is the default;
+- when the user says they do not know, AI first tries to resolve from the actual image/request instead of repeating the question;
+- numeric dimensions, hidden features, unseen asymmetry, and unseen attachments are never invented to complete intake;
+- clarification is limited to one round with at most three material items, written in plain language with one recommended interpretation;
+- the user may simply accept the recommendation;
+- AI recommendations remain working interpretations until the user accepts them.
+
+`docs/foundation/04-reference-guide.md` remains the durable policy owner. `mcp/tests/reference-generator-buildability.test.ts` protects the assisted-intake boundary together with the existing buildability, cross-view, approval, and bounded-output contracts.
+
+No form schema, intake state machine, new MCP tool, manifest, package, or additional planning document was added.
 
 ## Evidence Boundary
 
@@ -107,6 +122,7 @@ GitHub/static proof can establish:
 - current routing/ownership;
 - P0–P7 instruction/contracts;
 - Reference Generator scope/buildability/approval contract;
+- assisted-intake/no-guessing/clarification contract;
 - regression/static integrity;
 - default serialized MCP surface.
 
@@ -114,6 +130,7 @@ It cannot establish:
 
 - generated reference-image quality;
 - whether a specific generated board actually preserves the source;
+- whether real users find a clarification understandable;
 - actual image handoff into a local modelling candidate;
 - model image-understanding accuracy;
 - installed Codex deferred-search parity;
@@ -139,8 +156,12 @@ NON-LOCAL NEXT — REAL IMAGE ACCEPTANCE
 
 Provide one usable real source image on an image-capable surface.
 Run blockbench-reference-generator once.
-Inspect the actual produced board against the existing Reference Guide:
 
+Acceptance should exercise both paths naturally:
+- normal clear image → ideally zero clarification;
+- if the user genuinely does not know an optional/material fact → verify the AI resolves, leaves unset, or asks one useful bounded clarification instead of guessing.
+
+Inspect the actual produced board against the existing Reference Guide:
 1. source identity / recognizable silhouette preserved;
 2. buildable Cuboid construction, not smooth/voxel-filter slop;
 3. all views represent one compatible model;
@@ -149,9 +170,9 @@ Inspect the actual produced board against the existing Reference Guide:
 6. hidden features / photographic artifacts are not invented as geometry;
 7. no unresolved material cross-view conflict remains.
 
-If one concrete defect exists, allow maximum one targeted correction.
+If one concrete visual defect exists, allow maximum one targeted correction.
 Then stop for user approval.
 
 Do not start Blockbench/Codex local modelling in this scope.
-Do not add P8/new architecture unless this real-image acceptance exposes a concrete failure that the current minimal route cannot resolve.
+Do not add P8/new architecture unless real-image acceptance exposes a concrete failure that the current minimal route cannot resolve.
 ```

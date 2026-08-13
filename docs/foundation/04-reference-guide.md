@@ -1,7 +1,7 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 1.5  
+**Version:** 1.6  
 **Updated:** 2026-08-13
 
 ## Purpose
@@ -18,6 +18,8 @@ The approved multi-view image is a **visual Modelling Brief**.
 
 ```text
 Source Image / user intent
+↓
+AI-Assisted Intake Resolution when needed
 ↓
 Modelling Brief Draft
 ↓
@@ -55,6 +57,40 @@ Reference Evidence Map       → derived working index; never image authority
 - **Reference Evidence Map** — run-local material claim index derived from the actual approved image; never a Cube blueprint or replacement for the image.
 
 The default Reference Generator deliverable is the **image only**. Small user-supplied target notes may accompany the handoff, but no ZIP/manifest/technical-document package is required.
+
+## AI-Assisted Intake Resolution
+
+Reference preparation is **assistive, not form-filling**. The user should not need modelling terminology or answers to optional questions before the AI can proceed.
+
+Default behavior is **zero clarification**. Resolve missing information in this order:
+
+```text
+explicit user fact
+→ use as a constraint
+
+directly visible fact
+→ AI may resolve from the source image
+
+optional unknown
+→ leave unset
+
+material ambiguity that changes identity/buildability
+→ one compact clarification round
+```
+
+Rules:
+
+- if the user says they do not know, do not repeat the same question;
+- explain unfamiliar concepts in plain language rather than asking the user to translate their intent into modelling terms;
+- AI may resolve only directly visible facts such as visible defining features, visible asymmetry, visible attachments/contacts, or clear current pose/state;
+- never infer numeric dimensions or scale from image pixels;
+- never invent hidden features, unseen asymmetry, unseen attachments, or other non-visible facts just to complete intake;
+- optional unknowns remain unset when they are not required for a useful reference;
+- an AI recommendation is a working interpretation, not a user-provided fact, until the user accepts it.
+
+If a material ambiguity remains, ask in **one compact round with at most three material items**. For each item: explain the issue simply, state what the image appears to show, and give one recommended interpretation. Alternatives are included only when they materially change the target. The user may answer simply with **use your recommendation**.
+
+If identity/buildability is still materially unresolved after that round, return `NEEDS REVIEW` instead of guessing or opening another questionnaire loop.
 
 ## View Baseline
 

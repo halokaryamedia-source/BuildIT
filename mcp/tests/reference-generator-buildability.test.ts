@@ -19,6 +19,36 @@ describe("reference generator buildability contract", () => {
     expect(skill).toContain("generate directly when the source is usable");
   });
 
+  test("AI resolves unknowns before asking and keeps clarification bounded", async () => {
+    const [skill, guide] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+    ]);
+    const lowerSkill = normalized(skill);
+    const lowerGuide = normalized(guide);
+
+    for (const text of [lowerSkill, lowerGuide]) {
+      expect(text).toContain("ai-assisted intake resolution");
+      expect(text).toContain("zero clarification");
+      expect(text).toContain("do not repeat");
+      expect(text).toContain("one compact round");
+      expect(text).toContain("use your recommendation");
+      expect(text).toContain("working interpretation");
+      expect(text).toContain("not a user-provided fact");
+    }
+
+    expect(lowerSkill).toContain("leave optional unknowns unset");
+    expect(lowerSkill).toContain("at most **three material items**");
+    expect(lowerSkill).toContain("never infer numeric dimensions/scale from pixels");
+    expect(lowerSkill).toContain("never invent hidden features, unseen asymmetry, unseen attachments");
+    expect(lowerSkill).toContain("needs review");
+
+    expect(lowerGuide).toContain("assistive, not form-filling");
+    expect(lowerGuide).toContain("optional unknowns remain unset");
+    expect(lowerGuide).toContain("at most three material items");
+    expect(lowerGuide).toContain("explain unfamiliar concepts in plain language");
+  });
+
   test("Blockbench grammar prevents voxel-stack and smooth-primitive shortcuts", async () => {
     const raw = await source("../.agents/skills/blockbench-reference-generator/SKILL.md");
     for (const primitive of [

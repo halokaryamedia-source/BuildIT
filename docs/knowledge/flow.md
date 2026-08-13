@@ -11,6 +11,9 @@ USER REQUEST
 │
 ├─ REFERENCE PREPARATION
 │  source image / user intent
+│  → AI-assisted intake resolution
+│     zero-question default; resolve visible facts; leave optional unknowns unset
+│     one compact clarification round only if material ambiguity remains
 │  → blockbench-reference-generator
 │  → one buildable multi-view Modelling Brief image
 │  → maximum one targeted correction
@@ -44,6 +47,12 @@ Reference preparation is not MCP authoring. Asset authoring is not repository de
 
 ```text
 SOURCE IMAGE / USER INTENT
+→ AI-ASSISTED INTAKE RESOLUTION
+   explicit user fact → preserve
+   clearly visible fact → resolve from image
+   optional unknown → leave unset
+   material unresolved ambiguity → one compact clarification round
+→ INTERNAL GENERATION BRIEF
 → REFERENCE GENERATOR
 → MODELLING BRIEF DRAFT
 → USER APPROVAL
@@ -76,6 +85,8 @@ only after primary form passes
 → final validation
 → .bbmodel / Bedrock geometry export
 ```
+
+For reference intake, user uncertainty is not automatically a blocker: AI should resolve what the image clearly supports and leave irrelevant optional facts unset. It must not invent dimensions or hidden features merely to complete an intake. If one material ambiguity remains after the single clarification round, stop at `NEEDS REVIEW`.
 
 `UNCHANGED`/`REGRESSED` is not modelling progress. Do not stack compensating patches. Tool success is execution evidence, not visual approval.
 

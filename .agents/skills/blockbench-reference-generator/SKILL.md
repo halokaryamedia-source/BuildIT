@@ -9,7 +9,24 @@ Create **one Minecraft / Blockbench reference image**. Hard constraints: **build
 
 ## Simple User Contract
 
-User only needs to **upload a usable source image**; extra facts are optional. Do not expose a long questionnaire. Never ask for Cube counts, pivots, UVs, animation, MCP tools, or package data. Without dimensions, preserve visual proportions only; never infer numeric scale from pixels. Ask only if ambiguity changes identity/buildability.
+User only needs to **upload a usable source image**; extra facts are optional. Do not expose a long questionnaire. Never ask for Cube counts, pivots, UVs, animation, MCP tools, or package data. Without dimensions, preserve visual proportions only; never infer numeric scale from pixels.
+
+Prefer **zero clarification**. AI resolves everything it safely can from the actual image + user request before asking the user anything.
+
+## AI-Assisted Intake Resolution
+
+When information is missing or the user says they do not know:
+
+1. **Use explicit user facts** as constraints.
+2. **Resolve directly visible facts** from the source image when they are clear: subject identity, visible defining feature, visible asymmetry, visible attachment/contact, or current pose/state.
+3. **Leave optional unknowns unset** when they are not required. Unknown does not mean the user must provide an answer.
+4. **Ask only for material ambiguity** that changes identity or buildability and cannot be resolved honestly from the image/request.
+
+Never infer numeric dimensions/scale from pixels. Never invent hidden features, unseen asymmetry, unseen attachments, or other non-visible facts just to complete intake.
+
+If clarification is required, use **one compact round** with at most **three material items**. Explain each item in plain language, state what the image appears to show, and give one recommended interpretation. Offer alternatives only when they materially matter. The user may simply say **use your recommendation**.
+
+Do not repeat a question after the user says they do not know. If the remaining unknown is optional, leave it unset. If it is still material after the one clarification round, return **NEEDS REVIEW** instead of guessing. Each AI recommendation is a working interpretation, not a user-provided fact, until the user accepts it.
 
 ## Automatic Internal Generation Brief
 
