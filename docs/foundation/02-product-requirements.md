@@ -1,8 +1,8 @@
 # BlockIT — Product Requirements
 
 **Status:** Active Policy  
-**Version:** 1.2  
-**Updated:** 2026-08-08  
+**Version:** 1.3  
+**Updated:** 2026-08-13  
 **Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
 ## 1. Product Objective
@@ -20,7 +20,8 @@ The system must prefer evidence-backed modelling decisions over assumptions.
 
 Optional input:
 
-- requested dimensions;
+- requested dimensions / target scale;
+- explicit pose requirement;
 - target use;
 - texture style;
 - animation requirement;
@@ -31,12 +32,17 @@ A suggested method is not automatically a requirement. Preserve the user's goal
 while rejecting a method that conflicts with current evidence or would reduce
 quality.
 
+Nonvisual user constraints such as target scale/height, target use, and other
+downstream facts stay **outside the image** by default. Carry them as compact
+Handoff Constraints alongside the approved Modelling Brief rather than forcing
+them into captions, dimension text, manifests, or extra panels.
+
 ## 3. Canonical Product Flow
 
 ```text
 Request
 ↓
-Approved Modelling Brief
+Approved Modelling Brief + relevant Handoff Constraints
 ↓
 Cross-view consistency check
 ↓
@@ -81,7 +87,8 @@ cannot resolve.
 ### PR-002 — Use Reference Honestly
 
 Use the approved Modelling Brief for visible silhouette, proportions, masses,
-contacts, orientation, and style.
+pose, contacts, orientation, and style. Use approved Handoff Constraints for
+nonvisual facts such as target scale/height or target use.
 
 Do not convert reference pixels/panel size into Cube coordinates or invent hidden
 features from ambiguous evidence.
@@ -91,6 +98,8 @@ features from ambiguous evidence.
 Before primary Cube authoring:
 
 - check cross-view consistency;
+- for articulated subjects, confirm required limb/appendage count, pose state,
+  attachment, negative-space, and ground/support consistency across views;
 - establish X/Y/Z interpretation, front direction, and ground relation;
 - establish target envelope when approved dimensions exist;
 - form a temporary Primary Form Hypothesis for the major masses.
@@ -242,6 +251,8 @@ Unless separately requested/proven:
 - recognizable whole form;
 - coherent silhouette and primary proportions;
 - correct major orientation/contacts;
+- articulated subjects preserve approved pose, limb count/attachment, ground
+  contact/support, and important negative spaces;
 - important rotations justified by form/motion;
 - meaningful pivots justified by transform relationships.
 
@@ -266,7 +277,7 @@ Unless separately requested/proven:
 
 A modelling task is complete when:
 
-- request/scope and reference are understood;
+- request/scope, approved reference, and material Handoff Constraints are understood;
 - whole primary form passed the required visual gate;
 - required secondary geometry/hierarchy/pivots are complete;
 - texture/animation are complete only when in scope;

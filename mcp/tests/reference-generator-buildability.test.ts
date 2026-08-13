@@ -114,6 +114,55 @@ describe("reference generator buildability contract", () => {
     expect(skill).toContain("near-orthographic/weak perspective, no wide-angle");
   });
 
+  test("articulated subjects lock a stable natural pose before generation", async () => {
+    const [skill, guide] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+    ]);
+    for (const text of [normalized(skill), normalized(guide)]) {
+      expect(text).toContain("stable natural neutral stance");
+      expect(text).toContain("explicitly requests another pose");
+      expect(text).toContain("dynamic source pose");
+      expect(text).toContain("exact pose");
+      expect(text).toContain("limb phase");
+    }
+  });
+
+  test("limb integrity is invariant across orthographic and 3/4 views", async () => {
+    const [skill, guide] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+    ]);
+    for (const text of [normalized(skill), normalized(guide)]) {
+      expect(text).toContain("plausible attachment");
+      expect(text).toContain("ground plane");
+      expect(text).toContain("near/far limbs");
+      expect(text).toContain("duplicated");
+      expect(text).toContain("missing");
+      expect(text).toContain("merged");
+      expect(text).toContain("floating");
+      expect(text).toContain("orthographic views own structural pose truth");
+      expect(text).toContain("3/4 view");
+      expect(text).toContain("must not redesign");
+    }
+  });
+
+  test("nonvisual user constraints stay outside the generated image by default", async () => {
+    const [skill, guide, flow, requirements] = await Promise.all([
+      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../docs/foundation/04-reference-guide.md"),
+      source("../docs/knowledge/flow.md"),
+      source("../docs/foundation/02-product-requirements.md"),
+    ]);
+    for (const text of [normalized(skill), normalized(guide)]) {
+      expect(text).toContain("outside the image");
+      expect(text).toContain("handoff");
+      expect(text).toContain("only view labels may appear");
+    }
+    expect(normalized(flow)).toContain("nonvisual handoff constraints");
+    expect(normalized(requirements)).toContain("outside the image");
+  });
+
   test("default view board may change only when the actual object requires it", async () => {
     const [skill, guide] = await Promise.all([
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),

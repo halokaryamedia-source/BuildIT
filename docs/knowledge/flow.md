@@ -17,20 +17,29 @@ LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates 
 
 ```text
 SOURCE IMAGE + USER INTENT
+→ split VISUAL TARGET from NONVISUAL HANDOFF CONSTRAINTS
 → ASSISTED INTAKE
 → INTERNAL GENERATION BRIEF
+→ POSE / ARTICULATION LOCK when applicable
 → PRE-GENERATION READINESS
    ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
-   └─ READY → GENERATE ONE DRAFT → VISUAL GATE → USER APPROVAL
-→ ACTUAL APPROVED REFERENCE IMAGE
+   └─ READY → GENERATE ONE CLEAN DRAFT
+              → view labels only by default
+              → VISUAL GATE
+              → USER APPROVAL
+→ ACTUAL APPROVED REFERENCE IMAGE + relevant HANDOFF CONSTRAINTS
 ```
+
+For articulated subjects, default to a stable natural neutral stance unless the user explicitly requests another pose. Required limb/appendage count, attachment, support/ground relation, negative spaces, and pose/limb phase must stay consistent across all panels. A dynamic source pose does not automatically become the modelling pose.
+
+Nonvisual facts such as target scale/height stay outside the image by default and are passed in active modelling task context. They are not assumed to persist automatically through image metadata or conversation memory.
 
 Generation is output, not discovery. Durable policy: `docs/foundation/04-reference-guide.md`.
 
 ## 3. Bedrock Authoring
 
 ```text
-ACTUAL APPROVED REFERENCE IMAGE
+ACTUAL APPROVED REFERENCE IMAGE + MATERIAL HANDOFF CONSTRAINTS
 → VIEW PAIR MAP + REFERENCE EVIDENCE MAP
 → SEMANTIC FORM
 → CONSTRUCTION + TRANSFORM OWNERSHIP

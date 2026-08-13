@@ -7,14 +7,12 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REPOSITORY_HYGIENE_CLEANUP_COMPLETE
+REFERENCE_POSE_LIMB_HARDENING_IMPLEMENTED
 ```
 
 Working branch: **`Local` only**.
 
-The user explicitly does **not** want local Codex/Blockbench testing yet. `NO LOCAL RUN ACTIVE`.
-
-Do not claim live Blockbench/model-quality improvement without actual runtime proof. Controller execution also requires direct runtime evidence.
+`NO LOCAL RUN ACTIVE`. Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
 ## Retained Product State
 
@@ -31,7 +29,33 @@ PRO-7  bounded new-animation sound effects
 PRO-8  read-only AnimationController/state inspection
 ```
 
-Professional samples remain evidence, never presets/count targets. AnimationController creation/mutation, existing-animation direct sound/timeline-effect mutation, and bone-binding expressions remain deliberately deferred.
+Reference preparation now additionally enforces:
+
+```text
+articulated subject
+→ stable natural neutral stance by default
+  OR exact user-requested pose
+→ limb/appendage identity + attachment lock
+→ shared ground/support relation
+→ same pose/limb phase across all panels
+→ orthographic structural authority
+→ clean board: view labels only by default
+→ nonvisual user facts carried outside image
+```
+
+This is generic policy, not an elephant-specific anatomy preset.
+
+## Current Pre-Local Reference Candidate
+
+The current acceptance candidate is an **elephant** sourced from the user-provided photo. The earlier generated Drafts are **NOT APPROVED** because the rear-leg/pose relationship did not pass the strengthened pose/limb integrity gate.
+
+Retained nonvisual Handoff Constraint:
+
+```text
+target Minecraft height ≈ 2 × player height
+```
+
+That scale fact must remain outside the generated image unless the user explicitly asks to display it. A fresh Draft must be generated from the source under the current hardened Reference Generator rules and then explicitly reviewed/approved.
 
 ## Active Documentation Owners
 
@@ -47,16 +71,18 @@ docs/foundation/validation-report.md           proof state
 operations/local-acceptance-runbook.md          local procedure, inactive
 ```
 
-The two tiny legacy-looking files that remain under `docs/knowledge/reviews/` and `docs/knowledge/decisions/`, plus `docs/foundation/03-modelling-workflow.md`, are compatibility/regression support for current links/tests; they are not product/navigation owners. Full historical versions remain in Git history.
-
 ## Verification Boundary
 
-`LOCAL PROOF REQUIRED` remains for claims that static/CI cannot establish: later Molang/sound/controller persistence, controller execution, generated-reference quality, P5–P7 model-facing effectiveness, and visual model quality.
+`LOCAL PROOF REQUIRED` remains for installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual model quality.
+
+Generated-reference quality is direct image-capable evidence and requires explicit review of the actual Draft; static policy/tests cannot certify a future generated image.
 
 ## Next Step
 
 ```text
-NON-LOCAL STOP — ACTIVE REPOSITORY DOCUMENTATION IS CONSOLIDATED
+PRE-LOCAL A — GENERATE ONE FRESH ELEPHANT MODELLING BRIEF
+→ audit pose/limb/cross-view integrity
+→ user approval
 ```
 
-Do not add another plan/review/archive layer. Keep local testing deferred until explicitly reactivated. Reopen repository work only for a concrete product requirement or new evidence.
+Do **not** start Blockbench/Codex local acceptance until the new reference is approved. After approval, the next stage is fresh `Local` build/deployment preparation for `mcp/dist/mcp.js`, including exact HEAD + artifact hash, then Local Acceptance.

@@ -41,6 +41,8 @@ bun run docs:check
 
 Production plugin: `mcp/dist/mcp.js`. A static gate failure is engineering evidence, not runtime proof.
 
+Record the fresh `dist/mcp.js` file hash and exact repository HEAD used for the build. The package version alone is not sufficient proof that Blockbench loaded the current build.
+
 ## 4. Load BlockIT / Transport
 
 Load the repository build in desktop Blockbench. Default endpoint:
@@ -73,10 +75,14 @@ Verify editable `.bbmodel` and Bedrock geometry export to explicit absolute path
 
 ## 8. Fixture B — Reference Fidelity
 
-Use an explicitly approved reference, such as `workspace/fixtures/zebra/reference.webp` when that fixture is deliberately selected.
+Use a **fresh explicitly approved Modelling Brief that passed the current Reference Generator gate**. Do not treat an old fixture image as approved merely because it exists in the repository.
+
+For articulated subjects, the approved board must already have one locked pose: stable natural neutral stance by default, or the exact user-requested pose. Required limb/appendage count, attachment, ground/support, near/far separation, negative spaces, and pose/limb phase must be consistent across required panels.
+
+Carry material nonvisual Handoff Constraints separately in the active task context. Example: target scale/height belongs in task context, not as image caption text.
 
 ```text
-actual approved reference
+actual approved reference + material Handoff Constraints
 → Semantic Form / Primary Form Hypothesis
 → coarse primary geometry
 → fresh corresponding model views
