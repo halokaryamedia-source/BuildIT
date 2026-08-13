@@ -29,6 +29,7 @@ jobs:
         run: |
           python3 .github/scripts/pro7_fix_anchor.py
           python3 .github/scripts/pro7_sound_effects.py
+          python3 .github/scripts/pro7_compact_surface.py
       - name: Regenerate prompt and API owners
         working-directory: mcp
         run: |
@@ -56,6 +57,7 @@ jobs:
           git rm .github/workflows/pro7-sound-effects.yml
           git rm .github/scripts/pro7_sound_effects.py
           git rm .github/scripts/pro7_fix_anchor.py
+          git rm .github/scripts/pro7_compact_surface.py
           git add -A
           git commit -m "feat: support bounded Bedrock sound effect keyframes"
           git push origin HEAD:Local
