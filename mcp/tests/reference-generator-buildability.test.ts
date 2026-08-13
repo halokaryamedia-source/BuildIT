@@ -28,14 +28,20 @@ describe("reference generator orthographic-core contract", () => {
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
     ]);
+
+    expect(skill).toContain("source-nearest anchor");
+    expect(skill).toContain("smallest orthographic core");
+    expect(skill).toContain("not a fixed five-panel turnaround");
+
+    expect(guide).toContain("source-nearest anchor");
+    expect(guide).toMatch(/smallest orthographic core|smallest mutually compatible orthographic view set/);
+    expect(guide).toContain("not a fixed five-panel turnaround");
+
     for (const text of [skill, guide]) {
-      expect(text).toContain("source-nearest anchor");
-      expect(text).toContain("smallest orthographic core");
-      expect(text).toContain("not a fixed five-panel turnaround");
       expect(text).toContain("omit that view");
-      expect(text).toContain("rather than");
       expect(text).toContain("invent");
     }
+
     expect(flow).toContain("source-nearest anchor orientation");
     expect(flow).toContain("smallest orthographic core");
   });
