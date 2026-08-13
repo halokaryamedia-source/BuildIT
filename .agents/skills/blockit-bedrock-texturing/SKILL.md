@@ -28,41 +28,46 @@ filesystem material deliverable       → save_material_config
 material_instance read/set/bulk/clear → dedicated material-instance tool
 ```
 
-Known identity skips list/discovery. `get_texture` is only for pixel/image evidence, not confirmation. Painter intent names the actual action (fill/shape/gradient/brush/erase/pick/copy/settings/layer/selection/preset), not merely "paint".
+Known identity skips list/discovery. `get_texture` is for pixel/image evidence, not confirmation. Painter intent names the actual action rather than merely "paint".
 
-## Deferred Spec Loading
+## Deferred Spec Loading / Stage
 
-After routing, load a missing spec with the **exact tool name** + specific action; never raw user wording alone.
-
-```text
-get_texture            → "get_texture read texture image pixels"
-configure_material     → "configure_material edit existing PBR material"
-assign_texture_channel → "assign_texture_channel assign PBR texture channel"
-texture_selection      → "texture_selection rectangle invert texture selection"
-```
-
-If the exact spec is loaded, call it directly.
-
-## Stage / Anti-Loop
-
-Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
+If an exact spec is missing, load it with the **exact selected tool name** + action; if loaded, call it directly. Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
 - `DISCOVER` only when texture/material/face identity required next is unknown/stale.
-- After mutation, reuse returned state; **do not re-list/re-read it only for confirmation**.
-- Bounded surface mismatch → correct that state, then verify affected appearance; do not restart broad discovery.
+- Reuse mutation output; do not re-list/re-read only for confirmation.
+- Bounded surface mismatch → correct that state, then verify affected appearance.
 - Validation failure keeps the selected capability unless identity/state became stale/unknown.
 
 ## Readiness
 
 For end-to-end reference work, production texturing starts after dependent geometry has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED`.
 
-For a texture-only revision on an **existing asset**, current geometry is the user-provided baseline unless geometry correction is in scope. **Do not claim that baseline is reference-accurate** merely because texturing can proceed.
+For texture-only revision on an existing asset, current geometry is the user-provided baseline unless geometry correction is in scope. Do not claim that baseline is reference-accurate merely because texturing can proceed.
 
-A flat/placeholder texture may be provisional for visibility. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships as applicable.
+A flat/placeholder texture may be provisional for visibility. If geometry changes after production texturing begins, re-check only affected Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channel relationships.
 
-## Native Bedrock PBR
+## Minecraft-First Reference Texture
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; **use `activate_texture` to choose the active/default working texture**, then use Painter operations rather than generic per-face `Texture.apply()` semantics.
+The approved reference is **surface guidance, not a pixel-copy contract**. Preserve:
+
+```text
+base palette
+major color/material regions
+part separation
+identity-critical markings
+required material/PBR meaning
+```
+
+Prefer Minecraft-readable pixel treatment over photoreal micro-detail, dense noise, wrinkles, or baked-light shading. Texture supports geometry; **do not paint fake silhouette or missing required form**.
+
+A **minor reference discrepancy**—small shade/noise differences or slight non-critical marking placement drift—does not block texturing. Choose one canonical surface interpretation consistently: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest Minecraft-readable texture**.
+
+Only a material surface contradiction affecting identity-critical marking, required material region/channel, part separation, or intended Minecraft readability becomes `BLOCKED`. Do not average conflicting material evidence into an invented compromise.
+
+## Native Bedrock PBR / UV
+
+`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; use `activate_texture` to choose the active/default working texture, then Painter operations.
 
 `material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools stay outside BlockIT Bedrock Entity. For Box-UV Cubes, `uv_offset`, `mirror_uv`, and `autouv` are intentional authored layout state: use `modify_cube` for one known Cube or `modify_cubes_batch` for a coherent known set. Intentional reuse/mirroring is valid; accidental overlap is not.
 
@@ -70,4 +75,4 @@ Logical project UV resolution and bitmap pixel dimensions are separate facts; do
 
 ## Verification
 
-`create_texture` already returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output does not prove the completion claim. Use model views only when appearance on geometry matters; keep RTX/in-game claims bounded to available evidence.
+`create_texture` already returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output does not prove the completion claim. Use model views when appearance on geometry matters; keep RTX/in-game claims bounded to available evidence.
