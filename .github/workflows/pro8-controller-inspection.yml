@@ -26,7 +26,9 @@ jobs:
         working-directory: mcp
         run: bun install --frozen-lockfile
       - name: Apply bounded PRO-8 patch
-        run: python3 .github/scripts/pro8_controller_inspection.py
+        run: |
+          python3 .github/scripts/pro8_controller_inspection.py
+          python3 .github/scripts/pro8_followup.py
       - name: Regenerate owners
         working-directory: mcp
         run: |
@@ -53,6 +55,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm -f .github/workflows/pro8-controller-inspection.yml
           git rm -f .github/scripts/pro8_controller_inspection.py
+          git rm -f .github/scripts/pro8_followup.py
           git add -A
           git commit -m "feat: inspect authored animation controllers"
           git push origin HEAD:Local
