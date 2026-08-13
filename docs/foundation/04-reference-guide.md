@@ -1,8 +1,8 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 2.0  
-**Updated:** 2026-08-13
+**Version:** 2.1  
+**Updated:** 2026-08-14
 
 ## Purpose
 
@@ -23,6 +23,17 @@ Reference Evidence Map → derived working index; never image authority
 The **actual approved reference image** must be available as multimodal input to the model performing reference-driven geometry reasoning. A path, manifest, prose summary, or memory is context, not visual evidence. **A path itself is not visual evidence.** If the image cannot be inspected, material reference-driven geometry/approval is `BLOCKED`.
 
 Default deliverable is the image only. Handoff Constraints are task context, not a ZIP/manifest/package.
+
+## Execution Boundary
+
+Reference readiness and repository/policy hardening are separate from image execution.
+
+- Completing an audit, skill/policy change, CI run, or `next-action.md` update does **not** authorize generation.
+- If work switches from image generation into workflow/repository hardening, earlier generation permission is consumed.
+- After hardening/verification, stop and report. Resume image generation or editing only after a **fresh explicit user instruction** to generate/execute.
+- A repository next step may describe what would happen next, but it is not execution consent.
+
+This boundary prevents system improvement from silently turning into another image attempt.
 
 ## Intake / Readiness
 
@@ -98,7 +109,7 @@ For the one allowed correction:
 - preserve relationships that already passed;
 - reject a correction that fixes one panel by silently redesigning another.
 
-If material conflict remains, stop at `NOT READY / NEEDS REVIEW`; do not generate more variants.
+A correction also requires the Execution Boundary above. If material conflict remains, stop at `NOT READY / NEEDS REVIEW`; do not generate more variants.
 
 ## View Pair Map
 
@@ -130,7 +141,9 @@ evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 
 When dimensions are approved: `1 block = 16 Blockbench units`. Use them as whole-model target/envelope; individual Cube transforms remain modeller decisions.
 
-Never derive scale/transforms from pixels, panel size, perspective, masks, mesh fitting, or similarity scores. Target dimensions normally remain **Handoff Constraints outside the image**. **Only view labels may appear** by default unless the user explicitly requests visible notes.
+Never derive scale/transforms from pixels, panel size, perspective, masks, mesh fitting, or similarity scores. Target dimensions normally remain **Handoff Constraints outside the image**.
+
+**Only panel/view labels may appear by default.** No board title, header, subtitle, explanatory note, status text, target height, scale note, dimensions, or target-use text is rendered unless explicitly requested.
 
 ## Completion
 
