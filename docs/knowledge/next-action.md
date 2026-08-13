@@ -35,6 +35,8 @@ No P8 architecture, preset/profile, evaluator, planner, controller framework, ne
 
 `manage_keyframes` create/edit may author finite numbers or non-empty Molang strings in transform values. Strings are preserved into native `_Keyframe` state; BlockIT never evaluates them. `inspect_animation` already returns authored `getArray()` values.
 
+Scalar number/string values use the existing uniform-keyframe path; three-component arrays remain explicit per-axis values.
+
 `create_animation` intentionally remains numeric-only because it owns a separate codec/file-space conversion path. Expression support there is not required for the bounded gap.
 
 ## Still Deferred
