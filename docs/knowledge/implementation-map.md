@@ -122,11 +122,11 @@ Fresh GitHub/CI serialized measurement:
 ```text
 initialize instructions: 386 characters
 62 tools
-74,996 tools/list response characters
-74,952 tools-array characters
-51,810 input-schema characters
-10,885 description characters
-per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
+75,129 tools/list response characters
+75,085 tools-array characters
+52,105 input-schema characters
+10,723 description characters
+per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
 These are serialized characters, not client token/context measurements. `mcp/scripts/measure-default-surface.ts` owns the isolated measurement.
@@ -162,7 +162,7 @@ intent + known state + stage
 Static retrieval evidence:
 
 ```text
-raw semantic stress: Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
+raw semantic stress: Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9135 / MRR 0.6668
 exact-name routed:   Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
 ```
 
@@ -307,7 +307,10 @@ P5     semantic form/orientation/pivot/contact
 P6     actual reference + claim/view grounding
 P7     qualitative correction convergence/evaluation integrity
 REF    minimal Reference Generator buildability/cross-view route
-DOC    post-P7/reference-generator current-state synchronization
+PRO-1  professional representation/transform/hierarchy/detail reasoning
+PRO-2  professional-sample authoring-expressiveness validation
+PRO-3  place_cube per-element parent + initial inflate creation completeness
+DOC    current-state synchronization
 ```
 
 No local run is active.

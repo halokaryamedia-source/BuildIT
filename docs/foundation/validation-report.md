@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-13  
-**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, completed non-local efficiency hardening, P0–P7 modelling/evaluation contracts, minimal Reference Generator route, and current-state synchronization.
+**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7 modelling/evaluation contracts, minimal Reference Generator route, professional modelling reasoning, `place_cube` creation completeness, and current-state synchronization.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -57,11 +57,11 @@ Current verification pins Bun **1.3.14** and measures the isolated `initialize �
 ```text
 initialize instructions: 386 characters
 62 tools
-74,996 tools/list response characters
-74,952 tools-array characters
-51,810 input-schema characters
-10,885 description characters
-per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,034
+75,129 tools/list response characters
+75,085 tools-array characters
+52,105 input-schema characters
+10,723 description characters
+per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
 These are serialized character measurements, **not** model-visible token/context measurements. Real prompt loading, latency, retry frequency, and image-context cost require client/model evidence.
@@ -90,7 +90,7 @@ P0 stage lock
 DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
 
 P1 raw static retrieval proxy
-Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9231 / MRR 0.6652
+Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9135 / MRR 0.6668
 
 P2 exact-name routed loading proxy
 Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
@@ -205,6 +205,23 @@ Static contract requires:
 
 **Proof status:** repository/source/test contract is implemented. Generated image quality is **not** statically verifiable and remains direct image-capable evidence.
 
+## Professional Modelling / Phase 3 Static Proof
+
+Professional `.bbmodel` samples are learning evidence, not presets or anatomy rules. Current object-agnostic reasoning covers representation choice, transform ownership, primary hierarchy timing, and identity-weighted secondary detail.
+
+Phase 3 extends the existing `place_cube` contract only:
+
+```text
+elements[].group   optional exact per-Cube parent override
+elements[].inflate optional finite initial Bedrock inflation
+```
+
+Top-level `group` remains the compatibility default. All explicit parent references are resolved before `Undo.initEdit`; one missing/ambiguous parent fails before mutation. No new Cube tool, asset profile, geometry planner, rig generator, or professional preset was added.
+
+GitHub CI contract proof: **212 tests / 0 failures**, TypeScript success, default-surface budget success, production build success, and generated-doc freshness success. `place_cube` serialized payload is **3,167 characters**, below the retained **3,200** ceiling.
+
+**Proof status:** source/schema/tests/generated docs are `CURRENT-PROJECT VERIFIED` for repository/CI semantics. Live Blockbench placement, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
+
 ## Product / Lifecycle / Export
 
 | Capability | Proof status |
@@ -288,7 +305,7 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 
 ## Current Evidence Boundary
 
-Current non-local source/contracts are synchronized through **P0–P7 + the minimal Reference Generator route**.
+Current non-local source/contracts are synchronized through **P0–P7 + the minimal Reference Generator route + professional modelling Phase 1–3**.
 
 No local run is active. Remaining direct/model-facing questions are intentionally unresolved until explicitly activated:
 
