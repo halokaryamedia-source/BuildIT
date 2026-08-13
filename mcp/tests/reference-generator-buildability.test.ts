@@ -15,6 +15,25 @@ describe("reference generator projection contract", () => {
     expect(skill).toContain("needs review");
   });
 
+  test("hardening and readiness never imply image execution consent", async () => {
+    const [skill, guide, flow, next] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/knowledge/flow.md"),
+      read("../docs/knowledge/next-action.md"),
+    ]);
+    for (const text of [skill, guide]) {
+      expect(text).toContain("fresh explicit user instruction");
+      expect(text).toContain("hardening");
+      expect(text).toContain("does not authorize");
+    }
+    expect(skill).toContain("readiness is not permission to generate");
+    expect(flow).toContain("execution consent gate");
+    expect(flow).toContain("stop; wait for user");
+    expect(next).toContain("reference_execution_waiting_explicit_user_command");
+    expect(next).toContain("wait — do not generate");
+  });
+
   test("pose stays natural without forced symmetry", async () => {
     const [skill, guide] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
@@ -102,6 +121,20 @@ describe("reference generator projection contract", () => {
     expect(flow).toContain("regenerate the whole board");
   });
 
+  test("presentation remains clean and user facts stay outside image pixels", async () => {
+    const [skill, guide] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+    ]);
+    for (const text of [skill, guide]) {
+      expect(text).toContain("only panel/view labels may appear by default");
+      expect(text).toContain("no title");
+      expect(text).toContain("header");
+      expect(text).toContain("subtitle");
+      expect(text).toContain("outside the image");
+    }
+  });
+
   test("construction, handoff and generation budget remain bounded", async () => {
     const [skill, guide] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
@@ -109,11 +142,10 @@ describe("reference generator projection contract", () => {
     ]);
     expect(skill).toContain("simplest blockbench-buildable representation");
     expect(skill).toContain("never lazy-voxelize");
-    expect(skill).toContain("outside the image");
-    expect(guide).toContain("outside the image");
     expect(skill).toContain("first draft = maximum 1");
     expect(skill).toContain("targeted correction = maximum 1");
     expect(skill).toContain("automatic variants = 0");
     expect(skill).toContain("one image only");
+    expect(guide).toContain("generation budget");
   });
 });
