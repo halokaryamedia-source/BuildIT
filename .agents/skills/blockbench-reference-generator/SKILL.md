@@ -118,4 +118,4 @@ automatic variants   = 0
 
 A materially new user-approved source, pose, target, or requirement **starts a new cycle**. **Do not start a new cycle automatically** to bypass a failed correction.
 
-Return one image only and stop for user review. Only after approval may the **actual approved reference image** + retained nonvisual facts go to modelling. Do not generate ZIPs.
+Return **one image only** and stop for user review. Only after approval may the **actual approved reference image** + retained nonvisual facts go to modelling. Do not generate ZIPs.
