@@ -13,69 +13,61 @@ REPOSITORY WORK       → next-action.md → affected owner → development-brie
 LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
 ```
 
-A route change matters. Repository/policy hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; reference execution requires a fresh explicit user instruction.
+Hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; generation requires a fresh explicit user instruction.
 
 ## 2. Reference Preparation
 
 ```text
 SOURCE IMAGE + USER INTENT
-→ VISUAL TARGET + NONVISUAL HANDOFF CONSTRAINTS
+→ VISUAL TARGET + HANDOFF CONSTRAINTS
 → INTERNAL GENERATION BRIEF
+→ MINECRAFT-FIRST GEOMETRY + TEXTURE TARGET
 → SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
-   → original Source remains authority regardless of camera angle
-   → generated anchor normalizes perspective
-→ stable/readable POSE + ARTICULATED-FEATURE STATE when applicable
-→ SMALLEST ORTHOGRAPHIC CORE
-   → only views needed to constrain missing axes / key structure
-   → omit an optional conflicting view only if remaining core stays sufficiently constrained
-   → otherwise NEEDS REVIEW
-   → generated 3/4 is not default structural authority
+→ stable/readable POSE + ARTICULATED-FEATURE INTENT
+→ FIVE-PREVIEW COVERAGE BOARD
+   UPPER: SIDE | FRONT | BACK
+   LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
 → PRE-GENERATION READINESS
-   ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
-   └─ READY → EXECUTION CONSENT GATE
-              ├─ no fresh explicit generation instruction → STOP; WAIT FOR USER
-              └─ fresh explicit instruction → GENERATE ONE CLEAN CORE DRAFT
-                   → panel/view labels only; no title/header/note by default
-                   → VISUAL GATE:
-                        anchor fidelity
-                        orthographic coherence
-                        articulation lock
-                        support/naturalness
-                        construction/readability
-                   ├─ PASS → USER APPROVAL
-                   └─ MATERIAL DEFECT
-                        → one BOARD-LEVEL TARGETED CORRECTION
-                        → fresh execution consent again
-                        → Source + locked Brief remain authority
-                        → regenerate whole shown core; never patch one panel
-                        → remove unnecessary conflicting view only if core remains sufficient
-                        → still material? NEEDS REVIEW; STOP
+→ EXECUTION CONSENT GATE
+   ├─ no fresh instruction → STOP; WAIT FOR USER
+   └─ fresh instruction → ONE CLEAN FIVE-PREVIEW DRAFT
+        → labels only by default
+        → gate: recognizability
+                geometry buildability
+                texture usability
+                no material contradiction
+                readability
+        ├─ PASS or minor preview drift → USER APPROVAL
+        └─ MATERIAL DEFECT → one board-level correction → still material? NEEDS REVIEW
 → ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 ```
 
-Grounded load-bearing subjects normally use a stable natural neutral stance without forced bilateral alignment. When pose is normalized, preserve identity-bearing silhouette and major masses rather than source gait/limb silhouette. Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across shown views.
+Five previews are broad Minecraft modelling evidence, **not five engineering drawings**. Minor curl/angle/contour/overlap/shade/marking drift is acceptable when identity, primary geometry, topology/attachment, buildability, and identity-critical texture information remain clear.
 
-Reference preparation no longer assumes a fixed five-view board. Use the **smallest orthographic core that materially constrains the model**. TOP/BACK are conditional. An original Source Image photographed from 3/4 remains visual authority; only a **generated** 3/4 panel is diagnostic and subordinate to the orthographic core.
+Geometry prioritizes recognizable Blockbench-buildable major form. Texture prioritizes Minecraft-readable palette, material regions, part separation, and identity-critical markings rather than photoreal micro-detail.
 
-Generation budget is scoped per **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry a failed correction.
-
-Nonvisual scale/height/use facts stay outside image pixels. Durable policy: `docs/foundation/04-reference-guide.md`.
+Generation budget is per **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry.
 
 ## 3. Bedrock Authoring
 
 ```text
 ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
-→ VIEW PAIR MAP for views actually present
+→ VIEW PAIR MAP
 → REFERENCE EVIDENCE MAP
+→ DISCREPANCY TRIAGE
+   ├─ MINOR → ONE CANONICAL MINECRAFT INTERPRETATION → continue
+   └─ MATERIAL → CONFLICTING / BLOCKED
 → SEMANTIC FORM
 → CONSTRUCTION + TRANSFORM OWNERSHIP
 → CONTACT / ATTACHMENT INVARIANTS
 → PRIMARY FORM HYPOTHESIS
 → PRIMARY BLOCKOUT: COARSE CUBES + REQUIRED PRIMARY GROUPS/PIVOTS
 → CANONICAL MODEL VIEWS
-→ CLAIM-LOCKED REFERENCE ↔ MODEL COMPARISON
+→ DIFFERENCE-FIRST REFERENCE ↔ MODEL COMPARISON
 → FAIL | UNVERIFIED | PASS
 ```
+
+For a minor discrepancy choose consistently: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest recognizable Blockbench-buildable interpretation**. Minor means it does not change identity, primary mass/required count, topology/attachment, important negative space, buildability, or identity-critical texture/material information. Do not average drift.
 
 Use the simplest construction that preserves visible requirements; examples are not presets. **Form-defining hierarchy may belong in the primary blockout; neutral organization stays downstream.** Professional samples remain learning evidence only.
 
@@ -88,18 +80,13 @@ exact target state
 → IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Only after primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export.
+After primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export. Texture applies the same rule: minor surface drift becomes one Minecraft-readable canonical surface; material texture conflict is not silently averaged.
 
 ## 4. Repository Work
 
 ```text
-AGENTS.md
-→ next-action.md when continuing
-→ affected owner + nearest AGENTS.md
-→ development-brief
-→ smallest complete change
-→ minimum useful proof
-→ STOP AND REPORT
+AGENTS.md → next-action.md when continuing → affected owner + nearest AGENTS.md
+→ development-brief → smallest complete change → minimum useful proof → STOP AND REPORT
 ```
 
 Repository proof never becomes permission for image generation or local Blockbench execution.
