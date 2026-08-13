@@ -80,6 +80,8 @@ Required retained GitHub gate:
 frozen install → typecheck → tests → measure:surface → build → docs:check
 ```
 
+Normal `MCP Verify` is the retained-state authority; a docs-only continuation commit may trigger it after temporary helper cleanup.
+
 Static/CI proof can establish schema/type/result/docs consistency only. Native expression persistence, preview evaluation, Bedrock export semantics, and visual motion quality remain `LOCAL PROOF REQUIRED` if local testing is later reactivated.
 
 ## Next Step
