@@ -66,7 +66,7 @@ Use varied rectangular parts, not equal world-block voxels. Rotate only for visi
 
 ### Orthographic Core Lock
 
-**Do not design a fixed five-panel turnaround.** Use the **smallest mutually compatible orthographic view set** that constrains the model.
+This is **not a fixed five-panel turnaround**. Use the **smallest mutually compatible orthographic view set** that constrains the model.
 
 1. Choose the source-nearest anchor orientation first.
 2. Add only views needed to constrain missing axes or identity-critical structure.
