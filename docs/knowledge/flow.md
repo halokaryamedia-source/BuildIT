@@ -21,14 +21,17 @@ A route change matters. Repository/policy hardening never silently continues int
 SOURCE IMAGE + USER INTENT
 → VISUAL TARGET + NONVISUAL HANDOFF CONSTRAINTS
 → INTERNAL GENERATION BRIEF
-→ SOURCE-NEAREST ANCHOR ORIENTATION
+→ SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
+   → original Source remains authority regardless of camera angle
+   → generated anchor normalizes perspective
 → stable/readable POSE + ARTICULATED-FEATURE STATE when applicable
 → SMALLEST ORTHOGRAPHIC CORE
    → only views needed to constrain missing axes / key structure
-   → omit a view if it requires contradictory invention
-   → 3/4 is not default initial-core content
+   → omit an optional conflicting view only if remaining core stays sufficiently constrained
+   → otherwise NEEDS REVIEW
+   → generated 3/4 is not default structural authority
 → PRE-GENERATION READINESS
-   ├─ NOT READY → clarify once → still material? NEEDS REVIEW; DO NOT GENERATE
+   ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
    └─ READY → EXECUTION CONSENT GATE
               ├─ no fresh explicit generation instruction → STOP; WAIT FOR USER
               └─ fresh explicit instruction → GENERATE ONE CLEAN CORE DRAFT
@@ -45,14 +48,16 @@ SOURCE IMAGE + USER INTENT
                         → fresh execution consent again
                         → Source + locked Brief remain authority
                         → regenerate whole shown core; never patch one panel
-                        → remove unnecessary conflicting view rather than invent structure
+                        → remove unnecessary conflicting view only if core remains sufficient
                         → still material? NEEDS REVIEW; STOP
 → ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 ```
 
-Grounded load-bearing subjects normally use a stable natural neutral stance without forced bilateral alignment. Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across shown views.
+Grounded load-bearing subjects normally use a stable natural neutral stance without forced bilateral alignment. When pose is normalized, preserve identity-bearing silhouette and major masses rather than source gait/limb silhouette. Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across shown views.
 
-Reference preparation no longer assumes a fixed five-view board. Use the **smallest orthographic core that materially constrains the model**. TOP/BACK are conditional. 3/4 is diagnostic and only added after orthographic coherence or by explicit user request.
+Reference preparation no longer assumes a fixed five-view board. Use the **smallest orthographic core that materially constrains the model**. TOP/BACK are conditional. An original Source Image photographed from 3/4 remains visual authority; only a **generated** 3/4 panel is diagnostic and subordinate to the orthographic core.
+
+Generation budget is scoped per **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry a failed correction.
 
 Nonvisual scale/height/use facts stay outside image pixels. Durable policy: `docs/foundation/04-reference-guide.md`.
 
