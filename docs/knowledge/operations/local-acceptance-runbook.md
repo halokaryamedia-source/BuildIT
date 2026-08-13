@@ -1,6 +1,6 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-13  
+Updated: 2026-08-14  
 Owner: local Codex + Blockbench acceptance procedure  
 Active only when `docs/knowledge/next-action.md` points here.
 
@@ -8,7 +8,7 @@ This is the single procedural owner for BlockIT live acceptance. It is inactive 
 
 ## 1. Goal
 
-Prove or disprove claims source/CI cannot establish: local plugin/runtime and stateless MCP behavior, real Codex tool exposure/search behavior, representative Bedrock authoring reachability, reference judgement/correction convergence, persistence/export, and observable call/retry/context behavior.
+Prove or disprove claims source/CI cannot establish: exact local plugin freshness, stateless MCP behavior, real Codex tool exposure/search behavior, representative Bedrock authoring reachability, Minecraft-first reference judgement, persistence/export, and observable call/retry/context behavior.
 
 Establish a baseline before editing source. Reproduce and classify a failure first.
 
@@ -24,11 +24,20 @@ AGENTS.md
 
 Do not load Git history or the whole foundation set before a concrete failure identifies the boundary.
 
-## 3. Environment / Static Gate
+## 3. Exact Local Build / Freshness Gate
 
-Record Local commit SHA, working-tree status, OS, Bun/Codex/Blockbench versions, loaded BlockIT file, MCP endpoint, and Extended MCP Families setting.
+Do not use package version as freshness proof. Record the exact `Local` HEAD and hash of the artifact actually prepared for Blockbench.
 
-From `mcp/`:
+From the repository root:
+
+```bash
+git switch Local
+git pull --ff-only
+git status --short
+git rev-parse HEAD
+```
+
+The working tree must be clean before the acceptance build. Then from `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
@@ -39,21 +48,48 @@ bun run build
 bun run docs:check
 ```
 
-Production plugin: `mcp/dist/mcp.js`. A static gate failure is engineering evidence, not runtime proof.
+Production plugin: `mcp/dist/mcp.js`.
 
-Record the fresh `dist/mcp.js` file hash and exact repository HEAD used for the build. The package version alone is not sufficient proof that Blockbench loaded the current build.
+On Windows PowerShell, record the fresh artifact hash:
 
-## 4. Load BlockIT / Transport
+```powershell
+Get-FileHash .\dist\mcp.js -Algorithm SHA256
+```
 
-Load the repository build in desktop Blockbench. Default endpoint:
+Record together:
+
+```text
+Local HEAD
+mcp/dist/mcp.js SHA-256
+Blockbench version
+Bun version
+Codex/client version when visible
+actual BlockIT file/path loaded by Blockbench
+MCP endpoint
+Extended MCP Families setting
+```
+
+A static gate failure is engineering evidence, not runtime proof. If the loaded file/path or artifact freshness cannot be established, classify `ENVIRONMENT / INSTALL` and stop before model-quality claims.
+
+## 4. Load Current BlockIT / Reconnect MCP
+
+Load the fresh repository build in desktop Blockbench, fully reload/restart Blockbench, then reconnect/restart the MCP client so no previous plugin process or cached tool surface is treated as current proof.
+
+Default endpoint:
 
 ```text
 http://127.0.0.1:3000/bb-mcp
 ```
 
-Baseline constraints: 62 enabled tools, Extended MCP Families off, `risky_eval` and `from_geo_json` disabled, and no upstream hosted plugin used as BlockIT proof.
+Baseline constraints: **62 enabled tools**, Extended MCP Families off, `risky_eval` and `from_geo_json` disabled, and no upstream hosted plugin used as BlockIT proof.
 
-With the plugin running, execute `bun run verify:stateless-local` and confirm independent follow-up calls do not rely on a durable server session.
+With the plugin running, execute:
+
+```bash
+bun run verify:stateless-local
+```
+
+Confirm independent follow-up calls do not rely on a durable server session.
 
 ## 5. Native Tool Exposure
 
@@ -73,13 +109,37 @@ Do not treat controller creation/mutation or existing-animation direct sound/tim
 
 Verify editable `.bbmodel` and Bedrock geometry export to explicit absolute paths. When relevant, reopen the `.bbmodel` and confirm the authored state under test survives. Unsupported reopen/merge scenarios remain `LOCAL PROOF REQUIRED`.
 
-## 8. Fixture B — Reference Fidelity
+## 8. Fixture B — Minecraft-First Reference Test
 
-Use a **fresh explicitly approved Modelling Brief that passed the current Reference Generator gate**. Do not treat an old fixture image as approved merely because it exists in the repository.
+Use the **actual user-approved reference image visible to the local modelling context** plus material nonvisual Handoff Constraints.
 
-For articulated subjects, the approved board must already have one locked pose: stable natural neutral stance by default, or the exact user-requested pose. Required limb/appendage count, attachment, ground/support, near/far separation, negative spaces, and pose/limb phase must be consistent across required panels.
+For newly generated references, the current generator defaults to five broad previews:
 
-Carry material nonvisual Handoff Constraints separately in the active task context. Example: target scale/height belongs in task context, not as image caption text.
+```text
+SIDE | FRONT | BACK
+TOP / FOOTPRINT | FRONT-SIDE 3/4
+```
+
+The five previews are coverage evidence, not five engineering-perfect drawings. Do **not** generate a replacement merely to satisfy panel count when an already approved reference provides sufficient evidence for the claims under test. Fewer approved panels are valid when the missing axis is not material; a materially missing axis remains `UNVERIFIED / BLOCKED`.
+
+Reference discrepancy triage:
+
+```text
+MINOR
+→ choose one canonical Minecraft interpretation
+→ explicit user requirement
+→ original Source evidence
+→ best-supported approved reference view(s)
+→ simplest recognizable Blockbench-buildable form
+→ continue consistently
+
+MATERIAL
+→ CONFLICTING / BLOCKED
+```
+
+Minor curl/angle/contour/overlap or texture shade/noise/marking drift is not a blocker by itself. Do not average drift. Material conflict means a difference that changes identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information.
+
+Geometry acceptance prioritizes recognizable major form, attachments/topology, important negative spaces, and clean Blockbench-buildable construction. Texture acceptance prioritizes Minecraft-readable palette, major material/color regions, part separation, and identity-critical markings rather than pixel-perfect copying.
 
 ```text
 actual approved reference + material Handoff Constraints
@@ -88,9 +148,10 @@ actual approved reference + material Handoff Constraints
 → fresh corresponding model views
 → difference-first FAIL | UNVERIFIED | PASS
 → causal correction only after diagnosis
+→ production texture only after dependent geometry PASS
 ```
 
-A front-plausible but side/depth-wrong model cannot receive full 3D `PASS`. A repeated same-cause correction direction that fails twice without new evidence stops as `BLOCKED`. Geometry failure must not be hidden with texture or animation.
+A front-plausible but materially side/depth-wrong model cannot receive full 3D `PASS`. A correction that helps one view while materially regressing another is rejected. A repeated same-cause correction direction that fails twice without new evidence stops as `BLOCKED`. Geometry failure must not be hidden with texture or animation.
 
 ## 9. Efficiency Trace
 
