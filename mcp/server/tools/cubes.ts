@@ -63,6 +63,18 @@ const placeCubeElementSchema = cubeSchema
       .describe(
         "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
       ),
+    group: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group."
+      ),
+    inflate: z
+      .number()
+      .finite()
+      .optional()
+      .describe("Optional finite Bedrock Cube inflation authored at creation."),
   })
   .refine(
     (element) =>
@@ -475,7 +487,14 @@ export function registerCubesTools() {
   createTool(cubeToolDocs[0].name, {
     ...cubeToolDocs[0],
     async execute({ elements, faces, group }) {
-      const outlinerGroup = resolvePlacementGroup(group);
+      const defaultOutlinerGroup = resolvePlacementGroup(group);
+      const placements = elements.map((element: PlaceCubeElement) => ({
+        element,
+        outlinerGroup:
+          element.group !== undefined
+            ? resolvePlacementGroup(element.group)
+            : defaultOutlinerGroup,
+      }));
       const customFaceUvs = Array.isArray(faces);
 
       Undo.initEdit({
@@ -486,7 +505,7 @@ export function registerCubesTools() {
 
       let cubes: Cube[];
       try {
-        cubes = elements.map((element: PlaceCubeElement) => {
+        cubes = placements.map(({ element, outlinerGroup }) => {
           const cube = new Cube({
             autouv: customFaceUvs ? 0 : 1,
             name: element.name,
@@ -494,6 +513,7 @@ export function registerCubesTools() {
             to: element.to as [number, number, number],
             origin: (element.origin ?? [0, 0, 0]) as [number, number, number],
             rotation: element.rotation as [number, number, number],
+            ...(element.inflate !== undefined ? { inflate: element.inflate } : {}),
             ...(customFaceUvs ? { box_uv: false } : {}),
           }).init();
 
