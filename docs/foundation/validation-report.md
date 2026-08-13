@@ -17,7 +17,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_ORTHOGRAPHIC_BOUNDARIES_AND_PRO1_PRO8_STATIC_VERIFIED
+NON_LOCAL_P0_P7_REFERENCE_MINECRAFT_FIRST_FIVE_PREVIEW_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
@@ -37,7 +37,7 @@ tools array:                    76,395 characters
 input schemas:                  53,493 characters
 descriptions:                   10,645 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
-runtime workflow prompt:        6,995 characters
+runtime workflow prompt:        6,959 characters
 ```
 
 These are serialized characters, not model-visible tokens.
@@ -56,54 +56,57 @@ Semantic form precedes exact transforms and visible relationships own constructi
 
 ## P6 — Actual Reference Grounding / Claim-Locked Comparison
 
-Reference-driven approval requires the **actual approved reference image** plus fresh current-revision model evidence. Path/prose/memory is not image evidence. Difference-first comparison remains the approval contract.
+Reference-driven approval requires the **actual approved reference image** plus fresh current-revision model evidence. Path/prose/memory is not image evidence. Difference-first comparison remains the approval contract. A **View Pair Map** and **Reference Evidence Map** remain explicit evidence owners; ambiguous pairings stay `UNVERIFIED`.
 
 ## P7 — Fidelity Convergence / Evaluation Integrity
 
 Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Evaluation is qualitative and evidence-bound, not a scalar similarity score. Real convergence remains `LOCAL PROOF REQUIRED`.
 
-## Reference Generator — Orthographic Core + Clarified Boundaries
+## Reference Generator — Minecraft-First Five-Preview Contract
 
 Current reference preparation requires:
 
 ```text
 source image + user intent
 → Internal Generation Brief
+→ MINECRAFT-FIRST GEOMETRY + TEXTURE TARGET
 → SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
-→ stable/readable pose + identity-critical articulated-feature state
-→ SMALLEST ORTHOGRAPHIC CORE
-   → only evidence-bearing views
-   → TOP/BACK conditional
-   → generated 3/4 diagnostic, not structural authority
-   → optional conflicting view may be omitted only if remaining core stays sufficiently constrained
-   → otherwise NEEDS REVIEW
+→ stable/readable pose + articulated-feature intent
+→ FIVE-PREVIEW COVERAGE BOARD
+   UPPER: SIDE | FRONT | BACK
+   LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
 → Pre-Generation Readiness
 → EXECUTION CONSENT GATE
    ├─ fresh explicit user generation instruction → one Draft/correction
    └─ no fresh instruction → STOP; WAIT FOR USER
 → visual gate:
-   anchor fidelity
-   orthographic coherence
-   articulation lock
-   support/naturalness
-   construction/readability
+   recognizability / source identity
+   geometry buildability
+   texture usability
+   no material cross-view contradiction
+   presentation/readability
 → user approval
 → actual approved reference image + relevant Handoff Constraints
 ```
 
-Five ambiguity closures are now part of the generic contract:
+The five previews are **broad Minecraft modelling evidence, not five exact technical drawings**. SIDE/FRONT/BACK/TOP provide construction evidence and generated 3/4 provides supplemental volume/readability evidence. TOP gives useful footprint/depth guidance without requiring engineering-perfect projection.
 
-- **Anchor:** the generated anchor is orthographic, while the original Source Image remains visual authority regardless of its camera angle; perspective/lens distortion is normalized rather than copied.
-- **Pose normalization:** preserve identity-bearing silhouette and major-mass relationships, not source gait/limb silhouette when the approved modelling pose intentionally changes.
-- **View omission:** an optional contradictory view may be removed only when the remaining core still sufficiently constrains every material structure; otherwise the board remains `NEEDS REVIEW`.
-- **3/4:** an original Source Image photographed from 3/4 remains evidence authority; only a generated 3/4 panel is diagnostic and never structural authority.
-- **Generation budget:** one Draft + at most one targeted correction applies per unchanged Internal Generation Brief/review cycle. A materially changed user-approved source/pose/target/requirement may start a new cycle, but the system never auto-opens a new cycle merely to retry failure.
+Reference fidelity is **Minecraft-first**. Geometry preserves recognizable silhouette, primary masses/counts, topology/attachment, important negative spaces, and Blockbench buildability rather than exact real-world anatomy or contour. Texture preserves base palette, major color/material regions, part separation, and identity-critical markings rather than photoreal micro-detail.
 
-Pose/articulation rules remain relational, not anatomy presets. Structural correction stays board-level: original Source Image + locked Brief remain authority; failed Draft is defect evidence, not geometry authority; the whole shown core is regenerated rather than patching one panel.
+Minor preview drift—small curl/angle/contour/overlap/shade/marking differences—does not invalidate a recognizable and buildable reference. Downstream modelling/texturing resolves minor discrepancy into **one canonical Minecraft interpretation**:
 
-Repository/policy hardening, audit completion, CI success, or `next-action.md` never authorizes image generation. Only panel/view labels appear by default; scale/height/use facts remain Handoff Constraints outside image pixels.
+```text
+explicit user requirement
+→ original Source Image evidence
+→ best-supported approved reference view(s)
+→ simplest recognizable Blockbench-buildable interpretation
+```
 
-No anatomy engine, pose planner, fixed view preset, manifest/package, new MCP tool, runtime profile, or scoring system was added. Static tests do not certify future generated-image quality; actual Draft quality and approval require direct image-capable evidence.
+Minor drift is not `BLOCKED` and must not be averaged. Only unresolved **material** contradiction affecting identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information becomes `CONFLICTING / BLOCKED`.
+
+Structural correction remains board-level. A fix that helps one view while materially regressing another is rejected; runtime workflow explicitly rejects cross-view regression. Repository/policy hardening, audit completion, CI success, or `next-action.md` never authorizes image generation.
+
+Only panel/view labels appear by default; scale/height/use facts remain Handoff Constraints outside image pixels. No anatomy engine, pose planner, scorer, similarity authority, new MCP tool, runtime profile, or asset-specific preset was added. Static tests do not certify future generated-image quality; actual Draft quality and final model quality still require image-capable/local evidence.
 
 ## Professional Sample Forensics — Static / Non-Local
 
@@ -121,7 +124,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **213 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**.
+Current GitHub proof: **209 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,959 < 7,000**.
 
 Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
@@ -131,7 +134,7 @@ Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representat
 
 ## Texture / Paint / PBR
 
-Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-UV batch parity without a new UV tool/preset system.
+Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-UV batch parity without a new UV tool/preset system. Minecraft-first texture judgement now tolerates minor surface drift while material identity/channel contradictions remain blockers.
 
 ## Animation / Rig
 
@@ -158,4 +161,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated clarified orthographic-core Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first five-preview Reference Generator + minor/material canonicalization + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
