@@ -4,145 +4,89 @@ async function read(path: string) {
   return (await Bun.file(path).text()).replaceAll("**", "").replace(/\s+/g, " ").toLowerCase();
 }
 
-describe("reference generator orthographic-core contract", () => {
-  test("intake, readiness and execution consent stay bounded", async () => {
-    const [skill, guide, flow, next] = await Promise.all([
+describe("reference Minecraft-first coverage", () => {
+  test("execution consent stays bounded", async () => {
+    const [skill, flow, next] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
       read("../docs/knowledge/next-action.md"),
     ]);
     expect(skill).toContain("zero clarification");
-    expect(skill).toContain("three material items");
     expect(skill).toContain("generation is output, not discovery");
     expect(skill).toContain("readiness is not permission to generate");
     expect(skill).toContain("fresh explicit user instruction");
     expect(flow).toContain("execution consent gate");
     expect(next).toContain("wait for fresh explicit user generation command");
-    expect(guide).toMatch(/not execution consent|do not authorize generation/);
   });
 
-  test("anchor is orthographic while original source keeps camera-angle authority", async () => {
-    const [skill, guide, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-    ]);
-    for (const text of [skill, guide, flow]) expect(text).toContain("source-nearest orthographic anchor");
-    for (const text of [skill, guide]) {
-      expect(text).toContain("source image remains");
-      expect(text).toContain("3/4");
-      expect(text).toMatch(/normalizes (?:camera )?projection|normalize[s]? perspective/);
-    }
-  });
-
-  test("orthographic core is minimal but cannot become materially underconstrained", async () => {
-    const [skill, guide, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-    ]);
-    expect(skill).toContain("smallest orthographic core");
-    expect(skill).toContain("not a fixed five-panel turnaround");
-    expect(guide).toMatch(/smallest orthographic core|smallest mutually compatible orthographic view set/);
-    for (const text of [skill, guide, flow]) {
-      expect(text).toContain("sufficiently constrained");
-      expect(text).toContain("needs review");
-    }
-  });
-
-  test("pose normalization preserves identity rather than source gait silhouette", async () => {
+  test("default board has five broad preview positions", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
     ]);
     for (const text of [skill, guide, flow]) {
-      expect(text).toContain("identity-bearing silhouette");
-      expect(text).toContain("gait");
+      expect(text).toContain("five-preview");
+      expect(text).toContain("side | front | back");
+      expect(text).toContain("top / footprint | front-side 3/4");
     }
-    for (const text of [skill, guide]) {
-      expect(text).toContain("stable natural neutral stance");
-      expect(text).toContain("bilateral alignment");
-      expect(text).toContain("hidden joint precision");
-    }
+    expect(skill).toContain("source-nearest orthographic anchor");
+    expect(guide).toContain("not five exact technical drawings");
   });
 
-  test("generated 3/4 is diagnostic without demoting a 3/4 source image", async () => {
-    const [skill, guide, flow] = await Promise.all([
+  test("goal is recognizable Blockbench geometry plus Minecraft-readable texture", async () => {
+    const [skill, guide, texturing] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
+      read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
     ]);
     for (const text of [skill, guide]) {
-      expect(text).toContain("3/4 is not part of the default initial core");
-      expect(text).toContain("generated");
-      expect(text).toContain("diagnostic");
-      expect(text).toContain("never structural authority");
-      expect(text).toContain("source image");
+      expect(text).toContain("minecraft-first");
+      expect(text).toContain("geometry");
+      expect(text).toContain("texture");
     }
-    expect(flow).toContain("original source image photographed from 3/4 remains visual authority");
+    expect(skill).toContain("simplest blockbench-buildable representation");
+    expect(skill).toContain("never lazy-voxelize");
+    expect(guide).toContain("does not need to be 100% identical");
+    for (const text of [skill, guide, texturing]) {
+      expect(text).toContain("base palette");
+      expect(text).toContain("identity-critical markings");
+    }
   });
 
-  test("articulated feature state and visual gate remain relational", async () => {
+  test("minor drift uses one canonical interpretation; material conflict still blocks", async () => {
+    const [guide, flow, modelling, texturing, workflow] = await Promise.all([
+      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/knowledge/flow.md"),
+      read("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      read("prompts/bedrock_entity_workflow.md"),
+    ]);
+    for (const text of [guide, flow, modelling, texturing, workflow]) {
+      expect(text).toContain("minor");
+      expect(text).toContain("material");
+      expect(text).toContain("canonical");
+    }
+    expect(guide).toContain("minor drift is not `blocked`");
+    expect(modelling).toContain("minor reference discrepancy alone is not a blocker");
+    expect(modelling).toContain("do not average drift");
+    expect(texturing).toContain("do not average conflicting material evidence");
+    expect(workflow).toContain("only unresolved material conflict");
+  });
+
+  test("pose, presentation and budget stay bounded", async () => {
     const [skill, guide] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
     ]);
-    for (const text of [skill, guide]) {
-      expect(text).toContain("identity-critical articulated");
-      expect(text).toContain("direction/bend");
-      expect(text).toContain("terminal");
-      expect(text).toContain("anchor fidelity");
-      expect(text).toContain("orthographic coherence");
-      expect(text).toContain("articulation lock");
-      expect(text).toContain("naturalness");
-      expect(text).toContain("not ready / needs review");
-    }
-  });
-
-  test("one correction stays board-level and cannot hide missing required evidence", async () => {
-    const [skill, guide, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-    ]);
-    for (const text of [skill, guide]) {
-      expect(text).toContain("board-level defect");
-      expect(text).toContain("defect evidence");
-      expect(text).toContain("not geometry authority");
-      expect(text).toContain("whole shown");
-      expect(text).toContain("remove an unnecessary problematic view");
-    }
-    expect(flow).toContain("regenerate whole shown core");
-  });
-
-  test("generation budget is per unchanged brief cycle and never auto-retries", async () => {
-    const [skill, guide, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-    ]);
-    for (const text of [skill, guide, flow]) {
-      expect(text).toContain("unchanged internal generation brief / review cycle");
-      expect(text).toMatch(/new cycle|starts a new cycle|begins a new review cycle/);
-      expect(text).toMatch(/never start one automatically|must not open a new cycle automatically|do not start a new cycle automatically/);
-    }
+    expect(skill).toContain("stable natural neutral stance");
+    expect(skill).toContain("bilateral alignment");
+    expect(skill).toContain("direction/bend");
+    expect(skill).toContain("only panel/view labels may appear by default");
+    expect(guide).toContain("outside the image");
     expect(skill).toContain("first draft = maximum 1");
     expect(skill).toContain("targeted correction = maximum 1");
     expect(skill).toContain("automatic variants = 0");
-  });
-
-  test("presentation and construction remain bounded", async () => {
-    const [skill, guide] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-    ]);
-    expect(skill).toContain("simplest blockbench-buildable representation");
-    expect(skill).toContain("never lazy-voxelize");
-    for (const text of [skill, guide]) {
-      expect(text).toContain("only panel/view labels may appear by default");
-      expect(text).toContain("outside the image");
-    }
+    expect(skill).toContain("return one image only");
   });
 });
