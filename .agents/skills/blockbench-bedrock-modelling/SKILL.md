@@ -20,13 +20,15 @@ Reference-driven work requires the **actual approved reference image visible in 
 
 ```text
 user brief/target → identity/function
-approved image → visible form
+approved image → visible Minecraft form guidance
 approved dimensions → numeric envelope
 Reference Evidence Map → derived index only
 claim_id | kind | observable claim | supporting reference view(s) | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
 Build a **View Pair Map**; ambiguous front/back, left/right, mirrored, or 3/4 pairing stays `UNVERIFIED`.
+
+Reference fidelity is **Minecraft-first**: preserve recognizability, primary masses/counts, attachment/topology, important negative spaces, and buildability rather than exact real-world contour/anatomy.
 
 ## Semantic Form / Construction / Transform Gate
 
@@ -57,7 +59,7 @@ For every **required attachment**, state its **contact target/invariant** before
 
 Normal lane: grounded claims → Semantic Form → construction + transform ownership → Primary Form → coherent primary Cubes/required Groups → necessary views → diagnosed correction. **If no current decision requires a branch, stay in the geometry lane** instead of searching for completeness work.
 
-Use `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE` per material relation. **A convincing front silhouette does not validate depth.** Never average material cross-view conflict into invented geometry; unresolved material conflict → **Enter the workflow `BLOCKED` state**.
+Use `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE` per material relation. Triage cross-view differences before calling them conflict. A **minor reference discrepancy** does not change identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Resolve minor drift with **one canonical interpretation**: explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest recognizable Blockbench-buildable form. Do not average drift. **A convincing front silhouette does not validate depth.** Only unresolved **material** cross-view conflict → **Enter the workflow `BLOCKED` state**.
 
 Semantic Form says what exists/how parts relate; Primary Form says where/how large/how oriented. Keep placement/size, claims/views, transform owner, contact invariant, uncertainty. Exact transforms come from the whole-form hypothesis.
 
@@ -73,7 +75,7 @@ Material verdict requires **actual approved reference image and fresh current-re
 claim_id | reference view | current model view | observed difference | FAIL | UNVERIFIED | PASS
 ```
 
-Search **difference-first** for recognizability, masses/counts, silhouette/proportion, orientation, contact, negative spaces. `FAIL` = critical/major mismatch; `UNVERIFIED` = missing/ambiguous/conflicting/unavailable evidence; `PASS` = fresh paired evidence shows no critical/major mismatch for supported claim.
+Search **difference-first** for recognizability, masses/counts, silhouette/proportion, orientation, contact, negative spaces. `FAIL` = critical/major mismatch; `UNVERIFIED` = missing/ambiguous/materially conflicting/unavailable evidence; `PASS` = fresh paired evidence shows no critical/major mismatch for supported claim. **Minor preview drift is not `FAIL`** when the canonical Minecraft interpretation remains recognizable and buildable.
 
 Front PASS is not full 3D PASS when depth/side evidence is missing/fails. Tool success, coordinates, bounds, hierarchy, validators, similarity/IoU/projection scores, or fluent review text **cannot justify PASS**. Material mutation makes affected captures stale. Wrong decomposition → Semantic Form; wrong whole relation → Primary Form.
 
@@ -99,6 +101,6 @@ If the **same causal correction direction has failed twice without new evidence*
 
 ## BLOCKED / Completion
 
-`BLOCKED` covers missing approved image, invalid View Pair Map, unresolved material conflict, unavailable capability, or repeated same-cause failure.
+`BLOCKED` covers missing approved image, invalid View Pair Map, unresolved **material** conflict, unavailable capability, or repeated same-cause failure. Minor reference discrepancy alone is not a blocker.
 
 Primary-form-defining hierarchy/pivots may exist before primary `PASS`; **secondary** geometry and neutral organization wait. Production texture/animation waits for dependent geometry/hierarchy/pivots. Existing-asset work may use current geometry as baseline without claiming reference approval. Complete only claims supported by fresh paired evidence; report `UNVERIFIED` honestly.
