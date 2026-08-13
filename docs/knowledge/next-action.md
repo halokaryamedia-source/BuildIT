@@ -14,7 +14,7 @@ Working branch: **`Local` only**.
 
 The user explicitly does **not** want local Codex/Blockbench testing yet. `NO LOCAL RUN ACTIVE`. Professional samples remain learning evidence, never presets/templates/count targets.
 
-Do not claim live Blockbench/model-quality improvement or controller execution from static/CI proof.
+Do not claim live Blockbench/model-quality improvement without actual runtime proof. Controller execution also requires direct runtime evidence.
 
 ## Retained State
 
