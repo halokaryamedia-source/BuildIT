@@ -45,7 +45,7 @@ representation: geometry | texture | animation | omit
 material evidence state
 ```
 
-**A semantic label never authorizes coordinates.** Every primary Cube implements a declared mass/landmark or justified split; no orphan/filler Cube. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
+**A semantic label never authorizes coordinates. No orphan Cube, filler Cube.** Every primary Cube implements a declared mass/landmark or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
 Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, not presets. Use volume for silhouette, planes for sheet-like form, linked segments for meaningful bends, and Locator for a required non-visible anchor.
 
@@ -55,7 +55,7 @@ Classify each primary mass `AXIS_ALIGNED | ROTATED | UNRESOLVED`. **`[0,0,0]` ne
 
 For every **required attachment**, state its **contact target/invariant** before coordinates. Use an **attachment/joint pivot** when it owns the transform. **AABB overlap, hierarchy, or numeric touching is not contact proof**; important negative spaces stay open.
 
-## Primary Build / Reference Discrepancy
+## Tool Lane Discipline / Primary Build
 
 Normal lane: grounded claims → Semantic Form → construction + transform ownership → Primary Form → coherent primary Cubes/Groups → necessary views → diagnosed correction.
 
@@ -96,9 +96,9 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact authored state when sufficient; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
+**Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
 
-After fresh affected views: `IMPROVED | UNCHANGED | REGRESSED`. A correction is progress only when `IMPROVED` with no supported material claim/view `REGRESSED`; `UNCHANGED`/`REGRESSED` is not progress. Delta is qualitative, never a similarity score.
+After fresh affected views: `IMPROVED | UNCHANGED | REGRESSED`. A correction is progress only when `IMPROVED` and no **previously supported material claim/view** is `REGRESSED`; `UNCHANGED`/`REGRESSED` is not progress. Delta is qualitative, never a similarity score.
 
 If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
 
