@@ -20,7 +20,7 @@ Root `AGENTS.md` owns routing. `docs/knowledge/flow.md` owns the detailed curren
 - `docs/foundation/` — durable current policy and proof state
 - `docs/knowledge/operations/local-acceptance-runbook.md` — local procedure only when reactivated
 
-Compact files retained under `docs/knowledge/reviews/`, `decisions/`, and `skills/` are regression-support only. Historical audits, decisions, plans, and experiments live in Git history.
+Historical audits, decisions, plans, and experiments live in Git history. The only remaining legacy-looking knowledge files are a tiny capability regression fixture and a compatibility pointer required by current links; neither is a current documentation owner.
 
 ## Repository Map
 
