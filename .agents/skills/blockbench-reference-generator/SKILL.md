@@ -123,4 +123,4 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Return **one image only** as the Modelling Brief Draft and stop for user review/approval. Only after approval may the actual approved image + retained nonvisual facts go to modelling.
+Return **one image only** as the Modelling Brief Draft and stop for user review/approval. Only after approval may the actual approved image + retained nonvisual facts go to modelling. **Do not generate ZIPs**.
