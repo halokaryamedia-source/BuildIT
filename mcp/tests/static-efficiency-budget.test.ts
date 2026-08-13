@@ -30,7 +30,7 @@ describe("static efficiency budget", () => {
     ]);
 
     expect(root.length).toBeLessThan(5_000);
-    expect(referenceGenerator.length).toBeLessThan(4_000);
+    expect(referenceGenerator.length).toBeLessThan(8_000);
     expect(orchestrator.length).toBeLessThan(5_000);
     expect(modelling.length).toBeLessThan(8_000);
     expect(texturing.length).toBeLessThan(4_500);

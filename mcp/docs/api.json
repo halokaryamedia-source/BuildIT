@@ -1,11 +1,11 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T09:35:53.774Z",
+  "generatedAt": "2026-08-13T09:50:33.844Z",
   "tools": [
     {
       "name": "place_cube",
       "title": "Place Cube",
-      "description": "Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.",
+      "description": "Places Bedrock Cubes with explicit geometry, parent, inflate, and UV intent. Texture stays global. Success records authored state; reference fidelity is not evaluated.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {

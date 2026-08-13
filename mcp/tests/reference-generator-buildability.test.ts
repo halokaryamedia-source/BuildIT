@@ -68,8 +68,8 @@ describe("reference generator buildability contract", () => {
 
     const lowerFlow = normalized(flow);
     expect(lowerFlow).toContain("internal generation brief");
-    expect(lowerFlow).toContain("pre-generation readiness gate");
-    expect(lowerFlow).toContain("not ready → do not generate");
+    expect(lowerFlow).toContain("pre-generation readiness");
+    expect(lowerFlow).toContain("still material? needs review; do not generate");
   });
 
   test("Blockbench grammar prevents voxel-stack and smooth-primitive shortcuts", async () => {
@@ -150,7 +150,7 @@ describe("reference generator buildability contract", () => {
     const lowerGuide = normalized(guide);
 
     expect(lowerSkill).toContain("modelling brief draft");
-    expect(lowerSkill).toContain("stop for user review / approval");
+    expect(lowerSkill).toContain("user review / approval");
     expect(lowerSkill).toContain("only after user approval");
     expect(lowerSkill).toContain("actual approved image");
     expect(lowerGuide).toContain("user has approved the image for modelling");

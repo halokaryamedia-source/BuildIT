@@ -271,7 +271,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "place_cube",
     description:
-      "Places Bedrock Cubes with explicit finite geometry and deterministic UV intent. Texture selection is global in native Bedrock single_texture and remains owned by activate_texture; custom face UV entries switch only the new Cube to per-face UV mode. Success applies authored state only; visual/reference fidelity is not evaluated.",
+      "Places Bedrock Cubes with explicit geometry, parent, inflate, and UV intent. Texture stays global. Success records authored state; reference fidelity is not evaluated.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -488,7 +488,7 @@ export function registerCubesTools() {
     ...cubeToolDocs[0],
     async execute({ elements, faces, group }) {
       const defaultOutlinerGroup = resolvePlacementGroup(group);
-      const placements = elements.map((element: PlaceCubeElement) => ({
+      const placements: Array<{ element: PlaceCubeElement; outlinerGroup: Group | "root" }> = elements.map((element: PlaceCubeElement) => ({
         element,
         outlinerGroup:
           element.group !== undefined

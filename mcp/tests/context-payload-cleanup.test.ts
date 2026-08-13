@@ -207,12 +207,12 @@ describe("context and payload cleanup", () => {
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("context_mode");
     expect(next.length).toBeLessThan(7_000);
-    expect(next).toContain("PRE_LOCAL_EFFICIENCY_CLEANUP_COMPLETE");
-    expect(next).toContain("GitHub-Only Pretest Hardening");
+    expect(next).toContain("Working branch: **`Local` only**");
+    expect(next).toContain("PRO-1");
+    expect(next).toContain("PRO-2");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("WAIT");
-    expect(next).toContain("do not run local until the user explicitly requests testing");
-    expect(next).toContain("does **not** want another local Codex/Blockbench run yet");
+    expect(next).toContain("LOCAL PROOF REQUIRED");
+    expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
     expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
     expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
   });

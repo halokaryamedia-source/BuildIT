@@ -8,7 +8,7 @@ Choose the smallest route before loading context.
 
 ### Reference Preparation
 
-Use when the user wants to create/revise the **reference image itself** before Blockbench modelling.
+For creating/revising the **reference image itself** before Blockbench modelling.
 
 ```text
 source image / user intent
@@ -19,13 +19,11 @@ source image / user intent
    └─ NOT READY → bounded clarification → still material? NEEDS REVIEW
 ```
 
-Run only on an image-capable surface. **Generation is output, not discovery:** do not generate a speculative Draft before material identity/form/buildability are understood. Do not load the MCP authoring orchestrator or call BlockIT MCP just to prepare the reference. After approval, hand the actual image to modelling.
-
-Detailed current sequence: `docs/knowledge/flow.md`. Durable reference policy: `docs/foundation/04-reference-guide.md`.
+Image-capable surface only. **Generation is output, not discovery.** Do not call BlockIT MCP for reference preparation. Detailed sequence: `docs/knowledge/flow.md`; durable policy: `docs/foundation/04-reference-guide.md`.
 
 ### Asset Authoring
 
-Use for Minecraft Bedrock Entity create/revise/inspect/texture/animate/validate/export work that does not change repository/plugin source.
+For Bedrock Entity create/revise/inspect/texture/animate/validate/export work that does not change repository/plugin source.
 
 ```text
 current request / actual approved reference
@@ -34,15 +32,13 @@ current request / actual approved reference
 → BlockIT MCP
 ```
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, engineering history, activation matrices, or all foundation docs. Load another owner only when the current decision depends on it.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, engineering history, activation matrices, or all foundation docs. Tool selection starts from intent + known state, not repository/code search.
 
-Normal asset tool selection must **not search repository files/source/docs first**. Route from intent + known state, then call a loaded tool or one precise native `tool_search`. Repository/code search is for source/plugin work or reproduced defects.
-
-Asset authoring is not software **Developing** merely because it changes a model. Reference generation is also not repository development. Do not route it through `development-brief` unless repository/plugin behavior changes.
+Asset authoring is not software **Developing** merely because it changes a model. Reference generation is not repository development. **Do not route it through `development-brief`** unless repository/plugin behavior changes.
 
 ### Repository / Plugin Work
 
-Use for source/docs/tests/CI/MCP/plugin/architecture/maintenance.
+For source/docs/tests/CI/MCP/plugin/architecture/maintenance.
 
 ```text
 this file
@@ -53,7 +49,7 @@ this file
 → at most one relevant engineering specialist
 ```
 
-Named MCP-tool defect: use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before code search; otherwise avoid broad scans.
+For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad code search.
 
 ## Source Precedence
 
@@ -80,13 +76,11 @@ Resolve material conflicts explicitly.
 
 ## Execution / Proof
 
-**ChatGPT → GitHub:** repository/source/docs/CI evidence only. Do not invent Blockbench runtime proof.
+**ChatGPT → GitHub:** repository/source/docs/CI evidence only; never invent Blockbench runtime proof.
 
-**Codex local:** use shell/MCP/Blockbench only when the claim requires it; do not run broad checks by ritual.
+**Codex local:** shell/MCP/Blockbench only when the claim requires it; no broad checks by ritual.
 
-Use the cheapest evidence that can falsify the claim. Source/CI proof never upgrades a live image/Blockbench visual claim. Do not create tests, screenshots, reports, or builds merely to look rigorous.
-
-Evidence labels when useful:
+Use the cheapest falsifiable evidence. Source/CI proof never upgrades a live visual claim.
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -98,11 +92,11 @@ UNKNOWN
 
 ## Product Boundary
 
-Minecraft Bedrock Entity (`bedrock`) is the retained default. Reference generation creates the visual brief; it does not author geometry. Tool success is execution evidence, not visual fidelity. Reference-driven judgement uses `FAIL / UNVERIFIED / PASS`; `BLOCKED` is valid when continuation requires guessing.
+Minecraft Bedrock Entity (`bedrock`) remains the default. Reference generation creates a visual brief, not geometry. Tool success is execution evidence, not visual fidelity. Reference judgement uses `FAIL / UNVERIFIED / PASS`; `BLOCKED` is valid when continuation would require guessing.
 
-Reference image generation → `blockbench-reference-generator`; modelling judgement → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`. Missing native capability must not be faked with generic Mesh, risky evaluation, UI automation, or another format.
+Reference generation → `blockbench-reference-generator`; modelling judgement → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`. Missing native capability must not be faked with generic Mesh, risky evaluation, UI automation, or another format.
 
-For `mcp/**`, `mcp/AGENTS.md` owns strict TypeScript/Zod/runtime/registration/result/generated-doc/containment rules.
+For `mcp/**`, `mcp/AGENTS.md` owns TypeScript/Zod/runtime/registration/result/generated-doc/containment rules.
 
 ## Canonical Owners
 
@@ -112,7 +106,7 @@ For `mcp/**`, `mcp/AGENTS.md` owns strict TypeScript/Zod/runtime/registration/re
 - product/reference/modelling policy → `docs/foundation/`
 - reference image generation → `.agents/skills/blockbench-reference-generator/`
 - asset orchestration → `.agents/skills/blockit-bedrock-entity-mcp/`
-- plugin/runtime → `mcp/` source + proof
+- plugin/runtime → `mcp/`
 - repository change contract → `.agents/skills/development-brief/`
 
 Do not recreate retired generic skills or parallel planning/state systems.
