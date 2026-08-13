@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-PROFESSIONAL_ANIMATION_SOUND_EFFECTS_PRO7_COMPLETE
+PROFESSIONAL_ANIMATION_CONTROLLER_INSPECTION_PRO8_IMPLEMENTED_AWAITING_VERIFY
 ```
 
 Working branch: **`Local` only**.
@@ -28,6 +28,7 @@ PRO-4  geometry/texturing/animation forensic audit
 PRO-5  modify_cubes_batch Box-UV parity
 PRO-6  manage_keyframes explicit Molang transform-string preservation
 PRO-7  create_animation + inspect_animation Bedrock sound-effect closure
+PRO-8  inspect_animation AnimationController/state read-only closure; authoring deferred
 ```
 
 No P8 architecture, preset/profile, evaluator, planner, controller framework, new tool family, or local test was added.
@@ -51,7 +52,7 @@ The local audio-preview `file` path is intentionally **not** part of the BlockIT
 ## Still Deferred
 
 ```text
-animation controllers
+animation controller creation/mutation
 existing-animation sound-effect mutation
 timeline-effect keyframes
 bone-binding expressions
@@ -97,7 +98,7 @@ Normal `MCP Verify` is the retained-state authority. Static/CI proof can establi
 ## Next Step
 
 ```text
-NON-LOCAL NEXT — ANIMATION_CONTROLLER_GAP_PRIORITIZATION
+AFTER PRO-8 VERIFY — NO FURTHER SAMPLE-DRIVEN SOURCE EXPANSION
 ```
 
-Controllers are sample-evidenced but materially larger than expression/sound keyframe closure. Inspect the native controller owner and supplied controller structures before changing source. If a bounded extension of an existing owner is not sufficient, **defer** rather than add a controller framework. Do not start local testing.
+The professional sample audit now has bounded closures for geometry creation, Box-UV batch state, Molang transform keyframes, sound events, and controller inspection. Controller creation/mutation remains intentionally deferred because it requires state-machine ownership rather than a small existing-tool extension. The supplied samples contain no timeline-effect keyframes and do not justify a new controller/evaluator framework. Keep local testing deferred until the user explicitly reactivates it.

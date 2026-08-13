@@ -7,15 +7,20 @@ import { animationIdOptionalSchema } from "@/lib/zodObjects";
 
 export const inspectAnimationParameters = z.object({
   animation_id: animationIdOptionalSchema.describe(
-    "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation."
+    "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem."
   ),
   bone: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes."
+      "Optional Group UUID or unique exact name. Use only for authored Animation bone/keyframe detail."
     ),
+  state: z
+    .string()
+    .min(1)
+    .optional()
+    .describe("Optional AnimationController state UUID or unique exact state name for focused state-machine detail."),
   include_effect_keyframes: z
     .boolean()
     .optional()
@@ -29,7 +34,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.",
+      "Read-only Animation or AnimationController inspection. Use `bone` for transform keyframes, `state` for controller state detail, and effect detail only for authored Animation keyframes.",
     annotations: {
       title: "Inspect Authored Animation",
       readOnlyHint: true,
@@ -47,36 +52,39 @@ type EffectDataPoint = KeyframeDataPoint & {
   script?: string;
 };
 
-function resolveAnimation(reference?: string): _Animation {
+type InspectableAnimationItem = _Animation | AnimationController;
+
+function isAnimationController(item: InspectableAnimationItem): item is AnimationController {
+  return typeof AnimationController !== "undefined" && item instanceof AnimationController;
+}
+
+function resolveAnimationItem(reference?: string): InspectableAnimationItem {
+  const allItems = AnimationItem.all as unknown as InspectableAnimationItem[];
   if (reference === undefined) {
-    const selected = AnimationItem.selected;
+    const selected = AnimationItem.selected as unknown as InspectableAnimationItem | null;
     if (!selected) {
       throw new Error(
-        "No animation selected. Pass an exact Animation UUID or exact unique Animation name."
+        "No AnimationItem selected. Pass an exact Animation/AnimationController UUID or unique exact name."
       );
     }
     return selected;
   }
 
-  const uuidMatch = AnimationItem.all.find(
-    (animation) => animation.uuid === reference
-  );
+  const uuidMatch = allItems.find((item) => item.uuid === reference);
   if (uuidMatch) return uuidMatch;
 
-  const nameMatches = AnimationItem.all.filter(
-    (animation) => animation.name === reference
-  );
+  const nameMatches = allItems.filter((item) => item.name === reference);
   if (nameMatches.length === 1) return nameMatches[0];
   if (nameMatches.length > 1) {
     throw new Error(
-      `Animation name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
-        .map((animation) => `${animation.name} (${animation.uuid})`)
+      `AnimationItem name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${nameMatches
+        .map((item) => `${item.name} (${item.uuid})`)
         .join(", ")}`
     );
   }
 
   throw new Error(
-    `Animation "${reference}" not found. Pass an exact Animation UUID or exact unique Animation name.`
+    `AnimationItem "${reference}" not found. Pass an exact Animation/AnimationController UUID or unique exact name.`
   );
 }
 
@@ -99,6 +107,124 @@ function resolveGroup(reference: string): Group {
   throw new Error(
     `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID.`
   );
+}
+
+
+type ControllerStateView = AnimationControllerState & {
+  animations: Array<{ uuid: string; key: string; animation: string; blend_value: string | number }>;
+  transitions: Array<{ uuid: string; target: string; condition: string }>;
+  sounds: Array<{ uuid?: string; effect?: string }>;
+  particles: Array<{
+    uuid?: string;
+    effect?: string;
+    locator?: string;
+    bind_to_actor?: boolean;
+    pre_effect_script?: string;
+  }>;
+  blend_transition_curve?: Record<string, number>;
+};
+
+export function resolveUniqueControllerState<T extends { uuid: string; name: string }>(
+  states: readonly T[],
+  reference: string
+): T {
+  const uuidMatch = states.find((state) => state.uuid === reference);
+  if (uuidMatch) return uuidMatch;
+  const nameMatches = states.filter((state) => state.name === reference);
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(`AnimationController state name "${reference}" is ambiguous. Use an exact state UUID.`);
+  }
+  throw new Error(`AnimationController state "${reference}" not found.`);
+}
+
+function summarizeControllerState(state: ControllerStateView, index: number) {
+  return {
+    index,
+    uuid: state.uuid,
+    name: state.name,
+    animation_count: state.animations.length,
+    transition_count: state.transitions.length,
+    sound_count: state.sounds.length,
+    particle_count: state.particles.length,
+    has_on_entry: Boolean(state.on_entry && state.on_entry.replace(/[\n\s;.]+/g, "")),
+    has_on_exit: Boolean(state.on_exit && state.on_exit.replace(/[\n\s;.]+/g, "")),
+    blend_transition: state.blend_transition || 0,
+    has_blend_transition_curve: Boolean(state.blend_transition_curve && Object.keys(state.blend_transition_curve).length),
+    blend_via_shortest_path: Boolean(state.blend_via_shortest_path),
+  };
+}
+
+function inspectControllerState(controller: AnimationController, reference: string) {
+  const state = resolveUniqueControllerState(
+    controller.states as ControllerStateView[],
+    reference
+  );
+  const allItems = AnimationItem.all as unknown as InspectableAnimationItem[];
+  return {
+    uuid: state.uuid,
+    name: state.name,
+    animations: state.animations.map((link, index) => {
+      const loaded = link.animation
+        ? allItems.find((item) => item.uuid === link.animation && !isAnimationController(item))
+        : undefined;
+      return {
+        index,
+        uuid: link.uuid,
+        animation_key: link.key,
+        loaded_animation_uuid: link.animation || null,
+        loaded_animation_name: loaded?.name || null,
+        blend_value: link.blend_value || null,
+      };
+    }),
+    transitions: state.transitions.map((transition, index) => {
+      const target = controller.states.find((candidate) => candidate.uuid === transition.target);
+      return {
+        index,
+        uuid: transition.uuid,
+        target_uuid: transition.target || null,
+        target_name: target?.name || null,
+        condition: transition.condition || "",
+      };
+    }),
+    sounds: state.sounds.map((sound, index) => ({
+      index,
+      effect: sound.effect || null,
+    })),
+    particles: state.particles.map((particle, index) => ({
+      index,
+      effect: particle.effect || null,
+      locator: particle.locator || null,
+      bind_to_actor: particle.bind_to_actor === false ? false : true,
+      pre_effect_script: particle.pre_effect_script || null,
+    })),
+    on_entry: state.on_entry || null,
+    on_exit: state.on_exit || null,
+    blend_transition: state.blend_transition || 0,
+    blend_transition_curve:
+      state.blend_transition_curve && Object.keys(state.blend_transition_curve).length
+        ? { ...state.blend_transition_curve }
+        : null,
+    blend_via_shortest_path: Boolean(state.blend_via_shortest_path),
+  };
+}
+
+function inspectAnimationController(controller: AnimationController, stateReference?: string) {
+  const initial = controller.states.find((state) => state.uuid === controller.initial_state);
+  return {
+    authored_space: "blockbench_animation_controller" as const,
+    controller: {
+      uuid: controller.uuid,
+      name: controller.name,
+      path: controller.path || null,
+      initial_state: controller.initial_state
+        ? { uuid: controller.initial_state, name: initial?.name || null }
+        : null,
+    },
+    state_count: controller.states.length,
+    states: (controller.states as ControllerStateView[]).map(summarizeControllerState),
+    focused_state: stateReference ? inspectControllerState(controller, stateReference) : null,
+  };
 }
 
 function inspectKeyframe(keyframe: _Keyframe) {
@@ -249,8 +375,26 @@ export function registerAnimationInspectionTools() {
     animationInspectionToolDocs[0].name,
     {
       ...animationInspectionToolDocs[0],
-      async execute({ animation_id, bone, include_effect_keyframes }) {
-        const animation = resolveAnimation(animation_id);
+      async execute({ animation_id, bone, state, include_effect_keyframes }) {
+        const item = resolveAnimationItem(animation_id);
+        if (isAnimationController(item)) {
+          if (bone !== undefined) {
+            throw new Error("`bone` applies only to authored Animation inspection; use `state` for AnimationController detail.");
+          }
+          if (include_effect_keyframes) {
+            throw new Error("`include_effect_keyframes` applies only to authored Animation effect keyframes, not controller state effects.");
+          }
+          const result = inspectAnimationController(item, state);
+          return {
+            content: [{ type: "text" as const, text: JSON.stringify(result) }],
+            structuredContent: result,
+          };
+        }
+        if (state !== undefined) {
+          throw new Error("`state` applies only to AnimationController inspection; use `bone` for authored Animation detail.");
+        }
+
+        const animation = item;
         const boneAnimators = summarizeBoneAnimators(animation);
         const effects = inspectParticleEffects(animation, include_effect_keyframes);
 

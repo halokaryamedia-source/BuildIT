@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T11:09:51.956Z",
+  "generatedAt": "2026-08-13T11:47:38.218Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1770,7 +1770,7 @@
     {
       "name": "inspect_animation",
       "title": "Inspect Authored Animation",
-      "description": "Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.",
+      "description": "Read-only Animation or AnimationController inspection. Use `bone` for transform keyframes, `state` for controller state detail, and effect detail only for authored Animation keyframes.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1785,14 +1785,20 @@
               "animation_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation.",
-                "markdownDescription": "Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation."
+                "description": "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem.",
+                "markdownDescription": "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem."
               },
               "bone": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes.",
-                "markdownDescription": "Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes."
+                "description": "Optional Group UUID or unique exact name. Use only for authored Animation bone/keyframe detail.",
+                "markdownDescription": "Optional Group UUID or unique exact name. Use only for authored Animation bone/keyframe detail."
+              },
+              "state": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Optional AnimationController state UUID or unique exact state name for focused state-machine detail.",
+                "markdownDescription": "Optional AnimationController state UUID or unique exact state name for focused state-machine detail."
               },
               "include_effect_keyframes": {
                 "type": "boolean",

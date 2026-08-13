@@ -13,7 +13,7 @@ Decide from intent + known state before discovery:
 
 ```text
 new animation                         → create_animation
-existing animation state unknown      → inspect_animation
+existing animation/controller unknown → inspect_animation
 create/edit/delete transform keyframe → manage_keyframes
 interpolation / Bezier                → animation_graph_editor
 Group/bone structure or pivot edit    → bone_rigging
@@ -66,8 +66,8 @@ Do not make `animation_timeline.select_range` a core-correctness dependency; pre
 
 ## Protected Gaps
 
-New-animation sound effects are owned by `create_animation`; direct sound/timeline-effect mutation on an existing animation, animation controllers, and bone-binding expressions remain protected gaps. Do not route them through `risky_eval` or generic UI actions.
+`inspect_animation` may read animation controllers/state structure. Controller creation/mutation remains a protected state-machine gap; existing-animation sound/timeline mutation and bone-binding expressions also remain protected gaps. Do not route them through `risky_eval` or generic UI actions.
 
 ## Verification
 
-After mutation, verify only affected attachment, transform arc, clipping, and return-to-neutral. Preview only relevant motion. Do not claim controller/in-game behavior without direct capability and evidence.
+After mutation, verify only affected attachment, transform arc, clipping, and return-to-neutral. Preview only relevant motion. Controller inspection is authored-state evidence only. Do not claim controller execution/in-game behavior without direct runtime evidence.

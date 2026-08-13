@@ -692,7 +692,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Authored Animation</p>
-      <p class="card-desc">Returns read-only Animation identity/settings plus bone and particle/sound summaries. Supply `bone` for transform keyframes; set `include_effect_keyframes=true` only for full effect timing/data.</p>
+      <p class="card-desc">Read-only Animation or AnimationController inspection. Use `bone` for transform keyframes, `state` for controller state detail, and effect detail only for authored Animation keyframes.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -707,12 +707,17 @@ bun run docs:check
       <td class="col-name">animation_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Animation UUID or exact unique Animation name. If omitted, uses the currently selected Animation. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">bone</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional Group UUID or unique exact name. Omit for animation/bone summaries; provide for detailed authored keyframes. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional Group UUID or unique exact name. Use only for authored Animation bone/keyframe detail. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">state</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional AnimationController state UUID or unique exact state name for focused state-machine detail. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">include_effect_keyframes</td>
       <td class="col-type">boolean</td>
@@ -2972,7 +2977,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-13T11:09:51.956Z from Zod schemas
+        Generated 2026-08-13T11:47:38.218Z from Zod schemas
       </footer>
     </main>
   </div>
