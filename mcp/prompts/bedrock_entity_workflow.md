@@ -73,9 +73,9 @@ Front PASS is not full 3D PASS when depth evidence is missing/fails. Bounds, hie
 
 ## Local correction / convergence
 
-Reuse fresh exact authored state when sufficient; otherwise `inspect_element` once. Diagnose `TRANSLATE | RESIZE | ROTATE | hierarchy REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`; state target/invariant/effect, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`.
+**Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. Diagnose `TRANSLATE | RESIZE | ROTATE | hierarchy REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`; state target/invariant/effect, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`.
 
-Progress requires `IMPROVED` and no supported material claim/view `REGRESSED`. `UNCHANGED`/`REGRESSED` is **not progress**. Delta is qualitative, not a score. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
+Progress requires `IMPROVED` and no **previously supported material claim/view** `REGRESSED`. `UNCHANGED`/`REGRESSED` is **not progress**. Delta is qualitative, not a score. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
 
 ## Downstream stages
 
