@@ -1,0 +1,58 @@
+name: Repository Hygiene Cleanup
+
+on:
+  push:
+    branches:
+      - Local
+    paths:
+      - ".github/workflows/repository-hygiene-cleanup.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local
+        uses: actions/checkout@v4
+        with:
+          ref: Local
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+      - name: Install dependencies
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Apply repository hygiene cleanup
+        run: python3 .github/scripts/repository_hygiene_cleanup.py
+      - name: Regenerate prompt and API owners
+        working-directory: mcp
+        run: |
+          bun run prompts:build
+          bun run docs:build
+      - name: Typecheck
+        working-directory: mcp
+        run: bun run typecheck
+      - name: Contract tests
+        working-directory: mcp
+        run: bun run test
+      - name: Measure default MCP surface
+        working-directory: mcp
+        run: bun run measure:surface
+      - name: Production build
+        working-directory: mcp
+        run: bun run build
+      - name: Generated docs freshness
+        working-directory: mcp
+        run: bun run docs:check
+      - name: Commit clean retained tree and remove helper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/repository-hygiene-cleanup.yml
+          git rm -f .github/scripts/repository_hygiene_cleanup.py
+          git add -A
+          git commit -m "chore: consolidate active repository documentation"
+          git push origin HEAD:Local
