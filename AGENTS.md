@@ -23,7 +23,7 @@ current request / actual approved reference
 → BlockIT MCP
 ```
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary skill indexes, or the whole foundation set. Asset authoring is not repository development merely because a model changes.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary skill indexes, or the whole foundation set. Asset authoring is not software **Developing** merely because a model changes.
 
 ### Repository / Plugin Work
 
