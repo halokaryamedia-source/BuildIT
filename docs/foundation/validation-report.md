@@ -17,7 +17,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_POSE_LIMB_HANDOFF_AND_PRO1_PRO8_STATIC_VERIFIED
+NON_LOCAL_P0_P7_REFERENCE_SIMPLIFIED_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
@@ -50,26 +50,19 @@ These are serialized characters, not model-visible tokens.
 
 P0–P4 retain stage locking, exact-name routing, bounded recovery, and named-defect source/test ownership. These are static decision/retrieval proofs, not installed-model behavioral proof.
 
-## P5 — Semantic Form / Rotation / Contact
+## P5–P7 Modelling Evidence Boundary
 
-Semantic form precedes exact transforms; visible orientation, pivot ownership, and contact invariants must be decided explicitly. Behavioral image-to-form effectiveness remains `LOCAL PROOF REQUIRED`.
+Semantic form precedes exact transforms; actual approved image plus fresh model evidence owns visual comparison; correction progress is `IMPROVED | UNCHANGED | REGRESSED`. Behavioral image-to-form effectiveness and real convergence remain `LOCAL PROOF REQUIRED`.
 
-## P6 — Actual Reference Grounding / Claim-Locked Comparison
+## Reference Generator — Simplified Static Contract
 
-Reference-driven approval requires the actual approved image plus fresh current model evidence. Filename/path/prose is not visual evidence. End-to-end image understanding/handoff remains direct evidence.
-
-## P7 — Fidelity Convergence / Evaluation Integrity
-
-Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Real convergence quality remains `LOCAL PROOF REQUIRED`.
-
-## Reference Generator — Static Hardened Contract
-
-The current reference-preparation contract is statically verified to require:
+Current reference preparation is statically verified to require:
 
 ```text
 source image + user intent
 → Internal Generation Brief
-→ articulated pose/limb lock when applicable
+→ most structurally readable stable pose when articulated
+→ grounded load-bearing subjects: natural neutral stance by default
 → Pre-Generation Readiness Gate
 → one clean multi-view Draft
 → direct visual review
@@ -77,11 +70,11 @@ source image + user intent
 → approved image + relevant nonvisual Handoff Constraints
 ```
 
-For articulated subjects, default pose is a **stable natural neutral stance** unless the user explicitly requests another pose. Required limb/appendage count, plausible attachment, coherent support/ground relation, near/far separation, negative spaces, and pose/limb phase must remain consistent across required panels. Orthographic views own structural pose truth; the 3/4 view must not redesign anatomy or limb placement.
+The pose rule is relational, not an anatomy template. Explicitly requested/observable pose state is preserved across views without inventing hidden joint precision. Ground/support requirements apply only when structurally relevant. Orthographic views own structural pose truth; TOP preserves footprint/placement rather than pretending to share a side-view ground baseline; 3/4 cannot redesign anatomy or pose.
 
-By default, the generated board contains **view labels only**. Nonvisual user facts such as target dimensions/scale, target use, or other downstream constraints stay outside image pixels and must be passed explicitly as Handoff Constraints when material to modelling. No manifest/package layer was added for this.
+Construction patterns are examples rather than an exhaustive taxonomy or preset system. The board contains view labels only by default; scale/height/use facts remain Handoff Constraints outside image pixels. No planner, anatomy schema, manifest, package, or new MCP capability was added.
 
-The contract allows one Draft, at most one targeted correction, and zero automatic variants. **Static tests do not certify the quality of a future generated image.** Actual Draft quality and approval remain direct image-capable evidence.
+Static tests do not certify future generated-image quality. Actual Draft quality and approval remain direct image-capable evidence.
 
 ## Professional Sample Forensics — Static / Non-Local
 
@@ -99,19 +92,13 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **217 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count stays **62**; max tool payload **3,167 < 3,200**; runtime workflow prompt **6,995 < 7,000**.
-
-Reference pose/limb/handoff hardening changed instruction/policy/test owners only; it did not add MCP tools, runtime profiles, planners, manifests, or controller capability.
+Current GitHub proof is maintained by the normal `MCP Verify` workflow. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,995 < 7,000**. Exact test count is recorded only after the retained commit passes the official workflow.
 
 Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
 ## Product / Lifecycle / Export
 
 Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted live-baseline evidence.
-
-## Observation / Reference Fidelity
-
-Observation tools retain accepted representative live evidence. P5–P7 model-facing effectiveness and future generated-reference quality retain their direct-evidence boundaries.
 
 ## Texture / Paint / PBR
 
@@ -120,10 +107,6 @@ Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-
 ## Animation / Rig
 
 `manage_keyframes` preserves authored Molang strings without evaluation. PRO-7 adds bounded new-animation sound events. PRO-8 adds read-only AnimationController/state inspection while preserving authored external animation keys. Controller creation/mutation remains deferred.
-
-## Locator / Null Object
-
-Direct Locator/Null Object lifecycle ownership and representative reopen persistence retain accepted baseline evidence.
 
 ## Protected Native Capability Gaps
 
@@ -142,4 +125,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + simplified hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.

@@ -4,214 +4,134 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-function normalized(text: string): string {
-  return text.replace(/\s+/g, " ").trim().toLowerCase();
+function plain(text: string): string {
+  return text.replaceAll("**", "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 describe("reference generator buildability contract", () => {
-  test("simple user input is enriched without technical intake", async () => {
-    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
-    expect(skill).toContain("simple user contract");
+  test("intake stays simple, assisted, and bounded", async () => {
+    const skill = plain(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("upload a usable source image");
-    expect(skill).toContain("extra facts are optional");
-    expect(skill).toContain("do not expose a long questionnaire");
-    expect(skill).toContain("automatic internal generation brief");
-    expect(skill).toContain("generate only after the pre-generation readiness gate passes");
+    expect(skill).toContain("zero clarification");
+    expect(skill).toContain("one compact round");
+    expect(skill).toContain("three material items");
+    expect(skill).toContain("leave optional unknowns unset");
+    expect(skill).toContain("never infer numeric dimensions/scale from pixels");
+    expect(skill).toContain("needs review");
   });
 
-  test("AI resolves unknowns before asking and keeps clarification bounded", async () => {
-    const [skill, guide] = await Promise.all([
-      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      source("../docs/foundation/04-reference-guide.md"),
-    ]);
-    const lowerSkill = normalized(skill);
-    const lowerGuide = normalized(guide);
-
-    for (const text of [lowerSkill, lowerGuide]) {
-      expect(text).toContain("ai-assisted intake resolution");
-      expect(text).toContain("zero clarification");
-      expect(text).toContain("do not repeat");
-      expect(text).toContain("one compact round");
-      expect(text).toContain("use your recommendation");
-      expect(text).toContain("working interpretation");
-      expect(text).toContain("not a user-provided fact");
-    }
-
-    expect(lowerSkill).toContain("leave optional unknowns unset");
-    expect(lowerSkill).toContain("at most **three material items**");
-    expect(lowerSkill).toContain("never infer numeric dimensions/scale from pixels");
-    expect(lowerSkill).toContain("never invent hidden features, unseen asymmetry, unseen attachments");
-    expect(lowerSkill).toContain("needs review");
-
-    expect(lowerGuide).toContain("assistive, not form-filling");
-    expect(lowerGuide).toContain("optional unknowns remain unset");
-    expect(lowerGuide).toContain("at most three material items");
-    expect(lowerGuide).toContain("explain unfamiliar concepts in plain language");
-  });
-
-  test("generation cannot start before material understanding is ready", async () => {
+  test("generation cannot substitute for unresolved understanding", async () => {
     const [skill, guide, flow] = await Promise.all([
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("../docs/foundation/04-reference-guide.md"),
       source("../docs/knowledge/flow.md"),
     ]);
-
-    for (const text of [normalized(skill), normalized(guide)]) {
-      expect(text).toContain("pre-generation readiness gate");
+    for (const text of [plain(skill), plain(guide)]) {
       expect(text).toContain("generation is output, not discovery");
-      expect(text).toContain("internal generation brief");
+      expect(text).toContain("pre-generation readiness gate");
       expect(text).toContain("no unresolved material ambiguity");
-      expect(text).toContain("do not generate");
       expect(text).toContain("concrete visual defect");
       expect(text).toContain("missing pre-generation understanding");
     }
-
-    const lowerFlow = normalized(flow);
-    expect(lowerFlow).toContain("internal generation brief");
-    expect(lowerFlow).toContain("pre-generation readiness");
-    expect(lowerFlow).toContain("still material? needs review; do not generate");
+    expect(plain(flow)).toContain("still material? needs review; do not generate");
   });
 
-  test("Blockbench grammar prevents voxel-stack and smooth-primitive shortcuts", async () => {
-    const raw = await source("../.agents/skills/blockbench-reference-generator/SKILL.md");
-    for (const primitive of [
-      "CUBOID",
-      "ROTATED_CUBOID",
-      "STEPPED_CUBOIDS",
-      "MULTI_CUBOID_MASS",
-      "TEXTURE_ONLY",
-    ]) expect(raw).toContain(primitive);
-
-    const skill = normalized(raw);
-    expect(skill).toContain("hard constraints");
-    expect(skill).toContain("buildable cuboid construction");
-    expect(skill).toContain("not world blocks/equal voxels");
+  test("construction guidance is buildable but not an exhaustive taxonomy or preset", async () => {
+    const skill = plain(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
+    expect(skill).toContain("simplest blockbench-buildable representation");
+    expect(skill).toContain("reasoning examples, not exhaustive categories, presets, or asset-class rules");
+    expect(skill).toContain("plane_like_cube");
+    expect(skill).toContain("layered_or_inflated_form");
+    expect(skill).toContain("linked_segments");
     expect(skill).toContain("never lazy-voxelize");
     expect(skill).toContain("few large meaningful segments");
     expect(skill).toContain("never one smooth primitive or unit-cube staircase");
-    expect(skill).toContain("not fake seam lines");
-    expect(skill).not.toContain("geometry standard wins");
+    expect(skill).not.toContain("every visible form resolves to");
     expect(skill).not.toContain("golden sample");
   });
 
-  test("source interpretation excludes photographic and hidden-detail hallucination", async () => {
-    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
+  test("source interpretation does not hallucinate hidden form or articulation", async () => {
+    const skill = plain(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("ignore hands, stands, scenery, shadows, supports");
     expect(skill).toContain("normalize perspective; lens distortion is not geometry");
     expect(skill).toContain("highlights/reflections/shadows/ao are not markings");
     expect(skill).toContain("do not mirror/invent side-specific");
+    expect(skill).toContain("hidden joint precision");
     expect(skill).toContain("do not blend conflicting sources");
-    expect(skill).toContain("never infer numeric scale from pixels");
   });
 
-  test("all views stay one model at comparable presentation scale", async () => {
-    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
-    expect(skill).toContain("single-model cross-view lock");
-    expect(skill).toContain("all panels show that same model");
-    expect(skill).toContain("do not redesign panels independently");
-    expect(skill).toContain("same scale, center, and ground/baseline");
-    expect(skill).toContain("true top-down orthographic same 3d model, not flat diagram");
-    expect(skill).toContain("near-orthographic/weak perspective, no wide-angle");
-  });
-
-  test("articulated subjects lock a stable natural pose before generation", async () => {
+  test("pose defaults to readability rather than universal standing", async () => {
     const [skill, guide] = await Promise.all([
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("../docs/foundation/04-reference-guide.md"),
     ]);
-    for (const rawText of [skill, guide]) {
-      const text = normalized(rawText).replaceAll("**", "");
+    for (const text of [plain(skill), plain(guide)]) {
+      expect(text).toContain("most structurally readable stable pose");
+      expect(text).toContain("grounded load-bearing subjects");
       expect(text).toContain("stable natural neutral stance");
-      expect(text).toContain("explicitly requests another pose");
       expect(text).toContain("does not automatically become the modelling pose");
-      expect(text).toContain("exact pose");
-      expect(text).toContain("limb phase");
+      expect(text).toContain("requested/observable pose state");
+      expect(text).toContain("do not invent hidden joint precision");
     }
   });
 
-  test("limb integrity is invariant across orthographic and 3/4 views", async () => {
+  test("limb integrity stays relational instead of becoming an anatomy preset", async () => {
     const [skill, guide] = await Promise.all([
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("../docs/foundation/04-reference-guide.md"),
     ]);
-    for (const text of [normalized(skill), normalized(guide)]) {
+    for (const text of [plain(skill), plain(guide)]) {
       expect(text).toContain("plausible attachment");
-      expect(text).toContain("ground plane");
       expect(text).toContain("near/far limbs");
+      expect(text).toContain("coherent ground plane");
       expect(text).toContain("duplicated");
       expect(text).toContain("missing");
       expect(text).toContain("merged");
       expect(text).toContain("floating");
       expect(text).toContain("orthographic views own structural pose truth");
-      expect(text).toContain("3/4 view");
       expect(text).toContain("must not redesign");
     }
+    expect(plain(guide)).toContain("not a quadruped/humanoid anatomy template");
   });
 
-  test("nonvisual user constraints stay outside the generated image by default", async () => {
+  test("view rules distinguish side/front/back baseline from top footprint", async () => {
+    const skill = plain(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
+    expect(skill).toContain("side/front/back keep comparable scale, center, and one coherent ground baseline");
+    expect(skill).toContain("true top-down orthographic same 3d model, not flat diagram");
+    expect(skill).toContain("preserve footprint, center, proportions");
+    expect(skill).toContain("rather than inventing a ground baseline");
+    expect(skill).toContain("near-orthographic/weak perspective, no wide-angle");
+    expect(skill).toContain("do not redesign panels independently");
+  });
+
+  test("nonvisual user constraints stay outside the image without a new package layer", async () => {
     const [skill, guide, flow, requirements] = await Promise.all([
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("../docs/foundation/04-reference-guide.md"),
       source("../docs/knowledge/flow.md"),
       source("../docs/foundation/02-product-requirements.md"),
     ]);
-    for (const text of [normalized(skill), normalized(guide)]) {
+    for (const text of [plain(skill), plain(guide)]) {
       expect(text).toContain("outside the image");
-      expect(text).toContain("handoff");
       expect(text).toContain("only view labels may appear");
     }
-    expect(normalized(flow)).toContain("nonvisual handoff constraints");
-    expect(normalized(requirements)).toContain("outside the image");
+    expect(plain(guide)).toContain("not a zip/manifest/package");
+    expect(plain(flow)).toContain("nonvisual handoff constraints");
+    expect(plain(requirements)).toContain("outside the image");
   });
 
-  test("default view board may change only when the actual object requires it", async () => {
-    const [skill, guide] = await Promise.all([
-      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      source("../docs/foundation/04-reference-guide.md"),
-    ]);
-    const lowerSkill = normalized(skill);
-    const lowerGuide = normalized(guide);
-
-    expect(lowerSkill).toContain("default board");
-    expect(lowerSkill).toContain("different view set only when the actual object's geometry/asymmetry requires it");
-    expect(lowerSkill).toContain("do not add views for completeness");
-    expect(lowerGuide).toContain("a different view set is allowed when the actual object requires it");
-    expect(lowerGuide).toContain("do not add views for completeness");
-  });
-
-  test("presentation and visual gate reject image-generator artifacts", async () => {
-    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
-    expect(skill).toContain("blockbench ui/gizmos/grid/wireframe/bounds");
-    expect(skill).toContain("random speckle/dithering");
-    expect(skill).toContain("only view labels may appear");
+  test("visual gate and output budget remain bounded", async () => {
+    const skill = plain(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
     expect(skill).toContain("actual generated board");
     expect(skill).toContain("not ready / needs review");
     expect(skill).toContain("do not average conflicting shapes");
-    expect(skill).toContain("if not inspectable, do not claim the visual gate passed");
     expect(skill).toContain("do not produce numeric buildability/fidelity/view scores");
-  });
-
-  test("draft stops for user approval before modelling handoff", async () => {
-    const [skill, guide] = await Promise.all([
-      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      source("../docs/foundation/04-reference-guide.md"),
-    ]);
-    const lowerSkill = normalized(skill);
-    const lowerGuide = normalized(guide);
-
-    expect(lowerSkill).toContain("modelling brief draft");
-    expect(lowerSkill).toContain("user review / approval");
-    expect(lowerSkill).toContain("only after user approval");
-    expect(lowerSkill).toContain("actual approved image");
-    expect(lowerGuide).toContain("user has approved the image for modelling");
-  });
-
-  test("hardening remains image-only and bounded", async () => {
-    const skill = normalized(await source("../.agents/skills/blockbench-reference-generator/SKILL.md"));
-    expect(skill).toContain("return **one image only**");
+    expect(skill).toContain("first draft = maximum 1");
+    expect(skill).toContain("targeted correction = maximum 1");
     expect(skill).toContain("automatic variants = 0");
+    expect(skill).toContain("one image only");
+    expect(skill).toContain("user review / approval");
+    expect(skill).toContain("actual approved image");
     expect(skill).toContain("do not generate zips");
-    expect(skill).not.toContain("place_cube");
-    expect(skill).not.toContain("cube coordinates");
   });
 });

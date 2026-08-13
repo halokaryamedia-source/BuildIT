@@ -7,47 +7,36 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REFERENCE_POSE_LIMB_HARDENING_STATIC_VERIFIED
+REFERENCE_HARDENING_SIMPLIFICATION_PENDING_STATIC_VERIFY
 ```
 
 Working branch: **`Local` only**.
 
 `NO LOCAL RUN ACTIVE`. Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
-## Retained Product State
+## Current Reference Contract
 
-```text
-P0–P7  routing / grounding / convergence contracts
-REF    assisted reference preparation/readiness + pose/limb/handoff integrity
-PRO-1  professional construction reasoning
-PRO-2  authoring expressiveness validation
-PRO-3  place_cube parent + initial inflate completeness
-PRO-4  geometry/texturing/animation sample forensics
-PRO-5  modify_cubes_batch Box-UV parity
-PRO-6  authored Molang transform strings
-PRO-7  bounded new-animation sound effects
-PRO-8  read-only AnimationController/state inspection
-```
-
-Reference preparation now enforces:
+Reference preparation is intentionally bounded:
 
 ```text
 articulated subject
-→ stable natural neutral stance by default
-  OR exact user-requested pose
-→ limb/appendage identity + attachment lock
-→ shared ground/support relation
-→ same pose/limb phase across all panels
+→ most structurally readable stable pose
+→ grounded load-bearing subject normally uses stable natural neutral stance
+→ requested/observable pose state preserved across views
+→ no invented hidden joint precision
+→ relational limb/attachment/support integrity
 → orthographic structural authority
+→ TOP owns footprint/placement, not side-view ground baseline
+→ construction patterns are examples, not exhaustive taxonomy/presets
 → clean board: view labels only by default
-→ nonvisual user facts carried outside image
+→ nonvisual user facts stay outside image as Handoff Constraints
 ```
 
-This is generic policy, not an elephant-specific anatomy preset. Static verification is **217 tests / 0 failures** with typecheck, surface, build, docs freshness, and aggregate enforcement all passing.
+This is generic policy, not an elephant/quadruped/humanoid anatomy preset. No new MCP tool, planner, profile, manifest, or package layer is justified.
 
 ## Current Pre-Local Reference Candidate
 
-The current acceptance candidate is an **elephant** sourced from the user-provided photo. The earlier generated Drafts are **NOT APPROVED** because the rear-leg/pose relationship did not pass the strengthened pose/limb integrity gate.
+The acceptance candidate remains the user-provided **elephant** source photo. Earlier generated Drafts are **NOT APPROVED** because pose/rear-limb integrity failed.
 
 Retained nonvisual Handoff Constraint:
 
@@ -55,34 +44,19 @@ Retained nonvisual Handoff Constraint:
 target Minecraft height ≈ 2 × player height
 ```
 
-That scale fact remains outside the generated image unless the user explicitly asks to display it. A fresh Draft must be generated from the source under the hardened Reference Generator rules and then explicitly reviewed/approved.
-
-## Active Documentation Owners
-
-```text
-AGENTS.md                                      task routing / proof discipline
-CONTEXT.md                                     stable facts
-README.md                                      public product entrypoint
-docs/knowledge/flow.md                         detailed current flow
-docs/knowledge/next-action.md                  active continuation
-docs/knowledge/implementation-map.md           source/tool ownership
-docs/foundation/01,02,04,05,06,07              durable product/reference/modelling policy
-docs/foundation/validation-report.md           proof state
-operations/local-acceptance-runbook.md          local procedure, inactive
-```
+That fact stays outside the image unless the user explicitly requests visible text.
 
 ## Verification Boundary
 
-`LOCAL PROOF REQUIRED` remains for installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual model quality.
-
-Generated-reference quality is direct image-capable evidence and requires explicit review of the actual Draft; static policy/tests cannot certify a future generated image.
+Generated-reference quality requires direct review of the actual Draft; static policy/tests cannot certify it. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain direct/local proof.
 
 ## Next Step
 
 ```text
-PRE-LOCAL A — GENERATE ONE FRESH ELEPHANT MODELLING BRIEF
-→ audit pose/limb/cross-view integrity
-→ user approval
+1. finish official static verification for this simplification pass
+2. PRE-LOCAL A — generate ONE fresh elephant Modelling Brief from the original source only
+3. audit pose / limb / cross-view integrity
+4. user approval
 ```
 
-Do **not** start Blockbench/Codex local acceptance until the new reference is approved. After approval, the next stage is fresh `Local` build/deployment preparation for `mcp/dist/mcp.js`, including exact HEAD + artifact hash, then Local Acceptance.
+Do not start Blockbench/Codex local acceptance before the new reference is approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before loading it into Blockbench.

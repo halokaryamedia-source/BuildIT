@@ -1,187 +1,93 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 1.8  
+**Version:** 1.9  
 **Updated:** 2026-08-13
 
 ## Purpose
 
-Define Source Image → approved visual Modelling Brief handoff for Minecraft Bedrock modelling.
+Define the durable Source Image → approved visual Modelling Brief contract. Operational generation procedure belongs to `.agents/skills/blockbench-reference-generator/SKILL.md`; this policy should not duplicate the full prompt or become an MCP/geometry subsystem.
 
-The active image-generation owner is `.agents/skills/blockbench-reference-generator/SKILL.md`. This policy defines what a usable reference image means; it does not turn the generator into an MCP/geometry subsystem.
+The reference should reduce ambiguity about identity, silhouette, proportion, major masses, pose/state, visible contacts, orientation, and style. It must **not** become a pixel-calibrated Cube blueprint.
 
-The reference should reduce ambiguity about identity, silhouette, proportion, major masses, pose, visible contacts, orientation, and style. It must **not** become a pixel-calibrated Cube blueprint.
-
-## Core Principle
-
-The approved multi-view image is a **visual Modelling Brief**.
+## Authority / Handoff
 
 ```text
-Source Image / user intent
-↓
-AI-Assisted Intake Resolution (usually silent)
-↓
-Internal Generation Brief
-↓
-Pose / articulation lock when applicable
-↓
-Pre-Generation Readiness Gate
-↓ READY
-Modelling Brief Draft
-↓
-user review / targeted correction when needed
-↓
-Approved Modelling Brief image
-+
-retained nonvisual Handoff Constraints
-↓
-Reference Fidelity modelling workflow
-```
-
-**Generation is output, not discovery.** The AI must understand the material target before the first image-generation call. Approval means the image is useful enough to model from; it does not certify metric image consistency and does not approve Cube transforms.
-
-## Actual Image Evidence Boundary
-
-For reference-driven modelling, the **actual approved reference image must be available as multimodal input to the model performing geometry reasoning and visual comparison**. A filename, filesystem path, manifest, package metadata, textual description, previous observation summary, or memory may identify/contextualize the reference but is not visual evidence. **A path itself is not visual evidence.**
-
-If the active modelling model cannot actually inspect the approved image, do not reconstruct visible form from prose or generic object knowledge. Material reference-driven geometry/approval is `BLOCKED` until the image is available.
-
-Keep authority separate:
-
-```text
-user brief / approved target → target identity + requested function
-approved reference image     → visible form + approved pose
+user brief / approved target → identity + requested function
+approved reference image     → visible form + approved visible pose/state
 approved numeric dimensions  → whole-model scale/envelope
-Handoff Constraints          → nonvisual user facts carried outside image
+Handoff Constraints          → material nonvisual user facts outside image
 Reference Evidence Map       → derived working index; never image authority
 ```
 
-## Canonical Terms
+The **actual approved reference image must be available as multimodal input** to the model performing reference-driven geometry reasoning and visual comparison. A filename, filesystem path, manifest, textual description, previous summary, or memory may provide context but is not visual evidence. **A path itself is not visual evidence.** If the active modelling model cannot inspect the approved image, material reference-driven geometry/approval is `BLOCKED`.
 
-- **Source Image** — original user image(s); identity/provenance authority, not direct geometry data.
-- **Golden Sample** — layout/lighting/presentation/construction-language example; never target anatomy authority.
-- **Internal Generation Brief** — AI-resolved pre-generation understanding of subject, visible form, pose, views, and buildable construction language; not a user-facing form or Cube blueprint.
-- **Modelling Brief Draft** — generated multi-view reference image before approval.
+### Canonical terms
+
+- **Source Image** — original user image(s); identity/provenance authority, not geometry data.
+- **Internal Generation Brief** — AI-resolved pre-generation understanding; not a user-facing form or Cube blueprint.
+- **Modelling Brief Draft** — generated reference before approval.
 - **Modelling Brief** — approved visual image guide consumed by modelling.
 - **Requested Dimensions** — optional approved numeric width/height/length target.
-- **Handoff Constraints** — compact user-supplied nonvisual facts such as target scale/height, use, or must-preserve requirement; kept outside image pixels and passed to modelling in active task context.
-- **Reference Evidence Map** — run-local material claim index derived from the actual approved image; never a Cube blueprint or replacement for the image.
+- **Handoff Constraints** — compact material nonvisual facts such as target scale/height, target use, or must-preserve requirements.
+- **Reference Evidence Map** — run-local observable-claim index derived from the actual approved image.
+- **Golden Sample** — presentation/construction-language example only; never target anatomy authority.
 
-The default Reference Generator deliverable is the **image only**. Handoff Constraints are not a ZIP/manifest/package. If modelling occurs in a separate session, pass the relevant facts explicitly alongside the approved image; do not assume image metadata or conversation memory will persist them automatically.
+The default deliverable is the **image only**. Handoff Constraints remain compact task context, not a ZIP/manifest/package. If modelling occurs in another session, pass relevant facts explicitly with the approved image rather than assuming metadata or memory will preserve them.
 
-## AI-Assisted Intake Resolution
+## Intake / Readiness Principles
 
-Reference preparation is **assistive, not form-filling**. The user should not need modelling terminology or answers to optional questions before the AI can proceed.
+Reference preparation is **assistive, not form-filling**. Prefer **zero clarification**. Resolve explicit user facts first, then directly visible facts, leave optional unknowns unset, and ask only for material ambiguity.
 
-Default behavior is **zero clarification**:
+Do not repeat questions the user cannot answer. If clarification is necessary, use **one compact round with at most three material items**, explain unfamiliar concepts in plain language, provide one recommended interpretation, and allow **use your recommendation**. A recommendation remains a **working interpretation**, **not a user-provided fact**, until accepted.
 
-```text
-explicit user fact      → use as a constraint
-directly visible fact   → AI may resolve from source
-optional unknown        → leave unset
-material ambiguity      → one compact clarification round
-```
+Never infer numeric dimensions or scale from pixels. Never invent hidden features, unseen asymmetry, unseen attachments, or unobserved articulation.
 
-Rules:
+The **Pre-Generation Readiness Gate** must pass before generation. **Generation is output, not discovery.** `READY` means there is **no unresolved material ambiguity** that could still change identity, major form, required visible features, pose/state integrity, or buildability. A targeted correction may fix a **concrete visual defect**; it may not compensate for **missing pre-generation understanding**. If material ambiguity remains, `NEEDS REVIEW`; **do not generate**.
 
-- if the user says they do not know, **do not repeat** the same question;
-- explain unfamiliar concepts in plain language;
-- resolve directly visible identity/features/asymmetry/attachments/current state only when clear;
-- never infer numeric dimensions or scale from image pixels;
-- never invent hidden features, unseen asymmetry, unseen attachments, or other non-visible facts;
-- optional unknowns remain unset;
-- an AI recommendation is a **working interpretation**, **not a user-provided fact** until accepted.
+## Pose / Articulation Principle
 
-If a material ambiguity remains, ask in **one compact round with at most three material items**. Explain the issue, what the image appears to show, and one recommended interpretation. The user may simply say **use your recommendation**. If identity/buildability is still materially unresolved, return `NEEDS REVIEW`.
+For articulated subjects, use the **most structurally readable stable pose** unless the user explicitly requires another state.
 
-## Pre-Generation Readiness Gate
+For grounded load-bearing subjects, normal modelling reference uses a **stable natural neutral stance**. A dynamic pose visible in the Source Image does **not** automatically become the modelling pose. Neutral does not require mirrored or robotic symmetry.
 
-A usable source image alone is not sufficient. Before the first generation call, the Internal Generation Brief must lock:
+If a different pose is required, preserve the same requested/observable pose state and limb phase across required views, but do not invent hidden joint precision that the source does not establish.
 
-- intended subject / identity;
-- material visible silhouette and major masses;
-- defining visible features and important negative spaces;
-- visible attachments/contacts and visible asymmetry;
-- required view set;
-- Blockbench/Cuboid construction interpretation;
-- for articulated subjects: required limb/appendage count, attachment regions, one pose state, support/ground relation, and whether the pose is neutral or explicitly user-requested.
+Material invariants are relational rather than anatomy presets:
 
-Optional values may remain unset. `READY` means **no unresolved material ambiguity** could still change identity, major form, required visible feature, pose integrity, or buildability.
+- required limb/appendage count stays consistent;
+- attachment is plausible for the visible subject;
+- near/far limbs remain distinguishable when relevant;
+- grounded load-bearing supports share a coherent ground plane;
+- required negative spaces remain consistent;
+- duplicated, missing, merged, floating, relocated, or independently re-posed limbs are invalid.
 
-```text
-material understanding complete?
-├─ YES → READY → generate one Draft
-└─ NO  → use the existing one-round clarification budget
-         → still material? NEEDS REVIEW → do not generate
-```
+Orthographic views own structural pose truth. The 3/4 view helps read volume but **must not redesign** anatomy, attachment, limb position, or pose state. This is a generic integrity rule, not a quadruped/humanoid anatomy template.
 
-Do not use generation to discover the target or compare speculative alternatives. The single targeted correction after generation is for a **concrete visual defect** against an already-ready Internal Generation Brief, not for **missing pre-generation understanding**.
+## Construction Principle
 
-## Pose / Articulation Integrity
+Use the **simplest Blockbench-buildable representation that preserves the visible requirement**. Cuboids, rotated Cuboids, stepped masses, plane-like Cubes, layered/inflated forms, linked segments, and texture-only treatment are **reasoning examples, not exhaustive categories or presets**.
 
-For articulated animals, humanoids, robots, or other limb-bearing subjects, pose is a structural contract, not decoration.
+Do not lazy-voxelize, substitute smooth primitives, or turn one sample's Cube count/segmentation into a rule. The Modelling Brief is a buildable visual target, not an exact Cube plan.
 
-### Default pose
+## View / Cross-View Principle
 
-Unless the user explicitly requests another pose:
-
-```text
-STABLE NATURAL NEUTRAL STANCE
-```
-
-A dynamic pose visible in the Source Image does **not** automatically become the modelling pose. Normalize it when a neutral stance provides clearer, more stable modelling evidence.
-
-Neutral does not mean robotic symmetry. Mild natural offsets are allowed when anatomically plausible, but the subject must not read as being mid-gait or mid-action.
-
-If the user explicitly requests a dynamic pose, preserve that **exact pose and limb phase** across every required panel.
-
-### Limb / appendage contract
-
-For each required limb or load-bearing appendage, lock:
-
-```text
-identity
-→ plausible attachment region
-→ coherent chain direction
-→ stable relative length/proportion
-→ terminal part
-→ contact/support relation when applicable
-```
-
-Rules:
-
-- required count is invariant across panels;
-- near/far limbs remain distinguishable even when partially occluded;
-- load-bearing feet/terminal supports share one coherent ground plane;
-- no floating or ground-penetrating load-bearing foot;
-- no limb may originate from an implausible torso region;
-- no duplicated, missing, merged, relocated, or independently re-posed limb;
-- required negative spaces between limbs/body remain consistent.
-
-A board with a material limb, attachment, stance, or ground-contact error is `NOT READY / NEEDS REVIEW`, even if texture and overall presentation look attractive.
-
-### View authority
-
-Orthographic views own structural pose truth. The 3/4 view helps read volume but **must not redesign anatomy, attachment, limb position, or gait phase**.
-
-TOP / FOOTPRINT must preserve the same body width, head/appendage placement, limb footprint, separation, and relevant negative spaces as the orthographic side/front/back views.
-
-## View Baseline
-
-Normal generated-reference baseline:
+Normal board:
 
 ```text
 UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-Orthographic views carry primary shape/proportion/pose evidence. The 3/4 view helps volume and identity; it is not metric calibration.
+A different view set is allowed when the actual object requires it. **Do not add views for completeness.**
 
-Add RIGHT SIDE only when material asymmetry cannot be represented honestly without it. A different view set is allowed when the actual object requires it. **Do not add views for completeness** or turn one Golden Sample's panels into anatomy rules.
+For grounded subjects, side/front/back share a coherent ground relation and comparable presentation scale. TOP is a true top-down orthographic view of the same 3D subject and preserves footprint, center, proportions, placement, and negative spaces; it is not required to depict a side-view ground baseline. The 3/4 view remains structurally subordinate to clearer orthographic evidence.
+
+Before modelling, required views must describe one compatible object and one compatible pose/state. A front view may support width/height but cannot by itself certify depth. Perspective 3/4 may interpret volume but cannot override clearer orthographic evidence. Material cross-view conflict **must not be averaged** into a fake compromise; unresolved conflict is `NOT READY / NEEDS REVIEW` or modelling `BLOCKED` as appropriate.
 
 ### View Pair Map
 
-Before any reference view can approve a model view:
+Map reference orientation before it can approve a model view:
 
 ```text
 REFERENCE FRONT ↔ MODEL front
@@ -191,25 +97,11 @@ REFERENCE TOP   ↔ MODEL top
 REFERENCE 3/4   ↔ MODEL matching front_left_3q/front_right_3q
 ```
 
-The sheet's actual orientation owns the mapping. **Ambiguous front/back**, left/right, or 3/4 pairing remains `UNVERIFIED`; do not compare whichever view looks most convenient.
-
-## Cross-View Consistency
-
-Before modelling, required views must describe one compatible object **and one compatible pose**.
-
-```text
-width        ← front/back + top when visible
-height       ← front/back + side
-length/depth ← side + top
-limb phase   ← side/front/back/top agreement
-ground       ← side/front/back shared baseline
-```
-
-If primary-mass, pose, limb, contact, or negative-space evidence materially conflicts across views, mark the reference `NOT READY / NEEDS REVIEW` rather than averaging contradictory shapes.
+The sheet's actual orientation owns the mapping. **Ambiguous front/back**, left/right, or 3/4 pairing remains `UNVERIFIED`; do not silently compare the most convenient view.
 
 ## Reference Evidence Map
 
-Before exact geometry, derive only material observable claims needed for current modelling:
+Before exact geometry, derive only material observable claims needed for current decisions:
 
 ```text
 claim_id
@@ -219,150 +111,32 @@ supporting reference view(s)
 evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Run-local IDs may look like `mass:torso`, `count:legs`, `contact:foot_ground`, `orientation:neck`, `negative_space:leg_gap`.
+**Claim text describes what is visible**, not what the object “usually” has. No Cube coordinates/count/pivot plan belongs here. No pixel-derived dimension is promoted to model space. Material Semantic Form decisions trace to claim IDs; unresolved material claims remain provisional/unverified or `BLOCKED`.
 
-Rules:
+The map is a compact decision aid, not another manifest ceremony. The actual image remains authority.
 
-- **claim text describes what is visible**, not what the object “usually” has;
-- user-provided identity/function may clarify intent, but generic world knowledge cannot invent hidden form;
-- no Cube coordinates/count/pivot plan belongs in this map;
-- no pixel-derived dimension is promoted to model space;
-- material Semantic Form decisions trace to one or more claim IDs;
-- unresolved material claims remain provisional/unverified or `BLOCKED`.
+## Dimensions / Image Content
 
-The map is a compact decision aid, not another manifest ceremony. If the actual image contradicts it, re-ground the affected claim; the image remains authority.
+When dimensions are approved: `1 block = 16 Blockbench units`. Use them as whole-model target/envelope; individual Cube transforms remain modeller decisions.
 
-## Axis Evidence States
+Never derive scale/transforms from pixels, image bounds, dimension-line lengths, panel size, perspective projection, masks, mesh fitting, or similarity scores.
 
-For material primary-mass dimensions/relationships:
+Target dimensions are optional for reference generation and normally remain **Handoff Constraints outside the image**. **Only view labels may appear** by default. Do not print target height, scale notes, target use, or other user facts into the board unless explicitly requested.
 
-```text
-SUPPORTED    relevant views directly constrain the claim
-PROVISIONAL  working value needed but evidence weak/incomplete
-CONFLICTING  relevant views materially disagree
-UNAVAILABLE  required axis/relationship cannot be observed
-```
+## Readiness / Completion
 
-A front view may support width/height but cannot by itself certify depth. Perspective 3/4 may interpret volume but cannot override clearer orthographic evidence. `PROVISIONAL` remains a hypothesis. `CONFLICTING` evidence **must not be averaged**; if material and unresolved, modelling is `BLOCKED`. `UNAVAILABLE` remains `UNVERIFIED`.
+A Draft is acceptable only when:
 
-## Dimensions / Handoff Constraints
-
-When dimensions are approved:
-
-`1 block = 16 Blockbench units`
-
-Use dimensions as numeric whole-model target/envelope. Individual Cube transforms remain modeller decisions.
-
-Never derive scale/transforms from pixels, subject image bounds, dimension-line lengths, panel size, perspective projection, masks, mesh fitting, or similarity score.
-
-Target dimensions are optional for reference generation. By default they remain **Handoff Constraints outside the image**. Do not print target height, scale notes, use notes, or other user facts into the board unless the user explicitly wants those facts visible in the image.
-
-## Draft Quality Bar
-
-A good generated Draft should show:
-
-- clear primary/secondary rectangular masses and purposeful size variation;
-- limited purposeful rotations;
-- one locked model and pose across views;
-- correct limb/appendage count and plausible attachments;
-- coherent shared ground contact/support;
-- usable orthographic silhouettes and truthful TOP / FOOTPRINT;
-- important negative spaces preserved;
-- a distinct 3/4 volume read without anatomy redesign;
-- clean technical-board presentation.
-
-Reject Drafts with:
-
-- smooth/realistic forms with pixelated skin;
-- generic voxel filters, uniform Cube stacking, micro-Cube clutter, or arbitrary rotation noise;
-- duplicated/missing/merged/floating/re-posed limbs;
-- inconsistent subjects, pose, part count, or ground relation between panels;
-- cropped/missing/ambiguous required views;
-- cinematic/environment presentation that hides construction.
-
-The Draft is a **buildable visual target**, not an exact Cube plan.
-
-## Hidden Geometry Rule
-
-- **hidden surface** of a known visible volume — may be completed consistently;
-- **hidden feature** such as unseen protrusion/recess/attachment — do not invent without evidence or user requirement.
-
-## Image Content / Handoff Rule
-
-The image is the visual deliverable. **Only view labels may appear** by default.
-
-Retain only short nonvisual Handoff Constraints that materially affect downstream modelling, for example:
-
-```text
-Asset name (optional)
-Requested dimensions / target height (optional)
-Target use (optional)
-Must-preserve requirement (optional)
-Material asymmetry note (optional)
-Explicit pose override (optional)
-```
-
-Keep these facts in the active handoff context; do not render them as captions, dimensions, notes, extra panels, or decorative text unless explicitly requested. Do not create a manifest just to store them.
-
-Do not ask the user for Cube counts, bones, pivots, UV layout, animation plans, MCP operations, or package metadata.
-
-## Generation Budget
-
-```text
-multi-view Draft       = maximum 1
-targeted correction    = maximum 1
-automatic alternatives = 0
-```
-
-Generation starts only after readiness passes. Correct only a concrete visible defect. If one targeted correction still leaves a material conflict, mark `NOT READY / NEEDS REVIEW`; do not generate variants to simulate progress.
-
-Do not revive multi-sheet/manifest/hash/ZIP machinery without a future proved need.
-
-## Reference Generator Boundary
-
-Reference generation belongs to an image-capable surface and returns **one Modelling Brief image only**. It does not call BlockIT MCP, author `.bbmodel` geometry, create Codex handoff packages, or emit Geometry/Texture/Animation/Validation documents.
-
-After user approval, Codex/BlockIT consumes the actual Modelling Brief image plus any explicitly carried Handoff Constraints through the normal Bedrock modelling workflow. If the active modelling surface cannot inspect the image or does not receive a material nonvisual constraint needed for the task, do not fake that knowledge.
-
-## Handoff To Modelling
-
-```text
-actual approved image + relevant Handoff Constraints available
-↓
-View Pair Map + Cross-view consistency
-↓
-Reference Evidence Map
-↓
-Semantic Form Contract
-↓
-Coordinate frame + target envelope when supplied
-↓
-Primary Form Hypothesis
-↓
-Explicit coarse primary Cubes
-↓
-Structural + visual observation
-↓
-actual reference ↔ fresh model claim-locked comparison
-```
-
-The Modelling Brief owns visual requirements. Handoff Constraints own approved nonvisual facts. The modeller decides Cube count, exact transforms, hierarchy, pivots, UVs, texture, and optional animation.
-
-No reference-generation rule may hard-code object-specific MCP profiles or geometry plans.
-
-## Completion Criteria
-
-Reference is ready when:
-
-- target identity is clear and recognizable;
+- identity is clear and recognizable;
 - construction reads as Minecraft / Blockbench Cuboid form;
-- required views describe one compatible object and pose;
-- articulated subjects have correct limb/appendage count, plausible attachment, support/ground contact, separation, and cross-view pose lock;
+- required views describe one compatible object and pose/state;
+- articulated subjects preserve required count, plausible attachment, support/contact when applicable, separation, and cross-view pose integrity;
 - view pairing is resolvable;
-- whole-form masses/proportions/contacts are understandable;
-- important asymmetry and negative spaces are represented;
+- primary masses/proportions/contacts and important negative spaces are understandable;
 - no unresolved major cross-view conflict remains;
 - user has approved the image for modelling.
+
+Generation budget remains: one Draft, at most one targeted correction, zero automatic alternatives. If a material conflict survives the correction, return `NOT READY / NEEDS REVIEW`; do not generate variants to simulate progress.
 
 Reference validity never proves final model fidelity.
 

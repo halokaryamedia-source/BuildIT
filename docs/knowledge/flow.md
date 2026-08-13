@@ -20,7 +20,7 @@ SOURCE IMAGE + USER INTENT
 → split VISUAL TARGET from NONVISUAL HANDOFF CONSTRAINTS
 → ASSISTED INTAKE
 → INTERNAL GENERATION BRIEF
-→ POSE / ARTICULATION LOCK when applicable
+→ stable/readable POSE STATE when applicable
 → PRE-GENERATION READINESS
    ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
    └─ READY → GENERATE ONE CLEAN DRAFT
@@ -30,11 +30,9 @@ SOURCE IMAGE + USER INTENT
 → ACTUAL APPROVED REFERENCE IMAGE + relevant HANDOFF CONSTRAINTS
 ```
 
-For articulated subjects, default to a stable natural neutral stance unless the user explicitly requests another pose. Required limb/appendage count, attachment, support/ground relation, negative spaces, and pose/limb phase must stay consistent across all panels. A dynamic source pose does not automatically become the modelling pose.
+For articulated subjects choose the most structurally readable stable pose unless the user explicitly requires another state. Grounded load-bearing subjects normally use a stable natural neutral stance. A dynamic source pose does not automatically become the modelling pose. Preserve requested/observable pose state and limb phase across views without inventing hidden articulation.
 
-Nonvisual facts such as target scale/height stay outside the image by default and are passed in active modelling task context. They are not assumed to persist automatically through image metadata or conversation memory.
-
-Generation is output, not discovery. Durable policy: `docs/foundation/04-reference-guide.md`.
+Nonvisual facts such as target scale/height stay outside the image by default and are passed in active modelling task context. Generation is output, not discovery. Durable policy: `docs/foundation/04-reference-guide.md`.
 
 ## 3. Bedrock Authoring
 
@@ -52,7 +50,7 @@ ACTUAL APPROVED REFERENCE IMAGE + MATERIAL HANDOFF CONSTRAINTS
 → FAIL | UNVERIFIED | PASS
 ```
 
-Use the simplest construction that preserves the visible requirement. Solid, sheet-like, layered, segmented, and texture-only are reasoning patterns, **not presets**. Shared orientation/contact/attachment/articulation may be Group/Bone transform ownership. Form-defining hierarchy may belong in the primary blockout; neutral organization waits downstream.
+Use the simplest construction that preserves the visible requirement. Solid, sheet-like, layered, segmented, and texture-only forms are reasoning examples, **not presets**. Shared orientation/contact/attachment/articulation may be Group/Bone transform ownership. Form-defining hierarchy may belong in the primary blockout; neutral organization waits downstream.
 
 For local failure:
 
@@ -101,7 +99,5 @@ current source ownership    → implementation-map.md
 local acceptance procedure  → operations/local-acceptance-runbook.md only when reactivated
 historical rationale        → Git history / GitHub issues and PRs
 ```
-
-The tiny files that remain under `knowledge/reviews/` and `knowledge/decisions/` are compatibility/regression support only; they are not current product or navigation owners.
 
 Do not create another roadmap, review index, decision log, duplicate flow owner, or parallel planning state.
