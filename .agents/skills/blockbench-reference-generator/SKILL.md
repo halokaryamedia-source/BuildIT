@@ -28,6 +28,31 @@ If clarification is required, use **one compact round** with at most **three mat
 
 Do not repeat a question after the user says they do not know. If the remaining unknown is optional, leave it unset. If it is still material after the one clarification round, return **NEEDS REVIEW** instead of guessing. Each AI recommendation is a working interpretation, not a user-provided fact, until the user accepts it.
 
+## Pre-Generation Readiness Gate
+
+**Do not generate an image until understanding is complete enough to define one coherent target.** Generation is output, not discovery.
+
+Before the first image-generation call, the AI must have internally resolved:
+
+- intended subject / identity;
+- material visible silhouette, major masses, defining features, attachments/contacts, visible asymmetry, and pose/state;
+- which unknowns are safely optional and remain unset;
+- the required view set for an honest representation;
+- the Blockbench construction interpretation needed to keep the same model across views.
+
+`READY` means there is **no unresolved material ambiguity that could change identity, major form, required visible feature, or buildability**. It does **not** mean every optional field has a value.
+
+```text
+intake resolution
+→ internal generation brief
+→ readiness check
+   ├─ READY → generate once
+   └─ NOT READY → clarify within the existing one-round limit
+                  → still material? NEEDS REVIEW; do not generate
+```
+
+Never generate a draft to discover what the target should be. The post-generation targeted correction budget is only for a **concrete visual defect in an already-ready brief**; it must not compensate for missing pre-generation understanding.
+
 ## Automatic Internal Generation Brief
 
 ### 1. Subject
@@ -86,6 +111,6 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-**Generate directly when the source is usable.** Keep user dimensions/must-preserve facts for modelling handoff; do not print unless requested.
+**Generate only after the Pre-Generation Readiness Gate passes.** Keep user dimensions/must-preserve facts for modelling handoff; do not print unless requested.
 
 Return **one image only** as the Modelling Brief Draft. Stop for **user review / approval**. Only after user approval may the actual approved image plus already-supplied target facts be handed to modelling. **Do not generate ZIPs** or other deliverables.
