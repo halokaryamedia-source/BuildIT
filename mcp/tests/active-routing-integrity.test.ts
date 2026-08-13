@@ -20,19 +20,18 @@ describe("active routing integrity", () => {
         .map((entry) => entry.name)
     );
 
-    const activation = await source("../docs/knowledge/skills/activation-matrix.md");
-    const activeActivation = activation.split("## 7. Retired / External Helpers")[0];
-    const developmentBrief = await source(
-      "../.agents/skills/development-brief/SKILL.md"
-    );
-    const mcpDevelopment = await source(
-      "../.agents/skills/mcp-server-development/SKILL.md"
-    );
+    const [root, developmentBrief, mcpDevelopment, orchestrator] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../.agents/skills/development-brief/SKILL.md"),
+      source("../.agents/skills/mcp-server-development/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+    ]);
 
     const referenced = new Set([
-      ...backtickedSkillLikeNames(activeActivation),
+      ...backtickedSkillLikeNames(root),
       ...backtickedSkillLikeNames(developmentBrief),
       ...backtickedSkillLikeNames(mcpDevelopment),
+      ...backtickedSkillLikeNames(orchestrator),
     ]);
 
     for (const name of referenced) {
