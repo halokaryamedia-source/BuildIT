@@ -5,7 +5,7 @@ description: Bedrock Entity judgement for reference grounding, construction, tra
 
 # Blockbench Bedrock Modelling
 
-Own what must exist, how form is represented, transform ownership, and whether geometry is grounded enough to continue.
+Own geometry/form judgement, transform ownership, and whether reference-grounded modelling can continue.
 
 ## Minimum Necessary Evidence
 
@@ -59,7 +59,7 @@ For every **required attachment**, state its **contact target/invariant** before
 
 **If no current decision requires a branch, stay in the geometry lane.** Normal lane: grounded claims → Semantic Form → construction + transform ownership → Primary Form → coherent primary Cubes/Groups → necessary views → diagnosed correction.
 
-Triage cross-view differences before conflict. A **minor reference discrepancy** does not change identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Resolve it with **one canonical interpretation**:
+A **minor reference discrepancy** does not change identity, primary mass/required count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Resolve it with **one canonical interpretation**:
 
 ```text
 explicit user requirement
@@ -98,7 +98,7 @@ MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 
 **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
 
-After fresh affected views: `IMPROVED | UNCHANGED | REGRESSED`. A correction is progress only when `IMPROVED` and no **previously supported material claim/view** is `REGRESSED`; `UNCHANGED`/`REGRESSED` is not progress. Delta is qualitative, never a similarity score.
+After fresh affected views: `IMPROVED | UNCHANGED | REGRESSED`. A correction is progress only when `IMPROVED` and no **previously supported material claim/view** is `REGRESSED`; `UNCHANGED`/`REGRESSED` is not progress. **A fix that helps one view while materially regressing another is rejected.** Delta is qualitative, never a similarity score.
 
 If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
 
