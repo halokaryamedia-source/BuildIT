@@ -14,7 +14,7 @@ Working branch: **`Local` only**.
 
 `NO LOCAL RUN ACTIVE`. Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
-Retained state: **P0–P7 + REF + PRO-1–PRO-8**. No source capability was removed by this documentation/reference simplification.
+Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No source capability was removed by this reference simplification.
 
 ## Current Reference Contract
 
@@ -48,7 +48,7 @@ That fact stays outside the image unless the user explicitly requests visible te
 
 ## Verification Boundary
 
-Generated-reference quality requires direct review of the actual Draft; static policy/tests cannot certify it. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain direct/local proof.
+Generated-reference quality requires direct review of the actual Draft; static policy/tests cannot certify it. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
 
 ## Next Step
 
