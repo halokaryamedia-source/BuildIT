@@ -72,7 +72,7 @@ ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 → FAIL | UNVERIFIED | PASS
 ```
 
-Use the simplest construction that preserves visible requirements; examples are not presets. Professional samples remain learning evidence only.
+Use the simplest construction that preserves visible requirements; examples are not presets. **Form-defining hierarchy may belong in the primary blockout; neutral hierarchy/organization stays downstream.** Professional samples remain learning evidence only.
 
 For local correction:
 
