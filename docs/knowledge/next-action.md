@@ -7,12 +7,12 @@ This is the **single active repository-continuation snapshot**. Root `AGENTS.md`
 ## Status
 
 ```text
-PROFESSIONAL_MODELLING_REASONING_HARDENING_IN_PROGRESS
+PROFESSIONAL_MODELLING_REASONING_PHASE1_COMPLETE
 ```
 
 Working branch: **`Local` only**.
 
-Current scope is **repository/static improvement informed by professional `.bbmodel` samples**. The samples are evidence of useful modelling decisions; they are not presets, asset classes, anatomy rules, target Cube counts, or required hierarchy shapes.
+Professional `.bbmodel` samples supplied by the user were used as **learning evidence only**. They do not become presets, asset classes, anatomy rules, target Cube counts, required hierarchy shapes, copied rotations, or complexity targets.
 
 Do not run Codex local / Blockbench runtime acceptance or claim live modelling-quality improvement unless the active user scope explicitly reactivates local proof.
 
@@ -26,11 +26,11 @@ P7     qualitative correction convergence + evaluation integrity
 REF    assisted intake + pre-generation readiness + buildable multi-view reference
 ```
 
-No P8 architecture, professional preset framework, asset classifier, geometry planner, automatic rig generator, new registration profile, router, scorer, or recovery system is being added.
+No P8 architecture, professional preset framework, asset classifier, geometry planner, automatic rig generator, new registration profile, router, scorer, or recovery system was added.
 
-## Current Priority
+## Phase 1 Completed — Reasoning First
 
-Improve the **existing modelling judgement** before adding tool surface:
+The existing modelling judgement now owns four additional object-agnostic decisions:
 
 ```text
 1. REPRESENTATION REASONING
@@ -44,77 +44,63 @@ Improve the **existing modelling judgement** before adding tool surface:
 
 4. IDENTITY-WEIGHTED DETAIL
    secondary complexity concentrates only where it materially improves the asset
-
-5. ONLY THEN — TOOL EXPRESSIVENESS AUDIT
-   change MCP source only when the improved reasoning exposes a concrete execution mismatch
 ```
 
-Items 1–4 are decision-layer improvements. They must not become user-facing option sets, persisted construction schemas, fixture profiles, or hard-coded sample behavior.
+Construction forms such as solid Cuboid, plane-like Cube, layered/inflated shell, linked meaningful segments, or texture-only are **reasoning examples, not selectable presets or asset profiles**.
 
-## Phase 1 Development Contract
+The canonical modelling skill, runtime Bedrock workflow, current flow, modelling workflow policy, and Geometry Standard are synchronized around these decisions. A narrow regression contract prevents fixture names and professional preset/profile/planner fields from entering the normal surface.
+
+## Existing Capability Audit
+
+Static source review after Phase 1 found **no current capability blocker requiring a new tool or profile**:
 
 ```text
-Goal:
-Improve professional modelling decisions without increasing product complexity.
-
-Generic requirement:
-The modeller must choose representation, transform ownership, required primary
-hierarchy, and detail allocation from the actual reference evidence.
-
-Evidence source:
-Professional sample .bbmodel files supplied by the user.
-They demonstrate possibilities; they do not define universal anatomy or workflow order.
-
-Build owner:
-blockbench-bedrock-modelling + existing canonical flow/geometry policy.
-
-In scope:
-- active modelling skill;
-- runtime Bedrock workflow prompt;
-- current flow;
-- durable geometry policy;
-- narrow regression protection against preset/fixture hard-coding.
-
-Out of scope:
-- object/category presets;
-- fixed complexity/detail targets;
-- auto rig/geometry planner;
-- new profile/router/framework;
-- batch Group creation;
-- local Blockbench acceptance;
-- source-tool expansion before a concrete contract mismatch is shown.
-
-Acceptance:
-1. representation choice is explicit but remains object-agnostic;
-2. shared semantic transforms can be Group/Bone-owned;
-3. required transform hierarchy can be primary rather than forced downstream;
-4. secondary detail is identity-weighted rather than uniformly increased;
-5. current instruction surface stays compact.
+solid / zero-span Cube geometry → place_cube
+local rotated Cube + pivot      → place_cube / modify_cube
+shared transform hierarchy      → add_group with parent/origin/rotation
+layer separation                → modify_cube inflate
+exact local correction          → modify_cube / modify_cubes_batch
+functional points               → manage_locator / manage_null_object
 ```
 
-## Source Capability Boundary
+Therefore:
 
-Current MCP already supports finite/zero-span Cube geometry, explicit Cube rotation+pivot, Groups with parent/origin/rotation, Locators, and post-create Cube `inflate`/UV mutation. Those capabilities should be reused before adding another tool.
+```text
+NO SOURCE-TOOL CHANGE REQUIRED YET
+```
 
-One **possible** later mismatch is `place_cube` creation expressiveness (for example initial layer/UV state or many known parents), but this is not approved work merely because professional samples use those states. First prove the improved reasoning needs a lower-friction source path in actual authoring.
+Some source shapes could reduce authoring calls—for example initial layer/UV state during Cube creation or assigning many already-known Cube parents more compactly. Those remain **optimization candidates only**, not approved requirements. Do not add them until actual authoring evidence shows material friction that cannot be solved cleanly with the current surface.
+
+## Guardrails Preserved
+
+- no fixed Cube/detail count;
+- no hierarchy depth target;
+- no professional-asset preset;
+- no fixture-specific anatomy or rotation rule;
+- no “more Cubes/rotations = better” heuristic;
+- no new registration profile or modelling mode;
+- no automatic planner/rig generator;
+- no source change merely because a sample used a feature;
+- primary visual claims still require actual reference + fresh paired model evidence;
+- P6 explicit front/back, left/right, mirrored, and 3/4 View Pair ambiguity remains protected.
 
 ## Evidence Boundary
 
-GitHub/static proof can establish:
+`CURRENT-PROJECT VERIFIED` through GitHub/static inspection:
 
-- updated modelling/flow contracts;
-- absence of new preset/profile/planner fields;
-- source capability ownership;
-- regression/static consistency that is actually checked.
+- active modelling/flow contracts contain representation reasoning, transform ownership, primary hierarchy timing, and identity-weighted detail;
+- the professional-sample guardrail regression exists;
+- no new professional preset/profile/planner fields were added to the normal tool source;
+- active modelling skill and runtime prompt remain within their existing static size budgets.
 
-It cannot establish:
+`LOCAL PROOF REQUIRED`:
 
-- that a model now looks professionally authored;
-- live Group/Cube transform behavior in Blockbench;
-- reduced real authoring calls;
-- improved reference fidelity in an installed model-facing run.
+- whether an installed modelling model actually chooses better construction;
+- whether live Blockbench output is visually closer to professional quality;
+- whether authoring call count becomes a material bottleneck;
+- whether any candidate source-tool optimization is worth implementing.
 
-Those remain `LOCAL PROOF REQUIRED` if/when explicitly activated.
+No GitHub Actions status is currently attached to this work, and no local Bun/Blockbench acceptance run was performed in this scope. Do not report CI/runtime PASS from this phase.
 
 ## Continuation Boot
 
@@ -129,4 +115,8 @@ AGENTS.md
 
 ## Next Step
 
-Finish Phase 1 reasoning synchronization and static protection. Then audit the existing normal MCP surface against those stronger decisions. **Only implement a source-tool change when a concrete mismatch remains after reuse of existing capability.**
+```text
+PHASE 2 — BOUNDED AUTHORING-EXPRESSIVENESS VALIDATION
+```
+
+Use the stronger Phase 1 reasoning against a representative real modelling task. Observe where the current normal MCP surface actually causes repeated/noisy work. **Only implement a source-tool change for a reproduced material bottleneck.** If the current tools express the decision cleanly enough, `No change required` remains the correct result.
