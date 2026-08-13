@@ -7,7 +7,7 @@ Root `AGENTS.md` owns routing; `flow.md` owns detailed sequence; `docs/foundatio
 ## Status
 
 ```text
-REFERENCE_ORTHOGRAPHIC_BOUNDARY_CLARIFICATION_PENDING_STATIC_VERIFY
+REFERENCE_ORTHOGRAPHIC_BOUNDARY_CLARIFICATION_STATIC_VERIFIED
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
@@ -18,7 +18,7 @@ Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source c
 
 ## Clarified Reference Contract
 
-The orthographic-core strategy remains. This pass only removes five ambiguities:
+The orthographic-core strategy remains. This pass removes five ambiguities:
 
 ```text
 SOURCE-NEAREST ORTHOGRAPHIC ANCHOR
@@ -30,7 +30,7 @@ POSE NORMALIZATION
 → do not preserve source gait silhouette when modelling pose intentionally changes
 
 VIEW OMISSION
-→ omit optional contradictory view only if remaining core stays materially sufficient
+→ omit optional contradictory view only if remaining core stays sufficiently constrained
 → otherwise NEEDS REVIEW
 
 3/4 DISTINCTION
@@ -62,9 +62,8 @@ CI or this file never authorizes image generation. Future image quality, install
 ## Next Step
 
 ```text
-1. finish official static verification for these reference clarifications
-2. STOP AND REPORT
-3. WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
+WAIT — DO NOT GENERATE
+→ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
 Do not start Blockbench/Codex local acceptance before a future reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before Blockbench local acceptance.
