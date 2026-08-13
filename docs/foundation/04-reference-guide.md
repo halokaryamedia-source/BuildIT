@@ -20,7 +20,7 @@ Handoff Constraints → material nonvisual facts outside image
 Reference Evidence Map → derived working index; never image authority
 ```
 
-The **actual approved reference image** must be available as multimodal input to the model performing reference-driven geometry reasoning. A path, manifest, prose summary, or memory is context, not visual evidence. If the image cannot be inspected, material reference-driven geometry/approval is `BLOCKED`.
+The **actual approved reference image** must be available as multimodal input to the model performing reference-driven geometry reasoning. A path, manifest, prose summary, or memory is context, not visual evidence. **A path itself is not visual evidence.** If the image cannot be inspected, material reference-driven geometry/approval is `BLOCKED`.
 
 Default deliverable is the image only. Handoff Constraints are task context, not a ZIP/manifest/package.
 
@@ -110,7 +110,7 @@ REFERENCE TOP   ↔ MODEL top
 REFERENCE 3/4   ↔ MODEL matching 3/4
 ```
 
-Ambiguous pairing remains `UNVERIFIED`.
+**Ambiguous front/back, left/right, or 3/4 pairing remains `UNVERIFIED`.**
 
 ## Reference Evidence Map
 
@@ -124,7 +124,7 @@ supporting reference view(s)
 evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Claims describe what is visible, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here. The actual approved reference image remains authority.
+**Claim text describes what is visible**, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here. The actual approved reference image remains authority.
 
 ## Dimensions / Image Content
 
