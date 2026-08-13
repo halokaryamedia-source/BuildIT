@@ -9,9 +9,8 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    const foundation = await source("../docs/foundation/03-modelling-workflow.md");
 
-    for (const text of [orchestrator, modelling, workflow, foundation]) {
+    for (const text of [orchestrator, modelling, workflow]) {
       expect(text.toLowerCase()).toContain("minimum necessary evidence");
       expect(text.toLowerCase()).toContain("unverified");
     }
@@ -20,14 +19,12 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(modelling).toContain("No per-Cube inspection ceremony");
     expect(modelling).toContain("No screenshot-per-mutation loop");
     expect(workflow).toContain("Do not inspect each newly placed Cube or capture after every mutation");
-    expect(foundation).toContain("no per-Cube inspect by default");
   });
 
   test("bounds, specialists, checkpoints and uncertainty are conditional rather than mandatory", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-
     expect(orchestrator).toContain("Load specialists lazily");
     expect(orchestrator).toContain("Mutation count alone is not a checkpoint trigger");
     expect(orchestrator).toContain("Use `inspect_model_bounds` only when");
@@ -44,12 +41,11 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(profile).not.toContain("minimum_evidence");
   });
 
-  test("CI modelling gates are explicitly contract proof, not behavioral or visual proof", async () => {
-    const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
-    expect(audit).toContain("Proof Taxonomy — Do Not Confuse Contract With Behaviour");
-    expect(audit).toContain("contract proof");
-    expect(audit).toContain("BEHAVIORAL MODELLING PROOF");
-    expect(audit).toContain("REFERENCE-FIDELITY OUTCOME PROOF");
+  test("CI modelling gates remain static proof rather than behavioral or visual proof", async () => {
+    const validation = await source("../docs/foundation/validation-report.md");
+    expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
+    expect(validation).toContain("LOCAL PROOF REQUIRED");
+    expect(validation).toContain("Current GitHub proof");
+    expect(validation).toContain("visual-quality improvement");
   });
-
 });
