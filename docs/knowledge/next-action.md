@@ -12,21 +12,19 @@ Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
 Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
 
-Current source contract is static-verified: Minecraft-first Geometry + Texture, five-preview default for future references, minor reference drift may be resolved into one canonical Minecraft interpretation, and unresolved material contradiction remains `BLOCKED`.
+Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, and persistence remain **LOCAL PROOF REQUIRED**.
 
 ## Local Handoff
 
-Use `docs/knowledge/operations/local-acceptance-runbook.md` as the single procedure owner.
+Single procedure owner: `docs/knowledge/operations/local-acceptance-runbook.md`.
 
 ```text
 current Local
-→ clean working tree + exact HEAD
-→ MCP static gate
-→ fresh build
-→ record mcp/dist/mcp.js SHA-256
-→ load the exact local BlockIT build
-→ restart Blockbench
-→ reconnect MCP client
+→ clean tree + exact HEAD
+→ static gate + fresh build
+→ record dist/mcp.js SHA-256
+→ load current local BlockIT build
+→ restart Blockbench + reconnect MCP
 → verify endpoint + 62-tool default surface
 → verify:stateless-local
 → Fixture A
@@ -35,30 +33,28 @@ current Local
 → efficiency trace
 ```
 
-Package/plugin version alone is not freshness proof. CI cannot prove which local plugin file Blockbench actually loaded.
+Package version alone is not freshness proof.
 
-The existing elephant reference was accepted as sufficient for a Minecraft/Blockbench interpretation. Fixture B may use it only when the **actual approved image is visible to the local modelling context**. Do not regenerate merely to satisfy the new five-preview default. If an approved reference lacks a material axis, that claim stays `UNVERIFIED / BLOCKED`.
+The approved elephant reference may be used for Fixture B only when the actual image is visible to the local modelling context. Five previews are the future default, not a reason to regenerate an already approved usable reference.
 
 ```text
 MINOR → one canonical Minecraft interpretation → continue
 MATERIAL → CONFLICTING / BLOCKED
 ```
 
-Reference generation remains a separate execution boundary:
+Reference generation remains separately gated:
 
 ```text
 WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-Local plugin freshness and Fixture A do not grant image-generation permission.
-
 ## Next Step
 
 ```text
 LOCAL MACHINE
-→ run runbook sections 3–4
-→ prove exact HEAD + dist/mcp.js hash + loaded BlockIT file
-→ then begin Fixture A
+→ execute runbook sections 3–4
+→ prove exact HEAD + artifact hash + current BlockIT load
+→ begin Fixture A
 ```
 
-Do not change source during preparation unless a reproducible local failure identifies a concrete owner. No speculative cleanup, new tools, profiles, routers, or compatibility layers.
+Do not change source unless a reproducible local failure identifies a concrete owner. No speculative cleanup, new tools, profiles, routers, or compatibility layers.
