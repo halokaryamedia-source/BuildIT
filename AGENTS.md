@@ -4,26 +4,17 @@ Current intent owns the task; current source and relevant proof own behavior.
 
 ## Task Class First
 
-Choose the smallest route before loading context.
-
 ### Reference Preparation
-
-For creating/revising the **reference image itself** before Blockbench modelling.
 
 ```text
 source image / user intent
 → .agents/skills/blockbench-reference-generator/SKILL.md
-→ assisted intake + internal brief
-→ pre-generation readiness
-   ├─ READY → generate Draft → visual gate → user approval
-   └─ NOT READY → bounded clarification → still material? NEEDS REVIEW
+→ readiness → one Draft → visual gate → user approval
 ```
 
-Image-capable surface only. **Generation is output, not discovery.** Do not call BlockIT MCP for reference preparation. Detailed sequence: `docs/knowledge/flow.md`; durable policy: `docs/foundation/04-reference-guide.md`.
+Image-capable work only. Generation is output, not discovery. Detailed sequence: `docs/knowledge/flow.md`; durable policy: `docs/foundation/04-reference-guide.md`.
 
 ### Asset Authoring
-
-For Bedrock Entity create/revise/inspect/texture/animate/validate/export work that does not change repository/plugin source.
 
 ```text
 current request / actual approved reference
@@ -32,17 +23,13 @@ current request / actual approved reference
 → BlockIT MCP
 ```
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, engineering history, activation matrices, or all foundation docs. Tool selection starts from intent + known state, not repository/code search.
-
-Asset authoring is not software **Developing** merely because it changes a model. Reference generation is not repository development. **Do not route it through `development-brief`** unless repository/plugin behavior changes.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary skill indexes, or the whole foundation set. Asset authoring is not repository development merely because a model changes.
 
 ### Repository / Plugin Work
 
-For source/docs/tests/CI/MCP/plugin/architecture/maintenance.
-
 ```text
 this file
-→ docs/knowledge/next-action.md when continuing active work
+→ docs/knowledge/next-action.md when continuing current work
 → CONTEXT.md only when stable facts matter
 → affected source + nearest AGENTS.md
 → .agents/skills/development-brief/SKILL.md
@@ -56,12 +43,10 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 1. current user instruction;
 2. current source + relevant runtime/visual proof;
 3. root/nearest `AGENTS.md`;
-4. `docs/foundation/` policy;
+4. current `docs/foundation/` policy;
 5. `docs/knowledge/next-action.md`;
 6. `CONTEXT.md`;
-7. decision/review history for rationale.
-
-Resolve material conflicts explicitly.
+7. Git history / GitHub issues or PRs only when historical rationale can change the decision.
 
 ## Work Discipline
 
@@ -69,18 +54,16 @@ Resolve material conflicts explicitly.
 - Make the minimum complete change; reuse before adding a layer.
 - Do not broaden scope because adjacent issues are visible.
 - No fallback/framework/profile/compatibility layer without proved need.
-- Fixtures/named assets are evidence, not generic product rules.
+- Fixtures and samples are evidence, not generic product rules.
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid.
 - Never claim proof that was not obtained.
 
 ## Execution / Proof
 
-**ChatGPT → GitHub:** repository/source/docs/CI evidence only; never invent Blockbench runtime proof.
+**ChatGPT → GitHub:** repository/source/docs/CI evidence only.
 
-**Codex local:** shell/MCP/Blockbench only when the claim requires it; no broad checks by ritual.
-
-Use the cheapest falsifiable evidence. Source/CI proof never upgrades a live visual claim.
+**Codex local / Blockbench:** runtime/model/visual proof only when explicitly active and required.
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -90,27 +73,25 @@ UNSUPPORTED
 UNKNOWN
 ```
 
+Source/CI proof never upgrades a live visual/runtime claim.
+
 ## Product Boundary
 
 Minecraft Bedrock Entity (`bedrock`) remains the default. Reference generation creates a visual brief, not geometry. Tool success is execution evidence, not visual fidelity. Reference judgement uses `FAIL / UNVERIFIED / PASS`; `BLOCKED` is valid when continuation would require guessing.
 
-Reference generation → `blockbench-reference-generator`; modelling judgement → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`. Missing native capability must not be faked with generic Mesh, risky evaluation, UI automation, or another format.
+Reference generation → `blockbench-reference-generator`; modelling judgement → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
 
-For `mcp/**`, `mcp/AGENTS.md` owns TypeScript/Zod/runtime/registration/result/generated-doc/containment rules.
+For `mcp/**`, `mcp/AGENTS.md` owns package-specific engineering rules.
 
 ## Canonical Owners
 
-- task/product flow → `docs/knowledge/flow.md`
+- detailed current flow → `docs/knowledge/flow.md`
 - active continuation → `docs/knowledge/next-action.md`
 - stable facts → `CONTEXT.md`
-- product/reference/modelling policy → `docs/foundation/`
-- reference image generation → `.agents/skills/blockbench-reference-generator/`
-- asset orchestration → `.agents/skills/blockit-bedrock-entity-mcp/`
-- plugin/runtime → `mcp/`
-- repository change contract → `.agents/skills/development-brief/`
+- source/tool ownership → `docs/knowledge/implementation-map.md`
+- current proof state → `docs/foundation/validation-report.md`
+- durable policy → `docs/foundation/`
+- local procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated
+- historical rationale → Git history / GitHub issues and PRs
 
-Do not recreate retired generic skills or parallel planning/state systems.
-
-## Communication
-
-Keep progress compact: decisions, proof, blockers, one next step.
+Do not recreate duplicate navigation, review archives, decision logs, roadmaps, or parallel planning/state systems in the active tree.
