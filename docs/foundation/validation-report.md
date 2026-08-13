@@ -103,7 +103,7 @@ Current GitHub proof: **217 tests / 0 failures**, typecheck PASS, surface PASS, 
 
 Reference pose/limb/handoff hardening changed instruction/policy/test owners only; it did not add MCP tools, runtime profiles, planners, manifests, or controller capability.
 
-Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual model-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
+Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
 ## Product / Lifecycle / Export
 
