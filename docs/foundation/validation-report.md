@@ -50,13 +50,21 @@ These are serialized characters, not model-visible tokens.
 
 P0–P4 retain stage locking, exact-name routing, bounded recovery, and named-defect source/test ownership. These are static decision/retrieval proofs, not installed-model behavioral proof.
 
-## P5–P7 Modelling Evidence Boundary
+## P5 — Semantic Form / Rotation / Contact
 
-Semantic form precedes exact transforms; actual approved image plus fresh model evidence owns visual comparison; correction progress is `IMPROVED | UNCHANGED | REGRESSED`. Behavioral image-to-form effectiveness and real convergence remain `LOCAL PROOF REQUIRED`.
+Semantic form precedes exact transforms and visible relationships own construction decisions. Behavioral image-to-form effectiveness remains `LOCAL PROOF REQUIRED`.
+
+## P6 — Actual Reference Grounding / Claim-Locked Comparison
+
+Reference-driven approval requires the actual approved reference image plus fresh current-revision model evidence. Path/prose/memory is not image evidence. Difference-first comparison remains the approval contract.
+
+## P7 — Fidelity Convergence / Evaluation Integrity
+
+Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Evaluation is qualitative and evidence-bound, not a scalar similarity score. Real convergence remains `LOCAL PROOF REQUIRED`.
 
 ## Reference Generator — Simplified Static Contract
 
-Current reference preparation is statically verified to require:
+Current reference preparation requires:
 
 ```text
 source image + user intent
@@ -70,7 +78,7 @@ source image + user intent
 → approved image + relevant nonvisual Handoff Constraints
 ```
 
-The pose rule is relational, not an anatomy template. Explicitly requested/observable pose state is preserved across views without inventing hidden joint precision. Ground/support requirements apply only when structurally relevant. Orthographic views own structural pose truth; TOP preserves footprint/placement rather than pretending to share a side-view ground baseline; 3/4 cannot redesign anatomy or pose.
+The pose rule is relational, not an anatomy template. Requested/observable pose state is preserved across views without inventing hidden joint precision. Ground/support requirements apply only when structurally relevant. Orthographic views own structural pose truth; TOP preserves footprint/placement rather than pretending to share a side-view ground baseline; 3/4 cannot redesign anatomy or pose.
 
 Construction patterns are examples rather than an exhaustive taxonomy or preset system. The board contains view labels only by default; scale/height/use facts remain Handoff Constraints outside image pixels. No planner, anatomy schema, manifest, package, or new MCP capability was added.
 
@@ -88,7 +96,7 @@ PRO-7  create_animation + inspect_animation sound events
 PRO-8  inspect_animation read-only AnimationController/state inspection
 ```
 
-Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, and bone-binding expressions remain deferred. The supplied samples contain no timeline-effect keyframes.
+Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, and bone-binding expressions remain deferred.
 
 ## Current Static Verification
 
@@ -107,6 +115,10 @@ Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-
 ## Animation / Rig
 
 `manage_keyframes` preserves authored Molang strings without evaluation. PRO-7 adds bounded new-animation sound events. PRO-8 adds read-only AnimationController/state inspection while preserving authored external animation keys. Controller creation/mutation remains deferred.
+
+## Locator / Null Object
+
+Direct Locator/Null Object lifecycle ownership and representative reopen persistence retain accepted baseline evidence.
 
 ## Protected Native Capability Gaps
 

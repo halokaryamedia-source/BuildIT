@@ -14,9 +14,9 @@ Working branch: **`Local` only**.
 
 `NO LOCAL RUN ACTIVE`. Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
-## Current Reference Contract
+Retained state: **P0–P7 + REF + PRO-1–PRO-8**. No source capability was removed by this documentation/reference simplification.
 
-Reference preparation is intentionally bounded:
+## Current Reference Contract
 
 ```text
 articulated subject
