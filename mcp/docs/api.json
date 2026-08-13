@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T11:06:27.756Z",
+  "generatedAt": "2026-08-13T11:09:51.956Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1797,8 +1797,8 @@
               "include_effect_keyframes": {
                 "type": "boolean",
                 "default": false,
-                "description": "Include full particle-effect keyframes. Keep false for the normal summary path; enable only when effect timing/data is needed.",
-                "markdownDescription": "Include full particle-effect keyframes. Keep false for the normal summary path; enable only when effect timing/data is needed."
+                "description": "Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed.",
+                "markdownDescription": "Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed."
               }
             },
             "additionalProperties": false
