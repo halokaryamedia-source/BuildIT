@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-13  
-**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Reference Generator, and professional PRO-1–PRO-8 static closures.
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, hardened Reference Generator, and professional PRO-1–PRO-8 static closures.
 
 This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`.
 
@@ -17,11 +17,11 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_AND_PRO1_PRO8_IMPLEMENTED
+NON_LOCAL_P0_P7_REFERENCE_POSE_LIMB_HANDOFF_AND_PRO1_PRO8_STATIC_VERIFIED
 NO_LOCAL_RUN_ACTIVE
 ```
 
-The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later reasoning and professional-sample changes are static/CI proof unless explicitly stated otherwise.
+The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later reasoning, Reference Generator, and professional-sample changes are static/CI proof unless explicitly stated otherwise.
 
 ## Accepted Live Baseline — 2026-08-12
 
@@ -62,6 +62,27 @@ Reference-driven approval requires the actual approved image plus fresh current 
 
 Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Real convergence quality remains `LOCAL PROOF REQUIRED`.
 
+## Reference Generator — Static Hardened Contract
+
+The current reference-preparation contract is statically verified to require:
+
+```text
+source image + user intent
+→ Internal Generation Brief
+→ articulated pose/limb lock when applicable
+→ Pre-Generation Readiness Gate
+→ one clean multi-view Draft
+→ direct visual review
+→ user approval
+→ approved image + relevant nonvisual Handoff Constraints
+```
+
+For articulated subjects, default pose is a **stable natural neutral stance** unless the user explicitly requests another pose. Required limb/appendage count, plausible attachment, coherent support/ground relation, near/far separation, negative spaces, and pose/limb phase must remain consistent across required panels. Orthographic views own structural pose truth; the 3/4 view must not redesign anatomy or limb placement.
+
+By default, the generated board contains **view labels only**. Nonvisual user facts such as target dimensions/scale, target use, or other downstream constraints stay outside image pixels and must be passed explicitly as Handoff Constraints when material to modelling. No manifest/package layer was added for this.
+
+The contract allows one Draft, at most one targeted correction, and zero automatic variants. **Static tests do not certify the quality of a future generated image.** Actual Draft quality and approval remain direct image-capable evidence.
+
 ## Professional Sample Forensics — Static / Non-Local
 
 Nine professional `.bbmodel` samples remain learning evidence only. Retained bounded closures are:
@@ -76,15 +97,13 @@ PRO-8  inspect_animation read-only AnimationController/state inspection
 
 Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, and bone-binding expressions remain deferred. The supplied samples contain no timeline-effect keyframes.
 
-## Minimal Reference Generator
+## Current Static Verification
 
-Source image/user intent → one buildable multi-view Draft → at most one targeted correction → user approval → actual approved image handed to modelling. Generated-image quality remains direct image-capable evidence.
+Current GitHub proof: **217 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count stays **62**; max tool payload **3,167 < 3,200**; runtime workflow prompt **6,995 < 7,000**.
 
-## Professional Modelling / PRO-1–PRO-8 Static Proof
+Reference pose/limb/handoff hardening changed instruction/policy/test owners only; it did not add MCP tools, runtime profiles, planners, manifests, or controller capability.
 
-Current GitHub proof: **218 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count stays **62**; max tool payload **3,167 < 3,200**; runtime workflow prompt **6,995 < 7,000**.
-
-Later Molang/sound/controller-inspection persistence, controller execution, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
+Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual model-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
 ## Product / Lifecycle / Export
 
@@ -92,7 +111,7 @@ Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representat
 
 ## Observation / Reference Fidelity
 
-Observation tools retain accepted representative live evidence. P5–P7 and Reference Generator effectiveness retain their direct-evidence boundaries.
+Observation tools retain accepted representative live evidence. P5–P7 model-facing effectiveness and future generated-reference quality retain their direct-evidence boundaries.
 
 ## Texture / Paint / PBR
 
@@ -123,4 +142,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + Reference Generator + professional PRO-1–PRO-8**. No local run is active. Sample-driven source expansion is stopped unless a concrete new requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + hardened Reference Generator + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.

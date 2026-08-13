@@ -120,11 +120,22 @@ Installed-client/model behavior remains direct/local proof.
 
 Protected gaps remain controller creation/mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
+## Reference Preparation Ownership
+
+Reference preparation is instruction/policy owned, not an MCP tool family. Current hardened contract keeps visual and nonvisual authority separate:
+
+```text
+approved image       → visible form + approved pose
+Handoff Constraints  → approved nonvisual scale/use/pose-override facts
+```
+
+Articulated subjects use a stable natural neutral stance by default or the exact user-requested pose; limb count/attachment/support and cross-view pose phase are locked before approval. No object-specific anatomy preset, manifest layer, or geometry planner was added.
+
 ## Completed Current Hardening
 
 ```text
 P0–P7  routing / grounding / convergence
-REF    reference preparation/readiness
+REF    reference preparation/readiness + pose/limb/handoff integrity
 PRO-1–PRO-8 professional construction/sample-driven bounded closures
 DOC    current-state + repository-hygiene synchronization
 ```

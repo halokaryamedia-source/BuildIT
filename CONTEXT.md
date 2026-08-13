@@ -15,20 +15,23 @@ Primary output is an editable `.bbmodel`; Bedrock geometry JSON is the runtime g
 
 - Source Image — original visual input, not geometry data.
 - Modelling Brief Draft — generated multi-view reference before approval.
-- Modelling Brief — approved visual guide, not a per-Cube blueprint.
+- Modelling Brief — approved visual guide, including approved visible form/pose; not a per-Cube blueprint.
 - Requested Dimensions — user-approved target dimensions; `1 block = 16 Blockbench units`.
+- Handoff Constraints — compact approved nonvisual facts such as target scale/height, target use, or explicit pose override; kept outside image pixels by default and passed explicitly when material to downstream modelling.
+
+For articulated reference preparation, stable default is a natural neutral stance unless the user explicitly requests another pose. Pose/limb integrity is a reference-quality requirement, not an object-specific preset.
 
 ## Repository Shape
 
 ```text
 .agents/skills/    canonical skills
 docs/foundation/  durable current policy
-docs/knowledge/   current flow, continuation, ownership, local procedure + tiny test-support indexes
+docs/knowledge/   current flow, continuation, ownership, local procedure + tiny compatibility/regression support
 mcp/              plugin/runtime/build/tests/generated API docs
 workspace/        reusable acceptance fixtures
 ```
 
-There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; compact skill indexes under `docs/knowledge/skills/` are secondary/test support only.
+There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
 ## MCP Facts
 
@@ -40,7 +43,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Evidence Boundary
 
-The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
+The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, hardened Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
 
 Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, and experiments.
 

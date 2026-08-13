@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REFERENCE_POSE_LIMB_HARDENING_IMPLEMENTED
+REFERENCE_POSE_LIMB_HARDENING_STATIC_VERIFIED
 ```
 
 Working branch: **`Local` only**.
@@ -18,7 +18,7 @@ Working branch: **`Local` only**.
 
 ```text
 P0–P7  routing / grounding / convergence contracts
-REF    assisted reference preparation/readiness
+REF    assisted reference preparation/readiness + pose/limb/handoff integrity
 PRO-1  professional construction reasoning
 PRO-2  authoring expressiveness validation
 PRO-3  place_cube parent + initial inflate completeness
@@ -29,7 +29,7 @@ PRO-7  bounded new-animation sound effects
 PRO-8  read-only AnimationController/state inspection
 ```
 
-Reference preparation now additionally enforces:
+Reference preparation now enforces:
 
 ```text
 articulated subject
@@ -43,7 +43,7 @@ articulated subject
 → nonvisual user facts carried outside image
 ```
 
-This is generic policy, not an elephant-specific anatomy preset.
+This is generic policy, not an elephant-specific anatomy preset. Static verification is **217 tests / 0 failures** with typecheck, surface, build, docs freshness, and aggregate enforcement all passing.
 
 ## Current Pre-Local Reference Candidate
 
@@ -55,7 +55,7 @@ Retained nonvisual Handoff Constraint:
 target Minecraft height ≈ 2 × player height
 ```
 
-That scale fact must remain outside the generated image unless the user explicitly asks to display it. A fresh Draft must be generated from the source under the current hardened Reference Generator rules and then explicitly reviewed/approved.
+That scale fact remains outside the generated image unless the user explicitly asks to display it. A fresh Draft must be generated from the source under the hardened Reference Generator rules and then explicitly reviewed/approved.
 
 ## Active Documentation Owners
 
