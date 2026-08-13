@@ -6,45 +6,39 @@
 
 ## Purpose
 
-Define the durable Source Image → approved Modelling Brief contract. Operational procedure belongs to `.agents/skills/blockbench-reference-generator/SKILL.md`; this policy must not duplicate the full prompt or become an MCP/geometry subsystem.
+Define the durable Source Image → approved Modelling Brief contract. Operational procedure belongs to `.agents/skills/blockbench-reference-generator/SKILL.md`; this file should remain semantic policy, not a second prompt or MCP subsystem.
 
-The reference reduces ambiguity about identity, silhouette, proportion, major masses, pose/state, contacts, orientation, and style. It is **not** a pixel-calibrated Cube blueprint.
+The reference reduces ambiguity about identity, silhouette, proportion, major masses, pose/state, contacts, orientation, and style. It is not an exact Cube blueprint.
 
-## Authority / Handoff
+## Authority
 
 ```text
 user brief / approved target → identity + requested function
-approved reference image     → visible form + approved visible pose/state
-approved numeric dimensions  → whole-model scale/envelope
-Handoff Constraints          → material nonvisual facts outside image
-Reference Evidence Map       → derived working index; never image authority
+actual approved reference image → visible form + approved pose/state
+approved numeric dimensions → whole-model scale/envelope
+Handoff Constraints → material nonvisual facts outside image
+Reference Evidence Map → derived working index; never image authority
 ```
 
-The **actual approved image must be available as multimodal input** to the model performing reference-driven geometry reasoning. A path, manifest, text description, prior summary, or memory is context, not visual evidence. If the model cannot inspect the approved image, material reference-driven geometry/approval is `BLOCKED`.
+The **actual approved reference image** must be available as multimodal input to the model performing reference-driven geometry reasoning. A path, manifest, prose summary, or memory is context, not visual evidence. If the image cannot be inspected, material reference-driven geometry/approval is `BLOCKED`.
 
-- **Source Image** — original user image(s); identity/provenance authority.
-- **Internal Generation Brief** — AI-resolved pre-generation understanding; not a Cube blueprint.
-- **Modelling Brief Draft** — generated reference before approval.
-- **Modelling Brief** — approved image consumed by modelling.
-- **Handoff Constraints** — material nonvisual facts such as target scale/height or target use.
-- **Reference Evidence Map** — observable-claim index derived from the approved image.
-- **Golden Sample** — presentation/construction-language example only; never target anatomy authority.
-
-Default deliverable is the **image only**. Handoff Constraints remain task context, not a ZIP/manifest/package.
+Default deliverable is the image only. Handoff Constraints are task context, not a ZIP/manifest/package.
 
 ## Intake / Readiness
 
-Reference preparation is **assistive, not form-filling**. Prefer zero clarification. Resolve explicit user facts, then directly visible facts; leave optional unknowns unset; ask only for material ambiguity. Never infer numeric dimensions from pixels or invent hidden features, asymmetry, attachments, or articulation.
+Reference preparation is assistive, not form-filling. Prefer zero clarification. Resolve explicit user facts, then visible facts; leave optional unknowns unset; ask only for material ambiguity.
 
-The **Pre-Generation Readiness Gate** must pass first. **Generation is output, not discovery.** `READY` means no unresolved material ambiguity could still change identity, major form, visible feature, pose/articulation integrity, projection consistency, or buildability. A targeted correction may fix a concrete visual defect; it may not replace missing understanding.
+Never infer numeric dimensions from pixels or invent hidden features, asymmetry, attachments, articulation, or hidden joint precision.
+
+The **Pre-Generation Readiness Gate** must pass first. **Generation is output, not discovery.** `READY` means no unresolved material ambiguity could still change identity, major form, visible feature, pose/articulation integrity, projection consistency, or buildability. A targeted correction fixes a concrete visual defect; it cannot replace missing understanding.
 
 ## Pose / Articulation
 
-Use the **most structurally readable stable pose** unless the user explicitly requires another state.
+Use the **most structurally readable stable pose** unless another state is explicitly required.
 
 For grounded load-bearing subjects, default to a **stable natural neutral stance**. A dynamic source pose does not automatically become the modelling pose. Neutral does not mean robotic symmetry; do not force perfect bilateral alignment merely because it is easier to generate.
 
-If another pose is required, preserve the same requested/observable pose state and limb phase across views without inventing hidden joint precision.
+If another pose is required, preserve the same requested/observable pose state and limb phase across required views without inventing hidden joint precision.
 
 Relational invariants:
 - limb/appendage count stays consistent;
@@ -62,7 +56,7 @@ Orthographic views own structural truth. The 3/4 view must not redesign anatomy,
 
 Use the **simplest Blockbench-buildable representation that preserves the visible requirement**. Cuboids, rotated/stepped masses, plane-like Cubes, layered/inflated forms, linked segments, and texture-only treatment are examples, not exhaustive categories or presets.
 
-Do not lazy-voxelize, substitute smooth primitives, or turn one sample's Cube count/segmentation into a rule. The Modelling Brief is a buildable visual target, not an exact Cube plan.
+Do not lazy-voxelize, substitute smooth primitives, or turn sample Cube counts/segmentation into rules.
 
 ## Single-Model Projection Principle
 
@@ -73,13 +67,13 @@ UPPER: LEFT SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-LEFT 3/4
 ```
 
-Before generation, the locked major masses, pose, limb placement, articulated-feature states, attachments, and negative spaces must be able to explain every required view without contradiction.
+Before generation, the locked major masses, pose, limb placement, articulated-feature states, attachments, and negative spaces must explain every required view without contradiction.
 
 - SIDE/FRONT/BACK keep comparable scale and coherent ground relation when grounded.
-- TOP is a true top-down projection of the **same locked structure**. Preserve footprint, mass placement, appendage roots, limb locations, and negative spaces. Unknown hidden detail stays conservative rather than becoming invented geometry.
+- TOP is a true **top-down projection of the same locked structure**. Preserve footprint, mass placement, appendage roots, limb locations, and negative spaces. Unknown hidden detail stays conservative instead of becoming invented geometry.
 - 3/4 remains structurally subordinate to orthographic views.
 
-A material TOP mismatch proves the board is not yet one coherent model.
+A material **TOP mismatch** proves the board is not yet one coherent model.
 
 ## Visual Gate
 
@@ -90,7 +84,7 @@ Review the actual Draft in this order:
 3. **Support / naturalness** — stable support without accidental gait, floating support, or forced robotic symmetry.
 4. **Construction / readability** — recognizable, uncropped, buildable, visually consistent target.
 
-Any material TOP mismatch, articulated-feature drift, pose/support conflict, or cross-view redesign is `NOT READY / NEEDS REVIEW` regardless of presentation quality. Do not average conflicting shapes or replace qualitative review with numeric scores.
+Any material TOP mismatch, articulated-feature drift, pose/support conflict, or cross-view redesign is `NOT READY / NEEDS REVIEW` regardless of presentation quality. Material cross-view conflicts **must not be averaged** into a fake compromise. Do not replace qualitative review with numeric scores.
 
 ## Targeted Correction
 
@@ -98,7 +92,7 @@ A structural cross-view defect is a **board-level defect**, even when one panel 
 
 For the one allowed correction:
 - original Source Image + locked Internal Generation Brief remain authority;
-- failed Draft is defect evidence, not geometry authority;
+- failed Draft is defect evidence, **not geometry authority**;
 - name failed invariants explicitly;
 - regenerate the **whole board from the same locked structure**, never one panel independently;
 - preserve relationships that already passed;
@@ -106,9 +100,7 @@ For the one allowed correction:
 
 If material conflict remains, stop at `NOT READY / NEEDS REVIEW`; do not generate more variants.
 
-## View Pair / Evidence
-
-Map reference orientation before it can approve a model view:
+## View Pair Map
 
 ```text
 REFERENCE FRONT ↔ MODEL front
@@ -120,17 +112,19 @@ REFERENCE 3/4   ↔ MODEL matching 3/4
 
 Ambiguous pairing remains `UNVERIFIED`.
 
+## Reference Evidence Map
+
 Before exact geometry, derive only material observable claims:
 
 ```text
 claim_id
 kind: identity | mass | landmark | count | topology/contact | orientation | negative_space | representation
 observable claim
-supporting view(s)
+supporting reference view(s)
 evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Claims describe what is visible, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here. The actual image remains authority.
+Claims describe what is visible, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong here. The actual approved reference image remains authority.
 
 ## Dimensions / Image Content
 
