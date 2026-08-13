@@ -4,7 +4,7 @@ Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
 
 ## Minimum necessary evidence
 
-**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. **Do not immediately call `get_project_info`** unless needed. `inspect_model_bounds` is only for envelope/scale/ground/displacement. **Otherwise skip it.** `UNVERIFIED` is not a retry command.
+**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. **Do not immediately call `get_project_info`** unless needed. `inspect_model_bounds` is only for envelope/scale/ground/displacement. **Otherwise skip it.** **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision.
 
 ## Actual reference grounding
 
@@ -55,7 +55,7 @@ MATERIAL → CONFLICTING / BLOCKED
 
 Minor drift does not change identity, primary masses/counts, topology/attachment, important negative spaces, or Minecraft buildability. Canonical choice: **user requirement → original Source evidence → best-supported approved view → simplest recognizable Blockbench-buildable form**. Do not average drift. Only unresolved material conflict → `BLOCKED`.
 
-Build minimum coherent form with finite transforms and required primary Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. Do not chain Cube placement from tool success. **Once judgeable, stop before secondary detail.** Under-constrained extent is a **working hypothesis, not verified reference evidence**.
+Build minimum coherent form with finite transforms and required primary Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified reference evidence**.
 
 After primary `PASS`, use identity-weighted detail only where silhouette, recognizability, contact/layering, or motion benefits.
 
@@ -79,7 +79,7 @@ Progress requires `IMPROVED` and no supported material claim/view `REGRESSED`. `
 
 ## Downstream stages
 
-Primary-form-defining hierarchy/pivots may exist before primary `PASS`; secondary geometry waits. End-to-end **production** texture waits for dependent geometry `PASS`; production animation waits for suitable hierarchy/pivots. Material `FAIL` returns upstream; unresolved required `UNVERIFIED` → `BLOCKED`.
+Primary-form-defining hierarchy/pivots may exist before primary `PASS`; secondary geometry waits. End-to-end **production** texture waits for dependent geometry `PASS`; production animation waits for **participating hierarchy/pivots**. Material `FAIL` returns upstream; unresolved required `UNVERIFIED` → `BLOCKED`.
 
 Texture specialist is Minecraft-first too: minor shade/noise/marking drift may be canonicalized; material identity/required region/channel conflict may not.
 
@@ -89,7 +89,7 @@ Use `list_locator_elements` for discovery, `inspect_element` for focused state, 
 
 ## Protected Native Capability Gaps
 
-Molang: `manage_keyframes`; no MCP eval. `inspect_animation` reads controllers. Controller mutation, TextureMesh, visible bounds, sound/timeline mutation, animated textures, bone-binding expressions remain gaps; do not fake them. **Native Bedrock PBR and per-face `material_instance` are **not** gaps**.
+Molang: `manage_keyframes`; no MCP eval. `inspect_animation` reads controllers. Controller mutation, TextureMesh, visible bounds, sound/timeline mutation, animated textures, bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
