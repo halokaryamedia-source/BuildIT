@@ -9,7 +9,7 @@ Own surface authoring only. Geometry/pivot judgement stays with `blockbench-bedr
 
 ## Direct Routing
 
-Route from intent + known state and reuse returned identity/metadata.
+Route from intent + known state. **Reuse identity/metadata already returned by the current workflow.**
 
 ```text
 texture missing                    → create_texture
@@ -41,7 +41,7 @@ Load a missing spec by **exact tool name** + action; otherwise call it directly.
 
 For end-to-end reference work, production texturing starts after dependent geometry has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED`.
 
-Texture-only revision may use existing geometry as baseline without claiming reference accuracy. A flat texture may be provisional. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channels.
+For a texture-only revision on an **existing asset**, use current geometry as baseline without claiming reference accuracy. A **flat/placeholder texture** may be provisional. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channels.
 
 ## Minecraft-First Reference Texture
 
@@ -63,9 +63,9 @@ Only a material surface contradiction affecting identity-critical marking, requi
 
 ## Native Bedrock PBR / UV
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; use `activate_texture`, then Painter operations.
+`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; **use `activate_texture` to choose the active/default working texture**, then Painter operations.
 
-`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools stay outside BlockIT Bedrock Entity. Box-UV `uv_offset`, `mirror_uv`, and `autouv` are authored layout state; use `modify_cube` or `modify_cubes_batch`. Intentional reuse/mirroring is valid; accidental overlap is not.
+`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools stay outside BlockIT Bedrock Entity. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, and `autouv` are authored layout state; use `modify_cube` or `modify_cubes_batch`. Intentional reuse/mirroring is valid; accidental overlap is not.
 
 Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or a packing-density target. Inspect existing PBR state before replacing channels. Keep color/normal/height/MER identity deterministic.
 
