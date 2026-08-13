@@ -20,17 +20,30 @@ SOURCE IMAGE + USER INTENT
 → split VISUAL TARGET from NONVISUAL HANDOFF CONSTRAINTS
 → ASSISTED INTAKE
 → INTERNAL GENERATION BRIEF
-→ stable/readable POSE STATE when applicable
+→ stable/readable POSE + ARTICULATED-FEATURE STATE when applicable
+→ SINGLE-MODEL PROJECTION LOCK
 → PRE-GENERATION READINESS
    ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
    └─ READY → GENERATE ONE CLEAN DRAFT
               → view labels only by default
-              → VISUAL GATE
-              → USER APPROVAL
+              → VISUAL GATE:
+                   projection coherence
+                   articulation lock
+                   support/naturalness
+                   construction/readability
+              ├─ PASS → USER APPROVAL
+              └─ MATERIAL DEFECT
+                   → one BOARD-LEVEL TARGETED CORRECTION
+                   → original Source + locked Brief remain authority
+                   → regenerate the whole board, never patch one view independently
+                   → re-run VISUAL GATE
+                   → still material? NEEDS REVIEW; STOP
 → ACTUAL APPROVED REFERENCE IMAGE + relevant HANDOFF CONSTRAINTS
 ```
 
-For articulated subjects choose the most structurally readable stable pose unless the user explicitly requires another state. Grounded load-bearing subjects normally use a stable natural neutral stance. A dynamic source pose does not automatically become the modelling pose. Preserve requested/observable pose state and limb phase across views without inventing hidden articulation.
+For articulated subjects choose the most structurally readable stable pose unless another state is explicitly required. Grounded load-bearing subjects normally use a stable natural neutral stance, but do not force perfect bilateral alignment merely because it is easier to generate.
+
+Identity-critical articulated features keep one visible root/direction-or-bend/terminal state across views. A multi-view board is several projections of one locked structural interpretation, not several independently designed images. TOP is a true top-down projection of that same structure; a material TOP mismatch is a board-level defect.
 
 Nonvisual facts such as target scale/height stay outside the image by default and are passed in active modelling task context. Generation is output, not discovery. Durable policy: `docs/foundation/04-reference-guide.md`.
 
