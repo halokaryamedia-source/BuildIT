@@ -25,7 +25,7 @@ describe("reference generator projection contract", () => {
     for (const text of [skill, guide]) {
       expect(text).toContain("fresh explicit user instruction");
       expect(text).toContain("hardening");
-      expect(text).toContain("does not authorize");
+      expect(text).toMatch(/does not authorize|never authorizes/);
     }
     expect(skill).toContain("readiness is not permission to generate");
     expect(flow).toContain("execution consent gate");
@@ -128,7 +128,7 @@ describe("reference generator projection contract", () => {
     ]);
     for (const text of [skill, guide]) {
       expect(text).toContain("only panel/view labels may appear by default");
-      expect(text).toContain("no title");
+      expect(text).toMatch(/no (?:board )?title/);
       expect(text).toContain("header");
       expect(text).toContain("subtitle");
       expect(text).toContain("outside the image");
