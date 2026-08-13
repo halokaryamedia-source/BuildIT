@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REFERENCE_SINGLE_MODEL_PROJECTION_HARDENING_PENDING_STATIC_VERIFY
+REFERENCE_SINGLE_MODEL_PROJECTION_HARDENING_STATIC_VERIFIED
 ```
 
 Working branch: **`Local` only**.
@@ -52,7 +52,7 @@ trunk articulation   → state/curl drifts across views
 neutral stance       → stable but too mechanically aligned/robotic
 ```
 
-These are now treated as board-level projection/articulation defects, not as prompts to add elephant-specific anatomy rules.
+These are board-level projection/articulation defects, not reasons to add elephant-specific anatomy rules.
 
 Retained nonvisual Handoff Constraint:
 
@@ -64,18 +64,20 @@ That fact stays outside the image unless the user explicitly requests visible te
 
 ## Verification Boundary
 
-Static policy/tests can prove the workflow contract only. They cannot certify the next generated Draft. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
+The projection/correction workflow is static-verified. Static policy/tests cannot certify the next generated Draft. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
 
 ## Next Step
 
 ```text
-1. finish official static verification for this projection hardening
-2. use the one allowed TARGETED CORRECTION
-   → original elephant Source Image + locked Brief as authority
-   → failed Draft only as defect evidence
-   → regenerate the entire board from one locked structure
-3. audit TOP projection, trunk state, natural support, then full cross-view consistency
-4. user approval or stop at NEEDS REVIEW
+TARGETED CORRECTION — use the one allowed correction
+→ original elephant Source Image + locked Brief remain authority
+→ failed Draft is defect evidence only
+→ regenerate the entire board from one locked structure
+→ audit TOP projection
+→ audit trunk articulated state
+→ audit natural support / non-robotic stance
+→ audit full cross-view consistency
+→ user approval OR stop at NEEDS REVIEW
 ```
 
 Do not start Blockbench/Codex local acceptance before the reference is approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before loading it into Blockbench.
