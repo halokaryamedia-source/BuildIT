@@ -87,9 +87,25 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toBe(false);
     expect(
       modifyCubesBatchParameters.safeParse({
+        updates: [
+          { id: "a", uv_offset: [8, 16], autouv: "0", mirror_uv: true },
+        ],
+      }).success
+    ).toBe(true);
+    expect(
+      modifyCubesBatchParameters.safeParse({
         updates: [{ id: "a", name: "renamed" }],
       }).success
     ).toBe(false);
+  });
+
+  test("batch Cube correction carries existing Box-UV authored state without a new tool", async () => {
+    const cubes = await source("server/tools/cubes.ts");
+    expect(cubes).toContain("update.uv_offset");
+    expect(cubes).toContain("update.autouv");
+    expect(cubes).toContain("update.mirror_uv");
+    expect(cubes).toContain("geometryVisibilityFields");
+    expect(cubes).not.toContain("professional_uv");
   });
 
   test("Cube authoring rejects finite endpoints that produce non-finite size", () => {

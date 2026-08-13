@@ -127,13 +127,10 @@ See [`mcp/README.md`](mcp/README.md) for runtime/build details.
 
 The 2026-08-12 bounded local acceptance pass verified representative runtime transport, geometry/correction/Undo, reference-fidelity behavior, texture/Paint/PBR/material instances, animation playback, Locator/Null Object lifecycle, and `.bbmodel`/Bedrock export persistence.
 
-Current fresh GitHub/CI serialized surface:
-
-```text
-62 tools
-75,129 tools/list response characters
-52,105 input-schema characters
-10,723 description characters
+r tools
+75,474 tools/list response characters
+52,461 input-schema characters
+10,712 description characters
 initialize instructions: 386 characters
 ```
 

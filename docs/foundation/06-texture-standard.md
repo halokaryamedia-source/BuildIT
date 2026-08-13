@@ -66,6 +66,8 @@ Do **not** treat a specific texture-canvas size (`256`, `512`, `1024`, etc.) as 
 universal product law or automatic MCP guarantee. Choose/verify canvas behavior
 from the current model, project format, and actual runtime capability.
 
+**Logical/project UV resolution and physical bitmap dimensions are separate facts.** Do not assume they must be equal, power-of-two, or share one universal scale ratio.
+
 ## UV Requirements
 
 Where texture is required:
@@ -79,6 +81,12 @@ Where texture is required:
 
 Do not change UV layout after substantial finished painting without a concrete
 reason.
+
+## Box UV / Atlas Authoring
+
+Box UV is a first-class professional path for Cuboid Bedrock assets when it represents the intended surface workflow. Final layout may deliberately use authored per-Cube `uv_offset`, `mirror_uv`, and disabled/controlled auto-UV state. Automatic UV can be a starting aid; it is not proof of a finished atlas.
+
+Intentional UV reuse/overlap is valid for symmetric or repeated surfaces that are meant to share pixels. Reject accidental overlap, not reuse itself. Do **not** use a universal packing-density score or maximize occupied pixels as a quality target. Multiple texture variants may share one established geometry/UV layout.
 
 ## Mirror UV
 

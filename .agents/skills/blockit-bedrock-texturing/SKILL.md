@@ -64,9 +64,9 @@ A flat/placeholder texture may be provisional for visibility. If geometry change
 
 `apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; **use `activate_texture` to choose the active/default working texture**, then use Painter operations rather than generic per-face `Texture.apply()` semantics.
 
-`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools are outside BlockIT Bedrock Entity; do not claim direct Cube UV coverage beyond current Cube/texture contracts.
+`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools stay outside BlockIT Bedrock Entity. For Box-UV Cubes, `uv_offset`, `mirror_uv`, and `autouv` are intentional authored layout state: use `modify_cube` for one known Cube or `modify_cubes_batch` for a coherent known set. Intentional reuse/mirroring is valid; accidental overlap is not.
 
-Inspect existing PBR state before replacing channels. Keep color/normal/height/MER identity deterministic.
+Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or a packing-density target. Inspect existing PBR state before replacing channels. Keep color/normal/height/MER identity deterministic.
 
 ## Verification
 

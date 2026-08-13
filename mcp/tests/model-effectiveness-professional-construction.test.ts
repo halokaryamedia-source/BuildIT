@@ -28,6 +28,8 @@ describe("model creation effectiveness — professional construction without pre
     expect(geometry).toContain("layered/inflated shell");
     expect(geometry).toContain("linked meaningful segments");
     expect(geometry).toContain("unit-Cube staircasing");
+    expect(geometry).toContain("Locator intent");
+    expect(geometry).toContain("positive-only or fixed-value rule");
   });
 
   test("transform ownership distinguishes local Cube transforms from shared Group/Bone transforms", async () => {

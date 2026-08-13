@@ -27,19 +27,7 @@ Reuse known Group/bone UUIDs. **Call `get_project_info` only when** lifecycle st
 
 ## Deferred Spec Loading
 
-After routing, load a missing spec with the **exact tool name** + short action; never raw user wording alone.
-
-```text
-inspect_animation         → "inspect_animation inspect authored animation keyframes"
-manage_keyframes          → "manage_keyframes create edit transform keyframes"
-animation_graph_editor    → "animation_graph_editor interpolation Bezier easing"
-bone_rigging              → "bone_rigging edit reparent pivot bone rig"
-animation_timeline        → "animation_timeline playback time loop"
-batch_keyframe_operations → "batch_keyframe_operations batch offset scale keyframes"
-animation_copy_paste      → "animation_copy_paste copy mirror paste keyframes"
-```
-
-If the exact spec is loaded, call it directly; reformulation keeps the same selected tool name.
+After routing, load a missing spec with the **exact tool name** + short action; never raw user wording alone. If the exact spec is loaded, call it directly; reformulation keeps the same selected tool name.
 
 ## Stage / Anti-Loop
 
@@ -59,6 +47,8 @@ For animation-only revision on an **existing asset**, current geometry is the us
 
 A small **diagnostic pose/playback** may test pivot, attachment, or transform direction. If material geometry/hierarchy/pivots change, **consider animation on the affected bones stale** until affected keyframes, arcs, attachments, clipping, and neutral return are rechecked.
 
+Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Choose interpolation, snapping/FPS, loop mode, and participating bones from the motion; coordinated semantic motion matters more than dense keys.
+
 ## Direct Animation Surface
 
 ```text
@@ -76,7 +66,7 @@ Do not make `animation_timeline.select_range` a core-correctness dependency; pre
 
 ## Protected Gaps
 
-Direct MCP authoring still does not own animation controllers, sound-effect keyframes, timeline-effect keyframes, or bone-binding expressions. Do not fake them through `risky_eval`, generic UI actions, or unrelated export paths.
+Direct MCP authoring still does not own animation controllers, sound-effect keyframes, timeline-effect keyframes, expression-valued transform keyframes, or bone-binding expressions. Do not fake expression motion by baking arbitrary dense numeric keys, and do not route these gaps through `risky_eval` or generic UI actions.
 
 ## Verification
 

@@ -115,6 +115,14 @@ const cubeCorrectionUpdateSchema = z
       .describe(
         "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
       ),
+    uv_offset: finiteVec2Schema
+      .optional()
+      .describe("Finite box-UV offset [u,v] for this Cube."),
+    autouv: z
+      .enum(["0", "1", "2"])
+      .optional()
+      .describe("Auto UV setting: 0 disabled, 1 enabled, 2 relative."),
+    mirror_uv: z.boolean().optional().describe("Whether to mirror Box UVs."),
     visibility: z
       .boolean()
       .optional()
@@ -127,10 +135,13 @@ const cubeCorrectionUpdateSchema = z
       update.from !== undefined ||
       update.to !== undefined ||
       update.rotation !== undefined ||
+      update.uv_offset !== undefined ||
+      update.autouv !== undefined ||
+      update.mirror_uv !== undefined ||
       update.visibility !== undefined,
     {
       message:
-        "Each update must change at least one authored field: origin, from, to, rotation, or visibility.",
+        "Each update must change at least one authored field: origin, from, to, rotation, uv_offset, autouv, mirror_uv, or visibility.",
     }
   );
 
@@ -263,7 +274,7 @@ export const modifyCubesBatchParameters = z.object({
       }
     )
     .describe(
-      "1-32 explicit Cube transform/visibility updates applied in one Undo unit."
+      "1-32 explicit Cube transform/Box-UV/visibility updates applied in one Undo unit."
     ),
 }).strict();
 
@@ -293,7 +304,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "modify_cubes_batch",
     description:
-      "Applies 1-32 unique UUID-targeted Cube corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; pivot, rotation, finite-span, and per-Cube before/after `geometry_effect` rules remain explicit. Execution success does not mean the geometry was corrected visually.",
+      "Applies 1-32 unique UUID-targeted Cube transform/Box-UV/visibility corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; per-Cube before/after `geometry_effect` remains explicit. Execution success does not mean the geometry was corrected visually.",
     annotations: {
       title: "Modify Cubes Batch",
       destructiveHint: true,
@@ -732,6 +743,11 @@ export function registerCubesTools() {
             ...(update.from !== undefined ? { from: update.from } : {}),
             ...(update.to !== undefined ? { to: update.to } : {}),
             ...(update.rotation !== undefined ? { rotation: update.rotation } : {}),
+            ...(update.uv_offset !== undefined ? { uv_offset: update.uv_offset } : {}),
+            ...(update.autouv !== undefined
+              ? { autouv: Number(update.autouv) as 0 | 1 | 2 }
+              : {}),
+            ...(update.mirror_uv !== undefined ? { mirror_uv: update.mirror_uv } : {}),
             ...(update.visibility !== undefined
               ? { visibility: update.visibility }
               : {}),
@@ -756,8 +772,17 @@ export function registerCubesTools() {
           geometry_effect: cubeGeometryEffect(before, after),
         };
       });
-      const effectiveGeometryTargets = effects.filter(
-        ({ geometry_effect }) => geometry_effect.changed_fields.length > 0
+      const geometryVisibilityFields = new Set([
+        "from",
+        "to",
+        "origin",
+        "rotation",
+        "visibility",
+      ]);
+      const effectiveGeometryTargets = effects.filter(({ geometry_effect }) =>
+        geometry_effect.changed_fields.some((field) =>
+          geometryVisibilityFields.has(field)
+        )
       ).length;
       const result = {
         execution: "applied" as const,

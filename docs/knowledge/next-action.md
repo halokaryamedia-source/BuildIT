@@ -2,149 +2,139 @@
 
 Updated: 2026-08-13
 
-This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; `flow.md` owns the detailed current sequence; `docs/foundation/validation-report.md` owns accepted proof detail.
+This is the **single active repository-continuation snapshot**. Root `AGENTS.md` owns routing; `flow.md` owns detailed task/product sequence; `docs/foundation/validation-report.md` owns proof state.
 
 ## Status
 
 ```text
-PLACE_CUBE_CREATION_COMPLETENESS_PHASE3_COMPLETE
+PROFESSIONAL_SAMPLE_FORENSIC_AUDIT_AND_UV_BATCH_PARITY_COMPLETE
 ```
 
 Working branch: **`Local` only**.
 
-Professional `.bbmodel` samples remain **learning evidence only**. They do not become presets, asset classes, anatomy rules, Cube-count targets, hierarchy-depth targets, copied rotations, or complexity targets.
+The user explicitly does **not** want a local Codex/Blockbench test yet. `NO LOCAL RUN ACTIVE`.
+
+Professional `.bbmodel` samples remain learning evidence only. They never become presets, asset classes, anatomy rules, target Cube/keyframe counts, UV templates, hierarchy-depth targets, copied transforms, or complexity targets.
 
 Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
-## Retained Accepted State
+## Retained State
 
 ```text
 P0–P4  routing / deferred loading / bounded recovery / defect navigation
 P5     semantic form / orientation / pivot / contact
 P6     actual-reference grounding + claim/view locking
 P7     qualitative correction convergence + evaluation integrity
-REF    assisted intake + pre-generation readiness + buildable multi-view reference
-PRO-1  representation reasoning + transform ownership + primary hierarchy timing + identity-weighted detail
-PRO-2  bounded professional-sample authoring-expressiveness validation
-PRO-3  place_cube per-element parent + initial inflate creation completeness
+REF    assisted intake + pre-generation readiness
+PRO-1  representation + transform ownership + primary hierarchy + identity-weighted detail
+PRO-2  professional authoring expressiveness validation
+PRO-3  place_cube per-element parent + initial inflate
+PRO-4  nine-sample geometry / texturing / animation forensic audit
+PRO-5  existing modify_cubes_batch Box-UV parity
 ```
 
-No P8 architecture, professional preset framework, asset classifier, geometry planner, automatic rig generator, new registration profile, router, scorer, or recovery system was added.
+No P8 architecture, professional preset/profile, asset classifier, auto-packer, geometry planner, rig generator, router, scorer, or new authoring mode was added.
 
-## Phase 3 Result
+## Forensic Result
 
-The existing `place_cube` contract now accepts two optional per-element authored fields:
+### Geometry
+
+Current reasoning already covers the important professional patterns. Added only two missing semantics:
+
+- `inflate` sign/magnitude is a local layer relationship, not a positive/fixed preset;
+- required non-visible effect/hold/attachment anchors are Locator intent, not hidden placeholder Cubes.
+
+No new geometry tool is justified.
+
+### Texturing / UV
+
+Across the supplied samples:
 
 ```text
-element.group
-  Group UUID / unique exact-name parent override
-
-element.inflate
-  finite Bedrock Cube inflation authored during creation
+538 / 538 Cubes use Box UV
+538 / 538 final Cubes use autouv = 0
+516 / 538 store explicit uv_offset
+134 / 538 use mirror_uv
 ```
 
-Compatibility remains:
+Professional Box-UV layout is therefore intentional authored state. `modify_cubes_batch` now has parity with the existing single-Cube fields:
 
 ```text
-element.group supplied → explicit per-Cube parent
-element.group omitted  → existing top-level group default
-both omitted            → root, same existing behavior
+uv_offset
+mirror_uv
+autouv
 ```
 
-Execution contract:
+This remains one existing tool. No UV planner/packer, packing score, texture preset, or generic per-Cube texture selector was added.
 
-- top-level and per-element explicit Group references resolve before `Undo.initEdit`;
-- one missing/ambiguous explicit parent fails the whole request before mutation;
-- known finite `inflate` is authored in the native Cube constructor rather than requiring a follow-up correction call;
-- rotation/pivot, UV, Undo, identity, result, and `visual_verdict: not_evaluated` remain owned by the same existing tool;
-- no new Cube tool or modelling mode exists.
+The samples also prove that logical project UV resolution may differ from bitmap dimensions. That observation alone does **not** justify a new project-resolution field; exact creation ownership remains unproven.
 
-Targeted regression owner:
+### Animation
 
-`mcp/tests/place-cube-creation-completeness.test.ts`
+Five of nine samples are static. The four animated samples contain 103 clips, 21 controllers, 3,516 keyframes, and overwhelmingly linear interpolation. Therefore professional quality does not imply dense curves, one FPS, one loop mode, or a keyframe target.
 
-## Verified Repository / CI State
-
-The bounded Phase 3 gate passed before final cleanup:
+Static evidence also proves three direct production gaps:
 
 ```text
-TypeScript                  PASS
-contract tests              212 PASS / 0 FAIL
-default MCP surface         PASS
-production build            PASS
-generated docs freshness    PASS
+expression-valued transform keyframes
+sound-effect keyframes
+animation controllers
 ```
 
-Fresh serialized surface:
+They are **DEFERRED**, not implemented here. Do not fake expression motion by arbitrary dense numeric baking. Mapped particle effects remain already supported.
+
+Full evidence: `docs/knowledge/reviews/professional-sample-forensic-audit-2026-08-13.md`.
+
+## CI / Surface Proof
+
+The retained repository gate must pass:
+
+```text
+frozen install
+→ typecheck
+→ tests
+→ measure:surface
+→ build
+→ docs:check
+```
+
+Fresh serialized metrics after PRO-5:
 
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,129 characters
-tools array:                    75,085 characters
-input schemas:                  52,105 characters
-descriptions:                   10,723 characters
-per-tool payload max:           3,167 characters
-place_cube payload:             3,167 characters
-retained per-tool ceiling:      3,200 characters
+tools/list response:            75,474 characters
+tools array:                    75,430 characters
+input schemas:                  52,461 characters
+descriptions:                   10,712 characters
+per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
-These are serialized-character measurements, not token measurements.
-
-Generated API docs were produced through the repository owner commands, not hand-edited. All temporary Phase 3 helper workflows/scripts were removed; only the normal `MCP Verify` workflow remains.
-
-## Explicitly Out Of Scope
-
-Do not add without new reproduced evidence:
-
-- mirror-UV creation optimization;
-- per-Cube texture selection;
-- Group batch creation;
-- rig generator;
-- asset/category preset;
-- professional detail profile;
-- hierarchy-depth target;
-- automatic geometry planner;
-- object-specific rules from professional samples.
-
-The professional samples have now justified **one** source-contract expansion (`place_cube` creation completeness). They do not currently justify another MCP surface expansion.
+These are serialized characters, not model-visible token measurements.
 
 ## Evidence Boundary
 
-`CURRENT-PROJECT VERIFIED` for repository/CI semantics:
+`CURRENT-PROJECT VERIFIED` after CI for source/static semantics: forensic counts, current reasoning/policy, Box-UV batch schema/execution contract, generated docs, and surface/build/test gates.
 
-- Phase 1 reasoning contracts;
-- Phase 2 bottleneck evidence;
-- Phase 3 schema/source behavior as statically expressed;
-- pre-Undo parent preflight ordering;
-- finite initial inflate schema;
-- backward-compatible top-level parent contract;
-- generated-doc consistency;
-- current surface budgets/build/tests.
+`LOCAL PROOF REQUIRED` remains for native Blockbench persistence/visual behavior, real call reduction, and whether the revised reasoning creates visibly better models.
 
-`LOCAL PROOF REQUIRED`:
+## Explicitly Deferred
 
-- installed Blockbench behavior of mixed-parent `place_cube` batches;
-- actual native persistence of initial `inflate` in a live project;
-- measured reduction in real authoring calls;
-- whether stronger reasoning creates visibly more professional models;
-- end-to-end representative professional-style authoring quality.
+Do not implement without a separate bounded requirement:
 
-## Continuation Boot
-
-```text
-AGENTS.md
-→ this file
-→ flow.md only when detailed sequence matters
-→ affected owner + nearest AGENTS.md
-→ development-brief for repository changes
-→ at most one relevant specialist
-```
+- animation controllers;
+- sound/timeline-effect keyframes;
+- expression-valued transform keyframes;
+- new project logical-UV resolution control;
+- UV auto-packer / UV-density score;
+- PBR expansion from these samples;
+- Group batch creation / rig generator;
+- professional presets or asset classes.
 
 ## Next Step
 
 ```text
-NO FURTHER SOURCE EXPANSION FROM SAMPLE EVIDENCE
+NON-LOCAL NEXT — ANIMATION GAP PRIORITIZATION
 ```
 
-The next meaningful quality step is a **representative real authoring acceptance run** using the stronger reasoning + current MCP surface. That requires explicit reactivation of local Codex/Blockbench proof. Until then, `No change required` is the correct repository result; do not add another tool, preset, batching layer, or modelling mode merely because the professional samples contain more authored features.
+Inspect the three sample-evidenced animation gaps **one at a time**, starting with expression-valued transform keyframes. Determine whether an existing keyframe contract can support it narrowly and safely. If it requires an evaluator/controller framework, defer it. Do not start local Codex/Blockbench acceptance until the user explicitly reactivates it.

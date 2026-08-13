@@ -120,13 +120,13 @@ from_geo_json         disabled
 Fresh GitHub/CI serialized measurement:
 
 ```text
-initialize instructions: 386 characters
-62 tools
-75,129 tools/list response characters
-75,085 tools-array characters
-52,105 input-schema characters
-10,723 description characters
-per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
+initialize instructions:       386 characters
+tool count:                     62
+tools/list response:            75,474 characters
+tools array:                    75,430 characters
+input schemas:                  52,461 characters
+descriptions:                   10,712 characters
+per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
 These are serialized characters, not client token/context measurements. `mcp/scripts/measure-default-surface.ts` owns the isolated measurement.

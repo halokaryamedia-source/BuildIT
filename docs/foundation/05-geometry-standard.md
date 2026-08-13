@@ -61,7 +61,7 @@ Choose the **simplest construction that preserves the visible requirement**. The
 Rules:
 
 - A plane-like Cube is not a shortcut for unknown depth.
-- `inflate` is layer-control, not proportion repair or fake detail.
+- `inflate` is layer-control, not proportion repair or fake detail. Its sign and magnitude are local authored choices; do not impose a positive-only or fixed-value rule.
 - Linked segments must express meaningful changes of direction/contact; reject micro-segmentation and unit-Cube staircasing used only to imitate a curve.
 - A visible marking, color break, scratch, seam, or painted feature stays texture unless it materially changes volume/silhouette.
 - Complexity follows visible need. A simple professional object may require very few Cubes; a complex one may require many.
@@ -311,6 +311,10 @@ Use symmetry/mirroring only when the reference supports it. Preserve meaningful 
 ## Hierarchy / Naming
 
 Hierarchy exists for transform ownership, articulation, attachment, or useful organization. Use semantic names and stable UUIDs for mutation identity. Hierarchy never justifies bad placement/pivot/contact.
+
+## Functional Anchors / Locators
+
+A required non-visible effect, hold, or attachment point that needs transform identity but no visible volume is **Locator intent**, not a hidden/placeholder Cube. Use geometry only when the target actually has visible form.
 
 ## Completion Criteria
 

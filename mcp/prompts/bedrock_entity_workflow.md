@@ -36,7 +36,7 @@ material evidence state
 
 A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark or justified split; **no orphan/filler Cube**.
 
-Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, **not presets or asset classes**. Use volume for silhouette; plane-like geometry for sheet-like form; `inflate` for layering; linked segments for meaningful bends, never unit-Cube staircasing.
+Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, **not presets or asset classes**. Use volume for silhouette; planes for sheet-like form; `inflate` for layering; linked segments for meaningful bends; use Locator—not a hidden Cube—for a required non-visible anchor.
 
 Decide **transform ownership** before rotation. Shared orientation/attachment/articulation should be Group/Bone-owned; local rigid slope can stay Cube-owned. Form/contact/articulation-defining Groups/pivots belong in primary blockout; neutral organization may wait.
 
@@ -88,7 +88,7 @@ Use `list_locator_elements` for discovery, `inspect_element` for focused state, 
 
 ## Protected Native Capability Gaps
 
-TextureMesh, visible bounding-box fields, animation controllers/effects, animated textures, and bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+TextureMesh, visible bounding-box fields, animation controllers, sound/timeline effects, expression-valued transform keyframes, animated textures, and bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 

@@ -50,6 +50,22 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(foundation).toContain("keyframe effort never justifies preserving a bad rig or geometry baseline");
   });
 
+  test("professional texture and animation evidence improves reasoning without density presets", async () => {
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const texturePolicy = await source("../docs/foundation/06-texture-standard.md");
+
+    expect(texturing).toContain("Box-UV Cubes");
+    expect(texturing).toContain("modify_cubes_batch");
+    expect(texturing).toContain("Logical project UV resolution and bitmap pixel dimensions are separate facts");
+    expect(texturePolicy).toContain("Box UV / Atlas Authoring");
+    expect(texturePolicy).toContain("packing-density score");
+
+    expect(animation).toContain("no keyframe-count, FPS, or Bezier-complexity target");
+    expect(animation).toContain("expression-valued transform keyframes");
+    expect(animation).toContain("Do not fake expression motion");
+  });
+
   test("sequencing hardening remains decision-layer only", async () => {
     const profile = await source("lib/registrationProfile.ts");
     const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");

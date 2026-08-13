@@ -45,7 +45,7 @@ material evidence state
 
 A semantic label never authorizes coordinates. Every primary Cube implements a declared mass/landmark or justified split/relationship. **No orphan Cube, filler Cube**. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
-Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, thin/plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, **not presets or required asset classes**. Use volume for silhouette; plane-like geometry only for sheet-like form; `inflate` only for deliberate layer separation; linked segments only for meaningful bend/articulation, never unit-Cube staircasing.
+Choose the **simplest construction that preserves the visible requirement**. Solid Cuboid, thin/plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, **not presets or required asset classes**. Use volume for silhouette; planes for sheet-like form; `inflate` for deliberate layer separation; linked segments for meaningful bends; use Locator—not a hidden Cube—for a required non-visible anchor.
 
 Decide **transform ownership** before rotation. Shared semantic orientation/attachment/articulation should be Group/Bone-owned; local rigid slope may be Cube-owned. Form/contact/articulation-defining Groups/pivots belong in primary blockout; neutral organization may wait.
 

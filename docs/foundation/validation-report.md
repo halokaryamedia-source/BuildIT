@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-13  
-**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7 modelling/evaluation contracts, minimal Reference Generator route, professional modelling reasoning, `place_cube` creation completeness, and current-state synchronization.
+**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7, Reference Generator, professional geometry/texturing/animation sample forensics, bounded Box-UV batch parity, and current-state synchronization.
 
 This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
 
@@ -55,13 +55,13 @@ from_geo_json         disabled
 Current verification pins Bun **1.3.14** and measures the isolated `initialize → tools/list` surface through the real stateless HTTP owner.
 
 ```text
-initialize instructions: 386 characters
-62 tools
-75,129 tools/list response characters
-75,085 tools-array characters
-52,105 input-schema characters
-10,723 description characters
-per-tool payload: p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
+initialize instructions:       386 characters
+tool count:                     62
+tools/list response:            75,474 characters
+tools array:                    75,430 characters
+input schemas:                  52,461 characters
+descriptions:                   10,712 characters
+per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
 These are serialized character measurements, **not** model-visible token/context measurements. Real prompt loading, latency, retry frequency, and image-context cost require client/model evidence.
@@ -173,6 +173,16 @@ Model-facing evaluation is limited to:
 The candidate must receive the actual approved reference image but not the expected answer. Independent expectations must pre-exist candidate output.
 
 **Proof status:** repository/source/tests prove the P7 contract and fixture separation. They cannot prove real candidate image understanding or convergence quality.
+
+## Professional Sample Forensics — Static / Non-Local
+
+Nine supplied professional `.bbmodel` files were inspected as learning evidence only. Static evidence supports purposeful transform ownership, plane-like Cubes, signed/local `inflate`, Locator-owned functional anchors, Box-UV/manual atlas state, and motion semantics that avoid keyframe/FPS/curve-density targets.
+
+Texturing evidence reproduced one narrow contract mismatch: `modify_cube` owned `uv_offset` / `mirror_uv` / `autouv`, while `modify_cubes_batch` did not. The existing batch tool now owns those same Box-UV fields; no new UV tool, packer, score, preset, or profile was introduced.
+
+Animation samples also prove production gaps for animation controllers, sound-effect keyframes, and expression-valued transform keyframes. They remain **deferred capability gaps**, not permission to fake or auto-bake them. No local run is active.
+
+Detailed evidence: `docs/knowledge/reviews/professional-sample-forensic-audit-2026-08-13.md`.
 
 ## Minimal Reference Generator
 
