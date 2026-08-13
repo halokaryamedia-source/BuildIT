@@ -30,7 +30,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Apply bounded forensic improvements
-        run: python3 .github/scripts/professional_sample_forensic_patch.py
+        run: |
+          python3 .github/scripts/professional_sample_forensic_patch.py
+          python3 .github/scripts/professional_sample_forensic_followup.py
 
       - name: Regenerate prompt and API owners
         working-directory: mcp
@@ -71,6 +73,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/professional-sample-forensic-ci.yml
           git rm .github/scripts/professional_sample_forensic_patch.py
+          git rm .github/scripts/professional_sample_forensic_followup.py
           git rm .github/scripts/professional_sample_forensic_finalize.py
           git add -A
           git commit -m "feat: apply professional sample forensic improvements"
