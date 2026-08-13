@@ -7,62 +7,59 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-REFERENCE_EXECUTION_WAITING_EXPLICIT_USER_COMMAND
+REFERENCE_ORTHOGRAPHIC_CORE_HARDENING_PENDING_STATIC_VERIFY
 ```
 
 Working branch: **`Local` only**.
 
 `NO LOCAL RUN ACTIVE`. Do not claim live Blockbench/model-quality improvement without actual runtime proof.
 
-Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. The single-model projection/correction workflow is static-verified; no MCP source capability was added or removed.
+Retained state: **P0–P7 + REF + PRO-1–PRO-8**. No MCP source capability was added or removed.
 
-## Execution Boundary
+## Why The Workflow Changed
 
-Repository/policy hardening and reference-image execution are separate phases.
+The latest elephant Draft remained `NOT APPROVED`. The important finding was broader than the elephant itself: asking the image model for a fixed five-view turnaround encouraged several visually related 2D interpretations rather than one reliably constrained structure.
 
-```text
-hardening / audit / docs / CI
-→ STOP AND REPORT
-→ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
-→ only then may image generation/editing run
-```
-
-Do not infer image-execution consent from CI success, this file's next step, an earlier draft request, or an earlier approved plan.
+Therefore the default generation strategy no longer requires five views.
 
 ## Current Reference Contract
 
 ```text
 source + user intent
 → Internal Generation Brief
-→ stable/readable pose
-→ lock identity-critical articulated-feature state
-→ SINGLE-MODEL PROJECTION LOCK
+→ SOURCE-NEAREST ANCHOR
+→ stable/readable pose + articulated-feature lock
+→ SMALLEST ORTHOGRAPHIC CORE
+   → add only views needed to constrain missing axes / key structure
+   → omit a view rather than invent contradictory structure
+   → TOP/BACK conditional
+   → 3/4 not default initial-core content
 → readiness
 → EXECUTION CONSENT GATE
-→ one Draft or one authorized board-level correction
+→ one authorized Core Draft/correction
 → visual gate:
-   projection coherence
+   anchor fidelity
+   orthographic coherence
    articulation lock
    support/naturalness
    construction/readability
 → user approval
 ```
 
-TOP must be a true projection of the same locked structure. Grounded neutral pose must not be forced into robotic bilateral alignment. Only panel/view labels appear by default; no title/header/subtitle/note unless explicitly requested.
+This is generic policy, not an elephant/quadruped preset. The core is chosen by evidence need, not a fixed panel template.
 
-## Current Pre-Local Reference Candidate
+## Current Pre-Local Candidate
 
-The user-provided **elephant** source photo remains source authority.
+The user-provided elephant source photo remains source authority. Existing generated boards remain **NOT APPROVED** and are defect evidence only.
 
-The last approved-to-review Draft remains **NOT APPROVED** because:
+Observed failures that motivated this hardening:
 
 ```text
-TOP / FOOTPRINT      → not trustworthy as projection of the same model
-trunk articulation   → state/curl drifts across views
-neutral stance       → stable but too mechanically aligned/robotic
+TOP / FOOTPRINT      → inconsistent with the rest of the board
+trunk articulation   → state/curl drift between views
+neutral stance       → overly mechanical alignment
+fixed five-view board→ encourages independent panel interpretation
 ```
-
-The later assistant-triggered boards produced while workflow hardening was the active task are **DISCARDED / NOT APPROVED**. They are process-error artifacts, not geometry authority and not continuation reference images.
 
 Retained nonvisual Handoff Constraint:
 
@@ -70,20 +67,30 @@ Retained nonvisual Handoff Constraint:
 target Minecraft height ≈ 2 × player height
 ```
 
-That fact stays outside image pixels unless the user explicitly requests visible text.
+That fact stays outside image pixels unless explicitly requested visible.
+
+## Execution Boundary
+
+Repository/policy hardening and image execution remain separate.
+
+```text
+hardening / audit / docs / CI
+→ STOP AND REPORT
+→ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
+```
+
+No image generation is authorized by this file, CI success, or earlier generation requests.
 
 ## Verification Boundary
 
-Static policy/tests can prove the workflow contract only. They cannot certify a future generated Draft. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
+Static policy/tests can prove the workflow contract only. They cannot certify future image quality. Installed-plugin freshness, runtime MCP exposure, later Molang/sound/controller persistence, controller execution, P5–P7 model-facing effectiveness, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
 
 ## Next Step
 
 ```text
-WAIT — DO NOT GENERATE
-→ report completion of workflow hardening
-→ wait for a fresh explicit user instruction to generate/execute
+1. finish official static verification for orthographic-core hardening
+2. STOP AND REPORT
+3. WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-When the user later explicitly authorizes generation, the permitted execution is one board-level targeted correction using the original elephant Source Image + locked Brief as authority; discarded boards are defect context only and must not be copied.
-
-Do not start Blockbench/Codex local acceptance before the reference is approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before loading it into Blockbench.
+Do not start Blockbench/Codex local acceptance before a new reference is explicitly approved. After approval, prepare a fresh `Local` build of `mcp/dist/mcp.js` and record exact HEAD + artifact hash before loading it into Blockbench.
