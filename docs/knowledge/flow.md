@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-08-13
+Updated: 2026-08-14
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns task routing.
 
@@ -13,6 +13,8 @@ REPOSITORY WORK       → next-action.md → affected owner → development-brie
 LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
 ```
 
+A route change matters. **Repository/policy hardening never silently continues into image generation.** After hardening/verification, stop and report; reference execution requires a fresh explicit user instruction.
+
 ## 2. Reference Preparation
 
 ```text
@@ -24,20 +26,25 @@ SOURCE IMAGE + USER INTENT
 → SINGLE-MODEL PROJECTION LOCK
 → PRE-GENERATION READINESS
    ├─ NOT READY → clarification → still material? NEEDS REVIEW; DO NOT GENERATE
-   └─ READY → GENERATE ONE CLEAN DRAFT
-              → view labels only by default
-              → VISUAL GATE:
-                   projection coherence
-                   articulation lock
-                   support/naturalness
-                   construction/readability
-              ├─ PASS → USER APPROVAL
-              └─ MATERIAL DEFECT
-                   → one BOARD-LEVEL TARGETED CORRECTION
-                   → original Source + locked Brief remain authority
-                   → regenerate the whole board, never patch one view independently
-                   → re-run VISUAL GATE
-                   → still material? NEEDS REVIEW; STOP
+   └─ READY → EXECUTION CONSENT GATE
+              ├─ no fresh explicit user generation instruction
+              │    → STOP; WAIT FOR USER
+              └─ fresh explicit user generation instruction
+                   → GENERATE ONE CLEAN DRAFT
+                   → panel/view labels only by default; no title/header/note
+                   → VISUAL GATE:
+                        projection coherence
+                        articulation lock
+                        support/naturalness
+                        construction/readability
+                   ├─ PASS → USER APPROVAL
+                   └─ MATERIAL DEFECT
+                        → one BOARD-LEVEL TARGETED CORRECTION
+                        → correction also requires fresh explicit execution consent
+                        → original Source + locked Brief remain authority
+                        → regenerate the whole board, never patch one view independently
+                        → re-run VISUAL GATE
+                        → still material? NEEDS REVIEW; STOP
 → ACTUAL APPROVED REFERENCE IMAGE + relevant HANDOFF CONSTRAINTS
 ```
 
@@ -90,7 +97,10 @@ AGENTS.md
 → at most one engineering specialist
 → smallest complete change
 → minimum useful proof
+→ STOP AND REPORT
 ```
+
+Completing repository work does **not** consume or infer permission for a different execution route such as image generation or local Blockbench testing.
 
 ## 5. Evidence Boundary
 
@@ -100,7 +110,7 @@ image-capable preparation = generated-reference visual evidence
 Codex local / Blockbench  = installed-client/runtime/model-facing evidence
 ```
 
-Source/CI proof never becomes live visual/runtime proof.
+Source/CI proof never becomes live visual/runtime proof, and proof completion never becomes execution consent.
 
 ## 6. Continuity Owners
 
