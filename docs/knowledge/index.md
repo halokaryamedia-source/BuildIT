@@ -81,9 +81,9 @@ Current fresh GitHub/CI serialized surface:
 
 ```text
 62 tools
-74,996 tools/list response characters
-51,810 input-schema characters
-10,885 description characters
+76,439 tools/list response characters
+53,493 input-schema characters
+10,645 description characters
 initialize instructions: 386 characters
 ```
 
@@ -99,9 +99,14 @@ P5     semantic form / orientation / pivot / contact
 P6     actual-reference grounding + claim/view locking
 P7     qualitative correction convergence + evaluation integrity
 REF    assisted intake + pre-generation readiness + buildable reference route
+PRO-1–PRO-4 professional construction + full sample forensic audit
+PRO-5  Box-UV batch parity
+PRO-6  authored Molang transform keyframes
+PRO-7  bounded new-animation sound events
+PRO-8  read-only AnimationController/state inspection
 ```
 
-No Codex/Blockbench local run is active. Remaining direct-evidence questions include generated-reference quality, installed-client deferred-search parity, actual model-visible token/latency/image-context cost, and P5–P7 model-facing effectiveness.
+No Codex/Blockbench local run is active. Remaining direct-evidence questions include generated-reference quality, installed-client deferred-search parity, actual model-visible token/latency/image-context cost, P5–P7 model-facing effectiveness, and live persistence/preview/export behavior for later professional-animation closures.
 
 These are evidence questions, not reasons for speculative router/profile/scorer architecture.
 

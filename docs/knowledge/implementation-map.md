@@ -15,52 +15,30 @@ Current `Local` source/ownership only. Active task state belongs in `next-action
 | product/reference/modelling policy | `docs/foundation/` |
 | reference image generation | `.agents/skills/blockbench-reference-generator/` |
 | asset orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
-| modelling/reference-grounding judgement | `.agents/skills/blockbench-bedrock-modelling/` |
+| modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
 | texture/PBR | `.agents/skills/blockit-bedrock-texturing/` |
 | animation | `.agents/skills/blockit-bedrock-animation/` |
 | repository change contract | `.agents/skills/development-brief/` |
-| MCP public/transport/schema/result decisions | `.agents/skills/mcp-server-development/` |
-| Blockbench runtime/API/UI mechanics | `.agents/skills/blockbench-runtime-development/` |
-| TypeScript type-system boundary | `.agents/skills/typescript-type-safety/` |
-| Bun build/package/tooling | `.agents/skills/bun-tooling/` |
+| MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
+| Blockbench runtime/API/UI | `.agents/skills/blockbench-runtime-development/` |
+| TypeScript boundary | `.agents/skills/typescript-type-safety/` |
+| Bun tooling | `.agents/skills/bun-tooling/` |
 | MCP package invariants | `mcp/AGENTS.md` |
-| MCP public/runtime source | `mcp/` |
 | current proof state | `docs/foundation/validation-report.md` |
 | future/non-active work | `docs/knowledge/operations/task-board.md` |
 | completed local procedure | `docs/knowledge/operations/local-acceptance-runbook.md` |
 
 ## Canonical Routes
 
-### Reference preparation
-
 ```text
-source image / user intent
-→ blockbench-reference-generator
-→ one buildable multi-view Modelling Brief image
-→ user approval
-```
+REFERENCE PREPARATION
+source image / user intent → blockbench-reference-generator → approved Modelling Brief
 
-Image-only. No MCP, geometry, ZIP/manifest package, or numeric fidelity score.
+ASSET AUTHORING
+current request + actual approved reference → blockit-bedrock-entity-mcp → active specialist → BlockIT MCP
 
-### Asset authoring
-
-```text
-current request + actual approved reference image
-→ blockit-bedrock-entity-mcp
-→ only active modelling/texturing/animation specialist
-→ BlockIT MCP
-```
-
-### Repository / plugin work
-
-```text
-AGENTS.md
-→ next-action.md when continuing current work
-→ CONTEXT.md only when stable facts matter
-→ named tool defect? Hot-Path Defect Index
-→ affected owner
-→ development-brief
-→ at most one useful engineering specialist
+REPOSITORY / PLUGIN WORK
+AGENTS.md → next-action.md when continuing → affected owner → development-brief
 ```
 
 ## MCP Source Areas
@@ -69,18 +47,18 @@ AGENTS.md
 mcp/index.ts          plugin lifecycle
 mcp/server/           transport/tools/resources/prompts
 mcp/server/tools/     authored operations
-mcp/lib/              schemas/factories/identities/result normalization
+mcp/lib/              schemas/factories/identity/result helpers
 mcp/ui/               Blockbench panel/settings
-mcp/prompts/          one runtime workflow + source-only maintainer references
-mcp/build/            build/docs/runtime-manifest generation
-mcp/scripts/          isolated verification/measurement utilities
+mcp/prompts/          runtime workflow + source-only references
+mcp/build/            build/docs/manifest generation
+mcp/scripts/          verification/measurement utilities
 mcp/tests/            contract/integration/static-efficiency gates
 mcp/docs/             generated API docs; secondary to source
 ```
 
 ## Hot-Path Defect Index
 
-For a repository/plugin defect naming one of these tools, inspect the mapped **source owner + primary regression owner first**. Expand only if that pair cannot explain the defect.
+For a named MCP-tool defect, inspect the mapped **source owner + primary regression owner first**. **Expand only if that pair cannot explain the defect.**
 
 | Tool(s) | Source owner | Primary regression owner |
 |---|---|---|
@@ -94,18 +72,17 @@ For a repository/plugin defect naming one of these tools, inspect the mapped **s
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
 | `list_locator_elements`, `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
 | `create_texture`, `list_textures`, `get_texture`, `activate_texture` | `mcp/server/tools/texture.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
-| `create_pbr_material`, `configure_material`, `assign_texture_channel` | `mcp/server/tools/texture.ts` | `mcp/tests/pbr-channel-contract.test.ts` |
 | `create_animation` | `mcp/server/tools/animation.ts` | `mcp/tests/create-animation-contract.test.ts` |
 | `manage_keyframes`, `animation_graph_editor`, `bone_rigging`, `animation_timeline`, `batch_keyframe_operations`, `animation_copy_paste` | `mcp/server/tools/animation.ts` | `mcp/tests/animation-mutation-contract.test.ts` |
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
 | `get_undo_stack` | `mcp/server/tools/history.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
+`inspect_animation` controller-specific regression coverage additionally lives in `mcp/tests/animation-controller-inspection-contract.test.ts`.
+
 `undo`/`redo` remain source-owned by `mcp/server/tools/history.ts` and are intentionally not indexed until a real defect justifies a specific primary regression owner.
 
 ## Default MCP Surface
-
-Accepted baseline:
 
 ```text
 62 enabled tools
@@ -122,33 +99,22 @@ Fresh GitHub/CI serialized measurement:
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,926 characters
-tools array:                    75,882 characters
-input schemas:                  52,842 characters
-descriptions:                   10,783 characters
+tools/list response:            76,439 characters
+tools array:                    76,395 characters
+input schemas:                  53,493 characters
+descriptions:                   10,645 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
 ```
 
-These are serialized characters, not client token/context measurements. `mcp/scripts/measure-default-surface.ts` owns the isolated measurement.
+These are serialized characters, not client token/context measurements.
 
 ## Deferred MCP Discovery Ownership
 
-Current upstream Codex architecture supports:
-
-```text
-MCP catalog
-→ deferred exposure
-→ native tool_search
-→ matching tool spec loaded when needed
-```
-
-BuildIT compatibility owner is `mcp/server/server.ts`, which sends compact `MCP_SERVER_INSTRUCTIONS`. Runtime workflow remains separately owned by `mcp/prompts/bedrock_entity_workflow.md`.
-
-All 62 retained Bedrock capabilities remain. No BuildIT custom router/additional profile/multi-endpoint split is justified by current evidence.
+Current upstream Codex architecture supports catalog → deferred exposure → native `tool_search` → matching spec loading. BuildIT keeps all 62 retained Bedrock capabilities and a compact server namespace. No custom router/additional profile/multi-endpoint split is justified by current evidence.
 
 ## Authoring Decision / Recovery Ownership
 
-The asset orchestrator owns the decision layer:
+The asset orchestrator owns:
 
 ```text
 intent + known state + stage
@@ -159,145 +125,51 @@ intent + known state + stage
 → bounded recovery from existing failure signals
 ```
 
-Static retrieval evidence:
-
-```text
-raw semantic stress: Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9135 / MRR 0.6668
-exact-name routed:   Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
-```
-
 Installed-client/model behavior remains direct/local proof.
 
-## Reference Generator Ownership
-
-```text
-.agents/skills/blockbench-reference-generator/SKILL.md
-```
-
-owns:
-
-```text
-actual source image / user intent
-→ one Minecraft / Blockbench multi-view Modelling Brief Draft
-→ maximum one targeted correction
-→ user approval
-```
-
-`docs/foundation/04-reference-guide.md` owns durable reference policy.
-
-The generator does not:
-
-- call BlockIT MCP;
-- create `.bbmodel` geometry;
-- decide Cube count/transforms/pivots;
-- create ZIP/manifest/production packages;
-- use numeric fidelity scoring.
-
-Static regression owner:
-
-```text
-mcp/tests/reference-generator-buildability.test.ts
-```
-
-Generated-image quality still requires direct image-capable evidence.
-
-## Reference Grounding / Modelling Ownership
+## Reference / Modelling Ownership
 
 After user approval:
 
 ```text
-actual approved image visible to modelling model
-→ Reference Evidence Map
-→ View Pair Map
+actual approved image
+→ Reference Evidence Map + View Pair Map
 → Semantic Form Contract
 → Primary Form Hypothesis
-→ MCP geometry tools
+→ MCP geometry
 → capture_model_views
-→ actual reference + fresh current model view(s)
 → claim-locked difference-first verdict
 ```
 
-Ownership:
+User-approved target owns identity/function; actual approved image owns visible form; approved dimensions own whole-model numeric envelope. Filename/path/manifest/prose/memory is context only, never visual proof.
 
-- user brief/approved target → identity/function;
-- actual approved reference image → visible form;
-- approved dimensions → numeric whole-model envelope;
-- `blockbench-bedrock-modelling` → semantic decomposition, orientation/pivot/contact, whole-form/correction judgement;
-- `mcp/prompts/bedrock_entity_workflow.md` → compact runtime workflow;
-- `capture_model_views` → deterministic labeled **model** images only;
-- `docs/foundation/07-visual-validation.md` → visual verdict/convergence contract.
-
-Filename/path/manifest/prose/memory is context only. Missing/ambiguous actual image/view pairing keeps material work `UNVERIFIED/BLOCKED`.
-
-### P5
-
-```text
-semantic form
-→ explicit orientation state
-→ pivot role for rotation
-→ contact invariant
-→ exact geometry
-```
-
-### P6
-
-```text
-actual approved image
-→ grounded claim IDs + view pairing
-→ fresh claim-locked reference/model comparison
-```
-
-### P7
-
-```text
-pre-correction evidence
-→ causal correction
-→ fresh affected evidence
-→ IMPROVED | UNCHANGED | REGRESSED
-```
-
-P5–P7 add no image→Cube planner, similarity/IoU/fidelity authority, self-reported semantic MCP field, registration profile, or runtime evaluator framework.
+P5–P7 retain semantic-form, actual-image grounding, and qualitative convergence without an image→Cube planner, similarity scorer, or runtime evaluator framework.
 
 ## Bedrock Authoring Ownership
 
 ### Project / observation
 
-- `create_project`, `get_project_info` → lifecycle/project summary.
-- `inspect_model_bounds` → rendered Cube envelope facts.
-- `capture_model_views` → bounded canonical **model** views.
-- `capture_screenshot` → current editor view only.
+`create_project`, `get_project_info`, `inspect_model_bounds`, `capture_model_views`, and focused inspection own lifecycle/observation.
 
 ### Geometry / hierarchy
 
-- `place_cube`, `add_group` → Cube/Group authoring after grounded decisions.
-- `modify_cube`, `modify_cubes_batch` → bounded mutation with `geometry_effect`.
-- `list_outline`, `find_elements_by_criteria` → compact discovery.
-- `inspect_element` → focused authored state.
-- rename/remove/duplicate/history → utility/recovery.
+`place_cube` / `add_group` own creation; `modify_cube` / `modify_cubes_batch` own correction. PRO-3 adds per-element parent + initial inflate; PRO-5 gives batch Cube Box-UV state parity.
 
 ### Texture / surface
 
-Texture, Painter, TextureGroup/PBR, and material-instance tools own native Bedrock surface work. Generic `apply_texture` and raw `filter_by_material` are not default callable concepts.
+Native Bedrock texture, Painter, TextureGroup/PBR, and material-instance tools own surface work. Generic `apply_texture` and raw `filter_by_material` are not default callable concepts.
 
 ### Animation
 
-Animation tools own identity, focused inspection, numeric or explicit Molang transform keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` preserves Molang strings without evaluating them. New-animation sound effects are owned by `create_animation`/`inspect_animation`; controllers and existing-animation sound/timeline mutation remain protected gaps.
+Animation tools own identity, numeric or explicit Molang transform keyframes, graph/batch/copy, rigging, playback/timeline, and bounded new-animation sound effects. `manage_keyframes` preserves Molang strings without evaluating them. `inspect_animation` also owns read-only AnimationController/state inspection and preserves authored external animation keys. Controller creation/mutation and existing-animation direct sound/timeline-effect mutation remain protected gaps.
 
 ### Locator / Null Object
 
-`list_locator_elements` is identity/type/parent discovery. Detailed transforms/visibility/Null IK read state belong to `inspect_element`; create/update state comes from `manage_locator` / `manage_null_object`.
-
-## MCP Result / Prompt Ownership
-
-- `mcp/lib/factories.ts` owns request-level result normalization.
-- only `mcp/prompts/bedrock_entity_workflow.md` is bundled/exposed as runtime workflow.
-- maintainer Markdown remains source-only.
+`list_locator_elements` owns compact discovery; `inspect_element` owns focused read state; `manage_locator` / `manage_null_object` own authored mutation.
 
 ## Toolchain / CI
 
-Root `.bun-version` pins Bun **1.3.14**.
-
-`MCP Verify` owns frozen install, typecheck, contract tests, default-surface measurement, production build, generated-doc freshness, and aggregate enforcement.
+Root `.bun-version` pins Bun **1.3.14**. `MCP Verify` owns frozen install, typecheck, contract tests, surface measurement, production build, generated-doc freshness, and aggregate enforcement.
 
 ## Completed Current Hardening
 
@@ -309,22 +181,22 @@ P7     qualitative correction convergence/evaluation integrity
 REF    minimal Reference Generator buildability/cross-view route
 PRO-1  professional representation/transform/hierarchy/detail reasoning
 PRO-2  professional-sample authoring-expressiveness validation
-PRO-3  place_cube per-element parent + initial inflate creation completeness
+PRO-3  place_cube parent + initial inflate completeness
 PRO-4  nine-sample geometry/texturing/animation forensic audit
 PRO-5  modify_cubes_batch Box-UV parity
 PRO-6  manage_keyframes authored Molang transform-string support
+PRO-7  create_animation + inspect_animation Bedrock sound-effect closure
+PRO-8  inspect_animation read-only AnimationController/state closure
 DOC    current-state synchronization
 ```
 
-No local run is active.
-
-Remaining direct/model-facing evidence includes installed deferred-search parity, real token/latency/image-context cost, Reference Generator visual quality, actual-image handoff, P5–P7 model-facing effectiveness, and live expression-keyframe persistence/preview/export behavior.
+No local run is active. Remaining direct/model-facing evidence includes installed deferred-search parity, real token/latency/image-context cost, Reference Generator visual quality, actual-image handoff, P5–P7 model-facing effectiveness, and live persistence/preview/export behavior for Molang keyframes, sound events, and controller inspection.
 
 ## Protected Native Gaps
 
 - TextureMesh direct authoring/inspection;
 - native Bedrock visible bounding-box fields;
-- animation controllers;
-- existing-animation sound/timeline-effect mutation;
+- animation controller creation/mutation;
+- existing-animation direct sound/timeline-effect mutation;
 - animated-texture authoring;
 - bone-binding expressions.

@@ -67,7 +67,7 @@ BlockIT runs inside desktop Blockbench and exposes a loopback MCP endpoint. Tool
 
 The normal surface is Bedrock-focused with generic fallback families explicitly opt-in. `risky_eval` and `from_geo_json` remain disabled. The accepted baseline has **62 enabled tools**; active efficiency measurements belong in the validation/next-action owners rather than here.
 
-Supported ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export. Protected direct-ownership gaps include TextureMesh authoring, native visible bounding-box fields, animation controllers, animation sound/timeline effects, animated textures, and bone-binding expressions.
+Supported ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation (including authored Molang transform strings, bounded new-animation sound events, and read-only AnimationController/state inspection), Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export. Protected direct-ownership gaps include TextureMesh authoring, native visible bounding-box fields, animation controller creation/mutation, existing-animation direct sound/timeline-effect mutation, animated textures, and bone-binding expressions.
 
 Reference image generation is outside the MCP capability surface. It is an image-capable pre-modelling route and must not be simulated through generic MCP/UI tooling.
 

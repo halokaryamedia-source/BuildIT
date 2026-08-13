@@ -35,7 +35,7 @@ Normal `bedrock` capability includes:
 - Cube/Cuboid geometry and Group/bone pivots;
 - bounded project/element/model-view observation;
 - texture/Painter/PBR/material instances;
-- Bedrock animation/BoneAnimator workflows;
+- Bedrock animation/BoneAnimator workflows, authored Molang transform strings, bounded new-animation sound events, and read-only AnimationController/state inspection;
 - Locator / Null Object authored state;
 - Undo/history;
 - editable `.bbmodel` and Bedrock geometry export.
@@ -57,9 +57,9 @@ Current isolated GitHub/CI `initialize → tools/list` measurement:
 
 ```text
 62 tools
-74,996 tools/list response characters
-51,810 input-schema characters
-10,885 description characters
+76,439 tools/list response characters
+53,493 input-schema characters
+10,645 description characters
 initialize instructions: 386 characters
 ```
 

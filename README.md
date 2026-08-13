@@ -131,15 +131,15 @@ Fresh GitHub/CI serialized surface:
 
 ```text
 62 tools
-75,926 tools/list response characters
-52,842 input-schema characters
-10,783 description characters
+76,439 tools/list response characters
+53,493 input-schema characters
+10,645 description characters
 initialize instructions: 386 characters
 ```
 
 `export_model` remains exposed; `list_export_formats`, `apply_texture`, and `filter_by_material` are absent from the default callable surface; `risky_eval` and `from_geo_json` remain disabled.
 
-**P0–P7, assisted Reference Generator intake/readiness, and professional PRO-1–PRO-6 contracts are implemented on `Local` unless a specific accepted live baseline applies.** Installed Codex deferred-search parity, actual model-visible token/latency/image-context cost, generated-reference quality, and P5–P7 model-facing effectiveness remain direct/local evidence questions when explicitly activated.
+**P0–P7, assisted Reference Generator intake/readiness, and professional PRO-1–PRO-8 static contracts are implemented on `Local` unless a specific accepted live baseline applies.** PRO-8 adds read-only controller/state inspection; controller creation/mutation remains deliberately deferred. Installed Codex deferred-search parity, actual model-visible token/latency/image-context cost, generated-reference quality, P5–P7 model-facing effectiveness, and live behavior of later PRO closures remain direct/local evidence questions when explicitly activated.
 
 Character counts are not token measurements.
 

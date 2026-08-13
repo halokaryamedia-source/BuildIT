@@ -7,7 +7,7 @@ Single active repository-continuation snapshot. Root `AGENTS.md` owns routing; `
 ## Status
 
 ```text
-PROFESSIONAL_ANIMATION_CONTROLLER_INSPECTION_PRO8_COMPLETE
+PROFESSIONAL_STATIC_PRELOCAL_CONSOLIDATION_COMPLETE
 ```
 
 Working branch: **`Local` only**.
@@ -31,7 +31,7 @@ PRO-7  create_animation + inspect_animation Bedrock sound-effect closure
 PRO-8  inspect_animation AnimationController/state read-only closure; authoring deferred
 ```
 
-No P8 architecture, preset/profile, evaluator, planner, controller framework, new tool family, or local test was added.
+No P8 architecture, preset/profile, evaluator, planner, controller framework, new tool family, or local test was added. Current proof/ownership/README/task/review owners are synchronized through PRO-8.
 
 ## PRO-6 Contract
 
@@ -107,9 +107,9 @@ Normal `MCP Verify` on retained `Local` is the final static/CI authority. Static
 ## Next Step
 
 ```text
-NO FURTHER SAMPLE-DRIVEN SOURCE EXPANSION
+NON-LOCAL STOP — NO FURTHER SAMPLE-DRIVEN SOURCE EXPANSION
 ```
 
 The professional sample audit now has bounded closures for geometry creation, Box-UV batch state, Molang transform keyframes, sound events, and controller inspection. Controller creation/mutation remains intentionally deferred because it requires state-machine ownership rather than a small existing-tool extension. The supplied samples contain no timeline-effect keyframes and do not justify a new controller/evaluator framework.
 
-Keep local testing deferred until the user explicitly reactivates it. Reopen source expansion only from a concrete new authoring requirement or new evidence that demonstrates a bounded missing capability.
+Keep local testing deferred until the user explicitly reactivates it. There is no remaining justified sample-driven non-local source task after this synchronization; reopen only from a concrete new authoring requirement or new evidence that demonstrates a bounded missing capability.

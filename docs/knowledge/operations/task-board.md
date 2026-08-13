@@ -4,7 +4,7 @@ Updated: 2026-08-13
 
 Use this page for **future / non-active work only**. It never overrides [`next-action.md`](../next-action.md).
 
-The first local acceptance pass, non-local efficiency cleanup, P0–P7 reasoning hardening, minimal Reference Generator route, and current-state synchronization are complete at their documented proof levels. **No fresh Codex/Blockbench local trace is active.**
+The first local acceptance pass, non-local efficiency cleanup, P0–P7 reasoning hardening, minimal Reference Generator route, professional PRO-1–PRO-8 static closures, and current-state synchronization are complete at their documented proof levels. **No fresh Codex/Blockbench local trace is active.**
 
 ## Waiting On Future Efficiency Evidence
 
@@ -49,8 +49,8 @@ Future implementation is demand-driven and must be backed by Blockbench Bedrock 
 
 - TextureMesh direct authoring/inspection;
 - native Bedrock visible bounding-box fields;
-- animation controllers;
-- animation sound/timeline effects;
+- animation controller creation/mutation;
+- existing-animation direct sound/timeline-effect mutation;
 - animated-texture authoring;
 - bone-binding expressions.
 
@@ -63,6 +63,7 @@ Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI aut
 - [x] Update the Review Index after local acceptance/P0–P4 materially changed the meaning of older reviews.
 - [x] Audit and synchronize active/current-state docs after P0–P4.
 - [x] Re-audit active docs, flow, proof, ownership, public README, and Review Index after P5–P7 + Reference Generator materially changed continuation.
+- [x] Synchronize proof/ownership/README/task/review owners after professional PRO-1–PRO-8 static closures.
 - [ ] Prune this board when a waiting item becomes irrelevant or active.
 
 ## Holds

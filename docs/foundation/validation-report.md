@@ -1,331 +1,126 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-13  
-**Scope:** current `Local` source, accepted 2026-08-12 Codex + Blockbench functional evidence, P0–P7, Reference Generator, professional sample forensics, Box-UV batch parity, authored Molang transform-string keyframes, and current-state synchronization.
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Reference Generator, and professional PRO-1–PRO-8 static closures.
 
-This page owns **proof state**, not active execution order. Current work belongs in `docs/knowledge/next-action.md`.
+This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`.
 
 ## Evidence Labels
 
-- `CURRENT-PROJECT VERIFIED` — sufficient proof exists in the target environment for the exact claim.
-- `OFFICIALLY VERIFIED` — authoritative upstream evidence supports semantics, but current-project live integration may remain unproven.
-- `LOCAL PROOF REQUIRED` — source/contract exists but a live/model-facing claim still needs local/direct evidence.
-- `UNSUPPORTED` — evidence shows the method should not be relied on.
-- `UNKNOWN` — evidence is insufficient or conflicting.
+- `CURRENT-PROJECT VERIFIED` — target-environment proof exists for the exact claim.
+- `OFFICIALLY VERIFIED` — authoritative upstream evidence supports the semantics.
+- `LOCAL PROOF REQUIRED` — source/contract exists but direct runtime/model-facing proof is still required.
+- `UNSUPPORTED` — evidence rejects the method.
+- `UNKNOWN` — evidence is insufficient.
 
 ## Functional Status
 
 ```text
 LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_AND_REFERENCE_ROUTE_IMPLEMENTED
+NON_LOCAL_P0_P7_REFERENCE_AND_PRO1_PRO8_IMPLEMENTED
 NO_LOCAL_RUN_ACTIVE
 ```
 
-The bounded functional pass completed on 2026-08-12 in Blockbench 5.1.6 against the loopback BlockIT endpoint. It is historical evidence for the accepted baseline; it is **not an instruction to run another local pass now**.
-
-Later P0–P7 and Reference Generator changes are repository/source/contract/static proof unless a claim below explicitly reuses accepted live evidence. Static proof does not retroactively prove improved model reasoning, image understanding, or generated-image quality.
+The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later reasoning and professional-sample changes are static/CI proof unless explicitly stated otherwise.
 
 ## Accepted Live Baseline — 2026-08-12
 
-| Area | Result | Evidence |
-|---|---|---|
-| Environment/runtime | `CURRENT-PROJECT VERIFIED` | Windows 11, Bun 1.3.11, Codex CLI 0.137.0, Blockbench 5.1.6, local `mcp/dist/mcp.js`, loopback stateless endpoint |
-| Default MCP surface | `CURRENT-PROJECT VERIFIED` | live endpoint exposed **62 enabled tools** with dangerous/default-off containment retained |
-| Codex task catalog refresh | `UNKNOWN` | one long-running task retained stale 94-tool catalog while direct endpoint returned 62 |
-| Geometry/correction | `CURRENT-PROJECT VERIFIED` | Group + Cubes, focused inspection/bounds/views, causal resize, Undo/Redo |
-| Reference fidelity baseline | `CURRENT-PROJECT VERIFIED` | front-plausible/depth-wrong fixture remained `FAIL`; one correction did not become false global PASS |
-| Texture/Paint/PBR/material instance | `CURRENT-PROJECT VERIFIED` | texture, Painter edit, native PBR color+MER path, face material instance |
-| Animation | `CURRENT-PROJECT VERIFIED` | create/inspect/keyframes, selected animation, timeline time + play/pause |
-| Locator / Null Object | `CURRENT-PROJECT VERIFIED` | create/update/inspect/rename/remove/Undo plus reopened persistence |
-| Persistence/export | `CURRENT-PROJECT VERIFIED` | editable `.bbmodel` + Bedrock geometry JSON written; reopened smoke fixture retained state |
-
-Accepted default containment:
-
-```text
-export_model          exposed
-list_export_formats   not exposed
-apply_texture         not exposed
-filter_by_material    not exposed
-risky_eval            disabled
-from_geo_json         disabled
-```
+Representative `CURRENT-PROJECT VERIFIED` coverage: loopback/stateless transport, 62-tool default surface, geometry/correction/Undo, difference-first reference behavior, texture/Paint/PBR/material instances, base animation create/inspect/timeline/playback, Locator/Null Object lifecycle, `.bbmodel` persistence, and Bedrock geometry export.
 
 ## Fresh GitHub-Only Serialized Surface Proof
-
-Current verification pins Bun **1.3.14** and measures the isolated `initialize → tools/list` surface through the real stateless HTTP owner.
 
 ```text
 initialize instructions:       386 characters
 tool count:                     62
-tools/list response:            75,926 characters
-tools array:                    75,882 characters
-input schemas:                  52,842 characters
-descriptions:                   10,783 characters
+tools/list response:            76,439 characters
+tools array:                    76,395 characters
+input schemas:                  53,493 characters
+descriptions:                   10,645 characters
 per-tool payload:               p50 1,082 / p90 2,149 / p95 2,268 / max 3,167
+runtime workflow prompt:        6,995 characters
 ```
 
-These are serialized character measurements, **not** model-visible token/context measurements. Real prompt loading, latency, retry frequency, and image-context cost require client/model evidence.
-
-The advertised `manage_locator` / `manage_null_object` schema flattening remains a known representation boundary, not a proved runtime defect.
+These are serialized characters, not model-visible tokens.
 
 ## Native Deferred MCP Discovery Compatibility
 
-Current upstream Codex architecture provides `OFFICIALLY VERIFIED` evidence for deferred MCP discovery when tool search is available:
-
-```text
-MCP initialize + tools/list
-→ client-side catalog
-→ deferred tool_search
-→ matching tool specs loaded when needed
-```
-
-BuildIT retains all 62 Bedrock capabilities and a compact namespace description. Installed local Codex/model parity remains `LOCAL PROOF REQUIRED`.
-
-No custom BuildIT router, extra registration profile, or multi-endpoint split was introduced.
+`OFFICIALLY VERIFIED` upstream architecture supports catalog → deferred `tool_search` → matching tool spec loading. Installed client/model parity remains `LOCAL PROOF REQUIRED`. No custom BuildIT router/profile was added.
 
 ## P0–P4 Static Efficiency / Decision Proof
 
-```text
-P0 stage lock
-DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE
-
-P1 raw static retrieval proxy
-Top-1 0.5096 / Top-3 0.7981 / Top-8 0.9135 / MRR 0.6668
-
-P2 exact-name routed loading proxy
-Top-1 0.8173 / Top-3 0.9808 / Top-8 1.0000 / MRR 0.8990
-
-P3 bounded recovery
-validation / ambiguity / not-found / stale-known-reference / no-effect / capability mismatch
-→ repair only missing decision state; usually keep selected tool
-
-P4 repository defect navigation
-named hot-path tool
-→ mapped source owner + primary regression owner
-→ broaden only if needed
-```
-
-P1/P2 are static retrieval proxies over 104 human-style cases / 52 expected tools / all 62 competitors. They are not installed-model behavioral proof.
+P0–P4 retain stage locking, exact-name routing, bounded recovery, and named-defect source/test ownership. These are static decision/retrieval proofs, not installed-model behavioral proof.
 
 ## P5 — Semantic Form / Rotation / Contact
 
-Current modelling contract requires semantic form before exact transforms:
-
-```text
-material mass/landmark
-→ orientation: AXIS_ALIGNED | ROTATED | UNRESOLVED
-→ explicit pivot/transform role when rotated
-→ declared attachment/contact invariant when material
-→ exact coordinates only after that decision exists
-```
-
-`[0,0,0]` is not a default modelling answer when visible evidence requires a slope. AABB overlap/hierarchy/touching is structural state, not visual contact proof.
-
-**Proof status:** repository/source/CI contract exists. Whether the model correctly identifies masses, orientation, pivots, and contacts from an image remains `LOCAL PROOF REQUIRED` / model-facing evidence.
+Semantic form precedes exact transforms; visible orientation, pivot ownership, and contact invariants must be decided explicitly. Behavioral image-to-form effectiveness remains `LOCAL PROOF REQUIRED`.
 
 ## P6 — Actual Reference Grounding / Claim-Locked Comparison
 
-Reference-driven authoring requires the **actual approved reference image** in the active multimodal comparison context.
-
-```text
-actual approved image
-→ Reference Evidence Map
-→ View Pair Map
-→ Semantic Form linked to grounded claim IDs
-→ authoring
-→ fresh current model views
-→ claim-locked reference ↔ model verdict
-```
-
-Material rules:
-
-- user brief/approved target owns identity/function;
-- actual approved image owns visible form;
-- approved dimensions own numeric whole-model envelope;
-- filename/path/manifest/metadata/prose/memory is not visual evidence;
-- ambiguous/mirrored view pairing stays `UNVERIFIED`;
-- missing actual image blocks material reference-driven approval;
-- `PASS` requires actual approved reference + fresh current-revision model evidence;
-- successful tools/bounds/hierarchy/similarity scores cannot justify visual `PASS`.
-
-**Proof status:** repository/static contract exists. Actual image-understanding accuracy and end-to-end image handoff remain direct/model-facing evidence.
+Reference-driven approval requires the actual approved image plus fresh current model evidence. Filename/path/prose is not visual evidence. End-to-end image understanding/handoff remains direct evidence.
 
 ## P7 — Fidelity Convergence / Evaluation Integrity
 
-P7 closes correction wandering without adding a scorer/planner/runtime profile.
-
-```text
-pre-correction paired evidence
-→ causal correction
-→ fresh affected paired evidence
-→ IMPROVED | UNCHANGED | REGRESSED
-```
-
-A correction counts as progress only when the target mismatch is `IMPROVED` and no previously supported material claim/view is `REGRESSED`. `UNCHANGED` or `REGRESSED` is not progress; cross-view regression changes the diagnosis or reopens the Primary Form Hypothesis.
-
-Model-facing evaluation is limited to:
-
-1. decomposition / coverage;
-2. cross-view consistency;
-3. spatial hypothesis quality;
-4. correction direction / convergence.
-
-The candidate must receive the actual approved reference image but not the expected answer. Independent expectations must pre-exist candidate output.
-
-**Proof status:** repository/source/tests prove the P7 contract and fixture separation. They cannot prove real candidate image understanding or convergence quality.
+Correction progress is `IMPROVED | UNCHANGED | REGRESSED`; only improvement without regression counts as progress. Real convergence quality remains `LOCAL PROOF REQUIRED`.
 
 ## Professional Sample Forensics — Static / Non-Local
 
-Nine supplied professional `.bbmodel` files were inspected as learning evidence only. Static evidence supports purposeful transform ownership, plane-like Cubes, signed/local `inflate`, Locator-owned functional anchors, Box-UV/manual atlas state, and motion semantics that avoid keyframe/FPS/curve-density targets.
+Nine professional `.bbmodel` samples remain learning evidence only. Retained bounded closures are:
 
-Texturing evidence reproduced one narrow contract mismatch: `modify_cube` owned `uv_offset` / `mirror_uv` / `autouv`, while `modify_cubes_batch` did not. The existing batch tool now owns those same Box-UV fields; no new UV tool, packer, score, preset, or profile was introduced.
+```text
+PRO-3  place_cube per-element parent + initial inflate
+PRO-5  modify_cubes_batch Box-UV authored-state parity
+PRO-6  manage_keyframes authored Molang string preservation
+PRO-7  create_animation + inspect_animation sound events
+PRO-8  inspect_animation read-only AnimationController/state inspection
+```
 
-Animation samples also prove production gaps for animation controllers, sound-effect keyframes, and expression-valued transform keyframes. They remain **deferred capability gaps**, not permission to fake or auto-bake them. No local run is active.
-
-Detailed evidence: `docs/knowledge/reviews/professional-sample-forensic-audit-2026-08-13.md`.
+Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, and bone-binding expressions remain deferred. The supplied samples contain no timeline-effect keyframes.
 
 ## Minimal Reference Generator
 
-Active owner:
+Source image/user intent → one buildable multi-view Draft → at most one targeted correction → user approval → actual approved image handed to modelling. Generated-image quality remains direct image-capable evidence.
 
-```text
-/.agents/skills/blockbench-reference-generator/SKILL.md
-```
+## Professional Modelling / PRO-1–PRO-8 Static Proof
 
-Current contract:
+Current GitHub proof: **218 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count stays **62**; max tool payload **3,167 < 3,200**; runtime workflow prompt **6,995 < 7,000**.
 
-```text
-source image / user intent
-→ one Minecraft / Blockbench multi-view Modelling Brief Draft
-→ maximum one targeted correction
-→ user approval
-→ actual approved image handed to modelling
-```
-
-Static contract requires:
-
-- buildable Cuboid construction;
-- one consistent model across all views;
-- no lazy voxelization or smooth fake primitives;
-- no invented hidden/asymmetric features;
-- orthographic scale/center/baseline consistency;
-- correct side/front/back/top/3Q semantics;
-- no numeric fidelity scoring;
-- image-only output, no ZIP/manifest/geometry package.
-
-**Proof status:** repository/source/test contract is implemented. Generated image quality is **not** statically verifiable and remains direct image-capable evidence.
-
-## Professional Modelling / Phase 3 Static Proof
-
-Professional `.bbmodel` samples are learning evidence, not presets or anatomy rules. Current object-agnostic reasoning covers representation choice, transform ownership, primary hierarchy timing, and identity-weighted secondary detail.
-
-Phase 3 extends the existing `place_cube` contract only:
-
-```text
-elements[].group   optional exact per-Cube parent override
-elements[].inflate optional finite initial Bedrock inflation
-```
-
-Top-level `group` remains the compatibility default. All explicit parent references are resolved before `Undo.initEdit`; one missing/ambiguous parent fails before mutation. No new Cube tool, asset profile, geometry planner, rig generator, or professional preset was added.
-
-GitHub CI contract proof: **212 tests / 0 failures**, TypeScript success, default-surface budget success, production build success, and generated-doc freshness success. `place_cube` serialized payload is **3,167 characters**, below the retained **3,200** ceiling.
-
-**Proof status:** source/schema/tests/generated docs are `CURRENT-PROJECT VERIFIED` for repository/CI semantics. Live Blockbench placement, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED`.
+Later Molang/sound/controller-inspection persistence, controller execution, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
 
 ## Product / Lifecycle / Export
 
-| Capability | Proof status |
-|---|---|
-| fixed Bedrock `create_project` format | source + accepted `CURRENT-PROJECT VERIFIED` baseline |
-| lifecycle state from create/path export | source + accepted live baseline |
-| Bedrock geometry + editable `.bbmodel` codecs | source + accepted live baseline |
-| smoke `.bbmodel` save/reopen fidelity | accepted `CURRENT-PROJECT VERIFIED` |
-| existing Bedrock multi-model overwrite/merge | source protected; exact scenario `LOCAL PROOF REQUIRED` |
+Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted live-baseline evidence.
 
 ## Observation / Reference Fidelity
 
-| Capability | Proof status |
-|---|---|
-| `inspect_model_bounds` | source + representative accepted live use |
-| `capture_model_views` | source + representative accepted live use |
-| `inspect_element` | source + representative accepted live use |
-| difference-first `FAIL / UNVERIFIED / PASS` | workflow + accepted adversarial live case |
-| P5 semantic-form/orientation/contact | source/CI; behavioral effectiveness `LOCAL PROOF REQUIRED` |
-| P6 actual-image/claim/view grounding | source/CI; image-understanding/handoff `LOCAL PROOF REQUIRED` |
-| P7 qualitative convergence/evaluation integrity | source/CI; model-facing effectiveness `LOCAL PROOF REQUIRED` |
-| Reference Generator buildability/cross-view contract | source/CI; visual output quality requires image-capable evidence |
-| repeated same-cause correction → `BLOCKED` | contract; exact behavioral threshold `LOCAL PROOF REQUIRED` |
-
-Required cross-view rule remains:
-
-```text
-front PASS + side FAIL        → whole-form FAIL
-front PASS + side unavailable → whole-form UNVERIFIED for depth/side claims
-front PASS + conflicting side/top reference → BLOCKED
-```
+Observation tools retain accepted representative live evidence. P5–P7 and Reference Generator effectiveness retain their direct-evidence boundaries.
 
 ## Texture / Paint / PBR
 
-Native Bedrock texture lifecycle, Painter, TextureGroup/PBR, and per-face `material_instance` remain available. Generic `apply_texture` and raw `filter_by_material` remain outside the default Bedrock callable surface. Representative live reachability comes from the accepted baseline.
+Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-UV batch parity without a new UV tool/preset system.
 
 ## Animation / Rig
 
-Current contracts retain animation identity, summary/focused inspection, keyframes, graph/batch/copy, rigging, and playback/timeline. `manage_keyframes` now accepts finite numeric values or explicit authored Molang transform strings and preserves strings without BlockIT evaluation. `create_animation` intentionally remains numeric-only. Representative create/inspect/keyframe/timeline/playback remains the accepted live baseline; the new expression path is source/CI proof only.
-
-`create_animation`/`inspect_animation` own bounded new-animation sound-effect authoring/inspection. Existing-animation sound/timeline mutation and controllers remain protected gaps.
+`manage_keyframes` preserves authored Molang strings without evaluation. PRO-7 adds bounded new-animation sound events. PRO-8 adds read-only AnimationController/state inspection while preserving authored external animation keys. Controller creation/mutation remains deferred.
 
 ## Locator / Null Object
 
-Direct ownership remains:
-
-```text
-list_locator_elements
-manage_locator
-manage_null_object
-inspect_element
-rename_element
-remove_element
-```
-
-Representative lifecycle + `.bbmodel` reopen is accepted `CURRENT-PROJECT VERIFIED`.
+Direct Locator/Null Object lifecycle ownership and representative reopen persistence retain accepted baseline evidence.
 
 ## Protected Native Capability Gaps
 
 ```text
 TextureMesh direct authoring/inspection
 native Bedrock visible bounding-box fields
-animation controllers
-existing-animation sound/timeline-effect mutation
+animation controller creation/mutation
+existing-animation direct sound/timeline-effect mutation
 animated-texture authoring
 bone-binding expressions
 ```
 
-Do not emulate them with generic Mesh, arbitrary Cubes, risky evaluation, UI automation, Hytale, or another format.
-
 ## Explicitly Unsupported As Modelling Authority
 
-- automatic image→Cuboid reconstruction as geometry truth;
-- SF3D/mesh decomposition as Bedrock geometry authority;
-- IoU/projection/similarity/fidelity score as automatic resemblance approval;
-- filename/path/manifest/prose/memory as substitute for actual image evidence;
-- successful Cube placement as visual approval;
-- screenshot-per-mutation or per-Cube approval quotas;
-- arbitrary fallback coordinates/pivots;
-- fixture-specific rules promoted to generic behavior.
+Automatic image→geometry truth, similarity scores as visual approval, metadata/prose as image evidence, mutation success as visual approval, arbitrary fallback transforms, and sample-specific rules are unsupported.
 
 ## Current Evidence Boundary
 
-Current non-local source/contracts are synchronized through **P0–P7 + the minimal Reference Generator route + professional PRO-1–PRO-6**.
-
-No local run is active. Remaining direct/model-facing questions are intentionally unresolved until explicitly activated:
-
-```text
-Reference Generator visual quality
-actual approved-image handoff to modelling candidate
-installed Codex deferred-search parity
-real model-visible token/latency/image-context cost
-P5–P7 image-understanding and convergence effectiveness
-new runtime/persistence defects, if reproduced
-```
-
-Do not add a router/profile/scorer/package layer or remove retained native capability without evidence that the current bounded path is insufficient.
+Current non-local contracts are synchronized through **P0–P7 + Reference Generator + professional PRO-1–PRO-8**. No local run is active. Sample-driven source expansion is stopped unless a concrete new requirement proves another bounded gap.

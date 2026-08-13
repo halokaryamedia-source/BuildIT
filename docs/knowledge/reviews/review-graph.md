@@ -19,6 +19,9 @@ Reviews are point-in-time evidence. They do **not** own current execution; curre
 | [MCP Pre-local Generic Semantics Audit](mcp-prelocal-generic-semantics-audit-2026-08-10.md) | **Implemented evidence.** Generic/redundant Bedrock-misaligned semantics were narrowed/contained. |
 | [BlockIT Agent Skill Surface](blockit-agent-skill-surface-2026-08-10.md) | **Historical skill-surface evidence.** Current inventory additionally includes the later minimal `blockbench-reference-generator` route. |
 | [Codex Native Deferred MCP Tool Loading](codex-native-deferred-mcp-tool-loading-2026-08-11.md) | **Static architecture implemented; installed-client parity remains optional local proof.** |
+| [Professional Authoring Expressiveness](professional-authoring-expressiveness-2026-08-13.md) | **Implemented evidence.** Identified the bounded `place_cube` parent/inflate creation bottleneck without introducing professional presets. |
+| [Professional Sample Forensic Audit](professional-sample-forensic-audit-2026-08-13.md) | **Current static evidence.** Geometry/Texturing/Animation sample patterns drove PRO-4–PRO-7 while remaining learning evidence only. |
+| [Professional Animation Controller Prioritization](professional-animation-controller-prioritization-2026-08-13.md) | **Current static evidence.** Read-only controller inspection is bounded; controller creation/mutation is intentionally deferred. |
 | [Anti-Slop Skill Candidates](anti-slop-skill-candidates.md) | **Historical research.** Candidate stacks do not override current routing. |
 | [Orca CLI MCP Audit](orca-cli-mcp-audit.md) | **Reference/history only.** |
 | [Review Template](review-template.md) | Reusable review template. |
@@ -26,16 +29,18 @@ Reviews are point-in-time evidence. They do **not** own current execution; curre
 ## Current Execution Gate
 
 ```text
-LOCAL Codex + Blockbench acceptance                         COMPLETE (historical baseline)
-→ post-acceptance static cleanup                            COMPLETE
-→ P0–P4 routing/deferred-loading/recovery/navigation       COMPLETE
-→ P5 semantic form / rotation / pivot / contact            IMPLEMENTED (static contract)
-→ P6 actual-reference grounding / claim-view locking       IMPLEMENTED (static contract)
-→ P7 qualitative convergence / evaluation integrity       IMPLEMENTED (static contract)
-→ minimal Reference Generator route/buildability           IMPLEMENTED (static contract)
-→ post-P7/reference-generator current-state synchronization COMPLETE
+LOCAL Codex + Blockbench acceptance                          COMPLETE (historical baseline)
+→ post-acceptance static cleanup                             COMPLETE
+→ P0–P7 reasoning/routing/reference-fidelity contracts      COMPLETE (static)
+→ minimal Reference Generator route/buildability            COMPLETE (static)
+→ PRO-1–PRO-4 professional reasoning + forensic audit       COMPLETE (static)
+→ PRO-5 Box-UV batch parity                                  COMPLETE (static)
+→ PRO-6 authored Molang transform keyframes                 COMPLETE (static)
+→ PRO-7 bounded new-animation sound events                  COMPLETE (static)
+→ PRO-8 read-only AnimationController/state inspection      COMPLETE (static)
+→ current-state proof/ownership synchronization             COMPLETE
 → NO LOCAL RUN ACTIVE
-→ next product step: non-local Reference Generator real-image acceptance when requested
+→ NO FURTHER SAMPLE-DRIVEN SOURCE EXPANSION
 ```
 
 Current state: [Next Action](../next-action.md).  
