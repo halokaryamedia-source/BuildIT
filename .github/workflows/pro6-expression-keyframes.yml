@@ -1,5 +1,5 @@
 name: PRO-6 Expression Keyframes
-# bounded non-local verification only
+# bounded non-local verification only; expression anti-baking guardrail retained
 
 on:
   push:
