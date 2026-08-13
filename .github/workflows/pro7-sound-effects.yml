@@ -55,9 +55,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm .github/workflows/pro7-sound-effects.yml
-          git rm .github/scripts/pro7_sound_effects.py
-          git rm .github/scripts/pro7_fix_anchor.py
-          git rm .github/scripts/pro7_compact_surface.py
+          git rm -f .github/scripts/pro7_sound_effects.py
+          git rm -f .github/scripts/pro7_fix_anchor.py
+          git rm -f .github/scripts/pro7_compact_surface.py
           git add -A
           git commit -m "feat: support bounded Bedrock sound effect keyframes"
           git push origin HEAD:Local
