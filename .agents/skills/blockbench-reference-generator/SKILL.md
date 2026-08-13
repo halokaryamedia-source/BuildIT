@@ -15,6 +15,14 @@ Resolve in order: explicit user fact → directly visible fact → leave optiona
 
 Never invent hidden features, unseen asymmetry/attachments, or hidden joint precision. Unresolved material ambiguity → **NEEDS REVIEW**.
 
+## Execution Consent Gate
+
+**Readiness is not permission to generate.** Repository work, policy/skill hardening, audit, CI verification, or updating `next-action.md` never authorizes image generation by itself.
+
+If the conversation switches from reference generation into workflow/repository hardening, any earlier generation authorization is considered consumed. After hardening/verification, **stop and report the result**. Generate or edit an image only after a **fresh explicit user instruction to generate/execute**.
+
+Do not infer execution permission from a previous draft request, an approved plan, CI success, or the repository's next step.
+
 ## Pre-Generation Readiness
 
 **Generation is output, not discovery.** Before generation, lock an Internal Generation Brief:
@@ -27,7 +35,8 @@ Never invent hidden features, unseen asymmetry/attachments, or hidden joint prec
 `READY` means no material ambiguity can still change identity, major form, visible feature, pose/articulation integrity, projection consistency, or buildability.
 
 ```text
-READY → generate once
+READY + fresh user execution instruction → generate once
+READY without fresh execution instruction → STOP; wait for user
 NOT READY → one clarification round
 still material → NEEDS REVIEW; do not generate
 ```
@@ -86,9 +95,11 @@ Use another view set only when the object actually requires it. Do not add views
 
 ### 5. Presentation / Handoff
 
-Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral planar lighting. No cinematic scene, Blockbench UI/gizmos/grid/wireframe/bounds, gameplay UI, baked-photo lighting, random speckle/dithering, or fake-geometry shading. **Only view labels may appear** by default.
+Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral planar lighting. No cinematic scene, Blockbench UI/gizmos/grid/wireframe/bounds, gameplay UI, baked-photo lighting, random speckle/dithering, or fake-geometry shading.
 
-Nonvisual constraints such as target scale/dimensions/use stay **outside the image** as compact handoff context unless explicitly requested visible. Do not create captions, manifests, or extra panels for them.
+**Only panel/view labels may appear by default.** No title, header, subtitle, explanatory note, status text, target scale, dimensions, or target-use text unless the user explicitly asks to render it.
+
+Nonvisual constraints such as target scale/dimensions/use stay **outside the image** as compact handoff context. Do not create captions, manifests, or extra panels for them.
 
 ## Visual Gate
 
@@ -113,7 +124,7 @@ For the one allowed correction:
 - regenerate the **whole board from the same locked structure**; never patch one view independently;
 - preserve relationships that already passed; reject a correction that fixes one panel by redesigning another.
 
-If material conflict remains, stop at **NOT READY / NEEDS REVIEW**; do not generate more variants.
+The correction itself still requires the **Execution Consent Gate**. If material conflict remains, stop at **NOT READY / NEEDS REVIEW**; do not generate more variants.
 
 ## Budget / Output
 
