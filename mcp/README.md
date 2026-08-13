@@ -67,3 +67,7 @@ Generated `docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are se
 Repository continuation follows root `AGENTS.md`, `docs/knowledge/next-action.md`, and the affected owner. Named MCP defects use the `implementation-map.md` Hot-Path Defect Index first.
 
 Do not add compatibility shims, duplicate project tools, new router/profile layers, or generic import/eval capability without a proved need.
+
+## Upstream attribution
+
+BlockIT retains upstream attribution in package/license metadata while the Bedrock-focused product surface and repository workflow remain project-owned.
