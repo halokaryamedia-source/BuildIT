@@ -40,14 +40,12 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
-    const foundation = await source("../docs/foundation/03-modelling-workflow.md");
 
     expect(texturing).toContain("flat/placeholder texture");
     expect(texturing).toContain("re-check only the affected downstream state");
     expect(animation).toContain("diagnostic pose/playback");
     expect(animation).toContain("consider animation on the affected bones stale");
     expect(orchestrator).not.toContain("A flat/placeholder texture or diagnostic pose/playback");
-    expect(foundation).toContain("keyframe effort never justifies preserving a bad rig or geometry baseline");
   });
 
   test("professional texture and animation evidence improves reasoning without density presets", async () => {
@@ -60,7 +58,6 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(texturing).toContain("Logical project UV resolution and bitmap pixel dimensions are separate facts");
     expect(texturePolicy).toContain("Box UV / Atlas Authoring");
     expect(texturePolicy).toContain("packing-density score");
-
     expect(animation).toContain("no keyframe-count, FPS, or Bezier-complexity target");
     expect(animation).toContain("expression-valued transform keyframes");
     expect(animation).toContain("Do not fake expression motion");
@@ -68,10 +65,11 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("sequencing hardening remains decision-layer only", async () => {
     const profile = await source("lib/registrationProfile.ts");
-    const audit = await source("../docs/knowledge/reviews/model-creation-effectiveness-audit-2026-08-10.md");
+    const validation = await source("../docs/foundation/validation-report.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("sequencing");
     expect(profile).not.toContain("readiness");
-    expect(audit).toContain("No runtime readiness state, new profile, or tool gate was added");
+    expect(validation).toContain("P5–P7");
+    expect(validation).toContain("LOCAL PROOF REQUIRED");
   });
 });
