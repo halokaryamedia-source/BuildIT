@@ -27,5 +27,8 @@ __pycache__/
 # Obsidian UI/workspace state is local; Markdown under docs/knowledge stays tracked.
 docs/knowledge/.obsidian/
 
-# Per-project MCP screenshots/previews are transient. Reference packages stay tracked.
+# Asset Workspace transient visual/debug output. Intentional project files stay tracked.
+workspace/**/.cache/
+
+# Legacy local workspace cache path remains ignored if an older package is opened.
 workspace/**/mcp-data/cache/
