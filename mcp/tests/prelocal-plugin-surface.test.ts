@@ -83,23 +83,21 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(execute).toBeGreaterThan(fullValidation);
   });
 
-  test("capability matrix preserves mapped Bedrock capability and protects remaining gaps", async () => {
-    const matrix = await source("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md");
+  test("canonical implementation map preserves mapped Bedrock capability and protected gaps", async () => {
+    const implementation = await source("../docs/knowledge/implementation-map.md");
     for (const capability of [
-      "TextureMesh",
-      "Locators",
-      "Null Objects in Bedrock workflow",
-      "Animation controllers",
-      "Native Bedrock bounding-box fields",
-      "Animated textures",
-      "Bone binding expression",
-      "Per-face `material_instance`",
+      "TextureMesh direct authoring",
+      "Locator/Null Object",
+      "controller creation/mutation",
+      "native visible bounding-box fields",
+      "animated textures",
+      "bone-binding expressions",
+      "material-instance",
     ]) {
-      expect(matrix).toContain(capability);
+      expect(implementation).toContain(capability);
     }
-    expect(matrix).toContain("manage_locator");
-    expect(matrix).toContain("manage_null_object");
-    expect(matrix).toContain("MCP GAP — protected");
-    expect(matrix).toContain("not evidence that the native Bedrock capability may be removed");
+    expect(implementation).toContain("manage_locator");
+    expect(implementation).toContain("manage_null_object");
+    expect(implementation).toContain("Protected gaps remain");
   });
 });

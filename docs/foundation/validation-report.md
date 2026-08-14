@@ -1,9 +1,9 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-14  
-**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 static closures, and current pre-local plugin-freshness handoff.
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 static closures, and the completed static pre-local optimization closure. Local acceptance is currently user-deferred.
 
-This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`; local execution procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md`.
+This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`; local execution procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated.
 
 ## Evidence Labels
 
@@ -17,18 +17,37 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ```text
 ACCEPTED LIVE BASELINE (2026-08-12): LOCAL_ACCEPTANCE_COMPLETE
-CURRENT HEAD STATE:                 PRELOCAL_PLUGIN_FRESHNESS_READY
+CURRENT HEAD STATE:                 PRELOCAL_OPTIMIZATION_COMPLETE
 CURRENT SOURCE/CI:                  STATIC VERIFIED
 CURRENT LOCAL RUN:                  NO LOCAL RUN ACTIVE
+LOCAL ACCEPTANCE:                   DEFERRED
 ```
 
-The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later P0–P7 reasoning, Reference Generator changes, professional-sample closures, Codex routing hardening, and current documentation/test-preparation changes are static/CI proof unless explicitly stated otherwise.
+The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later P0–P7 reasoning, Reference Generator changes, professional-sample closures, Codex routing hardening, workspace/documentation optimization, and current CI maintenance are static/CI proof unless explicitly stated otherwise.
 
-**Do not claim live Blockbench/model-quality improvement without actual runtime proof on the current local artifact.**
+**Do not claim live Blockbench/model-quality or runtime-usage improvement without actual runtime proof on the current local artifact.**
 
-## Current Local Acceptance Target
+## Static Pre-local Optimization Closure
 
-The next live acceptance is intentionally limited to two modelling tests after plugin freshness is proved:
+Current repository/static closure includes:
+
+```text
+U1  repository regression preflight + coherent logical patching
+U2  targeted tests/invariants read before owner edits
+U3  known/coherent place_cube(elements=[...]) batching without batching uncertainty
+U4  affected-view-first correction verification with material-risk expansion only
+U5  meaningful workspace persistence; no mutation-count checkpoint ritual
+U6  canonical documentation ownership; historical review/decision residue removed
+U7  NO CHANGE REQUIRED without installed-client evidence for prompt/tool/profile cost
+```
+
+The current runtime prompt remains one intentionally exposed workflow prompt; the default surface remains 62 tools; routed exact-name discovery meets the current static top-8 coverage gate. Serialized characters and static retrieval proxies are not installed-client token/context measurements, so they do not justify a speculative lean profile, tool removal, router, or prompt rewrite.
+
+Actual runtime call reduction and installed-client context cost remain `LOCAL PROOF REQUIRED`.
+
+## Deferred Local Acceptance Target
+
+Local acceptance is **not active**. When a fresh explicit instruction later reactivates it, the preserved target remains:
 
 ```text
 fresh Local build
@@ -45,7 +64,7 @@ fresh Local build
 
 `TEST 1` isolates Plugin/MCP mechanics from reference quality. `TEST 2` evaluates real Minecraft-first Geometry + Texture judgement using the approved elephant reference. The elephant image is test evidence and must be visible to the local modelling context; it is not production plugin content.
 
-Installed-plugin freshness, runtime behavior on the current build, current persistence/export behavior, current call efficiency, and current elephant model quality remain `LOCAL PROOF REQUIRED` until that run occurs.
+Installed-plugin freshness, runtime behavior on the current build, current persistence/export behavior, current call efficiency, and current elephant model quality remain `LOCAL PROOF REQUIRED` until an explicitly reactivated run occurs.
 
 ## Accepted Live Baseline — 2026-08-12
 
@@ -97,7 +116,8 @@ known fresh identity/state → reuse it
 known tool spec            → execute; do not search again
 unknown/stale target       → focused discovery only
 fresh mutation result      → do not ritual read back
-visual gate                → meaningful checkpoint, not capture-per-mutation
+known coherent Cubes       → one place_cube(elements=[...]) call
+visual correction          → affected view(s) first; expand only for material cross-view risk
 same causal failure twice without new evidence → BLOCKED
 ```
 
@@ -105,7 +125,7 @@ This routing is static verified; real installed-client call reduction remains `L
 
 ## Native Deferred MCP Discovery Compatibility
 
-`OFFICIALLY VERIFIED` upstream architecture supports catalog → deferred `tool_search` → matching tool spec loading. Installed client/model parity remains `LOCAL PROOF REQUIRED`. No custom BuildIT router/profile was added.
+`OFFICIALLY VERIFIED` upstream architecture supports catalog → deferred `tool_search` → matching tool spec loading. Current static routed evaluation retains complete top-8 coverage. Installed client/model parity and actual schema/context cost remain `LOCAL PROOF REQUIRED`. No custom BuildIT router/profile was added.
 
 ## P0–P4 Static Efficiency / Decision Proof
 
@@ -169,7 +189,7 @@ Structural correction remains board-level. A fix that helps one view while mater
 
 Only panel/view labels appear by default; scale/height/use facts remain Handoff Constraints outside image pixels. No anatomy engine, pose planner, scorer, similarity authority, new MCP tool, runtime profile, or asset-specific preset was added. Static tests do not certify future generated-image quality; actual Draft quality and final model quality still require image-capable/local evidence.
 
-The already approved elephant reference remains usable for the current Test 2 when the actual image is visible to the local modelling context. The new five-preview default does not force regeneration of an already approved usable reference.
+The already approved elephant reference remains usable for a future Test 2 when the actual image is visible to the local modelling context. The five-preview default does not force regeneration of an already approved usable reference.
 
 ## Professional Sample Forensics — Static / Non-Local
 
@@ -187,13 +207,13 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 ## Current Static Verification
 
-Current GitHub proof: **209 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,959 < 7,000**.
+Current GitHub proof: **full contract suite PASS**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,959 < 7,000**.
 
-Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is active.
+Exact test totals are deliberately not stored as durable proof metadata because they change when regression coverage is added. Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is explicitly reactivated.
 
 ## Product / Lifecycle / Export
 
-Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted 2026-08-12 baseline evidence. Current-build persistence/export is rechecked in the next local acceptance rather than inferred from source.
+Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted 2026-08-12 baseline evidence. Current-build persistence/export is rechecked only when local acceptance is explicitly reactivated rather than inferred from source.
 
 ## Texture / Paint / PBR
 
@@ -224,4 +244,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first five-preview Reference Generator + minor/material canonicalization + Codex exact-tool routing + professional PRO-1–PRO-8**. The repository is prepared for local artifact freshness proof and the two explicit local tests. No current runtime/model-quality claim is upgraded until that local evidence exists.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first five-preview Reference Generator + minor/material canonicalization + Codex exact-tool routing + professional PRO-1–PRO-8 + static pre-local optimization closure**. No local acceptance is active. No current runtime/model-quality or actual usage-efficiency claim is upgraded until a future explicitly reactivated local run provides that evidence.

@@ -2,17 +2,17 @@
 
 BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. `Local` is the current product/development authority.
 
-**Project snapshot version: `v0.1`** — pre-local-test baseline. This project snapshot label is separate from the internal MCP plugin package version.
+**Project snapshot version: `v0.1`** — pre-local baseline. This project snapshot label is separate from the internal MCP plugin package version.
 
 ## Current Status
 
 ```text
-PRELOCAL_PLUGIN_FRESHNESS_READY
+PRELOCAL_OPTIMIZATION_COMPLETE
 ```
 
-The current source contract is static/CI verified. **Installed-plugin freshness, live Blockbench behavior, model quality, and persistence on the current build remain `LOCAL PROOF REQUIRED` until the local test is run.**
+The current source contract and pre-local optimization closure are static/CI verified. **Installed-plugin freshness, live Blockbench behavior, model quality, runtime call efficiency, and persistence on the current build remain `LOCAL PROOF REQUIRED`.**
 
-Do not claim live Blockbench/model-quality improvement without actual runtime proof.
+**Local acceptance is currently deferred.** Do not activate the local runbook or claim live Blockbench/model-quality improvement without a fresh explicit instruction and actual runtime proof.
 
 ## Product Flow
 
@@ -28,25 +28,26 @@ Root `AGENTS.md` owns routing. `docs/knowledge/flow.md` owns the detailed produc
 
 ## Asset Workspace
 
-Persistent model work belongs under:
+Persistent asset continuity lives under `workspace/`. **`workspace/README.md` is the full workspace contract.** A named active project owns one compact resume README plus its current editable model and deliberate retained files; Codex should open that named package only. Git history owns old revisions and transient captures/logs do not become project memory.
 
-```text
-workspace/
-├─ active/<project>/
-└─ saved/<project>/
-```
+## Pre-local Optimization Closure
 
-`workspace/active/<project>/` keeps one current `.bbmodel`, intentional retained references/assets/exports, and a **small project `README.md`** containing only current resume facts. Codex should open the named project rather than scan every workspace package.
+Current static closure includes:
 
-The project README is asset continuity, not a second roadmap or visual authority. Git history owns old iterations. Temporary captures/logs belong in `.cache/` and are ignored.
+- repository regression preflight before editing and one coherent logical patch;
+- known/coherent Cube creation through `place_cube(elements=[...])` without batching uncertainty;
+- affected-view-first correction verification with cross-view expansion only when material risk exists;
+- meaningful workspace persistence rather than mutation-count checkpoints;
+- canonical documentation ownership with historical review/decision residue removed;
+- no speculative tool-count, runtime-prompt, router, or registration-profile redesign without installed-client evidence.
 
-The Reference Generator remains **image-only**. Saving an approved image into a workspace project is a downstream/local persistence action; no manifest JSON, geometry blueprint, ZIP, or sidecar file is required.
+These are source/instruction/test improvements, not proof of runtime usage reduction.
 
-See `workspace/README.md` for the compact contract.
+## Local Acceptance — Deferred
 
-## Local Acceptance Flow
+No local run is active. `docs/knowledge/operations/local-acceptance-runbook.md` remains the single procedure owner but is inactive until `docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
 
-The next live acceptance is deliberately simple:
+When reactivated, the acceptance sequence remains:
 
 ```text
 current Local
@@ -63,23 +64,20 @@ current Local
 → efficiency check
 ```
 
-**Test 1** proves the Plugin/MCP mechanics. **Test 2** proves reference-driven Minecraft Geometry + Texture judgement using the approved elephant reference. The approved image must be visible to the local modelling context; it is not bundled into the production plugin.
-
-The single procedure owner is `docs/knowledge/operations/local-acceptance-runbook.md`.
-
 ## Current Documentation Owners
 
+- Root `AGENTS.md` owns routing and proof discipline.
 - `CONTEXT.md` — stable facts
-- `docs/knowledge/next-action.md` — repository/plugin continuation
+- `docs/knowledge/next-action.md` — repository/plugin continuation and whether local acceptance is active
 - `workspace/README.md` — persistent asset workspace rules
 - `workspace/active/<project>/README.md` — active asset-specific continuity
 - `docs/knowledge/flow.md` — detailed current workflow
 - `docs/knowledge/implementation-map.md` — source/tool ownership
 - `docs/foundation/validation-report.md` — current proof state
 - `docs/foundation/` — durable current policy
-- `docs/knowledge/operations/local-acceptance-runbook.md` — active local acceptance procedure when `next-action.md` points to it
+- `docs/knowledge/operations/local-acceptance-runbook.md` — local procedure only when explicitly reactivated
 
-Historical audits, decisions, plans, experiments, retired fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
+Historical audits, reviews, decisions, plans, experiments, retired fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
 
 ## Repository Map
 
@@ -104,9 +102,9 @@ bun run build
 bun run docs:check
 ```
 
-Production output is the local build at `mcp/dist/mcp.js`. `dist/` is generated and not repository authority. **Package version alone is not freshness proof**; local acceptance records the exact Git HEAD plus SHA-256 of the built `mcp/dist/mcp.js` actually loaded by Blockbench.
+Production output is the local build at `mcp/dist/mcp.js`. `dist/` is generated and not repository authority. **Package version alone is not freshness proof**; a future local acceptance records the exact Git HEAD plus SHA-256 of the built `mcp/dist/mcp.js` actually loaded by Blockbench.
 
-Do not use the upstream hosted plugin as BlockIT proof.
+Do **not** use the upstream hosted plugin as BlockIT proof.
 
 Current static surface:
 
@@ -120,7 +118,7 @@ max per-tool payload: 3,167 characters
 runtime workflow prompt: 6,959 characters
 ```
 
-P0–P7, the Minecraft-first Reference Generator contract, and PRO-1–PRO-8 are implemented at their documented proof level. PRO-8 is read-only AnimationController/state inspection; controller creation/mutation remains deferred. Serialized character counts are not token measurements.
+Serialized character counts are static measurements, not installed-client token/context measurements.
 
 ## Runtime / Security Baseline
 
@@ -133,11 +131,9 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-Normal asset authoring should route from current intent + known state to the exact MCP tool and active modelling/texturing/animation specialist. Do not broad-scan the repository or workspace, repeatedly rediscover known state, inspect every Cube, or capture after every mutation.
+Normal asset authoring routes from current intent + known state to the exact MCP tool and active modelling/texturing/animation specialist. Do not broad-scan the repository/workspace, repeatedly rediscover known state, inspect every Cube, or capture after every mutation.
 
 ## Protected Capability Gaps
-
-The following remain explicit gaps rather than being faked through generic fallbacks:
 
 - AnimationController creation/mutation
 - existing-animation direct sound/timeline-effect mutation

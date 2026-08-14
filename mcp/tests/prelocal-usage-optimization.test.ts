@@ -44,13 +44,40 @@ describe("pre-local usage optimization contract", () => {
     expect(runbook).toContain("Do not invent token or latency numbers");
   });
 
-  test("continuation returns to local acceptance without claiming runtime improvement", async () => {
+  test("workspace resume persists meaningful state instead of mutation-count checkpoints", async () => {
+    const [workspace, active, flow] = await Promise.all([
+      source("../workspace/README.md"),
+      source("../workspace/active/README.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+    expect(workspace).toContain("## Meaningful Persistence");
+    expect(workspace).toContain("Do **not** save/checkpoint after every MCP mutation or capture");
+    expect(workspace).toContain("Mutation count alone is not a checkpoint trigger");
+    expect(active).toContain("Full workspace lifecycle and package rules live in `../README.md`");
+    expect(flow).toContain("meaningful handoff, resume-state change, park, or completion boundary");
+  });
+
+  test("prompt and tool surface remain evidence-gated rather than gaining an optimization profile", async () => {
+    const [profile, prompts, next] = await Promise.all([
+      source("lib/registrationProfile.ts"),
+      source("server/prompts.ts"),
+      source("../docs/knowledge/next-action.md"),
+    ]);
+    expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
+    expect(profile).not.toContain("lean_mode");
+    expect(profile).not.toContain("usage_profile");
+    expect(prompts).toContain('createPrompt("bedrock_entity_workflow"');
+    expect(next).toContain("U7  No change required");
+    expect(next).toContain("installed-client evidence");
+  });
+
+  test("pre-local closure keeps local acceptance explicitly deferred", async () => {
     const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain("PRELOCAL_USAGE_OPTIMIZATION_READY");
+    expect(next).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
     expect(next).toContain("NO LOCAL RUN ACTIVE");
-    expect(next).toContain("instruction/test evidence only");
-    expect(next).toContain("efficiency impact");
+    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
     expect(next).toContain("LOCAL PROOF REQUIRED");
-    expect(next).toContain("execute runbook sections 3–4");
+    expect(next).not.toContain("execute runbook sections 3–4");
+    expect(next).toContain("local runbook requires fresh explicit reactivation");
   });
 });

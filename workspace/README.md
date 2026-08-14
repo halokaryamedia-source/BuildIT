@@ -33,9 +33,17 @@ Current next step — one concrete step
 Known blocker(s), if any
 ```
 
-Keep it factual and short. Do not turn the project README into a development log, decision archive, per-Cube plan, checkpoint history, or tool-call transcript.
+Keep it factual and short. Do not turn the project README into a development log, decision archive, per-Cube plan, checkpoint history, UUID registry, or tool-call transcript.
 
 Prefer **one current editable `.bbmodel`** per project. Git history owns older iterations; avoid `model_v2_final_final.bbmodel` style duplication.
+
+## Meaningful Persistence
+
+Persist the current `.bbmodel` and update the project README when **resume-critical state materially changes** or at a meaningful handoff, park, or completion boundary.
+
+Do **not** save/checkpoint after every MCP mutation or capture, and do not update the README merely because a number of calls or mutations occurred. **Mutation count alone is not a checkpoint trigger.** During one uninterrupted authoring session, reuse fresh live/returned state instead of converting every intermediate state into repository memory.
+
+A README update should leave one useful current next step and real blockers, not a transcript of how the session arrived there.
 
 ## Codex Resume Rule
 
@@ -66,6 +74,7 @@ Do not retain as project memory:
 - temporary model-view captures;
 - MCP/tool logs;
 - speculative geometry plans;
+- persistent per-element UUID registries;
 - duplicate historical `.bbmodel` copies;
 - generated cache files;
 - generic sample/fixture policy.

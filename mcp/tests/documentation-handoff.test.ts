@@ -47,7 +47,7 @@ describe("Codex documentation handoff", () => {
     expect(developmentBrief).not.toContain("`code-review`");
   });
 
-  test("current continuation stays bounded and does not silently reactivate local acceptance", async () => {
+  test("current continuation stays bounded and keeps local acceptance explicitly deferred", async () => {
     const [next, runbook, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -57,14 +57,42 @@ describe("Codex documentation handoff", () => {
     expect(next.length).toBeLessThan(7_000);
     expect(next).toContain("Working branch: **`Local` only**");
     expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
+    expect(next).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
     expect(next).toContain("## Next Step");
     expect(next).toContain("NO LOCAL RUN ACTIVE");
+    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
     expect(next).toContain("LOCAL PROOF REQUIRED");
-    expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
+    expect(next).not.toContain("execute runbook sections 3–4");
+    expect(next).toContain("Do not claim live Blockbench/model-quality or runtime-usage improvement without actual runtime proof");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("62 enabled tools");
     expect(implementation).toContain("No local run is active");
+  });
+
+  test("status owners stay synchronized", async () => {
+    const [rootReadme, mcpReadme, next, validation] = await Promise.all([
+      text("../README.md"),
+      text("README.md"),
+      text("../docs/knowledge/next-action.md"),
+      text("../docs/foundation/validation-report.md"),
+    ]);
+    for (const owner of [rootReadme, mcpReadme, next, validation]) {
+      expect(owner).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
+    }
+    expect(rootReadme).toContain("Local Acceptance — Deferred");
+    expect(mcpReadme).toContain("Local Acceptance — Inactive");
+    expect(validation).toContain("LOCAL ACCEPTANCE:                   DEFERRED");
+  });
+
+  test("historical review and decision residue is absent from active knowledge", async () => {
+    const dirs = (await readdir("../docs/knowledge", { withFileTypes: true }))
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+    expect(dirs).not.toContain("reviews");
+    expect(dirs).not.toContain("decisions");
+    expect(await Bun.file("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md").exists()).toBe(false);
+    expect(await Bun.file("../docs/knowledge/decisions/reference-fidelity-loop.md").exists()).toBe(false);
   });
 
   test("named MCP-tool defects have a bounded source and primary-test index", async () => {
@@ -118,6 +146,7 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
     expect(validation).toContain("Native Deferred MCP Discovery Compatibility");
     expect(validation).toContain("P0–P4 Static Efficiency / Decision Proof");
+    expect(validation).toContain("Static Pre-local Optimization Closure");
     expect(validation).toContain("OFFICIALLY VERIFIED");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");

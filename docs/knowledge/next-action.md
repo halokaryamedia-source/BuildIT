@@ -5,50 +5,40 @@ Updated: 2026-08-14
 ## Status
 
 ```text
-PRELOCAL_USAGE_OPTIMIZATION_READY
+PRELOCAL_OPTIMIZATION_COMPLETE
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
-Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
+Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed by the optimization closure.
 
-Pre-local usage discipline is now encoded in current instructions/tests: repository regression preflight + coherent patching, known/coherent `place_cube(elements=[...])` batching, affected-view-first correction verification, and a concrete Efficiency Check. This is instruction/test evidence only.
-
-Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, efficiency impact, and persistence remain **LOCAL PROOF REQUIRED**.
-
-**Do not claim live Blockbench/model-quality improvement without actual runtime proof.**
-
-## Local Handoff
-
-Single procedure owner: `docs/knowledge/operations/local-acceptance-runbook.md`.
-
-The local test is deliberately simple:
+Static pre-local closure now owns:
 
 ```text
-current Local
-→ clean tree + exact HEAD
-→ static gate + fresh build
-→ record dist/mcp.js SHA-256
-→ load current local BlockIT build
-→ restart Blockbench + reconnect MCP
-→ verify endpoint + 62-tool default surface
-→ verify:stateless-local
-→ TEST 1 — MCP / CORE MECHANICS
-→ persistence / export
-→ TEST 2 — REFERENCE MODEL (ELEPHANT)
-→ efficiency check
+U1  repository regression preflight + coherent logical patching
+U2  targeted invariant/test preflight before owner edits
+U3  known/coherent place_cube(elements=[...]) batching; uncertainty is not batched
+U4  affected-view-first correction verification; broaden only for material cross-view risk
+U5  meaningful workspace persistence; no mutation-count checkpoint ritual
+U6  canonical documentation ownership; review/decision residue removed from active knowledge
+U7  No change required — current static evidence does not justify tool/profile/prompt redesign
 ```
 
-**Test 1** proves the plugin/MCP mechanics work. **Test 2** proves MCP can build a Minecraft/Blockbench elephant from the approved reference, including Geometry + Texture judgement.
+U7 remains evidence-gated: current routed exact-name discovery retains complete top-8 coverage in the static proxy, the runtime bundle exposes one canonical workflow prompt, and serialized surface size is not installed-client token/context proof. Changing tool count, registration profiles, or runtime prompts without installed-client evidence would be speculative.
 
-Package version alone is not freshness proof.
+Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, actual call efficiency, and persistence remain **LOCAL PROOF REQUIRED**.
 
-The approved elephant reference may be used for Test 2 only when the actual image is visible to the local modelling context. Five previews are the future default, not a reason to regenerate an already approved usable reference.
+**Do not claim live Blockbench/model-quality or runtime-usage improvement without actual runtime proof.**
+
+## Local Acceptance Boundary
 
 ```text
-MINOR → one canonical Minecraft interpretation → continue
-MATERIAL → CONFLICTING / BLOCKED
+LOCAL ACCEPTANCE DEFERRED
 ```
+
+The user has explicitly deferred local testing. `docs/knowledge/operations/local-acceptance-runbook.md` remains the single procedure owner but is **inactive**. Do not execute its build/freshness/runtime steps and do not silently reactivate it from repository readiness alone.
+
+The approved elephant reference and the two-stage local test remain preserved for a future explicitly reactivated run; they are not current work.
 
 Reference generation remains separately gated:
 
@@ -59,10 +49,11 @@ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ## Next Step
 
 ```text
-LOCAL MACHINE
-→ execute runbook sections 3–4
-→ prove exact HEAD + artifact hash + current BlockIT load
-→ begin TEST 1 — MCP / CORE MECHANICS
+PRELOCAL / REPOSITORY
+→ static optimization closure complete
+→ no local test active
+→ continue only from a fresh concrete user instruction or newly evidenced repository issue
+→ local runbook requires fresh explicit reactivation
 ```
 
-Do not change source unless a reproducible local failure identifies a concrete owner. No speculative cleanup, new tools, profiles, routers, or compatibility layers.
+No speculative cleanup, new tools, profiles, routers, compatibility layers, telemetry systems, or persistent UUID registries are justified by the current evidence.

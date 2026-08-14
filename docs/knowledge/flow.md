@@ -97,13 +97,13 @@ exact target state
 
 After primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export. Texture applies the same rule: minor surface drift becomes one Minecraft-readable canonical surface; material texture conflict is not silently averaged.
 
-For a persistent project, write the current `.bbmodel` and deliberate deliverables back into the **same active project package** and keep its README limited to one current next step plus real blockers. Git history owns previous revisions. When work is completed or intentionally parked, move the package to `workspace/saved/`.
+For a persistent project, persist the current `.bbmodel` and deliberate deliverables at a **meaningful handoff, resume-state change, park, or completion boundary**, not after every mutation/capture. Keep its README limited to one current next step plus real blockers; mutation count alone is not a checkpoint trigger. Git history owns previous revisions. When work is completed or intentionally parked, move the package to `workspace/saved/`.
 
 ## 4. Repository Work
 
 ```text
 AGENTS.md → next-action.md when continuing → affected owner + nearest AGENTS.md
-→ development-brief → smallest complete change → minimum useful proof → STOP AND REPORT
+→ development-brief → regression preflight → one smallest coherent patch → minimum useful proof → STOP AND REPORT
 ```
 
 Repository proof never becomes permission for image generation or local Blockbench execution.
@@ -122,7 +122,7 @@ asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
 current proof state        → foundation/validation-report.md
 current source ownership   → implementation-map.md
-local acceptance procedure → operations/local-acceptance-runbook.md when reactivated
+local acceptance procedure → operations/local-acceptance-runbook.md only when reactivated
 historical rationale       → Git history / GitHub issues and PRs
 ```
 
