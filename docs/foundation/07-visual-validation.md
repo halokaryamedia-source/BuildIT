@@ -1,8 +1,8 @@
 # BlockIT — Visual Validation
 
 **Status:** Active Policy  
-**Version:** 1.5  
-**Updated:** 2026-08-12
+**Version:** 1.6  
+**Updated:** 2026-08-14
 
 ## Purpose
 
@@ -139,8 +139,7 @@ Current Local source includes:
 
 Returns raw rendered whole-Cube envelope facts such as size/center/ground context.
 
-Use it to detect catastrophic scale/displacement issues that camera framing could
-hide. It is not a visual validator.
+Use `inspect_model_bounds` only when envelope/scale/ground/displacement materially affects the current decision, including an approved numeric target envelope. Do not call it as a mandatory modelling checkpoint. It is structural evidence, not a visual validator.
 
 ### `capture_model_views`
 
@@ -152,9 +151,7 @@ readability context. Successful capture is not `PASS`. It does not itself load/s
 
 ### `inspect_element`
 
-Returns exact authored Cube/Group state for a diagnosed local target. Use it
-before numeric local correction rather than guessing current transforms from a
-screenshot or memory.
+Returns exact authored Cube/Group state for a diagnosed local target. Reuse fresh exact state already returned for that target when sufficient; use `inspect_element` only when required state is unavailable, insufficient, or stale. Do not add a mandatory readback before every numeric correction.
 
 These are source-implemented capabilities. Their live integration/image delivery
 still remains `LOCAL PROOF REQUIRED` until tested locally.
@@ -246,7 +243,7 @@ If decomposition is wrong, return to Semantic Form against actual reference clai
 
 ## Gate 2 — Complete Geometry
 
-After secondary geometry/hierarchy/pivots, review applicable supported claims:
+After secondary geometry/neutral organization, with form-defining hierarchy/pivots already established when required, review applicable supported claims:
 
 - silhouette/proportions across the declared reference views;
 - required major parts/counts and orientation;
@@ -301,12 +298,12 @@ GLOBAL
 → otherwise revise/rebuild Primary Form Hypothesis
 
 LOCAL
-→ locate exact UUID
-→ inspect_element only if fresh exact state unavailable
+→ locate exact UUID only if target identity is not already fresh/known
+→ reuse fresh exact authored state; inspect_element only if unavailable/insufficient/stale
 → choose causal correction
 → retain relevant pre-correction paired evidence
 → mutate bounded relationship
-→ fresh affected paired view(s)
+→ fresh affected paired view(s) first; expand only for material cross-view risk
 → qualitative fidelity delta
 ```
 
@@ -447,4 +444,4 @@ If that proof is unavailable, report `LOCAL PROOF REQUIRED` / user-facing
 - [Modelling Workflow](03-modelling-workflow.md)
 - [Geometry Standard](05-geometry-standard.md)
 - [Validation Report](validation-report.md)
-- [Reference Fidelity Decision](../knowledge/decisions/reference-fidelity-loop.md)
+- [Current Flow](../knowledge/flow.md)

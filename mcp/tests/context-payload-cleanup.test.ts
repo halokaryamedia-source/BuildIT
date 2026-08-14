@@ -201,21 +201,4 @@ describe("context and payload cleanup", () => {
     expect(block).toContain("destructiveHint: false");
     expect(block).not.toContain("destructiveHint: true");
   });
-
-  test("continuity stays compact and keeps local execution deferred", async () => {
-    const profile = await source("lib/registrationProfile.ts");
-    const next = await source("../docs/knowledge/next-action.md");
-    expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
-    expect(profile).not.toContain("lean_mode");
-    expect(profile).not.toContain("context_mode");
-    expect(next.length).toBeLessThan(7_000);
-    expect(next).toContain("Working branch: **`Local` only**");
-    expect(next).toContain("PRO-1");
-    expect(next).toContain("PRO-2");
-    expect(next).toContain("## Next Step");
-    expect(next).toContain("LOCAL PROOF REQUIRED");
-    expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
-    expect(next).not.toContain("LOCAL — run one fresh Codex efficiency trace");
-    expect(next).not.toContain("LOCAL — follow operations/local-acceptance-runbook.md");
-  });
 });

@@ -1,8 +1,8 @@
 # BlockIT — Product Requirements
 
 **Status:** Active Policy  
-**Version:** 1.3  
-**Updated:** 2026-08-13  
+**Version:** 1.4  
+**Updated:** 2026-08-14  
 **Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
 ## 1. Product Objective
@@ -44,37 +44,42 @@ Request
 ↓
 Approved Modelling Brief + relevant Handoff Constraints
 ↓
-Cross-view consistency check
+View Pair Map + Reference Evidence Map
 ↓
-Coordinate frame + target envelope
+Semantic Form
+↓
+Coordinate frame + target envelope when approved
+↓
+Construction + transform ownership + contact invariants
 ↓
 Primary Form Hypothesis
 ↓
-Explicit coarse primary Cube authoring
+Coarse primary Cubes + required primary Groups/pivots
 ↓
-inspect_model_bounds
+Conditional structural observation only when it can change the decision
 ↓
-capture_model_views
+Canonical model views
 ↓
-Reference ↔ model visual gate
+Difference-first Reference ↔ model visual gate
 ↓
-GLOBAL failure? → revise/rebuild hypothesis
-LOCAL failure?  → inspect_element → causal correction
+GLOBAL failure? → revise/rebuild Semantic Form or Primary Form Hypothesis
+LOCAL failure?  → reuse fresh exact state, or inspect_element once if unavailable/stale
+                → causal correction → fresh affected view(s) first
 ↓
-Secondary geometry / hierarchy / pivots
+Identity-weighted secondary geometry / neutral organization
 ↓
 Full geometry review
 ↓
-UV / texture
+UV / texture when required
 ↓
-Optional animation
+Optional animation when required
 ↓
 Final validation
 ↓
 Save `.bbmodel` when in scope
 ```
 
-Detailed procedure: [03-modelling-workflow.md](03-modelling-workflow.md).
+Durable workflow policy: [03-modelling-workflow.md](03-modelling-workflow.md). Detailed current sequence: [Current Flow](../knowledge/flow.md).
 
 ## 4. Core Requirements
 
@@ -97,11 +102,13 @@ features from ambiguous evidence.
 
 Before primary Cube authoring:
 
-- check cross-view consistency;
+- check cross-view consistency and explicit view pairing;
 - for articulated subjects, confirm required limb/appendage count, pose state,
   attachment, negative-space, and ground/support consistency across views;
+- form a Semantic Form for material masses/landmarks/count/topology before exact coordinates;
 - establish X/Y/Z interpretation, front direction, and ground relation;
 - establish target envelope when approved dimensions exist;
+- identify construction/transform ownership and material contact invariants;
 - form a temporary Primary Form Hypothesis for the major masses.
 
 ### PR-004 — Author Intentional Primary Geometry
@@ -139,20 +146,19 @@ Cube origin + from/to/rotation
 
 ### PR-006 — Observe Before Approval
 
-Use structural observation to detect global scale/location problems and visual
-observation to judge resemblance.
+Use only observation that can change the next decision.
 
 Current Local source provides:
 
-- `inspect_model_bounds`;
-- `capture_model_views`.
+- `inspect_model_bounds` for envelope/scale/ground/displacement questions;
+- `capture_model_views` for canonical visual evidence.
 
-Successful observation calls are not visual `PASS`.
+Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters. Do not call it as a ritual step after every blockout or correction. Successful observation calls are not visual `PASS`.
 
 ### PR-007 — Reject Bad Primary Scaffolds
 
 If the whole object is unrecognizable or several primary relationships are wrong
-together, revise/rebuild the Primary Form Hypothesis and coarse blockout.
+together, revise/rebuild the Semantic Form or Primary Form Hypothesis and coarse blockout.
 
 Do not preserve a bad scaffold because many Cubes already exist.
 
@@ -160,11 +166,11 @@ Do not preserve a bad scaffold because many Cubes already exist.
 
 When whole form is sound but one bounded relationship is wrong:
 
-1. locate/confirm exact target UUID;
-2. use `inspect_element` for current authored state;
-3. classify the cause;
+1. reuse known exact target identity when fresh; perform focused identity resolution only when missing/stale/ambiguous;
+2. reuse fresh exact authored state already returned for that target; use `inspect_element` once only when required state is unavailable or stale;
+3. classify the causal mismatch;
 4. apply one coherent correction;
-5. re-observe affected views.
+5. re-observe the affected view(s) first and expand only when material cross-view risk exists.
 
 Use the causal vocabulary:
 
@@ -175,10 +181,9 @@ Do not default to `ADD MASS`.
 For one relationship spanning multiple Cubes, `modify_cubes_batch` may apply
 different exact-UUID patches in one recoverable Undo unit.
 
-### PR-009 — Add Secondary Structure Only After Primary Form Passes
+### PR-009 — Gate Secondary Work After Primary Form Passes
 
-Hierarchy, smaller geometry, pivots, texture support, and optional animation must
-not be used to compensate for unresolved primary-form errors.
+Form/contact/articulation-defining Groups and pivots may belong in the primary blockout when they own the judged form. After primary `PASS`, add only grounded secondary geometry and neutral organization. Texture support and optional animation must not be used to compensate for unresolved primary-form errors.
 
 ### PR-010 — Texture Supports Geometry
 
@@ -268,6 +273,7 @@ Unless separately requested/proven:
 
 - minimum meaningful Cuboids;
 - minimum useful observation/proof;
+- reuse fresh returned state instead of ritual readback;
 - no per-Cube screenshot/approval ceremony;
 - no repeated full review for genuinely local changes;
 - stop repeated failed correction direction after two attempts without new
@@ -279,7 +285,8 @@ A modelling task is complete when:
 
 - request/scope, approved reference, and material Handoff Constraints are understood;
 - whole primary form passed the required visual gate;
-- required secondary geometry/hierarchy/pivots are complete;
+- required primary hierarchy/pivots are established when form-defining;
+- required secondary geometry and neutral organization are complete;
 - texture/animation are complete only when in scope;
 - no unresolved critical/major visual issue remains;
 - required structural and visual evidence exists;

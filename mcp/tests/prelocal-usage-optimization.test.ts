@@ -71,13 +71,28 @@ describe("pre-local usage optimization contract", () => {
     expect(next).toContain("installed-client evidence");
   });
 
-  test("pre-local closure keeps local acceptance explicitly deferred", async () => {
-    const next = await source("../docs/knowledge/next-action.md");
-    expect(next).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
-    expect(next).toContain("NO LOCAL RUN ACTIVE");
-    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
-    expect(next).toContain("LOCAL PROOF REQUIRED");
-    expect(next).not.toContain("execute runbook sections 3–4");
-    expect(next).toContain("local runbook requires fresh explicit reactivation");
+  test("durable foundation policy preserves minimum-evidence authoring", async () => {
+    const [requirements, workflowPolicy, geometry, validation] = await Promise.all([
+      source("../docs/foundation/02-product-requirements.md"),
+      source("../docs/foundation/03-modelling-workflow.md"),
+      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/foundation/07-visual-validation.md"),
+    ]);
+
+    expect(requirements).toContain("Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters");
+    expect(requirements).toContain("reuse fresh exact authored state already returned for that target");
+    expect(requirements).toContain("use `inspect_element` once only when required state is unavailable or stale");
+    expect(requirements).toContain("affected view(s) first");
+
+    expect(workflowPolicy).toContain("**Status:** Active Policy");
+    expect(workflowPolicy).not.toContain("test-support contract");
+    expect(workflowPolicy).toContain("`inspect_element` is a fallback for missing/stale exact target state");
+    expect(workflowPolicy).toContain("`inspect_model_bounds` is only for material envelope/scale/ground/displacement questions");
+    expect(workflowPolicy).toContain("capture affected view(s) first");
+
+    expect(geometry).toContain("Reuse fresh exact authored state already returned for the target when sufficient");
+    expect(geometry).toContain("Call `inspect_element` once only when the required current state is missing or stale");
+    expect(validation).toContain("Use `inspect_model_bounds` only when envelope/scale/ground/displacement materially affects the current decision");
+    expect(validation).toContain("use `inspect_element` only when required state is unavailable, insufficient, or stale");
   });
 });

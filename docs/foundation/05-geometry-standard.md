@@ -1,8 +1,8 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 1.6  
-**Updated:** 2026-08-13
+**Version:** 1.7  
+**Updated:** 2026-08-14
 
 ## Purpose
 
@@ -180,7 +180,7 @@ origin supplied explicitly
 current rotation already non-zero
 requested rotation changes
 origin omitted
-→ allowed; reuse the existing inspected pivot
+→ allowed; reuse the existing known pivot
 ```
 
 The explicit origin may equal the stored origin when that point is genuinely intended. Do not infer pivot intent merely because a numeric origin exists.
@@ -255,6 +255,8 @@ Use `ADD MASS` only when evidence shows missing volume.
 
 ## Correction Accuracy Contract
 
+Reuse fresh exact authored state already returned for the target when sufficient. Call `inspect_element` once only when the required current state is missing or stale.
+
 Before mutating a diagnosed local mismatch:
 
 ```text
@@ -270,7 +272,7 @@ Keep this compact.
 
 - **TRANSLATE** — size remains unchanged; preserve intended pivot relationship.
 - **RESIZE** — name changed axis and fixed center/face/contact.
-- **ROTATE** — do not change `from/to/size`; use inspected or explicitly justified pivot.
+- **ROTATE** — do not change `from/to/size`; use the existing known or explicitly justified pivot.
 - **REATTACH** — distinguish visual contact from hierarchy-parent correction; unsupported reparenting stays `BLOCKED`.
 
 After `modify_cube` / `modify_cubes_batch`, inspect returned `geometry_effect`:
@@ -290,7 +292,7 @@ Only after structural effect matches intent should fresh affected views decide v
 
 ## Global vs Local Failure
 
-Global failure (unrecognizable object, wrong decomposition, several primary relations wrong) reopens Semantic Form or Primary Form Hypothesis. A local failure inspects/corrects only the responsible relationship.
+Global failure (unrecognizable object, wrong decomposition, several primary relations wrong) reopens Semantic Form or Primary Form Hypothesis. A local failure diagnoses/corrects only the responsible relationship.
 
 After two failed attempts in the same causal direction without new evidence, stop patching and reframe.
 
@@ -334,4 +336,4 @@ Geometry is ready for UV/texture only when:
 
 - [Modelling Workflow](03-modelling-workflow.md)
 - [Visual Validation](07-visual-validation.md)
-- [Reference Fidelity Decision](../knowledge/decisions/reference-fidelity-loop.md)
+- [Current Flow](../knowledge/flow.md)

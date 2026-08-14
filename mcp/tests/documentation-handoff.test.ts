@@ -86,7 +86,7 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("LOCAL ACCEPTANCE:                   DEFERRED");
   });
 
-  test("historical review and decision residue is absent from active knowledge", async () => {
+  test("historical review and decision residue is absent from active knowledge and foundation links", async () => {
     const dirs = (await readdir("../docs/knowledge", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
@@ -94,6 +94,19 @@ describe("Codex documentation handoff", () => {
     expect(dirs).not.toContain("decisions");
     expect(await Bun.file("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md").exists()).toBe(false);
     expect(await Bun.file("../docs/knowledge/decisions/reference-fidelity-loop.md").exists()).toBe(false);
+
+    const foundationFiles = (await readdir("../docs/foundation"))
+      .filter((name) => name.endsWith(".md"));
+    for (const file of foundationFiles) {
+      const body = await text(`../docs/foundation/${file}`);
+      expect(body).not.toContain("../knowledge/decisions/");
+      expect(body).not.toContain("../knowledge/reviews/");
+    }
+
+    const workflowPolicy = await text("../docs/foundation/03-modelling-workflow.md");
+    expect(workflowPolicy).toContain("**Status:** Active Policy");
+    expect(workflowPolicy).not.toContain("test-support contract");
+    expect(workflowPolicy).toContain("[Current Flow](../knowledge/flow.md)");
   });
 
   test("named MCP-tool defects have a bounded source and primary-test index", async () => {
