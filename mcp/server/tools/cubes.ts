@@ -764,8 +764,6 @@ export function registerCubesTools() {
       const effects = targets.map(({ cube, before }) => {
         const after = finalCubeState(cube);
         return {
-          uuid: cube.uuid,
-          name: cube.name,
           before,
           after,
           geometry_effect: cubeGeometryEffect(before, after),
