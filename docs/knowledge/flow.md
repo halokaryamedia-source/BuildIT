@@ -8,7 +8,7 @@ This is the **single detailed current flow**. Root `AGENTS.md` owns task routing
 
 ```text
 REFERENCE PREPARATION → blockbench-reference-generator
-ASSET AUTHORING       → blockit-bedrock-entity-mcp → active specialist only
+ASSET AUTHORING       → named workspace package when persistent → blockit-bedrock-entity-mcp → active specialist only
 REPOSITORY WORK       → next-action.md → affected owner → development-brief
 LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
 ```
@@ -48,7 +48,22 @@ Geometry prioritizes recognizable Blockbench-buildable major form. Texture prior
 
 Generation budget is per **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry.
 
+The Reference Generator still returns **one image only**. Saving an approved reference under a project `workspace/active/<project>/references/` directory is a downstream/local persistence action, not generator output.
+
 ## 3. Bedrock Authoring
+
+For persistent work, establish asset continuity without a broad repository scan:
+
+```text
+user names/continues project
+→ workspace/active/<project>/README.md
+→ current .bbmodel + only required reference/assets
+→ actual approved reference visible when visual judgement is needed
+```
+
+If no persistent package exists and the user wants the work retained, create one compact project package. Do not create manifest JSON, per-Cube plans, checkpoint logs, or duplicate model-version files merely to support continuity.
+
+Then author:
 
 ```text
 ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
@@ -82,6 +97,8 @@ exact target state
 
 After primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export. Texture applies the same rule: minor surface drift becomes one Minecraft-readable canonical surface; material texture conflict is not silently averaged.
 
+For a persistent project, write the current `.bbmodel` and deliberate deliverables back into the **same active project package** and keep its README limited to one current next step plus real blockers. Git history owns previous revisions. When work is completed or intentionally parked, move the package to `workspace/saved/`.
+
 ## 4. Repository Work
 
 ```text
@@ -98,7 +115,10 @@ ChatGPT → GitHub          = source/docs/static/CI evidence
 image-capable preparation = generated-reference visual evidence
 Codex local / Blockbench  = installed-client/runtime/model-facing evidence
 
-current continuation       → next-action.md
+repository continuation    → next-action.md
+active asset continuity    → workspace/active/<project>/README.md
+saved asset package        → workspace/saved/<project>/
+asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
 current proof state        → foundation/validation-report.md
 current source ownership   → implementation-map.md
@@ -106,4 +126,4 @@ local acceptance procedure → operations/local-acceptance-runbook.md when react
 historical rationale       → Git history / GitHub issues and PRs
 ```
 
-Do not create duplicate roadmap, review index, decision log, flow owner, or parallel planning state.
+Do not create duplicate roadmap, review index, decision log, flow owner, manifest layer, or parallel workspace-state system.
