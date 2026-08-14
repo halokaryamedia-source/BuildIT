@@ -18,10 +18,13 @@ Image-capable work only. Generation is output, not discovery. Detailed sequence:
 
 ```text
 current request / actual approved reference
+→ named workspace package when persistent
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 → only the active modelling/texturing/animation specialist
 → BlockIT MCP
 ```
+
+For a named persistent asset, `workspace/active/<project>/README.md` is the **asset-specific continuity owner**. Read that project plus only the current model/reference/assets needed for the next decision. Do not scan every active project. A stored reference path or README is context only; the actual image must still be visible when visual judgement is required.
 
 For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary skill indexes, or the whole foundation set. Asset authoring is not software **Developing** merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
 
@@ -48,6 +51,8 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 6. `CONTEXT.md`;
 7. Git history / GitHub issues or PRs only when historical rationale can change the decision.
 
+A project README under `workspace/active/` carries current asset continuity only. It cannot override the user, actual approved visual evidence, or current product policy.
+
 ## Work Discipline
 
 - Inspect the current owner/caller/pattern before shared changes.
@@ -58,6 +63,7 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid.
 - Never claim proof that was not obtained.
+- Persistent asset work uses one current workspace package instead of scattered model/reference/output files.
 - When a repository change alters user-facing setup, current product status, capability boundaries, or the active test entrypoint, update the relevant `README.md` in the same change. Do not churn README files for internal changes that leave those facts unchanged.
 
 ## Execution / Proof
@@ -82,12 +88,17 @@ Minecraft Bedrock Entity (`bedrock`) remains the default. Reference generation c
 
 Reference generation → `blockbench-reference-generator`; modelling judgement → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
 
+The Reference Generator remains image-only. Saving an approved image into a workspace project is a downstream persistence action, not additional generator output.
+
 For `mcp/**`, `mcp/AGENTS.md` owns package-specific engineering rules.
 
 ## Canonical Owners
 
 - detailed current flow → `docs/knowledge/flow.md`
-- active continuation → `docs/knowledge/next-action.md`
+- repository/plugin continuation → `docs/knowledge/next-action.md`
+- active asset continuity → `workspace/active/<project>/README.md`
+- saved/parked asset packages → `workspace/saved/`
+- asset workspace rules → `workspace/README.md`
 - stable facts → `CONTEXT.md`
 - source/tool ownership → `docs/knowledge/implementation-map.md`
 - current proof state → `docs/foundation/validation-report.md`
