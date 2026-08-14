@@ -499,6 +499,7 @@ export function registerElementTools() {
     ...elementToolDocs[0],
     async execute({ id }) {
       const element = resolveUniqueDestructiveElement(id);
+      const removedRoot = elementContinuationState(element);
       const deleteElements: OutlinerElement[] = [];
       const deleteGroups: Group[] = [];
 
@@ -525,6 +526,12 @@ export function registerElementTools() {
             deletedNodeUuids.has(animatorUuid)
           )
       );
+      const deletionCounts = {
+        groups: deleteGroups.length,
+        elements: deleteElements.length,
+        total_nodes: deleteGroups.length + deleteElements.length,
+      };
+      const affectedAnimationCount = deleteAnimations.length;
 
       Undo.initEdit({
         elements: deleteElements,
@@ -551,7 +558,20 @@ export function registerElementTools() {
       }
 
       Canvas.updateAll();
-      return `Removed element with ID ${id}`;
+      const result = {
+        removed_root: removedRoot,
+        removed_counts: deletionCounts,
+        affected_animations: affectedAnimationCount,
+      };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Removed ${removedRoot.type} ${removedRoot.name} (${removedRoot.uuid}); ${deletionCounts.total_nodes} outliner node(s) removed and ${affectedAnimationCount} affected animation(s) included in Undo.`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, elementToolDocs[0].status);
 

@@ -50,16 +50,25 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(locatorSource).toContain('formatId !== "bedrock"');
   });
 
-  test("generic remove_element snapshots recursive deletion state before Undo", async () => {
+  test("generic remove_element snapshots recursive deletion state and returns a compact receipt", async () => {
     const elementSource = await source("server/tools/element.ts");
     const start = elementSource.indexOf("createTool(elementToolDocs[0].name");
     const end = elementSource.indexOf("createTool(elementToolDocs[1].name", start);
     const block = elementSource.slice(start, end);
+    expect(block).toContain("const removedRoot = elementContinuationState(element);");
     expect(block).toContain("const deleteElements: OutlinerElement[] = [];");
     expect(block).toContain("const deleteGroups: Group[] = [];");
     expect(block).toContain("element.forEachChild");
     expect(block).toContain("animations: deleteAnimations");
+    expect(block).toContain("const deletionCounts = {");
+    expect(block).toContain("total_nodes: deleteGroups.length + deleteElements.length");
+    expect(block).toContain("const affectedAnimationCount = deleteAnimations.length;");
     expect(block.indexOf("const deleteAnimations")).toBeLessThan(block.indexOf("Undo.initEdit({"));
+    expect(block.indexOf("const deletionCounts")).toBeLessThan(block.indexOf("Undo.initEdit({"));
+    expect(block).toContain("removed_root: removedRoot");
+    expect(block).toContain("removed_counts: deletionCounts");
+    expect(block).toContain("affected_animations: affectedAnimationCount");
+    expect(block).toContain("structuredContent: result");
   });
 
   test("inspect_element exposes authored Locator and Null Object state", async () => {
