@@ -75,6 +75,26 @@ describe("static efficiency budget", () => {
     expect(getUndoStackParameters.parse({ limit: 200 }).limit).toBe(200);
   });
 
+  test("undo and redo return compact post-action recovery position without a stack reread", async () => {
+    const history = await source("server/tools/history.ts");
+    const undoStart = history.indexOf("createTool(historyToolDocs[0].name");
+    const redoStart = history.indexOf("createTool(historyToolDocs[1].name", undoStart);
+    const stackStart = history.indexOf("createTool(historyToolDocs[2].name", redoStart);
+    const undoBlock = history.slice(undoStart, redoStart);
+    const redoBlock = history.slice(redoStart, stackStart);
+
+    for (const block of [undoBlock, redoBlock]) {
+      expect(block).toContain("const position = currentHistoryPosition();");
+      expect(block).toContain("new_index: position.index");
+      expect(block).toContain("total: position.total");
+      expect(block).toContain("can_undo: position.can_undo");
+      expect(block).toContain("can_redo: position.can_redo");
+      expect(block).toContain("structuredContent: result");
+      expect(block).not.toContain("summarizeHistory(");
+    }
+    expect(history.slice(stackStart)).toContain("JSON.stringify(summarizeHistory(limit))");
+  });
+
   test("material discovery channel summaries omit redundant presence flags", () => {
     const textures = [
       { name: "Color", uuid: "tex-color", pbr_channel: "color" },

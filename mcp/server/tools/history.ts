@@ -105,6 +105,17 @@ interface IUndoEntrySummary {
   is_current: boolean;
 }
 
+function currentHistoryPosition() {
+  const total = Undo.history?.length ?? 0;
+  const index = Undo.index ?? 0;
+  return {
+    index,
+    total,
+    can_undo: index > 0,
+    can_redo: index < total,
+  };
+}
+
 function summarizeHistory(limit: number): {
   index: number;
   total: number;
@@ -117,7 +128,8 @@ function summarizeHistory(limit: number): {
     type?: string;
     time?: number;
   }>;
-  const index = Undo.index ?? 0;
+  const position = currentHistoryPosition();
+  const index = position.index;
 
   const start = Math.max(0, history.length - limit);
   const entries: IUndoEntrySummary[] = history
@@ -136,10 +148,7 @@ function summarizeHistory(limit: number): {
     .reverse();
 
   return {
-    index,
-    total: history.length,
-    can_undo: index > 0,
-    can_redo: index < history.length,
+    ...position,
     entries,
   };
 }
@@ -165,14 +174,25 @@ export function registerHistoryTools() {
       }
 
       Canvas.updateAll();
-      return JSON.stringify(
-        {
-          undone_count: undone.length,
-          requested: steps,
-          undone,
-          new_index: Undo.index,
-        }
-      );
+      const position = currentHistoryPosition();
+      const result = {
+        undone_count: undone.length,
+        requested: steps,
+        undone,
+        new_index: position.index,
+        total: position.total,
+        can_undo: position.can_undo,
+        can_redo: position.can_redo,
+      };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Undid ${undone.length} edit(s); history is now at ${position.index}/${position.total}.`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, historyToolDocs[0].status);
 
@@ -198,14 +218,25 @@ export function registerHistoryTools() {
       }
 
       Canvas.updateAll();
-      return JSON.stringify(
-        {
-          redone_count: redone.length,
-          requested: steps,
-          redone,
-          new_index: Undo.index,
-        }
-      );
+      const position = currentHistoryPosition();
+      const result = {
+        redone_count: redone.length,
+        requested: steps,
+        redone,
+        new_index: position.index,
+        total: position.total,
+        can_undo: position.can_undo,
+        can_redo: position.can_redo,
+      };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Redid ${redone.length} edit(s); history is now at ${position.index}/${position.total}.`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, historyToolDocs[1].status);
 
