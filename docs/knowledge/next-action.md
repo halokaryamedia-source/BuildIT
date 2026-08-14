@@ -60,9 +60,9 @@ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 
 ```text
 PRELOCAL / REPOSITORY
-→ finish the current static controller-mutation gate as one coherent batch
+→ controller-mutation static closure complete
 → no local test active
-→ after static closure, continue only from a fresh concrete user instruction or newly evidenced repository issue
+→ continue only from a fresh concrete user instruction or newly evidenced repository issue
 → local runbook requires fresh explicit reactivation
 ```
 
