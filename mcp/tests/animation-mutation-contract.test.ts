@@ -367,6 +367,32 @@ describe("animation mutation contract", () => {
     expect(source).toContain("parentBone.uuid,");
   });
 
+  test("bone_rigging returns bounded continuation state and deletion receipt", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[3].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[4].name", start);
+    const block = source.slice(start, end);
+
+    expect(block).toContain("const boneIdentity = (group: Group) =>");
+    expect(block).toContain("const boneState = (group: Group) =>");
+    expect(block).toContain('group.parent instanceof Group ? group.parent.uuid : "root"');
+    expect(block).toContain("origin: [...group.origin]");
+    expect(block).toContain("rotation: [...group.rotation]");
+    expect(block).toContain("ik_enabled: group.ik_enabled === true");
+    expect(block).toContain("affectedBone = group;");
+    expect(block).toContain("affectedBone = mirroredBone;");
+    expect(block).toContain("bone: boneState(affectedBone)");
+    expect(block).toContain("const deletionReceipt =");
+    expect(block).toContain("removed_root: boneIdentity(targetBone)");
+    expect(block).toContain("total_nodes: deleteGroups.length + deleteElements.length");
+    expect(block).toContain("affected_animations: deleteAnimations.length");
+    expect(block.indexOf("const deletionReceipt =")).toBeLessThan(
+      block.indexOf("Undo.initEdit")
+    );
+    expect(block).toContain("structuredContent: result");
+    expect(block).not.toContain("inspect_element");
+  });
+
   test("bone delete Undo covers descendants and affected animations before recursive removal", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     expect(source).toContain("deleteGroups = [targetBone]");

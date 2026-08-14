@@ -1529,6 +1529,19 @@ createTool(
       let deleteAnimations: _Animation[] = [];
       let ikTarget: Group | undefined;
       let mirroredBoneName: string | undefined;
+      const boneIdentity = (group: Group) => ({
+        uuid: group.uuid,
+        name: group.name,
+        parent: group.parent instanceof Group ? group.parent.uuid : "root",
+      });
+      const boneState = (group: Group) => ({
+        ...boneIdentity(group),
+        origin: [...group.origin] as [number, number, number],
+        rotation: [...group.rotation] as [number, number, number],
+        ik_enabled: group.ik_enabled === true,
+        ik_target:
+          (group as Group & { ik_target?: string }).ik_target ?? null,
+      });
 
       switch (action) {
         case "create":
@@ -1699,6 +1712,18 @@ createTool(
           break;
       }
 
+      const deletionReceipt =
+        action === "delete" && targetBone
+          ? {
+              removed_root: boneIdentity(targetBone),
+              removed_counts: {
+                groups: deleteGroups.length,
+                elements: deleteElements.length,
+                total_nodes: deleteGroups.length + deleteElements.length,
+              },
+              affected_animations: deleteAnimations.length,
+            }
+          : null;
       const undoElements = action === "delete" ? deleteElements : childElements;
       const undoGroups =
         action === "delete" ? deleteGroups : targetBone ? [targetBone] : [];
@@ -1711,8 +1736,9 @@ createTool(
           : {}),
       });
 
-      let result = "";
+      let resultText = "";
       let createdGroup: Group | undefined;
+      let affectedBone: Group | undefined;
       try {
         switch (action) {
           case "create": {
@@ -1722,6 +1748,7 @@ createTool(
               rotation: bone_data.rotation ? toArrayVector3(bone_data.rotation) : [0, 0, 0],
             }).init();
             createdGroup = group;
+            affectedBone = group;
 
             group.addTo(parentBone ?? "root");
             childElements.forEach((element) => element.addTo(group));
@@ -1731,42 +1758,45 @@ createTool(
               (group as Group & { ik_target?: string }).ik_target = ikTarget.uuid;
             }
 
-            result = `Created bone "${group.name}" with UUID ${group.uuid}`;
+            resultText = `Created bone "${group.name}" with UUID ${group.uuid}`;
             break;
           }
 
           case "parent": {
             targetBone!.addTo(parentBone as Group);
-            result = `Parented "${targetBone!.name}" to "${(parentBone as Group).name}"`;
+            affectedBone = targetBone!;
+            resultText = `Parented "${targetBone!.name}" to "${(parentBone as Group).name}"`;
             break;
           }
 
           case "unparent": {
             targetBone!.addTo("root");
-            result = `Unparented "${targetBone!.name}"`;
+            affectedBone = targetBone!;
+            resultText = `Unparented "${targetBone!.name}"`;
             break;
           }
 
           case "delete": {
-            const deletedBoneName = targetBone!.name;
             targetBone!.remove(false);
             // Mirror Blockbench's native Group.remove(true) Undo contract:
             // the deleted object lists represent an empty post-edit state.
             deleteElements.length = 0;
             deleteGroups.length = 0;
-            result = `Deleted bone "${deletedBoneName}"`;
+            resultText = `Deleted bone "${deletionReceipt!.removed_root.name}"`;
             break;
           }
 
           case "rename": {
             targetBone!.name = bone_data.new_name!;
-            result = `Renamed bone to "${bone_data.new_name}"`;
+            affectedBone = targetBone!;
+            resultText = `Renamed bone to "${bone_data.new_name}"`;
             break;
           }
 
           case "set_pivot": {
             targetBone!.transferOrigin(toArrayVector3(bone_data.origin!));
-            result = `Set pivot point for "${targetBone!.name}"`;
+            affectedBone = targetBone!;
+            resultText = `Set pivot point for "${targetBone!.name}"`;
             break;
           }
 
@@ -1777,7 +1807,8 @@ createTool(
             if (ikTarget) {
               (targetBone! as Group & { ik_target?: string }).ik_target = ikTarget.uuid;
             }
-            result = `Updated IK settings for "${targetBone!.name}"`;
+            affectedBone = targetBone!;
+            resultText = `Updated IK settings for "${targetBone!.name}"`;
             break;
           }
 
@@ -1785,10 +1816,11 @@ createTool(
             const axis = bone_data.mirror_axis!;
             const mirroredBone = targetBone!.duplicate();
             createdGroup = mirroredBone;
+            affectedBone = mirroredBone;
             const axisIndex = axis === "x" ? 0 : axis === "y" ? 1 : 2;
             mirroredBone.origin[axisIndex] *= -1;
             mirroredBone.name = mirroredBoneName!;
-            result = `Mirrored bone "${targetBone!.name}" across ${axis} axis`;
+            resultText = `Mirrored bone "${targetBone!.name}" across ${axis} axis`;
             break;
           }
         }
@@ -1806,7 +1838,27 @@ createTool(
       }
 
       Canvas.updateAll();
-      return result;
+      if (action === "delete") {
+        const result = {
+          action,
+          ...deletionReceipt!,
+        };
+        return {
+          content: [{ type: "text" as const, text: resultText }],
+          structuredContent: result,
+        };
+      }
+      if (!affectedBone) {
+        throw new Error(`Bone rigging action "${action}" completed without a continuation bone.`);
+      }
+      const result = {
+        action,
+        bone: boneState(affectedBone),
+      };
+      return {
+        content: [{ type: "text" as const, text: resultText }],
+        structuredContent: result,
+      };
     },
   },
   animationToolDocs[3].status
