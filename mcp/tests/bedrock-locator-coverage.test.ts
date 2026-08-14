@@ -93,6 +93,6 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(prompt).toContain("`manage_null_object`");
     expect(validation).toContain("## Locator / Null Object");
     expect(validation).toContain("TextureMesh direct authoring/inspection");
-    expect(validation).toContain("animation controller creation/mutation");
+    expect(validation).toContain("AnimationController state particle/sound mutation");
   });
 });

@@ -36,7 +36,8 @@ describe("Bedrock prompt and skill surface", () => {
     expect(texturing).toContain("material_instance");
     expect(texturing).toContain("Native Bedrock PBR");
     expect(animation).toContain("inspect_animation");
-    expect(animation).toContain("animation controllers");
+    expect(animation).toContain("manage_animation_controller");
+    expect(animation).toContain("batch coherent operations");
   });
 
   test("reference-driven modelling keeps a difference-first three-state visual verdict", async () => {

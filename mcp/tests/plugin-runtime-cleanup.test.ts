@@ -63,7 +63,7 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(pkg.description).toContain("Minecraft Bedrock Entity");
     expect(pkg.author).toBe("Halo Karya Media");
     expect(pkg.contributors).toContain("Jason J. Gardner");
-    expect(readme).toContain("Upstream attribution");
+    expect(readme).toContain("upstream hosted plugin");
     expect(await Bun.file("server/types.ts").exists()).toBe(false);
   });
 });
