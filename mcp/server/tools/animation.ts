@@ -2187,7 +2187,20 @@ createTool(
           updateKeyframeSelection();
         }
 
-        return `Performed ${operation} on ${keyframes.length} keyframes`;
+        const result = {
+          operation,
+          source_keyframes: keyframes.length,
+          created_keyframes: bakeSamples.length,
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Bake used ${keyframes.length} source keyframe(s) and created ${bakeSamples.length} new keyframe(s).`,
+            },
+          ],
+          structuredContent: result,
+        };
       }
 
       if (operation === "scale") {

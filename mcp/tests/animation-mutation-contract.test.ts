@@ -328,6 +328,23 @@ describe("animation mutation contract", () => {
     expect(source).toContain("\"Batch keyframe scale\",");
   });
 
+  test("batch bake reports actual created keyframes without returning an unbounded keyframe list", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[6].name", start);
+    const block = source.slice(start, end);
+    const bakeStart = block.indexOf('if (operation === "bake")');
+    const bakeEnd = block.indexOf('if (operation === "scale")', bakeStart);
+    const bakeBlock = block.slice(bakeStart, bakeEnd);
+
+    expect(bakeBlock).toContain("source_keyframes: keyframes.length");
+    expect(bakeBlock).toContain("created_keyframes: bakeSamples.length");
+    expect(bakeBlock).toContain("structuredContent: result");
+    expect(bakeBlock).toContain("bakeSamples.length");
+    expect(bakeBlock).not.toContain("affected_keyframes");
+    expect(bakeBlock).not.toContain("inspect_animation");
+  });
+
   test("paste planned times reject out-of-range and same-channel collapse before Undo", async () => {
     expect(() =>
       requireValidPlannedPasteChannelTimes({
