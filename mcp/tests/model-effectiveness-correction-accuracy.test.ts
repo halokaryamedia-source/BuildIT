@@ -118,13 +118,25 @@ describe("model creation effectiveness — correction accuracy", () => {
     ).toThrow();
   });
 
-  test("Cube correction results expose before/after structural effects", async () => {
+  test("single-Cube correction returns current authored state plus structural effects", async () => {
     const cubes = await source("server/tools/cubes.ts");
-    expect(cubes).toContain("geometry_effect");
-    expect(cubes).toContain("center_delta");
-    expect(cubes).toContain("size_delta");
-    expect(cubes).toContain("rotation_delta");
-    expect(cubes).toContain("visual_verdict: \"not_evaluated\"");
+    const effectStart = cubes.indexOf("function cubeGeometryEffect");
+    const effectEnd = cubes.indexOf("type ModifyCubeRequest", effectStart);
+    const geometryEffect = cubes.slice(effectStart, effectEnd);
+
+    const start = cubes.indexOf("createTool(cubeToolDocs[1].name");
+    const end = cubes.indexOf("createTool(cubeToolDocs[2].name", start);
+    const block = cubes.slice(start, end);
+
+    expect(block).toContain("geometry_effect");
+    expect(block).toContain("cubeGeometryEffect(before, after)");
+    expect(block).toContain("after,");
+    expect(block).not.toContain("\n        before,\n");
+    expect(block).toContain("visual_verdict: \"not_evaluated\"");
+
+    expect(geometryEffect).toContain("center_delta");
+    expect(geometryEffect).toContain("size_delta");
+    expect(geometryEffect).toContain("rotation_delta");
   });
 
   test("modelling workflow requires an invariant before numeric correction", async () => {

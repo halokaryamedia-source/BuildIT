@@ -657,7 +657,6 @@ export function registerCubesTools() {
         execution: "applied" as const,
         visual_verdict: "not_evaluated" as const,
         modified: cubes.length,
-        before,
         after,
         geometry_effect: geometryEffect,
       };

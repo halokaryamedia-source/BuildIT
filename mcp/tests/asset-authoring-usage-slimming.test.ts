@@ -177,14 +177,23 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(orchestrator).toContain("Do not automatically re-read them with `inspect_element`");
   });
 
-  test("correction and recovery outputs do not repeat identical state payloads", async () => {
+  test("single-Cube correction returns current state without repeating the full previous state", async () => {
     const cubes = await source("server/tools/cubes.ts");
+    const singleStart = cubes.indexOf("createTool(cubeToolDocs[1].name");
+    const batchStart = cubes.indexOf("createTool(cubeToolDocs[2].name", singleStart);
+    const single = cubes.slice(singleStart, batchStart);
+    const batch = cubes.slice(batchStart);
+
+    expect(single).not.toContain("cube: after,");
+    expect(single).toContain("after,");
+    expect(single).not.toContain("\n        before,\n");
+    expect(single).toContain("geometry_effect");
+
+    expect(batch).toContain("before,");
+    expect(batch).toContain("after,");
+    expect(batch).toContain("geometry_effect");
+
     const history = await source("server/tools/history.ts");
-    expect(cubes).not.toContain("cube: after,");
-    expect(cubes).not.toContain("cubes: effects.map(({ after }) => after)");
-    expect(cubes).toContain("before,");
-    expect(cubes).toContain("after,");
-    expect(cubes).toContain("geometry_effect");
     expect(history).toContain("JSON.stringify(summarizeHistory(limit))");
   });
 
