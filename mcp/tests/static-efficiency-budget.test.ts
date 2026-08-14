@@ -74,14 +74,17 @@ describe("static efficiency budget", () => {
     expect(getUndoStackParameters.parse({ limit: 200 }).limit).toBe(200);
   });
 
-  test("project info is bounded and result mirrors are compacted centrally", async () => {
+  test("project info stays lifecycle/counts-only and result mirrors are compacted centrally", async () => {
     const [project, factories] = await Promise.all([
       source("server/tools/project.ts"),
       source("lib/factories.ts"),
     ]);
 
-    expect(project).toContain("const ROOT_GROUP_SUMMARY_LIMIT = 50");
-    expect(project).toContain("root_groups_truncated");
+    expect(project).not.toContain("ROOT_GROUP_SUMMARY_LIMIT");
+    expect(project).not.toContain("root_groups_truncated");
+    expect(project).not.toContain("root_groups: rootGroups");
+    expect(project).toContain("root_groups: rootGroupCount");
+    expect(project).toContain("Use list_outline only when hierarchy detail is actually needed");
     expect(project).toContain("structuredContent: result");
     expect(factories).toContain("compactMirroredStructuredContent");
     expect(factories).toContain("returned structured data");

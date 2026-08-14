@@ -5,8 +5,6 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
-const ROOT_GROUP_SUMMARY_LIMIT = 50;
-
 export const createProjectParameters = z.object({
   name: z.string().min(1).describe("Non-empty project name."),
 }).strict();
@@ -131,16 +129,10 @@ export function registerProjectTools() {
       const format = Format as
         | { id?: string; name?: string; display_name?: string }
         | undefined;
-      const allRootGroups = Outliner.root.filter(
-        (node): node is Group => node instanceof Group
+      const rootGroupCount = Outliner.root.reduce(
+        (count, node) => count + (node instanceof Group ? 1 : 0),
+        0
       );
-      const rootGroups = allRootGroups
-        .slice(0, ROOT_GROUP_SUMMARY_LIMIT)
-        .map((group) => ({
-          name: group.name,
-          uuid: group.uuid,
-          children: group.children?.length ?? 0,
-        }));
 
       const result = {
         project: currentProjectLifecycle(),
@@ -157,10 +149,8 @@ export function registerProjectTools() {
           groups: Group.all.length,
           textures: Texture.all.length,
           outliner_elements: Outliner.elements.length,
-          root_groups: allRootGroups.length,
+          root_groups: rootGroupCount,
         },
-        root_groups: rootGroups,
-        root_groups_truncated: allRootGroups.length > rootGroups.length,
       };
 
       return {
