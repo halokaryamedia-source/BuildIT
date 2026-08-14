@@ -57,7 +57,7 @@ The single procedure owner is `docs/knowledge/operations/local-acceptance-runboo
 - `docs/foundation/` — durable current policy
 - `docs/knowledge/operations/local-acceptance-runbook.md` — active local acceptance procedure when `next-action.md` points to it
 
-Historical audits, decisions, plans, and experiments belong in Git history, not parallel current-owner documents.
+Historical audits, decisions, plans, experiments, and retired fixtures belong in Git history, not parallel current-owner files.
 
 ## Repository Map
 
@@ -66,7 +66,6 @@ Historical audits, decisions, plans, and experiments belong in Git history, not 
 mcp/                Blockbench plugin/runtime/build/tests/generated API docs
 docs/foundation/    durable current policy + proof state
 docs/knowledge/     current flow/continuation/ownership/procedure
-workspace/fixtures/ bounded reusable evidence/acceptance fixtures
 ```
 
 ## MCP Development
