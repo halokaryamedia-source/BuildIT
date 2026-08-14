@@ -2,6 +2,8 @@
 
 BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. `Local` is the current product/development authority.
 
+**Project snapshot version: `v0.1`** — pre-local-test baseline. This project snapshot label is separate from the internal MCP plugin package version.
+
 ## Current Status
 
 ```text
