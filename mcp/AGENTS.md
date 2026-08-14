@@ -77,12 +77,13 @@ The runtime prompt bundle contains only prompts intentionally exposed by `server
 
 ## Verification
 
-For normal `mcp/**` source work, the repository gate is:
+For normal `mcp/**` source work, use the same repository gate as the official MCP verification workflow:
 
 ```bash
 bun install --frozen-lockfile
 bun run typecheck
 bun run test
+bun run measure:surface
 bun run build
 bun run docs:check
 ```
