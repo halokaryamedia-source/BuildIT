@@ -63,7 +63,8 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
     expect(next).toContain("LOCAL PROOF REQUIRED");
     expect(next).not.toContain("execute runbook sections 3–4");
-    expect(next).toContain("Do not claim live Blockbench/model-quality or runtime-usage improvement without actual runtime proof");
+    expect(next).toContain("Do not claim live Blockbench/model-quality improvement without actual runtime proof");
+    expect(next).toContain("runtime-usage improvement also requires direct runtime evidence");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("62 enabled tools");
