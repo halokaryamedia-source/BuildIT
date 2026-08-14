@@ -408,10 +408,14 @@ export function registerAnimationInspectionTools() {
         }
 
         const animation = item;
-        const boneAnimators = summarizeBoneAnimators(animation);
-        const effects = inspectParticleEffects(animation, include_effect_keyframes);
+        const animationSummary = {
+          uuid: animation.uuid,
+          name: animation.name,
+          loop: animation.loop,
+          length: animation.length,
+          snapping: animation.snapping,
+        };
 
-        let focusedBone = null;
         if (bone !== undefined) {
           const group = resolveGroup(bone);
           const existingAnimator = animation.animators[group.uuid];
@@ -422,7 +426,7 @@ export function registerAnimationInspectionTools() {
           }
 
           const animator = existingAnimator as BoneAnimator | undefined;
-          focusedBone = {
+          const focusedBone = {
             group: {
               uuid: group.uuid,
               name: group.name,
@@ -446,21 +450,29 @@ export function registerAnimationInspectionTools() {
                   scale: { keyframe_count: 0, keyframes: [] },
                 },
           };
+          const result = {
+            authored_space: "blockbench_animation" as const,
+            animation: animationSummary,
+            focused_bone: focusedBone,
+            ...(include_effect_keyframes
+              ? { effects: inspectParticleEffects(animation, true) }
+              : {}),
+          };
+          return {
+            content: [{ type: "text" as const, text: JSON.stringify(result) }],
+            structuredContent: result,
+          };
         }
 
+        const boneAnimators = summarizeBoneAnimators(animation);
+        const effects = inspectParticleEffects(animation, include_effect_keyframes);
         const result = {
           authored_space: "blockbench_animation" as const,
-          animation: {
-            uuid: animation.uuid,
-            name: animation.name,
-            loop: animation.loop,
-            length: animation.length,
-            snapping: animation.snapping,
-          },
+          animation: animationSummary,
           bone_animator_count: boneAnimators.length,
           bone_animators: boneAnimators,
           effects,
-          focused_bone: focusedBone,
+          focused_bone: null,
         };
 
         return {

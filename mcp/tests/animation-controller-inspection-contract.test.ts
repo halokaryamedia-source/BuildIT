@@ -50,4 +50,21 @@ describe("AnimationController inspection closure", () => {
     expect(focusedState).toContain("uuid: transition.uuid");
     expect(focusedState).toContain("uuid: link.uuid");
   });
+
+  test("focused authored-bone inspection omits animation-wide summaries", async () => {
+    const source = await Bun.file("server/tools/animation-inspection.ts").text();
+    const executeStart = source.indexOf("async execute({ animation_id, bone, state, include_effect_keyframes })");
+    const focusedStart = source.indexOf("if (bone !== undefined)", executeStart);
+    const summaryStart = source.indexOf("const boneAnimators = summarizeBoneAnimators(animation)", focusedStart);
+    expect(executeStart).toBeGreaterThan(-1);
+    expect(focusedStart).toBeGreaterThan(executeStart);
+    expect(summaryStart).toBeGreaterThan(focusedStart);
+
+    const focusedBranch = source.slice(focusedStart, summaryStart);
+    expect(focusedBranch).toContain("focused_bone: focusedBone");
+    expect(focusedBranch).not.toContain("summarizeBoneAnimators");
+    expect(focusedBranch).not.toContain("bone_animator_count");
+    expect(focusedBranch).toContain("include_effect_keyframes");
+    expect(focusedBranch).toContain("inspectParticleEffects(animation, true)");
+  });
 });
