@@ -364,6 +364,21 @@ describe("animation mutation contract", () => {
     expect(source).toContain("plannedPasteTimesByChannel[channel][index]");
   });
 
+  test("animation paste reports bounded pasted/overwrite counts from native replaceOthers", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[6].name");
+    const block = source.slice(start);
+
+    expect(block).toContain("const pastedKeyframeCount = countAnimationClipboardKeyframes(");
+    expect(block).toContain("const replacedKeyframes: _Keyframe[] = [];");
+    expect(block).toContain("keyframe.replaceOthers(replacedKeyframes);");
+    expect(block).toContain("pasted_keyframes: pastedKeyframeCount");
+    expect(block).toContain("overwritten_keyframes: replacedKeyframes.length");
+    expect(block).toContain("structuredContent: result");
+    expect(block).not.toContain("affected_keyframes");
+    expect(block).not.toContain("inspect_animation");
+  });
+
   test("bone create child adoption rejects parent/ancestor cycles before Undo", async () => {
     const hierarchy = new Map<string, string | null>([
       ["root-bone", null],

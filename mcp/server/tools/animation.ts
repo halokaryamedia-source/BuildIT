@@ -2449,7 +2449,10 @@ createTool(
 
           // @ts-ignore
           const clipboardData = global.animationClipboard;
-          if (countAnimationClipboardKeyframes(clipboardData.channels) === 0) {
+          const pastedKeyframeCount = countAnimationClipboardKeyframes(
+            clipboardData.channels
+          );
+          if (pastedKeyframeCount === 0) {
             throw new Error(
               "Animation clipboard contains no keyframe data. Copy a non-empty animation range first."
             );
@@ -2476,6 +2479,7 @@ createTool(
             ])
           ) as Record<string, number[]>;
           requireValidPlannedPasteChannelTimes(plannedPasteTimesByChannel);
+          const replacedKeyframes: _Keyframe[] = [];
 
           Undo.initEdit({
             animations: [tgtAnimation],
@@ -2524,7 +2528,7 @@ createTool(
                       `Channel "${channel}" is unavailable for ${tgtBone.name}.`
                     );
                   }
-                  keyframe.replaceOthers([]);
+                  keyframe.replaceOthers(replacedKeyframes);
 
                   if (kfData.interpolation === "bezier") {
                     // @ts-ignore
@@ -2555,9 +2559,20 @@ createTool(
 
           Animator.preview();
 
-          return `Pasted animation data to "${target.bone}"${
-            mirrorAxis ? ` (mirrored on ${mirrorAxis} axis)` : ""
-          }`;
+          const result = {
+            action,
+            pasted_keyframes: pastedKeyframeCount,
+            overwritten_keyframes: replacedKeyframes.length,
+          };
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `${action === "mirror_paste" ? "Mirrored paste" : "Paste"} wrote ${pastedKeyframeCount} keyframe(s) to "${tgtBone.name}" and overwrote ${replacedKeyframes.length} existing keyframe(s).`,
+              },
+            ],
+            structuredContent: result,
+          };
         }
       }
     },
