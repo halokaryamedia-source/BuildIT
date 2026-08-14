@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified: 2026-08-13  
+Last verified: 2026-08-14  
 Stability: stable
 
 This file owns stable project facts only. Active work belongs in `docs/knowledge/next-action.md`; routing belongs in `AGENTS.md`.
@@ -28,10 +28,11 @@ For articulated reference preparation, stable default is a natural neutral stanc
 docs/foundation/  durable current policy
 docs/knowledge/   current flow, continuation, ownership, local procedure + tiny compatibility/regression support
 mcp/              plugin/runtime/build/tests/generated API docs
-workspace/        reusable acceptance fixtures
 ```
 
 There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
+
+Retired acceptance fixtures and experiments belong in Git history rather than the active tree. Current reference-model acceptance uses the actual user-approved reference supplied to the active local modelling context; that test evidence is not bundled into the production plugin.
 
 ## MCP Facts
 
@@ -45,7 +46,7 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, hardened Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
 
-Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, and experiments.
+Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, experiments, and fixtures.
 
 ## Navigation
 
