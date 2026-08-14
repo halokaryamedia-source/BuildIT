@@ -2025,6 +2025,9 @@ createTool(
       }
 
       if (operation === "offset" || operation === "mirror") {
+        const movesTime =
+          operation === "offset" && (parameters.offset_time ?? 0) !== 0;
+        const replacedKeyframes: _Keyframe[] = [];
         if (operation === "offset" && parameters.offset_time !== undefined) {
           requireValidPlannedKeyframeTimes(
             keyframes.map(
@@ -2062,6 +2065,14 @@ createTool(
                 }
               }
             });
+
+            if (movesTime) {
+              keyframes.forEach((kf: _Keyframe) => {
+                kf.replaceOthers(replacedKeyframes);
+              });
+              Undo.addKeyframeCasualties(replacedKeyframes);
+              AnimationItem.selected!.setLength();
+            }
           } else {
             const mirrorAxis = parameters.mirror_axis;
   if (!mirrorAxis) {
@@ -2081,6 +2092,22 @@ createTool(
         }
 
         Animator.preview();
+        if (operation === "offset") {
+          const result = {
+            operation,
+            source_keyframes: keyframes.length,
+            overwritten_keyframes: replacedKeyframes.length,
+          };
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Offset updated ${keyframes.length} keyframe(s) and overwrote ${replacedKeyframes.length} existing keyframe(s).`,
+              },
+            ],
+            structuredContent: result,
+          };
+        }
         return `Performed ${operation} on ${keyframes.length} keyframes`;
       }
 

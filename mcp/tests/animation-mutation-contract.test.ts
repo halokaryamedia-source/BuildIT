@@ -328,6 +328,34 @@ describe("animation mutation contract", () => {
     expect(source).toContain("\"Batch keyframe scale\",");
   });
 
+  test("batch offset mirrors native time-drag collision cleanup and Undo casualty ownership", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[6].name", start);
+    const block = source.slice(start, end);
+    const offsetStart = block.indexOf('if (operation === "offset" || operation === "mirror")');
+    const offsetEnd = block.indexOf('if (operation === "bake")', offsetStart);
+    const offsetBlock = block.slice(offsetStart, offsetEnd);
+
+    expect(offsetBlock).toContain('operation === "offset" && (parameters.offset_time ?? 0) !== 0');
+    expect(offsetBlock).toContain("const replacedKeyframes: _Keyframe[] = [];");
+    expect(offsetBlock).toContain("if (movesTime) {");
+    expect(offsetBlock).toContain("kf.replaceOthers(replacedKeyframes);");
+    expect(offsetBlock).toContain("Undo.addKeyframeCasualties(replacedKeyframes);");
+    expect(offsetBlock).toContain("AnimationItem.selected!.setLength();");
+    expect(offsetBlock.indexOf("kf.replaceOthers(replacedKeyframes);")).toBeLessThan(
+      offsetBlock.indexOf("Undo.addKeyframeCasualties(replacedKeyframes);")
+    );
+    expect(offsetBlock.indexOf("Undo.addKeyframeCasualties(replacedKeyframes);")).toBeLessThan(
+      offsetBlock.indexOf("Undo.finishEdit")
+    );
+    expect(offsetBlock).toContain("source_keyframes: keyframes.length");
+    expect(offsetBlock).toContain("overwritten_keyframes: replacedKeyframes.length");
+    expect(offsetBlock).toContain("structuredContent: result");
+    expect(offsetBlock).not.toContain("affected_keyframes");
+    expect(offsetBlock).not.toContain("inspect_animation");
+  });
+
   test("batch scale reports bounded overwrite count from native replaceOthers", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
