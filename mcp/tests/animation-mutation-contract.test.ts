@@ -328,6 +328,27 @@ describe("animation mutation contract", () => {
     expect(source).toContain("\"Batch keyframe scale\",");
   });
 
+  test("batch scale reports bounded overwrite count from native replaceOthers", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[6].name", start);
+    const block = source.slice(start, end);
+    const scaleStart = block.indexOf('if (operation === "scale")');
+    const scaleEnd = block.indexOf('if (operation === "reverse")', scaleStart);
+    const scaleBlock = block.slice(scaleStart, scaleEnd);
+
+    expect(scaleBlock).toContain("const replacedKeyframes: _Keyframe[] = [];");
+    expect(scaleBlock.indexOf("const replacedKeyframes: _Keyframe[] = [];")).toBeLessThan(
+      scaleBlock.indexOf("Undo.initEdit")
+    );
+    expect(scaleBlock).toContain("keyframe.replaceOthers(replacedKeyframes);");
+    expect(scaleBlock).toContain("source_keyframes: keyframes.length");
+    expect(scaleBlock).toContain("overwritten_keyframes: replacedKeyframes.length");
+    expect(scaleBlock).toContain("structuredContent: result");
+    expect(scaleBlock).not.toContain("affected_keyframes");
+    expect(scaleBlock).not.toContain("inspect_animation");
+  });
+
   test("batch bake reports actual created keyframes without returning an unbounded keyframe list", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     const start = source.indexOf("createTool(\n  animationToolDocs[5].name");

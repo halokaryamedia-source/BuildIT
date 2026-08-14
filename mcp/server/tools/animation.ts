@@ -2234,6 +2234,7 @@ createTool(
           "Batch keyframe scale",
           true
         );
+        const replacedKeyframes: _Keyframe[] = [];
 
         Undo.initEdit({
           animations: [animation],
@@ -2255,7 +2256,6 @@ createTool(
             }
           );
 
-          const replacedKeyframes: _Keyframe[] = [];
           stretchStates.forEach(({ keyframe }) => {
             keyframe.replaceOthers(replacedKeyframes);
           });
@@ -2271,7 +2271,20 @@ createTool(
 
         Animator.preview();
         updateKeyframeSelection();
-        return `Performed ${operation} on ${keyframes.length} keyframes`;
+        const result = {
+          operation,
+          source_keyframes: keyframes.length,
+          overwritten_keyframes: replacedKeyframes.length,
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Scale moved ${keyframes.length} keyframe(s) and overwrote ${replacedKeyframes.length} existing keyframe(s).`,
+            },
+          ],
+          structuredContent: result,
+        };
       }
 
       if (operation === "reverse") {
