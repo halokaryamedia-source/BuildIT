@@ -25,4 +25,29 @@ describe("AnimationController inspection closure", () => {
     expect(() => resolveUniqueControllerState(states, "attack")).toThrow("ambiguous");
     expect(() => resolveUniqueControllerState(states, "missing")).toThrow("not found");
   });
+
+  test("focused state inspection omits the redundant all-state summary", async () => {
+    const source = await Bun.file("server/tools/animation-inspection.ts").text();
+    const start = source.indexOf("function inspectAnimationController");
+    const end = source.indexOf("function inspectKeyframe", start);
+    const controllerInspection = source.slice(start, end);
+    const focusedStart = controllerInspection.indexOf("if (stateReference)");
+    const summaryReturn = controllerInspection.indexOf("states: (controller.states as ControllerStateView[]).map(summarizeControllerState)");
+    expect(focusedStart).toBeGreaterThan(-1);
+    expect(summaryReturn).toBeGreaterThan(focusedStart);
+    const focusedBranch = controllerInspection.slice(focusedStart, summaryReturn);
+    expect(focusedBranch).toContain("focused_state: inspectControllerState(controller, stateReference)");
+    expect(focusedBranch).not.toContain("states: (controller.states");
+  });
+
+  test("focused state exposes exact effect UUIDs for identity reuse", async () => {
+    const source = await Bun.file("server/tools/animation-inspection.ts").text();
+    const start = source.indexOf("function inspectControllerState");
+    const end = source.indexOf("function inspectAnimationController", start);
+    const focusedState = source.slice(start, end);
+    expect(focusedState).toContain("uuid: sound.uuid || null");
+    expect(focusedState).toContain("uuid: particle.uuid || null");
+    expect(focusedState).toContain("uuid: transition.uuid");
+    expect(focusedState).toContain("uuid: link.uuid");
+  });
 });

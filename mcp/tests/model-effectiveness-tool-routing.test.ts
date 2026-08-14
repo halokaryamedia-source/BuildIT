@@ -30,9 +30,11 @@ describe("model creation effectiveness — tool routing", () => {
   test("specialists reuse known state instead of forcing lifecycle and discovery rereads", async () => {
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const normalizedAnimation = animation.toLowerCase().replaceAll("`", "");
 
-    expect(animation).toContain("Call `get_project_info` only when");
-    expect(animation).toContain("Call `list_outline` only when");
+    expect(normalizedAnimation).toMatch(/get_project_info[^.\n]*only[^.\n]*(unknown|stale)/);
+    expect(normalizedAnimation).toMatch(/list_outline[^.\n]*only[^.\n]*(identity|hierarchy)/);
+    expect(normalizedAnimation).toContain("reuse known");
     expect(animation).not.toContain("Confirm the active project format is `bedrock` with `get_project_info`");
     expect(texturing).toContain("Reuse identity/metadata already returned by the current workflow");
     expect(texturing).toContain("do not re-list/re-read it only for confirmation");
@@ -64,7 +66,4 @@ describe("model creation effectiveness — tool routing", () => {
     expect(profile).not.toContain("geometry_only");
     expect(profile).not.toContain("tool_lane_profile");
   });
-
-
-
 });

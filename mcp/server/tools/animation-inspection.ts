@@ -189,10 +189,12 @@ function inspectControllerState(controller: AnimationController, reference: stri
     }),
     sounds: state.sounds.map((sound, index) => ({
       index,
+      uuid: sound.uuid || null,
       effect: sound.effect || null,
     })),
     particles: state.particles.map((particle, index) => ({
       index,
+      uuid: particle.uuid || null,
       effect: particle.effect || null,
       locator: particle.locator || null,
       bind_to_actor: particle.bind_to_actor === false ? false : true,
@@ -211,7 +213,7 @@ function inspectControllerState(controller: AnimationController, reference: stri
 
 function inspectAnimationController(controller: AnimationController, stateReference?: string) {
   const initial = controller.states.find((state) => state.uuid === controller.initial_state);
-  return {
+  const base = {
     authored_space: "blockbench_animation_controller" as const,
     controller: {
       uuid: controller.uuid,
@@ -222,8 +224,19 @@ function inspectAnimationController(controller: AnimationController, stateRefere
         : null,
     },
     state_count: controller.states.length,
+  };
+
+  if (stateReference) {
+    return {
+      ...base,
+      focused_state: inspectControllerState(controller, stateReference),
+    };
+  }
+
+  return {
+    ...base,
     states: (controller.states as ControllerStateView[]).map(summarizeControllerState),
-    focused_state: stateReference ? inspectControllerState(controller, stateReference) : null,
+    focused_state: null,
   };
 }
 
