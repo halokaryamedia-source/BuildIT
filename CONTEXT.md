@@ -3,7 +3,7 @@
 Last verified: 2026-08-14  
 Stability: stable
 
-This file owns stable project facts only. Active work belongs in `docs/knowledge/next-action.md`; routing belongs in `AGENTS.md`.
+This file owns stable project facts only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; persistent asset continuity belongs in `workspace/active/<project>/README.md`; routing belongs in `AGENTS.md`.
 
 ## Product
 
@@ -18,6 +18,7 @@ Primary output is an editable `.bbmodel`; Bedrock geometry JSON is the runtime g
 - Modelling Brief — approved visual guide, including approved visible form/pose; not a per-Cube blueprint.
 - Requested Dimensions — user-approved target dimensions; `1 block = 16 Blockbench units`.
 - Handoff Constraints — compact approved nonvisual facts such as target scale/height, target use, or explicit pose override; kept outside image pixels by default and passed explicitly when material to downstream modelling.
+- Asset Workspace — repository-backed current asset package storage under `workspace/`; it preserves current `.bbmodel`, intentional references/assets/exports, and compact asset-specific continuity without becoming runtime policy.
 
 For articulated reference preparation, stable default is a natural neutral stance unless the user explicitly requests another pose. Pose/limb integrity is a reference-quality requirement, not an object-specific preset.
 
@@ -26,13 +27,18 @@ For articulated reference preparation, stable default is a natural neutral stanc
 ```text
 .agents/skills/    canonical skills
 docs/foundation/  durable current policy
-docs/knowledge/   current flow, continuation, ownership, local procedure + tiny compatibility/regression support
+docs/knowledge/   current flow, repository continuation, ownership, local procedure
 mcp/              plugin/runtime/build/tests/generated API docs
+workspace/        persistent active/saved Blockbench asset packages
 ```
 
 There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
-Retired acceptance fixtures and experiments belong in Git history rather than the active tree. Current reference-model acceptance uses the actual user-approved reference supplied to the active local modelling context; that test evidence is not bundled into the production plugin.
+`workspace/active/<project>/README.md` owns only the current asset-specific resume facts for that named project. It is not a second repository roadmap. Stored reference paths are continuity/provenance only until the actual image is visible in the active modelling context.
+
+Retired acceptance fixtures and experiments belong in Git history rather than the active workspace. Current reference-model acceptance uses the actual user-approved reference supplied to the active local modelling context; that test evidence is not bundled into the production plugin.
+
+The Reference Generator itself remains image-only. Persisting an approved reference into a workspace project is a downstream/local storage action.
 
 ## MCP Facts
 
@@ -46,13 +52,15 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, hardened Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
 
-Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, experiments, and fixtures.
+Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, experiments, and obsolete asset revisions.
 
 ## Navigation
 
 - routing → `AGENTS.md`
 - flow → `docs/knowledge/flow.md`
-- continuation → `docs/knowledge/next-action.md`
+- repository continuation → `docs/knowledge/next-action.md`
+- active asset continuity → `workspace/active/<project>/README.md`
+- asset workspace rules → `workspace/README.md`
 - source ownership → `docs/knowledge/implementation-map.md`
 - proof state → `docs/foundation/validation-report.md`
 - local acceptance → `docs/knowledge/operations/local-acceptance-runbook.md` only when reactivated
