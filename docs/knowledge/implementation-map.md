@@ -1,8 +1,8 @@
 # Implementation Map
 
-Updated: 2026-08-13
+Updated: 2026-08-14
 
-Current `Local` source/ownership only. Active task state belongs in `next-action.md`; Git history owns retired rationale and experiments.
+Current `Local` source/ownership only. Repository/plugin active task state belongs in `next-action.md`; persistent asset continuity belongs in `workspace/active/<project>/README.md`; Git history owns retired rationale and experiments.
 
 ## Primary Owners
 
@@ -10,7 +10,10 @@ Current `Local` source/ownership only. Active task state belongs in `next-action
 |---|---|
 | task routing / proof discipline | root `AGENTS.md` |
 | stable project facts | root `CONTEXT.md` |
-| active continuation | `docs/knowledge/next-action.md` |
+| repository/plugin continuation | `docs/knowledge/next-action.md` |
+| active asset continuity | `workspace/active/<project>/README.md` |
+| asset workspace lifecycle/rules | `workspace/README.md` |
+| saved/parked asset packages | `workspace/saved/` |
 | detailed current flow | `docs/knowledge/flow.md` |
 | product/reference/modelling policy | `docs/foundation/` |
 | current proof state | `docs/foundation/validation-report.md` |
@@ -25,6 +28,8 @@ Current `Local` source/ownership only. Active task state belongs in `next-action
 | TypeScript | `.agents/skills/typescript-type-safety/` |
 | Bun tooling | `.agents/skills/bun-tooling/` |
 | local acceptance procedure | `docs/knowledge/operations/local-acceptance-runbook.md` only when reactivated |
+
+Workspace is **storage/continuity, not an MCP capability family**. Reference Generator output remains image-only; persistence of an approved image into a project package is downstream/local asset storage.
 
 ## MCP Source Areas
 
@@ -101,12 +106,15 @@ Current upstream Codex architecture supports catalog → deferred exposure → n
 
 ```text
 intent + known state + stage
+→ named workspace state when persistent
 → deterministic semantic route
 → exact tool loaded? call
 → otherwise exact-name native tool_search
 → execute
 → bounded recovery from existing failure signals
 ```
+
+A known named workspace package should reduce rediscovery, not create a new discovery ritual. Read its compact README and only needed current files; do not scan all active projects or treat stored prose as visual evidence.
 
 Installed-client/model behavior remains direct/local proof.
 
