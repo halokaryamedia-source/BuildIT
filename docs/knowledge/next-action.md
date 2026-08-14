@@ -20,6 +20,8 @@ Current source contract is static-verified. Installed plugin freshness, runtime/
 
 Single procedure owner: `docs/knowledge/operations/local-acceptance-runbook.md`.
 
+The local test is deliberately simple:
+
 ```text
 current Local
 → clean tree + exact HEAD
@@ -29,15 +31,17 @@ current Local
 → restart Blockbench + reconnect MCP
 → verify endpoint + 62-tool default surface
 → verify:stateless-local
-→ Fixture A
-→ persistence/export
-→ Fixture B
-→ efficiency trace
+→ TEST 1 — MCP / CORE MECHANICS
+→ persistence / export
+→ TEST 2 — REFERENCE MODEL (ELEPHANT)
+→ efficiency check
 ```
+
+**Test 1** proves the plugin/MCP mechanics work. **Test 2** proves MCP can build a Minecraft/Blockbench elephant from the approved reference, including Geometry + Texture judgement.
 
 Package version alone is not freshness proof.
 
-The approved elephant reference may be used for Fixture B only when the actual image is visible to the local modelling context. Five previews are the future default, not a reason to regenerate an already approved usable reference.
+The approved elephant reference may be used for Test 2 only when the actual image is visible to the local modelling context. Five previews are the future default, not a reason to regenerate an already approved usable reference.
 
 ```text
 MINOR → one canonical Minecraft interpretation → continue
@@ -56,7 +60,7 @@ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 LOCAL MACHINE
 → execute runbook sections 3–4
 → prove exact HEAD + artifact hash + current BlockIT load
-→ begin Fixture A
+→ begin TEST 1 — MCP / CORE MECHANICS
 ```
 
 Do not change source unless a reproducible local failure identifies a concrete owner. No speculative cleanup, new tools, profiles, routers, or compatibility layers.
