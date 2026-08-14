@@ -58,6 +58,7 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid.
 - Never claim proof that was not obtained.
+- When a repository change alters user-facing setup, current product status, capability boundaries, or the active test entrypoint, update the relevant `README.md` in the same change. Do not churn README files for internal changes that leave those facts unchanged.
 
 ## Execution / Proof
 
