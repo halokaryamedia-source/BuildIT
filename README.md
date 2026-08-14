@@ -26,6 +26,24 @@ Reference fidelity is **Minecraft-first**: recognizable Geometry + Texture that 
 
 Root `AGENTS.md` owns routing. `docs/knowledge/flow.md` owns the detailed product sequence. Tool success is execution evidence, not visual approval.
 
+## Asset Workspace
+
+Persistent model work belongs under:
+
+```text
+workspace/
+├─ active/<project>/
+└─ saved/<project>/
+```
+
+`workspace/active/<project>/` keeps one current `.bbmodel`, intentional retained references/assets/exports, and a **small project `README.md`** containing only current resume facts. Codex should open the named project rather than scan every workspace package.
+
+The project README is asset continuity, not a second roadmap or visual authority. Git history owns old iterations. Temporary captures/logs belong in `.cache/` and are ignored.
+
+The Reference Generator remains **image-only**. Saving an approved image into a workspace project is a downstream/local persistence action; no manifest JSON, geometry blueprint, ZIP, or sidecar file is required.
+
+See `workspace/README.md` for the compact contract.
+
 ## Local Acceptance Flow
 
 The next live acceptance is deliberately simple:
@@ -52,14 +70,16 @@ The single procedure owner is `docs/knowledge/operations/local-acceptance-runboo
 ## Current Documentation Owners
 
 - `CONTEXT.md` — stable facts
-- `docs/knowledge/next-action.md` — active continuation
+- `docs/knowledge/next-action.md` — repository/plugin continuation
+- `workspace/README.md` — persistent asset workspace rules
+- `workspace/active/<project>/README.md` — active asset-specific continuity
 - `docs/knowledge/flow.md` — detailed current workflow
 - `docs/knowledge/implementation-map.md` — source/tool ownership
 - `docs/foundation/validation-report.md` — current proof state
 - `docs/foundation/` — durable current policy
 - `docs/knowledge/operations/local-acceptance-runbook.md` — active local acceptance procedure when `next-action.md` points to it
 
-Historical audits, decisions, plans, experiments, and retired fixtures belong in Git history, not parallel current-owner files.
+Historical audits, decisions, plans, experiments, retired fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
 
 ## Repository Map
 
@@ -67,7 +87,8 @@ Historical audits, decisions, plans, experiments, and retired fixtures belong in
 .agents/skills/     canonical Codex/agent skills and authoring judgement
 mcp/                Blockbench plugin/runtime/build/tests/generated API docs
 docs/foundation/    durable current policy + proof state
-docs/knowledge/     current flow/continuation/ownership/procedure
+docs/knowledge/     current flow/repository-continuation/ownership/procedure
+workspace/          persistent active/saved Blockbench asset packages
 ```
 
 ## MCP Development
@@ -112,7 +133,7 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-Normal asset authoring should route from current intent + known state to the exact MCP tool and active modelling/texturing/animation specialist. Do not broad-scan the repository, repeatedly rediscover known state, inspect every Cube, or capture after every mutation.
+Normal asset authoring should route from current intent + known state to the exact MCP tool and active modelling/texturing/animation specialist. Do not broad-scan the repository or workspace, repeatedly rediscover known state, inspect every Cube, or capture after every mutation.
 
 ## Protected Capability Gaps
 
@@ -127,7 +148,7 @@ The following remain explicit gaps rather than being faked through generic fallb
 
 ## Hygiene
 
-One current owner per responsibility. Git history owns removed historical documentation. Do not add another routing, planning, review, scoring, profile, compatibility, or packaging layer without concrete need.
+One current owner per responsibility. Git history owns removed historical documentation and obsolete asset revisions. Do not add another routing, planning, review, scoring, profile, compatibility, packaging, or workspace-state layer without concrete need.
 
 ## License
 
