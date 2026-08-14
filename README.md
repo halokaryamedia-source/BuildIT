@@ -7,10 +7,10 @@ BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built
 ## Current Status
 
 ```text
-PRELOCAL_OPTIMIZATION_COMPLETE
+PRELOCAL_CONTROLLER_MUTATION_READY
 ```
 
-The current source contract and pre-local optimization closure are static/CI verified. **Installed-plugin freshness, live Blockbench behavior, model quality, runtime call efficiency, and persistence on the current build remain `LOCAL PROOF REQUIRED`.**
+The current source contract, pre-local optimization closure, and bounded AnimationController mutation source are repository/static work. **Installed-plugin freshness, live Blockbench behavior, controller execution, model quality, runtime call efficiency, and persistence on the current build remain `LOCAL PROOF REQUIRED`.**
 
 **Local acceptance is currently deferred.** Do not activate the local runbook or claim live Blockbench/model-quality improvement without a fresh explicit instruction and actual runtime proof.
 
@@ -30,18 +30,20 @@ Root `AGENTS.md` owns routing. `docs/knowledge/flow.md` owns the detailed produc
 
 Persistent asset continuity lives under `workspace/`. **`workspace/README.md` is the full workspace contract.** A named active project owns one compact resume README plus its current editable model and deliberate retained files; Codex should open that named package only. Git history owns old revisions and transient captures/logs do not become project memory.
 
-## Pre-local Optimization Closure
+## Current Static Closures
 
-Current static closure includes:
+Pre-local optimization keeps:
 
-- repository regression preflight before editing and one coherent logical patch;
-- known/coherent Cube creation through `place_cube(elements=[...])` without batching uncertainty;
-- affected-view-first correction verification with cross-view expansion only when material risk exists;
+- regression preflight before editing and one coherent logical patch;
+- known/coherent Cube creation through `place_cube(elements=[...])`;
+- affected-view-first correction verification;
 - meaningful workspace persistence rather than mutation-count checkpoints;
-- canonical documentation ownership with historical review/decision residue removed;
+- canonical documentation ownership;
 - no speculative tool-count, runtime-prompt, router, or registration-profile redesign without installed-client evidence.
 
-These are source/instruction/test improvements, not proof of runtime usage reduction.
+AnimationController authoring now has one compact `manage_animation_controller` capability instead of several narrow tools. One call can apply up to 32 ordered state-machine operations in one Undo unit and returns affected state/IDs so immediate `inspect_animation` readback is unnecessary.
+
+These are source/instruction/test improvements, not proof of runtime usage reduction or live controller behavior.
 
 ## Local Acceptance — Deferred
 
@@ -56,7 +58,7 @@ current Local
 → record mcp/dist/mcp.js SHA-256
 → load the exact local BlockIT build
 → restart Blockbench + reconnect MCP
-→ verify endpoint + 62-tool default surface
+→ verify endpoint + 63-tool default surface
 → verify:stateless-local
 → TEST 1 — MCP / CORE MECHANICS
 → persistence / export
@@ -79,16 +81,6 @@ current Local
 
 Historical audits, reviews, decisions, plans, experiments, retired fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
 
-## Repository Map
-
-```text
-.agents/skills/     canonical Codex/agent skills and authoring judgement
-mcp/                Blockbench plugin/runtime/build/tests/generated API docs
-docs/foundation/    durable current policy + proof state
-docs/knowledge/     current flow/repository-continuation/ownership/procedure
-workspace/          persistent active/saved Blockbench asset packages
-```
-
 ## MCP Development
 
 From `mcp/`:
@@ -102,23 +94,21 @@ bun run build
 bun run docs:check
 ```
 
-Production output is the local build at `mcp/dist/mcp.js`. `dist/` is generated and not repository authority. **Package version alone is not freshness proof**; a future local acceptance records the exact Git HEAD plus SHA-256 of the built `mcp/dist/mcp.js` actually loaded by Blockbench.
+Production output is `mcp/dist/mcp.js`. `dist/` is generated and not repository authority. **Package version alone is not freshness proof.**
 
-Do **not** use the upstream hosted plugin as BlockIT proof.
-
-Current static surface:
+Current surface contract:
 
 ```text
-62 enabled tools
-76,439 tools/list response characters
-53,493 input-schema characters
-10,645 description characters
-initialize instructions: 386 characters
-max per-tool payload: 3,167 characters
-runtime workflow prompt: 6,959 characters
+63 enabled tools
+initialize instructions          <= 700 characters
+tools/list response              <= 80,500 characters
+input schemas                    <= 56,500 characters
+descriptions                     <= 11,500 characters
+max per-tool payload             <= 3,200 characters
+runtime workflow prompt          < 7,000 characters
 ```
 
-Serialized character counts are static measurements, not installed-client token/context measurements.
+`measure:surface` emits the exact current serialized measurements. These are static characters, not installed-client token/context measurements. The max-per-tool ceiling was **not increased** for AnimationController mutation.
 
 ## Runtime / Security Baseline
 
@@ -135,7 +125,7 @@ Normal asset authoring routes from current intent + known state to the exact MCP
 
 ## Protected Capability Gaps
 
-- AnimationController creation/mutation
+- AnimationController state particle/sound and blend-curve mutation
 - existing-animation direct sound/timeline-effect mutation
 - TextureMesh direct authoring/inspection
 - native Bedrock visible bounding-box fields

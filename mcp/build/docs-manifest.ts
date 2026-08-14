@@ -12,6 +12,7 @@ import { paintToolDocs } from "../server/tools/paint";
 import { projectToolDocs } from "../server/tools/project";
 import { textureToolDocs } from "../server/tools/texture";
 import { animationToolDocs } from "../server/tools/animation";
+import { animationControllerToolDocs } from "../server/tools/animation-controller";
 import { animationInspectionToolDocs } from "../server/tools/animation-inspection";
 import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
@@ -26,7 +27,14 @@ export interface CategoryGroup {
 export const toolManifest: CategoryGroup[] = [
   { category: "Cubes", tools: cubeToolDocs },
   { category: "Camera & Screenshots", tools: cameraToolDocs },
-  { category: "Animation", tools: [...animationToolDocs, ...animationInspectionToolDocs] },
+  {
+    category: "Animation",
+    tools: [
+      ...animationToolDocs,
+      ...animationControllerToolDocs,
+      ...animationInspectionToolDocs,
+    ],
+  },
   { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs, ...locatorToolDocs] },
   { category: "Export", tools: exportToolDocs },
   { category: "History", tools: historyToolDocs },

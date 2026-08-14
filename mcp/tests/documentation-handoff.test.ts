@@ -57,7 +57,7 @@ describe("Codex documentation handoff", () => {
     expect(next.length).toBeLessThan(7_000);
     expect(next).toContain("Working branch: **`Local` only**");
     expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
-    expect(next).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
+    expect(next).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
     expect(next).toContain("## Next Step");
     expect(next).toContain("NO LOCAL RUN ACTIVE");
     expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
@@ -67,7 +67,7 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("runtime-usage improvement also requires direct runtime evidence");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
-    expect(implementation).toContain("62 enabled tools");
+    expect(implementation).toContain("63 enabled tools");
     expect(implementation).toContain("No local run is active");
   });
 
@@ -79,7 +79,7 @@ describe("Codex documentation handoff", () => {
       text("../docs/foundation/validation-report.md"),
     ]);
     for (const owner of [rootReadme, mcpReadme, next, validation]) {
-      expect(owner).toContain("PRELOCAL_OPTIMIZATION_COMPLETE");
+      expect(owner).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
     }
     expect(rootReadme).toContain("Local Acceptance — Deferred");
     expect(mcpReadme).toContain("Local Acceptance — Inactive");
@@ -134,6 +134,7 @@ describe("Codex documentation handoff", () => {
       { tools: ["list_locator_elements", "manage_locator", "manage_null_object"], source: "server/tools/locators.ts", test: "tests/bedrock-locator-coverage.test.ts" },
       { tools: ["create_texture", "list_textures", "get_texture", "activate_texture"], source: "server/tools/texture.ts", test: "tests/context-payload-cleanup.test.ts" },
       { tools: ["create_animation"], source: "server/tools/animation.ts", test: "tests/create-animation-contract.test.ts" },
+      { tools: ["manage_animation_controller"], source: "server/tools/animation-controller.ts", test: "tests/animation-controller-mutation-contract.test.ts" },
       { tools: ["inspect_animation"], source: "server/tools/animation-inspection.ts", test: "tests/context-payload-cleanup.test.ts" },
       { tools: ["get_undo_stack"], source: "server/tools/history.ts", test: "tests/static-efficiency-budget.test.ts" },
       { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
@@ -161,6 +162,7 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("Native Deferred MCP Discovery Compatibility");
     expect(validation).toContain("P0–P4 Static Efficiency / Decision Proof");
     expect(validation).toContain("Static Pre-local Optimization Closure");
+    expect(validation).toContain("AnimationController Mutation");
     expect(validation).toContain("OFFICIALLY VERIFIED");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");

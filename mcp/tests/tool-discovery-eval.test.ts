@@ -61,9 +61,9 @@ describe("tool discovery eval", () => {
     );
 
     for (const report of [raw, routed]) {
-      expect(report.case_count).toBe(104);
-      expect(report.expected_tool_count).toBe(52);
-      expect(report.enabled_tool_count).toBe(62);
+      expect(report.case_count).toBe(106);
+      expect(report.expected_tool_count).toBe(53);
+      expect(report.enabled_tool_count).toBe(63);
       expect(report.missing_expected_tools).toEqual([]);
       expect(report.upstream_reference.default_limit).toBe(8);
       expect(report.proxy_note).toContain("not installed-client proof");

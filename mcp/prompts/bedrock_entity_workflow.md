@@ -89,7 +89,7 @@ Use `list_locator_elements` for discovery, `inspect_element` for focused state, 
 
 ## Protected Native Capability Gaps
 
-Molang: `manage_keyframes`; no MCP eval. `inspect_animation` reads controllers. Controller mutation, TextureMesh, visible bounds, sound/timeline mutation, animated textures, bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+Molang: `manage_keyframes`; no MCP eval. `manage_animation_controller` mutates state machines; `inspect_animation` reads them. TextureMesh, visible bounds, existing-animation effects, animated textures, bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 

@@ -97,7 +97,7 @@ http://127.0.0.1:3000/bb-mcp
 Required baseline:
 
 ```text
-62 enabled tools
+63 enabled tools
 Extended MCP Families = OFF
 risky_eval = disabled
 from_geo_json = disabled
@@ -137,11 +137,13 @@ create / inspect
 → PBR / material instance
 → small animation + authored Molang transform string
 → bounded new-animation sound event
-→ read-only AnimationController/state inspection
+→ manage_animation_controller: one coherent create/state/transition batch
+→ inspect_animation only when returned mutation state is insufficient
+→ Undo / Redo the controller batch
 → Locator / Null Object
 ```
 
-Do not treat controller creation/mutation or existing-animation direct sound/timeline-effect mutation as implemented capability.
+Do not treat controller runtime/in-game execution, controller-state particle/sound or blend-curve mutation, or existing-animation direct sound/timeline-effect mutation as implemented/proved capability.
 
 ## 7. Persistence / Export
 
@@ -230,13 +232,15 @@ Discovery calls
 Redundant readbacks
 tool_search calls / misses
 place_cube calls / Cubes authored
+manage_animation_controller calls / operations authored
+Immediate controller readbacks
 capture_model_views calls / views requested
 Correction attempts
 Same-cause retries
 Broad repository reads
 ```
 
-Flag capture-per-mutation behavior, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. These counts are session evidence, not a new telemetry subsystem. Do not invent token or latency numbers.
+Flag capture-per-mutation behavior, fragmented controller operations, immediate controller reinspection when returned state was sufficient, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. These counts are session evidence, not a new telemetry subsystem. Do not invent token or latency numbers.
 
 ## 10. Failure Classification
 

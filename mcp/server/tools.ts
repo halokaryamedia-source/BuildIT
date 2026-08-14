@@ -12,6 +12,7 @@ import {
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
 import { registerAnimationTools } from "./tools/animation";
+import { registerAnimationControllerTools } from "./tools/animation-controller";
 import { registerAnimationInspectionTools } from "./tools/animation-inspection";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
@@ -31,6 +32,11 @@ import { registerValidatorResources } from "./resources/validator";
 
 type RegistrationFunction = () => void;
 
+function registerAnimationFamilyTools(): void {
+  registerAnimationTools();
+  registerAnimationControllerTools();
+}
+
 function registerElementFamilyTools(): void {
   registerElementTools();
   registerLocatorTools();
@@ -45,7 +51,7 @@ const registrationFunctions: Record<
   McpRegistrationFamily,
   RegistrationFunction
 > = {
-  animation: registerAnimationTools,
+  animation: registerAnimationFamilyTools,
   animation_inspection: registerAnimationInspectionTools,
   camera: registerCameraTools,
   cubes: registerCubesTools,

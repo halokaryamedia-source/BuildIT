@@ -263,6 +263,11 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "make a looping Bedrock animation",
   ],
   [
+    "manage_animation_controller",
+    "create a Bedrock animation controller state machine",
+    "add controller states transitions and animation links",
+  ],
+  [
     "manage_keyframes",
     "add a rotation keyframe to this bone",
     "edit keyframe values at this time",
@@ -560,17 +565,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 62) {
+  if (report.enabled_tool_count !== 63) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 62`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 63`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 52) {
+  if (report.expected_tool_count !== 53) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 52`
+      `expected_tool_count=${report.expected_tool_count}; expected 53`
     );
   }
   if (report.missing_expected_tools.length > 0) {

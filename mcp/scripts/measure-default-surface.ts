@@ -6,15 +6,15 @@ const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
 
-// Fresh isolated tools/list baseline measured on 2026-08-12 after the static
-// efficiency cleanup: 62 tools, 74,996 response chars, 51,810 input-schema
-// chars, 10,885 description chars, 3,034 max per-tool payload chars.
-// These are regression ceilings with small headroom, not token-usage targets.
+// The controller-mutation closure adds one compact default tool while retaining
+// the previous surface discipline. These are regression ceilings with small
+// headroom, not token-usage targets; max per-tool payload stays intentionally
+// unchanged so a new capability cannot justify a bloated schema by itself.
 const SURFACE_BUDGET = {
-  tool_count: 62,
+  tool_count: 63,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 79_000,
-  input_schema_chars: 54_500,
+  tools_list_response_chars: 80_500,
+  input_schema_chars: 56_500,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

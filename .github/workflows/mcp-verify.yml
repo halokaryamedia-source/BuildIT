@@ -72,6 +72,21 @@ jobs:
         continue-on-error: true
         run: bun run docs:check
 
+      - name: Regenerate stale docs for inspection
+        if: steps.docs.outcome == 'failure'
+        run: bun run docs:build
+
+      - name: Upload regenerated stale docs
+        if: steps.docs.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: generated-mcp-docs
+          path: |
+            mcp/docs/api.json
+            mcp/docs/index.html
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Enforce verification result
         if: always()
         env:

@@ -34,23 +34,21 @@ workspace/        persistent active/saved Blockbench asset packages
 
 There are **ten repository-owned skill packages** under `.agents/skills/`. Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
-`workspace/active/<project>/README.md` owns only the current asset-specific resume facts for that named project. It is not a second repository roadmap. Stored reference paths are continuity/provenance only until the actual image is visible in the active modelling context.
+`workspace/active/<project>/README.md` owns only the current asset-specific resume facts for that named project. Stored reference paths are continuity/provenance only until the actual image is visible in the active modelling context.
 
-Retired acceptance fixtures and experiments belong in Git history rather than the active workspace. Current reference-model acceptance uses the actual user-approved reference supplied to the active local modelling context; that test evidence is not bundled into the production plugin.
-
-The Reference Generator itself remains image-only. Persisting an approved reference into a workspace project is a downstream/local storage action.
+The Reference Generator remains image-only. Persisting an approved reference into a workspace project is a downstream/local storage action.
 
 ## MCP Facts
 
-BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The accepted default surface has **62 enabled tools**. Generic fallback families are opt-in; `risky_eval` and `from_geo_json` remain disabled.
+BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The default Bedrock Entity surface has **63 enabled tools**. Generic fallback families are opt-in; `risky_eval` and `from_geo_json` remain disabled.
 
-Current ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation including Molang transform strings, bounded new-animation sound events and read-only AnimationController/state inspection, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export.
+Current ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation including Molang transform strings, bounded new-animation sound events, AnimationController/state inspection plus bounded state-machine mutation through one batched tool, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export.
 
-Controller creation/mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions remain protected gaps.
+Controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions remain protected gaps.
 
 ## Evidence Boundary
 
-The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12. It established representative live proof for the accepted baseline. Later P0–P7, hardened Reference Generator, and PRO-1–PRO-8 changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
+The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12 and remains the accepted live baseline. Later P0–P7, hardened Reference Generator, PRO-1–PRO-8, optimization, and AnimationController mutation changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
 
 Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, experiments, and obsolete asset revisions.
 

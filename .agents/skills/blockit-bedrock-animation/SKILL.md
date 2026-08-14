@@ -14,6 +14,7 @@ Decide from intent + known state before discovery:
 ```text
 new animation                         → create_animation
 existing animation/controller unknown → inspect_animation
+controller create/edit/state machine  → manage_animation_controller
 create/edit/delete transform keyframe → manage_keyframes
 interpolation / Bezier                → animation_graph_editor
 Group/bone structure or pivot edit    → bone_rigging
@@ -35,6 +36,7 @@ Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
 - New animation: establish motion/bones/pivots, create only needed keyframes, then verify relevant motion.
 - Existing edit: inspect once when authored state is unknown, diagnose bone/channel/time, mutate only that state, then verify affected motion.
+- Controller edit: batch coherent operations; reuse `manage_animation_controller` returned IDs/state instead of immediate re-inspection.
 - Known participating identity/state must not fall back to broad outline/project reads.
 - Validation failure keeps the selected capability unless state became stale/unknown.
 - Do not re-inspect the whole animation when returned state plus focused preview is sufficient.
@@ -54,6 +56,7 @@ Professional motion has no keyframe-count, FPS, or Bezier-complexity target. Cho
 ```text
 create_animation
 inspect_animation
+manage_animation_controller
 manage_keyframes
 animation_graph_editor
 bone_rigging
@@ -66,8 +69,8 @@ Do not make `animation_timeline.select_range` a core-correctness dependency; pre
 
 ## Protected Gaps
 
-`inspect_animation` may read animation controllers/state structure. Controller creation/mutation remains a protected state-machine gap; existing-animation sound/timeline mutation and bone-binding expressions also remain protected gaps. Do not route them through `risky_eval` or generic UI actions.
+Existing-animation sound/timeline mutation, controller state particle/sound + blend-curve mutation, and bone-binding expressions remain protected gaps. Do not route them through `risky_eval` or generic UI actions.
 
 ## Verification
 
-After mutation, verify only affected attachment, transform arc, clipping, and return-to-neutral. Preview only relevant motion. Controller inspection is authored-state evidence only. Do not claim controller execution/in-game behavior without direct runtime evidence.
+After mutation, verify only affected attachment, transform arc, clipping, and return-to-neutral. Preview only relevant motion. Controller inspection/mutation is authored-state evidence only. Do not claim controller execution/in-game behavior without direct runtime evidence.

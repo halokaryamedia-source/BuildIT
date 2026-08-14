@@ -5,14 +5,12 @@ Minecraft **Bedrock Entity-focused** MCP server/plugin running inside desktop Bl
 Current repository state:
 
 ```text
-PRELOCAL_OPTIMIZATION_COMPLETE
+PRELOCAL_CONTROLLER_MUTATION_READY
 ```
 
-The source/build contract and pre-local optimization closure are static verified. The exact plugin artifact loaded by Blockbench, current runtime behavior, runtime call efficiency, persistence, and current model-quality results remain **LOCAL PROOF REQUIRED**.
+The source contract includes the completed pre-local optimization closure plus one bounded AnimationController mutation tool. The exact plugin artifact loaded by Blockbench, current runtime behavior, controller execution, runtime call efficiency, persistence, and current model-quality results remain **LOCAL PROOF REQUIRED**.
 
 **Local acceptance is currently deferred.** Do not activate runtime/local proof merely because the repository is static-ready.
-
-Do **not** use the upstream hosted plugin as BlockIT proof; validate the repository local build when local acceptance is explicitly reactivated.
 
 ## Build / Verify
 
@@ -27,19 +25,7 @@ bun run build
 bun run docs:check
 ```
 
-Production plugin:
-
-```text
-dist/mcp.js
-```
-
-`dist/` is generated output. Package version alone is not artifact-freshness proof. A future local acceptance records the exact `Local` HEAD and SHA-256 of the fresh `dist/mcp.js` actually loaded into Blockbench.
-
-Runtime-only stateless smoke, only after local acceptance is explicitly reactivated and the fresh plugin is running:
-
-```bash
-bun run verify:stateless-local
-```
+Production plugin: `dist/mcp.js`. `dist/` is generated output; package version alone is not artifact-freshness proof.
 
 ## Endpoint / Containment
 
@@ -51,34 +37,41 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-The server is loopback-only and request-owned/stateless. The accepted default surface remains **62 enabled tools**.
+The server is loopback-only and request-owned/stateless. The default Bedrock Entity surface is **63 enabled tools**.
+
+## AnimationController Mutation
+
+`manage_animation_controller` is one default experimental capability inside the existing animation family. It does **not** create a new registration profile or controller framework.
+
+One call can create a controller or coherently mutate up to 32 ordered operations covering:
+
+```text
+controller rename
+state add/update/remove
+initial-state selection
+transition add/update/remove
+animation-link add/update/remove
+state on_entry / on_exit
+scalar blend_transition / shortest-path flag
+```
+
+The tool preflights the complete plan before native mutation, applies one `animation_controllers` Undo unit, rolls back an unexpectedly failed apply, and returns the controller identity plus affected state/created IDs. Reuse that returned state; do not immediately call `inspect_animation` unless additional detail is genuinely needed.
+
+`inspect_animation` remains read-only. Controller runtime/in-game execution is not proved by source mutation success.
 
 ## Local Acceptance — Inactive
 
 The single procedure owner is `../docs/knowledge/operations/local-acceptance-runbook.md`. It is not an active next step until `../docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
 
-When reactivated, it retains two modelling stages:
-
-```text
-TEST 1 — MCP / CORE MECHANICS
-→ Plugin + MCP mechanics, Undo/Redo, texture/PBR, animation reachability,
-  Locator/Null Object, persistence, and export
-
-TEST 2 — REFERENCE MODEL (ELEPHANT)
-→ Minecraft-first Geometry + Texture modelling from the approved reference
-```
-
-The approved elephant image is test evidence, not production plugin content.
+When reactivated, Test 1 includes representative controller create/mutate/inspect in addition to existing core mechanics; Test 2 remains the approved elephant reference model.
 
 ## Bedrock Product Boundary
 
-Normal capability includes Cube/Group authoring, bounded observation, texture/Painter/PBR/material instances, Bedrock animation including authored Molang transform strings and bounded new-animation sound events, read-only AnimationController/state inspection, Locator/Null Object state, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
+Normal capability includes Cube/Group authoring, bounded observation, texture/Painter/PBR/material instances, Bedrock animation with Molang transform strings, bounded new-animation sound events, AnimationController/state inspection and state-machine mutation, Locator/Null Object state, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
 
-Reference-driven modelling is **Minecraft-first**. Minor view/texture drift may be resolved into one canonical recognizable Blockbench-buildable interpretation; unresolved material contradiction remains `CONFLICTING / BLOCKED`.
+Protected gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
-Protected gaps remain controller creation/mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
-
-## Codex / Agent Routing
+## Usage Discipline
 
 Normal asset authoring routes from intent + known state + current stage to the exact tool. Reuse fresh returned state instead of ritual rediscovery.
 
@@ -86,6 +79,8 @@ Normal asset authoring routes from intent + known state + current stage to the e
 known target/tool → execute directly
 unknown/stale identity → focused discovery only
 known coherent Cubes → place_cube(elements=[...])
+coherent controller edit → one manage_animation_controller batch
+controller returned state → reuse; inspect only if more detail is needed
 geometry → modelling specialist
 texture/PBR → texturing specialist
 animation → animation specialist
@@ -93,19 +88,19 @@ animation → animation specialist
 
 Do not broad-search repository source for ordinary asset authoring, inspect every newly placed Cube, capture after every mutation, or use disabled/generic fallback capability to hide an unsupported gap.
 
-## Current Serialized Proof
+## Surface Guard
 
 ```text
-62 enabled tools
-76,439 tools/list response characters
-53,493 input-schema characters
-10,645 description characters
-initialize instructions: 386 characters
-max per-tool payload: 3,167 characters
-runtime workflow prompt: 6,959 characters
+63 enabled tools
+initialize instructions          <= 700 characters
+tools/list response              <= 80,500 characters
+input schemas                    <= 56,500 characters
+descriptions                     <= 11,500 characters
+max per-tool payload             <= 3,200 characters
+runtime workflow prompt          < 7,000 characters
 ```
 
-These are serialized characters, not installed-client token measurements. Current static evidence does not justify reducing the tool surface, adding a lean profile, or shrinking the runtime prompt by assumption.
+`measure:surface` prints exact current serialized counts. The controller closure keeps the previous `3,200` max-per-tool ceiling instead of relaxing it for a large schema. Serialized characters are not installed-client token measurements.
 
 ## Source Layout
 
@@ -121,12 +116,6 @@ tests/        contract/integration regressions
 docs/         generated API documentation
 ```
 
-Generated `docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are secondary to source and checked for freshness.
+Generated `docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are secondary to source and freshness-controlled.
 
-Repository continuation follows root `AGENTS.md`, `docs/knowledge/next-action.md`, and the affected owner. Named MCP defects use the `implementation-map.md` Hot-Path Defect Index first.
-
-Do not add compatibility shims, duplicate project tools, new router/profile layers, generic import/eval capability, or another testing framework without a proved need.
-
-## Upstream attribution
-
-BlockIT retains upstream attribution in package/license metadata while the Bedrock-focused product surface and repository workflow remain project-owned.
+Do **not** use the upstream hosted plugin as BlockIT proof. Do not add compatibility shims, duplicate controller tools, new router/profile layers, generic import/eval capability, or another testing framework without a proved need.
