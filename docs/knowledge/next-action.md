@@ -28,7 +28,7 @@ U7 remains evidence-gated: current routed exact-name discovery retains complete 
 
 Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, actual call efficiency, and persistence remain **LOCAL PROOF REQUIRED**.
 
-**Do not claim live Blockbench/model-quality or runtime-usage improvement without actual runtime proof.**
+**Do not claim live Blockbench/model-quality improvement without actual runtime proof; runtime-usage improvement also requires direct runtime evidence.**
 
 ## Local Acceptance Boundary
 
