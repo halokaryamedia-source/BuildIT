@@ -46,6 +46,7 @@ file deliverable              → export_model
 ```
 
 Texture/PBR → `blockit-bedrock-texturing`; animation/rig → `blockit-bedrock-animation`.
+Known coherent Cubes → `place_cube(elements=[...])`; uncertainty → no batch.
 
 ## Search Intent Templates
 

@@ -5,14 +5,16 @@ Updated: 2026-08-14
 ## Status
 
 ```text
-PRELOCAL_PLUGIN_FRESHNESS_READY
+PRELOCAL_USAGE_OPTIMIZATION_READY
 ```
 
 Working branch: **`Local` only**. `NO LOCAL RUN ACTIVE`.
 
 Retained state: **P0–P7 + REF + PRO-1, PRO-2, PRO-3–PRO-8**. No MCP source capability was added or removed.
 
-Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, and persistence remain **LOCAL PROOF REQUIRED**.
+Pre-local usage discipline is now encoded in current instructions/tests: repository regression preflight + coherent patching, known/coherent `place_cube(elements=[...])` batching, affected-view-first correction verification, and a concrete Efficiency Check. This is instruction/test evidence only.
+
+Current source contract is static-verified. Installed plugin freshness, runtime/model behavior, efficiency impact, and persistence remain **LOCAL PROOF REQUIRED**.
 
 **Do not claim live Blockbench/model-quality improvement without actual runtime proof.**
 

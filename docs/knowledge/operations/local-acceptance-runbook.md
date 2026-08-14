@@ -222,7 +222,21 @@ A materially wrong side/depth view cannot receive full 3D `PASS`. A correction t
 
 ## 9. Efficiency Check
 
-Record only meaningful calls and observable cost. Flag redundant rereads, capture-per-mutation behavior, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. Do not invent token or latency numbers.
+Record only meaningful calls and observable cost:
+
+```text
+Total MCP calls
+Discovery calls
+Redundant readbacks
+tool_search calls / misses
+place_cube calls / Cubes authored
+capture_model_views calls / views requested
+Correction attempts
+Same-cause retries
+Broad repository reads
+```
+
+Flag capture-per-mutation behavior, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. These counts are session evidence, not a new telemetry subsystem. Do not invent token or latency numbers.
 
 ## 10. Failure Classification
 

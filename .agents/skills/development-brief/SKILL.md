@@ -39,10 +39,12 @@ A suggested implementation is not automatically the requirement. Samples, fixtur
 ## Procedure
 
 1. **Ground the requirement** — inspect the current owner/pattern and separate fact, assumption, unknown, and optional method.
-2. **Decide whether code/docs must change** — `No change required` is valid when current behavior already satisfies the goal.
-3. **Choose one build owner** — use this skill alone for trivial work; otherwise add at most one specialist whose domain procedure materially changes the implementation decision.
-4. **Set minimal proof** — define 2-5 acceptance criteria and use the cheapest evidence that can falsify them. `ChatGPT → GitHub` provides repository/static proof; local runtime/Blockbench proof is used only when actually available and requested by the active task.
-5. **Implement and re-check the same contract** — do not broaden scope because adjacent issues are visible. Before completion, verify goal, scope, criteria, and available proof against the original contract.
+2. **Preflight regression assertions** — before editing an owner, inspect the targeted tests/invariants that pin its current behavior. For one logical change, collect all affected owners and required invariants before writing.
+3. **Decide whether code/docs must change** — `No change required` is valid when current behavior already satisfies the goal.
+4. **Choose one build owner** — use this skill alone for trivial work; otherwise add at most one specialist whose domain procedure materially changes the implementation decision.
+5. **Set minimal proof** — define 2-5 acceptance criteria and use the cheapest evidence that can falsify them. `ChatGPT → GitHub` provides repository/static proof; local runtime/Blockbench proof is used only when actually available and requested by the active task.
+6. **Implement one coherent patch** — apply the complete logical change across its affected owners, run targeted proof, then the required full gate. Do not use intermediary commits/pushes as regression discovery when the assertions were available up front.
+7. **Re-check the same contract** — do not broaden scope because adjacent issues are visible. Before completion, verify goal, scope, criteria, and available proof against the original contract.
 
 ## Owner Selection
 
