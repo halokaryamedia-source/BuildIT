@@ -215,8 +215,23 @@ describe("P1.3 core identity ownership", () => {
     expect(cubes).toContain("after,");
     expect(cubes).toContain("geometry_effect: geometryEffect");
     expect(cubes).not.toContain("cube: after,");
+
     expect(elements).toContain("structuredContent: result");
     expect(elements).toContain("group: {");
+    expect(elements).toContain("function elementContinuationState");
+    expect(elements).toContain('if (element instanceof Locator) return "locator";');
+    expect(elements).toContain('if (element instanceof NullObject) return "null_object";');
+
+    const duplicateStart = elements.indexOf("createTool(elementToolDocs[3].name");
+    const renameStart = elements.indexOf("createTool(elementToolDocs[4].name", duplicateStart);
+    const findStart = elements.indexOf("createTool(elementToolDocs[5].name", renameStart);
+    const duplicateBlock = elements.slice(duplicateStart, renameStart);
+    const renameBlock = elements.slice(renameStart, findStart);
+    for (const block of [duplicateBlock, renameBlock]) {
+      expect(block).toContain("elementContinuationState");
+      expect(block).toContain("structuredContent: result");
+    }
+
     expect(project).toContain("structuredContent: result");
     expect(project).toContain("currentProjectLifecycle()");
     expect(project).toContain("export_path: Project.export_path ?? null");

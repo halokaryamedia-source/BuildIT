@@ -333,6 +333,26 @@ function resolveOptionalGroupScope(reference?: string): Group | null {
 
 type ResolvedElement = OutlinerElement | Group;
 
+function continuationElementType(
+  element: ResolvedElement
+): "cube" | "group" | "locator" | "null_object" | "element" {
+  if (element instanceof Cube) return "cube";
+  if (element instanceof Group) return "group";
+  if (element instanceof Locator) return "locator";
+  if (element instanceof NullObject) return "null_object";
+  return "element";
+}
+
+function elementContinuationState(element: ResolvedElement) {
+  const parent = (element as { parent?: unknown }).parent;
+  return {
+    uuid: element.uuid,
+    name: element.name,
+    type: continuationElementType(element),
+    parent: parent instanceof Group ? parent.uuid : "root",
+  };
+}
+
 function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
   const candidates = new Map<string, ResolvedElement>();
 
@@ -726,7 +746,16 @@ export function registerElementTools() {
       }
 
       Canvas.updateAll();
-      return `Duplicated "${element.name}" as "${dup.name}" (ID: ${dup.uuid}).`;
+      const result = { element: elementContinuationState(dup) };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Duplicated "${element.name}" as "${dup.name}" (${dup.uuid}).`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, elementToolDocs[3].status);
 
@@ -755,7 +784,16 @@ export function registerElementTools() {
       }
 
       Canvas.updateAll();
-      return `Renamed element "${id}" to "${new_name}".`;
+      const result = { element: elementContinuationState(element) };
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Renamed ${result.element.type} ${result.element.name} (${result.element.uuid}).`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, elementToolDocs[4].status);
 
