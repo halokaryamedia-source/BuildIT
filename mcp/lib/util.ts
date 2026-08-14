@@ -195,13 +195,12 @@ export function findTextureGroupOrThrow(id: string): TextureGroup {
 }
 
 /**
- * Helper to get texture info for a PBR channel
+ * Returns compact discovery identity for one PBR channel.
+ * Focused material/config detail remains owned by get_material_info.
  */
 export function getChannelTextureInfo(textures: Texture[], channel: string) {
   const tex = textures.find((t: Texture) => t.pbr_channel === channel);
-  return tex
-    ? { name: tex.name, uuid: tex.uuid, hasTexture: true }
-    : { hasTexture: false };
+  return tex ? { name: tex.name, uuid: tex.uuid } : null;
 }
 
 /**

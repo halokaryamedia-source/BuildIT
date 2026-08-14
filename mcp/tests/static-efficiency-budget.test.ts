@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { getChannelTextureInfo } from "@/lib/util";
 import {
   findElementsByCriteriaParameters,
   listOutlineParameters,
@@ -72,6 +73,18 @@ describe("static efficiency budget", () => {
     expect(findElementsByCriteriaParameters.parse({ limit: 1000 }).limit).toBe(1000);
     expect(getUndoStackParameters.parse({}).limit).toBe(20);
     expect(getUndoStackParameters.parse({ limit: 200 }).limit).toBe(200);
+  });
+
+  test("material discovery channel summaries omit redundant presence flags", () => {
+    const textures = [
+      { name: "Color", uuid: "tex-color", pbr_channel: "color" },
+    ] as Texture[];
+
+    expect(getChannelTextureInfo(textures, "color")).toEqual({
+      name: "Color",
+      uuid: "tex-color",
+    });
+    expect(getChannelTextureInfo(textures, "normal")).toBeNull();
   });
 
   test("project info stays lifecycle/counts-only and result mirrors are compacted centrally", async () => {
