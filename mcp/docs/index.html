@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(72)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(73)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -27,7 +27,7 @@
         <p class="nav-heading">Categories</p>
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(3)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
-        <a href="#cat-animation" class="nav-link">Animation <span class="count">(8)</span></a>
+        <a href="#cat-animation" class="nav-link">Animation <span class="count">(9)</span></a>
         <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
-          <a href="#tools"><strong>72</strong> tools (29 stable, 43 experimental)</a>
+          <a href="#tools"><strong>73</strong> tools (29 stable, 44 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -679,6 +679,45 @@ bun run docs:check
       <td class="col-type">object</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Target data for paste operation.</td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-manage_animation_controller" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_animation_controller</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Animation Controller</p>
+      <p class="card-desc">Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">controller_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Existing AnimationController UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">create_name</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">New AnimationController name; use instead of controller_id. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">operations</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">One to 32 ordered controller/state-machine mutations. <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2977,7 +3016,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-13T11:47:38.218Z from Zod schemas
+        Generated 2026-08-14T11:36:17.264Z from Zod schemas
       </footer>
     </main>
   </div>

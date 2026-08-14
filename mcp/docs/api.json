@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-13T11:47:38.218Z",
+  "generatedAt": "2026-08-14T11:36:17.264Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1760,6 +1760,146 @@
             },
             "required": [
               "action"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "manage_animation_controller",
+      "title": "Manage Animation Controller",
+      "description": "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
+      "status": "experimental",
+      "category": "Animation",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_animation_controller",
+        "definitions": {
+          "manage_animation_controller": {
+            "type": "object",
+            "properties": {
+              "controller_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Existing AnimationController UUID or unique exact name.",
+                "markdownDescription": "Existing AnimationController UUID or unique exact name."
+              },
+              "create_name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "New AnimationController name; use instead of controller_id.",
+                "markdownDescription": "New AnimationController name; use instead of controller_id."
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "type": "string",
+                      "enum": [
+                        "rename_controller",
+                        "add_state",
+                        "update_state",
+                        "remove_state",
+                        "set_initial_state",
+                        "add_transition",
+                        "update_transition",
+                        "remove_transition",
+                        "add_animation",
+                        "update_animation",
+                        "remove_animation"
+                      ],
+                      "description": "Controller mutation to apply.",
+                      "markdownDescription": "Controller mutation to apply."
+                    },
+                    "state": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Exact state UUID or unique exact state name.",
+                      "markdownDescription": "Exact state UUID or unique exact state name."
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Exact transition or animation-link UUID.",
+                      "markdownDescription": "Exact transition or animation-link UUID."
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Controller/state name for rename or add_state.",
+                      "markdownDescription": "Controller/state name for rename or add_state."
+                    },
+                    "target": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Exact transition target state UUID/name.",
+                      "markdownDescription": "Exact transition target state UUID/name."
+                    },
+                    "animation": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Exact authored Animation UUID/name.",
+                      "markdownDescription": "Exact authored Animation UUID/name."
+                    },
+                    "condition": {
+                      "type": "string",
+                      "description": "Non-empty authored transition Molang condition.",
+                      "markdownDescription": "Non-empty authored transition Molang condition."
+                    },
+                    "blend_value": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ],
+                      "description": "Finite number or authored Molang blend value.",
+                      "markdownDescription": "Finite number or authored Molang blend value."
+                    },
+                    "on_entry": {
+                      "type": "string",
+                      "description": "State on_entry script; empty clears.",
+                      "markdownDescription": "State on_entry script; empty clears."
+                    },
+                    "on_exit": {
+                      "type": "string",
+                      "description": "State on_exit script; empty clears.",
+                      "markdownDescription": "State on_exit script; empty clears."
+                    },
+                    "blend_transition": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10000,
+                      "description": "State blend duration in seconds.",
+                      "markdownDescription": "State blend duration in seconds."
+                    },
+                    "blend_via_shortest_path": {
+                      "type": "boolean",
+                      "description": "State shortest-path blend flag.",
+                      "markdownDescription": "State shortest-path blend flag."
+                    }
+                  },
+                  "required": [
+                    "op"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 32,
+                "description": "One to 32 ordered controller/state-machine mutations.",
+                "markdownDescription": "One to 32 ordered controller/state-machine mutations."
+              }
+            },
+            "required": [
+              "operations"
             ],
             "additionalProperties": false
           }
