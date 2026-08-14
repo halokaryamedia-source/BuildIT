@@ -622,7 +622,7 @@ export function registerTextureTools() {
         collections: [],
       });
 
-      let texture: Texture;
+      let texture!: Texture;
 
       try {
         texture = new Texture({
@@ -683,9 +683,13 @@ export function registerTextureTools() {
           texture.getActiveLayer().name = layer_name;
         }
 
-        Undo.finishEdit("Agent created texture");
+        Undo.finishEdit("Agent created texture", {
+          textures: [texture],
+          collections: [],
+        });
       } catch (error) {
-        Undo.cancelEdit(true);
+        if (texture) texture.remove(true);
+        Undo.cancelEdit();
         Canvas.updateAll();
         throw error;
       }
@@ -823,6 +827,10 @@ export function registerTextureTools() {
         name,
         is_material,
       });
+      const originalTextureGroups = textureList.map((texture) => ({
+        texture,
+        group: texture.group,
+      }));
 
       Undo.initEdit({
         texture_groups: [],
@@ -830,17 +838,22 @@ export function registerTextureTools() {
       });
 
       try {
-        textureGroup.add();
-
         textureList.forEach((texture) => {
-          texture.extend({
-            group: textureGroup.uuid,
-          });
+          texture.group = textureGroup.uuid;
         });
 
-        Undo.finishEdit("Agent added texture group");
+        textureGroup.add();
+
+        Undo.finishEdit("Agent added texture group", {
+          texture_groups: [textureGroup],
+          textures: textureList,
+        });
       } catch (error) {
-        Undo.cancelEdit(true);
+        for (const { texture, group } of originalTextureGroups) {
+          texture.group = group;
+        }
+        textureGroup.remove();
+        Undo.cancelEdit();
         Canvas.updateAll();
         throw error;
       }
@@ -933,6 +946,11 @@ export function registerTextureTools() {
         heightTexture,
         merTexture,
       ].filter((texture): texture is Texture => texture !== undefined);
+      const originalTextureChannels = texturesToAdd.map((texture) => ({
+        texture,
+        group: texture.group,
+        pbrChannel: texture.pbr_channel,
+      }));
 
       // @ts-ignore - TextureGroup is globally available
       const textureGroup = new TextureGroup({
@@ -967,28 +985,38 @@ export function registerTextureTools() {
         }
         textureGroup.material_config.saved = false;
 
-        textureGroup.add();
-
-        // Assign preflighted textures to channels without resolving again.
+        // Match Blockbench's native create-material path: author the two
+        // channel fields directly before adding the material group.
         if (colorTexture) {
-          colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+          colorTexture.group = textureGroup.uuid;
+          colorTexture.pbr_channel = "color";
         }
         if (normalTexture) {
-          normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+          normalTexture.group = textureGroup.uuid;
+          normalTexture.pbr_channel = "normal";
         }
         if (heightTexture) {
-          heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+          heightTexture.group = textureGroup.uuid;
+          heightTexture.pbr_channel = "height";
         }
         if (merTexture) {
-          merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+          merTexture.group = textureGroup.uuid;
+          merTexture.pbr_channel = "mer";
         }
 
-        // Update material preview
-        textureGroup.updateMaterial();
+        textureGroup.add();
 
-        Undo.finishEdit("Agent created PBR material");
+        Undo.finishEdit("Agent created PBR material", {
+          texture_groups: [textureGroup],
+          textures: texturesToAdd,
+        });
       } catch (error) {
-        Undo.cancelEdit(true);
+        for (const { texture, group, pbrChannel } of originalTextureChannels) {
+          texture.group = group;
+          texture.pbr_channel = pbrChannel;
+        }
+        textureGroup.remove();
+        Undo.cancelEdit();
         Canvas.updateAll();
         throw error;
       }
@@ -1075,7 +1103,8 @@ export function registerTextureTools() {
           textures
             .filter((t: Texture) => t.pbr_channel === "color")
             .forEach((t: Texture) => (t.pbr_channel = "color"));
-          colorTexture.extend({ group: textureGroup.uuid, pbr_channel: "color" });
+          colorTexture.group = textureGroup.uuid;
+          colorTexture.pbr_channel = "color";
         }
 
         // Handle normal channel
@@ -1084,7 +1113,8 @@ export function registerTextureTools() {
             .filter((t: Texture) => t.pbr_channel === "normal")
             .forEach((t: Texture) => (t.group = ""));
         } else if (normalTexture) {
-          normalTexture.extend({ group: textureGroup.uuid, pbr_channel: "normal" });
+          normalTexture.group = textureGroup.uuid;
+          normalTexture.pbr_channel = "normal";
         }
 
         // Handle height channel
@@ -1093,7 +1123,8 @@ export function registerTextureTools() {
             .filter((t: Texture) => t.pbr_channel === "height")
             .forEach((t: Texture) => (t.group = ""));
         } else if (heightTexture) {
-          heightTexture.extend({ group: textureGroup.uuid, pbr_channel: "height" });
+          heightTexture.group = textureGroup.uuid;
+          heightTexture.pbr_channel = "height";
         }
 
         // Handle MER channel
@@ -1102,7 +1133,8 @@ export function registerTextureTools() {
             .filter((t: Texture) => t.pbr_channel === "mer")
             .forEach((t: Texture) => (t.group = ""));
         } else if (merTexture) {
-          merTexture.extend({ group: textureGroup.uuid, pbr_channel: "mer" });
+          merTexture.group = textureGroup.uuid;
+          merTexture.pbr_channel = "mer";
         }
 
         // Update uniform values
@@ -1316,10 +1348,8 @@ export function registerTextureTools() {
         });
 
         // Assign the texture to the channel
-        tex.extend({
-          group: textureGroup.uuid,
-          pbr_channel: channel,
-        });
+        tex.group = textureGroup.uuid;
+        tex.pbr_channel = channel;
 
         textureGroup.material_config.saved = false;
         textureGroup.updateMaterial();

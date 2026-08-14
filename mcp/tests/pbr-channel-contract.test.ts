@@ -57,6 +57,49 @@ describe("PBR channel identity preflight", () => {
     expect(pbrBlock.indexOf("hasExactTextureGroupNameCollision")).toBeLessThan(pbrBlock.indexOf("Undo.initEdit"));
   });
 
+  test("new textures and texture groups publish native Undo post-state", async () => {
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+
+    const textureStart = source.indexOf("createTool(textureToolDocs[0].name");
+    const textureEnd = source.indexOf("createTool(textureToolDocs[1].name", textureStart);
+    const textureBlock = source.slice(textureStart, textureEnd);
+    expect(textureBlock).toContain("textures: [texture]");
+
+    const groupStart = source.indexOf("createTool(textureToolDocs[2].name");
+    const groupEnd = source.indexOf("createTool(textureToolDocs[3].name", groupStart);
+    const groupBlock = source.slice(groupStart, groupEnd);
+    expect(groupBlock).toContain("texture.group = textureGroup.uuid");
+    expect(groupBlock).not.toContain("texture.extend(");
+    expect(groupBlock).toContain("texture_groups: [textureGroup]");
+    expect(groupBlock).toContain("textureGroup.remove()");
+  });
+
+  test("PBR material creation uses native channel assignment and atomic Undo ownership", async () => {
+    const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    const start = source.indexOf("createTool(textureToolDocs[5].name");
+    const end = source.indexOf("createTool(textureToolDocs[6].name", start);
+    const block = source.slice(start, end);
+
+    expect(block).toContain('colorTexture.group = textureGroup.uuid');
+    expect(block).toContain('colorTexture.pbr_channel = "color"');
+    expect(block).not.toContain("colorTexture.extend(");
+    expect(block).toContain("textureGroup.remove()");
+    expect(block).toContain("texture_groups: [textureGroup]");
+
+    const configureStart = source.indexOf("createTool(textureToolDocs[6].name");
+    const configureEnd = source.indexOf("createTool(textureToolDocs[7].name", configureStart);
+    const configureBlock = source.slice(configureStart, configureEnd);
+    expect(configureBlock).toContain('normalTexture.group = textureGroup.uuid');
+    expect(configureBlock).not.toContain("normalTexture.extend(");
+
+    const assignStart = source.indexOf("createTool(textureToolDocs[10].name");
+    const assignEnd = source.indexOf("createTool(textureToolDocs[11].name", assignStart);
+    const assignBlock = source.slice(assignStart, assignEnd);
+    expect(assignBlock).toContain("tex.group = textureGroup.uuid");
+    expect(assignBlock).toContain("tex.pbr_channel = channel");
+    expect(assignBlock).not.toContain("tex.extend(");
+  });
+
   test("PBR source combinations match the effective native Bedrock compile branches", () => {
     expect(createPbrMaterialParameters.safeParse({ name: "mat", color_texture: "color", color_value: [255, 255, 255, 255] }).success).toBe(false);
     expect(createPbrMaterialParameters.safeParse({ name: "mat", mer_texture: "mer", mer_value: [1, 2, 3] }).success).toBe(false);
