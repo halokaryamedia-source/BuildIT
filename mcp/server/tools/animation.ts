@@ -2089,6 +2089,8 @@ createTool(
             const mirrorAxisIndex =
               mirrorAxis === "x" ? 0 : mirrorAxis === "y" ? 1 : 2;
             mirrorKeyframes.forEach((kf: _Keyframe) => {
+              // blockbench-types@5.1.0 declares axisLetter, while the runtime Keyframe.flip contract uses numeric indexes.
+              // @ts-expect-error Runtime Blockbench expects 0|1|2 here.
               kf.flip(mirrorAxisIndex);
             });
           }
