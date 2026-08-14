@@ -877,6 +877,13 @@ export function resolveUniqueKeyframeMatchIndexes(
     return matchedIndex;
   });
 }
+function keyframeContinuationState(keyframe: _Keyframe) {
+  return {
+    uuid: keyframe.uuid,
+    time: keyframe.time,
+    interpolation: keyframe.interpolation,
+  };
+}
 export function requireValidPlannedKeyframeTimes(
   times: readonly number[],
   context: string,
@@ -1152,6 +1159,27 @@ createTool(
       const animation = resolveAnimation(animation_id);
       const group = resolveRigGroup(bone_name);
       const existingAnimator = animation.animators[group.uuid] as BoneAnimator | undefined;
+      const buildResult = (
+        affectedKeyframes: Array<ReturnType<typeof keyframeContinuationState>>
+      ) => {
+        const result = {
+          action,
+          animation: { uuid: animation.uuid, name: animation.name },
+          bone: { uuid: group.uuid, name: group.name },
+          channel,
+          affected_count: affectedKeyframes.length,
+          affected_keyframes: affectedKeyframes,
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `${action} affected ${affectedKeyframes.length} keyframe(s) for ${group.name}.${channel}.`,
+            },
+          ],
+          structuredContent: result,
+        };
+      };
 
       const applyValues = (
         keyframe: _Keyframe,
@@ -1208,10 +1236,23 @@ createTool(
         }
 
         Animator.preview();
-        return `Successfully performed ${action} on ${targetKeyframes.length} keyframes for ${bone_name}.${channel}`;
+        return buildResult(targetKeyframes.map(keyframeContinuationState));
       }
 
+      const plannedCreateTimes =
+        action === "create"
+          ? keyframes.map((keyframe) => Timeline.snapTime(keyframe.time, animation))
+          : [];
+      if (action === "create") {
+        requireValidPlannedKeyframeTimes(
+          plannedCreateTimes,
+          "manage_keyframes create",
+          true
+        );
+      }
       const targetKeyframes = action === "create" ? [] : resolveRequestedTargets();
+      let affectedKeyframes =
+        action === "delete" ? targetKeyframes.map(keyframeContinuationState) : [];
 
       Undo.initEdit({
         animations: [animation],
@@ -1228,14 +1269,15 @@ createTool(
           }
           animator = createdAnimator;
         }
+        const createdKeyframes: _Keyframe[] = [];
 
         switch (action) {
           case "create":
-            keyframes.forEach((kf) => {
+            keyframes.forEach((kf, index) => {
               const keyframe = animator!.addKeyframe({
                 channel,
                 data_points: [{}],
-                time: Timeline.snapTime(kf.time, animation),
+                time: plannedCreateTimes[index],
                 interpolation: kf.interpolation ?? "linear",
               });
               if (!keyframe) {
@@ -1258,8 +1300,10 @@ createTool(
                 if (kf.bezier_handles.right_value)
                   keyframe.bezier_right_value = toArrayVector3(kf.bezier_handles.right_value);
               }
+              createdKeyframes.push(keyframe);
             });
             animation.setLength();
+            affectedKeyframes = createdKeyframes.map(keyframeContinuationState);
             break;
 
           case "delete":
@@ -1288,6 +1332,7 @@ createTool(
                     keyframe.bezier_right_value = toArrayVector3(kf.bezier_handles.right_value);
                 }
             });
+            affectedKeyframes = targetKeyframes.map(keyframeContinuationState);
             break;
         }
 
@@ -1300,7 +1345,7 @@ createTool(
       }
 
       Animator.preview();
-      return `Successfully performed ${action} on ${keyframes.length} keyframes for ${bone_name}.${channel}`;
+      return buildResult(affectedKeyframes);
     },
   },
   animationToolDocs[1].status

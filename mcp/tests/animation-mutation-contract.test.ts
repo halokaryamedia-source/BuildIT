@@ -288,6 +288,26 @@ describe("animation mutation contract", () => {
     expect(source).toContain("const targetKeyframes = action === \"create\" ? [] : resolveRequestedTargets()");
   });
 
+  test("manage_keyframes returns exact affected identity/time state and preflights snapped create times", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[1].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[2].name", start);
+    const block = source.slice(start, end);
+
+    expect(source).toContain("function keyframeContinuationState(keyframe: _Keyframe)");
+    expect(source).toContain("uuid: keyframe.uuid");
+    expect(source).toContain("time: keyframe.time");
+    expect(source).toContain("interpolation: keyframe.interpolation");
+    expect(block).toContain("const plannedCreateTimes =");
+    expect(block).toContain("Timeline.snapTime(keyframe.time, animation)");
+    expect(block).toContain('"manage_keyframes create"');
+    expect(block).toContain("time: plannedCreateTimes[index]");
+    expect(block).toContain("affected_keyframes: affectedKeyframes");
+    expect(block).toContain("structuredContent: result");
+    expect(block).toContain("return buildResult(targetKeyframes.map(keyframeContinuationState));");
+    expect(block).not.toContain("inspect_animation");
+  });
+
   test("batch offset/scale plans stay inside native keyframe time bounds", async () => {
     expect(() =>
       requireValidPlannedKeyframeTimes([0, 1.5, 10000], "test")
