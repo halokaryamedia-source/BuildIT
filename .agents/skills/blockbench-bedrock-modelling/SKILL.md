@@ -98,7 +98,7 @@ MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 
 **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, expected structural + visible effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, declared pivot role, required attachment. `geometry_effect` must match intent. **An unintended center shift** during center-preserving RESIZE, size change during TRANSLATE, extent change during ROTATE, or broken contact invariant is structurally wrong.
 
-Capture affected view(s) first; expand only for material cross-view risk. Then classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material regression; `UNCHANGED`/`REGRESSED` is not progress. **A fix that helps one view while materially regressing another is rejected.** Delta is qualitative, never a similarity score.
+Capture affected view(s) first; expand only for material cross-view risk. Then classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no previously supported material claim `REGRESSED`; `UNCHANGED`/`REGRESSED` is not progress. **A fix that helps one view while materially regressing another is rejected.** Delta is qualitative, never a similarity score.
 
 If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and report/reframe.
 
