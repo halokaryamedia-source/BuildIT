@@ -5,41 +5,25 @@ description: BlockIT Bedrock Entity asset router. Route from intent + known stat
 
 # BlockIT Bedrock Entity MCP
 
-Use for **asset authoring**, not plugin/repository development. Target `bedrock`.
+Use for **asset authoring**, not plugin development. Target `bedrock`.
 
 ## Fast Routing Contract
 
-Normal asset work **must not begin by searching repository files**/source/docs. This skill is the **routing authority for the first tool decision**.
+Normal asset work **must not begin by searching repository files**. This skill is the **routing authority for the first tool decision**.
 
 ```text
 intent + known state/UUIDs + stage → route
-→ loaded exact tool or one precise native tool_search
+→ exact tool or one precise native tool_search
 → execute → reuse state
 ```
 
-Do not use Graphify, Obsidian, GitHub/code search for tool choice.
-
-## Persistent Workspace Continuity
-
-When the user names or resumes a persistent repo-backed asset and `workspace/active/<project>/README.md` exists, read **that project README only**, then open only the current `.bbmodel`/reference/assets needed for the next decision. This is continuity, not broad repository discovery.
-
-```text
-known project
-→ workspace/active/<project>/README.md
-→ current model + needed evidence only
-→ intent + known state + stage
-→ route
-```
-
-Do not scan every folder under `workspace/active/`. Stored paths/prose are not visual evidence; reference judgement still requires the actual approved image visible in active context.
-
-If persistent work has no package yet, create one only when persistence is actually wanted. No manifest JSON, geometry blueprint, checkpoint log, or duplicate versioned `.bbmodel` copies are required. `workspace/README.md` owns storage rules.
+Do not use Graphify, Obsidian, GitHub/code search for tool choice. For a known persistent project, read only `workspace/active/<project>/README.md` plus files needed now; never scan all active projects. Storage rules: `workspace/README.md`.
 
 ## Authoring Stage Lock
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-`DISCOVER` only for unknown/stale state; **known fresh state must not regress** there. Reuse mutation output.
+`DISCOVER` is for unknown/stale state; **known fresh state must not regress** there.
 
 ## Tool Lane Discipline
 
@@ -65,7 +49,7 @@ Texture/Paint/PBR → `blockit-bedrock-texturing`. Animation/keyframe/rig → `b
 
 ## Search Intent Templates
 
-`tool_search` is **deferred spec loading after routing**, not a second router. If the **exact tool spec is already loaded, skip search**. Otherwise use the **exact selected tool name** + action; **never send raw user wording alone**.
+`tool_search` is **deferred spec loading after routing**. If the **exact tool spec is already loaded, skip search**. Otherwise use the **exact selected tool name** + action; **never send raw user wording alone**.
 
 `place_cube` → `"place_cube create new Bedrock Cube geometry"`.
 
@@ -76,12 +60,12 @@ Use **one precise native `tool_search`**. If it misses, **reformulate once** wit
 Failure does not reopen tool selection by default.
 
 ```text
-schema/validation failure → INVALID_INPUT    → repair args; same tool; no search
-"ambiguous" target        → TARGET_AMBIGUOUS → resolve UUID once; same tool
-"not found" unknown ref   → TARGET_NOT_FOUND → focused identity lookup; same tool
-known UUID now not found  → STALE_STATE      → one focused refresh; same tool
-[NO_EFFECT]/no authored effect → NO_EFFECT   → change diagnosis/payload; never resend
-unsupported capability/format → CAPABILITY_MISMATCH → reroute once or BLOCKED
+schema/validation failure → INVALID_INPUT → repair args; same tool; no search
+ambiguous target → TARGET_AMBIGUOUS → resolve UUID once; same tool
+unknown ref missing → TARGET_NOT_FOUND → focused identity lookup; same tool
+known UUID missing → STALE_STATE → one focused refresh; same tool
+no authored effect → NO_EFFECT → change diagnosis/payload; never resend
+unsupported capability → CAPABILITY_MISMATCH → reroute once or BLOCKED
 ```
 
 Recovery reads only missing decision state. Same failed causal direction twice without new evidence → `BLOCKED`.
@@ -90,11 +74,10 @@ Recovery reads only missing decision state. Same failed causal direction twice w
 
 - Known UUID/identity → skip discovery unless stale/ambiguous.
 - Fresh mutation → skip readback; reuse returned state/`geometry_effect`.
-- Locator/Null mutations return state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale/inconsistent.
+- Locator/Null mutations return state. **Do not automatically re-read them with `inspect_element`** unless insufficient/stale.
 - **Do not immediately call `get_project_info`** after create/export unless missing fields/external change matter.
-- Known tool spec already loaded → call it; do not repeat `tool_search` on a new turn.
-- Failed/no-effect correction → never repeat the same payload; diagnose first.
-- Known workspace package → do not rediscover project identity from the whole repository.
+- Known tool spec already loaded → call it; do not repeat `tool_search`.
+- Failed/no-effect correction → diagnose; never resend the same payload.
 
 ```text
 known target UUID            ≠ discovery
@@ -103,27 +86,23 @@ geometry targeting           ≠ get_selection
 asset tool selection         ≠ repository/code search
 ```
 
-**Load specialists lazily**: geometry → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
+Load specialists lazily: geometry → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`.
 
 ## Minimum Necessary Evidence
 
-- **Do not inspect every newly placed Cube.** Inspect only diagnosed/ambiguous or numeric correction state.
+- Do not inspect every newly placed Cube; inspect diagnosed/ambiguous state.
 - Do not capture after every mutation; use meaningful visual gates.
-- **Use `inspect_model_bounds` only when** numeric envelope, scale, ground, displacement, or gross placement is the question.
-- `UNVERIFIED` is not a retry command. **Mutation count alone is not a checkpoint trigger.**
+- Use `inspect_model_bounds` only for envelope/scale/ground/displacement.
+- `UNVERIFIED` is not a retry command.
 
 ## Visual / Blocker Boundary
 
-Reference fidelity: **`FAIL / UNVERIFIED / PASS`**; tool success cannot upgrade it. Use **`BLOCKED`** for unsupported/exhausted/repeated speculative work. **Do not continue speculative mutation** merely to avoid a blocker.
+Reference fidelity: **`FAIL / UNVERIFIED / PASS`**; tool success cannot upgrade it. Use **`BLOCKED`** for unsupported/exhausted/speculative work.
 
 ## Downstream / Export
 
-production texture/animation waits for accepted dependencies. Existing-asset work may use geometry as baseline without certifying it.
+Production texture/animation waits for accepted dependencies. `export_model` supports Bedrock geometry JSON (`bedrock`) and editable `.bbmodel` (`project`).
 
-`export_model` supports:
-- Bedrock geometry JSON (`bedrock`);
-- editable `.bbmodel` (`project`).
-
-For persistent work, keep the current editable `.bbmodel` and deliberate exports inside the same `workspace/active/<project>/` package. Prefer one current model file; Git history owns older revisions. Update the compact project README only when the current next step or real blocker changes.
+Persistent work keeps one current `.bbmodel` and deliberate exports in `workspace/active/<project>/`; Git history owns old revisions.
 
 Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
