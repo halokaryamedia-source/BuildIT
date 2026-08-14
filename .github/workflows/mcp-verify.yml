@@ -25,11 +25,8 @@ on:
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
 
-# Temporary one-shot generated-doc closure. This revision may push only the
-# deterministic generated docs after all source gates succeed. It does not edit
-# workflow files, source, schemas, or capability state.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
@@ -74,17 +71,6 @@ jobs:
         id: docs
         continue-on-error: true
         run: bun run docs:check
-
-      - name: One-shot generated docs closure
-        if: github.event_name == 'push' && steps.typecheck.outcome == 'success' && steps.tests.outcome == 'success' && steps.surface.outcome == 'success' && steps.build.outcome == 'success' && steps.docs.outcome == 'failure'
-        run: |
-          bun run docs:build
-          git -C .. config user.name "github-actions[bot]"
-          git -C .. config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C .. add mcp/docs/api.json mcp/docs/index.html
-          git -C .. diff --cached --quiet && exit 0
-          git -C .. commit -m "docs: refresh generated MCP docs"
-          git -C .. push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Enforce verification result
         if: always()
