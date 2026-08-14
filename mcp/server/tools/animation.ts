@@ -2028,6 +2028,17 @@ createTool(
         const movesTime =
           operation === "offset" && (parameters.offset_time ?? 0) !== 0;
         const replacedKeyframes: _Keyframe[] = [];
+        const mirrorKeyframes =
+          operation === "mirror"
+            ? keyframes.filter(
+                (kf: _Keyframe) => kf.transform && kf.channel !== "scale"
+              )
+            : [];
+        if (operation === "mirror" && mirrorKeyframes.length === 0) {
+          throw new Error(
+            "No position or rotation transform keyframes found matching selection criteria for mirror."
+          );
+        }
         if (operation === "offset" && parameters.offset_time !== undefined) {
           requireValidPlannedKeyframeTimes(
             keyframes.map(
@@ -2038,7 +2049,7 @@ createTool(
         }
 
         Undo.initEdit({
-          keyframes,
+          keyframes: operation === "mirror" ? mirrorKeyframes : keyframes,
         });
 
         try {
@@ -2074,13 +2085,12 @@ createTool(
               AnimationItem.selected!.setLength();
             }
           } else {
-            const mirrorAxis = parameters.mirror_axis;
-  if (!mirrorAxis) {
-    throw new Error("Mirror axis required for mirror operation.");
-  }
-  keyframes.forEach((kf: _Keyframe) => {
-    kf.flip(mirrorAxis);
-  });
+            const mirrorAxis = parameters.mirror_axis!;
+            const mirrorAxisIndex =
+              mirrorAxis === "x" ? 0 : mirrorAxis === "y" ? 1 : 2;
+            mirrorKeyframes.forEach((kf: _Keyframe) => {
+              kf.flip(mirrorAxisIndex);
+            });
           }
 
           Undo.finishEdit(`Batch keyframe operation: ${operation}`);
@@ -2108,7 +2118,7 @@ createTool(
             structuredContent: result,
           };
         }
-        return `Performed ${operation} on ${keyframes.length} keyframes`;
+        return `Mirrored ${mirrorKeyframes.length} transform keyframe(s) across ${parameters.mirror_axis} axis`;
       }
 
       if (operation === "bake") {

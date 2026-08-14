@@ -356,6 +356,29 @@ describe("animation mutation contract", () => {
     expect(offsetBlock).not.toContain("inspect_animation");
   });
 
+  test("batch mirror maps schema axis to native numeric flip index and excludes native no-op keyframes", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
+    const end = source.indexOf("createTool(\n  animationToolDocs[6].name", start);
+    const block = source.slice(start, end);
+    const mirrorStart = block.indexOf('if (operation === "offset" || operation === "mirror")');
+    const mirrorEnd = block.indexOf('if (operation === "bake")', mirrorStart);
+    const mirrorBlock = block.slice(mirrorStart, mirrorEnd);
+
+    expect(mirrorBlock).toContain("const mirrorKeyframes =");
+    expect(mirrorBlock).toContain('kf.transform && kf.channel !== "scale"');
+    expect(mirrorBlock).toContain('operation === "mirror" && mirrorKeyframes.length === 0');
+    expect(mirrorBlock.indexOf("mirrorKeyframes.length === 0")).toBeLessThan(
+      mirrorBlock.indexOf("Undo.initEdit")
+    );
+    expect(mirrorBlock).toContain('keyframes: operation === "mirror" ? mirrorKeyframes : keyframes');
+    expect(mirrorBlock).toContain("const mirrorAxisIndex =");
+    expect(mirrorBlock).toContain('mirrorAxis === "x" ? 0 : mirrorAxis === "y" ? 1 : 2');
+    expect(mirrorBlock).toContain("kf.flip(mirrorAxisIndex);");
+    expect(mirrorBlock).not.toContain("kf.flip(mirrorAxis);");
+    expect(mirrorBlock).toContain("mirrorKeyframes.length");
+  });
+
   test("batch scale reports bounded overwrite count from native replaceOthers", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     const start = source.indexOf("createTool(\n  animationToolDocs[5].name");
