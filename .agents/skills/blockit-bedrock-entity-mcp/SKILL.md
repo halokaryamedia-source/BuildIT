@@ -19,6 +19,22 @@ intent + known state/UUIDs + stage → route
 
 Do not use Graphify, Obsidian, GitHub/code search for tool choice.
 
+## Persistent Workspace Continuity
+
+When the user names or resumes a persistent repo-backed asset and `workspace/active/<project>/README.md` exists, read **that project README only**, then open only the current `.bbmodel`/reference/assets needed for the next decision. This is continuity, not broad repository discovery.
+
+```text
+known project
+→ workspace/active/<project>/README.md
+→ current model + needed evidence only
+→ intent + known state + stage
+→ route
+```
+
+Do not scan every folder under `workspace/active/`. Stored paths/prose are not visual evidence; reference judgement still requires the actual approved image visible in active context.
+
+If persistent work has no package yet, create one only when persistence is actually wanted. No manifest JSON, geometry blueprint, checkpoint log, or duplicate versioned `.bbmodel` copies are required. `workspace/README.md` owns storage rules.
+
 ## Authoring Stage Lock
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
@@ -78,9 +94,11 @@ Recovery reads only missing decision state. Same failed causal direction twice w
 - **Do not immediately call `get_project_info`** after create/export unless missing fields/external change matter.
 - Known tool spec already loaded → call it; do not repeat `tool_search` on a new turn.
 - Failed/no-effect correction → never repeat the same payload; diagnose first.
+- Known workspace package → do not rediscover project identity from the whole repository.
 
 ```text
 known target UUID            ≠ discovery
+known workspace project      ≠ workspace scan
 geometry targeting           ≠ get_selection
 asset tool selection         ≠ repository/code search
 ```
@@ -105,5 +123,7 @@ production texture/animation waits for accepted dependencies. Existing-asset wor
 `export_model` supports:
 - Bedrock geometry JSON (`bedrock`);
 - editable `.bbmodel` (`project`).
+
+For persistent work, keep the current editable `.bbmodel` and deliberate exports inside the same `workspace/active/<project>/` package. Prefer one current model file; Git history owns older revisions. Update the compact project README only when the current next step or real blocker changes.
 
 Missing native capability stays explicit; do not emulate it with generic Mesh, `risky_eval`, UI automation, Hytale, or another format.
