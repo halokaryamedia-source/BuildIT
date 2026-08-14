@@ -1,9 +1,9 @@
 # BlockIT Foundation Validation Report
 
 **Updated:** 2026-08-14  
-**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, hardened Reference Generator, and professional PRO-1–PRO-8 static closures.
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 static closures, and current pre-local plugin-freshness handoff.
 
-This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`.
+This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`; local execution procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md`.
 
 ## Evidence Labels
 
@@ -16,16 +16,42 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 ## Functional Status
 
 ```text
-LOCAL_ACCEPTANCE_COMPLETE
-NON_LOCAL_P0_P7_REFERENCE_MINECRAFT_FIRST_FIVE_PREVIEW_AND_PRO1_PRO8_STATIC_VERIFIED
-NO_LOCAL_RUN_ACTIVE
+ACCEPTED LIVE BASELINE (2026-08-12): LOCAL_ACCEPTANCE_COMPLETE
+CURRENT HEAD STATE:                 PRELOCAL_PLUGIN_FRESHNESS_READY
+CURRENT SOURCE/CI:                  STATIC VERIFIED
+CURRENT LOCAL RUN:                  NO LOCAL RUN ACTIVE
 ```
 
-The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later reasoning, Reference Generator, and professional-sample changes are static/CI proof unless explicitly stated otherwise.
+The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later P0–P7 reasoning, Reference Generator changes, professional-sample closures, Codex routing hardening, and current documentation/test-preparation changes are static/CI proof unless explicitly stated otherwise.
+
+**Do not claim live Blockbench/model-quality improvement without actual runtime proof on the current local artifact.**
+
+## Current Local Acceptance Target
+
+The next live acceptance is intentionally limited to two modelling tests after plugin freshness is proved:
+
+```text
+fresh Local build
+→ exact Git HEAD + mcp/dist/mcp.js SHA-256
+→ load exact local BlockIT artifact
+→ restart Blockbench + reconnect MCP
+→ verify endpoint + 62-tool default surface
+→ verify:stateless-local
+→ TEST 1 — MCP / CORE MECHANICS
+→ persistence / export
+→ TEST 2 — REFERENCE MODEL (ELEPHANT)
+→ efficiency check
+```
+
+`TEST 1` isolates Plugin/MCP mechanics from reference quality. `TEST 2` evaluates real Minecraft-first Geometry + Texture judgement using the approved elephant reference. The elephant image is test evidence and must be visible to the local modelling context; it is not production plugin content.
+
+Installed-plugin freshness, runtime behavior on the current build, current persistence/export behavior, current call efficiency, and current elephant model quality remain `LOCAL PROOF REQUIRED` until that run occurs.
 
 ## Accepted Live Baseline — 2026-08-12
 
 Representative `CURRENT-PROJECT VERIFIED` coverage: loopback/stateless transport, 62-tool default surface, geometry/correction/Undo, difference-first reference behavior, texture/Paint/PBR/material instances, base animation create/inspect/timeline/playback, Locator/Null Object lifecycle, `.bbmodel` persistence, and Bedrock geometry export.
+
+This baseline is retained as historical live evidence; it is **not** proof that the current generated `mcp/dist/mcp.js` has been loaded locally.
 
 ## Fresh GitHub-Only Serialized Surface Proof
 
@@ -41,6 +67,41 @@ runtime workflow prompt:        6,959 characters
 ```
 
 These are serialized characters, not model-visible tokens.
+
+## Plugin / MCP Static Readiness
+
+Current source establishes:
+
+```text
+default profile              bedrock_entity
+endpoint                     http://127.0.0.1:3000/bb-mcp
+transport                    loopback-only stateless Streamable HTTP / JSON
+Extended MCP Families        OFF by default
+risky_eval                   disabled
+from_geo_json                disabled
+production artifact          mcp/dist/mcp.js
+```
+
+Plugin lifecycle owns the HTTP server and closes active sockets during unload. UI/settings teardown remains explicit. Disabled tools are excluded from enabled server registration and the BlockIT panel Tool Test path also refuses disabled execution.
+
+These are source/static claims. Which local `dist/mcp.js` Blockbench actually loads is still `LOCAL PROOF REQUIRED`; package version alone is not freshness proof.
+
+## Codex / Agent Routing State
+
+Normal asset authoring routes from current intent + known state + stage to the exact MCP tool and only the active modelling/texturing/animation specialist. It does not begin with broad repository/history discovery.
+
+Key anti-loop invariants remain:
+
+```text
+known fresh identity/state → reuse it
+known tool spec            → execute; do not search again
+unknown/stale target       → focused discovery only
+fresh mutation result      → do not ritual read back
+visual gate                → meaningful checkpoint, not capture-per-mutation
+same causal failure twice without new evidence → BLOCKED
+```
+
+This routing is static verified; real installed-client call reduction remains `LOCAL PROOF REQUIRED`.
 
 ## Native Deferred MCP Discovery Compatibility
 
@@ -108,6 +169,8 @@ Structural correction remains board-level. A fix that helps one view while mater
 
 Only panel/view labels appear by default; scale/height/use facts remain Handoff Constraints outside image pixels. No anatomy engine, pose planner, scorer, similarity authority, new MCP tool, runtime profile, or asset-specific preset was added. Static tests do not certify future generated-image quality; actual Draft quality and final model quality still require image-capable/local evidence.
 
+The already approved elephant reference remains usable for the current Test 2 when the actual image is visible to the local modelling context. The new five-preview default does not force regeneration of an already approved usable reference.
+
 ## Professional Sample Forensics — Static / Non-Local
 
 Nine professional `.bbmodel` samples remain learning evidence only. Retained bounded closures are:
@@ -126,15 +189,15 @@ Controller creation/mutation, existing-animation direct sound/timeline-effect mu
 
 Current GitHub proof: **209 tests / 0 failures**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count remains **62**; max tool payload remains **3,167 < 3,200**; runtime workflow prompt remains **6,959 < 7,000**.
 
-Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is reactivated.
+Later Molang/sound/controller-inspection persistence, controller execution, installed-plugin freshness, real call reduction, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is active.
 
 ## Product / Lifecycle / Export
 
-Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted live-baseline evidence.
+Project lifecycle, editable `.bbmodel`, Bedrock geometry export, and representative save/reopen retain accepted 2026-08-12 baseline evidence. Current-build persistence/export is rechecked in the next local acceptance rather than inferred from source.
 
 ## Texture / Paint / PBR
 
-Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-UV batch parity without a new UV tool/preset system. Minecraft-first texture judgement now tolerates minor surface drift while material identity/channel contradictions remain blockers.
+Native texture/Painter/PBR/material-instance capability remains. PRO-5 adds Box-UV batch parity without a new UV tool/preset system. Minecraft-first texture judgement tolerates minor surface drift while material identity/channel contradictions remain blockers.
 
 ## Animation / Rig
 
@@ -161,4 +224,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first five-preview Reference Generator + minor/material canonicalization + professional PRO-1–PRO-8**. No local run is active. Source expansion remains stopped unless a concrete requirement proves another bounded gap.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first five-preview Reference Generator + minor/material canonicalization + Codex exact-tool routing + professional PRO-1–PRO-8**. The repository is prepared for local artifact freshness proof and the two explicit local tests. No current runtime/model-quality claim is upgraded until that local evidence exists.
