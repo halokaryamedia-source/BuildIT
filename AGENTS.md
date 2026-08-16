@@ -2,12 +2,6 @@
 
 Current intent owns the task; current source and relevant proof own behavior.
 
-## GitHub work
-
-For any material GitHub read/write, read and follow [GITHUB_RULES.md](GITHUB_RULES.md) before editing.
-
-`GITHUB_RULES.md` is the canonical ChatGPT ↔ GitHub operating policy. Repository-specific rules here may narrow domain behavior, but they do not duplicate or weaken its safety, tool-fit, validation, retry, or STOP rules.
-
 ## Task Class First
 
 ### Reference Preparation
@@ -38,7 +32,6 @@ For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/kn
 
 ```text
 this file
-→ GITHUB_RULES.md before material GitHub write
 → docs/knowledge/next-action.md when continuing current work
 → CONTEXT.md only when stable facts matter
 → affected source + nearest AGENTS.md
@@ -58,9 +51,24 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 6. `CONTEXT.md`;
 7. Git history / GitHub issues or PRs only when historical rationale can change the decision.
 
-## Evidence boundary
+## Work Discipline
 
-Use evidence labels only when material uncertainty remains:
+- Inspect the current owner/caller/pattern before shared changes.
+- Make the minimum complete change; reuse before adding a layer.
+- Do not broaden scope because adjacent issues are visible.
+- No fallback/framework/profile/compatibility layer without proved need.
+- Fixtures and samples are evidence, not generic product rules.
+- Stop the same failed direction after two attempts without new evidence.
+- `No change required` is valid.
+- Never claim proof that was not obtained.
+- Persistent asset work uses one current workspace package instead of scattered files.
+- When a repository change alters user-facing setup, current product status, capability boundaries, or the active test entrypoint, update the relevant `README.md` in the same change. Do not churn README files for internal changes that leave those facts unchanged.
+
+## Execution / Proof
+
+**ChatGPT → GitHub:** repository/source/docs/CI evidence only.
+
+**Codex local / Blockbench:** runtime/model/visual proof only when explicitly active and required.
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -70,7 +78,7 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Source/CI proof never upgrades a live Blockbench/model/visual/runtime claim.
+Source/CI proof never upgrades a live visual/runtime claim.
 
 ## Product Boundary
 
