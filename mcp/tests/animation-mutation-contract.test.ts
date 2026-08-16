@@ -451,6 +451,21 @@ describe("animation mutation contract", () => {
     expect(block).not.toContain("inspect_animation");
   });
 
+  test("animation copy snapshots Bezier handles instead of retaining live source references", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[6].name");
+    const block = source.slice(start);
+
+    expect(block).toContain("bezier_left_time: toArrayVector3(kf.bezier_left_time)");
+    expect(block).toContain("bezier_left_value: toArrayVector3(kf.bezier_left_value)");
+    expect(block).toContain("bezier_right_time: toArrayVector3(kf.bezier_right_time)");
+    expect(block).toContain("bezier_right_value: toArrayVector3(kf.bezier_right_value)");
+    expect(block).not.toContain("bezier_left_time: kf.bezier_left_time,");
+    expect(block).not.toContain("bezier_left_value: kf.bezier_left_value,");
+    expect(block).not.toContain("bezier_right_time: kf.bezier_right_time,");
+    expect(block).not.toContain("bezier_right_value: kf.bezier_right_value,");
+  });
+
   test("mirror_paste delegates transform and Bezier mirroring to native Keyframe.flip without mutating clipboard handles", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     const start = source.indexOf("createTool(\n  animationToolDocs[6].name");

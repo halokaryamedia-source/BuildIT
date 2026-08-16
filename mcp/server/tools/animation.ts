@@ -2457,13 +2457,13 @@ createTool(
               values: kf.getArray(),
               interpolation: kf.interpolation,
               // @ts-ignore
-              bezier_left_time: kf.bezier_left_time,
+              bezier_left_time: toArrayVector3(kf.bezier_left_time),
               // @ts-ignore
-              bezier_left_value: kf.bezier_left_value,
+              bezier_left_value: toArrayVector3(kf.bezier_left_value),
               // @ts-ignore
-              bezier_right_time: kf.bezier_right_time,
+              bezier_right_time: toArrayVector3(kf.bezier_right_time),
               // @ts-ignore
-              bezier_right_value: kf.bezier_right_value,
+              bezier_right_value: toArrayVector3(kf.bezier_right_value),
             }));
           });
 
