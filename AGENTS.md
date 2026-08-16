@@ -70,6 +70,17 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 
 **Codex local / Blockbench:** runtime/model/visual proof only when explicitly active and required.
 
+### GitHub Actions discipline
+
+GitHub Actions is verification infrastructure, not a background development engine.
+
+- Automatic workflows must run only on the working branch and source/config paths their checks can actually falsify. Documentation, routing, planning, and status edits do not justify a full MCP suite unless a check explicitly owns that file.
+- Superseded runs must use concurrency cancellation when repeated pushes can overlap.
+- Verification workflows are read-only. Do not let a normal push-triggered verifier build a bundle, commit it, and push back into the working branch.
+- Publishing, release bundling, or generated-artifact publication is an explicit/manual release action, not a side effect of every development push.
+- Do not create one-shot publish/test workflows to compensate for a missing local capability.
+- Do not rerun an unchanged failed workflow merely to seek a green status; diagnose the first failing owner or stop if the failure is outside the current scope.
+
 ```text
 CURRENT-PROJECT VERIFIED
 OFFICIALLY VERIFIED
