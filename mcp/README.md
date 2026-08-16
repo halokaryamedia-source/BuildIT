@@ -25,6 +25,10 @@ bun run build
 bun run docs:check
 ```
 
+During iteration, use the smallest relevant check first. GitHub `MCP Verify` automatically runs the full gate only for executable/config changes on `Local`; MCP Markdown, generated docs, and unrelated repository documentation do not trigger it. Superseded runs are cancelled, and a deliberate full check remains available through `workflow_dispatch`.
+
+Verification is read-only. Publishing or refreshing a distributable bundle is an explicit/manual release action; it must not be implemented as a push-triggered workflow that commits and pushes back into the working branch.
+
 Production plugin: `dist/mcp.js`. `dist/` is generated output; package version alone is not artifact-freshness proof.
 
 ## Endpoint / Containment
