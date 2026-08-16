@@ -25,6 +25,7 @@ Before a material change, know the repository, working branch, current HEAD, and
 - Never silently fall back to the default branch.
 - Re-check HEAD only when concurrent movement is plausible or immediately before a write that could overwrite newer work.
 - For file replacement/deletion, use the current blob/content SHA from the exact target branch. If GitHub rejects a stale SHA, refetch once and rebuild the intended final state; never guess or substitute another SHA type.
+- Treat a repository-designated default, protected, production, or release branch as read-only unless current repository policy or an explicit user instruction authorizes the write. Never switch to such a branch merely to bypass a workflow, stale SHA, or connector limitation.
 
 ## 2. READ MINIMUM — read only what can change the decision
 
@@ -87,6 +88,7 @@ Hard stops:
 - Never split `update_file` into chunks. It replaces the whole file; it does not append or patch.
 - Keep blob/content SHA, commit SHA, and tree SHA distinct.
 - Low-level Git blob/tree/commit/ref operations are not the default editor. Use them only when the task genuinely requires those semantics and the capability is known to be available.
+- Force-push, history rewrite, destructive reset, or equivalent ref manipulation is never a workaround for stale SHA, CI failure, connector limits, or messy commit history.
 - Permission, safety, or capability denial ends that operation immediately. Do not retry through Git gymnastics, helper files, or temporary workflows.
 - Do not use GitHub Actions as a remote shell or as a substitute for missing local/browser/audio/runtime capability.
 - Do not change repository structure merely to make the connector easier to use.
@@ -101,6 +103,7 @@ Prepare the intended final state before the first write.
 - Prefer one coherent logical change over chains of `try`, `rerun`, `trigger`, `sync`, or `final proof` commits.
 - Do not create commits only to trigger CI, align proof, rerun a workflow, or make tooling easier to operate.
 - Do not treat intermediate connector commits as independent milestones requiring separate validation.
+- For a coordinated multi-file change, establish the intended complete patch before the first write. If HEAD moves materially during the change, refetch affected current state and reassess before continuing; do not blindly overwrite, merge, or rebase around concurrent work.
 - Keep one canonical owner for each durable rule/state where practical; do not copy the same contract across many docs and create synchronization cascades.
 - Update status/continuity/release metadata only when the milestone, blocker, next meaningful objective, capability boundary, or actual release state changed—not after every micro-step.
 - New files, workflows, abstractions, compatibility layers, fixtures, reports, and persistent state default to zero unless the current requirement proves a durable need.
@@ -117,6 +120,7 @@ Validation is evidence, not ceremony.
 - Only a completed successful run is PASS. `queued`, `in_progress`, `pending`, `cancelled`, `skipped`, or superseded runs are not PASS and do not need to be waited on when a newer relevant run replaces them.
 - Do not rerun unchanged checks or chase every verifier to green when they cannot falsify the current change.
 - On CI failure, inspect the failing job/step and only the relevant error before editing.
+- Do not weaken, delete, bypass, or broaden a valid test/workflow merely to obtain a green result. Change a test or workflow only when evidence shows that test/workflow is itself the first wrong owner.
 - Same-cause retry budget: maximum 2 attempts.
 - Permission/capability denial retry budget: 0 unless new evidence changes the condition.
 - Regression tests are for material, realistically recurring invariants—not every typo, one-time migration, cosmetic wording change, or temporary state.
@@ -136,6 +140,15 @@ GitHub Actions is verification infrastructure, not a background development engi
 - Publishing/release bundling is an explicit release action, not a side effect of every development push.
 - Do not create temporary/one-shot workflows to compensate for a missing capability.
 - Do not rerun an unchanged failed workflow merely to seek a green badge.
+
+## Repository safety
+
+High-impact repository mutations are not normal development steps.
+
+- Force-push/history rewrite, branch or tag deletion, pull-request merge/close, release/tag publication or deletion, repository settings changes, permission changes, and similar destructive or externally visible mutations require explicit task authority and an exact current target.
+- Perform only the requested high-impact mutation. Do not create, merge, close, publish, delete, or reconfigure GitHub objects merely as cleanup, ceremony, proof, or a workaround.
+- Never commit, paste, echo, or move secrets such as API keys, access tokens, passwords, private keys, authorization headers, or `.env` credentials into source, workflows, issues, pull requests, comments, logs, or documentation. If a secret is discovered, do not reproduce its value; report only the affected location/type and treat exposure as a security issue.
+- Generated or derived artifacts follow their source owner. Fix the canonical source and regenerate when the artifact is invalid; do not hand-patch generated output unless repository policy explicitly defines that file as an authored source.
 
 ## 7. STOP — completion is a valid terminal state
 
@@ -164,6 +177,7 @@ relevant CI               0–1
 same-cause retry          <= 2
 capability-denial retry   0
 adjacent cleanup          0
+high-impact mutations     0 unless explicitly authorized
 ```
 
 Exceed a budget only when the current task provides concrete evidence that more work is necessary.
