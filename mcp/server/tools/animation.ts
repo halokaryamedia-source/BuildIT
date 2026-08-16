@@ -2459,6 +2459,10 @@ createTool(
                 return { x, y, z };
               }),
               interpolation: kf.interpolation,
+              ...(channel === "scale" ? { uniform: kf.uniform === true } : {}),
+              ...(kf.interpolation === "bezier"
+                ? { bezier_linked: kf.bezier_linked === true }
+                : {}),
               // @ts-ignore
               bezier_left_time: toArrayVector3(kf.bezier_left_time),
               // @ts-ignore
@@ -2562,6 +2566,14 @@ createTool(
                     data_points: dataPoints,
                     time: targetTime,
                     interpolation: kfData.interpolation,
+                    ...(channel === "scale" &&
+                    typeof kfData.uniform === "boolean"
+                      ? { uniform: kfData.uniform }
+                      : {}),
+                    ...(kfData.interpolation === "bezier" &&
+                    typeof kfData.bezier_linked === "boolean"
+                      ? { bezier_linked: kfData.bezier_linked }
+                      : {}),
                   });
                   if (!keyframe) {
                     throw new Error(
