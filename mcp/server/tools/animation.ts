@@ -2511,14 +2511,14 @@ createTool(
           }
           const mirrorAxis =
             action === "mirror_paste" ? target.mirror_axis! : null;
-          const axisIndex =
+          const mirrorAxisIndex =
             mirrorAxis === "x"
               ? 0
               : mirrorAxis === "y"
               ? 1
               : mirrorAxis === "z"
               ? 2
-              : -1;
+              : null;
           const timeOffset = target.time_offset ?? 0;
           const plannedPasteTimesByChannel = Object.fromEntries(
             Object.entries(
@@ -2553,14 +2553,6 @@ createTool(
               ([channel, keyframes]: [string, any[]]) => {
                 keyframes.forEach((kfData, index) => {
                   const values = [...kfData.values];
-
-                  if (
-                    mirrorAxis &&
-                    (channel === "rotation" || channel === "position")
-                  ) {
-                    values[axisIndex] *= -1;
-                  }
-
                   const targetTime = plannedPasteTimesByChannel[channel][index];
 
                   const keyframe = animator!.addKeyframe({
@@ -2585,16 +2577,22 @@ createTool(
                   if (kfData.interpolation === "bezier") {
                     // @ts-ignore
                     if (kfData.bezier_left_time !== undefined)
-                      keyframe.bezier_left_time = kfData.bezier_left_time;
+                      keyframe.bezier_left_time = [...kfData.bezier_left_time];
                     // @ts-ignore
                     if (kfData.bezier_left_value)
-                      keyframe.bezier_left_value = kfData.bezier_left_value;
+                      keyframe.bezier_left_value = [...kfData.bezier_left_value];
                     // @ts-ignore
                     if (kfData.bezier_right_time !== undefined)
-                      keyframe.bezier_right_time = kfData.bezier_right_time;
+                      keyframe.bezier_right_time = [...kfData.bezier_right_time];
                     // @ts-ignore
                     if (kfData.bezier_right_value)
-                      keyframe.bezier_right_value = kfData.bezier_right_value;
+                      keyframe.bezier_right_value = [...kfData.bezier_right_value];
+                  }
+
+                  if (mirrorAxisIndex !== null) {
+                    // blockbench-types@5.1.0 declares axisLetter, while the runtime Keyframe.flip contract uses numeric indexes.
+                    // @ts-expect-error Runtime Blockbench expects 0|1|2 here.
+                    keyframe.flip(mirrorAxisIndex);
                   }
                 });
               }

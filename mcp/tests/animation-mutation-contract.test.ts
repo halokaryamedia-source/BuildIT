@@ -451,6 +451,25 @@ describe("animation mutation contract", () => {
     expect(block).not.toContain("inspect_animation");
   });
 
+  test("mirror_paste delegates transform and Bezier mirroring to native Keyframe.flip without mutating clipboard handles", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[6].name");
+    const block = source.slice(start);
+
+    expect(block).toContain("const mirrorAxisIndex =");
+    expect(block).toContain('mirrorAxis === "z" ? 2 : null');
+    expect(block).not.toContain("values[axisIndex] *= -1");
+    expect(block).toContain("keyframe.bezier_left_time = [...kfData.bezier_left_time]");
+    expect(block).toContain("keyframe.bezier_left_value = [...kfData.bezier_left_value]");
+    expect(block).toContain("keyframe.bezier_right_time = [...kfData.bezier_right_time]");
+    expect(block).toContain("keyframe.bezier_right_value = [...kfData.bezier_right_value]");
+    expect(block).toContain("if (mirrorAxisIndex !== null) {");
+    expect(block).toContain("keyframe.flip(mirrorAxisIndex);");
+    expect(block.indexOf("keyframe.bezier_right_value = [...kfData.bezier_right_value]")).toBeLessThan(
+      block.indexOf("keyframe.flip(mirrorAxisIndex);")
+    );
+  });
+
   test("bone create child adoption rejects parent/ancestor cycles before Undo", async () => {
     const hierarchy = new Map<string, string | null>([
       ["root-bone", null],
