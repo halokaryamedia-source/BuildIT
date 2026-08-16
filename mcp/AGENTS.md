@@ -77,7 +77,9 @@ The runtime prompt bundle contains only prompts intentionally exposed by `server
 
 ## Verification
 
-For normal `mcp/**` source work, use the same repository gate as the official MCP verification workflow:
+During normal iteration, run the smallest check that can falsify the changed MCP contract. Do not run the full suite merely because an MCP-adjacent Markdown, routing, planning, or status file changed.
+
+For a final MCP source/config verification when the executable/public contract can actually be affected, the official gate is:
 
 ```bash
 bun install --frozen-lockfile
@@ -87,6 +89,8 @@ bun run measure:surface
 bun run build
 bun run docs:check
 ```
+
+The GitHub `MCP Verify` workflow is a final relevant gate for executable/config changes on `Local`; it is not an automatic verifier for every repository edit. It is fail-fast, cancels superseded runs, and may also be invoked deliberately with `workflow_dispatch` when a full check is actually required.
 
 Use targeted tests for the public contract being changed; do not add low-value ceremony. GitHub/static proof covers source contracts and buildability, **not** live Blockbench rendering, Undo behavior, playback, persistence, or visual fidelity. Run local proof only when the active user/task explicitly requires it.
 
