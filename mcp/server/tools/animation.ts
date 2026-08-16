@@ -2454,7 +2454,10 @@ createTool(
 
             copiedData.channels[channel] = keyframes.map((kf: _Keyframe) => ({
               time: kf.time,
-              values: kf.getArray(),
+              data_points: kf.data_points.map((_, dataPointIndex) => {
+                const [x, y, z] = kf.getArray(dataPointIndex);
+                return { x, y, z };
+              }),
               interpolation: kf.interpolation,
               // @ts-ignore
               bezier_left_time: toArrayVector3(kf.bezier_left_time),
@@ -2545,18 +2548,18 @@ createTool(
             Object.entries(clipboardData.channels as Record<string, any[]>).forEach(
               ([channel, keyframes]: [string, any[]]) => {
                 keyframes.forEach((kfData, index) => {
-                  const values = [...kfData.values];
+                  const dataPoints = kfData.data_points.map(
+                    (point: { x: number | string; y: number | string; z: number | string }) => ({
+                      x: point.x,
+                      y: point.y,
+                      z: point.z,
+                    })
+                  );
                   const targetTime = plannedPasteTimesByChannel[channel][index];
 
                   const keyframe = animator!.addKeyframe({
                     channel,
-                    data_points: [
-                      {
-                        x: values[0],
-                        y: values[1],
-                        z: values[2],
-                      },
-                    ],
+                    data_points: dataPoints,
                     time: targetTime,
                     interpolation: kfData.interpolation,
                   });

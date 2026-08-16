@@ -466,6 +466,20 @@ describe("animation mutation contract", () => {
     expect(block).not.toContain("bezier_right_value: kf.bezier_right_value,");
   });
 
+  test("animation copy/paste preserves every transform data point without widening clipboard payload", async () => {
+    const source = await Bun.file("server/tools/animation.ts").text();
+    const start = source.indexOf("createTool(\n  animationToolDocs[6].name");
+    const block = source.slice(start);
+
+    expect(block).toContain("data_points: kf.data_points.map((_, dataPointIndex) => {");
+    expect(block).toContain("const [x, y, z] = kf.getArray(dataPointIndex);");
+    expect(block).toContain("const dataPoints = kfData.data_points.map(");
+    expect(block).toContain("data_points: dataPoints,");
+    expect(block).not.toContain("values: kf.getArray(),");
+    expect(block).not.toContain("const values = [...kfData.values];");
+    expect(block).not.toContain("kf.getUndoCopy(");
+  });
+
   test("mirror_paste delegates transform and Bezier mirroring to native Keyframe.flip without mutating clipboard handles", async () => {
     const source = await Bun.file("server/tools/animation.ts").text();
     const start = source.indexOf("createTool(\n  animationToolDocs[6].name");
