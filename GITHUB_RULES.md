@@ -24,6 +24,7 @@ Before a material change, know the repository, working branch, current HEAD, and
 - Search is for discovery, not current-state authority.
 - Never silently fall back to the default branch.
 - Re-check HEAD only when concurrent movement is plausible or immediately before a write that could overwrite newer work.
+- For file replacement/deletion, use the current blob/content SHA from the exact target branch. If GitHub rejects a stale SHA, refetch once and rebuild the intended final state; never guess or substitute another SHA type.
 
 ## 2. READ MINIMUM — read only what can change the decision
 
@@ -85,7 +86,9 @@ Hard stops:
 - Never full-replace a file from partial file context.
 - Never split `update_file` into chunks. It replaces the whole file; it does not append or patch.
 - Keep blob/content SHA, commit SHA, and tree SHA distinct.
+- Low-level Git blob/tree/commit/ref operations are not the default editor. Use them only when the task genuinely requires those semantics and the capability is known to be available.
 - Permission, safety, or capability denial ends that operation immediately. Do not retry through Git gymnastics, helper files, or temporary workflows.
+- Do not use GitHub Actions as a remote shell or as a substitute for missing local/browser/audio/runtime capability.
 - Do not change repository structure merely to make the connector easier to use.
 - If the current channel cannot perform the change safely, report the required channel instead of forcing completion.
 
@@ -98,6 +101,8 @@ Prepare the intended final state before the first write.
 - Prefer one coherent logical change over chains of `try`, `rerun`, `trigger`, `sync`, or `final proof` commits.
 - Do not create commits only to trigger CI, align proof, rerun a workflow, or make tooling easier to operate.
 - Do not treat intermediate connector commits as independent milestones requiring separate validation.
+- Keep one canonical owner for each durable rule/state where practical; do not copy the same contract across many docs and create synchronization cascades.
+- Update status/continuity/release metadata only when the milestone, blocker, next meaningful objective, capability boundary, or actual release state changed—not after every micro-step.
 - New files, workflows, abstractions, compatibility layers, fixtures, reports, and persistent state default to zero unless the current requirement proves a durable need.
 
 ## 6. VERIFY MINIMUM — validation follows the claim
@@ -107,6 +112,9 @@ Validation is evidence, not ceremony.
 - Run the cheapest check that can falsify the changed claim.
 - Targeted checks are the default during iteration.
 - Use a full suite only when the changed executable/public contract can actually be affected and a final full gate is materially useful.
+- When CI is relevant, prefer the relevant gate on the final logical state; do not treat an intermediate commit/run as final proof.
+- A workflow that correctly does not trigger because changed paths are outside its scope is not missing proof. Do not manufacture unrelated changes merely to trigger it.
+- Only a completed successful run is PASS. `queued`, `in_progress`, `pending`, `cancelled`, `skipped`, or superseded runs are not PASS and do not need to be waited on when a newer relevant run replaces them.
 - Do not rerun unchanged checks or chase every verifier to green when they cannot falsify the current change.
 - On CI failure, inspect the failing job/step and only the relevant error before editing.
 - Same-cause retry budget: maximum 2 attempts.
@@ -114,6 +122,7 @@ Validation is evidence, not ceremony.
 - Regression tests are for material, realistically recurring invariants—not every typo, one-time migration, cosmetic wording change, or temporary state.
 - Do not use exact natural-language prose as a test contract unless the exact string itself is a machine requirement.
 - Historical failures are not active work unless the current system still reproduces their root cause.
+- Static inspection and CI prove only the contracts they actually exercise. They do not prove browser visuals, audio quality, local runtime behavior, installed-plugin freshness, or other capabilities that were not actually executed.
 
 ## GitHub Actions
 
