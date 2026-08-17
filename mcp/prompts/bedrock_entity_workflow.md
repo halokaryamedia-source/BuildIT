@@ -39,7 +39,7 @@ For every **required attachment**, identify **contact target/invariant** first. 
 
 ## Primary form / authoring
 
-**A front-view match cannot certify depth.** Material cross-view conflict → `CONFLICTING / BLOCKED`; minor drift uses one canonical interpretation.
+**A front-view match cannot certify depth.** Minor drift uses one canonical interpretation; only unresolved material conflict → `CONFLICTING / BLOCKED`.
 
 Build coherent primary form with required Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified reference evidence**.
 

@@ -5,7 +5,7 @@ description: Minecraft Bedrock Entity texture specialist for texture lifecycle, 
 
 # BlockIT Bedrock Texturing
 
-Geometry stays with `blockbench-bedrock-modelling`.
+Geometry: `blockbench-bedrock-modelling`.
 
 ## Direct Routing
 
@@ -23,11 +23,11 @@ PBR inspect/channel → get_material_info / assign_texture_channel
 material_instance → dedicated material-instance tool
 ```
 
-Known identity skips discovery. `get_texture` is evidence, not confirmation.
+Known identity skips discovery. `create_texture` already returns texture identity/size/group/channel/render metadata.
 
 ## Deferred Spec Loading / Stage
 
-Load missing spec by **exact tool name** + action; otherwise call it. Use `DISCOVER → DESIGN → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
+Load missing spec by **exact tool name** + action. Use `DISCOVER → DESIGN → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
 - Reuse mutation output; **do not re-list/re-read it only for confirmation**.
 - Bounded mismatch → local correction; failure keeps capability unless state became stale/unknown.
@@ -77,7 +77,7 @@ Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATI
 
 ## Native Bedrock PBR / UV
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture`; use `activate_texture`, then Painter.
+`apply_texture` is disabled for Bedrock `single_texture`; use `activate_texture` to choose the active/default working texture, then Painter.
 
 `material_instance` is Bedrock face metadata, distinct from PBR. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, `autouv` are authored state; use `modify_cube` or `modify_cubes_batch`.
 
