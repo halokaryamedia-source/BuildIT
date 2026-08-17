@@ -4,6 +4,7 @@ import {
   requirePaintCoordinates,
 } from "@/server/tools/paint";
 import {
+  mapFaceUvToTexturePixels,
   requireFiniteInspectableFaceUv,
   requireFiniteInspectableVector2,
 } from "@/server/tools/element-inspection";
@@ -104,7 +105,7 @@ describe("texturing authoring contract", () => {
       "mirror_uv: cube.mirror_uv === true",
       "face.uv",
       "rotation: face.rotation",
-      "enabled: face.enabled !== false",
+      "const enabled = face.enabled !== false;",
       "uv: inspectCubeUv(cube)",
     ]) {
       expect(inspection).toContain(marker);
@@ -114,4 +115,74 @@ describe("texturing authoring contract", () => {
       expect(inspection).toContain(`"${face}"`);
     }
   });
+  test("Cube face UV maps to native Painter texture-space pixels without losing orientation", () => {
+    expect(
+      mapFaceUvToTexturePixels(
+        [2, 4, 6, 12],
+        { width: 64, displayHeight: 64, uvWidth: 16, uvHeight: 16 },
+        "fixture"
+      )
+    ).toEqual({
+      corners: [8, 16, 24, 48],
+      rect: [8, 16, 24, 48],
+      size: [16, 32],
+      flip_u: false,
+      flip_v: false,
+    });
+
+    expect(
+      mapFaceUvToTexturePixels(
+        [6, 12, 2, 4],
+        { width: 64, displayHeight: 64, uvWidth: 16, uvHeight: 16 },
+        "fixture"
+      )
+    ).toEqual({
+      corners: [24, 48, 8, 16],
+      rect: [8, 16, 24, 48],
+      size: [16, 32],
+      flip_u: true,
+      flip_v: true,
+    });
+
+    expect(
+      mapFaceUvToTexturePixels(
+        [0.25, 0.25, 1.25, 1.25],
+        { width: 16, displayHeight: 16, uvWidth: 16, uvHeight: 16 },
+        "fixture"
+      ).rect
+    ).toEqual([0, 0, 2, 2]);
+
+    expect(() =>
+      mapFaceUvToTexturePixels(
+        [0, 0, 4, 4],
+        { width: 0, displayHeight: 16, uvWidth: 16, uvHeight: 16 },
+        "fixture"
+      )
+    ).toThrow("finite positive texture dimension");
+  });
+
+  test("Cube inspection exposes semantic texture-space mapping state for every face", async () => {
+    const inspection = await source("server/tools/element-inspection.ts");
+
+    for (const marker of [
+      "Texture.getDefault()",
+      "texture.width",
+      "texture.display_height",
+      "texture.getUVWidth()",
+      "texture.getUVHeight()",
+      'state: "no_texture"',
+      'state: "texture_error"',
+      'state: "animated_texture_unsupported"',
+      "texture_space:",
+      "effective_texture:",
+      "mapping_state:",
+      "paintable:",
+      "texture_pixels:",
+      "mapFaceUvToTexturePixels(",
+      '"disabled_face" as const',
+    ]) {
+      expect(inspection).toContain(marker);
+    }
+  });
+
 });
