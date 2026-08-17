@@ -1,10 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-async function source(path) {
+type ActionRef = {
+  action: string;
+  revision: string;
+  note: string;
+};
+
+async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-function actionRefs(workflow) {
+function actionRefs(workflow: string): ActionRef[] {
   return [...workflow.matchAll(/^\s*uses:\s+([^@\s]+)@([^\s#]+)(?:\s+#\s*(.+))?$/gm)].map(
     (match) => ({
       action: match[1],
