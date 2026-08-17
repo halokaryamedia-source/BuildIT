@@ -32,6 +32,7 @@ For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/kn
 
 ```text
 this file
+→ GITHUB_RULES.md for material GitHub work
 → docs/knowledge/next-action.md when continuing current work
 → CONTEXT.md only when stable facts matter
 → affected source + nearest AGENTS.md
@@ -40,6 +41,12 @@ this file
 ```
 
 For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad code search.
+
+### GitHub Work
+
+`GITHUB_RULES.md` owns ChatGPT ↔ GitHub branch/ref authority, minimum-read discipline, tool fit, atomic multi-file delivery, commit/history quality, CI/API safety, experimental Actions boundaries, verification economy, retries, and STOP behavior.
+
+`Local` remains the working repository authority unless the user explicitly names another ref. For one coherent multi-file GitHub change, preserve one logical commit rather than accepting one Contents-API commit per file.
 
 ## Source Precedence
 
@@ -66,9 +73,9 @@ For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Pa
 
 ## Execution / Proof
 
-**ChatGPT → GitHub:** repository/source/docs/CI evidence only.
+**ChatGPT → GitHub:** repository/source/docs/CI evidence. An explicitly approved bounded `Experimental/` GitHub Actions job may additionally provide browser/runtime artifacts only for the environment it actually executes.
 
-**Codex local / Blockbench:** runtime/model/visual proof only when explicitly active and required.
+**Codex local / Blockbench desktop:** local runtime/model/visual proof only when explicitly active and required.
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -78,7 +85,7 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Source/CI proof never upgrades a live visual/runtime claim.
+Source/CI proof never upgrades a live visual/runtime claim. Experimental artifact existence also does not upgrade a visual claim until the relevant image/runtime evidence is actually inspected.
 
 ## Product Boundary
 
@@ -90,6 +97,7 @@ For `mcp/**`, `mcp/AGENTS.md` owns package-specific engineering rules.
 
 ## Canonical Owners
 
+- GitHub execution/history/CI discipline → `GITHUB_RULES.md`
 - detailed current flow → `docs/knowledge/flow.md`
 - repository/plugin continuation → `docs/knowledge/next-action.md`
 - active asset continuity → `workspace/active/<project>/README.md`
