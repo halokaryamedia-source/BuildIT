@@ -127,10 +127,15 @@ describe("repository GitHub discipline", () => {
     expect(next.length).toBeLessThan(7_000);
     expect(next).toContain("Experimental/README.md");
     expect(next).not.toContain("## Experimental Plan");
-    expect(next).toContain("EXPERIMENTAL / NOT ACTIVE / NOT END-TO-END PROVEN");
+    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
 
     for (const marker of [
       "## Active Research — On-Demand Blockbench Web Authoring",
+      "## Current proof state",
+      "CUBE POC VERIFIED",
+      "CHATGPT VISUAL LOOP VERIFIED",
+      "NOT PRODUCTION",
+      "LOCAL ACCEPTANCE UNCHANGED",
       "## Material unknowns",
       "## POC scope",
       "## Runner strategy",
