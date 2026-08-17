@@ -41,7 +41,7 @@ For every **required attachment**, identify **contact target/invariant** first. 
 
 **A front-view match cannot certify depth.** Material cross-view conflict → `CONFLICTING / BLOCKED`; minor drift uses one canonical interpretation.
 
-Build minimum coherent primary form with finite transforms and required Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified reference evidence**.
+Build coherent primary form with required Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified reference evidence**.
 
 After primary `PASS`, add only identity-weighted detail.
 
@@ -105,7 +105,7 @@ Molang: `manage_keyframes`; no MCP eval. `manage_animation_controller` mutates s
 ## Stage/tool routing
 
 ```text
-project unknown/absent → get_project_info or create_project
+project unknown/absent → get_project_info or create_project as appropriate
 known project → grounded reference → Semantic Form + Primary Form → place_cube / add_group
 judgeable form → capture_model_views
 bounded geometry mismatch → inspect_element only if needed → modify_cube / modify_cubes_batch

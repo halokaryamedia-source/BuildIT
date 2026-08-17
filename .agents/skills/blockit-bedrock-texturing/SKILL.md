@@ -5,11 +5,11 @@ description: Minecraft Bedrock Entity texture specialist for texture lifecycle, 
 
 # BlockIT Bedrock Texturing
 
-Geometry/pivot judgement stays with `blockbench-bedrock-modelling`.
+Geometry stays with `blockbench-bedrock-modelling`.
 
 ## Direct Routing
 
-Reuse fresh identity/state.
+**Reuse identity/metadata already returned by the current workflow.**
 
 ```text
 missing texture → create_texture
@@ -19,7 +19,7 @@ active/default → activate_texture
 bounded region → draw_shape_tool
 exact pixels/general brush → paint_with_brush
 PBR create/edit → create_pbr_material / configure_material
-PBR inspect/channel → list_materials / get_material_info / assign_texture_channel
+PBR inspect/channel → get_material_info / assign_texture_channel
 material_instance → dedicated material-instance tool
 ```
 
@@ -29,7 +29,6 @@ Known identity skips discovery. `get_texture` is evidence, not confirmation.
 
 Load missing spec by **exact tool name** + action; otherwise call it. Use `DISCOVER → DESIGN → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
-- Discover only unknown/stale state.
 - Reuse mutation output; **do not re-list/re-read it only for confirmation**.
 - Bounded mismatch → local correction; failure keeps capability unless state became stale/unknown.
 
@@ -41,7 +40,7 @@ For an **existing asset**, geometry is baseline. **Do not claim that baseline is
 
 ## Minecraft-First Surface
 
-Preserve base palette, major material regions, part separation, identity-critical markings, required material/PBR meaning. Prefer readable pixels over photoreal detail or random high-contrast noise; do not paint fake silhouette. Minor drift may be canonicalized: **user requirement → original Source evidence → approved reference → simplest Minecraft-readable texture**. Material identity/region/channel conflict → `BLOCKED`.
+Preserve base palette, major material regions, part separation, identity-critical markings, required material/PBR meaning. Prefer readable pixels over photoreal detail or random high-contrast noise; do not paint fake silhouette. Minor drift may be canonicalized: **user requirement → original Source evidence → approved reference → simplest Minecraft-readable texture**. Material identity/region/channel conflict → `BLOCKED`; do not average conflicting material evidence.
 
 ## Texture Design Contract
 
@@ -86,4 +85,4 @@ Logical project UV resolution and bitmap pixel dimensions are separate facts; do
 
 ## Verification
 
-`create_texture` returns texture metadata. Atlas checks region/seam/flip/density; model view checks material readability, part separation, face-aware shading, identity/style. Keep RTX/in-game claims bounded to evidence.
+Atlas checks region/seam/flip/density; model view checks material readability, part separation, shading, identity/style. Keep RTX/in-game claims bounded to evidence.
