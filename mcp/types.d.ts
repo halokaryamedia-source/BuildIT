@@ -71,6 +71,28 @@ declare global {
     [key: string]: unknown;
   }
 
+  /** Runtime edit environment passed as Painter.edit's second callback argument. */
+  interface BlockbenchRuntimeTextureEditEnvironment {
+    ctx: CanvasRenderingContext2D;
+    offset: [number, number];
+  }
+
+  /**
+   * The official Painter.edit runtime invokes Texture.edit callbacks with the
+   * active canvas plus Painter.current. The published Texture declaration only
+   * exposes the first callback argument, so keep this one evidence-backed
+   * overload for bounded direct pixel edits.
+   */
+  interface Texture {
+    edit(
+      callback: (
+        canvas: HTMLCanvasElement,
+        environment: BlockbenchRuntimeTextureEditEnvironment
+      ) => void | HTMLCanvasElement,
+      options?: TextureEditOptions
+    ): void;
+  }
+
   /**
    * Small runtime-only Painter surface proven by Blockbench's official
    * `js/texturing/painter.js` implementation but omitted/read-only in the
