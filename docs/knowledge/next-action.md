@@ -6,17 +6,18 @@ Updated: 2026-08-18
 
 ```text
 PRELOCAL_CONTROLLER_MUTATION_READY
+TEXTURING_T0_T1_CI_VERIFIED
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED
 ```
 
 Working branch: **`Local` only**.
 
-Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7**. Current production source retains bounded AnimationController mutation and the existing 63-tool default Bedrock surface.
+Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5**. Current production source retains bounded AnimationController mutation and the existing 63-tool default Bedrock surface.
 
 Installed-plugin freshness, live controller execution, current desktop Blockbench/model behavior, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
 
-**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; the Experimental browser proof below does not upgrade desktop MCP claims.**
+**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; CI/source proof below does not upgrade visual fidelity.**
 
 ## Active Boundary
 
@@ -49,41 +50,53 @@ CHATGPT VISUAL LOOP VERIFIED
 NOT PRODUCTION
 ```
 
-Verified browser evidence remains valid and scoped to what actually ran. The pause does not retract that proof, does not change MCP production behavior, and does not reactivate local acceptance.
-
 Do not edit/run `Experimental/**`, continue the correction loop, or add new Experimental capability while this pause is active.
 
-### Development reliability
+### Development reliability — COMPLETE
 
-**R1 Write Safety + R2 Verification Quality + R3 CI Efficiency + R4 Proof Reliability are retained. Current milestone: R5 Supply Chain.**
+R1 Write Safety, R2 Verification Quality, R3 CI Efficiency, R4 Proof Reliability, and R5 Supply Chain are complete and retained. Active verification workflows keep audited Actions pinned by immutable SHA; Bun uses exact `.bun-version` plus committed `mcp/bun.lock` with `bun install --frozen-lockfile`.
 
-R5 active-workflow audit:
+Experimental supply-chain hardening remains deferred while Experimental is paused.
+
+### Core MCP texturing — ACTIVE
+
+Audit found the main texturing bottleneck in Painter correctness, UV observability, and the lack of a semantic Cube/face → UV region authoring bridge.
+
+**T0 Painter contract correctness — CI VERIFIED**
+
+- direct Painter stroke tools now rely on Blockbench's native Painter lifecycle for Undo instead of nesting manual Undo around native strokes;
+- `paint_with_brush` applies brush size/opacity/softness/shape/blend mode and honors connected versus separated stroke semantics;
+- `eraser_tool` follows the same bounded native stroke path;
+- coordinate-driven brush/eraser calls reject empty coordinate work;
+- unsupported synthetic fill `tolerance` fails closed instead of being silently ignored.
+
+**T1 UV observability — CI VERIFIED**
+
+`inspect_element` Cube output now includes focused authored UV state:
 
 ```text
-actions/checkout
-→ trusted `actions` publisher
-→ active verification workflows pin the audited v6 target by full commit SHA
-
-oven-sh/setup-bun
-→ trusted official Bun organization
-→ active verification workflows pin the audited v2 target by full commit SHA
-
-Bun runtime
-→ exact `.bun-version`
-
-MCP dependencies
-→ committed `mcp/bun.lock`
-→ `bun install --frozen-lockfile`
-
-workflow permissions
-→ `contents: read`
+uv.mode
+uv.box_uv
+uv.uv_offset
+uv.autouv
+uv.mirror_uv
+uv.faces.{north,south,east,west,up,down}.uv
+uv.faces.*.rotation
+uv.faces.*.enabled
 ```
 
-The active workflows keep the major-version track as comments next to immutable SHAs so future updates are explicit and reviewable rather than floating automatically.
+Regression owner: `mcp/tests/texture-authoring-contract.test.ts`.
 
-Experimental supply-chain audit is **DEFERRED while paused**. The retained POC currently uses floating major Action refs (`checkout@v6`, `setup-node@v6`, `upload-artifact@v4`), Node `22`, and an exact Playwright top-level version without a package lock while the workflow runs `npm install --package-lock=false`. Blockbench source itself remains pinned to an exact commit. These are known reproducibility gaps to address only when a fresh explicit instruction reopens Experimental; touching its workflow now could trigger the paused POC.
+Primary implementation commit:
 
-Acceptance requires Repository Verify plus MCP Verify on the final R5 logical state. Experimental execution is not part of R5 acceptance.
+```text
+4ec722f61a00dfcb4e9fda67320ee28feacf31ee
+fix(texturing): align Painter strokes and expose UV state
+```
+
+MCP Verify run `32054804760` passed typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness.
+
+This is **source/CI proof only**. Actual desktop Painter behavior, Undo behavior, UV persistence, and visual texture quality remain LOCAL PROOF REQUIRED when materially claimed.
 
 ## Current Repository Closure
 
@@ -95,18 +108,22 @@ Production source still retains:
 - compact continuation state;
 - existing protected capability gaps.
 
-```text
-U7  No change required — no speculative profile/router/runtime-prompt redesign without installed-client evidence
-```
-
 Protected production gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
 ## Next Step
 
-**STOP after the R5 final gate.** The planned repository-reliability sequence R1–R5 is then complete. Continue only from:
+Continue core MCP texturing with **T2 — semantic UV/face layout authoring**.
 
-1. a fresh explicit instruction for the next repository/feature-development objective;
-2. a newly evidenced current repository defect; or
-3. a fresh explicit instruction to reactivate desktop local acceptance.
+Target direction:
 
-Experimental remains paused unless the user explicitly reopens it. Do not automatically resume browser experiments or start another reliability phase merely because R5 is green.
+```text
+known Cube/face identity
+→ inspect authored UV layout
+→ map intended material/marking to exact face/UV region
+→ bounded deterministic region/pixel operation
+→ fresh atlas/model visual verification
+```
+
+Do not build a generic auto-texture generator yet. Close the semantic face/region bridge first, then improve the texturing skill/prompt and visual convergence loop.
+
+Experimental remains paused unless the user explicitly reopens it.
