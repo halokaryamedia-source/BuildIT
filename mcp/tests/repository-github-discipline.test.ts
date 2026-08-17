@@ -55,7 +55,7 @@ describe("repository GitHub discipline", () => {
       "Do not route it through `development-brief`",
     ]) expect(root).toContain(marker);
 
-    expect(root).toContain("Do not edit, run CI, advance `next-action`");
+    expect(root).toContain("Do not edit, run CI, advance continuation state");
     expect(root).toContain("If `next-action.md` disagrees materially");
   });
 

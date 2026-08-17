@@ -20,7 +20,7 @@ AGENTS.md
 → report → STOP
 ```
 
-Do not edit, run CI, advance `next-action`, activate local acceptance, start an experiment, or execute a recorded next step unless the user also asks to continue/change something.
+Do not edit, run CI, advance continuation state, activate local acceptance, start an experiment, or execute a recorded next step unless the user also asks to continue/change something.
 
 ### Repository / Plugin Work
 
@@ -56,7 +56,7 @@ source image / user intent
 current request / actual approved reference
 → named workspace package when persistent
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ active modelling/texturing/animation specialist
+→ `blockbench-bedrock-modelling` / `blockit-bedrock-texturing` / `blockit-bedrock-animation` as needed
 → BlockIT MCP
 ```
 

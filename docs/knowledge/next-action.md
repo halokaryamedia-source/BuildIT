@@ -31,7 +31,11 @@ current user instruction
 
 Local acceptance remains explicitly deferred. `docs/knowledge/operations/local-acceptance-runbook.md` is inactive until a fresh explicit user instruction reactivates it.
 
-Reference generation also remains execution-gated and requires a fresh explicit generation request.
+Reference generation remains execution-gated:
+
+```text
+WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
+```
 
 ### Experimental research
 
@@ -52,7 +56,10 @@ The current source retains:
 - complete plan preflight before mutation;
 - compact continuation state instead of ritual readback;
 - the existing protected capability gaps;
-- U7 `No change required` for speculative profile/router/runtime-prompt redesign without installed-client evidence.
+
+```text
+U7  No change required — no speculative profile/router/runtime-prompt redesign without installed-client evidence
+```
 
 Protected gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
