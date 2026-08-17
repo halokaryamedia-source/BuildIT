@@ -55,37 +55,35 @@ Do not edit/run `Experimental/**`, continue the correction loop, or add new Expe
 
 ### Development reliability
 
-**R1 Write Safety + R2 Verification Quality + R3 CI Efficiency are retained. Current milestone: R4 Proof Reliability.**
+**R1 Write Safety + R2 Verification Quality + R3 CI Efficiency + R4 Proof Reliability are retained. Current milestone: R5 Supply Chain.**
 
-Canonical proof-state owner: `docs/foundation/validation-report.md`.
-
-R4 contract:
+R5 active-workflow audit:
 
 ```text
-claim state + matching proof surface
-→ STATIC / CI / HOSTED-RUNTIME / VISUAL / LOCAL-RUNTIME / PRODUCTION
-→ one surface never upgrades another
+actions/checkout
+→ trusted `actions` publisher
+→ active verification workflows pin the audited v6 target by full commit SHA
 
-retained runtime/artifact evidence
-→ compact manifest.json / proof.json / equivalent
-→ commit/ref + run/job + execution surface
-→ material input digest + output identity/digests
-→ status/stage + cleanup + visual-inspection state when applicable
+oven-sh/setup-bun
+→ trusted official Bun organization
+→ active verification workflows pin the audited v2 target by full commit SHA
 
-runtime failure
-→ stage + category/owner + message
-→ do not mislabel harness/environment failure as product/runtime failure
+Bun runtime
+→ exact `.bun-version`
 
-ambiguous GitHub mutation
-→ PRESENT_AS_INTENDED
-  | ABSENT_SAFE_TO_RETRY
-  | CONFLICTING_OR_UNKNOWN
-→ no blind retry
+MCP dependencies
+→ committed `mcp/bun.lock`
+→ `bun install --frozen-lockfile`
+
+workflow permissions
+→ `contents: read`
 ```
 
-`GITHUB_RULES.md` already owns the required mutation behavior (`5xx/timeout` reconciliation before retry), so R4 does not duplicate that policy. The regression contract protects both the existing GitHub rule and the new proof-surface/evidence-record taxonomy.
+The active workflows keep the major-version track as comments next to immutable SHAs so future updates are explicit and reviewable rather than floating automatically.
 
-Acceptance requires Repository Verify plus MCP Verify because `docs/foundation/**`, `docs/knowledge/**`, and the MCP regression-contract test are part of this milestone. Feature development remains on hold while the reliability-improvement sequence is active.
+Experimental supply-chain audit is **DEFERRED while paused**. The retained POC currently uses floating major Action refs (`checkout@v6`, `setup-node@v6`, `upload-artifact@v4`), Node `22`, and an exact Playwright top-level version without a package lock while the workflow runs `npm install --package-lock=false`. Blockbench source itself remains pinned to an exact commit. These are known reproducibility gaps to address only when a fresh explicit instruction reopens Experimental; touching its workflow now could trigger the paused POC.
+
+Acceptance requires Repository Verify plus MCP Verify on the final R5 logical state. Experimental execution is not part of R5 acceptance.
 
 ## Current Repository Closure
 
@@ -105,10 +103,10 @@ Protected production gaps remain controller-state particle/sound and blend-curve
 
 ## Next Step
 
-**STOP after the R4 final gate.** Continue only from:
+**STOP after the R5 final gate.** The planned repository-reliability sequence R1–R5 is then complete. Continue only from:
 
-1. a fresh explicit instruction to start **R5 Supply Chain** audit/hardening;
+1. a fresh explicit instruction for the next repository/feature-development objective;
 2. a newly evidenced current repository defect; or
-3. another fresh explicit development instruction.
+3. a fresh explicit instruction to reactivate desktop local acceptance.
 
-Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R4 is green.
+Experimental remains paused unless the user explicitly reopens it. Do not automatically resume browser experiments or start another reliability phase merely because R5 is green.
