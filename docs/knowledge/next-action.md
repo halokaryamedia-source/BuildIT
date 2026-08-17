@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-14
+Updated: 2026-08-17
 
 ## Status
 
@@ -67,3 +67,91 @@ PRELOCAL / REPOSITORY
 ```
 
 No speculative controller runtime framework, new profile, generic evaluator, compatibility layer, telemetry system, or persistent controller registry is justified.
+
+## Experimental Plan — On-Demand Blockbench Web Authoring
+
+```text
+EXPERIMENTAL / NOT ACTIVE / NOT END-TO-END PROVEN
+```
+
+This is a research-backed experimental direction, **not** an approved product boundary, active implementation phase, or local-acceptance reactivation.
+
+### Feasibility finding
+
+The official Blockbench source supports the core pieces required for an on-demand browser authoring/render job:
+
+```text
+Blockbench Web can be built/served
+→ native Cube / Texture / Animation APIs are programmatically authorable
+→ project codec can parse and compile .bbmodel
+→ native Preview uses THREE.WebGLRenderer
+→ native camera presets are callable
+→ Screencam can capture viewport screenshots/GIFs
+→ Timeline.setTime() + Animator.preview() can render deterministic animation frames
+```
+
+Therefore the architecture is technically feasible **without requiring MCP or a continuously running Blockbench instance**. The intended job mode is:
+
+```text
+ChatGPT
+→ GitHub job/input state
+→ ephemeral on-demand browser runner
+→ official Blockbench Web runtime
+→ native author/load/render/validate/compile
+→ .bbmodel + texture + preview artifacts
+→ GitHub
+→ ChatGPT visual review
+→ bounded correction iteration
+```
+
+MCP remains a separate optional **live Blockbench adapter**; it is not required by this experimental job-mode architecture.
+
+### Important corrections / non-goals
+
+- Do **not** build a custom Three.js renderer when native Blockbench Preview/Screencam can own rendering.
+- Do **not** make a custom full `.bbmodel` serializer by default; prefer native `Codecs.project.compile()` / project parse behavior.
+- Do **not** treat Blockbench URL `loadtype=json&loaddata=...` as the production transport for large models; browser-side in-memory/file/blob injection is the safer experiment.
+- Web Blockbench has no Electron/Node filesystem (`fs`, `PathModule`, `child_process`, etc. are unavailable in web mode), so the runner must transfer project/texture data through browser-safe memory/blob/upload/HTTP mechanisms.
+- No official Blockbench Playwright/Puppeteer/headless harness was found in the audited source. Browser automation around the official web runtime would be BuildIT-owned experimental glue.
+- The official Blockbench GitHub workflow proves the web app can be built on `ubuntu-latest`; it does **not** prove WebGL rendering succeeds in a GitHub-hosted headless browser.
+
+### Material unknowns that must be proved before implementation expands
+
+1. **Runner WebGL proof** — a GitHub-hosted runner must successfully create the Blockbench WebGL viewport and render a known cube. Software rendering is acceptable for the POC if deterministic enough.
+2. **Artifact-to-ChatGPT visual proof** — the generated PNG must be retrievable through the connected GitHub path in a form ChatGPT can actually inspect visually, not merely as opaque/base64 metadata.
+3. **Native authoring injection proof** — one bounded runner script must create/load native geometry, texture, and animation state without MCP and without maintaining a persistent Blockbench session.
+
+### POC scope
+
+The first experiment must stay intentionally small:
+
+```text
+1 known cube
++ 1 in-memory PNG texture
++ optional 1-bone / 2-keyframe animation probe
+```
+
+Required outputs:
+
+```text
+model.bbmodel
+preview-perspective.png
+preview-front.png
+(optional) animation-frame-000.png
+(optional) animation-frame-050.png
+```
+
+Acceptance criteria:
+
+1. Start the official Blockbench Web runtime only for the job and terminate it afterward.
+2. Create or load the known model through native Blockbench project/authoring APIs and render it with native Preview/Screencam.
+3. Compile the result with the native Blockbench project codec and persist the `.bbmodel` plus screenshots as GitHub artifacts/output.
+4. Prove ChatGPT can retrieve and **visually inspect** at least one native Blockbench screenshot from that output path.
+5. No MCP server, persistent desktop Blockbench session, custom renderer, or custom full `.bbmodel` compatibility layer is introduced for this POC.
+
+### Stop rules
+
+- If GitHub-hosted WebGL fails after **two bounded approaches with new evidence**, stop that runner direction; do not compensate by building a renderer clone. Re-evaluate a self-hosted/on-demand browser runner or mark the experiment blocked.
+- If screenshot artifacts cannot be surfaced back to ChatGPT as real visual evidence, do not claim a closed visual correction loop.
+- Do not expand into full geometry/texture/animation generation until the cube → native render → native `.bbmodel` → ChatGPT-visible screenshot loop is proven.
+- Keep current MCP behavior, current product status, and deferred local acceptance unchanged while this remains experimental.
