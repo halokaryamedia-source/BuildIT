@@ -61,13 +61,19 @@ requirement / policy wrong
 → semantic or policy owner
 
 requirement correct + implementation wrong
-→ implementation owner
+→ implementation owner — IMPLEMENTATION REGRESSION
 
 implementation correct + regression assertion stale
-→ test owner
+→ test owner — STALE TEST
 
 implementation/test correct + CI routing wrong
-→ workflow or repository policy
+→ workflow or repository policy — ROUTING FAILURE
+
+implementation/test/routing correct + runtime/toolchain unavailable
+→ environment or capability owner — ENVIRONMENT FAILURE
+
+requested proof missing despite otherwise successful execution
+→ proof owner — PROOF FAILURE
 
 derived/generated artifact wrong
 → upstream canonical owner
@@ -100,7 +106,7 @@ browser / Blockbench / visual / runtime claim
 → actual matching capability
 ```
 
-Do not use per-file Contents API when it would turn one logical delivery into several commits.
+Contents API is an authored-state mutation, never a scratch/probe/preflight mechanism. Never create placeholder/test files on `Local`; do not use per-file Contents API when it would turn one logical delivery into several commits.
 
 For connector work, when atomic multi-file delivery is genuinely required and the low-level Git capability is available:
 
@@ -108,6 +114,7 @@ For connector work, when atomic multi-file delivery is genuinely required and th
 pinned HEAD + base tree
 → create required blobs
 → create one tree from the base tree
+→ keep ref unchanged while blobs/tree are prepared
 → create one commit with pinned HEAD as parent
 → fast-forward intended ref once
 ```
@@ -125,12 +132,22 @@ Hard stops:
 
 ## 5. WRITE ONCE — deliver meaningful repository state
 
-Prepare the intended logical result before the first repository commit.
+Before the first repository mutation, pass this transaction gate:
+
+```text
+repo/ref/HEAD pinned
+scope + owners final
+complete final contents ready
+no scratch/temporary paths
+expected proof known
+
+any NO → DO NOT WRITE
+```
 
 - One intentional write per file is the default, but **WRITE ONCE does not mean COMMIT EVERY WRITE**.
 - Same-file and overlapping mutations are serial, never parallel.
 - Reuse successful mutation responses and returned identifiers as current state; do not immediately refetch for reassurance unless concurrency or proof requires it.
-- For coordinated multi-file work, establish the complete intended patch before the first commit. If HEAD moves materially, refetch affected state and reassess.
+- For atomic multi-file work, prepare blobs/tree without moving the ref, re-check HEAD immediately before commit/ref update, then fast-forward once; if HEAD moved materially, rebuild from current state.
 - Keep one canonical owner per durable rule/state where practical; avoid duplicate contracts and synchronization cascades.
 - Update README/status/continuity/proof metadata only when its owned setup, milestone, blocker, capability boundary, test entrypoint, or next meaningful objective actually changes.
 - Preserve lockfiles, runtime/version files, dependency constraints, and action references unless their drift is the actual first wrong owner or the user explicitly requests change.
@@ -208,7 +225,7 @@ Validation is evidence, not ceremony.
 - Only a completed successful run is PASS. Queued, running, pending, cancelled, skipped, neutral, or superseded runs are not PASS.
 - Superseded runs need not be waited on when a newer relevant run replaces them.
 - Do not rerun unchanged checks or chase unrelated verifiers to green.
-- On CI failure, inspect the exact failing job/step and only relevant error before editing.
+- On CI failure, inspect the exact failing job/step and only relevant error before editing. The first useful failure should identify the invariant, owner, and expected condition where practical.
 - Do not weaken, delete, bypass, or broaden a valid test/workflow merely to get green; change it only when evidence shows the verifier itself is the first wrong owner.
 - Same-cause retry budget: maximum 2 attempts, each requiring new evidence.
 - Permission/capability denial retry budget: 0 unless new evidence changes the condition.

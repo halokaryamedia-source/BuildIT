@@ -37,45 +37,40 @@ Reference generation remains execution-gated:
 WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 ```
 
-### Experimental research
+### Experimental research — PAUSED BY USER
 
-`Experimental/README.md` owns the detailed **On-Demand Blockbench Web Authoring** contract.
+`Experimental/README.md` retains the verified **On-Demand Blockbench Web Authoring** proof contract, but further Experimental development/execution is paused until a fresh explicit user instruction resumes it.
 
 ```text
-EXPERIMENTAL
+PAUSED BY USER
 CUBE POC VERIFIED
 DATA-ONLY AUTHORING POC VERIFIED
 CHATGPT VISUAL LOOP VERIFIED
 NOT PRODUCTION
 ```
 
-Proved browser path:
+Verified browser evidence remains valid and scoped to what actually ran. The pause does not retract that proof, does not change MCP production behavior, and does not reactivate local acceptance.
+
+Do not edit/run `Experimental/**`, continue the correction loop, or add new Experimental capability while this pause is active.
+
+### Development reliability
+
+Current reliability milestone is **R1 Write Safety + R2 Verification Quality**.
+
+Owned requirements:
 
 ```text
-bounded request.json
-→ data-only-v1 validator
-→ GitHub-hosted ephemeral browser
-→ official Blockbench Web
-→ native Group/Cube/Texture authoring
-→ native Preview/Screencam
-→ native .bbmodel compile/reparse
-→ GitHub artifact
-→ actual ChatGPT visual inspection
+GITHUB_RULES.md
+→ Contents API never used as scratch/probe/preflight
+→ pre-write transaction gate before repository mutation
+→ atomic blob/tree preparation leaves ref unchanged until final delivery
+→ failure class identifies first wrong owner
+→ material regression failures expose invariant + owner + expected condition
 ```
 
-Latest generalized proof:
+Acceptance is the relevant Repository Verify plus MCP Verify on the final logical state because the regression-contract test under `mcp/tests/**` changes with this milestone.
 
-```text
-BuildIT commit:   79e0d4096560a63f5d3b51c7ed19cbd86e2c70d2
-Workflow run:     32043429658
-Artifact ID:      9292374397
-Authored state:   1 group + 3 Cubes + 1 embedded texture
-Result:           PASS
-```
-
-The request surface is bounded create-only data: `create_texture`, `add_group`, `add_cube`; maximum 32 operations. No request-provided shell, JavaScript, browser flags, arbitrary path/URL, secrets, or generic execution field exists.
-
-This proof does not change MCP production behavior, reactivate local acceptance, prove complex-model generation, or authorize autonomous correction.
+Feature development remains on hold while the reliability-improvement sequence is being advanced.
 
 ## Current Repository Closure
 
@@ -95,10 +90,10 @@ Protected production gaps remain controller-state particle/sound and blend-curve
 
 ## Next Step
 
-**STOP.** Data-only create v1 is closed. Continue only from:
+**STOP after the R1/R2 final gate.** Continue only from:
 
-1. a fresh explicit instruction to design the next bounded experiment: **verified prior authored state → data-only targeted correction → native mutation → fresh artifact + ChatGPT difference review**;
+1. a fresh explicit instruction to start **R3 CI Efficiency** ownership/path audit;
 2. a newly evidenced current repository defect; or
-3. a fresh explicit instruction to reactivate desktop local acceptance.
+3. another fresh explicit development instruction.
 
-Do not automatically add `modify_cube`, rotations, deletes, richer texture transport, animation, autonomous loops, complex assets, production integration, compatibility layers, or MCP replacement. Experimental success remains scoped evidence, not production proof.
+Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R1/R2 is green.

@@ -4,6 +4,18 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
+function requireInvariant(
+  body: string,
+  pattern: RegExp,
+  owner: string,
+  invariant: string,
+  expected: string,
+): void {
+  if (!pattern.test(body)) {
+    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
+  }
+}
+
 describe("repository GitHub discipline", () => {
   test("GITHUB_RULES keeps PRD-quality core and conditional surfaces", async () => {
     const rules = await source("../GITHUB_RULES.md");
@@ -44,6 +56,58 @@ describe("repository GitHub discipline", () => {
     expect(rules).toContain("Do not widen permissions");
     expect(rules).toContain("read-only repository permissions");
     expect(rules).toContain("artifact existence is not visual approval");
+
+    for (const label of [
+      "IMPLEMENTATION REGRESSION",
+      "STALE TEST",
+      "ROUTING FAILURE",
+      "ENVIRONMENT FAILURE",
+      "PROOF FAILURE",
+    ]) {
+      requireInvariant(
+        rules,
+        new RegExp(label),
+        "GITHUB_RULES.md",
+        "CI/runtime failures are classified by first wrong owner before editing",
+        label,
+      );
+    }
+
+    requireInvariant(
+      rules,
+      /Contents API[^\n]*authored-state mutation[^\n]*scratch\/probe\/preflight/,
+      "GITHUB_RULES.md",
+      "Contents API cannot be used as a scratch or capability-probe write",
+      "Contents API authored-state mutation + scratch/probe/preflight prohibition",
+    );
+    requireInvariant(
+      rules,
+      /placeholder\/test files[^\n]*`Local`/,
+      "GITHUB_RULES.md",
+      "Local must never receive placeholder/test writes",
+      "placeholder/test files prohibited on Local",
+    );
+    requireInvariant(
+      rules,
+      /repo\/ref\/HEAD pinned[\s\S]*scope \+ owners final[\s\S]*complete final contents ready[\s\S]*no scratch\/temporary paths[\s\S]*expected proof known[\s\S]*DO NOT WRITE/,
+      "GITHUB_RULES.md",
+      "Repository mutations require a complete pre-write transaction gate",
+      "pinned authority + final scope/content + no scratch paths + known proof",
+    );
+    requireInvariant(
+      rules,
+      /keep ref unchanged while blobs\/tree are prepared/,
+      "GITHUB_RULES.md",
+      "Atomic blob/tree preparation must not move Local before the candidate state is complete",
+      "keep ref unchanged during blob/tree preparation",
+    );
+    requireInvariant(
+      rules,
+      /first useful failure[^\n]*invariant, owner, and expected condition/,
+      "GITHUB_RULES.md",
+      "Material regression failures should identify enough context for first-owner diagnosis",
+      "failure message names invariant + owner + expected condition",
+    );
   });
 
   test("root routing separates observation, Developing, Maintenance, and asset authoring", async () => {
