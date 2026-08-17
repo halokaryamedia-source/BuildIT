@@ -16,6 +16,30 @@ function requireInvariant(
   }
 }
 
+function requireTextInvariant(
+  body: string,
+  text: string,
+  owner: string,
+  invariant: string,
+  expected: string,
+): void {
+  if (!body.includes(text)) {
+    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
+  }
+}
+
+function requireAbsentTextInvariant(
+  body: string,
+  text: string,
+  owner: string,
+  invariant: string,
+  expected: string,
+): void {
+  if (body.includes(text)) {
+    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
+  }
+}
+
 describe("repository GitHub discipline", () => {
   test("GITHUB_RULES keeps PRD-quality core and conditional surfaces", async () => {
     const rules = await source("../GITHUB_RULES.md");
@@ -148,9 +172,11 @@ describe("repository GitHub discipline", () => {
   });
 
   test("repository and MCP verification are split by proof surface", async () => {
-    const [repository, mcp] = await Promise.all([
+    const [repository, mcp, buildIndex, promptGenerator] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
+      source("build/index.ts"),
+      source("build/generate-manifest.ts"),
     ]);
 
     for (const marker of [
@@ -180,6 +206,57 @@ describe("repository GitHub discipline", () => {
     expect(mcp).toContain("bun run measure:surface");
     expect(mcp).toContain("bun run build");
     expect(mcp).toContain("bun run docs:check");
+
+    const maintainerOnly = [
+      "mcp/AGENTS.md",
+      "mcp/README.md",
+      "mcp/prompts/blockbench_code_eval_safety.md",
+      "mcp/prompts/blockbench_native_apis.md",
+    ];
+    for (const path of maintainerOnly) {
+      requireTextInvariant(
+        repository,
+        `"${path}"`,
+        ".github/workflows/repository-verify.yml",
+        "Maintainer-only MCP documentation must retain repository-level verification",
+        `${path} is routed to Repository Verify`,
+      );
+      requireTextInvariant(
+        mcp,
+        `"!${path}"`,
+        ".github/workflows/mcp-verify.yml",
+        "Maintainer-only MCP documentation must not trigger the full executable gate",
+        `!${path}`,
+      );
+    }
+
+    requireAbsentTextInvariant(
+      mcp,
+      '"!mcp/**/*.md"',
+      ".github/workflows/mcp-verify.yml",
+      "MCP routing must never exclude all Markdown generically",
+      "only audited exact maintainer-only paths may be excluded",
+    );
+
+    for (const path of [
+      "mcp/about.md",
+      "mcp/icon.svg",
+      "mcp/prompts/bedrock_entity_workflow.md",
+    ]) {
+      requireAbsentTextInvariant(
+        mcp,
+        `"!${path}"`,
+        ".github/workflows/mcp-verify.yml",
+        "Runtime/build inputs must remain eligible for full MCP verification",
+        `${path} is not excluded from MCP Verify`,
+      );
+    }
+
+    expect(buildIndex).toContain('resolve("./icon.svg")');
+    expect(buildIndex).toContain('resolve("./about.md")');
+    expect(promptGenerator).toContain(
+      'const RUNTIME_PROMPT_FILES = ["bedrock_entity_workflow.md"] as const;'
+    );
   });
 
   test("active continuation stays compact while Experimental owns the research contract", async () => {

@@ -13,6 +13,10 @@ on:
       - "docs/foundation/**"
       - "docs/knowledge/**"
       - "workspace/README.md"
+      - "mcp/AGENTS.md"
+      - "mcp/README.md"
+      - "mcp/prompts/blockbench_code_eval_safety.md"
+      - "mcp/prompts/blockbench_native_apis.md"
       - "Experimental/**"
       - ".github/workflows/**"
   pull_request:
@@ -28,6 +32,10 @@ on:
       - "docs/foundation/**"
       - "docs/knowledge/**"
       - "workspace/README.md"
+      - "mcp/AGENTS.md"
+      - "mcp/README.md"
+      - "mcp/prompts/blockbench_code_eval_safety.md"
+      - "mcp/prompts/blockbench_native_apis.md"
       - "Experimental/**"
       - ".github/workflows/**"
   workflow_dispatch:

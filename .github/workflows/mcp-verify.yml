@@ -6,6 +6,10 @@ on:
       - Local
     paths:
       - "mcp/**"
+      - "!mcp/AGENTS.md"
+      - "!mcp/README.md"
+      - "!mcp/prompts/blockbench_code_eval_safety.md"
+      - "!mcp/prompts/blockbench_native_apis.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
@@ -14,6 +18,10 @@ on:
       - main
     paths:
       - "mcp/**"
+      - "!mcp/AGENTS.md"
+      - "!mcp/README.md"
+      - "!mcp/prompts/blockbench_code_eval_safety.md"
+      - "!mcp/prompts/blockbench_native_apis.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:

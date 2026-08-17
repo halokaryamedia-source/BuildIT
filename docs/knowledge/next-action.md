@@ -55,22 +55,27 @@ Do not edit/run `Experimental/**`, continue the correction loop, or add new Expe
 
 ### Development reliability
 
-Current reliability milestone is **R1 Write Safety + R2 Verification Quality**.
+**R1 Write Safety + R2 Verification Quality are retained. Current milestone: R3 CI Efficiency.**
 
-Owned requirements:
+Audit result:
 
 ```text
-GITHUB_RULES.md
-→ Contents API never used as scratch/probe/preflight
-→ pre-write transaction gate before repository mutation
-→ atomic blob/tree preparation leaves ref unchanged until final delivery
-→ failure class identifies first wrong owner
-→ material regression failures expose invariant + owner + expected condition
+full MCP Verify
+→ executable/public-contract/build inputs under mcp/**
+→ generated docs and their source owners
+→ about.md + icon.svg build assets
+→ bedrock_entity_workflow.md runtime prompt
+
+Repository Verify only
+→ mcp/AGENTS.md
+→ mcp/README.md
+→ mcp/prompts/blockbench_code_eval_safety.md
+→ mcp/prompts/blockbench_native_apis.md
 ```
 
-Acceptance is the relevant Repository Verify plus MCP Verify on the final logical state because the regression-contract test under `mcp/tests/**` changes with this milestone.
+The four Repository-Verify-only paths are exact audited maintainer/source-reference files. Broad exclusions such as `!mcp/**/*.md` remain prohibited because Markdown can be a runtime/build input.
 
-Feature development remains on hold while the reliability-improvement sequence is being advanced.
+Acceptance requires Repository Verify plus MCP Verify on the final R3 logical state because both workflow routing and the regression contract change. Feature development remains on hold while the reliability-improvement sequence is active.
 
 ## Current Repository Closure
 
@@ -90,10 +95,10 @@ Protected production gaps remain controller-state particle/sound and blend-curve
 
 ## Next Step
 
-**STOP after the R1/R2 final gate.** Continue only from:
+**STOP after the R3 final gate.** Continue only from:
 
-1. a fresh explicit instruction to start **R3 CI Efficiency** ownership/path audit;
+1. a fresh explicit instruction to start **R4 Proof Reliability**;
 2. a newly evidenced current repository defect; or
 3. another fresh explicit development instruction.
 
-Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R1/R2 is green.
+Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R3 is green.
