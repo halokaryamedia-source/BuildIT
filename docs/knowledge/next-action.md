@@ -6,7 +6,7 @@ Updated: 2026-08-18
 
 ```text
 PRELOCAL_CONTROLLER_MUTATION_READY
-TEXTURING_T0_T1_CI_VERIFIED
+TEXTURING_T0_T2_CI_VERIFIED
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED
 ```
@@ -72,7 +72,7 @@ Audit found the main texturing bottleneck in Painter correctness, UV observabili
 
 **T1 UV observability — CI VERIFIED**
 
-`inspect_element` Cube output now includes focused authored UV state:
+`inspect_element` Cube output includes focused authored UV state:
 
 ```text
 uv.mode
@@ -85,16 +85,39 @@ uv.faces.*.rotation
 uv.faces.*.enabled
 ```
 
+**T2 semantic UV/face layout bridge — CI VERIFIED**
+
+`inspect_element` now maps each enabled Cube face from authored UV space to effective texture pixel space without adding another MCP tool. The default Bedrock surface remains 63 tools.
+
+For a mapped face the focused result now exposes:
+
+```text
+uv.texture_space.state
+uv.texture_space.effective_texture
+uv.faces.*.mapping_state
+uv.faces.*.paintable
+uv.faces.*.texture_pixels.corners
+uv.faces.*.texture_pixels.rect
+uv.faces.*.texture_pixels.size
+uv.faces.*.texture_pixels.flip_u
+uv.faces.*.texture_pixels.flip_v
+```
+
+The mapping follows Blockbench Painter's native texture-space factors (`texture.width / texture.getUVWidth()` and `texture.display_height / texture.getUVHeight()`), preserves reversed UV orientation, and returns ordered floor/ceil pixel bounds ready for deterministic region authoring. No texture, texture load errors, disabled faces, and animated textures fail closed into explicit mapping states instead of guessing paint coordinates.
+
 Regression owner: `mcp/tests/texture-authoring-contract.test.ts`.
 
-Primary implementation commit:
+Primary texturing commits:
 
 ```text
 4ec722f61a00dfcb4e9fda67320ee28feacf31ee
 fix(texturing): align Painter strokes and expose UV state
+
+15053e75cf594a74cccef68878a16d1d1cd07ce6
+feat(texturing): map Cube faces to texture pixels
 ```
 
-MCP Verify run `32054804760` passed typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness.
+MCP Verify run `32054804760` verified T0/T1. MCP Verify run `32056911088` verified T2. Both passed typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness.
 
 This is **source/CI proof only**. Actual desktop Painter behavior, Undo behavior, UV persistence, and visual texture quality remain LOCAL PROOF REQUIRED when materially claimed.
 
@@ -116,18 +139,19 @@ Protected production gaps remain controller-state particle/sound and blend-curve
 
 ## Next Step
 
-Continue core MCP texturing with **T2 — semantic UV/face layout authoring**.
+Continue core MCP texturing with **T3 — deterministic bounded region/pixel authoring**.
 
 Target direction:
 
 ```text
 known Cube/face identity
-→ inspect authored UV layout
-→ map intended material/marking to exact face/UV region
-→ bounded deterministic region/pixel operation
-→ fresh atlas/model visual verification
+→ reuse inspect_element texture pixel mapping
+→ choose an explicit bounded region operation
+→ mutate only that mapped region
+→ return exact affected texture-space bounds
+→ verify fresh atlas/model evidence when visual quality is claimed
 ```
 
-Do not build a generic auto-texture generator yet. Close the semantic face/region bridge first, then improve the texturing skill/prompt and visual convergence loop.
+Do not build a generic auto-texture generator yet. T3 should close deterministic region mutation first; texture design reasoning/prompt improvements and visual convergence remain later stages.
 
 Experimental remains paused unless the user explicitly reopens it.
