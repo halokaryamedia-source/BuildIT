@@ -38,6 +38,8 @@ WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
 
 ### Experimental research — PAUSED BY USER
 
+`Experimental/README.md` retains the research proof contract.
+
 ```text
 PAUSED BY USER
 CUBE POC VERIFIED
