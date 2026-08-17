@@ -152,10 +152,11 @@ describe("Codex documentation handoff", () => {
   });
 
   test("proof docs separate accepted live baseline from current static/model-facing evidence", async () => {
-    const [validation, context, implementation] = await Promise.all([
+    const [validation, context, implementation, rules] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
       text("../CONTEXT.md"),
       text("../docs/knowledge/implementation-map.md"),
+      text("../GITHUB_RULES.md"),
     ]);
 
     expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
@@ -166,6 +167,49 @@ describe("Codex documentation handoff", () => {
     expect(validation).toContain("AnimationController Mutation");
     expect(validation).toContain("OFFICIALLY VERIFIED");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
+
+    expect(validation).toContain("## Proof Surface Taxonomy");
+    for (const surface of [
+      "STATIC",
+      "CI",
+      "HOSTED-RUNTIME",
+      "VISUAL",
+      "LOCAL-RUNTIME",
+      "PRODUCTION",
+    ]) expect(validation).toContain(surface);
+    expect(validation).toContain("one proof surface never upgrades a different execution surface");
+    expect(validation).toContain("artifact existence");
+
+    expect(validation).toContain("## Retained Runtime / Artifact Evidence Record");
+    for (const marker of [
+      "source commit/ref",
+      "run/job identity",
+      "execution surface",
+      "material input digest",
+      "output filenames + digest/byte size",
+      "status + last completed stage",
+      "visual-inspection state",
+    ]) expect(validation).toContain(marker);
+    for (const stage of [
+      "validate_input",
+      "pin_source",
+      "environment_setup",
+      "launch_runtime",
+      "execute",
+      "capture_or_compile",
+      "write_artifact",
+      "cleanup",
+    ]) expect(validation).toContain(stage);
+
+    for (const state of [
+      "PRESENT_AS_INTENDED",
+      "ABSENT_SAFE_TO_RETRY",
+      "CONFLICTING_OR_UNKNOWN",
+    ]) expect(validation).toContain(state);
+    expect(rules).toContain("5xx/timeout mutation outcome may be unknown");
+    expect(rules).toContain("refetch target state first");
+    expect(rules).toContain("Retry only after confirming the intended mutation is absent");
+
     expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
     expect(implementation).toContain("Deferred MCP Discovery Ownership");
     expect(implementation).toContain("Authoring Decision / Recovery Ownership");

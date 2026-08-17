@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-17
+Updated: 2026-08-18
 
 ## Current Status
 
@@ -55,27 +55,37 @@ Do not edit/run `Experimental/**`, continue the correction loop, or add new Expe
 
 ### Development reliability
 
-**R1 Write Safety + R2 Verification Quality are retained. Current milestone: R3 CI Efficiency.**
+**R1 Write Safety + R2 Verification Quality + R3 CI Efficiency are retained. Current milestone: R4 Proof Reliability.**
 
-Audit result:
+Canonical proof-state owner: `docs/foundation/validation-report.md`.
+
+R4 contract:
 
 ```text
-full MCP Verify
-→ executable/public-contract/build inputs under mcp/**
-→ generated docs and their source owners
-→ about.md + icon.svg build assets
-→ bedrock_entity_workflow.md runtime prompt
+claim state + matching proof surface
+→ STATIC / CI / HOSTED-RUNTIME / VISUAL / LOCAL-RUNTIME / PRODUCTION
+→ one surface never upgrades another
 
-Repository Verify only
-→ mcp/AGENTS.md
-→ mcp/README.md
-→ mcp/prompts/blockbench_code_eval_safety.md
-→ mcp/prompts/blockbench_native_apis.md
+retained runtime/artifact evidence
+→ compact manifest.json / proof.json / equivalent
+→ commit/ref + run/job + execution surface
+→ material input digest + output identity/digests
+→ status/stage + cleanup + visual-inspection state when applicable
+
+runtime failure
+→ stage + category/owner + message
+→ do not mislabel harness/environment failure as product/runtime failure
+
+ambiguous GitHub mutation
+→ PRESENT_AS_INTENDED
+  | ABSENT_SAFE_TO_RETRY
+  | CONFLICTING_OR_UNKNOWN
+→ no blind retry
 ```
 
-The four Repository-Verify-only paths are exact audited maintainer/source-reference files. Broad exclusions such as `!mcp/**/*.md` remain prohibited because Markdown can be a runtime/build input.
+`GITHUB_RULES.md` already owns the required mutation behavior (`5xx/timeout` reconciliation before retry), so R4 does not duplicate that policy. The regression contract protects both the existing GitHub rule and the new proof-surface/evidence-record taxonomy.
 
-Acceptance requires Repository Verify plus MCP Verify on the final R3 logical state because both workflow routing and the regression contract change. Feature development remains on hold while the reliability-improvement sequence is active.
+Acceptance requires Repository Verify plus MCP Verify because `docs/foundation/**`, `docs/knowledge/**`, and the MCP regression-contract test are part of this milestone. Feature development remains on hold while the reliability-improvement sequence is active.
 
 ## Current Repository Closure
 
@@ -95,10 +105,10 @@ Protected production gaps remain controller-state particle/sound and blend-curve
 
 ## Next Step
 
-**STOP after the R3 final gate.** Continue only from:
+**STOP after the R4 final gate.** Continue only from:
 
-1. a fresh explicit instruction to start **R4 Proof Reliability**;
+1. a fresh explicit instruction to start **R5 Supply Chain** audit/hardening;
 2. a newly evidenced current repository defect; or
 3. another fresh explicit development instruction.
 
-Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R3 is green.
+Experimental remains paused. Do not automatically resume browser experiments, reactivate local acceptance, or start feature development merely because R4 is green.

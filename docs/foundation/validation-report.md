@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-14  
-**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 closures, pre-local optimization, and bounded AnimationController mutation. Local acceptance is user-deferred.
+**Updated:** 2026-08-18  
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 closures, pre-local optimization, bounded AnimationController mutation, and repository reliability R1–R4. Local acceptance is user-deferred.
 
 This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`; local execution procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated.
 
@@ -12,6 +12,79 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 - `LOCAL PROOF REQUIRED` — source/contract exists but direct runtime/model-facing proof is still required.
 - `UNSUPPORTED` — evidence rejects the method.
 - `UNKNOWN` — evidence is insufficient.
+
+## Proof Surface Taxonomy
+
+Evidence labels describe claim state; proof surfaces describe **where the evidence actually came from**. A materially runtime-facing claim should preserve both rather than treating one successful surface as universal proof.
+
+```text
+STATIC            exact source/schema/docs or deterministic static inspection
+CI                completed matching contract/build/test workflow on the exact commit
+HOSTED-RUNTIME    exact hosted runtime/process actually executed
+VISUAL            actual generated/rendered image evidence was retrieved and inspected
+LOCAL-RUNTIME     exact local BlockIT/Blockbench artifact actually executed
+PRODUCTION        actual release/deployment/production environment operation succeeded
+```
+
+Rules:
+
+- one proof surface never upgrades a different execution surface;
+- `CI` does not imply `LOCAL-RUNTIME`, `VISUAL`, or `PRODUCTION`;
+- `HOSTED-RUNTIME` does not prove desktop BlockIT behavior;
+- `VISUAL` requires actual inspection of the relevant image/view, not artifact existence;
+- `CURRENT-PROJECT VERIFIED` applies only to the exact claim and matching executed surface;
+- `LOCAL PROOF REQUIRED` remains until the required local surface actually runs.
+
+Example:
+
+```text
+CURRENT-PROJECT VERIFIED / HOSTED-RUNTIME + VISUAL
+≠ LOCAL-RUNTIME VERIFIED
+```
+
+## Retained Runtime / Artifact Evidence Record
+
+When runtime or artifact proof is retained as acceptance evidence, keep one compact `manifest.json`, `proof.json`, or equivalent record. Include only applicable fields:
+
+```text
+source commit/ref
+run/job identity
+execution surface
+material input digest
+output filenames + digest/byte size
+status + last completed stage
+cleanup state when a process/server/browser was launched
+visual-inspection state when visual proof is claimed
+```
+
+This is reproducibility evidence, not telemetry. Do not create a persistent tracking service or duplicate large artifact contents inside the manifest.
+
+Recommended generic runtime stages:
+
+```text
+validate_input
+→ pin_source
+→ environment_setup
+→ launch_runtime
+→ execute
+→ capture_or_compile
+→ write_artifact
+→ cleanup
+```
+
+Domain-specific stages may refine this list. A retained failure should identify at least `stage`, failure category/owner, and message so a harness/environment failure is not mislabeled as a product/runtime failure.
+
+## Mutation Reconciliation Boundary
+
+GitHub mutation recovery remains owned by `GITHUB_RULES.md`. For ambiguous mutation outcomes, the evidence state must be reconciled before retry:
+
+```text
+PRESENT_AS_INTENDED       → accept current repository state; do not duplicate the mutation
+ABSENT_SAFE_TO_RETRY      → one evidence-bearing retry may proceed within the retry budget
+CONFLICTING_OR_UNKNOWN    → STOP and diagnose; no blind retry
+```
+
+A timeout/5xx is not proof of either success or failure. Permission/capability denial remains zero-retry until new evidence changes the condition.
 
 ## Functional Status
 
@@ -230,4 +303,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation**. No local acceptance is active. No current runtime/model-quality, controller-execution, or actual usage-efficiency claim is upgraded until a future explicitly reactivated local run provides that evidence.
+Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation + R1–R4 repository reliability**. No local acceptance is active. No current runtime/model-quality, controller-execution, or actual usage-efficiency claim is upgraded until a future explicitly reactivated local run provides that evidence.
