@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import { createWriteStream, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { once } from "node:events";
 import { execFileSync, spawn } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -46,7 +46,8 @@ const proof = {
   failure: null,
 };
 
-const serverLog = createWriteStream(join(outputDir, "blockbench-server.log"), { flags: "w" });
+const serverLogPath = join(outputDir, "blockbench-server.log");
+const serverLogFd = openSync(serverLogPath, "w");
 const browserLogPath = join(outputDir, "browser.log");
 let browserLog = "";
 let server;
@@ -121,7 +122,7 @@ try {
     {
       cwd: blockbenchDir,
       env: process.env,
-      stdio: ["ignore", serverLog, serverLog],
+      stdio: ["ignore", serverLogFd, serverLogFd],
     },
   );
   await waitForServer(serverUrl);
@@ -353,7 +354,11 @@ try {
     };
     process.exitCode = 1;
   }
-  serverLog.end();
+  try {
+    closeSync(serverLogFd);
+  } catch (error) {
+    browserLog += `[cleanup-server-log] ${error instanceof Error ? error.message : String(error)}\n`;
+  }
   writeFileSync(browserLogPath, browserLog, "utf8");
   writeProof();
 }
