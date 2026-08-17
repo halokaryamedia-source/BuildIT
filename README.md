@@ -24,11 +24,17 @@ The current source contract, pre-local optimization closure, and bounded Animati
 
 Reference fidelity is **Minecraft-first**: recognizable Geometry + Texture that can be built cleanly in Blockbench matters more than exact 1:1 reconstruction. Minor reference drift may be resolved into one canonical Minecraft interpretation; unresolved material contradiction remains `BLOCKED`.
 
-Root `AGENTS.md` owns routing. `docs/knowledge/flow.md` owns the detailed product sequence. Tool success is execution evidence, not visual approval.
+Root `AGENTS.md` owns routing and task-class boot. `GITHUB_RULES.md` owns ChatGPT ↔ GitHub execution/history/CI discipline. `docs/knowledge/flow.md` owns the detailed product sequence. Tool success is execution evidence, not visual approval.
 
 ## Asset Workspace
 
 Persistent asset continuity lives under `workspace/`. **`workspace/README.md` is the full workspace contract.** A named active project owns one compact resume README plus its current editable model and deliberate retained files; Codex should open that named package only. Git history owns old revisions and transient captures/logs do not become project memory.
+
+## Experimental Research
+
+`Experimental/` is an isolated non-production research surface. `Experimental/README.md` owns the detailed On-Demand Blockbench Web Authoring POC contract.
+
+Experimental source, workflows, `.bbmodel` files, screenshots, or artifacts do **not** become product capability, local-acceptance proof, or visual PASS merely because they exist or a workflow ran.
 
 ## Current Static Closures
 
@@ -68,9 +74,11 @@ current Local
 
 ## Current Documentation Owners
 
-- Root `AGENTS.md` owns routing and proof discipline.
+- Root `AGENTS.md` — task class, boot, routing, source/proof discipline
+- `GITHUB_RULES.md` — GitHub branch/ref, tool-fit, commit/history, CI/API/security, retries, STOP
 - `CONTEXT.md` — stable facts
 - `docs/knowledge/next-action.md` — repository/plugin continuation and whether local acceptance is active
+- `Experimental/README.md` — current bounded experimental research contract
 - `workspace/README.md` — persistent asset workspace rules
 - `workspace/active/<project>/README.md` — active asset-specific continuity
 - `docs/knowledge/flow.md` — detailed current workflow
@@ -79,7 +87,23 @@ current Local
 - `docs/foundation/` — durable current policy
 - `docs/knowledge/operations/local-acceptance-runbook.md` — local procedure only when explicitly reactivated
 
-Historical audits, reviews, decisions, plans, experiments, retired fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
+Historical audits, reviews, decisions, retired experiments, plans, fixtures, and obsolete model revisions belong in Git history rather than parallel current-owner files.
+
+## Repository Verification
+
+Verification is split by proof surface:
+
+```text
+repository/policy/routing changes
+→ .github/workflows/repository-verify.yml
+→ targeted static repository-contract tests
+
+mcp/** executable/public contract changes
+→ .github/workflows/mcp-verify.yml
+→ typecheck + full contracts + surface + build + generated-doc freshness
+```
+
+Both verification workflows are read-only and path-scoped. A repository-only policy change should not trigger the full MCP executable suite merely for ceremony.
 
 ## MCP Development
 

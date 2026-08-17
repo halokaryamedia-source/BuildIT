@@ -1,0 +1,76 @@
+name: Repository Verify
+
+on:
+  push:
+    branches:
+      - Local
+    paths:
+      - "AGENTS.md"
+      - "GITHUB_RULES.md"
+      - "CONTEXT.md"
+      - "README.md"
+      - ".agents/skills/**"
+      - "docs/foundation/**"
+      - "docs/knowledge/**"
+      - "workspace/README.md"
+      - "Experimental/**"
+      - ".github/workflows/repository-verify.yml"
+      - ".github/workflows/mcp-verify.yml"
+  pull_request:
+    branches:
+      - Local
+      - main
+    paths:
+      - "AGENTS.md"
+      - "GITHUB_RULES.md"
+      - "CONTEXT.md"
+      - "README.md"
+      - ".agents/skills/**"
+      - "docs/foundation/**"
+      - "docs/knowledge/**"
+      - "workspace/README.md"
+      - "Experimental/**"
+      - ".github/workflows/repository-verify.yml"
+      - ".github/workflows/mcp-verify.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Static repository contract
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: Install dependencies from lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Verify repository routing and policy
+        run: |
+          bun test \
+            tests/repository-github-discipline.test.ts \
+            tests/static-efficiency-budget.test.ts \
+            tests/documentation-handoff.test.ts \
+            tests/active-routing-integrity.test.ts \
+            tests/asset-authoring-usage-slimming.test.ts \
+            tests/asset-tool-routing.test.ts \
+            tests/reference-generator-buildability.test.ts \
+            tests/model-effectiveness-*.test.ts \
+            tests/prelocal-prompt-skill-surface.test.ts \
+            tests/prelocal-usage-optimization.test.ts

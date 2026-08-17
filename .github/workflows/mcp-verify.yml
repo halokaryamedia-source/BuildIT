@@ -2,28 +2,25 @@ name: MCP Verify
 
 on:
   push:
+    branches:
+      - Local
     paths:
       - "mcp/**"
-      - "AGENTS.md"
-      - "README.md"
-      - "CONTEXT.md"
-      - ".agents/skills/**"
-      - "docs/knowledge/**"
-      - "docs/foundation/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
+    branches:
+      - Local
+      - main
     paths:
       - "mcp/**"
-      - "AGENTS.md"
-      - "README.md"
-      - "CONTEXT.md"
-      - ".agents/skills/**"
-      - "docs/knowledge/**"
-      - "docs/foundation/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -48,46 +45,16 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Typecheck
-        id: typecheck
-        continue-on-error: true
         run: bun run typecheck
 
       - name: Contract tests
-        id: tests
-        continue-on-error: true
         run: bun run test
 
       - name: Default MCP surface measurement
-        id: surface
-        continue-on-error: true
         run: bun run measure:surface
 
       - name: Production build
-        id: build
-        continue-on-error: true
         run: bun run build
 
       - name: Generated docs freshness
-        id: docs
-        continue-on-error: true
         run: bun run docs:check
-
-      - name: Enforce verification result
-        if: always()
-        env:
-          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
-          TESTS_OUTCOME: ${{ steps.tests.outcome }}
-          SURFACE_OUTCOME: ${{ steps.surface.outcome }}
-          BUILD_OUTCOME: ${{ steps.build.outcome }}
-          DOCS_OUTCOME: ${{ steps.docs.outcome }}
-        run: |
-          failed=0
-          for gate in TYPECHECK TESTS SURFACE BUILD DOCS; do
-            outcome_var="${gate}_OUTCOME"
-            outcome="${!outcome_var}"
-            if [ "$outcome" != "success" ]; then
-              echo "${gate} gate failed: ${outcome}"
-              failed=1
-            fi
-          done
-          exit "$failed"

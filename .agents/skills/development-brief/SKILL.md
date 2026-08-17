@@ -1,65 +1,86 @@
 ---
 name: development-brief
-description: Front door for BlockIT repository create/change tasks. Ground the actual requirement, separate suggested method/fixture from the goal, set minimal scope and 2-5 provable acceptance criteria, identify execution channel, then hand off to at most one relevant implementation specialist. Do not use for ordinary asset authoring.
+description: Mandatory front door for non-trivial BlockIT repository/plugin Developing. Recover stable context and active continuation, ground the real goal, define minimal scope with 2-5 provable criteria and a proof budget, then use at most one relevant specialist. Do not use for ordinary asset authoring.
 ---
 
 # Development Brief
 
-Turn a repository create/change request into the **smallest grounded development contract**. Root `AGENTS.md` owns source precedence, proof economy, evidence labels, communication, and general anti-slop discipline; do not duplicate them here.
+Turn a repository/plugin change request into the **smallest grounded development contract without losing cross-session context**.
 
-## Load Only Needed Context
+Root `AGENTS.md` owns boot, routing, source precedence, and evidence. `GITHUB_RULES.md` owns GitHub execution/history/CI. Do not duplicate them here.
 
-Start with the current request and affected owner.
+## Entry boundary
 
-- Read `docs/knowledge/next-action.md` only when continuing current repository work.
-- Read `CONTEXT.md` only when stable project facts materially affect the decision.
-- Read one relevant policy/decision/source owner only when needed to resolve scope or a conflict.
-- Do not load review history, task board, foundation set, or multiple specialists by ritual.
+Use for non-trivial changes to BlockIT itself: MCP/plugin behavior, repository policy, skills, workflows, build/test contracts, or shared engineering.
+
+Normal asset authoring is not Developing. A read-only `amati / inspect / understand` request does not enter implementation; recover context, report, and STOP unless the user asks to continue/change something.
+
+## Mandatory Developing continuity
+
+```text
+AGENTS.md
+→ GITHUB_RULES.md Core Rules
+→ CONTEXT.md
+→ docs/knowledge/next-action.md
+→ smallest owner/evidence needed
+```
+
+`CONTEXT.md` and `next-action.md` are mandatory so a new session does not invent boundaries, repeat completed work, or select arbitrary TODOs.
+
+If `next-action.md` and current source materially disagree:
+
+```text
+verify exact current owner
+→ identify stale record
+→ reconcile it
+→ continue from actual state
+```
+
+### Bounded Maintenance exception
+
+For a concrete defect whose decision cannot be changed by stable project context, start from the exact defect/owner. Read `CONTEXT.md` only when stable project facts materially affect the decision.
 
 ## Development Contract
 
-Record only fields that affect implementation:
+Record only material fields:
 
 ```text
-Goal:
-Generic requirement:
-Suggested method / fixture (if any):
-Execution channel:
-Input authority / expected output:
-Build owner:
-Acceptance POV:
-In scope / out of scope:
+Goal
+Generic requirement
+Suggested method / fixture (if any)
+Input authority / expected output
+Build owner / Acceptance POV
+In scope / out of scope
 Acceptance criteria: 2-5
-Proof budget:
-Material unknowns:
+Proof budget
+Material unknowns
 ```
 
-A suggested implementation is not automatically the requirement. Samples, fixtures, and Golden Samples are evidence unless object-specific behavior is explicitly requested.
+A proposed method is not automatically the requirement. Samples/fixtures are evidence unless object-specific behavior is requested.
 
 ## Procedure
 
-1. **Ground the requirement** — inspect the current owner/pattern and separate fact, assumption, unknown, and optional method.
-2. **Preflight regression assertions** — before editing an owner, inspect the targeted tests/invariants that pin its current behavior. For one logical change, collect all affected owners and required invariants before writing.
-3. **Decide whether code/docs must change** — `No change required` is valid when current behavior already satisfies the goal.
-4. **Choose one build owner** — use this skill alone for trivial work; otherwise add at most one specialist whose domain procedure materially changes the implementation decision.
-5. **Set minimal proof** — define 2-5 acceptance criteria and use the cheapest evidence that can falsify them. `ChatGPT → GitHub` provides repository/static proof; local runtime/Blockbench proof is used only when actually available and requested by the active task.
-6. **Implement one coherent patch** — apply the complete logical change across its affected owners, run targeted proof, then the required full gate. Do not use intermediary commits/pushes as regression discovery when the assertions were available up front.
-7. **Re-check the same contract** — do not broaden scope because adjacent issues are visible. Before completion, verify goal, scope, criteria, and available proof against the original contract.
+1. **Recover and ground** — apply mandatory continuity, then read only extra evidence that can change the decision. Separate fact, proposal, history, and unknown.
+2. **Preflight regression assertions** — inspect targeted tests/invariants before editing; collect affected owners/invariants for one logical change before writing.
+3. **Need development?** — inspect current behavior first. `No change required` is valid. Old audits/TODOs and adjacent cleanup are not scope by default.
+4. **Choose POVs** — Build POV owns the change; Acceptance POV is the downstream consumer/operator that determines whether it solves the need.
+5. **Set minimal scope/proof** — define 2-5 falsifiable criteria and the cheapest evidence that can falsify them.
+6. **Choose one build owner** — add at most one specialist.
+7. **Implement one coherent patch** — follow `GITHUB_RULES.md`; do not use intermediary commits/pushes as regression discovery when assertions were available up front.
+8. **Final gate** — re-check goal, out-of-scope, criteria, and actual proof. Distinguish implemented from verified when live Blockbench/browser proof remains unavailable. Update `next-action.md` only if active continuation changed.
 
 ## Owner Selection
 
-Choose by primary semantic responsibility, not every technology present:
-
 ```text
-MCP public/schema/result/transport contract → mcp-server-development
-Blockbench API/lifecycle/UI/Undo mechanics   → blockbench-runtime-development
-TypeScript type-system problem              → typescript-type-safety
-Bun/build/package tooling                   → bun-tooling
-model/visual judgement                      → blockbench-bedrock-modelling
+MCP public/schema/result/transport → mcp-server-development
+Blockbench API/lifecycle/UI/Undo  → blockbench-runtime-development
+TypeScript type-system            → typescript-type-safety
+Bun/build/package tooling         → bun-tooling
+model/visual judgement            → blockbench-bedrock-modelling
 ```
 
 If no specialist adds material procedure, do not load one.
 
 ## Completion Boundary
 
-Report `implemented` separately from `verified` when required live evidence was not obtained. Do not invent another plan, persona, review layer, or escalation skill merely to make the task look more rigorous.
+Report implementation separately from live verification where required. Do not invent another planning/review layer merely to appear more rigorous.
