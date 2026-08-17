@@ -14,8 +14,7 @@ on:
       - "docs/knowledge/**"
       - "workspace/README.md"
       - "Experimental/**"
-      - ".github/workflows/repository-verify.yml"
-      - ".github/workflows/mcp-verify.yml"
+      - ".github/workflows/**"
   pull_request:
     branches:
       - Local
@@ -30,8 +29,7 @@ on:
       - "docs/knowledge/**"
       - "workspace/README.md"
       - "Experimental/**"
-      - ".github/workflows/repository-verify.yml"
-      - ".github/workflows/mcp-verify.yml"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 concurrency:

@@ -209,12 +209,12 @@ Validation is evidence, not ceremony.
 - Superseded runs need not be waited on when a newer relevant run replaces them.
 - Do not rerun unchanged checks or chase unrelated verifiers to green.
 - On CI failure, inspect the exact failing job/step and only relevant error before editing.
-- Do not weaken or bypass a valid test/workflow merely to get green; change it only when evidence shows the verifier itself is the first wrong owner.
+- Do not weaken, delete, bypass, or broaden a valid test/workflow merely to get green; change it only when evidence shows the verifier itself is the first wrong owner.
 - Same-cause retry budget: maximum 2 attempts, each requiring new evidence.
 - Permission/capability denial retry budget: 0 unless new evidence changes the condition.
 - Regression tests protect material, realistically recurring invariants—not every typo, cosmetic wording change, or temporary state.
 - Do not use exact natural-language prose as a test contract unless the exact string is itself machine-required.
-- Static source/CI evidence proves only what it exercises. It does not prove live Blockbench behavior, browser rendering, model quality, persistence, playback, or visual fidelity unless those actually ran.
+- Static source/CI evidence proves only what it exercises. It does not prove live Blockbench behavior, browser rendering, model quality, persistence, playback, visual fidelity, or deployment success unless those actually ran.
 
 ## 7. STOP — completion is a valid terminal state
 
@@ -311,10 +311,12 @@ GitHub Actions is verification/deployment infrastructure, not a background devel
 - Do not create temporary one-use workflows merely because the active channel lacks another capability.
 - Do not rerun unchanged failed workflows merely to seek green.
 - Understand event and credential semantics before relying on workflow chaining.
-- Use least-privilege workflow permissions and preserve declared action/runtime versions unless version drift is the actual issue.
-- Treat event-derived names/text/inputs as untrusted data and validate them before privileged script use.
-- Privileged base-context workflows and persistent runners require a separately safe design for untrusted contributions.
+- Use least-privilege workflow permissions. Do not widen permissions, expose protected data, or switch credentials merely to make CI pass.
+- Preserve declared action/runtime versions unless version drift is the actual issue. For new third-party actions, use trusted sources and prefer immutable/pinned revisions where practical; never move to `latest`, `main`, or `master` as a convenience fix.
+- Treat issue/PR titles and bodies, branch names, labels, commit messages, workflow inputs, and other event-derived strings as untrusted input. Validate before use and never interpolate them directly into privileged shell/script code.
+- `pull_request_target` and equivalent privileged base-context workflows are security boundaries. Never execute untrusted PR code with secrets, write tokens, or other privileged context without a separately reviewed safe design.
 - Fork contributions may intentionally lack protected credentials; do not weaken repository policy merely to make such CI green.
+- Never route untrusted PR code to a privileged or persistent self-hosted runner merely to gain missing capabilities.
 
 ### Approved `Experimental/` runtime exception
 

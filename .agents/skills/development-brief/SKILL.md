@@ -1,6 +1,6 @@
 ---
 name: development-brief
-description: Mandatory front door for non-trivial BlockIT repository/plugin Developing. Recover stable context and active continuation, ground the real goal, define minimal scope with 2-5 provable criteria and a proof budget, then use at most one relevant specialist. Do not use for ordinary asset authoring.
+description: Mandatory front door for non-trivial BlockIT Developing. Recover context and continuation, ground the goal, define minimal scope with 2-5 provable criteria and a proof budget, then use at most one specialist. Not for ordinary asset authoring.
 ---
 
 # Development Brief
@@ -48,6 +48,7 @@ Record only material fields:
 Goal
 Generic requirement
 Suggested method / fixture (if any)
+Execution channel (only when material)
 Input authority / expected output
 Build owner / Acceptance POV
 In scope / out of scope
@@ -64,7 +65,7 @@ A proposed method is not automatically the requirement. Samples/fixtures are evi
 2. **Preflight regression assertions** — collect all affected owners and required invariants before writing; inspect targeted tests/invariants before editing.
 3. **Need development?** — inspect current behavior first. `No change required` is valid. Old audits/TODOs and adjacent cleanup are not scope by default.
 4. **Choose POVs** — Build POV owns the change; Acceptance POV is the downstream consumer/operator that determines whether it solves the need.
-5. **Set minimal scope/proof** — define 2-5 falsifiable criteria and the cheapest evidence that can falsify them.
+5. **Set minimal scope/proof** — define 2-5 falsifiable criteria and the cheapest evidence that can falsify them. Record execution channel only when it constrains implementation or proof.
 6. **Choose one build owner** — add at most one specialist.
 7. **Implement one coherent patch** — follow `GITHUB_RULES.md`. Do not use intermediary commits/pushes as regression discovery when assertions were available up front.
 8. **Final gate** — re-check goal, out-of-scope, criteria, and actual proof. Distinguish implemented from verified when live Blockbench/browser proof remains unavailable. Update `next-action.md` only if active continuation changed.

@@ -34,6 +34,14 @@ describe("repository GitHub discipline", () => {
     expect(rules).toContain("one categorized logical commit");
     expect(rules).toContain("Same-cause retry budget: maximum 2 attempts");
     expect(rules).toContain("Static source/CI evidence proves only what it exercises");
+    expect(rules).toContain("weaken, delete, bypass, or broaden");
+    expect(rules).toContain("deployment success");
+    expect(rules).toContain("new third-party actions");
+    expect(rules).toContain("trusted sources");
+    expect(rules).toContain("immutable/pinned revisions");
+    expect(rules).toContain("`pull_request_target`");
+    expect(rules).toContain("self-hosted runner");
+    expect(rules).toContain("Do not widen permissions");
     expect(rules).toContain("read-only repository permissions");
     expect(rules).toContain("artifact existence is not visual approval");
   });
@@ -70,6 +78,7 @@ describe("repository GitHub discipline", () => {
     expect(brief).toContain(
       "Read `CONTEXT.md` only when stable project facts materially affect the decision."
     );
+    expect(brief).toContain("Execution channel (only when material)");
     expect(brief).toContain("Acceptance criteria: 2-5");
     expect(brief).toContain("at most one specialist");
   });
@@ -91,6 +100,10 @@ describe("repository GitHub discipline", () => {
 
     expect(repository).toContain('"GITHUB_RULES.md"');
     expect(repository).toContain('"Experimental/**"');
+    expect(repository).toContain('".github/workflows/**"');
+    expect(repository).not.toContain('".github/workflows/repository-verify.yml"');
+    expect(repository).not.toContain('".github/workflows/mcp-verify.yml"');
+    expect(repository).not.toContain("pull_request_target");
     expect(repository).toContain("tests/repository-github-discipline.test.ts");
     expect(repository).toContain("tests/static-efficiency-budget.test.ts");
 
@@ -98,6 +111,7 @@ describe("repository GitHub discipline", () => {
     expect(mcp).not.toContain('"AGENTS.md"');
     expect(mcp).not.toContain('"CONTEXT.md"');
     expect(mcp).not.toContain('"docs/knowledge/**"');
+    expect(mcp).not.toContain("pull_request_target");
     expect(mcp).not.toContain("continue-on-error");
     expect(mcp).toContain("bun run typecheck");
     expect(mcp).toContain("bun run test");
