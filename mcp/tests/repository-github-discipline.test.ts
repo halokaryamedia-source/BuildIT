@@ -103,7 +103,6 @@ describe("repository GitHub discipline", () => {
     expect(repository).toContain('".github/workflows/**"');
     expect(repository).not.toContain('".github/workflows/repository-verify.yml"');
     expect(repository).not.toContain('".github/workflows/mcp-verify.yml"');
-    expect(repository).not.toContain("pull_request_target");
     expect(repository).toContain("tests/repository-github-discipline.test.ts");
     expect(repository).toContain("tests/static-efficiency-budget.test.ts");
 
@@ -111,7 +110,6 @@ describe("repository GitHub discipline", () => {
     expect(mcp).not.toContain('"AGENTS.md"');
     expect(mcp).not.toContain('"CONTEXT.md"');
     expect(mcp).not.toContain('"docs/knowledge/**"');
-    expect(mcp).not.toContain("pull_request_target");
     expect(mcp).not.toContain("continue-on-error");
     expect(mcp).toContain("bun run typecheck");
     expect(mcp).toContain("bun run test");
@@ -143,5 +141,41 @@ describe("repository GitHub discipline", () => {
       "actually visually inspects",
       "Codecs.project.compile()",
     ]) expect(experimental).toContain(marker);
+  });
+
+  test("experimental Blockbench Web Attempt A is bounded and artifact-only", async () => {
+    const [workflow, runner, pkg] = await Promise.all([
+      source("../.github/workflows/blockbench-web-poc.yml"),
+      source("../Experimental/blockbench-web-poc/run-poc.mjs"),
+      source("../Experimental/blockbench-web-poc/package.json"),
+    ]);
+
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("branches:\n      - Local");
+    expect(workflow).toContain("contents: read");
+    expect(workflow).toContain("runs-on: ubuntu-latest");
+    expect(workflow).toContain("timeout-minutes: 20");
+    expect(workflow).toContain("xvfb-run -a");
+    expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("if: always()");
+    expect(workflow).toContain("47e633e4a1338f957ee7baa0acbcf54da11e77df");
+    expect(workflow).not.toContain("pull_request:");
+    expect(workflow).not.toContain("pull_request_target");
+    expect(workflow).not.toContain("self-hosted");
+    expect(workflow).not.toContain("${{ secrets.");
+
+    expect(pkg).toContain('"playwright": "1.62.1"');
+    expect(runner).toContain("headless: false");
+    expect(runner).toContain('"--use-angle=swiftshader"');
+    expect(runner).toContain("new Group");
+    expect(runner).toContain("new Cube");
+    expect(runner).toContain("new Texture");
+    expect(runner).toContain("Screencam.screenshotPreview");
+    expect(runner).toContain("Codecs.project.compile");
+    expect(runner).toContain("Codecs.project.parse");
+    expect(runner).toContain("model.bbmodel");
+    expect(runner).toContain("preview-perspective.png");
+    expect(runner).toContain("preview-front.png");
+    expect(runner).toContain("proof.json");
   });
 });

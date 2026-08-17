@@ -1,0 +1,75 @@
+name: Experimental Blockbench Web POC
+
+on:
+  push:
+    branches:
+      - Local
+    paths:
+      - "Experimental/blockbench-web-poc/**"
+      - ".github/workflows/blockbench-web-poc.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BLOCKBENCH_COMMIT: "47e633e4a1338f957ee7baa0acbcf54da11e77df"
+  POC_DIR: "Experimental/blockbench-web-poc"
+
+jobs:
+  attempt-a:
+    name: Attempt A — headed Xvfb + SwiftShader
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout BuildIT
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install pinned browser controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$POC_DIR"
+          npm install --package-lock=false
+          npx playwright install --with-deps chromium
+
+      - name: Fetch pinned official Blockbench source
+        shell: bash
+        run: |
+          set -euo pipefail
+          blockbench_dir="$RUNNER_TEMP/blockbench"
+          git init "$blockbench_dir"
+          git -C "$blockbench_dir" remote add origin https://github.com/JannisX11/blockbench.git
+          git -C "$blockbench_dir" fetch --depth=1 origin "$BLOCKBENCH_COMMIT"
+          git -C "$blockbench_dir" checkout --detach FETCH_HEAD
+          test "$(git -C "$blockbench_dir" rev-parse HEAD)" = "$BLOCKBENCH_COMMIT"
+          cd "$blockbench_dir"
+          npm ci
+
+      - name: Run bounded native Blockbench Web proof
+        shell: bash
+        env:
+          BLOCKBENCH_DIR: ${{ runner.temp }}/blockbench
+        run: |
+          set -euo pipefail
+          rm -rf "$POC_DIR/output"
+          xvfb-run -a node "$POC_DIR/run-poc.mjs"
+
+      - name: Upload proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blockbench-web-poc-attempt-a
+          path: Experimental/blockbench-web-poc/output/
+          if-no-files-found: error
+          retention-days: 7
