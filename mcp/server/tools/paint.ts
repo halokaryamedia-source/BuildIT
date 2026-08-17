@@ -445,6 +445,152 @@ export function requireNativeFillTolerance(tolerance?: number): void {
   }
 }
 
+type TexturePixelRegion = {
+  rect: [number, number, number, number];
+  size: [number, number];
+};
+
+function requirePositiveTextureDimension(value: number, context: string): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`${context} must be a finite positive texture dimension.`);
+  }
+  return value;
+}
+
+function requireFiniteTexturePoint(
+  point: PaintCoordinate,
+  width: number,
+  height: number,
+  context: string
+): void {
+  if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+    throw new Error(`${context} must use finite texture coordinates.`);
+  }
+  if (point.x < 0 || point.y < 0 || point.x >= width || point.y >= height) {
+    throw new Error(
+      `${context} (${point.x}, ${point.y}) is outside texture bounds 0..${width - 1} × 0..${height - 1}.`
+    );
+  }
+}
+
+export function normalizeTexturePixelRegion(
+  start: PaintCoordinate,
+  end: PaintCoordinate,
+  width: number,
+  height: number,
+  context: string
+): TexturePixelRegion {
+  requirePositiveTextureDimension(width, `${context} texture width`);
+  requirePositiveTextureDimension(height, `${context} texture height`);
+  requireFiniteTexturePoint(start, width, height, `${context} start`);
+  requireFiniteTexturePoint(end, width, height, `${context} end`);
+  if (
+    !Number.isInteger(start.x) ||
+    !Number.isInteger(start.y) ||
+    !Number.isInteger(end.x) ||
+    !Number.isInteger(end.y)
+  ) {
+    throw new Error(`${context} requires integer pixel coordinates for bounded region authoring.`);
+  }
+
+  const left = Math.min(start.x, end.x);
+  const top = Math.min(start.y, end.y);
+  const right = Math.max(start.x, end.x) + 1;
+  const bottom = Math.max(start.y, end.y) + 1;
+  return {
+    rect: [left, top, right, bottom],
+    size: [right - left, bottom - top],
+  };
+}
+
+export function texturePixelRectToUvTag(
+  rect: readonly number[],
+  width: number,
+  height: number,
+  uvWidth: number,
+  uvHeight: number,
+  context: string
+): [number, number, number, number] {
+  requirePositiveTextureDimension(width, `${context} texture width`);
+  requirePositiveTextureDimension(height, `${context} texture height`);
+  requirePositiveTextureDimension(uvWidth, `${context} UV width`);
+  requirePositiveTextureDimension(uvHeight, `${context} UV height`);
+  if (
+    rect.length !== 4 ||
+    rect.some((value) => !Number.isFinite(value) || !Number.isInteger(value))
+  ) {
+    throw new Error(`${context} requires an integer [left, top, right, bottom] pixel rectangle.`);
+  }
+  const [left, top, right, bottom] = rect;
+  if (left < 0 || top < 0 || right <= left || bottom <= top || right > width || bottom > height) {
+    throw new Error(`${context} pixel rectangle is outside the active texture frame.`);
+  }
+  return [
+    (left / width) * uvWidth,
+    (top / height) * uvHeight,
+    (right / width) * uvWidth,
+    (bottom / height) * uvHeight,
+  ];
+}
+
+export function requireTextureCoordinatesWithinBounds(
+  coordinates: readonly PaintCoordinate[],
+  width: number,
+  height: number,
+  toolName: string
+): void {
+  requirePositiveTextureDimension(width, `${toolName} texture width`);
+  requirePositiveTextureDimension(height, `${toolName} texture height`);
+  coordinates.forEach((coordinate, index) =>
+    requireFiniteTexturePoint(
+      coordinate,
+      width,
+      height,
+      `${toolName} coordinate[${index}]`
+    )
+  );
+}
+
+function exactPixelBounds(coordinates: readonly PaintCoordinate[]): TexturePixelRegion {
+  const xs = coordinates.map((coordinate) => coordinate.x);
+  const ys = coordinates.map((coordinate) => coordinate.y);
+  const left = Math.min(...xs);
+  const top = Math.min(...ys);
+  const right = Math.max(...xs) + 1;
+  const bottom = Math.max(...ys) + 1;
+  return { rect: [left, top, right, bottom], size: [right - left, bottom - top] };
+}
+
+export function isExactPixelAuthoringRequest(
+  coordinates: readonly PaintCoordinate[],
+  settings: {
+    size: number;
+    opacity: number;
+    softness: number;
+    shape: string;
+    blendMode: string;
+    connectStrokes: boolean;
+    mirrorPainting: boolean;
+    lockAlpha: boolean;
+    eraseMode: boolean;
+  }
+): boolean {
+  return (
+    coordinates.every(
+      (coordinate) => Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)
+    ) &&
+    settings.size === 1 &&
+    settings.opacity === 255 &&
+    settings.softness === 0 &&
+    settings.shape === "square" &&
+    settings.blendMode === "default" &&
+    settings.connectStrokes === false &&
+    settings.mirrorPainting === false &&
+    settings.lockAlpha === false &&
+    settings.eraseMode === false
+  );
+}
+
 export function registerPaintTools() {
   createTool(
     paintToolDocs[0].name,
@@ -509,6 +655,26 @@ export function registerPaintTools() {
         blend_mode,
       }) {
         const texture = getAndActivateTexture(texture_id);
+        if (getRuntimePainter().mirror_painting) {
+          throw new Error(
+            "draw_shape_tool bounded region authoring requires mirror painting to be disabled so no mirrored write can escape the reported bounds."
+          );
+        }
+        const region = normalizeTexturePixelRegion(
+          start,
+          end,
+          texture.width,
+          texture.display_height,
+          "draw_shape_tool"
+        );
+        const uvTag = texturePixelRectToUvTag(
+          region.rect,
+          texture.width,
+          texture.display_height,
+          texture.getUVWidth(),
+          texture.getUVHeight(),
+          "draw_shape_tool"
+        );
 
         // Apply settings
         if (color) {
@@ -531,13 +697,36 @@ export function registerPaintTools() {
         // @ts-ignore
         BarItems.draw_shape_tool.select();
 
-        // Draw shape
-        getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        getRuntimePainter().useShapeTool(texture, end.x, end.y, {});
+        // Pass the bounded UV tag through Blockbench's native Painter so the
+        // requested pixel rectangle clips the shape instead of allowing bleed.
+        getRuntimePainter().startPaintTool(
+          texture,
+          start.x,
+          start.y,
+          uvTag,
+          { shiftKey: false }
+        );
+        getRuntimePainter().useShapeTool(texture, end.x, end.y, {}, uvTag);
         getRuntimePainter().stopPaintTool();
         Canvas.updateAll();
 
-        return `Drew ${shape} from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
+        const result = {
+          operation: "draw_shape",
+          shape,
+          texture: { uuid: texture.uuid, name: texture.name, id: texture.id },
+          bounded: true,
+          affected_rect: region.rect,
+          affected_size: region.size,
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Drew ${shape} inside texture pixel bounds [${region.rect.join(", ")}] on "${texture.name}".`,
+            },
+          ],
+          structuredContent: result,
+        };
       },
     },
     paintToolDocs[1].status
@@ -862,6 +1051,7 @@ export function registerPaintTools() {
         const opacity = brush_settings?.opacity ?? 255;
         const softness = brush_settings?.softness ?? 0;
         const shape = brush_settings?.shape ?? "square";
+        const blendMode = brush_settings?.blend_mode ?? "ambient";
 
         setBarItemValue("slider_brush_size", size);
         setBarItemValue("slider_brush_opacity", opacity);
@@ -871,6 +1061,99 @@ export function registerPaintTools() {
           setBarItemValue("blend_mode", brush_settings.blend_mode);
         }
         ColorPanel.set(colorHex, false, false);
+
+        const exactPixelMode = isExactPixelAuthoringRequest(coordinates, {
+          size,
+          opacity,
+          softness,
+          shape,
+          blendMode,
+          connectStrokes: connect_strokes,
+          mirrorPainting: getRuntimePainter().mirror_painting,
+          lockAlpha: getRuntimePainter().lock_alpha,
+          eraseMode: getRuntimePainter().erase_mode,
+        });
+
+        if (exactPixelMode) {
+          requireTextureCoordinatesWithinBounds(
+            coordinates,
+            texture.width,
+            texture.display_height,
+            "paint_with_brush exact pixel"
+          );
+          const active = texture.getActiveCanvas();
+          for (const coordinate of coordinates) {
+            const localX = coordinate.x - active.offset[0];
+            const localY = coordinate.y - active.offset[1];
+            if (
+              localX < 0 ||
+              localY < 0 ||
+              localX >= active.canvas.width ||
+              localY >= active.canvas.height
+            ) {
+              throw new Error(
+                `paint_with_brush exact pixel (${coordinate.x}, ${coordinate.y}) falls outside the active texture canvas/layer.`
+              );
+            }
+          }
+
+          const undoAspects: UndoAspects = { selected_texture: true, bitmap: true };
+          if (texture.layers_enabled && texture.layers[0]) {
+            const activeLayer = texture.getActiveLayer();
+            if (!activeLayer) {
+              throw new Error("paint_with_brush exact pixel authoring requires an active texture layer.");
+            }
+            undoAspects.layers = [activeLayer];
+          } else {
+            undoAspects.textures = [texture];
+          }
+
+          Undo.initEdit(undoAspects);
+          try {
+            texture.edit(
+              (canvas, env) => {
+                env.ctx.save();
+                env.ctx.globalAlpha = 1;
+                env.ctx.globalCompositeOperation = "source-over";
+                env.ctx.fillStyle = colorHex;
+                for (const coordinate of coordinates) {
+                  env.ctx.fillRect(
+                    coordinate.x - env.offset[0],
+                    coordinate.y - env.offset[1],
+                    1,
+                    1
+                  );
+                }
+                env.ctx.restore();
+              },
+              { no_undo: true }
+            );
+            Undo.finishEdit("Paint exact texture pixels");
+          } catch (error) {
+            Undo.cancelEdit(true);
+            throw error;
+          }
+          Canvas.updateAll();
+
+          const bounds = exactPixelBounds(coordinates);
+          const result = {
+            operation: "paint_with_brush",
+            mode: "exact_pixels",
+            texture: { uuid: texture.uuid, name: texture.name, id: texture.id },
+            pixels_requested: coordinates.length,
+            affected_rect: bounds.rect,
+            affected_size: bounds.size,
+          };
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Painted ${coordinates.length} exact pixels inside [${bounds.rect.join(", ")}] on "${texture.name}".`,
+              },
+            ],
+            structuredContent: result,
+          };
+        }
 
         // @ts-ignore - official Blockbench Painter tool ID
         BarItems.brush_tool.select();

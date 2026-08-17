@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
+  isExactPixelAuthoringRequest,
+  normalizeTexturePixelRegion,
   requireNativeFillTolerance,
   requirePaintCoordinates,
+  requireTextureCoordinatesWithinBounds,
+  texturePixelRectToUvTag,
 } from "@/server/tools/paint";
 import {
   mapFaceUvToTexturePixels,
@@ -50,7 +54,6 @@ describe("texturing authoring contract", () => {
       [2, 3],
       [4, 5],
       [5, 6],
-      [7, 8],
     ] as const) {
       const block = toolBlock(paint, index, nextIndex);
       expect(block).toContain("startPaintTool");
@@ -183,6 +186,122 @@ describe("texturing authoring contract", () => {
     ]) {
       expect(inspection).toContain(marker);
     }
+  });
+
+  test("T3 region bounds round-trip between texture pixels and authored UV space", () => {
+    expect(
+      normalizeTexturePixelRegion(
+        { x: 23, y: 47 },
+        { x: 8, y: 16 },
+        64,
+        64,
+        "fixture"
+      )
+    ).toEqual({ rect: [8, 16, 24, 48], size: [16, 32] });
+
+    const uvTag = texturePixelRectToUvTag(
+      [8, 16, 24, 48],
+      64,
+      64,
+      16,
+      16,
+      "fixture"
+    );
+    expect(uvTag).toEqual([2, 4, 6, 12]);
+    expect(
+      mapFaceUvToTexturePixels(
+        uvTag,
+        { width: 64, displayHeight: 64, uvWidth: 16, uvHeight: 16 },
+        "fixture"
+      ).rect
+    ).toEqual([8, 16, 24, 48]);
+
+    expect(() =>
+      normalizeTexturePixelRegion(
+        { x: -1, y: 0 },
+        { x: 2, y: 2 },
+        16,
+        16,
+        "fixture"
+      )
+    ).toThrow("outside texture bounds");
+  });
+
+  test("T3 bounded shape authoring passes an exact clip through native Painter", async () => {
+    const paint = await source("server/tools/paint.ts");
+    const shape = toolBlock(paint, 1, 2);
+
+    for (const marker of [
+      "bounded region authoring requires mirror painting to be disabled",
+      "normalizeTexturePixelRegion(",
+      "texturePixelRectToUvTag(",
+      "start.x,",
+      "uvTag,",
+      "useShapeTool(texture, end.x, end.y, {}, uvTag)",
+      'bounded: true',
+      "affected_rect: region.rect",
+      "affected_size: region.size",
+    ]) {
+      expect(shape).toContain(marker);
+    }
+  });
+
+  test("T3 exact pixel authoring is narrow, bounded, and one Undo unit", async () => {
+    expect(
+      isExactPixelAuthoringRequest([{ x: 3, y: 4 }], {
+        size: 1,
+        opacity: 255,
+        softness: 0,
+        shape: "square",
+        blendMode: "default",
+        connectStrokes: false,
+        mirrorPainting: false,
+        lockAlpha: false,
+        eraseMode: false,
+      })
+    ).toBe(true);
+    expect(
+      isExactPixelAuthoringRequest([{ x: 3, y: 4 }], {
+        size: 2,
+        opacity: 255,
+        softness: 0,
+        shape: "square",
+        blendMode: "default",
+        connectStrokes: false,
+        mirrorPainting: false,
+        lockAlpha: false,
+        eraseMode: false,
+      })
+    ).toBe(false);
+
+    expect(() =>
+      requireTextureCoordinatesWithinBounds(
+        [{ x: 16, y: 0 }],
+        16,
+        16,
+        "fixture"
+      )
+    ).toThrow("outside texture bounds");
+
+    const paint = await source("server/tools/paint.ts");
+    const brush = toolBlock(paint, 7, 8);
+    for (const marker of [
+      "isExactPixelAuthoringRequest(coordinates",
+      'brush_settings?.blend_mode ?? "ambient"',
+      "texture.getActiveCanvas()",
+      "Undo.initEdit(undoAspects)",
+      "texture.edit(",
+      "env.ctx.fillRect(",
+      'mode: "exact_pixels"',
+      "affected_rect: bounds.rect",
+      'Undo.finishEdit("Paint exact texture pixels")',
+      "Undo.cancelEdit(true)",
+    ]) {
+      expect(brush).toContain(marker);
+    }
+    expect(brush).toContain("startPaintTool");
+    expect(brush).toContain("movePaintTool");
+    expect(brush).toContain("stopPaintTool");
   });
 
 });
