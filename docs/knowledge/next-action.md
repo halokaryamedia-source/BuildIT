@@ -17,7 +17,7 @@ Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5**. Current p
 
 Installed-plugin freshness, live controller execution, current desktop Blockbench/model behavior, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
 
-**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; CI/source proof below does not upgrade visual fidelity.**
+**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; the Experimental browser proof below does not upgrade desktop MCP claims.**
 
 ## Active Boundary
 
@@ -107,6 +107,10 @@ Production source still retains:
 - complete plan preflight before mutation;
 - compact continuation state;
 - existing protected capability gaps.
+
+```text
+U7  No change required — no speculative profile/router/runtime-prompt redesign without installed-client evidence
+```
 
 Protected production gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
