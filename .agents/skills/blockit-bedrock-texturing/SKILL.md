@@ -5,70 +5,85 @@ description: Minecraft Bedrock Entity texture specialist for texture lifecycle, 
 
 # BlockIT Bedrock Texturing
 
-Own surface authoring only. Geometry/pivot judgement stays with `blockbench-bedrock-modelling`.
+Geometry/pivot judgement stays with `blockbench-bedrock-modelling`.
 
 ## Direct Routing
 
-Route from intent + known state. **Reuse identity/metadata already returned by the current workflow.**
+Reuse fresh identity/state.
 
 ```text
-texture missing                    → create_texture
-texture identity unknown           → list_textures
-pixel/image evidence               → get_texture
-active/default texture             → activate_texture
-texture group                      → add_texture_group
-bounded pixel edit                 → exact Painter tool
-new / edit PBR                     → create_pbr_material / configure_material
-PBR discovery/detail               → list_materials / get_material_info
-PBR channel                        → assign_texture_channel
-texture-set import                 → import_texture_set
-material file                      → save_material_config
-material_instance read/write       → dedicated material-instance tool
+missing texture → create_texture
+unknown texture → list_textures
+pixel evidence → get_texture
+active/default → activate_texture
+bounded region → draw_shape_tool
+exact pixels/general brush → paint_with_brush
+PBR create/edit → create_pbr_material / configure_material
+PBR inspect/channel → list_materials / get_material_info / assign_texture_channel
+material_instance → dedicated material-instance tool
 ```
 
-Known identity skips discovery. `get_texture` is evidence, not confirmation. Painter intent names the actual action.
+Known identity skips discovery. `get_texture` is evidence, not confirmation.
 
 ## Deferred Spec Loading / Stage
 
-Load a missing spec by **exact tool name** + action; otherwise call it directly. Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
+Load missing spec by **exact tool name** + action; otherwise call it. Use `DISCOVER → DESIGN → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 
 - Discover only unknown/stale state.
 - Reuse mutation output; **do not re-list/re-read it only for confirmation**.
-- Bounded mismatch → correct then verify affected appearance.
-- Validation failure keeps the capability unless state became stale/unknown.
+- Bounded mismatch → local correction; failure keeps capability unless state became stale/unknown.
 
 ## Readiness
 
-For end-to-end reference work, production texturing starts after dependent geometry has `PASS`. Material geometry `FAIL` returns to modelling; required `UNVERIFIED` becomes `BLOCKED`.
+Production texturing starts after dependent geometry `PASS`; geometry `FAIL` returns upstream and required `UNVERIFIED` becomes `BLOCKED`.
 
-For a texture-only revision on an **existing asset**, use current geometry as baseline. **Do not claim that baseline is reference-accurate** merely because texturing can proceed. A **flat/placeholder texture** may be provisional. If geometry changes after production texturing begins, **re-check only the affected downstream state**: Cube/face identity, UV assumptions, assignments, painted alignment, material instances, and PBR channels.
+For an **existing asset**, geometry is baseline. **Do not claim that baseline is reference-accurate**. A **flat/placeholder texture** is provisional. After geometry changes, **re-check only the affected downstream state**: Cube/face, UV, assignment/alignment, material_instance, PBR.
 
-## Minecraft-First Reference Texture
+## Minecraft-First Surface
 
-Reference is surface guidance, not exact pixel replication. Preserve:
+Preserve base palette, major material regions, part separation, identity-critical markings, required material/PBR meaning. Prefer readable pixels over photoreal detail or random high-contrast noise; do not paint fake silhouette. Minor drift may be canonicalized: **user requirement → original Source evidence → approved reference → simplest Minecraft-readable texture**. Material identity/region/channel conflict → `BLOCKED`.
+
+## Texture Design Contract
+
+Before production pixels define:
 
 ```text
-base palette
-major color/material regions
-part separation
-identity-critical markings
-required material/PBR meaning
+style/readable density
+palette roles: base | secondary | shadow | highlight | accent
+material zones: Cube/face + mapped region
+value hierarchy / part separation
+one face-aware shading language
+directional/asymmetric marks + mirror constraints
+seam-critical edges / pattern direction
+detail budget: identity > material > optional wear/noise
+required PBR / material_instance meaning
 ```
 
-Prefer Minecraft-readable pixels over photoreal micro-detail, dense noise, wrinkles, or baked lighting. Texture supports geometry; **do not paint fake silhouette or missing required form**.
+Use a small intentional palette family. Same-material faces keep one family with controlled value separation and one highlight direction. Directional marks account for face rotation, `flip_u`/`flip_v`, mirror UV; continuous markings align across seams. Detail must improve identity, material readability, or form. Material/seam ambiguity stays `UNVERIFIED`/`BLOCKED`.
 
-A **minor reference discrepancy**—small shade/noise or non-critical marking drift—does not block. Choose one canonical surface: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest Minecraft-readable texture**.
+## Mapped Authoring Procedure
 
-Only a material surface contradiction affecting identity-critical marking, required material region/channel, part separation, or Minecraft readability becomes `BLOCKED`. **Do not average conflicting material evidence**.
+Do not mentally re-derive atlas coordinates when `inspect_element` already reports them.
+
+```text
+MAP → require mapping_state=mapped + paintable=true; reuse texture_pixels.rect/size + flip_u/flip_v
+BASE PASS → major regions first with bounded draw_shape_tool
+VALUE / FORM PASS → controlled face-aware value/material variation
+IDENTITY PASS → bounded regions or paint_with_brush exact-pixel path
+SECONDARY DETAIL PASS → purposeful material detail; stop before noise
+VERIFY → fresh atlas + model-view evidence after coherent pass/correction
+```
+
+Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`. Tool success is not visual `PASS`; correct locally.
 
 ## Native Bedrock PBR / UV
 
-`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture` work; **use `activate_texture` to choose the active/default working texture**, then Painter operations.
+`apply_texture` is intentionally not enabled for normal Bedrock Entity `single_texture`; use `activate_texture`, then Painter.
 
-`material_instance` is Bedrock face metadata, distinct from a PBR TextureGroup. Generic Mesh UV tools stay outside BlockIT Bedrock Entity. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, and `autouv` are authored layout state; use `modify_cube` or `modify_cubes_batch`. Intentional reuse/mirroring is valid; accidental overlap is not.
+`material_instance` is Bedrock face metadata, distinct from PBR. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, `autouv` are authored state; use `modify_cube` or `modify_cubes_batch`.
 
-Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or a packing-density target. Inspect existing PBR state before replacing channels. Keep color/normal/height/MER identity deterministic.
+Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or packing-density target. Inspect PBR before replacing channels; keep color/normal/height/MER identity deterministic.
 
 ## Verification
 
-`create_texture` already returns texture identity/size/group/channel/render metadata. Read material/material-instance state only when mutation output cannot prove completion. Use model views when appearance matters; keep RTX/in-game claims bounded to evidence.
+`create_texture` returns texture metadata. Atlas checks region/seam/flip/density; model view checks material readability, part separation, face-aware shading, identity/style. Keep RTX/in-game claims bounded to evidence.
