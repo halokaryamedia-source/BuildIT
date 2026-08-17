@@ -143,7 +143,7 @@ describe("repository GitHub discipline", () => {
       "## Acceptance criteria",
       "## Stop rules",
       "GitHub Actions artifact",
-      "actually visually inspects",
+      "actually visually inspected",
       "Codecs.project.compile()",
     ]) expect(experimental).toContain(marker);
   });
