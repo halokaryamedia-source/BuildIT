@@ -1,12 +1,15 @@
 import { chromium } from "playwright";
 import { closeSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { once } from "node:events";
+import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadAuthoringRequest } from "./authoring-contract.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const outputDir = join(scriptDir, "output");
+const requestPath = join(scriptDir, "request.json");
 const blockbenchDir = process.env.BLOCKBENCH_DIR;
 const expectedBlockbenchCommit = process.env.BLOCKBENCH_COMMIT;
 const serverUrl = "http://127.0.0.1:4173/";
@@ -18,6 +21,14 @@ if (!/^[0-9a-f]{40}$/.test(expectedBlockbenchCommit)) {
   throw new Error("BLOCKBENCH_COMMIT must be an exact 40-character commit SHA");
 }
 
+const authoringRequest = loadAuthoringRequest(requestPath);
+const canonicalRequest = `${JSON.stringify(authoringRequest, null, 2)}\n`;
+const requestSha256 = createHash("sha256").update(canonicalRequest).digest("hex");
+const operationCounts = authoringRequest.operations.reduce((counts, operation) => {
+  counts[operation.op] = (counts[operation.op] || 0) + 1;
+  return counts;
+}, {});
+
 rmSync(outputDir, { recursive: true, force: true });
 mkdirSync(outputDir, { recursive: true });
 
@@ -25,16 +36,19 @@ const playwrightPackage = JSON.parse(
   readFileSync(join(scriptDir, "node_modules", "playwright", "package.json"), "utf8"),
 );
 const proof = {
-  schema_version: 1,
+  schema_version: 2,
   status: "RUNNING",
-  attempt: "A",
+  attempt: "A-data-only-v1",
   execution: "github-hosted-headed-xvfb-swiftshader",
+  authoring_contract: "data-only-v1",
+  request_sha256: requestSha256,
+  request_operation_counts: operationCounts,
   blockbench_commit_expected: expectedBlockbenchCommit,
   blockbench_commit_actual: null,
   node_version: process.version,
   playwright_version: playwrightPackage.version,
   browser_version: null,
-  stage: "bootstrap",
+  stage: "validate_authoring_request",
   webgl: null,
   authored: null,
   reparsed: null,
@@ -103,6 +117,8 @@ function pngBuffer(dataUrl, label) {
 }
 
 try {
+  writeFileSync(join(outputDir, "request.json"), canonicalRequest, "utf8");
+
   setStage("pin_blockbench_source");
   proof.blockbench_commit_actual = execFileSync(
     "git",
@@ -168,8 +184,8 @@ try {
     { timeout: 90000 },
   );
 
-  setStage("native_author_render_compile");
-  const result = await page.evaluate(async () => {
+  setStage("execute_data_only_authoring");
+  const result = await page.evaluate(async (request) => {
     const preview = Preview.selected;
     const gl = preview.renderer.getContext();
     if (!gl) throw new Error("Blockbench Preview renderer did not expose a WebGL context");
@@ -178,61 +194,124 @@ try {
       available: true,
       version: gl.getParameter(gl.VERSION),
       shading_language_version: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
-      vendor: debug
-        ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL)
-        : gl.getParameter(gl.VENDOR),
-      renderer: debug
-        ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)
-        : gl.getParameter(gl.RENDERER),
+      vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+      renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+    };
+
+    const expected = {
+      groups: request.operations.filter((operation) => operation.op === "add_group").map((operation) => operation.name).sort(),
+      cubes: request.operations.filter((operation) => operation.op === "add_cube").map((operation) => operation.name).sort(),
+      textures: request.operations.filter((operation) => operation.op === "create_texture").map((operation) => operation.name).sort(),
     };
 
     setupProject(Formats.bedrock);
-    Project.name = "blockit_web_poc";
-    Project.model_identifier = "geometry.blockit_web_poc";
-    Project.texture_width = 16;
-    Project.texture_height = 16;
+    Project.name = request.project.name;
+    Project.model_identifier = request.project.identifier;
+    Project.texture_width = request.project.texture_width;
+    Project.texture_height = request.project.texture_height;
     Project.box_uv = true;
 
-    const root = new Group({ name: "root", origin: [0, 0, 0] }).init();
-    const cube = new Cube({
-      name: "poc_cube",
-      from: [-4, 0, -4],
-      to: [4, 8, 4],
-      origin: [0, 4, 0],
-      box_uv: true,
-      uv_offset: [0, 0],
-    })
-      .addTo(root)
-      .init();
+    const groups = new Map();
+    const textures = new Map();
 
-    const textureCanvas = document.createElement("canvas");
-    textureCanvas.width = 16;
-    textureCanvas.height = 16;
-    const textureContext = textureCanvas.getContext("2d");
-    textureContext.fillStyle = "#c77a2b";
-    textureContext.fillRect(0, 0, 16, 16);
-    textureContext.fillStyle = "#4c2c18";
-    for (let y = 0; y < 16; y += 4) {
-      for (let x = (y / 4) % 2 === 0 ? 0 : 4; x < 16; x += 8) {
-        textureContext.fillRect(x, y, 4, 4);
+    async function waitForTexture(texture, width, height) {
+      const deadline = performance.now() + 10000;
+      while ((texture.width !== width || texture.height !== height) && performance.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      if (texture.width !== width || texture.height !== height) {
+        throw new Error(`Texture ${texture.name} did not load as ${width}x${height}; got ${texture.width}x${texture.height}`);
       }
     }
-    const textureDataUrl = textureCanvas.toDataURL("image/png");
-    const texture = new Texture({ name: "poc.png" }).fromDataURL(textureDataUrl).add(false);
 
-    const textureDeadline = performance.now() + 10000;
-    while ((texture.width !== 16 || texture.height !== 16) && performance.now() < textureDeadline) {
-      await new Promise((resolve) => setTimeout(resolve, 25));
-    }
-    if (texture.width !== 16 || texture.height !== 16) {
-      throw new Error(`Texture did not load as 16x16; got ${texture.width}x${texture.height}`);
+    for (const operation of request.operations) {
+      if (operation.op === "create_texture") {
+        const canvas = document.createElement("canvas");
+        canvas.width = operation.width;
+        canvas.height = operation.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Could not create 2D canvas context for texture generation");
+
+        if (operation.pattern.type === "solid") {
+          ctx.fillStyle = operation.pattern.color;
+          ctx.fillRect(0, 0, operation.width, operation.height);
+        } else {
+          ctx.fillStyle = operation.pattern.primary;
+          ctx.fillRect(0, 0, operation.width, operation.height);
+          ctx.fillStyle = operation.pattern.secondary;
+          const cell = operation.pattern.cell;
+          for (let y = 0; y < operation.height; y += cell) {
+            for (let x = 0; x < operation.width; x += cell) {
+              if (((x / cell) + (y / cell)) % 2 === 1) ctx.fillRect(x, y, cell, cell);
+            }
+          }
+        }
+
+        const texture = new Texture({ name: operation.name })
+          .fromDataURL(canvas.toDataURL("image/png"))
+          .add(false);
+        await waitForTexture(texture, operation.width, operation.height);
+        textures.set(operation.id, texture);
+        continue;
+      }
+
+      if (operation.op === "add_group") {
+        const group = new Group({ name: operation.name, origin: operation.origin });
+        if (operation.parent) group.addTo(groups.get(operation.parent));
+        group.init();
+        groups.set(operation.id, group);
+        continue;
+      }
+
+      const parent = groups.get(operation.parent);
+      const texture = textures.get(operation.texture);
+      if (!parent || !texture) throw new Error(`Validated references were unavailable for cube ${operation.name}`);
+      const cube = new Cube({
+        name: operation.name,
+        from: operation.from,
+        to: operation.to,
+        origin: operation.origin,
+        box_uv: true,
+        uv_offset: operation.uv_offset,
+      })
+        .addTo(parent)
+        .init();
+      cube.applyTexture(texture, true);
+      cube.preview_controller.updateAll(cube);
     }
 
-    cube.applyTexture(texture, true);
-    cube.preview_controller.updateAll(cube);
     Canvas.updateAllBones();
     Canvas.updateAllPositions();
     Canvas.updateAllFaces();
+
+    const authored = {
+      groups: Group.all.map((item) => item.name).sort(),
+      cubes: Cube.all.map((item) => ({ name: item.name, from: [...item.from], to: [...item.to] })).sort((a, b) => a.name.localeCompare(b.name)),
+      textures: Texture.all.map((item) => ({ name: item.name, width: item.width, height: item.height })).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+    const authoredNames = {
+      groups: authored.groups,
+      cubes: authored.cubes.map((item) => item.name),
+      textures: authored.textures.map((item) => item.name),
+    };
+    for (const key of ["groups", "cubes", "textures"]) {
+      if (JSON.stringify(authoredNames[key]) !== JSON.stringify(expected[key])) {
+        throw new Error(`Authored ${key} mismatch: expected ${JSON.stringify(expected[key])}, got ${JSON.stringify(authoredNames[key])}`);
+      }
+    }
+
+    const bounds = {
+      min: [Infinity, Infinity, Infinity],
+      max: [-Infinity, -Infinity, -Infinity],
+    };
+    for (const cube of Cube.all) {
+      for (let axis = 0; axis < 3; axis++) {
+        bounds.min[axis] = Math.min(bounds.min[axis], cube.from[axis]);
+        bounds.max[axis] = Math.max(bounds.max[axis], cube.to[axis]);
+      }
+    }
+    const center = bounds.min.map((value, axis) => (value + bounds.max[axis]) / 2);
+    const span = Math.max(8, ...bounds.max.map((value, axis) => value - bounds.min[axis]));
 
     async function capture(preset) {
       preview.loadAnglePreset(preset);
@@ -241,82 +320,73 @@ try {
       preview.render();
       return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("Native screenshot timed out")), 10000);
-        Screencam.screenshotPreview(
-          preview,
-          { crop: true, width: 512, height: 512 },
-          (dataUrl) => {
-            clearTimeout(timeout);
-            if (!dataUrl) reject(new Error("Native screenshot returned no image data"));
-            else resolve(dataUrl);
-          },
-        );
+        Screencam.screenshotPreview(preview, { crop: true, width: 512, height: 512 }, (dataUrl) => {
+          clearTimeout(timeout);
+          if (!dataUrl) reject(new Error("Native screenshot returned no image data"));
+          else resolve(dataUrl);
+        });
       });
     }
 
     const perspective = await capture({
-      position: [18, 14, 18],
-      target: [0, 4, 0],
+      position: [center[0] + span * 1.6, center[1] + span * 1.2, center[2] + span * 1.6],
+      target: center,
       projection: "perspective",
       fov: 45,
     });
     const front = await capture({
-      position: [0, 4, 24],
-      target: [0, 4, 0],
+      position: [center[0], center[1], center[2] + span * 2.4],
+      target: center,
       projection: "perspective",
       fov: 40,
     });
-
-    const authored = {
-      groups: Group.all.map((item) => item.name),
-      cubes: Cube.all.map((item) => ({ name: item.name, from: [...item.from], to: [...item.to] })),
-      textures: Texture.all.map((item) => ({ name: item.name, width: item.width, height: item.height })),
-    };
-    if (authored.groups.length !== 1 || authored.cubes.length !== 1 || authored.textures.length !== 1) {
-      throw new Error(`Unexpected authored state: ${JSON.stringify(authored)}`);
-    }
 
     const compiled = Codecs.project.compile({ bitmaps: true, minify: false });
     if (typeof compiled !== "string" || compiled.length < 256) {
       throw new Error("Native project codec did not return a usable bbmodel string");
     }
-
     const parsedModel = JSON.parse(compiled);
-    setupProject(Formats.bedrock);
-    Codecs.project.parse(parsedModel, "");
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const reparsed = {
-      groups: Group.all.map((item) => item.name),
-      cubes: Cube.all.map((item) => item.name),
-      textures: Texture.all.map((item) => item.name),
-    };
-    if (
-      reparsed.groups.length !== 1 ||
-      reparsed.cubes.length !== 1 ||
-      reparsed.textures.length !== 1 ||
-      reparsed.groups[0] !== "root" ||
-      reparsed.cubes[0] !== "poc_cube" ||
-      reparsed.textures[0] !== "poc.png"
-    ) {
-      throw new Error(`Native bbmodel reparse mismatch: ${JSON.stringify(reparsed)}`);
+    if (parsedModel.meta?.model_format !== "bedrock") {
+      throw new Error(`Compiled project model_format is not bedrock: ${parsedModel.meta?.model_format}`);
     }
 
-    return { webgl, authored, reparsed, compiled, perspective, front };
-  });
+    setupProject(Formats.bedrock);
+    Codecs.project.parse(parsedModel, "");
+    const textureDeadline = performance.now() + 10000;
+    while (Texture.all.some((texture) => !texture.width || !texture.height) && performance.now() < textureDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+
+    const reparsed = {
+      groups: Group.all.map((item) => item.name).sort(),
+      cubes: Cube.all.map((item) => item.name).sort(),
+      textures: Texture.all.map((item) => item.name).sort(),
+    };
+    for (const key of ["groups", "cubes", "textures"]) {
+      if (JSON.stringify(reparsed[key]) !== JSON.stringify(expected[key])) {
+        throw new Error(`Native bbmodel reparse ${key} mismatch: expected ${JSON.stringify(expected[key])}, got ${JSON.stringify(reparsed[key])}`);
+      }
+    }
+
+    return { webgl, authored, reparsed, compiled, perspective, front, bounds, center, span };
+  }, authoringRequest);
 
   proof.webgl = result.webgl;
   proof.authored = result.authored;
   proof.reparsed = result.reparsed;
+  proof.framing = { bounds: result.bounds, center: result.center, span: result.span };
 
   setStage("write_artifacts");
   const modelPath = join(outputDir, "model.bbmodel");
   const perspectivePath = join(outputDir, "preview-perspective.png");
   const frontPath = join(outputDir, "preview-front.png");
+  const requestOutputPath = join(outputDir, "request.json");
   writeFileSync(modelPath, result.compiled, "utf8");
   writeFileSync(perspectivePath, pngBuffer(result.perspective, "perspective screenshot"));
   writeFileSync(frontPath, pngBuffer(result.front, "front screenshot"));
 
   proof.outputs = {
+    request_json_bytes: statSync(requestOutputPath).size,
     model_bbmodel_bytes: statSync(modelPath).size,
     preview_perspective_bytes: statSync(perspectivePath).size,
     preview_front_bytes: statSync(frontPath).size,

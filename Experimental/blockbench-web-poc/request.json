@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "blockit_data_ops_poc",
+    "identifier": "geometry.blockit_data_ops_poc",
+    "texture_width": 16,
+    "texture_height": 16,
+    "box_uv": true
+  },
+  "operations": [
+    {
+      "op": "create_texture",
+      "id": "copper_checker",
+      "name": "copper.png",
+      "width": 16,
+      "height": 16,
+      "pattern": {
+        "type": "checker",
+        "primary": "#c77a2b",
+        "secondary": "#4c2c18",
+        "cell": 4
+      }
+    },
+    {
+      "op": "add_group",
+      "id": "root",
+      "name": "root",
+      "origin": [0, 0, 0]
+    },
+    {
+      "op": "add_cube",
+      "id": "left_post",
+      "name": "left_post",
+      "parent": "root",
+      "from": [-6, 0, -2],
+      "to": [-2, 10, 2],
+      "origin": [-4, 5, 0],
+      "uv_offset": [0, 0],
+      "texture": "copper_checker"
+    },
+    {
+      "op": "add_cube",
+      "id": "right_post",
+      "name": "right_post",
+      "parent": "root",
+      "from": [2, 0, -2],
+      "to": [6, 10, 2],
+      "origin": [4, 5, 0],
+      "uv_offset": [0, 0],
+      "texture": "copper_checker"
+    },
+    {
+      "op": "add_cube",
+      "id": "top_beam",
+      "name": "top_beam",
+      "parent": "root",
+      "from": [-6, 10, -2],
+      "to": [6, 14, 2],
+      "origin": [0, 12, 0],
+      "uv_offset": [0, 0],
+      "texture": "copper_checker"
+    }
+  ]
+}
