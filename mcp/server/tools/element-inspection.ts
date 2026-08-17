@@ -94,6 +94,71 @@ export function requireFiniteInspectableVector3(
   }
   return [values[0], values[1], values[2]];
 }
+
+export function requireFiniteInspectableVector2(
+  values: readonly number[],
+  context: string
+): [number, number] {
+  if (values.length !== 2 || values.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `${context} contains non-finite authored UV state and cannot be reported safely.`
+    );
+  }
+  return [values[0], values[1]];
+}
+
+export function requireFiniteInspectableFaceUv(
+  values: readonly number[],
+  context: string
+): [number, number, number, number] {
+  if (values.length !== 4 || values.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `${context} contains a non-finite authored face UV rectangle and cannot be reported safely.`
+    );
+  }
+  return [values[0], values[1], values[2], values[3]];
+}
+
+const CUBE_FACE_KEYS = [
+  "north",
+  "south",
+  "east",
+  "west",
+  "up",
+  "down",
+] as const;
+
+function inspectCubeUv(cube: Cube) {
+  const faces = Object.fromEntries(
+    CUBE_FACE_KEYS.map((faceKey) => {
+      const face = cube.faces[faceKey];
+      return [
+        faceKey,
+        {
+          uv: requireFiniteInspectableFaceUv(
+            face.uv,
+            `Cube ${cube.name} (${cube.uuid}) face ${faceKey}`
+          ),
+          rotation: face.rotation,
+          enabled: face.enabled !== false,
+        },
+      ];
+    })
+  );
+
+  return {
+    mode: cube.box_uv ? ("box_uv" as const) : ("per_face" as const),
+    box_uv: cube.box_uv === true,
+    uv_offset: requireFiniteInspectableVector2(
+      cube.uv_offset,
+      `Cube ${cube.name} (${cube.uuid}) uv_offset`
+    ),
+    autouv: cube.autouv,
+    mirror_uv: cube.mirror_uv === true,
+    faces,
+  };
+}
+
 function cubeSize(cube: Cube): [number, number, number] {
   const from = requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`);
   const to = requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`);
@@ -128,6 +193,7 @@ function inspectCube(cube: Cube) {
     ] as [number, number, number],
     origin: requireFiniteInspectableVector3(cube.origin, `Cube ${cube.name} (${cube.uuid}) origin`),
     rotation: requireFiniteInspectableVector3(cube.rotation, `Cube ${cube.name} (${cube.uuid}) rotation`),
+    uv: inspectCubeUv(cube),
     visibility: cube.visibility !== false,
   };
 }

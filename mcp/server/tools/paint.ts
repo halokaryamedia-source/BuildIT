@@ -426,6 +426,25 @@ function getRuntimePainter(): BlockbenchRuntimePainter {
   return Painter as unknown as BlockbenchRuntimePainter;
 }
 
+type PaintCoordinate = { x: number; y: number };
+
+export function requirePaintCoordinates(
+  coordinates: readonly PaintCoordinate[],
+  toolName: string
+): void {
+  if (coordinates.length === 0) {
+    throw new Error(`${toolName} requires at least one coordinate.`);
+  }
+}
+
+export function requireNativeFillTolerance(tolerance?: number): void {
+  if (tolerance !== undefined) {
+    throw new Error(
+      "paint_fill_tool does not expose synthetic color tolerance because Blockbench native fill matches the exact source color. Omit tolerance or choose a different fill strategy."
+    );
+  }
+}
+
 export function registerPaintTools() {
   createTool(
     paintToolDocs[0].name,
@@ -442,12 +461,8 @@ export function registerPaintTools() {
         fill_mode,
         blend_mode,
       }) {
+        requireNativeFillTolerance(tolerance);
         const texture = getAndActivateTexture(texture_id);
-
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
 
         // Apply settings
         if (color) {
@@ -470,8 +485,6 @@ export function registerPaintTools() {
         // Perform fill
         getRuntimePainter().startPaintTool(texture, x, y, {}, { shiftKey: false });
         getRuntimePainter().stopPaintTool();
-
-        Undo.finishEdit("Fill tool");
         Canvas.updateAll();
 
         return `Filled area at (${x}, ${y}) on texture "${texture.name}"`;
@@ -496,11 +509,6 @@ export function registerPaintTools() {
         blend_mode,
       }) {
         const texture = getAndActivateTexture(texture_id);
-
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
 
         // Apply settings
         if (color) {
@@ -527,8 +535,6 @@ export function registerPaintTools() {
         getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
         getRuntimePainter().useShapeTool(texture, end.x, end.y, {});
         getRuntimePainter().stopPaintTool();
-
-        Undo.finishEdit("Draw shape");
         Canvas.updateAll();
 
         return `Drew ${shape} from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
@@ -553,11 +559,6 @@ export function registerPaintTools() {
       }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
         // Apply settings
         ColorPanel.set(start_color, false, false);
         // @ts-ignore
@@ -578,8 +579,6 @@ export function registerPaintTools() {
         getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
         getRuntimePainter().useGradientTool(texture, end.x, end.y, {});
         getRuntimePainter().stopPaintTool();
-
-        Undo.finishEdit("Apply gradient");
         Canvas.updateAll();
 
         return `Applied gradient from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
@@ -634,11 +633,6 @@ export function registerPaintTools() {
       async execute({ texture_id, source, target, brush_size, opacity, mode }) {
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
         // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
@@ -659,11 +653,9 @@ export function registerPaintTools() {
           ctrlOrCmd: true,
         });
 
-        // Apply at target point
+        // Apply at target point. The native Painter lifecycle owns Undo.
         getRuntimePainter().startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
         getRuntimePainter().stopPaintTool();
-
-        Undo.finishEdit("Copy brush");
         Canvas.updateAll();
 
         return `Copied from (${source.x}, ${source.y}) to (${target.x}, ${target.y}) on texture "${texture.name}"`;
@@ -686,14 +678,9 @@ export function registerPaintTools() {
         shape,
         connect_strokes,
       }) {
+        requirePaintCoordinates(coordinates, "eraser_tool");
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          bitmap: true,
-        });
-
-        // Apply settings
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
         }
@@ -707,27 +694,27 @@ export function registerPaintTools() {
           setBarItemValue("brush_shape", shape);
         }
 
-        // Select eraser tool
-        // @ts-ignore
+        // @ts-ignore - official Blockbench Painter tool ID
         BarItems.eraser.select();
 
-        // Erase at coordinates
-        for (let i = 0; i < coordinates.length; i++) {
-          const coord = coordinates[i];
-
-          if (i === 0 || !connect_strokes) {
-            // Start new stroke
-            getRuntimePainter().startPaintTool(texture, coord.x, coord.y, {}, { shiftKey: false });
-          } else {
-            // Continue stroke
-            getRuntimePainter().movePaintTool(texture, coord.x, coord.y, {});
-          }
+        const first = coordinates[0];
+        getRuntimePainter().startPaintTool(
+          texture,
+          first.x,
+          first.y,
+          {},
+          { shiftKey: false }
+        );
+        for (const coord of coordinates.slice(1)) {
+          getRuntimePainter().movePaintTool(
+            texture,
+            coord.x,
+            coord.y,
+            {},
+            !connect_strokes
+          );
         }
-
-        // Finish erasing
         getRuntimePainter().stopPaintTool();
-
-        Undo.finishEdit("Erase texture");
         Canvas.updateAll();
 
         return `Erased ${coordinates.length} points on texture "${texture.name}"`;
@@ -867,66 +854,45 @@ export function registerPaintTools() {
         brush_settings,
         connect_strokes,
       }) {
+        requirePaintCoordinates(coordinates, "paint_with_brush");
         const texture = getAndActivateTexture(texture_id);
 
-        Undo.initEdit({
-          textures: [texture],
-          selected_texture: true,
-          bitmap: true,
-        });
-
-        // Parse brush color to RGB values
         const colorHex = brush_settings?.color ?? "#000000";
-        const red = parseInt(colorHex.slice(1, 3), 16);
-        const green = parseInt(colorHex.slice(3, 5), 16);
-        const blue = parseInt(colorHex.slice(5, 7), 16);
-        const alpha = brush_settings?.opacity ?? 255;
-
         const size = brush_settings?.size ?? 1;
+        const opacity = brush_settings?.opacity ?? 255;
         const softness = brush_settings?.softness ?? 0;
         const shape = brush_settings?.shape ?? "square";
 
-        // Apply brush settings using .value assignment
-        // @ts-ignore
-        BarItems.slider_brush_size.value = size;
-        // @ts-ignore
-        BarItems.slider_brush_opacity.value = alpha;
-        // @ts-ignore
-        BarItems.slider_brush_softness.value = softness;
-        // @ts-ignore
-        BarItems.brush_shape.value = shape;
+        setBarItemValue("slider_brush_size", size);
+        setBarItemValue("slider_brush_opacity", opacity);
+        setBarItemValue("slider_brush_softness", softness);
+        setBarItemValue("brush_shape", shape);
+        if (brush_settings?.blend_mode !== undefined) {
+          setBarItemValue("blend_mode", brush_settings.blend_mode);
+        }
         ColorPanel.set(colorHex, false, false);
 
-        // Paint using Painter.edit() method
-        texture.edit(
-          (canvas: HTMLCanvasElement) => {
-            const ctx = canvas.getContext("2d")!;
-            for (const coord of coordinates) {
-              if (shape === "circle") {
-                Painter.editCircle(
-                  ctx,
-                  coord.x,
-                  coord.y,
-                  size,
-                  softness,
-                  () => ({ r: red, g: green, b: blue, a: alpha })
-                );
-              } else {
-                Painter.editSquare(
-                  ctx,
-                  coord.x,
-                  coord.y,
-                  size,
-                  softness,
-                  () => ({ r: red, g: green, b: blue, a: alpha })
-                );
-              }
-            }
-          },
-          { edit_name: "Paint with brush" }
-        );
+        // @ts-ignore - official Blockbench Painter tool ID
+        BarItems.brush_tool.select();
 
-        Undo.finishEdit("Paint with brush");
+        const first = coordinates[0];
+        getRuntimePainter().startPaintTool(
+          texture,
+          first.x,
+          first.y,
+          {},
+          { shiftKey: false }
+        );
+        for (const coord of coordinates.slice(1)) {
+          getRuntimePainter().movePaintTool(
+            texture,
+            coord.x,
+            coord.y,
+            {},
+            !connect_strokes
+          );
+        }
+        getRuntimePainter().stopPaintTool();
         Canvas.updateAll();
 
         return `Painted ${coordinates.length} points on texture "${texture.name}"`;
