@@ -13,7 +13,7 @@ Geometry: `blockbench-bedrock-modelling`.
 
 ## Deferred Spec Loading
 
-Known identity skips discovery. Load the exact tool name only; do not re-list/re-read for confirmation. Production texture waits for geometry `PASS`; unresolved material stays `UNVERIFIED`.
+Known identity skips discovery. Load the exact tool name only; do not re-list/re-read it only for confirmation. Production texture waits for geometry `PASS`; unresolved material stays `UNVERIFIED`.
 
 For an existing asset, current texture state may be a baseline only. Do not claim that baseline is reference-accurate. A flat/placeholder texture is temporary; after upstream change, re-check only the affected downstream state.
 
