@@ -19,6 +19,7 @@ ANIMATION_D3_PROPERTY_MUTATION_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D4_SHARED_IDENTITY_FIXED
 ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_PENDING
 ANIMATION_D5_EFFECT_SUMMARY_COUNT_DEFECT_IDENTIFIED
+ANIMATION_D5_EXACT_PATCH_LOCAL_VERIFIED_UPLOAD_BLOCKED
 ANIMATION_FINAL_STATIC_AUDIT_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -73,17 +74,28 @@ batch_keyframe_operations
 
 Current environment cannot safely write this owner: connector supports full-file replacement only, `animation.ts` is ~89 KB, no repo checkout is mounted, and container GitHub DNS is unavailable. **Do not manually reserialize the file or move the guard to a wrong central owner.** Apply this exact patch from a patch-capable checkout/action and add bounded ownership regression tests.
 
-## D5 Inspector Count Defect
+## D5 Inspector Count Contract — LOCKED
 
-`animation-inspection.ts` summary currently counts data points rather than effective Bedrock exports:
+Full authored effect keyframes/data points remain observable. Summary semantics are intentionally split:
 
 ```text
-particle_count → includes blank-effect points
-sound_count    → includes blank-effect points
-timeline.script_count → counts data points, not effective exported script lines
+keyframe_count → authored editor keyframes/timestamps
+particle_count → effective non-empty particle effect payloads exported
+sound_count    → effective non-empty sound effect payloads exported
+script_count   → effective non-blank timeline script lines exported
 ```
 
-Native compilation filters blanks and splits timeline scripts into effective lines. Keep full data-point observability, but make these summary counts reflect export semantics. Do not rename fields or add scores.
+Native Bedrock compilation can retain an authored effect keyframe whose compiled value is undefined; JSON serialization then omits that timestamp. Therefore do **not** silently redefine `keyframe_count` as exported timestamp count.
+
+An exact local D5 source patch is already derived from current source and checksum-verified:
+
+```text
+pre-patch inspector blob  7c354c8d745cc76464748245060580db79adfef7
+intended patched blob      ff67ba651071b3c1eb16fd0f9fa534034bfdb027
+regression test blob       4d971a934e3ca7bba26f702eb4df5e91d6c2ce6f
+```
+
+Two connector uploads produced `3c90b38b...`, not the expected patched SHA; those blobs remain unreferenced. A transient bad D5 commit was reverted by `074613952041d48c0b1fdc80ce88c120651ae24e`, restoring the exact pre-D5 tree. **Only reference the D5 source blob if upload returns exactly `ff67ba651071b3c1eb16fd0f9fa534034bfdb027`.**
 
 ## D1 Mutation Contract — LOCKED
 
@@ -120,7 +132,7 @@ This environment has no Bun 1.3.14 or usable release-download path. **Never comm
 ## Next Step
 
 1. Patch-capable checkout/action: close D4 timeline/batch target ownership + regressions.
-2. Fix D5 effective effect-summary counts.
+2. Transfer the checksum-verified D5 patch only through an exact-file path; require blob SHA `ff67ba651071b3c1eb16fd0f9fa534034bfdb027` before commit.
 3. With Bun/docs generation: implement locked D1 existing-animation effects, then D2 controller-state effects, then D3 `anim_time_update`/`blend_weight` mutation through existing owners.
 4. Run create → inspect → modify symmetry audit and final static animation audit; fix concrete residuals only.
 5. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
