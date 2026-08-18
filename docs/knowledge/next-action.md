@@ -11,13 +11,15 @@ TEXTURING_T5_IMPLEMENTED_CI_UNVERIFIED
 TEXTURING_T6_PRODUCTION_DISCIPLINE_SOURCE_IMPLEMENTED
 TEXTURING_T7_T17_DEEP_HARDENING_SOURCE_IMPLEMENTED
 TEXTURING_T18_NO_CHANGE_REQUIRED
+TEXTURING_FINAL_STATIC_AUDIT_COMPLETE
+TEXTURING_CI_TERMINAL_PROOF_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
 Working branch: **`Local` only**.
 
-Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 decisions**. Default Bedrock surface remains 63 tools; no new texture tool/profile/router.
+Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 decisions**.
 
 Actual desktop Painter behavior, UV persistence, visual quality, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
 **Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof.**
@@ -75,7 +77,7 @@ PBR support
 → new blank support texture matches established base bitmap size
 ```
 
-Imported existing texture data may preserve authored nonstandard dimensions. This keeps existing assets readable without allowing normal AI production to fragment into per-body-part color textures.
+Imported existing data may preserve authored dimensions. PBR support must belong to a material TextureGroup; non-material groups remain explicit color variants.
 
 ### T8 — global atlas / UV observability
 
@@ -172,20 +174,17 @@ U7  No change required — no speculative profile/router/runtime-prompt redesign
 
 Protected production gaps outside this texture work remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
-## Next Step — SOURCE/CI + FINAL STATIC UV/TEXTURE AUDIT
+## Final Static Audit
 
-1. Complete the normal MCP/repository source verification for the final T7–T18 logical state.
-2. Diagnose only exact failing owners if a verification gate fails; do not weaken valid tests to get green.
-3. After source verification, perform one **read-only final static forensic audit of the UV/texture architecture**:
-   - project logical resolution ownership;
-   - atlas creation/lifecycle roles;
-   - global UV audit correctness and boundedness;
-   - Cube UV mutation/lock path;
-   - Painter explicit texture targeting;
-   - material/PBR/variant boundary;
-   - prompt/skill/policy alignment;
-   - convergence evidence ownership.
-4. If that audit finds no concrete remaining source weakness, record `TEXTURING SOURCE CLOSED` and stop.
+Completed after T7–T18. It re-checked project UV ownership, atlas lifecycle/audit, Cube UV lock, explicit Painter targeting, PBR/variant ownership, guidance alignment, and convergence evidence. Routing and PBR-group gaps found by the audit were fixed. No further concrete source redesign is justified.
+
+`mcp-verify.yml` now watches the texturing skill and Texture Standard consumed by MCP tests.
+
+## Next Step — CI TERMINAL PROOF ONLY
+
+1. Record terminal MCP Verify for the final source and relevant Repository Verify for routing/policy when accessible.
+2. If a gate fails, diagnose only the exact failing owner; do not redesign adjacent texture architecture or weaken a valid test.
+3. On terminal green source/CI proof, record `TEXTURING SOURCE CLOSED` and stop.
 
 **Local acceptance is not part of this next step.**
 
