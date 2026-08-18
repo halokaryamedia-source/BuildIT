@@ -136,6 +136,21 @@ export function resolveCoreTexture(
   );
 }
 
+function isCoreAnimationControllerItem(
+  item: _Animation | AnimationController
+): item is AnimationController {
+  return (
+    typeof AnimationController !== "undefined" &&
+    item instanceof AnimationController
+  );
+}
+
+function currentCoreAuthoredAnimations(): _Animation[] {
+  return ((AnimationItem.all ?? []) as unknown as Array<_Animation | AnimationController>).filter(
+    (item): item is _Animation => !isCoreAnimationControllerItem(item)
+  );
+}
+
 export function resolveCoreAnimation(
   reference?: string,
   options: {
@@ -143,16 +158,30 @@ export function resolveCoreAnimation(
     notFoundHint?: string;
   } = {}
 ) {
+  const animations = currentCoreAuthoredAnimations();
   if (reference === undefined) {
-    if (options.allowSelected && AnimationItem.selected) {
-      return AnimationItem.selected;
+    const selected = AnimationItem.selected as unknown as
+      | _Animation
+      | AnimationController
+      | null;
+    if (
+      options.allowSelected &&
+      selected &&
+      !isCoreAnimationControllerItem(selected)
+    ) {
+      return selected;
+    }
+    if (options.allowSelected && selected) {
+      throw new Error(
+        "The selected AnimationItem is an AnimationController, not an authored Animation. Select an authored Animation or pass its exact UUID/name."
+      );
     }
     throw new Error(
       "No animation target was provided. Pass an exact Animation UUID or exact unique Animation name."
     );
   }
 
-  return resolveUuidOrUniqueName(AnimationItem.all ?? [], reference, {
+  return resolveUuidOrUniqueName(animations, reference, {
     kind: "Animation",
     notFoundHint:
       options.notFoundHint ??
