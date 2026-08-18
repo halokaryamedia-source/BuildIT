@@ -26,7 +26,7 @@ export const inspectAnimationParameters = z.object({
     .optional()
     .default(false)
     .describe(
-      "Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed."
+      "Include full particle/sound/timeline effect keyframes. Keep false for summary; enable only when effect timing/data is needed."
     ),
 });
 

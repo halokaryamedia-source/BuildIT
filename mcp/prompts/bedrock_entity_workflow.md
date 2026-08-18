@@ -86,11 +86,11 @@ VERIFY → fresh get_texture + capture_model_views model-view evidence
 
 Tool success is not visual `PASS`.
 
-Texture convergence needs actual reference + fresh `get_texture` + `capture_model_views`; mutation makes evidence stale. Use a **Texture Difference Table**. `FAIL` → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. **Same causal correction direction failing twice without new evidence** → `BLOCKED`; if the same causal correction direction fails twice without new evidence, stop.
+Texture convergence needs actual reference + fresh `get_texture` + `capture_model_views`; mutation makes evidence stale. Use a **Texture Difference Table**. `FAIL` → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. **Same causal correction direction failing twice without new evidence** → `BLOCKED`.
 
 ## Protected Native Capability Gaps
 
-TextureMesh, visible bounds, existing-animation effects, animated textures, bone-binding expressions remain gaps. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+Gaps: TextureMesh, visible bounds, animated textures, controller blend-curve mutation, bone-binding expressions. Native Bedrock PBR, per-face `material_instance`, existing-animation effects, and controller-state particle/sound authoring are supported.
 
 ## Stage/tool routing
 
