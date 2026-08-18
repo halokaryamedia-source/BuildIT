@@ -12,7 +12,7 @@ TEXTURING_T6_PRODUCTION_DISCIPLINE_SOURCE_IMPLEMENTED
 TEXTURING_T7_T17_DEEP_HARDENING_SOURCE_IMPLEMENTED
 TEXTURING_T18_NO_CHANGE_REQUIRED
 TEXTURING_FINAL_STATIC_AUDIT_COMPLETE
-TEXTURING_CI_TERMINAL_PROOF_PENDING
+TEXTURING_CI_TERMINAL_PROOF_BLOCKED_BY_CURRENT_ENVIRONMENT
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
@@ -23,8 +23,7 @@ Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 d
 
 Actual desktop Painter behavior, UV persistence, visual quality, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
 **Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof.**
-**Experimental browser proof below does not upgrade desktop MCP claims.**
-
+**Experimental browser proof does not upgrade desktop MCP claims.**
 
 ## Active Boundary
 
@@ -45,8 +44,6 @@ T0–T4 retain their recorded CI-verified Painter, UV observation/mapping, bound
 
 ### T6 — production discipline
 
-Retained:
-
 ```text
 new AI Bedrock logical UV = 128×128
 one base-color atlas PNG for the whole model
@@ -60,7 +57,7 @@ flat fill cannot pass supported form/material/detail requirements
 
 ### T7 — atlas lifecycle integrity
 
-`create_texture` now preflights production role before Undo:
+`create_texture` preflights production role before Undo:
 
 ```text
 base color candidate
@@ -74,14 +71,15 @@ explicit color variant
 
 PBR support
 → normal / height / MER
+→ material TextureGroup required
 → new blank support texture matches established base bitmap size
 ```
 
-Imported existing data may preserve authored dimensions. PBR support must belong to a material TextureGroup; non-material groups remain explicit color variants.
+Imported existing data may preserve authored dimensions. Non-material groups remain explicit color variants.
 
 ### T8 — global atlas / UV observability
 
-`list_textures` now returns structured atlas inventory plus a bounded global UV audit:
+`list_textures` returns structured atlas inventory plus bounded global UV audit:
 
 ```text
 texture role / group / PBR channel
@@ -103,8 +101,6 @@ Exact reuse is evidence, not automatically an error. Partial overlap is a review
 
 ### T9–T10 — UV lock and grid discipline
 
-AI-authored Box UV intended for production painting uses:
-
 ```text
 initial native auto UV as provisional mapping
 → audit/correct uv_offset / mirror_uv
@@ -116,7 +112,7 @@ Integer logical UV is the normal AI pixel-art target. Fractional UV, out-of-boun
 
 ### T11 — texel-scale contract
 
-Logical UV remains stable at 128×128. Physical bitmap size determines detail density:
+Logical UV remains stable at 128×128. Physical bitmap determines detail density:
 
 ```text
 128 bitmap → 1× physical pixels / UV unit
@@ -130,7 +126,7 @@ Reasoning scales identity marks, material detail, and microdetail to reported `p
 
 ### T12–T17 — professional texture language
 
-Active policy/skill/prompt now require, when supported:
+Active policy/skill/prompt require, when supported:
 
 ```text
 material-specific value + hue ramps
@@ -146,7 +142,7 @@ Texture must reinforce actual geometry; shading must not invent major fake silho
 
 ### T18 — focused texture evidence
 
-**No new public crop parameter/tool is justified yet.** Source now provides:
+**No new public crop parameter/tool is justified.** Current source provides:
 
 ```text
 get_texture → full-atlas image + exact texture/logical/physical density metadata
@@ -154,11 +150,9 @@ list_textures → global bounded UV atlas audit
 inspect_element → exact affected face → physical texture rect
 ```
 
-This is sufficient current source evidence for whole-atlas structure plus deterministic affected-region reasoning. Do not add a new crop API until a concrete source/runtime limitation proves that these retained surfaces cannot support the required review. `No change required` is the current T18 decision.
+Do not add a crop API until a concrete limitation proves these retained surfaces insufficient.
 
 ## Regression Owners
-
-Primary texture regressions:
 
 - `mcp/tests/texture-authoring-contract.test.ts`
 - `mcp/tests/texture-design-reasoning.test.ts`
@@ -166,25 +160,40 @@ Primary texture regressions:
 - `mcp/tests/texture-production-discipline.test.ts`
 - `mcp/tests/texture-atlas-integrity.test.ts`
 
-## Current Repository Closure
-
-```text
-U7  No change required — no speculative profile/router/runtime-prompt redesign without installed-client evidence
-```
-
-Protected production gaps outside this texture work remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
-
 ## Final Static Audit
 
 Completed after T7–T18. It re-checked project UV ownership, atlas lifecycle/audit, Cube UV lock, explicit Painter targeting, PBR/variant ownership, guidance alignment, and convergence evidence. Routing and PBR-group gaps found by the audit were fixed. No further concrete source redesign is justified.
 
 `mcp-verify.yml` now watches the texturing skill and Texture Standard consumed by MCP tests.
 
-## Next Step — CI TERMINAL PROOF ONLY
+## CI Proof Retrieval Boundary
 
-1. Record terminal MCP Verify for the final source and relevant Repository Verify for routing/policy when accessible.
-2. If a gate fails, diagnose only the exact failing owner; do not redesign adjacent texture architecture or weaken a valid test.
-3. On terminal green source/CI proof, record `TEXTURING SOURCE CLOSED` and stop.
+Terminal Actions proof was attempted on 2026-08-18 and could not be retrieved from the current execution environment:
+
+```text
+GitHub connector commit-run lookup → exposes PR-triggered runs only; Local work is direct push
+combined commit status             → no legacy status contexts returned
+GitHub CLI                         → unavailable (`gh: command not found`)
+container GitHub REST fallback     → unavailable (DNS resolution failure)
+```
+
+Therefore **no CI PASS or FAIL is claimed**. This is an evidence-access blocker, not evidence that CI passed or failed.
+
+Relevant snapshots:
+
+```text
+255f303ac2a1edb527900bdc1ec3fc9cfff214ae  last texture source/test change requiring MCP Verify
+b58fbdb323227cf5d492dacd6d55bc3bb8c25794  final static-audit documentation head before this blocker note
+```
+
+Do not change source merely to trigger CI, do not reopen T7–T18, and do not substitute local testing.
+
+## Next Step — TERMINAL CI PROOF WHEN ACCESSIBLE
+
+1. From an environment that can see **push-triggered GitHub Actions runs**, retrieve MCP Verify for source snapshot `255f303...` (or a later source-equivalent head) and relevant Repository Verify for the continuation head.
+2. If a run is terminal green, record its run/job identity and mark `TEXTURING SOURCE CLOSED`.
+3. If a run fails, inspect only the failing job/log and fix the exact owner; do not redesign adjacent texture architecture or weaken a valid regression.
+4. If no run exists, diagnose workflow enablement/triggering only. Do not create no-op source changes solely to manufacture proof.
 
 **Local acceptance is not part of this next step.**
 
