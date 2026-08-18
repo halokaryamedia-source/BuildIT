@@ -18,6 +18,7 @@ ANIMATION_D2_CONTROLLER_EFFECT_MUTATION_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D3_MATH_PROPERTY_OBSERVABILITY_IMPLEMENTED
 ANIMATION_D3_PROPERTY_MUTATION_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D4_AUTHORED_CONTROLLER_IDENTITY_FIXED
+ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_PENDING
 ANIMATION_FINAL_STATIC_AUDIT_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -84,7 +85,20 @@ Commit `90284633cfb8a3177f26c29536283756a5ef3f72`.
 
 `resolveCoreAnimation()` now filters AnimationControllers before UUID/name resolution and rejects selected-controller fallback. This fixes shared identity for `manage_keyframes`, graph editor, and copy/paste callers.
 
-Residual: `animation_timeline` and `batch_keyframe_operations` still read `AnimationItem.selected` directly; switch them to authored-Animation resolution before closing D4.
+Residual first-owner requirements:
+
+```text
+animation_timeline
+→ resolve selected authored Animation before playback/property mutation
+→ selected AnimationController must fail closed
+
+batch_keyframe_operations
+→ resolve one authored Animation before reading Timeline selection
+→ all/selected/range/pattern candidates must satisfy keyframe.animator.animation === target
+→ use that target for snap/setLength/Undo; never raw AnimationItem.selected
+```
+
+Filtering only the selected item is insufficient because `Timeline.keyframes` / `Timeline.selected` are global UI collections and may contain stale/non-target keyframes. Close ownership before D4 is marked complete.
 
 ## D1 Mutation Contract — LOCKED
 
@@ -132,7 +146,7 @@ Current environment has no Bun 1.3.14 or usable download path; GitHub connector 
 
 ## Next Step
 
-1. Finish D4 source-only hardening: route `animation_timeline` and `batch_keyframe_operations` through authored-Animation resolution; inspect continuation-state gaps.
+1. Finish D4 source-only hardening in `animation.ts`: authored resolver for timeline/batch, target-owned keyframe filtering, and compact continuation state for persistent timeline property edits if it removes a real reread.
 2. With Bun + canonical docs generation available, implement locked **D1 existing-animation effect mutation** and generated docs as one logical delivery.
 3. Implement **D2 controller-state particle/sound mutation** by extending `manage_animation_controller`; no separate controller-effect family.
 4. Implement D3 mutation parity for `anim_time_update` / `blend_weight` through the smallest existing animation-property owner; never create `math_animation`.
