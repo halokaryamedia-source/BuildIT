@@ -119,6 +119,24 @@ pinned HEAD + base tree
 → fast-forward intended ref once
 ```
 
+### Large-file connector anti-stall rule
+
+When partial-file editing is unavailable but the connector can fetch the **exact complete current blob**, file size alone is not a blocker and must not trigger repeated transport/tool workaround attempts.
+
+```text
+exact current full blob
+→ construct complete replacement once
+→ create unreferenced candidate blob/tree/commit
+→ compare candidate against pinned HEAD
+→ bounded intended diff? fast-forward once : discard candidate
+```
+
+- Prefer this full-blob replacement path after the first confirmed partial-edit limitation; do not spend repeated attempts searching for alternate download, DNS, CLI, patch, materialization, or transport paths without new evidence.
+- Full replacement is valid only from exact complete current content; partial/truncated reconstruction remains prohibited.
+- Orphan blobs/commits may be used as preflight artifacts, but do not move the working ref until the exact diff is reviewed and bounded.
+- Do not create checkpoint, retry, proof-only, or transport-workaround commits on the working branch. Branch history records logical outcomes, not failed tooling attempts.
+- If a public-schema change is blocked only by an unavailable canonical generator, prepare the source/test candidate unreferenced, record the blocker once, and continue the next independent development owner. Do not repeatedly probe the same unavailable toolchain.
+
 Hard stops:
 
 - Never full-replace a file from partial context.
