@@ -13,8 +13,9 @@ ANIMATION_MATH_RESEARCH_COMPLETE
 ANIMATION_A0_NO_CHANGE_REQUIRED
 ANIMATION_A1_A2_NATIVE_SEMANTICS_CONFIRMED
 ANIMATION_A1_A2_PUBLIC_SCHEMA_DEFERRED_UNTIL_DOCS_TOOLCHAIN
-ANIMATION_A3_A7_REASONING_SOURCE_IMPLEMENTED
-ANIMATION_A8_A10_PENDING
+ANIMATION_A3_A9_REASONING_POLICY_IMPLEMENTED
+ANIMATION_A10_CONVERGENCE_POLICY_IMPLEMENTED
+ANIMATION_A10_FINAL_STATIC_AUDIT_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
@@ -96,7 +97,7 @@ Official Blockbench confirms mutable `particle`, `sound`, and `timeline` channel
 
 Official Blockbench confirms controller states own/export deep-copied particle/sound arrays, already retained by BlockIT's snapshot/Undo plan. Defer mutation for the same docs-toolchain reason. Extend `manage_animation_controller`; do not add a controller-effect tool family. Blend curves stay deferred.
 
-### A3–A7 — active reasoning hardening
+### A3–A10 — reasoning hardening
 
 Native Animation also owns `anim_time_update` and `blend_weight`; current BlockIT creation/inspection does not yet fully own that parity. Add authoring/inspection through existing animation surfaces when public-contract docs can be regenerated; do not add a separate math-animation tool.
 
@@ -108,11 +109,11 @@ This phase changes policy/skill plus regression routing/tests; it does not prove
 
 ## Next Step
 
-1. Verify the A3–A7 policy/regression patch through MCP Verify + Repository Verify when terminal push-run visibility is available.
+1. Verify the A3–A10 policy/regression patch through MCP Verify + Repository Verify when terminal push-run visibility is available.
 2. In an environment with Bun and the canonical docs generator, implement **A1 existing-animation effect mutation** in the existing animation family and **A2 controller-state particle/sound mutation** in `manage_animation_controller`.
 3. Regenerate API docs through the repository generator; never hand-edit generated entries.
 4. Diagnose only exact failing owners if a gate fails.
-5. After A1/A2 source closure, continue the bounded **A8 idle-variation architecture → A9 perspective-aware motion → A10 difference-first animation convergence/final static audit**.
+5. After A1/A2 and animation-level math-property parity are implemented, perform the **A10 final static animation architecture audit** and close only concrete remaining gaps.
 6. Keep blend-curve mutation, bone-binding expressions, and added Bezier complexity deferred unless new evidence changes priority.
 
 **Local acceptance is not part of this next step.**
