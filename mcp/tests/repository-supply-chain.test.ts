@@ -22,22 +22,26 @@ function actionRefs(workflow: string): ActionRef[] {
 
 describe("repository workflow supply chain", () => {
   test("active verification workflows pin trusted Actions to immutable revisions", async () => {
-    const workflows = await Promise.all([
+    const [repositoryWorkflow, mcpWorkflow] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
     ]);
 
-    for (const workflow of workflows) {
+    const expectedActions = new Map([
+      [repositoryWorkflow, ["actions/checkout", "oven-sh/setup-bun"]],
+      [
+        mcpWorkflow,
+        ["actions/checkout", "actions/upload-artifact", "oven-sh/setup-bun"],
+      ],
+    ]);
+
+    for (const [workflow, expected] of expectedActions) {
       const refs = actionRefs(workflow);
-      expect(refs).toHaveLength(2);
-      expect(refs.map((entry) => entry.action).sort()).toEqual([
-        "actions/checkout",
-        "oven-sh/setup-bun",
-      ]);
+      expect(refs.map((entry) => entry.action).sort()).toEqual(expected);
 
       for (const ref of refs) {
         expect(ref.revision).toMatch(/^[0-9a-f]{40}$/);
-        expect(ref.note).toMatch(/^v\d+$/);
+        expect(ref.note).toMatch(/^v\d+(?:\.\d+\.\d+)?$/);
       }
 
       expect(workflow).not.toMatch(/^\s*uses:\s+[^\s]+@(main|master|latest|v\d+)\s*$/gm);
