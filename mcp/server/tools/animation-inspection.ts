@@ -276,6 +276,22 @@ function normalizePreEffectScript(script: string | undefined): string | null {
   return script.match(/;$/) ? script : `${script};`;
 }
 
+export function countEffectiveEffectDataPoints(
+  points: readonly { effect?: string | null }[]
+): number {
+  return points.reduce((count, point) => count + (point.effect ? 1 : 0), 0);
+}
+
+export function countEffectiveTimelineScriptLines(
+  points: readonly { script?: string | null }[]
+): number {
+  const script = points[0]?.script;
+  if (typeof script !== "string") return 0;
+  return script
+    .split("\n")
+    .filter((line) => Boolean(line.replace(/[\s;]/g, ""))).length;
+}
+
 function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean) {
   const existingEffects = animation.animators.effects;
   if (!existingEffects) {
@@ -361,7 +377,8 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     particle: {
       keyframe_count: inspectedKeyframes.length,
       particle_count: inspectedKeyframes.reduce(
-        (count, keyframe) => count + keyframe.particles.length,
+        (count, keyframe) =>
+          count + countEffectiveEffectDataPoints(keyframe.particles),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedKeyframes } : {}),
@@ -369,7 +386,7 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     sound: {
       keyframe_count: inspectedSoundKeyframes.length,
       sound_count: inspectedSoundKeyframes.reduce(
-        (count, keyframe) => count + keyframe.sounds.length,
+        (count, keyframe) => count + countEffectiveEffectDataPoints(keyframe.sounds),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedSoundKeyframes } : {}),
@@ -377,7 +394,8 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     timeline: {
       keyframe_count: inspectedTimelineKeyframes.length,
       script_count: inspectedTimelineKeyframes.reduce(
-        (count, keyframe) => count + keyframe.scripts.length,
+        (count, keyframe) =>
+          count + countEffectiveTimelineScriptLines(keyframe.scripts),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedTimelineKeyframes } : {}),
