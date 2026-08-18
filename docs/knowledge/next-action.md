@@ -7,71 +7,42 @@ Updated: 2026-08-19
 ```text
 PRELOCAL_CONTROLLER_MUTATION_READY
 PRO-1–PRO-8 STATIC HARDENING RETAINED
+U7  No change required
 TEXTURING_T0_T18_STATIC_HARDENING_COMPLETE
-ANIMATION_D1_EFFECT_OBSERVABILITY_IMPLEMENTED
-ANIMATION_D2_CONTROLLER_EFFECT_CANDIDATE_PREPARED
-ANIMATION_D3_MATH_PROPERTY_OBSERVABILITY_IMPLEMENTED
-ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_FIXED
-ANIMATION_D5_EFFECT_SUMMARY_COUNTS_FIXED
-ANIMATION_FINAL_STATIC_INTEGRATION_CANDIDATE_PREPARED
+ANIMATION_D1_D3_INTEGRATION_PR_ACTIVE
 ANIMATION_CREATE_INSPECT_MODIFY_SYMMETRY_STATIC_AUDIT_COMPLETE
 ANIMATION_FINAL_STATIC_ARCHITECTURE_AUDIT_COMPLETE
-ANIMATION_CANONICAL_INTEGRATION_WAITING_FOR_BUN_GATE
-ANIMATION_SOURCE_CLOSURE_PENDING_CANONICAL_GATE
+ANIMATION_CANONICAL_VERIFICATION_IN_PROGRESS
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
-Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. GitHub discipline is owned by `GITHUB_RULES.md`; do not duplicate it here.
+Working branch: **`Local` only** as repository authority. PR #21 (`animation/canonical-effect-molang-closure`) is the bounded verification/delivery branch, not a replacement authority. `Experimental/**` remains **PAUSED BY USER**; its research contract lives in `Experimental/README.md`.
 
 ## Proof Boundary
 
-Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Experimental browser proof below does not upgrade desktop MCP claims. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**. Static/source/CI evidence proves only its matching surface.
+Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Experimental browser proof below does not upgrade desktop MCP claims. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**. Static/source/CI evidence proves only its matching surface; installed-client evidence is separate.
 
-## Final Static Candidate
+Reference generation remains consent-gated: wait for fresh explicit user generation command before any new reference image generation.
 
-Reference candidate, **NOT on `Local`**:
+## Integration Delivery
 
-```text
-8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c
-feat(animation): prepare canonical effect and Molang closure
-```
-
-Final delivery must reproduce it from the then-current `Local`; never merge orphan history blindly.
-
-Candidate closure:
-- D1 `manage_animation_effects`: particle/sound/timeline add-update-remove, exact inspected identity, snapping/collision/no-op preflight, one Undo, native point cap, split-on-move, final-point removal, preview `file` preservation, strict schemas, inspector/export-compatible continuation.
-- D2 extends existing `manage_animation_controller` with controller-state sound/particle lifecycle; no new controller tool.
-- D3 extends existing `animation_timeline` with `set_anim_time_update` / `set_blend_weight`; no `math_animation`.
-- runtime registration + canonical docs manifest include D1; inspector covers particle/sound/timeline.
-- skill/policy/runtime workflow stop treating implemented D1/D2 as gaps; animation skill remains routing owner.
-- regression owners cover D1/D2/D3, strictness, one-Undo behavior, docs registration, inspection parity, routing, and ownership.
-- implementation-map candidate owns `manage_animation_effects`, 64-tool inventory, and remaining protected gaps.
-- only exact inventory 63 → 64 is adjusted statically; serialized character ceilings stay unchanged until measured.
-
-## Static Symmetry / Architecture Closure
-
-Verified lifecycle:
-
-```text
-transform keys          create/manage → inspect → modify → inspect
-Molang transforms       manage_keyframes → inspect → modify → inspect
-animation effects       create/manage_animation_effects → inspect → modify → inspect
-controller composition  manage_animation_controller → inspect(state) → modify → inspect
-controller effects      manage_animation_controller → inspect(state) → modify → inspect
-animation properties    animation_timeline → inspect → modify → inspect
-loop/length/snapping    create/timeline → inspect → modify → inspect
-```
-
-No missing owner/tool justifies new public surface. Identity, Undo ownership, collision/no-op preflight, Molang preservation, effect ownership, controller composition, continuation state, routing, docs ownership, and 64-tool inventory are coherent at source/static level.
-
-Legacy `animation_timeline` action-field strictness was reviewed but **not promoted**: its multi-action looseness predates D3 and no current failure evidence justifies widening this closure. D3 already requires Molang for its actions and rejects Molang on unrelated actions. Reopen only with concrete evidence.
+Draft PR #21 targets `Local` with one animation closure commit. It carries:
+- D1 `manage_animation_effects` for existing Animation particle/sound/timeline lifecycle with exact inspected identity, collision/no-op preflight, one Undo, native point cap, split-on-move, strict schemas, and inspector/export-compatible continuation.
+- D2 state sound/particle lifecycle through existing `manage_animation_controller`; no new controller tool.
+- D3 `set_anim_time_update` / `set_blend_weight` through existing `animation_timeline`; no `math_animation`.
+- canonical docs-manifest/runtime registration/inspection/routing ownership.
+- implementation-map ownership and exact default inventory 63 → 64; serialized character ceilings stay unchanged unless measured evidence requires adjustment.
 
 Remaining protected animation gaps: controller blend-curve mutation and bone-binding expressions. Generic generators, quality scores, and extra Bezier complexity remain deferred.
 
-## Canonical Gate Blocker
+## CI Evidence
 
-Public MCP changes still require:
+GitHub Actions is the canonical Bun surface; the user's Windows workstation is not required.
+
+Repository Verify exposed bounded instruction/continuation regressions from earlier compaction. MCP Verify reached Bun 1.3.14 successfully and currently exposed a stale TypeScript test-stub typing error before executable tests. Fix only those proved owners; do not weaken tests or widen product scope.
+
+Canonical gate remains:
 
 ```text
 bun install --frozen-lockfile
@@ -83,21 +54,17 @@ bun run docs:build
 bun run docs:check
 ```
 
-Environment boundary: the user's workstation is **Windows and is not needed for this gate**. Repo-owned `.github/workflows/mcp-verify.yml` uses `ubuntu-latest`; the assistant sandbox is separate and not repository authority.
-
-Current assistant environment has no Bun, cached canonical dependencies, preloaded Bun image, authenticated `gh` dispatch path, or usable package/binary download transport. Do not create a temporary workflow/branch, push incomplete schema only to trigger CI, hand-edit generated API docs, weaken verification, or keep probing equivalent transports.
-
-Generated artifacts remain intentionally pending canonical generation:
+Generated artifacts stay generator-owned:
 - `mcp/docs/api.json`
 - `mcp/docs/index.html`
 - `mcp/prompts/manifest.json`
 
 ## Next Step
 
-1. Use repo-owned GitHub Actions `ubuntu-latest` verifier or another repository-authorized Bun-capable surface; do not involve the user's Windows desktop.
-2. Reproduce candidate `8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c` from current `Local` as one logical delivery.
-3. Run canonical gate; `measure:surface` must confirm 64 tools and prove any ceiling adjustment actually needed.
-4. Regenerate prompt/API artifacts canonically in the same verified delivery.
-5. If verification changes executable source beyond generated artifacts or evidence-backed budget values, rerun only the affected static audit; otherwise mark **ANIMATION SOURCE CLOSED**.
+1. Fix only CI-proved stale instruction/continuation markers and the `_Animation` test-stub type error on PR #21.
+2. Let Repository Verify + MCP Verify rerun on the new PR head.
+3. Use actual `measure:surface` output for any evidence-backed ceiling change; do not inflate budgets speculatively.
+4. Regenerate prompt/API artifacts canonically once executable gates reach generation.
+5. When both verification surfaces are green, merge the verified logical delivery to `Local` and mark **ANIMATION SOURCE CLOSED**.
 
 **Local acceptance remains deferred and is not part of this next step.**
