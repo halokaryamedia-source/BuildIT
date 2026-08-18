@@ -16,90 +16,44 @@ ANIMATION_D1_MUTATION_SCHEMA_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D2_CONTROLLER_EFFECT_MUTATION_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D3_MATH_PROPERTY_OBSERVABILITY_IMPLEMENTED
 ANIMATION_D3_PROPERTY_MUTATION_PENDING_DOCS_TOOLCHAIN
-ANIMATION_D4_SHARED_IDENTITY_FIXED
-ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_PENDING
-ANIMATION_D5_EFFECT_SUMMARY_COUNT_DEFECT_IDENTIFIED
-ANIMATION_D5_EXACT_PATCH_LOCAL_VERIFIED_UPLOAD_BLOCKED
+ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_FIXED
+ANIMATION_D5_EFFECT_SUMMARY_COUNTS_FIXED
 ANIMATION_FINAL_STATIC_AUDIT_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
-Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. Live desktop playback/quality and runtime efficiency remain **LOCAL PROOF REQUIRED**; local acceptance is not a current next step.
+Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. Live desktop animation playback/quality and runtime efficiency remain local-proof-only claims.
 
-## Closed / Retained Owners
+## Retained Boundaries
 
-Texture is statically closed through T18; reopen only for a concrete defect.
+Texture is statically closed through T18; reopen only for a concrete defect. Professional animation evidence + Molang/math reasoning live in `docs/foundation/08-animation-standard.md`; samples are evidence, not presets.
 
-Professional animation evidence and Molang/math reasoning are retained in `docs/foundation/08-animation-standard.md`. Key rule: quality comes from pose/timing/phase/weight/recovery; continuous cyclic/reactive motion may use Molang; identity-critical action/contact stays authored. Samples are evidence, not presets.
+### Completed source hardening
 
-## Development Completed
+- D1.1 effect observability — `7a3fcc2522911c0a578ace871a9b6b0532e1ab9c`
+  - `inspect_animation` exposes particle/sound/timeline keyframe UUID + time.
+  - particle/sound datapoints expose `data_point_index`; no synthetic datapoint UUID.
+- D3.1 math-property observability — `fbc1be9380ce81df71207858f55bdf41bc335f36`
+  - authored `anim_time_update` / `blend_weight` returned as text/null; never evaluated.
+- D4 shared Animation identity — `90284633cfb8a3177f26c29536283756a5ef3f72`
+  - controllers cannot resolve as authored Animation.
+- D4 timeline/batch ownership — `ec64de58da23b1426527b9d2d7101c5286e015be`
+  - timeline resolves authored Animation first.
+  - `select_range` touches target-owned keyframes only.
+  - batch `all|selected|range|pattern` filters `keyframe.animator.animation === target`.
+  - snap/setLength/bake/scale use the same target Animation.
+- D5 effect summary semantics — `279f9b7dec1ebc189068f0c5e9bad7641c4dbf45`
+  - `keyframe_count` remains authored editor count.
+  - particle/sound payload counts follow native truthy-effect export.
+  - timeline `script_count` follows first datapoint + native effective line filtering.
+  - full authored datapoint observability remains unchanged.
 
-### D1.1 — effect observability
-
-`7a3fcc2522911c0a578ace871a9b6b0532e1ab9c`
-
-`inspect_animation(include_effect_keyframes=true)` exposes particle/sound/timeline keyframe UUID + time. Particle/sound data points expose `data_point_index`; timeline exposes stored script. No synthetic data-point UUID exists.
-
-### D3.1 — math-property observability
-
-`fbc1be9380ce81df71207858f55bdf41bc335f36`
-
-Authored Animation summary returns `anim_time_update` and `blend_weight` as string or `null`, without Molang evaluation.
-
-### D4 — shared authored Animation identity
-
-`90284633cfb8a3177f26c29536283756a5ef3f72`
-
-`resolveCoreAnimation()` filters AnimationControllers before UUID/name resolution and rejects selected-controller fallback. `manage_keyframes`, graph editor, and copy/paste inherit this fail-closed owner.
-
-## D4 Remaining Patch — LOCKED
-
-`mcp/server/tools/animation.ts` still bypasses the shared owner in timeline/batch:
-
-```text
-animation_timeline
-→ resolve selected authored Animation before action
-→ controller selection fails closed
-→ select_range touches only target-owned keyframes
-
-batch_keyframe_operations
-→ resolve authored Animation before Timeline collections
-→ all/selected/range/pattern require
-   keyframe.animator.animation === target
-→ use target consistently for snap/setLength/bake/scale/offset ownership
-```
-
-`Timeline.keyframes` and `Timeline.selected` are global UI collections; selected-item validation alone is insufficient.
-
-Current environment cannot safely write this owner: connector supports full-file replacement only, `animation.ts` is ~89 KB, no repo checkout is mounted, and container GitHub DNS is unavailable. **Do not manually reserialize the file or move the guard to a wrong central owner.** Apply this exact patch from a patch-capable checkout/action and add bounded ownership regression tests.
-
-## D5 Inspector Count Contract — LOCKED
-
-Full authored effect keyframes/data points remain observable. Summary semantics are intentionally split:
-
-```text
-keyframe_count → authored editor keyframes/timestamps
-particle_count → effective non-empty particle effect payloads exported
-sound_count    → effective non-empty sound effect payloads exported
-script_count   → effective non-blank timeline script lines exported
-```
-
-Native Bedrock compilation can retain an authored effect keyframe whose compiled value is undefined; JSON serialization then omits that timestamp. Therefore do **not** silently redefine `keyframe_count` as exported timestamp count.
-
-An exact local D5 source patch is already derived from current source and checksum-verified:
-
-```text
-pre-patch inspector blob  7c354c8d745cc76464748245060580db79adfef7
-intended patched blob      ff67ba651071b3c1eb16fd0f9fa534034bfdb027
-regression test blob       4d971a934e3ca7bba26f702eb4df5e91d6c2ce6f
-```
-
-Two connector uploads produced `3c90b38b...`, not the expected patched SHA; those blobs remain unreferenced. A transient bad D5 commit was reverted by `074613952041d48c0b1fdc80ce88c120651ae24e`, restoring the exact pre-D5 tree. **Only reference the D5 source blob if upload returns exactly `ff67ba651071b3c1eb16fd0f9fa534034bfdb027`.**
+Large-file rule established: full replacement is acceptable. Fetch exact full blob, create unreferenced candidate commit, compare exact diff, then fast-forward `Local` only if the patch is bounded.
 
 ## D1 Mutation Contract — LOCKED
 
-Use the existing Animation family:
+Use existing Animation family; no generic effect tool.
 
 ```text
 channel   = particle | sound | timeline
@@ -107,34 +61,36 @@ operation = add | update | remove
 one authored Animation + ordered bounded operations + one Undo
 ```
 
-Identity and mutation rules:
+Rules:
 - particle/sound update-remove → keyframe UUID + `data_point_index`; timeline → keyframe UUID;
 - snap add/move time with target snapping;
 - particle/sound same-time add appends point; timeline duplicate time rejects;
-- preflight UUID/index/time collisions and effective no-op before Undo;
-- move onto occupied same-channel keyframe rejects rather than silently merging identity;
-- removing final particle/sound point removes keyframe;
+- preflight UUID/index/time collision + effective no-op before Undo;
+- moving onto occupied same-channel keyframe rejects; do not silently merge identities;
+- removing final particle/sound point removes keyframe; timeline remove removes keyframe;
 - particle owns effect/locator/bind/pre-script; sound owns effect/locator; timeline owns script;
-- optional fields need explicit clear semantics; effect cannot become blank;
-- never evaluate Molang/script; return bounded continuation state.
+- explicit clear semantics for optional fields; effect cannot become blank;
+- preserve scripts/Molang as authored text; never evaluate gameplay truth;
+- return bounded continuation state.
 
 ## Public Schema Boundary
 
-D1 mutation, D2 state effects, and D3 property mutation change public schemas and require canonical:
+D1 mutation, D2 controller-state effects, and D3 property mutation change public schemas and require canonical:
 
 ```text
 bun run docs:build
 bun run docs:check
 ```
 
-This environment has no Bun 1.3.14 or usable release-download path. **Never commit those schema changes without generated docs or hand-edit generated API files.**
+Current environment still lacks Bun 1.3.14. **Do not fast-forward public-schema changes without canonical generated docs; never hand-edit generated API files.** Source/test candidates may be prepared unreferenced, but `Local` must remain schema/docs-consistent.
 
 ## Next Step
 
-1. Patch-capable checkout/action: close D4 timeline/batch target ownership + regressions.
-2. Transfer the checksum-verified D5 patch only through an exact-file path; require blob SHA `ff67ba651071b3c1eb16fd0f9fa534034bfdb027` before commit.
-3. With Bun/docs generation: implement locked D1 existing-animation effects, then D2 controller-state effects, then D3 `anim_time_update`/`blend_weight` mutation through existing owners.
-4. Run create → inspect → modify symmetry audit and final static animation audit; fix concrete residuals only.
-5. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
+1. Prepare D1 existing-animation effect mutation source/tests as an unreferenced candidate; keep the locked identity/collision/Undo contract.
+2. When canonical docs generation is available, generate docs and deliver D1 atomically to `Local`.
+3. Implement D2 controller-state particle/sound mutation by extending `manage_animation_controller`, not a new effect family.
+4. Implement D3 `anim_time_update` / `blend_weight` mutation through the smallest existing Animation property owner; never create `math_animation`.
+5. Run create → inspect → modify symmetry audit, then final static animation architecture audit; fix only concrete residuals.
+6. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
 
 **Local acceptance is not part of this next step.**
