@@ -1089,6 +1089,12 @@ function requireTextureCreationPreflight(params: {
     return;
   }
 
+  if (params.textureGroup?.is_material !== true) {
+    throw new Error(
+      "PBR support textures require an explicit material TextureGroup. Use create_pbr_material/add the support texture to that material instead of a variant/non-material group."
+    );
+  }
+
   if (params.data !== undefined) return;
 
   if (existingBase.length !== 1) {

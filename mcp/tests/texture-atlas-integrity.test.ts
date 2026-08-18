@@ -174,6 +174,7 @@ describe("texture atlas integrity", () => {
       "base-color atlas already exists",
       "square 128-based canvas",
       "explicit non-material TextureGroup",
+      "PBR support textures require an explicit material TextureGroup",
       "match the base atlas bitmap size",
     ]) {
       expect(texture).toContain(invariant);
