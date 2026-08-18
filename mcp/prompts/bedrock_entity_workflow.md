@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
+Create/revise Bedrock **Entity**; Cubes=geometry, Groups=bones.
 
 ## Minimum necessary evidence
 
@@ -31,7 +31,7 @@ representation: geometry | texture | animation | omit
 material evidence state + claim_id
 ```
 
-A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark; no orphan/filler Cube. Construction examples are **not presets**. Decide **transform ownership**: local rigid slope may be **Cube-owned**; shared orientation/attachment/articulation is **Group/Bone**-owned.
+A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark; no orphan/filler Cube. Construction examples are **not presets**. Decide **transform ownership**: local rigid slope may be **Cube-owned**; shared orientation/attachment/articulation is **Group/Bone**-owned. Form/contact/articulation hierarchy belongs in **primary blockout**.
 
 Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`; **`[0,0,0]` needs image support.** A visible material slope requires `ROTATED` + explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
@@ -59,7 +59,7 @@ Review **difference-first**. `FAIL` = critical/major mismatch; `UNVERIFIED` = mi
 
 **Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. Declare target/invariant, diagnose `TRANSLATE | RESIZE | ROTATE | hierarchy REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`.
 
-`UNCHANGED`/`REGRESSED` is **not progress**. Reject correction that regresses a supported material claim; **cross-view regression** is rejected. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
+`UNCHANGED`/`REGRESSED` is **not progress**. Reject correction that regresses a **previously supported material claim**; **cross-view regression** is rejected. Delta is **qualitative, not a score**. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
 
 ## Downstream stages
 
@@ -90,11 +90,11 @@ Texture convergence needs actual reference + fresh `get_texture` + `capture_mode
 
 ## Locator / Null Object authored state
 
-Use `manage_locator` / `manage_null_object` for direct authored state; use `inspect_element` only when focused detail is needed.
+`manage_locator` / `manage_null_object` own direct state; `inspect_element` owns focused detail.
 
 ## Protected Native Capability Gaps
 
-TextureMesh, visible bounds, animated textures, controller blend-curve mutation, and bone-binding expressions remain gaps. Native Bedrock PBR and per-face `material_instance` are **not** gaps. Existing-animation effects and controller-state particle/sound authoring are supported.
+Gaps: TextureMesh, visible bounds, animated textures, controller blend-curve mutation, bone-binding expressions. Native Bedrock PBR and per-face `material_instance` are **not** gaps. Existing-animation effects and controller-state particle/sound are supported.
 
 ## Stage/tool routing
 

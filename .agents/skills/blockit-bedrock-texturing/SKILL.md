@@ -1,6 +1,6 @@
 ---
 name: blockit-bedrock-texturing
-description: Bedrock Entity texture specialist for texture lifecycle, Painter, PBR, and material_instance metadata.
+description: Bedrock Entity texture specialist for atlas, UV, Painter, PBR, and material_instance.
 ---
 
 # BlockIT Bedrock Texturing
@@ -13,7 +13,7 @@ Geometry: `blockbench-bedrock-modelling`.
 
 ## Deferred Spec Loading
 
-Known identity skips discovery. Load the exact tool name only; do not re-list/re-read it only for confirmation. Production texture waits for geometry `PASS`.
+Known identity skips discovery. Load the exact tool name only; do not re-list/re-read for confirmation. Production texture waits for geometry `PASS`; unresolved material stays `UNVERIFIED`.
 
 For an existing asset, current texture state may be a baseline only. Do not claim that baseline is reference-accurate. A flat/placeholder texture is temporary; after upstream change, re-check only the affected downstream state.
 
@@ -29,7 +29,7 @@ Before production pixels define:
 
 ```text
 atlas UUID + logical/physical size + pixels per UV unit
-palette roles + value/hue ramp per material family
+base palette + palette roles + value/hue ramp per material family
 material zones: Cube/face + mapped region
 value hierarchy / part separation
 face-aware shading language
