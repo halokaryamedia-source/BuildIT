@@ -9,7 +9,7 @@ Geometry: `blockbench-bedrock-modelling`.
 
 ## Direct Routing
 
-**Reuse identity/metadata already returned by the current workflow.** `create_texture` returns texture identity/size/group/channel/render metadata. `list_textures` owns atlas/UV audit; `get_texture` image evidence; `activate_texture` selection; PBR uses `create_pbr_material` / `configure_material` / `assign_texture_channel`.
+**Reuse identity/metadata already returned by the current workflow.** `create_texture` already returns texture identity/size/group/channel/render metadata. `list_textures` owns atlas/UV audit; `get_texture` image evidence; use `activate_texture` to choose the active/default working texture. PBR uses `create_pbr_material` / `configure_material` / `assign_texture_channel`.
 
 ## Deferred Spec Loading
 
@@ -29,7 +29,7 @@ Before production pixels define:
 
 ```text
 atlas UUID + logical/physical size + pixels per UV unit
-base palette + value/hue ramp per material family
+palette roles + value/hue ramp per material family
 material zones: Cube/face + mapped region
 value hierarchy / part separation
 face-aware shading language
@@ -45,26 +45,26 @@ Flat base color is provisional when reference/style shows form/material/detail. 
 
 ## UV / Atlas Gate
 
-Use `list_textures` global audit before production paint. For AI **Box-UV Cubes**, final painted Cubes use `autouv=0`; `modify_cubes_batch` may carry existing Box-UV state. Logical project UV resolution and bitmap pixel dimensions are separate facts. Require integer logical UV unless justified, no invalid UV, no unexplained partial overlap, and stable seams. Exact symmetric reuse is allowed; packing percentage is not a score.
+Use `list_textures` global audit before production paint. For AI **Box-UV Cubes**, final painted Cubes use `autouv=0`; `modify_cubes_batch` may carry existing Box-UV state. Logical project UV resolution and bitmap pixel dimensions are separate facts. Require integer logical UV, no out-of-bounds/invalid UV, no unexplained partial overlap, stable seams, and intentional exact reuse.
 
 **Do not mentally re-derive atlas coordinates.** For a needed face use `inspect_element`; require `mapping_state=mapped` + `paintable=true`, and reuse `texture_pixels.rect/size`, `flip_u`, `flip_v`.
 
 ```text
 MAP → global audit + affected inspect_element
-BASE PASS → major material regions with draw_shape_tool
-VALUE / FORM PASS → form, contact/occlusion, edge treatment, material ramps
-IDENTITY PASS → required marks via paint_with_brush exact-pixel path
+BASE PASS → draw_shape_tool major material regions
+VALUE / FORM PASS → form + contact/occlusion + edge + material ramps
+IDENTITY PASS → paint_with_brush exact-pixel path
 SECONDARY DETAIL PASS → scale detail to pixels per UV unit; stop before noise
 VERIFY → fresh atlas + model-view evidence
 ```
 
-`FAIL / UNVERIFIED / PASS` is visual-only. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
+Tool success is not visual `PASS`. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
 
 ## Texture Visual Convergence
 
 Reference review requires actual approved image + fresh `get_texture` + affected `capture_model_views`; mutation makes evidence stale. Minor drift uses one canonical interpretation; do not average conflicting material evidence. Use a **Texture Difference Table**: region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
 
-Local `FAIL` → target/invariant → **smallest bounded correction** → retain pre-evidence → mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal correction direction failing twice without new evidence → `BLOCKED`.
+Local `FAIL` → target/invariant → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
 ## Native Bedrock PBR / UV
 
