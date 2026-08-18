@@ -18,7 +18,7 @@ ANIMATION_D3_MATH_PROPERTY_OBSERVABILITY_IMPLEMENTED
 ANIMATION_D3_PROPERTY_MUTATION_PENDING_DOCS_TOOLCHAIN
 ANIMATION_D4_SHARED_IDENTITY_FIXED
 ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_PENDING
-ANIMATION_D5_EFFECT_SUMMARY_COUNTS_FIXED
+ANIMATION_D5_EFFECT_SUMMARY_COUNT_DEFECT_IDENTIFIED
 ANIMATION_FINAL_STATIC_AUDIT_PENDING
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -52,20 +52,6 @@ Authored Animation summary returns `anim_time_update` and `blend_weight` as stri
 
 `resolveCoreAnimation()` filters AnimationControllers before UUID/name resolution and rejects selected-controller fallback. `manage_keyframes`, graph editor, and copy/paste inherit this fail-closed owner.
 
-### D5 — effective effect-summary counts
-
-`04d70d7f10dcd7d478162376e156e30a42786c32`
-
-`inspect_animation` keeps full authored effect data-point visibility while summary counts now mirror effective Bedrock export semantics:
-
-```text
-particle_count → non-empty exported effect points
-sound_count    → non-empty exported effect points
-timeline.script_count → effective non-blank exported script lines
-```
-
-Regression owner: `mcp/tests/animation-effect-summary-contract.test.ts`.
-
 ## D4 Remaining Patch — LOCKED
 
 `mcp/server/tools/animation.ts` still bypasses the shared owner in timeline/batch:
@@ -86,6 +72,18 @@ batch_keyframe_operations
 `Timeline.keyframes` and `Timeline.selected` are global UI collections; selected-item validation alone is insufficient.
 
 Current environment cannot safely write this owner: connector supports full-file replacement only, `animation.ts` is ~89 KB, no repo checkout is mounted, and container GitHub DNS is unavailable. **Do not manually reserialize the file or move the guard to a wrong central owner.** Apply this exact patch from a patch-capable checkout/action and add bounded ownership regression tests.
+
+## D5 Inspector Count Defect
+
+`animation-inspection.ts` summary currently counts data points rather than effective Bedrock exports:
+
+```text
+particle_count → includes blank-effect points
+sound_count    → includes blank-effect points
+timeline.script_count → counts data points, not effective exported script lines
+```
+
+Native compilation filters blanks and splits timeline scripts into effective lines. Keep full data-point observability, but make these summary counts reflect export semantics. Do not rename fields or add scores.
 
 ## D1 Mutation Contract — LOCKED
 
@@ -122,8 +120,9 @@ This environment has no Bun 1.3.14 or usable release-download path. **Never comm
 ## Next Step
 
 1. Patch-capable checkout/action: close D4 timeline/batch target ownership + regressions.
-2. With Bun/docs generation: implement locked D1 existing-animation effects, then D2 controller-state effects, then D3 `anim_time_update`/`blend_weight` mutation through existing owners.
-3. Run create → inspect → modify symmetry audit and final static animation audit; fix concrete residuals only.
-4. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
+2. Fix D5 effective effect-summary counts.
+3. With Bun/docs generation: implement locked D1 existing-animation effects, then D2 controller-state effects, then D3 `anim_time_update`/`blend_weight` mutation through existing owners.
+4. Run create → inspect → modify symmetry audit and final static animation audit; fix concrete residuals only.
+5. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
 
 **Local acceptance is not part of this next step.**
