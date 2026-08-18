@@ -133,9 +133,13 @@ export function resolveUniqueControllerState<T extends { uuid: string; name: str
   const nameMatches = states.filter((state) => state.name === reference);
   if (nameMatches.length === 1) return nameMatches[0];
   if (nameMatches.length > 1) {
-    throw new Error(`AnimationController state name "${reference}" is ambiguous. Use an exact state UUID.`);
+    throw new Error(
+      `AnimationController state name "${reference}" is ambiguous. Use an exact state UUID.`
+    );
   }
-  throw new Error(`AnimationController state "${reference}" not found.`);
+  throw new Error(
+    `AnimationController state "${reference}" not found.`
+  );
 }
 
 function summarizeControllerState(state: ControllerStateView, index: number) {
@@ -215,7 +219,7 @@ function inspectAnimationController(controller: AnimationController, stateRefere
   const initial = controller.states.find((state) => state.uuid === controller.initial_state);
   const base = {
     authored_space: "blockbench_animation_controller" as const,
-    controller: {
+  controller: {
       uuid: controller.uuid,
       name: controller.name,
       path: controller.path || null,
@@ -274,6 +278,26 @@ function inspectChannel(animator: BoneAnimator, channel: TransformChannel) {
 function normalizePreEffectScript(script: string | undefined): string | null {
   if (!script || !script.replace(/[\n\s;.]+/g, "")) return null;
   return script.match(/;$/) ? script : `${script};`;
+}
+
+export function countEffectiveEffectDataPoints(
+  points: readonly { effect?: string | null }[]
+): number {
+  return points.reduce((count, point) => count + (point.effect ? 1 : 0), 0);
+}
+
+export function countEffectiveTimelineScriptLines(
+  points: readonly { script?: string | null }[]
+): number {
+  return points.reduce((count, point) => {
+    if (!point.script) return count;
+    return (
+      count +
+      point.script
+        .split("\n")
+        .filter((line) => Boolean(line.replace(/[\n\s;.]+/g, ""))).length
+    );
+  }, 0);
 }
 
 function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean) {
@@ -361,7 +385,8 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     particle: {
       keyframe_count: inspectedKeyframes.length,
       particle_count: inspectedKeyframes.reduce(
-        (count, keyframe) => count + keyframe.particles.length,
+        (count, keyframe) =>
+          count + countEffectiveEffectDataPoints(keyframe.particles),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedKeyframes } : {}),
@@ -369,7 +394,7 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     sound: {
       keyframe_count: inspectedSoundKeyframes.length,
       sound_count: inspectedSoundKeyframes.reduce(
-        (count, keyframe) => count + keyframe.sounds.length,
+        (count, keyframe) => count + countEffectiveEffectDataPoints(keyframe.sounds),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedSoundKeyframes } : {}),
@@ -377,7 +402,8 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     timeline: {
       keyframe_count: inspectedTimelineKeyframes.length,
       script_count: inspectedTimelineKeyframes.reduce(
-        (count, keyframe) => count + keyframe.scripts.length,
+        (count, keyframe) =>
+          count + countEffectiveTimelineScriptLines(keyframe.scripts),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedTimelineKeyframes } : {}),
