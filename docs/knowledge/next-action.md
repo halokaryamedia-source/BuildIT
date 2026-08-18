@@ -78,7 +78,9 @@ bun run docs:build
 bun run docs:check
 ```
 
-Repo-owned `bun-tooling` provides no alternate runtime path and explicitly requires unavailable proof to remain reported rather than inferred. Current execution environment has no Bun, no preloaded Bun container/image, no `gh` workflow-dispatch path, and no usable binary/package download transport. Do not create a temporary workflow/branch, hand-edit generated API docs, weaken verification, or repeatedly probe equivalent transport paths.
+**Environment boundary:** the user's workstation is Windows and is **not** required for this current verification step. The repo-owned `.github/workflows/mcp-verify.yml` runs the canonical verifier on `ubuntu-latest`; that CI runner is the Linux environment relevant to this gate. The assistant sandbox may also be Linux-like but is not repository authority. Do not ask the user to install/use a Linux Bun binary for this gate, and do not conflate CI/sandbox OS with the user's Windows desktop.
+
+Repo-owned `bun-tooling` provides no alternate runtime path and explicitly requires unavailable proof to remain reported rather than inferred. Current assistant execution environment has no Bun, no preloaded Bun container/image, no `gh` workflow-dispatch path, and no usable binary/package download transport. Do not create a temporary workflow/branch, hand-edit generated API docs, weaken verification, or repeatedly probe equivalent transport paths.
 
 Generated artifacts intentionally remain outside the orphan candidate until canonical generation is possible:
 - `mcp/docs/api.json`
@@ -87,7 +89,7 @@ Generated artifacts intentionally remain outside the orphan candidate until cano
 
 ## Next Step
 
-1. Obtain a Bun/docs-capable execution path without changing repository architecture.
+1. Use the repo-owned GitHub Actions `ubuntu-latest` verifier (or another repository-authorized Bun-capable execution surface) without involving the user's Windows desktop.
 2. Reproduce `8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c` from the then-current `Local` as one logical delivery.
 3. Run the canonical gate. `measure:surface` must confirm 64 tools and show whether any current character ceiling actually needs adjustment; do not inflate ceilings speculatively.
 4. Regenerate prompt/API artifacts through canonical generators and include them in the same verified delivery.
