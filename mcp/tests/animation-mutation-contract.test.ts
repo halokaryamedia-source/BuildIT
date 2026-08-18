@@ -342,7 +342,7 @@ describe("animation mutation contract", () => {
     expect(offsetBlock).toContain("if (movesTime) {");
     expect(offsetBlock).toContain("kf.replaceOthers(replacedKeyframes);");
     expect(offsetBlock).toContain("Undo.addKeyframeCasualties(replacedKeyframes);");
-    expect(offsetBlock).toContain("AnimationItem.selected!.setLength();");
+    expect(offsetBlock).toContain("animation.setLength();");
     expect(offsetBlock.indexOf("kf.replaceOthers(replacedKeyframes);")).toBeLessThan(
       offsetBlock.indexOf("Undo.addKeyframeCasualties(replacedKeyframes);")
     );
