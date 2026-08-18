@@ -1,78 +1,101 @@
 ---
 name: blockit-bedrock-animation
-description: Minecraft Bedrock Entity animation specialist for inspection, keyframes, interpolation, rig, timeline, batch/copy, and mapped effects.
+description: Minecraft Bedrock Entity animation specialist for authored motion, Molang layers, controllers, effects, rig, timeline, and bounded correction.
 ---
 
 # BlockIT Bedrock Animation
 
-Own animation execution after required geometry/hierarchy/pivots are suitable.
+Own animation after participating hierarchy/pivots are suitable. Motion intent and causality outrank keyframe count or curve complexity.
 
 ## Direct Routing
 
-Route from intent + known state:
-
 ```text
 new animation                         → create_animation
-existing animation/controller unknown → inspect_animation
-controller create/edit/state machine  → manage_animation_controller
-create/edit/delete transform keyframe → manage_keyframes
-interpolation / Bezier                → animation_graph_editor
-Group/bone structure or pivot edit    → bone_rigging
-playback/time/length/FPS/loop         → animation_timeline
-coherent multi-key timing/value edit  → batch_keyframe_operations
+unknown animation/controller          → inspect_animation
+controller state/composition          → manage_animation_controller
+transform keyframes / Molang values   → manage_keyframes
+curve change with evidence            → animation_graph_editor
+bone/pivot/IK                         → bone_rigging
+time/length/FPS/once-loop-hold        → animation_timeline
+coherent timing/value batch           → batch_keyframe_operations
 explicit copy/paste/mirror            → animation_copy_paste
-mapped particles / sounds             → create_animation / inspect_animation effects
+new-animation particle/sound          → create_animation
 ```
 
-Reuse known Group/bone/controller/state UUIDs. Use `get_project_info` only for unknown/stale lifecycle or a missing needed field. Use `list_outline` only when participating identity/hierarchy is unknown. Never guess duplicate bone names.
+Reuse fresh UUID/state; do not broad-read known hierarchy.
 
-## Deferred Spec Loading
+## Motion Design Contract
 
-Missing spec → load exact tool name + short action. Loaded spec → call directly. One reformulation keeps the same tool name.
-
-## Stage / Anti-Loop
-
-Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
-
-- New animation: establish motion/bones/pivots, author only needed keys, then verify relevant motion.
-- Existing edit: inspect once when authored state is unknown, diagnose bone/channel/time, mutate that state, then verify affected motion.
-- Controller edit: batch coherent operations; reuse `manage_animation_controller` returned IDs/state instead of immediate re-inspection.
-- Known controller state: use `inspect_animation(state=...)` only when focused detail is missing. Focused output is state-only, not a second full controller summary.
-- Focused state detail returns exact transition, animation-link, sound, and particle UUIDs; reuse them instead of rediscovering the controller.
-- Known participating identity/state must not fall back to broad project/outline reads.
-- Validation failure keeps the selected capability unless state became stale/unknown.
-- Do not re-inspect a whole animation/controller when returned state plus focused evidence is sufficient.
-
-## Readiness
-
-For end-to-end reference work, production animation starts only after dependent geometry and participating Group/bone hierarchy/pivots are suitable. Material geometry `FAIL`, attachment trouble, or pivot uncertainty returns upstream; unresolved required evidence may become `BLOCKED`.
-
-For animation-only revision on an **existing asset**, current geometry is the user-provided baseline when remodelling is out of scope; this **does not certify reference accuracy**. Inspect only participating bones/pivots and animation state needed by the motion.
-
-A small diagnostic pose/playback may test pivot, attachment, or transform direction. If material geometry/hierarchy/pivots change, treat animation on affected bones as stale until affected keys, arcs, attachment, clipping, and neutral return are rechecked.
-
-No keyframe-count/FPS/Bezier-complexity target. `manage_keyframes` preserves explicit Molang transform strings; do not guess-bake them.
-
-## Direct Animation Surface
+Before production keys define only what matters:
 
 ```text
-create_animation
-inspect_animation
-manage_animation_controller
-manage_keyframes
-animation_graph_editor
-bone_rigging
-animation_timeline
-batch_keyframe_operations
-animation_copy_paste
+archetype + intent
+duration / snapping intent
+primary driver bone(s)
+counter-motion / stabilizers
+followers / secondary chains
+phase + contact / attachment invariants
+authored-key vs Molang ownership
+causal sound/particle event(s)
+loop seam or neutral/handoff requirement
 ```
 
-Do not make `animation_timeline.select_range` a core-correctness dependency; prefer explicit keyframe/time ranges. Particle/sound effects use `create_animation` effect maps and `inspect_animation.effects`.
+Archetypes are categories, **not presets**: `PROCEDURAL_LAYER | LOOP_ORGANIC | LOCOMOTION | ACTION | MECHANICAL | HOLD_POSE | IDLE_VARIANT | FIRST_PERSON_ACTION | THIRD_PERSON_ACTION`.
+
+No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Prefer the simplest interpolation that preserves the intended motion; professional sample evidence does not justify curve complexity by default.
+
+## Procedural Math / Molang
+
+Use Molang for continuous, cyclic, reactive, or naturally parameterized motion; use explicit authored poses for identity-critical action, impact, contact, silhouette, and deliberate acting. `manage_keyframes` preserves authored Molang text; never evaluate it as gameplay truth or invent unknown query/state values.
+
+Choose the driver by cause:
+
+```text
+q.anim_time                 → time-driven cycle/response
+q.modified_distance_moved   → travel-linked phase
+q.modified_move_speed       → speed/intensity response
+controller blend value      → conditional/continuous layer weight
+```
+
+For periodic motion track `base + amplitude + frequency + phase`; trig uses degrees. For a chain, define `driver → delayed followers`, phase progression, and amplitude hierarchy. A mathematical gait relation is only a starting constraint: mirror/copy is not a gait generator, contact phases remain authored, and run is not merely faster walk.
+
+## Action / Weight / Effects
+
+When material to the action:
+
+```text
+anticipation
+→ acceleration / action
+→ impact or contact
+→ overshoot / follow-through
+→ recovery
+→ neutral or controller handoff
+```
+
+Use counter-motion/stabilization when the rig and intended weight require it. Secondary parts normally lag their driver.
+
+Bind each particle/sound to a named **causal event** such as release, contact, ignition, landing, start, or stop. Do not default effects to time zero unless state/animation start is the actual cause.
+
+## Authoring / Verification
+
+Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`. Existing-asset geometry can be a scope baseline without certifying accuracy. Geometry/hierarchy/pivot changes invalidate only affected animation assumptions.
+
+Review affected motion in this order:
+
+```text
+pose/readability
+→ timing/phase
+→ weight/contact
+→ attachment/clipping
+→ secondary motion
+→ effect synchronization
+→ loop seam / neutral return
+```
+
+Correction verdict is `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`. Do not use an animation quality score.
 
 ## Protected Gaps
 
-Existing-animation sound/timeline mutation, controller state particle/sound + blend-curve mutation, and bone-binding expressions remain protected. Do not route them through `risky_eval` or generic UI actions.
+Existing-animation effect mutation, controller-state particle/sound mutation, controller blend-curve mutation, and bone-binding expressions remain protected until their public/runtime owner is implemented and verified. Do not route them through `risky_eval` or generic UI actions.
 
-## Verification
-
-Verify only affected attachment, transform arc, clipping, effects, and neutral return. Preview only relevant motion. Controller inspection/mutation is authored-state evidence only; controller execution/in-game behavior requires direct runtime proof.
+Controller authored-state inspection/mutation is not proof of controller execution in Minecraft. Live playback/visual quality needs direct runtime evidence when explicitly activated.
