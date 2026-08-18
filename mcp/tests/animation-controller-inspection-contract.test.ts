@@ -51,6 +51,25 @@ describe("AnimationController inspection closure", () => {
     expect(focusedState).toContain("uuid: link.uuid");
   });
 
+  test("authored effect inspection exposes D1 target identity and timeline channel", async () => {
+    expect(
+      inspectAnimationParameters.parse({ include_effect_keyframes: true })
+        .include_effect_keyframes
+    ).toBe(true);
+
+    const source = await Bun.file("server/tools/animation-inspection.ts").text();
+    const start = source.indexOf("function inspectParticleEffects");
+    const end = source.indexOf("function summarizeBoneAnimators", start);
+    const effects = source.slice(start, end);
+
+    expect(effects).toContain("existingEffects.timeline");
+    expect(effects).toContain("inspectedTimelineKeyframes");
+    expect(effects).toContain("script_count");
+    expect(effects).toContain("data_point_index: dataPointIndex");
+    expect((effects.match(/data_point_index: dataPointIndex/g) ?? []).length).toBe(3);
+    expect(effects).not.toContain("data_point_uuid");
+  });
+
   test("focused authored-bone inspection omits animation-wide summaries", async () => {
     const source = await Bun.file("server/tools/animation-inspection.ts").text();
     const executeStart = source.indexOf("async execute({ animation_id, bone, state, include_effect_keyframes })");

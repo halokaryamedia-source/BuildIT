@@ -292,6 +292,11 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
         sound_count: 0,
         ...(includeKeyframes ? { keyframes: [] } : {}),
       },
+      timeline: {
+        keyframe_count: 0,
+        script_count: 0,
+        ...(includeKeyframes ? { keyframes: [] } : {}),
+      },
     };
   }
   if (!(existingEffects instanceof EffectAnimator)) {
@@ -306,9 +311,10 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
   const inspectedKeyframes = keyframes.map((keyframe) => ({
     uuid: keyframe.uuid,
     time: keyframe.time,
-    particles: keyframe.data_points.map((dataPoint) => {
+    particles: keyframe.data_points.map((dataPoint, dataPointIndex) => {
       const particle = dataPoint as EffectDataPoint;
       return {
+        data_point_index: dataPointIndex,
         effect: particle.effect || null,
         locator: particle.locator || null,
         bind_to_actor: particle.bind_to_actor === false ? false : null,
@@ -322,9 +328,27 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
   const inspectedSoundKeyframes = soundKeyframes.map((keyframe) => ({
     uuid: keyframe.uuid,
     time: keyframe.time,
-    sounds: keyframe.data_points.map((dataPoint) => {
+    sounds: keyframe.data_points.map((dataPoint, dataPointIndex) => {
       const sound = dataPoint as EffectDataPoint;
-      return { effect: sound.effect || null, locator: sound.locator || null };
+      return {
+        data_point_index: dataPointIndex,
+        effect: sound.effect || null,
+        locator: sound.locator || null,
+      };
+    }),
+  }));
+  const timelineKeyframes = ((existingEffects.timeline as _Keyframe[] | undefined) ?? [])
+    .slice()
+    .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
+  const inspectedTimelineKeyframes = timelineKeyframes.map((keyframe) => ({
+    uuid: keyframe.uuid,
+    time: keyframe.time,
+    scripts: keyframe.data_points.map((dataPoint, dataPointIndex) => {
+      const timeline = dataPoint as EffectDataPoint;
+      return {
+        data_point_index: dataPointIndex,
+        script: typeof timeline.script === "string" ? timeline.script : null,
+      };
     }),
   }));
 
@@ -349,6 +373,14 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedSoundKeyframes } : {}),
+    },
+    timeline: {
+      keyframe_count: inspectedTimelineKeyframes.length,
+      script_count: inspectedTimelineKeyframes.reduce(
+        (count, keyframe) => count + keyframe.scripts.length,
+        0
+      ),
+      ...(includeKeyframes ? { keyframes: inspectedTimelineKeyframes } : {}),
     },
   };
 }
