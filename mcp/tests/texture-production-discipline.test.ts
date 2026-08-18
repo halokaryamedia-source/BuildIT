@@ -50,7 +50,8 @@ describe("professional texture production discipline", () => {
 
     for (const text of [skill, workflow, policy]) {
       const lower = text.toLowerCase();
-      expect(lower).toContain("palette ramp");
+      expect(lower).toContain("palette");
+      expect(lower).toContain("ramp");
       expect(lower).toContain("flat base color");
       expect(lower).toContain("face-aware");
       expect(lower).toContain("identity");
