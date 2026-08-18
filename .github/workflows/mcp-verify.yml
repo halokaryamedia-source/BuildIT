@@ -73,4 +73,20 @@ jobs:
         run: bun run build
 
       - name: Generated docs freshness
+        id: docs_check
         run: bun run docs:check
+
+      - name: Regenerate stale docs for diagnostic artifact
+        if: ${{ failure() && steps.docs_check.outcome == 'failure' }}
+        run: bun run docs:build
+
+      - name: Upload regenerated docs diagnostic
+        if: ${{ failure() && steps.docs_check.outcome == 'failure' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: canonical-generated-docs
+          path: |
+            mcp/docs/api.json
+            mcp/docs/index.html
+          if-no-files-found: error
+          retention-days: 1
