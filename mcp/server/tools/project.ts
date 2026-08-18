@@ -5,6 +5,8 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
+export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
+
 export const createProjectParameters = z.object({
   name: z.string().min(1).describe("Non-empty project name."),
 }).strict();
@@ -100,16 +102,23 @@ export function registerProjectTools() {
       }
 
       Project!.name = name;
+      Project!.texture_width = DEFAULT_BEDROCK_UV_RESOLUTION;
+      Project!.texture_height = DEFAULT_BEDROCK_UV_RESOLUTION;
+
       const result = {
         project: currentProjectLifecycle(),
         format: { id: "bedrock" as const },
+        resolution: {
+          texture_width: Project!.texture_width ?? null,
+          texture_height: Project!.texture_height ?? null,
+        },
       };
 
       return {
         content: [
           {
             type: "text" as const,
-            text: `Created Bedrock project "${result.project.name}" (${result.project.uuid}).`,
+            text: `Created Bedrock project "${result.project.name}" (${result.project.uuid}) with ${result.resolution.texture_width}×${result.resolution.texture_height} logical UV canvas.`,
           },
         ],
         structuredContent: result,

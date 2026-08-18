@@ -67,20 +67,54 @@ Primary-form hierarchy/pivots may exist before primary `PASS`; secondary geometr
 
 ## Texture Design Contract
 
-Before pixels define `palette roles`, `material zones`, `value hierarchy`, one `face-aware` shading language, mirror/orientation constraints, seam direction, `detail budget`, and PBR / `material_instance` meaning. Reject random high-contrast noise.
+Normal AI-authored Bedrock Entity production uses **one color atlas PNG for the whole model**. Never create separate base-color textures per body part/Cube/material zone. If texture state is unknown, call `list_textures` once: reuse one existing color atlas; create exactly one only when none exists; if several color textures already exist, do not add another until explicit variants/PBR are distinguished from accidental fragmentation. PBR normal/height/MER channels do not change the one-base-color-atlas rule.
+
+New projects use a **128×128 logical UV baseline**. Create the production color PNG with explicit square `width`/`height` starting at 128×128 and scale upward only in clean 128-based sizes when detail needs it; prefer the smallest sufficient canvas and do not rely on `create_texture`'s generic small default. Existing/user-supplied assets may keep authored nonstandard resolution.
+
+Before pixels define:
+
+```text
+one base-color atlas + chosen 128-based canvas
+palette roles per material family
+material zones: Cube/face + mapped region
+value hierarchy / part separation
+one face-aware shading language
+hard-pixel / edge language + alpha intent
+directional/asymmetric marks + mirror constraints
+seam direction / identity-critical marks
+detail budget: identity > material > optional wear/noise
+required PBR / material_instance meaning
+```
+
+Use a controlled palette ramp per material family, not a flat global palette. A flat base color is not completion when the reference/style shows form shading, material variation, edge treatment, pattern, or identity detail. Prefer stepped pixel value ramps and hard texel edges for Minecraft style; continuous smooth gradient or soft/anti-aliased painting is only justified by the reference. Reject random high-contrast noise.
+
+### UV / Atlas Gate
+
+Do not paint production pixels until the intended single-atlas UV state is usable:
+
+```text
+single color atlas selected
+→ important faces mapped inside intended canvas
+→ uv_offset / mirror_uv / autouv final enough for painting
+→ accidental overlap rejected; intentional repeat/mirror reuse allowed
+→ asymmetric/directional details have suitable orientation
+→ seam-critical regions identified
+```
+
+Do not optimize packing percentage as a quality score. Do not move UVs after substantial painting without a concrete reason.
 
 ```text
 MAP → inspect_element; require mapping_state=mapped + paintable=true; reuse texture_pixels.rect + flip_u/flip_v
-BASE PASS → bounded draw_shape_tool
-VALUE / FORM PASS → controlled face-aware variation
-IDENTITY PASS → bounded region/exact pixels
-SECONDARY DETAIL PASS → purposeful detail only
+BASE PASS → bounded draw_shape_tool for major material regions
+VALUE / FORM PASS → controlled face-aware variation + material palette ramps; flat fill alone cannot pass when form is visible
+IDENTITY PASS → bounded region / paint_with_brush exact-pixel path for required markings/features
+SECONDARY DETAIL PASS → purposeful material detail only; stop before noise
 VERIFY → fresh atlas + model-view evidence
 ```
 
 Tool success is not visual `PASS`. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
 
-Texture convergence requires actual approved reference + fresh `get_texture` atlas + `capture_model_views`; mutation stales affected evidence.
+Texture convergence requires actual approved reference + fresh `get_texture` atlas + `capture_model_views`; mutation stales affected evidence. Review structure before microdetail: UV/region placement → palette/material separation → value/form shading → seam/orientation → identity marks → detail density.
 
 ```text
 Texture Difference Table
@@ -104,7 +138,7 @@ project unknown/absent → get_project_info or create_project as appropriate
 known project → grounded reference → Semantic Form + Primary Form → place_cube / add_group
 judgeable form → capture_model_views
 bounded geometry mismatch → inspect_element only if needed → modify_cube / modify_cubes_batch
-downstream texture → Texture Design Contract → mapped/bounded texturing
+downstream texture → Texture Design Contract → single-atlas UV gate → mapped/bounded texturing
 downstream animation → active animation specialist
 requested deliverable → export_model
 ```

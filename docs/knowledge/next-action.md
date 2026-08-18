@@ -8,6 +8,7 @@ Updated: 2026-08-18
 PRELOCAL_CONTROLLER_MUTATION_READY
 TEXTURING_T0_T4_CI_VERIFIED
 TEXTURING_T5_IMPLEMENTED_CI_UNVERIFIED
+TEXTURING_T6_PRODUCTION_DISCIPLINE_SOURCE_IMPLEMENTED
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED
 ```
@@ -16,9 +17,9 @@ Working branch: **`Local` only**.
 
 Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5**. Production retains bounded AnimationController mutation and the existing 63-tool default Bedrock surface.
 
-Installed-plugin freshness, live controller execution, current desktop Blockbench/model behavior, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
+Installed-plugin freshness, live controller execution, current desktop Blockbench/model behavior, persistence, actual runtime/call-efficiency, and visual texture-quality improvement remain **LOCAL PROOF REQUIRED**.
 
-**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; the Experimental browser proof below does not upgrade desktop MCP claims.**
+**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; static/CI proof cannot upgrade that claim.**
 
 ## Active Boundary
 
@@ -75,20 +76,9 @@ Native Painter lifecycle owns direct stroke Undo; brush parameters and connected
 
 **T4 texture design reasoning and authoring procedure — CI VERIFIED**
 
-Active texturing skill + runtime prompt require a **Texture Design Contract** before production pixels:
+Active texturing skill + runtime prompt require a **Texture Design Contract** before production pixels and route mapped regions through T2/T3 instead of mentally re-deriving atlas coordinates.
 
-```text
-palette roles
-material zones: Cube/face + mapped region
-value hierarchy / part separation
-face-aware shading language
-directional/asymmetric marks + mirror constraints
-seam-critical edges / pattern direction
-detail budget: identity > material > optional wear/noise
-required PBR / material_instance meaning
-```
-
-Authoring follows:
+Authoring retains:
 
 ```text
 MAP
@@ -99,7 +89,7 @@ MAP
 → VERIFY atlas + model-view evidence
 ```
 
-T4 reuses T2 mapped state and T3 bounded authoring instead of mentally re-deriving atlas coordinates. Noise-first painting is rejected. Local mismatch taxonomy is:
+Noise-first painting is rejected. Local mismatch taxonomy remains:
 
 ```text
 REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY
@@ -118,14 +108,38 @@ actual approved reference + fresh atlas + affected model views
 → IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Repeated failure of the same causal correction direction without new evidence stops as `BLOCKED`. Do not mark T5 CI VERIFIED until an exact terminal workflow proof is available.
+Repeated failure of the same causal correction direction without new evidence stops as `BLOCKED`.
 
-Regression owners:
+**T6 professional texture production discipline — SOURCE IMPLEMENTED**
+
+The current user-supplied professional samples were audited read-only and compared against T0–T5. The user explicitly chose a simpler AI-authoring standard instead of reproducing human-authored custom canvas choices.
+
+T6 now requires:
+
+```text
+new Bedrock project logical UV baseline = 128×128
+production base color = one atlas PNG for the whole model
+color PNG = explicit 128-based square canvas; smallest sufficient size
+no per-part/Cube/material-zone base-color texture fragmentation
+UV / Atlas Gate before production painting
+material-family palette ramps
+face-aware value/form shading
+identity-critical marks before decorative microdetail
+hard-pixel Minecraft treatment unless the reference requires softness
+flat base color cannot pass when supported form/material/detail evidence exists
+```
+
+The existing tool surface is retained. `create_project` now establishes the 128×128 logical UV baseline and returns it as continuation state. No new UV planner, auto-packer, texture generator, quality score, profile, or tool family was added.
+
+Regression owner added:
+- `mcp/tests/texture-production-discipline.test.ts`
+
+Existing regression owners remain:
 - `mcp/tests/texture-authoring-contract.test.ts`
 - `mcp/tests/texture-design-reasoning.test.ts`
 - `mcp/tests/texture-visual-convergence.test.ts`
 
-Primary texturing commits:
+Primary retained texturing commits:
 
 ```text
 4ec722f61a00dfcb4e9fda67320ee28feacf31ee  T0/T1
@@ -137,17 +151,26 @@ b88147ba78c457f6b010aa9181ebdcf66f9b0af1  T3 type closure
 392892025126ac63e82e6485fead2275ee18f55b  T5 convergence contract
 ```
 
-Final T4 proof:
+Final recorded T4 proof:
 - MCP Verify `32065026451` — typecheck, contract tests, 63-tool surface, production build, docs freshness PASS.
 - Repository Verify `32065026419` — repository routing/policy PASS.
 
-This remains **source/CI proof only** for T0–T4 and **source implementation only** for T5. Actual desktop Painter behavior, UV persistence, and visual texture quality remain LOCAL PROOF REQUIRED when materially claimed.
+Actual desktop Painter behavior, UV persistence, single-atlas execution, and visual texture quality remain LOCAL PROOF REQUIRED when materially claimed.
 
 ## Professional Sample Research Context
 
-A prior forensic study exists in Git history at commit `fd7b0e7e3286fc9b198b14a619abd733e831702c` (`professional-sample-forensic-audit-2026-08-13.md`). It analyzed nine supplied professional `.bbmodel` assets and established useful evidence around Box UV, explicit `uv_offset`, `mirror_uv`, logical-vs-bitmap resolution, material/atlas choices, geometry ownership, and animation patterns.
+Historical forensic evidence remains in Git history at commit `fd7b0e7e3286fc9b198b14a619abd733e831702c` (`professional-sample-forensic-audit-2026-08-13.md`). A fresh user-supplied sample set was also audited read-only on 2026-08-18 for texture/UV evidence.
 
-The original `.bbmodel` sample files are **not present in the current `Local` or `main` tree**; only the learned policy/source changes survive. Do not assume those original assets are available.
+Generalizable evidence retained from the studies includes intentional Box-UV placement, explicit `uv_offset`, deliberate mirror/reuse, material-aware palette/value structure, face-aware shading, identity-weighted pixel detail, and the fact that professional quality does not require PBR or maximum atlas packing.
+
+The user's current authoring decision overrides copying sample-specific custom resolutions:
+
+```text
+AI production standard → 128 logical baseline + simple 128-based color canvas
+existing professional asset → preserve/interpret its authored resolution as evidence
+```
+
+Do not turn samples into presets, asset-specific recipes, fixed atlas templates, material-count rules, generic auto-texture generators, quality scores, or runtime profiles.
 
 ## Current Repository Closure
 
@@ -157,37 +180,8 @@ U7  No change required — no speculative profile/router/runtime-prompt redesign
 
 Protected production gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
-## Next Step — WAIT FOR USER-SUPPLIED TEXTURING SAMPLES
+## Next Step
 
-**Do not start local/runtime testing yet.** The user will move to a new chat and provide professional Blockbench sample files for a deeper texturing study.
-
-On receipt of those samples, first perform a **read-only forensic texturing audit** before proposing implementation changes. Study the supplied `.bbmodel` data and available texture assets for evidence such as:
-
-```text
-UV mode / authored atlas layout / uv_offset / mirror reuse
-logical UV resolution vs physical bitmap dimensions
-palette hierarchy and color-family structure
-material zones and part separation
-face-aware value/shading language
-pixel clustering vs random noise
-seam continuity and pattern direction
-identity-critical markings
-detail density and readable Minecraft pixel scale
-texture variants / shared atlas layouts
-PBR or material_instance usage when actually present
-```
-
-Compare the new evidence against the historical nine-sample forensic findings and current **T0–T5 texturing architecture**. Extract only generalizable professional patterns.
-
-Decision rule after the audit:
-
-```text
-sample evidence
-→ identify concrete remaining texturing weakness
-→ map it to T2/T3 runtime, T4 design reasoning, or T5 convergence
-→ propose the smallest evidence-backed improvement
-```
-
-Do **not** turn samples into presets, asset-specific recipes, fixed atlas templates, material-count rules, generic auto-texture generators, quality scores, or new runtime profiles. Do not expand geometry/animation scope unless required to interpret the texture evidence.
+Current T6 source must satisfy the normal MCP/repository verification gates. After source verification, **live texture-quality claims still require an explicit local Blockbench texture acceptance run**; do not start that run unless the user explicitly requests it.
 
 Experimental remains paused unless explicitly reopened.
