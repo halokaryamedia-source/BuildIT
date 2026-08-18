@@ -839,6 +839,12 @@ export function countAnimationClipboardKeyframes(
     0
   );
 }
+export function keyframeBelongsToAnimation(
+  keyframe: { animator?: { animation?: unknown } | null },
+  animation: unknown
+): boolean {
+  return keyframe.animator?.animation === animation;
+}
 export function resolveUniqueKeyframeMatchIndexes(
   existingTimes: readonly number[],
   requestedTimes: readonly number[],
@@ -1870,10 +1876,7 @@ createTool(
     ...animationToolDocs[4],
     parameters: animationTimelineParameters,
     async execute({ action, time, length, fps, loop_mode, range }) {
-      const animation = AnimationItem.selected;
-      if (!animation) {
-        throw new Error("No animation selected.");
-      }
+      const animation = resolveAnimation();
 
       const runPersistentAnimationEdit = (
         label: string,
@@ -1956,13 +1959,15 @@ createTool(
               "Range parameter required for select_range action."
             );
           }
-          Timeline.keyframes.forEach((kf) => {
-            if (kf.time >= range.start && kf.time <= range.end) {
-              kf.select();
-            } else {
-              kf.selected = false;
-            }
-          });
+          (Timeline.keyframes as _Keyframe[])
+            .filter((kf) => keyframeBelongsToAnimation(kf, animation))
+            .forEach((kf) => {
+              if (kf.time >= range.start && kf.time <= range.end) {
+                kf.select();
+              } else {
+                kf.selected = false;
+              }
+            });
           result = `Selected keyframes between ${range.start} and ${range.end} seconds`;
           break;
       }
@@ -1981,26 +1986,30 @@ createTool(
     ...animationToolDocs[5],
     parameters: batchKeyframeOperationsParameters,
     async execute({ selection, range, pattern, operation, parameters = {} }) {
-      if (!AnimationItem.selected) {
-        throw new Error("No animation selected.");
-      }
+      const animation = resolveAnimation();
+      const targetTimelineKeyframes = (Timeline.keyframes as _Keyframe[]).filter(
+        (kf) => keyframeBelongsToAnimation(kf, animation)
+      );
+      const targetSelectedKeyframes = (Timeline.selected as _Keyframe[]).filter(
+        (kf) => keyframeBelongsToAnimation(kf, animation)
+      );
 
-      let keyframes: any[] = [];
+      let keyframes: _Keyframe[] = [];
 
       switch (selection) {
         case "all":
-          keyframes = Timeline.keyframes;
+          keyframes = targetTimelineKeyframes;
           break;
 
         case "selected":
-          keyframes = Timeline.selected;
+          keyframes = targetSelectedKeyframes;
           break;
 
         case "range":
           if (!range) {
             throw new Error("Range required for range selection.");
           }
-          keyframes = Timeline.keyframes.filter(
+          keyframes = targetTimelineKeyframes.filter(
             (kf) => kf.time >= range.start && kf.time <= range.end
           );
           break;
@@ -2009,7 +2018,7 @@ createTool(
           if (!pattern) {
             throw new Error("Pattern required for pattern selection.");
           }
-          keyframes = Timeline.keyframes.filter((kf) => {
+          keyframes = targetTimelineKeyframes.filter((kf) => {
             const relativeTime = kf.time - pattern.offset;
             return Math.abs(relativeTime % pattern.interval) < 0.001;
           });
@@ -2082,7 +2091,7 @@ createTool(
                 kf.replaceOthers(replacedKeyframes);
               });
               Undo.addKeyframeCasualties(replacedKeyframes);
-              AnimationItem.selected!.setLength();
+              animation.setLength();
             }
           } else {
             const mirrorAxis = parameters.mirror_axis!;
@@ -2124,7 +2133,6 @@ createTool(
       }
 
       if (operation === "bake") {
-        const animation = AnimationItem.selected;
         const interval =
           parameters.bake_interval ?? 1 / animation.snapping;
         if (!Number.isFinite(interval) || interval <= 0) {
@@ -2243,7 +2251,6 @@ createTool(
       }
 
       if (operation === "scale") {
-        const animation = AnimationItem.selected;
         const pivot = parameters.scale_pivot ?? 0;
         const factor = parameters.scale_factor ?? 1;
         if (!Number.isFinite(pivot)) {
