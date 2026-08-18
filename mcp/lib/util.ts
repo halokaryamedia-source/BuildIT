@@ -146,13 +146,20 @@ export function setBarItemValue(id: string, value: unknown): void {
  * tools, which historically act on `Texture.selected` regardless of their
  * `texture_id` argument, target the intended texture.
  *
- * If `id` is omitted, the currently selected texture is used as-is. Explicit
- * references resolve exact UUID first, then exact texture ID, then exact name
- * only when unique. Ambiguous or missing explicit references fail before the
- * active texture selection changes.
+ * With exactly one loaded texture, omission may use selected/default state.
+ * With multiple textures (for example PBR support channels or explicit
+ * variants), callers must pass an explicit texture identity so production
+ * painting cannot drift to whichever panel texture happens to be selected.
  */
 export function getAndActivateTexture(id?: string): Texture {
   if (!id) {
+    const available = Project?.textures ?? Texture.all;
+    if (available.length > 1) {
+      throw new Error(
+        "Multiple textures are loaded. Pass texture_id explicitly so painting targets the intended base-color atlas or support channel instead of implicit selected/default state."
+      );
+    }
+
     const active = Texture.selected ?? Texture.getDefault();
     if (!active) {
       throw new Error(

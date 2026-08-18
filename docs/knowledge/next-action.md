@@ -9,17 +9,20 @@ PRELOCAL_CONTROLLER_MUTATION_READY
 TEXTURING_T0_T4_CI_VERIFIED
 TEXTURING_T5_IMPLEMENTED_CI_UNVERIFIED
 TEXTURING_T6_PRODUCTION_DISCIPLINE_SOURCE_IMPLEMENTED
+TEXTURING_T7_T17_DEEP_HARDENING_SOURCE_IMPLEMENTED
+TEXTURING_T18_NO_CHANGE_REQUIRED
 NO LOCAL RUN ACTIVE
-LOCAL ACCEPTANCE DEFERRED
+LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
 Working branch: **`Local` only**.
 
-Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5**. Production retains bounded AnimationController mutation and the existing 63-tool default Bedrock surface.
+Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 decisions**. Default Bedrock surface remains 63 tools; no new texture tool/profile/router.
 
-Installed-plugin freshness, live controller execution, current desktop Blockbench/model behavior, persistence, actual runtime/call-efficiency, and visual texture-quality improvement remain **LOCAL PROOF REQUIRED**.
+Actual desktop Painter behavior, UV persistence, visual quality, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
+**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof.**
+**Experimental browser proof below does not upgrade desktop MCP claims.**
 
-**Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof; static/CI proof cannot upgrade that claim.**
 
 ## Active Boundary
 
@@ -27,150 +30,139 @@ Installed-plugin freshness, live controller execution, current desktop Blockbenc
 current user instruction
 → current source + relevant proof
 → AGENTS.md + GITHUB_RULES.md
-→ this continuation owner when current work is resumed
+→ this continuation owner
 ```
 
-Local acceptance remains explicitly deferred. `docs/knowledge/operations/local-acceptance-runbook.md` is inactive until a fresh explicit user instruction reactivates it.
+The user explicitly does **not** plan local testing in the near term. Do not route UV/texture continuation to local acceptance, do not make it the next step, and do not repeatedly recommend it. `docs/knowledge/operations/local-acceptance-runbook.md` remains inactive until a fresh explicit user instruction reactivates it.
 
-Reference generation remains:
+`Experimental/**` remains **PAUSED BY USER**.
 
-```text
-WAIT FOR FRESH EXPLICIT USER GENERATION COMMAND
-```
+## MCP Texturing State
 
-### Experimental research — PAUSED BY USER
+T0–T4 retain their recorded CI-verified Painter, UV observation/mapping, bounded pixel authoring, and Texture Design Contract baseline. T5 difference-first visual convergence remains implemented; do not upgrade its CI/runtime status without exact matching proof.
 
-`Experimental/README.md` retains the research proof contract.
+### T6 — production discipline
 
-```text
-PAUSED BY USER
-CUBE POC VERIFIED
-DATA-ONLY AUTHORING POC VERIFIED
-CHATGPT VISUAL LOOP VERIFIED
-NOT PRODUCTION
-```
-
-Do not edit/run `Experimental/**` or add new Experimental capability while this pause is active.
-
-### Development reliability — COMPLETE
-
-R1 Write Safety, R2 Verification Quality, R3 CI Efficiency, R4 Proof Reliability, and R5 Supply Chain are retained. Active verification Actions remain immutable-SHA pinned; Bun uses exact `.bun-version` + committed `mcp/bun.lock` with `bun install --frozen-lockfile`.
-
-### Core MCP texturing — ACTIVE
-
-**T0 Painter contract correctness — CI VERIFIED**
-
-Native Painter lifecycle owns direct stroke Undo; brush parameters and connected/separated semantics are honored; empty work is rejected; unsupported synthetic fill tolerance fails closed.
-
-**T1 UV observability — CI VERIFIED**
-
-`inspect_element` exposes Cube UV mode/offset/mirroring and all six per-face UV rectangles, rotations, and enabled state.
-
-**T2 semantic UV/face layout bridge — CI VERIFIED**
-
-`inspect_element` maps enabled Cube faces to effective texture pixels with explicit mapping state, effective texture, `rect`/`size`, mapped corners, and `flip_u`/`flip_v`; invalid/animated/disabled states fail closed.
-
-**T3 deterministic bounded region/pixel authoring — CI VERIFIED**
-
-`draw_shape_tool` supports bounded mapped regions and reports exact affected bounds. `paint_with_brush` keeps native behavior plus a narrow exact-pixel path for explicit safe 1px separated writes. No new tool was added.
-
-**T4 texture design reasoning and authoring procedure — CI VERIFIED**
-
-Active texturing skill + runtime prompt require a **Texture Design Contract** before production pixels and route mapped regions through T2/T3 instead of mentally re-deriving atlas coordinates.
-
-Authoring retains:
+Retained:
 
 ```text
-MAP
-→ BASE PASS
-→ VALUE / FORM PASS
-→ IDENTITY PASS
-→ SECONDARY DETAIL PASS
-→ VERIFY atlas + model-view evidence
-```
-
-Noise-first painting is rejected. Local mismatch taxonomy remains:
-
-```text
-REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY
-UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY
-```
-
-**T5 texture visual convergence — IMPLEMENTED, CI PROOF NOT YET RECORDED**
-
-Commit `392892025126ac63e82e6485fead2275ee18f55b` adds the difference-first texture convergence contract:
-
-```text
-actual approved reference + fresh atlas + affected model views
-→ Texture Difference Table
-→ smallest bounded correction
-→ fresh affected evidence
-→ IMPROVED | UNCHANGED | REGRESSED
-```
-
-Repeated failure of the same causal correction direction without new evidence stops as `BLOCKED`.
-
-**T6 professional texture production discipline — SOURCE IMPLEMENTED**
-
-The current user-supplied professional samples were audited read-only and compared against T0–T5. The user explicitly chose a simpler AI-authoring standard instead of reproducing human-authored custom canvas choices.
-
-T6 now requires:
-
-```text
-new Bedrock project logical UV baseline = 128×128
-production base color = one atlas PNG for the whole model
-color PNG = explicit 128-based square canvas; smallest sufficient size
-no per-part/Cube/material-zone base-color texture fragmentation
-UV / Atlas Gate before production painting
+new AI Bedrock logical UV = 128×128
+one base-color atlas PNG for the whole model
+physical color bitmap = smallest sufficient square 128-based size
+UV / Atlas Gate before production pixels
 material-family palette ramps
-face-aware value/form shading
-identity-critical marks before decorative microdetail
-hard-pixel Minecraft treatment unless the reference requires softness
-flat base color cannot pass when supported form/material/detail evidence exists
+face-aware form shading
+identity before decorative microdetail
+flat fill cannot pass supported form/material/detail requirements
 ```
 
-The existing tool surface is retained. `create_project` now establishes the 128×128 logical UV baseline and returns it as continuation state. No new UV planner, auto-packer, texture generator, quality score, profile, or tool family was added.
+### T7 — atlas lifecycle integrity
 
-Regression owner added:
-- `mcp/tests/texture-production-discipline.test.ts`
+`create_texture` now preflights production role before Undo:
 
-Existing regression owners remain:
+```text
+base color candidate
+→ first atlas only
+→ second normal base-color texture rejected
+
+explicit color variant
+→ explicit non-material TextureGroup
+→ exactly one established base atlas
+→ new blank variant matches base bitmap size
+
+PBR support
+→ normal / height / MER
+→ new blank support texture matches established base bitmap size
+```
+
+Imported existing texture data may preserve authored nonstandard dimensions. This keeps existing assets readable without allowing normal AI production to fragment into per-body-part color textures.
+
+### T8 — global atlas / UV observability
+
+`list_textures` now returns structured atlas inventory plus a bounded global UV audit:
+
+```text
+texture role / group / PBR channel
+default + selected identity
+bitmap dimensions
+logical UV dimensions
+physical pixels per UV unit
+atlas state: none | single | fragmented
+invalid UV
+out-of-bounds UV
+fractional UV
+unlocked Box-UV Cubes
+exact reuse regions
+partial-overlap candidates
+production gate: ready | review_required
+```
+
+Exact reuse is evidence, not automatically an error. Partial overlap is a review candidate, not an auto-packer judgement. Packing percentage remains non-authoritative.
+
+### T9–T10 — UV lock and grid discipline
+
+AI-authored Box UV intended for production painting uses:
+
+```text
+initial native auto UV as provisional mapping
+→ audit/correct uv_offset / mirror_uv
+→ autouv=0
+→ production paint
+```
+
+Integer logical UV is the normal AI pixel-art target. Fractional UV, out-of-bounds state, invalid UV, unlocked Box UV, and unexplained partial overlap block the production UV gate until resolved or explicitly justified.
+
+### T11 — texel-scale contract
+
+Logical UV remains stable at 128×128. Physical bitmap size determines detail density:
+
+```text
+128 bitmap → 1× physical pixels / UV unit
+256 bitmap → 2×
+384 bitmap → 3×
+512 bitmap → 4×
+...
+```
+
+Reasoning scales identity marks, material detail, and microdetail to reported `physical_pixels_per_uv_unit`; a larger bitmap is not itself a quality claim.
+
+### T12–T17 — professional texture language
+
+Active policy/skill/prompt now require, when supported:
+
+```text
+material-specific value + hue ramps
+face-aware form separation
+contact / occlusion darkening where real geometry supports it
+edge treatment appropriate to material
+hard-pixel alpha discipline (normally 0 / 255)
+identity-critical marks before material microdetail
+material detail before optional wear/noise
+```
+
+Texture must reinforce actual geometry; shading must not invent major fake silhouette/volume.
+
+### T18 — focused texture evidence
+
+**No new public crop parameter/tool is justified yet.** Source now provides:
+
+```text
+get_texture → full-atlas image + exact texture/logical/physical density metadata
+list_textures → global bounded UV atlas audit
+inspect_element → exact affected face → physical texture rect
+```
+
+This is sufficient current source evidence for whole-atlas structure plus deterministic affected-region reasoning. Do not add a new crop API until a concrete source/runtime limitation proves that these retained surfaces cannot support the required review. `No change required` is the current T18 decision.
+
+## Regression Owners
+
+Primary texture regressions:
+
 - `mcp/tests/texture-authoring-contract.test.ts`
 - `mcp/tests/texture-design-reasoning.test.ts`
 - `mcp/tests/texture-visual-convergence.test.ts`
-
-Primary retained texturing commits:
-
-```text
-4ec722f61a00dfcb4e9fda67320ee28feacf31ee  T0/T1
-15053e75cf594a74cccef68878a16d1d1cd07ce6  T2
-d7fed4b26c7079e4d82e757f37fd35eca99a9474  T3
-b88147ba78c457f6b010aa9181ebdcf66f9b0af1  T3 type closure
-07e2b0981fcb300e6640aca98978bcab06fe91ad  T4 design contract
-247d380df138c4678c6b83ca70078773e438f1a8  T4 final invariant closure
-392892025126ac63e82e6485fead2275ee18f55b  T5 convergence contract
-```
-
-Final recorded T4 proof:
-- MCP Verify `32065026451` — typecheck, contract tests, 63-tool surface, production build, docs freshness PASS.
-- Repository Verify `32065026419` — repository routing/policy PASS.
-
-Actual desktop Painter behavior, UV persistence, single-atlas execution, and visual texture quality remain LOCAL PROOF REQUIRED when materially claimed.
-
-## Professional Sample Research Context
-
-Historical forensic evidence remains in Git history at commit `fd7b0e7e3286fc9b198b14a619abd733e831702c` (`professional-sample-forensic-audit-2026-08-13.md`). A fresh user-supplied sample set was also audited read-only on 2026-08-18 for texture/UV evidence.
-
-Generalizable evidence retained from the studies includes intentional Box-UV placement, explicit `uv_offset`, deliberate mirror/reuse, material-aware palette/value structure, face-aware shading, identity-weighted pixel detail, and the fact that professional quality does not require PBR or maximum atlas packing.
-
-The user's current authoring decision overrides copying sample-specific custom resolutions:
-
-```text
-AI production standard → 128 logical baseline + simple 128-based color canvas
-existing professional asset → preserve/interpret its authored resolution as evidence
-```
-
-Do not turn samples into presets, asset-specific recipes, fixed atlas templates, material-count rules, generic auto-texture generators, quality scores, or runtime profiles.
+- `mcp/tests/texture-production-discipline.test.ts`
+- `mcp/tests/texture-atlas-integrity.test.ts`
 
 ## Current Repository Closure
 
@@ -178,10 +170,23 @@ Do not turn samples into presets, asset-specific recipes, fixed atlas templates,
 U7  No change required — no speculative profile/router/runtime-prompt redesign without installed-client evidence
 ```
 
-Protected production gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
+Protected production gaps outside this texture work remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
-## Next Step
+## Next Step — SOURCE/CI + FINAL STATIC UV/TEXTURE AUDIT
 
-Current T6 source must satisfy the normal MCP/repository verification gates. After source verification, **live texture-quality claims still require an explicit local Blockbench texture acceptance run**; do not start that run unless the user explicitly requests it.
+1. Complete the normal MCP/repository source verification for the final T7–T18 logical state.
+2. Diagnose only exact failing owners if a verification gate fails; do not weaken valid tests to get green.
+3. After source verification, perform one **read-only final static forensic audit of the UV/texture architecture**:
+   - project logical resolution ownership;
+   - atlas creation/lifecycle roles;
+   - global UV audit correctness and boundedness;
+   - Cube UV mutation/lock path;
+   - Painter explicit texture targeting;
+   - material/PBR/variant boundary;
+   - prompt/skill/policy alignment;
+   - convergence evidence ownership.
+4. If that audit finds no concrete remaining source weakness, record `TEXTURING SOURCE CLOSED` and stop.
+
+**Local acceptance is not part of this next step.**
 
 Experimental remains paused unless explicitly reopened.

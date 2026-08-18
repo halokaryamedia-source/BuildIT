@@ -19,7 +19,7 @@ describe("professional texture production discipline", () => {
     expect(project).toContain("resolution: {");
   });
 
-  test("active guidance owns one production color atlas and simple canvas scale", async () => {
+  test("active guidance owns one production color atlas and explicit atlas identity", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -31,17 +31,18 @@ describe("professional texture production discipline", () => {
       expect(lower).toContain("color atlas");
       expect(lower).toContain("128");
       expect(lower).toContain("body part");
+      expect(lower).toContain("texture_id");
       expect(text).toContain("PBR");
     }
 
-    expect(skill).toContain("one color atlas PNG");
-    expect(workflow).toContain("one color atlas PNG");
+    expect(skill).toContain("one base-color atlas PNG");
+    expect(workflow).toContain("one base-color atlas PNG");
     expect(skill).toContain("list_textures");
     expect(workflow).toContain("list_textures");
-    expect(policy).toContain("Single Color Atlas");
+    expect(policy).toContain("Single Base-Color Atlas");
   });
 
-  test("production texture requires material ramps, form shading, identity, and detail", async () => {
+  test("production texture requires texel scale plus material/form/detail hierarchy", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -50,13 +51,23 @@ describe("professional texture production discipline", () => {
 
     for (const text of [skill, workflow, policy]) {
       const lower = text.toLowerCase();
-      expect(lower).toContain("palette");
-      expect(lower).toContain("ramp");
-      expect(lower).toContain("flat base color");
-      expect(lower).toContain("face-aware");
-      expect(lower).toContain("identity");
-      expect(lower).toContain("detail");
-      expect(lower).toContain("noise");
+      for (const invariant of [
+        "palette",
+        "ramp",
+        "pixels per uv unit",
+        "flat",
+        "face",
+        "contact",
+        "occlusion",
+        "edge",
+        "hue",
+        "identity",
+        "detail",
+        "noise",
+        "alpha",
+      ]) {
+        expect(lower).toContain(invariant);
+      }
     }
 
     for (const stage of [
@@ -71,22 +82,44 @@ describe("professional texture production discipline", () => {
     }
   });
 
-  test("UV mapping is gated before production pixels and convergence reviews structure first", async () => {
-    const [skill, workflow] = await Promise.all([
+  test("UV mapping is globally audited and locked before production pixels", async () => {
+    const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
+      source("../docs/foundation/06-texture-standard.md"),
     ]);
 
-    for (const text of [skill, workflow]) {
-      expect(text).toContain("UV / Atlas Gate");
-      expect(text).toContain("uv_offset");
-      expect(text).toContain("mirror_uv");
-      expect(text).toContain("autouv");
-      expect(text).toContain("accidental overlap");
-      expect(text).toContain("seam-critical");
-      expect(text).toContain("UV/region placement");
-      expect(text).toContain("palette/material separation");
-      expect(text).toContain("value/form shading");
+    for (const text of [skill, workflow, policy]) {
+      const lower = text.toLowerCase();
+      expect(lower).toContain("autouv=0");
+      expect(lower).toContain("integer");
+      expect(lower).toContain("out-of-bounds");
+      expect(lower).toContain("partial overlap");
+      expect(lower).toContain("exact reuse");
+      expect(lower).toContain("seam");
     }
+
+    expect(skill).toContain("UV / Atlas Gate");
+    expect(workflow).toContain("UV / Atlas Gate");
+  });
+
+  test("convergence reviews structure and identity before microdetail", async () => {
+    const [skill, workflow, policy] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+      source("../docs/foundation/06-texture-standard.md"),
+    ]);
+
+    for (const text of [skill, workflow, policy]) {
+      const lower = text.toLowerCase();
+      expect(lower).toContain("uv");
+      expect(lower).toContain("material");
+      expect(lower).toContain("form");
+      expect(lower).toContain("identity");
+      expect(lower).toContain("microdetail");
+    }
+
+    expect(skill).toContain("Texture Difference Table");
+    expect(workflow).toContain("Texture Difference Table");
   });
 });

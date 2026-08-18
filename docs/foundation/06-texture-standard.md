@@ -1,246 +1,352 @@
 # BlockIT — Texture Standard
 
 **Status:** Active Policy  
-**Version:** 1.2  
+**Version:** 1.3  
 **Updated:** 2026-08-18
 
 ## Purpose
 
 Define texture/UV quality rules for Minecraft Bedrock models after geometry is coherent.
 
-This note defines **modelling policy**, not guaranteed MCP automation. Actual UV, texture, canvas, and persistence capability remains current source/runtime truth.
+This note defines modelling policy, not proof of live runtime behavior. Current source and applicable CI own implemented MCP semantics.
 
 ## Core Principle
 
 **Texture supports geometry; it does not repair geometry.**
 
-Use texture for:
-
-- color/material identity;
-- pattern;
-- shading/highlight;
-- small surface detail;
-- information that does not need silhouette/real volume/separate motion.
-
-If silhouette/proportion/attachment is wrong, fix geometry first.
+Use texture for color/material identity, pattern, form readability, highlights/shadows, small surface detail, and information that does not need silhouette/real volume/separate motion. If silhouette, proportion, attachment, or required volume is wrong, fix geometry first.
 
 ## Workflow
 
 ```text
-primary + complete geometry passes
+coherent geometry
 ↓
-choose texture style / required detail level
+one base-color atlas + UV layout
 ↓
-prepare one usable production color atlas + UV layout
+UV / Atlas Gate
 ↓
-base color/material pass
+base material regions
 ↓
-value/form shading + identity pass
+value / form / contact / edge pass
 ↓
-controlled secondary detail when required
+identity pass
 ↓
-fresh texture visual gate
+controlled secondary detail
+↓
+fresh atlas + model-view review
 ```
 
-Do not begin texture polish on a primary form that still fails geometry review.
-
-## Sequencing / Existing-Asset Boundary
-
-For end-to-end reference-driven creation, production texture work requires the complete geometry review to have `PASS` for the shape/surfaces the texture depends on. A material geometry `FAIL` returns to modelling. A required `UNVERIFIED` geometry claim must be resolved or reported `BLOCKED`; texture is not a way to make uncertainty look finished.
-
-For a texture-only task on an existing asset, current geometry may be accepted as the user-provided working baseline when geometry correction is outside scope. Do not turn that scope decision into a claim that the geometry matches a reference.
-
-A minimal placeholder/flat texture may be used early solely to make geometry readable. It stays provisional and must not receive production polish/detail or be counted as completion progress.
-
-If geometry changes after texture production begins, invalidate only the affected downstream assumptions and re-check them: Cube/face identity, UV layout, texture assignment, painted alignment, material instances, and PBR channel relationships as applicable. Sunk cost in texture work is not evidence that rejected geometry should be preserved.
+A placeholder/flat texture may make geometry readable early, but it is provisional and is not production completion.
 
 ## AI Authoring Canvas Standard
 
-For **new AI-authored Bedrock Entity projects**, the logical UV baseline is **128×128**. Do not infer unusual logical resolutions from professional sample files simply because a human author used them.
+For **new AI-authored Bedrock Entity projects**, logical UV remains **128×128**.
 
-The production base-color PNG must use an explicit square canvas beginning at **128×128** and scale upward only in clean 128-based sizes when the visible detail requirement justifies more room. Prefer the smallest sufficient canvas; do not rely on a generic low-resolution texture-tool default. Existing/user-supplied assets may preserve their authored nonstandard canvas/resolution.
-
-Logical/project UV resolution and physical bitmap dimensions remain separate runtime facts. The simplified AI production rule above is an authoring standard, not a claim that every existing professional asset uses identical logical and physical dimensions.
-
-## Single Color Atlas
-
-Normal Bedrock Entity production uses **one base-color atlas PNG for the whole model**. Do not create separate base-color textures for body parts, Cubes, material zones, or object sections.
-
-When current texture state is unknown:
+The production base-color bitmap uses an explicit square canvas in clean 128-based sizes:
 
 ```text
-no usable color atlas → create one
-one usable color atlas → reuse / activate it
-multiple color textures → do not add another until explicit variants/PBR are distinguished from accidental fragmentation
+128×128
+256×256
+384×384
+512×512
+...
 ```
 
-Additional color textures are valid only for an explicit variant requirement. Normal/height/MER textures are separate PBR support channels and do not justify fragmenting the base color atlas.
+Choose the smallest sufficient bitmap. The logical UV canvas stays simple while physical bitmap density may increase.
+
+Imported/existing user assets may preserve authored nonstandard logical or physical dimensions. Professional samples are evidence to interpret, not custom-resolution presets for new AI work.
+
+## Single Base-Color Atlas
+
+Normal production uses **one base-color atlas PNG for the whole model**. Do not create base-color textures per body part, Cube, material family, or object section.
+
+```text
+no base atlas      → create one
+one base atlas     → reuse it
+multiple base candidates → resolve fragmentation before new color authoring
+```
+
+An additional color texture is valid only as an explicit variant that intentionally reuses the established geometry/UV layout. New AI-authored variants belong to an explicit non-material TextureGroup rather than masquerading as another body-part texture.
+
+Normal/height/MER textures are PBR support channels. They do not change the one-base-color rule and should match the base bitmap size for new AI authoring.
+
+## Atlas Identity
+
+After choosing the base atlas, retain its UUID as production continuation state and pass that UUID explicitly as `texture_id` for paint mutations whenever multiple textures are present.
+
+When multiple textures exist, paint/read operations must target the intended texture explicitly instead of relying on whichever texture is selected/default in the editor. This prevents color work from drifting onto PBR channels, variants, or stale textures.
+
+## Texel Scale Contract
+
+Before detailed painting, establish:
+
+```text
+logical UV dimensions
+physical bitmap dimensions
+physical pixels per UV unit
+identity-detail scale
+material-detail scale
+microdetail floor
+```
+
+A larger physical bitmap provides more pixels inside the same logical UV area; it does **not** justify arbitrary noise.
+
+Example reasoning:
+
+```text
+128 logical → 128 bitmap = 1× density
+128 logical → 256 bitmap = 2× density
+128 logical → 512 bitmap = 4× density
+```
+
+Detail size must be readable at the chosen density.
 
 ## UV Requirements
 
-Where texture is required:
+Important visible surfaces must have usable, finite UVs. For new AI production:
 
-- important visible surfaces have usable UVs;
-- UVs remain within the intended texture canvas;
-- accidental overlap is avoided;
-- mirrored UV is intentional;
-- focal areas receive adequate usable texel space;
-- orientation remains understandable/editable;
-- seam-critical regions are known before directional/detail painting.
+- important faces remain inside the logical canvas;
+- integer logical UV is the standard unless a specific requirement justifies fractional UV;
+- accidental partial overlap is rejected;
+- exact reuse is allowed when intentionally symmetric/repeated;
+- mirror use is deliberate;
+- directional/asymmetric markings have suitable orientation;
+- seam-critical relationships are known before detail painting.
+
+Do not optimize atlas occupancy as a quality score.
+
+## Box UV / UV Lock
+
+Box UV is a first-class professional workflow for Cuboid Bedrock assets.
+
+Automatic UV may establish an initial layout. It is **not** the final painted state.
+
+For AI-authored Box UV:
+
+```text
+initial auto UV
+→ audit
+→ author uv_offset / mirror intent
+→ autouv=0
+→ production paint
+```
+
+Painted Box-UV Cubes should be locked with `autouv=0` before production pixel work. This reduces the chance that later geometry/editor behavior silently moves painted regions.
+
+Per-face authored UV follows its own explicit face rectangles.
+
+## Global UV / Atlas Audit
+
+The global audit must distinguish at least:
+
+```text
+invalid/non-finite UV
+out-of-bounds faces
+fractional UV candidates
+unlocked Box-UV Cubes
+exact reused regions
+partial-overlap candidates
+```
+
+These are evidence categories, not a generic quality score.
+
+Exact reuse can be correct. Partial overlap is a review condition because it can silently corrupt unrelated painted regions. Degenerate/zero-area UV may occur on sheet/zero-thickness geometry and is not automatically a defect.
+
+## UV Stability
 
 Do not change UV layout after substantial finished painting without a concrete reason.
 
-## Box UV / Atlas Authoring
+Any material UV change invalidates affected downstream assumptions:
 
-Box UV is a first-class professional path for Cuboid Bedrock assets when it represents the intended surface workflow. Final layout may deliberately use authored per-Cube `uv_offset`, `mirror_uv`, and disabled/controlled auto-UV state. Automatic UV can be a starting aid; it is not proof of a finished atlas.
+- mapped physical region;
+- orientation;
+- seam continuity;
+- shared/reused pixels;
+- painted alignment;
+- variant alignment;
+- PBR/channel alignment where applicable.
 
-Intentional UV reuse/overlap is valid for symmetric or repeated surfaces that are meant to share pixels. Reject accidental overlap, not reuse itself. Do **not** use a universal packing-density score or maximize occupied pixels as a quality target. Multiple explicit texture variants may share one established geometry/UV layout.
+Re-check only affected downstream state.
 
-Production painting waits for a usable **UV / Atlas Gate**:
+## Material-Family Palette Ramps
 
-```text
-single color atlas selected
-→ important faces mapped inside intended canvas
-→ uv_offset / mirror_uv / autouv final enough for painting
-→ accidental overlap rejected; intentional repeat/mirror reuse allowed
-→ directional/asymmetric markings have suitable orientation
-→ seam-critical regions identified
-```
+A production texture uses **material-aware ramps**, not one global brightness ladder and not one flat color per material.
 
-## Mirror UV
-
-Use mirrored UV when visual symmetry is intended and no directional/asymmetric marking is required.
-
-Avoid it for:
-
-- text/symbols;
-- asymmetric markings;
-- left/right-specific details;
-- intentionally different material wear.
-
-## Palette / Material Ramps
-
-A production palette is **material-aware**. Build a controlled value/hue ramp per material family instead of treating the whole model as one undifferentiated palette.
-
-Possible roles include:
+Relevant dimensions include:
 
 ```text
 base
 shadow / deep shadow when needed
 highlight / edge highlight when needed
+controlled hue movement
 material-specific secondary hue
 identity/accent color
 ```
 
-These roles are not a fixed color-count recipe. Metal, cloth, wood, stone, organic surfaces, paint, and accents may use different ramp behavior when the reference supports it.
+These are roles, not a fixed color-count recipe.
+
+Reason about **value and hue**. Brightness-only ramps often look procedural and lifeless; controlled warm/cool or hue shifts are valid when the reference/material supports them.
+
 
 ## Base Texture
 
-First establish:
-
-- primary/secondary colors;
-- material zones;
-- accent/focal colors;
-- basic value separation.
-
-At the base gate, no important required surface should be unintentionally blank.
-
-**Flat base color is not production completion** when the reference/style shows visible form shading, material variation, edge treatment, pattern, or identity detail.
-
-## Value / Form Shading
-
-After base regions, add controlled value/form information that makes geometry and material readable:
-
-- coherent face-aware light/shadow separation;
-- material-specific highlights/shadows;
-- readable edge treatment where appropriate;
-- local value changes that support form rather than random noise.
-
-For Minecraft/pixel-art style, prefer stepped value ramps and deliberate pixel clusters over smooth airbrushed gradients. Continuous smooth gradients are optional only when the requested reference/style calls for them.
-
-## Identity / Secondary Texture Detail
-
-Identity-critical marks come before decorative microdetail. Add only detail that improves material/identity/readability:
-
-- controlled hue/value variation;
-- required markings, facial/identity features, emblems, wraps, seams, or panel lines;
-- material-specific marks;
-- purposeful pattern;
-- small wear/dirt/scratches when requested and still readable.
-
-Do not use random high-contrast noise as fake detail.
-
-For crisp Minecraft pixel texture, use hard texel edges and avoid accidental soft/anti-aliased pixels unless the reference explicitly requires them.
-
-## Lighting / Shading Consistency
-
-Keep one coherent shading language across the asset. Avoid unrelated highlight directions between parts unless the requested style explicitly uses them.
+The base pass establishes primary/secondary colors, material zones, accent/focal colors, and basic value separation. No important required surface should remain unintentionally blank.
 
 ## Material Readability
 
-Texture variation should follow the intended material rather than generic noise.
-For example:
+Texture variation follows the intended material rather than generic noise. Different materials may use different contrast, hue movement, edge language, or pattern direction while remaining part of one coherent asset.
 
-- metal can use sharper contrast/highlights;
-- cloth/skin normally uses softer stepped transitions;
-- wood grain follows form direction;
-- stone variation is irregular but controlled.
+## Lighting / Shading Consistency
 
-These are examples, not mandatory material recipes.
+Keep one coherent light/shading language across the asset. Face/form separation, contact darkening, and highlights must not contradict each other without reference evidence.
 
 ## Geometry Alignment
 
-Texture should follow form:
+Pattern direction, identity features, shading cues, seams, and edge treatment must align to the actual geometry. Texture can reinforce form but cannot repair wrong silhouette/proportion/attachment.
 
-- pattern direction follows surface direction;
-- facial/identity features align to the intended face/view;
-- recessed/raised cues are consistent with geometry;
-- no accidental flip/rotation remains.
+## Value / Form Shading
+
+Flat base color is not completion when supported form/material evidence exists.
+
+After the base pass, add controlled information that helps the geometry read:
+
+```text
+face/form separation
+material-specific shadow/highlight
+local form transition
+```
+
+Prefer stepped pixel ramps for Minecraft/pixel-art styling. Continuous smooth gradients are optional only when the requested style actually needs them.
+
+## Contact / Occlusion Treatment
+
+Where geometry creates real contact, recess, overlap, joint, underside, or attachment, a small controlled darkening may reinforce depth.
+
+Examples include:
+
+- armor seams;
+- panel recesses;
+- handle connections;
+- undersides;
+- joint contact;
+- overlapping plates.
+
+Texture may reinforce real geometry. It must not invent missing large volume or substitute for required geometry.
+
+## Edge Treatment
+
+Edges are intentional design surfaces when material/readability supports them.
+
+Possible treatment:
+
+- sharp metal highlight;
+- darker cloth/panel boundary;
+- painted edge;
+- restrained wear;
+- silhouette-side value separation.
+
+Do not outline every edge indiscriminately. Edge treatment follows material, light language, and readable scale.
+
+## Identity Before Microdetail
+
+Production priority is:
+
+```text
+material separation
+→ form readability
+→ identity-critical mark
+→ material pattern
+→ secondary variation
+→ optional wear/noise
+```
+
+Identity-critical features include required markings, facial features, emblems, wraps, seams, panel lines, and recognizability-critical color breaks.
+
+Noise-first painting is rejected.
+
+## Pixel / Alpha Discipline
+
+For crisp Minecraft pixel texture:
+
+- use deliberate pixel clusters;
+- use hard texel edges;
+- avoid accidental brush softness/antialiasing;
+- default authored alpha intent is **0 or 255**.
+
+Intermediate alpha is valid only when reference/material behavior actually requires translucency or blending.
+
+## Mirror / Reuse
+
+Mirrored/reused UV is intentional when surfaces are truly meant to share pixels.
+
+Avoid shared/mirrored regions for:
+
+- text/symbols;
+- left/right-specific detail;
+- directional marks;
+- deliberate asymmetric wear;
+- unique identity features.
+
+If a shared region later needs unique content, change the UV ownership before painting that unique content.
+
+## Texture Variants
+
+A variant reuses the same geometry/UV intent and changes texture content intentionally.
+
+Variants do not justify separate body-part atlases.
+
+For new AI-authored variants:
+
+```text
+one established base atlas
+→ explicit variant group
+→ matching bitmap dimensions
+→ same UV ownership
+```
+
+## PBR Boundary
+
+PBR is optional and evidence-driven.
+
+A normal/height/MER channel is a support texture, not another base-color atlas. New AI-authored support textures should match the base bitmap dimensions.
+
+Do not add PBR to imitate professionalism when the reference/sample quality is already explained by color-atlas UV placement, value, hue, material readability, and pixel detail.
 
 ## Evidence Rule
 
-Structural proof such as “texture is linked” or “UV exists” does not prove visual texture quality.
+“Texture exists”, “UV exists”, or “paint tool succeeded” does not prove texture quality.
 
-When texture completion is claimed, inspect fresh current-revision visual evidence in this order where applicable:
+Review applicable evidence in this order:
 
 ```text
-UV / region placement
-→ palette + material separation
-→ value / form shading
-→ seam / orientation
-→ identity-critical marks
-→ secondary detail density
+1. atlas ownership / fragmentation
+2. UV validity / bounds / overlap / lock
+3. palette + material separation
+4. form + contact + edge readability
+5. seam / orientation
+6. identity-critical marks
+7. secondary detail density
 ```
 
-Applicable criteria include:
-
-- alignment;
-- density/readability;
-- pattern/material direction;
-- missing/broken surfaces;
-- identity/style match.
-
-## Runtime Boundary
-
-Current Reference Fidelity work has not recently proven the full UV/texture runtime/persistence path. Any claim that a particular MCP tool automatically packs UVs, chooses the optimal canvas, or persists all texture state must be verified against current Local source/runtime before use.
-
-Use `LOCAL PROOF REQUIRED` when live proof matters.
+Fresh visual evidence is still required when a visual-quality claim is made; static source/CI only proves the contracts it executes.
 
 ## Completion Criteria
 
 Texture is complete for the requested scope when:
 
-- geometry is already coherent;
-- exactly one intended base-color atlas is used unless an explicit variant requirement says otherwise;
-- required UVs are usable and stable enough for the painted content;
-- required surfaces have intended material/color information;
-- material palette/value separation is readable;
+- geometry dependency is coherent;
+- exactly one intended base-color atlas exists unless explicit variants are required;
+- atlas identity is deterministic;
+- important UVs are finite, in-bounds, stable, and correctly oriented;
+- AI-authored painted Box UV is locked;
+- no unresolved accidental partial overlap remains;
+- material families have readable palette/value separation;
 - visible form is not left as unjustified flat fill;
-- identity-critical markings/details are present when supported by the reference;
-- texture density/style is coherent enough for the target;
-- no unresolved critical/major texture issue remains;
-- fresh visual evidence supports the texture claim;
-- persistence/linkage claims are proven when they are material to delivery.
+- contact/edge treatment is used when it materially improves supported form;
+- identity-critical markings are present;
+- detail density matches physical pixels-per-UV-unit;
+- no accidental soft/alpha artifacts remain for crisp pixel style;
+- no unresolved critical/major texture issue remains.
 
 ## Related
 

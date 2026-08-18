@@ -67,78 +67,37 @@ Primary-form hierarchy/pivots may exist before primary `PASS`; secondary geometr
 
 ## Texture Design Contract
 
-Normal AI-authored Bedrock Entity production uses **one color atlas PNG for the whole model**. Never create separate base-color textures per body part/Cube/material zone. If texture state is unknown, call `list_textures` once: reuse one existing color atlas; create exactly one only when none exists; if several color textures already exist, do not add another until explicit variants/PBR are distinguished from accidental fragmentation. PBR normal/height/MER channels do not change the one-base-color-atlas rule.
+Use **one base-color atlas PNG for the whole model**, never per body part/Cube/material zone. `list_textures`: `none`→create, `single`→reuse, `fragmented`→stop. Variants use non-material TextureGroup; PBR normal/height/MER are support. New projects: logical UV 128×128, square 128-based bitmap. Pin atlas UUID; pass `texture_id` when multiple textures exist.
 
-New projects use a **128×128 logical UV baseline**. Create the production color PNG with explicit square `width`/`height` starting at 128×128 and scale upward only in clean 128-based sizes when detail needs it; prefer the smallest sufficient canvas and do not rely on `create_texture`'s generic small default. Existing/user-supplied assets may keep authored nonstandard resolution.
-
-Before pixels define:
-
-```text
-one base-color atlas + chosen 128-based canvas
-palette roles per material family
-material zones: Cube/face + mapped region
-value hierarchy / part separation
-one face-aware shading language
-hard-pixel / edge language + alpha intent
-directional/asymmetric marks + mirror constraints
-seam direction / identity-critical marks
-detail budget: identity > material > optional wear/noise
-required PBR / material_instance meaning
-```
-
-Use a controlled palette ramp per material family, not a flat global palette. A flat base color is not completion when the reference/style shows form shading, material variation, edge treatment, pattern, or identity detail. Prefer stepped pixel value ramps and hard texel edges for Minecraft style; continuous smooth gradient or soft/anti-aliased painting is only justified by the reference. Reject random high-contrast noise.
+Define `palette roles`, material value/hue ramps, `material zones`, `value hierarchy`, `face-aware` shading, contact/occlusion, edge, hard-pixel/alpha intent, mirror/orientation, `seam`, identity, `detail budget`, pixels per UV unit, PBR / `material_instance`. Flat fill provisional; reject random high-contrast noise.
 
 ### UV / Atlas Gate
 
-Do not paint production pixels until the intended single-atlas UV state is usable:
+Run `list_textures` audit before paint. AI Box UV final paint: `autouv=0`; no out-of-bounds/invalid UV, integer logical UV unless justified, no unexplained partial overlap, stable seams; exact reuse okay. Do not mentally re-derive atlas coordinates.
 
 ```text
-single color atlas selected
-→ important faces mapped inside intended canvas
-→ uv_offset / mirror_uv / autouv final enough for painting
-→ accidental overlap rejected; intentional repeat/mirror reuse allowed
-→ asymmetric/directional details have suitable orientation
-→ seam-critical regions identified
+MAP → inspect_element; mapping_state=mapped + paintable=true; reuse texture_pixels.rect + flip_u/flip_v
+BASE PASS → draw_shape_tool
+VALUE / FORM PASS → face-aware form + contact/occlusion + edge + value/hue
+IDENTITY PASS → paint_with_brush exact-pixel path before microdetail
+SECONDARY DETAIL PASS → detail by pixels per UV unit; stop before noise
+VERIFY → fresh get_texture + capture_model_views model-view evidence
 ```
 
-Do not optimize packing percentage as a quality score. Do not move UVs after substantial painting without a concrete reason.
+Tool success is not visual `PASS`.
 
-```text
-MAP → inspect_element; require mapping_state=mapped + paintable=true; reuse texture_pixels.rect + flip_u/flip_v
-BASE PASS → bounded draw_shape_tool for major material regions
-VALUE / FORM PASS → controlled face-aware variation + material palette ramps; flat fill alone cannot pass when form is visible
-IDENTITY PASS → bounded region / paint_with_brush exact-pixel path for required markings/features
-SECONDARY DETAIL PASS → purposeful material detail only; stop before noise
-VERIFY → fresh atlas + model-view evidence
-```
-
-Tool success is not visual `PASS`. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
-
-Texture convergence requires actual approved reference + fresh `get_texture` atlas + `capture_model_views`; mutation stales affected evidence. Review structure before microdetail: UV/region placement → palette/material separation → value/form shading → seam/orientation → identity marks → detail density.
-
-```text
-Texture Difference Table
-region | reference | atlas | model view | category | mismatch | severity | FAIL | UNVERIFIED | PASS
-```
-
-Local `FAIL` → target/invariant → smallest bounded correction → retain pre-evidence → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Progress requires target `IMPROVED` and no regression. Same causal correction direction failing twice without new evidence → `BLOCKED`.
-
-## Locator / Null Object authored state
-
-Use `list_locator_elements` for discovery, `inspect_element` for focused state, and `manage_locator` / `manage_null_object` for create/update.
+Texture convergence needs actual reference + fresh `get_texture` + `capture_model_views`; mutation makes evidence stale. Use a **Texture Difference Table**. `FAIL` → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. **Same causal correction direction failing twice without new evidence** → `BLOCKED`; if the same causal correction direction fails twice without new evidence, stop.
 
 ## Protected Native Capability Gaps
 
-Molang: `manage_keyframes`; no MCP eval. `manage_animation_controller` mutates state machines; `inspect_animation` reads them. TextureMesh, visible bounds, existing-animation effects, animated textures, bone-binding expressions remain gaps; do not fake them. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
+TextureMesh, visible bounds, existing-animation effects, animated textures, bone-binding expressions remain gaps. Native Bedrock PBR and per-face `material_instance` are **not** gaps.
 
 ## Stage/tool routing
 
 ```text
 project unknown/absent → get_project_info or create_project as appropriate
-known project → grounded reference → Semantic Form + Primary Form → place_cube / add_group
-judgeable form → capture_model_views
-bounded geometry mismatch → inspect_element only if needed → modify_cube / modify_cubes_batch
-downstream texture → Texture Design Contract → single-atlas UV gate → mapped/bounded texturing
-downstream animation → active animation specialist
-requested deliverable → export_model
+build → place_cube / add_group → capture_model_views
+mismatch → inspect_element → modify_cube / modify_cubes_batch
+texture → Texture Design Contract → UV / Atlas Gate
+deliverable → export_model
 ```
