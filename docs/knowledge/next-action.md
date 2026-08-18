@@ -15,7 +15,7 @@ ANIMATION_D1_EFFECT_OBSERVABILITY_IMPLEMENTED
 ANIMATION_D1_MUTATION_CANDIDATE_PREPARED_UNREFERENCED
 ANIMATION_D2_CONTROLLER_EFFECT_CANDIDATE_PREPARED_UNREFERENCED
 ANIMATION_D3_MATH_PROPERTY_OBSERVABILITY_IMPLEMENTED
-ANIMATION_D3_PROPERTY_MUTATION_PENDING_DOCS_TOOLCHAIN
+ANIMATION_D3_PROPERTY_MUTATION_CANDIDATE_PREPARED_UNREFERENCED
 ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_FIXED
 ANIMATION_D5_EFFECT_SUMMARY_COUNTS_FIXED
 ANIMATION_FINAL_STATIC_AUDIT_PENDING
@@ -50,25 +50,6 @@ GitHub execution/tool-fit/atomicity/large-file discipline is owned **only** by `
 
 ## D1 Existing-Animation Effect Mutation
 
-Locked behavior:
-
-```text
-channel   = particle | sound | timeline
-operation = add | update | remove
-one authored Animation + ordered bounded operations + one Undo
-```
-
-Identity/rules:
-- particle/sound update-remove → keyframe UUID + `data_point_index`; timeline → keyframe UUID;
-- snap add/move with target animation snapping;
-- particle/sound same-time add appends point; native max 1000 datapoints enforced;
-- timeline duplicate time rejects;
-- preflight identity/index/time collision + effective no-op before Undo;
-- moving a particle/sound datapoint splits it to a new keyframe and never silently merges into occupied time;
-- removal of final point removes its keyframe;
-- `null` clears optional locator/pre-script or resets actor binding to native default;
-- moving particle/sound preserves editor-only `file` linkage; Molang/script is preserved, never evaluated.
-
 Prepared candidate (NOT on `Local`):
 
 ```text
@@ -76,7 +57,17 @@ Prepared candidate (NOT on `Local`):
 feat(animation): prepare existing effect mutation
 ```
 
-Candidate adds `mcp/server/tools/animation-effects.ts`, registers `manage_animation_effects` in the existing Animation family, and adds its bounded regression contract.
+Contract:
+- channel `particle | sound | timeline`; operation `add | update | remove`;
+- particle/sound update-remove targets keyframe UUID + `data_point_index`; timeline targets keyframe UUID;
+- snap add/move with target animation snapping; same-time particle/sound add appends point up to native 1000-point limit;
+- timeline duplicate time rejects; move never silently merges identities;
+- preflight identity/index/time collision + effective no-op before one Undo;
+- removing final point removes its keyframe;
+- `null` clears optional locator/pre-script or resets actor binding to native default;
+- moving particle/sound preserves editor-only `file` linkage; Molang/script is preserved, never evaluated.
+
+Candidate adds `mcp/server/tools/animation-effects.ts`, registers `manage_animation_effects` in the existing Animation family, and adds a bounded regression contract.
 
 ## D2 Controller-State Effects
 
@@ -87,27 +78,45 @@ Prepared candidate (NOT on `Local`):
 feat(animation): prepare controller state effects
 ```
 
-Candidate extends existing `manage_animation_controller`; **no new tool family**. Added bounded operations:
+Candidate extends existing `manage_animation_controller`; **no new tool family**:
 
 ```text
 add_sound | update_sound | remove_sound
 add_particle | update_particle | remove_particle
 ```
 
-Contract:
-- state target resolves exact UUID/unique name; effect update/remove uses native state-entry UUID;
-- sound owns `effect` only;
-- particle owns `effect`, optional `locator`, `bind_to_actor`, `pre_effect_script`;
-- `null` clears locator/pre-script and resets actor binding to native default true;
-- updates preserve editor-only `file` linkage through the existing controller plan snapshot/extend round-trip;
-- effective no-op updates reject before Undo;
-- all operations remain in the existing one-controller/one-Undo plan and return created/removed UUID receipts plus affected-state effect counts.
+State target resolves exact UUID/unique name; effect update/remove uses native state-entry UUID. Sound owns `effect`; particle owns `effect`, optional `locator`, `bind_to_actor`, `pre_effect_script`. `null` performs native-default clear/reset. Existing controller plan/Undo ownership and preview-only `file` linkage are preserved; effective no-op updates reject before Undo.
 
-Candidate diff is bounded to `mcp/server/tools/animation-controller.ts` plus `mcp/tests/animation-controller-effects-mutation.test.ts`.
+## D3 Animation-Level Molang Properties
+
+Prepared candidate (NOT on `Local`):
+
+```text
+5b452ec491fe7a563a4477d5342922ee37a54908
+feat(animation): prepare Molang property mutation
+```
+
+Candidate extends existing `animation_timeline`; **no new math/property tool**:
+
+```text
+set_anim_time_update
+set_blend_weight
+```
+
+Contract:
+- payload `molang: string | null`; null clears to native `""`;
+- normalization matches Blockbench Animation properties dialog: `trim().replace(/\n/g, "")`;
+- whitespace-only text rejects; unrelated timeline actions reject `molang`;
+- authored text is preserved and never evaluated by BlockIT;
+- effective no-op rejects before Undo;
+- mutation uses existing authored-Animation resolver + persistent animation Undo owner;
+- result returns `uuid`, `name`, `anim_time_update`, and `blend_weight` so immediate reread is unnecessary.
+
+Exact candidate diff is bounded to `mcp/server/tools/animation.ts` plus `mcp/tests/animation-math-property-mutation.test.ts`; no keyframe/rig/batch/copy-paste behavior is changed.
 
 ## Public Schema Boundary
 
-D1, D2, and D3 property mutation change public schemas/tool surface and require canonical:
+D1, D2, and D3 change public schema/tool surface and require canonical:
 
 ```text
 bun run docs:build
@@ -118,9 +127,8 @@ Current environment still lacks Bun 1.3.14. **Do not fast-forward public-schema/
 
 ## Next Step
 
-1. Prepare D3 `anim_time_update` / `blend_weight` mutation through the smallest coherent existing Animation property owner; never create `math_animation`.
-2. In a Bun/docs-capable execution path, reproduce current D1+D2+D3 final source candidates from current `Local`, run targeted/full required MCP verification, regenerate canonical API docs, and deliver only verified logical changes.
-3. Run create → inspect → modify symmetry audit, then final static animation architecture audit; fix concrete residuals only.
-4. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
+1. In a Bun/docs-capable execution path, reproduce current D1+D2+D3 final source candidates from current `Local`, run targeted/full required MCP verification, regenerate canonical API docs, and deliver only verified logical changes.
+2. Run create → inspect → modify symmetry audit, then final static animation architecture audit; fix concrete residuals only.
+3. Keep blend curves, bone-binding, generic generators, quality scores, and added Bezier complexity deferred without new evidence.
 
 **Local acceptance is not part of this next step.**
