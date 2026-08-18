@@ -443,56 +443,96 @@ const animationTimelineRangeSchema = z
     "Inclusive finite non-negative timeline selection range with start less than or equal to end."
   );
 
-export const animationTimelineParameters = z.object({
-  action: z
-    .enum([
-      "play",
-      "pause",
-      "stop",
-      "set_time",
-      "set_length",
-      "set_fps",
-      "loop",
-      "select_range",
-    ])
-    .describe("Timeline action to perform."),
-  time: z
-    .number()
-    .finite()
-    .min(0)
-    .max(1000)
-    .optional()
-    .describe(
-      "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
-    ),
-  length: z
-    .number()
-    .finite()
-    .min(0)
-    .max(10000)
-    .optional()
-    .describe(
-      "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
-    ),
-  fps: z
-    .number()
-    .min(10)
-    .max(500)
-    .optional()
-    .describe(
-      "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
-    ),
-  loop_mode: loopModeEnum.optional().describe("Loop mode for the animation."),
-  range: animationTimelineRangeSchema
-    .optional()
-    .describe("Inclusive time range for select_range."),
-}).refine(
-  (params) => params.action !== "loop" || params.loop_mode !== undefined,
-  {
-    message: "loop_mode is required for the loop action.",
-    path: ["loop_mode"],
-  }
-);
+const animationMolangPropertySchema = z.union([
+  z.string().refine(
+    (value) => value.trim().replace(/\n/g, "").length > 0,
+    {
+      message:
+        "Molang value must contain authored text; use null to clear the native property.",
+    }
+  ),
+  z.null(),
+]);
+
+export const animationTimelineParameters = z
+  .object({
+    action: z
+      .enum([
+        "play",
+        "pause",
+        "stop",
+        "set_time",
+        "set_length",
+        "set_fps",
+        "loop",
+        "select_range",
+        "set_anim_time_update",
+        "set_blend_weight",
+      ])
+      .describe("Timeline or persistent authored-Animation property action."),
+    time: z
+      .number()
+      .finite()
+      .min(0)
+      .max(1000)
+      .optional()
+      .describe(
+        "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
+      ),
+    length: z
+      .number()
+      .finite()
+      .min(0)
+      .max(10000)
+      .optional()
+      .describe(
+        "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
+      ),
+    fps: z
+      .number()
+      .min(10)
+      .max(500)
+      .optional()
+      .describe(
+        "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
+      ),
+    loop_mode: loopModeEnum.optional().describe("Loop mode for the animation."),
+    range: animationTimelineRangeSchema
+      .optional()
+      .describe("Inclusive time range for select_range."),
+    molang: animationMolangPropertySchema
+      .optional()
+      .describe(
+        "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. BlockIT preserves text and never evaluates it."
+      ),
+  })
+  .superRefine((params, ctx) => {
+    const usesMolang =
+      params.action === "set_anim_time_update" ||
+      params.action === "set_blend_weight";
+
+    if (params.action === "loop" && params.loop_mode === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["loop_mode"],
+        message: "loop_mode is required for the loop action.",
+      });
+    }
+    if (usesMolang && params.molang === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["molang"],
+        message: `${params.action} requires molang; use null to clear.`,
+      });
+    }
+    if (!usesMolang && params.molang !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["molang"],
+        message: "molang is used only by set_anim_time_update or set_blend_weight.",
+      });
+    }
+  });
 
 export const batchKeyframeOperationsParameters = z
   .object({
@@ -720,7 +760,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_timeline",
     description:
-      "Controls the animation timeline, including playback, time scrubbing, and timeline settings.",
+      "Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.",
     annotations: {
       title: "Animation Timeline",
       destructiveHint: true,
@@ -844,6 +884,9 @@ export function keyframeBelongsToAnimation(
   animation: unknown
 ): boolean {
   return keyframe.animator?.animation === animation;
+}
+export function normalizeAnimationMolangProperty(value: string | null): string {
+  return value === null ? "" : value.trim().replace(/\n/g, "");
 }
 export function resolveUniqueKeyframeMatchIndexes(
   existingTimes: readonly number[],
@@ -1875,8 +1918,12 @@ createTool(
   {
     ...animationToolDocs[4],
     parameters: animationTimelineParameters,
-    async execute({ action, time, length, fps, loop_mode, range }) {
+    async execute({ action, time, length, fps, loop_mode, range, molang }) {
       const animation = resolveAnimation();
+      const animationMolang = animation as _Animation & {
+        anim_time_update?: string;
+        blend_weight?: string;
+      };
 
       const runPersistentAnimationEdit = (
         label: string,
@@ -1952,6 +1999,50 @@ createTool(
           }
           result = `Set loop mode to ${animation.loop}`;
           break;
+
+        case "set_anim_time_update":
+        case "set_blend_weight": {
+          if (molang === undefined) {
+            throw new Error(`${action} requires molang; use null to clear.`);
+          }
+          const property =
+            action === "set_anim_time_update"
+              ? "anim_time_update"
+              : "blend_weight";
+          const nextValue = normalizeAnimationMolangProperty(molang);
+          const currentValue = normalizeAnimationMolangProperty(
+            animationMolang[property]
+              ? String(animationMolang[property])
+              : null
+          );
+          if (nextValue === currentValue) {
+            throw new Error(
+              `${action} would not change animation "${animation.name}".`
+            );
+          }
+          runPersistentAnimationEdit(`Change animation ${property}`, () => {
+            animation.extend({ [property]: nextValue });
+          });
+          const propertyResult = {
+            action,
+            animation: {
+              uuid: animation.uuid,
+              name: animation.name,
+              anim_time_update: animationMolang.anim_time_update || null,
+              blend_weight: animationMolang.blend_weight || null,
+            },
+          };
+          Animator.preview();
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Updated ${property} for animation "${animation.name}".`,
+              },
+            ],
+            structuredContent: propertyResult,
+          };
+        }
 
         case "select_range":
           if (!range) {

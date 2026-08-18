@@ -10,7 +10,7 @@ describe("authored Animation identity separation", () => {
       ) {}
     }
 
-    const authored = { uuid: "anim-1", name: "walk" };
+    const authored = { uuid: "anim-1", name: "walk" } as unknown as _Animation;
     const controller = new FakeAnimationController("controller-1", "walk_controller");
     const previousAnimationItem = (globalThis as any).AnimationItem;
     const previousAnimationController = (globalThis as any).AnimationController;

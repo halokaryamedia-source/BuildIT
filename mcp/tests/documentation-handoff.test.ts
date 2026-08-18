@@ -68,7 +68,7 @@ describe("Codex documentation handoff", () => {
     expect(next).toContain("actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**");
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
-    expect(implementation).toContain("63 enabled tools");
+    expect(implementation).toContain("64 enabled tools");
     expect(implementation).toContain("No local run is active");
   });
 
@@ -135,6 +135,7 @@ describe("Codex documentation handoff", () => {
       { tools: ["list_locator_elements", "manage_locator", "manage_null_object"], source: "server/tools/locators.ts", test: "tests/bedrock-locator-coverage.test.ts" },
       { tools: ["create_texture", "list_textures", "get_texture", "activate_texture"], source: "server/tools/texture.ts", test: "tests/context-payload-cleanup.test.ts" },
       { tools: ["create_animation"], source: "server/tools/animation.ts", test: "tests/create-animation-contract.test.ts" },
+      { tools: ["manage_animation_effects"], source: "server/tools/animation-effects.ts", test: "tests/animation-effect-mutation-contract.test.ts" },
       { tools: ["manage_animation_controller"], source: "server/tools/animation-controller.ts", test: "tests/animation-controller-mutation-contract.test.ts" },
       { tools: ["inspect_animation"], source: "server/tools/animation-inspection.ts", test: "tests/context-payload-cleanup.test.ts" },
       { tools: ["get_undo_stack"], source: "server/tools/history.ts", test: "tests/static-efficiency-budget.test.ts" },

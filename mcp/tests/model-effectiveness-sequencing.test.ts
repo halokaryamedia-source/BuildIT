@@ -69,8 +69,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(texturing).toContain("Box-UV Cubes");
     expect(texturing).toContain("modify_cubes_batch");
     expect(texturing).toContain("Logical project UV resolution and bitmap pixel dimensions are separate facts");
-    expect(texturePolicy).toContain("Box UV / Atlas Authoring");
-    expect(texturePolicy).toContain("packing-density score");
+    expect(texturePolicy).toContain("Box UV / UV Lock");
+    expect(texturePolicy).toContain("Do not optimize atlas occupancy as a quality score");
 
     const normalizedAnimation = animation.toLowerCase();
     expect(normalizedAnimation).toContain("keyframe-count");

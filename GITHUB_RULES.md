@@ -1,12 +1,10 @@
 # GitHub Rules — BlockIT
 
-Canonical operating rules for AI/ChatGPT working with GitHub in this repository.
-
-Root and nearest `AGENTS.md` files may narrow domain behavior, but they must not weaken safety, integrity, proof, history, security, or STOP boundaries here. Normal asset authoring through BlockIT MCP is not repository development merely because a model changes.
+Canonical operating rules for AI/ChatGPT working with GitHub in this repository. Root/nearest `AGENTS.md` may narrow domain behavior but never weaken safety, integrity, proof, history, security, or STOP boundaries.
 
 ## How to use this file
 
-For normal repository work, apply **Core Rules 1–7**. Read a **Conditional GitHub Surface** only when the current task actually touches it.
+Apply Core Rules 1–7. Read a Conditional GitHub Surface only when the task touches it.
 
 ```text
 PIN
@@ -22,20 +20,16 @@ PIN
 
 ## 1. PIN — establish exact current authority
 
-Before a material change, know the repository, intended ref, current HEAD, requested scope, and whether the target is writable.
+Before a material change, know repository, intended ref, current HEAD, scope, and writability.
 
 - `Local` is the working repository authority. Never silently fall back to another branch.
-- `main`, protected, production, and release refs are read-only unless repository policy or explicit user instruction authorizes a write.
-- Every supported write explicitly targets the intended ref.
-- Direct branch/file fetch is current-state authority. Search is discovery only.
-- Re-check HEAD only when concurrent movement is plausible or before a write that could overwrite newer work.
-- Replacement/deletion uses the current blob/content SHA from the exact target branch. On stale state, refetch once and rebuild the intended final state; never substitute another identifier type.
-- Archived/read-only repositories are not write targets.
-- Current source plus relevant proof outranks stale continuation prose. If `next-action.md` materially conflicts with current source/state, reconcile the stale owner before continuing.
+- `main`, protected, production, and release refs are read-only unless explicitly authorized.
+- Every write targets the intended ref; direct branch/file fetch is current-state authority.
+- Re-check HEAD when concurrent movement is plausible or immediately before an atomic ref move.
+- Replacement/deletion uses the current blob/content SHA from the exact branch.
+- Current source + relevant proof outranks stale continuation prose.
 
 ## 2. READ MINIMUM — read only what can change the decision
-
-Default budget:
 
 ```text
 owner/source files   1–3
@@ -43,61 +37,54 @@ history reads        0
 broad scans          0
 ```
 
-The mandatory Developing continuity boot in `AGENTS.md` and `development-brief` is an exception because it prevents cross-session drift. After that boot, additional reading remains minimum-needed.
-
-- Open more only for a concrete unresolved question.
-- Do not read history, review archives, generated output, adjacent owners, or all workspaces merely to feel safer.
-- For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad search.
-- Truncated, paginated, partial, or capped output is incomplete evidence, not proof of absence.
-- Continue pagination or narrow a query only when unseen data can materially change the decision.
-- A missing result may mean missing, stale ref, or inaccessible. Verify exact repository/ref/access once before concluding absence; do not guess alternate branches or paths.
+The Developing continuity boot is allowed. Otherwise:
+- open more only for a concrete unresolved question;
+- use `docs/knowledge/implementation-map.md` Hot-Path Defect Index for named MCP-tool defects;
+- truncated/partial output is incomplete evidence, not absence;
+- verify exact repo/ref/access once before concluding a target is missing.
 
 ## 3. DIAGNOSE — fix the first wrong owner
 
-Before writing, establish actual vs expected behavior and identify the first owner that is wrong.
-
 ```text
-requirement / policy wrong
+requirement/policy wrong
 → semantic or policy owner
 
 requirement correct + implementation wrong
 → implementation owner — IMPLEMENTATION REGRESSION
 
-implementation correct + regression assertion stale
+implementation correct + assertion stale
 → test owner — STALE TEST
 
 implementation/test correct + CI routing wrong
-→ workflow or repository policy — ROUTING FAILURE
+→ workflow/policy — ROUTING FAILURE
 
-implementation/test/routing correct + runtime/toolchain unavailable
-→ environment or capability owner — ENVIRONMENT FAILURE
+implementation/test/routing correct + runtime unavailable
+→ environment/capability — ENVIRONMENT FAILURE
 
-requested proof missing despite otherwise successful execution
+requested proof missing
 → proof owner — PROOF FAILURE
 
-derived/generated artifact wrong
+generated artifact wrong
 → upstream canonical owner
 ```
 
 - Do not widen Maintenance into redesign.
-- Do not perform unrelated cleanup, refactors, compatibility work, documentation synchronization, dependency upgrades, or framework creation unless they block the requested result.
-- CI failure is evidence to diagnose, not permission to change the easiest file.
-- Historical failures, TODOs, and audits are not active work unless reproduced or explicitly promoted by current user intent.
+- CI failure is evidence to diagnose, not permission to edit the easiest file.
+- Historical failures/TODOs are inactive unless reproduced or explicitly promoted.
 - `No change required` is valid.
-- Do not add routers, profiles, generic evaluators, compatibility layers, telemetry, alternate transports, or persistent registries without proved current need.
+- Do not add routers, profiles, generic evaluators, compatibility layers, telemetry, alternate transports, or registries without current evidence.
 
 ## 4. TOOL FIT — use repository semantics that match the operation
 
 ```text
-current branch / exact file state
+current branch / exact file
 → direct GitHub fetch
 
-one small bounded UTF-8 file + one logical delivery + complete current file
+small bounded UTF-8 file + complete final contents
 → GitHub Contents API
 
-coherent multi-file logical delivery / commit atomicity matters /
-large file / precise patch / coordinated refactor / binary / Git LFS
-→ local/Codex git workspace or another known-safe atomic Git capability
+coherent multi-file delivery / atomicity / large file / precise patch / binary
+→ local/Codex git or known-safe atomic Git capability
 
 CI diagnosis
 → run → failing job/step → exact relevant log
@@ -106,38 +93,35 @@ browser / Blockbench / visual / runtime claim
 → actual matching capability
 ```
 
-Contents API is an authored-state mutation, never a scratch/probe/preflight mechanism. Never create placeholder/test files on `Local`; do not use per-file Contents API when it would turn one logical delivery into several commits.
+Contents API is an authored-state mutation, never a scratch/probe/preflight mechanism. Never create placeholder/test files on `Local`.
 
-For connector work, when atomic multi-file delivery is genuinely required and the low-level Git capability is available:
+For atomic connector work:
 
 ```text
 pinned HEAD + base tree
 → create required blobs
-→ create one tree from the base tree
+→ create one tree
 → keep ref unchanged while blobs/tree are prepared
 → create one commit with pinned HEAD as parent
 → fast-forward intended ref once
 ```
 
-- When partial-file editing is unavailable but the connector can fetch the **exact complete current blob**, use that same low-level flow with one complete replacement blob and review the resulting candidate diff before moving the ref. File size alone is not a blocker.
-- After one confirmed partial-edit limitation, do not keep probing alternate download, DNS, CLI, patch, materialization, or transport paths without new evidence. Use the exact full-blob path if available; otherwise report the capability boundary and continue an independent owner.
-- Orphan blobs/trees/commits are valid preflight artifacts because they do not move the working ref. Do not create scratch files, checkpoint commits, retry commits, proof-only commits, or transport-workaround commits on `Local`.
-- If a public-schema change is blocked only by an unavailable canonical generator, prepare the complete source/test candidate unreferenced, record that blocker once in the owned continuation state, and continue independent development. Do not repeatedly probe the unavailable toolchain.
+- Exact full-blob replacement is valid when partial editing is unavailable; review the candidate diff before moving the ref.
+- After one confirmed capability limitation, do not repeatedly probe equivalent DNS/download/CLI/transport routes without new evidence.
+- Orphan blobs/trees/commits are valid preflight artifacts while the working ref stays unchanged.
+- Public-schema work blocked only by a canonical generator may be prepared unreferenced; never hand-edit generated entries.
 
 Hard stops:
-
-- Never full-replace a file from partial context.
-- Never split `update_file` into chunks; it replaces the whole file.
-- Keep blob/content SHA, commit SHA, tree SHA, tag/ref, workflow-run ID, artifact ID, and job ID distinct.
-- Low-level blob/tree/commit/ref operations are not the default editor; reserve them for genuine atomic-delivery semantics.
-- Never use history rewriting or destructive ref operations as a workaround for stale state, CI failure, connector limits, commit spam, or messy history.
-- Permission, policy, or capability denial ends that operation unless new evidence changes the condition.
-- Do not change repository structure merely to make a connector easier to use.
-- If the current channel cannot perform a change safely or preserve required history quality, use or report the suitable channel instead of forcing completion.
+- never full-replace from partial context;
+- never split `update_file` into chunks;
+- keep blob/content SHA, commit SHA, tree SHA, ref, workflow-run ID, artifact ID, and job ID distinct;
+- never rewrite history to hide CI/tooling mistakes;
+- permission/capability denial ends that operation unless new evidence changes it;
+- do not reshape repository architecture merely for connector convenience.
 
 ## 5. WRITE ONCE — deliver meaningful repository state
 
-Before the first repository mutation, pass this transaction gate:
+Transaction gate:
 
 ```text
 repo/ref/HEAD pinned
@@ -149,31 +133,27 @@ expected proof known
 any NO → DO NOT WRITE
 ```
 
-- One intentional write per file is the default, but **WRITE ONCE does not mean COMMIT EVERY WRITE**.
-- Same-file and overlapping mutations are serial, never parallel.
-- Reuse successful mutation responses and returned identifiers as current state; do not immediately refetch for reassurance unless concurrency or proof requires it.
-- For atomic multi-file work, prepare blobs/tree without moving the ref, re-check HEAD immediately before commit/ref update, then fast-forward once; if HEAD moved materially, rebuild from current state.
-- Candidate/preflight Git objects are acceptable only when the working ref remains unchanged; they are not repository history until deliberately referenced.
-- Keep one canonical owner per durable rule/state where practical; avoid duplicate contracts and synchronization cascades.
-- Update README/status/continuity/proof metadata only when its owned setup, milestone, blocker, capability boundary, test entrypoint, or next meaningful objective actually changes.
-- Preserve lockfiles, runtime/version files, dependency constraints, and action references unless their drift is the actual first wrong owner or the user explicitly requests change.
-- New files, workflows, abstractions, compatibility layers, fixtures, reports, branches, PRs, issues, comments, labels, releases, and other persistent side effects default to zero unless current scope proves a need.
-- Generated MCP API docs follow their source/generator. Never hand-edit generated entries.
-- `Experimental/` is isolated research space; existence or CI execution there does not make it production capability or local-acceptance proof.
+- One intentional write per file is the default, but WRITE ONCE does not mean COMMIT EVERY WRITE.
+- Same-file/overlapping mutations are serial.
+- Reuse successful mutation results as current state unless proof/concurrency requires refetch.
+- Atomic multi-file work prepares blobs/tree first, re-checks HEAD, then moves the ref once.
+- Keep one canonical owner per durable rule/state.
+- Preserve lockfiles, version files, dependency constraints, and action revisions unless they are the proved owner.
+- New files/workflows/branches/PRs/issues/reports default to zero unless the current scope proves a need.
+- Generated MCP API docs follow their generator.
+- `Experimental/` is isolated research evidence, not production capability.
 
 ### Commit discipline — history must remain meaningful
 
-A commit is a **categorized logical delivery**, not a save, checkpoint, reasoning step, tool call, CI trigger, or proof marker.
-
-Default delivery:
+A commit is a categorized logical delivery, not a save/checkpoint/tool call/CI trigger.
 
 ```text
 prepare complete logical change
-→ cheapest relevant pre-commit proof available
-→ review intended diff/state
+→ cheapest relevant proof
+→ review intended diff
 → one categorized logical commit
 → push/ref update once
-→ only relevant CI
+→ relevant CI
 → STOP
 ```
 
@@ -186,182 +166,122 @@ intended file set complete?
 message explains repository outcome?
 reviewable/revertable as one unit?
 
-any NO
-→ DO NOT COMMIT YET
+any NO → DO NOT COMMIT YET
 ```
 
-Message:
+Message: `<type>(<optional-scope>): <concise logical outcome>`.
 
-```text
-<type>(<optional-scope>): <concise logical outcome>
-```
+Categories: `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `build`, `release`, `chore`.
 
-Categories:
-
-```text
-feat:      new capability
-fix:       wrong behavior or regression
-docs:      documentation/policy-only change
-refactor:  internal restructuring without intended behavior change
-test:      regression-contract-only change
-ci:        CI/workflow routing or execution
-build:     build/dependency/toolchain
-release:   explicit release/publish state
-chore:     bounded maintenance only when no clearer type fits
-```
-
-- A `fix:` may include tests and supporting docs when they prove/document the same fix.
-- Split commits only for genuinely independent logical deliveries that can be reviewed, reverted, and landed separately.
-- Do not split by file, directory, technical layer, tool call, work order, or discovery order.
-- More than one commit for one requested task needs a concrete logical boundary.
-- Avoid vague history such as `update`, `changes`, `fix again`, `sync`, `final`, `try`, or `misc`.
-- Do not create checkpoint commits by default.
-- Unpublished local commits may be consolidated before first push when safe. Never rewrite published/shared history merely for aesthetics without explicit authority.
-- When one logical change touches multiple files and the active tool would create commit spam, use a known-safe atomic channel or report the required channel.
+- A `fix:` may include tests/docs that prove the same fix.
+- Split only genuinely independent deliveries; never split by file/tool call/work order.
+- Avoid vague history such as `update`, `changes`, `fix again`, `final`, `try`, or `misc`.
+- Never rewrite published/shared history for aesthetics without explicit authority.
 
 ## 6. VERIFY MINIMUM — validation follows the claim
 
-Validation is evidence, not ceremony.
-
 - Run the cheapest check that can falsify the changed claim.
-- Targeted checks are default during iteration.
-- Use the full MCP suite only when changed executable/public contracts can actually be affected and the final gate is materially useful.
-- Repository/policy/routing changes use the repository-specific static gate; they do not automatically justify full MCP build/surface verification.
-- When CI is relevant, prefer the relevant gate on the final logical state; intermediate runs are not final proof.
-- Only a completed successful run is PASS. Queued, running, pending, cancelled, skipped, neutral, or superseded runs are not PASS.
-- Superseded runs need not be waited on when a newer relevant run replaces them.
-- Do not rerun unchanged checks or chase unrelated verifiers to green.
-- On CI failure, inspect the exact failing job/step and only relevant error before editing. The first useful failure should identify the invariant, owner, and expected condition where practical.
-- Do not weaken, delete, bypass, or broaden a valid test/workflow merely to get green; change it only when evidence shows the verifier itself is the first wrong owner.
+- Targeted checks are default during iteration; full MCP verification is for executable/public contract changes.
+- Only a completed successful run is PASS.
+- Do not rerun unchanged checks or chase unrelated verifiers.
+- On CI failure, inspect only the exact failing job/step/error first; the first useful failure should identify the invariant, owner, and expected condition.
+- Do not weaken, delete, bypass, or broaden a valid test/workflow merely to get green.
 - Same-cause retry budget: maximum 2 attempts, each requiring new evidence.
-- Permission/capability denial retry budget: 0 unless new evidence changes the condition.
-- Regression tests protect material, realistically recurring invariants—not every typo, cosmetic wording change, or temporary state.
-- Do not use exact natural-language prose as a test contract unless the exact string is itself machine-required.
-- Static source/CI evidence proves only what it exercises. It does not prove live Blockbench behavior, browser rendering, model quality, persistence, playback, visual fidelity, or deployment success unless those actually ran.
+- Permission/capability denial retry budget: 0 without new evidence.
+- Exact natural-language prose should not be a test contract unless the string is itself required.
+- Static source/CI evidence proves only what it exercises. It does not prove Blockbench behavior, browser rendering, model quality, persistence, playback, visual fidelity, or deployment success unless those ran.
 
 ## 7. STOP — completion is a valid terminal state
 
-When requested outcome, acceptance criteria, and minimum relevant proof are satisfied, stop.
-
-Do not automatically:
-
-- audit another layer;
-- synchronize unrelated docs;
-- run another verifier;
-- create proof-of-proof;
-- fix adjacent non-blocking issues;
-- create branches/PRs/issues/comments merely for ceremony;
-- promote experimental behavior to production;
-- continue because more tooling is available.
+When the requested outcome, acceptance criteria, and minimum proof are satisfied, stop. Do not automatically audit another layer, sync unrelated docs, create proof-of-proof, create branches/PRs/issues for ceremony, or continue because more tooling exists.
 
 ## Default efficiency budget
 
 ```text
-owner/source reads        1–3 after required continuity boot
+owner/source reads        1–3 after continuity boot
 history reads             0
 broad scans               0
-new files                 0 unless required
-new workflows             0 unless required
+new files/workflows       0 unless required
 new abstractions          0
 intentional writes/file   1
 logical commits/task      1 by default
-uncategorized commits     0
-intermediate commits      0
 CI-trigger commits        0
 proof-only commits        0
 push/ref updates/task     1 by default
-relevant CI               0–1 per affected proof surface
+relevant CI               0–1 per proof surface
 same-cause retry          <= 2
 capability-denial retry   0
 adjacent cleanup          0
-high-impact mutations     0 unless explicitly authorized
+high-impact mutations     0 unless authorized
 ```
 
-Exceed a budget only when concrete current evidence requires it.
-
 # Conditional GitHub Surfaces
-
-Apply only when the current task touches that surface.
 
 ## API failures, pagination, rate limits, and ambiguous mutations
 
 ```text
 401        authentication problem
-403        permission / policy / rate-limit investigation
+403        permission / policy / rate limit
 404        missing OR inaccessible / stale target
-409        conflict / stale state → refetch relevant state
-422        invalid request / policy failure → fix request before retry
-429        rate limited → respect server retry/reset guidance
+409        conflict / stale state → refetch target
+422        invalid request / policy failure
+429        rate limited → respect retry/reset guidance
 5xx/timeout mutation outcome may be unknown → inspect current state before retry
 ```
 
-- Do not create request storms or parallel mutation bursts.
-- Respect retry/rate-limit signals instead of repeatedly probing.
-- If a mutating request has an unknown outcome, refetch target state first. Retry only after confirming the intended mutation is absent.
+Do not create request storms. If mutation outcome is unknown, refetch target state first. Retry only after confirming the intended mutation is absent.
 
 ## Special files, Git LFS, binaries, submodules, and generated artifacts
 
-Before treating repository content as UTF-8 text, distinguish regular files from symlinks, submodules, Git LFS pointers, generated artifacts, binaries, and files outside practical tool limits.
-
-- Never hand-edit an LFS pointer as the large-file content.
-- Do not rewrite a symlink, submodule, or binary through plain-text replacement unless that representation is explicitly intended.
-- Generated/derived artifacts follow their canonical source; fix source and regenerate unless repository policy defines the artifact as authored source.
+Distinguish regular text from symlinks, submodules, Git LFS pointers, binaries, and generated artifacts.
+- Never hand-edit an LFS pointer as large-file content.
+- Do not rewrite symlinks/submodules/binaries as plain text unless intended.
+- Generated artifacts follow canonical source/generator.
 
 ## Pull requests, branch protection, rulesets, reviews, and merge queues
 
-When a task involves a PR or merge decision:
-
-- Refresh current PR head SHA, base, mergeability, required reviews/CODEOWNERS state, checks, and deployment/environment gates before a high-impact action.
-- A new commit can stale prior approvals/check assumptions; do not act from an old snapshot.
-- Required human review, CODEOWNERS, repository protection/rules, signed-commit requirements, linear-history requirements, merge queues, and deployment gates are authority rather than errors to work around.
-- If merge-queue CI routing is wrong, fix workflow event/routing rather than avoiding the queue.
-- Branch/tag deletion, PR merge/close, release publication/deletion, environment bypass, repository settings/permission/rules changes, and history-altering actions require explicit authority and an exact current target.
-- Perform only the requested high-impact mutation; do not add unrelated repository-object changes as cleanup or ceremony.
+- Refresh PR head/base, mergeability, required reviews/CODEOWNERS, checks, and environment gates before a high-impact action.
+- New commits can stale approvals/check assumptions.
+- Protection/rules/signatures/linear history/merge queues are authority, not errors to work around.
+- Branch/tag deletion, PR merge/close, releases, environment bypass, settings/permission changes, and history-altering actions require explicit authority.
+- Perform only the requested high-impact mutation.
 
 ## GitHub Actions
 
 GitHub Actions is verification/deployment infrastructure, not a background development engine.
 
-- Automatic workflows run only on intended branches/events/paths their checks can falsify.
-- Documentation/routing/planning/status changes do not justify full executable MCP verification unless a check explicitly owns them.
-- Correctly skipped irrelevant workflows are not missing proof; do not manufacture unrelated changes to trigger them.
-- A required but skipped check is CI/ruleset routing, not permission to change unrelated code.
-- For unusually large diffs, do not infer correctness solely from absence of a path-filtered run.
-- Prefer fail-fast when downstream checks are meaningless after an upstream failure.
-- Cancel superseded runs when older results are no longer useful.
-- Verification workflows are read-only by default and do not commit/push back to `Local`.
-- Publishing/release bundling is explicit release work.
-- Do not create temporary one-use workflows merely because the active channel lacks another capability.
+- Automatic workflows run only on intended events/paths.
+- Correct skips are not missing proof.
+- Prefer fail-fast when downstream checks are meaningless.
+- Verification workflows use read-only repository permissions by default and do not push back to `Local`.
+- Do not create temporary one-use workflows merely because another capability is missing.
 - Do not rerun unchanged failed workflows merely to seek green.
-- Understand event and credential semantics before relying on workflow chaining.
-- Use least-privilege workflow permissions. Do not widen permissions, expose protected data, or switch credentials merely to make CI pass.
-- Preserve declared action/runtime versions unless version drift is the actual issue. For new third-party actions, use trusted sources and prefer immutable/pinned revisions where practical; never move to `latest`, `main`, or `master` as a convenience fix.
-- Treat issue/PR titles and bodies, branch names, labels, commit messages, workflow inputs, and other event-derived strings as untrusted input. Validate before use and never interpolate them directly into privileged shell/script code.
-- `pull_request_target` and equivalent privileged base-context workflows are security boundaries. Never execute untrusted PR code with secrets, write tokens, or other privileged context without a separately reviewed safe design.
-- Fork contributions may intentionally lack protected credentials; do not weaken repository policy merely to make such CI green.
-- Never route untrusted PR code to a privileged or persistent self-hosted runner merely to gain missing capabilities.
+- Use least privilege. Do not widen permissions, expose protected data, or switch credentials merely to pass CI.
+- Preserve declared action/runtime versions unless version drift is the actual issue.
+- For new third-party actions, use trusted sources and prefer immutable/pinned revisions; never move to `latest`, `main`, or `master` for convenience.
+- Treat event-derived strings as untrusted input.
+- `pull_request_target` is a security boundary; never run untrusted PR code with privileged secrets/write tokens.
+- Never route untrusted PR code to a privileged or persistent self-hosted runner for convenience.
 
 ### Approved `Experimental/` runtime exception
 
-A repository-owned, explicitly user-approved **bounded experimental harness** may use Actions as an ephemeral runtime when that runtime is itself the experiment under test. This is not a generic remote execution surface.
+A repository-owned, user-approved bounded experimental harness may use Actions as an ephemeral runtime when that runtime is the experiment. It is not a generic remote-execution surface.
 
 For the on-demand Blockbench Web POC:
-
-- keep harness/scripts/fixtures under `Experimental/` and bounded to the experiment;
-- use read-only repository permissions unless a separately approved operation proves more is required;
-- expose only bounded repository-owned inputs, never a general code-execution interface;
-- pin Blockbench/browser/runtime revisions where reproducibility matters;
-- validate workflow inputs before script use;
-- runner output goes to temporary workspace and GitHub Actions artifacts, not automatically into production source;
-- browser/server processes terminate with the job;
-- `.bbmodel`, PNG previews, logs, and proof metadata remain experimental evidence until explicitly promoted;
-- artifact existence is not visual approval; ChatGPT must retrieve and actually inspect relevant image evidence;
-- failure of the runner does not authorize weakening MCP security, creating a renderer clone, or changing production capability;
-- keep a retained harness stable/reusable rather than creating a new workflow for each run.
+- keep harness/scripts/fixtures under `Experimental/`;
+- use read-only repository permissions unless separately approved;
+- expose bounded repository-owned inputs, never general code execution;
+- pin Blockbench/browser/runtime revisions when reproducibility matters;
+- write outputs to temporary workspace and GitHub Actions artifacts, not production source;
+- terminate browser/server processes with the job;
+- `.bbmodel`, PNG previews, logs, and proof metadata remain experimental;
+- artifact existence is not visual approval; ChatGPT must retrieve and inspect relevant image evidence;
+- runner failure does not authorize weakening MCP security or cloning production rendering;
+- retain one stable reusable harness instead of per-run workflows.
 
 ## Sensitive data, releases, and deployment environments
 
-- Do not place credentials or other protected values into source, workflows, issues, PRs, comments, logs, or documentation.
-- If protected data is discovered, report the affected location/type without repeating the value and treat it as a security issue.
-- Redaction in logs is not permission to print protected values intentionally.
-- Environment/release/deployment approval gates are authoritative constraints, not ordinary CI failures. Do not bypass required reviewers/protection for convenience.
+- Do not place credentials/protected values in source, workflows, issues, PRs, comments, logs, or docs.
+- Report affected location/type without repeating protected values.
+- Redaction is not permission to print protected values.
+- Release/deployment approval gates are authoritative constraints; do not bypass required reviewers/protection.

@@ -92,18 +92,24 @@ describe("professional animation reasoning contract", () => {
     }
   });
 
-  test("protected effect/controller gaps remain explicit until their public owner can be regenerated", async () => {
-    const [skill, policy, controller] = await Promise.all([
+  test("verified effect/controller owners replace only the gaps they actually close", async () => {
+    const [skill, policy, controller, effects] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
       source("../docs/foundation/08-animation-standard.md"),
       source("server/tools/animation-controller.ts"),
+      source("server/tools/animation-effects.ts"),
     ]);
 
-    expect(skill).toContain("Existing-animation effect mutation");
-    expect(skill).toContain("controller-state particle/sound mutation");
-    expect(policy).toContain("existing-animation direct effect mutation");
-    expect(policy).toContain("controller-state particle/sound mutation");
-    expect(controller).not.toContain('"add_particle"');
-    expect(controller).not.toContain('"add_sound"');
+    expect(skill).toContain("existing animation effects            → manage_animation_effects");
+    expect(skill).toContain("controller state/composition/effects  → manage_animation_controller");
+    expect(skill).toContain("time/length/FPS/loop/Molang controls  → animation_timeline");
+    expect(policy).toContain("existing-animation particle/sound/timeline effect mutation");
+    expect(policy).toContain("controller blend-curve mutation");
+    expect(policy).toContain("bone-binding expressions");
+    expect(controller).toContain('"add_particle"');
+    expect(controller).toContain('"add_sound"');
+    expect(effects).toContain('name: "manage_animation_effects"');
+    expect(skill).not.toContain("Existing-animation effect mutation");
+    expect(skill).not.toContain("controller-state particle/sound mutation");
   });
 });

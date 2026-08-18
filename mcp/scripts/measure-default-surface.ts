@@ -6,15 +6,15 @@ const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
 
-// The controller-mutation closure adds one compact default tool while retaining
+// The effect-mutation closure adds one compact default tool while retaining
 // the previous surface discipline. These are regression ceilings with small
 // headroom, not token-usage targets; max per-tool payload stays intentionally
 // unchanged so a new capability cannot justify a bloated schema by itself.
 const SURFACE_BUDGET = {
-  tool_count: 63,
+  tool_count: 64,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 80_500,
-  input_schema_chars: 56_500,
+  tools_list_response_chars: 82_000,
+  input_schema_chars: 58_000,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

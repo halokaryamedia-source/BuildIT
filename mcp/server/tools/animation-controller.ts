@@ -10,6 +10,15 @@ const nonEmptyAuthoredString = z
     message: "Value must contain non-whitespace authored text.",
   });
 
+const nonEmptyAuthoredScript = z
+  .string()
+  .refine((value) => value.replace(/[\n\s;.]+/g, "").length > 0, {
+    message: "Script must contain an authored statement or command.",
+  });
+
+const clearableAuthoredString = z.union([nonEmptyAuthoredString, z.null()]);
+const clearableAuthoredScript = z.union([nonEmptyAuthoredScript, z.null()]);
+
 const controllerBlendValueSchema = z.union([
   z.number().finite(),
   nonEmptyAuthoredString,
@@ -30,6 +39,12 @@ const controllerOperationSchema = z
         "add_animation",
         "update_animation",
         "remove_animation",
+        "add_sound",
+        "update_sound",
+        "remove_sound",
+        "add_particle",
+        "update_particle",
+        "remove_particle",
       ])
       .describe("Controller mutation to apply."),
     state: z
@@ -41,7 +56,7 @@ const controllerOperationSchema = z
       .string()
       .min(1)
       .optional()
-      .describe("Exact transition or animation-link UUID."),
+      .describe("Exact transition, animation-link, sound, or particle UUID."),
     name: z
       .string()
       .min(1)
@@ -63,6 +78,19 @@ const controllerOperationSchema = z
     blend_value: controllerBlendValueSchema
       .optional()
       .describe("Finite number or authored Molang blend value."),
+    effect: nonEmptyAuthoredString
+      .optional()
+      .describe("Bedrock sound/particle effect identifier."),
+    locator: clearableAuthoredString
+      .optional()
+      .describe("Particle Locator name; null clears to entity space."),
+    bind_to_actor: z
+      .union([z.boolean(), z.null()])
+      .optional()
+      .describe("Particle actor binding; null resets to native default true."),
+    pre_effect_script: clearableAuthoredScript
+      .optional()
+      .describe("Particle pre-effect Molang; null clears."),
     on_entry: z.string().optional().describe("State on_entry script; empty clears."),
     on_exit: z.string().optional().describe("State on_exit script; empty clears."),
     blend_transition: z
@@ -191,6 +219,54 @@ const controllerOperationSchema = z
         require("state", "id");
         allow("state", "id");
         break;
+      case "add_sound":
+        require("state", "effect");
+        allow("state", "effect");
+        break;
+      case "update_sound":
+        require("state", "id", "effect");
+        allow("state", "id", "effect");
+        break;
+      case "remove_sound":
+        require("state", "id");
+        allow("state", "id");
+        break;
+      case "add_particle":
+        require("state", "effect");
+        allow(
+          "state",
+          "effect",
+          "locator",
+          "bind_to_actor",
+          "pre_effect_script"
+        );
+        break;
+      case "update_particle":
+        require("state", "id");
+        allow(
+          "state",
+          "id",
+          "effect",
+          "locator",
+          "bind_to_actor",
+          "pre_effect_script"
+        );
+        if (
+          operation.effect === undefined &&
+          operation.locator === undefined &&
+          operation.bind_to_actor === undefined &&
+          operation.pre_effect_script === undefined
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "update_particle requires at least one authored particle field.",
+          });
+        }
+        break;
+      case "remove_particle":
+        require("state", "id");
+        allow("state", "id");
+        break;
     }
   });
 
@@ -226,7 +302,7 @@ export const animationControllerToolDocs: ToolSpec[] = [
   {
     name: "manage_animation_controller",
     description:
-      "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
+      "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
     annotations: {
       title: "Manage Animation Controller",
       destructiveHint: true,
@@ -249,13 +325,28 @@ type ControllerTransition = {
   condition: string;
 };
 
+type ControllerSoundEffect = {
+  uuid: string;
+  effect: string;
+  file?: string;
+};
+
+type ControllerParticleEffect = {
+  uuid: string;
+  effect: string;
+  locator: string;
+  bind_to_actor: boolean;
+  pre_effect_script: string;
+  file?: string;
+};
+
 type ControllerStatePlan = {
   uuid: string;
   name: string;
   animations: ControllerAnimationLink[];
   transitions: ControllerTransition[];
-  sounds: unknown[];
-  particles: unknown[];
+  sounds: ControllerSoundEffect[];
+  particles: ControllerParticleEffect[];
   on_entry: string;
   on_exit: string;
   blend_transition: number;
@@ -346,8 +437,8 @@ function snapshotController(controller: AnimationController): ControllerPlan {
       const view = state as AnimationControllerState & {
         animations: ControllerAnimationLink[];
         transitions: ControllerTransition[];
-        sounds: unknown[];
-        particles: unknown[];
+        sounds: ControllerSoundEffect[];
+        particles: ControllerParticleEffect[];
         blend_transition_curve?: Record<string, number>;
       };
       return {
@@ -431,6 +522,32 @@ function findAnimationLink(
   return link;
 }
 
+function findSoundEffect(
+  state: ControllerStatePlan,
+  uuid: string
+): ControllerSoundEffect {
+  const sound = state.sounds.find((candidate) => candidate.uuid === uuid);
+  if (!sound) {
+    throw new Error(
+      `Sound effect "${uuid}" not found in state "${state.name}". Use inspect_animation state detail to confirm the sound UUID.`
+    );
+  }
+  return sound;
+}
+
+function findParticleEffect(
+  state: ControllerStatePlan,
+  uuid: string
+): ControllerParticleEffect {
+  const particle = state.particles.find((candidate) => candidate.uuid === uuid);
+  if (!particle) {
+    throw new Error(
+      `Particle effect "${uuid}" not found in state "${state.name}". Use inspect_animation state detail to confirm the particle UUID.`
+    );
+  }
+  return particle;
+}
+
 function normalizeBlendValue(value: string | number | undefined): string {
   if (value === undefined) return "";
   return typeof value === "number" ? String(value) : value;
@@ -442,6 +559,8 @@ function summarizeState(state: ControllerStatePlan) {
     name: state.name,
     animation_count: state.animations.length,
     transition_count: state.transitions.length,
+    sound_count: state.sounds.length,
+    particle_count: state.particles.length,
     on_entry: state.on_entry || null,
     on_exit: state.on_exit || null,
     blend_transition: state.blend_transition || 0,
@@ -457,11 +576,15 @@ function applyOperationToPlan(
     states: Array<{ uuid: string; name: string }>;
     transitions: Array<{ uuid: string; state_uuid: string; target_uuid: string }>;
     animation_links: Array<{ uuid: string; state_uuid: string; animation_key: string; animation_uuid: string | null }>;
+    sounds: Array<{ uuid: string; state_uuid: string; effect: string }>;
+    particles: Array<{ uuid: string; state_uuid: string; effect: string }>;
   },
   removed: {
     states: Array<{ uuid: string; name: string }>;
     transitions: string[];
     animation_links: string[];
+    sounds: string[];
+    particles: string[];
   }
 ): void {
   switch (operation.op) {
@@ -674,6 +797,91 @@ function applyOperationToPlan(
       removed.animation_links.push(link.uuid);
       return;
     }
+    case "add_sound": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const sound: ControllerSoundEffect = {
+        uuid: guid(),
+        effect: operation.effect!,
+        file: "",
+      };
+      state.sounds.push(sound);
+      affectedStateUuids.add(state.uuid);
+      created.sounds.push({ uuid: sound.uuid, state_uuid: state.uuid, effect: sound.effect });
+      return;
+    }
+    case "update_sound": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const sound = findSoundEffect(state, operation.id!);
+      if (sound.effect === operation.effect) {
+        throw new Error(`update_sound would not change sound effect "${sound.uuid}".`);
+      }
+      sound.effect = operation.effect!;
+      affectedStateUuids.add(state.uuid);
+      return;
+    }
+    case "remove_sound": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const sound = findSoundEffect(state, operation.id!);
+      state.sounds = state.sounds.filter((candidate) => candidate.uuid !== sound.uuid);
+      affectedStateUuids.add(state.uuid);
+      removed.sounds.push(sound.uuid);
+      return;
+    }
+    case "add_particle": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const particle: ControllerParticleEffect = {
+        uuid: guid(),
+        effect: operation.effect!,
+        locator: operation.locator ?? "",
+        bind_to_actor: operation.bind_to_actor ?? true,
+        pre_effect_script: operation.pre_effect_script ?? "",
+        file: "",
+      };
+      state.particles.push(particle);
+      affectedStateUuids.add(state.uuid);
+      created.particles.push({ uuid: particle.uuid, state_uuid: state.uuid, effect: particle.effect });
+      return;
+    }
+    case "update_particle": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const particle = findParticleEffect(state, operation.id!);
+      const next = {
+        effect: operation.effect ?? particle.effect,
+        locator:
+          operation.locator === undefined
+            ? particle.locator
+            : operation.locator ?? "",
+        bind_to_actor:
+          operation.bind_to_actor === undefined
+            ? particle.bind_to_actor
+            : operation.bind_to_actor ?? true,
+        pre_effect_script:
+          operation.pre_effect_script === undefined
+            ? particle.pre_effect_script
+            : operation.pre_effect_script ?? "",
+      };
+      if (
+        next.effect === particle.effect &&
+        next.locator === particle.locator &&
+        next.bind_to_actor === particle.bind_to_actor &&
+        next.pre_effect_script === particle.pre_effect_script
+      ) {
+        throw new Error(`update_particle would not change particle effect "${particle.uuid}".`);
+      }
+      Object.assign(particle, next);
+      affectedStateUuids.add(state.uuid);
+      return;
+    }
+    case "remove_particle": {
+      const state = resolveControllerState(plan.states, operation.state!);
+      const particle = findParticleEffect(state, operation.id!);
+      state.particles = state.particles.filter(
+        (candidate) => candidate.uuid !== particle.uuid
+      );
+      affectedStateUuids.add(state.uuid);
+      removed.particles.push(particle.uuid);
+      return;
+    }
   }
 }
 
@@ -729,11 +937,15 @@ export function registerAnimationControllerTools(): void {
           states: [] as Array<{ uuid: string; name: string }>,
           transitions: [] as Array<{ uuid: string; state_uuid: string; target_uuid: string }>,
           animation_links: [] as Array<{ uuid: string; state_uuid: string; animation_key: string; animation_uuid: string | null }>,
+          sounds: [] as Array<{ uuid: string; state_uuid: string; effect: string }>,
+          particles: [] as Array<{ uuid: string; state_uuid: string; effect: string }>,
         };
         const removed = {
           states: [] as Array<{ uuid: string; name: string }>,
           transitions: [] as string[],
           animation_links: [] as string[],
+          sounds: [] as string[],
+          particles: [] as string[],
         };
 
         for (const operation of operations) {

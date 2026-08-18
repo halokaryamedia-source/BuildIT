@@ -293,11 +293,9 @@ Do not create an animation quality score.
 
 ## Current Capability Boundary
 
-Retained current strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new-animation particle/sound effects, and bounded AnimationController state-machine mutation.
+Retained current strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new-animation particle/sound effects, existing-animation particle/sound/timeline effect mutation, animation-level `anim_time_update` / `blend_weight` mutation, and bounded AnimationController state-machine plus state particle/sound mutation.
 
 Protected gaps remain:
-- existing-animation direct effect mutation;
-- controller-state particle/sound mutation;
 - controller blend-curve mutation;
 - bone-binding expressions.
 

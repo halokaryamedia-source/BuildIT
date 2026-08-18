@@ -88,8 +88,10 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     for (const capability of [
       "TextureMesh direct authoring",
       "Locator/Null Object",
+      "manage_animation_effects",
       "manage_animation_controller",
-      "controller-state particle/sound and blend-curve mutation",
+      "state sound/particle mutation",
+      "controller blend-curve mutation",
       "native visible bounding-box fields",
       "animated textures",
       "bone-binding expressions",
