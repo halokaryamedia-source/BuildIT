@@ -67,32 +67,27 @@ Primary-form hierarchy/pivots may exist before primary `PASS`; secondary geometr
 
 ## Texture Design Contract
 
-Before production texture pixels define:
+Before pixels define `palette roles`, `material zones`, `value hierarchy`, one `face-aware` shading language, mirror/orientation constraints, seam direction, `detail budget`, and PBR / `material_instance` meaning. Reject random high-contrast noise.
 
 ```text
-style/readable density
-palette roles: base | secondary | shadow | highlight | accent
-material zones: Cube/face + mapped region
-value hierarchy / part separation
-one face-aware shading language
-directional/asymmetric marks + mirror constraints
-seam-critical edges / pattern direction
-detail budget: identity > material > optional wear/noise
-required PBR / material_instance meaning
-```
-
-Use an intentional palette; do not create detail with random high-contrast noise. Same-material faces keep one family with controlled value separation and coherent highlight direction. Directional marks account for face rotation, `flip_u`/`flip_v`, mirror UV; seam-crossing markings align.
-
-```text
-MAP → inspect_element; require mapping_state=mapped + paintable=true; reuse texture_pixels.rect/size + flip_u/flip_v
-BASE PASS → major regions with bounded draw_shape_tool
-VALUE / FORM PASS → controlled face-aware value/material variation
-IDENTITY PASS → bounded region or exact isolated pixels
+MAP → inspect_element; require mapping_state=mapped + paintable=true; reuse texture_pixels.rect + flip_u/flip_v
+BASE PASS → bounded draw_shape_tool
+VALUE / FORM PASS → controlled face-aware variation
+IDENTITY PASS → bounded region/exact pixels
 SECONDARY DETAIL PASS → purposeful detail only
-VERIFY → atlas evidence + model-view evidence
+VERIFY → fresh atlas + model-view evidence
 ```
 
-Tool success is not visual `PASS`. Diagnose local texture mismatch as `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`; correct locally.
+Tool success is not visual `PASS`. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
+
+Texture convergence requires actual approved reference + fresh `get_texture` atlas + `capture_model_views`; mutation stales affected evidence.
+
+```text
+Texture Difference Table
+region | reference | atlas | model view | category | mismatch | severity | FAIL | UNVERIFIED | PASS
+```
+
+Local `FAIL` → target/invariant → smallest bounded correction → retain pre-evidence → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Progress requires target `IMPROVED` and no regression. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
 ## Locator / Null Object authored state
 

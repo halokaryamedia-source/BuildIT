@@ -28,19 +28,17 @@ Known identity skips discovery. `create_texture` already returns texture identit
 ## Deferred Spec Loading / Stage
 
 Load missing spec by **exact tool name** + action. Use `DISCOVER → DESIGN → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
-
-- Reuse mutation output; **do not re-list/re-read it only for confirmation**.
-- Bounded mismatch → local correction; failure keeps capability unless state became stale/unknown.
+Reuse mutation output; **do not re-list/re-read it only for confirmation**.
 
 ## Readiness
 
 Production texturing starts after dependent geometry `PASS`; geometry `FAIL` returns upstream and required `UNVERIFIED` becomes `BLOCKED`.
 
-For an **existing asset**, geometry is baseline. **Do not claim that baseline is reference-accurate**. A **flat/placeholder texture** is provisional. After geometry changes, **re-check only the affected downstream state**: Cube/face, UV, assignment/alignment, material_instance, PBR.
+For an **existing asset**, geometry is baseline; **Do not claim that baseline is reference-accurate**. A **flat/placeholder texture** is provisional. After geometry changes, **re-check only the affected downstream state**: Cube/face, UV, alignment, material_instance, PBR.
 
 ## Minecraft-First Surface
 
-Preserve base palette, major material regions, part separation, identity-critical markings, required material/PBR meaning. Prefer readable pixels over photoreal detail or random high-contrast noise; do not paint fake silhouette. Minor drift may be canonicalized: **user requirement → original Source evidence → approved reference → simplest Minecraft-readable texture**. Material identity/region/channel conflict → `BLOCKED`; do not average conflicting material evidence.
+Preserve palette, material regions, part separation, identity markings, required material/PBR meaning. Prefer readable pixels over photoreal detail or random high-contrast noise; do not paint fake silhouette. Minor drift: **user requirement → original Source evidence → approved reference → simplest Minecraft-readable texture**. Material identity/region/channel conflict → `BLOCKED`; do not average conflicting material evidence.
 
 ## Texture Design Contract
 
@@ -58,7 +56,7 @@ detail budget: identity > material > optional wear/noise
 required PBR / material_instance meaning
 ```
 
-Use a small intentional palette family. Same-material faces keep one family with controlled value separation and one highlight direction. Directional marks account for face rotation, `flip_u`/`flip_v`, mirror UV; continuous markings align across seams. Detail must improve identity, material readability, or form. Material/seam ambiguity stays `UNVERIFIED`/`BLOCKED`.
+Use an intentional palette family. Same-material faces keep controlled value separation and one highlight direction. Directional marks account for face rotation, `flip_u`/`flip_v`, mirror UV; seam-crossing marks align.
 
 ## Mapped Authoring Procedure
 
@@ -73,16 +71,23 @@ SECONDARY DETAIL PASS → purposeful material detail; stop before noise
 VERIFY → fresh atlas + model-view evidence after coherent pass/correction
 ```
 
-Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`. Tool success is not visual `PASS`; correct locally.
+Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`. Tool success is not visual `PASS`.
+
+## Texture Visual Convergence
+
+Reference-driven review requires actual approved image + fresh `get_texture` atlas + affected `capture_model_views`; texture mutation makes affected evidence stale.
+
+```text
+Texture Difference Table
+region | reference | atlas | model view | category | mismatch | severity | FAIL | UNVERIFIED | PASS
+```
+
+Local `FAIL` → target/invariant → **smallest bounded correction** → retain pre-evidence → T3 mutate → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Progress requires target `IMPROVED` and no supported regression. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
 ## Native Bedrock PBR / UV
 
-`apply_texture` is disabled for Bedrock `single_texture`; use `activate_texture` to choose the active/default working texture, then Painter.
+`apply_texture` is disabled for Bedrock `single_texture`; use `activate_texture` to choose the active/default working texture.
 
-`material_instance` is Bedrock face metadata, distinct from PBR. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, `autouv` are authored state; use `modify_cube` or `modify_cubes_batch`.
+`material_instance` is face metadata. For **Box-UV Cubes**, `uv_offset`, `mirror_uv`, `autouv` are authored state; use `modify_cube` or `modify_cubes_batch`.
 
-Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or packing-density target. Inspect PBR before replacing channels; keep color/normal/height/MER identity deterministic.
-
-## Verification
-
-Atlas checks region/seam/flip/density; model view checks material readability, part separation, shading, identity/style. Keep RTX/in-game claims bounded to evidence.
+Logical project UV resolution and bitmap pixel dimensions are separate facts; do not assume equality, power-of-two sizing, or packing-density target.
