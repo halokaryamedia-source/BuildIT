@@ -15,14 +15,14 @@ TEXTURING_FINAL_STATIC_AUDIT_COMPLETE
 TEXTURING_CI_TERMINAL_PROOF_BLOCKED_BY_CURRENT_ENVIRONMENT
 ANIMATION_SAMPLE_FORENSICS_COMPLETE
 ANIMATION_A0_A10_NEXT_TO_DO_RECORDED
-ANIMATION_MATH_PROCEDURAL_RESEARCH_ACTIVE
+ANIMATION_MATH_PROCEDURAL_RESEARCH_COMPLETE
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
 Working branch: **`Local` only**.
 
-Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 decisions + Animation A0–A10 forensic roadmap**.
+Retained state: **P0–P7 + REF + PRO-1–PRO-8 + U1–U7 + R1–R5 + T0–T18 decisions + Animation A0–A10 forensic roadmap + Molang math research**.
 
 Actual desktop Painter behavior, UV persistence, animation playback/quality, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**.
 **Do not claim live desktop Blockbench/model-quality or animation-quality improvement without actual matching runtime proof.**
@@ -275,6 +275,162 @@ state/context selection + layered composition
 
 Do not replace explicit authored action with generic sinusoidal motion, and do not keyframe every continuous cyclic detail when a clear procedural driver is more appropriate.
 
+## Molang Math / Procedural Animation Research — 2026-08-18
+
+Authoritative Bedrock/Blockbench documentation confirms that mathematical animation is authored through Molang expressions in animation transform values, animation properties, and AnimationController expressions. It is not a separate animation subsystem.
+
+### Core timing / driver facts
+
+```text
+q.anim_time
+→ current animation time in seconds
+
+q.delta_time
+→ elapsed time since previous rendered frame
+
+anim_time_update default
+→ q.anim_time + q.delta_time
+
+q.modified_distance_moved
+→ horizontal distance driver affected by relevant entity modifiers
+
+q.modified_move_speed
+→ current modified walking speed
+
+q.state_time
+→ time spent in current animation-controller state; modern format requirement applies
+```
+
+Use the driver that represents the intended cause. Time-driven motion is appropriate for breathing/vibration/mechanical cycles; distance-driven motion can keep locomotion or wheel phase tied to actual travel instead of wall-clock speed.
+
+### Important math semantics
+
+Molang trigonometric functions use **degrees**, not radians.
+
+```text
+math.sin(angle_degrees)
+math.cos(angle_degrees)
+math.clamp(value, min, max)
+math.inverse_lerp(start, end, value)
+math.lerp(start, end, t)
+math.lerprotate(start, end, t)
+math.hermite_blend(t)
+math.min_angle(angle)
+math.mod(value, denominator)
+math.exp(value)
+math.abs / min / max / sqrt / pow / sign
+```
+
+Current official Molang also exposes easing functions, but supplied professional samples do not justify replacing their timing/pose discipline with generic easing recipes.
+
+### Mathematical building blocks to retain
+
+These are reasoning forms, **not fixed presets**:
+
+#### Periodic oscillation
+
+```text
+value = base + amplitude * sin(360 * frequency_hz * time + phase_deg)
+```
+
+Appropriate for breathing, idle sway, vibration, rotor-like cyclic response, antenna/cloth micro-motion, and similar continuous periodic behavior.
+
+#### Left/right gait phase
+
+```text
+right = base + A * cos(theta)
+left  = base + A * cos(theta + 180)
+```
+
+Real gait may need non-180 offsets, different amplitudes, body compensation, and authored contact phases. Mathematical phase is a starting relationship, not a complete gait generator.
+
+#### Traveling wave / secondary chain
+
+```text
+bone_i = base_i + A_i * sin(theta + phase_i)
+phase_i progresses along the chain
+```
+
+Use for tail/cloth/rope/antenna-like followers when a continuous driver is appropriate. Sample Anky supports this pattern. Identity-critical smash/attack motion should switch to authored poses when procedural motion would erase the action shape.
+
+#### Normalized response / remap
+
+```text
+p = clamp(inverse_lerp(input_min, input_max, input), 0, 1)
+value = lerp(output_min, output_max, p)
+```
+
+Useful for speed→amplitude, look-angle→pose response, charge→extension, or other bounded controls.
+
+#### Smooth normalized transition
+
+```text
+p = clamp(inverse_lerp(t0, t1, time), 0, 1)
+e = hermite_blend(p)
+value = lerp(start, end, e)
+```
+
+Useful where a mathematically defined smooth transition is simpler than dense keys. Do not use it to bypass identity-critical authored poses.
+
+#### Damped settling approximation
+
+```text
+value = base + A * exp(-damping * time) * sin(360 * frequency * time + phase)
+```
+
+Potential use: recoil settling, spring/antenna response, mechanical vibration after impact. Treat as an approximation and keep it bounded to an appropriate one-shot/state-time domain.
+
+#### Angular shortest path
+
+```text
+lerprotate(start_angle, end_angle, t)
+```
+
+Useful for bounded orientation response where wrapping across ±180° would otherwise take the long path.
+
+### Animation-level math controls
+
+```text
+anim_time_update
+→ controls how timeline time advances; can scale or modulate playback rate
+
+blend_weight
+→ Molang expression can scale the amplitude/contribution of an animation
+
+controller animation blend value
+→ Molang can conditionally or continuously weight a layered animation
+
+controller variables / remap
+→ can normalize gameplay/query data into reusable animation weights
+```
+
+This supports a layered architecture such as:
+
+```text
+base authored locomotion
++ procedural look layer
++ procedural breathing / tail layer
++ conditional attack layer
++ controller/query-driven blend weights
+```
+
+### Math-animation guardrails
+
+```text
+DO use math when the motion is continuous, cyclic, reactive, or naturally parameterized.
+DO use authored key poses for identity-critical action, impact, silhouette, contact, or deliberate acting.
+DO bind effects to causal events rather than arbitrary equation extrema unless the extrema are the actual event.
+DO preserve authored Molang strings exactly; BlockIT should not evaluate them as gameplay truth.
+DO choose phase/frequency/amplitude from the asset and intent, not a global preset.
+
+DO NOT use per-frame math.random directly for arbitrary transform jitter.
+DO NOT turn every animation into sine waves.
+DO NOT replace walk/run contact design with a generic mirrored cosine alone.
+DO NOT increase Bezier/curve complexity just because math expressions exist.
+```
+
+For controlled randomness, prefer selecting an authored variant/state or initializing a variable once at the appropriate controller/event boundary instead of generating new random transform values every rendered frame.
+
 ## Animation A0–A10 — NEXT TO DO
 
 Development must begin with source audit and regression-owner discovery; do not assume every item requires a new tool.
@@ -338,7 +494,7 @@ Make phase relationships first-class. Mirror/copy is not a gait generator. For c
 
 ### A5 — Molang procedural vs authored-keyframe ownership — P0
 
-Research and formalize math/procedural animation. Preserve authored Molang text; do not evaluate or invent gameplay state. Prefer math for continuous cyclic/response motion when it improves clarity and reduces unnecessary key density. Prefer authored keys for identity-critical poses/actions.
+Formalize the retained math research into active skill/prompt/policy guidance. Preserve authored Molang text; do not evaluate or invent gameplay state. Prefer math for continuous cyclic/response motion when it improves clarity and reduces unnecessary key density. Prefer authored keys for identity-critical poses/actions.
 
 ### A6 — action timing / weight contract — P0
 
@@ -398,22 +554,15 @@ more Bezier/graph-editor complexity
 → supplied professional animations are overwhelmingly linear
 ```
 
-## Active Next Step — MATH / PROCEDURAL ANIMATION RESEARCH, THEN A0–A10 SOURCE PLAN
+## Active Next Step — A1–A7 SOURCE AUDIT + IMPLEMENTATION PLAN
 
-1. Research authoritative Bedrock Molang math/query semantics relevant to animation: `math.sin`, `math.cos`, `math.clamp`, `math.lerp`, time/ground-speed/query drivers, variable ownership, and expression evaluation context.
-2. Map mathematical building blocks to animation uses without creating fixed presets:
-   - periodic oscillation;
-   - frequency/amplitude/phase;
-   - left/right gait phase;
-   - traveling waves along chains;
-   - damping / settling approximation;
-   - clamping and normalized controls;
-   - interpolation/remapping;
-   - additive/controller layering.
-3. Compare that evidence against current `manage_keyframes`, controller, timeline, inspection, and creation surfaces.
-4. Identify exact source gaps and regression owners before mutation.
-5. Implement A1–A7 first where evidence supports a concrete source weakness; A0/A8–A10 follow based on owner analysis.
-6. Do not increase Bezier complexity or controller blend-curve scope without new evidence.
+1. Audit exact source owners for existing-animation effects, controller-state effects, animation creation properties, Molang transform preservation, `anim_time_update`, `blend_weight`, timeline loop/snapping, and inspection output.
+2. Confirm native Blockbench Undo and identity semantics before any mutation extension.
+3. Identify regression owners and exact public-schema impact before changing code.
+4. Implement **A1 existing-animation effect mutation** and **A2 controller-state effect mutation** where native evidence is complete.
+5. Implement **A3–A7 reasoning contracts**, including retained math/procedural animation guidance, without adding preset generators or animation quality scores.
+6. Reassess A0 only if the source audit shows meaningful extra calls or missing authoring parity.
+7. Keep A8–A10 for the next bounded phase after A1–A7 source closure.
 
 ### Passive texture closure
 
