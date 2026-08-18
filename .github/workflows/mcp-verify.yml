@@ -10,6 +10,8 @@ on:
       - "!mcp/README.md"
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
+      - ".agents/skills/blockit-bedrock-texturing/SKILL.md"
+      - "docs/foundation/06-texture-standard.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   pull_request:
@@ -22,6 +24,8 @@ on:
       - "!mcp/README.md"
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
+      - ".agents/skills/blockit-bedrock-texturing/SKILL.md"
+      - "docs/foundation/06-texture-standard.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
