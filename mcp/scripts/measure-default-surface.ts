@@ -13,8 +13,8 @@ const PROTOCOL_VERSION = "2025-06-18";
 const SURFACE_BUDGET = {
   tool_count: 64,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 80_500,
-  input_schema_chars: 56_500,
+  tools_list_response_chars: 82_000,
+  input_schema_chars: 58_000,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

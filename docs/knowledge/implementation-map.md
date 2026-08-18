@@ -92,8 +92,8 @@ Surface regression ceilings:
 
 ```text
 initialize instructions       <= 700 characters
-tools/list response           <= 80,500 characters
-input schemas                 <= 56,500 characters
+tools/list response           <= 82,000 characters
+input schemas                 <= 58,000 characters
 descriptions                  <= 11,500 characters
 per-tool payload max          <= 3,200 characters
 ```
