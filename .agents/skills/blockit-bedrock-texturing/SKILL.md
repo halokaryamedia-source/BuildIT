@@ -19,7 +19,7 @@ Known identity skips discovery. Load the exact tool name only; do not re-list/re
 
 Normal AI Bedrock production uses **one base-color atlas PNG for the whole model**. Never create base color per body part, Cube, or material zone. `list_textures`: `none` → create one; `single` → reuse; `fragmented` → stop and reconcile. A color variant must be explicit in a non-material TextureGroup. PBR normal/height/MER remain support textures.
 
-New AI projects keep logical UV **128×128**. New base-color bitmaps use square 128-based sizes (128/256/384/512/…) and the smallest sufficient size; imported existing assets may retain authored dimensions. After choosing the base atlas, pin its UUID and pass `texture_id` explicitly whenever multiple textures are loaded.
+New AI projects keep logical UV **128×128**. New base-color bitmaps use square 128-based sizes (128/256/384/512/…) and smallest sufficient size; imports may retain dimensions. After choosing the base atlas, pin its UUID and pass `texture_id` explicitly whenever multiple textures are loaded.
 
 ## Texture Design Contract
 
@@ -57,11 +57,11 @@ SECONDARY DETAIL PASS → scale detail to pixels per UV unit; stop before noise
 VERIFY → fresh atlas + model-view evidence
 ```
 
-Tool success is not visual `PASS`. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
+`FAIL / UNVERIFIED / PASS` remains visual-only. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
 
 ## Texture Visual Convergence
 
-Reference review requires actual approved image + fresh `get_texture` atlas + affected `capture_model_views`; mutation makes evidence stale. Use a **Texture Difference Table** and review UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
+Reference review requires actual approved image + fresh `get_texture` atlas + affected `capture_model_views`; texture mutation makes evidence stale. Use a **Texture Difference Table** and review UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
 
 Local `FAIL` → target/invariant → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported regression. **Same causal correction direction failing twice without new evidence** → `BLOCKED`.
 
