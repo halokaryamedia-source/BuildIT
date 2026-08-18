@@ -119,23 +119,10 @@ pinned HEAD + base tree
 → fast-forward intended ref once
 ```
 
-### Large-file connector anti-stall rule
-
-When partial-file editing is unavailable but the connector can fetch the **exact complete current blob**, file size alone is not a blocker and must not trigger repeated transport/tool workaround attempts.
-
-```text
-exact current full blob
-→ construct complete replacement once
-→ create unreferenced candidate blob/tree/commit
-→ compare candidate against pinned HEAD
-→ bounded intended diff? fast-forward once : discard candidate
-```
-
-- Prefer this full-blob replacement path after the first confirmed partial-edit limitation; do not spend repeated attempts searching for alternate download, DNS, CLI, patch, materialization, or transport paths without new evidence.
-- Full replacement is valid only from exact complete current content; partial/truncated reconstruction remains prohibited.
-- Orphan blobs/commits may be used as preflight artifacts, but do not move the working ref until the exact diff is reviewed and bounded.
-- Do not create checkpoint, retry, proof-only, or transport-workaround commits on the working branch. Branch history records logical outcomes, not failed tooling attempts.
-- If a public-schema change is blocked only by an unavailable canonical generator, prepare the source/test candidate unreferenced, record the blocker once, and continue the next independent development owner. Do not repeatedly probe the same unavailable toolchain.
+- When partial-file editing is unavailable but the connector can fetch the **exact complete current blob**, use that same low-level flow with one complete replacement blob and review the resulting candidate diff before moving the ref. File size alone is not a blocker.
+- After one confirmed partial-edit limitation, do not keep probing alternate download, DNS, CLI, patch, materialization, or transport paths without new evidence. Use the exact full-blob path if available; otherwise report the capability boundary and continue an independent owner.
+- Orphan blobs/trees/commits are valid preflight artifacts because they do not move the working ref. Do not create scratch files, checkpoint commits, retry commits, proof-only commits, or transport-workaround commits on `Local`.
+- If a public-schema change is blocked only by an unavailable canonical generator, prepare the complete source/test candidate unreferenced, record that blocker once in the owned continuation state, and continue independent development. Do not repeatedly probe the unavailable toolchain.
 
 Hard stops:
 
@@ -166,6 +153,7 @@ any NO → DO NOT WRITE
 - Same-file and overlapping mutations are serial, never parallel.
 - Reuse successful mutation responses and returned identifiers as current state; do not immediately refetch for reassurance unless concurrency or proof requires it.
 - For atomic multi-file work, prepare blobs/tree without moving the ref, re-check HEAD immediately before commit/ref update, then fast-forward once; if HEAD moved materially, rebuild from current state.
+- Candidate/preflight Git objects are acceptable only when the working ref remains unchanged; they are not repository history until deliberately referenced.
 - Keep one canonical owner per durable rule/state where practical; avoid duplicate contracts and synchronization cascades.
 - Update README/status/continuity/proof metadata only when its owned setup, milestone, blocker, capability boundary, test entrypoint, or next meaningful objective actually changes.
 - Preserve lockfiles, runtime/version files, dependency constraints, and action references unless their drift is the actual first wrong owner or the user explicitly requests change.
