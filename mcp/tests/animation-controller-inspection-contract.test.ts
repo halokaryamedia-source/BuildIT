@@ -70,6 +70,17 @@ describe("AnimationController inspection closure", () => {
     expect(effects).not.toContain("data_point_uuid");
   });
 
+  test("authored animation summary preserves animation-level Molang controls", async () => {
+    const source = await Bun.file("server/tools/animation-inspection.ts").text();
+    const executeStart = source.indexOf("const animationSummary = {");
+    const focusedStart = source.indexOf("if (bone !== undefined)", executeStart);
+    const summary = source.slice(executeStart, focusedStart);
+
+    expect(summary).toContain("anim_time_update: animation.anim_time_update || null");
+    expect(summary).toContain("blend_weight: animation.blend_weight || null");
+    expect(summary).not.toContain("MolangParser.parse(");
+  });
+
   test("focused authored-bone inspection omits animation-wide summaries", async () => {
     const source = await Bun.file("server/tools/animation-inspection.ts").text();
     const executeStart = source.indexOf("async execute({ animation_id, bone, state, include_effect_keyframes })");

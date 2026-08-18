@@ -446,6 +446,8 @@ export function registerAnimationInspectionTools() {
           loop: animation.loop,
           length: animation.length,
           snapping: animation.snapping,
+          anim_time_update: animation.anim_time_update || null,
+          blend_weight: animation.blend_weight || null,
         };
 
         if (bone !== undefined) {
