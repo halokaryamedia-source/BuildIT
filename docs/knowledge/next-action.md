@@ -21,6 +21,8 @@ ANIMATION_CANONICAL_CI_EXECUTION_NOT_OBSERVED
 PRELOCAL_STATIC_EFFICIENCY_ACTIVE
 AUTHORING_SKILL_STACK_COMPACTED_STATIC
 TOOL_DISCOVERY_EVALUATOR_64_SYNC_IN_LOCAL
+LOCATOR_SCHEMA_GUIDANCE_COMPACTED_STATIC
+MATERIAL_DISCOVERY_RESULTS_COMPACTED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -44,11 +46,19 @@ refactor(authoring): compact active skill instructions
 
 2167c3a691144ffff36bb6b563e0d08d8747db59
 test(discovery): align static evaluator with 64-tool surface
+
+2e2f5346a4f318249c491c2e44cc944011c69c13
+refactor(mcp): compact locator schema guidance
+
+9927f0d59d77ed27312f2d9dafde478367827ca9
+fix(mcp): restore material discovery cleanup
 ```
 
 Current pre-local efficiency scope:
 - active authoring instruction owners are compacted without removing Bedrock capability or visual-quality gates;
 - the static tool-discovery proxy now expects the 64-tool source and includes `manage_animation_effects` cases;
+- Locator/Null Object branch schema descriptions keep required create/update guidance while removing repeated prose;
+- `get_face_material_instances` and `list_material_instances` now use concise human summaries plus canonical `structuredContent`, while list usage detail remains opt-in and bounded;
 - no custom router, lean/profile mode, dynamic endpoint split, tool deletion, media-resolution reduction, or runtime telemetry was added;
 - no actual Codex token/call saving is claimed before a future user-authorized local comparison.
 
@@ -96,10 +106,10 @@ The user's Windows workstation and Codex-local authoring test are not required f
 
 ## Next Step
 
-1. Audit the exact current 64-tool serialized MCP surface using existing source ownership and `measure:surface`; identify only concrete schema/description/tool-metadata waste candidates.
-2. Preserve tool count, capability, routing semantics, and quality-critical input guidance; do not shorten metadata merely because it is large.
-3. For any candidate compaction, require the static discovery evaluator plus relevant contract tests to remain coherent; fix only source-provable waste.
-4. Keep result-payload cleanup separate unless a concrete duplicate/default-detail offender is demonstrated from source.
+1. Continue the exact 64-tool static surface audit only where current source demonstrates redundant schema/description/tool-result representation; do not broad-minify metadata.
+2. Prefer `measure:surface` output when a matching canonical run is observable; until then, keep changes limited to source-provable duplication and preserve discovery-critical branch/identity guidance.
+3. Treat recovery-only or already-compact tools as `NO CHANGE REQUIRED` unless a concrete payload/default-detail problem is demonstrated.
+4. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 5. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without a fresh user instruction.
 
 The pending Animation generated-artifact/canonical gate remains real but is not the current user-selected next development objective.
