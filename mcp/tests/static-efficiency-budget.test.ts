@@ -183,7 +183,8 @@ describe("static efficiency budget", () => {
     expect(project).not.toContain("root_groups_truncated");
     expect(project).not.toContain("root_groups: rootGroups");
     expect(project).toContain("root_groups: rootGroupCount");
-    expect(project).toContain("Use list_outline only when hierarchy detail is actually needed");
+    expect(project).not.toContain("bounded top-level Group summary");
+    expect(project).toContain("Use list_outline only when hierarchy detail is needed");
     expect(project).toContain("structuredContent: result");
     expect(factories).toContain("compactMirroredStructuredContent");
     expect(factories).toContain("returned structured data");
