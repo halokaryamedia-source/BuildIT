@@ -10,7 +10,7 @@ BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built
 PRELOCAL_CONTROLLER_MUTATION_READY
 ```
 
-The current source contract, pre-local optimization closure, and bounded AnimationController mutation source are repository/static work. **Installed-plugin freshness, live Blockbench behavior, controller execution, model quality, runtime call efficiency, and persistence on the current build remain `LOCAL PROOF REQUIRED`.**
+The current source contract includes the pre-local optimization closure, bounded AnimationController mutation, existing-animation particle/sound/timeline effect mutation, controller-state particle/sound mutation, and animation-level `anim_time_update` / `blend_weight` mutation. These are source/static capabilities; current canonical CI/build/generated-doc freshness is still pending for the 64-tool source state. **Installed-plugin freshness, live Blockbench behavior, controller execution, model quality, runtime call efficiency, and persistence on the current build remain `LOCAL PROOF REQUIRED`.**
 
 **Local acceptance is currently deferred.** Do not activate the local runbook or claim live Blockbench/model-quality improvement without a fresh explicit instruction and actual runtime proof.
 
@@ -47,7 +47,11 @@ Pre-local optimization keeps:
 - canonical documentation ownership;
 - no speculative tool-count, runtime-prompt, router, or registration-profile redesign without installed-client evidence.
 
-AnimationController authoring now has one compact `manage_animation_controller` capability instead of several narrow tools. One call can apply up to 32 ordered state-machine operations in one Undo unit and returns affected state/IDs so immediate `inspect_animation` readback is unnecessary.
+Animation authoring now includes:
+
+- `manage_animation_controller` for bounded state-machine mutation, including controller-state particle/sound lifecycle;
+- `manage_animation_effects` for existing-animation particle/sound/timeline effects;
+- `animation_timeline` support for `anim_time_update` and `blend_weight`.
 
 These are source/instruction/test improvements, not proof of runtime usage reduction or live controller behavior.
 
@@ -55,7 +59,7 @@ These are source/instruction/test improvements, not proof of runtime usage reduc
 
 No local run is active. `docs/knowledge/operations/local-acceptance-runbook.md` remains the single procedure owner but is inactive until `docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
 
-When reactivated, the acceptance sequence remains:
+When reactivated, the acceptance sequence targets the current source surface:
 
 ```text
 current Local
@@ -64,7 +68,7 @@ current Local
 → record mcp/dist/mcp.js SHA-256
 → load the exact local BlockIT build
 → restart Blockbench + reconnect MCP
-→ verify endpoint + 63-tool default surface
+→ verify endpoint + 64-tool default surface
 → verify:stateless-local
 → TEST 1 — MCP / CORE MECHANICS
 → persistence / export
@@ -120,10 +124,10 @@ bun run docs:check
 
 Production output is `mcp/dist/mcp.js`. `dist/` is generated and not repository authority. **Package version alone is not freshness proof.**
 
-Current surface contract:
+Current source surface contract:
 
 ```text
-63 enabled tools
+64 enabled tools
 initialize instructions          <= 700 characters
 tools/list response              <= 80,500 characters
 input schemas                    <= 56,500 characters
@@ -132,7 +136,7 @@ max per-tool payload             <= 3,200 characters
 runtime workflow prompt          < 7,000 characters
 ```
 
-`measure:surface` emits the exact current serialized measurements. These are static characters, not installed-client token/context measurements. The max-per-tool ceiling was **not increased** for AnimationController mutation.
+`measure:surface` must confirm the exact current serialized measurements before canonical PASS is claimed. These are static characters, not installed-client token/context measurements. The max-per-tool ceiling was **not increased** for the animation effect closure.
 
 ## Runtime / Security Baseline
 
@@ -149,8 +153,7 @@ Normal asset authoring routes from current intent + known state to the exact MCP
 
 ## Protected Capability Gaps
 
-- AnimationController state particle/sound and blend-curve mutation
-- existing-animation direct sound/timeline-effect mutation
+- AnimationController blend-curve mutation
 - TextureMesh direct authoring/inspection
 - native Bedrock visible bounding-box fields
 - animated-texture authoring
