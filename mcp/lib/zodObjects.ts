@@ -156,7 +156,7 @@ export const timeRangeSchema = z.object({
 export const elementIdSchema = z
   .string()
   .min(1)
-  .describe("Non-empty ID or name of the element.");
+  .describe("Element UUID or name.");
 
 /** Optional mesh ID with fallback to selected */
 export const meshIdOptionalSchema = z
@@ -174,20 +174,20 @@ export const textureIdOptionalSchema = z
   .string()
   .min(1)
   .optional()
-  .describe("Non-empty Texture ID or name. Omit to use the selected/default texture.");
+  .describe("Texture UUID/ID/name; omit for selected/default texture.");
 
 /** Required texture ID */
 export const textureIdSchema = z
   .string()
   .min(1)
-  .describe("Non-empty Texture ID or name.");
+  .describe("Texture UUID/ID/name.");
 
 /** Optional animation ID with fallback to current */
 export const animationIdOptionalSchema = z
   .string()
   .min(1)
   .optional()
-  .describe("Non-empty Animation UUID or name. Omit to use the current animation where supported.");
+  .describe("Animation UUID/name; omit for current animation when supported.");
 
 /** Optional group/bone ID */
 export const groupIdOptionalSchema = z
@@ -199,20 +199,20 @@ export const groupIdOptionalSchema = z
 export const boneNameSchema = z
   .string()
   .min(1)
-  .describe("Non-empty bone/group UUID or name.");
+  .describe("Bone/Group UUID or name.");
 
 /** Optional cube ID with fallback to selected */
 export const cubeIdOptionalSchema = z
   .string()
   .min(1)
   .optional()
-  .describe("Non-empty Cube UUID or name. Omit to use the selected Cube(s) where supported.");
+  .describe("Cube UUID/name; omit for selected Cube(s) when supported.");
 
 /** Required cube ID */
 export const cubeIdSchema = z
   .string()
   .min(1)
-  .describe("Non-empty ID or name of the Cube.");
+  .describe("Cube UUID or name.");
 
 /** Face keys array (optional) */
 export const faceKeysOptionalSchema = z
