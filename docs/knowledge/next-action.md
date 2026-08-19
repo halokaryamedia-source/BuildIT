@@ -18,7 +18,11 @@ ANIMATION_FINAL_STATIC_ARCHITECTURE_AUDIT_COMPLETE
 ANIMATION_LOCAL_SOURCE_INTEGRATION_STATIC_VERIFIED
 ANIMATION_GENERATED_ARTIFACTS_STALE
 ANIMATION_CANONICAL_CI_EXECUTION_NOT_OBSERVED
+PRELOCAL_STATIC_EFFICIENCY_ACTIVE
+AUTHORING_SKILL_STACK_COMPACTED_STATIC
+TOOL_DISCOVERY_EVALUATOR_64_SYNC_IN_LOCAL
 NO LOCAL RUN ACTIVE
+LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
 
@@ -26,7 +30,27 @@ Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. 
 
 ## Proof Boundary
 
-Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Experimental browser proof below does not upgrade desktop MCP claims. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**. Static/source/CI evidence proves only its matching surface.
+Do not claim live desktop Blockbench/model-quality improvement or actual Codex usage reduction without matching runtime proof. Visual fidelity, playback, persistence, and installed-client call/token efficiency remain **LOCAL PROOF REQUIRED**. Static/source/CI evidence proves only its matching surface.
+
+## User-Directed Pre-Local Efficiency Continuation
+
+The user explicitly deferred Codex-local efficiency testing and requested only improvements that can be justified before local runtime evidence.
+
+Integrated source work:
+
+```text
+cc8f814dfded0700372287e1fc0536a8ce7db282
+refactor(authoring): compact active skill instructions
+
+2167c3a691144ffff36bb6b563e0d08d8747db59
+test(discovery): align static evaluator with 64-tool surface
+```
+
+Current pre-local efficiency scope:
+- active authoring instruction owners are compacted without removing Bedrock capability or visual-quality gates;
+- the static tool-discovery proxy now expects the 64-tool source and includes `manage_animation_effects` cases;
+- no custom router, lean/profile mode, dynamic endpoint split, tool deletion, media-resolution reduction, or runtime telemetry was added;
+- no actual Codex token/call saving is claimed before a future user-authorized local comparison.
 
 ## Animation Source In Local
 
@@ -37,45 +61,26 @@ Integrated commit:
 feat(animation): integrate effect and Molang closure
 ```
 
-Historical preflight candidate: `8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c`.
-
 Integrated scope:
-- D1 `manage_animation_effects`: particle/sound/timeline add-update-remove, exact inspected identity, snapping/collision/no-op preflight, one Undo, native point cap, split-on-move, final-point removal, preview `file` preservation, strict schemas, inspector/export-compatible continuation.
-- D2 extends `manage_animation_controller` with controller-state sound/particle lifecycle; no new controller tool.
-- D3 extends `animation_timeline` with `set_anim_time_update` / `set_blend_weight`; no `math_animation`.
-- runtime registration calls `registerAnimationEffectTools()` inside the existing animation family.
-- canonical docs-manifest source includes `animationEffectToolDocs`.
+- D1 `manage_animation_effects`: particle/sound/timeline add-update-remove with exact identity, bounded preflight, one Undo, and continuation state;
+- D2 extends `manage_animation_controller` with controller-state sound/particle lifecycle;
+- D3 extends `animation_timeline` with `set_anim_time_update` / `set_blend_weight`;
+- runtime registration keeps the additions inside the existing animation family;
+- canonical docs-manifest source includes `animationEffectToolDocs`;
 - static surface owner expects exactly 64 default tools.
-- regression owners for D1/D2/D3 are present in `Local`.
-
-Static lifecycle remains coherent:
-
-```text
-transform keys          create/manage → inspect → modify → inspect
-Molang transforms       manage_keyframes → inspect → modify → inspect
-animation effects       create/manage_animation_effects → inspect → modify → inspect
-controller composition  manage_animation_controller → inspect(state) → modify → inspect
-controller effects      manage_animation_controller → inspect(state) → modify → inspect
-animation properties    animation_timeline → inspect → modify → inspect
-loop/length/snapping    create/timeline → inspect → modify → inspect
-```
 
 Remaining protected animation gaps: controller blend-curve mutation and bone-binding expressions.
 
 ## Verification Result So Far
 
-Static integration checks on current `Local` are coherent, but canonical PASS is **not claimed**.
+Static/source integration is coherent, but canonical PASS for the current 64-tool state is **not claimed**.
 
-Generated artifacts are demonstrably stale relative to the integrated source:
-- `mcp/docs/api.json` still has `generatedAt` 2026-08-14.
-- `mcp/docs/index.html` still reports Animation tool count `(9)` instead of the manifest with the added effect tool.
-- `mcp/prompts/manifest.json` still classifies existing-animation effects as a protected gap.
+Generated artifacts remain stale relative to the integrated animation source:
+- `mcp/docs/api.json` still predates the animation-effect integration;
+- `mcp/docs/index.html` still reflects the older Animation tool count;
+- `mcp/prompts/manifest.json` still contains the older protected-gap wording.
 
-Therefore `docs:check` cannot be considered fresh until canonical regeneration is committed.
-
-No GitHub CI status/workflow run is observable for integration commit `33784de067525e8fcdd2510d6195c7b2ac85187e` through the currently available GitHub status/run surfaces. Do not infer typecheck/test/build PASS from source inspection.
-
-Canonical gate still required:
+Canonical MCP gate remains:
 
 ```text
 bun install --frozen-lockfile
@@ -87,13 +92,14 @@ bun run docs:build
 bun run docs:check
 ```
 
-The user's Windows workstation is not required for this CI gate. `docs/foundation/validation-report.md` remains the proof owner for the last completed canonical/live evidence; its prior 63-tool proof does not verify this 64-tool source state.
+The user's Windows workstation and Codex-local authoring test are not required for the current pre-local/static work. `docs/foundation/validation-report.md` remains the proof owner for completed canonical/live evidence.
 
 ## Next Step
 
-1. Regenerate `mcp/prompts/manifest.json`, `mcp/docs/api.json`, and `mcp/docs/index.html` through canonical Bun generators when the Bun-capable gate is available.
-2. Run typecheck, tests, `measure:surface`, build, and docs freshness on the exact final source state.
-3. Fix only concrete failures attributable to this integration; do not widen scope.
-4. After a completed successful canonical run, update proof owners and mark **ANIMATION SOURCE CLOSED**.
+1. Audit the exact current 64-tool serialized MCP surface using existing source ownership and `measure:surface`; identify only concrete schema/description/tool-metadata waste candidates.
+2. Preserve tool count, capability, routing semantics, and quality-critical input guidance; do not shorten metadata merely because it is large.
+3. For any candidate compaction, require the static discovery evaluator plus relevant contract tests to remain coherent; fix only source-provable waste.
+4. Keep result-payload cleanup separate unless a concrete duplicate/default-detail offender is demonstrated from source.
+5. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without a fresh user instruction.
 
-**Local acceptance remains deferred and is not part of this next step.**
+The pending Animation generated-artifact/canonical gate remains real but is not the current user-selected next development objective.
