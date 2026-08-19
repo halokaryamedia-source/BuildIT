@@ -30,6 +30,7 @@ TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
 PAINT_FILL_UNSUPPORTED_TOLERANCE_REMOVED_STATIC
 TEXTURE_LAYER_ACTION_SCHEMA_AUDIT_NO_CHANGE
 PBR_MATERIAL_READ_RESULTS_COMPACTED_STATIC
+PBR_MUTATION_RETURN_STATE_REUSED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -65,6 +66,7 @@ Current scope:
 - `paint_fill_tool` no longer advertises synthetic `tolerance` that native fill rejects, removing a known invalid-call/retry path without changing native fill behavior;
 - `texture_layer_management` action-specific fields were audited: `opacity`, `blend_mode`, `target_index`, and rename `layer_name` are conditionally required by runtime, but the current MCP registration owner flattens discriminated-union branches into one top-level field map and only marks fields required when required in every branch. A nine-branch union therefore would not expose conditional requirements to the client and would duplicate common branch schemas; a top-level `superRefine` would only move the same failed call earlier. **NO CHANGE REQUIRED** for this efficiency objective until the registration/client evidence changes;
 - `list_materials` now returns a short material-count summary with complete material/channel/config data in `structuredContent`; `get_material_info` returns a short identity/texture/preview summary while preserving texture metadata, config/file state, and compiled `texture_set_json` in `structuredContent`;
+- PBR mutations now reuse their already-authored post-state: `create_pbr_material`, `configure_material`, and `assign_texture_channel` return concise summaries plus material identity/channel/config state in `structuredContent`; they do not compile `texture_set_json` or call the focused read tool merely to enrich the mutation result;
 - PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
 - material-instance discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;
@@ -118,10 +120,10 @@ The Windows workstation and Codex-local authoring test are not required for curr
 
 ## Next Step
 
-1. Audit PBR mutation return reuse for `create_pbr_material`, `configure_material`, and `assign_texture_channel`: determine whether mutation-local authored state can be returned as concise `structuredContent` so callers can avoid immediate confirmation reads.
-2. Reuse state already available at the mutation boundary; do not compile or fetch broad extra detail merely to enrich a response, and do not make a readback-saving goal weaker than correctness/Undo semantics.
-3. Keep `texture_layer_management` and similar action-dependent schemas as `NO CHANGE REQUIRED` for efficiency unless a client-visible conditional-schema mechanism or installed-client evidence changes the decision.
-4. Continue source-provable schema/description/result cleanup only; do not broad-minify metadata or add another global result compactor.
+1. Perform one final bounded pre-local pass over normal-authoring mutation results for source-provable confirmation-read pressure or misleading success; prioritize owners that already hold exact post-state at the mutation boundary.
+2. Do not enrich mutation responses by compiling artifacts, capturing images, or performing broad extra reads; exact local authored state only.
+3. If no concrete high-value offender remains, record **NO CHANGE REQUIRED** and stop static micro-optimization until installed-client/local efficiency evidence is explicitly reactivated.
+4. Keep `texture_layer_management` and similar action-dependent schemas as `NO CHANGE REQUIRED` unless a client-visible conditional-schema mechanism or installed-client evidence changes the decision.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without fresh user instruction.
 

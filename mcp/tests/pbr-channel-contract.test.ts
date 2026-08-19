@@ -76,6 +76,7 @@ describe("PBR channel identity preflight", () => {
 
   test("PBR material creation uses native channel assignment and atomic Undo ownership", async () => {
     const source = await Bun.file(new URL("../server/tools/texture.ts", import.meta.url)).text();
+    expect(source).toContain("function pbrMaterialState(textureGroup: TextureGroup)");
     const start = source.indexOf("createTool(textureToolDocs[5].name");
     const end = source.indexOf("createTool(textureToolDocs[6].name", start);
     const block = source.slice(start, end);
@@ -85,12 +86,18 @@ describe("PBR channel identity preflight", () => {
     expect(block).not.toContain("colorTexture.extend(");
     expect(block).toContain("textureGroup.remove()");
     expect(block).toContain("texture_groups: [textureGroup]");
+    expect(block).toContain("const materialState = pbrMaterialState(textureGroup);");
+    expect(block).toContain("structuredContent: { success: true, material: materialState }");
+    expect(block).not.toContain("compileForBedrock");
 
     const configureStart = source.indexOf("createTool(textureToolDocs[6].name");
     const configureEnd = source.indexOf("createTool(textureToolDocs[7].name", configureStart);
     const configureBlock = source.slice(configureStart, configureEnd);
     expect(configureBlock).toContain('normalTexture.group = textureGroup.uuid');
     expect(configureBlock).not.toContain("normalTexture.extend(");
+    expect(configureBlock).toContain("const materialState = pbrMaterialState(textureGroup);");
+    expect(configureBlock).toContain("structuredContent: { material: materialState }");
+    expect(configureBlock).not.toContain("compileForBedrock");
 
     const assignStart = source.indexOf("createTool(textureToolDocs[10].name");
     const assignEnd = source.indexOf("createTool(textureToolDocs[11].name", assignStart);
@@ -98,6 +105,9 @@ describe("PBR channel identity preflight", () => {
     expect(assignBlock).toContain("tex.group = textureGroup.uuid");
     expect(assignBlock).toContain("tex.pbr_channel = channel");
     expect(assignBlock).not.toContain("tex.extend(");
+    expect(assignBlock).toContain("const materialState = pbrMaterialState(textureGroup);");
+    expect(assignBlock).toContain("structuredContent: { material: materialState }");
+    expect(assignBlock).not.toContain("compileForBedrock");
   });
 
   test("PBR source combinations match the effective native Bedrock compile branches", () => {

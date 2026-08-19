@@ -599,6 +599,26 @@ export function requireDistinctPbrChannelAssignments(
   }
 }
 
+function pbrMaterialState(textureGroup: TextureGroup) {
+  const textures = textureGroup.getTextures();
+  return {
+    name: textureGroup.name,
+    uuid: textureGroup.uuid,
+    channels: {
+      color: getChannelTextureInfo(textures, "color"),
+      normal: getChannelTextureInfo(textures, "normal"),
+      height: getChannelTextureInfo(textures, "height"),
+      mer: getChannelTextureInfo(textures, "mer"),
+    },
+    config: {
+      color_value: textureGroup.material_config.color_value,
+      mer_value: textureGroup.material_config.mer_value,
+      subsurface_value: textureGroup.material_config.subsurface_value,
+      saved: textureGroup.material_config.saved,
+    },
+  };
+}
+
 export type TextureProductionRole =
   | "base_color_candidate"
   | "explicit_variant"
@@ -1577,20 +1597,16 @@ export function registerTextureTools() {
 
       Canvas.updateAll();
 
-      return JSON.stringify({
-        success: true,
-        material: {
-          name: textureGroup.name,
-          uuid: textureGroup.uuid,
-          is_material: true,
-          channels: {
-            color: color_texture ? true : !!color_value,
-            normal: !!normal_texture,
-            height: !!height_texture,
-            mer: mer_texture ? true : !!mer_value,
+      const materialState = pbrMaterialState(textureGroup);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Created PBR material "${textureGroup.name}" (${textureGroup.uuid}) with ${texturesToAdd.length} assigned texture(s).`,
           },
-        },
-      });
+        ],
+        structuredContent: { success: true, material: materialState },
+      };
     },
   }, textureToolDocs[5].status);
 
@@ -1723,7 +1739,16 @@ export function registerTextureTools() {
 
       Canvas.updateAll();
 
-      return `Configured material "${textureGroup.name}"`;
+      const materialState = pbrMaterialState(textureGroup);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Configured PBR material "${textureGroup.name}" (${textureGroup.uuid}).`,
+          },
+        ],
+        structuredContent: { material: materialState },
+      };
     },
   }, textureToolDocs[6].status);
 
@@ -1736,25 +1761,7 @@ export function registerTextureTools() {
         (g: TextureGroup) => g.is_material
       );
 
-      const result = materials.map((group: TextureGroup) => {
-        const textures = group.getTextures();
-        return {
-          name: group.name,
-          uuid: group.uuid,
-          channels: {
-            color: getChannelTextureInfo(textures, "color"),
-            normal: getChannelTextureInfo(textures, "normal"),
-            height: getChannelTextureInfo(textures, "height"),
-            mer: getChannelTextureInfo(textures, "mer"),
-          },
-          config: {
-            color_value: group.material_config.color_value,
-            mer_value: group.material_config.mer_value,
-            subsurface_value: group.material_config.subsurface_value,
-            saved: group.material_config.saved,
-          },
-        };
-      });
+      const result = materials.map(pbrMaterialState);
 
       return {
         content: [
@@ -1933,7 +1940,16 @@ export function registerTextureTools() {
 
       Canvas.updateAll();
 
-      return `Assigned texture "${tex.name}" to ${channel} channel of material "${textureGroup.name}"`;
+      const materialState = pbrMaterialState(textureGroup);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Assigned texture "${tex.name}" to ${channel} channel of material "${textureGroup.name}".`,
+          },
+        ],
+        structuredContent: { material: materialState },
+      };
     },
   }, textureToolDocs[10].status);
 
