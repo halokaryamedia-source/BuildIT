@@ -1,6 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { getChannelTextureInfo } from "@/lib/util";
 import {
+  animationIdOptionalSchema,
+  boneNameSchema,
+  cubeIdOptionalSchema,
+  cubeIdSchema,
+  elementIdSchema,
+  textureIdOptionalSchema,
+  textureIdSchema,
+} from "@/lib/zodObjects";
+import {
   findElementsByCriteriaParameters,
   listOutlineParameters,
 } from "@/server/tools/element";
@@ -73,6 +82,63 @@ describe("static efficiency budget", () => {
     expect(findElementsByCriteriaParameters.parse({ limit: 1000 }).limit).toBe(1000);
     expect(getUndoStackParameters.parse({}).limit).toBe(20);
     expect(getUndoStackParameters.parse({ limit: 200 }).limit).toBe(200);
+  });
+
+  test("high-reuse identity guidance stays concise without losing targeting semantics", () => {
+    const cases = [
+      {
+        description: elementIdSchema.description ?? "",
+        max: 32,
+        terms: ["Element", "UUID", "name"],
+      },
+      {
+        description: textureIdOptionalSchema.description ?? "",
+        max: 60,
+        terms: ["Texture", "UUID", "ID", "name", "omit", "selected/default"],
+      },
+      {
+        description: textureIdSchema.description ?? "",
+        max: 32,
+        terms: ["Texture", "UUID", "ID", "name"],
+      },
+      {
+        description: animationIdOptionalSchema.description ?? "",
+        max: 70,
+        terms: ["Animation", "UUID", "name", "omit", "current"],
+      },
+      {
+        description: boneNameSchema.description ?? "",
+        max: 36,
+        terms: ["Bone", "Group", "UUID", "name"],
+      },
+      {
+        description: cubeIdOptionalSchema.description ?? "",
+        max: 64,
+        terms: ["Cube", "UUID", "name", "omit", "selected"],
+      },
+      {
+        description: cubeIdSchema.description ?? "",
+        max: 30,
+        terms: ["Cube", "UUID", "name"],
+      },
+    ] as const;
+
+    for (const { description, max, terms } of cases) {
+      expect(description.length).toBeLessThanOrEqual(max);
+      for (const term of terms) expect(description).toContain(term);
+    }
+
+    for (const schema of [
+      elementIdSchema,
+      textureIdOptionalSchema,
+      textureIdSchema,
+      animationIdOptionalSchema,
+      boneNameSchema,
+      cubeIdOptionalSchema,
+      cubeIdSchema,
+    ]) {
+      expect(schema.safeParse("").success).toBe(false);
+    }
   });
 
   test("undo and redo return compact post-action recovery position without a stack reread", async () => {
