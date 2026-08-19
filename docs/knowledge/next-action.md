@@ -28,6 +28,7 @@ PROJECT_INFO_METADATA_ALIGNED_STATIC
 RUNTIME_WORKFLOW_PROMPT_COMPACTED_STATIC
 TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
 PAINT_FILL_UNSUPPORTED_TOLERANCE_REMOVED_STATIC
+TEXTURE_LAYER_ACTION_SCHEMA_AUDIT_NO_CHANGE
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -51,6 +52,8 @@ Integrated source work:
 - `0344b3cac1b6fc53be4ef20e4f7e7cc6062e25a7` — compact shared identity schema guidance.
 - `d4a8eab1f9db99afc080cc4d8fe41545719d7082` — align `get_project_info` metadata to its actual result.
 - `7630fdb1b230cd1f2fda193b92cbf1662ff71d88` — compact runtime workflow guidance while retaining hard quality gates.
+- `5dc1ae48abfb97ca65ec86f442edf051e9a3690a` — compact shared optional Texture identity guidance.
+- `a927b64a0e0c53620da3b7aa7c0dc620daebcb2d` — remove unsupported `paint_fill_tool.tolerance` from the advertised/runtime surface.
 
 Current scope:
 - authoring instructions are shorter without removing Bedrock capability or visual-quality gates;
@@ -58,6 +61,7 @@ Current scope:
 - Locator/Null Object and high-reuse identity schemas retain target/UUID/fallback/branch semantics while removing repeated prose;
 - optional Texture identity guidance is shortened at the shared schema owner and fans out across normal Paint tools plus `get_texture`; its fallback to selected/default remains explicit and empty identifiers remain rejected;
 - `paint_fill_tool` no longer advertises synthetic `tolerance` that native fill rejects, removing a known invalid-call/retry path without changing native fill behavior;
+- `texture_layer_management` action-specific fields were audited: `opacity`, `blend_mode`, `target_index`, and rename `layer_name` are conditionally required by runtime, but the current MCP registration owner flattens discriminated-union branches into one top-level field map and only marks fields required when required in every branch. A nine-branch union therefore would not expose conditional requirements to the client and would duplicate common branch schemas; a top-level `superRefine` would only move the same failed call earlier. **NO CHANGE REQUIRED** for this efficiency objective until the registration/client evidence changes;
 - PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
 - material discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;
@@ -111,10 +115,10 @@ The Windows workstation and Codex-local authoring test are not required for curr
 
 ## Next Step
 
-1. Continue the exact 64-tool static audit only for source-provable schema/description/result duplication; do not broad-minify metadata.
-2. Prefer high-reuse owners where one safe compaction reduces repeated advertised schema text without changing behavior.
-3. Preserve discovery-critical terms (`UUID`, target type, fallback semantics, branch requirements) and explicit correctness/quality guidance.
-4. Treat PBR source-switch fields, recovery-only results, centrally compacted mirrors, and already-compact tools as `NO CHANGE REQUIRED` unless a concrete offender is demonstrated.
+1. Audit `list_materials` and `get_material_info` result representation: both currently expose structured PBR/material state as serialized JSON text. Determine whether concise human summary + canonical `structuredContent` can remove avoidable text payload without losing data or forcing follow-up reads.
+2. Preserve complete material/channel/config/texture-set information and keep detail opt-ins/capability unchanged; result cleanup must not become a new global compactor.
+3. Keep `texture_layer_management` and similar action-dependent schemas as `NO CHANGE REQUIRED` for efficiency unless a client-visible conditional-schema mechanism or installed-client evidence changes the decision.
+4. Continue source-provable schema/description/result cleanup only; do not broad-minify metadata.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without fresh user instruction.
 
