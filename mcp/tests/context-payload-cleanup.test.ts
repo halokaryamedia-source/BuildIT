@@ -160,13 +160,22 @@ describe("context and payload cleanup", () => {
     expect(parsed.usage_limit_per_instance).toBe(100);
 
     const sourceText = await source("server/tools/material-instances.ts");
+    const getStart = sourceText.indexOf("materialInstanceToolDocs[0].name");
+    const getEnd = sourceText.indexOf("materialInstanceToolDocs[1].name", getStart);
+    const getBlock = sourceText.slice(getStart, getEnd);
+    expect(getBlock).toContain("structuredContent: read");
+    expect(getBlock).toContain("Read material-instance metadata");
+    expect(getBlock).not.toContain("JSON.stringify(");
+
     const start = sourceText.indexOf("materialInstanceToolDocs[2].name");
     const end = sourceText.indexOf("materialInstanceToolDocs[3].name", start);
     const listBlock = sourceText.slice(start, end);
     expect(listBlock).toContain("entry.usage_count += 1");
     expect(listBlock).toContain("include_usages && entry.usages.length < usage_limit_per_instance");
     expect(listBlock).toContain("usages_truncated");
-    expect(listBlock).not.toContain("null, 2");
+    expect(listBlock).toContain("structuredContent: read");
+    expect(listBlock).toContain("Found ${materialInstances.length} unique material instance(s).");
+    expect(listBlock).not.toContain("JSON.stringify(");
   });
 
   test("high-frequency inspect_element routing prose stays compact", () => {
