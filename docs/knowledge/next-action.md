@@ -24,6 +24,7 @@ TOOL_DISCOVERY_EVALUATOR_64_SYNC_IN_LOCAL
 LOCATOR_SCHEMA_GUIDANCE_COMPACTED_STATIC
 MATERIAL_DISCOVERY_RESULTS_COMPACTED_STATIC
 SHARED_IDENTITY_SCHEMA_GUIDANCE_COMPACTED_STATIC
+PROJECT_INFO_METADATA_ALIGNED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -59,6 +60,9 @@ refactor(mcp): compact shared identity schema guidance
 
 af042bf14d746d343ce655236b07839fd78e989a
 merge(mcp): finalize pre-local schema efficiency
+
+d4a8eab1f9db99afc080cc4d8fe41545719d7082
+refactor(mcp): correct project info surface guidance
 ```
 
 Current pre-local efficiency scope:
@@ -68,6 +72,8 @@ Current pre-local efficiency scope:
 - `get_face_material_instances` and `list_material_instances` use concise human summaries plus canonical `structuredContent`, while list usage detail remains opt-in and bounded;
 - high-reuse shared identity schemas keep target type, UUID/name, and fallback semantics while dropping redundant `non-empty` prose already represented by `minLength` constraints;
 - the shared identity compaction is guarded by a static efficiency contract that checks concise descriptions and rejection of empty-string IDs;
+- `get_project_info` metadata now matches its actual lifecycle/format/logical-UV/counts result instead of advertising a removed top-level Group summary; hierarchy detail remains owned by `list_outline`;
+- current element/animation inspection JSON mirrors already rely on the central mirror compactor when `structuredContent` is present, while recovery-only compact-string owners remain unchanged; no second global result compactor was added;
 - no custom router, lean/profile mode, dynamic endpoint split, tool deletion, media-resolution reduction, or runtime telemetry was added;
 - no actual Codex token/call saving is claimed before a future user-authorized local comparison.
 
@@ -94,7 +100,7 @@ Remaining protected animation gaps: controller blend-curve mutation and bone-bin
 
 Static/source integration is coherent, but canonical PASS for the current 64-tool state is **not claimed**.
 
-Generated artifacts remain stale relative to the integrated animation source:
+Generated artifacts remain stale relative to the integrated animation source and later public metadata changes:
 - `mcp/docs/api.json` still predates the animation-effect integration;
 - `mcp/docs/index.html` still reflects the older Animation tool count;
 - `mcp/prompts/manifest.json` still contains the older protected-gap wording.
@@ -111,15 +117,15 @@ bun run docs:build
 bun run docs:check
 ```
 
-The user's Windows workstation and Codex-local authoring test are not required for the current pre-local/static work. `docs/foundation/validation-report.md` remains the proof owner for completed canonical/live evidence.
+The user's Windows workstation and Codex-local authoring test are not required for the current pre-local/static work. The current execution environment does not have the repository-pinned Bun 1.3.14 available, so no canonical Bun PASS is inferred from source inspection. `docs/foundation/validation-report.md` remains the proof owner for completed canonical/live evidence.
 
 ## Next Step
 
 1. Continue the exact 64-tool static surface audit only where current source demonstrates redundant schema/description/tool-result representation; do not broad-minify metadata.
 2. Prefer high-reuse metadata owners and repeated schema text first because one safe compaction reduces multiple advertised tool schemas without changing behavior.
 3. Preserve discovery-critical terms (`UUID`, target type, fallback semantics, branch requirements) and explicit correctness guidance; schema constraints may own facts that do not need to be repeated in prose.
-4. Treat recovery-only or already-compact tools as `NO CHANGE REQUIRED` unless a concrete payload/default-detail problem is demonstrated.
+4. Treat recovery-only, centrally compacted mirrors, or already-compact tools as `NO CHANGE REQUIRED` unless a concrete payload/default-detail problem is demonstrated.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without a fresh user instruction.
 
-The pending Animation generated-artifact/canonical gate remains real but is not the current user-selected next development objective.
+The pending generated-artifact/canonical Bun gate remains real but is not a Codex-local test.
