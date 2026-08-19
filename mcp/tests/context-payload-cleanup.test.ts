@@ -102,7 +102,7 @@ describe("context and payload cleanup", () => {
     expect(outline).toContain("returned_nodes: returnedNodes");
   });
 
-  test("texture creation returns metadata instead of implicit image bytes", async () => {
+  test("texture creation and material reads avoid redundant image/JSON payloads", async () => {
     const texture = await source("server/tools/texture.ts");
     const start = texture.indexOf("createTool(textureToolDocs[0].name");
     const end = texture.indexOf("createTool(textureToolDocs[1].name", start);
@@ -115,8 +115,12 @@ describe("context and payload cleanup", () => {
     const materialStart = texture.indexOf("createTool(textureToolDocs[7].name");
     const materialEnd = texture.indexOf("createTool(textureToolDocs[9].name", materialStart);
     const materialReads = texture.slice(materialStart, materialEnd);
-    expect(materialReads).not.toContain("JSON.stringify(result, null, 2)");
-    expect(materialReads).toContain("JSON.stringify(result)");
+    expect(materialReads).not.toContain("JSON.stringify(");
+    expect(materialReads).toContain("structuredContent: { materials: result }");
+    expect(materialReads).toContain("Found ${result.length} PBR material(s).");
+    expect(materialReads).toContain("structuredContent: result");
+    expect(materialReads).toContain("Read PBR material");
+    expect(materialReads).toContain("texture_set_json: textureSetJson");
   });
 
   test("element discovery defaults are compact and truncation remains explicit", async () => {

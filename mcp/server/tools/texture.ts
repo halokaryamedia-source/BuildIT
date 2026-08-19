@@ -1756,7 +1756,15 @@ export function registerTextureTools() {
         };
       });
 
-      return JSON.stringify(result);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Found ${result.length} PBR material(s).`,
+          },
+        ],
+        structuredContent: { materials: result },
+      };
     },
   }, textureToolDocs[7].status);
 
@@ -1798,7 +1806,15 @@ export function registerTextureTools() {
         texture_set_json: textureSetJson,
       };
 
-      return JSON.stringify(result);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Read PBR material "${textureGroup.name}" (${textureGroup.uuid}) with ${textures.length} texture(s); texture_set preview: ${textureSetJson ? "available" : "unavailable"}.`,
+          },
+        ],
+        structuredContent: result,
+      };
     },
   }, textureToolDocs[8].status);
 
