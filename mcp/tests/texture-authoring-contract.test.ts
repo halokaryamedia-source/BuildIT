@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   isExactPixelAuthoringRequest,
   normalizeTexturePixelRegion,
-  requireNativeFillTolerance,
+  paintFillToolParameters,
   requirePaintCoordinates,
   requireTextureCoordinatesWithinBounds,
   texturePixelRectToUvTag,
@@ -26,14 +26,12 @@ function toolBlock(paint: string, index: number, nextIndex: number): string {
 }
 
 describe("texturing authoring contract", () => {
-  test("fill tolerance fails closed instead of being silently ignored", () => {
-    expect(() => requireNativeFillTolerance(undefined)).not.toThrow();
-    expect(() => requireNativeFillTolerance(0)).toThrow(
-      "native fill matches the exact source color"
-    );
-    expect(() => requireNativeFillTolerance(25)).toThrow(
-      "native fill matches the exact source color"
-    );
+  test("fill surface omits unsupported synthetic tolerance", async () => {
+    expect(Object.keys(paintFillToolParameters.shape)).not.toContain("tolerance");
+    const paint = await source("server/tools/paint.ts");
+    const fill = toolBlock(paint, 0, 1);
+    expect(fill).not.toContain("tolerance");
+    expect(fill).not.toContain("requireNativeFillTolerance");
   });
 
   test("coordinate-driven paint operations reject empty work before runtime mutation", () => {

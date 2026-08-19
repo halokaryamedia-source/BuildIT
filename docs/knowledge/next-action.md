@@ -27,6 +27,7 @@ SHARED_IDENTITY_SCHEMA_GUIDANCE_COMPACTED_STATIC
 PROJECT_INFO_METADATA_ALIGNED_STATIC
 RUNTIME_WORKFLOW_PROMPT_COMPACTED_STATIC
 TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
+PAINT_FILL_UNSUPPORTED_TOLERANCE_REMOVED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -56,6 +57,7 @@ Current scope:
 - the static tool-discovery proxy expects 64 enabled tools and includes `manage_animation_effects`;
 - Locator/Null Object and high-reuse identity schemas retain target/UUID/fallback/branch semantics while removing repeated prose;
 - optional Texture identity guidance is shortened at the shared schema owner and fans out across normal Paint tools plus `get_texture`; its fallback to selected/default remains explicit and empty identifiers remain rejected;
+- `paint_fill_tool` no longer advertises synthetic `tolerance` that native fill rejects, removing a known invalid-call/retry path without changing native fill behavior;
 - PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
 - material discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;

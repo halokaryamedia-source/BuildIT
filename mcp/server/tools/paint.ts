@@ -41,12 +41,6 @@ export const paintFillToolParameters = z.object({
   y: z.number().describe("Y coordinate to start fill."),
   color: hexColorSchema.describe("Fill color as hex string."),
   opacity: opacitySchema.describe("Fill opacity (0-255)."),
-  tolerance: z
-    .number()
-    .min(0)
-    .max(100)
-    .optional()
-    .describe("Color tolerance for fill."),
   fill_mode: fillModeEnum
     .optional()
     .default("color_connected")
@@ -437,14 +431,6 @@ export function requirePaintCoordinates(
   }
 }
 
-export function requireNativeFillTolerance(tolerance?: number): void {
-  if (tolerance !== undefined) {
-    throw new Error(
-      "paint_fill_tool does not expose synthetic color tolerance because Blockbench native fill matches the exact source color. Omit tolerance or choose a different fill strategy."
-    );
-  }
-}
-
 type TexturePixelRegion = {
   rect: [number, number, number, number];
   size: [number, number];
@@ -603,11 +589,9 @@ export function registerPaintTools() {
         y,
         color,
         opacity,
-        tolerance,
         fill_mode,
         blend_mode,
       }) {
-        requireNativeFillTolerance(tolerance);
         const texture = getAndActivateTexture(texture_id);
 
         // Apply settings
