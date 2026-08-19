@@ -8,7 +8,7 @@ Current repository state:
 PRELOCAL_CONTROLLER_MUTATION_READY
 ```
 
-The source contract includes the completed pre-local optimization closure plus one bounded AnimationController mutation tool. The exact plugin artifact loaded by Blockbench, current runtime behavior, controller execution, runtime call efficiency, persistence, and current model-quality results remain **LOCAL PROOF REQUIRED**.
+The source contract includes the completed pre-local optimization closure, bounded AnimationController state-machine mutation, existing-animation particle/sound/timeline effect mutation, controller-state particle/sound lifecycle, and animation-level `anim_time_update` / `blend_weight` mutation. The current source surface expects 64 enabled tools. Canonical CI/build/generated-doc freshness for this 64-tool state is still pending; the exact plugin artifact loaded by Blockbench, runtime behavior, controller execution, runtime call efficiency, persistence, and current model-quality results remain **LOCAL PROOF REQUIRED**.
 
 **Local acceptance is currently deferred.** Do not activate runtime/local proof merely because the repository is static-ready.
 
@@ -37,39 +37,29 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-The server is loopback-only and request-owned/stateless. The default Bedrock Entity surface is **63 enabled tools**.
+The server is loopback-only and request-owned/stateless. The current source default Bedrock Entity surface is **64 enabled tools**; `measure:surface` must confirm that exact final surface before canonical PASS is claimed.
 
-## AnimationController Mutation
+## Animation Mutation
 
-`manage_animation_controller` is one default experimental capability inside the existing animation family. It does **not** create a new registration profile or controller framework.
+`manage_animation_controller` remains one bounded experimental capability inside the existing animation family. One call can create a controller or coherently mutate up to 32 ordered operations covering controller/state/transition/animation-link ownership plus state particle/sound lifecycle.
 
-One call can create a controller or coherently mutate up to 32 ordered operations covering:
+`manage_animation_effects` owns existing authored Animation particle, sound, and timeline effect add/update/remove using inspected keyframe/data-point identity, bounded collision/no-op preflight, and one Undo transaction.
 
-```text
-controller rename
-state add/update/remove
-initial-state selection
-transition add/update/remove
-animation-link add/update/remove
-state on_entry / on_exit
-scalar blend_transition / shortest-path flag
-```
+`animation_timeline` also owns animation-level `anim_time_update` and `blend_weight` mutation while preserving authored Molang text without evaluating it.
 
-The tool preflights the complete plan before native mutation, applies one `animation_controllers` Undo unit, rolls back an unexpectedly failed apply, and returns the controller identity plus affected state/created IDs. Reuse that returned state; do not immediately call `inspect_animation` unless additional detail is genuinely needed.
-
-`inspect_animation` remains read-only. Controller runtime/in-game execution is not proved by source mutation success.
+These capabilities stay inside the existing animation registration family; they do **not** create a new registration profile, controller framework, generic evaluator, or UI fallback. `inspect_animation` remains the read owner. Source mutation success does not prove live controller/game execution.
 
 ## Local Acceptance — Inactive
 
 The single procedure owner is `../docs/knowledge/operations/local-acceptance-runbook.md`. It is not an active next step until `../docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
 
-When reactivated, Test 1 includes representative controller create/mutate/inspect in addition to existing core mechanics; Test 2 remains the approved elephant reference model.
+When reactivated, Test 1 includes representative animation/controller create-mutate-inspect coverage in addition to existing core mechanics; Test 2 remains the approved elephant reference model.
 
 ## Bedrock Product Boundary
 
-Normal capability includes Cube/Group authoring, bounded observation, texture/Painter/PBR/material instances, Bedrock animation with Molang transform strings, bounded new-animation sound events, AnimationController/state inspection and state-machine mutation, Locator/Null Object state, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
+Normal source capability includes Cube/Group authoring, bounded observation, texture/Painter/PBR/material instances, Bedrock animation with numeric/Molang transform values, new- and existing-animation particle/sound/timeline effects, animation-level timing/blend properties, AnimationController/state inspection and state-machine plus state-effect mutation, Locator/Null Object state, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
 
-Protected gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
+Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
 ## Usage Discipline
 
@@ -80,7 +70,8 @@ known target/tool → execute directly
 unknown/stale identity → focused discovery only
 known coherent Cubes → place_cube(elements=[...])
 coherent controller edit → one manage_animation_controller batch
-controller returned state → reuse; inspect only if more detail is needed
+existing animation effects → manage_animation_effects
+controller/effect returned state → reuse; inspect only if more detail is needed
 geometry → modelling specialist
 texture/PBR → texturing specialist
 animation → animation specialist
@@ -91,7 +82,7 @@ Do not broad-search repository source for ordinary asset authoring, inspect ever
 ## Surface Guard
 
 ```text
-63 enabled tools
+64 enabled tools
 initialize instructions          <= 700 characters
 tools/list response              <= 80,500 characters
 input schemas                    <= 56,500 characters
@@ -100,7 +91,7 @@ max per-tool payload             <= 3,200 characters
 runtime workflow prompt          < 7,000 characters
 ```
 
-`measure:surface` prints exact current serialized counts. The controller closure keeps the previous `3,200` max-per-tool ceiling instead of relaxing it for a large schema. Serialized characters are not installed-client token measurements.
+`measure:surface` prints exact current serialized counts. The animation effect closure keeps the previous `3,200` max-per-tool ceiling instead of relaxing it for a new public tool. Serialized characters are not installed-client token measurements.
 
 ## Source Layout
 
@@ -116,6 +107,6 @@ tests/        contract/integration regressions
 docs/         generated API documentation
 ```
 
-Generated `docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are secondary to source and freshness-controlled.
+Generated `docs/api.json`, `docs/index.html`, and `prompts/manifest.json` are secondary to source and freshness-controlled. They are currently pending canonical regeneration for the 64-tool animation source state; do not hand-edit them.
 
-Do **not** use the upstream hosted plugin as BlockIT proof. Do not add compatibility shims, duplicate controller tools, new router/profile layers, generic import/eval capability, or another testing framework without a proved need.
+Do **not** use the upstream hosted plugin as BlockIT proof. Do not add compatibility shims, duplicate controller/effect tools, new router/profile layers, generic import/eval capability, or another testing framework without a proved need.
