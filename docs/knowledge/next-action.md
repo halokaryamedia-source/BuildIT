@@ -29,6 +29,7 @@ RUNTIME_WORKFLOW_PROMPT_COMPACTED_STATIC
 TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
 PAINT_FILL_UNSUPPORTED_TOLERANCE_REMOVED_STATIC
 TEXTURE_LAYER_ACTION_SCHEMA_AUDIT_NO_CHANGE
+PBR_MATERIAL_READ_RESULTS_COMPACTED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -54,6 +55,7 @@ Integrated source work:
 - `7630fdb1b230cd1f2fda193b92cbf1662ff71d88` — compact runtime workflow guidance while retaining hard quality gates.
 - `5dc1ae48abfb97ca65ec86f442edf051e9a3690a` — compact shared optional Texture identity guidance.
 - `a927b64a0e0c53620da3b7aa7c0dc620daebcb2d` — remove unsupported `paint_fill_tool.tolerance` from the advertised/runtime surface.
+- `11af2e5f7ecf2e50913089a8400453470ebc7d50` — move `list_materials` / `get_material_info` PBR state from serialized JSON text to concise summaries plus canonical `structuredContent`.
 
 Current scope:
 - authoring instructions are shorter without removing Bedrock capability or visual-quality gates;
@@ -62,8 +64,9 @@ Current scope:
 - optional Texture identity guidance is shortened at the shared schema owner and fans out across normal Paint tools plus `get_texture`; its fallback to selected/default remains explicit and empty identifiers remain rejected;
 - `paint_fill_tool` no longer advertises synthetic `tolerance` that native fill rejects, removing a known invalid-call/retry path without changing native fill behavior;
 - `texture_layer_management` action-specific fields were audited: `opacity`, `blend_mode`, `target_index`, and rename `layer_name` are conditionally required by runtime, but the current MCP registration owner flattens discriminated-union branches into one top-level field map and only marks fields required when required in every branch. A nine-branch union therefore would not expose conditional requirements to the client and would duplicate common branch schemas; a top-level `superRefine` would only move the same failed call earlier. **NO CHANGE REQUIRED** for this efficiency objective until the registration/client evidence changes;
+- `list_materials` now returns a short material-count summary with complete material/channel/config data in `structuredContent`; `get_material_info` returns a short identity/texture/preview summary while preserving texture metadata, config/file state, and compiled `texture_set_json` in `structuredContent`;
 - PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
-- material discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
+- material-instance discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;
 - the runtime workflow prompt is compacted with hard reference/semantic-form/difference-first/texture gates retained, and the canonical PBR/`material_instance` non-gap wording restored;
 - element/animation exact JSON mirrors with `structuredContent` remain owned by the central mirror compactor; no second global compactor was added;
@@ -115,10 +118,10 @@ The Windows workstation and Codex-local authoring test are not required for curr
 
 ## Next Step
 
-1. Audit `list_materials` and `get_material_info` result representation: both currently expose structured PBR/material state as serialized JSON text. Determine whether concise human summary + canonical `structuredContent` can remove avoidable text payload without losing data or forcing follow-up reads.
-2. Preserve complete material/channel/config/texture-set information and keep detail opt-ins/capability unchanged; result cleanup must not become a new global compactor.
+1. Audit PBR mutation return reuse for `create_pbr_material`, `configure_material`, and `assign_texture_channel`: determine whether mutation-local authored state can be returned as concise `structuredContent` so callers can avoid immediate confirmation reads.
+2. Reuse state already available at the mutation boundary; do not compile or fetch broad extra detail merely to enrich a response, and do not make a readback-saving goal weaker than correctness/Undo semantics.
 3. Keep `texture_layer_management` and similar action-dependent schemas as `NO CHANGE REQUIRED` for efficiency unless a client-visible conditional-schema mechanism or installed-client evidence changes the decision.
-4. Continue source-provable schema/description/result cleanup only; do not broad-minify metadata.
+4. Continue source-provable schema/description/result cleanup only; do not broad-minify metadata or add another global result compactor.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without fresh user instruction.
 
