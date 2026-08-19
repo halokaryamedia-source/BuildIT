@@ -30,7 +30,8 @@ TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
 PAINT_FILL_UNSUPPORTED_TOLERANCE_REMOVED_STATIC
 TEXTURE_LAYER_ACTION_SCHEMA_AUDIT_NO_CHANGE
 PBR_MATERIAL_READ_RESULTS_COMPACTED_STATIC
-PBR_MUTATION_RETURN_STATE_REUSED_STATIC
+PBR_MUTATION_RETURN_ENRICHMENT_REVERTED_STATIC
+PRELOCAL_EFFICIENCY_MICRO_OPTIMIZATION_STOPPED
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -57,6 +58,7 @@ Integrated source work:
 - `5dc1ae48abfb97ca65ec86f442edf051e9a3690a` — compact shared optional Texture identity guidance.
 - `a927b64a0e0c53620da3b7aa7c0dc620daebcb2d` — remove unsupported `paint_fill_tool.tolerance` from the advertised/runtime surface.
 - `11af2e5f7ecf2e50913089a8400453470ebc7d50` — move `list_materials` / `get_material_info` PBR state from serialized JSON text to concise summaries plus canonical `structuredContent`.
+- `5325d8e3f07c88286739948378d55052c227638a` — attempted broad PBR mutation post-state reuse; superseded by the current correction because static cost review could not prove the extra mutation payload would remove enough focused reads.
 
 Current scope:
 - authoring instructions are shorter without removing Bedrock capability or visual-quality gates;
@@ -65,8 +67,8 @@ Current scope:
 - optional Texture identity guidance is shortened at the shared schema owner and fans out across normal Paint tools plus `get_texture`; its fallback to selected/default remains explicit and empty identifiers remain rejected;
 - `paint_fill_tool` no longer advertises synthetic `tolerance` that native fill rejects, removing a known invalid-call/retry path without changing native fill behavior;
 - `texture_layer_management` action-specific fields were audited: `opacity`, `blend_mode`, `target_index`, and rename `layer_name` are conditionally required by runtime, but the current MCP registration owner flattens discriminated-union branches into one top-level field map and only marks fields required when required in every branch. A nine-branch union therefore would not expose conditional requirements to the client and would duplicate common branch schemas; a top-level `superRefine` would only move the same failed call earlier. **NO CHANGE REQUIRED** for this efficiency objective until the registration/client evidence changes;
-- `list_materials` now returns a short material-count summary with complete material/channel/config data in `structuredContent`; `get_material_info` returns a short identity/texture/preview summary while preserving texture metadata, config/file state, and compiled `texture_set_json` in `structuredContent`;
-- PBR mutations now reuse their already-authored post-state: `create_pbr_material`, `configure_material`, and `assign_texture_channel` return concise summaries plus material identity/channel/config state in `structuredContent`; they do not compile `texture_set_json` or call the focused read tool merely to enrich the mutation result;
+- `list_materials` keeps a short material-count summary with complete material/channel/config data in `structuredContent`; `get_material_info` keeps a short identity/texture/preview summary while preserving texture metadata, config/file state, and compiled `texture_set_json` in `structuredContent`;
+- broad PBR mutation state enrichment is reverted. `create_pbr_material`, `configure_material`, and `assign_texture_channel` use the earlier compact success results instead of returning a channel/config snapshot on every mutation. Static review found that the enriched form increased normal mutation payload and its first-texture-per-channel summary was not equivalent to full `get_material_info`; without installed-client evidence that it suppresses enough confirmation reads, the enrichment is not a source-proven efficiency win;
 - PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
 - material-instance discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;
@@ -120,11 +122,11 @@ The Windows workstation and Codex-local authoring test are not required for curr
 
 ## Next Step
 
-1. Perform one final bounded pre-local pass over normal-authoring mutation results for source-provable confirmation-read pressure or misleading success; prioritize owners that already hold exact post-state at the mutation boundary.
-2. Do not enrich mutation responses by compiling artifacts, capturing images, or performing broad extra reads; exact local authored state only.
-3. If no concrete high-value offender remains, record **NO CHANGE REQUIRED** and stop static micro-optimization until installed-client/local efficiency evidence is explicitly reactivated.
-4. Keep `texture_layer_management` and similar action-dependent schemas as `NO CHANGE REQUIRED` unless a client-visible conditional-schema mechanism or installed-client evidence changes the decision.
-5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
-6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without fresh user instruction.
+1. Stop pre-local/static micro-optimization here. The remaining tradeoffs depend on installed-client behavior rather than source-only character or payload reasoning.
+2. Preserve the current wins: compact active instructions, high-reuse schema guidance, unsupported-input removal, summary-first material reads, bounded discovery, and central exact-mirror compaction.
+3. Do not re-enrich mutation results, add router/profile logic, reduce media resolution, remove tools, or redesign exposure without installed-client evidence.
+4. When the user explicitly reactivates local efficiency proof, compare actual task-level tool calls, result/context payload, confirmation/readback frequency, and output quality against a fixed representative authoring task.
+5. Keep the generated-artifact/canonical Bun gate as a separate source/build closure; it is real but is not proof of Codex runtime efficiency.
+6. Do not start Codex-local testing or local acceptance without fresh user instruction.
 
 The pending generated-artifact/canonical Bun gate remains real but is not a Codex-local test.
