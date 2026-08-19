@@ -1,11 +1,11 @@
 ---
 name: blockit-bedrock-animation
-description: Minecraft Bedrock Entity animation specialist for authored motion, Molang layers, controllers, effects, rig, timeline, and bounded correction.
+description: Minecraft Bedrock Entity animation specialist for authored motion, Molang, controllers, effects, rig, timeline, and bounded correction.
 ---
 
 # BlockIT Bedrock Animation
 
-Own animation after participating hierarchy/pivots are suitable. Motion intent and causality outrank keyframe count or curve complexity.
+Use after participating hierarchy/pivots are suitable. Motion causality outranks keyframe count or curve complexity.
 
 ## Direct Routing
 
@@ -23,80 +23,53 @@ explicit copy/paste/mirror            → animation_copy_paste
 new-animation particle/sound          → create_animation
 ```
 
-Reuse fresh UUID/state; do not broad-read known hierarchy.
+## Deferred Spec Loading
+
+Load the **exact tool name** only. Reuse fresh UUID/state; known participating identity/state must not fall back to broad hierarchy discovery or confirmation reads.
 
 ## Motion Design Contract
 
-Before production keys define only what matters:
+Before production keys define:
 
 ```text
-archetype + intent
-duration / snapping intent
-primary driver bone(s)
-counter-motion / stabilizers
+archetype + intent + duration/snapping intent
+primary driver bone(s) + counter-motion/stabilizers
 followers / secondary chains
 phase + contact / attachment invariants
 authored-key vs Molang ownership
-causal sound/particle event(s)
-loop seam or neutral/handoff requirement
+causal event for sound/particle
+loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, **not presets**: `PROCEDURAL_LAYER | LOOP_ORGANIC | LOCOMOTION | ACTION | MECHANICAL | HOLD_POSE | IDLE_VARIANT | FIRST_PERSON_ACTION | THIRD_PERSON_ACTION`.
-
-No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Prefer the simplest interpolation that preserves intended motion.
+Archetypes are categories, **not presets**. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target; use the simplest interpolation that preserves motion.
 
 ## Procedural Math / Molang
 
-Use Molang for continuous, cyclic, reactive, or naturally parameterized motion; use explicit authored poses for identity-critical action, impact, contact, silhouette, and deliberate acting. `manage_keyframes` preserves authored Molang text; never evaluate it as gameplay truth or invent unknown query/state values.
-
-Choose the driver by cause:
+Use Molang for continuous, cyclic, reactive, parameterized motion; explicit authored poses own identity-critical action, impact, contact, silhouette, and acting. Preserve authored Molang text; do not invent unknown query/state values.
 
 ```text
-q.anim_time                 → time-driven cycle/response
-q.modified_distance_moved   → travel-linked phase
-q.modified_move_speed       → speed/intensity response
-controller blend value      → conditional/continuous layer weight
+q.anim_time               → time-driven cycle/response
+q.modified_distance_moved → travel-linked phase
+q.modified_move_speed     → speed/intensity response
+controller blend value    → conditional layer weight
 ```
 
-For periodic motion track `base + amplitude + frequency + phase`; trig uses degrees. For a chain define `driver → delayed followers`, phase progression, amplitude hierarchy, and attachment continuity. A mathematical gait relation is only a starting constraint: mirror/copy is not a gait generator, contact phases remain authored, and run is not merely faster walk.
+Periodic motion tracks base + amplitude + frequency + phase. Chains use `driver → delayed followers`, deliberate phase/amplitude hierarchy, and attachment continuity. Mirror/copy is not a gait generator; contact remains authored; run is not merely faster walk.
 
 ## Action / Weight / Effects
 
-When material:
+When material: `anticipation → acceleration/action → impact/contact → overshoot/follow-through → recovery → neutral/handoff`.
 
-```text
-anticipation
-→ acceleration / action
-→ impact or contact
-→ overshoot / follow-through
-→ recovery
-→ neutral or controller handoff
-```
-
-Use counter-motion/stabilization when intended weight requires it. Secondary parts normally lag their driver.
-
-Bind each particle/sound to a named **causal event** such as release, contact, ignition, landing, start, or stop. Do not default effects to time zero unless state/animation start is the actual cause.
+Use counter-motion when weight needs it; secondary parts normally lag the driver. Bind each particle/sound to a named **causal event** (release/contact/ignition/landing/start/stop), not time zero unless start is the cause.
 
 ## Authoring / Verification
 
-Use `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`. Existing-asset geometry can be a scope baseline without certifying accuracy. Geometry/hierarchy/pivot changes invalidate only affected animation assumptions.
+`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`. Geometry/hierarchy/pivot changes invalidate only affected animation assumptions.
 
-Review affected motion in this order:
+Review: pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return.
 
-```text
-pose/readability
-→ timing/phase
-→ weight/contact
-→ attachment/clipping
-→ secondary motion
-→ effect synchronization
-→ loop seam / neutral return
-```
-
-Correction verdict is `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`. Do not use an animation quality score.
+Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`. Do not use an animation quality score.
 
 ## Protected Gaps
 
-Controller blend-curve mutation and bone-binding expressions remain protected. Do not route protected gaps through `risky_eval` or generic UI actions.
-
-Controller authored-state inspection/mutation is not proof of controller execution in Minecraft. Live playback/visual quality needs direct runtime evidence when explicitly activated.
+Controller blend-curve mutation and bone-binding expressions remain protected; do not route them through `risky_eval` or generic UI actions. Authored controller state is not proof of Minecraft execution; live playback/visual quality requires direct runtime evidence when explicitly activated.
