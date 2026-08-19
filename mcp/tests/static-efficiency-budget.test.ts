@@ -93,7 +93,7 @@ describe("static efficiency budget", () => {
       },
       {
         description: textureIdOptionalSchema.description ?? "",
-        max: 60,
+        max: 50,
         terms: ["Texture", "UUID", "ID", "name", "omit", "selected/default"],
       },
       {
@@ -139,6 +139,15 @@ describe("static efficiency budget", () => {
     ]) {
       expect(schema.safeParse("").success).toBe(false);
     }
+  });
+
+  test("optional Texture identity guidance is shared across normal Paint and texture reads", async () => {
+    const [paint, texture] = await Promise.all([
+      source("server/tools/paint.ts"),
+      source("server/tools/texture.ts"),
+    ]);
+    expect((paint.match(/texture_id: textureIdOptionalSchema/g) ?? []).length).toBeGreaterThanOrEqual(7);
+    expect(texture).toContain("texture: textureIdOptionalSchema");
   });
 
   test("undo and redo return compact post-action recovery position without a stack reread", async () => {

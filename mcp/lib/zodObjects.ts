@@ -174,7 +174,7 @@ export const textureIdOptionalSchema = z
   .string()
   .min(1)
   .optional()
-  .describe("Texture UUID/ID/name; omit for selected/default texture.");
+  .describe("Texture UUID/ID/name; omit for selected/default.");
 
 /** Required texture ID */
 export const textureIdSchema = z

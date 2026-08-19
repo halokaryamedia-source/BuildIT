@@ -26,6 +26,7 @@ MATERIAL_DISCOVERY_RESULTS_COMPACTED_STATIC
 SHARED_IDENTITY_SCHEMA_GUIDANCE_COMPACTED_STATIC
 PROJECT_INFO_METADATA_ALIGNED_STATIC
 RUNTIME_WORKFLOW_PROMPT_COMPACTED_STATIC
+TEXTURE_OPTIONAL_IDENTITY_GUIDANCE_COMPACTED_STATIC
 NO LOCAL RUN ACTIVE
 LOCAL CODEX EFFICIENCY TEST DEFERRED BY USER
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
@@ -48,11 +49,14 @@ Integrated source work:
 - `9927f0d59d77ed27312f2d9dafde478367827ca9` — compact material discovery result representation.
 - `0344b3cac1b6fc53be4ef20e4f7e7cc6062e25a7` — compact shared identity schema guidance.
 - `d4a8eab1f9db99afc080cc4d8fe41545719d7082` — align `get_project_info` metadata to its actual result.
+- `7630fdb1b230cd1f2fda193b92cbf1662ff71d88` — compact runtime workflow guidance while retaining hard quality gates.
 
 Current scope:
 - authoring instructions are shorter without removing Bedrock capability or visual-quality gates;
 - the static tool-discovery proxy expects 64 enabled tools and includes `manage_animation_effects`;
 - Locator/Null Object and high-reuse identity schemas retain target/UUID/fallback/branch semantics while removing repeated prose;
+- optional Texture identity guidance is shortened at the shared schema owner and fans out across normal Paint tools plus `get_texture`; its fallback to selected/default remains explicit and empty identifiers remain rejected;
+- PBR action-specific Texture/Material descriptions were reviewed but are not broad-minified because several own source-switch, `none`, uniqueness, or mutation-preflight semantics; treat those as `NO CHANGE REQUIRED` until a concrete serialized-surface offender is measured;
 - material discovery uses concise text plus canonical `structuredContent`, with usage detail still opt-in and bounded;
 - `get_project_info` advertises lifecycle/format/logical-UV/counts only; hierarchy remains owned by `list_outline`;
 - the runtime workflow prompt is compacted with hard reference/semantic-form/difference-first/texture gates retained, and the canonical PBR/`material_instance` non-gap wording restored;
@@ -108,7 +112,7 @@ The Windows workstation and Codex-local authoring test are not required for curr
 1. Continue the exact 64-tool static audit only for source-provable schema/description/result duplication; do not broad-minify metadata.
 2. Prefer high-reuse owners where one safe compaction reduces repeated advertised schema text without changing behavior.
 3. Preserve discovery-critical terms (`UUID`, target type, fallback semantics, branch requirements) and explicit correctness/quality guidance.
-4. Treat recovery-only, centrally compacted mirrors, and already-compact tools as `NO CHANGE REQUIRED` unless a concrete offender is demonstrated.
+4. Treat PBR source-switch fields, recovery-only results, centrally compacted mirrors, and already-compact tools as `NO CHANGE REQUIRED` unless a concrete offender is demonstrated.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without fresh user instruction.
 
