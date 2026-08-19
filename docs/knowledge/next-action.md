@@ -15,8 +15,9 @@ ANIMATION_D4_TIMELINE_BATCH_OWNERSHIP_FIXED
 ANIMATION_D5_EFFECT_SUMMARY_COUNTS_FIXED
 ANIMATION_CREATE_INSPECT_MODIFY_SYMMETRY_STATIC_AUDIT_COMPLETE
 ANIMATION_FINAL_STATIC_ARCHITECTURE_AUDIT_COMPLETE
-ANIMATION_SOURCE_IN_LOCAL_CANONICAL_VERIFICATION_PENDING
-ANIMATION_CANONICAL_CLOSURE_DEFERRED_UNTIL_CROSS_DOMAIN_FINALIZATION
+ANIMATION_LOCAL_SOURCE_INTEGRATION_STATIC_VERIFIED
+ANIMATION_GENERATED_ARTIFACTS_STALE
+ANIMATION_CANONICAL_CI_EXECUTION_NOT_OBSERVED
 NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE DEFERRED — NOT A CURRENT NEXT STEP
 ```
@@ -27,23 +28,25 @@ Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. 
 
 Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Experimental browser proof below does not upgrade desktop MCP claims. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**. Static/source/CI evidence proves only its matching surface.
 
-## Animation Source Now In Local
+## Animation Source In Local
 
-The previously reviewed animation closure is now intentionally integrated into `Local` at source level. Historical preflight candidate:
+Integrated commit:
 
 ```text
-8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c
-feat(animation): prepare canonical effect and Molang closure
+33784de067525e8fcdd2510d6195c7b2ac85187e
+feat(animation): integrate effect and Molang closure
 ```
+
+Historical preflight candidate: `8cd1a4e86b28af8ff4ecaa0cbfa72051c6de194c`.
 
 Integrated scope:
 - D1 `manage_animation_effects`: particle/sound/timeline add-update-remove, exact inspected identity, snapping/collision/no-op preflight, one Undo, native point cap, split-on-move, final-point removal, preview `file` preservation, strict schemas, inspector/export-compatible continuation.
 - D2 extends `manage_animation_controller` with controller-state sound/particle lifecycle; no new controller tool.
 - D3 extends `animation_timeline` with `set_anim_time_update` / `set_blend_weight`; no `math_animation`.
-- runtime registration + canonical docs manifest source include D1; `inspect_animation` covers particle/sound/timeline.
-- animation skill/policy/runtime prompt route implemented D1/D2 instead of treating them as gaps.
-- regression owners cover D1/D2/D3, strictness, one-Undo behavior, docs registration, inspection parity, routing, and ownership.
-- implementation map owns `manage_animation_effects` and the static 64-tool inventory.
+- runtime registration calls `registerAnimationEffectTools()` inside the existing animation family.
+- canonical docs-manifest source includes `animationEffectToolDocs`.
+- static surface owner expects exactly 64 default tools.
+- regression owners for D1/D2/D3 are present in `Local`.
 
 Static lifecycle remains coherent:
 
@@ -57,11 +60,22 @@ animation properties    animation_timeline → inspect → modify → inspect
 loop/length/snapping    create/timeline → inspect → modify → inspect
 ```
 
-Remaining protected animation gaps: controller blend-curve mutation and bone-binding expressions. Generic generators, quality scores, and extra Bezier complexity remain deferred.
+Remaining protected animation gaps: controller blend-curve mutation and bone-binding expressions.
 
-## Canonical Verification Still Pending
+## Verification Result So Far
 
-Source presence in `Local` is **not** the same as canonical verification. Public MCP changes still require:
+Static integration checks on current `Local` are coherent, but canonical PASS is **not claimed**.
+
+Generated artifacts are demonstrably stale relative to the integrated source:
+- `mcp/docs/api.json` still has `generatedAt` 2026-08-14.
+- `mcp/docs/index.html` still reports Animation tool count `(9)` instead of the manifest with the added effect tool.
+- `mcp/prompts/manifest.json` still classifies existing-animation effects as a protected gap.
+
+Therefore `docs:check` cannot be considered fresh until canonical regeneration is committed.
+
+No GitHub CI status/workflow run is observable for integration commit `33784de067525e8fcdd2510d6195c7b2ac85187e` through the currently available GitHub status/run surfaces. Do not infer typecheck/test/build PASS from source inspection.
+
+Canonical gate still required:
 
 ```text
 bun install --frozen-lockfile
@@ -73,21 +87,13 @@ bun run docs:build
 bun run docs:check
 ```
 
-The repo-owned `.github/workflows/mcp-verify.yml` runs automatically for relevant pushes to `Local`. The user's Windows workstation is not required for this CI gate.
-
-Generated artifacts are not hand-edited. Until canonical generation is committed, these may remain stale relative to the new source:
-- `mcp/docs/api.json`
-- `mcp/docs/index.html`
-- `mcp/prompts/manifest.json`
-
-`docs/foundation/validation-report.md` remains the proof owner for the last completed canonical/live evidence; do not reinterpret its prior 63-tool proof as verification of this 64-tool source state.
+The user's Windows workstation is not required for this CI gate. `docs/foundation/validation-report.md` remains the proof owner for the last completed canonical/live evidence; its prior 63-tool proof does not verify this 64-tool source state.
 
 ## Next Step
 
-1. Read the automatic `MCP Verify` result for the Local integration commit.
-2. Fix only concrete failures attributable to the animation integration; do not widen scope.
-3. If generated docs are the only remaining stale surface, keep that canonical generation/commit as unfinished and allow it to wait for cross-domain finalization if desired.
-4. At final project closure, run the full canonical gate, regenerate all derived artifacts, and update proof owners from actual results.
-5. Mark **ANIMATION SOURCE CLOSED** only after canonical verification; local Blockbench acceptance remains separately deferred.
+1. Regenerate `mcp/prompts/manifest.json`, `mcp/docs/api.json`, and `mcp/docs/index.html` through canonical Bun generators when the Bun-capable gate is available.
+2. Run typecheck, tests, `measure:surface`, build, and docs freshness on the exact final source state.
+3. Fix only concrete failures attributable to this integration; do not widen scope.
+4. After a completed successful canonical run, update proof owners and mark **ANIMATION SOURCE CLOSED**.
 
 **Local acceptance remains deferred and is not part of this next step.**
