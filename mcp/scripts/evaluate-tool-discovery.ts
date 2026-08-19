@@ -268,6 +268,11 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "add controller states transitions and animation links",
   ],
   [
+    "manage_animation_effects",
+    "add particle sound or timeline effect keyframes to an existing animation",
+    "update or remove an authored animation effect by keyframe identity",
+  ],
+  [
     "manage_keyframes",
     "add a rotation keyframe to this bone",
     "edit keyframe values at this time",
@@ -565,17 +570,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 63) {
+  if (report.enabled_tool_count !== 64) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 63`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 64`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 53) {
+  if (report.expected_tool_count !== 54) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 53`
+      `expected_tool_count=${report.expected_tool_count}; expected 54`
     );
   }
   if (report.missing_expected_tools.length > 0) {
