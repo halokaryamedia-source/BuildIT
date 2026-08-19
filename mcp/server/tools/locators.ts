@@ -14,28 +14,28 @@ const locatorCreateSchema = z
   .object({
     action: z
       .literal("create")
-      .describe("Create branch: requires name and parent; do not send id."),
+      .describe("Create: requires name+parent; omit id."),
     name: z
       .string()
       .min(1)
-      .describe("Required when action=create. Locator name; omit for update."),
+      .describe("Required when action=create. Locator name."),
     parent: z
       .string()
       .min(1)
-      .describe("Required when action=create: parent Group UUID or exact unique name."),
+      .describe("Required when action=create. Parent Group UUID or unique exact name."),
     position: finiteLocatorVector3Schema
       .optional()
       .default([0, 0, 0])
-      .describe("Create-only initial position; defaults to [0,0,0]."),
+      .describe("Initial position; default [0,0,0]."),
     rotation: finiteLocatorVector3Schema
       .optional()
       .default([0, 0, 0])
-      .describe("Create-only initial rotation; defaults to [0,0,0]."),
+      .describe("Initial rotation; default [0,0,0]."),
     ignore_inherited_scale: z
       .boolean()
       .optional()
       .default(false)
-      .describe("Create-only initial ignore_inherited_scale value."),
+      .describe("Initial ignore_inherited_scale; default false."),
   })
   .strict();
 
@@ -43,26 +43,26 @@ const locatorUpdateSchema = z
   .object({
     action: z
       .literal("update")
-      .describe("Update branch: requires id plus at least one authored field; do not send name."),
+      .describe("Update: requires id + at least one authored field; omit name."),
     id: z
       .string()
       .min(1)
-      .describe("Required when action=update. Exact Locator UUID or exact unique name."),
+      .describe("Required when action=update. Locator UUID or unique exact name."),
     parent: z
       .string()
       .min(1)
       .optional()
-      .describe("Update-only optional replacement parent Group UUID or exact unique name."),
+      .describe("Replacement parent Group UUID or unique exact name."),
     position: finiteLocatorVector3Schema
       .optional()
-      .describe("Update-only optional replacement position."),
+      .describe("Replacement position."),
     rotation: finiteLocatorVector3Schema
       .optional()
-      .describe("Update-only optional replacement rotation."),
+      .describe("Replacement rotation."),
     ignore_inherited_scale: z
       .boolean()
       .optional()
-      .describe("Update-only optional ignore_inherited_scale replacement."),
+      .describe("Replacement ignore_inherited_scale."),
   })
   .strict();
 
@@ -88,19 +88,19 @@ const nullObjectCreateSchema = z
   .object({
     action: z
       .literal("create")
-      .describe("Create branch: requires name and parent; do not send id."),
+      .describe("Create: requires name+parent; omit id."),
     name: z
       .string()
       .min(1)
-      .describe("Required when action=create. Null Object name; omit for update."),
+      .describe("Required when action=create. Null Object name."),
     parent: z
       .string()
       .min(1)
-      .describe("Required when action=create: parent Group UUID or exact unique name."),
+      .describe("Required when action=create. Parent Group UUID or unique exact name."),
     position: finiteLocatorVector3Schema
       .optional()
       .default([0, 0, 0])
-      .describe("Create-only initial position; defaults to [0,0,0]."),
+      .describe("Initial position; default [0,0,0]."),
   })
   .strict();
 
@@ -108,19 +108,19 @@ const nullObjectUpdateSchema = z
   .object({
     action: z
       .literal("update")
-      .describe("Update branch: requires id plus parent and/or position; do not send name."),
+      .describe("Update: requires id plus parent and/or position; omit name."),
     id: z
       .string()
       .min(1)
-      .describe("Required when action=update. Exact Null Object UUID or exact unique name."),
+      .describe("Required when action=update. Null Object UUID or unique exact name."),
     parent: z
       .string()
       .min(1)
       .optional()
-      .describe("Update-only optional replacement parent Group UUID or exact unique name."),
+      .describe("Replacement parent Group UUID or unique exact name."),
     position: finiteLocatorVector3Schema
       .optional()
-      .describe("Update-only optional replacement position."),
+      .describe("Replacement position."),
   })
   .strict();
 
@@ -145,7 +145,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "list_locator_elements",
     description:
-      "Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.",
+      "Lists Locator/Null Object identity, type, and parent. Use inspect_element only for detailed authored state.",
     annotations: {
       title: "List Bedrock Locator Elements",
       readOnlyHint: true,
@@ -156,7 +156,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "manage_locator",
     description:
-      "Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.",
+      "Creates or updates a Locator. Create requires name+parent; update requires id plus an authored field. Rename/delete use rename_element/remove_element.",
     annotations: {
       title: "Manage Bedrock Locator",
       destructiveHint: true,
@@ -167,7 +167,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "manage_null_object",
     description:
-      "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain Blockbench editor/animation state and read-only in this tool. Rename/delete use rename_element/remove_element.",
+      "Creates or updates a Null Object. Create requires name+parent; update requires id plus parent/position. Geometry uses a `_null_` locator entry; IK fields remain Blockbench editor/animation state. Rename/delete use rename_element/remove_element.",
     annotations: {
       title: "Manage Bedrock Null Object",
       destructiveHint: true,
