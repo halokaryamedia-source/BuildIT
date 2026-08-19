@@ -12,6 +12,7 @@ import {
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
 import { registerAnimationTools } from "./tools/animation";
+import { registerAnimationEffectTools } from "./tools/animation-effects";
 import { registerAnimationControllerTools } from "./tools/animation-controller";
 import { registerAnimationInspectionTools } from "./tools/animation-inspection";
 import { registerCubesTools } from "./tools/cubes";
@@ -34,6 +35,7 @@ type RegistrationFunction = () => void;
 
 function registerAnimationFamilyTools(): void {
   registerAnimationTools();
+  registerAnimationEffectTools();
   registerAnimationControllerTools();
 }
 

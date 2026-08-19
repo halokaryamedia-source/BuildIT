@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-14
+Updated: 2026-08-18
 
 Current `Local` source/ownership only. Repository/plugin active task state belongs in `next-action.md`; persistent asset continuity belongs in `workspace/active/<project>/README.md`; Git history owns retired rationale and experiments.
 
@@ -63,21 +63,23 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `list_locator_elements`, `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
 | `create_texture`, `list_textures`, `get_texture`, `activate_texture` | `mcp/server/tools/texture.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
 | `create_animation` | `mcp/server/tools/animation.ts` | `mcp/tests/create-animation-contract.test.ts` |
+| `manage_animation_effects` | `mcp/server/tools/animation-effects.ts` | `mcp/tests/animation-effect-mutation-contract.test.ts` |
 | `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `manage_keyframes`, `animation_graph_editor`, `bone_rigging`, `animation_timeline`, `batch_keyframe_operations`, `animation_copy_paste` | `mcp/server/tools/animation.ts` | `mcp/tests/animation-mutation-contract.test.ts` |
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
 | `get_undo_stack` | `mcp/server/tools/history.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
-Controller inspection additionally lives in `mcp/tests/animation-controller-inspection-contract.test.ts`.
+Controller inspection additionally lives in `mcp/tests/animation-controller-inspection-contract.test.ts`; state-effect mutation additionally lives in `mcp/tests/animation-controller-effects-mutation.test.ts`.
 
 `undo`/`redo` remain source-owned by `mcp/server/tools/history.ts` and are intentionally not indexed until a real defect justifies a specific primary regression owner.
 
 ## Default MCP Surface
 
 ```text
-63 enabled tools
+64 enabled tools
 export_model                  exposed
+manage_animation_effects      exposed
 manage_animation_controller   exposed
 list_export_formats           not exposed
 apply_texture                 not exposed
@@ -100,7 +102,7 @@ per-tool payload max          <= 3,200 characters
 
 ## Deferred MCP Discovery Ownership
 
-Current upstream Codex architecture supports catalog → deferred exposure → native `tool_search` → matching spec loading. BuildIT keeps all 63 retained Bedrock capabilities and a compact server namespace. No custom router/additional profile/multi-endpoint split is justified by current evidence.
+Current upstream Codex architecture supports catalog → deferred exposure → native `tool_search` → matching spec loading. BuildIT keeps all 64 retained Bedrock capabilities and a compact server namespace. No custom router/additional profile/multi-endpoint split is justified by current evidence.
 
 ## Authoring Decision / Recovery Ownership
 
@@ -115,7 +117,7 @@ intent + known state + stage
 → bounded recovery from existing failure signals
 ```
 
-Known controller state returned by `manage_animation_controller` is continuation state; do not immediately rediscover it with `inspect_animation` unless more detail is needed.
+Known controller/effect state returned by mutation tools is continuation state; do not immediately rediscover it with `inspect_animation` unless more detail is needed.
 
 Installed-client/model behavior remains direct/local proof.
 
@@ -123,11 +125,11 @@ Installed-client/model behavior remains direct/local proof.
 
 - geometry: `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`;
 - surface: native texture/Painter/PBR/material-instance paths;
-- animation: numeric/Molang transform keys, graph/batch/copy, rig/timeline, bounded new-animation sound effects, read-only controller inspection, and batched AnimationController state-machine mutation;
+- animation: numeric/Molang transform keys, graph/batch/copy, rig/timeline, new-animation sound/particle effects, existing-animation particle/sound/timeline effects, animation-level `anim_time_update` / `blend_weight`, read-only controller inspection, and batched AnimationController state-machine plus state sound/particle mutation;
 - Locator/Null Object: compact discovery, focused inspection, and direct mutation;
 - observation/export: project info, bounds, canonical views, `.bbmodel`, and Bedrock geometry export.
 
-Protected gaps remain controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
+Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
 ## Reference Preparation Ownership
 
@@ -146,6 +148,7 @@ REF    reference preparation/readiness + pose/limb/handoff integrity
 PRO-1–PRO-8 professional construction/sample-driven bounded closures
 U1–U7  pre-local usage/documentation optimization
 CTRL   bounded AnimationController state-machine mutation
+ANIM   existing-effect, controller-effect, and animation-level Molang mutation closure
 ```
 
 No local run is active. Remaining runtime/model-facing claims stay direct/local proof.

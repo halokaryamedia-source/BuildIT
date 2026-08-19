@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified: 2026-08-14  
+Last verified: 2026-08-19  
 Stability: stable
 
 This file owns stable project facts only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; persistent asset continuity belongs in `workspace/active/<project>/README.md`; routing belongs in `AGENTS.md`.
@@ -40,15 +40,17 @@ The Reference Generator remains image-only. Persisting an approved reference int
 
 ## MCP Facts
 
-BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The default Bedrock Entity surface has **63 enabled tools**. Generic fallback families are opt-in; `risky_eval` and `from_geo_json` remain disabled.
+BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. Current `Local` source registers **64 enabled tools** in the default Bedrock Entity surface. Generic fallback families are opt-in; `risky_eval` and `from_geo_json` remain disabled.
 
-Current ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation including Molang transform strings, bounded new-animation sound events, AnimationController/state inspection plus bounded state-machine mutation through one batched tool, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export.
+Current source ownership includes Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation with numeric/Molang transform values, new-animation particle/sound effects, existing-animation particle/sound/timeline effect mutation, animation-level `anim_time_update` / `blend_weight`, AnimationController/state inspection plus bounded state-machine and state particle/sound mutation, Locator/Null Object lifecycle, Undo, `.bbmodel`, and Bedrock geometry export.
 
-Controller-state particle/sound and blend-curve mutation, existing-animation direct sound/timeline-effect mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions remain protected gaps.
+Controller blend-curve mutation, TextureMesh direct authoring, native visible bounding-box fields, animated textures, and bone-binding expressions remain protected gaps.
+
+The 64-tool source state is integrated into `Local`, but canonical Bun/CI verification and generated API/prompt artifact closure for the animation additions remain pending. Source presence is not verification.
 
 ## Evidence Boundary
 
-The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12 and remains the accepted live baseline. Later P0–P7, hardened Reference Generator, PRO-1–PRO-8, optimization, and AnimationController mutation changes are static/CI proof unless the validation report explicitly says otherwise. No local run is active.
+The **first bounded Codex + Blockbench local acceptance pass completed** on 2026-08-12 and remains the accepted live baseline. Later P0–P7, hardened Reference Generator, PRO-1–PRO-8, optimization, AnimationController mutation, and the current animation-effect/Molang closure are static/source proof unless the validation report explicitly says otherwise. No local run is active.
 
 Current source and current policy own behavior. Git history / GitHub issues and PRs own retired rationale, reviews, decisions, experiments, and obsolete asset revisions.
 

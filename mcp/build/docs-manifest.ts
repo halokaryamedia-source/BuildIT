@@ -12,6 +12,7 @@ import { paintToolDocs } from "../server/tools/paint";
 import { projectToolDocs } from "../server/tools/project";
 import { textureToolDocs } from "../server/tools/texture";
 import { animationToolDocs } from "../server/tools/animation";
+import { animationEffectToolDocs } from "../server/tools/animation-effects";
 import { animationControllerToolDocs } from "../server/tools/animation-controller";
 import { animationInspectionToolDocs } from "../server/tools/animation-inspection";
 import { uiToolDocs } from "../server/tools/ui";
@@ -31,6 +32,7 @@ export const toolManifest: CategoryGroup[] = [
     category: "Animation",
     tools: [
       ...animationToolDocs,
+      ...animationEffectToolDocs,
       ...animationControllerToolDocs,
       ...animationInspectionToolDocs,
     ],
