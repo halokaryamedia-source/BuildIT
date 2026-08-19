@@ -57,8 +57,8 @@ fix(mcp): restore material discovery cleanup
 0344b3cac1b6fc53be4ef20e4f7e7cc6062e25a7
 refactor(mcp): compact shared identity schema guidance
 
-544953c296a8e7e612cd7d64e7f28444858dafe1
-merge(mcp): reconcile shared schema compaction
+226a09b9b7a723ebde1d8f898659e014d35ba0a5
+merge(mcp): finalize shared schema compaction
 ```
 
 Current pre-local efficiency scope:
@@ -67,7 +67,7 @@ Current pre-local efficiency scope:
 - Locator/Null Object branch schema descriptions keep required create/update guidance while removing repeated prose;
 - `get_face_material_instances` and `list_material_instances` use concise human summaries plus canonical `structuredContent`, while list usage detail remains opt-in and bounded;
 - high-reuse shared identity schemas keep target type, UUID/name, and fallback semantics while dropping redundant `non-empty` prose already represented by `minLength` constraints;
-- the shared identity compaction is guarded by a static efficiency contract that checks both concise descriptions and rejection of empty-string IDs;
+- the shared identity compaction is guarded by a static efficiency contract that checks concise descriptions and rejection of empty-string IDs;
 - no custom router, lean/profile mode, dynamic endpoint split, tool deletion, media-resolution reduction, or runtime telemetry was added;
 - no actual Codex token/call saving is claimed before a future user-authorized local comparison.
 
