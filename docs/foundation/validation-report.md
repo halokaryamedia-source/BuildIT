@@ -1,7 +1,7 @@
 # BlockIT Foundation Validation Report
 
-**Updated:** 2026-08-18  
-**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 closures, pre-local optimization, bounded AnimationController mutation, and repository reliability R1–R4. Local acceptance is user-deferred.
+**Updated:** 2026-08-19  
+**Scope:** current `Local`, accepted 2026-08-12 live baseline, P0–P7, Minecraft-first Reference Generator, professional PRO-1–PRO-8 closures, pre-local optimization, bounded AnimationController mutation, integrated animation effect/Molang source closure, and repository reliability R1–R4. Local acceptance is user-deferred.
 
 This page owns proof state. Active execution belongs in `docs/knowledge/next-action.md`; local execution procedure belongs in `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated.
 
@@ -15,7 +15,7 @@ This page owns proof state. Active execution belongs in `docs/knowledge/next-act
 
 ## Proof Surface Taxonomy
 
-Evidence labels describe claim state; proof surfaces describe **where the evidence actually came from**. A materially runtime-facing claim should preserve both rather than treating one successful surface as universal proof.
+Evidence labels describe claim state; proof surfaces describe **where the evidence actually came from**.
 
 ```text
 STATIC            exact source/schema/docs or deterministic static inspection
@@ -76,7 +76,7 @@ Domain-specific stages may refine this list. A retained failure should identify 
 
 ## Mutation Reconciliation Boundary
 
-GitHub mutation recovery remains owned by `GITHUB_RULES.md`. For ambiguous mutation outcomes, the evidence state must be reconciled before retry:
+GitHub mutation recovery remains owned by `GITHUB_RULES.md`. For ambiguous mutation outcomes, reconcile evidence before retry:
 
 ```text
 PRESENT_AS_INTENDED       → accept current repository state; do not duplicate the mutation
@@ -91,14 +91,16 @@ A timeout/5xx is not proof of either success or failure. Permission/capability d
 ```text
 ACCEPTED LIVE BASELINE (2026-08-12): LOCAL_ACCEPTANCE_COMPLETE
 CURRENT HEAD STATE:                 PRELOCAL_CONTROLLER_MUTATION_READY
-CURRENT SOURCE/CI:                  STATIC VERIFIED
+CURRENT SOURCE STATE:               ANIMATION_LOCAL_SOURCE_INTEGRATION_STATIC_VERIFIED
+CURRENT CANONICAL CI:               NOT OBSERVED FOR 64-TOOL SOURCE
+GENERATED ARTIFACTS:                STALE AGAINST CURRENT SOURCE
 CURRENT LOCAL RUN:                  NO LOCAL RUN ACTIVE
 LOCAL ACCEPTANCE:                   DEFERRED
 ```
 
-The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later hardening, optimization, and controller-mutation work is source/static proof unless explicitly stated otherwise.
+The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later hardening, optimization, controller mutation, and the 2026-08-19 animation effect/Molang closure are source/static evidence unless an exact newer proof surface is stated.
 
-**Do not claim live Blockbench/model-quality, controller execution, or runtime-usage improvement without actual runtime proof on the current local artifact.**
+**Do not claim live Blockbench/model-quality, controller execution, persistence, or runtime-usage improvement without actual matching runtime proof on the current artifact.**
 
 ## Static Pre-local Optimization Closure
 
@@ -114,13 +116,11 @@ U7  NO CHANGE REQUIRED for lean profile/router/runtime-prompt redesign without i
 
 Actual runtime call reduction and installed-client context cost remain `LOCAL PROOF REQUIRED`.
 
-## AnimationController Mutation — Static / Non-Local
+## AnimationController Mutation + Animation Closure — Static / Non-Local
 
-The controller closure adds **one** default experimental tool: `manage_animation_controller`. It stays inside the existing animation family and does not add a registration profile, router, controller framework, or generic UI fallback.
+`manage_animation_controller` remains one bounded default experimental capability inside the existing animation family. It does not add a registration profile, router, controller framework, or generic UI fallback.
 
-One call accepts up to 32 ordered operations and owns one native `animation_controllers` Undo transaction. The tool preflights the complete in-memory plan before native mutation, rejects no-effect/invalid state-machine operations, rolls back an unexpectedly failed native apply with `Undo.cancelEdit(true)`, and returns controller identity plus affected state/created IDs so an immediate `inspect_animation` readback is unnecessary.
-
-Supported mutation scope:
+Current source can coherently mutate controller/state-machine ownership including:
 
 ```text
 controller rename
@@ -131,52 +131,67 @@ animation-link add / update / remove
 state on_entry / on_exit
 scalar blend_transition
 blend_via_shortest_path
+state particle add / update / remove
+state sound add / update / remove
 ```
 
-Native Blockbench source was inspected for `AnimationController`, `AnimationControllerState`, controller codec semantics, and controller Undo ownership. This supports the source design but **does not** prove the current built plugin executes correctly in live Blockbench; that remains `LOCAL PROOF REQUIRED`.
+The integrated animation closure at source commit `33784de067525e8fcdd2510d6195c7b2ac85187e` additionally provides:
 
-Protected controller sub-gaps remain state particle/sound mutation and blend-curve mutation. Existing-animation direct sound/timeline-effect mutation also remains a gap.
+```text
+manage_animation_effects
+→ existing-animation particle / sound / timeline add-update-remove
+
+animation_timeline
+→ set_anim_time_update
+→ set_blend_weight
+```
+
+Source/static inspection confirms registration inside the existing animation family, exact inspected identity ownership for effect mutation, bounded preflight/no-op/collision handling, and regression owners for D1/D2/D3. This does **not** prove current built-plugin execution in live Blockbench or Minecraft; those claims remain `LOCAL PROOF REQUIRED`.
+
+Remaining protected animation gaps are controller blend-curve mutation and bone-binding expressions.
 
 ## Deferred Local Acceptance Target
 
-Local acceptance is **not active**. When a fresh explicit instruction later reactivates it, the target remains:
+Local acceptance is **not active**. When explicitly reactivated, first sync the runbook to the actual then-current source and generated artifacts. The current source expects this target:
 
 ```text
 fresh Local build
 → exact Git HEAD + mcp/dist/mcp.js SHA-256
 → load exact local BlockIT artifact
 → restart Blockbench + reconnect MCP
-→ verify endpoint + 63-tool default surface
+→ verify endpoint + 64-tool default surface
 → verify:stateless-local
-→ TEST 1 — MCP / CORE MECHANICS including controller create/mutate/inspect
+→ TEST 1 — MCP / CORE MECHANICS including animation/controller create-mutate-inspect
 → persistence / export
 → TEST 2 — REFERENCE MODEL (ELEPHANT)
 → efficiency check
 ```
 
-Installed-plugin freshness, runtime behavior on the current build, controller execution, current persistence/export behavior, actual call efficiency, and current elephant model quality remain `LOCAL PROOF REQUIRED` until an explicitly reactivated run occurs.
+Installed-plugin freshness, runtime behavior on the current build, controller execution, effect persistence, current persistence/export behavior, actual call efficiency, and current model quality remain `LOCAL PROOF REQUIRED` until a deliberately reactivated run occurs.
 
 ## Accepted Live Baseline — 2026-08-12
 
 Representative `CURRENT-PROJECT VERIFIED` coverage: loopback/stateless transport, the then-current **62-tool** default surface, geometry/correction/Undo, difference-first reference behavior, texture/Paint/PBR/material instances, base animation create/inspect/timeline/playback, Locator/Null Object lifecycle, `.bbmodel` persistence, and Bedrock geometry export.
 
-This baseline is historical live evidence; it is **not** proof that the current 63-tool artifact has been loaded locally.
+This baseline is historical live evidence. It is **not** proof that the current 64-tool source has been built or loaded locally.
 
 ## Fresh GitHub-Only Serialized Surface Proof
 
-The current source guard is deliberately budget-based so capability additions cannot silently expand context cost:
+The source guard remains budget-based so capability additions cannot silently expand context cost.
+
+Last completed canonical proof before the animation closure covered **63 tools**. Current `Local` source now expects **64 tools**, but the exact 64-tool measurement has not been observed as a completed canonical CI result.
 
 ```text
-tool count                      63 exactly
-initialize instructions         <= 700 characters
-tools/list response             <= 80,500 characters
-input schemas                   <= 56,500 characters
-descriptions                    <= 11,500 characters
-per-tool payload max            <= 3,200 characters
-runtime workflow prompt         < 7,000 characters
+current source expected tool count  64 exactly
+initialize instructions             <= 700 characters
+tools/list response                 <= 80,500 characters
+input schemas                       <= 56,500 characters
+descriptions                        <= 11,500 characters
+per-tool payload max                <= 3,200 characters
+runtime workflow prompt             < 7,000 characters
 ```
 
-`bun run measure:surface` emits exact current serialized values in CI. Serialized characters are not model-visible token counts. The controller capability did **not** receive a larger max-per-tool allowance.
+`bun run measure:surface` owns the exact current serialized values. Serialized characters are not installed-client token/context measurements. No character ceiling was raised speculatively for the new animation effect tool.
 
 ## Plugin / MCP Static Readiness
 
@@ -203,7 +218,8 @@ unknown/stale target       → focused discovery only
 fresh mutation result      → do not ritual read back
 known coherent Cubes       → one place_cube(elements=[...]) call
 coherent controller work   → one manage_animation_controller operation batch
-controller returned state  → reuse; inspect only when extra detail is needed
+existing animation effects → manage_animation_effects
+returned state             → reuse; inspect only when extra detail is needed
 visual correction          → affected view(s) first; expand only for material cross-view risk
 same causal failure twice without new evidence → BLOCKED
 ```
@@ -212,7 +228,7 @@ Real installed-client call reduction remains `LOCAL PROOF REQUIRED`.
 
 ## Native Deferred MCP Discovery Compatibility
 
-`OFFICIALLY VERIFIED` upstream architecture supports catalog → deferred `tool_search` → matching tool spec loading. Static evaluation includes the controller tool while retaining a routed top-8 coverage gate. Installed client/model parity and actual schema/context cost remain `LOCAL PROOF REQUIRED`. No custom BuildIT router/profile was added.
+`OFFICIALLY VERIFIED` upstream architecture supports catalog → deferred `tool_search` → matching tool spec loading. Static source keeps a compact server namespace and no custom BuildIT router/profile. Installed client/model parity and actual schema/context cost remain `LOCAL PROOF REQUIRED`.
 
 ## P0–P4 Static Efficiency / Decision Proof
 
@@ -252,22 +268,34 @@ Repository/policy hardening, CI success, or `next-action.md` never authorizes im
 
 ## Professional Sample Forensics — Static / Non-Local
 
-Nine professional `.bbmodel` samples remain learning evidence only. Retained bounded closures are:
+Professional `.bbmodel` samples remain learning evidence only. Retained bounded closures include:
 
 ```text
 PRO-3  place_cube per-element parent + initial inflate
 PRO-5  modify_cubes_batch Box-UV authored-state parity
 PRO-6  manage_keyframes authored Molang string preservation
-PRO-7  create_animation + inspect_animation sound events
+PRO-7  create_animation + inspect_animation sound/particle effects
 PRO-8  inspect_animation read-only AnimationController/state inspection
 CTRL   manage_animation_controller bounded state-machine mutation
+ANIM   existing-effect, controller-effect, and animation-level Molang mutation source
 ```
 
 ## Current Static Verification
 
-Current GitHub proof: **full contract suite PASS**, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, aggregate enforcement PASS. Tool count is **63**; surface and prompt ceilings remain enforced rather than replaced with guessed token savings.
+Last completed canonical GitHub proof before the current animation closure reported **full contract suite PASS, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, and aggregate enforcement PASS** for the then-current **63-tool** source.
 
-Exact test totals and transient exact surface character counts are deliberately not stored as durable proof metadata. Later installed-plugin freshness, real call reduction, controller execution, controller-effect persistence, and visual-quality improvement remain `LOCAL PROOF REQUIRED` if local testing is explicitly reactivated.
+For the current 64-tool `Local` source, source-level integration has been inspected and is coherent, but canonical PASS is **not claimed**:
+
+- runtime registration includes `registerAnimationEffectTools()` inside the existing animation family;
+- canonical docs-manifest source includes `animationEffectToolDocs`;
+- surface owner expects exactly 64 tools;
+- D1/D2/D3 regression owners are present;
+- `mcp/docs/api.json` remains generated from 2026-08-14;
+- `mcp/docs/index.html` still reports Animation tool count `(9)`;
+- `mcp/prompts/manifest.json` still classifies existing-animation effects as a gap;
+- no matching completed CI run/status for the 64-tool integration has been observable through the currently available run/status surfaces.
+
+Therefore generated-doc freshness and current typecheck/test/build/surface PASS remain pending until the canonical Bun gate is observed on the exact final source state.
 
 ## Product / Lifecycle / Export
 
@@ -279,7 +307,7 @@ Native texture/Painter/PBR/material-instance capability remains. Minecraft-first
 
 ## Animation / Rig
 
-`manage_keyframes` preserves authored Molang strings without evaluation. New-animation sound events remain bounded. `inspect_animation` remains read-only for controller/state inspection. `manage_animation_controller` now owns bounded controller state-machine creation/mutation and returns continuation state to avoid ritual reinspection. Controller runtime execution is still `LOCAL PROOF REQUIRED`.
+Current source includes numeric/Molang transform keys, existing-animation effect mutation, controller-state effect mutation, animation-level `anim_time_update` / `blend_weight`, and bounded controller state-machine mutation. `inspect_animation` remains the read owner. Live playback, persistence, and Minecraft controller execution remain `LOCAL PROOF REQUIRED`.
 
 ## Locator / Null Object
 
@@ -288,9 +316,7 @@ Direct Locator/Null Object lifecycle ownership and representative reopen persist
 ## Protected Native Capability Gaps
 
 ```text
-AnimationController state particle/sound mutation
 AnimationController blend-curve mutation
-existing-animation direct sound/timeline-effect mutation
 TextureMesh direct authoring/inspection
 native Bedrock visible bounding-box fields
 animated-texture authoring
@@ -303,4 +329,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts are synchronized through **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation + R1–R4 repository reliability**. No local acceptance is active. No current runtime/model-quality, controller-execution, or actual usage-efficiency claim is upgraded until a future explicitly reactivated local run provides that evidence.
+Current non-local contracts include **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation + animation effect/Molang source closure + R1–R4 repository reliability**. No local acceptance is active. No current runtime/model-quality, controller-execution, persistence, or actual usage-efficiency claim is upgraded until a matching proof surface provides that evidence.
