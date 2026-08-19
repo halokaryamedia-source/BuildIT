@@ -56,6 +56,9 @@ fix(mcp): restore material discovery cleanup
 
 0344b3cac1b6fc53be4ef20e4f7e7cc6062e25a7
 refactor(mcp): compact shared identity schema guidance
+
+544953c296a8e7e612cd7d64e7f28444858dafe1
+merge(mcp): reconcile shared schema compaction
 ```
 
 Current pre-local efficiency scope:
@@ -63,7 +66,8 @@ Current pre-local efficiency scope:
 - the static tool-discovery proxy expects the 64-tool source and includes `manage_animation_effects` cases;
 - Locator/Null Object branch schema descriptions keep required create/update guidance while removing repeated prose;
 - `get_face_material_instances` and `list_material_instances` use concise human summaries plus canonical `structuredContent`, while list usage detail remains opt-in and bounded;
-- high-reuse shared identity schemas now keep UUID/name/fallback semantics while dropping redundant `non-empty` prose already represented by `minLength` constraints; this reduces repeated serialized schema text wherever those shared schemas are reused;
+- high-reuse shared identity schemas keep target type, UUID/name, and fallback semantics while dropping redundant `non-empty` prose already represented by `minLength` constraints;
+- the shared identity compaction is guarded by a static efficiency contract that checks both concise descriptions and rejection of empty-string IDs;
 - no custom router, lean/profile mode, dynamic endpoint split, tool deletion, media-resolution reduction, or runtime telemetry was added;
 - no actual Codex token/call saving is claimed before a future user-authorized local comparison.
 
@@ -113,7 +117,7 @@ The user's Windows workstation and Codex-local authoring test are not required f
 
 1. Continue the exact 64-tool static surface audit only where current source demonstrates redundant schema/description/tool-result representation; do not broad-minify metadata.
 2. Prefer high-reuse metadata owners and repeated schema text first because one safe compaction reduces multiple advertised tool schemas without changing behavior.
-3. Preserve discovery-critical terms (`UUID`, target type, fallback semantics, branch requirements) and explicit correctness guidance; `minLength` or enum constraints may own facts that do not need to be repeated in prose.
+3. Preserve discovery-critical terms (`UUID`, target type, fallback semantics, branch requirements) and explicit correctness guidance; schema constraints may own facts that do not need to be repeated in prose.
 4. Treat recovery-only or already-compact tools as `NO CHANGE REQUIRED` unless a concrete payload/default-detail problem is demonstrated.
 5. Keep tool count, capability, routing semantics, visual-quality gates, and explicit large-detail opt-ins unchanged.
 6. Do not start Codex-local testing, local acceptance, router/profile redesign, tool removal, or media-resolution experiments without a fresh user instruction.
