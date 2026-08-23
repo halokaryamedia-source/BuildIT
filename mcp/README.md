@@ -49,9 +49,9 @@ The server is loopback-only and request-owned/stateless. The current source defa
 
 These capabilities stay inside the existing animation registration family; they do **not** create a new registration profile, controller framework, generic evaluator, or UI fallback. `inspect_animation` remains the read owner. Source mutation success does not prove live controller/game execution.
 
-## Local Acceptance — Inactive
+## Local Acceptance - Reactivated
 
-The single procedure owner is `../docs/knowledge/operations/local-acceptance-runbook.md`. It is not an active next step until `../docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
+Reactivated by explicit user instruction on 2026-08-23. The single procedure owner remains `../docs/knowledge/operations/local-acceptance-runbook.md`; execution state and the pending plugin-enable step are owned by `../docs/knowledge/next-action.md`.
 
 When reactivated, Test 1 includes representative animation/controller create-mutate-inspect coverage in addition to existing core mechanics; Test 2 remains the approved elephant reference model.
 

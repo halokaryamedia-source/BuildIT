@@ -151,4 +151,4 @@ CTRL   bounded AnimationController state-machine mutation
 ANIM   existing-effect, controller-effect, and animation-level Molang mutation closure
 ```
 
-No local run is active. Remaining runtime/model-facing claims stay direct/local proof.
+Local acceptance reactivated 2026-08-23; execution is pending plugin enable in desktop Blockbench. Remaining runtime/model-facing claims stay direct/local proof.

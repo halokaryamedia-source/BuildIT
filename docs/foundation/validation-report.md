@@ -92,10 +92,10 @@ A timeout/5xx is not proof of either success or failure. Permission/capability d
 ACCEPTED LIVE BASELINE (2026-08-12): LOCAL_ACCEPTANCE_COMPLETE
 CURRENT HEAD STATE:                 PRELOCAL_CONTROLLER_MUTATION_READY
 CURRENT SOURCE STATE:               ANIMATION_LOCAL_SOURCE_INTEGRATION_STATIC_VERIFIED
-CURRENT CANONICAL CI:               NOT OBSERVED FOR 64-TOOL SOURCE
-GENERATED ARTIFACTS:                STALE AGAINST CURRENT SOURCE
-CURRENT LOCAL RUN:                  NO LOCAL RUN ACTIVE
-LOCAL ACCEPTANCE:                   DEFERRED
+CURRENT CANONICAL CI:               OBSERVED GREEN FOR 64-TOOL SOURCE
+GENERATED ARTIFACTS:                FRESH AGAINST CURRENT SOURCE
+CURRENT LOCAL RUN:                  REACTIVATED — AWAITING PLUGIN ENABLE
+LOCAL ACCEPTANCE:                   REACTIVATED 2026-08-23
 ```
 
 The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later hardening, optimization, controller mutation, and the 2026-08-19 animation effect/Molang closure are source/static evidence unless an exact newer proof surface is stated.
@@ -150,9 +150,9 @@ Source/static inspection confirms registration inside the existing animation fam
 
 Remaining protected animation gaps are controller blend-curve mutation and bone-binding expressions.
 
-## Deferred Local Acceptance Target
+## Local Acceptance Target (Reactivated 2026-08-23)
 
-Local acceptance is **not active**. When explicitly reactivated, first sync the runbook to the actual then-current source and generated artifacts. The current source expects this target:
+Local acceptance is **reactivated** by explicit user instruction. Source and generated artifacts are already synced to the current state; the recorded execution facts live in `docs/knowledge/next-action.md`. The target sequence:
 
 ```text
 fresh Local build
@@ -284,18 +284,13 @@ ANIM   existing-effect, controller-effect, and animation-level Molang mutation s
 
 Last completed canonical GitHub proof before the current animation closure reported **full contract suite PASS, typecheck PASS, surface PASS, build PASS, generated-doc freshness PASS, and aggregate enforcement PASS** for the then-current **63-tool** source.
 
-For the current 64-tool `Local` source, source-level integration has been inspected and is coherent, but canonical PASS is **not claimed**:
+For the current 64-tool `Local` source, the canonical gate is now **observed green** on both surfaces:
 
-- runtime registration includes `registerAnimationEffectTools()` inside the existing animation family;
-- canonical docs-manifest source includes `animationEffectToolDocs`;
-- surface owner expects exactly 64 tools;
-- D1/D2/D3 regression owners are present;
-- `mcp/docs/api.json` remains generated from 2026-08-14;
-- `mcp/docs/index.html` still reports Animation tool count `(9)`;
-- `mcp/prompts/manifest.json` still classifies existing-animation effects as a gap;
-- no matching completed CI run/status for the 64-tool integration has been observable through the currently available run/status surfaces.
+- local full gate PASS at HEAD `d8c0899`: typecheck, 311 contract tests, measure:surface (64 tools within every ceiling), build, prompts/docs regeneration, docs:check fresh;
+- GitHub `MCP Verify` completed **success** for the same state (runs 32638654484, 32648128107, 32649749692);
+- generated artifacts (`docs/api.json`, `docs/index.html`, `prompts/manifest.json`) are regenerated from current source and freshness-gated.
 
-Therefore generated-doc freshness and current typecheck/test/build/surface PASS remain pending until the canonical Bun gate is observed on the exact final source state.
+The 2026-08-23 audit repair sweep (commits `0496fb4`…`d8c0899`) closed material static findings across transport/lifecycle, geometry fail-closed contracts, paint bounds/identity, animation receipts, and surface budgets; rationale and per-finding evidence live in Git history. These remain source/static facts only — live Blockbench behavior is owned by the reactivated local run below.
 
 ## Product / Lifecycle / Export
 

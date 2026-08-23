@@ -47,7 +47,7 @@ describe("Codex documentation handoff", () => {
     expect(developmentBrief).not.toContain("`code-review`");
   });
 
-  test("current continuation stays bounded and keeps local acceptance explicitly deferred", async () => {
+  test("current continuation stays bounded and tracks the reactivated local acceptance", async () => {
     const [next, runbook, implementation] = await Promise.all([
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -61,8 +61,8 @@ describe("Codex documentation handoff", () => {
     expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
     expect(next).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
     expect(next).toContain("## Next Step");
-    expect(next).toContain("NO LOCAL RUN ACTIVE");
-    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
+    expect(next).toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
+    expect(next).toContain("LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23");
     expect(next).toContain("LOCAL PROOF REQUIRED");
     expect(next).not.toContain("execute runbook sections 3–4");
     expect(next).toContain("Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof");
@@ -71,7 +71,9 @@ describe("Codex documentation handoff", () => {
     expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("64 enabled tools");
-    expect(implementation).toContain("No local run is active");
+    expect(implementation).toContain(
+      "Local acceptance reactivated 2026-08-23"
+    );
   });
 
   test("status owners stay synchronized", async () => {
@@ -84,9 +86,9 @@ describe("Codex documentation handoff", () => {
     for (const owner of [rootReadme, mcpReadme, next, validation]) {
       expect(owner).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
     }
-    expect(rootReadme).toContain("Local Acceptance — Deferred");
-    expect(mcpReadme).toContain("Local Acceptance — Inactive");
-    expect(validation).toContain("LOCAL ACCEPTANCE:                   DEFERRED");
+    expect(rootReadme).toContain("Local Acceptance - Reactivated");
+    expect(mcpReadme).toContain("Local Acceptance - Reactivated");
+    expect(validation).toContain("LOCAL ACCEPTANCE:                   REACTIVATED 2026-08-23");
   });
 
   test("historical review and decision residue is absent from active knowledge and foundation links", async () => {

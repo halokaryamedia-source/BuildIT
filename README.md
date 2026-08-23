@@ -55,9 +55,9 @@ Animation authoring now includes:
 
 These are source/instruction/test improvements, not proof of runtime usage reduction or live controller behavior.
 
-## Local Acceptance — Deferred
+## Local Acceptance - Reactivated
 
-No local run is active. `docs/knowledge/operations/local-acceptance-runbook.md` remains the single procedure owner but is inactive until `docs/knowledge/next-action.md` explicitly reactivates it after a fresh user instruction.
+Reactivated by explicit user instruction on 2026-08-23; execution state, deployed artifact hash, and the pending plugin-enable step are owned by `docs/knowledge/next-action.md`. `docs/knowledge/operations/local-acceptance-runbook.md` remains the single procedure owner.
 
 When reactivated, the acceptance sequence targets the current source surface:
 

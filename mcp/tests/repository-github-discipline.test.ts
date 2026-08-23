@@ -270,7 +270,7 @@ describe("repository GitHub discipline", () => {
     expect(next.length).toBeLessThan(10_000);
     expect(next).toContain("`Experimental/**` remains **PAUSED BY USER**");
     expect(next).not.toContain("## Experimental Plan");
-    expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
+    expect(next).toContain("LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23");
 
     for (const marker of [
       "## Active Research — On-Demand Blockbench Web Authoring",
