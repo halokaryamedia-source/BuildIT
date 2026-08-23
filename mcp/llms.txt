@@ -1,56 +1,41 @@
-# Project: Blockbench MCP Plugin
-# Repository: https://github.com/jasonjgardner/blockbench-mcp-plugin
-# Author: Jason Gardner
-# Type: Blockbench Plugin
-# Target Platform: Minecraft + Blockbench
+# Project: BlockIT
+# Repository: https://github.com/halokaryamedia-source/BuildIT
+# Author: Halo Karya Media
+# Type: Blockbench Plugin (MCP server)
+# Target Platform: Minecraft Bedrock Entity + Blockbench 5.0+
 
 ## Summary
-This is a plugin for Blockbench that integrates with the Model Context Protocol (MCP). It enables automated and contextual manipulation of 3D models using LLM-driven workflows. It is designed to assist with structured model generation, property editing, and potential export logic for downstream use.
+BlockIT is a local Blockbench MCP workflow for AI-assisted Minecraft Bedrock Entity modelling. The plugin runs inside desktop Blockbench and exposes a loopback-only, stateless Streamable HTTP/JSON MCP endpoint at `http://127.0.0.1:3000/bb-mcp` with **64 enabled tools** by default (profile `bedrock_entity`). The primary output is an editable `.bbmodel`; Bedrock geometry JSON is the runtime export.
 
-## Key Objectives
-- Connect Blockbench’s internal model representation to LLMs using a structured protocol (MCP).
-- Enable structured data exchange: import/export model metadata, geometry, animations, and textures.
-- Allow scripted or conversational workflows with AI agents to modify models in-place.
+## Current Capability Surface
+- Project lifecycle: create/inspect project, rendered model bounds.
+- Geometry: `place_cube`, `modify_cube`, `modify_cubes_batch`, `add_group`, outline discovery, focused element inspection.
+- Observation: canonical model-view capture with explicit front direction; no visual PASS/FAIL from tools.
+- Textures: create/list/get/activate, Painter pixel tools, PBR channels, Bedrock material instances.
+- Animation: create animation, keyframe management (authored Molang strings preserved without evaluation), graph editor, rigging, timeline incl. animation-level `anim_time_update`/`blend_weight`, batch keyframe operations, copy/paste with mirror paste, new- and existing-animation particle/sound/timeline effects (`manage_animation_effects`), read-only controller inspection, batched AnimationController state-machine plus state-effect mutation (`manage_animation_controller`).
+- Locators/Null Objects: compact discovery, focused inspection, direct mutation.
+- History: undo/redo, undo-stack summary, named checkpoints.
+- Export: Bedrock geometry JSON and editable `.bbmodel` to verified absolute paths.
 
-## Dependencies
-- Blockbench Plugin API (JavaScript-based)
-- Model Context Protocol (specification reference needed)
-- Three.js (via Blockbench)
-- Optionally, APIs for communication with a local or remote LLM agent
-
-## Features (Planned / In Progress)
-- [x] MCP schema parsing and validation
-- [ ] AI-assisted property editing (name, scale, origin, visibility, etc.)
-- [ ] AI-assisted animation creation or modification
-- [ ] Export geometry or metadata in MCP-compliant format
-- [ ] Basic UI integration (side panel, buttons, notifications)
-- [ ] LLM interface (agent chat or command-based interaction)
+## Security Boundary
+- Loopback-only binding with present-Origin validation; remote origins are rejected before MCP dispatch.
+- `risky_eval` and `from_geo_json` are disabled and excluded from the default registration.
+- Generic fallback families are opt-in via the Extended MCP Families setting.
 
 ## Development Setup
-1. Clone this repository into the Blockbench plugins folder or load it via `Plugins > Load Plugin from File`.
-2. Use Blockbench's developer mode for live reloading and debugging.
-3. The main entry point is `index.ts`.
-4. Enable logging in the developer console (`View > Developer Tools`) to track plugin actions.
+1. Install Bun (see `.bun-version`) and run `bun install --frozen-lockfile`.
+2. Verification gates: `bun run typecheck`, `bun run test`, `bun run measure:surface`, `bun run build`, `bun run docs:build`, `bun run docs:check`.
+3. Production artifact is `dist/mcp.js`; load it in Blockbench via `Plugins > Load Plugin from File`.
+4. Tool modules stay import-safe outside Blockbench so tests and generated API docs run in Bun.
 
 ## Notes for LLM Tools
-- Focus on manipulating models through the Blockbench API (`Blockbench.model`, `Group`, `Cube`, `Outliner`, etc.)
-- MCP references should include object definitions, context-specific logic, and any validation rules.
-- Maintain two-way sync between the Blockbench UI state and MCP object model.
-- LLM tools can assist in generating plugin UI code (e.g., dialogs, sidebars) or creating MCP-compatible payloads.
-
-## Plugin API Reference
-- Official: https://www.blockbench.net/wiki
-- Common classes: `new Action()`, `new Dialog()`, `Blockbench.showQuickMessage()`
-- Typical usage patterns involve:
-  - Registering actions with `MenuBar.addAction`
-  - Manipulating models via `Outliner`, `selected`, or `Project` state
-  - Reading and writing metadata with `model.getProperty()` or `model.format`
+- Tool success is structural evidence only; it never proves visual correctness of a model.
+- Prefer exact UUID targeting; ambiguous names fail closed instead of picking the first match.
+- Mutation results return authored continuation state; avoid immediate re-inspection readbacks.
 
 ## License
-MIT License
+GPL-3.0-only. See LICENSE in the repository root.
 
 ## Related Projects
 - JannisX11/Blockbench
-- Model Context Protocol (concept/protocol spec)
-
-# End of LLM.txt
+- Model Context Protocol specification

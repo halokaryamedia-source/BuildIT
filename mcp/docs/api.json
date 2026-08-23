@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-23T15:16:13.389Z",
+  "generatedAt": "2026-08-23T15:48:11.693Z",
   "tools": [
     {
       "name": "place_cube",
@@ -1585,8 +1585,8 @@
                   "smooth",
                   "bake"
                 ],
-                "description": "Operation to perform on keyframes.",
-                "markdownDescription": "Operation to perform on keyframes."
+                "description": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.",
+                "markdownDescription": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
               },
               "parameters": {
                 "type": "object",

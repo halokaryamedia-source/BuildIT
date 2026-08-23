@@ -1085,7 +1085,12 @@ export function registerAnimationControllerTools(): void {
         };
 
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result) }],
+          content: [
+            {
+              type: "text" as const,
+              text: `${creating ? "Created" : "Updated"} controller "${finalPlan.name}" (${controller.uuid}); ${operations.length} operation(s) applied across ${affectedStateUuids.size} state(s).`,
+            },
+          ],
           structuredContent: result,
         };
       },

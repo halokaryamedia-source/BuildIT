@@ -559,7 +559,9 @@ export const batchKeyframeOperationsParameters = z
       .describe("Pattern-based selection."),
     operation: z
       .enum(["offset", "scale", "reverse", "mirror", "smooth", "bake"])
-      .describe("Operation to perform on keyframes."),
+      .describe(
+        "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
+      ),
     parameters: z
       .object({
         offset_time: z.number().finite().optional().describe("Finite time offset to apply."),

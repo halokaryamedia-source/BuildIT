@@ -2,34 +2,44 @@ import { resolve } from "node:path";
 
 const packageRoot = resolve(import.meta.dir, "..");
 const docsDir = resolve(packageRoot, "docs");
-const targets = ["api.json", "index.html"] as const;
+const promptsDir = resolve(packageRoot, "prompts");
+
+// Generated artifacts that must stay fresh against their source owners.
+// prompts/manifest.json bundles runtime prompt content from prompts/*.md, so a
+// source-only edit without `bun run prompts:build` is staleness too.
+const targets = [
+  { file: "api.json", path: resolve(docsDir, "api.json") },
+  { file: "index.html", path: resolve(docsDir, "index.html") },
+  {
+    file: "../prompts/manifest.json",
+    path: resolve(promptsDir, "manifest.json"),
+  },
+] as const;
+
+type TargetFile = (typeof targets)[number]["file"];
 const originals = new Map<string, string>();
 
-function normalizeGeneratedAt(file: (typeof targets)[number], content: string): string {
-  if (file === "api.json") {
-    const parsed = JSON.parse(content) as Record<string, unknown>;
-    parsed.generatedAt = "<generated-at>";
-    return JSON.stringify(parsed, null, 2);
+function normalizeGeneratedAt(file: TargetFile, content: string): string {
+  if (file === "index.html") {
+    return content.replace(
+      /Generated [^<\n]+ from Zod schemas/g,
+      "Generated <generated-at> from Zod schemas"
+    );
   }
 
-  return content.replace(
-    /Generated [^<\n]+ from Zod schemas/g,
-    "Generated <generated-at> from Zod schemas"
-  );
+  const parsed = JSON.parse(content) as Record<string, unknown>;
+  parsed.generatedAt = "<generated-at>";
+  return JSON.stringify(parsed, null, 2);
 }
 
 async function restoreOriginals(): Promise<void> {
-  for (const [file, content] of originals) {
-    await Bun.write(resolve(docsDir, file), content);
+  for (const [path, content] of originals) {
+    await Bun.write(path, content);
   }
 }
 
-async function checkDocsFreshness(): Promise<number> {
-  for (const file of targets) {
-    originals.set(file, await Bun.file(resolve(docsDir, file)).text());
-  }
-
-  const build = Bun.spawn(["bun", "run", "docs:build"], {
+async function runBuildScript(script: string): Promise<void> {
+  const build = Bun.spawn(["bun", "run", script], {
     cwd: packageRoot,
     stdout: "inherit",
     stderr: "inherit",
@@ -37,19 +47,31 @@ async function checkDocsFreshness(): Promise<number> {
 
   const buildExitCode = await build.exited;
   if (buildExitCode !== 0) {
-    throw new Error(`Documentation generation failed with exit code ${buildExitCode}.`);
+    throw new Error(`${script} failed with exit code ${buildExitCode}.`);
+  }
+}
+
+async function checkDocsFreshness(): Promise<number> {
+  for (const target of targets) {
+    originals.set(target.path, await Bun.file(target.path).text());
   }
 
+  await runBuildScript("docs:build");
+  await runBuildScript("prompts:build");
+
   const stale: string[] = [];
-  for (const file of targets) {
-    const original = originals.get(file);
+  for (const target of targets) {
+    const original = originals.get(target.path);
     if (original === undefined) {
-      throw new Error(`Missing original documentation snapshot for ${file}.`);
+      throw new Error(`Missing original documentation snapshot for ${target.file}.`);
     }
 
-    const generated = await Bun.file(resolve(docsDir, file)).text();
-    if (normalizeGeneratedAt(file, original) !== normalizeGeneratedAt(file, generated)) {
-      stale.push(file);
+    const generated = await Bun.file(target.path).text();
+    if (
+      normalizeGeneratedAt(target.file, original) !==
+      normalizeGeneratedAt(target.file, generated)
+    ) {
+      stale.push(target.file);
     }
   }
 
@@ -59,7 +81,7 @@ async function checkDocsFreshness(): Promise<number> {
   }
 
   console.error(
-    `Generated MCP documentation is stale: ${stale.join(", ")}. Run \`bun run docs:build\` and commit the generated output.`
+    `Generated MCP documentation is stale: ${stale.join(", ")}. Run \`bun run docs:build\` / \`bun run prompts:build\` and commit the generated output.`
   );
   return 1;
 }
