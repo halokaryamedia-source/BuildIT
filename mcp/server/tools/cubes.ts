@@ -2,9 +2,10 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { cubeSchema, faceEnum } from "@/lib/zodObjects";
+import { autoUvEnum, cubeSchema, faceEnum } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";
+import { requireOpenProject } from "@/lib/util";
 
 const finiteVec3Schema = z.tuple([
   z.number().finite(),
@@ -118,8 +119,7 @@ const cubeCorrectionUpdateSchema = z
     uv_offset: finiteVec2Schema
       .optional()
       .describe("Finite box-UV offset [u,v] for this Cube."),
-    autouv: z
-      .enum(["0", "1", "2"])
+    autouv: autoUvEnum
       .optional()
       .describe("Auto UV setting: 0 disabled, 1 enabled, 2 relative."),
     mirror_uv: z.boolean().optional().describe("Whether to mirror Box UVs."),
@@ -165,7 +165,7 @@ export const placeCubeParameters = z
         z
           .literal(true)
           .describe(
-            "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping."
+            "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
           ),
         z
           .array(
@@ -191,7 +191,7 @@ export const placeCubeParameters = z
       .optional()
       .default(true)
       .describe(
-        "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode."
+        "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode."
       ),
   })
   .strict();
@@ -207,7 +207,7 @@ export const modifyCubeParameters = z.object({
   origin: finiteVec3Schema
     .optional()
     .describe(
-      "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform."
+      "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform."
     ),
   from: finiteVec3Schema
     .optional()
@@ -218,10 +218,9 @@ export const modifyCubeParameters = z.object({
   rotation: finiteVec3Schema
     .optional()
     .describe(
-      "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
+      "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot."
     ),
-  autouv: z
-    .enum(["0", "1", "2"])
+  autouv: autoUvEnum
     .optional()
     .describe(
       "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
@@ -381,6 +380,21 @@ function finalCubeState(cube: Cube) {
       `Cube ${cube.name} (${cube.uuid}) has a non-finite inflate value and cannot be reported safely.`
     );
   }
+  const origin = [...cube.origin] as [number, number, number];
+  if (origin.length !== 3 || origin.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite origin and cannot be reported safely.`
+    );
+  }
+  const rotation = [...cube.rotation] as [number, number, number];
+  if (
+    rotation.length !== 3 ||
+    rotation.some((value) => !Number.isFinite(value))
+  ) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite rotation and cannot be reported safely.`
+    );
+  }
 
   return {
     uuid: cube.uuid,
@@ -388,8 +402,8 @@ function finalCubeState(cube: Cube) {
     from,
     to,
     size,
-    origin: [...cube.origin] as [number, number, number],
-    rotation: [...cube.rotation] as [number, number, number],
+    origin,
+    rotation,
     inflate,
     box_uv: cube.box_uv,
     uv_offset: uvOffset,
@@ -498,6 +512,7 @@ export function registerCubesTools() {
   createTool(cubeToolDocs[0].name, {
     ...cubeToolDocs[0],
     async execute({ elements, faces, group }) {
+      requireOpenProject("placing Cubes");
       const defaultOutlinerGroup = resolvePlacementGroup(group);
       const placements: Array<{ element: PlaceCubeElement; outlinerGroup: Group | "root" }> = elements.map((element: PlaceCubeElement) => ({
         element,
@@ -585,6 +600,7 @@ export function registerCubesTools() {
       inflate,
       visibility,
     }) {
+      requireOpenProject("modifying a Cube");
       const cubes = [resolveUniqueCube(id)];
       const before = finalCubeState(cubes[0]);
 
@@ -678,11 +694,7 @@ export function registerCubesTools() {
   createTool(cubeToolDocs[2].name, {
     ...cubeToolDocs[2],
     async execute({ updates }) {
-      if (!Project) {
-        throw new Error(
-          "No project is open. Open or create the intended Bedrock project before modifying Cubes."
-        );
-      }
+      requireOpenProject("modifying Cubes");
 
       const targets: Array<{
         cube: Cube;

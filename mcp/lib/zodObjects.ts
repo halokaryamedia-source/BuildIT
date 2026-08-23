@@ -129,14 +129,29 @@ export const colorSchema = z.union([
       /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/,
       "Hex color #RRGGBB or #RRGGBBAA"
     ),
-  z.string().regex(/^[a-z]{3,20}$/, "Named color"),
+  z
+    .string()
+    .regex(/^[a-z]{3,20}$/, "Named color (lowercase)"),
 ]);
 
 /** Hex color string */
+export const hexColorPattern = /^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$/;
+
+/** Required hex color string */
+export const requiredHexColorSchema = z
+  .string()
+  .regex(hexColorPattern, {
+    message: "Hex color in #RRGGBB or #RRGGBBAA form.",
+  })
+  .describe("Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000).");
+
 export const hexColorSchema = z
   .string()
+  .regex(hexColorPattern, {
+    message: "Hex color in #RRGGBB or #RRGGBBAA form.",
+  })
   .optional()
-  .describe("Color as hex string (e.g., #FF0000).");
+  .describe("Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000).");
 
 // ============================================================================
 // Time/Range Schemas
@@ -317,28 +332,6 @@ export const meshSchema = z.object({
     .optional()
     .default([])
     .describe("Vertices of the mesh."),
-});
-
-/** Keyframe data for animation tools */
-export const keyframeDataSchema = z.object({
-  time: z.number().describe("Time in seconds for the keyframe."),
-  values: z
-    .union([vector3Schema, z.number()])
-    .optional()
-    .describe("Values: [x,y,z] for position/rotation, number for uniform scale."),
-  interpolation: interpolationEnum
-    .optional()
-    .default("linear")
-    .describe("Interpolation type for the keyframe."),
-  bezier_handles: z
-    .object({
-      left_time: z.number().optional(),
-      left_value: z.union([vector3Schema, z.number()]).optional(),
-      right_time: z.number().optional(),
-      right_value: z.union([vector3Schema, z.number()]).optional(),
-    })
-    .optional()
-    .describe("Bezier handle positions for bezier interpolation."),
 });
 
 /** Brush settings for paint tools */

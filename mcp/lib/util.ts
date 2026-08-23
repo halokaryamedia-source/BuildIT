@@ -9,6 +9,19 @@ export function isAbsoluteFilesystemPath(value: string): boolean {
 }
 
 /**
+ * Shared fail-closed precondition for tools that need an open project.
+ * One consistent error vocabulary instead of a raw getter TypeError escaping
+ * for the same caller mistake across tool families.
+ */
+export function requireOpenProject(action: string): void {
+  if (!Project) {
+    throw new Error(
+      `No project is open. Open or create the intended Bedrock project before ${action}.`
+    );
+  }
+}
+
+/**
  * Helper function to create properly formatted image content for MCP responses.
  * Handles data URLs, base64 strings, and objects with url property.
  *
@@ -30,6 +43,10 @@ export function imageContent(
     if (matches) {
       mimeType = matches[1] || mimeType;
       base64Data = matches[2];
+    } else {
+      throw new Error(
+        "imageContent received an unsupported data URL; expected base64-encoded image data."
+      );
     }
   }
 
@@ -87,15 +104,6 @@ export function fixCircularReferences<
     }
     return v;
   };
-}
-
-export function getProjectTexture(id: string): Texture | null {
-  const texture = (Project?.textures ?? Texture.all).find(
-    ({ id: textureId, name, uuid }) =>
-      textureId === id || name === id || uuid === id
-  );
-
-  return texture || null;
 }
 
 type RuntimeMutableBarItem = BarItem & {
@@ -185,21 +193,6 @@ export function getAndActivateTexture(id?: string): Texture {
 // ============================================================================
 // Texture-group / channel helpers
 // ============================================================================
-
-/**
- * Helper to find a TextureGroup by name or UUID
- */
-export function findTextureGroupOrThrow(id: string): TextureGroup {
-  const group = TextureGroup.all.find(
-    (g: TextureGroup) => g.uuid === id || g.name === id
-  );
-  if (!group) {
-    throw new Error(
-      `Material/texture group "${id}" not found. Use the list_materials tool to see available materials.`
-    );
-  }
-  return group;
-}
 
 /**
  * Returns compact discovery identity for one PBR channel.

@@ -8,6 +8,7 @@ import {
   elementIdSchema,
   vector3Schema,
 } from "@/lib/zodObjects";
+import { requireOpenProject } from "@/lib/util";
 
 export const removeElementParameters = z.object({
   id: elementIdSchema.describe(
@@ -98,7 +99,7 @@ export const selectAllOfTypeParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes."
+      "Optional Group UUID/unique-name subtree scope; rejected if ambiguous before selection."
     ),
 });
 
@@ -164,7 +165,7 @@ export const listOutlineParameters = z.object({
     .optional()
     .default(8)
     .describe(
-      "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed."
+      "Maximum tree depth. Default 8; increase only for deeper structure."
     ),
   max_nodes: z
     .number()
@@ -183,14 +184,23 @@ export const duplicateElementParameters = z.object({
     "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
   ),
   offset: finiteElementVector3Schema.optional().default([0, 0, 0]).describe("Finite translation offset [x,y,z] applied to the duplicated Cube/Group subtree."),
-  newName: z.string().optional(),
+  newName: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Name for the duplicated root only; descendants keep `<name>_copy` names."
+    ),
 });
 
 export const renameElementParameters = z.object({
   id: elementIdSchema.describe(
-    "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename."
+    "Exact element/Group UUID or unique name; ambiguous names are rejected before rename."
   ),
-  new_name: z.string().describe("New name to assign."),
+  new_name: z
+    .string()
+    .min(1)
+    .describe("Non-empty new name to assign."),
 });
 
 export const elementToolDocs: ToolSpec[] = [
@@ -498,6 +508,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
     ...elementToolDocs[0],
     async execute({ id }) {
+      requireOpenProject("removing an element");
       const element = resolveUniqueDestructiveElement(id);
       const removedRoot = elementContinuationState(element);
       const deleteElements: OutlinerElement[] = [];
@@ -578,6 +589,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
     async execute({ name, origin, rotation, parent }) {
+      requireOpenProject("adding a Group");
       const parentGroup = resolveParentGroup(parent);
 
       Undo.initEdit({
@@ -703,6 +715,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[3].name, {
     ...elementToolDocs[3],
     async execute({ id, offset, newName }) {
+      requireOpenProject("duplicating an element");
       const element = resolveUniqueDestructiveElement(id);
       if (!(element instanceof Cube) && !(element instanceof Group)) {
         throw new Error(
@@ -710,9 +723,9 @@ export function registerElementTools() {
         );
       }
 
-      function cloneCube(cube: Cube, parent: any) {
+      function cloneCube(cube: Cube, parent: any, isRoot: boolean) {
         const dupe = new Cube({
-          name: newName || `${cube.name}_copy`,
+          name: isRoot && newName ? newName : `${cube.name}_copy`,
           from: [cube.from[0] + offset[0], cube.from[1] + offset[1], cube.from[2] + offset[2]],
           to: [cube.to[0] + offset[0], cube.to[1] + offset[1], cube.to[2] + offset[2]],
           origin: [cube.origin[0] + offset[0], cube.origin[1] + offset[1], cube.origin[2] + offset[2]],
@@ -729,9 +742,9 @@ export function registerElementTools() {
         return dupe;
       }
 
-      function cloneGroup(group: Group, parent: any) {
+      function cloneGroup(group: Group, parent: any, isRoot: boolean) {
         const dupeGroup = new Group({
-          name: newName || `${group.name}_copy`,
+          name: isRoot && newName ? newName : `${group.name}_copy`,
           origin: [group.origin[0] + offset[0], group.origin[1] + offset[1], group.origin[2] + offset[2]],
           rotation: group.rotation,
           autouv: group.autouv,
@@ -740,13 +753,13 @@ export function registerElementTools() {
           visibility: group.visibility,
         }).init();
         dupeGroup.addTo(parent);
-        group.children.forEach((child: any) => cloneElement(child, dupeGroup));
+        group.children.forEach((child: any) => cloneElement(child, dupeGroup, false));
         return dupeGroup;
       }
 
-      function cloneElement(el: any, parent: any) {
-        if (el instanceof Cube) return cloneCube(el, parent);
-        if (el instanceof Group) return cloneGroup(el, parent);
+      function cloneElement(el: any, parent: any, isRoot: boolean) {
+        if (el instanceof Cube) return cloneCube(el, parent, isRoot);
+        if (el instanceof Group) return cloneGroup(el, parent, isRoot);
         throw new Error(
           `Group "${parent?.name ?? "(unknown)"}" contains an element type that the Bedrock Cuboid duplicate workflow does not clone.`
         );
@@ -757,7 +770,7 @@ export function registerElementTools() {
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
       let dup: Cube | Group;
       try {
-        dup = cloneElement(element, element.parent ?? Outliner);
+        dup = cloneElement(element, element.parent ?? "root", true);
         Undo.finishEdit("Agent duplicated element");
       } catch (error) {
         Undo.cancelEdit(true);
@@ -786,6 +799,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[4].name, {
     ...elementToolDocs[4],
     async execute({ id, new_name }) {
+      requireOpenProject("renaming an element");
       const element = resolveUniqueDestructiveElement(id);
       Undo.initEdit({
         elements: element instanceof Group ? [] : [element],
@@ -829,6 +843,7 @@ export function registerElementTools() {
       selected_only,
       limit,
     }) {
+      requireOpenProject("searching elements");
       const regex = safeCompileRegex(name_pattern);
       if (name_contains !== undefined && name_contains.length === 0) {
         throw new Error("name_contains cannot be empty; omit it only when no substring filter is intended.");
@@ -882,6 +897,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[6].name, {
     ...elementToolDocs[6],
     async execute({ type, add_to_selection, parent_group }) {
+      requireOpenProject("selecting elements");
       const parentScope = resolveOptionalGroupScope(parent_group);
 
       const pool: Array<Cube | Group> =
@@ -962,6 +978,7 @@ export function registerElementTools() {
   createTool(elementToolDocs[8].name, {
     ...elementToolDocs[8],
     async execute() {
+      requireOpenProject("reading the editor selection");
       const cubes = Cube.selected.map((c: Cube) => ({
         uuid: c.uuid,
         name: c.name,

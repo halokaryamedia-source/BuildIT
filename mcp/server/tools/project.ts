@@ -7,9 +7,17 @@ import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
 
-export const createProjectParameters = z.object({
-  name: z.string().min(1).describe("Non-empty project name."),
-}).strict();
+export const createProjectParameters = z
+  .object({
+    name: z.string().min(1).describe("Non-empty project name."),
+    discard_unsaved: z
+      .boolean()
+      .optional()
+      .describe(
+        "Discard unsaved changes in the open project; required when it currently has unsaved work."
+      ),
+  })
+  .strict();
 
 export const getProjectInfoParameters = z.object({});
 export const inspectModelBoundsParameters = z.object({});
@@ -18,7 +26,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "create_project",
     description:
-      "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.",
+      "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format; refuses unsaved work without `discard_unsaved`.",
     annotations: {
       title: "Create Project",
       destructiveHint: true,
@@ -94,7 +102,13 @@ function currentProjectLifecycle() {
 export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
-    async execute({ name }) {
+    async execute({ name, discard_unsaved }) {
+      if (Project && Project.saved === false && discard_unsaved !== true) {
+        throw new Error(
+          `The open project "${Project.name}" has unsaved changes. Save it first, or pass discard_unsaved: true to abandon them.`
+        );
+      }
+
       const created = newProject(Formats.bedrock);
 
       if (!created) {

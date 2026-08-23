@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { requireOpenProject } from "@/lib/util";
 
 export const undoParameters = z.object({
   steps: z
@@ -45,7 +46,7 @@ export const saveCheckpointParameters = z.object({
     .min(1)
     .max(120)
     .describe(
-      "Descriptive name for the checkpoint. Shown in undo history so agents can navigate back to this point."
+      "Descriptive checkpoint name shown in undo history for navigation back to this point."
     ),
 });
 
@@ -157,23 +158,34 @@ export function registerHistoryTools() {
   createTool(historyToolDocs[0].name, {
     ...historyToolDocs[0],
     async execute({ steps }) {
+      requireOpenProject("undoing edits");
       const history = Undo.history ?? [];
       const available = Undo.index ?? 0;
       if (available === 0) {
         throw new Error("Nothing to undo. The undo stack is empty.");
       }
-
-      const count = Math.min(steps, available);
-      const undone: string[] = [];
-      for (let i = 0; i < count; i++) {
-        const entry = history[(Undo.index ?? 0) - 1] as
-          | { action?: string }
-          | undefined;
-        undone.push(entry?.action ?? "(unnamed edit)");
-        Undo.undo();
+      if (steps > available) {
+        throw new Error(
+          `Cannot undo ${steps} step(s); only ${available} edit(s) are available. Use get_undo_stack to inspect the history depth first.`
+        );
       }
 
-      Canvas.updateAll();
+      const count = steps;
+      const undone: string[] = [];
+      try {
+        for (let i = 0; i < count; i++) {
+          const entry = history[(Undo.index ?? 0) - 1] as
+            | { action?: string }
+            | undefined;
+          undone.push(entry?.action ?? "(unnamed edit)");
+          Undo.undo();
+        }
+      } catch (error) {
+        Canvas.updateAll();
+        throw new Error(
+          `Undo failed after ${undone.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
       const position = currentHistoryPosition();
       const result = {
         undone_count: undone.length,
@@ -199,6 +211,7 @@ export function registerHistoryTools() {
   createTool(historyToolDocs[1].name, {
     ...historyToolDocs[1],
     async execute({ steps }) {
+      requireOpenProject("redoing edits");
       const history = Undo.history ?? [];
       const available = history.length - (Undo.index ?? 0);
       if (available === 0) {
@@ -206,15 +219,27 @@ export function registerHistoryTools() {
           "Nothing to redo. No edits have been undone or the redo stack has been cleared."
         );
       }
+      if (steps > available) {
+        throw new Error(
+          `Cannot redo ${steps} step(s); only ${available} undone edit(s) are available. Use get_undo_stack to inspect the history depth first.`
+        );
+      }
 
-      const count = Math.min(steps, available);
+      const count = steps;
       const redone: string[] = [];
-      for (let i = 0; i < count; i++) {
-        const entry = history[Undo.index ?? 0] as
-          | { action?: string }
-          | undefined;
-        redone.push(entry?.action ?? "(unnamed edit)");
-        Undo.redo();
+      try {
+        for (let i = 0; i < count; i++) {
+          const entry = history[Undo.index ?? 0] as
+            | { action?: string }
+            | undefined;
+          redone.push(entry?.action ?? "(unnamed edit)");
+          Undo.redo();
+        }
+      } catch (error) {
+        Canvas.updateAll();
+        throw new Error(
+          `Redo failed after ${redone.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
+        );
       }
 
       Canvas.updateAll();
@@ -250,6 +275,7 @@ export function registerHistoryTools() {
   createTool(historyToolDocs[3].name, {
     ...historyToolDocs[3],
     async execute({ name }) {
+      requireOpenProject("saving a checkpoint");
       const label = `[checkpoint] ${name}`;
       Undo.initEdit({
         elements: [],

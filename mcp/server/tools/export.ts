@@ -16,7 +16,7 @@ export const exportModelParameters = z.object({
     .optional()
     .default("bedrock")
     .describe(
-      "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`."
+      "BlockIT output: `bedrock` = Bedrock geometry JSON, `project` = editable `.bbmodel`."
     ),
   options: z
     .record(z.unknown())
@@ -34,6 +34,12 @@ export const exportModelParameters = z.object({
     .describe(
       "Optional absolute output path; requires Blockbench filesystem permission."
     ),
+  overwrite: z
+    .boolean()
+    .optional()
+    .describe(
+      "Allow replacing an existing `.bbmodel` at `path`; Bedrock exports always refuse existing files."
+    ),
   max_content_length: z
     .number()
     .int()
@@ -41,7 +47,7 @@ export const exportModelParameters = z.object({
     .max(2_000_000)
     .optional()
     .describe(
-      "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed."
+      "Max characters returned in `content`; default 0 with `path`, else 100000."
     ),
 });
 
@@ -60,7 +66,7 @@ export const exportToolDocs: ToolSpec[] = [
   {
     name: "export_model",
     description:
-      "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`. Filesystem writes require Blockbench permission, verify the written artifact, and refuse existing Bedrock geometry files rather than bypass native multi-model overwrite semantics.",
+      "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel` with verified filesystem writes; `overwrite` consents to replacing an existing `.bbmodel`, and existing Bedrock geometry files are always refused.",
     annotations: {
       title: "Export Bedrock Model",
       destructiveHint: true,
@@ -146,6 +152,18 @@ function toTextContent(raw: unknown): string {
   return String(raw);
 }
 
+function sliceWithoutSplittingSurrogatePair(
+  value: string,
+  maxChars: number
+): string {
+  let end = maxChars;
+  const lastCodeUnit = value.charCodeAt(end - 1);
+  if (lastCodeUnit >= 0xd800 && lastCodeUnit <= 0xdbff) {
+    end -= 1;
+  }
+  return value.slice(0, end);
+}
+
 export function registerExportTools() {
   createTool(
     exportToolDocs[0].name,
@@ -184,7 +202,7 @@ export function registerExportTools() {
     exportToolDocs[1].name,
     {
       ...exportToolDocs[1],
-      async execute({ codec_id, options, path, max_content_length }) {
+      async execute({ codec_id, options, path, overwrite, max_content_length }) {
         requireBedrockEntityProject();
         const registry = codecRegistry();
         const codec = registry[codec_id];
@@ -223,6 +241,15 @@ export function registerExportTools() {
           if (codec_id === "bedrock" && exportFs.existsSync(path)) {
             throw new Error(
               `Refusing to overwrite existing Bedrock geometry file ${path}. Native Blockbench uses codec overwrite/merge semantics for existing multi-model geometry files; export_model will not bypass that behavior. Choose a new path or use native Blockbench export/save for the existing file.`
+            );
+          }
+          if (
+            codec_id === "project" &&
+            overwrite !== true &&
+            exportFs.existsSync(path)
+          ) {
+            throw new Error(
+              `Refusing to replace the existing .bbmodel file ${path} without explicit consent. Pass overwrite: true, choose a new path, or save from the Blockbench editor directly.`
             );
           }
         }
@@ -276,16 +303,18 @@ export function registerExportTools() {
 
         let wrote_to_path: string | null = null;
         if (path && exportFs) {
+          // Verify the lifecycle owner exists BEFORE touching the filesystem so
+          // a failed verification never leaves a half-claimed artifact behind.
+          if (typeof codec.afterSave !== "function") {
+            throw new Error(
+              `Codec "${codec_id}" does not implement the native afterSave() lifecycle owner required for verified filesystem writes. Omit \`path\` to receive the compiled content in the MCP response instead.`
+            );
+          }
           exportFs.writeFileSync(path, binaryBuffer ?? (text ?? ""));
           const writtenStat = exportFs.statSync(path);
           if (!writtenStat.isFile() || writtenStat.size !== byteLength) {
             throw new Error(
               `Export write verification failed for ${path}: expected a regular file of ${byteLength} bytes, got ${writtenStat.isFile() ? `${writtenStat.size} bytes` : "a non-file target"}. The path may exist, but export_model will not report it as a verified artifact.`
-            );
-          }
-          if (typeof codec.afterSave !== "function") {
-            throw new Error(
-              `Export artifact was written to ${path}, but codec "${codec_id}" has no native afterSave() lifecycle owner. Project path/save state was not reported as synchronized.`
             );
           }
           codec.afterSave(path);
@@ -311,12 +340,17 @@ export function registerExportTools() {
         // echoing large compiled content into model context unless requested.
         const effectiveMaxContentLength =
           max_content_length ?? (path ? 0 : 100_000);
-        const truncated = fullContent.length > effectiveMaxContentLength;
+        const truncated =
+          effectiveMaxContentLength > 0 &&
+          fullContent.length > effectiveMaxContentLength;
         const returnedContent =
           effectiveMaxContentLength === 0
             ? null
             : truncated
-              ? fullContent.slice(0, effectiveMaxContentLength)
+              ? sliceWithoutSplittingSurrogatePair(
+                  fullContent,
+                  effectiveMaxContentLength
+                )
               : fullContent;
 
         const result = {

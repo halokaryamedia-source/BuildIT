@@ -325,6 +325,43 @@ function structuredResult(
   };
 }
 
+function vector3Equals(
+  current: ArrayLike<number>,
+  requested: ArrayLike<number>
+): boolean {
+  return (
+    current.length === requested.length &&
+    current[0] === requested[0] &&
+    current[1] === requested[1] &&
+    current[2] === requested[2]
+  );
+}
+
+/**
+ * Bedrock locators/null objects become bones sharing one namespace with
+ * Cubes/Groups on export, so create-time uniqueness is enforced across all
+ * outliner families instead of only the requesting family.
+ */
+function assertOutlinerNameAvailable(
+  name: string,
+  requestedKind: "Locator" | "Null Object"
+): void {
+  const families: Array<[string, Array<{ name: string }>]> = [
+    ["Locator", Locator.all],
+    ["Null Object", NullObject.all],
+    ["Cube", (Cube.all ?? []) as Array<{ name: string }>],
+    ["Group", (Group.all ?? []) as Array<{ name: string }>],
+  ];
+  for (const [family, items] of families) {
+    const collision = items.find((item) => item.name === name);
+    if (collision) {
+      throw new Error(
+        `${requestedKind} name "${name}" already exists as a ${family} ("${collision.name}"). Names must remain unique across Locators, Null Objects, Cubes, and Groups so exported Bedrock bone references stay deterministic.`
+      );
+    }
+  }
+}
+
 export function registerLocatorTools() {
   createTool(
     locatorToolDocs[0].name,
@@ -362,11 +399,7 @@ export function registerLocatorTools() {
 
         if (args.action === "create") {
           const parent = resolveParent(args.parent);
-          if (Locator.all.some((locator) => locator.name === args.name)) {
-            throw new Error(
-              `Locator name "${args.name}" already exists. Locator names must remain unique for deterministic Bedrock references.`
-            );
-          }
+          assertOutlinerNameAvailable(args.name, "Locator");
 
           const edited: OutlinerElement[] = [];
           let locator: Locator | undefined;
@@ -392,11 +425,38 @@ export function registerLocatorTools() {
         }
 
         const locator = resolveLocator(args.id);
-        const parent =
+        const nextParent =
           args.parent !== undefined ? resolveParent(args.parent) : undefined;
+        const parentChanges =
+          nextParent !== undefined &&
+          !(
+            locator.parent instanceof Group &&
+            locator.parent.uuid === nextParent.uuid
+          );
+        const positionChanges =
+          args.position !== undefined &&
+          !vector3Equals(locator.position, args.position);
+        const rotationChanges =
+          args.rotation !== undefined &&
+          !vector3Equals(locator.rotation, args.rotation);
+        const scaleFlagChanges =
+          args.ignore_inherited_scale !== undefined &&
+          locator.ignore_inherited_scale !== args.ignore_inherited_scale;
+
+        if (
+          !parentChanges &&
+          !positionChanges &&
+          !rotationChanges &&
+          !scaleFlagChanges
+        ) {
+          throw new Error(
+            `No-op update rejected: locator ${locator.name} (${locator.uuid}) already has the requested state. No Undo entry was created.`
+          );
+        }
+
         Undo.initEdit({ elements: [locator], outliner: true });
         try {
-          if (parent) locator.addTo(parent);
+          if (parentChanges && nextParent) locator.addTo(nextParent);
           if (args.position !== undefined) {
             locator.position = [...args.position] as [number, number, number];
           }
@@ -428,11 +488,7 @@ export function registerLocatorTools() {
 
         if (args.action === "create") {
           const parent = resolveParent(args.parent);
-          if (NullObject.all.some((element) => element.name === args.name)) {
-            throw new Error(
-              `Null Object name "${args.name}" already exists. Null Object names must remain unique for deterministic references.`
-            );
-          }
+          assertOutlinerNameAvailable(args.name, "Null Object");
           const edited: OutlinerElement[] = [];
           let element: NullObject | undefined;
           Undo.initEdit({ elements: edited, outliner: true });
@@ -455,11 +511,27 @@ export function registerLocatorTools() {
         }
 
         const element = resolveNullObject(args.id);
-        const parent =
+        const nextParent =
           args.parent !== undefined ? resolveParent(args.parent) : undefined;
+        const parentChanges =
+          nextParent !== undefined &&
+          !(
+            element.parent instanceof Group &&
+            element.parent.uuid === nextParent.uuid
+          );
+        const positionChanges =
+          args.position !== undefined &&
+          !vector3Equals(element.position, args.position);
+
+        if (!parentChanges && !positionChanges) {
+          throw new Error(
+            `No-op update rejected: null object ${element.name} (${element.uuid}) already has the requested state. No Undo entry was created.`
+          );
+        }
+
         Undo.initEdit({ elements: [element], outliner: true });
         try {
-          if (parent) element.addTo(parent);
+          if (parentChanges && nextParent) element.addTo(nextParent);
           if (args.position !== undefined) {
             element.position = [...args.position] as [number, number, number];
           }
