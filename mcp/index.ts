@@ -18,6 +18,7 @@ import {
   resolveMcpRegistrationProfile,
 } from "@/lib/registrationProfile";
 import { resources } from "@/server";
+import { registerReferenceModelsResource } from "@/server/resources";
 import { uiSetup, uiTeardown } from "@/ui";
 import { settingsSetup, settingsTeardown } from "@/ui/settings";
 import { setupI18n } from "@/ui/i18n";
@@ -41,6 +42,13 @@ BBPlugin.register("mcp", {
   icon: getIcon(),
   variant: "desktop",
   async onload() {
+    // Guard against double onload without onunload: re-creating the server
+    // would leak the previous listener and keep the port occupied.
+    if (httpServer) {
+      console.error("[MCP] Plugin onload called while the server is already running.");
+      return;
+    }
+
     // Get network module with Blockbench permission handling
     // @ts-ignore - requireNativeModule is a Blockbench global
     const net = requireNativeModule("net", {
@@ -58,6 +66,15 @@ BBPlugin.register("mcp", {
     setupI18n();
     settingsSetup();
 
+    const rawPort = Number(Settings.get("mcp_port") || 3000);
+    if (!Number.isInteger(rawPort) || rawPort < 1 || rawPort > 65535) {
+      console.error(
+        `[MCP] Invalid mcp_port value "${Settings.get("mcp_port")}" - server will not start. Set a port between 1 and 65535 in plugin settings.`
+      );
+      Blockbench.showQuickMessage("MCP Server: invalid port in settings", 3000);
+      return;
+    }
+
     // Bedrock Entity remains the default registration truth. The optional
     // setting can only add the source-preserved generic import/UI families for
     // this plugin load; registerMcpProfile() will not register core families twice.
@@ -65,6 +82,9 @@ BBPlugin.register("mcp", {
       Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
     );
     registerMcpProfile(registrationProfile);
+
+    // Runtime-conditional resource (depends on the reference_models plugin).
+    registerReferenceModelsResource();
 
     // Local prompt content is bundled into this BlockIT build. User overrides
     // remain local; normal plugin startup performs no prompt-network fetch.
@@ -74,7 +94,7 @@ BBPlugin.register("mcp", {
     // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
     // configured at plugin lifecycle level.
     httpServer = createNetServer(net, {
-      port: Number(Settings.get("mcp_port") || 3000),
+      port: rawPort,
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
       host: "127.0.0.1",
       profile: registrationProfile,
@@ -90,7 +110,11 @@ BBPlugin.register("mcp", {
 
   onunload() {
     if (httpServer) {
-      httpServer.close();
+      // close() throws ERR_SERVER_NOT_RUNNING when listen never succeeded;
+      // socket teardown must stay unconditional.
+      if (httpServer.listening) {
+        httpServer.close();
+      }
       httpServer.closeActiveSockets();
       httpServer = null;
     }

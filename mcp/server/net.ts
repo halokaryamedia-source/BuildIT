@@ -28,11 +28,18 @@ function getStatusText (status: number): string {
     405: 'Method Not Allowed',
     406: 'Not Acceptable',
     409: 'Conflict',
+    413: 'Payload Too Large',
     415: 'Unsupported Media Type',
+    431: 'Request Header Fields Too Large',
     500: 'Internal Server Error'
   }
   return texts[status] || 'Unknown'
 }
+
+// Loopback MCP requests are small JSON documents. These caps exist so a hostile
+// local client cannot grow the parser buffer without bound.
+const MAX_REQUEST_HEADER_BYTES = 32 * 1024
+const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024
 
 function isAllowedLocalOrigin (origin: string): boolean {
   try {
@@ -45,6 +52,22 @@ function isAllowedLocalOrigin (origin: string): boolean {
       hostname === '127.0.0.1' ||
       hostname === '[::1]' ||
       hostname === '::1'
+    )
+  } catch {
+    return false
+  }
+}
+
+// Defense-in-depth against DNS rebinding: a rebound browser page would carry a
+// remote Host value even though its Origin gate may not fire on same-site forms.
+function isAllowedLocalHost (hostHeader: string): boolean {
+  try {
+    const parsed = new URL(`http://${hostHeader.trim()}`)
+    const hostname = parsed.hostname.toLowerCase()
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '[::1]'
     )
   } catch {
     return false
@@ -130,10 +153,16 @@ export default function createNetServer (
     let buffer = Buffer.alloc(0)
     let socketEnded = false
     let processing = false
+    let awaitingDrain = false
 
     socket.on('data', (chunk: Buffer) => {
       if (socketEnded) return
       buffer = Buffer.concat([buffer, chunk])
+      void processBufferedRequests()
+    })
+
+    socket.on('drain', () => {
+      awaitingDrain = false
       void processBufferedRequests()
     })
 
@@ -150,7 +179,7 @@ export default function createNetServer (
     })
 
     async function processBufferedRequests (): Promise<void> {
-      if (processing) return
+      if (processing || awaitingDrain) return
       processing = true
 
       try {
@@ -158,13 +187,51 @@ export default function createNetServer (
           if (socketEnded || socket.destroyed || !socket.writable) return
 
           const headerEnd = buffer.indexOf('\r\n\r\n')
-          if (headerEnd === -1) return
+          if (headerEnd === -1) {
+            if (buffer.length > MAX_REQUEST_HEADER_BYTES) {
+              sendResponse(
+                socket,
+                431,
+                { 'content-type': 'application/json' },
+                JSON.stringify({
+                  jsonrpc: '2.0',
+                  error: { code: -32000, message: 'Bad Request: header section too large' },
+                  id: null
+                }),
+                'close'
+              )
+              buffer = Buffer.alloc(0)
+            }
+            return
+          }
+          if (headerEnd > MAX_REQUEST_HEADER_BYTES) {
+            sendResponse(
+              socket,
+              431,
+              { 'content-type': 'application/json' },
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32000, message: 'Bad Request: header section too large' },
+                id: null
+              }),
+              'close'
+            )
+            buffer = Buffer.alloc(0)
+            return
+          }
 
           const headerSection = buffer.subarray(0, headerEnd).toString()
           const lines = headerSection.split('\r\n')
-          const [method, path] = lines[0].split(' ')
+          const requestLineParts = lines[0].split(' ')
+          const [method, path, version] = requestLineParts
 
-          if (!method || !path) {
+          if (
+            requestLineParts.length !== 3 ||
+            !method ||
+            !path ||
+            !version ||
+            !/^HTTP\/1\.[01]$/.test(version)
+          ) {
             sendResponse(
               socket,
               400,
@@ -181,18 +248,49 @@ export default function createNetServer (
           }
 
           const headers: Record<string, string> = {}
+          const contentLengthValues: string[] = []
           for (let i = 1; i < lines.length; i++) {
             const colonIdx = lines[i].indexOf(':')
             if (colonIdx > 0) {
               const key = lines[i].substring(0, colonIdx).trim().toLowerCase()
               const value = lines[i].substring(colonIdx + 1).trim()
+              if (key === 'content-length') {
+                contentLengthValues.push(value)
+              }
               headers[key] = value
             }
           }
 
+          // Chunked framing is not implemented; accepting it would leave the
+          // chunked bytes in the buffer and desync every later request.
+          if (headers['transfer-encoding'] !== undefined) {
+            sendResponse(
+              socket,
+              400,
+              { 'content-type': 'application/json' },
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32000,
+                  message: 'Bad Request: Transfer-Encoding is not supported; send Content-Length.'
+                },
+                id: null
+              }),
+              'close'
+            )
+            buffer = Buffer.alloc(0)
+            return
+          }
+
           const rawContentLength = headers['content-length'] || '0'
+          const distinctContentLengths = new Set(contentLengthValues)
           const contentLength = Number.parseInt(rawContentLength, 10)
-          if (!Number.isFinite(contentLength) || contentLength < 0) {
+          if (
+            distinctContentLengths.size > 1 ||
+            !/^\d+$/.test(rawContentLength) ||
+            !Number.isFinite(contentLength) ||
+            contentLength < 0
+          ) {
             sendResponse(
               socket,
               400,
@@ -203,6 +301,22 @@ export default function createNetServer (
                 id: null
               }),
               headers['connection']
+            )
+            buffer = Buffer.alloc(0)
+            return
+          }
+
+          if (contentLength > MAX_REQUEST_BODY_BYTES) {
+            sendResponse(
+              socket,
+              413,
+              { 'content-type': 'application/json' },
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32000, message: 'Payload Too Large: request body exceeds limit' },
+                id: null
+              }),
+              'close'
             )
             buffer = Buffer.alloc(0)
             return
@@ -226,6 +340,25 @@ export default function createNetServer (
                 error: {
                   code: -32000,
                   message: 'Forbidden: invalid Origin header'
+                },
+                id: null
+              }),
+              headers['connection']
+            )
+            continue
+          }
+
+          const hostHeader = headers['host']
+          if (hostHeader !== undefined && !isAllowedLocalHost(hostHeader)) {
+            sendResponse(
+              socket,
+              403,
+              { 'content-type': 'application/json' },
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32000,
+                  message: 'Forbidden: invalid Host header'
                 },
                 id: null
               }),
@@ -329,13 +462,17 @@ export default function createNetServer (
 
           try {
             const response = await handleStatelessMcpRequest(webRequest)
-            sendResponse(
+            const sent = sendResponse(
               socket,
               response.status,
               response.headers,
               response.body,
               headers['connection']
             )
+            if (!sent) {
+              awaitingDrain = true
+              return
+            }
           } catch (error) {
             console.error('[MCP] Request handler error:', error)
             sendResponse(
@@ -368,7 +505,13 @@ export default function createNetServer (
         }
       } finally {
         processing = false
-        if (buffer.length > 0 && !socketEnded && !socket.destroyed && socket.writable) {
+        if (
+          buffer.length > 0 &&
+          !awaitingDrain &&
+          !socketEnded &&
+          !socket.destroyed &&
+          socket.writable
+        ) {
           void processBufferedRequests()
         }
       }
@@ -408,11 +551,12 @@ export default function createNetServer (
         sock.write(response, () => {
           sock.end()
         })
-      } else {
-        sock.write(response)
+        return true
       }
 
-      return true
+      // Backpressure: false means the kernel buffer is full. The caller pauses
+      // pipelined dispatch and resumes on the socket drain event.
+      return sock.write(response)
     }
   }) as NetServer
 

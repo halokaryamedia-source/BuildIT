@@ -175,12 +175,6 @@ export function registerUITools() {
     {
       ...uiToolDocs[0],
       async execute({ action, confirmEvent: args, confirmDialog }) {
-        Undo.initEdit({
-          elements: [],
-          outliner: true,
-          collections: [],
-        });
-
         const parsedArgs = args ? parseJsonObject(args, "confirmEvent") : {};
 
         if (!(action in BarItems)) {
@@ -188,18 +182,29 @@ export function registerUITools() {
         }
         const barItem = BarItems[action];
 
-        if (barItem && barItem instanceof Action) {
-          const eventType = typeof parsedArgs.event === "string"
-            ? parsedArgs.event
-            : "click";
-          barItem.trigger(new Event(eventType, eventInitFromJson(parsedArgs)));
-        }
+        Undo.initEdit({
+          elements: [],
+          outliner: true,
+          collections: [],
+        });
 
-        if (confirmDialog) {
-          Dialog.open?.confirm();
-        }
+        try {
+          if (barItem && barItem instanceof Action) {
+            const eventType = typeof parsedArgs.event === "string"
+              ? parsedArgs.event
+              : "click";
+            barItem.trigger(new Event(eventType, eventInitFromJson(parsedArgs)));
+          }
 
-        Undo.finishEdit("Agent triggered action");
+          if (confirmDialog) {
+            Dialog.open?.confirm();
+          }
+
+          Undo.finishEdit("Agent triggered action");
+        } catch (error) {
+          Undo.cancelEdit(true);
+          throw error;
+        }
 
         let result;
 

@@ -1,6 +1,6 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
-import { createResource } from "@/lib/factories";
+import { createResource, resources } from "@/lib/factories";
 import { findByResourceId, makeResourceUri } from "@/lib/resourceUri";
 
 // Register projects resource using the factory pattern
@@ -127,16 +127,47 @@ createResource("nodes", {
       throw new Error(`Node with ID "${id}" not found.`);
     }
 
-    const { position, rotation, scale, ...rest } = node;
+    // Enumerate scalar fields explicitly: spreading unknown node objects can
+    // pull engine/mesh references (or circular structures) into the payload.
+    const nodeRecord = node as unknown as Record<string, unknown> & {
+      position?: { toArray(): number[] };
+      rotation?: { toArray(): number[] };
+      scale?: { toArray(): number[] };
+    };
+    const scalar = (
+      value: unknown
+    ): string | number | boolean | null | undefined =>
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+        ? value
+        : null;
+    const extra: Record<string, string | number | boolean | null> = {};
+    for (const [key, value] of Object.entries(nodeRecord)) {
+      if (["position", "rotation", "scale", "uuid", "name"].includes(key)) {
+        continue;
+      }
+      const safeValue = scalar(value);
+      if (safeValue !== null && safeValue !== undefined) {
+        extra[key] = safeValue;
+      }
+    }
+
     return {
       contents: [
         {
           uri: uri.href,
           text: JSON.stringify({
-            ...rest,
-            position: position.toArray(),
-            rotation: rotation.toArray(),
-            scale: scale.toArray(),
+            uuid: node.uuid,
+            name: node.name,
+            ...extra,
+            position: nodeRecord.position
+              ? nodeRecord.position.toArray()
+              : null,
+            rotation: nodeRecord.rotation
+              ? nodeRecord.rotation.toArray()
+              : null,
+            scale: nodeRecord.scale ? nodeRecord.scale.toArray() : null,
           }),
           mimeType: "application/json",
         },
@@ -237,7 +268,18 @@ createResource("textures", {
   },
 });
 
-if (Plugins.installed.some((p: { id: string }) => p.id === "reference_models")) {
+/**
+ * Conditionally registers the reference_models resource at plugin runtime.
+ * The Plugins global must never be read at module scope so this module stays
+ * import-safe for Bun tests and docs generation.
+ */
+export function registerReferenceModelsResource(): void {
+  if (resources["reference_models"]) return;
+  if (
+    !Plugins.installed.some((p: { id: string }) => p.id === "reference_models")
+  ) {
+    return;
+  }
   createResource("reference_models", {
     uriTemplate: "reference_models://{id}",
     title: "Reference Models",
