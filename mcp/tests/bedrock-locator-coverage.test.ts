@@ -83,9 +83,10 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
   test("Null Object creation rejects duplicate exact names before Undo", async () => {
     const locatorSource = await source("server/tools/locators.ts");
     const block = locatorSource.slice(locatorSource.indexOf("locatorToolDocs[2].name"));
-    expect(block.indexOf("NullObject.all.some")).toBeGreaterThan(-1);
-    expect(block.indexOf("Undo.initEdit")).toBeGreaterThan(block.indexOf("NullObject.all.some"));
-    expect(block).toContain("must remain unique for deterministic references");
+    expect(block.indexOf("assertOutlinerNameAvailable")).toBeGreaterThan(-1);
+    expect(locatorSource).toContain(
+      "Names must remain unique across Locators, Null Objects, Cubes, and Groups"
+    );
   });
 
   test("Null Object geometry round-trip distinction is documented", async () => {

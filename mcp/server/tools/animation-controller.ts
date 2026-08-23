@@ -19,6 +19,22 @@ const nonEmptyAuthoredScript = z
 const clearableAuthoredString = z.union([nonEmptyAuthoredString, z.null()]);
 const clearableAuthoredScript = z.union([nonEmptyAuthoredScript, z.null()]);
 
+/**
+ * Schema-level on_entry/on_exit accept empty strings because empty clears the
+ * script; whitespace-only text is neither authored nor a clear, so it is
+ * rejected here without paying union-serialization cost in the listed schema.
+ */
+function requireAuthoredScriptText(
+  value: string | undefined,
+  field: "on_entry" | "on_exit"
+): void {
+  if (value !== undefined && value.trim().length === 0) {
+    throw new Error(
+      `${field} must contain non-whitespace authored text; pass an empty string to clear it.`
+    );
+  }
+}
+
 const controllerBlendValueSchema = z.union([
   z.number().finite(),
   nonEmptyAuthoredString,
@@ -91,8 +107,14 @@ const controllerOperationSchema = z
     pre_effect_script: clearableAuthoredScript
       .optional()
       .describe("Particle pre-effect Molang; null clears."),
-    on_entry: z.string().optional().describe("State on_entry script; empty clears."),
-    on_exit: z.string().optional().describe("State on_exit script; empty clears."),
+    on_entry: z
+      .string()
+      .optional()
+      .describe("State on_entry script; empty clears."),
+    on_exit: z
+      .string()
+      .optional()
+      .describe("State on_exit script; empty clears."),
     blend_transition: z
       .number()
       .finite()
@@ -150,6 +172,8 @@ const controllerOperationSchema = z
           "blend_transition",
           "blend_via_shortest_path"
         );
+        requireAuthoredScriptText(operation.on_entry, "on_entry");
+        requireAuthoredScriptText(operation.on_exit, "on_exit");
         break;
       case "update_state": {
         require("state");
@@ -173,6 +197,8 @@ const controllerOperationSchema = z
             message: "update_state requires at least one authored field.",
           });
         }
+        requireAuthoredScriptText(operation.on_entry, "on_entry");
+        requireAuthoredScriptText(operation.on_exit, "on_exit");
         break;
       }
       case "remove_state":
@@ -446,7 +472,12 @@ function snapshotController(controller: AnimationController): ControllerPlan {
         name: view.name,
         animations: view.animations.map((link) => ({
           ...link,
-          blend_value: String(link.blend_value ?? ""),
+          // Preserve the authored typeof: numeric blend_value must not be
+          // silently rewritten to a string for states this batch never edits.
+          blend_value:
+            typeof link.blend_value === "number"
+              ? link.blend_value
+              : String(link.blend_value ?? ""),
         })),
         transitions: cloneJsonArray(view.transitions),
         sounds: cloneJsonArray(view.sounds),
@@ -747,9 +778,22 @@ function applyOperationToPlan(
     case "add_animation": {
       const state = resolveControllerState(plan.states, operation.state!);
       const animation = resolveAuthoredAnimation(operation.animation!);
+      // Bedrock controllers key animation links by short name: a duplicate
+      // key would silently shadow the earlier link on serialize.
+      const nextKey = animation.getShortName();
+      if (
+        state.animations.some(
+          (candidate) =>
+            candidate.key === nextKey || candidate.animation === animation.uuid
+        )
+      ) {
+        throw new Error(
+          `State "${state.name}" already links animation "${nextKey}". Remove the existing link or update it instead of adding a duplicate.`
+        );
+      }
       const link = {
         uuid: guid(),
-        key: animation.getShortName(),
+        key: nextKey,
         animation: animation.uuid,
         blend_value: normalizeBlendValue(operation.blend_value),
       };
@@ -779,6 +823,18 @@ function applyOperationToPlan(
       ) {
         throw new Error(
           `update_animation would not change animation link "${link.uuid}".`
+        );
+      }
+      if (
+        state.animations.some(
+          (candidate) =>
+            candidate.uuid !== link.uuid &&
+            (candidate.key === nextKey ||
+              candidate.animation === nextAnimationUuid)
+        )
+      ) {
+        throw new Error(
+          `State "${state.name}" already links animation "${nextKey}". update_animation would create a duplicate link key.`
         );
       }
       link.animation = nextAnimationUuid;

@@ -110,7 +110,7 @@ bun run docs:check
       <td class="col-name">faces</td>
       <td class="col-type">boolean | object[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode. <span class="param-meta">(default: <code>true</code>)</span></td>
+      <td class="col-desc">UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode. <span class="param-meta">(default: <code>true</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -149,7 +149,7 @@ bun run docs:check
       <td class="col-name">origin</td>
       <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">from</td>
       <td class="col-type">unknown[]</td>
@@ -164,7 +164,7 @@ bun run docs:check
       <td class="col-name">rotation</td>
       <td class="col-type">unknown[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+      <td class="col-desc">Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr><tr>
       <td class="col-name">autouv</td>
       <td class="col-type">&quot;0&quot; | &quot;1&quot; | &quot;2&quot;</td>
@@ -332,7 +332,7 @@ bun run docs:check
       <td class="col-name">front_direction</td>
       <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons.</td>
+      <td class="col-desc">Explicit object front direction; no default, preventing mirrored comparisons.</td>
     </tr><tr>
       <td class="col-name">framing</td>
       <td class="col-type">object | object</td>
@@ -384,12 +384,12 @@ bun run docs:check
       <td class="col-name">bones</td>
       <td class="col-type">Record&lt;string, object[]&gt;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space.</td>
+      <td class="col-desc">Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space.</td>
     </tr><tr>
       <td class="col-name">particle_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array.</td>
+      <td class="col-desc">Particle effects keyed by unique non-negative finite timestamps; one effect or array each.</td>
     </tr><tr>
       <td class="col-name">sound_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
@@ -487,7 +487,7 @@ bun run docs:check
       <td class="col-name">axis</td>
       <td class="col-type">&quot;x&quot; | &quot;y&quot; | &quot;z&quot; | string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level. <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
+      <td class="col-desc">Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level. <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">action</td>
       <td class="col-type">&quot;smooth&quot; | &quot;linear&quot; | &quot;ease_in&quot; | &quot;ease_out&quot; | &quot;ease_in_out&quot; | &quot;stepped&quot; | &quot;custom&quot;</td>
@@ -502,7 +502,7 @@ bun run docs:check
       <td class="col-name">custom_curve</td>
       <td class="col-type">object</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action).</td>
+      <td class="col-desc">Bezier left/right handle offsets for the axis or all axes ('custom' action only).</td>
     </tr></tbody>
     </table>
       </div>
@@ -575,7 +575,7 @@ bun run docs:check
       <td class="col-name">length</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor. <span class="param-meta">[min: 0, max: 10000]</span></td>
+      <td class="col-desc">set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor. <span class="param-meta">[min: 0, max: 10000]</span></td>
     </tr><tr>
       <td class="col-name">fps</td>
       <td class="col-type">number</td>
@@ -595,7 +595,7 @@ bun run docs:check
       <td class="col-name">molang</td>
       <td class="col-type">string | null</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated.</td>
+      <td class="col-desc">Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.</td>
     </tr></tbody>
     </table>
       </div>
@@ -795,7 +795,7 @@ bun run docs:check
       <td class="col-name">state</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional AnimationController state UUID or unique exact state name for focused state-machine detail. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional controller state UUID or unique name for focused state-machine detail. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">include_effect_keyframes</td>
       <td class="col-type">boolean</td>
@@ -910,7 +910,7 @@ bun run docs:check
       <td class="col-name">max_depth</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed. <span class="param-meta">(default: <code>8</code>) [min: 1, max: 32]</span></td>
+      <td class="col-desc">Maximum tree depth. Default 8; increase only for deeper structure. <span class="param-meta">(default: <code>8</code>) [min: 1, max: 32]</span></td>
     </tr><tr>
       <td class="col-name">max_nodes</td>
       <td class="col-type">integer</td>
@@ -954,7 +954,7 @@ bun run docs:check
       <td class="col-name">newName</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"></td>
+      <td class="col-desc">Name for the duplicated root only; descendants keep `&lt;name&gt;_copy` names. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -983,12 +983,12 @@ bun run docs:check
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Exact element/Group UUID or unique name; ambiguous names are rejected before rename. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">new_name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">New name to assign.</td>
+      <td class="col-desc">Non-empty new name to assign. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1091,7 +1091,7 @@ bun run docs:check
       <td class="col-name">parent_group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional Group UUID/unique-name subtree scope; rejected if ambiguous before selection. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1246,7 +1246,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Export Bedrock Model</p>
-      <p class="card-desc">Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`. Filesystem writes require Blockbench permission, verify the written artifact, and refuse existing Bedrock geometry files rather than bypass native multi-model overwrite semantics.</p>
+      <p class="card-desc">Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel` with verified filesystem writes; `overwrite` consents to replacing an existing `.bbmodel`, and existing Bedrock geometry files are always refused.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1261,7 +1261,7 @@ bun run docs:check
       <td class="col-name">codec_id</td>
       <td class="col-type">&quot;bedrock&quot; | &quot;project&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
+      <td class="col-desc">BlockIT output: `bedrock` = Bedrock geometry JSON, `project` = editable `.bbmodel`. <span class="param-meta">(default: <code>&quot;bedrock&quot;</code>)</span></td>
     </tr><tr>
       <td class="col-name">options</td>
       <td class="col-type">Record&lt;string, unknown&gt;</td>
@@ -1273,10 +1273,15 @@ bun run docs:check
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Optional absolute output path; requires Blockbench filesystem permission.</td>
     </tr><tr>
+      <td class="col-name">overwrite</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Allow replacing an existing `.bbmodel` at `path`; Bedrock exports always refuse existing files.</td>
+    </tr><tr>
       <td class="col-name">max_content_length</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed. <span class="param-meta">[min: 0, max: 2000000]</span></td>
+      <td class="col-desc">Max characters returned in `content`; default 0 with `path`, else 100000. <span class="param-meta">[min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1395,7 +1400,7 @@ bun run docs:check
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Descriptive name for the checkpoint. Shown in undo history so agents can navigate back to this point. <span class="param-meta">[minLength: 1, maxLength: 120]</span></td>
+      <td class="col-desc">Descriptive checkpoint name shown in undo history for navigation back to this point. <span class="param-meta">[minLength: 1, maxLength: 120]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1800,11 +1805,11 @@ bun run docs:check
         <h3 class="card-name">color_picker_tool</h3>
         <div class="card-badges">
           <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-readonly">read-only</span>
+
         </div>
       </div>
       <p class="card-title">Color Picker Tool</p>
-      <p class="card-desc">Picks colors from textures and sets them as the active color.</p>
+      <p class="card-desc">Picks a color into the active color slot; pick_opacity also mutates brush opacity state.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2099,7 +2104,7 @@ bun run docs:check
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Name of the brush preset.</td>
+      <td class="col-desc">Non-empty name of the brush preset. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">size</td>
       <td class="col-type">number</td>
@@ -2283,7 +2288,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Project</p>
-      <p class="card-desc">Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.</p>
+      <p class="card-desc">Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format; refuses unsaved work without `discard_unsaved`.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2299,6 +2304,11 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Non-empty project name. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">discard_unsaved</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Discard unsaved changes in the open project; required when it currently has unsaved work.</td>
     </tr></tbody>
     </table>
       </div>
@@ -2695,7 +2705,7 @@ bun run docs:check
       <td class="col-name">material</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Material/texture group target to inspect; UUID preferred, exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2758,7 +2768,7 @@ bun run docs:check
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Explicit texture target; UUID preferred, then texture ID, then unique name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">channel</td>
       <td class="col-type">&quot;color&quot; | &quot;normal&quot; | &quot;height&quot; | &quot;mer&quot;</td>
@@ -2821,7 +2831,7 @@ bun run docs:check
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture target to activate; UUID preferred, then ID, then unique name. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3050,7 +3060,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-23T12:07:26.824Z from Zod schemas
+        Generated 2026-08-23T15:16:13.389Z from Zod schemas
       </footer>
     </main>
   </div>

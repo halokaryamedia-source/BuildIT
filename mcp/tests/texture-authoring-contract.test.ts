@@ -285,7 +285,7 @@ describe("texturing authoring contract", () => {
     const brush = toolBlock(paint, 7, 8);
     for (const marker of [
       "isExactPixelAuthoringRequest(coordinates",
-      'brush_settings?.blend_mode ?? "ambient"',
+      'brush_settings?.blend_mode ?? "default"',
       "texture.getActiveCanvas()",
       "Undo.initEdit(undoAspects)",
       "texture.edit(",

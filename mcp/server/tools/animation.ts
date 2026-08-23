@@ -90,7 +90,7 @@ const bedrockParticleEffectsSchema = z
     });
   })
   .describe(
-    "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array."
+    "Particle effects keyed by unique non-negative finite timestamps; one effect or array each."
   );
 
 const bedrockSoundEffectSchema = z.object({
@@ -228,7 +228,7 @@ export const createAnimationParameters = z.object({
   bones: z
     .record(bedrockBoneKeyframesSchema)
     .describe(
-      "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space."
+      "Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space."
     ),
   particle_effects: bedrockParticleEffectsSchema.optional(),
   sound_effects: bedrockSoundEffectsSchema.optional(),
@@ -311,7 +311,7 @@ export const animationGraphEditorParameters = z.object({
   axis: axisWithAllEnum
     .default("all")
     .describe(
-      "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level."
+      "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level."
     ),
   action: z
     .enum([
@@ -342,7 +342,7 @@ export const animationGraphEditorParameters = z.object({
     })
     .optional()
     .describe(
-      "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action)."
+      "Bezier left/right handle offsets for the axis or all axes ('custom' action only)."
     ),
 });
 
@@ -486,7 +486,7 @@ export const animationTimelineParameters = z
       .max(10000)
       .optional()
       .describe(
-        "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor."
+        "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor."
       ),
     fps: z
       .number()
@@ -503,7 +503,7 @@ export const animationTimelineParameters = z
     molang: animationMolangPropertySchema
       .optional()
       .describe(
-        "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated."
+        "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated."
       ),
   })
   .superRefine((params, ctx) => {
@@ -1177,7 +1177,7 @@ createTool(
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify(result),
+              text: `Created animation "${createdAnimation.name}" (${createdAnimation.uuid}) for ${result.requested_bone_count} bone(s); ${requestedParticleEffectCount} particle and ${requestedSoundEffectCount} sound effect keyframe(s) requested.`,
             },
           ],
           structuredContent: result,
@@ -1209,7 +1209,8 @@ createTool(
       const group = resolveRigGroup(bone_name);
       const existingAnimator = animation.animators[group.uuid] as BoneAnimator | undefined;
       const buildResult = (
-        affectedKeyframes: Array<ReturnType<typeof keyframeContinuationState>>
+        affectedKeyframes: Array<ReturnType<typeof keyframeContinuationState>>,
+        overwrittenKeyframeCount = 0
       ) => {
         const result = {
           action,
@@ -1218,12 +1219,18 @@ createTool(
           channel,
           affected_count: affectedKeyframes.length,
           affected_keyframes: affectedKeyframes,
+          ...(overwrittenKeyframeCount > 0
+            ? { overwritten_keyframes: overwrittenKeyframeCount }
+            : {}),
         };
         return {
           content: [
             {
               type: "text" as const,
-              text: `${action} affected ${affectedKeyframes.length} keyframe(s) for ${group.name}.${channel}.`,
+              text:
+                overwrittenKeyframeCount > 0
+                  ? `${action} affected ${affectedKeyframes.length} keyframe(s) for ${group.name}.${channel}, replacing ${overwrittenKeyframeCount} coincident keyframe(s).`
+                  : `${action} affected ${affectedKeyframes.length} keyframe(s) for ${group.name}.${channel}.`,
             },
           ],
           structuredContent: result,
@@ -1302,6 +1309,7 @@ createTool(
       const targetKeyframes = action === "create" ? [] : resolveRequestedTargets();
       let affectedKeyframes =
         action === "delete" ? targetKeyframes.map(keyframeContinuationState) : [];
+      const createCasualties: _Keyframe[] = [];
 
       Undo.initEdit({
         animations: [animation],
@@ -1333,7 +1341,9 @@ createTool(
                 throw new Error(`Channel "${channel}" is unavailable for ${group.name}.`);
               }
               applyValues(keyframe, kf.values);
-              keyframe.replaceOthers([]);
+              // Collect same-time casualties so the create receipt reports
+              // what native replace semantics evicted.
+              keyframe.replaceOthers(createCasualties);
 
               if (kf.interpolation === "bezier" && kf.bezier_handles) {
                 // @ts-ignore
@@ -1394,7 +1404,7 @@ createTool(
       }
 
       Animator.preview();
-      return buildResult(affectedKeyframes);
+      return buildResult(affectedKeyframes, createCasualties.length);
     },
   },
   animationToolDocs[1].status

@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-23T12:07:26.824Z",
+  "generatedAt": "2026-08-23T15:16:13.389Z",
   "tools": [
     {
       "name": "place_cube",
@@ -139,8 +139,8 @@
                   {
                     "type": "boolean",
                     "const": true,
-                    "description": "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping.",
-                    "markdownDescription": "Use the Cube UV mode inherited from the Bedrock project; per-face UV Cubes receive native auto UV mapping."
+                    "description": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping.",
+                    "markdownDescription": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
                   },
                   {
                     "type": "array",
@@ -184,8 +184,8 @@
                   }
                 ],
                 "default": true,
-                "description": "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode.",
-                "markdownDescription": "Bedrock UV intent. Use true/default for inherited project UV mode, or explicit custom face UV rectangles for per-face UV mode."
+                "description": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode.",
+                "markdownDescription": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode."
               }
             },
             "required": [
@@ -239,8 +239,8 @@
                     "type": "number"
                   }
                 ],
-                "description": "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform.",
-                "markdownDescription": "Cube pivot. Origin-only preserves visual position; with from/to/rotation it rewrites the authored transform."
+                "description": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform.",
+                "markdownDescription": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform."
               },
               "from": {
                 "type": "array",
@@ -293,8 +293,8 @@
                     "type": "number"
                   }
                 ],
-                "description": "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot.",
-                "markdownDescription": "Cube rotation. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
+                "description": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot.",
+                "markdownDescription": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot."
               },
               "autouv": {
                 "type": "string",
@@ -655,8 +655,8 @@
                   "+z",
                   "-z"
                 ],
-                "description": "Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons.",
-                "markdownDescription": "Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons."
+                "description": "Explicit object front direction; no default, preventing mirrored comparisons.",
+                "markdownDescription": "Explicit object front direction; no default, preventing mirrored comparisons."
               },
               "framing": {
                 "anyOf": [
@@ -829,8 +829,8 @@
                   "description": "Transform keyframes at finite non-negative times; one value per channel per time.",
                   "markdownDescription": "Transform keyframes at finite non-negative times; one value per channel per time."
                 },
-                "description": "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space.",
-                "markdownDescription": "Bone keyframes keyed by Group UUID or case-insensitively unique Group name; transform values use Blockbench authored space."
+                "description": "Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space.",
+                "markdownDescription": "Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space."
               },
               "particle_effects": {
                 "type": "object",
@@ -904,8 +904,8 @@
                     }
                   ]
                 },
-                "description": "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array.",
-                "markdownDescription": "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array."
+                "description": "Particle effects keyed by unique non-negative finite timestamps; one effect or array each.",
+                "markdownDescription": "Particle effects keyed by unique non-negative finite timestamps; one effect or array each."
               },
               "sound_effects": {
                 "type": "object",
@@ -1194,8 +1194,8 @@
                   }
                 ],
                 "default": "all",
-                "description": "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level.",
-                "markdownDescription": "Bezier-handle axis to modify. 'all' applies the same handle change to x, y, and z; interpolation mode itself remains keyframe-level."
+                "description": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level.",
+                "markdownDescription": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level."
               },
               "action": {
                 "type": "string",
@@ -1262,8 +1262,8 @@
                   "control_point_2"
                 ],
                 "additionalProperties": false,
-                "description": "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action).",
-                "markdownDescription": "Custom Bezier left/right handle offsets for the requested axis or all axes (only for 'custom' action)."
+                "description": "Bezier left/right handle offsets for the axis or all axes ('custom' action only).",
+                "markdownDescription": "Bezier left/right handle offsets for the axis or all axes ('custom' action only)."
               }
             },
             "required": [
@@ -1437,8 +1437,8 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10000,
-                "description": "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor.",
-                "markdownDescription": "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor."
+                "description": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor.",
+                "markdownDescription": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor."
               },
               "fps": {
                 "type": "number",
@@ -1490,8 +1490,8 @@
                     "type": "null"
                   }
                 ],
-                "description": "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated.",
-                "markdownDescription": "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated."
+                "description": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.",
+                "markdownDescription": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated."
               }
             },
             "required": [
@@ -2103,8 +2103,8 @@
               "state": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional AnimationController state UUID or unique exact state name for focused state-machine detail.",
-                "markdownDescription": "Optional AnimationController state UUID or unique exact state name for focused state-machine detail."
+                "description": "Optional controller state UUID or unique name for focused state-machine detail.",
+                "markdownDescription": "Optional controller state UUID or unique name for focused state-machine detail."
               },
               "include_effect_keyframes": {
                 "type": "boolean",
@@ -2259,8 +2259,8 @@
                 "minimum": 1,
                 "maximum": 32,
                 "default": 8,
-                "description": "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed.",
-                "markdownDescription": "Maximum tree depth. Defaults to 8 for a compact hierarchy view; increase only when deeper structure is needed."
+                "description": "Maximum tree depth. Default 8; increase only for deeper structure.",
+                "markdownDescription": "Maximum tree depth. Default 8; increase only for deeper structure."
               },
               "max_nodes": {
                 "type": "integer",
@@ -2322,7 +2322,10 @@
                 "markdownDescription": "Finite translation offset [x,y,z] applied to the duplicated Cube/Group subtree."
               },
               "newName": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1,
+                "description": "Name for the duplicated root only; descendants keep `<name>_copy` names.",
+                "markdownDescription": "Name for the duplicated root only; descendants keep `<name>_copy` names."
               }
             },
             "required": [
@@ -2352,13 +2355,14 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename.",
-                "markdownDescription": "Exact outliner element or Group UUID, or exact unique name. Ambiguous names are rejected before rename."
+                "description": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename.",
+                "markdownDescription": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename."
               },
               "new_name": {
                 "type": "string",
-                "description": "New name to assign.",
-                "markdownDescription": "New name to assign."
+                "minLength": 1,
+                "description": "Non-empty new name to assign.",
+                "markdownDescription": "Non-empty new name to assign."
               }
             },
             "required": [
@@ -2505,8 +2509,8 @@
               "parent_group": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes.",
-                "markdownDescription": "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes."
+                "description": "Optional Group UUID/unique-name subtree scope; rejected if ambiguous before selection.",
+                "markdownDescription": "Optional Group UUID/unique-name subtree scope; rejected if ambiguous before selection."
               }
             },
             "required": [
@@ -2947,7 +2951,7 @@
     {
       "name": "export_model",
       "title": "Export Bedrock Model",
-      "description": "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel`. Filesystem writes require Blockbench permission, verify the written artifact, and refuse existing Bedrock geometry files rather than bypass native multi-model overwrite semantics.",
+      "description": "Compiles the active Bedrock Entity project as Bedrock geometry JSON or editable `.bbmodel` with verified filesystem writes; `overwrite` consents to replacing an existing `.bbmodel`, and existing Bedrock geometry files are always refused.",
       "status": "experimental",
       "category": "Export",
       "annotations": {
@@ -2967,8 +2971,8 @@
                   "project"
                 ],
                 "default": "bedrock",
-                "description": "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`.",
-                "markdownDescription": "BlockIT model output: `bedrock` for Minecraft Bedrock geometry JSON, or `project` for the editable Blockbench `.bbmodel`."
+                "description": "BlockIT output: `bedrock` = Bedrock geometry JSON, `project` = editable `.bbmodel`.",
+                "markdownDescription": "BlockIT output: `bedrock` = Bedrock geometry JSON, `project` = editable `.bbmodel`."
               },
               "options": {
                 "type": "object",
@@ -2981,12 +2985,17 @@
                 "description": "Optional absolute output path; requires Blockbench filesystem permission.",
                 "markdownDescription": "Optional absolute output path; requires Blockbench filesystem permission."
               },
+              "overwrite": {
+                "type": "boolean",
+                "description": "Allow replacing an existing `.bbmodel` at `path`; Bedrock exports always refuse existing files.",
+                "markdownDescription": "Allow replacing an existing `.bbmodel` at `path`; Bedrock exports always refuse existing files."
+              },
               "max_content_length": {
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2000000,
-                "description": "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed.",
-                "markdownDescription": "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed."
+                "description": "Max characters returned in `content`; default 0 with `path`, else 100000.",
+                "markdownDescription": "Max characters returned in `content`; default 0 with `path`, else 100000."
               }
             },
             "additionalProperties": false
@@ -3104,8 +3113,8 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 120,
-                "description": "Descriptive name for the checkpoint. Shown in undo history so agents can navigate back to this point.",
-                "markdownDescription": "Descriptive name for the checkpoint. Shown in undo history so agents can navigate back to this point."
+                "description": "Descriptive checkpoint name shown in undo history for navigation back to this point.",
+                "markdownDescription": "Descriptive checkpoint name shown in undo history for navigation back to this point."
               }
             },
             "required": [
@@ -3443,6 +3452,10 @@
               },
               "color": {
                 "type": "string",
+                "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                "errorMessage": {
+                  "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                },
                 "description": "Fill color as hex string.",
                 "markdownDescription": "Fill color as hex string."
               },
@@ -3568,6 +3581,10 @@
               },
               "color": {
                 "type": "string",
+                "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                "errorMessage": {
+                  "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                },
                 "description": "Shape color as hex string.",
                 "markdownDescription": "Shape color as hex string."
               },
@@ -3676,11 +3693,19 @@
               },
               "start_color": {
                 "type": "string",
+                "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                "errorMessage": {
+                  "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                },
                 "description": "Start color as hex string.",
                 "markdownDescription": "Start color as hex string."
               },
               "end_color": {
                 "type": "string",
+                "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                "errorMessage": {
+                  "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                },
                 "description": "End color as hex string.",
                 "markdownDescription": "End color as hex string."
               },
@@ -3723,12 +3748,10 @@
     {
       "name": "color_picker_tool",
       "title": "Color Picker Tool",
-      "description": "Picks colors from textures and sets them as the active color.",
+      "description": "Picks a color into the active color slot; pick_opacity also mutates brush opacity state.",
       "status": "experimental",
       "category": "Paint Tools",
-      "annotations": {
-        "readOnlyHint": true
-      },
+      "annotations": {},
       "parameters": {
         "$ref": "#/definitions/color_picker_tool",
         "definitions": {
@@ -4177,6 +4200,10 @@
                   },
                   "color": {
                     "type": "string",
+                    "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                    "errorMessage": {
+                      "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                    },
                     "description": "Brush color as hex string.",
                     "markdownDescription": "Brush color as hex string."
                   },
@@ -4234,8 +4261,9 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Name of the brush preset.",
-                "markdownDescription": "Name of the brush preset."
+                "minLength": 1,
+                "description": "Non-empty name of the brush preset.",
+                "markdownDescription": "Non-empty name of the brush preset."
               },
               "size": {
                 "type": "number",
@@ -4269,6 +4297,10 @@
               },
               "color": {
                 "type": "string",
+                "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                "errorMessage": {
+                  "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                },
                 "description": "Brush color as hex string.",
                 "markdownDescription": "Brush color as hex string."
               },
@@ -4515,7 +4547,7 @@
     {
       "name": "create_project",
       "title": "Create Project",
-      "description": "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format.",
+      "description": "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format; refuses unsaved work without `discard_unsaved`.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4533,6 +4565,11 @@
                 "minLength": 1,
                 "description": "Non-empty project name.",
                 "markdownDescription": "Non-empty project name."
+              },
+              "discard_unsaved": {
+                "type": "boolean",
+                "description": "Discard unsaved changes in the open project; required when it currently has unsaved work.",
+                "markdownDescription": "Discard unsaved changes in the open project; required when it currently has unsaved work."
               }
             },
             "required": [
@@ -4656,7 +4693,7 @@
                     "type": "string",
                     "pattern": "^[a-z]{3,20}$",
                     "errorMessage": {
-                      "pattern": "Named color"
+                      "pattern": "Named color (lowercase)"
                     }
                   }
                 ],
@@ -5069,8 +5106,8 @@
               "material": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique.",
-                "markdownDescription": "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique."
+                "description": "Material/texture group target to inspect; UUID preferred, exact name only when unique.",
+                "markdownDescription": "Material/texture group target to inspect; UUID preferred, exact name only when unique."
               }
             },
             "required": [
@@ -5137,8 +5174,8 @@
               "texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Explicit texture target; UUID preferred, then texture ID, then unique name.",
+                "markdownDescription": "Explicit texture target; UUID preferred, then texture ID, then unique name."
               },
               "channel": {
                 "type": "string",
@@ -5213,8 +5250,8 @@
               "texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+                "description": "Texture target to activate; UUID preferred, then ID, then unique name.",
+                "markdownDescription": "Texture target to activate; UUID preferred, then ID, then unique name."
               }
             },
             "required": [

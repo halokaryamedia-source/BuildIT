@@ -138,7 +138,7 @@ export const activateTextureParameters = z.object({
   texture: textureIdSchema
     .min(1)
     .describe(
-      "Required texture target to activate. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Texture target to activate; UUID preferred, then ID, then unique name."
     ),
 });
 
@@ -289,7 +289,7 @@ export const getMaterialInfoParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Required material/texture group target to inspect. Exact UUID is preferred; an exact name is accepted only when unique."
+      "Material/texture group target to inspect; UUID preferred, exact name only when unique."
     ),
 });
 
@@ -313,7 +313,7 @@ export const assignTextureChannelParameters = z.object({
   texture: textureIdSchema
     .min(1)
     .describe(
-      "Required explicit texture target to assign. Exact UUID is preferred, then exact texture ID, then exact name only when unique."
+      "Explicit texture target; UUID preferred, then texture ID, then unique name."
     ),
   channel: pbrChannelEnum.describe("PBR channel to assign the texture to."),
 });

@@ -379,7 +379,7 @@ export function registerAnimationEffectTools() {
           sim[operation.channel].push({ id: `move:${index}`, uuid: null, channel: operation.channel, time: nextTime, points: [{ id: found.pointId, snapshot: next }] });
         });
 
-        type PlanResult = ReturnType<typeof continuationState> | { channel: AnimationEffectChannel; removed: { keyframe_uuid: string; data_point_index: number | null } };
+        type PlanResult = ReturnType<typeof continuationState> | { channel: AnimationEffectChannel; removed: { keyframe_uuid: string; data_point_index: number | null; remaining?: Array<{ effect: string; script: string }> } };
         const results: PlanResult[] = [];
         Undo.initEdit({ animations: [animation] });
         try {
@@ -408,6 +408,18 @@ export function registerAnimationEffectTools() {
               const targetTime = snappedTime!;
               const snapshot = applyPayload(operation.channel, { effect: "", locator: "", bind_to_actor: true, script: "", file: "" }, operation);
               const effects = ensureEffects();
+              // Same-time collision parity with particle/sound: merge into
+              // the existing keyframe instead of stacking silent duplicates.
+              if (operation.channel === "timeline") {
+                const existingTimeline = findRuntimeAtTime("timeline", targetTime)[0];
+                if (existingTimeline) {
+                  if (operation.script !== undefined) {
+                    existingTimeline.data_points[0].script = operation.script;
+                  }
+                  results.push(continuationState("timeline", existingTimeline, null));
+                  return;
+                }
+              }
               if (operation.channel !== "timeline") {
                 const existingAtTime = findRuntimeAtTime(operation.channel, targetTime)[0];
                 if (existingAtTime) {
@@ -444,7 +456,21 @@ export function registerAnimationEffectTools() {
             if (operation.operation === "remove") {
               if (keyframe.data_points.length === 1) keyframe.remove();
               else keyframe.data_points.splice(runtimeIndex, 1);
-              results.push({ channel: operation.channel, removed: { keyframe_uuid: operation.keyframe_uuid!, data_point_index: operation.data_point_index! } });
+              // Positional indices of surviving sibling points shift after a
+              // remove; publish the remap so later calls cannot silently
+              // retarget a stale data_point_index onto a different effect.
+              const remainingEffects = keyframe.data_points.map((candidate) => {
+                const snapshot = effectPointSnapshot(candidate);
+                return { effect: snapshot.effect ?? "", script: snapshot.script ?? "" };
+              });
+              results.push({
+                channel: operation.channel,
+                removed: {
+                  keyframe_uuid: operation.keyframe_uuid!,
+                  data_point_index: operation.data_point_index!,
+                  remaining: remainingEffects,
+                },
+              });
               return;
             }
 

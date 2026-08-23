@@ -20,7 +20,7 @@ export const inspectAnimationParameters = z.object({
     .string()
     .min(1)
     .optional()
-    .describe("Optional AnimationController state UUID or unique exact state name for focused state-machine detail."),
+    .describe(      "Optional controller state UUID or unique name for focused state-machine detail."),
   include_effect_keyframes: z
     .boolean()
     .optional()

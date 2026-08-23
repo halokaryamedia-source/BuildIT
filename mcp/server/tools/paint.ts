@@ -3,10 +3,11 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL } from "@/lib/constants";
-import { getProjectTexture, getAndActivateTexture, setBarItemValue } from "@/lib/util";
+import { getAndActivateTexture, setBarItemValue } from "@/lib/util";
 import {
   textureIdOptionalSchema,
   hexColorSchema,
+  requiredHexColorSchema,
   opacitySchema,
   brushSizeSchema,
   brushSoftnessSchema,
@@ -34,6 +35,30 @@ const textureLayerBlendModeEnum = z.enum([
   "difference",
   "alpha_mask",
 ]);
+
+/**
+ * Pixel operations reject out-of-bounds coordinates instead of letting the
+ * native painter silently clip/wrap/ignore them while still reporting success.
+ */
+function requirePixelsWithinTexture(
+  texture: Texture,
+  points: Array<{ x: number; y: number }>
+): void {
+  for (const point of points) {
+    if (
+      !Number.isFinite(point.x) ||
+      !Number.isFinite(point.y) ||
+      point.x < 0 ||
+      point.y < 0 ||
+      point.x >= texture.width ||
+      point.y >= texture.height
+    ) {
+      throw new Error(
+        `Coordinate (${point.x}, ${point.y}) is outside texture "${texture.name}" (${texture.width}x${texture.height}). Use in-bounds pixel coordinates.`
+      );
+    }
+  }
+}
 
 export const paintFillToolParameters = z.object({
   texture_id: textureIdOptionalSchema,
@@ -80,8 +105,8 @@ export const gradientToolParameters = z.object({
     x: z.number().describe("Gradient end X coordinate."),
     y: z.number().describe("Gradient end Y coordinate."),
   }),
-  start_color: z.string().describe("Start color as hex string."),
-  end_color: z.string().describe("End color as hex string."),
+  start_color: requiredHexColorSchema.describe("Start color as hex string."),
+  end_color: requiredHexColorSchema.describe("End color as hex string."),
   opacity: opacitySchema.describe("Gradient opacity (0-255)."),
   blend_mode: blendModeEnum.optional().describe("Gradient blend mode."),
 });
@@ -209,7 +234,7 @@ export const paintWithBrushParameters = z.object({
 });
 
 export const createBrushPresetParameters = z.object({
-  name: z.string().describe("Name of the brush preset."),
+  name: z.string().min(1).describe("Non-empty name of the brush preset."),
   size: brushSizeSchema,
   opacity: opacitySchema,
   softness: brushSoftnessSchema,
@@ -324,10 +349,9 @@ export const paintToolDocs: ToolSpec[] = [
   {
     name: "color_picker_tool",
     description:
-      "Picks colors from textures and sets them as the active color.",
+      "Picks a color into the active color slot; pick_opacity also mutates brush opacity state.",
     annotations: {
       title: "Color Picker Tool",
-      readOnlyHint: true,
     },
     parameters: colorPickerToolParameters,
     status: STATUS_EXPERIMENTAL,
@@ -593,6 +617,7 @@ export function registerPaintTools() {
         blend_mode,
       }) {
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, [{ x, y }]);
 
         // Apply settings
         if (color) {
@@ -731,6 +756,7 @@ export function registerPaintTools() {
         blend_mode,
       }) {
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, [start, end]);
 
         // Apply settings
         ColorPanel.set(start_color, false, false);
@@ -767,6 +793,7 @@ export function registerPaintTools() {
       parameters: colorPickerToolParameters,
       async execute({ texture_id, x, y, set_as_secondary, pick_opacity }) {
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, [{ x, y }]);
 
         // Pick color
         getRuntimePainter().colorPicker(texture, x, y, { button: set_as_secondary ? 2 : 0 });
@@ -805,6 +832,7 @@ export function registerPaintTools() {
       parameters: copyBrushToolParameters,
       async execute({ texture_id, source, target, brush_size, opacity, mode }) {
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, [source, target]);
 
         // Apply settings
         if (brush_size !== undefined) {
@@ -853,6 +881,7 @@ export function registerPaintTools() {
       }) {
         requirePaintCoordinates(coordinates, "eraser_tool");
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, coordinates);
 
         if (brush_size !== undefined) {
           setBarItemValue("slider_brush_size", brush_size);
@@ -931,6 +960,17 @@ export function registerPaintTools() {
 
         // Mirror painting
         if (mirror_painting !== undefined) {
+          if (
+            !mirror_painting.enabled &&
+            (mirror_painting.axis ||
+              mirror_painting.texture ||
+              mirror_painting.texture_center)
+          ) {
+            throw new Error(
+              "Mirror sub-options (axis/texture/texture_center) require mirror_painting.enabled; they would be silently dropped otherwise."
+            );
+          }
+
           setBarItemValue("mirror_painting", mirror_painting.enabled);
           getRuntimePainter().mirror_painting = mirror_painting.enabled;
           appliedSettings.push(`Mirror painting: ${mirror_painting.enabled}`);
@@ -1029,13 +1069,16 @@ export function registerPaintTools() {
       }) {
         requirePaintCoordinates(coordinates, "paint_with_brush");
         const texture = getAndActivateTexture(texture_id);
+        requirePixelsWithinTexture(texture, coordinates);
 
         const colorHex = brush_settings?.color ?? "#000000";
         const size = brush_settings?.size ?? 1;
         const opacity = brush_settings?.opacity ?? 255;
         const softness = brush_settings?.softness ?? 0;
         const shape = brush_settings?.shape ?? "square";
-        const blendMode = brush_settings?.blend_mode ?? "ambient";
+        // Neutral default must match blendModeEnum's "default" so omitted
+        // settings can still qualify for the bounded exact-pixel path.
+        const blendMode = brush_settings?.blend_mode ?? "default";
 
         setBarItemValue("slider_brush_size", size);
         setBarItemValue("slider_brush_opacity", opacity);
@@ -1214,16 +1257,21 @@ export function registerPaintTools() {
       parameters: loadBrushPresetParameters,
       async execute({ preset_name }) {
         // @ts-ignore
-        const preset = StateMemory.brush_presets.find(
+        const matches = StateMemory.brush_presets.filter(
           (p: { name: string }) => p.name === preset_name
         );
 
-        if (!preset) {
+        if (matches.length === 0) {
           throw new Error(`Brush preset "${preset_name}" not found.`);
+        }
+        if (matches.length > 1) {
+          throw new Error(
+            `Brush preset name "${preset_name}" is ambiguous (${matches.length} presets share it). Delete duplicates or recreate the intended preset with a unique name.`
+          );
         }
 
         // @ts-ignore
-        Painter.loadBrushPreset(preset);
+        Painter.loadBrushPreset(matches[0]);
 
         return `Loaded brush preset "${preset_name}"`;
       },

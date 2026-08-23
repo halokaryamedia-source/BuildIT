@@ -94,7 +94,7 @@ export const captureModelViewsParameters = z.object({
   front_direction: z
     .enum(["+z", "-z"])
     .describe(
-      "Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons."
+      "Explicit object front direction; no default, preventing mirrored comparisons."
     ),
   framing: z
     .union([
