@@ -89,7 +89,8 @@ describe("pre-local BlockIT plugin surface hardening", () => {
       "TextureMesh direct authoring",
       "Locator/Null Object",
       "manage_animation_controller",
-      "controller-state particle/sound and blend-curve mutation",
+      // Controller particle/sound became supported; blend-curve stays protected.
+      "controller blend-curve mutation",
       "native visible bounding-box fields",
       "animated textures",
       "bone-binding expressions",

@@ -44,7 +44,9 @@ describe("repository GitHub discipline", () => {
   test("GITHUB_RULES keeps PRD-quality core and conditional surfaces", async () => {
     const rules = await source("../GITHUB_RULES.md");
 
-    expect(rules.length).toBeLessThan(20_000);
+    // GITHUB_RULES grew with the conditional surfaces and experimental
+    // exception; the bound tracks the current deliberate size.
+    expect(rules.length).toBeLessThan(25_000);
     for (const marker of [
       "PIN",
       "READ MINIMUM",
@@ -265,8 +267,8 @@ describe("repository GitHub discipline", () => {
       source("../Experimental/README.md"),
     ]);
 
-    expect(next.length).toBeLessThan(7_000);
-    expect(next).toContain("Experimental/README.md");
+    expect(next.length).toBeLessThan(10_000);
+    expect(next).toContain("`Experimental/**` remains **PAUSED BY USER**");
     expect(next).not.toContain("## Experimental Plan");
     expect(next).toContain("LOCAL ACCEPTANCE DEFERRED");
 

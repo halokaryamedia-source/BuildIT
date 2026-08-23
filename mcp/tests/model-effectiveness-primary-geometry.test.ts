@@ -34,7 +34,7 @@ describe("model creation effectiveness — primary geometry", () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
 
     expect(modelling).toContain("provisional working extent");
-    expect(workflow).toContain("working hypothesis, not verified reference evidence");
+    expect(workflow).toContain("working hypothesis, not verified evidence");
     expect(modelling).toContain("Do not continue with another Cube merely because the previous placement succeeded");
     expect(workflow).toContain("Do not chain Cube placement based on previous tool success");
   });

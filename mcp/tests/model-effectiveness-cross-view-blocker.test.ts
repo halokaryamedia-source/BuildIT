@@ -40,6 +40,6 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
     }
     expect(modelling).toContain("same causal correction direction has failed twice without new evidence");
     expect(workflow).toContain("same causal correction direction fails twice without new evidence");
-    expect(orchestrator).toContain("Do not continue speculative mutation");
+    expect(orchestrator).toContain("do not mutate speculatively");
   });
 });

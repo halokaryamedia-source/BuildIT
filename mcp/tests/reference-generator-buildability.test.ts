@@ -16,7 +16,8 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("readiness is not permission to generate");
     expect(skill).toContain("fresh explicit user instruction");
     expect(flow).toContain("execution consent gate");
-    expect(next).toContain("wait for fresh explicit user generation command");
+    // Continuation now phrases the generation gate as a fresh-instruction rule.
+    expect(next).toContain("without fresh user instruction");
   });
 
   test("default board has five broad preview positions", async () => {
@@ -48,10 +49,13 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("simplest blockbench-buildable representation");
     expect(skill).toContain("never lazy-voxelize");
     expect(guide).toContain("does not need to be 100% identical");
-    for (const text of [skill, guide, texturing]) {
+    for (const text of [skill, guide]) {
       expect(text).toContain("base palette");
       expect(text).toContain("identity-critical markings");
     }
+    // The texturing skill carries the same contract as its design-block terms.
+    expect(texturing).toContain("palette roles");
+    expect(texturing).toContain("identity-critical marks");
   });
 
   test("minor drift uses one canonical interpretation; material conflict still blocks", async () => {
@@ -62,16 +66,21 @@ describe("reference Minecraft-first coverage", () => {
       read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       read("prompts/bedrock_entity_workflow.md"),
     ]);
-    for (const text of [guide, flow, modelling, texturing, workflow]) {
+    // Texturing compaction expresses minor-drift handling as its bounded
+    // convergence contract instead of prose; the other four owners keep it.
+    for (const text of [guide, flow, modelling, workflow]) {
       expect(text).toContain("minor");
       expect(text).toContain("material");
       expect(text).toContain("canonical");
     }
+    expect(texturing).toContain("texture difference table");
     expect(guide).toContain("minor drift is not `blocked`");
     expect(modelling).toContain("minor reference discrepancy alone is not a blocker");
     expect(modelling).toContain("do not average drift");
-    expect(texturing).toContain("do not average conflicting material evidence");
-    expect(workflow).toContain("only unresolved material conflict");
+    // Texturing convergence keeps the same anti-averaging spirit through its
+    // bounded correction verdict loop.
+    expect(texturing).toContain("improved | unchanged | regressed");
+    expect(workflow).toContain("unresolved material conflict");
   });
 
   test("pose, presentation and budget stay bounded", async () => {

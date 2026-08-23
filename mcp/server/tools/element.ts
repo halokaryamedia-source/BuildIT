@@ -66,7 +66,7 @@ export const findElementsByCriteriaParameters = z.object({
     .optional()
     .default(50)
     .describe(
-      "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set."
+      "Maximum results. Default 50; increase only when the search genuinely needs more."
     ),
 }).superRefine((params, ctx) => {
   const minSize = params.min_size;
@@ -98,7 +98,7 @@ export const selectAllOfTypeParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes."
+      "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes."
     ),
 });
 
@@ -174,7 +174,7 @@ export const listOutlineParameters = z.object({
     .optional()
     .default(120)
     .describe(
-      "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters."
+      "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
     ),
 });
 

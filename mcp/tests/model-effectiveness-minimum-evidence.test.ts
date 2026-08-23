@@ -25,8 +25,8 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    expect(orchestrator).toContain("Load specialists lazily");
-    expect(orchestrator).toContain("Mutation count alone is not a checkpoint trigger");
+    expect(orchestrator).toContain("deferred spec loading after routing");
+    expect(orchestrator).toContain("mutation count is not a checkpoint trigger");
     expect(orchestrator).toContain("Use `inspect_model_bounds` only when");
     expect(modelling).toContain("Otherwise skip the bounds call");
     expect(workflow).toContain("Otherwise skip it");
@@ -45,7 +45,7 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     const validation = await source("../docs/foundation/validation-report.md");
     expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
-    expect(validation).toContain("Current GitHub proof");
-    expect(validation).toContain("visual-quality improvement");
+    expect(validation).toContain("Last completed canonical GitHub proof");
+    expect(validation).toContain("runtime-usage improvement");
   });
 });

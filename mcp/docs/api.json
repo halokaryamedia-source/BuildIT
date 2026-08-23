@@ -1,6 +1,6 @@
 {
   "version": "1.6.1",
-  "generatedAt": "2026-08-14T11:36:17.264Z",
+  "generatedAt": "2026-08-23T12:07:26.824Z",
   "tools": [
     {
       "name": "place_cube",
@@ -179,8 +179,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 6,
-                    "description": "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state.",
-                    "markdownDescription": "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state."
+                    "description": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV.",
+                    "markdownDescription": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
                   }
                 ],
                 "default": true,
@@ -655,8 +655,8 @@
                   "+z",
                   "-z"
                 ],
-                "description": "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons.",
-                "markdownDescription": "Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons."
+                "description": "Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons.",
+                "markdownDescription": "Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons."
               },
               "framing": {
                 "anyOf": [
@@ -904,8 +904,8 @@
                     }
                   ]
                 },
-                "description": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.",
-                "markdownDescription": "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
+                "description": "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array.",
+                "markdownDescription": "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array."
               },
               "sound_effects": {
                 "type": "object",
@@ -991,8 +991,8 @@
               "animation_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Animation UUID or name. Omit to use the current animation where supported.",
-                "markdownDescription": "Non-empty Animation UUID or name. Omit to use the current animation where supported."
+                "description": "Animation UUID/name; omit for current animation when supported.",
+                "markdownDescription": "Animation UUID/name; omit for current animation when supported."
               },
               "action": {
                 "type": "string",
@@ -1159,8 +1159,8 @@
               "animation_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Animation UUID or name. Omit to use the current animation where supported.",
-                "markdownDescription": "Non-empty Animation UUID or name. Omit to use the current animation where supported."
+                "description": "Animation UUID/name; omit for current animation when supported.",
+                "markdownDescription": "Animation UUID/name; omit for current animation when supported."
               },
               "bone_name": {
                 "type": "string",
@@ -1397,7 +1397,7 @@
     {
       "name": "animation_timeline",
       "title": "Animation Timeline",
-      "description": "Controls the animation timeline, including playback, time scrubbing, and timeline settings.",
+      "description": "Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1419,24 +1419,26 @@
                   "set_length",
                   "set_fps",
                   "loop",
-                  "select_range"
+                  "select_range",
+                  "set_anim_time_update",
+                  "set_blend_weight"
                 ],
-                "description": "Timeline action to perform.",
-                "markdownDescription": "Timeline action to perform."
+                "description": "Timeline or persistent authored-Animation property action.",
+                "markdownDescription": "Timeline or persistent authored-Animation property action."
               },
               "time": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 1000,
-                "description": "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length.",
-                "markdownDescription": "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
+                "description": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length.",
+                "markdownDescription": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length."
               },
               "length": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10000,
-                "description": "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor.",
-                "markdownDescription": "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
+                "description": "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor.",
+                "markdownDescription": "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor."
               },
               "fps": {
                 "type": "number",
@@ -1478,6 +1480,18 @@
                 "additionalProperties": false,
                 "description": "Inclusive time range for select_range.",
                 "markdownDescription": "Inclusive time range for select_range."
+              },
+              "molang": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated.",
+                "markdownDescription": "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated."
               }
             },
             "required": [
@@ -1768,9 +1782,118 @@
       }
     },
     {
+      "name": "manage_animation_effects",
+      "title": "Manage Animation Effects",
+      "description": "Adds, updates, or removes existing-Animation particle, sound, and timeline effect keyframes with exact keyframe/data-point identity, preflighted collisions, one Undo transaction, and bounded continuation state.",
+      "status": "experimental",
+      "category": "Animation",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_animation_effects",
+        "definitions": {
+          "manage_animation_effects": {
+            "type": "object",
+            "properties": {
+              "animation_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Animation UUID/name; omit for current animation when supported.",
+                "markdownDescription": "Animation UUID/name; omit for current animation when supported."
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "add",
+                        "update",
+                        "remove"
+                      ]
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "particle",
+                        "sound",
+                        "timeline"
+                      ]
+                    },
+                    "keyframe_uuid": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "data_point_index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "time": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "effect": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "bind_to_actor": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "pre_effect_script": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "script": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "operation",
+                    "channel"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 64,
+                "description": "Ordered bounded effect mutations for one authored Animation.",
+                "markdownDescription": "Ordered bounded effect mutations for one authored Animation."
+              }
+            },
+            "required": [
+              "operations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "manage_animation_controller",
       "title": "Manage Animation Controller",
-      "description": "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
+      "description": "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1812,7 +1935,13 @@
                         "remove_transition",
                         "add_animation",
                         "update_animation",
-                        "remove_animation"
+                        "remove_animation",
+                        "add_sound",
+                        "update_sound",
+                        "remove_sound",
+                        "add_particle",
+                        "update_particle",
+                        "remove_particle"
                       ],
                       "description": "Controller mutation to apply.",
                       "markdownDescription": "Controller mutation to apply."
@@ -1826,8 +1955,8 @@
                     "id": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "Exact transition or animation-link UUID.",
-                      "markdownDescription": "Exact transition or animation-link UUID."
+                      "description": "Exact transition, animation-link, sound, or particle UUID.",
+                      "markdownDescription": "Exact transition, animation-link, sound, or particle UUID."
                     },
                     "name": {
                       "type": "string",
@@ -1863,6 +1992,43 @@
                       ],
                       "description": "Finite number or authored Molang blend value.",
                       "markdownDescription": "Finite number or authored Molang blend value."
+                    },
+                    "effect": {
+                      "type": "string",
+                      "description": "Bedrock sound/particle effect identifier.",
+                      "markdownDescription": "Bedrock sound/particle effect identifier."
+                    },
+                    "locator": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Particle Locator name; null clears to entity space.",
+                      "markdownDescription": "Particle Locator name; null clears to entity space."
+                    },
+                    "bind_to_actor": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ],
+                      "description": "Particle actor binding; null resets to native default true.",
+                      "markdownDescription": "Particle actor binding; null resets to native default true."
+                    },
+                    "pre_effect_script": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Particle pre-effect Molang; null clears.",
+                      "markdownDescription": "Particle pre-effect Molang; null clears."
                     },
                     "on_entry": {
                       "type": "string",
@@ -1925,8 +2091,8 @@
               "animation_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem.",
-                "markdownDescription": "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem."
+                "description": "Exact Animation/AnimationController UUID or unique name; omit to use the selected AnimationItem.",
+                "markdownDescription": "Exact Animation/AnimationController UUID or unique name; omit to use the selected AnimationItem."
               },
               "bone": {
                 "type": "string",
@@ -1943,8 +2109,8 @@
               "include_effect_keyframes": {
                 "type": "boolean",
                 "default": false,
-                "description": "Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed.",
-                "markdownDescription": "Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed."
+                "description": "Include full particle/sound/timeline effect keyframes; keep false for summary.",
+                "markdownDescription": "Include full particle/sound/timeline effect keyframes; keep false for summary."
               }
             },
             "additionalProperties": false
@@ -2101,8 +2267,8 @@
                 "minimum": 1,
                 "maximum": 5000,
                 "default": 120,
-                "description": "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters.",
-                "markdownDescription": "Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters."
+                "description": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters.",
+                "markdownDescription": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
               }
             },
             "additionalProperties": false
@@ -2296,8 +2462,8 @@
                 "minimum": 1,
                 "maximum": 1000,
                 "default": 50,
-                "description": "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set.",
-                "markdownDescription": "Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set."
+                "description": "Maximum results. Default 50; increase only when the search genuinely needs more.",
+                "markdownDescription": "Maximum results. Default 50; increase only when the search genuinely needs more."
               }
             },
             "additionalProperties": false
@@ -2339,8 +2505,8 @@
               "parent_group": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes.",
-                "markdownDescription": "Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes."
+                "description": "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes.",
+                "markdownDescription": "Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes."
               }
             },
             "required": [
@@ -2435,8 +2601,8 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool.",
-                "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool."
+                "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
+                "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
               }
             },
             "required": [
@@ -2451,7 +2617,7 @@
     {
       "name": "list_locator_elements",
       "title": "List Bedrock Locator Elements",
-      "description": "Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.",
+      "description": "Lists Locator/Null Object identity, type, and parent. Use inspect_element only for detailed authored state.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2472,7 +2638,7 @@
     {
       "name": "manage_locator",
       "title": "Manage Bedrock Locator",
-      "description": "Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.",
+      "description": "Creates or updates a Locator. Create requires name+parent; update requires id plus an authored field. Rename/delete use rename_element/remove_element.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2489,20 +2655,20 @@
                   "action": {
                     "type": "string",
                     "const": "create",
-                    "description": "Create branch: requires name and parent; do not send id.",
-                    "markdownDescription": "Create branch: requires name and parent; do not send id."
+                    "description": "Create: requires name+parent; omit id.",
+                    "markdownDescription": "Create: requires name+parent; omit id."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=create. Locator name; omit for update.",
-                    "markdownDescription": "Required when action=create. Locator name; omit for update."
+                    "description": "Required when action=create. Locator name.",
+                    "markdownDescription": "Required when action=create. Locator name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=create: parent Group UUID or exact unique name.",
-                    "markdownDescription": "Required when action=create: parent Group UUID or exact unique name."
+                    "description": "Required when action=create. Parent Group UUID or unique exact name.",
+                    "markdownDescription": "Required when action=create. Parent Group UUID or unique exact name."
                   },
                   "position": {
                     "type": "array",
@@ -2524,8 +2690,8 @@
                       0,
                       0
                     ],
-                    "description": "Create-only initial position; defaults to [0,0,0].",
-                    "markdownDescription": "Create-only initial position; defaults to [0,0,0]."
+                    "description": "Initial position; default [0,0,0].",
+                    "markdownDescription": "Initial position; default [0,0,0]."
                   },
                   "rotation": {
                     "type": "array",
@@ -2547,14 +2713,14 @@
                       0,
                       0
                     ],
-                    "description": "Create-only initial rotation; defaults to [0,0,0].",
-                    "markdownDescription": "Create-only initial rotation; defaults to [0,0,0]."
+                    "description": "Initial rotation; default [0,0,0].",
+                    "markdownDescription": "Initial rotation; default [0,0,0]."
                   },
                   "ignore_inherited_scale": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Create-only initial ignore_inherited_scale value.",
-                    "markdownDescription": "Create-only initial ignore_inherited_scale value."
+                    "description": "Initial ignore_inherited_scale; default false.",
+                    "markdownDescription": "Initial ignore_inherited_scale; default false."
                   }
                 },
                 "required": [
@@ -2570,20 +2736,20 @@
                   "action": {
                     "type": "string",
                     "const": "update",
-                    "description": "Update branch: requires id plus at least one authored field; do not send name.",
-                    "markdownDescription": "Update branch: requires id plus at least one authored field; do not send name."
+                    "description": "Update: requires id + at least one authored field; omit name.",
+                    "markdownDescription": "Update: requires id + at least one authored field; omit name."
                   },
                   "id": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=update. Exact Locator UUID or exact unique name.",
-                    "markdownDescription": "Required when action=update. Exact Locator UUID or exact unique name."
+                    "description": "Required when action=update. Locator UUID or unique exact name.",
+                    "markdownDescription": "Required when action=update. Locator UUID or unique exact name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Update-only optional replacement parent Group UUID or exact unique name.",
-                    "markdownDescription": "Update-only optional replacement parent Group UUID or exact unique name."
+                    "description": "Replacement parent Group UUID or unique exact name.",
+                    "markdownDescription": "Replacement parent Group UUID or unique exact name."
                   },
                   "position": {
                     "type": "array",
@@ -2600,8 +2766,8 @@
                         "type": "number"
                       }
                     ],
-                    "description": "Update-only optional replacement position.",
-                    "markdownDescription": "Update-only optional replacement position."
+                    "description": "Replacement position.",
+                    "markdownDescription": "Replacement position."
                   },
                   "rotation": {
                     "type": "array",
@@ -2618,13 +2784,13 @@
                         "type": "number"
                       }
                     ],
-                    "description": "Update-only optional replacement rotation.",
-                    "markdownDescription": "Update-only optional replacement rotation."
+                    "description": "Replacement rotation.",
+                    "markdownDescription": "Replacement rotation."
                   },
                   "ignore_inherited_scale": {
                     "type": "boolean",
-                    "description": "Update-only optional ignore_inherited_scale replacement.",
-                    "markdownDescription": "Update-only optional ignore_inherited_scale replacement."
+                    "description": "Replacement ignore_inherited_scale.",
+                    "markdownDescription": "Replacement ignore_inherited_scale."
                   }
                 },
                 "required": [
@@ -2642,7 +2808,7 @@
     {
       "name": "manage_null_object",
       "title": "Manage Bedrock Null Object",
-      "description": "Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain Blockbench editor/animation state and read-only in this tool. Rename/delete use rename_element/remove_element.",
+      "description": "Creates or updates a Null Object. Create requires name+parent; update requires id plus parent/position. Geometry uses a `_null_` locator entry; IK fields remain Blockbench editor/animation state. Rename/delete use rename_element/remove_element.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2659,20 +2825,20 @@
                   "action": {
                     "type": "string",
                     "const": "create",
-                    "description": "Create branch: requires name and parent; do not send id.",
-                    "markdownDescription": "Create branch: requires name and parent; do not send id."
+                    "description": "Create: requires name+parent; omit id.",
+                    "markdownDescription": "Create: requires name+parent; omit id."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=create. Null Object name; omit for update.",
-                    "markdownDescription": "Required when action=create. Null Object name; omit for update."
+                    "description": "Required when action=create. Null Object name.",
+                    "markdownDescription": "Required when action=create. Null Object name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=create: parent Group UUID or exact unique name.",
-                    "markdownDescription": "Required when action=create: parent Group UUID or exact unique name."
+                    "description": "Required when action=create. Parent Group UUID or unique exact name.",
+                    "markdownDescription": "Required when action=create. Parent Group UUID or unique exact name."
                   },
                   "position": {
                     "type": "array",
@@ -2694,8 +2860,8 @@
                       0,
                       0
                     ],
-                    "description": "Create-only initial position; defaults to [0,0,0].",
-                    "markdownDescription": "Create-only initial position; defaults to [0,0,0]."
+                    "description": "Initial position; default [0,0,0].",
+                    "markdownDescription": "Initial position; default [0,0,0]."
                   }
                 },
                 "required": [
@@ -2711,20 +2877,20 @@
                   "action": {
                     "type": "string",
                     "const": "update",
-                    "description": "Update branch: requires id plus parent and/or position; do not send name.",
-                    "markdownDescription": "Update branch: requires id plus parent and/or position; do not send name."
+                    "description": "Update: requires id plus parent and/or position; omit name.",
+                    "markdownDescription": "Update: requires id plus parent and/or position; omit name."
                   },
                   "id": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Required when action=update. Exact Null Object UUID or exact unique name.",
-                    "markdownDescription": "Required when action=update. Exact Null Object UUID or exact unique name."
+                    "description": "Required when action=update. Null Object UUID or unique exact name.",
+                    "markdownDescription": "Required when action=update. Null Object UUID or unique exact name."
                   },
                   "parent": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Update-only optional replacement parent Group UUID or exact unique name.",
-                    "markdownDescription": "Update-only optional replacement parent Group UUID or exact unique name."
+                    "description": "Replacement parent Group UUID or unique exact name.",
+                    "markdownDescription": "Replacement parent Group UUID or unique exact name."
                   },
                   "position": {
                     "type": "array",
@@ -2741,8 +2907,8 @@
                         "type": "number"
                       }
                     ],
-                    "description": "Update-only optional replacement position.",
-                    "markdownDescription": "Update-only optional replacement position."
+                    "description": "Replacement position.",
+                    "markdownDescription": "Replacement position."
                   }
                 },
                 "required": [
@@ -2819,8 +2985,8 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2000000,
-                "description": "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed.",
-                "markdownDescription": "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed."
+                "description": "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed.",
+                "markdownDescription": "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed."
               }
             },
             "additionalProperties": false
@@ -3146,8 +3312,8 @@
                     "cube_id": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "Non-empty ID or name of the Cube.",
-                      "markdownDescription": "Non-empty ID or name of the Cube."
+                      "description": "Cube UUID or name.",
+                      "markdownDescription": "Cube UUID or name."
                     },
                     "faces": {
                       "type": "array",
@@ -3262,8 +3428,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "x": {
                 "type": "number",
@@ -3286,13 +3452,6 @@
                 "maximum": 255,
                 "description": "Fill opacity (0-255).",
                 "markdownDescription": "Fill opacity (0-255)."
-              },
-              "tolerance": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 100,
-                "description": "Color tolerance for fill.",
-                "markdownDescription": "Color tolerance for fill."
               },
               "fill_mode": {
                 "type": "string",
@@ -3353,8 +3512,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "shape": {
                 "type": "string",
@@ -3472,8 +3631,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "start": {
                 "type": "object",
@@ -3579,8 +3738,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "x": {
                 "type": "number",
@@ -3633,8 +3792,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "source": {
                 "type": "object",
@@ -3730,8 +3889,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "coordinates": {
                 "type": "array",
@@ -3955,8 +4114,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "coordinates": {
                 "type": "array",
@@ -4206,8 +4365,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "coordinates": {
                 "type": "object",
@@ -4304,8 +4463,8 @@
               "texture_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               },
               "layer_name": {
                 "type": "string",
@@ -4388,7 +4547,7 @@
     {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns project lifecycle/format/resolution/counts plus a bounded top-level Group summary. Use list_outline only when hierarchy detail is actually needed.",
+      "description": "Returns project lifecycle, format, logical UV resolution, and element counts. Use list_outline only when hierarchy detail is needed.",
       "status": "stable",
       "category": "Project",
       "annotations": {
@@ -4631,8 +4790,8 @@
                   "minLength": 1
                 },
                 "minItems": 1,
-                "description": "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique.",
-                "markdownDescription": "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique."
+                "description": "Optional non-empty explicit texture targets; each resolves UUID, then texture ID, then unique name.",
+                "markdownDescription": "Optional non-empty explicit texture targets; each resolves UUID, then texture ID, then unique name."
               },
               "is_material": {
                 "type": "boolean",
@@ -4689,8 +4848,8 @@
               "texture": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty Texture ID or name. Omit to use the selected/default texture.",
-                "markdownDescription": "Non-empty Texture ID or name. Omit to use the selected/default texture."
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
               }
             },
             "additionalProperties": false
@@ -4972,8 +5131,8 @@
               "material": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique.",
-                "markdownDescription": "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique."
+                "description": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique.",
+                "markdownDescription": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
               },
               "texture": {
                 "type": "string",
@@ -5023,8 +5182,8 @@
               "material": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique.",
-                "markdownDescription": "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique."
+                "description": "Material/texture group target to save; UUID preferred, exact name only when unique.",
+                "markdownDescription": "Material/texture group target to save; UUID preferred, exact name only when unique."
               }
             },
             "required": [

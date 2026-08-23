@@ -7,7 +7,7 @@ import { animationIdOptionalSchema } from "@/lib/zodObjects";
 
 export const inspectAnimationParameters = z.object({
   animation_id: animationIdOptionalSchema.describe(
-    "Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem."
+    "Exact Animation/AnimationController UUID or unique name; omit to use the selected AnimationItem."
   ),
   bone: z
     .string()
@@ -26,7 +26,7 @@ export const inspectAnimationParameters = z.object({
     .optional()
     .default(false)
     .describe(
-      "Include full particle/sound/timeline effect keyframes. Keep false for summary; enable only when effect timing/data is needed."
+      "Include full particle/sound/timeline effect keyframes; keep false for summary."
     ),
 });
 

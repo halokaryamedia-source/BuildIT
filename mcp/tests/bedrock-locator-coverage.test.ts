@@ -95,13 +95,18 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
   });
 
   test("current owners keep Locator coverage mapped while remaining native gaps stay protected", async () => {
-    const prompt = await source("prompts/bedrock_entity_workflow.md");
+    // The runtime prompt compaction moved Locator routing/continuation
+    // guidance to the orchestrator skill; the validation report keeps the
+    // capability/gap ledger.
+    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const validation = await source("../docs/foundation/validation-report.md");
-    expect(prompt).toContain("## Locator / Null Object authored state");
-    expect(prompt).toContain("`manage_locator`");
-    expect(prompt).toContain("`manage_null_object`");
+    expect(orchestrator).toContain("list_locator_elements");
+    expect(orchestrator).toContain("manage_locator / manage_null_object");
+    expect(orchestrator).toContain(
+      "Do not automatically re-read them with `inspect_element`"
+    );
     expect(validation).toContain("## Locator / Null Object");
     expect(validation).toContain("TextureMesh direct authoring/inspection");
-    expect(validation).toContain("AnimationController state particle/sound mutation");
+    expect(validation).toContain("AnimationController blend-curve mutation");
   });
 });

@@ -54,7 +54,9 @@ describe("pre-local generic semantics narrowing", () => {
     expect(exportSource).toContain("exportToolDocs[0].status,\n    false");
     expect(exportSource).toContain("BLOCKIT_MODEL_CODEC_IDS = [\"bedrock\", \"project\"]");
     expect(exportSource).toContain("const codec = registry[codec_id]");
-    expect(skill).toContain("`export_model` supports:");
+    expect(skill).toContain(
+      "`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`)"
+    );
     expect(skill).not.toContain("list_export_formats");
   });
 
@@ -71,7 +73,7 @@ describe("pre-local generic semantics narrowing", () => {
     expect(texture).toContain("textureToolDocs[1].status, false");
     expect(texture).toContain("native Bedrock Entity is single_texture");
     expect(skill).not.toContain("- `apply_texture`");
-    expect(skill).toContain("use `activate_texture` to choose the active/default working texture");
+    expect(skill).toContain("→ activate_texture");
   });
 
   test("raw per-face texture discovery is disabled for Bedrock single-texture authoring", async () => {

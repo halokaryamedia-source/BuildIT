@@ -28,8 +28,11 @@ describe("Locator discovery efficiency", () => {
       expect(listBlock).not.toContain(detailedField);
     }
 
-    expect(locators).toContain(
-      "Use inspect_element only when detailed authored state is needed."
+    // The in-tool hint sentence was removed during prompt/schema compaction;
+    // the readback-discipline invariant now lives in the orchestrator skill.
+    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(orchestrator).toContain(
+      "Do not automatically re-read them with `inspect_element`"
     );
   });
 });

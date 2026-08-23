@@ -119,7 +119,7 @@ export const addTextureGroupParameters = z.object({
     .min(1)
     .optional()
     .describe(
-      "Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique."
+      "Optional non-empty explicit texture targets; each resolves UUID, then texture ID, then unique name."
     ),
   is_material: z
     .boolean()
@@ -308,7 +308,7 @@ export const assignTextureChannelParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique."
+      "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
     ),
   texture: textureIdSchema
     .min(1)
@@ -323,7 +323,7 @@ export const saveMaterialConfigParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique."
+      "Material/texture group target to save; UUID preferred, exact name only when unique."
     ),
 });
 

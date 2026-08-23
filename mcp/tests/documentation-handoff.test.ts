@@ -54,7 +54,9 @@ describe("Codex documentation handoff", () => {
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    expect(next.length).toBeLessThan(7_000);
+    // Continuation grew with the animation/effects status ledger; the bound
+    // tracks the current deliberate size instead of the older 7k budget.
+    expect(next.length).toBeLessThan(10_000);
     expect(next).toContain("Working branch: **`Local` only**");
     expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
     expect(next).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");

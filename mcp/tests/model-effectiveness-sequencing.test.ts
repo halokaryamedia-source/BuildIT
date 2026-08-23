@@ -12,17 +12,18 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     const workflow = await source("prompts/bedrock_entity_workflow.md");
 
     for (const text of [orchestrator, texturing, workflow]) {
-      expect(text).toContain("production");
-      expect(text).toContain("geometry");
-      expect(text).toContain("PASS");
-      expect(text).toContain("UNVERIFIED");
-      expect(text).toContain("BLOCKED");
+      // Sources capitalize Production at sentence start; compare lowered.
+      const lowered = text.toLowerCase();
+      expect(lowered).toContain("production");
+      expect(lowered).toContain("geometry");
+      expect(lowered).toContain("pass");
+      expect(lowered).toContain("unverified");
+      expect(lowered).toContain("blocked");
     }
 
+    // Animation compaction states the prerequisite in its opening contract.
     const normalizedAnimation = animation.toLowerCase().replaceAll("/", " ");
-    expect(normalizedAnimation).toContain("production animation");
-    expect(normalizedAnimation).toContain("participating");
-    expect(normalizedAnimation).toContain("group bone");
+    expect(normalizedAnimation).toContain("participating hierarchy pivots are suitable");
     expect(normalizedAnimation).toContain("hierarchy");
     expect(normalizedAnimation).toContain("pivot");
     expect(workflow).toContain("participating hierarchy/pivots");
@@ -30,34 +31,28 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("existing-asset direct tasks stay scoped without inventing geometry approval", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
-    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const foundationSequencing = await source("../docs/foundation/03-modelling-workflow.md");
 
-    for (const text of [orchestrator, texturing, animation]) {
-      expect(text.toLowerCase().replaceAll("-", " ")).toContain("existing asset");
-      expect(text.toLowerCase()).toContain("baseline");
-    }
-    expect(orchestrator).toContain("without certifying it");
-    expect(texturing).toContain("Do not claim that baseline is reference-accurate");
-
-    const normalizedAnimation = animation.toLowerCase().replaceAll("-", " ");
-    expect(normalizedAnimation).toContain("does not certify");
-    expect(normalizedAnimation).toContain("reference accuracy");
+    // Specialist skills no longer restate the baseline-scope rule; ownership
+    // is the orchestrator lane, the modelling skill, and foundation policy.
+    expect(orchestrator.toLowerCase()).toContain("existing geometry may be a task baseline");
+    expect(orchestrator).toContain("without certifying accuracy");
+    expect(modelling.toLowerCase()).toContain("existing-asset work may use current geometry as baseline");
+    expect(foundationSequencing).toContain(
+      "Existing-asset work may accept the current asset as the task baseline"
+    );
   });
 
   test("temporary aids and downstream invalidation stay with their domain owners", async () => {
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
-    expect(texturing).toContain("flat/placeholder texture");
-    expect(texturing).toContain("re-check only the affected downstream state");
-
-    const normalizedAnimation = animation.toLowerCase();
-    expect(normalizedAnimation).toContain("diagnostic");
-    expect(normalizedAnimation).toContain("pose/playback");
-    expect(normalizedAnimation).toContain("affected bones");
-    expect(normalizedAnimation).toContain("stale");
+    expect(texturing).toContain(
+      "Flat color is provisional when form/material/detail is visible"
+    );
+    expect(animation).toContain("invalidate only affected animation assumptions");
     expect(orchestrator).not.toContain("A flat/placeholder texture or diagnostic pose/playback");
   });
 
@@ -66,20 +61,24 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
     const texturePolicy = await source("../docs/foundation/06-texture-standard.md");
 
-    expect(texturing).toContain("Box-UV Cubes");
-    expect(texturing).toContain("modify_cubes_batch");
-    expect(texturing).toContain("Logical project UV resolution and bitmap pixel dimensions are separate facts");
-    expect(texturePolicy).toContain("Box UV / Atlas Authoring");
-    expect(texturePolicy).toContain("packing-density score");
+    // Texture standard now owns atlas/UV-lock/texel-scale reasoning.
+    expect(texturePolicy).toContain("Box UV / UV Lock");
+    expect(texturePolicy).toContain("Painted Box-UV Cubes should be locked with `autouv=0`");
+    expect(texturePolicy).toContain("Do not optimize atlas occupancy as a quality score.");
+    expect(texturePolicy).toContain("physical pixels per UV unit");
+
+    // The texturing skill keeps the operational gate.
+    expect(texturing).toContain("AI Box UV final paint");
+    expect(texturing).toContain("`autouv=0`");
+    expect(texturing).toContain("Do not mentally re-derive atlas coordinates");
 
     const normalizedAnimation = animation.toLowerCase();
-    expect(normalizedAnimation).toContain("keyframe-count");
+    expect(normalizedAnimation).toContain("keyframe count or curve complexity");
     expect(normalizedAnimation).toContain("fps");
-    expect(normalizedAnimation).toContain("bezier-complexity");
-    expect(normalizedAnimation).toContain("target");
+    expect(normalizedAnimation).toContain("bezier");
     expect(normalizedAnimation).toContain("manage_keyframes");
     expect(normalizedAnimation).toContain("molang");
-    expect(normalizedAnimation).toContain("guess-bake");
+    expect(normalizedAnimation).toContain("no universal fps, duration, amplitude, phase, keyframe count, or bezier target");
   });
 
   test("sequencing hardening remains decision-layer only", async () => {

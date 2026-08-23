@@ -19,10 +19,12 @@ describe("model creation effectiveness — tool routing", () => {
       expect(text).toContain("export_model");
       expect(text.toLowerCase()).toContain("stage");
     }
-    expect(orchestrator).toContain("Do not immediately call `get_project_info`");
+    expect(orchestrator).toContain(
+      "Skip `get_project_info` after create/export unless required"
+    );
     expect(workflow).toContain("Do not immediately call `get_project_info`");
     expect(workflow).not.toContain("get_project_info → place_cube/Group build");
-    expect(workflow).toContain("project unknown/absent → get_project_info or create_project as appropriate");
+    expect(workflow).toContain("project unknown/absent → get_project_info or create_project");
     expect(modelling).toContain("Tool Lane Discipline");
     expect(modelling).toContain("If no current decision requires a branch, stay in the geometry lane");
   });
@@ -32,13 +34,17 @@ describe("model creation effectiveness — tool routing", () => {
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     const normalizedAnimation = animation.toLowerCase().replaceAll("`", "");
 
-    expect(normalizedAnimation).toMatch(/get_project_info[^.\n]*only[^.\n]*(unknown|stale)/);
-    expect(normalizedAnimation).toMatch(/list_outline[^.\n]*only[^.\n]*(identity|hierarchy)/);
-    expect(normalizedAnimation).toContain("reuse known");
+    // Animation compaction states reuse discipline as one contract sentence.
+    expect(normalizedAnimation).toContain("reuse fresh uuid/state");
+    expect(normalizedAnimation).toContain(
+      "must not fall back to broad hierarchy discovery or confirmation reads"
+    );
     expect(animation).not.toContain("Confirm the active project format is `bedrock` with `get_project_info`");
-    expect(texturing).toContain("Reuse identity/metadata already returned by the current workflow");
+    expect(texturing).toContain("Reuse fresh identity/metadata.");
     expect(texturing).toContain("do not re-list/re-read it only for confirmation");
-    expect(texturing).toContain("`create_texture` already returns texture identity/size/group/channel/render metadata");
+    expect(texturing).toContain(
+      "Pin the color atlas UUID and pass `texture_id` when multiple textures are loaded"
+    );
   });
 
   test("convenience tools explain their branch-only role instead of competing with geometry identity/evidence", async () => {

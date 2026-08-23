@@ -10,7 +10,9 @@ describe("authored Animation identity separation", () => {
       ) {}
     }
 
-    const authored = { uuid: "anim-1", name: "walk" };
+    // Identity-only stub: the resolver contract types authored animations as
+    // _Animation, so the stub must be that shape for identity assertions.
+    const authored = { uuid: "anim-1", name: "walk" } as unknown as _Animation;
     const controller = new FakeAnimationController("controller-1", "walk_controller");
     const previousAnimationItem = (globalThis as any).AnimationItem;
     const previousAnimationController = (globalThis as any).AnimationController;

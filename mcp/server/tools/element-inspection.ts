@@ -9,7 +9,7 @@ export const inspectElementParameters = z.object({
     .string()
     .min(1)
     .describe(
-      "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool."
+      "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
     ),
 });
 

@@ -41,7 +41,7 @@ export const exportModelParameters = z.object({
     .max(2_000_000)
     .optional()
     .describe(
-      "Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed."
+      "Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed."
     ),
 });
 

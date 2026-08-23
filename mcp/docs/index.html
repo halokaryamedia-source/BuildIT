@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(73)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(74)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -27,7 +27,7 @@
         <p class="nav-heading">Categories</p>
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(3)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
-        <a href="#cat-animation" class="nav-link">Animation <span class="count">(9)</span></a>
+        <a href="#cat-animation" class="nav-link">Animation <span class="count">(10)</span></a>
         <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v1.6.1</p>
         <nav class="stats">
-          <a href="#tools"><strong>73</strong> tools (29 stable, 44 experimental)</a>
+          <a href="#tools"><strong>74</strong> tools (29 stable, 45 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -332,7 +332,7 @@ bun run docs:check
       <td class="col-name">front_direction</td>
       <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Explicit object front direction established by the modelling coordinate frame. No default is used to avoid mirrored comparisons.</td>
+      <td class="col-desc">Explicit object front direction from the modelling coordinate frame; no default, avoiding mirrored comparisons.</td>
     </tr><tr>
       <td class="col-name">framing</td>
       <td class="col-type">object | object</td>
@@ -389,7 +389,7 @@ bun run docs:check
       <td class="col-name">particle_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array.</td>
+      <td class="col-desc">Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array.</td>
     </tr><tr>
       <td class="col-name">sound_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
@@ -423,7 +423,7 @@ bun run docs:check
       <td class="col-name">animation_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Animation UUID or name. Omit to use the current animation where supported. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Animation UUID/name; omit for current animation when supported. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">action</td>
       <td class="col-type">&quot;create&quot; | &quot;delete&quot; | &quot;edit&quot; | &quot;select&quot;</td>
@@ -472,7 +472,7 @@ bun run docs:check
       <td class="col-name">animation_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Animation UUID or name. Omit to use the current animation where supported. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Animation UUID/name; omit for current animation when supported. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">bone_name</td>
       <td class="col-type">string</td>
@@ -550,7 +550,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Animation Timeline</p>
-      <p class="card-desc">Controls the animation timeline, including playback, time scrubbing, and timeline settings.</p>
+      <p class="card-desc">Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -563,19 +563,19 @@ bun run docs:check
       </thead>
       <tbody><tr>
       <td class="col-name">action</td>
-      <td class="col-type">&quot;play&quot; | &quot;pause&quot; | &quot;stop&quot; | &quot;set_time&quot; | &quot;set_length&quot; | &quot;set_fps&quot; | &quot;loop&quot; | &quot;select_range&quot;</td>
+      <td class="col-type">&quot;play&quot; | &quot;pause&quot; | &quot;stop&quot; | &quot;set_time&quot; | &quot;set_length&quot; | &quot;set_fps&quot; | &quot;loop&quot; | &quot;select_range&quot; | &quot;set_anim_time_update&quot; | &quot;set_blend_weight&quot;</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Timeline action to perform.</td>
+      <td class="col-desc">Timeline or persistent authored-Animation property action.</td>
     </tr><tr>
       <td class="col-name">time</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length. <span class="param-meta">[min: 0, max: 1000]</span></td>
+      <td class="col-desc">Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length. <span class="param-meta">[min: 0, max: 1000]</span></td>
     </tr><tr>
       <td class="col-name">length</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor. <span class="param-meta">[min: 0, max: 10000]</span></td>
+      <td class="col-desc">Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor. <span class="param-meta">[min: 0, max: 10000]</span></td>
     </tr><tr>
       <td class="col-name">fps</td>
       <td class="col-type">number</td>
@@ -591,6 +591,11 @@ bun run docs:check
       <td class="col-type">object</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Inclusive time range for select_range.</td>
+    </tr><tr>
+      <td class="col-name">molang</td>
+      <td class="col-type">string | null</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated.</td>
     </tr></tbody>
     </table>
       </div>
@@ -683,6 +688,40 @@ bun run docs:check
     </table>
       </div>
     </div>
+<div id="tool-manage_animation_effects" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_animation_effects</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Animation Effects</p>
+      <p class="card-desc">Adds, updates, or removes existing-Animation particle, sound, and timeline effect keyframes with exact keyframe/data-point identity, preflighted collisions, one Undo transaction, and bounded continuation state.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">animation_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Animation UUID/name; omit for current animation when supported. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">operations</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Ordered bounded effect mutations for one authored Animation. <span class="param-meta">[minItems: 1, maxItems: 64]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
 <div id="tool-manage_animation_controller" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">manage_animation_controller</h3>
@@ -692,7 +731,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Animation Controller</p>
-      <p class="card-desc">Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.</p>
+      <p class="card-desc">Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -746,7 +785,7 @@ bun run docs:check
       <td class="col-name">animation_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Animation/AnimationController UUID or unique exact name. If omitted, uses the selected AnimationItem. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Exact Animation/AnimationController UUID or unique name; omit to use the selected AnimationItem. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">bone</td>
       <td class="col-type">string</td>
@@ -761,7 +800,7 @@ bun run docs:check
       <td class="col-name">include_effect_keyframes</td>
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Include full particle/sound effect keyframes. Keep false for summary; enable only when effect timing/data is needed. <span class="param-meta">(default: <code>false</code>)</span></td>
+      <td class="col-desc">Include full particle/sound/timeline effect keyframes; keep false for summary. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -876,7 +915,7 @@ bun run docs:check
       <td class="col-name">max_nodes</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum Cube/Group nodes returned. Defaults to 120; use targeted search or explicitly raise the bound when truncation matters. <span class="param-meta">(default: <code>120</code>) [min: 1, max: 5000]</span></td>
+      <td class="col-desc">Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters. <span class="param-meta">(default: <code>120</code>) [min: 1, max: 5000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1013,7 +1052,7 @@ bun run docs:check
       <td class="col-name">limit</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum results returned. Defaults to 50; increase only when the targeted search genuinely needs a larger result set. <span class="param-meta">(default: <code>50</code>) [min: 1, max: 1000]</span></td>
+      <td class="col-desc">Maximum results. Default 50; increase only when the search genuinely needs more. <span class="param-meta">(default: <code>50</code>) [min: 1, max: 1000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1052,7 +1091,7 @@ bun run docs:check
       <td class="col-name">parent_group</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Group UUID or unique exact name whose descendant subtree scopes selection. Omit for no scope; ambiguous or missing explicit scopes are rejected before selection changes. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional Group UUID or unique-name subtree scope; omit for no scope. Ambiguous or missing scopes are rejected before selection changes. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1134,7 +1173,7 @@ bun run docs:check
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact Cube, Group, Locator, or Null Object UUID, or exact unique name. Prefer UUID after locating the element with the relevant discovery tool. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1148,7 +1187,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Bedrock Locator Elements</p>
-      <p class="card-desc">Lists authored Locator and Null Object identity/type/parent. Use inspect_element only when detailed authored state is needed.</p>
+      <p class="card-desc">Lists Locator/Null Object identity, type, and parent. Use inspect_element only for detailed authored state.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1162,7 +1201,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Bedrock Locator</p>
-      <p class="card-desc">Create: action=create requires name+parent. Update: action=update requires id plus at least one of parent/position/rotation/ignore_inherited_scale. Rename/delete use rename_element/remove_element.</p>
+      <p class="card-desc">Creates or updates a Locator. Create requires name+parent; update requires id plus an authored field. Rename/delete use rename_element/remove_element.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1176,7 +1215,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Bedrock Null Object</p>
-      <p class="card-desc">Create: action=create requires name+parent. Update: action=update requires id plus parent and/or position. Bedrock geometry round-trips it through a `_null_` locator entry; IK fields remain Blockbench editor/animation state and read-only in this tool. Rename/delete use rename_element/remove_element.</p>
+      <p class="card-desc">Creates or updates a Null Object. Create requires name+parent; update requires id plus parent/position. Geometry uses a `_null_` locator entry; IK fields remain Blockbench editor/animation state. Rename/delete use rename_element/remove_element.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -1237,7 +1276,7 @@ bun run docs:check
       <td class="col-name">max_content_length</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum characters returned in `content`. Defaults to 0 when `path` is supplied, otherwise 100000; set explicitly when both file write and returned content are needed. <span class="param-meta">[min: 0, max: 2000000]</span></td>
+      <td class="col-desc">Maximum characters returned in `content`. Defaults to 0 with `path`, else 100000; set explicitly when both file write and returned content are needed. <span class="param-meta">[min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1598,7 +1637,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">x</td>
       <td class="col-type">number</td>
@@ -1619,11 +1658,6 @@ bun run docs:check
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Fill opacity (0-255). <span class="param-meta">[min: 0, max: 255]</span></td>
-    </tr><tr>
-      <td class="col-name">tolerance</td>
-      <td class="col-type">number</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Color tolerance for fill. <span class="param-meta">[min: 0, max: 100]</span></td>
     </tr><tr>
       <td class="col-name">fill_mode</td>
       <td class="col-type">&quot;color&quot; | &quot;color_connected&quot; | &quot;face&quot; | &quot;element&quot; | &quot;selected_elements&quot; | &quot;selection&quot;</td>
@@ -1662,7 +1696,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">shape</td>
       <td class="col-type">&quot;rectangle&quot; | &quot;rectangle_h&quot; | &quot;ellipse&quot; | &quot;ellipse_h&quot;</td>
@@ -1726,7 +1760,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">start</td>
       <td class="col-type">object</td>
@@ -1785,7 +1819,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">x</td>
       <td class="col-type">number</td>
@@ -1834,7 +1868,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">source</td>
       <td class="col-type">object</td>
@@ -1888,7 +1922,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">coordinates</td>
       <td class="col-type">object[]</td>
@@ -2021,7 +2055,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">coordinates</td>
       <td class="col-type">object[]</td>
@@ -2163,7 +2197,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">coordinates</td>
       <td class="col-type">object</td>
@@ -2212,7 +2246,7 @@ bun run docs:check
       <td class="col-name">texture_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">layer_name</td>
       <td class="col-type">string</td>
@@ -2278,7 +2312,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Project Info</p>
-      <p class="card-desc">Returns project lifecycle/format/resolution/counts plus a bounded top-level Group summary. Use list_outline only when hierarchy detail is actually needed.</p>
+      <p class="card-desc">Returns project lifecycle, format, logical UV resolution, and element counts. Use list_outline only when hierarchy detail is needed.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2442,7 +2476,7 @@ bun run docs:check
       <td class="col-name">textures</td>
       <td class="col-type">string[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional non-empty list of explicit texture targets. Each target resolves exact UUID first, then exact texture ID, then exact name only when unique. <span class="param-meta">[minItems: 1]</span></td>
+      <td class="col-desc">Optional non-empty explicit texture targets; each resolves UUID, then texture ID, then unique name. <span class="param-meta">[minItems: 1]</span></td>
     </tr><tr>
       <td class="col-name">is_material</td>
       <td class="col-type">boolean</td>
@@ -2490,7 +2524,7 @@ bun run docs:check
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty Texture ID or name. Omit to use the selected/default texture. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2719,7 +2753,7 @@ bun run docs:check
       <td class="col-name">material</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required material/texture group target for channel assignment. Exact UUID is preferred; an exact name is accepted only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Material/texture group target for channel assignment; UUID preferred, exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">texture</td>
       <td class="col-type">string</td>
@@ -2758,7 +2792,7 @@ bun run docs:check
       <td class="col-name">material</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Required material/texture group target to save. Exact UUID is preferred; an exact name is accepted only when unique. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Material/texture group target to save; UUID preferred, exact name only when unique. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3016,7 +3050,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-14T11:36:17.264Z from Zod schemas
+        Generated 2026-08-23T12:07:26.824Z from Zod schemas
       </footer>
     </main>
   </div>

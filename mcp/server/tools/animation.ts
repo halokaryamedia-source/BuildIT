@@ -90,7 +90,7 @@ const bedrockParticleEffectsSchema = z
     });
   })
   .describe(
-    "Particle effects keyed by unique finite non-negative timestamps; each value is one effect or a non-empty effect array."
+    "Particle effects keyed by unique finite non-negative timestamps; each value one effect or non-empty array."
   );
 
 const bedrockSoundEffectSchema = z.object({
@@ -477,7 +477,7 @@ export const animationTimelineParameters = z
       .max(1000)
       .optional()
       .describe(
-        "Time in seconds for set_time. Must be finite and within Blockbench Timeline.setTime() range 0..1000; it is not clamped to animation.length."
+        "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length."
       ),
     length: z
       .number()
@@ -486,7 +486,7 @@ export const animationTimelineParameters = z
       .max(10000)
       .optional()
       .describe(
-        "Length in seconds for set_length. Must be finite and within Blockbench's 0..10000 input range; Animation.setLength() may raise the resulting length to the authored keyframe floor."
+        "Length in seconds for set_length; finite, within 0..10000. Native setLength() may extend length to the authored keyframe floor."
       ),
     fps: z
       .number()
@@ -503,7 +503,7 @@ export const animationTimelineParameters = z
     molang: animationMolangPropertySchema
       .optional()
       .describe(
-        "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. BlockIT preserves text and never evaluates it."
+        "Authored animation-level Molang for set_anim_time_update/set_blend_weight; null clears to the native empty default. Text is preserved, never evaluated."
       ),
   })
   .superRefine((params, ctx) => {

@@ -185,7 +185,7 @@ export const placeCubeParameters = z
             { message: "Each custom-UV Cube face may appear at most once." }
           )
           .describe(
-            "One or more unique per-face UV overrides. This explicitly creates the new Cube in per-face UV mode; unlisted faces keep native default UV state."
+            "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
           ),
       ])
       .optional()
