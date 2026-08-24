@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-08-14
+Updated: 2026-08-25
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns task routing.
 
@@ -42,17 +42,17 @@ SOURCE IMAGE + USER INTENT
 → ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 ```
 
-Five previews are broad Minecraft modelling evidence, **not five engineering drawings**. Minor curl/angle/contour/overlap/shade/marking drift is acceptable when identity, primary geometry, topology/attachment, buildability, and identity-critical texture information remain clear.
+Five previews are broad Minecraft modelling evidence, not five engineering drawings. Minor curl/angle/contour/overlap/shade/marking drift is acceptable when identity, primary geometry, topology/attachment, buildability, and identity-critical texture information remain clear.
 
-Geometry prioritizes recognizable Blockbench-buildable major form. Texture prioritizes Minecraft-readable palette, material regions, part separation, and identity-critical markings rather than photoreal micro-detail.
+Geometry prioritizes recognizable Blockbench-buildable major form. Texture target prioritizes Minecraft-readable palette, material regions, part separation, and identity-critical markings rather than photoreal micro-detail.
 
-Generation budget is per **unchanged Internal Generation Brief / review cycle**: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry.
+Generation budget is per unchanged Internal Generation Brief/review cycle: one Draft, at most one targeted correction, zero automatic variants. A materially changed user-approved source/pose/target/requirement starts a new cycle; never start one automatically just to retry.
 
-The Reference Generator still returns **one image only**. Saving an approved reference under a project `workspace/active/<project>/references/` directory is a downstream/local persistence action, not generator output.
+The Reference Generator returns one image only. Saving an approved reference under `workspace/active/<project>/references/` is downstream/local persistence, not generator output.
 
 ## 3. Bedrock Authoring
 
-For persistent work, establish asset continuity without a broad repository scan:
+For persistent work:
 
 ```text
 user names/continues project
@@ -61,43 +61,128 @@ user names/continues project
 → actual approved reference visible when visual judgement is needed
 ```
 
-If no persistent package exists and the user wants the work retained, create one compact project package. Do not create manifest JSON, per-Cube plans, checkpoint logs, or duplicate model-version files merely to support continuity.
+If no persistent package exists and the user wants retention, create one compact package. Do not create manifest JSON, per-Cube plans, checkpoint logs, or duplicate model-version files merely for continuity.
 
-Then author:
+### 3.1 Geometry
+
+Choose the smallest evidence path that can change the model decision.
+
+For a clear predominantly rigid reference:
 
 ```text
-ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
-→ VIEW PAIR MAP
-→ REFERENCE EVIDENCE MAP
-→ DISCREPANCY TRIAGE
-   ├─ MINOR → ONE CANONICAL MINECRAFT INTERPRETATION → continue
-   └─ MATERIAL → CONFLICTING / BLOCKED
-→ SEMANTIC FORM
+ACTUAL APPROVED REFERENCE + HANDOFF CONSTRAINTS
+→ identity + envelope + primary masses
 → CONSTRUCTION + TRANSFORM OWNERSHIP
-→ CONTACT / ATTACHMENT INVARIANTS
-→ PRIMARY FORM HYPOTHESIS
-→ PRIMARY BLOCKOUT: COARSE CUBES + REQUIRED PRIMARY GROUPS/PIVOTS
+→ minimum meaningful hierarchy
+→ PRIMARY BLOCKOUT: coherent Cubes + REQUIRED PRIMARY GROUPS/PIVOTS
 → CANONICAL MODEL VIEWS
 → DIFFERENCE-FIRST REFERENCE ↔ MODEL COMPARISON
 → FAIL | UNVERIFIED | PASS
 ```
 
-For a minor discrepancy choose consistently: **explicit user requirement → original Source evidence → best-supported approved reference view(s) → simplest recognizable Blockbench-buildable interpretation**. Minor means it does not change identity, primary mass/required count, topology/attachment, important negative space, buildability, or identity-critical texture/material information. Do not average drift.
+Do **not** force View Pair Map / Reference Evidence Map ceremony when the reference is already clear.
 
-Use the simplest construction that preserves visible requirements; examples are not presets. **Form/contact/articulation-defining hierarchy may belong in the primary blockout; neutral organization stays downstream.** Professional samples remain learning evidence only.
-
-For local correction:
+For material ambiguity/conflict only:
 
 ```text
-exact target state
+relevant VIEW PAIR MAP / REFERENCE EVIDENCE
+→ DISCREPANCY TRIAGE
+   ├─ MINOR → ONE CANONICAL MINECRAFT INTERPRETATION → continue
+   └─ MATERIAL → CONFLICTING / BLOCKED
+→ SEMANTIC FORM facts that can change construction
+→ normal Geometry path
+```
+
+For a minor discrepancy choose consistently: explicit user requirement → original Source evidence → best-supported approved view(s) → simplest recognizable Blockbench-buildable interpretation. Do not average drift.
+
+Use the simplest construction that preserves visible requirements; examples are not presets. Local rigid transform may be **Cube-owned**; shared orientation/contact/articulation is **Group/Bone**-owned. Form/contact/articulation-defining hierarchy may belong in primary blockout; neutral organization stays downstream.
+
+Local correction:
+
+```text
+fresh target state
 → TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | grounded ADD MASS
 → fresh affected evidence
 → IMPROVED | UNCHANGED | REGRESSED
 ```
 
-After primary form passes: identity-weighted detail → texture/PBR if required → animation if required → final validation/export. Texture applies the same rule: minor surface drift becomes one Minecraft-readable canonical surface; material texture conflict is not silently averaged.
+After Geometry `PASS`, add identity-weighted secondary geometry only when silhouette, recognizability, contact/layering, or motion benefits.
 
-For a persistent project, persist the current `.bbmodel` and deliberate deliverables at a **meaningful handoff, resume-state change, park, or completion boundary**, not after every mutation/capture. Keep its README limited to one current next step plus real blockers; mutation count alone is not a checkpoint trigger. Git history owns previous revisions. When work is completed or intentionally parked, move the package to `workspace/saved/`.
+### 3.2 Canonical UV / Texture Vocabulary
+
+Never collapse these into one generic authoring stage:
+
+```text
+UV LAYOUT       = geometry → atlas coordinate mapping
+TEXTURE ATLAS   = bitmap/PNG canvas that stores pixels
+TEXTURE STYLING = color/material/shading/detail authored into the atlas
+TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
+```
+
+`create_texture` creates a **Texture Atlas**. It does not create UV Layout and does not complete Texture Styling.
+
+### 3.3 UV Layout
+
+After Geometry `PASS`:
+
+```text
+fresh box_uv_region / authored UV state
+→ final UV ownership + orientation
+→ final Box-UV lock: autouv=0
+→ list_textures global UV audit
+→ UV LAYOUT PASS
+```
+
+UV Layout owns `uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region`, reuse, orientation, seams, and bounds. It owns no color/style decision.
+
+Reuse fresh `place_cube` UV state. Use `inspect_element` only when face-specific mapping/orientation is missing.
+
+### 3.4 Texture Atlas
+
+```text
+UV LAYOUT PASS
+→ one base-color TEXTURE ATLAS
+→ explicit 128-based production bitmap dimensions
+→ retain atlas UUID / texture_id
+```
+
+The Texture Atlas is only the bitmap canvas. Atlas existence, blank pixels, or one fill color do not prove styling.
+
+PBR normal/height/MER are support Texture Atlases and do not change UV Layout ownership. If required, create matching support atlases before final styling/material configuration.
+
+### 3.5 Texture Styling
+
+```text
+TEXTURE ATLAS ready
+→ BASE PASS
+→ VALUE / FORM PASS
+→ IDENTITY PASS
+→ SECONDARY DETAIL PASS
+```
+
+Texture Styling owns palette, material separation, value/hue ramps, face/form shading, contact/occlusion, edge treatment, identity marks, and controlled detail.
+
+Flat fill is only a BASE PASS when visible form/material/detail exists. Prefer Minecraft-readable stepped pixel ramps; use continuous gradient only when reference/style supports it. Noise-first styling is rejected.
+
+### 3.6 Texture Verify
+
+```text
+fresh Texture Atlas image
++ fresh affected model views
+→ UV/region
+→ palette/material
+→ form/contact/edge
+→ seam/orientation
+→ identity
+→ microdetail
+→ FAIL | UNVERIFIED | PASS
+```
+
+Texture Verify is evidence, not another authoring stage. A paint-tool success cannot create visual `PASS`.
+
+After Texture Verify `PASS`: animation if required → final validation/export.
+
+For persistent projects, save the current `.bbmodel` and deliberate deliverables at meaningful handoff/resume/park/completion boundaries, not after every mutation/capture. Keep README to one current next step plus real blockers. Git history owns prior revisions. Move completed/parked packages to `workspace/saved/`.
 
 ## 4. Repository Work
 

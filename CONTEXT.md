@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified stable facts: 2026-08-24  
+Last verified stable facts: 2026-08-25  
 Stability: stable
 
 This file owns **stable project facts only**. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; asset continuity belongs in `workspace/active/<project>/README.md`; routing belongs in `AGENTS.md`.
@@ -19,6 +19,13 @@ Primary editable output is `.bbmodel`; Bedrock geometry JSON is the runtime geom
 - **Requested Dimensions** — user-approved target dimensions; `1 block = 16 Blockbench units`.
 - **Handoff Constraints** — compact approved nonvisual facts such as target scale/use/pose override.
 - **Asset Workspace** — repository-backed current asset package under `workspace/`; storage/continuity, not MCP runtime policy.
+- **Geometry** — 3D form, proportion, topology, attachment, and buildable volume.
+- **UV Layout** — geometry-to-atlas coordinate mapping such as `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region`; it does not contain color/style.
+- **Texture Atlas** — bitmap/PNG canvas that stores pixels. `create_texture` creates a Texture Atlas; atlas creation is not UV Layout or Texture Styling.
+- **Texture Styling** — authored color, material separation, shading, highlights, contact/edge treatment, identity marks, and controlled detail inside the Texture Atlas.
+- **Texture Verify** — fresh visual validation of the Texture Atlas as mapped through final UV Layout onto the model.
+
+When the distinction matters, do not use one generic “texture” stage to mean UV mapping, atlas creation, styling, and verification at once.
 
 Reference-driven modelling requires the actual approved image visible in active multimodal context. Paths, filenames, README text, manifests, and memory are provenance/context, not visual evidence.
 
@@ -38,7 +45,7 @@ Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
 BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The default Bedrock Entity surface contains **64 enabled tools**.
 
-Current source ownership includes Cube/Group authoring, coherent Cube and Group batching, texture/Painter/PBR/material instances, Bedrock animation with numeric/Molang values, AnimationController/state inspection and bounded mutation, Locator/Null Object lifecycle, Undo/history, `.bbmodel`, and Bedrock geometry export.
+Current source ownership includes Cube/Group authoring, coherent Cube and Group batching, UV Layout state, Texture Atlas lifecycle, Painter-based Texture Styling, PBR/material instances, Bedrock animation with numeric/Molang values, AnimationController/state inspection and bounded mutation, Locator/Null Object lifecycle, Undo/history, `.bbmodel`, and Bedrock geometry export.
 
 New Bedrock projects use logical UV resolution **128 by default** with explicit **256 opt-in**. Generic fallback families remain opt-in; `risky_eval` and `from_geo_json` remain disabled.
 

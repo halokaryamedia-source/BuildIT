@@ -20,6 +20,36 @@ describe("professional texture production discipline", () => {
     expect(project).toContain("resolution: {");
   });
 
+  test("canonical authoring vocabulary separates UV mapping, atlas creation, styling, and verification", async () => {
+    const [context, skill, workflow, policy, flow] = await Promise.all([
+      source("../CONTEXT.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+      source("../docs/foundation/06-texture-standard.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+
+    for (const owner of [context, skill, workflow, policy, flow]) {
+      for (const term of [
+        "UV Layout",
+        "Texture Atlas",
+        "Texture Styling",
+        "Texture Verify",
+      ]) {
+        expect(owner).toContain(term);
+      }
+    }
+
+    for (const owner of [context, skill, workflow, policy]) {
+      expect(owner).toContain("create_texture");
+      expect(owner).toContain("Texture Atlas");
+    }
+
+    expect(skill.indexOf("## UV Layout")).toBeLessThan(skill.indexOf("## Texture Atlas"));
+    expect(skill.indexOf("## Texture Atlas")).toBeLessThan(skill.indexOf("## Texture Styling"));
+    expect(skill.indexOf("## Texture Styling")).toBeLessThan(skill.indexOf("## Texture Verify"));
+  });
+
   test("active guidance owns one production color atlas and explicit atlas identity", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -43,7 +73,7 @@ describe("professional texture production discipline", () => {
     expect(policy).toContain("Single Base-Color Atlas");
   });
 
-  test("production texture requires texel scale plus material/form/detail hierarchy", async () => {
+  test("production styling requires texel scale plus material/form/detail hierarchy", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -102,7 +132,7 @@ describe("professional texture production discipline", () => {
     expect(skill).toContain("box_uv_region");
   });
 
-  test("UV mapping is globally audited and locked before production pixels", async () => {
+  test("UV Layout is globally audited and locked before Texture Styling", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -117,13 +147,12 @@ describe("professional texture production discipline", () => {
       expect(lower).toContain("partial overlap");
       expect(lower).toContain("exact reuse");
       expect(lower).toContain("seam");
+      expect(text).toContain("UV Layout");
+      expect(text).toContain("Texture Styling");
     }
-
-    expect(skill).toContain("UV / Atlas Gate");
-    expect(workflow).toContain("UV / Atlas Gate");
   });
 
-  test("convergence reviews structure and identity before microdetail", async () => {
+  test("Texture Verify reviews structure and identity before microdetail", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -137,9 +166,9 @@ describe("professional texture production discipline", () => {
       expect(lower).toContain("form");
       expect(lower).toContain("identity");
       expect(lower).toContain("microdetail");
+      expect(text).toContain("Texture Verify");
     }
 
-    expect(skill).toContain("Texture Visual Convergence");
-    expect(workflow).toContain("Texture Difference Table");
+    expect(skill).toContain("Visual Convergence");
   });
 });
