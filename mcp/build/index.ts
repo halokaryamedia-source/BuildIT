@@ -135,6 +135,25 @@ let process = requireNativeModule('process');`;
   return true;
 }
 
+function getBlockbenchPluginsMcpPath(): string | null {
+  const appData = process.env.APPDATA;
+  if (appData) return join(appData, "Blockbench", "plugins", "mcp.js");
+  const home = process.env.HOME || process.env.USERPROFILE;
+  if (home) return join(home, ".config", "Blockbench", "plugins", "mcp.js");
+  return null;
+}
+
+async function copyToBlockbenchPlugins(): Promise<void> {
+  const pluginsPath = getBlockbenchPluginsMcpPath();
+  if (!pluginsPath) return;
+  try {
+    await copyFile(join(OUTPUT_DIR, "mcp.js"), pluginsPath);
+    log.success(`Auto-reload: copied to ${c.cyan}${pluginsPath}${c.reset} — reload Blockbench (Ctrl+Shift+R)`);
+  } catch {
+    log.dim("Auto-reload: plugins path not writable, skip copy");
+  }
+}
+
 // Function to watch for file changes
 function watchFiles() {
   log.info("[Build] Watching for changes...");
@@ -158,6 +177,7 @@ function watchFiles() {
         log.step(`File changed: ${c.cyan}${filename}${c.reset}`);
         await cleanOutputDir();
         await buildPlugin();
+        await copyToBlockbenchPlugins();
         log.success("Rebuild complete");
       } while (pendingRebuild);
     })();
@@ -219,6 +239,7 @@ async function main() {
     log.info("Building with watch mode...");
     const success = await buildPlugin();
     if (success) {
+      await copyToBlockbenchPlugins();
       log.success(`Initial build completed. Output in ${c.cyan}${OUTPUT_DIR}${c.reset}`);
       watchFiles();
     }
