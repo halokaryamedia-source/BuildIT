@@ -28,7 +28,7 @@ Known identity skips discovery. Load the **exact tool name** only; do not re-lis
 
 Use **one base-color atlas PNG for the whole model**: never base color per body part, Cube, or material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile. PBR normal/height/MER are support textures.
 
-New AI projects: logical UV **128×128**; choose the smallest sufficient square 128-based bitmap. Pin the color atlas UUID and pass `texture_id` when multiple textures are loaded.
+New AI projects: logical UV **128×128**; choose the smallest sufficient square 128-based bitmap. Pin the color atlas UUID and pass `texture_id` when multiple textures are loaded. **Marketplace density standard: production bitmap = 2× logical UV** (128 UV → 256 PNG, 256 UV → 512 PNG) so identity detail stays readable.
 
 ## Texture Design Contract
 
@@ -57,6 +57,7 @@ Run `list_textures` before paint. AI Box UV final paint: `autouv=0`; require int
 ```text
 MAP → audit + affected inspect_element
 BASE PASS → draw_shape_tool major regions
+PAINT ECONOMY → one bounded rectangle fills all six faces of a single-material cube (box-fill) before per-pixel detail
 VALUE / FORM PASS → face-aware form/contact/occlusion/edge + material ramp
 IDENTITY PASS → paint_with_brush exact-pixel path
 SECONDARY DETAIL PASS → scale to pixels per UV unit; stop before noise

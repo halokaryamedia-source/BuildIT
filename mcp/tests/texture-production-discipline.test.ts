@@ -104,6 +104,16 @@ describe("professional texture production discipline", () => {
     expect(workflow).toContain("UV / Atlas Gate");
   });
 
+  test("marketplace density standard and box-fill paint economy stay in active guidance", async () => {
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+
+    expect(texturing).toContain("production bitmap = 2× logical UV");
+    expect(texturing).toContain("128 UV → 256 PNG");
+    expect(texturing).toContain("256 UV → 512 PNG");
+    expect(texturing).toContain("PAINT ECONOMY");
+    expect(texturing).toContain("fills all six faces of a single-material cube");
+  });
+
   test("convergence reviews structure and identity before microdetail", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),

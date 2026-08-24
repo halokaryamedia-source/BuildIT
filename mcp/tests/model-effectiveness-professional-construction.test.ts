@@ -70,6 +70,20 @@ describe("model creation effectiveness — professional construction without pre
     expect(lower(flow)).toContain("neutral organization");
   });
 
+  test("marketplace-grade construction patterns stay in modelling judgement", async () => {
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+
+    expect(modelling).toContain("Marketplace-Grade Construction Patterns");
+    expect(modelling).toContain("zero-span axis is valid");
+    expect(modelling).toContain("Inflate layering");
+    expect(modelling).toContain("negative inflate");
+    expect(modelling).toContain("small per-link rotation");
+    expect(modelling).toContain("never unit-Cube staircasing");
+    expect(modelling).toContain("mirror the Cube with `mirror_uv=true`");
+    expect(modelling).toContain("Locators** own non-visible anchors");
+    expect(modelling).toContain("Rig depth follows articulation need");
+  });
+
   test("professional samples never become callable presets, profiles, or fixture anatomy", async () => {
     const [profile, cubes, element, modelling, workflow] = await Promise.all([
       source("lib/registrationProfile.ts"),
