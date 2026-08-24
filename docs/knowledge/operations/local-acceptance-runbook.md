@@ -97,7 +97,7 @@ http://127.0.0.1:3000/bb-mcp
 Required baseline:
 
 ```text
-63 enabled tools
+64 enabled tools
 Extended MCP Families = OFF
 risky_eval = disabled
 from_geo_json = disabled

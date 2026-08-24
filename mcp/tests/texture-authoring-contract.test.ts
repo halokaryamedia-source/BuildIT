@@ -333,4 +333,22 @@ describe("texturing authoring contract", () => {
     }
   });
 
+  test("flatten_layers preserves base bitmap before compositing layers", async () => {
+    const paint = await source("server/tools/paint.ts");
+    const start = paint.indexOf('if (action === "flatten_layers")');
+    const end = paint.indexOf("if (texture.layers_enabled)", start);
+    const block = paint.slice(start, end);
+    for (const marker of [
+      "Preserve base bitmap",
+      "baseCanvas",
+      "texture.layers",
+      "offCtx.drawImage(baseCanvas",
+      "offCtx.drawImage(layerCanvas",
+    ]) {
+      expect(block).toContain(marker);
+    }
+    // Ensure base draw occurs before layer loop
+    expect(block.indexOf("baseCanvas")).toBeLessThan(block.indexOf("for (const layer of layersSnapshot)"));
+  });
+
 });

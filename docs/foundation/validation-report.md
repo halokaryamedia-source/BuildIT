@@ -94,8 +94,9 @@ CURRENT HEAD STATE:                 PRELOCAL_CONTROLLER_MUTATION_READY
 CURRENT SOURCE STATE:               ANIMATION_LOCAL_SOURCE_INTEGRATION_STATIC_VERIFIED
 CURRENT CANONICAL CI:               OBSERVED GREEN FOR 64-TOOL SOURCE
 GENERATED ARTIFACTS:                FRESH AGAINST CURRENT SOURCE
-CURRENT LOCAL RUN:                  REACTIVATED — AWAITING PLUGIN ENABLE
+CURRENT LOCAL RUN:                  TEST 1 COMPLETE 2026-08-24 (ONE LIVE DEFECT FIXED, ONE CONFIRMED OPEN)
 LOCAL ACCEPTANCE:                   REACTIVATED 2026-08-23
+LOCAL ACCEPTANCE:                   ACTIVE — TEST 2 PENDING (extends REACTIVATED 2026-08-23)
 ```
 
 The 2026-08-12 Blockbench 5.1.6 pass remains the accepted live baseline. Later hardening, optimization, controller mutation, and the 2026-08-19 animation effect/Molang closure are source/static evidence unless an exact newer proof surface is stated.
@@ -149,6 +150,59 @@ animation_timeline
 Source/static inspection confirms registration inside the existing animation family, exact inspected identity ownership for effect mutation, bounded preflight/no-op/collision handling, and regression owners for D1/D2/D3. This does **not** prove current built-plugin execution in live Blockbench or Minecraft; those claims remain `LOCAL PROOF REQUIRED`.
 
 Remaining protected animation gaps are controller blend-curve mutation and bone-binding expressions.
+
+## Local Acceptance Run — TEST 1 Complete (2026-08-24, LOCAL-RUNTIME)
+
+Executed per `docs/knowledge/operations/local-acceptance-runbook.md` on desktop Blockbench 5.1.6 against the deployed `Local` build (initial artifact `698C3CE9…` at HEAD `d8c0899`; repaired artifact `8DED1B56…` after DEFECT-LOCAL-1 fix). Local Bun runner 1.3.11 vs repo pin 1.3.14 deviation remains recorded; no canonical Bun-version PASS inferred.
+
+```text
+CURRENT-PROJECT VERIFIED / LOCAL-RUNTIME
+- health endpoint stateless JSON + tools/list = 64 exactly
+- verify:stateless-local 8/8 PASS
+- create/inspect: project/group/cubes incl. one rotated Cube with explicit origin;
+  finite rendered bounds include rotation (21.925 not 22.0)
+- causal correction (head resize) applied; geometry_effect receipt sufficient
+- undo/redo honest index reporting; depth rejection fail-closed without mutation
+- painter bounds rejection correct against real bitmap size
+- PBR material + face-scoped material_instance read-back exact (north only)
+- numeric animation + authored Molang keyframe preserved verbatim in exported .bbmodel
+- manage_animation_effects sound+particle batch receipts complete
+- controller batch (2 states + transition + animation link) in ONE call;
+  failed redundant-op batch rolled back cleanly (no dangling Undo entry);
+  whole-batch undo/redo as a single unit
+- Locator/Null Object create; no-op update rejection ("No Undo entry created");
+  cross-family duplicate-name rejection
+- persistence/export: editable .bbmodel + Bedrock geometry JSON via absolute paths;
+  overwrite-consent refusal live then honored on explicit overwrite:true;
+  geometry JSON carries corrected sizes, antenna pivot/rotation, locator +
+  auto-prefixed _null Null-Object locator
+- nested group removal removes all descendants (2 groups + 1 cube) with honest receipt
+- brush preset create/load works on first call in a fresh project
+- create_project refuses unsaved-work discard without explicit consent,
+  honors discard_unsaved:true
+```
+
+**DEFECT-LOCAL-1 — FIXED + rerun-verified live:** `create_texture` with `width`/`height` plus `fill_color` produced a real 16×16 bitmap while its response claimed the requested 128×128; root cause was the fresh-canvas path trusting `getActiveCanvas()` sizing (`mcp/server/tools/texture.ts`). Smallest fix enforces canvas dimensions before fill/clear; full canonical gate green locally (typecheck, 312 tests incl. new regression marker, measure:surface 64 within ceilings, build, docs fresh); redeployed and rerun verified: PNG ground truth 128×128, in-bounds paint succeeds at (100,100), OOB refusal reports `(128x128)`.
+
+**DEFECT-LOCAL-2 — CONFIRMED live, OPEN for repair:** `flatten_layers` loses pre-flatten authored pixels. Repro: gray atlas → two exact green pixels → `create_layer overlay` → `flatten_layers` → both sampled points return base `#808080`. Audit suspicion is now reproducible runtime evidence; owner candidate lives in the texture-layer management execution path. Repair cycle (source fix + gates + redeploy + rerun) is the next bounded task.
+
+Runtime-question dispositions from the recorded audit leftovers:
+
+```text
+flatten_layers data-loss suspicion      CONFIRMED → DEFECT-LOCAL-2 open
+native out-of-bounds paint wrap_mode    closed: guarded surface rejects before native dispatch
+StateMemory brush_presets first call    closed: verified live
+NoAAPreview blast radius                closed for default profile: generic family opt-in only
+forEachChild traversal completeness     closed: nested removal complete live
+multi-tab newProject() unsaved work     closed: consent gate verified live
+replaceOthers undo-casualty registration OPEN: mirror/bake scenario not exercised
+BarItems/settings ID currency           OPEN: trigger_action/setBarItemValue unused this run
+slowloris idle timeout absence          no change required (loopback-only design retained)
+```
+
+Observed session counters (evidence, not telemetry): ~55 meaningful tool calls; 0 discovery/tool_search calls (schemas from generated local docs); place_cube batching 4 Cubes / 2 calls; controller batch 4 ops / 1 call; 1 causal correction IMPROVED; 0 same-cause retries; capture_model_views 0 (TEST 1 is mechanics-only); 8 fail-closed rejections all leaving state intact; justified extra reads: inspect_animation (Molang values absent from mutation receipt), get_undo_stack ×2 (rollback/depth evidence); one ineffective get_project_info re-read flagged (could not answer controller existence).
+
+TEST 2 (Reference Model / Elephant) was **not** attempted: no approved reference image was active in this run's context.
 
 ## Local Acceptance Target (Reactivated 2026-08-23)
 
@@ -324,4 +378,4 @@ Automatic image→geometry truth, similarity scores as visual approval, metadata
 
 ## Current Evidence Boundary
 
-Current non-local contracts include **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation + animation effect/Molang source closure + R1–R4 repository reliability**. No local acceptance is active. No current runtime/model-quality, controller-execution, persistence, or actual usage-efficiency claim is upgraded until a matching proof surface provides that evidence.
+Current non-local contracts include **P0–P7 + execution-gated Minecraft-first Reference Generator + PRO-1–PRO-8 + static pre-local optimization + bounded AnimationController mutation + animation effect/Molang source closure + R1–R4 repository reliability**. The 2026-08-24 run adds LOCAL-RUNTIME proof for TEST 1 mechanics, transport, persistence/export, and the DEFECT-LOCAL-1 fix on the exact deployed artifact; DEFECT-LOCAL-2 (flatten_layers data loss) is confirmed live and unrepaired. Controller playback, Minecraft-side execution, and model-quality/efficiency claims beyond this run's counters remain `LOCAL PROOF REQUIRED` until matching surfaces provide that evidence.

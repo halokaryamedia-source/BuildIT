@@ -1745,6 +1745,13 @@ export function registerPaintTools() {
               off.height = texture.height;
               const offCtx = off.getContext("2d")!;
               offCtx.clearRect(0, 0, off.width, off.height);
+              // Preserve base bitmap before overlaying layers — previous fallback drew only layers, losing pre-flatten pixels.
+              const baseCanvas = (texture as unknown as { canvas: HTMLCanvasElement }).canvas;
+              if (baseCanvas) {
+                offCtx.globalAlpha = 1;
+                offCtx.globalCompositeOperation = "source-over";
+                offCtx.drawImage(baseCanvas, 0, 0);
+              }
               for (const layer of layersSnapshot) {
                 const layerCanvas = (layer as unknown as { canvas: HTMLCanvasElement }).canvas;
                 if (!layerCanvas) continue;

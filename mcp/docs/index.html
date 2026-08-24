@@ -846,7 +846,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Add Group</p>
-      <p class="card-desc">Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.</p>
+      <p class="card-desc">Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent; batch coherent bones with `groups` in one Undo unit. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -860,7 +860,7 @@ bun run docs:check
       <tbody><tr>
       <td class="col-name">name</td>
       <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
+      <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Non-empty Bedrock Group/bone name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">origin</td>
@@ -877,6 +877,11 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Parent Group UUID or unique exact name; omit/use `root` for intentional root. <span class="param-meta">(default: <code>&quot;root&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">groups</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Coherent Group/bone batch; ordered, one Undo unit.</td>
     </tr></tbody>
     </table>
       </div>
@@ -2309,6 +2314,11 @@ bun run docs:check
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Discard unsaved changes in the open project; required when it currently has unsaved work.</td>
+    </tr><tr>
+      <td class="col-name">resolution</td>
+      <td class="col-type">&quot;128&quot; | &quot;256&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Logical UV canvas edge; 128 (default) or 256.</td>
     </tr></tbody>
     </table>
       </div>
@@ -3060,7 +3070,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-23T15:48:11.693Z from Zod schemas
+        Generated 2026-08-24T08:52:36.780Z from Zod schemas
       </footer>
     </main>
   </div>

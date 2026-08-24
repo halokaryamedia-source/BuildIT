@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-23
+Updated: 2026-08-24 — Reconciled per user focus shift to MCP Geometry & Texturing quality (extends 2026-08-23)
 
 ## Current Status
 
@@ -14,6 +14,7 @@ CANONICAL_GATE_64_OBSERVED_CI_GREEN_D8C0899
 GENERATED_ARTIFACTS_FRESH_AGAINST_CURRENT_SOURCE
 LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23
 AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4
+FOCUS_SHIFT_2026_08_24_MCP_GEOMETRY_TEXTURE_QUALITY
 ```
 
 Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. GitHub discipline is owned by `GITHUB_RULES.md`.
@@ -23,6 +24,8 @@ Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. 
 Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED** until the matching local surface actually runs. Experimental browser proof below does not upgrade desktop MCP claims.
 
 Reference generation stays separately gated: repository/policy work and this testing reactivation never authorize image generation without fresh user instruction.
+
+Reconciliation 2026-08-24: per `AGENTS.md:34` and current user instruction, active Developing now owns **MCP quality improvement in Geometry & Texturing** — (1) MCP gagal membuat model sesuai referensi, (2) MCP boros/berputar-putar hasilnya buruk. `next-action.md` extended without removing required markers; prior continuation remains valid but local acceptance is paused for this hardening.
 
 ## Pre-local Optimization Ledger
 
@@ -83,9 +86,33 @@ Blocking step:      user must click Plugins ▸ mcp ▸ Enable in desktop
                     Blockbench; server was not listening before that click
 ```
 
+## Local Run Facts 2026-08-24 — TEST1 Complete (extends 2026-08-23)
+
+```text
+698C3CE9→8DED1B5 artifacts VERIFIED at %APPDATA%\Blockbench\plugins\mcp.js; verify:stateless-local 8/8 PASS (64 tools)
+TEST1 PASS incl. rotated Cube, causal correction, Painter bounds, PBR/material_instance, Molang, controller batch
+DEFECT-LOCAL-1 FIXED (canvas guard) rerun-verified 128×128; DEFECT-LOCAL-2 CONFIRMED OPEN flatten_layers loss deferred
+```
+
+## Active Developing — MCP Geometry & Texturing Quality (User-Gated 2026-08-24)
+
+**Goal:** MCP model Geometri & Tekstur sesuai referensi, efisien tanpa loop boros. 2 sektor utama.
+
+Build owner: `mcp-server-development`. Acceptance: difference-first visual gate with actual reference + fresh views.
+
+In scope: Geometri (intentional Cubes/Groups/pivots, batching, geometry_effect) + Texturing (single atlas, UV audit, flatten fidelity).
+Out: reference generation, protected gaps, new router/framework.
+
+Criteria (4): 1 Geometri batch/reuse/rotation 2 Texturing atlas/UV/flatten 3 Efisiensi min evidence 4 Surface 64 within ceilings.
+Proof: typecheck → test (model-effectiveness/texture/prelocal) → measure:surface → build → docs:check. Local runtime remains LOCAL PROOF REQUIRED.
+
+Next: `MCP_GEOMETRY_TEXTURING_HARDENING` → preflight → smallest patch (prompts + paint flatten base-include + keep groups batch/resolution) → gate → STOP.
+
+Paused: `LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23` + `AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4` remain; local acceptance paused for this hardening.
+
 ## Next Step
 
-Proceed with the runbook (`docs/knowledge/operations/local-acceptance-runbook.md`) from step 4 once the plugin is enabled:
+Proceed with the runbook (`docs/knowledge/operations/local-acceptance-runbook.md`) from step 4 once the plugin is enabled — **paused for MCP hardening; see Active Developing above**:
 
 ```text
 1. health endpoint + tools/list count = 64

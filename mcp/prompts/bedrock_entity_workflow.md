@@ -35,13 +35,13 @@ A semantic label never authorizes coordinates. Every primary Cube maps to a decl
 
 Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`; **`[0,0,0]` needs image support.** A visible material slope requires `ROTATED` + explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` with fallback `MASS_CENTER=center` or Group pivot → `PROVISIONAL`, otherwise `BLOCKED`.
 
-For every **required attachment**, identify **contact target/invariant** first; use an **attachment/joint pivot** when it owns the transform. Numeric overlap/hierarchy is not contact proof; important negative spaces stay open.
+For required attachment, state **contact target/invariant** first; use **attachment/joint pivot** when it owns transform. Overlap/hierarchy≠contact; keep negative spaces open.
 
 ## Primary form / authoring
 
 **A front-view match cannot certify depth.** Minor drift uses one canonical interpretation; unresolved material conflict → `CONFLICTING / BLOCKED`.
 
-Build coherent primary form with required Groups/pivots. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` proves execution only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified evidence**.
+Build coherent primary form. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` proves execution only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** `from/to`←envelope+Form, never pixels; batch coherent calls. Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified evidence**.
 
 After primary `PASS`, add only identity-weighted detail.
 

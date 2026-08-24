@@ -10,11 +10,14 @@ const PROTOCOL_VERSION = "2025-06-18";
 // the previous surface discipline. These are regression ceilings with small
 // headroom, not token-usage targets; max per-tool payload stays intentionally
 // unchanged so a new capability cannot justify a bloated schema by itself.
+// 2026-08-24: add_group gained the user-mandated coherent `groups` batch
+// (mirrors place_cube elements batching); ceilings were raised by the
+// measured delta of that one capability, not speculatively.
 const SURFACE_BUDGET = {
   tool_count: 64,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 80_500,
-  input_schema_chars: 56_500,
+  tools_list_response_chars: 82_000,
+  input_schema_chars: 58_000,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

@@ -6,16 +6,17 @@ async function source(path: string): Promise<string> {
 }
 
 describe("professional texture production discipline", () => {
-  test("new Bedrock projects use the simple 128 logical UV baseline", async () => {
+  test("new Bedrock projects default to the 128 logical UV baseline with an explicit 256 opt-in", async () => {
     expect(DEFAULT_BEDROCK_UV_RESOLUTION).toBe(128);
 
     const project = await source("server/tools/project.ts");
     expect(project).toContain(
-      "Project!.texture_width = DEFAULT_BEDROCK_UV_RESOLUTION"
+      "Project!.texture_width = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION"
     );
     expect(project).toContain(
-      "Project!.texture_height = DEFAULT_BEDROCK_UV_RESOLUTION"
+      "Project!.texture_height = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION"
     );
+    expect(project).toContain('z.literal(128), z.literal(256)');
     expect(project).toContain("resolution: {");
   });
 

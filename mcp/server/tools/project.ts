@@ -16,6 +16,10 @@ export const createProjectParameters = z
       .describe(
         "Discard unsaved changes in the open project; required when it currently has unsaved work."
       ),
+    resolution: z
+      .union([z.literal(128), z.literal(256)])
+      .optional()
+      .describe("Logical UV canvas edge; 128 (default) or 256."),
   })
   .strict();
 
@@ -102,7 +106,7 @@ function currentProjectLifecycle() {
 export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
-    async execute({ name, discard_unsaved }) {
+    async execute({ name, discard_unsaved, resolution }) {
       if (Project && Project.saved === false && discard_unsaved !== true) {
         throw new Error(
           `The open project "${Project.name}" has unsaved changes. Save it first, or pass discard_unsaved: true to abandon them.`
@@ -116,8 +120,8 @@ export function registerProjectTools() {
       }
 
       Project!.name = name;
-      Project!.texture_width = DEFAULT_BEDROCK_UV_RESOLUTION;
-      Project!.texture_height = DEFAULT_BEDROCK_UV_RESOLUTION;
+      Project!.texture_width = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION;
+      Project!.texture_height = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION;
 
       const result = {
         project: currentProjectLifecycle(),

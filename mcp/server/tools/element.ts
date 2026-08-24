@@ -130,7 +130,11 @@ export const getSelectionParameters = z.object({});
 
 export const addGroupParameters = z
   .object({
-    name: z.string().min(1).describe("Non-empty Bedrock Group/bone name."),
+    name: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("Non-empty Bedrock Group/bone name."),
     origin: finiteElementVector3Schema
       .optional()
       .default([0, 0, 0])
@@ -148,8 +152,42 @@ export const addGroupParameters = z
       .describe(
         "Parent Group UUID or unique exact name; omit/use `root` for intentional root."
       ),
+    groups: z
+      .array(
+        z.object({
+          name: z.string().min(1).describe("Non-empty unique bone name."),
+          origin: finiteElementVector3Schema
+            .optional()
+            .describe("Finite pivot; omit for [0,0,0]."),
+          rotation: finiteElementVector3Schema
+            .optional()
+            .describe("Finite initial rotation; omit for zero."),
+          parent: z
+            .string()
+            .optional()
+            .describe("Parent Group UUID/name or `root`; may reference an earlier batch entry."),
+        })
+      )
+      .optional()
+      .describe("Coherent Group/bone batch; ordered, one Undo unit."),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.groups && value.name !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Pass either `name` or `groups`, not both.",
+        path: ["groups"],
+      });
+    }
+    if (!value.groups && value.name === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Provide `name` or `groups`.",
+        path: ["name"],
+      });
+    }
+  });
 
 export const listOutlineParameters = z.object({
   include_cubes: z
@@ -218,7 +256,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "add_group",
     description:
-      "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
+      "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent; batch coherent bones with `groups` in one Undo unit. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
     annotations: {
       title: "Add Group",
       destructiveHint: true,
@@ -588,9 +626,18 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
-    async execute({ name, origin, rotation, parent }) {
+    async execute({ name, origin, rotation, parent, groups }) {
       requireOpenProject("adding a Group");
-      const parentGroup = resolveParentGroup(parent);
+      const batch =
+        groups ??
+        [
+          {
+            name: name ?? "",
+            origin,
+            rotation,
+            parent,
+          },
+        ];
 
       Undo.initEdit({
         elements: [],
@@ -599,15 +646,22 @@ export function registerElementTools() {
         collections: [],
       });
 
-      let group: Group;
+      const created: Group[] = [];
       try {
-        group = new Group({
-          name,
-          origin,
-          rotation,
-        }).init();
-        group.addTo(parentGroup);
-        Undo.finishEdit("Agent added group", { outliner: true, groups: [group] });
+        for (const entry of batch) {
+          const parentGroup = resolveParentGroup(entry.parent ?? "root");
+          const group = new Group({
+            name: entry.name,
+            origin: entry.origin ?? [0, 0, 0],
+            rotation: entry.rotation ?? [0, 0, 0],
+          }).init();
+          group.addTo(parentGroup);
+          created.push(group);
+        }
+        Undo.finishEdit(
+          created.length > 1 ? "Agent added groups" : "Agent added group",
+          { outliner: true, groups: created }
+        );
       } catch (error) {
         Undo.cancelEdit(true);
         Canvas.updateAll();
@@ -616,19 +670,38 @@ export function registerElementTools() {
 
       Canvas.updateAll();
       const result = {
-        group: {
+        groups: created.map((group) => ({
           uuid: group.uuid,
           name: group.name,
           origin: [...group.origin],
           rotation: [...group.rotation],
           parent: group.parent instanceof Group ? group.parent.uuid : "root",
-        },
+        })),
+        ...(groups
+          ? {}
+          : {
+              group: {
+                uuid: created[0].uuid,
+                name: created[0].name,
+                origin: [...created[0].origin],
+                rotation: [...created[0].rotation],
+                parent:
+                  created[0].parent instanceof Group
+                    ? created[0].parent.uuid
+                    : "root",
+              },
+            }),
       };
       return {
         content: [
           {
             type: "text" as const,
-            text: `Added Group ${group.name} (${group.uuid}).`,
+            text:
+              created.length > 1
+                ? `Added ${created.length} Groups: ${created
+                    .map((group) => group.name)
+                    .join(", ")}.`
+                : `Added Group ${created[0].name} (${created[0].uuid}).`,
           },
         ],
         structuredContent: result,
