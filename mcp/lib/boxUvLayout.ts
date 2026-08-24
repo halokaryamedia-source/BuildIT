@@ -18,10 +18,15 @@ function finiteSpan(
   return Math.abs(end - start);
 }
 
+function bedrockBoxUvAxisSize(span: number): number {
+  // Blockbench Bedrock Box UV defaults to Cube.size(axis, true), which floors
+  // authored span with a tiny epsilon before the template applies Math.round.
+  return Math.max(1, Math.floor(span + 0.0000001));
+}
+
 /**
- * Logical Box-UV footprint used by Blockbench Bedrock Cubes.
- * Zero/sub-unit axes still reserve one logical UV unit so packing never
- * collapses a paint region to zero size.
+ * Logical Box-UV footprint matching Blockbench's default Bedrock Box UV size
+ * semantics. Zero/sub-unit axes reserve one logical UV unit.
  */
 export function boxUvFootprint(
   from: readonly number[],
@@ -31,9 +36,9 @@ export function boxUvFootprint(
     throw new Error("Box-UV footprint requires [x,y,z] from/to coordinates.");
   }
 
-  const sizeX = Math.max(1, Math.round(finiteSpan(from, to, 0)));
-  const sizeY = Math.max(1, Math.round(finiteSpan(from, to, 1)));
-  const sizeZ = Math.max(1, Math.round(finiteSpan(from, to, 2)));
+  const sizeX = bedrockBoxUvAxisSize(finiteSpan(from, to, 0));
+  const sizeY = bedrockBoxUvAxisSize(finiteSpan(from, to, 1));
+  const sizeZ = bedrockBoxUvAxisSize(finiteSpan(from, to, 2));
 
   return [2 * (sizeX + sizeZ), sizeY + sizeZ];
 }
@@ -80,9 +85,20 @@ export function packBoxUvOffsets(
 ): [number, number][] {
   const width = requireCanvasDimension(logicalWidth, "Logical UV width");
   const height = requireCanvasDimension(logicalHeight, "Logical UV height");
-  const occupied = occupiedRegions.map((region, index) =>
-    requireRegion(region, `Occupied Box-UV region[${index}]`)
-  );
+  const occupied = occupiedRegions.map((region, index) => {
+    const normalized = requireRegion(region, `Occupied Box-UV region[${index}]`);
+    if (
+      normalized.x < 0 ||
+      normalized.y < 0 ||
+      normalized.x + normalized.width > width ||
+      normalized.y + normalized.height > height
+    ) {
+      throw new Error(
+        `Occupied Box-UV region[${index}] exceeds the ${width}×${height} logical UV canvas. Repair existing UV state before auto-packing more Cubes.`
+      );
+    }
+    return normalized;
+  });
 
   const planned: Array<[number, number] | null> = Array(footprints.length).fill(null);
   const ordered = footprints

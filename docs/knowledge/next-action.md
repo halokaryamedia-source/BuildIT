@@ -1,15 +1,17 @@
 # Next Action
 
-Updated: 2026-08-25 — cross-agent execution contract
+Updated: 2026-08-25 — baseline-driven UV / authoring-convergence hardening
 
 ## Current State
 
 ```text
 LOCAL_REPOSITORY_CLEANUP_COMPLETE
 CROSS_AGENT_EXECUTION_CONTRACT_COMPLETE
-AUTHORING_EFFECTIVENESS_TERMINOLOGY_ALIGNED
-STATIC_FOOTPRINT_GUARDRAIL_SEPARATED
-STALE_CONTINUATION_VERIFIERS_REPAIRED
+MCP_BOX_UV_AUTO_LAYOUT_SOURCE_APPLIED
+TEXTURE_PRODUCTION_ROUTING_HARDENED
+SIMPLE_RIGID_FAST_PATH_HARDENED
+USER_BASELINE_FAILURE_RECORDED
+LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE EXPERIMENT
 NO ACTIVE DEVELOPMENT
@@ -17,72 +19,57 @@ NO ACTIVE DEVELOPMENT
 
 Working branch: **`Local` only**. `Experimental/**` remains inactive unless the user explicitly resumes it. GitHub execution/history discipline is owned by `GITHUB_RULES.md`.
 
-## Cross-Agent Contract — Do Not Reinterpret
+## Baseline Failure That Drove This Patch
 
-ChatGPT, Codex, and Opencode use the same repository authority for Developing. Before a non-trivial mutation, the Developing Execution Gate requires:
+The user supplied the latest failed authoring result and reported two material problems:
 
-```text
-Goal
-Success Metric
-Forbidden Proxy / Non-Goal
-First Evidence Required
-Failure Classification / first wrong owner
-In Scope / Out of Scope
-Proof Required
-STOP Condition
-```
+1. UV/texturing was poor and effectively stopped at flat fills without readable value/form/detail work.
+2. A simple rigid model took too long to model and texture, with behavior consistent with excessive guessing/repetition.
+
+Historical pre-cleanup model data additionally showed manually authored Box-UV offsets and unnecessary nested rigid-part hierarchy. That history is supporting evidence only; it is not a fixture-specific product rule.
+
+## Source Hardening Applied
+
+- New Box-UV Cubes placed by `place_cube` receive deterministic non-overlapping `uv_offset` packing against the logical canvas and existing Box-UV occupancy.
+- `place_cube` returns each Cube's `box_uv_region` so downstream texturing can reuse mutation state instead of rediscovering broad UV ownership.
+- Auto UV stays active during geometry correction; after geometry `PASS`, texturing guidance uses one `modify_cubes_batch` to lock final Box-UV Cubes with `autouv=0` before production paint.
+- Texture guidance now routes base/material regions, stepped form/value work, optional continuous gradients, and identity/detail pixels to the existing Painter tools instead of allowing flat fill to masquerade as completion.
+- Production texture creation explicitly supplies 128-based bitmap dimensions rather than relying on the provisional 16×16 default.
+- Simple clear rigid props use a bounded modelling fast path: minimum meaningful hierarchy, coherent Cube batching, then judgeable views. Nested Groups are not created merely to carry small local rigid bends.
+
+## Do Not Reinterpret
 
 For MCP quality/usage work:
 
-- **Authoring Quality** is the accepted-result gate.
-- **Authoring Efficiency** is **Cost to Accepted Result**: the shortest justified decision path with unnecessary work minimized.
-- **Static Footprint** is only an instruction/schema/surface-size guardrail.
-
-Skill line count, prompt character count, schema size, tool count, or raw MCP-call count alone are **forbidden proxies** for Authoring Efficiency or model quality.
-
-## What Is Already Done — Do Not Repeat
-
-The following current-source work is not an automatic next step:
-
-- coherent `place_cube(elements=[...])` batching;
-- coherent `add_group(groups=[...])` batching;
-- project logical UV resolution `128` default / `256` opt-in;
-- retained texture/Painter hardening and `flatten_layers` source repair;
-- mutation-result reuse / reduced ritual readback discipline;
-- current 64-tool default Bedrock Entity surface;
-- repository cleanup that removed fixture-derived recipes, transient test workspaces, hidden watch deployment, and competing continuation owners;
-- cross-agent execution/benchmark semantics established by `AGENTS.md`, `development-brief`, and the local acceptance runbook.
-
-Do not reopen those areas merely because historical commits or old tests mention them.
+- **Authoring Quality** remains the accepted-result gate.
+- **Authoring Efficiency** remains Cost to Accepted Result.
+- Static footprint, Skill length, schema size, tool count, or raw call count alone are not success metrics.
+- Do not add fixture-specific recipes, telemetry, routers/profiles, or new tools merely because this baseline failed.
 
 ## Current Continuation
 
-There is **no automatic implementation step**.
+There is **no automatic implementation or test step**. The user explicitly deferred retesting until after this source hardening.
 
-If the user explicitly resumes MCP model-quality / efficiency work, use one exact-current-artifact benchmark:
+When the user chooses to retest, use the exact current artifact and the existing local acceptance procedure:
 
 ```text
 approved reference visible
-→ state Success Metric + Forbidden Proxy
-→ build/load exact current Local artifact
+→ exact Local artifact + hash
 → one bounded authoring attempt
 → quality gate
-→ call/correction trace
+→ call/correction trace when available
 → classify first wrong owner
-→ smallest complete patch only if evidence requires it
-→ repeat matching proof
 → compare Cost to Accepted Result
+→ smallest follow-up patch only if evidence requires it
 → STOP
 ```
 
-If quality fails, a lower raw call count is not an efficiency success.
-
 ## Proof Boundary
 
-Repository rules/tests can prove routing and terminology. They cannot prove live model quality or runtime Authoring Efficiency. Those remain **LOCAL PROOF REQUIRED** until the exact current artifact is deliberately run and inspected.
+The UV packing, returned-state, and Skill/routing changes are source/static facts. **No live model-quality or authoring-efficiency improvement is claimed until the exact hardened artifact is run and visually inspected.**
 
-Historical live/static proof belongs in `docs/foundation/validation-report.md`; rationale and discarded approaches belong in Git history.
+Current proof history lives in `docs/foundation/validation-report.md`; discarded experiments and fixture iterations remain Git history.
 
 ## STOP
 
-No repository, CI, local-runtime, workspace, or experimental action is implied without a new user instruction.
+No further repository, local-runtime, workspace, or experimental action is implied without a new user instruction.

@@ -9,26 +9,27 @@ Geometry: `blockbench-bedrock-modelling`.
 
 ## Direct Routing
 
-Reuse fresh identity/metadata.
+Reuse fresh identity/state.
 
 ```text
-create texture / atlas      → create_texture
-atlas identities + UV audit → list_textures
-fresh image evidence        → get_texture
-working texture selection   → activate_texture
-PBR create/configure        → create_pbr_material / configure_material
-PBR channel assignment      → assign_texture_channel
+base atlas lifecycle          → create_texture / list_textures / activate_texture
+fresh atlas image             → get_texture
+base/material regions         → draw_shape_tool; paint_fill_tool only for intentional contiguous base fill
+stepped value/form/edge       → draw_shape_tool / paint_with_brush
+continuous transition         → gradient_tool only when reference/style supports it
+identity/detail pixels        → paint_with_brush
+PBR                           → create_pbr_material / configure_material / assign_texture_channel
 ```
 
 ## Deferred Spec Loading
 
-Known identity skips discovery. Load the **exact tool name** only; do not re-list/re-read it only for confirmation. Production texture waits for geometry `PASS`.
+Known identity skips discovery. Load the **exact tool name** only when its spec is not loaded; do not re-list/re-read it only for confirmation. Production texture waits for geometry `PASS`.
 
 ## AI Production Atlas
 
-Use **one base-color atlas PNG for the whole model**: never base color per body part, Cube, or material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile. PBR normal/height/MER are support textures.
+Use **one base-color atlas PNG for the whole model**, never per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile. PBR normal/height/MER are support textures.
 
-New AI projects: logical UV **128×128**; choose the smallest sufficient square 128-based bitmap. Pin the color atlas UUID and pass `texture_id` when multiple textures are loaded.
+New AI production: logical UV **128×128**. Pass explicit production `width`/`height` using the smallest sufficient square 128-based bitmap; do not rely on provisional 16×16 `create_texture` default. Pin atlas UUID; pass `texture_id` when multiple textures are loaded.
 
 ## Texture Design Contract
 
@@ -38,7 +39,7 @@ Before production pixels define:
 atlas UUID + logical/physical size + pixels per UV unit
 palette roles + value/hue ramp
 material zones + value hierarchy + face-aware shading
-contact / occlusion + edge treatment
+contact/occlusion + edge treatment
 hard-pixel + alpha intent
 direction/mirror + seam constraints
 identity-critical marks
@@ -46,31 +47,35 @@ detail budget: identity > material > optional wear/noise
 required PBR / material_instance meaning
 ```
 
-Flat color is provisional when form/material/detail is visible. Prefer controlled Minecraft pixel clusters; reject random high-contrast noise.
+A flat fill is a **base pass only** when form/material/detail is visible; it never completes production texture. Prefer controlled Minecraft pixel clusters and stepped value/hue ramps; reject random high-contrast noise. Use `gradient_tool` smooth transitions only when style/reference supports them.
 
 ## UV / Atlas Gate
 
-Run `list_textures` before paint. AI Box UV final paint: `autouv=0`; require integer logical UV unless justified, no out-of-bounds/invalid UV, no unexplained partial overlap, stable seams/orientation; exact reuse is valid.
+Run `list_textures` once before production paint. Final AI Box UV requires `autouv=0`, integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation.
 
-**Do not mentally re-derive atlas coordinates.** For a needed face use `inspect_element`; require `mapping_state=mapped` + `paintable=true`, then reuse `texture_pixels.rect`, `flip_u`, `flip_v`.
+For fresh Box-UV Cubes, reuse `place_cube` returned `box_uv_region`; do not inspect them again by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, use one `modify_cubes_batch` to lock final Cubes with `autouv=0`; do not recalculate offsets already packed by `place_cube`.
+
+Use `inspect_element` only for needed face-specific mapping/orientation. One Cube inspection returns all six face mappings; never inspect per face. Reuse `texture_pixels.rect`, `flip_u`, `flip_v`.
 
 ```text
-MAP → audit + affected inspect_element
-BASE PASS → draw_shape_tool major regions
-VALUE / FORM PASS → face-aware form/contact/occlusion/edge + material ramp
-IDENTITY PASS → paint_with_brush exact-pixel path
+MAP → returned box_uv_region + one global list_textures audit
+BASE PASS → material regions; fill remains provisional
+VALUE / FORM PASS → stepped form/contact/occlusion/edge + material ramp
+IDENTITY PASS → exact-pixel paint_with_brush
 SECONDARY DETAIL PASS → scale to pixels per UV unit; stop before noise
-VERIFY → fresh atlas + model-view evidence
+VERIFY → one fresh atlas after coherent pass + affected model views
 ```
 
-`FAIL / UNVERIFIED / PASS` is visual-only; Tool success cannot create visual PASS. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
+For repeated same-color detail points, use one `paint_with_brush` coordinate batch with `connect_strokes=false` for disconnected pixels.
+
+`FAIL / UNVERIFIED / PASS` is visual-only. Diagnose `REGION_PLACEMENT | PALETTE_VALUE | MATERIAL_READABILITY | UV_ORIENTATION | SEAM_CONTINUITY | IDENTITY_MARK | DETAIL_DENSITY`.
 
 ## Texture Visual Convergence
 
-Use actual approved reference + fresh `get_texture` atlas + affected `capture_model_views`; texture mutation makes evidence stale. **Texture Difference Table** order: UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
+Use approved reference + fresh `get_texture` atlas + affected `capture_model_views`; mutation makes evidence stale. Review UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
 
-Local `FAIL` → target/invariant → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal correction direction failing twice without new evidence → `BLOCKED`.
+Local `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal direction failing twice without new evidence → `BLOCKED`.
 
 ## Native Bedrock PBR / UV
 
-`apply_texture` stays disabled for Bedrock `single_texture`; use explicit atlas identity. Box UV state is `uv_offset`, `mirror_uv`, `autouv`. **Native Bedrock PBR** and per-face `material_instance` are supported and never justify base-atlas fragmentation.
+`apply_texture` stays disabled for Bedrock `single_texture`. Box UV state is `uv_offset`, `mirror_uv`, `autouv`. **Native Bedrock PBR** and per-face `material_instance` never justify base-atlas fragmentation.

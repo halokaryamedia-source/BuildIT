@@ -12,6 +12,7 @@ import {
   requireFiniteInspectableFaceUv,
   requireFiniteInspectableVector2,
 } from "@/server/tools/element-inspection";
+import { boxUvFootprint, packBoxUvOffsets } from "@/lib/boxUvLayout";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -23,6 +24,18 @@ function toolBlock(paint: string, index: number, nextIndex: number): string {
   expect(start).toBeGreaterThanOrEqual(0);
   expect(end).toBeGreaterThan(start);
   return paint.slice(start, end);
+}
+
+function rectanglesOverlap(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number }
+): boolean {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
 }
 
 describe("texturing authoring contract", () => {
@@ -81,6 +94,70 @@ describe("texturing authoring contract", () => {
     expect(brush).toContain("!connect_strokes");
     expect(brush).not.toContain("Painter.editCircle");
     expect(brush).not.toContain("Painter.editSquare");
+  });
+
+  test("Box UV packing derives native footprint and avoids overlap deterministically", () => {
+    expect(boxUvFootprint([-1, 0, -1], [1, 10, 1])).toEqual([8, 12]);
+
+    const footprints = [
+      [8, 12],
+      [8, 5],
+      [8, 5],
+      [10, 4],
+      [10, 4],
+      [6, 13],
+      [6, 13],
+    ] as const;
+    const offsets = packBoxUvOffsets([], footprints, 128, 128);
+    const regions = footprints.map(([width, height], index) => ({
+      x: offsets[index][0],
+      y: offsets[index][1],
+      width,
+      height,
+    }));
+
+    for (let i = 0; i < regions.length; i += 1) {
+      expect(regions[i].x).toBeGreaterThanOrEqual(0);
+      expect(regions[i].y).toBeGreaterThanOrEqual(0);
+      expect(regions[i].x + regions[i].width).toBeLessThanOrEqual(128);
+      expect(regions[i].y + regions[i].height).toBeLessThanOrEqual(128);
+      for (let j = i + 1; j < regions.length; j += 1) {
+        expect(rectanglesOverlap(regions[i], regions[j])).toBe(false);
+      }
+    }
+
+    const afterExisting = packBoxUvOffsets(
+      [{ x: 0, y: 0, width: 8, height: 12 }],
+      [[8, 12]],
+      128,
+      128
+    );
+    expect(afterExisting[0]).not.toEqual([0, 0]);
+
+    expect(() =>
+      packBoxUvOffsets([], [[20, 20]], 16, 16)
+    ).toThrow("exceeds the 16×16 logical UV canvas");
+  });
+
+  test("place_cube returns packed Box UV continuation state without locking geometry early", async () => {
+    const cubes = await source("server/tools/cubes.ts");
+    for (const marker of [
+      "packBoxUvOffsets(",
+      "currentBoxUvOccupancy()",
+      "box_uv_region:",
+      '"auto_packed_unlocked" as const',
+    ]) {
+      expect(cubes).toContain(marker);
+    }
+
+    const start = cubes.indexOf("const plannedOffset = plannedBoxUvOffsets");
+    const end = cubes.indexOf("return cube;", start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const placement = cubes.slice(start, end);
+    expect(placement).toContain("uv_offset: plannedOffset");
+    expect(placement).toContain("autouv: 1");
+    expect(placement).not.toContain("autouv: 0");
   });
 
   test("Cube inspection exposes finite authored UV state and face rectangles", async () => {

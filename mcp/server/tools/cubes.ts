@@ -6,6 +6,11 @@ import { autoUvEnum, cubeSchema, faceEnum } from "@/lib/zodObjects";
 import { STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";
 import { requireOpenProject } from "@/lib/util";
+import {
+  boxUvFootprint,
+  packBoxUvOffsets,
+  type BoxUvRegion,
+} from "@/lib/boxUvLayout";
 
 const finiteVec3Schema = z.tuple([
   z.number().finite(),
@@ -364,6 +369,32 @@ function requirePivotTransferMesh(cube: Cube): void {
   }
 }
 
+function currentBoxUvOccupancy(): BoxUvRegion[] {
+  const regions: BoxUvRegion[] = [];
+  for (const cube of Cube.all ?? []) {
+    if (cube.box_uv !== true) continue;
+    const offset = [...cube.uv_offset] as [number, number];
+    if (offset.some((value) => !Number.isFinite(value))) {
+      throw new Error(
+        `Existing Box-UV Cube ${cube.name} (${cube.uuid}) has a non-finite uv_offset. Resolve its UV state before placing more Box-UV Cubes.`
+      );
+    }
+    const [width, height] = boxUvFootprint(cube.from, cube.to);
+    regions.push({ x: offset[0], y: offset[1], width, height });
+  }
+  return regions;
+}
+
+function boxUvRegionState(cube: Cube) {
+  if (cube.box_uv !== true) return null;
+  const [width, height] = boxUvFootprint(cube.from, cube.to);
+  const [u, v] = cube.uv_offset;
+  return {
+    logical_rect: [u, v, u + width, v + height] as [number, number, number, number],
+    size: [width, height] as [number, number],
+  };
+}
+
 function finalCubeState(cube: Cube) {
   const from = [...cube.from] as [number, number, number];
   const to = [...cube.to] as [number, number, number];
@@ -412,6 +443,7 @@ function finalCubeState(cube: Cube) {
     inflate,
     box_uv: cube.box_uv,
     uv_offset: uvOffset,
+    box_uv_region: boxUvRegionState(cube),
     mirror_uv: cube.mirror_uv,
     autouv: cube.autouv,
     visibility: cube.visibility !== false,
@@ -527,17 +559,35 @@ export function registerCubesTools() {
             : defaultOutlinerGroup,
       }));
       const customFaceUvs = Array.isArray(faces);
+      const autoPackBoxUv = !customFaceUvs && Project?.box_uv === true;
+      let plannedBoxUvOffsets: [number, number][] | null = null;
 
-      if (!customFaceUvs) {
+      if (autoPackBoxUv) {
+        const textureWidth = Project?.texture_width;
+        const textureHeight = Project?.texture_height;
+        if (
+          typeof textureWidth !== "number" ||
+          typeof textureHeight !== "number"
+        ) {
+          throw new Error(
+            "Box-UV auto-layout requires finite logical project texture dimensions."
+          );
+        }
+        plannedBoxUvOffsets = packBoxUvOffsets(
+          currentBoxUvOccupancy(),
+          placements.map(({ element }) => boxUvFootprint(element.from, element.to)),
+          textureWidth,
+          textureHeight
+        );
+      } else if (!customFaceUvs) {
         const textureWidth = Project?.texture_width ?? null;
         const textureHeight = Project?.texture_height ?? null;
         if (textureWidth !== null && textureHeight !== null) {
           for (const { element } of placements) {
-            const sizeX = Math.abs(element.to[0] - element.from[0]);
-            const sizeY = Math.abs(element.to[1] - element.from[1]);
-            const sizeZ = Math.abs(element.to[2] - element.from[2]);
-            const layoutWidth = 2 * (sizeZ + sizeX);
-            const layoutHeight = sizeZ + sizeY;
+            const [layoutWidth, layoutHeight] = boxUvFootprint(
+              element.from,
+              element.to
+            );
             if (layoutWidth > textureWidth || layoutHeight > textureHeight) {
               throw new Error(
                 `Cube "${element.name}" box-UV layout ${layoutWidth}×${layoutHeight} exceeds the ${textureWidth}×${textureHeight} logical UV canvas. Create the project with resolution 256, or author explicit per-face UV for this Cube.`
@@ -555,7 +605,7 @@ export function registerCubesTools() {
 
       let cubes: Cube[];
       try {
-        cubes = placements.map(({ element, outlinerGroup }) => {
+        cubes = placements.map(({ element, outlinerGroup }, index) => {
           const cube = new Cube({
             autouv: customFaceUvs ? 0 : 1,
             name: element.name,
@@ -576,6 +626,14 @@ export function registerCubesTools() {
               });
             });
           } else {
+            const plannedOffset = plannedBoxUvOffsets?.[index];
+            if (plannedOffset) {
+              cube.extend({
+                box_uv: true,
+                uv_offset: plannedOffset,
+                autouv: 1,
+              });
+            }
             cube.mapAutoUV();
           }
 
@@ -595,13 +653,19 @@ export function registerCubesTools() {
         visual_verdict: "not_evaluated" as const,
         added: cubes.length,
         uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,
+        box_uv_layout: plannedBoxUvOffsets
+          ? ("auto_packed_unlocked" as const)
+          : null,
         cubes: cubes.map((cube: Cube) => finalCubeState(cube)),
       };
+      const uvNote = plannedBoxUvOffsets
+        ? " Box-UV offsets were auto-packed without overlap; keep autouv active through geometry correction, then lock the final Cubes in one batch before production paint."
+        : "";
       return {
         content: [
           {
             type: "text" as const,
-            text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}. Execution succeeded; reference fidelity was not evaluated.`,
+            text: `Placed ${cubes.length} Cube${cubes.length === 1 ? "" : "s"} with ${customFaceUvs ? "explicit per-face UV overrides" : "inherited Bedrock UV mode"}.${uvNote} Execution succeeded; reference fidelity was not evaluated.`,
           },
         ],
         structuredContent: result,

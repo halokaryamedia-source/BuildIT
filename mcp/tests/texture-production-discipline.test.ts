@@ -83,6 +83,25 @@ describe("professional texture production discipline", () => {
     }
   });
 
+  test("texturing skill routes production stages through existing MCP tools", async () => {
+    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    for (const tool of [
+      "create_texture",
+      "list_textures",
+      "activate_texture",
+      "get_texture",
+      "paint_fill_tool",
+      "draw_shape_tool",
+      "gradient_tool",
+      "paint_with_brush",
+      "modify_cubes_batch",
+    ]) {
+      expect(skill).toContain(tool);
+    }
+    expect(skill).toContain("connect_strokes=false");
+    expect(skill).toContain("box_uv_region");
+  });
+
   test("UV mapping is globally audited and locked before production pixels", async () => {
     const [skill, workflow, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -120,7 +139,7 @@ describe("professional texture production discipline", () => {
       expect(lower).toContain("microdetail");
     }
 
-    expect(skill).toContain("Texture Difference Table");
+    expect(skill).toContain("Texture Visual Convergence");
     expect(workflow).toContain("Texture Difference Table");
   });
 });
