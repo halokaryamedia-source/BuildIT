@@ -96,6 +96,8 @@ If `next-action.md` disagrees materially with current source/state, verify the c
 
 **Codex local / Blockbench desktop:** local runtime/model/visual proof only when explicitly active and required.
 
+**Opencode local:** same as Codex local.
+
 ```text
 CURRENT-PROJECT VERIFIED
 OFFICIALLY VERIFIED
