@@ -634,6 +634,20 @@ export function isAiProductionColorCanvas(
   );
 }
 
+export function isProvisionalTextureCanvas(
+  width: number,
+  height: number
+): boolean {
+  return (
+    Number.isInteger(width) &&
+    Number.isInteger(height) &&
+    width === height &&
+    width >= 16 &&
+    width <= 1024 &&
+    width % 16 === 0
+  );
+}
+
 export const UV_ATLAS_AUDIT_EXAMPLE_LIMIT = 6;
 
 export type UvAtlasUsage = {
@@ -1062,10 +1076,11 @@ function requireTextureCreationPreflight(params: {
     }
     if (
       params.data === undefined &&
-      !isAiProductionColorCanvas(params.width, params.height)
+      !isAiProductionColorCanvas(params.width, params.height) &&
+      !isProvisionalTextureCanvas(params.width, params.height)
     ) {
       throw new Error(
-        `New AI-authored base-color atlases must use a square 128-based canvas (128, 256, 384, 512, ...). Received ${params.width}×${params.height}. Existing imported texture data may retain authored dimensions.`
+        `New AI-authored base-color atlases must use a square 128-based canvas (128, 256, 384, 512, ...) for production; provisional 16-based 16..1024 also allowed. Received ${params.width}×${params.height}. Existing imported texture data may retain authored dimensions.`
       );
     }
     return;
@@ -1179,6 +1194,14 @@ export function registerTextureTools() {
           texture.layers_enabled = false;
         } else {
           const { ctx } = texture.getActiveCanvas();
+
+          if (
+            ctx.canvas.width !== texture.width ||
+            ctx.canvas.height !== texture.height
+          ) {
+            ctx.canvas.width = texture.width;
+            ctx.canvas.height = texture.height;
+          }
 
           if (fill_color) {
             const color = Array.isArray(fill_color)

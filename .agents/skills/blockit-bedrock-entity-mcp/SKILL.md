@@ -81,11 +81,11 @@ asset tool selection         ≠ repository/code search
 
 ## Minimum Necessary Evidence
 
-**Do not inspect every newly placed Cube. Do not capture after every mutation.** Use `inspect_model_bounds` only when envelope/scale/ground/displacement matters. `UNVERIFIED` is not a retry command; mutation count is not a checkpoint trigger.
+**Do not inspect every newly placed Cube. Do not capture after every mutation.** Reuse fresh state from `place_cube`/`modify_cube` for correction. Use `inspect_model_bounds` only when envelope/scale/ground/displacement matters. `UNVERIFIED` is not a retry command — for non-reference tasks treat it as `PROVISIONAL` hypothesis and continue; mutation count is not a checkpoint trigger.
 
 ## Visual / Blocker Boundary
 
-Reference fidelity: **`FAIL / UNVERIFIED / PASS`**. Tool success cannot upgrade it. Unsupported/exhausted work → `BLOCKED`; do not mutate speculatively to avoid a blocker.
+Reference fidelity: **`FAIL / UNVERIFIED / PASS`** (reference-driven). For non-reference direct tasks, `UNVERIFIED` is `PROVISIONAL` and work continues with a marked hypothesis. Tool success cannot upgrade visual `PASS`. Unsupported/exhausted work → `BLOCKED`; do not mutate speculatively to avoid a blocker.
 
 ## Downstream / Export
 

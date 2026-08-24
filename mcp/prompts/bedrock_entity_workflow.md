@@ -4,11 +4,11 @@ Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
 
 ## Minimum necessary evidence
 
-**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. **Do not immediately call `get_project_info`** unless needed. Use `inspect_model_bounds` only for envelope/scale/ground/displacement; **Otherwise skip it.** **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision.
+**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. **Do not immediately call `get_project_info`** unless needed. Use `inspect_model_bounds` only for envelope/scale/ground/displacement; **Otherwise skip it.** **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision. Non-reference `UNVERIFIED` is `PROVISIONAL`.
 
 ## Actual reference grounding
 
-Reference-driven authoring requires the **actual approved reference image in active multimodal context**. Path/memory **is not image evidence**. If unavailable, `BLOCKED`.
+Reference-driven authoring requires the **actual approved reference image in active multimodal context**. Path/memory **is not image evidence**. If unavailable, `BLOCKED`. Non-reference direct tasks skip maps.
 
 ```text
 Reference Evidence Map
@@ -33,7 +33,7 @@ material evidence state + claim_id
 
 A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark; no orphan/filler Cube. Construction examples are **not presets**. **Transform ownership**: local rigid slope may be **Cube-owned**; shared orientation/attachment/articulation is **Group/Bone**-owned. Form/contact/articulation belongs in **primary blockout**.
 
-Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`; **`[0,0,0]` needs image support.** A visible material slope requires `ROTATED` + explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
+Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`; **`[0,0,0]` needs image support.** A visible material slope requires `ROTATED` + explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` with fallback `MASS_CENTER=center` or Group pivot → `PROVISIONAL`, otherwise `BLOCKED`.
 
 For every **required attachment**, identify **contact target/invariant** first; use an **attachment/joint pivot** when it owns the transform. Numeric overlap/hierarchy is not contact proof; important negative spaces stay open.
 
@@ -67,7 +67,7 @@ Primary hierarchy/pivots may precede `PASS`; secondary geometry waits. **Product
 
 ## Texture Design Contract
 
-Use **one base-color atlas PNG for the model**, never per body part/Cube/material zone. `list_textures`: `none`→create, `single`→reuse, `fragmented`→stop. Variants use non-material TextureGroup; PBR normal/height/MER support it. New projects: logical UV 128×128, square 128-based bitmap. Pin atlas UUID; pass `texture_id` when multiple textures exist.
+Use **one base-color atlas PNG** never per body part/Cube/material zone; `list_textures`: `none`→create, `single`→reuse, `fragmented`→stop. Variants use non-material group. New projects: 128×128 UV, 128-based production; provisional 16-based. Single atlas reused; pass `texture_id` when multiple base candidates.
 
 Define `palette roles`, material value/hue ramps, `material zones`, `value hierarchy`, `face-aware` shading, contact/occlusion, edge, hard-pixel/alpha intent, mirror/orientation, `seam`, identity, `detail budget`, pixels per UV unit, PBR / `material_instance`. Flat fill provisional; reject random high-contrast noise.
 

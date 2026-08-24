@@ -163,6 +163,25 @@ export function getAndActivateTexture(id?: string): Texture {
   if (!id) {
     const available = Project?.textures ?? Texture.all;
     if (available.length > 1) {
+      // Prefer the single base-color atlas when the request is implicit.
+      // This keeps iterative paint to-the-point without forcing the caller
+      // to pin texture_id on every brush stroke, while still requiring
+      // explicit identity when the base atlas is fragmented.
+      const baseCandidates = available.filter((texture: Texture) => {
+        const channel = (texture as Texture & { pbr_channel?: string }).pbr_channel ?? "color";
+        if (channel !== "color") return false;
+        const groupId = (texture as Texture & { group?: string }).group;
+        if (!groupId) return true;
+        const group = (globalThis as unknown as { TextureGroup?: { all: Array<{ uuid: string; is_material?: boolean }> } }).TextureGroup?.all.find(
+          (candidate) => candidate.uuid === groupId
+        );
+        return !group || group.is_material !== false;
+      });
+      if (baseCandidates.length === 1) {
+        const base = baseCandidates[0];
+        if (Texture.selected?.uuid !== base.uuid) base.select();
+        return base;
+      }
       throw new Error(
         "Multiple textures are loaded. Pass texture_id explicitly so painting targets the intended base-color atlas or support channel instead of implicit selected/default state."
       );

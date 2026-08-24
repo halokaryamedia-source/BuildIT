@@ -270,6 +270,19 @@ describe("texturing authoring contract", () => {
         lockAlpha: false,
         eraseMode: false,
       })
+    ).toBe(true);
+    expect(
+      isExactPixelAuthoringRequest([{ x: 3, y: 4 }], {
+        size: 3,
+        opacity: 255,
+        softness: 0,
+        shape: "square",
+        blendMode: "default",
+        connectStrokes: false,
+        mirrorPainting: false,
+        lockAlpha: false,
+        eraseMode: false,
+      })
     ).toBe(false);
 
     expect(() =>
@@ -300,6 +313,24 @@ describe("texturing authoring contract", () => {
     expect(brush).toContain("startPaintTool");
     expect(brush).toContain("movePaintTool");
     expect(brush).toContain("stopPaintTool");
+  });
+
+  test("create_texture sizes its fresh canvas to authored dimensions before filling", async () => {
+    const textureSource = await source("server/tools/texture.ts");
+    const executeStart = textureSource.indexOf("async execute({");
+    const executeEnd = textureSource.indexOf("const result = {", executeStart);
+    expect(executeStart).toBeGreaterThanOrEqual(0);
+    expect(executeEnd).toBeGreaterThan(executeStart);
+    const createExecute = textureSource.slice(executeStart, executeEnd);
+    for (const marker of [
+      "ctx.canvas.width !== texture.width",
+      "ctx.canvas.height !== texture.height",
+      "ctx.canvas.width = texture.width;",
+      "ctx.canvas.height = texture.height;",
+      "ctx.fillRect(0, 0, texture.width, texture.height)",
+    ]) {
+      expect(createExecute).toContain(marker);
+    }
   });
 
 });

@@ -40,7 +40,7 @@ A placeholder/flat texture may make geometry readable early, but it is provision
 
 ## AI Authoring Canvas Standard
 
-For **new AI-authored Bedrock Entity projects**, logical UV remains **128×128**.
+For **new AI-authored Bedrock Entity projects**, logical UV remains **128×128** for production.
 
 The production base-color bitmap uses an explicit square canvas in clean 128-based sizes:
 
@@ -54,7 +54,7 @@ The production base-color bitmap uses an explicit square canvas in clean 128-bas
 
 Choose the smallest sufficient bitmap. The logical UV canvas stays simple while physical bitmap density may increase.
 
-Imported/existing user assets may preserve authored nonstandard logical or physical dimensions. Professional samples are evidence to interpret, not custom-resolution presets for new AI work.
+Iterative / non-production authoring may use a provisional square 16-based canvas `16..1024` (16, 32, 48, 64, ...) to stay to-the-point; promote to 128-based before final production. Imported/existing user assets may preserve authored nonstandard logical or physical dimensions. Professional samples are evidence to interpret, not custom-resolution presets for new AI work.
 
 ## Single Base-Color Atlas
 

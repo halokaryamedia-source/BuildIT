@@ -82,7 +82,7 @@ const placeCubeElementSchema = cubeSchema
       !hasNonZeroRotation(element.rotation) || element.origin !== undefined,
     {
       message:
-        "A rotated Cube requires an explicit origin/pivot. Do not rely on an automatic [0,0,0] pivot for non-zero rotation.",
+        "A rotated Cube requires an explicit origin/pivot. Provide origin explicitly — provisional suggestion: center [(from[0]+to[0])/2, (from[1]+to[1])/2, (from[2]+to[2])/2] or the parent Group pivot when the rotation is attachment/joint-owned. Do not rely on automatic [0,0,0].",
       path: ["origin"],
     }
   )
@@ -346,8 +346,13 @@ function requireIntentionalRotationActivation(
     return;
   }
 
+  const center: [number, number, number] = [
+    (cube.from[0] + cube.to[0]) / 2,
+    (cube.from[1] + cube.to[1]) / 2,
+    (cube.from[2] + cube.to[2]) / 2,
+  ];
   throw new Error(
-    `Cube "${cube.name}" (${cube.uuid}) is currently unrotated. Activating a non-zero rotation requires an explicit origin/pivot in the same update. Inspect the Cube and provide the intended origin; do not silently reuse the existing origin ${JSON.stringify(cube.origin)}.`
+    `Cube "${cube.name}" (${cube.uuid}) is currently unrotated. Activating a non-zero rotation requires an explicit origin/pivot in the same update. Provisional center ${JSON.stringify(center)} or the parent Group pivot are suitable when attachment/joint-owned; do not silently reuse the existing origin ${JSON.stringify(cube.origin)}.`
   );
 }
 
@@ -522,6 +527,25 @@ export function registerCubesTools() {
             : defaultOutlinerGroup,
       }));
       const customFaceUvs = Array.isArray(faces);
+
+      if (!customFaceUvs) {
+        const textureWidth = Project?.texture_width ?? null;
+        const textureHeight = Project?.texture_height ?? null;
+        if (textureWidth !== null && textureHeight !== null) {
+          for (const { element } of placements) {
+            const sizeX = Math.abs(element.to[0] - element.from[0]);
+            const sizeY = Math.abs(element.to[1] - element.from[1]);
+            const sizeZ = Math.abs(element.to[2] - element.from[2]);
+            const layoutWidth = 2 * (sizeZ + sizeX);
+            const layoutHeight = sizeZ + sizeY;
+            if (layoutWidth > textureWidth || layoutHeight > textureHeight) {
+              throw new Error(
+                `Cube "${element.name}" box-UV layout ${layoutWidth}×${layoutHeight} exceeds the ${textureWidth}×${textureHeight} logical UV canvas. Create the project with resolution 256, or author explicit per-face UV for this Cube.`
+              );
+            }
+          }
+        }
+      }
 
       Undo.initEdit({
         elements: [],

@@ -194,7 +194,7 @@ A meaningful pivot serves a real transform relationship:
 - attachment;
 - parent/group transform.
 
-A geometric center is not universally correct. A distant origin is not valid merely because Blockbench accepts it. For an unrotated/non-articulated Cube, origin may remain a neutral implementation detail.
+A geometric center is not universally correct, but it is the **provisional fallback** when no material attachment/joint/parent evidence exists — `center = [(from[0]+to[0])/2, (from[1]+to[1])/2, (from[2]+to[2])/2]` or the parent Group pivot for joint-owned rotation. A distant origin is not valid merely because Blockbench accepts it. For an unrotated/non-articulated Cube, origin may remain a neutral implementation detail.
 
 ### Pivot-only Cube correction
 

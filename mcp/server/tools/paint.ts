@@ -589,7 +589,8 @@ export function isExactPixelAuthoringRequest(
     coordinates.every(
       (coordinate) => Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)
     ) &&
-    settings.size === 1 &&
+    settings.size >= 1 &&
+    settings.size <= 2 &&
     settings.opacity === 255 &&
     settings.softness === 0 &&
     settings.shape === "square" &&
@@ -1732,9 +1733,45 @@ export function registerPaintTools() {
             if (!texture.layers_enabled) {
               throw new Error("Texture has no layers to flatten.");
             }
-            texture.layers_enabled = false;
-            texture.selected_layer = null;
-            texture.layers.empty();
+            // Composite all layer canvases onto the base bitmap before disabling layers.
+            // Previous implementation emptied layers without merging, losing painted pixels (DEFECT-LOCAL-2).
+            const layersSnapshot = [...texture.layers] as Array<TextureLayer & { canvas: HTMLCanvasElement; opacity?: number; offset?: [number, number] }>;
+            const anyTexture = texture as unknown as { flatten?: () => void };
+            if (typeof anyTexture.flatten === "function") {
+              anyTexture.flatten();
+            } else {
+              const off = document.createElement("canvas");
+              off.width = texture.width;
+              off.height = texture.height;
+              const offCtx = off.getContext("2d")!;
+              offCtx.clearRect(0, 0, off.width, off.height);
+              for (const layer of layersSnapshot) {
+                const layerCanvas = (layer as unknown as { canvas: HTMLCanvasElement }).canvas;
+                if (!layerCanvas) continue;
+                const opacity = (layer as unknown as { opacity?: number }).opacity;
+                offCtx.globalAlpha = opacity !== undefined ? opacity / 100 : 1;
+                offCtx.globalCompositeOperation = "source-over";
+                const offset = (layer as unknown as { offset?: [number, number] }).offset ?? [0, 0];
+                offCtx.drawImage(layerCanvas, offset[0], offset[1]);
+              }
+              offCtx.globalAlpha = 1;
+              texture.layers_enabled = false;
+              texture.selected_layer = null;
+              texture.layers.empty();
+              // @ts-ignore - texture.edit is available in Blockbench runtime
+              texture.edit(
+                (canvas, env) => {
+                  env.ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  env.ctx.drawImage(off, 0, 0);
+                },
+                { no_undo: true }
+              );
+            }
+            if (texture.layers_enabled) {
+              texture.layers_enabled = false;
+              texture.selected_layer = null;
+              texture.layers.empty();
+            }
             result = "Flattened all layers";
 
             texture.updateChangesAfterEdit();
