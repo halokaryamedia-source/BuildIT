@@ -13,6 +13,15 @@ describe("Bedrock prompt and skill surface", () => {
     expect(prompts).not.toContain('createPrompt("blockbench_code_eval_safety"');
   });
 
+  test("runtime prompt manifest exactly mirrors the canonical prompt source", async () => {
+    const promptSource = await source("prompts/bedrock_entity_workflow.md");
+    const manifest = JSON.parse(await source("prompts/manifest.json")) as {
+      prompts: Record<string, string>;
+    };
+    expect(Object.keys(manifest.prompts)).toEqual(["bedrock_entity_workflow"]);
+    expect(manifest.prompts.bedrock_entity_workflow).toBe(promptSource);
+  });
+
   test("maintainer references remain source files but are excluded from the runtime bundle", async () => {
     const files = (await readdir("prompts")).filter((name) => name.endsWith(".md")).sort();
     expect(files).toEqual(["bedrock_entity_workflow.md", "blockbench_code_eval_safety.md", "blockbench_native_apis.md"]);

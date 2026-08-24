@@ -2,102 +2,77 @@
 
 Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
 
-## Minimum necessary evidence
+## Minimum Necessary Evidence
 
-**Do not inspect each newly placed Cube or capture after every mutation.** Reuse fresh state. **Do not immediately call `get_project_info`** unless needed. Use `inspect_model_bounds` only for envelope/scale/ground/displacement; **Otherwise skip it.** **Do not spend additional calls trying to remove UNVERIFIED** unless evidence can change the decision. Non-reference `UNVERIFIED` is `PROVISIONAL`.
+Reuse fresh tool state. Do not inspect every Cube, capture after every mutation, or call `get_project_info` after known create/export state. `inspect_model_bounds` is only for envelope/scale/ground/displacement. `UNVERIFIED` is not a retry command.
 
-## Actual reference grounding
+Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
-Reference-driven authoring requires the **actual approved reference image in active multimodal context**. Path/memory **is not image evidence**. If unavailable, `BLOCKED`. Non-reference direct tasks skip maps.
+## Simple Rigid Fast Path
 
-```text
-Reference Evidence Map
-claim_id | kind | observable claim | supporting reference view(s)
-SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
-```
-
-Build a **View Pair Map**; ambiguous front/back, left/right, mirrored, or 3/4 pairing → `UNVERIFIED`. Minecraft-first fidelity: recognizability + buildability over exact contour.
-
-## Semantic form before coordinates
-
-Before exact `from/to/origin/rotation`, form a **Semantic Form Contract**:
+For a clear predominantly rigid object with simple topology and no material cross-view conflict:
 
 ```text
-primary masses + must-exist reason
-required count / symmetry or deliberate asymmetry
-topology: what attaches to what
-important negative spaces / separations
-representation: geometry | texture | animation | omit
-material evidence state + claim_id
+identity + envelope + primary masses
+→ transform ownership
+→ minimum meaningful hierarchy
+→ one coherent primary Cube batch
+→ judgeable views
+→ correct only observed mismatch
 ```
 
-A semantic label never authorizes coordinates. Every primary Cube maps to a declared mass/landmark; no orphan/filler Cube. Construction examples are **not presets**. **Transform ownership**: local rigid slope may be **Cube-owned**; shared orientation/attachment/articulation is **Group/Bone**-owned. Form/contact/articulation belongs in **primary blockout**.
+Construction examples are **not presets**. Local rigid slopes may be **Cube-owned**; shared orientation/contact/articulation is **Group/Bone**-owned. Keep primary blockout hierarchy only when it owns real transform/contact/articulation. Do not build nested Groups for apparent sophistication. After primary `PASS`, add only identity-weighted detail.
 
-Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`; **`[0,0,0]` needs image support.** A visible material slope requires `ROTATED` + explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` with fallback `MASS_CENTER=center` or Group pivot → `PROVISIONAL`, otherwise `BLOCKED`.
+Use structured evidence maps only when ambiguity/conflict can materially change identity, count, topology, depth, attachment, negative space, or orientation. Do not perform analysis ceremony for an already clear rigid reference.
 
-For required attachment, state **contact target/invariant** first; use **attachment/joint pivot** when it owns transform. Overlap/hierarchy≠contact; keep negative spaces open.
+## Geometry / Visual Gate
 
-## Primary form / authoring
+Before exact coordinates, know only the material facts: primary masses, required counts, topology/contact, important negative spaces, representation, and transform ownership. A semantic label never authorizes coordinates.
 
-**A front-view match cannot certify depth.** Minor drift uses one canonical interpretation; unresolved material conflict → `CONFLICTING / BLOCKED`.
+Build coherent primary form with `place_cube(elements=[...])` and only required Groups. Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
 
-Build coherent primary form. Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` proves execution only; `visual_verdict: not_evaluated` is not approval. **Do not chain Cube placement based on previous tool success.** `from/to`←envelope+Form, never pixels; batch coherent calls. Once judgeable, stop before secondary detail. Under-constrained extent is a **working hypothesis, not verified evidence**.
-
-After primary `PASS`, add only identity-weighted detail.
-
-## Difference-first visual gate
-
-Material verdict requires the **actual approved reference image plus fresh current-revision model image(s)** together; stale/path/prose/memory cannot approve.
+Judge reference fidelity **difference-first** with fresh model views. Check identity, masses/counts, silhouette/proportion, depth, orientation, contact, and negative spaces.
 
 ```text
-claim_id | reference view | current model view | observed difference | FAIL | UNVERIFIED | PASS
+FAIL       = critical/major supported mismatch
+UNVERIFIED = missing/ambiguous material evidence
+PASS       = no critical/major supported mismatch
 ```
 
-Review **difference-first**. `FAIL` = critical/major mismatch; `UNVERIFIED` = missing/ambiguous/conflicting evidence; `PASS` = no critical/major supported mismatch. **Front PASS is not full 3D PASS** when depth evidence is missing/fails. Bounds, coordinates, tool success, or similarity scores cannot justify PASS. Mutation makes affected views stale.
+**Front PASS is not full 3D PASS** when depth evidence is missing or fails. Coordinates, bounds, hierarchy, export success, or similarity scores cannot create visual `PASS`.
 
-## Local correction / convergence
-
-**Reuse fresh exact authored state already returned for that target when sufficient**; otherwise `inspect_element` once. Declare target/invariant, diagnose `TRANSLATE | RESIZE | ROTATE | hierarchy REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`.
-
-`UNCHANGED`/`REGRESSED` is **not progress**. Reject correction that regresses a **previously supported material claim**; reject **cross-view regression**. Delta is **qualitative, not a score**. If the **same causal correction direction fails twice without new evidence**, use `BLOCKED`.
-
-## Downstream stages
-
-Primary hierarchy/pivots may precede `PASS`; secondary geometry waits. **Production** texture waits for geometry `PASS`; production animation waits for **participating hierarchy/pivots**. Material `FAIL` returns upstream; required `UNVERIFIED` → `BLOCKED`.
+Correction: reuse fresh target state; otherwise `inspect_element` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s) first. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Texture Design Contract
 
-Use **one base-color atlas PNG** never per body part/Cube/material zone; `list_textures`: `none`→create, `single`→reuse, `fragmented`→stop. Variants use non-material group. New projects: 128×128 UV, 128-based production; provisional 16-based. Single atlas reused; pass `texture_id` when multiple base candidates.
+Production texture waits for geometry `PASS`. Use **one base-color atlas PNG** for the whole model, never one base color per body part/Cube/material zone. New AI production uses logical UV 128×128 and explicit 128-based `create_texture` width/height; do not rely on the provisional 16×16 default. Reuse atlas UUID and pass `texture_id` when multiple textures exist. PBR support textures do not fragment the base color atlas.
 
-Define `palette roles`, material value/hue ramps, `material zones`, `value hierarchy`, `face-aware` shading, contact/occlusion, edge, hard-pixel/alpha intent, mirror/orientation, `seam`, identity, `detail budget`, pixels per UV unit, PBR / `material_instance`. Flat fill provisional; reject random high-contrast noise.
+Define palette roles, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge treatment, hard-pixel/alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit. Flat fill is a **BASE PASS only**, never production completion when material/form/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; random noise is rejected. Smooth gradient is optional only when the reference/style supports it.
 
 ### UV / Atlas Gate
 
-Audit with `list_textures` before paint. AI Box UV final paint: `autouv=0`; no out-of-bounds/invalid UV, integer logical UV unless justified, no unexplained partial overlap, stable seams; exact reuse okay. Do not mentally re-derive atlas coordinates.
+For fresh Box UV, reuse `place_cube` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, lock final Box-UV Cubes in one `modify_cubes_batch` with `autouv=0`, then call `list_textures` once for global UV audit. Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_element` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 
 ```text
-MAP → inspect_element; mapping_state=mapped + paintable=true; reuse texture_pixels.rect + flip_u/flip_v
-BASE PASS → draw_shape_tool
-VALUE / FORM PASS → face-aware form + contact/occlusion + edge + value/hue
-IDENTITY PASS → paint_with_brush exact-pixel path before microdetail
-SECONDARY DETAIL PASS → detail by pixels per UV unit; stop before noise
-VERIFY → fresh get_texture + capture_model_views model-view evidence
+BASE PASS             → draw_shape_tool; paint_fill_tool only for intentional contiguous base fill
+VALUE / FORM PASS     → draw_shape_tool / paint_with_brush for stepped form, contact, occlusion, edge, hue/value ramp
+IDENTITY PASS         → paint_with_brush exact-pixel identity marks
+SECONDARY DETAIL PASS → controlled detail by pixels per UV unit; stop before noise
+VERIFY                → one fresh get_texture after coherent pass + affected capture_model_views
 ```
 
-Tool success is not visual `PASS`.
+Use `gradient_tool` only for supported continuous transitions. Repeated same-color disconnected detail can be one `paint_with_brush` coordinate batch with `connect_strokes=false`.
 
-Texture convergence needs actual reference + fresh `get_texture` + `capture_model_views`; mutation makes evidence stale. Use a **Texture Difference Table**. `FAIL` → **smallest bounded correction** → **retain pre-evidence** → T3 mutate → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`. **Same causal correction direction failing twice without new evidence** → `BLOCKED`.
+Texture Difference Table order: UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail. Texture mutation makes evidence stale. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction failing twice → `BLOCKED`.
 
-## Protected Native Capability Gaps
-
-Gaps: TextureMesh, visible bounds, animated textures, controller blend-curve mutation, bone-binding expressions. Native Bedrock PBR and per-face `material_instance` are **not** gaps; existing-animation effects and controller-state particle/sound authoring are supported.
-
-## Stage/tool routing
+## Stage Routing
 
 ```text
-project unknown/absent → get_project_info or create_project
-build → place_cube / add_group → capture_model_views
-mismatch → inspect_element → modify_cube / modify_cubes_batch
-texture → Texture Design Contract → UV / Atlas Gate
-deliverable → export_model
+project absent              → create_project
+clear rigid build           → modelling fast path → place_cube/add_group → capture_model_views
+observed geometry mismatch  → inspect only missing state → modify_cube / modify_cubes_batch
+production texture          → explicit create_texture size → list_textures → Painter stages
+file deliverable            → export_model
 ```
+
+Protected gaps remain TextureMesh direct authoring, visible bounds, animated textures, controller blend-curve mutation, and bone-binding expressions.

@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — baseline-driven UV / authoring-convergence hardening
+Updated: 2026-08-25 — runtime prompt alignment after baseline failure
 
 ## Current State
 
@@ -10,6 +10,8 @@ CROSS_AGENT_EXECUTION_CONTRACT_COMPLETE
 MCP_BOX_UV_AUTO_LAYOUT_SOURCE_APPLIED
 TEXTURE_PRODUCTION_ROUTING_HARDENED
 SIMPLE_RIGID_FAST_PATH_HARDENED
+RUNTIME_MCP_PROMPT_FAST_PATH_ALIGNED
+PROMPT_MANIFEST_ALIGNED_TO_SOURCE
 USER_BASELINE_FAILURE_RECORDED
 LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
@@ -17,59 +19,67 @@ NO ACTIVE EXPERIMENT
 NO ACTIVE DEVELOPMENT
 ```
 
-Working branch: **`Local` only**. `Experimental/**` remains inactive unless the user explicitly resumes it. GitHub execution/history discipline is owned by `GITHUB_RULES.md`.
+Working branch: **`Local` only**. `Experimental/**` remains inactive unless the user explicitly resumes it.
 
-## Baseline Failure That Drove This Patch
+## Baseline Failure
 
-The user supplied the latest failed authoring result and reported two material problems:
+The latest user test was a **QUALITY FAIL**:
 
-1. UV/texturing was poor and effectively stopped at flat fills without readable value/form/detail work.
-2. A simple rigid model took too long to model and texture, with behavior consistent with excessive guessing/repetition.
+1. production texture visually stopped at flat/fill-like color instead of material/value/form/identity detail;
+2. geometry and texturing were too slow for a simple rigid model and appeared to spend work on guessing/repetition.
 
-Historical pre-cleanup model data additionally showed manually authored Box-UV offsets and unnecessary nested rigid-part hierarchy. That history is supporting evidence only; it is not a fixture-specific product rule.
+No quantitative token/call baseline is claimed because a complete trace was not retained.
 
-## Source Hardening Applied
+## Hardening Now Present
 
-- New Box-UV Cubes placed by `place_cube` receive deterministic non-overlapping `uv_offset` packing against the logical canvas and existing Box-UV occupancy.
-- `place_cube` returns each Cube's `box_uv_region` so downstream texturing can reuse mutation state instead of rediscovering broad UV ownership.
-- Auto UV stays active during geometry correction; after geometry `PASS`, texturing guidance uses one `modify_cubes_batch` to lock final Box-UV Cubes with `autouv=0` before production paint.
-- Texture guidance now routes base/material regions, stepped form/value work, optional continuous gradients, and identity/detail pixels to the existing Painter tools instead of allowing flat fill to masquerade as completion.
-- Production texture creation explicitly supplies 128-based bitmap dimensions rather than relying on the provisional 16×16 default.
-- Simple clear rigid props use a bounded modelling fast path: minimum meaningful hierarchy, coherent Cube batching, then judgeable views. Nested Groups are not created merely to carry small local rigid bends.
+- `place_cube` auto-packs new Box-UV offsets and returns `box_uv_region` continuation state.
+- Geometry correction keeps auto UV active; final production UV is locked only after geometry `PASS`.
+- The modelling Skill has a **Simple Rigid Fast Path** with minimum meaningful hierarchy and coherent Cube batching.
+- The texturing Skill treats flat fill as base-only and routes value/form/edge/identity work through existing Painter tools.
+- The **runtime MCP prompt now matches those same rules** instead of forcing Reference Evidence Map / View Pair Map / Semantic Form ceremony for a clear simple rigid reference.
+- Runtime prompt explicitly reuses fresh `box_uv_region`, performs one final `list_textures` UV audit, uses explicit 128-based production texture dimensions, and avoids Cube-by-Cube UV rediscovery.
+- `prompts/manifest.json` is aligned to the canonical runtime prompt source; regression coverage now checks source ↔ manifest equality.
+
+## Deliberately Not Applied In This Channel
+
+Two previously discussed public-contract changes remain **not implemented** here:
+
+- changing the actual `create_texture` schema/default away from provisional 16×16;
+- changing public tool descriptions / generated API documentation.
+
+Those changes require the canonical Bun docs generator so `docs/api.json` and `docs/index.html` stay generated from source. Do not hand-edit generated API docs or leave them stale. Current runtime guidance already requires explicit 128-based production dimensions, so this is not a reason to add a workaround layer.
+
+An aggregate `list_textures` Box-UV working map is also not added yet. Freshly created models already receive `box_uv_region` from `place_cube`; only promote an aggregate working-map result if a resumed/existing-model workflow proves Cube-by-Cube inspection is still material waste.
 
 ## Do Not Reinterpret
 
-For MCP quality/usage work:
-
-- **Authoring Quality** remains the accepted-result gate.
-- **Authoring Efficiency** remains Cost to Accepted Result.
-- Static footprint, Skill length, schema size, tool count, or raw call count alone are not success metrics.
-- Do not add fixture-specific recipes, telemetry, routers/profiles, or new tools merely because this baseline failed.
+- Authoring Quality = accepted-result gate.
+- Authoring Efficiency = Cost to Accepted Result.
+- Static footprint / Skill length / raw call count alone are not product success metrics.
+- Do not add fixture-specific recipes, telemetry, routers/profiles, or more tools without evidence.
 
 ## Current Continuation
 
-There is **no automatic implementation or test step**. The user explicitly deferred retesting until after this source hardening.
+There is **no automatic retest**. The user explicitly deferred testing until source hardening is complete.
 
-When the user chooses to retest, use the exact current artifact and the existing local acceptance procedure:
+When the user elects to retest:
 
 ```text
 approved reference visible
-→ exact Local artifact + hash
+→ exact current Local artifact
 → one bounded authoring attempt
 → quality gate
-→ call/correction trace when available
-→ classify first wrong owner
+→ observe call/correction behavior when available
+→ identify first wrong owner
 → compare Cost to Accepted Result
-→ smallest follow-up patch only if evidence requires it
+→ smallest follow-up only if evidence requires it
 → STOP
 ```
 
 ## Proof Boundary
 
-The UV packing, returned-state, and Skill/routing changes are source/static facts. **No live model-quality or authoring-efficiency improvement is claimed until the exact hardened artifact is run and visually inspected.**
-
-Current proof history lives in `docs/foundation/validation-report.md`; discarded experiments and fixture iterations remain Git history.
+All changes above are source/static facts. **No better visual quality or Authoring Efficiency is claimed until the exact hardened artifact is run and inspected.**
 
 ## STOP
 
-No further repository, local-runtime, workspace, or experimental action is implied without a new user instruction.
+No further repository, runtime, workspace, or experimental action is implied without a new user instruction or the required local/generated-doc capability.
