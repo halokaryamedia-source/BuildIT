@@ -5,12 +5,15 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local usage optimization contract", () => {
-  test("repository work preflights regressions before one coherent patch", async () => {
+  test("repository work states the real contract before one coherent patch", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
-    expect(brief).toContain("Preflight regression assertions");
-    expect(brief).toContain("collect all affected owners and required invariants before writing");
+
+    expect(brief).toContain("State the contract");
+    expect(brief).toContain("Preflight regressions");
+    expect(brief).toContain("Success Metric");
+    expect(brief).toContain("Forbidden Proxy / Non-Goal");
     expect(brief).toContain("Implement one coherent patch");
-    expect(brief).toContain("Do not use intermediary commits/pushes as regression discovery");
+    expect(brief).toContain("no intermediary/checkpoint commits");
   });
 
   test("known coherent creation batches without turning uncertainty into a call-saving target", async () => {
@@ -27,10 +30,15 @@ describe("pre-local usage optimization contract", () => {
     expect(modelling).toContain("A fix that helps one view while materially regressing another is rejected");
   });
 
-  test("local efficiency evidence uses concrete observable counters without telemetry architecture", async () => {
+  test("authoring efficiency uses accepted quality plus observable runtime cost", async () => {
     const runbook = await source("../docs/knowledge/operations/local-acceptance-runbook.md");
-    for (const metric of [
-      "Total MCP calls",
+
+    for (const marker of [
+      "Authoring Efficiency",
+      "Cost to Accepted Result",
+      "QUALITY FAIL",
+      "QUALITY PASS",
+      "Total meaningful MCP calls to Geometry PASS",
       "Discovery calls",
       "Redundant readbacks",
       "tool_search calls / misses",
@@ -38,9 +46,15 @@ describe("pre-local usage optimization contract", () => {
       "capture_model_views calls / views requested",
       "Correction attempts",
       "Same-cause retries",
-      "Broad repository reads",
-    ]) expect(runbook).toContain(metric);
-    expect(runbook).toContain("not a new telemetry subsystem");
+      "CONTRACT_CAUSED",
+      "REASONING_CAUSED",
+      "IMPROVED",
+      "UNCHANGED",
+      "REGRESSED",
+    ]) expect(runbook).toContain(marker);
+
+    expect(runbook).toContain("Static Footprint");
+    expect(runbook).toContain("not a telemetry subsystem");
     expect(runbook).toContain("Do not invent token or latency numbers");
   });
 
@@ -57,18 +71,22 @@ describe("pre-local usage optimization contract", () => {
     expect(flow).toContain("meaningful handoff, resume-state change, park, or completion boundary");
   });
 
-  test("prompt and tool surface remain evidence-gated rather than gaining an optimization profile", async () => {
+  test("prompt and tool surface stay evidence-gated rather than becoming an optimization profile", async () => {
     const [profile, prompts, next] = await Promise.all([
       source("lib/registrationProfile.ts"),
       source("server/prompts.ts"),
       source("../docs/knowledge/next-action.md"),
     ]);
+
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("usage_profile");
     expect(prompts).toContain('createPrompt("bedrock_entity_workflow"');
-    expect(next).toContain("U7  No change required");
-    expect(next).toContain("installed-client evidence");
+
+    expect(next).toContain("Authoring Efficiency");
+    expect(next).toContain("Static Footprint");
+    expect(next).toContain("forbidden proxies");
+    expect(next).toContain("NO ACTIVE DEVELOPMENT");
   });
 
   test("durable foundation policy preserves minimum-evidence authoring", async () => {

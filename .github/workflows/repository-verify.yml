@@ -73,7 +73,7 @@ jobs:
             tests/repository-github-discipline.test.ts \
             tests/repository-supply-chain.test.ts \
             tests/experimental-authoring-contract.test.ts \
-            tests/static-efficiency-budget.test.ts \
+            tests/static-footprint-budget.test.ts \
             tests/documentation-handoff.test.ts \
             tests/active-routing-integrity.test.ts \
             tests/asset-authoring-usage-slimming.test.ts \

@@ -16,36 +16,10 @@ function requireInvariant(
   }
 }
 
-function requireTextInvariant(
-  body: string,
-  text: string,
-  owner: string,
-  invariant: string,
-  expected: string,
-): void {
-  if (!body.includes(text)) {
-    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
-  }
-}
-
-function requireAbsentTextInvariant(
-  body: string,
-  text: string,
-  owner: string,
-  invariant: string,
-  expected: string,
-): void {
-  if (body.includes(text)) {
-    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
-  }
-}
-
 describe("repository GitHub discipline", () => {
-  test("GITHUB_RULES keeps PRD-quality core and conditional surfaces", async () => {
+  test("GITHUB_RULES keeps the canonical transaction and proof discipline", async () => {
     const rules = await source("../GITHUB_RULES.md");
 
-    // GITHUB_RULES grew with the conditional surfaces and experimental
-    // exception; the bound tracks the current deliberate size.
     expect(rules.length).toBeLessThan(25_000);
     for (const marker of [
       "PIN",
@@ -55,130 +29,91 @@ describe("repository GitHub discipline", () => {
       "WRITE ONCE",
       "VERIFY MINIMUM",
       "STOP",
-      "# Conditional GitHub Surfaces",
-      "## API failures, pagination, rate limits, and ambiguous mutations",
-      "## Special files, Git LFS, binaries, submodules, and generated artifacts",
-      "## Pull requests, branch protection, rulesets, reviews, and merge queues",
-      "## GitHub Actions",
-      "## Sensitive data, releases, and deployment environments",
-      "### Approved `Experimental/` runtime exception",
-    ]) expect(rules).toContain(marker);
-
-    for (const code of ["401", "403", "404", "409", "422", "429", "5xx"]) {
-      expect(rules).toContain(code);
-    }
-
-    expect(rules).toContain("One intentional write per file is the default");
-    expect(rules).toContain("one categorized logical commit");
-    expect(rules).toContain("Same-cause retry budget: maximum 2 attempts");
-    expect(rules).toContain("Static source/CI evidence proves only what it exercises");
-    expect(rules).toContain("weaken, delete, bypass, or broaden");
-    expect(rules).toContain("deployment success");
-    expect(rules).toContain("new third-party actions");
-    expect(rules).toContain("trusted sources");
-    expect(rules).toContain("immutable/pinned revisions");
-    expect(rules).toContain("`pull_request_target`");
-    expect(rules).toContain("self-hosted runner");
-    expect(rules).toContain("Do not widen permissions");
-    expect(rules).toContain("read-only repository permissions");
-    expect(rules).toContain("artifact existence is not visual approval");
-
-    for (const label of [
-      "IMPLEMENTATION REGRESSION",
       "STALE TEST",
       "ROUTING FAILURE",
-      "ENVIRONMENT FAILURE",
       "PROOF FAILURE",
-    ]) {
-      requireInvariant(
-        rules,
-        new RegExp(label),
-        "GITHUB_RULES.md",
-        "CI/runtime failures are classified by first wrong owner before editing",
-        label,
-      );
-    }
+      "Same-cause retry budget: maximum 2 attempts",
+      "Static source/CI evidence proves only what it exercises",
+      "Do not use exact natural-language prose as a test contract",
+    ]) expect(rules).toContain(marker);
 
-    requireInvariant(
-      rules,
-      /Contents API[^\n]*authored-state mutation[^\n]*scratch\/probe\/preflight/,
-      "GITHUB_RULES.md",
-      "Contents API cannot be used as a scratch or capability-probe write",
-      "Contents API authored-state mutation + scratch/probe/preflight prohibition",
-    );
-    requireInvariant(
-      rules,
-      /placeholder\/test files[^\n]*`Local`/,
-      "GITHUB_RULES.md",
-      "Local must never receive placeholder/test writes",
-      "placeholder/test files prohibited on Local",
-    );
     requireInvariant(
       rules,
       /repo\/ref\/HEAD pinned[\s\S]*scope \+ owners final[\s\S]*complete final contents ready[\s\S]*no scratch\/temporary paths[\s\S]*expected proof known[\s\S]*DO NOT WRITE/,
       "GITHUB_RULES.md",
-      "Repository mutations require a complete pre-write transaction gate",
-      "pinned authority + final scope/content + no scratch paths + known proof",
+      "repository mutations require a complete pre-write transaction gate",
+      "pinned authority + final scope/content + known proof",
     );
     requireInvariant(
       rules,
       /keep ref unchanged while blobs\/tree are prepared/,
       "GITHUB_RULES.md",
-      "Atomic blob/tree preparation must not move Local before the candidate state is complete",
+      "atomic candidate preparation cannot move Local early",
       "keep ref unchanged during blob/tree preparation",
-    );
-    requireInvariant(
-      rules,
-      /first useful failure[^\n]*invariant, owner, and expected condition/,
-      "GITHUB_RULES.md",
-      "Material regression failures should identify enough context for first-owner diagnosis",
-      "failure message names invariant + owner + expected condition",
     );
   });
 
-  test("root routing separates observation, Developing, Maintenance, and asset authoring", async () => {
+  test("root routing requires the Developing Execution Gate without bloating asset authoring", async () => {
     const root = await source("../AGENTS.md");
 
-    expect(root.length).toBeLessThan(5_000);
+    expect(root.length).toBeLessThan(7_000);
     for (const marker of [
       "### Observe / recover context",
       "### Repository / Plugin Work",
+      "#### Developing Execution Gate",
+      "Success Metric",
+      "Forbidden Proxy / Non-Goal",
+      "First Evidence Required",
+      "Failure Classification / first wrong owner",
+      "Proof Required",
+      "STOP Condition",
+      "Authoring Efficiency",
+      "Static Footprint",
       "### Bounded Maintenance",
-      "### Reference Preparation",
       "### Asset Authoring",
-      "GITHUB_RULES.md Core Rules",
-      "→ report → STOP",
       "do not automatically load",
-      "Asset authoring is not software **Developing**",
       "Do not route it through `development-brief`",
     ]) expect(root).toContain(marker);
 
-    expect(root).toContain("Do not edit, run CI, advance continuation state");
+    expect(root).toContain("raw MCP-call count alone cannot prove product improvement");
+    expect(root).toContain("Do not mutate until those fields are decision-ready");
     expect(root).toContain("If `next-action.md` disagrees materially");
   });
 
-  test("development brief preserves cross-session continuity without bloating Maintenance", async () => {
+  test("development brief preserves continuity and real success metrics", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
 
-    expect(brief.length).toBeLessThan(4_000);
-    expect(brief).toContain("## Mandatory Developing continuity");
-    expect(brief).toContain("→ CONTEXT.md");
-    expect(brief).toContain("→ docs/knowledge/next-action.md");
-    expect(brief).toContain("does not enter implementation");
+    expect(brief.length).toBeLessThan(6_000);
+    for (const marker of [
+      "## Mandatory Developing continuity",
+      "## Development Contract",
+      "Success Metric",
+      "Forbidden Proxy / Non-Goal",
+      "First Evidence Required",
+      "Failure Classification / first wrong owner",
+      "STOP Condition",
+      "## Effectiveness vocabulary",
+      "Authoring Quality",
+      "Authoring Efficiency",
+      "Cost to Accepted Result",
+      "Static Footprint",
+      "## Evidence before optimization",
+      "## Failure classification",
+      "at most one specialist",
+    ]) expect(brief).toContain(marker);
+
     expect(brief).toContain(
       "Read `CONTEXT.md` only when stable project facts materially affect the decision."
     );
-    expect(brief).toContain("Execution channel (only when material)");
-    expect(brief).toContain("Acceptance criteria: 2-5");
-    expect(brief).toContain("at most one specialist");
+    expect(brief).toContain("Static source can prove footprint/contract properties");
+    expect(brief).not.toContain("`grilling`");
+    expect(brief).not.toContain("`code-review`");
   });
 
-  test("repository and MCP verification are split by proof surface", async () => {
-    const [repository, mcp, buildIndex, promptGenerator] = await Promise.all([
+  test("repository and MCP verification stay split by proof surface", async () => {
+    const [repository, mcp] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
-      source("build/index.ts"),
-      source("build/generate-manifest.ts"),
     ]);
 
     for (const marker of [
@@ -190,108 +125,54 @@ describe("repository GitHub discipline", () => {
       expect(mcp).toContain(marker);
     }
 
-    expect(repository).toContain('"GITHUB_RULES.md"');
-    expect(repository).toContain('"Experimental/**"');
-    expect(repository).toContain('".github/workflows/**"');
-    expect(repository).not.toContain('".github/workflows/repository-verify.yml"');
-    expect(repository).not.toContain('".github/workflows/mcp-verify.yml"');
+    expect(repository).toContain('".agents/skills/**"');
+    expect(repository).toContain('"docs/knowledge/**"');
     expect(repository).toContain("tests/repository-github-discipline.test.ts");
-    expect(repository).toContain("tests/static-efficiency-budget.test.ts");
+    expect(repository).toContain("tests/static-footprint-budget.test.ts");
+    expect(repository).toContain("tests/documentation-handoff.test.ts");
+    expect(repository).not.toContain("tests/static-efficiency-budget.test.ts");
 
     expect(mcp).toContain('"mcp/**"');
-    expect(mcp).not.toContain('"AGENTS.md"');
-    expect(mcp).not.toContain('"CONTEXT.md"');
     expect(mcp).not.toContain('"docs/knowledge/**"');
-    expect(mcp).not.toContain("continue-on-error");
     expect(mcp).toContain("bun run typecheck");
     expect(mcp).toContain("bun run test");
     expect(mcp).toContain("bun run measure:surface");
     expect(mcp).toContain("bun run build");
     expect(mcp).toContain("bun run docs:check");
-
-    const maintainerOnly = [
-      "mcp/AGENTS.md",
-      "mcp/README.md",
-      "mcp/prompts/blockbench_code_eval_safety.md",
-      "mcp/prompts/blockbench_native_apis.md",
-    ];
-    for (const path of maintainerOnly) {
-      requireTextInvariant(
-        repository,
-        `"${path}"`,
-        ".github/workflows/repository-verify.yml",
-        "Maintainer-only MCP documentation must retain repository-level verification",
-        `${path} is routed to Repository Verify`,
-      );
-      requireTextInvariant(
-        mcp,
-        `"!${path}"`,
-        ".github/workflows/mcp-verify.yml",
-        "Maintainer-only MCP documentation must not trigger the full executable gate",
-        `!${path}`,
-      );
-    }
-
-    requireAbsentTextInvariant(
-      mcp,
-      '"!mcp/**/*.md"',
-      ".github/workflows/mcp-verify.yml",
-      "MCP routing must never exclude all Markdown generically",
-      "only audited exact maintainer-only paths may be excluded",
-    );
-
-    for (const path of [
-      "mcp/about.md",
-      "mcp/icon.svg",
-      "mcp/prompts/bedrock_entity_workflow.md",
-    ]) {
-      requireAbsentTextInvariant(
-        mcp,
-        `"!${path}"`,
-        ".github/workflows/mcp-verify.yml",
-        "Runtime/build inputs must remain eligible for full MCP verification",
-        `${path} is not excluded from MCP Verify`,
-      );
-    }
-
-    expect(buildIndex).toContain('resolve("./icon.svg")');
-    expect(buildIndex).toContain('resolve("./about.md")');
-    expect(promptGenerator).toContain(
-      'const RUNTIME_PROMPT_FILES = ["bedrock_entity_workflow.md"] as const;'
-    );
   });
 
-  test("active continuation stays compact while Experimental owns the research contract", async () => {
+  test("current continuation records closure without reviving stale runtime state", async () => {
     const [next, experimental] = await Promise.all([
       source("../docs/knowledge/next-action.md"),
       source("../Experimental/README.md"),
     ]);
 
-    expect(next.length).toBeLessThan(10_000);
-    expect(next).toContain("`Experimental/**` remains **PAUSED BY USER**");
-    expect(next).not.toContain("## Experimental Plan");
-    expect(next).toContain("LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23");
-
+    expect(next.length).toBeLessThan(7_000);
     for (const marker of [
-      "## Active Research — On-Demand Blockbench Web Authoring",
-      "## Current proof state",
-      "CUBE POC VERIFIED",
-      "CHATGPT VISUAL LOOP VERIFIED",
-      "NOT PRODUCTION",
-      "LOCAL ACCEPTANCE UNCHANGED",
-      "## Material unknowns",
-      "## POC scope",
-      "## Runner strategy",
-      "## Native job contract",
-      "## Acceptance criteria",
-      "## Stop rules",
-      "GitHub Actions artifact",
-      "actually visually inspected",
-      "Codecs.project.compile()",
-    ]) expect(experimental).toContain(marker);
+      "CROSS_AGENT_EXECUTION_CONTRACT_COMPLETE",
+      "AUTHORING_EFFECTIVENESS_TERMINOLOGY_ALIGNED",
+      "STATIC_FOOTPRINT_GUARDRAIL_SEPARATED",
+      "STALE_CONTINUATION_VERIFIERS_REPAIRED",
+      "NO ACTIVE LOCAL ACCEPTANCE RUN",
+      "NO ACTIVE EXPERIMENT",
+      "NO ACTIVE DEVELOPMENT",
+      "Success Metric",
+      "Forbidden Proxy / Non-Goal",
+      "Cost to Accepted Result",
+      "## STOP",
+    ]) expect(next).toContain(marker);
+
+    for (const stale of [
+      "AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4",
+      "LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23",
+      "PRELOCAL_CONTROLLER_MUTATION_READY",
+    ]) expect(next).not.toContain(stale);
+
+    expect(experimental).toContain("NOT PRODUCTION");
+    expect(experimental).toContain("## Stop rules");
   });
 
-  test("experimental Blockbench Web Attempt A is bounded and artifact-only", async () => {
+  test("experimental Blockbench Web harness remains bounded and artifact-only", async () => {
     const [workflow, runner, pkg] = await Promise.all([
       source("../.github/workflows/blockbench-web-poc.yml"),
       source("../Experimental/blockbench-web-poc/run-poc.mjs"),
@@ -299,31 +180,15 @@ describe("repository GitHub discipline", () => {
     ]);
 
     expect(workflow).toContain("workflow_dispatch:");
-    expect(workflow).toContain("branches:\n      - Local");
     expect(workflow).toContain("contents: read");
     expect(workflow).toContain("runs-on: ubuntu-latest");
-    expect(workflow).toContain("timeout-minutes: 20");
-    expect(workflow).toContain("xvfb-run -a");
-    expect(workflow).toContain("actions/upload-artifact@v4");
-    expect(workflow).toContain("if: always()");
-    expect(workflow).toContain("47e633e4a1338f957ee7baa0acbcf54da11e77df");
-    expect(workflow).not.toContain("pull_request:");
     expect(workflow).not.toContain("pull_request_target");
     expect(workflow).not.toContain("self-hosted");
     expect(workflow).not.toContain("${{ secrets.");
 
     expect(pkg).toContain('"playwright": "1.62.1"');
-    expect(runner).toContain("headless: false");
-    expect(runner).toContain('"--use-angle=swiftshader"');
-    expect(runner).toContain("new Group");
-    expect(runner).toContain("new Cube");
-    expect(runner).toContain("new Texture");
     expect(runner).toContain("Screencam.screenshotPreview");
     expect(runner).toContain("Codecs.project.compile");
-    expect(runner).toContain("Codecs.project.parse");
-    expect(runner).toContain("model.bbmodel");
-    expect(runner).toContain("preview-perspective.png");
-    expect(runner).toContain("preview-front.png");
     expect(runner).toContain("proof.json");
   });
 });

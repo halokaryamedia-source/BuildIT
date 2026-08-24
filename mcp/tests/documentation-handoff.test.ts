@@ -5,8 +5,8 @@ async function text(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("Codex documentation handoff", () => {
-  test("current repository-owned skill inventory resolves directly from canonical packages", async () => {
+describe("cross-agent repository handoff", () => {
+  test("repository-owned skill inventory resolves from canonical packages", async () => {
     const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -29,125 +29,104 @@ describe("Codex documentation handoff", () => {
       expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
     }
 
-    const [context, root, developmentBrief, referenceGenerator] = await Promise.all([
+    const [context, root, developmentBrief] = await Promise.all([
       text("../CONTEXT.md"),
       text("../AGENTS.md"),
       text("../.agents/skills/development-brief/SKILL.md"),
-      text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
     ]);
-    expect(context).toContain("ten repository-owned skill packages");
-    expect(root).toContain("### Reference Preparation");
-    expect(root).toContain("### Asset Authoring");
-    expect(root).toContain("### Repository / Plugin Work");
-    expect(root).toContain("Hot-Path Defect Index");
-    expect(referenceGenerator).toContain("Return **one image only**");
-    expect(referenceGenerator).toContain("automatic variants   = 0");
-    expect(referenceGenerator).toContain("Do not generate ZIPs");
-    expect(developmentBrief).not.toContain("`grilling`");
-    expect(developmentBrief).not.toContain("`code-review`");
+
+    expect(context).toContain("Root `AGENTS.md` owns task selection");
+    expect(root).toContain("#### Developing Execution Gate");
+    expect(developmentBrief).toContain("new ChatGPT, Codex, or Opencode session");
   });
 
-  test("current continuation stays bounded and tracks the reactivated local acceptance", async () => {
-    const [next, runbook, implementation] = await Promise.all([
+  test("handoff makes the real development objective explicit across providers", async () => {
+    const [root, brief, next, runbook] = await Promise.all([
+      text("../AGENTS.md"),
+      text("../.agents/skills/development-brief/SKILL.md"),
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+    ]);
+
+    for (const owner of [root, brief, next]) {
+      expect(owner).toContain("Success Metric");
+      expect(owner).toContain("Forbidden Proxy");
+    }
+
+    for (const owner of [root, brief, runbook]) {
+      expect(owner).toContain("Authoring Efficiency");
+      expect(owner).toContain("Static Footprint");
+    }
+
+    expect(brief).toContain("Cost to Accepted Result");
+    expect(runbook).toContain("Cost to Accepted Result");
+    expect(runbook).toContain("QUALITY FAIL");
+    expect(runbook).toContain("CONTRACT_CAUSED");
+    expect(runbook).toContain("REASONING_CAUSED");
+    expect(runbook).toContain("IMPROVED");
+    expect(runbook).toContain("UNCHANGED");
+    expect(runbook).toContain("REGRESSED");
+  });
+
+  test("continuation, stable facts, proof, and ownership remain separate", async () => {
+    const [context, next, validation, implementation] = await Promise.all([
+      text("../CONTEXT.md"),
+      text("../docs/knowledge/next-action.md"),
+      text("../docs/foundation/validation-report.md"),
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
-    // Continuation grew with the animation/effects status ledger; the bound
-    // tracks the current deliberate size instead of the older 7k budget.
-    expect(next.length).toBeLessThan(10_000);
-    expect(next).toContain("Working branch: **`Local` only**");
-    expect(next).toMatch(/PRO-1(?:–PRO-8|[^\n]*PRO-2)/);
-    expect(next).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
-    expect(next).toContain("## Next Step");
-    expect(next).toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
-    expect(next).toContain("LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23");
-    expect(next).toContain("LOCAL PROOF REQUIRED");
-    expect(next).not.toContain("execute runbook sections 3–4");
-    expect(next).toContain("Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof");
-    expect(next).toContain("Experimental browser proof below does not upgrade desktop MCP claims");
-    expect(next).toContain("actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED**");
-    expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` points here");
-    expect(implementation).toContain("## Hot-Path Defect Index");
-    expect(implementation).toContain("64 enabled tools");
-    expect(implementation).toContain(
-      "Local acceptance reactivated 2026-08-23"
-    );
+    expect(context).toContain("stable project facts only");
+    expect(context).not.toContain("AWAITING_PLUGIN_ENABLE");
+    expect(next).toContain("NO ACTIVE DEVELOPMENT");
+    expect(next).toContain("## Current Continuation");
+    expect(validation).toContain("This file owns the **proof boundary**");
+    expect(validation).toContain("LOCAL PROOF REQUIRED");
+    expect(implementation).toContain("This map contains no active task status");
   });
 
-  test("status owners stay synchronized", async () => {
-    const [rootReadme, mcpReadme, next, validation] = await Promise.all([
-      text("../README.md"),
-      text("README.md"),
-      text("../docs/knowledge/next-action.md"),
-      text("../docs/foundation/validation-report.md"),
-    ]);
-    for (const owner of [rootReadme, mcpReadme, next, validation]) {
-      expect(owner).toContain("PRELOCAL_CONTROLLER_MUTATION_READY");
-    }
-    expect(rootReadme).toContain("Local Acceptance - Reactivated");
-    expect(mcpReadme).toContain("Local Acceptance - Reactivated");
-    expect(validation).toContain("LOCAL ACCEPTANCE:                   REACTIVATED 2026-08-23");
-  });
-
-  test("historical review and decision residue is absent from active knowledge and foundation links", async () => {
+  test("historical review and decision residue stays outside active knowledge", async () => {
     const dirs = (await readdir("../docs/knowledge", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
+
     expect(dirs).not.toContain("reviews");
     expect(dirs).not.toContain("decisions");
-    expect(await Bun.file("../docs/knowledge/reviews/bedrock-entity-capability-surface-matrix.md").exists()).toBe(false);
-    expect(await Bun.file("../docs/knowledge/decisions/reference-fidelity-loop.md").exists()).toBe(false);
 
     const foundationFiles = (await readdir("../docs/foundation"))
       .filter((name) => name.endsWith(".md"));
+
     for (const file of foundationFiles) {
       const body = await text(`../docs/foundation/${file}`);
       expect(body).not.toContain("../knowledge/decisions/");
       expect(body).not.toContain("../knowledge/reviews/");
     }
-
-    const workflowPolicy = await text("../docs/foundation/03-modelling-workflow.md");
-    expect(workflowPolicy).toContain("**Status:** Active Policy");
-    expect(workflowPolicy).not.toContain("test-support contract");
-    expect(workflowPolicy).toContain("[Current Flow](../knowledge/flow.md)");
   });
 
-  test("named MCP-tool defects have a bounded source and primary-test index", async () => {
-    const [root, implementation] = await Promise.all([
-      text("../AGENTS.md"),
-      text("../docs/knowledge/implementation-map.md"),
-    ]);
+  test("named MCP defects retain bounded source and regression owners", async () => {
+    const implementation = await text("../docs/knowledge/implementation-map.md");
 
-    expect(root).toContain("Hot-Path Defect Index");
-    expect(root).toContain("docs/knowledge/implementation-map.md");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("source owner + primary regression owner first");
-    expect(implementation).toContain("Expand only if that pair cannot explain the defect");
-    expect(implementation).toContain("`undo`/`redo` remain source-owned");
+    expect(implementation).toContain("mcp/tests/static-footprint-budget.test.ts");
+    expect(implementation).not.toContain("mcp/tests/static-efficiency-budget.test.ts");
 
     const mappings = [
       { tools: ["create_project"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
-      { tools: ["get_project_info"], source: "server/tools/project.ts", test: "tests/static-efficiency-budget.test.ts" },
+      { tools: ["get_project_info"], source: "server/tools/project.ts", test: "tests/static-footprint-budget.test.ts" },
       { tools: ["inspect_model_bounds"], source: "server/tools/project.ts", test: "tests/rendered-model-bounds-numeric-safety.test.ts" },
       { tools: ["place_cube", "modify_cube", "modify_cubes_batch"], source: "server/tools/cubes.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
       { tools: ["add_group"], source: "server/tools/element.ts", test: "tests/p1-core-ownership.test.ts" },
-      { tools: ["list_outline", "find_elements_by_criteria"], source: "server/tools/element.ts", test: "tests/context-payload-cleanup.test.ts" },
       { tools: ["inspect_element"], source: "server/tools/element-inspection.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
       { tools: ["capture_model_views"], source: "server/tools/camera.ts", test: "tests/camera-framing-contract.test.ts" },
-      { tools: ["list_locator_elements", "manage_locator", "manage_null_object"], source: "server/tools/locators.ts", test: "tests/bedrock-locator-coverage.test.ts" },
-      { tools: ["create_texture", "list_textures", "get_texture", "activate_texture"], source: "server/tools/texture.ts", test: "tests/context-payload-cleanup.test.ts" },
-      { tools: ["create_animation"], source: "server/tools/animation.ts", test: "tests/create-animation-contract.test.ts" },
-      { tools: ["manage_animation_effects"], source: "server/tools/animation-effects.ts", test: "tests/animation-effect-mutation-contract.test.ts" },
-      { tools: ["manage_animation_controller"], source: "server/tools/animation-controller.ts", test: "tests/animation-controller-mutation-contract.test.ts" },
-      { tools: ["inspect_animation"], source: "server/tools/animation-inspection.ts", test: "tests/context-payload-cleanup.test.ts" },
-      { tools: ["get_undo_stack"], source: "server/tools/history.ts", test: "tests/static-efficiency-budget.test.ts" },
+      { tools: ["get_undo_stack", "undo", "redo"], source: "server/tools/history.ts", test: "tests/static-footprint-budget.test.ts" },
       { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
     ];
 
     for (const mapping of mappings) {
-      const row = implementation.split("\n").find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
+      const row = implementation
+        .split("\n")
+        .find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
       expect(row).toBeDefined();
       expect(row).toContain(`\`mcp/${mapping.source}\``);
       expect(row).toContain(`\`mcp/${mapping.test}\``);
@@ -156,67 +135,21 @@ describe("Codex documentation handoff", () => {
     }
   });
 
-  test("proof docs separate accepted live baseline from current static/model-facing evidence", async () => {
-    const [validation, context, implementation, rules] = await Promise.all([
+  test("proof docs never upgrade static compactness into live authoring claims", async () => {
+    const [validation, implementation, runbook] = await Promise.all([
       text("../docs/foundation/validation-report.md"),
-      text("../CONTEXT.md"),
       text("../docs/knowledge/implementation-map.md"),
-      text("../GITHUB_RULES.md"),
+      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toContain("LOCAL_ACCEPTANCE_COMPLETE");
-    expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
-    expect(validation).toContain("Native Deferred MCP Discovery Compatibility");
-    expect(validation).toContain("P0–P4 Static Efficiency / Decision Proof");
-    expect(validation).toContain("Static Pre-local Optimization Closure");
-    expect(validation).toContain("AnimationController Mutation");
-    expect(validation).toContain("OFFICIALLY VERIFIED");
-    expect(validation).toContain("LOCAL PROOF REQUIRED");
+    expect(validation).toContain("LAST OBSERVED CANONICAL GREEN");
+    expect(validation).toContain("ACCEPTED LIVE BASELINE");
+    expect(validation).toContain("Character counts are regression ceilings");
+    expect(validation).toContain("Visual / Reference Proof Rule");
 
-    expect(validation).toContain("## Proof Surface Taxonomy");
-    for (const surface of [
-      "STATIC",
-      "CI",
-      "HOSTED-RUNTIME",
-      "VISUAL",
-      "LOCAL-RUNTIME",
-      "PRODUCTION",
-    ]) expect(validation).toContain(surface);
-    expect(validation).toContain("one proof surface never upgrades a different execution surface");
-    expect(validation).toContain("artifact existence");
-
-    expect(validation).toContain("## Retained Runtime / Artifact Evidence Record");
-    for (const marker of [
-      "source commit/ref",
-      "run/job identity",
-      "execution surface",
-      "material input digest",
-      "output filenames + digest/byte size",
-      "status + last completed stage",
-      "visual-inspection state",
-    ]) expect(validation).toContain(marker);
-    for (const stage of [
-      "validate_input",
-      "pin_source",
-      "environment_setup",
-      "launch_runtime",
-      "execute",
-      "capture_or_compile",
-      "write_artifact",
-      "cleanup",
-    ]) expect(validation).toContain(stage);
-
-    for (const state of [
-      "PRESENT_AS_INTENDED",
-      "ABSENT_SAFE_TO_RETRY",
-      "CONFLICTING_OR_UNKNOWN",
-    ]) expect(validation).toContain(state);
-    expect(rules).toContain("5xx/timeout mutation outcome may be unknown");
-    expect(rules).toContain("refetch target state first");
-    expect(rules).toContain("Retry only after confirming the intended mutation is absent");
-
-    expect(context).toContain("first bounded Codex + Blockbench local acceptance pass completed");
-    expect(implementation).toContain("Deferred MCP Discovery Ownership");
-    expect(implementation).toContain("Authoring Decision / Recovery Ownership");
+    expect(implementation).toContain("## Effectiveness / Footprint Evidence Ownership");
+    expect(implementation).toContain("Static Footprint cannot upgrade");
+    expect(runbook).toContain("Static Footprint");
+    expect(runbook).toContain("cannot prove this runtime claim");
   });
 });

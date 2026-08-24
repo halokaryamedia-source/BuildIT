@@ -18,9 +18,10 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("Do not route it through `development-brief`");
 
     const readme = await source("../README.md");
-    expect(readme).toContain("## Current Documentation Owners");
-    expect(readme).toContain("Root `AGENTS.md` owns routing");
-    expect(readme).toContain("docs/knowledge/operations/local-acceptance-runbook.md");
+    expect(readme).toContain("## Evidence Boundary");
+    expect(readme).toContain("Do not encode transient continuation or CI state here");
+    expect(readme).toContain("## Current Owners");
+    expect(readme).toContain("`AGENTS.md` — task class, routing, source/proof discipline");
     expect(readme).not.toContain("## Start By Task");
     expect(readme).not.toContain("## Mandatory Session Boot");
   });

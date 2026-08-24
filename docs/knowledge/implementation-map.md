@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 
 Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
 
@@ -53,7 +53,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | Tool(s) | Source owner | Primary regression owner |
 |---|---|---|
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
-| `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-efficiency-budget.test.ts` |
+| `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
@@ -65,8 +65,23 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `manage_animation_effects` | `mcp/server/tools/animation-effects.ts` | `mcp/tests/animation-effect-mutation-contract.test.ts` |
 | `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
-| `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | targeted history/efficiency tests as applicable |
+| `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | `mcp/tests/static-footprint-budget.test.ts` for compact recovery state; targeted history tests for behavior |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
+
+## Effectiveness / Footprint Evidence Ownership
+
+```text
+Static Footprint
+→ mcp/tests/static-footprint-budget.test.ts
+→ instruction/schema/surface compactness only
+
+Authoring Quality + Authoring Efficiency
+→ docs/knowledge/operations/local-acceptance-runbook.md
+→ exact current local artifact + visual/runtime evidence
+→ Cost to Accepted Result
+```
+
+Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality claim.
 
 ## Default MCP Surface
 
@@ -92,7 +107,7 @@ descriptions                  <= 11,500 characters
 per-tool payload max          <= 3,200 characters
 ```
 
-`measure:surface` owns exact current serialized values. Serialized characters are not client token/context measurements.
+`measure:surface` owns exact current serialized values. Serialized characters are not client token/context measurements and are not Authoring Efficiency proof.
 
 ## Authoring Decision / Recovery Ownership
 

@@ -19,8 +19,8 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("static efficiency budget", () => {
-  test("active authoring instruction owners stay compact", async () => {
+describe("static footprint budget", () => {
+  test("instruction owners stay within deliberate footprint ceilings", async () => {
     const [
       root,
       referenceGenerator,
@@ -39,7 +39,7 @@ describe("static efficiency budget", () => {
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
-    expect(root.length).toBeLessThan(5_000);
+    expect(root.length).toBeLessThan(7_000);
     expect(referenceGenerator.length).toBeLessThan(8_000);
     expect(orchestrator.length).toBeLessThan(5_000);
     expect(modelling.length).toBeLessThan(8_000);
@@ -56,16 +56,30 @@ describe("static efficiency budget", () => {
     ]);
 
     expect(packageRules.length).toBeLessThan(6_000);
-    expect(developmentBrief.length).toBeLessThan(4_000);
+    expect(developmentBrief.length).toBeLessThan(6_000);
     expect(mcpDevelopment.length).toBeLessThan(4_000);
 
     expect(packageRules).toContain("Root `../AGENTS.md` owns repository routing");
     expect(mcpDevelopment).toContain("`mcp/AGENTS.md` owns package-wide");
-    expect(developmentBrief).toContain(
-      "Read `CONTEXT.md` only when stable project facts materially affect the decision."
-    );
-    expect(developmentBrief).not.toContain("`grilling`");
-    expect(developmentBrief).not.toContain("`code-review`");
+    expect(developmentBrief).toContain("## Effectiveness vocabulary");
+  });
+
+  test("static footprint is explicitly separate from authoring efficiency", async () => {
+    const [brief, implementation, runbook] = await Promise.all([
+      source("../.agents/skills/development-brief/SKILL.md"),
+      source("../docs/knowledge/implementation-map.md"),
+      source("../docs/knowledge/operations/local-acceptance-runbook.md"),
+    ]);
+
+    for (const owner of [brief, implementation, runbook]) {
+      expect(owner).toContain("Static Footprint");
+      expect(owner).toContain("Authoring Efficiency");
+    }
+
+    expect(brief).toContain("Cost to Accepted Result");
+    expect(implementation).toContain("Static Footprint cannot upgrade");
+    expect(runbook).toContain("QUALITY FAIL");
+    expect(runbook).toContain("efficiency claim is invalid");
   });
 
   test("normal discovery and recovery reads default to compact bounds", () => {
@@ -141,7 +155,7 @@ describe("static efficiency budget", () => {
     }
   });
 
-  test("optional Texture identity guidance is shared across normal Paint and texture reads", async () => {
+  test("optional Texture identity guidance is shared across Paint and texture reads", async () => {
     const [paint, texture] = await Promise.all([
       source("server/tools/paint.ts"),
       source("server/tools/texture.ts"),
@@ -150,7 +164,7 @@ describe("static efficiency budget", () => {
     expect(texture).toContain("texture: textureIdOptionalSchema");
   });
 
-  test("undo and redo return compact post-action recovery position without a stack reread", async () => {
+  test("undo and redo return compact recovery position without a stack reread", async () => {
     const history = await source("server/tools/history.ts");
     const undoStart = history.indexOf("createTool(historyToolDocs[0].name");
     const redoStart = history.indexOf("createTool(historyToolDocs[1].name", undoStart);
@@ -182,7 +196,7 @@ describe("static efficiency budget", () => {
     expect(getChannelTextureInfo(textures, "normal")).toBeNull();
   });
 
-  test("project info stays lifecycle/counts-only and result mirrors are compacted centrally", async () => {
+  test("project info stays lifecycle/counts-only and structured result mirrors stay compact", async () => {
     const [project, factories] = await Promise.all([
       source("server/tools/project.ts"),
       source("lib/factories.ts"),
@@ -192,7 +206,6 @@ describe("static efficiency budget", () => {
     expect(project).not.toContain("root_groups_truncated");
     expect(project).not.toContain("root_groups: rootGroups");
     expect(project).toContain("root_groups: rootGroupCount");
-    expect(project).not.toContain("bounded top-level Group summary");
     expect(project).toContain("Use list_outline only when hierarchy detail is needed");
     expect(project).toContain("structuredContent: result");
     expect(factories).toContain("compactMirroredStructuredContent");

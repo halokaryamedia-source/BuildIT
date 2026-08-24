@@ -36,6 +36,31 @@ AGENTS.md
 
 For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad code search.
 
+#### Developing Execution Gate
+
+Before the first mutation in non-trivial Developing, form a compact execution contract from current user intent + current authority:
+
+```text
+Goal
+Success Metric
+Forbidden Proxy / Non-Goal
+First Evidence Required
+Failure Classification / first wrong owner
+In Scope / Out of Scope
+Proof Required
+STOP Condition
+```
+
+Do not mutate until those fields are decision-ready. `UNKNOWN` is valid for the first wrong owner only when the exact evidence needed to resolve it is named. Never substitute an easy-to-measure proxy or implementation convenience for the user's success condition.
+
+For quality / efficiency / accuracy / less-usage / less-looping work:
+
+- **accepted result quality is the gate**;
+- **Authoring Efficiency** means the shortest justified path / cost to an accepted result;
+- **Static Footprint** means instruction/schema/surface-size guardrails only and is not proof of Authoring Efficiency;
+- line count, character count, schema size, tool count, or raw MCP-call count alone cannot prove product improvement;
+- when runtime or visual evidence can change the owner, obtain or explicitly require that matching evidence before redesign.
+
 ### Bounded Maintenance
 
 A concrete bug, stale rule, CI-routing defect, or behavior-preserving cleanup may start from the exact defect/owner when stable context cannot change the decision. Fix the first wrong owner; do not widen Maintenance into redesign.
