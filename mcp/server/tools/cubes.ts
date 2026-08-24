@@ -526,6 +526,24 @@ export function registerCubesTools() {
             ? resolvePlacementGroup(element.group)
             : defaultOutlinerGroup,
       }));
+      // Generic guard: Cube names must not collide with existing Group names (case-insensitive) — prevents the Group/Cube identity confusion seen in Elephant-Test (blue box + scattered cubes).
+      const existingGroupNamesLower = new Set(Group.all.map((group: Group) => group.name.toLowerCase()));
+      const existingCubeNamesLower = new Set(Cube.all.map((cube: Cube) => cube.name.toLowerCase()));
+      const batchNamesLower = new Set<string>();
+      for (const { element } of placements) {
+        const lower = element.name.toLowerCase();
+        if (existingGroupNamesLower.has(lower)) {
+          throw new Error(`Cube name "${element.name}" collides case-insensitively with an existing Group "${element.name}". Use a distinct Cube name so Group/Cube identity stays deterministic.`);
+        }
+        if (existingCubeNamesLower.has(lower)) {
+          throw new Error(`Cube name "${element.name}" already exists as a Cube (case-insensitive). Use a distinct name or modify the existing Cube.`);
+        }
+        if (batchNamesLower.has(lower)) {
+          throw new Error(`Batch contains duplicate Cube name "${element.name}" case-insensitively. Use unique names within one place_cube call.`);
+        }
+        batchNamesLower.add(lower);
+      }
+
       const customFaceUvs = Array.isArray(faces);
 
       if (!customFaceUvs) {
