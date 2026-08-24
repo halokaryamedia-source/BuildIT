@@ -1,145 +1,71 @@
 # Next Action
 
-Updated: 2026-08-24 — Reconciled per user focus shift to MCP Geometry & Texturing quality (extends 2026-08-23)
+Updated: 2026-08-24 — repository cleanup reconciliation
 
-## Current Status
+## Current State
 
 ```text
-PRELOCAL_CONTROLLER_MUTATION_READY
-PRO-1–PRO-8 STATIC HARDENING RETAINED
-TEXTURING_T0_T18_STATIC_HARDENING_RETAINED
-ANIMATION_D1_D5_EFFECT_MOLANG_CLOSURE_RETAINED
-FULL_AUDIT_REPAIR_SWEEP_2026_08_23_PUSHED
-CANONICAL_GATE_64_OBSERVED_CI_GREEN_D8C0899
-GENERATED_ARTIFACTS_FRESH_AGAINST_CURRENT_SOURCE
-LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23
-AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4
-FOCUS_SHIFT_2026_08_24_MCP_GEOMETRY_TEXTURE_QUALITY
+LOCAL_REPOSITORY_CLEANUP_COMPLETE
+MCP_GEOMETRY_TEXTURING_HARDENING_RETAINED
+TRANSIENT_TEST_WORKSPACE_REMOVED
+MARKETPLACE_RECIPE_POLICY_REMOVED
+HIDDEN_DEV_WATCH_DEPLOY_REMOVED
+NO ACTIVE LOCAL ACCEPTANCE RUN
+NO ACTIVE EXPERIMENT
 ```
 
-Working branch: **`Local` only**. `Experimental/**` remains **PAUSED BY USER**. GitHub discipline is owned by `GITHUB_RULES.md`.
+Working branch: **`Local` only**. `Experimental/**` remains inactive unless the user explicitly resumes it. GitHub execution/history discipline is owned by `GITHUB_RULES.md`.
+
+## What Is Already Done — Do Not Repeat
+
+The following work is already integrated in current source and is **not** a recorded next step:
+
+- coherent `place_cube(elements=[...])` batching;
+- coherent `add_group(groups=[...])` batching;
+- `create_project` logical UV resolution `128` default / `256` opt-in;
+- current source repair for the `flatten_layers` base-bitmap preservation defect;
+- texture/Painter bounds and atlas-targeting hardening;
+- compact mutation-result reuse / reduced readback discipline;
+- current 64-tool default Bedrock Entity surface.
+
+Do not restart those changes merely because older commits or historical validation text mention them.
+
+## Cleanup Closure
+
+This cleanup removed the sources of repository drift discovered on 2026-08-24:
+
+- transient/local quality-test assets no longer live under `workspace/active/`;
+- fixture-derived “marketplace-grade” modelling/texture recipes were removed from canonical skills;
+- prose-string tests added only to freeze those recipes were removed;
+- the Elephant-derived Cube/Group name-collision guard was removed rather than promoted into an unproved global invariant;
+- `dev:watch` no longer owns implicit deployment into the installed Blockbench plugin;
+- root/package README, `CONTEXT.md`, validation, and implementation ownership no longer compete as parallel continuation trackers.
+
+## Current Continuation
+
+There is **no automatic implementation step** after this cleanup.
+
+If the user explicitly resumes MCP model-quality work, begin with one exact-current-artifact, reference-grounded local test:
+
+```text
+approved reference visible
+→ build/load exact current Local artifact
+→ create one bounded model attempt
+→ capture only judgeable views
+→ diagnose first wrong owner from observed mismatch
+→ smallest complete patch only if evidence requires it
+→ targeted proof
+→ STOP
+```
+
+Do not respond to a poor model by automatically adding more modelling recipes, fixture-specific guards, prompt layers, profiles, routers, or repeated continuation markers.
 
 ## Proof Boundary
 
-Do not claim live desktop Blockbench/model-quality improvement without actual matching runtime proof. Visual fidelity, playback, persistence, and actual runtime/call-efficiency remain **LOCAL PROOF REQUIRED** until the matching local surface actually runs. Experimental browser proof below does not upgrade desktop MCP claims.
+Repository cleanup and retained source fixes are source/static facts. Current live Blockbench visual fidelity, installed-plugin behavior, and model-quality improvement remain **LOCAL PROOF REQUIRED** until the exact current artifact is deliberately run and inspected.
 
-Reference generation stays separately gated: repository/policy work and this testing reactivation never authorize image generation without fresh user instruction.
+Historical live/static proof is summarized in `docs/foundation/validation-report.md`; rationale and discarded iterations belong in Git history.
 
-Reconciliation 2026-08-24: per `AGENTS.md:34` and current user instruction, active Developing now owns **MCP quality improvement in Geometry & Texturing** — (1) MCP gagal membuat model sesuai referensi, (2) MCP boros/berputar-putar hasilnya buruk. `next-action.md` extended without removing required markers; prior continuation remains valid but local acceptance is paused for this hardening.
+## STOP
 
-## Pre-local Optimization Ledger
-
-```text
-U1 regression preflight + coherent logical patching
-U2 targeted tests/invariants read before owner edits
-U3 known/coherent place_cube(elements=[...]) batching
-U4 affected-view-first correction verification
-U5 meaningful workspace persistence; no mutation-count ritual
-U6 canonical documentation ownership
-U7  No change required for lean profile/router/runtime-prompt redesign
-    without installed-client evidence
-```
-
-## 2026-08-23 Audit Repair Sweep (pushed, CI green)
-
-Five commits restored canonical verification and closed material audit findings:
-
-```text
-0496fb4  restore canonical gate on the 64-tool surface
-         (stale-pin realignment, typecheck stub cast, regenerated artifacts)
-0d3ed6e  transport/lifecycle hardening (size caps, chunked rejection,
-         request-line/Content-Length/Host validation, backpressure,
-         double-onload/unload/port guards, trigger_action Undo pairing,
-         reference_models runtime registration, nodes field whitelist)
-924598a  geometry fail-closed contracts (shared project guards,
-         duplicate newName root-only, locator no-op preflight +
-         cross-family uniqueness, export overwrite consent +
-         afterSave precheck + honest truncation, undo/redo fail-closed
-         depth + partial reporting, create_project discard_unsaved,
-         finite origin/rotation reporting)
-c56a445  paint/animation gaps (six-surface pixel bounds guard,
-         exact-pixel default fix, duplicate controller animation-link
-         rejection, blend_value typeof preservation, keyframe create
-         casualty counts, schema compaction inside ceilings)
-d8c0899  hygiene port (BlockIT llms.txt, manifest freshness gate,
-         zod-upgrade surface guard test, controller summary mirror,
-         bake scope disclosure)
-```
-
-Canonical CI observed green on this state (`MCP Verify` runs 32638654484 / 32648128107 / 32649749692). Generated artifacts are fresh against source.
-
-## Local Acceptance Execution State
-
-The user explicitly reactivated local acceptance on 2026-08-23. Recorded facts:
-
-```text
-Git HEAD (local == origin/Local): d8c0899
-Deployed artifact:  %APPDATA%\Blockbench\plugins\mcp.js
-Artifact SHA-256:   698C3CE9D7F9806B3BAB7E9D25F0E3137EAABFE6EAEBF73177301838E794D1C1
-Deploy hash match:  VERIFIED
-Blockbench version: 5.1.6
-Bun local:          1.3.11 (repo pin 1.3.14 — deviation recorded; no canonical
-                    Bun-version PASS is inferred from the local runner)
-Endpoint:           http://127.0.0.1:3000/bb-mcp
-Plugin permissions: net/fs/process pre-granted for id "mcp"
-Blocking step:      user must click Plugins ▸ mcp ▸ Enable in desktop
-                    Blockbench; server was not listening before that click
-```
-
-## Local Run Facts 2026-08-24 — TEST1 Complete (extends 2026-08-23)
-
-```text
-698C3CE9→8DED1B5 artifacts VERIFIED at %APPDATA%\Blockbench\plugins\mcp.js; verify:stateless-local 8/8 PASS (64 tools)
-TEST1 PASS incl. rotated Cube, causal correction, Painter bounds, PBR/material_instance, Molang, controller batch
-DEFECT-LOCAL-1 FIXED (canvas guard) rerun-verified 128×128; DEFECT-LOCAL-2 CONFIRMED OPEN flatten_layers loss deferred
-```
-
-## Active Developing — MCP Geometry & Texturing Quality (User-Gated 2026-08-24)
-
-**Goal:** MCP model Geometri & Tekstur sesuai referensi, efisien tanpa loop boros. 2 sektor utama.
-
-Build owner: `mcp-server-development`. Acceptance: difference-first visual gate with actual reference + fresh views.
-
-In scope: Geometri (intentional Cubes/Groups/pivots, batching, geometry_effect) + Texturing (single atlas, UV audit, flatten fidelity).
-Out: reference generation, protected gaps, new router/framework.
-
-Criteria (4): 1 Geometri batch/reuse/rotation 2 Texturing atlas/UV/flatten 3 Efisiensi min evidence 4 Surface 64 within ceilings.
-Proof: typecheck → test (model-effectiveness/texture/prelocal) → measure:surface → build → docs:check. Local runtime remains LOCAL PROOF REQUIRED.
-
-Next: `MCP_GEOMETRY_TEXTURING_HARDENING` → preflight → smallest patch (prompts + paint flatten base-include + keep groups batch/resolution) → gate → STOP.
-
-Paused: `LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23` + `AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4` remain; local acceptance paused for this hardening.
-
-## Next Step
-
-Proceed with the runbook (`docs/knowledge/operations/local-acceptance-runbook.md`) from step 4 once the plugin is enabled — **paused for MCP hardening; see Active Developing above**:
-
-```text
-1. health endpoint + tools/list count = 64
-2. bun run verify:stateless-local
-3. TEST 1 core mechanics (create/inspect → cubes incl. rotated → causal
-   correction → undo/redo incl. depth rejection → texture/painter bounds
-   rejection → PBR/material instance → small animation + Molang →
-   manage_animation_effects → controller batch + undo → Locator/Null Object
-   incl. no-op rejection)
-4. persistence/export (.bbmodel + bedrock JSON via absolute temp paths;
-   verify overwrite-consent refusal live)
-5. efficiency log (total calls, discovery calls, redundant readbacks,
-   place_cube batches, controller ops per call, capture counts)
-```
-
-Runtime questions this run must answer (recorded audit leftovers):
-
-```text
-flatten_layers compositing/data-loss suspicion
-replaceOthers self-registration of undo casualties
-native out-of-bounds paint disposition per wrap_mode
-StateMemory 'brush_presets' initialization on first call
-NoAAPreview mutation blast radius vs active_editor_camera_untouched
-forEachChild traversal completeness (pinned design)
-multi-tab behavior of newProject() on unsaved work
-BarItems/settings ID currency behind setBarItemValue
-slowloris idle timeout stays deliberately absent (loopback-only)
-```
-
-Keep continuation compact; historical rationale belongs in Git history.
+No further repository, CI, local-runtime, workspace, or experimental action is implied by this file without a new user instruction.

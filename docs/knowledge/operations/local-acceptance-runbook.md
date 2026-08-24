@@ -1,23 +1,23 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-14  
-Owner: local Codex + Blockbench acceptance procedure  
-Active only when `docs/knowledge/next-action.md` points here.
+Updated: 2026-08-24  
+Owner: local Codex/Opencode + desktop Blockbench acceptance procedure  
+Active only when `docs/knowledge/next-action.md` explicitly points here.
 
 This is the single procedure for BlockIT live acceptance.
 
 ## 1. Goal
 
-Prove what source/CI cannot: exact local plugin freshness, MCP runtime behavior, real Codex tool exposure, core Bedrock authoring, persistence/export, and one real reference-driven model.
+Prove what source/CI cannot: exact local plugin freshness, MCP runtime behavior, client tool exposure, core Bedrock authoring, persistence/export, efficiency observations, and one real reference-driven model.
 
-There are only two modelling tests:
+There are two acceptance lanes:
 
 ```text
 TEST 1 — MCP / CORE MECHANICS
-→ prove the tools and plugin work correctly
+→ prove representative tools and plugin behavior
 
-TEST 2 — REFERENCE MODEL (ELEPHANT)
-→ prove MCP can turn an approved imperfect reference into a good Minecraft/Blockbench model
+TEST 2 — REFERENCE MODEL
+→ prove the exact current MCP can build a good Minecraft/Blockbench model from an approved reference
 ```
 
 Do not edit source before a reproducible failure identifies a concrete owner.
@@ -31,7 +31,7 @@ AGENTS.md
 → mcp/README.md + mcp/AGENTS.md only when MCP implementation matters
 ```
 
-Read `CONTEXT.md` only when a stable project fact materially matters. Do not load Git history or the whole foundation set by default.
+Read `CONTEXT.md` only when a stable project fact materially affects the decision. Do not load Git history or the full foundation set by default.
 
 ## 3. Exact Local Build / Freshness Gate
 
@@ -63,12 +63,6 @@ Production plugin:
 mcp/dist/mcp.js
 ```
 
-Windows PowerShell:
-
-```powershell
-Get-FileHash .\dist\mcp.js -Algorithm SHA256
-```
-
 Record:
 
 ```text
@@ -76,13 +70,13 @@ Local HEAD
 mcp/dist/mcp.js SHA-256
 Blockbench version
 Bun version
-Codex/client version when visible
+client version when visible
 actual BlockIT file/path loaded by Blockbench
 MCP endpoint
 Extended MCP Families setting
 ```
 
-If the loaded file/path or artifact freshness cannot be established, classify `ENVIRONMENT / INSTALL` and stop before model-quality claims.
+If exact artifact freshness cannot be established, classify `ENVIRONMENT / INSTALL` and stop before model-quality claims.
 
 ## 4. Load Current BlockIT / Reconnect MCP
 
@@ -110,40 +104,35 @@ With the plugin running:
 bun run verify:stateless-local
 ```
 
-Confirm follow-up MCP calls do not depend on a durable server session.
-
 ## 5. Tool Exposure Sanity Check
 
-Confirm relevant Bedrock tool families are reachable and known state is reused without unnecessary discovery. Observe client retry/context/latency only when the client exposes it. Unknown telemetry stays `UNVERIFIED`.
+Confirm relevant Bedrock tool families are reachable and known state is reused without unnecessary discovery. Observe retry/context/latency only when the client exposes it. Unknown telemetry stays `UNVERIFIED`.
 
 ## 6. Test 1 — MCP / Core Mechanics
 
-Purpose: prove **the plugin and MCP tools work**, independent of reference quality.
+Purpose: prove representative plugin/MCP behavior independent of reference quality.
 
-Create a small Bedrock project with:
+Create a small Bedrock project with one or more Groups, a few Cubes, and one intentionally rotated Cube with an explicit justified origin.
 
-- one Group;
-- a few Cubes;
-- one intentionally rotated Cube with an explicit origin.
-
-Verify only representative core behavior:
+Representative path:
 
 ```text
 create / inspect
+→ coherent Cube/Group batching where appropriate
 → finite bounds + model views
 → one causal correction
 → Undo / Redo
 → texture / Painter
 → PBR / material instance
-→ small animation + authored Molang transform string
-→ bounded new-animation sound event
-→ manage_animation_controller: one coherent create/state/transition batch
-→ inspect_animation only when returned mutation state is insufficient
-→ Undo / Redo the controller batch
+→ small animation with numeric or authored Molang value
+→ representative animation effect mutation
+→ one coherent AnimationController batch
+→ inspect_animation only when mutation return state is insufficient
 → Locator / Null Object
+→ persistence / export
 ```
 
-Do not treat controller runtime/in-game execution, controller-state particle/sound or blend-curve mutation, or existing-animation direct sound/timeline-effect mutation as implemented/proved capability.
+Do not try to exercise every tool. A bounded representative pass is sufficient unless the current task names a specific capability.
 
 ## 7. Persistence / Export
 
@@ -154,45 +143,40 @@ editable .bbmodel
 Bedrock geometry export
 ```
 
-Use explicit absolute paths. Reopen the `.bbmodel` when relevant and confirm the authored state under test survives. Unsupported scenarios remain `LOCAL PROOF REQUIRED`.
+Use explicit absolute paths. Reopen the `.bbmodel` only when persistence of the authored state under test matters.
 
-## 8. Test 2 — Reference Model (Elephant)
+## 8. Test 2 — Reference Model
 
-Purpose: prove MCP can use the **approved elephant reference** to make a recognizable, Minecraft-appropriate Geometry + Texture model even when the reference has minor imperfections.
+Purpose: prove MCP can use **one currently approved reference** to make a recognizable, Minecraft-appropriate Geometry + Texture model.
 
-The **actual approved image must be visible to the local modelling context**. Keep nonvisual constraints, such as target height, separately in task context.
+The actual approved image must be visible to the local modelling context. A filename/path/README/memory is not image evidence. Keep nonvisual constraints such as target height or use separately in task context.
 
-For future generated references, the default board is five previews:
+The validation reference is selected by the current user/task. Do **not** hard-code Elephant, chair, katana, windmill, or any other fixture into product policy.
+
+When the approved reference uses the standard reference board, expected coverage is:
 
 ```text
 SIDE | FRONT | BACK
 TOP / FOOTPRINT | FRONT-SIDE 3/4
 ```
 
-Five previews are coverage, not five engineering-perfect drawings. Do not regenerate an already approved usable reference merely to satisfy panel count.
-
 Reference discrepancy handling:
 
 ```text
 MINOR
 → choose one canonical Minecraft interpretation
-→ user requirement
-→ original Source evidence
-→ best-supported approved view(s)
-→ simplest recognizable Blockbench-buildable form
-→ continue
+→ use best-supported visible evidence
+→ continue with simplest recognizable buildable form
 
 MATERIAL
 → CONFLICTING / BLOCKED
 ```
 
-Minor differences such as small trunk curl/angle, overlap, contour, texture shade/noise, or non-critical marking drift are not blockers by themselves. Do not average drift.
-
 Geometry acceptance:
 
 ```text
 recognizable major form
-correct important part count / attachment
+correct important part count / topology / attachment
 important negative spaces preserved
 clean Blockbench-buildable construction
 ```
@@ -200,9 +184,9 @@ clean Blockbench-buildable construction
 Texture acceptance:
 
 ```text
-Minecraft-readable palette
+Minecraft-readable palette/material identity
 major color/material regions
-part separation
+part separation and form readability
 identity-critical markings
 ```
 
@@ -211,16 +195,16 @@ Do not require pixel-perfect source copying.
 Test sequence:
 
 ```text
-actual approved reference + material handoff constraints
+actual approved reference + handoff constraints
 → Semantic Form / Primary Form
-→ coarse primary geometry
+→ minimum coherent primary geometry
 → fresh model views
 → difference-first FAIL | UNVERIFIED | PASS
 → causal correction only after diagnosis
 → production texture only after geometry PASS
 ```
 
-A materially wrong side/depth view cannot receive full 3D `PASS`. A correction that improves one view while materially regressing another is rejected. Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
+A materially wrong side/depth view cannot receive full 3D `PASS`. Reject a correction that improves one view while materially regressing another. Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
 
 ## 9. Efficiency Check
 
@@ -232,21 +216,21 @@ Discovery calls
 Redundant readbacks
 tool_search calls / misses
 place_cube calls / Cubes authored
-manage_animation_controller calls / operations authored
-Immediate controller readbacks
+add_group calls / Groups authored
+controller calls / operations authored
 capture_model_views calls / views requested
 Correction attempts
 Same-cause retries
 Broad repository reads
 ```
 
-Flag capture-per-mutation behavior, fragmented controller operations, immediate controller reinspection when returned state was sufficient, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. These counts are session evidence, not a new telemetry subsystem. Do not invent token or latency numbers.
+Flag capture-per-mutation behavior, fragmented coherent operations, immediate reinspection when returned state was sufficient, unrelated specialist loads, overlapping reads, and retries caused by ambiguous contracts. These counts are session evidence, not a telemetry subsystem. Do not invent token or latency numbers.
 
 ## 10. Failure Classification
 
 ```text
 ENVIRONMENT / INSTALL
-CODEX CLIENT / TOOL EXPOSURE
+CLIENT / TOOL EXPOSURE
 MCP TRANSPORT / REGISTRATION
 BLOCKBENCH RUNTIME / API
 PUBLIC SOURCE CONTRACT
@@ -257,10 +241,15 @@ PERSISTENCE / EXPORT
 UNKNOWN
 ```
 
-For a reproducible failure: identify the exact owner, capture minimum evidence, make the smallest fix, rerun the failing scenario first, then run relevant repository gates.
+For a reproducible failure: identify the exact owner, capture minimum evidence, make the smallest complete fix, rerun the failing scenario first, then run relevant repository gates.
 
 ## 11. Completion
 
-Update only current owners: `validation-report.md` for new live proof and `next-action.md` for continuation. Update `implementation-map.md` only if ownership changed and foundation policy only if a durable product rule changed.
+Update only current owners:
 
-Historical rationale belongs in Git history, not a new review/decision system.
+- `docs/foundation/validation-report.md` when new proof materially changes the boundary;
+- `docs/knowledge/next-action.md` when continuation materially changes;
+- `docs/knowledge/implementation-map.md` only when ownership changes;
+- foundation policy only when a durable product rule changes.
+
+Historical rationale, discarded fixtures, and prior model iterations belong in Git history. When requested proof and criteria are satisfied, **STOP**.
