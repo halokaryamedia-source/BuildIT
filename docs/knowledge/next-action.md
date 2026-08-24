@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — canonical UV / Texture vocabulary alignment
+Updated: 2026-08-25 — Texture Atlas public-contract candidate awaiting canonical Bun generation
 
 ## Current State
 
@@ -8,19 +8,17 @@ Updated: 2026-08-25 — canonical UV / Texture vocabulary alignment
 LOCAL_REPOSITORY_CLEANUP_COMPLETE
 CROSS_AGENT_EXECUTION_CONTRACT_COMPLETE
 MCP_BOX_UV_AUTO_LAYOUT_SOURCE_APPLIED
-TEXTURE_PRODUCTION_ROUTING_HARDENED
 SIMPLE_RIGID_FAST_PATH_HARDENED
-RUNTIME_MCP_PROMPT_FAST_PATH_ALIGNED
 CANONICAL_AUTHORING_STAGE_VOCABULARY_ALIGNED
-PROMPT_MANIFEST_ALIGNED_TO_SOURCE
 USER_BASELINE_FAILURE_RECORDED
+TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_PREPARED_UNREFERENCED
+CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_LANDING
 LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE EXPERIMENT
-NO ACTIVE DEVELOPMENT
 ```
 
-Working branch: **`Local` only**. `Experimental/**` remains inactive unless the user explicitly resumes it.
+Working branch: **`Local` only**. Current active public MCP contract remains the `Local` source until the candidate below is generated, verified, reviewed, and deliberately landed. `Experimental/**` remains inactive.
 
 ## Canonical Vocabulary — Do Not Collapse
 
@@ -32,69 +30,90 @@ TEXTURE STYLING = color/material/shading/detail authored into the atlas
 TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 ```
 
-Key ownership:
+`create_texture` creates a **Texture Atlas**. UV state (`uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region`) is **UV Layout**. Painter operations are **Texture Styling**. `get_texture` plus mapped model views provides **Texture Verify** evidence.
 
-- `create_texture` creates a **Texture Atlas**.
-- `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region` are **UV Layout** state.
-- Painter operations are **Texture Styling**.
-- `get_texture` + mapped model views are **Texture Verify** evidence.
-- Atlas creation/fill is not Styling completion; UV mapping is not Texture Styling.
+## Prepared Public-Contract Candidate
 
-Stable definitions live in `CONTEXT.md`; durable UV/texture policy lives in `docs/foundation/06-texture-standard.md`; detailed authoring sequence lives in `docs/knowledge/flow.md`.
-
-## Baseline Failure
-
-The latest user test was a **QUALITY FAIL**:
-
-1. production styling visually stopped at flat/fill-like color instead of material/value/form/identity detail;
-2. geometry and styling were too slow for a simple rigid model and appeared to spend work on guessing/repetition.
-
-No quantitative token/call baseline is claimed because a complete trace was not retained.
-
-## Hardening Now Present
-
-- `place_cube` auto-packs new Box-UV offsets and returns `box_uv_region`.
-- Geometry correction keeps auto UV active; final production UV is locked after Geometry `PASS`.
-- Modelling Skill + runtime prompt use a Simple Rigid Fast Path for clear rigid references.
-- UV Layout, Texture Atlas, Texture Styling, and Texture Verify are now separate canonical stages across stable context, policy, flow, specialist Skill, and runtime prompt.
-- Texture Styling treats flat fill as BASE PASS only and routes value/form/edge/identity work through existing Painter tools.
-- Runtime prompt avoids Cube-by-Cube UV rediscovery when fresh UV state is already returned.
-- `prompts/manifest.json` mirrors the canonical runtime prompt source.
-
-## Deliberately Not Applied
-
-Public MCP schema/tool-name changes are not part of this terminology pass.
-
-The actual `create_texture` schema still has a provisional 16×16 default. Current production guidance requires explicit 128-based dimensions. Changing that public default requires the canonical Bun generated-doc path; do not hand-edit generated API docs.
-
-An aggregate `list_textures` Box-UV working map is still evidence-dependent. Freshly created models already return `box_uv_region`; promote aggregate recovery only if resumed/existing-model work still proves Cube-by-Cube inspection is material waste.
-
-## Current Continuation
-
-There is **no automatic retest**. The user explicitly deferred testing until source hardening is complete.
-
-When the user elects to retest:
+Unreferenced candidate commit:
 
 ```text
-approved reference visible
-→ exact current Local artifact
-→ one bounded authoring attempt
-→ Geometry quality gate
-→ UV Layout
-→ Texture Atlas
-→ Texture Styling
-→ Texture Verify
-→ observe call/correction behavior when available
-→ classify first wrong owner
-→ compare Cost to Accepted Result
-→ smallest follow-up only if evidence requires it
-→ STOP
+50367a1f6c670856102467fe63111ed019077f0c
+parent: 49eb2b6a6a8bf9aa2cd65ebb969916928a0fcb57
 ```
+
+The candidate is intentionally **not** on `Local` because this ChatGPT/GitHub-only channel has no Bun runtime and public schema/description changes require canonical generated artifacts.
+
+Candidate source/test files:
+
+```text
+mcp/server/tools/texture.ts
+mcp/server/tools/paint.ts
+mcp/tests/texture-production-discipline.test.ts
+.agents/skills/blockit-bedrock-texturing/SKILL.md
+mcp/prompts/bedrock_entity_workflow.md
+```
+
+Candidate semantics:
+
+- blank base Texture Atlas with omitted `width`/`height` uses supported current project UV dimensions, otherwise Bedrock fallback `128×128`;
+- blank variant/PBR support Atlas with omitted size inherits the established base Atlas bitmap dimensions;
+- explicit blank Atlas dimensions remain intentional, including provisional 16-based sizes;
+- imported image data keeps authored image dimensions and rejects simultaneous `data + width/height` rather than pretending to resample;
+- `create_texture` returns the sizing source (`explicit | project_uv | bedrock_default | base_atlas | imported_authored`);
+- public Texture lifecycle descriptions distinguish UV Layout, Texture Atlas, Texture Styling, and Texture Verify;
+- Painter descriptions state that fill is BASE PASS only, shape/brush own styling work, and gradient is for supported continuous transitions rather than default Minecraft shading;
+- terminology/regression coverage protects the above behavior.
+
+The candidate does **not** add new tools, UV working-map aggregation, Painter batching, telemetry, or fixture-specific behavior.
+
+## Required Local Completion
+
+Use local Codex/Opencode with Bun. Do not run a model-authoring benchmark or live visual acceptance during this completion.
+
+1. Start from current `Local` and apply/recover the exact unreferenced candidate `50367a1f6c670856102467fe63111ed019077f0c` without creating a permanent parking branch.
+2. From `mcp/` run:
+
+```bash
+bun install --frozen-lockfile
+bun run prompts:build
+bun run typecheck
+bun run test
+bun run measure:surface
+bun run build
+bun run docs:build
+bun run docs:check
+```
+
+3. Review the generated changes. Expected generated owners are:
+
+```text
+mcp/prompts/manifest.json
+mcp/docs/api.json
+mcp/docs/index.html
+```
+
+Do not hand-edit those generated files.
+4. Confirm the source candidate plus generated artifacts form one coherent public-contract change and that no unrelated diff was introduced.
+5. Re-fetch `Local` HEAD. If it moved materially, reconcile before landing; never force.
+6. Land one coherent commit on `Local`, then observe available CI/status. Do not claim live Blockbench/model quality from this static completion.
+7. Update this continuation owner to the new current state and **STOP**.
+
+## Deferred Until Evidence
+
+Do not implement these during local completion:
+
+- aggregate `list_textures` Box-UV working map;
+- Painter operation batching;
+- telemetry/session logger;
+- new MCP tools/router/profile;
+- live authoring/model test.
+
+Fresh models already return `box_uv_region`; promote aggregate recovery only if resumed/existing-model work later proves Cube-by-Cube inspection is material waste.
 
 ## Proof Boundary
 
-All terminology and routing changes above are source/static facts. **No better visual quality or Authoring Efficiency is claimed until the exact hardened artifact is run and inspected.**
+The candidate is source/test preparation only until the canonical Bun generator and repository gates run. The active `Local` public MCP contract is **not yet changed** by this candidate. No better visual quality or Authoring Efficiency is claimed.
 
 ## STOP
 
-No further repository, runtime, workspace, or experimental action is implied without a new user instruction or the required local/generated-doc capability.
+The only next implementation step is the bounded local Bun completion above. Live model retesting remains explicitly deferred by the user.
