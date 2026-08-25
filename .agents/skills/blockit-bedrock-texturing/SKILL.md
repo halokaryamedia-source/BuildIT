@@ -15,21 +15,21 @@ Texturing may inspect/audit UV state but must not borrow Cube mutation.
 UV/geometry/rig correction required
 → HANDOFF_REQUIRED
   target_phase: geometry
-  reason: <observed structural/UV defect>
-  readiness: <which Geometry/UV gate is not ready>
-  resume_from: <current model/project + immediate target identifiers>
+  reason: <defect>
+  readiness: <failed gate>
+  resume_from: <current target>
   action: set MCP Authoring Phase=geometry; reload BlockIT MCP
 → STOP
 ```
 
-Entry requires final Box UV locked with `autouv=0` where applicable and `list_textures` with no unresolved invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` as read context only.
+Entry: final Box UV locked with `autouv=0` where applicable; `list_textures` has no unresolved invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` read-only.
 
 ## Canonical Vocabulary
 
 ```text
-UV Layout       = geometry → atlas coordinate mapping
-Texture Atlas   = bitmap/PNG canvas storing pixels
-Texture Styling = authored color/material/shading/detail
+UV Layout       = geometry → atlas mapping
+Texture Atlas   = bitmap/PNG canvas
+Texture Styling = color/material/shading/detail
 Texture Verify  = fresh atlas + mapped-model visual validation
 ```
 
@@ -62,7 +62,7 @@ Texture Verify
   mapped model-view evidence → capture_model_views
 ```
 
-`list_textures` is also the global UV gate via `uv_audit.production_gate`. Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
+Global UV gate = `list_textures` → `uv_audit.production_gate`. Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
 
 ## First-Call Invariants
 
@@ -84,13 +84,13 @@ Load the routed active-phase spec only when needed. Known identity skips broad d
 
 Use one base-color atlas PNG for the whole model, not one color atlas per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
 
-New AI production uses logical UV **128×128 default, 256×256 opt-in**; pass explicit blank Atlas size. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+Production logical UV is **128×128 default, 256×256 opt-in**; pass explicit blank Atlas size. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
 PBR normal/height/MER are support atlases. Atlas creation/fill does not complete Texture Styling.
 
 ## Texture Styling
 
-Define palette roles, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha, seam, identity, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
+Define palette roles, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha, seam, identity marks, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
 
 ```text
 BASE PASS             → draw_shape_tool / intentional contiguous paint_fill_tool
@@ -104,4 +104,4 @@ VERIFY                → Texture Verify
 
 ## Texture Verify / Visual Convergence
 
-Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material/form → identity → microdetail. `FAIL / UNVERIFIED / PASS` is visual-only; repeated same-cause failure → `BLOCKED`.
+Use approved reference + fresh `get_texture` + `capture_model_views`. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same cause twice → `BLOCKED`.
