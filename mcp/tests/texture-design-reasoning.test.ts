@@ -14,15 +14,9 @@ describe("texture design reasoning contract", () => {
 
     for (const text of [skill, workflow, policy]) {
       const lower = text.toLowerCase();
-      for (const term of [
-        "palette",
-        "material",
-        "value",
-        "face",
-        "seam",
-        "identity",
-        "detail",
-      ]) expect(lower).toContain(term);
+      for (const term of ["palette", "material", "value", "face", "seam", "identity", "detail"]) {
+        expect(lower).toContain(term);
+      }
       expect(text).toContain("Texture Styling");
     }
 
@@ -62,8 +56,10 @@ describe("texture design reasoning contract", () => {
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
+    expect(skill.toLowerCase()).toContain("random high-contrast noise");
+    expect(workflow.toLowerCase()).toContain("random noise is rejected");
+
     for (const text of [skill, workflow]) {
-      expect(text.toLowerCase()).toContain("random high-contrast noise");
       expect(text.toLowerCase()).toContain("atlas");
       expect(text.toLowerCase()).toContain("visual");
       expect(text).toContain("get_texture");

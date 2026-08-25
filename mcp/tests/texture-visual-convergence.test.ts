@@ -16,11 +16,13 @@ describe("texture visual convergence contract", () => {
     for (const text of [skill, workflow]) {
       expect(text).toContain("get_texture");
       expect(text).toContain("capture_model_views");
-      expect(text.toLowerCase()).toContain("stale");
       for (const verdict of ["FAIL", "UNVERIFIED", "PASS"]) expect(text).toContain(verdict);
     }
     expect(skill).toContain("mapped model-view evidence");
+    expect(skill).toContain("fresh `get_texture`");
+    expect(skill).toContain("fresh affected evidence");
     expect(workflow).toContain("fresh get_texture atlas");
+    expect(workflow.toLowerCase()).toContain("visual evidence stale");
 
     const getTextureStart = texture.indexOf("createTool(textureToolDocs[4].name");
     const getTextureEnd = texture.indexOf("createTool(textureToolDocs[5].name", getTextureStart);

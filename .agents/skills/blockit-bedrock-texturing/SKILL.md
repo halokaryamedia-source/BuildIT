@@ -1,6 +1,6 @@
 ---
 name: blockit-bedrock-texturing
-description: Minecraft Bedrock Entity specialist for Texture Atlas, Texture Styling, Painter, PBR, material instances, and Texture Verify.
+description: Bedrock Entity specialist for Texture Atlas, Texture Styling, Painter, PBR, material instances, and Texture Verify.
 ---
 
 # BlockIT Bedrock Texturing
@@ -22,20 +22,20 @@ UV/geometry/rig correction required
 → STOP
 ```
 
-Texturing entry expects Geometry/UV readiness already established: final Box UV is locked with `autouv=0` where applicable and the global `list_textures` audit has no unresolved invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` only as read context; do not mutate UV ownership here.
+Entry requires final Box UV locked with `autouv=0` where applicable and `list_textures` with no unresolved invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` as read context only.
 
-After Texture Verify `PASS`, requested animation continues via the same handoff with `target_phase: animation` and `readiness: texture_verify=PASS`.
+After Texture Verify `PASS`, animation handoff uses `target_phase: animation` and `readiness: texture_verify=PASS`.
 
 ## Canonical Vocabulary
 
 ```text
 UV Layout       = geometry → atlas coordinate mapping
-Texture Atlas   = bitmap/PNG canvas that stores pixels
-Texture Styling = color/material/shading/detail authored into the atlas
+Texture Atlas   = bitmap/PNG canvas storing pixels
+Texture Styling = authored color/material/shading/detail
 Texture Verify  = fresh atlas + mapped-model visual validation
 ```
 
-`create_texture` = Texture Atlas. Painter = Texture Styling. UV mutation is not Texturing ownership. Per-face `material_instance` semantics belong to Texturing.
+`create_texture` = Texture Atlas. Painter = Texture Styling. UV mutation is not Texturing ownership. Per-face `material_instance` semantics belong here.
 
 ## Direct Routing
 
@@ -68,13 +68,13 @@ Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or 
 
 ## Deferred Spec Loading
 
-Load the exact active-phase tool only after routing selects it. Known identity skips broad discovery and confirmation reads; do not re-list/re-read it only for confirmation.
+Load the routed active-phase tool only. Known identity skips broad discovery; do not re-list/re-read it only for confirmation.
 
 ## Texture Atlas
 
 Use one base-color atlas PNG for the whole model, not one color atlas per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
 
-New AI production uses logical UV 128×128. Pass explicit 128-based `width`/`height` until the pending Texture Atlas sizing contract lands. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+New AI production uses logical UV 128×128. Pass explicit 128-based `width`/`height` until the pending sizing contract lands. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
 PBR normal/height/MER are support atlases. Atlas creation/fill does not complete Texture Styling.
 

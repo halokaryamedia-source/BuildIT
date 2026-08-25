@@ -17,9 +17,10 @@ describe("model creation effectiveness — tool routing", () => {
     for (const tool of ["get_project_info", "place_cube", "capture_model_views", "inspect_element", "modify_cube", "export_model"]) {
       expect(orchestrator).toContain(tool);
     }
-    for (const tool of ["place_cube", "capture_model_views", "inspect_element", "modify_cube"]) {
+    for (const tool of ["place_cube", "inspect_element", "modify_cube"]) {
       expect(geometryRuntime).toContain(tool);
     }
+    expect(geometryRuntime).toContain("fresh model views");
     expect(geometryRuntime).not.toContain("create_texture");
     expect(geometryRuntime).not.toContain("create_animation");
     expect(orchestrator).toContain("Skip `get_project_info` after create/export unless required");

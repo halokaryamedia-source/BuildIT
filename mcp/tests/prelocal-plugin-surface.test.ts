@@ -78,7 +78,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
       "native visible bounding-box fields",
       "animated textures",
       "bone-binding expressions",
-      "material-instance",
+      "material instances",
     ]) expect(implementation).toContain(capability);
     expect(implementation).toContain("manage_locator");
     expect(implementation).toContain("manage_null_object");
