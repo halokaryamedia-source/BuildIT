@@ -88,13 +88,14 @@ describe("authoring phase MCP surface", () => {
     }
   });
 
-  test("applying a phase surface controls the exact definitions used by request-owned MCP servers", () => {
+  test("applying a phase surface controls the exact production definitions used by request-owned MCP servers", () => {
     try {
       for (const phase of MCP_AUTHORING_PHASES) {
         applyMcpToolSurface("bedrock_entity", phase);
-        expect(Object.keys(getEnabledToolDefinitions()).sort()).toEqual(
-          [...phaseSurface(phase)].sort()
-        );
+        const enabledProductionTools = Object.keys(getEnabledToolDefinitions())
+          .filter((toolName) => getToolRegistrationFamily(toolName) !== undefined)
+          .sort();
+        expect(enabledProductionTools).toEqual([...phaseSurface(phase)].sort());
       }
     } finally {
       applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);

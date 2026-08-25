@@ -75,12 +75,16 @@ describe("texture design reasoning contract", () => {
       prompts: Record<string, string>;
     };
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    const runtime = await source("server/prompts.ts");
+    const [runtime, contract] = await Promise.all([
+      source("server/prompts.ts"),
+      source("lib/promptContract.ts"),
+    ]);
 
     expect(manifest.prompts.bedrock_entity_workflow).toBe(workflow);
     expect(workflow).toContain("## Texture Styling");
     expect(runtime).toContain("selectMcpPhaseWorkflowBody");
-    expect(runtime).toContain('texturing: [');
-    expect(runtime).toContain('"Texture Styling"');
+    expect(runtime).toContain("BEDROCK_WORKFLOW_PHASE_SECTIONS");
+    expect(contract).toContain('texturing: [');
+    expect(contract).toContain('"Texture Styling"');
   });
 });
