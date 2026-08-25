@@ -5,27 +5,21 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { requireOpenProject } from "@/lib/util";
 
-export const undoParameters = z.object({
-  steps: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .optional()
-    .default(1)
-    .describe("Number of steps to undo."),
-});
+function historyStepsParameters(action: "undo" | "redo") {
+  return z.object({
+    steps: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .default(1)
+      .describe(`Number of steps to ${action}.`),
+  });
+}
 
-export const redoParameters = z.object({
-  steps: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .optional()
-    .default(1)
-    .describe("Number of steps to redo."),
-});
+export const undoParameters = historyStepsParameters("undo");
+export const redoParameters = historyStepsParameters("redo");
 
 export const getUndoStackParameters = z.object({
   limit: z
@@ -106,6 +100,8 @@ interface IUndoEntrySummary {
   is_current: boolean;
 }
 
+type HistoryDirection = "undo" | "redo";
+
 function currentHistoryPosition() {
   const total = Undo.history?.length ?? 0;
   const index = Undo.index ?? 0;
@@ -154,38 +150,56 @@ function summarizeHistory(limit: number): {
   };
 }
 
+function applyHistorySteps(direction: HistoryDirection, steps: number): string[] {
+  const history = Undo.history ?? [];
+  const index = Undo.index ?? 0;
+  const available = direction === "undo" ? index : history.length - index;
+
+  if (available === 0) {
+    throw new Error(
+      direction === "undo"
+        ? "Nothing to undo. The undo stack is empty."
+        : "Nothing to redo. No edits have been undone or the redo stack has been cleared."
+    );
+  }
+  if (steps > available) {
+    throw new Error(
+      direction === "undo"
+        ? `Cannot undo ${steps} step(s); only ${available} edit(s) are available. Use get_undo_stack to inspect the history depth first.`
+        : `Cannot redo ${steps} step(s); only ${available} undone edit(s) are available. Use get_undo_stack to inspect the history depth first.`
+    );
+  }
+
+  const actions: string[] = [];
+  try {
+    for (let i = 0; i < steps; i++) {
+      const entryIndex =
+        direction === "undo" ? (Undo.index ?? 0) - 1 : (Undo.index ?? 0);
+      const entry = history[entryIndex] as { action?: string } | undefined;
+      actions.push(entry?.action ?? "(unnamed edit)");
+      if (direction === "undo") {
+        Undo.undo();
+      } else {
+        Undo.redo();
+      }
+    }
+  } catch (error) {
+    Canvas.updateAll();
+    const action = direction === "undo" ? "Undo" : "Redo";
+    throw new Error(
+      `${action} failed after ${actions.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  return actions;
+}
+
 export function registerHistoryTools() {
   createTool(historyToolDocs[0].name, {
     ...historyToolDocs[0],
     async execute({ steps }) {
       requireOpenProject("undoing edits");
-      const history = Undo.history ?? [];
-      const available = Undo.index ?? 0;
-      if (available === 0) {
-        throw new Error("Nothing to undo. The undo stack is empty.");
-      }
-      if (steps > available) {
-        throw new Error(
-          `Cannot undo ${steps} step(s); only ${available} edit(s) are available. Use get_undo_stack to inspect the history depth first.`
-        );
-      }
-
-      const count = steps;
-      const undone: string[] = [];
-      try {
-        for (let i = 0; i < count; i++) {
-          const entry = history[(Undo.index ?? 0) - 1] as
-            | { action?: string }
-            | undefined;
-          undone.push(entry?.action ?? "(unnamed edit)");
-          Undo.undo();
-        }
-      } catch (error) {
-        Canvas.updateAll();
-        throw new Error(
-          `Undo failed after ${undone.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
-        );
-      }
+      const undone = applyHistorySteps("undo", steps);
       const position = currentHistoryPosition();
       const result = {
         undone_count: undone.length,
@@ -212,36 +226,7 @@ export function registerHistoryTools() {
     ...historyToolDocs[1],
     async execute({ steps }) {
       requireOpenProject("redoing edits");
-      const history = Undo.history ?? [];
-      const available = history.length - (Undo.index ?? 0);
-      if (available === 0) {
-        throw new Error(
-          "Nothing to redo. No edits have been undone or the redo stack has been cleared."
-        );
-      }
-      if (steps > available) {
-        throw new Error(
-          `Cannot redo ${steps} step(s); only ${available} undone edit(s) are available. Use get_undo_stack to inspect the history depth first.`
-        );
-      }
-
-      const count = steps;
-      const redone: string[] = [];
-      try {
-        for (let i = 0; i < count; i++) {
-          const entry = history[Undo.index ?? 0] as
-            | { action?: string }
-            | undefined;
-          redone.push(entry?.action ?? "(unnamed edit)");
-          Undo.redo();
-        }
-      } catch (error) {
-        Canvas.updateAll();
-        throw new Error(
-          `Redo failed after ${redone.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
-        );
-      }
-
+      const redone = applyHistorySteps("redo", steps);
       Canvas.updateAll();
       const position = currentHistoryPosition();
       const result = {

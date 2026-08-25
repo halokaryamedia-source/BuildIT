@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — Texture Atlas public-contract candidate awaiting canonical Bun generation
+Updated: 2026-08-25 — bounded MCP internal cleanup + Texture Atlas candidate pending Bun generation
 
 ## Current State
 
@@ -11,14 +11,15 @@ MCP_BOX_UV_AUTO_LAYOUT_SOURCE_APPLIED
 SIMPLE_RIGID_FAST_PATH_HARDENED
 CANONICAL_AUTHORING_STAGE_VOCABULARY_ALIGNED
 USER_BASELINE_FAILURE_RECORDED
+HISTORY_TRAVERSAL_INTERNAL_CLEANUP_APPLIED
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_PREPARED_UNREFERENCED
-CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_LANDING
+CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_TEXTURE_CONTRACT_LANDING
 LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE EXPERIMENT
 ```
 
-Working branch: **`Local` only**. Current active public MCP contract remains the `Local` source until the candidate below is generated, verified, reviewed, and deliberately landed. `Experimental/**` remains inactive.
+Working branch: **`Local` only**. `Experimental/**` remains inactive. Current source plus relevant proof remains authority.
 
 ## Canonical Vocabulary — Do Not Collapse
 
@@ -32,25 +33,23 @@ TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 
 `create_texture` creates a **Texture Atlas**. UV state (`uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region`) is **UV Layout**. Painter operations are **Texture Styling**. `get_texture` plus mapped model views provides **Texture Verify** evidence.
 
-## Prepared Public-Contract Candidate
+## Bounded Internal Cleanup Applied
+
+`mcp/server/tools/history.ts` now shares the identical Undo/Redo step schema construction and the common history-traversal/validation/error path instead of maintaining two copies.
+
+The public tool names, schema semantics/defaults, error messages, result fields, `structuredContent`, stack-read behavior, and existing refresh semantics remain unchanged. In particular, the previous successful-redo refresh remains; no new successful-undo refresh was introduced.
+
+This is a source-structure cleanup. It does **not** prove lower wall-clock runtime or better Authoring Efficiency by itself.
+
+A larger `cubes.ts` consolidation was explored but was **not landed** because the available GitHub blob transport did not preserve the large candidate reliably. Do not infer any Cube lifecycle refactor from abandoned/unreferenced candidate objects.
+
+## Prepared Texture Atlas Public-Contract Candidate
 
 Unreferenced candidate commit:
 
 ```text
 50367a1f6c670856102467fe63111ed019077f0c
-parent: 49eb2b6a6a8bf9aa2cd65ebb969916928a0fcb57
-```
-
-The candidate is intentionally **not** on `Local` because this ChatGPT/GitHub-only channel has no Bun runtime and public schema/description changes require canonical generated artifacts.
-
-Candidate source/test files:
-
-```text
-mcp/server/tools/texture.ts
-mcp/server/tools/paint.ts
-mcp/tests/texture-production-discipline.test.ts
-.agents/skills/blockit-bedrock-texturing/SKILL.md
-mcp/prompts/bedrock_entity_workflow.md
+original parent: 49eb2b6a6a8bf9aa2cd65ebb969916928a0fcb57
 ```
 
 Candidate semantics:
@@ -66,12 +65,13 @@ Candidate semantics:
 
 The candidate does **not** add new tools, UV working-map aggregation, Painter batching, telemetry, or fixture-specific behavior.
 
-## Required Local Completion
+## Required Texture Candidate Completion
 
-Use local Codex/Opencode with Bun. Do not run a model-authoring benchmark or live visual acceptance during this completion.
+Use a local Codex/Opencode environment with Bun. Do not run a model-authoring benchmark or live visual acceptance during this completion.
 
-1. Start from current `Local` and apply/recover the exact unreferenced candidate `50367a1f6c670856102467fe63111ed019077f0c` without creating a permanent parking branch.
-2. From `mcp/` run:
+1. Start from the then-current `Local`.
+2. Recover/rebase the exact intent of candidate `50367a1f6c670856102467fe63111ed019077f0c` onto current `Local`; do not force-update or blindly replace newer source.
+3. From `mcp/` run:
 
 ```bash
 bun install --frozen-lockfile
@@ -84,36 +84,26 @@ bun run docs:build
 bun run docs:check
 ```
 
-3. Review the generated changes. Expected generated owners are:
-
-```text
-mcp/prompts/manifest.json
-mcp/docs/api.json
-mcp/docs/index.html
-```
-
-Do not hand-edit those generated files.
-4. Confirm the source candidate plus generated artifacts form one coherent public-contract change and that no unrelated diff was introduced.
-5. Re-fetch `Local` HEAD. If it moved materially, reconcile before landing; never force.
-6. Land one coherent commit on `Local`, then observe available CI/status. Do not claim live Blockbench/model quality from this static completion.
-7. Update this continuation owner to the new current state and **STOP**.
+4. Review generated changes. Expected generated owners are `mcp/prompts/manifest.json`, `mcp/docs/api.json`, and `mcp/docs/index.html`. Do not hand-edit generated entries.
+5. Confirm source + tests + generated artifacts form one coherent public-contract change with no unrelated diff.
+6. Re-fetch `Local` HEAD before landing; if it moved materially, reconcile and never force.
+7. Land one coherent commit, observe available CI/status, then STOP. Do not infer live Blockbench/model quality from static completion.
 
 ## Deferred Until Evidence
 
-Do not implement these during local completion:
+Do not implement automatically:
 
 - aggregate `list_textures` Box-UV working map;
 - Painter operation batching;
+- targeted Canvas refresh redesign;
 - telemetry/session logger;
 - new MCP tools/router/profile;
 - live authoring/model test.
 
-Fresh models already return `box_uv_region`; promote aggregate recovery only if resumed/existing-model work later proves Cube-by-Cube inspection is material waste.
-
 ## Proof Boundary
 
-The candidate is source/test preparation only until the canonical Bun generator and repository gates run. The active `Local` public MCP contract is **not yet changed** by this candidate. No better visual quality or Authoring Efficiency is claimed.
+The History cleanup is source/static evidence of reduced duplicated implementation while preserving the existing public contract. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching runtime evidence.**
 
 ## STOP
 
-The only next implementation step is the bounded local Bun completion above. Live model retesting remains explicitly deferred by the user.
+Do not broaden this internal cleanup into additional tool families in the same pass. The next implementation step is the bounded Texture Atlas candidate completion when a canonical Bun environment is available. Live model retesting remains deferred by the user.
