@@ -1,4 +1,8 @@
 import { MCP_EXTENDED_FAMILIES_SETTING_ID } from "@/lib/registrationProfile";
+import {
+  DEFAULT_MCP_AUTHORING_PHASE,
+  MCP_AUTHORING_PHASE_SETTING_ID,
+} from "@/lib/authoringPhase";
 
 const settings: Setting[] = [];
 
@@ -22,6 +26,20 @@ export function settingsSetup(): void {
       value: "/bb-mcp",
       category,
       icon: "webhook",
+    }),
+    new Setting(MCP_AUTHORING_PHASE_SETTING_ID, {
+      name: "MCP Authoring Phase",
+      description:
+        "Expose Core tools plus exactly one authoring phase on the next plugin load/reload. Change phase only at a deliberate Geometry, Texturing, or Animation handoff.",
+      type: "select",
+      value: DEFAULT_MCP_AUTHORING_PHASE,
+      options: {
+        geometry: "Geometry + Rig + UV Layout",
+        texturing: "Texturing",
+        animation: "Animation",
+      },
+      requires_restart: true,
+      category,
     }),
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
       name: "Extended MCP Families",
