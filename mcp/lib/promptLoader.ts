@@ -92,9 +92,11 @@ function validatePromptOverride(name: string, content: string): void {
   }
 }
 
-function serializeOverrides(values: Record<string, string>) {
+function serializeOverrides(
+  values: Record<string, string>
+): z.infer<typeof promptOverrideStoreSchema> {
   return {
-    schema_version: PROMPT_OVERRIDE_STORE_VERSION as const,
+    schema_version: PROMPT_OVERRIDE_STORE_VERSION,
     overrides: Object.fromEntries(
       Object.entries(values).map(([name, content]) => {
         const canonical = requireKnownPrompt(name);
