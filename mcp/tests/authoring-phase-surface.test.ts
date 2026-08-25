@@ -8,9 +8,11 @@ import {
   getMcpPhaseReadinessSummary,
   resolveMcpAuthoringPhase,
 } from "@/lib/authoringPhase";
+import { getEnabledToolDefinitions } from "@/lib/factories";
 import { buildMcpServerInstructions } from "@/server/server";
 import { selectMcpPhaseWorkflowBody } from "@/server/prompts";
 import {
+  applyMcpToolSurface,
   getMcpSurfaceToolNames,
   getToolRegistrationFamily,
   isCatalogToolEnabled,
@@ -83,6 +85,19 @@ describe("authoring phase MCP surface", () => {
       "inspect_animation",
     ]) {
       expect(geometry.has(foreignTool), foreignTool).toBe(false);
+    }
+  });
+
+  test("applying a phase surface controls the exact definitions used by request-owned MCP servers", () => {
+    try {
+      for (const phase of MCP_AUTHORING_PHASES) {
+        applyMcpToolSurface("bedrock_entity", phase);
+        expect(Object.keys(getEnabledToolDefinitions()).sort()).toEqual(
+          [...phaseSurface(phase)].sort()
+        );
+      }
+    } finally {
+      applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);
     }
   });
 
@@ -296,6 +311,7 @@ describe("authoring phase MCP surface", () => {
     expect(indexSource).toContain(
       "applyMcpToolSurface(registrationProfile, authoringPhase)"
     );
+    expect(indexSource).toContain("phase: authoringPhase");
     expect(settingsSource).toContain("MCP_AUTHORING_PHASE_SETTING_ID");
     expect(settingsSource).toContain('type: "select"');
     expect(settingsSource).toContain(

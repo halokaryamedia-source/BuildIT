@@ -111,8 +111,8 @@ BBPlugin.register("mcp", {
     // Runtime-conditional resource (depends on the reference_models plugin).
     registerReferenceModelsResource();
 
-    // Local prompt content is bundled into this BlockIT build. User overrides
-    // remain local; normal plugin startup performs no prompt-network fetch.
+    // Local prompt content is bundled into this BlockIT build. Compatible user
+    // overrides remain local; stale pre-phase overrides are discarded safely.
     await initPromptLoader();
 
     // P1.4 default transport is request-owned/stateless Streamable HTTP on
@@ -130,6 +130,7 @@ BBPlugin.register("mcp", {
       resources,
       prompts,
       profile: registrationProfile,
+      phase: authoringPhase,
     });
   },
 

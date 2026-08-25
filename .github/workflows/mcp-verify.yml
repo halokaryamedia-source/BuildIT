@@ -68,7 +68,7 @@ jobs:
       - name: Contract tests
         run: bun run test
 
-      - name: Default MCP surface measurement
+      - name: Catalog MCP surface measurement
         run: bun run measure:surface
 
       - name: Production build

@@ -47,6 +47,7 @@ export function settingsSetup(): void {
         "Explicitly expose the source-preserved generic import/UI fallback families on the next MCP plugin load. risky_eval and from_geo_json remain disabled.",
       type: "toggle",
       value: false,
+      requires_restart: true,
       category,
       icon: "extension",
     })

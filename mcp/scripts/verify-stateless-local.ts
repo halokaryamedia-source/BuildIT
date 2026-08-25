@@ -1,17 +1,18 @@
 export {};
 
+import {
+  getMcpSurfaceToolNames,
+  registerMcpProfile,
+} from "@/server/tools";
+import {
+  isMcpAuthoringPhase,
+  type McpAuthoringPhase,
+} from "@/lib/authoringPhase";
+import type { McpRegistrationProfile } from "@/lib/registrationProfile";
+
 const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 // Match the current Codex legacy Streamable HTTP initialization revision.
 const PROTOCOL_VERSION = "2025-06-18";
-
-const REQUIRED_CORE_TOOLS = [
-  "place_cube",
-  "modify_cube",
-  "list_outline",
-  "inspect_element",
-  "create_texture",
-  "create_animation",
-] as const;
 
 const FORBIDDEN_DEFAULT_TOOLS = ["risky_eval", "from_geo_json"] as const;
 
@@ -22,6 +23,11 @@ type CheckResult = {
 };
 
 type JsonObject = Record<string, unknown>;
+
+type HealthProduct = {
+  profile?: unknown;
+  authoring_phase?: unknown;
+};
 
 const targetUrl = (process.argv[2] || process.env.BLOCKIT_MCP_URL || DEFAULT_MCP_URL)
   .replace(/\/+$/, "");
@@ -37,6 +43,10 @@ async function readJson(response: Response): Promise<JsonObject> {
   const text = await response.text();
   if (!text) return {};
   return JSON.parse(text) as JsonObject;
+}
+
+function isRegistrationProfile(value: unknown): value is McpRegistrationProfile {
+  return value === "bedrock_entity" || value === "extended";
 }
 
 function mcpHeaders(includeProtocolVersion = false): Headers {
@@ -65,9 +75,9 @@ async function postMcp(
 }
 
 async function verify(): Promise<void> {
-  console.log(`BlockIT P1.4 stateless smoke check: ${targetUrl}`);
+  console.log(`BlockIT stateless phase-aware smoke check: ${targetUrl}`);
   console.log(`Codex-compatible protocol fixture: ${PROTOCOL_VERSION}`);
-  console.log("This is a transport smoke harness, not a substitute for Blockbench/Codex local acceptance.\n");
+  console.log("This is a transport/surface smoke harness, not a substitute for Blockbench/Codex visual acceptance.\n");
 
   const healthResponse = await fetch(healthUrl);
   const health = await readJson(healthResponse);
@@ -81,6 +91,28 @@ async function verify(): Promise<void> {
       transport?.response_mode === "json",
     `HTTP ${healthResponse.status}; ${JSON.stringify(transport ?? {})}`
   );
+
+  const product = health.product as HealthProduct | undefined;
+  const profile = product?.profile;
+  const phase = product?.authoring_phase;
+  const identityValid =
+    isRegistrationProfile(profile) && isMcpAuthoringPhase(phase);
+  record(
+    "health reports active profile and authoring phase",
+    identityValid,
+    `profile=${String(profile)}; phase=${String(phase)}`
+  );
+  if (!identityValid) {
+    throw new Error(
+      "Installed BlockIT health identity is missing a valid profile/authoring_phase. Rebuild and reload the current Local plugin before continuing."
+    );
+  }
+
+  // Mirror the installed profile in the local source catalog before deriving the
+  // exact expected phase surface. This keeps the smoke check source-driven.
+  registerMcpProfile(profile);
+  const activePhase: McpAuthoringPhase = phase;
+  const expectedToolNames = getMcpSurfaceToolNames(profile, activePhase).sort();
 
   const getResponse = await fetch(targetUrl, {
     method: "GET",
@@ -130,8 +162,12 @@ async function verify(): Promise<void> {
   });
   const initialize = await readJson(initializeResponse);
   const initializeResult = initialize.result as
-    | { protocolVersion?: unknown }
+    | { protocolVersion?: unknown; instructions?: unknown }
     | undefined;
+  const instructions =
+    typeof initializeResult?.instructions === "string"
+      ? initializeResult.instructions
+      : "";
   record(
     "initialize succeeds without a protocol session",
     initializeResponse.status === 200 &&
@@ -140,6 +176,11 @@ async function verify(): Promise<void> {
     `HTTP ${initializeResponse.status}; protocol=${String(
       initializeResult?.protocolVersion
     )}; session=${String(initializeResponse.headers.get("mcp-session-id"))}`
+  );
+  record(
+    "initialize names the same active authoring phase",
+    instructions.includes(`ACTIVE PHASE: ${activePhase.toUpperCase()}`),
+    `phase=${activePhase}; instructions=${instructions.length} chars`
   );
 
   const initializedResponse = await postMcp(
@@ -178,26 +219,33 @@ async function verify(): Promise<void> {
       | undefined;
     const names = (result?.tools ?? [])
       .map((tool) => tool.name)
-      .filter((name): name is string => typeof name === "string");
+      .filter((name): name is string => typeof name === "string")
+      .sort();
     return { response, names };
   };
 
   const firstList = await listTools(2);
-  const missingCore = REQUIRED_CORE_TOOLS.filter(
+  const missingExpected = expectedToolNames.filter(
     (tool) => !firstList.names.includes(tool)
+  );
+  const unexpected = firstList.names.filter(
+    (tool) => !expectedToolNames.includes(tool)
   );
   const exposedForbidden = FORBIDDEN_DEFAULT_TOOLS.filter((tool) =>
     firstList.names.includes(tool)
   );
   record(
-    "default tools/list preserves Bedrock core and dangerous defaults",
+    "tools/list exactly matches the source-owned active phase surface",
     firstList.response.status === 200 &&
       firstList.response.headers.get("mcp-session-id") === null &&
-      missingCore.length === 0 &&
+      missingExpected.length === 0 &&
+      unexpected.length === 0 &&
       exposedForbidden.length === 0,
-    `HTTP ${firstList.response.status}; tools=${firstList.names.length}; missing_core=${
-      missingCore.join(",") || "none"
-    }; exposed_forbidden=${exposedForbidden.join(",") || "none"}`
+    `HTTP ${firstList.response.status}; profile=${profile}; phase=${activePhase}; tools=${firstList.names.length}; expected=${expectedToolNames.length}; missing=${
+      missingExpected.join(",") || "none"
+    }; unexpected=${unexpected.join(",") || "none"}; forbidden=${
+      exposedForbidden.join(",") || "none"
+    }`
   );
 
   const secondList = await listTools(3);
@@ -205,7 +253,7 @@ async function verify(): Promise<void> {
     "repeated tools/list remains session-independent",
     secondList.response.status === 200 &&
       secondList.response.headers.get("mcp-session-id") === null &&
-      secondList.names.length === firstList.names.length,
+      JSON.stringify(secondList.names) === JSON.stringify(firstList.names),
     `HTTP ${secondList.response.status}; first=${firstList.names.length}; second=${secondList.names.length}; session=${String(
       secondList.response.headers.get("mcp-session-id")
     )}`
@@ -214,7 +262,7 @@ async function verify(): Promise<void> {
   const failed = checks.filter((check) => !check.ok);
   console.log(`\nResult: ${checks.length - failed.length}/${checks.length} checks passed.`);
   console.log(
-    "Still requires manual/local acceptance: OS bind address in Blockbench, real Codex connection, Blockbench read-only + bounded mutation, plugin unload/reload, and running UI truthfulness."
+    "Still requires manual/local acceptance: exact installed artifact freshness, real Codex connection, representative Blockbench mutation/Undo, phase handoffs, plugin unload/reload, and visual/model quality."
   );
 
   if (failed.length > 0) {

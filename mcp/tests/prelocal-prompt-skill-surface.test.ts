@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readdir } from "node:fs/promises";
+import { assertBedrockWorkflowSourceCompatible } from "@/lib/promptContract";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -26,6 +27,28 @@ describe("Bedrock prompt and skill surface", () => {
     expect(files).toEqual(["bedrock_entity_workflow.md", "blockbench_code_eval_safety.md", "blockbench_native_apis.md"]);
     const manifest = JSON.parse(await source("prompts/manifest.json")) as { prompts: Record<string, string> };
     expect(Object.keys(manifest.prompts)).toEqual(["bedrock_entity_workflow"]);
+  });
+
+  test("prompt override compatibility is phase-aware and stale overrides are not silently reused", async () => {
+    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    expect(() => assertBedrockWorkflowSourceCompatible(workflow)).not.toThrow();
+    expect(() =>
+      assertBedrockWorkflowSourceCompatible(
+        workflow.replace("## Texture Verify", "## Legacy Texture Review")
+      )
+    ).toThrow("missing section(s)");
+
+    const [loader, dialog, prompts] = await Promise.all([
+      source("lib/promptLoader.ts"),
+      source("ui/promptOverrideDialog.ts"),
+      source("server/prompts.ts"),
+    ]);
+    expect(loader).toContain("PROMPT_OVERRIDE_STORE_VERSION = 2");
+    expect(loader).toContain("base_fingerprint");
+    expect(loader).toContain("schema_version");
+    expect(loader).toContain("assertBedrockWorkflowSourceCompatible");
+    expect(dialog).toContain("Prompt override rejected");
+    expect(prompts).toContain("assertBedrockWorkflowSourceCompatible(workflow)");
   });
 
   test("skill stack keeps orchestration and domain judgement in separate active-phase owners", async () => {

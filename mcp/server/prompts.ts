@@ -2,27 +2,15 @@ import { z } from "zod";
 import { createPrompt, prompts } from "@/lib/factories";
 import { getPromptContent } from "@/lib/promptLoader";
 import {
+  BEDROCK_WORKFLOW_PHASE_SECTIONS,
+  assertBedrockWorkflowSourceCompatible,
+} from "@/lib/promptContract";
+import {
   buildMcpPhaseHandoffContract,
   buildMcpPhasePromptHeader,
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
-
-const PHASE_SOURCE_SECTIONS: Record<McpAuthoringPhase, string[]> = {
-  geometry: [
-    "Minimum Necessary Evidence",
-    "Simple Rigid Fast Path",
-    "Geometry / Visual Gate",
-    "UV Layout",
-  ],
-  texturing: [
-    "Minimum Necessary Evidence",
-    "Texture Atlas",
-    "Texture Styling",
-    "Texture Verify",
-  ],
-  animation: ["Minimum Necessary Evidence"],
-};
 
 const ANIMATION_RUNTIME_WORKFLOW = `## Animation Workflow
 
@@ -61,7 +49,8 @@ export function selectMcpPhaseWorkflowBody(
   workflow: string,
   phase: McpAuthoringPhase
 ): string {
-  const sections = PHASE_SOURCE_SECTIONS[phase].map((heading) =>
+  assertBedrockWorkflowSourceCompatible(workflow);
+  const sections = BEDROCK_WORKFLOW_PHASE_SECTIONS[phase].map((heading) =>
     readSection(workflow, heading)
   );
   if (phase === "animation") sections.push(ANIMATION_RUNTIME_WORKFLOW);

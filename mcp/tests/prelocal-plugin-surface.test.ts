@@ -7,9 +7,10 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local BlockIT plugin surface hardening", () => {
-  test("surface manifest distinguishes exposed/disabled/catalog entries deterministically", () => {
+  test("surface manifest distinguishes phase, exposed, disabled, and catalog entries deterministically", () => {
     const manifest = createSurfaceManifest({
       profile: "bedrock_entity",
+      phase: "geometry",
       tools: {
         exposed_b: { name: "exposed_b", description: "", enabled: true, status: "stable" },
         disabled_a: { name: "disabled_a", description: "", enabled: false, status: "experimental" },
@@ -21,6 +22,8 @@ describe("pre-local BlockIT plugin surface hardening", () => {
         bedrock_prompt: { name: "bedrock_prompt", description: "", arguments: [], enabled: true, status: "stable" },
       },
     });
+    expect(manifest.profile).toBe("bedrock_entity");
+    expect(manifest.authoring_phase).toBe("geometry");
     expect(manifest.tools).toEqual({
       exposed_count: 2, disabled_count: 1, catalog_count: 3,
       exposed: ["exposed_a", "exposed_b"], disabled: ["disabled_a"],
@@ -49,13 +52,22 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(buildSource).not.toContain("GITHUB_SHA");
   });
 
-  test("panel count language reflects MCP exposure instead of visible filter count", async () => {
-    const [panel, uiSource] = await Promise.all([source("ui/panel.html"), source("ui/index.ts")]);
+  test("panel exposes active phase and truthful MCP surface counts", async () => {
+    const [panel, uiSource, identitySource] = await Promise.all([
+      source("ui/panel.html"),
+      source("ui/index.ts"),
+      source("lib/productIdentity.ts"),
+    ]);
+    expect(panel).toContain("<dt>Authoring Phase</dt>");
+    expect(panel).toContain("server.authoringPhase");
     expect(panel).toContain("surface.tools.exposed_count");
     expect(panel).toContain("surface.prompts.exposed_count");
     expect(panel).toContain("surface.resources.available_count");
+    expect(uiSource).toContain("phase: McpAuthoringPhase");
+    expect(uiSource).toContain("authoringPhase: phase");
     expect(uiSource).toContain("showDisabled: false");
     expect(uiSource).toContain("createSurfaceManifest");
+    expect(identitySource).toContain("authoring_phase: authoringPhase");
   });
 
   test("Blockbench Tool Test cannot bypass disabled registration or full schema validation", async () => {

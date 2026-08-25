@@ -1,6 +1,7 @@
 import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
+import type { McpAuthoringPhase } from "@/lib/authoringPhase";
 import {
   PRODUCT_NAME,
   PRODUCT_REPOSITORY,
@@ -24,13 +25,15 @@ export function uiSetup({
   resources,
   prompts,
   profile,
+  phase,
 }: {
   tools: Record<string, IMCPTool>;
   resources: Record<string, IMCPResource>;
   prompts: Record<string, IMCPPrompt>;
   profile: McpRegistrationProfile;
+  phase: McpAuthoringPhase;
 }) {
-  const surface = createSurfaceManifest({ profile, tools, resources, prompts });
+  const surface = createSurfaceManifest({ profile, phase, tools, resources, prompts });
   panelCssHandle?.delete();
   panelCssHandle = Blockbench.addCSS(panelCSS);
 
@@ -65,6 +68,7 @@ export function uiSetup({
           version: VERSION,
           repositoryUrl: PRODUCT_REPOSITORY,
           profile,
+          authoringPhase: phase,
           endpoint: `127.0.0.1:${Settings.get("mcp_port") || 3000}${Settings.get("mcp_endpoint") || "/bb-mcp"}`,
           transport: "Streamable HTTP (stateless JSON)",
         },

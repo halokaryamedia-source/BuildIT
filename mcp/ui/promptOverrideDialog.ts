@@ -85,17 +85,31 @@ export function openPromptOverrideDialog(promptName: string): void {
     ],
     onButton(buttonIndex: number) {
       if (buttonIndex === 0) {
-        // Save Override
+        // Save Override. Invalid/stale workflow structure is rejected instead
+        // of being persisted and failing later during phase prompt generation.
         const textarea = document.getElementById(
           "mcp_override_textarea"
         ) as HTMLTextAreaElement | null;
         if (textarea) {
-          setPromptOverride(promptName, textarea.value);
-          document.dispatchEvent(new CustomEvent(PROMPT_OVERRIDE_CHANGED, { detail: { promptName } }));
-          Blockbench.showQuickMessage(
-            tl("mcp.dialog.override_saved"),
-            1500
-          );
+          try {
+            setPromptOverride(promptName, textarea.value);
+            document.dispatchEvent(
+              new CustomEvent(PROMPT_OVERRIDE_CHANGED, {
+                detail: { promptName },
+              })
+            );
+            Blockbench.showQuickMessage(
+              tl("mcp.dialog.override_saved"),
+              1500
+            );
+          } catch (error) {
+            Blockbench.showQuickMessage(
+              `Prompt override rejected: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+              4500
+            );
+          }
         }
         return;
       }
