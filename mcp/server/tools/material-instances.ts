@@ -108,6 +108,35 @@ function findCubeOrThrow(id: string): Cube {
   );
 }
 
+type MaterialFace = z.infer<typeof faceEnum>;
+
+function resolveExplicitOrSelectedCubes(
+  cubeId: string | undefined,
+  missingSelectionMessage: string
+): Cube[] {
+  if (cubeId) return [findCubeOrThrow(cubeId)];
+  if (!Cube.selected.length) {
+    throw new Error(missingSelectionMessage);
+  }
+  return Cube.selected;
+}
+
+function setMaterialNameOnFaces(
+  cube: Cube,
+  faces: readonly MaterialFace[],
+  materialName: string,
+  onlyWhenAssigned: boolean = false
+): number {
+  let modified = 0;
+  for (const faceDir of faces) {
+    const face = cube.faces[faceDir];
+    if (!face || (onlyWhenAssigned && !face.material_name)) continue;
+    face.extend({ material_name: materialName });
+    modified += 1;
+  }
+  return modified;
+}
+
 // ============================================================================
 // Material Instance Tool Docs
 // ============================================================================
@@ -225,18 +254,10 @@ export function registerMaterialInstanceTools() {
     {
       ...materialInstanceToolDocs[1],
       async execute({ cube_id, material_name, faces }) {
-        let cubes: Cube[];
-
-        if (cube_id) {
-          cubes = [findCubeOrThrow(cube_id)];
-        } else {
-          if (!Cube.selected.length) {
-            throw new Error(
-              "No cube specified and no cubes selected. Provide a cube_id or select cubes."
-            );
-          }
-          cubes = Cube.selected;
-        }
+        const cubes = resolveExplicitOrSelectedCubes(
+          cube_id,
+          "No cube specified and no cubes selected. Provide a cube_id or select cubes."
+        );
 
         Undo.initEdit({
           elements: cubes,
@@ -244,15 +265,8 @@ export function registerMaterialInstanceTools() {
         });
 
         let modifiedCount = 0;
-
         for (const cube of cubes) {
-          for (const faceDir of faces) {
-            const face = cube.faces[faceDir];
-            if (face) {
-              face.extend({ material_name });
-              modifiedCount++;
-            }
-          }
+          modifiedCount += setMaterialNameOnFaces(cube, faces, material_name);
         }
 
         Undo.finishEdit("Set material instances");
@@ -349,16 +363,13 @@ export function registerMaterialInstanceTools() {
         });
 
         let totalModified = 0;
-
         for (const assignment of assignments) {
           const cube = cubeCache[assignment.cube_id];
-          for (const faceDir of assignment.faces) {
-            const face = cube.faces[faceDir];
-            if (face) {
-              face.extend({ material_name: assignment.material_name });
-              totalModified++;
-            }
-          }
+          totalModified += setMaterialNameOnFaces(
+            cube,
+            assignment.faces,
+            assignment.material_name
+          );
         }
 
         Undo.finishEdit("Bulk set material instances");
@@ -375,20 +386,12 @@ export function registerMaterialInstanceTools() {
     {
       ...materialInstanceToolDocs[4],
       async execute({ cube_id, faces, all_cubes }) {
-        let cubes: Cube[];
-
-        if (all_cubes) {
-          cubes = Cube.all;
-        } else if (cube_id) {
-          cubes = [findCubeOrThrow(cube_id)];
-        } else {
-          if (!Cube.selected.length) {
-            throw new Error(
+        const cubes = all_cubes
+          ? Cube.all
+          : resolveExplicitOrSelectedCubes(
+              cube_id,
               "No cube specified and no cubes selected. Provide a cube_id, select cubes, or set all_cubes=true."
             );
-          }
-          cubes = Cube.selected;
-        }
 
         if (cubes.length === 0) {
           return "No cubes to process.";
@@ -401,15 +404,13 @@ export function registerMaterialInstanceTools() {
 
         const facesToClear = faces || faceEnum.options;
         let clearedCount = 0;
-
         for (const cube of cubes) {
-          for (const faceDir of facesToClear) {
-            const face = cube.faces[faceDir];
-            if (face && face.material_name) {
-              face.extend({ material_name: "" });
-              clearedCount++;
-            }
-          }
+          clearedCount += setMaterialNameOnFaces(
+            cube,
+            facesToClear,
+            "",
+            true
+          );
         }
 
         Undo.finishEdit("Clear material instances");
