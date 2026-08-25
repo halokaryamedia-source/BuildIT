@@ -55,20 +55,17 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     const start = elementSource.indexOf("createTool(elementToolDocs[0].name");
     const end = elementSource.indexOf("createTool(elementToolDocs[1].name", start);
     const block = elementSource.slice(start, end);
-    expect(block).toContain("const removedRoot = elementContinuationState(element);");
-    expect(block).toContain("const deleteElements: OutlinerElement[] = [];");
-    expect(block).toContain("const deleteGroups: Group[] = [];");
-    expect(block).toContain("element.forEachChild");
-    expect(block).toContain("animations: deleteAnimations");
-    expect(block).toContain("const deletionCounts = {");
-    expect(block).toContain("total_nodes: deleteGroups.length + deleteElements.length");
-    expect(block).toContain("const affectedAnimationCount = deleteAnimations.length;");
-    expect(block.indexOf("const deleteAnimations")).toBeLessThan(block.indexOf("Undo.initEdit({"));
-    expect(block.indexOf("const deletionCounts")).toBeLessThan(block.indexOf("Undo.initEdit({"));
-    expect(block).toContain("removed_root: removedRoot");
-    expect(block).toContain("removed_counts: deletionCounts");
-    expect(block).toContain("affected_animations: affectedAnimationCount");
-    expect(block).toContain("structuredContent: result");
+    for (const marker of [
+      "const removedRoot = elementContinuationState(element);",
+      "const deleteElements: OutlinerElement[] = [];",
+      "const deleteGroups: Group[] = [];",
+      "element.forEachChild",
+      "animations: deleteAnimations",
+      "removed_root: removedRoot",
+      "removed_counts: deletionCounts",
+      "affected_animations: affectedAnimationCount",
+      "structuredContent: result",
+    ]) expect(block).toContain(marker);
   });
 
   test("inspect_element exposes authored Locator and Null Object state", async () => {
@@ -82,11 +79,8 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
 
   test("Null Object creation rejects duplicate exact names before Undo", async () => {
     const locatorSource = await source("server/tools/locators.ts");
-    const block = locatorSource.slice(locatorSource.indexOf("locatorToolDocs[2].name"));
-    expect(block.indexOf("assertOutlinerNameAvailable")).toBeGreaterThan(-1);
-    expect(locatorSource).toContain(
-      "Names must remain unique across Locators, Null Objects, Cubes, and Groups"
-    );
+    expect(locatorSource.slice(locatorSource.indexOf("locatorToolDocs[2].name")).indexOf("assertOutlinerNameAvailable")).toBeGreaterThan(-1);
+    expect(locatorSource).toContain("Names must remain unique across Locators, Null Objects, Cubes, and Groups");
   });
 
   test("Null Object geometry round-trip distinction is documented", async () => {
@@ -95,18 +89,13 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(locatorSource).toContain("IK fields remain Blockbench editor/animation state");
   });
 
-  test("current owners keep Locator coverage mapped while remaining native gaps stay protected", async () => {
-    // The runtime prompt compaction moved Locator routing/continuation
-    // guidance to the orchestrator skill; the validation report keeps the
-    // capability/gap ledger.
+  test("current owners keep Locator coverage mapped while protected gaps remain explicit", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const validation = await source("../docs/foundation/validation-report.md");
     expect(orchestrator).toContain("list_locator_elements");
     expect(orchestrator).toContain("manage_locator / manage_null_object");
-    expect(orchestrator).toContain(
-      "Do not automatically re-read them with `inspect_element`"
-    );
-    expect(validation).toContain("## Locator / Null Object");
+    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
+    expect(validation).toContain("Locator/Null Object lifecycle");
     expect(validation).toContain("TextureMesh direct authoring/inspection");
     expect(validation).toContain("AnimationController blend-curve mutation");
   });

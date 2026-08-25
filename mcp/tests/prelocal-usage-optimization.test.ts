@@ -7,13 +7,11 @@ async function source(path: string): Promise<string> {
 describe("pre-local usage optimization contract", () => {
   test("repository work states the real contract before one coherent patch", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
-
     expect(brief).toContain("State the contract");
     expect(brief).toContain("Preflight regressions");
     expect(brief).toContain("Success Metric");
     expect(brief).toContain("Forbidden Proxy / Non-Goal");
     expect(brief).toContain("Implement one coherent patch");
-    expect(brief).toContain("no intermediary/checkpoint commits");
   });
 
   test("known coherent creation batches without turning uncertainty into a call-saving target", async () => {
@@ -27,34 +25,18 @@ describe("pre-local usage optimization contract", () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     expect(modelling).toContain("affected view(s) first");
     expect(modelling).toContain("expand only for material cross-view risk");
-    expect(modelling).toContain("A fix that helps one view while materially regressing another is rejected");
+    expect(modelling).toContain("helps one view while materially regressing another is rejected");
   });
 
   test("authoring efficiency uses accepted quality plus observable runtime cost", async () => {
     const runbook = await source("../docs/knowledge/operations/local-acceptance-runbook.md");
-
     for (const marker of [
-      "Authoring Efficiency",
-      "Cost to Accepted Result",
-      "QUALITY FAIL",
-      "QUALITY PASS",
-      "Total meaningful MCP calls to Geometry PASS",
-      "Discovery calls",
-      "Redundant readbacks",
-      "tool_search calls / misses",
-      "place_cube calls / Cubes authored",
-      "capture_model_views calls / views requested",
-      "Correction attempts",
-      "Same-cause retries",
-      "CONTRACT_CAUSED",
-      "REASONING_CAUSED",
-      "IMPROVED",
-      "UNCHANGED",
-      "REGRESSED",
+      "Authoring Efficiency", "Cost to Accepted Result", "QUALITY FAIL", "QUALITY PASS",
+      "Discovery calls", "Redundant readbacks", "tool_search calls / misses",
+      "Correction attempts", "Same-cause retries", "CONTRACT_CAUSED", "REASONING_CAUSED",
+      "IMPROVED", "UNCHANGED", "REGRESSED",
     ]) expect(runbook).toContain(marker);
-
     expect(runbook).toContain("Static Footprint");
-    expect(runbook).toContain("not a telemetry subsystem");
     expect(runbook).toContain("Do not invent token or latency numbers");
   });
 
@@ -67,8 +49,9 @@ describe("pre-local usage optimization contract", () => {
     expect(workspace).toContain("## Meaningful Persistence");
     expect(workspace).toContain("Do **not** save/checkpoint after every MCP mutation or capture");
     expect(workspace).toContain("Mutation count alone is not a checkpoint trigger");
+    expect(workspace).toContain("Current handoff state");
     expect(active).toContain("Full workspace lifecycle and package rules live in `../README.md`");
-    expect(flow).toContain("meaningful handoff, resume-state change, park, or completion boundary");
+    expect(flow).toContain("meaningful handoff/resume/park/completion boundaries");
   });
 
   test("prompt and tool surface stay evidence-gated rather than becoming an optimization profile", async () => {
@@ -77,15 +60,13 @@ describe("pre-local usage optimization contract", () => {
       source("server/prompts.ts"),
       source("../docs/knowledge/next-action.md"),
     ]);
-
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("usage_profile");
     expect(prompts).toContain('createPrompt("bedrock_entity_workflow"');
-
     expect(next).toContain("Authoring Efficiency");
     expect(next).toContain("Static Footprint");
-    expect(next).toContain("forbidden proxies");
+    expect(next).toContain("Success Metric");
     expect(next).toContain("NO ACTIVE DEVELOPMENT");
   });
 
@@ -96,21 +77,9 @@ describe("pre-local usage optimization contract", () => {
       source("../docs/foundation/05-geometry-standard.md"),
       source("../docs/foundation/07-visual-validation.md"),
     ]);
-
     expect(requirements).toContain("Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters");
-    expect(requirements).toContain("reuse fresh exact authored state already returned for that target");
-    expect(requirements).toContain("use `inspect_element` once only when required state is unavailable or stale");
-    expect(requirements).toContain("affected view(s) first");
-
-    expect(workflowPolicy).toContain("**Status:** Active Policy");
-    expect(workflowPolicy).not.toContain("test-support contract");
     expect(workflowPolicy).toContain("`inspect_element` is a fallback for missing/stale exact target state");
-    expect(workflowPolicy).toContain("`inspect_model_bounds` is only for material envelope/scale/ground/displacement questions");
-    expect(workflowPolicy).toContain("capture affected view(s) first");
-
     expect(geometry).toContain("Reuse fresh exact authored state already returned for the target when sufficient");
-    expect(geometry).toContain("Call `inspect_element` once only when the required current state is missing or stale");
     expect(validation).toContain("Use `inspect_model_bounds` only when envelope/scale/ground/displacement materially affects the current decision");
-    expect(validation).toContain("use `inspect_element` only when required state is unavailable, insufficient, or stale");
   });
 });

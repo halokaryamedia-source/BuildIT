@@ -5,19 +5,17 @@ async function read(path: string) {
 }
 
 describe("reference Minecraft-first coverage", () => {
-  test("execution consent stays bounded", async () => {
-    const [skill, flow, next] = await Promise.all([
+  test("execution consent stays bounded in the reference owners", async () => {
+    const [skill, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/knowledge/flow.md"),
-      read("../docs/knowledge/next-action.md"),
     ]);
     expect(skill).toContain("zero clarification");
     expect(skill).toContain("generation is output, not discovery");
     expect(skill).toContain("readiness is not permission to generate");
     expect(skill).toContain("fresh explicit user instruction");
     expect(flow).toContain("execution consent gate");
-    // Continuation now phrases the generation gate as a fresh-instruction rule.
-    expect(next).toContain("without fresh user instruction");
+    expect(flow).toContain("fresh instruction");
   });
 
   test("default board has five broad preview positions", async () => {
@@ -49,38 +47,25 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("simplest blockbench-buildable representation");
     expect(skill).toContain("never lazy-voxelize");
     expect(guide).toContain("does not need to be 100% identical");
-    for (const text of [skill, guide]) {
-      expect(text).toContain("base palette");
-      expect(text).toContain("identity-critical markings");
-    }
-    // The texturing skill carries the same contract as its design-block terms.
     expect(texturing).toContain("palette roles");
-    expect(texturing).toContain("identity-critical marks");
+    expect(texturing).toContain("identity marks");
   });
 
-  test("minor drift uses one canonical interpretation; material conflict still blocks", async () => {
-    const [guide, flow, modelling, texturing, workflow] = await Promise.all([
+  test("minor drift uses one consistent interpretation; material conflict still blocks", async () => {
+    const [guide, flow, modelling, texturing] = await Promise.all([
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
       read("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      read("prompts/bedrock_entity_workflow.md"),
     ]);
-    // Texturing compaction expresses minor-drift handling as its bounded
-    // convergence contract instead of prose; the other four owners keep it.
-    for (const text of [guide, flow, modelling, workflow]) {
+    for (const text of [guide, flow, modelling]) {
       expect(text).toContain("minor");
       expect(text).toContain("material");
-      expect(text).toContain("canonical");
     }
-    expect(texturing).toContain("texture difference table");
-    expect(guide).toContain("minor drift is not `blocked`");
-    expect(modelling).toContain("minor reference discrepancy alone is not a blocker");
     expect(modelling).toContain("do not average drift");
-    // Texturing convergence keeps the same anti-averaging spirit through its
-    // bounded correction verdict loop.
+    expect(modelling).toContain("simplest recognizable blockbench-buildable interpretation");
     expect(texturing).toContain("improved | unchanged | regressed");
-    expect(workflow).toContain("unresolved material conflict");
+    expect(texturing).toContain("blocked");
   });
 
   test("pose, presentation and budget stay bounded", async () => {

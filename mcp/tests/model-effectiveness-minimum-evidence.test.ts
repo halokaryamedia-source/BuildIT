@@ -14,26 +14,26 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
       expect(text.toLowerCase()).toContain("minimum necessary evidence");
       expect(text.toLowerCase()).toContain("unverified");
     }
-    expect(orchestrator).toContain("Do not inspect every newly placed Cube");
-    expect(orchestrator).toContain("Do not capture after every mutation");
+    expect(orchestrator).toContain("Do not inspect every new Cube or capture after every mutation");
+    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets");
     expect(modelling).toContain("No per-Cube inspection ceremony");
     expect(modelling).toContain("No screenshot-per-mutation loop");
-    expect(workflow).toContain("Do not inspect each newly placed Cube or capture after every mutation");
+    expect(workflow).toContain("Do not inspect every Cube, capture after every mutation");
   });
 
-  test("bounds, specialists, checkpoints and uncertainty are conditional rather than mandatory", async () => {
+  test("bounds, discovery, and uncertainty remain conditional rather than mandatory", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
+
     expect(orchestrator).toContain("deferred spec loading after routing");
-    expect(orchestrator).toContain("mutation count is not a checkpoint trigger");
-    expect(orchestrator).toContain("Use `inspect_model_bounds` only when");
+    expect(orchestrator).toContain("inspect_model_bounds` only for envelope/scale/ground/displacement");
     expect(modelling).toContain("Otherwise skip the bounds call");
-    expect(workflow).toContain("Otherwise skip it");
-    expect(workflow).toContain("Do not spend additional calls trying to remove UNVERIFIED");
+    expect(workflow).toContain("inspect_model_bounds` is only for envelope/scale/ground/displacement");
+    expect(workflow).toContain("`UNVERIFIED` is not a retry command");
   });
 
-  test("cleanup remains decision-layer only with no new efficiency profile or runtime mode", async () => {
+  test("cleanup remains decision-layer only with no new efficiency profile", async () => {
     const profile = await source("lib/registrationProfile.ts");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
@@ -41,11 +41,12 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(profile).not.toContain("minimum_evidence");
   });
 
-  test("CI modelling gates remain static proof rather than behavioral or visual proof", async () => {
+  test("CI proof remains static and cannot upgrade live authoring claims", async () => {
     const validation = await source("../docs/foundation/validation-report.md");
-    expect(validation).toContain("Fresh GitHub-Only Serialized Surface Proof");
+    expect(validation).toContain("LAST OBSERVED FULL CANONICAL GREEN");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
-    expect(validation).toContain("Last completed canonical GitHub proof");
-    expect(validation).toContain("runtime-usage improvement");
+    expect(validation).toContain("targeted tests");
+    expect(validation).toContain("cannot prove visual fidelity");
+    expect(validation).toContain("Authoring Efficiency");
   });
 });

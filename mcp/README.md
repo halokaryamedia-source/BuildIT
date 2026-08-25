@@ -17,7 +17,7 @@ bun run docs:check
 
 Production plugin: `dist/mcp.js`. `dist/` is generated output; package version alone is not artifact-freshness proof.
 
-`bun run dev:watch` is build/watch only. Loading or replacing the installed desktop Blockbench plugin is a separate explicit local action.
+`bun run dev:watch` is build/watch only. Loading or replacing the installed desktop Blockbench plugin is a separate explicit local action. Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
 
 ## Endpoint / Containment
 

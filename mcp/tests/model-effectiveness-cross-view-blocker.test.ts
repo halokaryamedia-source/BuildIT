@@ -6,40 +6,45 @@ async function source(path: string): Promise<string> {
 
 describe("model creation effectiveness — cross-view and blocker handling", () => {
   test("material 3D claims keep explicit evidence states instead of borrowing confidence across axes", async () => {
-    const reference = await source("../docs/foundation/04-reference-guide.md");
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    const [reference, modelling, workflow] = await Promise.all([
+      source("../docs/foundation/04-reference-guide.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
-    for (const text of [reference, modelling, workflow]) {
-      expect(text).toContain("SUPPORTED");
-      expect(text).toContain("PROVISIONAL");
-      expect(text).toContain("CONFLICTING");
-      expect(text).toContain("UNAVAILABLE");
+    for (const text of [reference, modelling]) {
+      for (const state of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE"]) {
+        expect(text).toContain(state);
+      }
     }
-    expect(modelling).toContain("A convincing front silhouette does not validate depth");
-    expect(workflow).toContain("A front-view match cannot certify depth");
+    expect(modelling).toContain("Front agreement does not certify depth");
+    expect(workflow).toContain("Front PASS is not full 3D PASS");
   });
 
   test("material cross-view conflicts block instead of being averaged into invented geometry", async () => {
-    const reference = await source("../docs/foundation/04-reference-guide.md");
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const validation = await source("../docs/foundation/07-visual-validation.md");
+    const [reference, modelling, validation] = await Promise.all([
+      source("../docs/foundation/04-reference-guide.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../docs/foundation/07-visual-validation.md"),
+    ]);
 
     expect(reference).toContain("must not be averaged");
-    expect(modelling).toContain("Enter the workflow `BLOCKED` state");
-    expect(validation).toContain("front PASS + conflicting side/top reference -> BLOCKED");
+    expect(modelling).toContain("Do not average drift");
+    expect(modelling).toContain("Only unresolved material conflict becomes `BLOCKED`");
+    expect(validation.toLowerCase()).toContain("conflicting");
+    expect(validation).toContain("BLOCKED");
   });
 
-  test("persistent correction failures stop and report a blocker instead of looping", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
+  test("persistent correction failures stop instead of looping", async () => {
+    const [modelling, orchestrator, workflow] = await Promise.all([
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
-    for (const text of [modelling, orchestrator, workflow]) {
-      expect(text).toContain("BLOCKED");
-    }
+    for (const text of [modelling, orchestrator, workflow]) expect(text).toContain("BLOCKED");
     expect(modelling).toContain("same causal correction direction has failed twice without new evidence");
-    expect(workflow).toContain("same causal correction direction fails twice without new evidence");
-    expect(orchestrator).toContain("do not mutate speculatively");
+    expect(workflow).toContain("Same causal correction failing twice without new evidence");
+    expect(orchestrator).toContain("Same causal correction failing twice without new evidence");
   });
 });

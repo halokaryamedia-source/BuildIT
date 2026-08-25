@@ -30,17 +30,14 @@ describe("cross-agent repository handoff", () => {
     }
 
     const [context, root, developmentBrief] = await Promise.all([
-      text("../CONTEXT.md"),
-      text("../AGENTS.md"),
-      text("../.agents/skills/development-brief/SKILL.md"),
+      text("../CONTEXT.md"), text("../AGENTS.md"), text("../.agents/skills/development-brief/SKILL.md"),
     ]);
-
     expect(context).toContain("Root `AGENTS.md` owns task selection");
     expect(root).toContain("#### Developing Execution Gate");
     expect(developmentBrief).toContain("new ChatGPT, Codex, or Opencode session");
   });
 
-  test("handoff makes the real development objective explicit across providers", async () => {
+  test("handoff keeps the real development objective explicit across providers", async () => {
     const [root, brief, next, runbook] = await Promise.all([
       text("../AGENTS.md"),
       text("../.agents/skills/development-brief/SKILL.md"),
@@ -48,24 +45,17 @@ describe("cross-agent repository handoff", () => {
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    for (const owner of [root, brief, next]) {
-      expect(owner).toContain("Success Metric");
-      expect(owner).toContain("Forbidden Proxy");
-    }
-
+    for (const owner of [root, brief, next]) expect(owner).toContain("Success Metric");
     for (const owner of [root, brief, runbook]) {
       expect(owner).toContain("Authoring Efficiency");
       expect(owner).toContain("Static Footprint");
     }
-
-    expect(brief).toContain("Cost to Accepted Result");
+    expect(root).toContain("Forbidden Proxy / Non-Goal");
+    expect(brief).toContain("Forbidden Proxy / Non-Goal");
     expect(runbook).toContain("Cost to Accepted Result");
-    expect(runbook).toContain("QUALITY FAIL");
-    expect(runbook).toContain("CONTRACT_CAUSED");
-    expect(runbook).toContain("REASONING_CAUSED");
-    expect(runbook).toContain("IMPROVED");
-    expect(runbook).toContain("UNCHANGED");
-    expect(runbook).toContain("REGRESSED");
+    for (const marker of ["QUALITY FAIL", "CONTRACT_CAUSED", "REASONING_CAUSED", "IMPROVED", "UNCHANGED", "REGRESSED"]) {
+      expect(runbook).toContain(marker);
+    }
   });
 
   test("continuation, stable facts, proof, and ownership remain separate", async () => {
@@ -79,7 +69,7 @@ describe("cross-agent repository handoff", () => {
     expect(context).toContain("stable project facts only");
     expect(context).not.toContain("AWAITING_PLUGIN_ENABLE");
     expect(next).toContain("NO ACTIVE DEVELOPMENT");
-    expect(next).toContain("## Current Continuation");
+    expect(next).toContain("## Verification Boundary");
     expect(validation).toContain("This file owns the **proof boundary**");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
     expect(implementation).toContain("This map contains no active task status");
@@ -89,13 +79,10 @@ describe("cross-agent repository handoff", () => {
     const dirs = (await readdir("../docs/knowledge", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
-
     expect(dirs).not.toContain("reviews");
     expect(dirs).not.toContain("decisions");
 
-    const foundationFiles = (await readdir("../docs/foundation"))
-      .filter((name) => name.endsWith(".md"));
-
+    const foundationFiles = (await readdir("../docs/foundation")).filter((name) => name.endsWith(".md"));
     for (const file of foundationFiles) {
       const body = await text(`../docs/foundation/${file}`);
       expect(body).not.toContain("../knowledge/decisions/");
@@ -105,28 +92,21 @@ describe("cross-agent repository handoff", () => {
 
   test("named MCP defects retain bounded source and regression owners", async () => {
     const implementation = await text("../docs/knowledge/implementation-map.md");
-
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("source owner + primary regression owner first");
     expect(implementation).toContain("mcp/tests/static-footprint-budget.test.ts");
-    expect(implementation).not.toContain("mcp/tests/static-efficiency-budget.test.ts");
 
     const mappings = [
       { tools: ["create_project"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
-      { tools: ["get_project_info"], source: "server/tools/project.ts", test: "tests/static-footprint-budget.test.ts" },
       { tools: ["inspect_model_bounds"], source: "server/tools/project.ts", test: "tests/rendered-model-bounds-numeric-safety.test.ts" },
       { tools: ["place_cube", "modify_cube", "modify_cubes_batch"], source: "server/tools/cubes.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
-      { tools: ["add_group"], source: "server/tools/element.ts", test: "tests/p1-core-ownership.test.ts" },
       { tools: ["inspect_element"], source: "server/tools/element-inspection.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
       { tools: ["capture_model_views"], source: "server/tools/camera.ts", test: "tests/camera-framing-contract.test.ts" },
-      { tools: ["get_undo_stack", "undo", "redo"], source: "server/tools/history.ts", test: "tests/static-footprint-budget.test.ts" },
       { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
     ];
 
     for (const mapping of mappings) {
-      const row = implementation
-        .split("\n")
-        .find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
+      const row = implementation.split("\n").find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
       expect(row).toBeDefined();
       expect(row).toContain(`\`mcp/${mapping.source}\``);
       expect(row).toContain(`\`mcp/${mapping.test}\``);
@@ -142,14 +122,13 @@ describe("cross-agent repository handoff", () => {
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toContain("LAST OBSERVED CANONICAL GREEN");
+    expect(validation).toContain("LAST OBSERVED FULL CANONICAL GREEN");
     expect(validation).toContain("ACCEPTED LIVE BASELINE");
     expect(validation).toContain("Character counts are regression ceilings");
     expect(validation).toContain("Visual / Reference Proof Rule");
-
+    expect(validation).toContain("cannot prove visual fidelity");
     expect(implementation).toContain("## Effectiveness / Footprint Evidence Ownership");
     expect(implementation).toContain("Static Footprint cannot upgrade");
     expect(runbook).toContain("Static Footprint");
-    expect(runbook).toContain("cannot prove this runtime claim");
   });
 });

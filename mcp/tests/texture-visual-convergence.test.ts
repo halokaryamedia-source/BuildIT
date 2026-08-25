@@ -5,7 +5,7 @@ async function source(path: string): Promise<string> {
 }
 
 describe("texture visual convergence contract", () => {
-  test("active guidance requires fresh atlas and model-view evidence", async () => {
+  test("active guidance requires fresh atlas and mapped model-view evidence", async () => {
     const [skill, workflow, texture, camera] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
@@ -14,12 +14,13 @@ describe("texture visual convergence contract", () => {
     ]);
 
     for (const text of [skill, workflow]) {
-      expect(text).toContain("Texture Difference Table");
       expect(text).toContain("get_texture");
       expect(text).toContain("capture_model_views");
       expect(text.toLowerCase()).toContain("stale");
       for (const verdict of ["FAIL", "UNVERIFIED", "PASS"]) expect(text).toContain(verdict);
     }
+    expect(skill).toContain("mapped model-view evidence");
+    expect(workflow).toContain("fresh get_texture atlas");
 
     const getTextureStart = texture.indexOf("createTool(textureToolDocs[4].name");
     const getTextureEnd = texture.indexOf("createTool(textureToolDocs[5].name", getTextureStart);
@@ -42,19 +43,16 @@ describe("texture visual convergence contract", () => {
     ]);
 
     for (const text of [skill, workflow]) {
-      expect(text).toContain("smallest bounded correction");
-      expect(text).toContain("retain pre-evidence");
+      expect(text.toLowerCase()).toContain("smallest");
       expect(text).toContain("IMPROVED | UNCHANGED | REGRESSED");
-      expect(text).toContain("Same causal correction direction failing twice without new evidence");
+      expect(text.toLowerCase()).toContain("same causal");
       expect(text).toContain("BLOCKED");
     }
-
+    expect(skill).toContain("smallest bounded causal correction");
     expect(validation).toContain("IMPROVED | UNCHANGED | REGRESSED");
-    expect(validation).toContain("same causal correction direction fails twice without new evidence");
-    expect(validation).toContain("qualitative difference-first delta");
   });
 
-  test("T5 stays on existing evidence and bounded-authoring surfaces", async () => {
+  test("visual convergence stays on existing evidence and Painter surfaces", async () => {
     const [profile, skill, workflow] = await Promise.all([
       source("lib/registrationProfile.ts"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -66,7 +64,9 @@ describe("texture visual convergence contract", () => {
       expect(profile).not.toContain(forbidden);
       expect(workflow).not.toContain(forbidden);
     }
-    expect(skill).toContain("T3 mutate");
-    expect(workflow).toContain("T3 mutate");
+    for (const tool of ["draw_shape_tool", "paint_with_brush", "get_texture", "capture_model_views"]) {
+      expect(skill).toContain(tool);
+      expect(workflow).toContain(tool);
+    }
   });
 });

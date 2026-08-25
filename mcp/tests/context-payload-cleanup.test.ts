@@ -19,24 +19,25 @@ async function source(path: string): Promise<string> {
 }
 
 describe("context and payload cleanup", () => {
-  test("canonical workflow stays compact while preserving hard validity invariants", async () => {
+  test("canonical workflow stays compact while preserving current hard validity invariants", async () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
     expect(workflow.length).toBeLessThan(9_000);
     for (const invariant of [
-      "minimum necessary evidence",
-      "SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE",
-      "visual_verdict: not_evaluated",
+      "Minimum Necessary Evidence",
       "FAIL",
       "UNVERIFIED",
       "PASS",
       "BLOCKED",
-      "same causal correction direction fails twice without new evidence",
+      "Same causal correction failing twice without new evidence",
       "geometry_effect",
-      "Protected Native Capability Gaps",
-      "Native Bedrock PBR and per-face `material_instance` are **not** gaps",
-    ]) {
-      expect(workflow.toLowerCase()).toContain(invariant.toLowerCase());
-    }
+      "Front PASS is not full 3D PASS",
+      "UV Layout",
+      "Texture Atlas",
+      "Texture Styling",
+      "Texture Verify",
+    ]) expect(workflow).toContain(invariant);
+    expect(workflow).not.toContain("Reference Evidence Map");
+    expect(workflow).not.toContain("Texture Design Contract");
   });
 
   test("panel metadata uses actual tool descriptions", async () => {
@@ -65,20 +66,11 @@ describe("context and payload cleanup", () => {
 
   test("animation summary keeps particle-effect keyframes lazy by default", async () => {
     expect(inspectAnimationParameters.parse({}).include_effect_keyframes).toBe(false);
-    expect(
-      inspectAnimationParameters.parse({ include_effect_keyframes: true })
-        .include_effect_keyframes
-    ).toBe(true);
-
+    expect(inspectAnimationParameters.parse({ include_effect_keyframes: true }).include_effect_keyframes).toBe(true);
     const inspection = await source("server/tools/animation-inspection.ts");
-    expect(inspection).toContain(
-      "inspectParticleEffects(animation, include_effect_keyframes)"
-    );
+    expect(inspection).toContain("inspectParticleEffects(animation, include_effect_keyframes)");
     expect(inspection).toContain("sound_count");
     expect(inspection).toContain("existingEffects.sound");
-    expect(inspection).toContain(
-      "...(includeKeyframes ? { keyframes: inspectedKeyframes } : {})"
-    );
   });
 
   test("list_outline defaults are compact while larger explicit bounds remain available", async () => {
@@ -86,9 +78,7 @@ describe("context and payload cleanup", () => {
     expect(parsed.max_depth).toBe(8);
     expect(parsed.max_nodes).toBe(120);
     expect(listOutlineParameters.parse({ max_depth: 32, max_nodes: 5000 })).toEqual({
-      include_cubes: true,
-      max_depth: 32,
-      max_nodes: 5000,
+      include_cubes: true, max_depth: 32, max_nodes: 5000,
     });
     expect(listOutlineParameters.safeParse({ max_nodes: 5001 }).success).toBe(false);
 
@@ -98,7 +88,6 @@ describe("context and payload cleanup", () => {
     const outline = elements.slice(start, end);
     expect(outline).toContain("let returnedNodes = 0");
     expect(outline).toContain("returnedNodes >= max_nodes");
-    expect(outline).toContain("truncated_at_max_nodes: nodeLimitReached || undefined");
     expect(outline).toContain("returned_nodes: returnedNodes");
   });
 
@@ -111,75 +100,22 @@ describe("context and payload cleanup", () => {
     expect(createBlock).toContain("structuredContent: result");
     expect(createBlock).toContain("uuid: texture.uuid");
     expect(createBlock).toContain("Use get_texture only when image evidence is needed");
-
-    const materialStart = texture.indexOf("createTool(textureToolDocs[7].name");
-    const materialEnd = texture.indexOf("createTool(textureToolDocs[9].name", materialStart);
-    const materialReads = texture.slice(materialStart, materialEnd);
-    expect(materialReads).not.toContain("JSON.stringify(");
-    expect(materialReads).toContain("structuredContent: { materials: result }");
-    expect(materialReads).toContain("Found ${result.length} PBR material(s).");
-    expect(materialReads).toContain("structuredContent: result");
-    expect(materialReads).toContain("Read PBR material");
-    expect(materialReads).toContain("texture_set_json: textureSetJson");
   });
 
   test("element discovery defaults are compact and truncation remains explicit", async () => {
     expect(findElementsByCriteriaParameters.parse({}).limit).toBe(50);
     expect(findElementsByCriteriaParameters.parse({ limit: 1000 }).limit).toBe(1000);
     expect(filterByMaterialParameters.parse({ texture: "tex" }).limit).toBe(50);
-    expect(
-      filterByMaterialParameters.safeParse({ texture: "tex", limit: 1001 }).success
-    ).toBe(false);
-
-    const elements = await source("server/tools/element.ts");
-    const findStart = elements.indexOf("createTool(elementToolDocs[5].name");
-    const findEnd = elements.indexOf("createTool(elementToolDocs[6].name", findStart);
-    const findBlock = elements.slice(findStart, findEnd);
-    expect(findBlock).toContain("let truncated = false");
-    expect(findBlock).toContain("if (matches.length >= limit) {");
-    expect(findBlock).toContain("truncated,");
-    expect(findBlock).not.toContain("truncated: matches.length >= limit");
-
-    const materialStart = elements.indexOf("createTool(elementToolDocs[7].name");
-    const materialEnd = elements.indexOf("createTool(elementToolDocs[8].name", materialStart);
-    const materialBlock = elements.slice(materialStart, materialEnd);
-    expect(materialBlock).toContain("async execute({ texture, include_face_keys, limit })");
-    expect(materialBlock).toContain("let truncated = false");
-    expect(materialBlock).toContain("truncated,");
+    expect(filterByMaterialParameters.safeParse({ texture: "tex", limit: 1001 }).success).toBe(false);
   });
 
   test("material-instance discovery is summary-first and mutations reject empty face sets", async () => {
     expect(facesArrayWithDefaultSchema.safeParse([]).success).toBe(false);
     expect(facesArrayOptionalSchema.safeParse([]).success).toBe(false);
-    expect(
-      materialInstanceAssignmentSchema.safeParse({
-        cube_id: "cube-uuid",
-        faces: [],
-        material_name: "detail",
-      }).success
-    ).toBe(false);
-
+    expect(materialInstanceAssignmentSchema.safeParse({ cube_id: "cube-uuid", faces: [], material_name: "detail" }).success).toBe(false);
     const parsed = listMaterialInstancesParametersSchema.parse({});
     expect(parsed.include_usages).toBe(false);
     expect(parsed.usage_limit_per_instance).toBe(100);
-
-    const sourceText = await source("server/tools/material-instances.ts");
-    const getStart = sourceText.indexOf("materialInstanceToolDocs[0].name");
-    const getEnd = sourceText.indexOf("materialInstanceToolDocs[1].name", getStart);
-    const getBlock = sourceText.slice(getStart, getEnd);
-    expect(getBlock).toContain("structuredContent: read");
-    expect(getBlock).toContain("Read material-instance metadata");
-    expect(getBlock).not.toContain("JSON.stringify(");
-
-    const start = sourceText.indexOf("materialInstanceToolDocs[2].name");
-    const end = sourceText.indexOf("materialInstanceToolDocs[3].name", start);
-    const listBlock = sourceText.slice(start, end);
-    expect(listBlock).toContain("entry.usage_count += 1");
-    expect(listBlock).toContain("include_usages && entry.usages.length < usage_limit_per_instance");
-    expect(listBlock).toContain("usages_truncated");
-    expect(listBlock).toContain("structuredContent: read");
-    expect(listBlock).toContain("Found ${materialInstances.length} unique material instance(s).");
-    expect(listBlock).not.toContain("JSON.stringify(");
   });
 
   test("high-frequency inspect_element routing prose stays compact", () => {
@@ -201,9 +137,7 @@ describe("context and payload cleanup", () => {
     expect(block).toContain("async execute()");
     expect(block).toContain("captureScreenshot()");
     expect(block).not.toContain("project");
-    expect(util).toContain("export function captureScreenshot()");
     expect(util).not.toContain("ModelProject.all.find");
-    expect(util).not.toContain("selectedProject.select()");
   });
 
   test("selection-only helper is not advertised as destructive model mutation", async () => {

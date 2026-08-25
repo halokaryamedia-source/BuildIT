@@ -10,32 +10,30 @@ describe("model creation effectiveness — primary geometry", () => {
     expect((cubes.match(/visual_verdict: \"not_evaluated\" as const/g) ?? []).length).toBe(3);
     expect((cubes.match(/execution: \"applied\" as const/g) ?? []).length).toBe(3);
     expect(cubes.toLowerCase()).toContain("reference fidelity was not evaluated");
-    expect(cubes).not.toContain("Corrected ${targets.length} Cubes");
     expect(cubes).toContain("does not mean the geometry was corrected visually");
   });
 
-  test("successful placement cannot authorize more geometry or detail", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
+  test("successful placement cannot authorize visual PASS or secondary detail", async () => {
+    const [modelling, workflow] = await Promise.all([
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
     for (const text of [modelling, workflow]) {
-      expect(text).toContain("execution");
-      expect(text).toContain("not_evaluated");
-      expect(text.toLowerCase()).toContain("stop");
-      expect(text.toLowerCase()).toContain("primary");
+      expect(text.toLowerCase()).toContain("tool success");
+      expect(text.toLowerCase()).toContain("execution evidence");
+      expect(text).toContain("PASS");
       expect(text.toLowerCase()).toContain("secondary");
     }
-    expect(modelling).toContain("Do not continue with another Cube merely because the previous placement succeeded");
-    expect(workflow).toContain("Do not chain Cube placement based on previous tool success");
+    expect(modelling).toContain("After primary `PASS`, add identity-weighted secondary geometry only");
+    expect(workflow).toContain("After primary `PASS`, add only identity-weighted detail");
   });
 
-  test("under-constrained geometry remains provisional rather than becoming success-by-placement", async () => {
+  test("under-constrained geometry remains provisional rather than success-by-placement", async () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
-
-    expect(modelling).toContain("provisional working extent");
-    expect(workflow).toContain("working hypothesis, not verified evidence");
-    expect(modelling).toContain("Do not continue with another Cube merely because the previous placement succeeded");
-    expect(workflow).toContain("Do not chain Cube placement based on previous tool success");
+    expect(modelling).toContain("PROVISIONAL");
+    expect(modelling).toContain("placement never verifies it");
+    expect(modelling).toContain("Material `UNRESOLVED` → `BLOCKED`");
+    expect(modelling).toContain("Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`");
   });
 });

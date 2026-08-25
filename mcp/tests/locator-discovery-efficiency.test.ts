@@ -7,7 +7,6 @@ async function source(path: string): Promise<string> {
 describe("Locator discovery efficiency", () => {
   test("list_locator_elements stays identity-first while inspect_element owns detail", async () => {
     const locators = await source("server/tools/locators.ts");
-
     expect(locators).toContain("const locators = Locator.all.map(locatorSummary)");
     expect(locators).toContain("const nullObjects = NullObject.all.map(nullObjectSummary)");
     expect(locators).not.toContain("const locators = Locator.all.map(locatorState)");
@@ -16,23 +15,11 @@ describe("Locator discovery efficiency", () => {
     const listStart = locators.indexOf("createTool(\n    locatorToolDocs[0].name");
     const listEnd = locators.indexOf("createTool(\n    locatorToolDocs[1].name", listStart);
     const listBlock = locators.slice(listStart, listEnd);
-
-    for (const detailedField of [
-      "position:",
-      "rotation:",
-      "ignore_inherited_scale:",
-      "ik_target:",
-      "ik_source:",
-      "visibility:",
-    ]) {
+    for (const detailedField of ["position:", "rotation:", "ignore_inherited_scale:", "ik_target:", "ik_source:", "visibility:"]) {
       expect(listBlock).not.toContain(detailedField);
     }
 
-    // The in-tool hint sentence was removed during prompt/schema compaction;
-    // the readback-discipline invariant now lives in the orchestrator skill.
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain(
-      "Do not automatically re-read them with `inspect_element`"
-    );
+    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
   });
 });

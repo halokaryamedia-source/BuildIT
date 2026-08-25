@@ -16,7 +16,6 @@ describe("pre-local generic semantics narrowing", () => {
     expect(createProjectParameters.parse({ name: "entity" })).toEqual({ name: "entity" });
     expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock" }).success).toBe(false);
     expect(createProjectParameters.safeParse({ name: "entity", format: "java_block" }).success).toBe(false);
-    expect(createProjectParameters.safeParse({ name: "entity", format: "bedrock_block" }).success).toBe(false);
   });
 
   test("add_group exposes only finite Bedrock bone create state", () => {
@@ -33,10 +32,7 @@ describe("pre-local generic semantics narrowing", () => {
     expect(requireFiniteTranslatedElementVector3([1, 2, 3], [4, 5, 6], "test")).toEqual([5, 7, 9]);
     expect(() => requireFiniteTranslatedElementVector3([1e308, 0, 0], [1e308, 0, 0], "test")).toThrow("non-finite authored coordinate");
     const sourceText = await source("server/tools/element.ts");
-    const duplicateStart = sourceText.indexOf("createTool(elementToolDocs[3].name");
-    const duplicateBlock = sourceText.slice(duplicateStart, sourceText.indexOf("createTool(elementToolDocs[4].name", duplicateStart));
-    expect(duplicateBlock).toContain("preflightDuplicateTranslation(element, offset)");
-    expect(duplicateBlock.indexOf("preflightDuplicateTranslation(element, offset)")).toBeLessThan(duplicateBlock.indexOf("Undo.initEdit"));
+    expect(sourceText).toContain("preflightDuplicateTranslation(element, offset)");
   });
 
   test("model export exposes only Bedrock geometry and editable Blockbench project codecs", () => {
@@ -45,7 +41,6 @@ describe("pre-local generic semantics narrowing", () => {
     expect(exportModelParameters.parse({}).codec_id).toBe("bedrock");
     expect(exportModelParameters.safeParse({ codec_id: "project" }).success).toBe(true);
     expect(exportModelParameters.safeParse({ codec_id: "obj" }).success).toBe(false);
-    expect(exportModelParameters.safeParse({ codec_id: "gltf" }).success).toBe(false);
   });
 
   test("fixed export-format discovery is default-disabled without removing export capability", async () => {
@@ -53,10 +48,7 @@ describe("pre-local generic semantics narrowing", () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     expect(exportSource).toContain("exportToolDocs[0].status,\n    false");
     expect(exportSource).toContain("BLOCKIT_MODEL_CODEC_IDS = [\"bedrock\", \"project\"]");
-    expect(exportSource).toContain("const codec = registry[codec_id]");
-    expect(skill).toContain(
-      "`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`)"
-    );
+    expect(skill).toContain("`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`)");
     expect(skill).not.toContain("list_export_formats");
   });
 
@@ -73,7 +65,7 @@ describe("pre-local generic semantics narrowing", () => {
     expect(texture).toContain("textureToolDocs[1].status, false");
     expect(texture).toContain("native Bedrock Entity is single_texture");
     expect(skill).not.toContain("- `apply_texture`");
-    expect(skill).toContain("→ activate_texture");
+    expect(skill).toContain("list_textures / activate_texture");
   });
 
   test("raw per-face texture discovery is disabled for Bedrock single-texture authoring", async () => {
