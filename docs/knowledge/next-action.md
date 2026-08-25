@@ -12,6 +12,7 @@ SIMPLE_RIGID_FAST_PATH_HARDENED
 CANONICAL_AUTHORING_STAGE_VOCABULARY_ALIGNED
 USER_BASELINE_FAILURE_RECORDED
 HISTORY_TRAVERSAL_INTERNAL_CLEANUP_APPLIED
+MATERIAL_INSTANCE_FACE_MUTATION_INTERNAL_CLEANUP_APPLIED
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_PREPARED_UNREFERENCED
 CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_TEXTURE_CONTRACT_LANDING
 LIVE_RETEST_DEFERRED_BY_USER
@@ -35,13 +36,28 @@ TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 
 ## Bounded Internal Cleanup Applied
 
-`mcp/server/tools/history.ts` now shares the identical Undo/Redo step schema construction and the common history-traversal/validation/error path instead of maintaining two copies.
+### History
 
-The public tool names, schema semantics/defaults, error messages, result fields, `structuredContent`, stack-read behavior, and existing refresh semantics remain unchanged. In particular, the previous successful-redo refresh remains; no new successful-undo refresh was introduced.
+`mcp/server/tools/history.ts` shares Undo/Redo step-schema construction and common history traversal/validation/error handling instead of maintaining two copies.
 
-This is a source-structure cleanup. It does **not** prove lower wall-clock runtime or better Authoring Efficiency by itself.
+Public tool names, schema semantics/defaults, error messages, result fields, `structuredContent`, stack-read behavior, and previous refresh semantics remain unchanged.
 
-A larger `cubes.ts` consolidation was explored but was **not landed** because the available GitHub blob transport did not preserve the large candidate reliably. Do not infer any Cube lifecycle refactor from abandoned/unreferenced candidate objects.
+### Material Instances
+
+`mcp/server/tools/material-instances.ts` now shares:
+
+- explicit-Cube vs selected-Cube scope resolution for set/clear operations;
+- one face material-name mutation primitive used by set, bulk-set, and clear.
+
+Tool schemas/descriptions, selected/all-cubes behavior, Undo scope/labels, Canvas refresh, face counts, and return text remain unchanged.
+
+### Audited Without Change
+
+`mcp/server/tools/project.ts`, `mcp/server/tools/export.ts`, and `mcp/server/tools/ui.ts` were inspected for the same cleanup class. No change was applied because the visible repetition was too small or runtime-sensitive to justify another abstraction.
+
+A larger `cubes.ts` consolidation and `locators.ts` cleanup were explored but not landed. The available GitHub transport in this session was not reliable enough for large full-file rewrites, and runtime-sensitive Undo/preview ordering was intentionally preserved rather than guessed.
+
+These are source-structure cleanups. They do **not** prove lower wall-clock runtime or better Authoring Efficiency by themselves.
 
 ## Prepared Texture Atlas Public-Contract Candidate
 
@@ -102,8 +118,8 @@ Do not implement automatically:
 
 ## Proof Boundary
 
-The History cleanup is source/static evidence of reduced duplicated implementation while preserving the existing public contract. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching runtime evidence.**
+The History and Material Instance cleanups are source/static evidence of reduced duplicated implementation while preserving their existing public contracts. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching runtime evidence.**
 
 ## STOP
 
-Do not broaden this internal cleanup into additional tool families in the same pass. The next implementation step is the bounded Texture Atlas candidate completion when a canonical Bun environment is available. Live model retesting remains deferred by the user.
+This bounded internal-cleanup pass is complete. Do not broaden into another tool family automatically. The next implementation step is the Texture Atlas candidate completion when a canonical Bun environment is available, or another explicitly requested bounded cleanup. Live model retesting remains deferred by the user.
