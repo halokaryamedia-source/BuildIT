@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — Phase Contract v2 context hardening; legacy CI reconciliation in progress
+Updated: 2026-08-25 — Phase Contract v2 context hardening verified; legacy CI reconciliation complete
 
 ## Current State
 
@@ -16,7 +16,8 @@ PHASE_SPECIFIC_RUNTIME_PROMPT_SOURCE_APPLIED
 COMPACT_PHASE_HANDOFF_STATE_SOURCE_APPLIED
 ACTIVE_SPECIALIST_ONLY_ROUTING_SOURCE_APPLIED
 INVALID_EXPLICIT_PHASE_FAILS_CLOSED
-LEGACY_CONTRACT_TEST_RECONCILIATION_ACTIVE
+LEGACY_CONTRACT_TEST_RECONCILIATION_COMPLETE
+CURRENT_FULL_MCP_VERIFY_GREEN
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASE_REQUIRED
 LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
@@ -109,17 +110,11 @@ mcp/tests/authoring-phase-surface.test.ts
 
 **Static Footprint** remains only a guardrail; lower tool/prompt size does not itself prove Authoring Efficiency.
 
-Current full MCP suite contains legacy exact-wording/retired-ceremony assertions. Do not restore `Reference Evidence Map`, old routing ceremony, or other retired prose merely to make those assertions green. Reconcile each legacy failure as:
+Legacy phase-era contract tests were reconciled by preserving machine/runtime/current semantic invariants and removing exact-string requirements for retired ceremony. The contradictory proof statement `64 enabled default surface` was corrected to `64 callable catalog across phases + phase-scoped client exposure`.
 
-```text
-CURRENT INVARIANT
-STALE EXACT-STRING / RETIRED CEREMONY
-LEGITIMATE REGRESSION
-```
+Current full MCP verification is green on commit `d7d93a4816f83289c5e5078c8e138b43d77fe74d`: typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness all passed.
 
-Current context contradiction in `validation-report.md` (`64 enabled default surface`) is a legitimate documentation regression and must be corrected to `64 catalog + phase-scoped exposure`. Tests should follow current semantic owners instead of forcing retired headings into runtime guidance.
-
-Source/CI cannot prove future Codex call efficiency or live Blockbench visual quality.
+Source/CI still cannot prove future Codex call efficiency or live Blockbench visual quality.
 
 ## Texture Atlas Public Contract — Still Separate
 
@@ -153,4 +148,4 @@ Do not implement automatically:
 
 ## STOP
 
-Complete legacy test reconciliation to restore a trustworthy current CI signal, then STOP. Texture Atlas candidate completion is a separate bounded task. Live model retesting remains deferred.
+Phase-context hardening and legacy CI reconciliation are complete. STOP here. Texture Atlas candidate completion is the next separate bounded source task. Live model retesting remains deferred.

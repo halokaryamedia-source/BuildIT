@@ -1,6 +1,6 @@
 # Validation Report
 
-Updated: 2026-08-25 — phase-scoped agent-contract hardening
+Updated: 2026-08-25 — phase-scoped agent-contract hardening verified
 
 This file owns the **proof boundary**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts belong in `CONTEXT.md`.
 
@@ -9,16 +9,16 @@ This file owns the **proof boundary**. Continuation belongs in `docs/knowledge/n
 ```text
 BEDROCK CALLABLE CATALOG:                 64 tools across phases
 DEFAULT CLIENT EXPOSURE:                  MCP Core + Geometry (27 tools)
-ACTIVE PHASE CONTRACT:                    SOURCE + TARGETED TEST PROOF
-LATEST FULL MCP VERIFY:                   RED — legacy test reconciliation required
-LAST OBSERVED FULL CANONICAL GREEN:       d8c0899 (pre-phase 64-tool exposure)
+ACTIVE PHASE CONTRACT:                    SOURCE + FULL MCP STATIC PROOF
+LATEST FULL MCP VERIFY:                   GREEN @ d7d93a4816f83289c5e5078c8e138b43d77fe74d
+LAST OBSERVED FULL CANONICAL GREEN:       d7d93a4816f83289c5e5078c8e138b43d77fe74d
 ACCEPTED LIVE BASELINE:                   2026-08-12 Blockbench 5.1.6
 LATEST USER AUTHORING BASELINE:           QUALITY FAIL reported 2026-08-25
 CURRENT HARDENING LIVE RETEST:            DEFERRED BY USER
 CURRENT MODEL-QUALITY CLAIM:              LOCAL PROOF REQUIRED
 ```
 
-Current static proof must not be confused with live Blockbench behavior. Source/typecheck/targeted tests can prove phase ownership, prompt filtering, handoff semantics, schemas, and build-facing contracts; they cannot prove visual fidelity, playback, installed-plugin freshness, or Authoring Efficiency.
+Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, schemas, buildability, and generated-doc freshness; they cannot prove visual fidelity, playback, installed-plugin freshness, or Authoring Efficiency.
 
 ## Current Agent-Contract Proof
 
@@ -31,7 +31,18 @@ GEOMETRY | TEXTURING | ANIMATION
 
 Runtime initialize instructions name `ACTIVE PHASE`, explain that foreign-phase tools are intentionally unavailable, and require `HANDOFF_REQUIRED` rather than foreign-tool search. Runtime workflow generation is phase-filtered: shared minimum-evidence guidance + only the current phase workflow + compact readiness/handoff state.
 
-The targeted `authoring-phase-surface.test.ts` contract currently covers:
+The current full MCP gate passed at `d7d93a4816f83289c5e5078c8e138b43d77fe74d`:
+
+```text
+bun install --frozen-lockfile  PASS
+bun run typecheck              PASS
+bun run test                   PASS
+bun run measure:surface        PASS
+bun run build                  PASS
+bun run docs:check             PASS
+```
+
+The phase contract regression additionally covers:
 
 - missing phase defaults to Geometry while explicit invalid phase fails closed;
 - default Geometry exposure is Core + Geometry only;
@@ -42,7 +53,7 @@ The targeted `authoring-phase-surface.test.ts` contract currently covers:
 - root/workspace routing loads the active specialist only;
 - compact handoff state preserves resume-critical context without a UUID registry.
 
-The latest full MCP verification still stops in legacy contract tests. That is **STALE_TEST / PROOF_FAILURE debt**, not evidence that the phase contract itself failed. Each legacy failure must be classified as current invariant, stale exact-string/retired ceremony, or legitimate regression before mutation.
+Legacy contract assertions were reconciled to current semantic/machine owners; retired ceremony was not restored merely to obtain green CI.
 
 ## 2026-08-25 User Baseline Failure
 
@@ -81,9 +92,9 @@ Geometry PASS
 
 ## Canonical Static Proof History
 
-Commit `d8c0899` remains the last observed **full canonical green** from the older pre-phase surface. It is historical proof, not proof of the current phase-scoped source.
+Commit `d7d93a4816f83289c5e5078c8e138b43d77fe74d` is the current observed **full canonical MCP green** for the phase-scoped source. Earlier green commit `d8c0899` remains historical proof for the older pre-phase surface only.
 
-Current phase hardening has newer source/typecheck/targeted-test evidence, but the full suite remains red until legacy tests are reconciled. Never restore retired ceremony merely to recover a green check.
+Do not infer live model quality or runtime authoring efficiency from this static green. Never restore retired ceremony solely to satisfy wording-based tests.
 
 ## Local Runtime History
 
@@ -95,7 +106,7 @@ Historical live coverage included loopback/stateless transport, then-current too
 
 Historical mechanics coverage included representative project/group/cube creation, correction, Undo/redo rejection behavior, Painter bounds, PBR/material instances, Molang/controller paths, Locator/Null Object behavior, persistence/export, and selected lifecycle checks on the artifacts used in that run.
 
-Neither historical run automatically proves current phase-scoped behavior.
+Neither historical run automatically proves current phase-scoped runtime behavior.
 
 ## Surface Guard
 
@@ -110,7 +121,7 @@ max per-tool payload                <= 3,200 characters
 canonical workflow source           < 9,000 characters
 ```
 
-These are **Static Footprint** regression ceilings. Character counts are regression ceilings, not client token measurements and not Authoring Efficiency proof. `bun run measure:surface` owns exact current serialized catalog values once the full gate reaches that step.
+These are **Static Footprint** regression ceilings. Character counts are regression ceilings, not client token measurements and not Authoring Efficiency proof. `bun run measure:surface` passed on the current canonical-green commit above.
 
 ## Visual / Reference Proof Rule
 
@@ -147,4 +158,4 @@ bone-binding expressions
 
 ## Current Boundary
 
-Phase-context hardening has static/source proof only. **No claim is made that the current source produces a better/faster model or eliminates live Codex looping until an exact-current authoring run is explicitly performed and inspected.**
+Phase-context hardening now has full static MCP verification. **No claim is made that the current source produces a better/faster model or eliminates live Codex looping until an exact-current authoring run is explicitly performed and inspected.**
