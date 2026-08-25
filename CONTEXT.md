@@ -24,6 +24,8 @@ Primary editable output is `.bbmodel`; Bedrock geometry JSON is the runtime geom
 - **Texture Atlas** — bitmap/PNG canvas that stores pixels. `create_texture` creates a Texture Atlas; atlas creation is not UV Layout or Texture Styling.
 - **Texture Styling** — authored color, material separation, shading, highlights, contact/edge treatment, identity marks, and controlled detail inside the Texture Atlas.
 - **Texture Verify** — fresh visual validation of the Texture Atlas as mapped through final UV Layout onto the model.
+- **MCP Core** — cross-phase lifecycle/recovery/discovery/inspection/selection/delete/rename/capture/export tools that remain exposed throughout authoring.
+- **Authoring Phase** — exactly one active specialist surface: `geometry`, `texturing`, or `animation`. Geometry also owns rig and UV Layout mutation.
 
 When the distinction matters, do not use one generic “texture” stage to mean UV mapping, atlas creation, styling, and verification at once.
 
@@ -43,7 +45,9 @@ Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
 ## MCP Facts
 
-BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The default Bedrock Entity surface contains **64 enabled tools**.
+BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The retained normal Bedrock catalog contains **64 callable tools across authoring phases**, but plugin startup exposes only **MCP Core + exactly one active authoring phase**. The default phase is **Geometry**, whose current exposure is **27 tools**.
+
+Phase ownership is strict: Geometry owns Cube/Group/rig/Locator mutation and UV Layout correction; Texturing owns Texture Atlas/Painter/PBR/material-instance work; Animation owns animation/keyframe/effect/controller work. If a downstream phase discovers an upstream structural defect, return to the owning phase instead of crossing the boundary.
 
 Current source ownership includes Cube/Group authoring, coherent Cube and Group batching, UV Layout state, Texture Atlas lifecycle, Painter-based Texture Styling, PBR/material instances, Bedrock animation with numeric/Molang values, AnimationController/state inspection and bounded mutation, Locator/Null Object lifecycle, Undo/history, `.bbmodel`, and Bedrock geometry export.
 
@@ -65,7 +69,7 @@ Static source/CI evidence never upgrades a live visual/runtime claim. Artifact e
 - repository continuation → `docs/knowledge/next-action.md`
 - active asset continuity → `workspace/active/<project>/README.md`
 - asset workspace rules → `workspace/README.md`
-- source ownership → `docs/knowledge/implementation-map.md`
+- source/tool ownership → `docs/knowledge/implementation-map.md`
 - proof state → `docs/foundation/validation-report.md`
 - local acceptance procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated
 - experimental research → `Experimental/`
