@@ -15,6 +15,22 @@ Normal asset work **must not begin by searching repository files**.
 
 MCP initialize `ACTIVE PHASE` + current `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
 
+## Bedrock Coordinate Contract
+
+All geometry coordinates use **Blockbench units**:
+
+```text
+1 Minecraft block = 16 Blockbench units
+x = width
+y = height
+z = length
++Y = up
+```
+
+Convert requested block dimensions once before authoring exact coordinates. `inspect_model_bounds` reports the same axes; it is for envelope/scale/ground/displacement, not visual fidelity.
+
+For `capture_model_views`, establish one asset `front_direction` (`+z` or `-z`) from the approved/current orientation and reuse it across verification captures. Do not flip front direction between comparisons. Persist it in workspace Material handoff constraints when it is resume-critical.
+
 ## Active Phase Contract
 
 Exactly one specialist lane is callable with MCP CORE:
@@ -57,21 +73,39 @@ known target detail           → inspect_element
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
 Locator identity unknown      → list_locator_elements
-global UV/atlas inventory     → list_textures
+global UV/atlas readiness     → list_textures
 recover change                → undo / redo
 file deliverable              → export_model
 
 GEOMETRY
-create bone/Group             → add_group
+create normal bone/Group      → add_group
 create Cube                   → place_cube
 one known Cube fix            → modify_cube
 several known Cube fixes      → modify_cubes_batch
 structural delete/rename      → remove_element / rename_element
 Locator/Null create/edit      → manage_locator / manage_null_object
-rig/pivot/IK                  → bone_rigging
+rig parent/pivot/IK/mirror    → bone_rigging
 ```
 
+`add_group` is the normal creation route. Do not choose `bone_rigging(action=create/delete/rename)` merely because it also looks applicable; use `bone_rigging` for rig-specific parent/pivot/IK/mirror work and the dedicated structural tools for ordinary create/delete/rename.
+
 Texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`; geometry/rig/UV judgement → `blockbench-bedrock-modelling`. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch.
+
+## First-Call Input Invariants
+
+Do not discover known cross-field rules by making a failing mutation first. When the routed tool uses action variants or conditional fields and its exact spec is not already loaded, load **that exact active-phase spec once** before mutation.
+
+```text
+place_cube rotation != [0,0,0] → origin required in the same Cube entry
+add_group                       → pass name OR groups, never both
+modify_cube                     → id + at least one authored field change
+manage_locator create           → name + parent; omit id
+manage_locator update           → id + at least one authored field change
+manage_null_object create       → name + parent; omit id
+manage_null_object update       → id + parent and/or position
+```
+
+A validation failure repairs arguments for the **same routed tool**; it is not permission to switch to a lookalike tool.
 
 ## Search / Recovery
 

@@ -43,7 +43,7 @@ Reuse fresh state; load exact spec only when needed.
 
 ```text
 UV read/audit
-  global UV/atlas audit      → list_textures
+  global UV/atlas readiness  → list_textures (`uv_audit.production_gate`)
   face-specific mapping      → inspect_element only when needed
   unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)
 
@@ -64,17 +64,35 @@ Texture Verify
   mapped model-view evidence → capture_model_views
 ```
 
+`list_textures` is not merely a texture list. Its `uv_audit.production_gate` is the global UV readiness signal; unresolved invalid/out-of-bounds/fractional/unlocked/partial-overlap state blocks production handoff.
+
 Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
+
+## First-Call Input Invariants
+
+Do not learn these rules through failed calls:
+
+```text
+blank production create_texture → pass width + height explicitly from project logical UV (128 default / 256 opt-in)
+data + fill_color                → invalid; choose imported image or generated fill
+fill_color                       → layer_name required
+pbr_channel                      → material TextureGroup `group` required
+Painter coordinates              → texture pixel coordinates; keep them in bounds
+```
+
+The current `create_texture` public schema still supplies a provisional **16×16** blank default when width/height are omitted. Production Codex authoring must therefore **not omit blank Atlas size**: reuse fresh project resolution from `create_project`/`get_project_info` and pass both dimensions explicitly. Do not treat the 16×16 fallback as a modelling recommendation.
+
+For imported image data, preserve the source's intended bitmap dimensions rather than treating the blank-Atlas default as image sizing guidance. Pin returned Atlas UUID; when more than one texture exists, pass `texture_id` explicitly to Painter tools.
 
 ## Deferred Spec Loading
 
-Load the routed active-phase tool only. Known identity skips broad discovery; do not re-list/re-read it only for confirmation.
+Load the routed active-phase tool only. When action variants or conditional fields matter and the exact spec is not loaded, load that one spec before the first mutation. Known identity skips broad discovery; do not re-list/re-read it only for confirmation.
 
 ## Texture Atlas
 
 Use one base-color atlas PNG for the whole model, not one color atlas per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
 
-New AI production uses logical UV 128×128. Pass explicit 128-based `width`/`height` until the pending sizing contract lands. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+New AI production uses the project's logical UV canvas: **128×128 default, 256×256 opt-in**. Until the pending context-aware sizing contract lands in the tool schema/runtime, pass explicit matching `width`/`height` for a blank production Atlas.
 
 PBR normal/height/MER are support atlases. Atlas creation/fill does not complete Texture Styling.
 
@@ -85,14 +103,14 @@ Define **palette roles**, value/hue ramp, material zones, face-aware shading, co
 Flat color is provisional when form/material/detail is visible; a flat fill is a **BASE PASS only**. Prefer controlled Minecraft pixel clusters and stepped ramps; reject random high-contrast noise. Smooth gradients only when reference/style supports them.
 
 ```text
-BASE PASS             → material regions
-VALUE / FORM PASS     → form/contact/occlusion/edge + material ramp
-IDENTITY PASS         → exact-pixel identity marks
+BASE PASS             → draw_shape_tool / intentional contiguous paint_fill_tool
+VALUE / FORM PASS     → draw_shape_tool / paint_with_brush
+IDENTITY PASS         → paint_with_brush exact-pixel marks
 SECONDARY DETAIL PASS → controlled detail; stop before noise
 VERIFY                → Texture Verify
 ```
 
-Repeated same-color disconnected detail may use one `paint_with_brush` coordinate batch with `connect_strokes=false`.
+`gradient_tool` is for a reference-supported continuous transition, not default Minecraft shading. Repeated same-color disconnected detail may use one `paint_with_brush` coordinate batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 

@@ -14,6 +14,13 @@ export type McpToolPhaseCategory = "core" | McpAuthoringPhase;
 
 export const DEFAULT_MCP_AUTHORING_PHASE: McpAuthoringPhase = "geometry";
 
+/**
+ * Client-visible Bedrock modelling coordinates. Normal asset authoring does not
+ * load root CONTEXT.md, so this invariant must travel with MCP initialize.
+ */
+export const BEDROCK_AUTHORING_COORDINATE_CONTRACT =
+  "Coords: 16 Blockbench units=1 Minecraft block; x=width,y=height,z=length,+Y=up.";
+
 let activeAuthoringPhase: McpAuthoringPhase = DEFAULT_MCP_AUTHORING_PHASE;
 
 const CORE_FAMILIES = new Set<McpRegistrationFamily>([
@@ -70,6 +77,25 @@ const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
     "Animation owns authored animations, keyframes, timeline, effects, controllers, and animation inspection.",
 };
 
+/**
+ * Keep initialize routing summary-first: these are the ambiguous/high-value
+ * choices Codex should resolve before any discovery or trial call.
+ */
+const PHASE_RUNTIME_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
+  geometry: "Owns: Cube/Group/rig/Locator/Null + UV Layout.",
+  texturing: "Owns: Texture Atlas/Painter/PBR/materials + Texture Verify.",
+  animation: "Owns: clips/keyframes/timeline/effects/controllers/inspection.",
+};
+
+const PHASE_TOOL_ROUTING_SUMMARY: Record<McpAuthoringPhase, string> = {
+  geometry:
+    "Route: add_group=new bone; bone_rigging=parent/pivot/IK/mirror; remove_element/rename_element=delete/rename; list_textures=UV gate.",
+  texturing:
+    "Route: list_textures=UV/atlas gate; create_texture=Atlas; activate_texture=select; Painter=Styling; blank Atlas=project UV 128/256.",
+  animation:
+    "Route: create_animation=new clip; manage_keyframes=bone/channel keys; manage_animation_controller/effects=state/effects; rig defect=>Geometry.",
+};
+
 const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
   geometry:
     "Texturing handoff readiness: geometry=PASS; uv_layout=PASS; final Box-UV lock is complete where applicable; list_textures has no unresolved invalid/out-of-bounds/partial-overlap blocker.",
@@ -119,11 +145,12 @@ export function buildMcpPhaseRuntimeContract(
 ): string {
   const label = phase.toUpperCase();
   return [
-    `ACTIVE PHASE: ${label}. Exposed surface: MCP CORE + ${label} only.`,
-    PHASE_OWNER_SUMMARY[phase],
-    `${PHASE_FOREIGN_SUMMARY[phase]} Their tools are intentionally unavailable.`,
-    "Do not tool_search for, emulate, rename, or substitute a foreign-phase tool.",
-    `If another phase is required, return ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, and action="set MCP Authoring Phase=<phase>; reload BlockIT MCP", then STOP.`,
+    `ACTIVE PHASE: ${label}. Surface=MCP CORE+${label}.`,
+    BEDROCK_AUTHORING_COORDINATE_CONTRACT,
+    PHASE_RUNTIME_OWNER_SUMMARY[phase],
+    PHASE_TOOL_ROUTING_SUMMARY[phase],
+    "Foreign-phase tools are intentionally unavailable. Do not tool_search, emulate, rename, or substitute them.",
+    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="set MCP Authoring Phase=<phase>; reload BlockIT MCP", then STOP.`,
   ].join(" ");
 }
 

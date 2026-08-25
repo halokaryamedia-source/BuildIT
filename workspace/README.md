@@ -28,11 +28,13 @@ Each active project has **one compact `README.md`** that owns only current asset
 Goal
 Current model file
 Approved reference(s), when intentionally retained
-Material handoff constraints
+Material handoff constraints (scale/front_direction/pose override when material)
 Current next step — one concrete step
 Known blocker(s), if any
 Current handoff state — only when a phase reload/resume is pending
 ```
+
+`front_direction` means the canonical object front used by `capture_model_views`: `+z` or `-z`. Record it once when reference comparison depends on orientation, then reuse it across sessions; do not silently flip it between verification captures. Requested scale should remain in Minecraft blocks plus its resolved Blockbench-unit envelope when that conversion is resume-critical (`1 block = 16 Blockbench units`).
 
 When a phase reload/resume is pending, `Current handoff state` is compact and resume-critical only:
 
