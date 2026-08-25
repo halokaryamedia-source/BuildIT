@@ -34,24 +34,26 @@ Workspace is storage/continuity, not an MCP capability family.
 ## MCP Source Areas
 
 ```text
-mcp/index.ts          plugin lifecycle
-mcp/server/           transport/tools/resources/prompts
-mcp/server/tools/     authored operations
-mcp/lib/              schemas/factories/identity/result helpers
-mcp/ui/               Blockbench panel/settings
-mcp/prompts/          runtime workflow + generated manifest
-mcp/build/            build/docs/manifest generation
-mcp/scripts/          verification/measurement utilities
-mcp/tests/            contract/integration regressions
-mcp/docs/             generated API docs; secondary to source
+mcp/index.ts                   plugin lifecycle
+mcp/server/                    transport/tools/resources/prompts
+mcp/server/tools/              authored operations
+mcp/lib/                       schemas/factories/identity/result helpers
+mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff contract
+mcp/ui/                        Blockbench panel/settings
+mcp/prompts/                   canonical workflow body + generated manifest
+mcp/build/                     build/docs/manifest generation
+mcp/scripts/                   verification/measurement utilities
+mcp/tests/                     contract/integration regressions
+mcp/docs/                      generated API docs; secondary to source
 ```
 
 ## Hot-Path Defect Index
 
 For a named MCP-tool defect, inspect the mapped **source owner + primary regression owner first**. Expand only when that pair cannot explain the defect.
 
-| Tool(s) | Source owner | Primary regression owner |
+| Tool(s) / boundary | Source owner | Primary regression owner |
 |---|---|---|
+| authoring phase exposure / `HANDOFF_REQUIRED` | `mcp/lib/authoringPhase.ts`, `mcp/server/server.ts`, active specialist Skills | `mcp/tests/authoring-phase-surface.test.ts` |
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
@@ -83,53 +85,68 @@ Authoring Quality + Authoring Efficiency
 
 Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality claim.
 
-## Default MCP Surface
+## MCP Catalog / Phase Exposure
+
+The normal Bedrock catalog retains **64 callable tools across phases**. It is not exposed to Codex all at once.
 
 ```text
-64 enabled tools
-export_model                  exposed
-manage_animation_effects      exposed
-manage_animation_controller   exposed
-list_export_formats           not exposed
-apply_texture                 not exposed
-filter_by_material            not exposed
-risky_eval                    disabled
-from_geo_json                disabled
+MCP CORE + exactly one active phase
+
+geometry   = Cube/Group/rig/Locator/Null + structural delete/rename + UV Layout mutation
+texturing  = Texture Atlas + Painter + PBR + material instances
+animation  = animation/keyframes/timeline/effects/controllers/inspection
 ```
 
-Surface regression ceilings:
+Default active phase is `geometry`; current Geometry exposure is **27 tools**. `list_textures` is read-only MCP Core because Geometry needs the global UV audit before Texturing handoff. `remove_element` and `rename_element` are Geometry-owned structural mutation, not cross-phase Core.
+
+Runtime initialize instructions name `ACTIVE PHASE`, explain why foreign-phase tools are absent, and require:
+
+```text
+foreign-phase need
+→ HANDOFF_REQUIRED
+→ target_phase + reason + resume_from
+→ set MCP Authoring Phase=<target>
+→ reload BlockIT MCP
+→ STOP
+```
+
+A known foreign-phase tool is never a `tool_search` miss and must not be emulated or substituted.
+
+Catalog/static regression ceilings remain:
 
 ```text
 initialize instructions       <= 700 characters
-tools/list response           <= 82,000 characters
-input schemas                 <= 58,000 characters
-descriptions                  <= 11,500 characters
+catalog tools/list budget     <= 82,000 characters
+catalog input schemas         <= 58,000 characters
+catalog descriptions          <= 11,500 characters
 per-tool payload max          <= 3,200 characters
 ```
 
-`measure:surface` owns exact current serialized values. Serialized characters are not client token/context measurements and are not Authoring Efficiency proof.
+`measure:surface` owns catalog serialized values. `authoring-phase-surface.test.ts` owns phase exposure/agent-legibility. Serialized characters are not client token/context measurements and are not Authoring Efficiency proof.
 
 ## Authoring Decision / Recovery Ownership
 
 ```text
-intent + known state + stage
-→ named workspace state when persistent
-→ exact tool when known
-→ focused discovery only when target/spec is stale or unknown
+ACTIVE PHASE + intent + known state
+→ exact exposed tool when known
+→ focused discovery only for an active-phase tool with stale/unknown target/spec
 → execute
 → reuse returned continuation state
 → bounded recovery from actual failure evidence
+
+foreign-phase mutation required
+→ HANDOFF_REQUIRED
+→ STOP
 ```
 
 Do not turn a professional sample, reference fixture, or one failed model into a global modelling recipe or runtime invariant without generic evidence.
 
 ## Current Bedrock Ownership
 
-- geometry: `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`;
-- surface: texture/Painter/PBR/material-instance paths;
-- animation: numeric/Molang transforms, effect mutation, AnimationController state-machine/state-effect mutation;
-- Locator/Null Object: discovery, focused inspection, direct mutation;
-- observation/export: project info, bounds, canonical views, `.bbmodel`, Bedrock geometry export.
+- MCP Core: lifecycle, focused discovery/inspection, selection, read-only global UV/atlas audit, history/recovery, canonical capture, export;
+- Geometry: `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
+- Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
+- Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 

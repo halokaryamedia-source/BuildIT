@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — phase-scoped MCP authoring surface applied; Texture Atlas candidate still awaits canonical Bun completion
+Updated: 2026-08-25 — Phase Contract v2 prepared for Codex legibility; Texture Atlas candidate remains separate
 
 ## Current State
 
@@ -14,6 +14,7 @@ USER_BASELINE_FAILURE_RECORDED
 HISTORY_TRAVERSAL_INTERNAL_CLEANUP_APPLIED
 MATERIAL_INSTANCE_FACE_MUTATION_INTERNAL_CLEANUP_APPLIED
 MCP_CORE_PLUS_SINGLE_AUTHORING_PHASE_SOURCE_APPLIED
+PHASE_CONTRACT_V2_AGENT_LEGIBILITY_SOURCE_APPLIED
 DEFAULT_AUTHORING_PHASE_GEOMETRY
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASE_REQUIRED_AFTER_PHASE_SURFACE
 CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_TEXTURE_CONTRACT_LANDING
@@ -23,6 +24,52 @@ NO ACTIVE EXPERIMENT
 ```
 
 Working branch: **`Local` only**. `Experimental/**` remains inactive. Current source plus relevant proof remains authority.
+
+## Phase Contract v2 — Codex Legibility
+
+The MCP catalog still retains normal Bedrock capability, but Codex receives only:
+
+```text
+MCP CORE
++
+exactly one active phase
+```
+
+Runtime initialize instructions now state `ACTIVE PHASE`, describe its ownership, and explicitly explain that foreign-phase tools are intentionally unavailable. Missing foreign-phase tools are **not** discovery misses.
+
+Canonical foreign-phase response:
+
+```text
+HANDOFF_REQUIRED
+target_phase: <geometry|texturing|animation>
+reason: <why current phase cannot own the next mutation>
+resume_from: <fresh project/UUID/state>
+action: set MCP Authoring Phase=<target>; reload BlockIT MCP
+STOP
+```
+
+Agent rules:
+
+- do not `tool_search`, emulate, rename, or substitute a known foreign-phase tool;
+- Geometry owns Cube/Group/rig/Locator/Null mutation, structural delete/rename, and UV Layout mutation;
+- `list_textures` is read-only MCP Core so Geometry can perform global UV/atlas audit before handoff and Texturing can reuse it;
+- Texturing owns Texture Atlas/Painter/PBR/material instances and returns structural/UV defects to Geometry;
+- Animation owns motion/keyframes/timeline/effects/controllers and returns structural rig/pivot/IK defects to Geometry;
+- the runtime workflow prompt receives a phase header before the canonical full-pipeline body, so later-stage sections are handoff targets rather than callable routes.
+
+Primary owners:
+
+```text
+mcp/lib/authoringPhase.ts
+mcp/server/server.ts
+mcp/server/prompts.ts
+.agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+.agents/skills/blockit-bedrock-texturing/SKILL.md
+.agents/skills/blockit-bedrock-animation/SKILL.md
+mcp/tests/authoring-phase-surface.test.ts
+```
+
+Acceptance POV for this source pass is **agent contract consistency**, not live model speed: active instructions, exposed surface, specialist routing, and handoff behavior must agree. No live modelling test is required for this pass.
 
 ## Canonical Vocabulary — Do Not Collapse
 
@@ -36,47 +83,6 @@ TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 
 `create_texture` creates a **Texture Atlas**. UV state (`uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region`) is **UV Layout**. Painter operations are **Texture Styling**. `get_texture` plus mapped model views provides **Texture Verify** evidence.
 
-## Phase-Scoped MCP Surface
-
-BlockIT retains the normal Bedrock callable catalog but plugin startup now exposes:
-
-```text
-MCP CORE
-+
-exactly one authoring phase
-```
-
-Authoring phases:
-
-```text
-geometry   = Geometry + rig + Locator/Null mutation + UV Layout mutation
-texturing  = Texture Atlas + Painter + PBR + material instances
-animation  = animation/keyframes/timeline/effects/controllers/inspection
-```
-
-Core stays available across all three phases for project lifecycle, recovery/history, focused discovery/inspection, selection, delete/rename, canonical capture, locator discovery, and export.
-
-Default phase is **Geometry**. Current source classification expects the default Geometry exposure to contain **27 tools**. Phase is selected through the `MCP Authoring Phase` Blockbench setting; the setting requires plugin/MCP reload rather than relying on live client tool-list refresh.
-
-Boundary rule:
-
-- Geometry completes rig and UV Layout mutation before Texturing handoff.
-- Texturing may inspect/audit UV state, but an upstream UV/geometry defect returns to Geometry rather than borrowing Cube mutation tools.
-- Animation does not own `bone_rigging`; structural rig defects return to Geometry.
-- Tool implementations, schemas, and names are unchanged; only MCP exposure is phase-scoped.
-
-Primary owners:
-
-```text
-mcp/lib/authoringPhase.ts
-mcp/server/tools.ts
-mcp/index.ts
-mcp/ui/settings.ts
-mcp/tests/authoring-phase-surface.test.ts
-```
-
-Generated MCP API documentation remains catalog-based; this phase-scoping pass does not edit tool schemas/descriptions and therefore does not require hand-edited generated API entries.
-
 ## Bounded Internal Cleanup Applied
 
 ### History
@@ -87,18 +93,18 @@ Generated MCP API documentation remains catalog-based; this phase-scoping pass d
 
 `mcp/server/tools/material-instances.ts` shares explicit/selected Cube scope resolution plus one face material-name mutation primitive across set, bulk-set, and clear.
 
-These cleanups and phase exposure are source/static facts. They do **not** prove lower wall-clock runtime or better Authoring Efficiency by themselves.
+These cleanups and phase contracts are source/static facts. They do **not** prove lower wall-clock runtime or better Authoring Efficiency by themselves.
 
 ## Texture Atlas Public-Contract Candidate
 
-The last rebased source/test candidate remains:
+The last source/test candidate remains:
 
 ```text
 2aa0a29a2f3d081a3f2765db41f2460524ff3fee
 old parent: bc395113159b92c9b0b8cb4322fb09308756924f
 ```
 
-Its intent remains current, but **do not land that old commit directly** after the phase-scoping changes. Rebase/recover its exact five-file intent onto the then-current `Local` before canonical generation.
+Its intent remains current, but **do not land that old commit directly** after phase-contract changes. Recover/rebase its exact five-file intent onto the then-current `Local` before canonical generation.
 
 Candidate intent:
 
@@ -107,7 +113,7 @@ Candidate intent:
 - explicit blank sizes remain intentional, including provisional 16-based sizes;
 - imported image data keeps authored dimensions and rejects simultaneous `data + width/height`;
 - `create_texture` reports its sizing source;
-- public Texture/ Painter descriptions preserve the UV Layout / Texture Atlas / Texture Styling / Texture Verify split;
+- public Texture/Painter descriptions preserve the UV Layout / Texture Atlas / Texture Styling / Texture Verify split;
 - fill remains BASE PASS only; shape/brush own styling and gradient is only for supported continuous transitions.
 
 ## Required Texture Candidate Completion
@@ -115,7 +121,7 @@ Candidate intent:
 A canonical Bun-capable environment is still required. Do not run a model-authoring benchmark or live visual acceptance during this completion.
 
 1. Start from the then-current `Local`.
-2. Recover/rebase the exact five-file intent from candidate `2aa0a29a2f3d081a3f2765db41f2460524ff3fee`; preserve the phase-scoped surface changes and never force-update.
+2. Recover/rebase the exact five-file intent from candidate `2aa0a29a2f3d081a3f2765db41f2460524ff3fee`; preserve phase-scoped/Phase Contract v2 behavior and never force-update.
 3. From `mcp/` run:
 
 ```bash
@@ -138,17 +144,18 @@ bun run docs:check
 
 Do not implement automatically:
 
-- aggregate `list_textures` Box-UV working map;
+- aggregate `list_textures` Box-UV working map beyond the current read-only audit surface;
 - Painter operation batching;
 - targeted Canvas refresh redesign;
 - telemetry/session logger;
 - mega-tools or dynamic live phase switching;
+- `get_phase` / `switch_phase` ritual tools;
 - live authoring/model test.
 
 ## Proof Boundary
 
-The phase-scoped authoring surface is source/static until the repository CI gate is observed and the installed plugin is later exercised. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching evidence.**
+Phase Contract v2 can be statically verified for instruction/surface/routing consistency. It does **not** prove that a future Codex authoring run uses fewer calls or produces better visual quality; that remains runtime evidence. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete.
 
 ## STOP
 
-After phase-surface CI is checked, do not broaden the phase system automatically. The next source-changing task remains the canonical Texture Atlas candidate completion when a Bun-capable environment is available. Live model retesting remains deferred.
+After Phase Contract v2 source/CI review, do not broaden the phase system automatically. The next source-changing task remains the canonical Texture Atlas candidate completion when a Bun-capable environment is available. Live model retesting remains deferred by the user.

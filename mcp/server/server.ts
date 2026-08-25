@@ -2,24 +2,40 @@
 /// <reference types="blockbench-types" />
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "@/lib/productIdentity";
+import {
+  DEFAULT_MCP_AUTHORING_PHASE,
+  buildMcpPhaseRuntimeContract,
+  getActiveMcpAuthoringPhase,
+  type McpAuthoringPhase,
+} from "@/lib/authoringPhase";
 
 /**
- * Compact server-level description used by MCP clients as namespace context.
- * Keep this capability-oriented and searchable; detailed workflow guidance
- * belongs in the dedicated runtime prompt rather than the initialization path.
+ * Phase-aware server instructions are part of the agent contract: Codex must
+ * know why foreign-phase tools are absent before it attempts discovery.
  */
-export const MCP_SERVER_INSTRUCTIONS =
-  "BlockIT Bedrock Entity authoring for Blockbench: project lifecycle; Cube/Group geometry; focused inspection and model bounds/views; textures, Painter, PBR, material instances; animation, rigging, keyframes; Locator/Null Object; history/Undo/Redo; and Bedrock/.bbmodel export. Prefer the smallest matching tool for the current step, and reuse fresh returned state before broad discovery.";
+export function buildMcpServerInstructions(
+  phase: McpAuthoringPhase
+): string {
+  return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
+    phase
+  )} CORE: lifecycle/read/selection/history/capture/export.`;
+}
+
+export const MCP_SERVER_INSTRUCTIONS = buildMcpServerInstructions(
+  DEFAULT_MCP_AUTHORING_PHASE
+);
 
 /** Create one request-owned MCP server instance. */
-export function createServer(): McpServer {
+export function createServer(
+  phase: McpAuthoringPhase = getActiveMcpAuthoringPhase()
+): McpServer {
   return new McpServer(
     {
       name: PRODUCT_NAME,
       version: PRODUCT_VERSION,
     },
     {
-      instructions: MCP_SERVER_INSTRUCTIONS,
+      instructions: buildMcpServerInstructions(phase),
     }
   );
 }

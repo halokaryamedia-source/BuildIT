@@ -24,8 +24,9 @@ Primary editable output is `.bbmodel`; Bedrock geometry JSON is the runtime geom
 - **Texture Atlas** — bitmap/PNG canvas that stores pixels. `create_texture` creates a Texture Atlas; atlas creation is not UV Layout or Texture Styling.
 - **Texture Styling** — authored color, material separation, shading, highlights, contact/edge treatment, identity marks, and controlled detail inside the Texture Atlas.
 - **Texture Verify** — fresh visual validation of the Texture Atlas as mapped through final UV Layout onto the model.
-- **MCP Core** — cross-phase lifecycle/recovery/discovery/inspection/selection/delete/rename/capture/export tools that remain exposed throughout authoring.
+- **MCP Core** — cross-phase lifecycle/recovery/discovery/inspection/selection/read-only UV audit/capture/export tools. Structural delete/rename and other model mutation stay phase-owned.
 - **Authoring Phase** — exactly one active specialist surface: `geometry`, `texturing`, or `animation`. Geometry also owns rig and UV Layout mutation.
+- **HANDOFF_REQUIRED** — deterministic stop response when requested work needs another authoring phase. The agent preserves fresh resume state, names `target_phase`, asks for the matching `MCP Authoring Phase` + reload, and does not search for a foreign-phase tool.
 
 When the distinction matters, do not use one generic “texture” stage to mean UV mapping, atlas creation, styling, and verification at once.
 
@@ -47,7 +48,9 @@ Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
 BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The retained normal Bedrock catalog contains **64 callable tools across authoring phases**, but plugin startup exposes only **MCP Core + exactly one active authoring phase**. The default phase is **Geometry**, whose current exposure is **27 tools**.
 
-Phase ownership is strict: Geometry owns Cube/Group/rig/Locator mutation and UV Layout correction; Texturing owns Texture Atlas/Painter/PBR/material-instance work; Animation owns animation/keyframe/effect/controller work. If a downstream phase discovers an upstream structural defect, return to the owning phase instead of crossing the boundary.
+Runtime initialize instructions name the active phase and explain that foreign-phase tools are intentionally unavailable. A foreign-phase need is not a tool-discovery miss: Codex must return `HANDOFF_REQUIRED` and stop rather than `tool_search`, emulate, rename, or substitute another tool.
+
+Phase ownership is strict: Geometry owns Cube/Group/rig/Locator/Null mutation, structural delete/rename, and UV Layout correction; `list_textures` is read-only Core so Geometry can perform the global UV audit before handoff. Texturing owns Texture Atlas/Painter/PBR/material-instance work. Animation owns animation/keyframe/effect/controller work. If a downstream phase discovers an upstream structural defect, return to the owning phase instead of crossing the boundary.
 
 Current source ownership includes Cube/Group authoring, coherent Cube and Group batching, UV Layout state, Texture Atlas lifecycle, Painter-based Texture Styling, PBR/material instances, Bedrock animation with numeric/Molang values, AnimationController/state inspection and bounded mutation, Locator/Null Object lifecycle, Undo/history, `.bbmodel`, and Bedrock geometry export.
 

@@ -1,11 +1,27 @@
 ---
 name: blockit-bedrock-animation
-description: Minecraft Bedrock Entity animation specialist for authored motion, Molang, controllers, effects, rig, timeline, and bounded correction.
+description: Minecraft Bedrock Entity animation specialist for authored motion, Molang, controllers, effects, timeline, and bounded correction.
 ---
 
 # BlockIT Bedrock Animation
 
-Use after participating hierarchy/pivots are suitable. Motion causality outranks keyframe count or curve complexity.
+Use only when `ACTIVE PHASE: ANIMATION` and participating hierarchy/pivots are suitable.
+
+## Phase Boundary
+
+Animation owns motion, not structural rig mutation.
+
+```text
+bone/pivot/IK/parenting structure must change
+→ HANDOFF_REQUIRED
+  target_phase: geometry
+  reason: <observed rig defect>
+  resume_from: <fresh animation/bone/project state>
+  action: set MCP Authoring Phase=geometry; reload BlockIT MCP
+→ STOP
+```
+
+Do not `tool_search` for `bone_rigging` while Animation is active.
 
 ## Direct Routing
 
@@ -16,16 +32,13 @@ controller state/composition/effects  → manage_animation_controller
 existing animation effects            → manage_animation_effects
 transform keyframes / Molang values   → manage_keyframes
 curve change with evidence            → animation_graph_editor
-bone/pivot/IK                         → bone_rigging
 time/length/FPS/loop/Molang controls  → animation_timeline
 batch coherent operations             → batch_keyframe_operations
 explicit copy/paste/mirror            → animation_copy_paste
 new-animation particle/sound          → create_animation
 ```
 
-## Deferred Spec Loading
-
-Load the **exact tool name** only. Reuse fresh UUID/state; known participating identity/state must not fall back to broad hierarchy discovery or confirmation reads.
+Load the exact active-phase tool only. Reuse fresh UUID/state; known identity must not fall back to broad discovery or confirmation reads.
 
 ## Motion Design Contract
 
@@ -41,7 +54,7 @@ causal event for sound/particle
 loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, **not presets**. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target; use the simplest interpolation that preserves motion.
+Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target.
 
 ## Procedural Math / Molang
 
@@ -54,22 +67,20 @@ q.modified_move_speed     → speed/intensity response
 controller blend value    → conditional layer weight
 ```
 
-Periodic motion tracks base + amplitude + frequency + phase. Chains use `driver → delayed followers`, deliberate phase/amplitude hierarchy, and attachment continuity. Mirror/copy is not a gait generator; contact remains authored; run is not merely faster walk.
+Periodic motion tracks base + amplitude + frequency + phase. Chains use driver → delayed followers, deliberate phase/amplitude hierarchy, and attachment continuity.
 
-## Action / Weight / Effects
+## Action / Effects / Verification
 
 When material: `anticipation → acceleration/action → impact/contact → overshoot/follow-through → recovery → neutral/handoff`.
 
-Use counter-motion when weight needs it; secondary parts normally lag the driver. Bind each particle/sound to a named **causal event** (release/contact/ignition/landing/start/stop), not time zero unless start is the cause.
+Bind particles/sounds to named causal events, not time zero unless start is the cause.
 
-## Authoring / Verification
+`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`. Geometry/hierarchy/pivot changes invalidate only affected animation assumptions.
+Review pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return.
 
-Review: pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return.
-
-Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`. Do not use an animation quality score.
+Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
 ## Protected Gaps
 
-Controller blend-curve mutation and bone-binding expressions remain protected; do not route them through `risky_eval` or generic UI actions. Authored controller state is not proof of Minecraft execution; live playback/visual quality requires direct runtime evidence when explicitly activated.
+Controller blend-curve mutation and bone-binding expressions remain protected; do not route them through `risky_eval` or generic UI actions. Authored controller state is not proof of Minecraft execution.

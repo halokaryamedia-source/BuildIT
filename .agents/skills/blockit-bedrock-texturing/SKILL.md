@@ -1,15 +1,29 @@
 ---
 name: blockit-bedrock-texturing
-description: Minecraft Bedrock Entity specialist for UV Layout, Texture Atlas lifecycle, Texture Styling, Painter, PBR, and material_instance metadata.
+description: Minecraft Bedrock Entity specialist for Texture Atlas, Texture Styling, Painter, PBR, material instances, and Texture Verify.
 ---
 
-# BlockIT Bedrock UV + Texture
+# BlockIT Bedrock Texturing
 
-Geometry judgement: `blockbench-bedrock-modelling`.
+Use only when `ACTIVE PHASE: TEXTURING`. Geometry owns geometry/rig/UV mutation.
 
-## Canonical Stage Vocabulary
+## Phase Boundary
 
-Keep stages separate:
+Texturing may inspect/audit UV state but must not borrow Cube mutation.
+
+```text
+UV/geometry/rig correction required
+→ HANDOFF_REQUIRED
+  target_phase: geometry
+  reason: <observed structural/UV defect>
+  resume_from: <fresh project/UUID/UV state>
+  action: set MCP Authoring Phase=geometry; reload BlockIT MCP
+→ STOP
+```
+
+After Texture Verify `PASS`, requested animation continues via the same handoff with `target_phase: animation`.
+
+## Canonical Vocabulary
 
 ```text
 UV LAYOUT       = geometry → atlas coordinate mapping
@@ -18,74 +32,63 @@ TEXTURE STYLING = color/material/shading/detail authored into the atlas
 TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 ```
 
-`create_texture` = **Texture Atlas**. `uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region` = **UV Layout**. Painter tools = **Texture Styling**.
+`create_texture` = Texture Atlas. Painter = Texture Styling. UV mutation is not Texturing ownership.
 
 ## Direct Routing
 
-Reuse fresh state; load exact tool spec only when not loaded.
+Reuse fresh state; load exact spec only when needed.
 
 ```text
-UV Layout
-  fresh Box-UV state       → reuse place_cube box_uv_region
-  final Box-UV lock        → modify_cubes_batch
-  global UV audit          → list_textures
-  face-specific mapping    → inspect_element only when needed
+UV read/audit
+  global UV/atlas audit      → list_textures
+  face-specific mapping      → inspect_element only when needed
+  unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)
 
 Texture Atlas
-  create atlas bitmap      → create_texture
-  atlas inventory/select   → list_textures / activate_texture
+  create atlas bitmap        → create_texture
+  inventory/select           → list_textures / activate_texture
 
 Texture Styling
-  base/material regions    → draw_shape_tool
-  contiguous base fill     → paint_fill_tool
-  stepped value/form/edge  → draw_shape_tool / paint_with_brush
-  supported smooth ramp    → gradient_tool
-  identity/detail pixels   → paint_with_brush
-  PBR/material semantics   → create_pbr_material / configure_material / assign_texture_channel
+  base/material regions      → draw_shape_tool
+  contiguous base fill       → paint_fill_tool
+  stepped value/form/edge    → draw_shape_tool / paint_with_brush
+  supported smooth ramp      → gradient_tool
+  identity/detail pixels     → paint_with_brush
+  PBR/material semantics     → create_pbr_material / configure_material / assign_texture_channel
 
 Texture Verify
-  fresh atlas image        → get_texture
-  mapped model evidence    → capture_model_views
+  fresh atlas image          → get_texture
+  mapped model evidence      → capture_model_views
 ```
 
-## UV Layout
-
-Run UV work only after geometry exists. For fresh Box UV, reuse `place_cube` `box_uv_region`; do not re-inspect by ritual. Keep auto UV active while geometry can still change.
-
-After geometry `PASS`, use one `modify_cubes_batch` to lock final Box-UV Cubes with `autouv=0`, then call `list_textures` once for global audit. Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation.
-
-Use `inspect_element` only for face-specific mapping/orientation; one Cube inspection returns all faces. Reuse `texture_pixels.rect`, `flip_u`, `flip_v`.
+Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
 
 ## Texture Atlas
 
-Use **one base-color atlas PNG for the whole model**, never per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
+Use one base-color atlas PNG for the whole model. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
 
-New AI production uses logical UV **128×128**. Pass explicit 128-based `width`/`height`; do not rely on provisional 16×16 default. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+New AI production uses logical UV 128×128. Pass explicit 128-based `width`/`height` until the pending Texture Atlas sizing contract lands. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
-PBR normal/height/MER are support atlas channels. Atlas creation/fill does **not** complete Texture Styling.
+PBR normal/height/MER are support atlases. Atlas creation/fill does not complete Texture Styling.
 
 ## Texture Styling
 
-Before production pixels define palette/value-hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit.
+Define palette/value-hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit.
 
-Flat fill is a **BASE PASS only** when form/material/detail is visible. Prefer controlled Minecraft pixel clusters and stepped value/hue ramps; reject random high-contrast noise. Use smooth `gradient_tool` transitions only when reference/style supports them.
+Flat fill is a **BASE PASS only** when form/material/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; reject random high-contrast noise. Smooth gradients only when reference/style supports them.
 
 ```text
-BASE PASS             → material regions; fill remains provisional
+BASE PASS             → material regions
 VALUE / FORM PASS     → form/contact/occlusion/edge + material ramp
 IDENTITY PASS         → exact-pixel identity marks
-SECONDARY DETAIL PASS → controlled detail by pixels per UV unit; stop before noise
+SECONDARY DETAIL PASS → controlled detail; stop before noise
 VERIFY                → Texture Verify
 ```
 
-For repeated same-color disconnected detail, use one `paint_with_brush` coordinate batch with `connect_strokes=false`.
+Repeated same-color disconnected detail may use one `paint_with_brush` coordinate batch with `connect_strokes=false`.
 
-## Texture Verify / Visual Convergence
+## Texture Verify
 
 Use approved reference + fresh `get_texture` + affected `capture_model_views`. Review UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
 
-`FAIL / UNVERIFIED / PASS` is visual-only. Texture mutation makes evidence stale. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal direction failing twice without new evidence → `BLOCKED`.
-
-## Native Bedrock PBR
-
-`apply_texture` stays disabled for Bedrock `single_texture`. Box UV state is `uv_offset`, `mirror_uv`, `autouv`. Native Bedrock PBR and per-face `material_instance` never justify base-atlas fragmentation.
+`FAIL / UNVERIFIED / PASS` is visual-only. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal direction failing twice without new evidence → `BLOCKED`.
