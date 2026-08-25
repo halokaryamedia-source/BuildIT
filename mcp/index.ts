@@ -12,11 +12,20 @@ import {
   PRODUCT_NAME,
   PRODUCT_REPOSITORY,
 } from "@/lib/productIdentity";
-import { tools, prompts, registerMcpProfile } from "@/server/tools";
+import {
+  tools,
+  prompts,
+  applyMcpToolSurface,
+  registerMcpProfile,
+} from "@/server/tools";
 import {
   MCP_EXTENDED_FAMILIES_SETTING_ID,
   resolveMcpRegistrationProfile,
 } from "@/lib/registrationProfile";
+import {
+  MCP_AUTHORING_PHASE_SETTING_ID,
+  resolveMcpAuthoringPhase,
+} from "@/lib/authoringPhase";
 import { resources } from "@/server";
 import { registerReferenceModelsResource } from "@/server/resources";
 import { uiSetup, uiTeardown } from "@/ui";
@@ -75,13 +84,17 @@ BBPlugin.register("mcp", {
       return;
     }
 
-    // Bedrock Entity remains the default registration truth. The optional
-    // setting can only add the source-preserved generic import/UI families for
-    // this plugin load; registerMcpProfile() will not register core families twice.
+    // Bedrock Entity remains the catalog truth. The optional extended setting
+    // may add generic fallback families, then authoring phase exposure narrows
+    // the actual MCP surface to Core + exactly one phase for this plugin load.
     const registrationProfile = resolveMcpRegistrationProfile(
       Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
     );
     registerMcpProfile(registrationProfile);
+    const authoringPhase = resolveMcpAuthoringPhase(
+      Settings.get(MCP_AUTHORING_PHASE_SETTING_ID)
+    );
+    applyMcpToolSurface(registrationProfile, authoringPhase);
 
     // Runtime-conditional resource (depends on the reference_models plugin).
     registerReferenceModelsResource();
