@@ -24,12 +24,23 @@ Production plugin: `dist/mcp.js`. `dist/` is generated output; package version a
 ```text
 endpoint                     http://127.0.0.1:3000/bb-mcp
 default profile              bedrock_entity
+default authoring phase      geometry
 Extended MCP Families        OFF
 risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-The default Bedrock Entity surface contains **64 enabled tools** and remains loopback-only/request-owned/stateless.
+The normal Bedrock catalog retains **64 callable tools across authoring phases**. Plugin startup exposes **Core + exactly one authoring phase** so Geometry, Texturing, and Animation work do not overlap. The default **Geometry** surface currently exposes **27 tools**. Phase changes are deliberate handoffs through the `MCP Authoring Phase` setting and require plugin/MCP reload.
+
+```text
+CORE + GEOMETRY
+or
+CORE + TEXTURING
+or
+CORE + ANIMATION
+```
+
+Geometry owns rig and UV Layout mutation. Texturing may inspect UV state but must hand back to Geometry when UV/geometry requires correction. Animation likewise hands structural rig changes back to Geometry.
 
 ## Current Capability
 
@@ -55,6 +66,7 @@ fresh mutation result → reuse it
 known coherent Cubes → one place_cube(elements=[...]) call
 known coherent Groups → one add_group(groups=[...]) call
 visual correction → affected view(s) first
+phase boundary crossed → switch phase instead of borrowing another phase's mutation tools
 same causal failure twice without new evidence → BLOCKED
 ```
 
@@ -63,16 +75,17 @@ Do not broad-search source for ordinary asset authoring, inspect every new Cube,
 ## Surface Guard
 
 ```text
-64 enabled tools
-initialize instructions          <= 700 characters
-tools/list response              <= 82,000 characters
-input schemas                    <= 58,000 characters
-descriptions                     <= 11,500 characters
-max per-tool payload             <= 3,200 characters
-runtime workflow prompt          < 7,000 characters
+retained Bedrock callable catalog  64 tools
+default Geometry exposure           27 tools
+initialize instructions             <= 700 characters
+catalog tools/list budget           <= 82,000 characters
+catalog input schemas               <= 58,000 characters
+catalog descriptions                <= 11,500 characters
+max per-tool payload                <= 3,200 characters
+runtime workflow prompt             < 7,000 characters
 ```
 
-`measure:surface` owns exact serialized values. Character counts are regression ceilings, not installed-client token measurements.
+`authoring-phase-surface.test.ts` owns the phase-exposure contract. `measure:surface` remains the catalog/static payload guard. Character counts are regression ceilings, not installed-client token measurements.
 
 ## Source Layout
 
