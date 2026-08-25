@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — bounded MCP internal cleanup + Texture Atlas candidate pending Bun generation
+Updated: 2026-08-25 — Texture Atlas candidate rebased; canonical Bun generation still required
 
 ## Current State
 
@@ -13,7 +13,7 @@ CANONICAL_AUTHORING_STAGE_VOCABULARY_ALIGNED
 USER_BASELINE_FAILURE_RECORDED
 HISTORY_TRAVERSAL_INTERNAL_CLEANUP_APPLIED
 MATERIAL_INSTANCE_FACE_MUTATION_INTERNAL_CLEANUP_APPLIED
-TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_PREPARED_UNREFERENCED
+TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASED_UNREFERENCED
 CANONICAL_BUN_GENERATION_REQUIRED_BEFORE_TEXTURE_CONTRACT_LANDING
 LIVE_RETEST_DEFERRED_BY_USER
 NO ACTIVE LOCAL ACCEPTANCE RUN
@@ -55,17 +55,27 @@ Tool schemas/descriptions, selected/all-cubes behavior, Undo scope/labels, Canva
 
 `mcp/server/tools/project.ts`, `mcp/server/tools/export.ts`, and `mcp/server/tools/ui.ts` were inspected for the same cleanup class. No change was applied because the visible repetition was too small or runtime-sensitive to justify another abstraction.
 
-A larger `cubes.ts` consolidation and `locators.ts` cleanup were explored but not landed. The available GitHub transport in this session was not reliable enough for large full-file rewrites, and runtime-sensitive Undo/preview ordering was intentionally preserved rather than guessed.
+A larger `cubes.ts` consolidation and `locators.ts` cleanup were explored but not landed. Runtime-sensitive Undo/preview ordering was intentionally preserved rather than guessed.
 
 These are source-structure cleanups. They do **not** prove lower wall-clock runtime or better Authoring Efficiency by themselves.
 
-## Prepared Texture Atlas Public-Contract Candidate
+## Rebased Texture Atlas Public-Contract Candidate
 
-Unreferenced candidate commit:
+Unreferenced source/test candidate:
 
 ```text
-50367a1f6c670856102467fe63111ed019077f0c
-original parent: 49eb2b6a6a8bf9aa2cd65ebb969916928a0fcb57
+2aa0a29a2f3d081a3f2765db41f2460524ff3fee
+parent: bc395113159b92c9b0b8cb4322fb09308756924f
+```
+
+The candidate was rebuilt from the previously approved source blobs onto the current MCP/internal-cleanup source state. Its diff is limited to:
+
+```text
+.agents/skills/blockit-bedrock-texturing/SKILL.md
+mcp/prompts/bedrock_entity_workflow.md
+mcp/server/tools/paint.ts
+mcp/server/tools/texture.ts
+mcp/tests/texture-production-discipline.test.ts
 ```
 
 Candidate semantics:
@@ -83,11 +93,10 @@ The candidate does **not** add new tools, UV working-map aggregation, Painter ba
 
 ## Required Texture Candidate Completion
 
-Use a local Codex/Opencode environment with Bun. Do not run a model-authoring benchmark or live visual acceptance during this completion.
+A canonical Bun-capable environment is still required. Do not run a model-authoring benchmark or live visual acceptance during this completion.
 
-1. Start from the then-current `Local`.
-2. Recover/rebase the exact intent of candidate `50367a1f6c670856102467fe63111ed019077f0c` onto current `Local`; do not force-update or blindly replace newer source.
-3. From `mcp/` run:
+1. Start from the then-current `Local` and recover the exact source/test intent from candidate `2aa0a29a2f3d081a3f2765db41f2460524ff3fee`. If `Local` moved beyond continuation-only changes, reconcile before applying; never force.
+2. From `mcp/` run:
 
 ```bash
 bun install --frozen-lockfile
@@ -100,10 +109,14 @@ bun run docs:build
 bun run docs:check
 ```
 
-4. Review generated changes. Expected generated owners are `mcp/prompts/manifest.json`, `mcp/docs/api.json`, and `mcp/docs/index.html`. Do not hand-edit generated entries.
-5. Confirm source + tests + generated artifacts form one coherent public-contract change with no unrelated diff.
-6. Re-fetch `Local` HEAD before landing; if it moved materially, reconcile and never force.
-7. Land one coherent commit, observe available CI/status, then STOP. Do not infer live Blockbench/model quality from static completion.
+3. Review generated changes. Expected generated owners are `mcp/prompts/manifest.json`, `mcp/docs/api.json`, and `mcp/docs/index.html`. Do not hand-edit generated entries.
+4. Confirm source + tests + generated artifacts form one coherent public-contract change with no unrelated diff.
+5. Re-fetch `Local` HEAD before landing; if it moved materially, reconcile and never force.
+6. Land one coherent commit, observe available CI/status, then STOP. Do not infer live Blockbench/model quality from static completion.
+
+## Environment Note
+
+This ChatGPT sandbox has Node/Git but no Bun and no outbound package-resolution network. The official MCP Verify workflow has Bun, but its docs freshness step regenerates files only inside the runner and restores the checked-in originals; it does not publish generated docs as an artifact. Therefore the public contract must remain unlanded rather than hand-editing generated files or temporarily breaking `Local`.
 
 ## Deferred Until Evidence
 
@@ -118,8 +131,8 @@ Do not implement automatically:
 
 ## Proof Boundary
 
-The History and Material Instance cleanups are source/static evidence of reduced duplicated implementation while preserving their existing public contracts. The Texture Atlas public-contract candidate remains unlanded until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching runtime evidence.**
+The History and Material Instance cleanups are source/static evidence of reduced duplicated implementation while preserving their existing public contracts. The rebased Texture Atlas candidate is source/test preparation only until canonical Bun generation/gates complete. **No better visual quality, wall-clock runtime, or Authoring Efficiency is claimed without matching runtime evidence.**
 
 ## STOP
 
-This bounded internal-cleanup pass is complete. Do not broaden into another tool family automatically. The next implementation step is the Texture Atlas candidate completion when a canonical Bun environment is available, or another explicitly requested bounded cleanup. Live model retesting remains deferred by the user.
+The source/test reconciliation step is complete. Do not land the Texture Atlas public contract until canonical Bun-generated artifacts and gates are available. Live model retesting remains deferred by the user.
