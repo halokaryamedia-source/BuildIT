@@ -13,7 +13,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-Trust the MCP initialize `ACTIVE PHASE` and current `tools/list`. Tool absence caused by phase scoping is **not** a discovery failure.
+MCP initialize `ACTIVE PHASE` + current `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
 
 ## Active Phase Contract
 
@@ -31,12 +31,13 @@ Foreign-phase need:
 HANDOFF_REQUIRED
 target_phase: <geometry|texturing|animation>
 reason: <why current phase cannot own the next mutation>
-resume_from: <fresh project/UUID/state already known>
+readiness: <latest verified gates relevant to the handoff>
+resume_from: <current model/project + immediate target identifiers>
 action: set MCP Authoring Phase=<target>; reload BlockIT MCP
 STOP
 ```
 
-Do **not** `tool_search`, emulate, rename, or substitute a foreign-phase tool. Geometry owns rig and UV mutation; Texturing/Animation return structural defects to Geometry.
+Do **not** `tool_search`, emulate, rename, or substitute a foreign-phase tool. Geometry owns rig and UV mutation; Texturing/Animation return structural defects to Geometry. Preserve only resume-critical state; an exact UUID belongs in `resume_from` only when the immediate next mutation needs it.
 
 ## Authoring Stage Lock
 
@@ -74,7 +75,7 @@ Texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-anim
 
 ## Search / Recovery
 
-`tool_search` is deferred spec loading **only for a tool that belongs to the active phase and is expected in current `tools/list`**. If exact spec is loaded, call it. One precise search; miss → reformulate once with the same name; second miss → `BLOCKED`.
+`tool_search` is **deferred spec loading after routing** and only for a tool that belongs to the active phase and is expected in current `tools/list`. If exact spec is loaded, call it. One precise search; miss → reformulate once with the same name; second miss → `BLOCKED`.
 
 A known foreign-phase tool must never enter this search path.
 
@@ -87,13 +88,14 @@ no effect       → NO_EFFECT           → change diagnosis/payload
 unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 ```
 
-## State / Anti-Loop
+## Minimum Necessary Evidence / Anti-Loop
 
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no ritual readback.
+- **Do not automatically re-read fresh mutation targets with `inspect_element`.**
 - Do not inspect every new Cube or capture after every mutation.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
-- Skip `get_project_info` after known create/export state.
+- Skip `get_project_info` after create/export unless required by unknown/stale lifecycle state.
 - Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Visual / Downstream

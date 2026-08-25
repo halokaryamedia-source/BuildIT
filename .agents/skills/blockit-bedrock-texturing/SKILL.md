@@ -16,23 +16,26 @@ UV/geometry/rig correction required
 → HANDOFF_REQUIRED
   target_phase: geometry
   reason: <observed structural/UV defect>
-  resume_from: <fresh project/UUID/UV state>
+  readiness: <which Geometry/UV gate is not ready>
+  resume_from: <current model/project + immediate target identifiers>
   action: set MCP Authoring Phase=geometry; reload BlockIT MCP
 → STOP
 ```
 
-After Texture Verify `PASS`, requested animation continues via the same handoff with `target_phase: animation`.
+Texturing entry expects Geometry/UV readiness already established: final Box UV is locked with `autouv=0` where applicable and the global `list_textures` audit has no unresolved invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` only as read context; do not mutate UV ownership here.
+
+After Texture Verify `PASS`, requested animation continues via the same handoff with `target_phase: animation` and `readiness: texture_verify=PASS`.
 
 ## Canonical Vocabulary
 
 ```text
-UV LAYOUT       = geometry → atlas coordinate mapping
-TEXTURE ATLAS   = bitmap/PNG canvas that stores pixels
-TEXTURE STYLING = color/material/shading/detail authored into the atlas
-TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
+UV Layout       = geometry → atlas coordinate mapping
+Texture Atlas   = bitmap/PNG canvas that stores pixels
+Texture Styling = color/material/shading/detail authored into the atlas
+Texture Verify  = fresh atlas + mapped-model visual validation
 ```
 
-`create_texture` = Texture Atlas. Painter = Texture Styling. UV mutation is not Texturing ownership.
+`create_texture` = Texture Atlas. Painter = Texture Styling. UV mutation is not Texturing ownership. Per-face `material_instance` semantics belong to Texturing.
 
 ## Direct Routing
 
@@ -58,14 +61,18 @@ Texture Styling
 
 Texture Verify
   fresh atlas image          → get_texture
-  mapped model evidence      → capture_model_views
+  mapped model-view evidence → capture_model_views
 ```
 
 Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
 
+## Deferred Spec Loading
+
+Load the exact active-phase tool only after routing selects it. Known identity skips broad discovery and confirmation reads; do not re-list/re-read it only for confirmation.
+
 ## Texture Atlas
 
-Use one base-color atlas PNG for the whole model. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
+Use one base-color atlas PNG for the whole model, not one color atlas per body part/Cube/material zone. `list_textures`: `none` → create; `single` → reuse; `fragmented` → stop/reconcile.
 
 New AI production uses logical UV 128×128. Pass explicit 128-based `width`/`height` until the pending Texture Atlas sizing contract lands. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
@@ -73,9 +80,9 @@ PBR normal/height/MER are support atlases. Atlas creation/fill does not complete
 
 ## Texture Styling
 
-Define palette/value-hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit.
+Define **palette roles**, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit.
 
-Flat fill is a **BASE PASS only** when form/material/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; reject random high-contrast noise. Smooth gradients only when reference/style supports them.
+Flat color is provisional when form/material/detail is visible; a flat fill is a **BASE PASS only**. Prefer controlled Minecraft pixel clusters and stepped ramps; reject random high-contrast noise. Smooth gradients only when reference/style supports them.
 
 ```text
 BASE PASS             → material regions
@@ -87,8 +94,8 @@ VERIFY                → Texture Verify
 
 Repeated same-color disconnected detail may use one `paint_with_brush` coordinate batch with `connect_strokes=false`.
 
-## Texture Verify
+## Texture Verify / Visual Convergence
 
 Use approved reference + fresh `get_texture` + affected `capture_model_views`. Review UV/region → palette/material → form/contact/edge → seam/orientation → identity → microdetail.
 
-`FAIL / UNVERIFIED / PASS` is visual-only. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal direction failing twice without new evidence → `BLOCKED`.
+`FAIL / UNVERIFIED / PASS` is visual-only. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`. Same causal direction failing twice without new evidence → `BLOCKED`.

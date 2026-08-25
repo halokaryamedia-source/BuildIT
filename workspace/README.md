@@ -31,9 +31,22 @@ Approved reference(s), when intentionally retained
 Material handoff constraints
 Current next step — one concrete step
 Known blocker(s), if any
+Current handoff state — only when a phase reload/resume is pending
 ```
 
-Keep it factual and short. Do not turn the project README into a development log, decision archive, per-Cube plan, checkpoint history, UUID registry, or tool-call transcript.
+When a phase reload/resume is pending, `Current handoff state` is compact and resume-critical only:
+
+```text
+current_phase: <geometry|texturing|animation>
+completed_gate(s): <latest verified gates only>
+target_phase: <next phase>
+resume_target: <current model/project + immediate target identifiers>
+blocker: <none|specific blocker>
+```
+
+Include an exact UUID only when the immediate next mutation requires it. Do not turn this into a per-element UUID registry, tool-call transcript, or checkpoint history.
+
+Keep the README factual and short. Do not turn it into a development log, decision archive, per-Cube plan, checkpoint history, UUID registry, or tool-call transcript.
 
 Prefer **one current editable `.bbmodel`** per project. Git history owns older iterations; avoid `model_v2_final_final.bbmodel` style duplication.
 
@@ -53,8 +66,13 @@ For a named persistent asset:
 user names/continues project
 → workspace/active/<project>/README.md
 → current .bbmodel + only the files needed for the next decision
-→ BlockIT asset router + active specialist
+→ read Current handoff state when present
+→ BlockIT asset router
+→ ACTIVE PHASE from MCP initialize
+→ active specialist only
 ```
+
+If the stored target phase and MCP `ACTIVE PHASE` disagree, do not guess or broad-search tools. Reconcile the phase setting/reload first.
 
 Do **not** scan every project under `workspace/active/` when the project is already known. Stored metadata is continuity, not visual authority.
 

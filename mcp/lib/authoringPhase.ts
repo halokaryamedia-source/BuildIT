@@ -70,10 +70,32 @@ const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
     "Animation owns authored animations, keyframes, timeline, effects, controllers, and animation inspection.",
 };
 
+const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
+  geometry:
+    "Texturing handoff readiness: geometry=PASS; uv_layout=PASS; final Box-UV lock is complete where applicable; list_textures has no unresolved invalid/out-of-bounds/partial-overlap blocker.",
+  texturing:
+    "Animation handoff readiness: texture_verify=PASS; no unresolved Geometry/UV blocker remains; required texture/material state is current.",
+  animation:
+    "Animation completion readiness: requested motion scope is verified; any structural rig/pivot/IK defect returns to Geometry instead of being repaired here.",
+};
+
+export function isMcpAuthoringPhase(value: unknown): value is McpAuthoringPhase {
+  return MCP_AUTHORING_PHASES.includes(value as McpAuthoringPhase);
+}
+
+/**
+ * Missing/default setting starts in Geometry. An explicit invalid value is a
+ * configuration error because silently pretending it is Geometry would give
+ * the agent a plausible but incorrect authoring context.
+ */
 export function resolveMcpAuthoringPhase(value: unknown): McpAuthoringPhase {
-  return MCP_AUTHORING_PHASES.includes(value as McpAuthoringPhase)
-    ? (value as McpAuthoringPhase)
-    : DEFAULT_MCP_AUTHORING_PHASE;
+  if (value === undefined || value === null || value === "") {
+    return DEFAULT_MCP_AUTHORING_PHASE;
+  }
+  if (isMcpAuthoringPhase(value)) return value;
+  throw new Error(
+    `Invalid MCP Authoring Phase "${String(value)}". Expected geometry, texturing, or animation.`
+  );
 }
 
 export function setActiveMcpAuthoringPhase(phase: McpAuthoringPhase): void {
@@ -88,6 +110,10 @@ export function getMcpPhaseOwnerSummary(phase: McpAuthoringPhase): string {
   return PHASE_OWNER_SUMMARY[phase];
 }
 
+export function getMcpPhaseReadinessSummary(phase: McpAuthoringPhase): string {
+  return PHASE_READINESS_SUMMARY[phase];
+}
+
 export function buildMcpPhaseRuntimeContract(
   phase: McpAuthoringPhase
 ): string {
@@ -97,7 +123,7 @@ export function buildMcpPhaseRuntimeContract(
     PHASE_OWNER_SUMMARY[phase],
     `${PHASE_FOREIGN_SUMMARY[phase]} Their tools are intentionally unavailable.`,
     "Do not tool_search for, emulate, rename, or substitute a foreign-phase tool.",
-    `If another phase is required, return ${MCP_HANDOFF_REQUIRED} with target_phase, reason, resume_from, and action="set MCP Authoring Phase=<phase>; reload BlockIT MCP", then STOP.`,
+    `If another phase is required, return ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, and action="set MCP Authoring Phase=<phase>; reload BlockIT MCP", then STOP.`,
   ].join(" ");
 }
 
@@ -107,7 +133,18 @@ export function buildMcpPhasePromptHeader(
   return [
     "## Active Phase Contract",
     buildMcpPhaseRuntimeContract(phase),
-    "The workflow body describes the full pipeline; foreign-phase sections are handoff targets, not callable routes in this session.",
+    "Only the current phase workflow is rendered below. Later phases are handoff targets, not callable routes in this session.",
+  ].join("\n\n");
+}
+
+export function buildMcpPhaseHandoffContract(
+  phase: McpAuthoringPhase
+): string {
+  return [
+    "## Phase Readiness / Handoff",
+    PHASE_READINESS_SUMMARY[phase],
+    "A handoff must preserve only resume-critical state: target_phase, reason, readiness, resume_from, and action. resume_from names the current model/project, immediate target identifiers, and last verified gate; include an exact UUID only when the next mutation needs it. Do not create a persistent UUID registry or tool-call transcript.",
+    `${MCP_HANDOFF_REQUIRED} means STOP after reporting the handoff.`,
   ].join("\n\n");
 }
 

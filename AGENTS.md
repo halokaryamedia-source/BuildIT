@@ -81,9 +81,15 @@ source image / user intent
 current request / actual approved reference
 → named workspace package when persistent
 → .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ `blockbench-bedrock-modelling` / `blockit-bedrock-texturing` / `blockit-bedrock-animation` as needed
+→ ACTIVE PHASE from MCP initialize
+→ active specialist only
+   geometry  → blockbench-bedrock-modelling
+   texturing → blockit-bedrock-texturing
+   animation → blockit-bedrock-animation
 → BlockIT MCP
 ```
+
+Do **not** preload later-phase specialists because the overall task may eventually need them. When `HANDOFF_REQUIRED` is emitted, preserve compact resume-critical state, switch/reload BlockIT MCP to the target phase, then load only the target specialist.
 
 `workspace/active/<project>/README.md` owns persistent asset continuity.
 

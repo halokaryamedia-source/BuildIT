@@ -26,7 +26,7 @@ Primary editable output is `.bbmodel`; Bedrock geometry JSON is the runtime geom
 - **Texture Verify** — fresh visual validation of the Texture Atlas as mapped through final UV Layout onto the model.
 - **MCP Core** — cross-phase lifecycle/recovery/discovery/inspection/selection/read-only UV audit/capture/export tools. Structural delete/rename and other model mutation stay phase-owned.
 - **Authoring Phase** — exactly one active specialist surface: `geometry`, `texturing`, or `animation`. Geometry also owns rig and UV Layout mutation.
-- **HANDOFF_REQUIRED** — deterministic stop response when requested work needs another authoring phase. The agent preserves fresh resume state, names `target_phase`, asks for the matching `MCP Authoring Phase` + reload, and does not search for a foreign-phase tool.
+- **HANDOFF_REQUIRED** — deterministic stop response when requested work needs another authoring phase. It preserves `target_phase`, `reason`, current `readiness`, compact `resume_from`, and the setting/reload `action`; it is not permission to search for a foreign-phase tool.
 
 When the distinction matters, do not use one generic “texture” stage to mean UV mapping, atlas creation, styling, and verification at once.
 
@@ -48,9 +48,13 @@ Root `AGENTS.md` owns task selection; no parallel skill-routing index is active.
 
 BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint. The retained normal Bedrock catalog contains **64 callable tools across authoring phases**, but plugin startup exposes only **MCP Core + exactly one active authoring phase**. The default phase is **Geometry**, whose current exposure is **27 tools**.
 
-Runtime initialize instructions name the active phase and explain that foreign-phase tools are intentionally unavailable. A foreign-phase need is not a tool-discovery miss: Codex must return `HANDOFF_REQUIRED` and stop rather than `tool_search`, emulate, rename, or substitute another tool.
+Runtime initialize instructions name the active phase and explain that foreign-phase tools are intentionally unavailable. Runtime workflow content is also phase-filtered: Codex receives shared minimum-evidence guidance plus only the current phase workflow, not the full Geometry→Texturing→Animation pipeline at once. A foreign-phase need is not a tool-discovery miss: Codex must return `HANDOFF_REQUIRED` and stop rather than `tool_search`, emulate, rename, or substitute another tool.
 
 Phase ownership is strict: Geometry owns Cube/Group/rig/Locator/Null mutation, structural delete/rename, and UV Layout correction; `list_textures` is read-only Core so Geometry can perform the global UV audit before handoff. Texturing owns Texture Atlas/Painter/PBR/material-instance work. Animation owns animation/keyframe/effect/controller work. If a downstream phase discovers an upstream structural defect, return to the owning phase instead of crossing the boundary.
+
+Asset authoring loads only the specialist matching MCP `ACTIVE PHASE`. Later-phase specialists are not preloaded; a handoff reloads the MCP phase first, then loads the target specialist. Persistent projects may store one compact `Current handoff state` in their README, but never a tool-call transcript or persistent UUID registry.
+
+An absent authoring-phase setting defaults to Geometry. An explicit invalid phase is a configuration error and must stop MCP startup rather than silently presenting a plausible but incorrect Geometry context.
 
 Current source ownership includes Cube/Group authoring, coherent Cube and Group batching, UV Layout state, Texture Atlas lifecycle, Painter-based Texture Styling, PBR/material instances, Bedrock animation with numeric/Molang values, AnimationController/state inspection and bounded mutation, Locator/Null Object lifecycle, Undo/history, `.bbmodel`, and Bedrock geometry export.
 

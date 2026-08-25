@@ -25,6 +25,7 @@ import {
 import {
   MCP_AUTHORING_PHASE_SETTING_ID,
   resolveMcpAuthoringPhase,
+  type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
 import { resources } from "@/server";
 import { registerReferenceModelsResource } from "@/server/resources";
@@ -91,9 +92,20 @@ BBPlugin.register("mcp", {
       Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
     );
     registerMcpProfile(registrationProfile);
-    const authoringPhase = resolveMcpAuthoringPhase(
-      Settings.get(MCP_AUTHORING_PHASE_SETTING_ID)
-    );
+
+    let authoringPhase: McpAuthoringPhase;
+    try {
+      authoringPhase = resolveMcpAuthoringPhase(
+        Settings.get(MCP_AUTHORING_PHASE_SETTING_ID)
+      );
+    } catch (error) {
+      console.error("[MCP] Invalid authoring phase setting - server will not start", error);
+      Blockbench.showQuickMessage(
+        "MCP Server: invalid Authoring Phase setting",
+        3000
+      );
+      return;
+    }
     applyMcpToolSurface(registrationProfile, authoringPhase);
 
     // Runtime-conditional resource (depends on the reference_models plugin).

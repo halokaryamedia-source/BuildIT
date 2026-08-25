@@ -3,10 +3,13 @@ import {
   DEFAULT_MCP_AUTHORING_PHASE,
   MCP_AUTHORING_PHASES,
   MCP_HANDOFF_REQUIRED,
+  buildMcpPhaseHandoffContract,
   classifyMcpToolPhase,
+  getMcpPhaseReadinessSummary,
   resolveMcpAuthoringPhase,
 } from "@/lib/authoringPhase";
 import { buildMcpServerInstructions } from "@/server/server";
+import { selectMcpPhaseWorkflowBody } from "@/server/prompts";
 import {
   getMcpSurfaceToolNames,
   getToolRegistrationFamily,
@@ -22,12 +25,15 @@ async function source(path: string): Promise<string> {
 }
 
 describe("authoring phase MCP surface", () => {
-  test("phase setting fails closed to Geometry", () => {
+  test("phase setting defaults only when absent and rejects explicit invalid values", () => {
     expect(DEFAULT_MCP_AUTHORING_PHASE).toBe("geometry");
     expect(resolveMcpAuthoringPhase(undefined)).toBe("geometry");
+    expect(resolveMcpAuthoringPhase(null)).toBe("geometry");
     expect(resolveMcpAuthoringPhase("texturing")).toBe("texturing");
     expect(resolveMcpAuthoringPhase("animation")).toBe("animation");
-    expect(resolveMcpAuthoringPhase("texturingg")).toBe("geometry");
+    expect(() => resolveMcpAuthoringPhase("texturingg")).toThrow(
+      "Invalid MCP Authoring Phase"
+    );
   });
 
   test("default Geometry surface is Core plus Geometry only", () => {
@@ -150,13 +156,14 @@ describe("authoring phase MCP surface", () => {
     }
   });
 
-  test("initialize instructions make the active phase and handoff stop explicit", () => {
+  test("initialize instructions make active phase, foreign-tool absence, and handoff stop explicit", () => {
     for (const phase of MCP_AUTHORING_PHASES) {
       const instructions = buildMcpServerInstructions(phase);
       expect(instructions).toContain(`ACTIVE PHASE: ${phase.toUpperCase()}`);
       expect(instructions).toContain("MCP CORE");
       expect(instructions).toContain(MCP_HANDOFF_REQUIRED);
       expect(instructions).toContain("Do not tool_search");
+      expect(instructions).toContain("readiness");
       expect(instructions).toContain("then STOP");
       expect(instructions.length).toBeLessThan(700);
     }
@@ -167,6 +174,52 @@ describe("authoring phase MCP surface", () => {
 
     const animation = buildMcpServerInstructions("animation");
     expect(animation).toContain("controllers");
+  });
+
+  test("runtime workflow renders only the active phase plus shared evidence guidance", async () => {
+    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    const geometry = selectMcpPhaseWorkflowBody(workflow, "geometry");
+    const texturing = selectMcpPhaseWorkflowBody(workflow, "texturing");
+    const animation = selectMcpPhaseWorkflowBody(workflow, "animation");
+
+    expect(geometry).toContain("## Geometry / Visual Gate");
+    expect(geometry).toContain("## UV Layout");
+    expect(geometry).not.toContain("## Texture Atlas");
+    expect(geometry).not.toContain("create_texture");
+    expect(geometry).not.toContain("create_animation");
+
+    expect(texturing).toContain("## Texture Atlas");
+    expect(texturing).toContain("## Texture Styling");
+    expect(texturing).toContain("## Texture Verify");
+    expect(texturing).not.toContain("## Geometry / Visual Gate");
+    expect(texturing).not.toContain("modify_cubes_batch");
+    expect(texturing).not.toContain("create_animation");
+
+    expect(animation).toContain("## Animation Workflow");
+    expect(animation).toContain("create_animation");
+    expect(animation).toContain("manage_keyframes");
+    expect(animation).toContain("manage_animation_controller");
+    expect(animation).not.toContain("place_cube");
+    expect(animation).not.toContain("create_texture");
+  });
+
+  test("handoff contract preserves compact readiness and resume-critical state", () => {
+    expect(getMcpPhaseReadinessSummary("geometry")).toContain("geometry=PASS");
+    expect(getMcpPhaseReadinessSummary("geometry")).toContain("uv_layout=PASS");
+    expect(getMcpPhaseReadinessSummary("texturing")).toContain(
+      "texture_verify=PASS"
+    );
+
+    for (const phase of MCP_AUTHORING_PHASES) {
+      const contract = buildMcpPhaseHandoffContract(phase);
+      expect(contract).toContain("target_phase");
+      expect(contract).toContain("reason");
+      expect(contract).toContain("readiness");
+      expect(contract).toContain("resume_from");
+      expect(contract).toContain("exact UUID only when the next mutation needs it");
+      expect(contract).toContain("Do not create a persistent UUID registry");
+      expect(contract).toContain(`${MCP_HANDOFF_REQUIRED} means STOP`);
+    }
   });
 
   test("specialist routes never direct-call a foreign-phase mutation", async () => {
@@ -211,17 +264,35 @@ describe("authoring phase MCP surface", () => {
       "Do not `tool_search` for `bone_rigging` while Animation is active"
     );
 
-    expect(runtimePrompts).toContain("buildMcpPhasePromptHeader");
-    expect(runtimePrompts).toContain("getActiveMcpAuthoringPhase");
+    expect(runtimePrompts).toContain("selectMcpPhaseWorkflowBody");
+    expect(runtimePrompts).toContain("buildMcpPhaseHandoffContract");
+    expect(runtimePrompts).not.toContain("`${phaseHeader}\\n\\n${workflow}`");
   });
 
-  test("plugin startup wires the phase setting before MCP server exposure", async () => {
+  test("root/workspace routing loads only the active specialist and preserves compact handoff state", async () => {
+    const [root, workspace] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../workspace/README.md"),
+    ]);
+
+    expect(root).toContain("→ active specialist only");
+    expect(root).toContain("Do **not** preload later-phase specialists");
+    expect(root).toContain("ACTIVE PHASE from MCP initialize");
+    expect(workspace).toContain("Current handoff state");
+    expect(workspace).toContain("completed_gate(s)");
+    expect(workspace).toContain("resume_target");
+    expect(workspace).toContain("exact UUID only when the immediate next mutation requires it");
+    expect(workspace).toContain("do not guess or broad-search tools");
+  });
+
+  test("plugin startup rejects invalid explicit phase before MCP exposure", async () => {
     const [indexSource, settingsSource] = await Promise.all([
       Bun.file("index.ts").text(),
       Bun.file("ui/settings.ts").text(),
     ]);
 
     expect(indexSource).toContain("resolveMcpAuthoringPhase");
+    expect(indexSource).toContain("Invalid authoring phase setting");
     expect(indexSource).toContain(
       "applyMcpToolSurface(registrationProfile, authoringPhase)"
     );

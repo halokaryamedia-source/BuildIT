@@ -16,7 +16,8 @@ bone/pivot/IK/parenting structure must change
 → HANDOFF_REQUIRED
   target_phase: geometry
   reason: <observed rig defect>
-  resume_from: <fresh animation/bone/project state>
+  readiness: <which hierarchy/pivot/IK prerequisite failed>
+  resume_from: <current model/project + immediate animation/bone target identifiers>
   action: set MCP Authoring Phase=geometry; reload BlockIT MCP
 → STOP
 ```
@@ -38,7 +39,7 @@ explicit copy/paste/mirror            → animation_copy_paste
 new-animation particle/sound          → create_animation
 ```
 
-Load the exact active-phase tool only. Reuse fresh UUID/state; known identity must not fall back to broad discovery or confirmation reads.
+Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**.
 
 ## Motion Design Contract
 
@@ -54,7 +55,7 @@ causal event for sound/particle
 loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target.
+Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not reduce acceptance to an **animation quality score**.
 
 ## Procedural Math / Molang
 
@@ -80,6 +81,10 @@ Bind particles/sounds to named causal events, not time zero unless start is the 
 Review pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return.
 
 Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`.
+
+## Completion / Handoff
+
+Requested Animation scope is complete only when the required motion/effect behavior is verified. If another phase is requested afterward, emit `HANDOFF_REQUIRED` with the latest verified readiness and STOP rather than preloading another specialist.
 
 ## Protected Gaps
 
