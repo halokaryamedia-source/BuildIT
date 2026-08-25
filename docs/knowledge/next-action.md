@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — Phase Contract v2 context hardening verified; legacy CI reconciliation complete
+Updated: 2026-08-25 — Codex Bedrock agent-legibility contract verified; current full MCP gate green
 
 ## Current State
 
@@ -15,6 +15,8 @@ PHASE_CONTRACT_V2_AGENT_LEGIBILITY_SOURCE_APPLIED
 PHASE_SPECIFIC_RUNTIME_PROMPT_SOURCE_APPLIED
 COMPACT_PHASE_HANDOFF_STATE_SOURCE_APPLIED
 ACTIVE_SPECIALIST_ONLY_ROUTING_SOURCE_APPLIED
+CODEX_BEDROCK_FIRST_CALL_CONTRACT_COMPLETE
+MCP_ROUTER_CI_COVERAGE_COMPLETE
 INVALID_EXPLICIT_PHASE_FAILS_CLOSED
 LEGACY_CONTRACT_TEST_RECONCILIATION_COMPLETE
 CURRENT_FULL_MCP_VERIFY_GREEN
@@ -87,6 +89,27 @@ An absent phase setting defaults to Geometry. An explicit invalid setting is a c
 
 `mcp/prompts/bedrock_entity_workflow.md` remains the full canonical pipeline source. Runtime prompt generation selects only shared Minimum Necessary Evidence plus current-phase sections. Animation receives a compact Animation workflow owned by runtime prompt registration. Later phases are handoff targets, not callable routes.
 
+Shared MCP initialize now carries the minimum Bedrock coordinate invariant (`16 Blockbench units = 1 Minecraft block`, `x=width`, `y=height`, `z=length`, `+Y=up`) plus phase ownership/handoff semantics. It intentionally does **not** enumerate exact tool routes because shared namespace instructions are copied into tool-search corpus entries; exact routing belongs in the active specialist Skill.
+
+## Codex First-Call Legibility
+
+The active asset router now resolves common lookalike routes before discovery:
+
+```text
+normal Group/bone creation   → add_group
+rig parent/pivot/IK/mirror   → bone_rigging
+structural delete/rename     → remove_element / rename_element
+one known Cube correction    → modify_cube
+coherent multi-Cube correction → modify_cubes_batch
+global UV/atlas readiness    → list_textures
+```
+
+It also carries first-call conditional invariants so Codex does not learn them by failed mutation: rotated Cube requires `origin`; `add_group` takes `name` or `groups`; `modify_cube` requires an authored change; Locator/Null create/update variants use their required fields. When conditional/action details matter, load that exact active-phase spec once, then repair validation on the same routed tool rather than switching to a lookalike tool.
+
+Texturing now treats `list_textures.uv_audit.production_gate` as the global UV gate, routes Painter by styling intent, and explicitly guards the current provisional `create_texture` 16×16 blank default: production Codex must pass the current project logical UV dimensions (128 default / 256 opt-in) instead of omitting blank Atlas size.
+
+Persistent asset continuity may retain scale and canonical `front_direction` when they are resume-critical so a later Codex session does not re-guess orientation or block-to-unit conversion.
+
 Primary owners:
 
 ```text
@@ -97,22 +120,23 @@ mcp/index.ts
 .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 .agents/skills/blockit-bedrock-texturing/SKILL.md
 .agents/skills/blockit-bedrock-animation/SKILL.md
-AGENTS.md
 workspace/README.md
 mcp/tests/authoring-phase-surface.test.ts
+mcp/tests/codex-agent-legibility-contract.test.ts
+.github/workflows/mcp-verify.yml
 ```
 
 ## Verification Boundary
 
-**Success Metric:** active instructions, current-phase prompt body, exposed tools, specialist routing, readiness, and handoff behavior agree without foreign-phase tool search.
+**Success Metric:** active instructions, current-phase prompt body, exposed tools, specialist routing, first-call invariants, readiness, and handoff behavior agree without foreign-phase search or unnecessary lookalike-tool guessing.
 
 **Forbidden Proxy / Non-Goal:** do not treat lower tool count, shorter prompts, fewer characters, a green exact-wording assertion, or raw call count alone as proof that Codex understands context or that Authoring Efficiency improved.
 
 **Static Footprint** remains only a guardrail; lower tool/prompt size does not itself prove Authoring Efficiency.
 
-Legacy phase-era contract tests were reconciled by preserving machine/runtime/current semantic invariants and removing exact-string requirements for retired ceremony. The contradictory proof statement `64 enabled default surface` was corrected to `64 callable catalog across phases + phase-scoped client exposure`.
+Current full MCP verification is green on commit `fc11428839ee21c1fe34251f6dafa2d1d7336877`: typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness all passed. Repository Verify also passed on the same source commit.
 
-Current full MCP verification is green on commit `d7d93a4816f83289c5e5078c8e138b43d77fe74d`: typecheck, contract tests, default MCP surface measurement, production build, and generated docs freshness all passed.
+The routed exact-name discovery regression retains `top_8_recall = 1` with no routed top-8 misses. Raw semantic discovery remains a stress metric, not the intended first decision path.
 
 Source/CI still cannot prove future Codex call efficiency or live Blockbench visual quality.
 
@@ -132,7 +156,9 @@ Intent:
 - explicit blank sizes remain intentional;
 - semantic Texture/Painter public descriptions stay aligned with UV Layout / Texture Atlas / Texture Styling / Texture Verify.
 
-Before landing, run canonical Bun generation and normal MCP gate. Do not hand-edit generated docs.
+The current agent contract guards this gap by requiring explicit project-sized blank Atlas dimensions. It does **not** claim the underlying `create_texture` default has already changed.
+
+Before landing the public-contract candidate, run canonical Bun generation and the normal MCP gate. Do not hand-edit generated docs.
 
 ## Deferred Until Evidence
 
@@ -148,4 +174,4 @@ Do not implement automatically:
 
 ## STOP
 
-Phase-context hardening and legacy CI reconciliation are complete. STOP here. Texture Atlas candidate completion is the next separate bounded source task. Live model retesting remains deferred.
+Codex Bedrock first-call legibility hardening and its CI routing are complete with full static verification. STOP here. A live exact-current Codex/Blockbench authoring run is still required to prove reduced looping or improved accepted model quality. The context-aware Texture Atlas runtime candidate remains a separate bounded source task.
