@@ -8,6 +8,12 @@ import {
   type McpRegistrationFamily,
   type McpRegistrationProfile,
 } from "@/lib/registrationProfile";
+import {
+  DEFAULT_MCP_AUTHORING_PHASE,
+  isMcpToolExposedForPhase,
+  setActiveMcpAuthoringPhase,
+  type McpAuthoringPhase,
+} from "@/lib/authoringPhase";
 
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
@@ -76,22 +82,92 @@ const registrationFunctions: Record<
  * register the Bedrock Entity core twice.
  */
 const registeredFamilies = new Set<McpRegistrationFamily>();
+const toolRegistrationFamily = new Map<string, McpRegistrationFamily>();
+const catalogToolEnabled = new Map<string, boolean>();
+
+function registerFamily(family: McpRegistrationFamily): void {
+  if (registeredFamilies.has(family)) return;
+
+  const before = new Set(Object.keys(tools));
+  registrationFunctions[family]();
+  registeredFamilies.add(family);
+
+  for (const [name, tool] of Object.entries(tools)) {
+    if (before.has(name)) continue;
+    toolRegistrationFamily.set(name, family);
+    catalogToolEnabled.set(name, tool.enabled);
+  }
+}
 
 export function registerMcpProfile(
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): void {
   for (const family of getRegistrationFamilies(profile)) {
-    if (registeredFamilies.has(family)) continue;
-
-    registrationFunctions[family]();
-    registeredFamilies.add(family);
+    registerFamily(family);
   }
 }
 
-// Register exactly the default BlockIT Bedrock Entity profile at module load.
-// The plugin onload path may explicitly opt in to the extended profile after
-// settings are initialized; registerMcpProfile() is idempotent per family.
+export function getToolRegistrationFamily(
+  toolName: string
+): McpRegistrationFamily | undefined {
+  return toolRegistrationFamily.get(toolName);
+}
+
+export function isCatalogToolEnabled(toolName: string): boolean {
+  return catalogToolEnabled.get(toolName) === true;
+}
+
+/**
+ * Calculate the exact MCP tool names exposed for one profile + authoring phase
+ * without mutating the catalog. Core is always included; only one phase pack is
+ * added. Individually disabled tools stay disabled.
+ */
+export function getMcpSurfaceToolNames(
+  profile: McpRegistrationProfile,
+  phase: McpAuthoringPhase
+): string[] {
+  const allowedFamilies = new Set(getRegistrationFamilies(profile));
+
+  return [...catalogToolEnabled.entries()]
+    .filter(([toolName, authoredEnabled]) => {
+      if (!authoredEnabled) return false;
+      const family = toolRegistrationFamily.get(toolName);
+      return Boolean(
+        family &&
+          allowedFamilies.has(family) &&
+          isMcpToolExposedForPhase(toolName, family, phase)
+      );
+    })
+    .map(([toolName]) => toolName)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Apply one deterministic authoring surface before the MCP server starts.
+ * Catalog capability is preserved and can be restored on the next plugin load;
+ * only tools/list + invocation exposure changes for the active phase.
+ */
+export function applyMcpToolSurface(
+  profile: McpRegistrationProfile,
+  phase: McpAuthoringPhase
+): void {
+  setActiveMcpAuthoringPhase(phase);
+  const exposed = new Set(getMcpSurfaceToolNames(profile, phase));
+
+  for (const [toolName, authoredEnabled] of catalogToolEnabled) {
+    const tool = tools[toolName];
+    if (!tool) continue;
+    tool.enabled = authoredEnabled && exposed.has(toolName);
+  }
+}
+
+// Register the full normal Bedrock catalog at module load. Actual plugin startup
+// narrows exposure to Core + one authoring phase after settings are available.
 registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);
+
+// Keep a deterministic phase value for helpers/tests before plugin startup,
+// without mutating the catalog's authored enabled flags.
+setActiveMcpAuthoringPhase(DEFAULT_MCP_AUTHORING_PHASE);
 
 // Function to get tool count - called at runtime after registration
 export function getToolCount(): number {
