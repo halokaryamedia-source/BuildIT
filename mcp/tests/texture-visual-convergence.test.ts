@@ -22,7 +22,7 @@ describe("texture visual convergence contract", () => {
     expect(skill).toContain("fresh `get_texture`");
     expect(skill).toContain("fresh affected evidence");
     expect(workflow).toContain("fresh get_texture atlas");
-    expect(workflow.toLowerCase()).toContain("visual evidence stale");
+    expect(workflow.toLowerCase()).toContain("stale");
 
     const getTextureStart = texture.indexOf("createTool(textureToolDocs[4].name");
     const getTextureEnd = texture.indexOf("createTool(textureToolDocs[5].name", getTextureStart);

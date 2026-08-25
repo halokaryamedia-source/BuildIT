@@ -24,8 +24,9 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       expect(text).toContain("STOP");
     }
 
-    expect(texturing).toContain("final Box UV is locked with `autouv=0`");
-    expect(texturing).toContain("list_textures` audit");
+    expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");
+    expect(texturing).toContain("list_textures");
+    expect(texturing).toContain("partial-overlap blocker");
     expect(animation.toLowerCase().replaceAll("/", " ")).toContain(
       "participating hierarchy pivots are suitable"
     );

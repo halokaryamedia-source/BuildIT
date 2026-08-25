@@ -94,7 +94,7 @@ describe("professional texture production discipline", () => {
       source("../docs/foundation/06-texture-standard.md"),
     ]);
 
-    expect(skill.toLowerCase()).toContain("final box uv is locked with `autouv=0`");
+    expect(skill.toLowerCase()).toContain("final box uv locked with `autouv=0`");
     expect(skill).toContain("list_textures");
     expect(skill).toContain("must not borrow Cube mutation");
 
