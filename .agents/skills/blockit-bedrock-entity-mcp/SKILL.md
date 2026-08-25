@@ -89,7 +89,7 @@ If conditional/action fields matter, load **that exact active-phase spec once** 
 
 ## Search / Recovery
 
-`tool_search` is **deferred spec loading after routing** and only for an active-phase tool expected in current `tools/list`. One precise search; miss → reformulate once with the same name; second miss → `BLOCKED`.
+`tool_search` is **deferred spec loading after routing** and only for a tool that belongs to the active phase and is expected in current `tools/list`. One precise search; miss → reformulate once with the same name; second miss → `BLOCKED`.
 
 A known foreign-phase tool must never enter this search path.
 
@@ -109,7 +109,7 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Do not inspect every new Cube or capture after every mutation.
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
-- Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
+- Skip `get_project_info` after create/export unless required by unknown/stale lifecycle state.
 - Same causal correction failing twice without new evidence → `BLOCKED`.
 
 Reference fidelity is `FAIL / UNVERIFIED / PASS`; tool success cannot create visual `PASS`. Existing geometry may be a task baseline without certifying reference accuracy. Another phase → `HANDOFF_REQUIRED` and STOP.
