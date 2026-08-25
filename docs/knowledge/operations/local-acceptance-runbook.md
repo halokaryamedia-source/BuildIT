@@ -8,13 +8,13 @@ This is the single procedure for BlockIT live acceptance.
 
 ## 1. Goal
 
-Prove what source/CI cannot: exact local plugin freshness, representative MCP/runtime behavior, real reference-driven model quality, and **Authoring Efficiency** on the exact artifact under test.
+Prove what source/CI cannot: exact installed plugin freshness, representative MCP/runtime behavior, real reference-driven model quality, and **Authoring Efficiency** on the exact artifact under test.
 
 There are two acceptance lanes:
 
 ```text
 TEST 1 — MCP / CORE MECHANICS
-→ prove representative tools and plugin behavior
+→ prove representative runtime behavior across deliberate authoring phases
 
 TEST 2 — REFERENCE MODEL / AUTHORING EFFECTIVENESS
 → prove accepted model quality
@@ -85,6 +85,7 @@ Bun version
 client/provider + version when visible
 actual BlockIT file/path loaded by Blockbench
 MCP endpoint
+MCP Authoring Phase
 Extended MCP Families setting
 ```
 
@@ -94,16 +95,21 @@ If exact artifact freshness cannot be established, classify `ENVIRONMENT / INSTA
 
 Load the fresh repository build in desktop Blockbench. Fully restart/reload Blockbench, then reconnect/restart the MCP client so an old process or cached surface cannot count as proof.
 
-Required baseline:
+Normal starting baseline:
 
 ```text
-endpoint = http://127.0.0.1:3000/bb-mcp
-64 enabled tools
-Extended MCP Families = OFF
-risky_eval = disabled
-from_geo_json = disabled
-local BlockIT build only
+endpoint                = http://127.0.0.1:3000/bb-mcp
+profile                 = bedrock_entity
+active authoring phase  = geometry
+Geometry tools/list     = 27 exposed tools
+retained catalog        = 64 callable tools across phases
+Extended MCP Families   = OFF
+risky_eval              = disabled
+from_geo_json           = disabled
+artifact                = local BlockIT build only
 ```
+
+Do **not** expect Geometry, Texturing, and Animation mutation tools to appear simultaneously. Runtime exposure is `MCP CORE + exactly one ACTIVE PHASE`.
 
 With the plugin running:
 
@@ -111,37 +117,106 @@ With the plugin running:
 bun run verify:stateless-local
 ```
 
+The smoke script reads installed health identity, confirms the active profile/phase, and requires installed `tools/list` to exactly match the current source-owned phase surface. A mismatch means `ENVIRONMENT / INSTALL` or MCP surface regression; do not continue to visual claims.
+
 Codex and Opencode are equivalent local execution surfaces for this procedure; provider identity is recorded, not treated as a different product contract.
 
-## 5. Tool Exposure Sanity Check
+## 5. Phase / Tool Exposure Sanity Check
 
-Confirm relevant Bedrock tool families are reachable and known state is reused without unnecessary discovery. Observe retry/context/latency only when the client exposes it. Unknown telemetry stays `UNVERIFIED`.
+For every phase used in the test, record:
 
-Do not convert tool discovery, schema character count, or prompt length into an Authoring Efficiency claim.
+```text
+profile
+active phase
+exposed tool count
+handoff source gate
+handoff target
+```
+
+Foreign-phase tool absence is expected and is **not** a discovery failure. If the next required mutation belongs to another phase:
+
+```text
+HANDOFF_REQUIRED
+→ record target_phase + reason + readiness + resume_from
+→ set MCP Authoring Phase=<target>
+→ reload BlockIT / reconnect MCP
+→ continue only after tools/list reflects the target phase
+```
+
+Do not `tool_search` for a known foreign-phase mutation.
+
+Observe retry/context/latency only when the client exposes it. Unknown telemetry stays `UNVERIFIED`. Do not convert tool-discovery scores, schema characters, prompt length, or catalog size into an Authoring Efficiency claim.
 
 ## 6. Test 1 — MCP / Core Mechanics
 
-Purpose: prove representative plugin/MCP behavior independent of reference quality.
+Purpose: prove representative plugin/MCP behavior independent of reference quality without defeating the phase boundary.
+
+### Geometry pass
+
+Start with `ACTIVE PHASE: GEOMETRY`.
 
 Create a small Bedrock project with one or more Groups, a few Cubes, and one intentionally rotated Cube with an explicit justified origin.
 
-Representative path:
+Representative Geometry/Core path:
 
 ```text
-create / inspect
+create / focused inspect
 → coherent Cube/Group batching where appropriate
-→ finite bounds + model views
+→ finite bounds + canonical model views
 → one causal correction
 → Undo / Redo
-→ texture / Painter
-→ PBR / material instance
-→ small animation with numeric or authored Molang value
-→ representative animation effect mutation
-→ one coherent AnimationController batch
-→ inspect_animation only when mutation return state is insufficient
 → Locator / Null Object
-→ persistence / export
+→ .bbmodel / Bedrock geometry export when required
 ```
+
+Confirm foreign Texturing/Animation mutations are absent rather than searched for.
+
+### Geometry → Texturing handoff
+
+When Geometry and UV Layout readiness are satisfied:
+
+```text
+geometry=PASS
+uv_layout=PASS
+final Box-UV lock complete where applicable
+list_textures UV audit has no unresolved invalid/out-of-bounds/partial-overlap blocker
+→ HANDOFF_REQUIRED(texturing)
+```
+
+Set `MCP Authoring Phase=texturing`, reload/reconnect, and rerun `bun run verify:stateless-local` if installed surface freshness is in doubt.
+
+Representative Texturing path:
+
+```text
+Texture Atlas
+→ Painter base/value/form/identity work
+→ PBR / material instance when required
+→ fresh get_texture + capture_model_views
+→ Texture Verify
+```
+
+A Geometry/UV defect found here returns to Geometry through a handoff; Texturing must not borrow Cube/rig mutation.
+
+### Texturing → Animation handoff
+
+Only when the test requires animation and `texture_verify=PASS` with no unresolved structural blocker:
+
+```text
+HANDOFF_REQUIRED(animation)
+→ set MCP Authoring Phase=animation
+→ reload/reconnect
+```
+
+Representative Animation path:
+
+```text
+small animation with numeric or authored Molang value
+→ representative animation effect mutation
+→ one coherent AnimationController batch when required
+→ inspect_animation only when mutation-returned state is insufficient
+```
+
+A structural bone/pivot/IK/parenting defect returns to Geometry. Animation must not borrow `bone_rigging`.
 
 Do not try to exercise every tool. A bounded representative pass is sufficient unless the current task names a specific capability.
 
@@ -212,12 +287,16 @@ Test sequence:
 
 ```text
 actual approved reference + handoff constraints
+→ ACTIVE PHASE: GEOMETRY
 → Semantic Form / Primary Form
 → minimum coherent primary geometry
 → fresh judgeable model views
 → difference-first FAIL | UNVERIFIED | PASS
 → causal correction only after diagnosis
+→ UV readiness
+→ HANDOFF_REQUIRED(TEXTURING)
 → production texture only after geometry PASS
+→ fresh Texture Verify evidence
 ```
 
 Reject a correction that improves one view while materially regressing another. Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
@@ -235,13 +314,14 @@ QUALITY PASS
 → Cost to Accepted Result
 ```
 
-Static Footprint — Skill/prompt characters, schema size, serialized tool surface, or similar compactness ceilings — is a separate guardrail and cannot prove this runtime claim.
+Static Footprint — Skill/prompt characters, schema size, serialized catalog surface, or similar compactness ceilings — is a separate guardrail and cannot prove this runtime claim.
 
 Record observable cost:
 
 ```text
 Total meaningful MCP calls to Geometry PASS
 Total meaningful MCP calls to Final PASS
+Phase handoffs / reloads required by real workflow
 Discovery calls
 Redundant readbacks
 tool_search calls / misses
@@ -253,6 +333,8 @@ Undo / recovery calls
 Same-cause retries
 Broad repository/state reads
 ```
+
+A required phase handoff is not automatically waste. Classify it as avoidable only if an incorrect phase decision or stale installation caused the extra transition.
 
 These are session observations, not a telemetry subsystem. Do not invent token or latency numbers when the client does not expose them.
 
@@ -297,6 +379,7 @@ AGENT_REASONING
 SKILL_INSTRUCTION
 MCP_PUBLIC_CONTRACT
 MCP_RESULT_QUALITY
+MCP_PHASE / HANDOFF
 STATE_DISCOVERY
 VISUAL_FEEDBACK
 CORRECTION_CAPABILITY

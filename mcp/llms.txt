@@ -2,40 +2,85 @@
 # Repository: https://github.com/halokaryamedia-source/BuildIT
 # Author: Halo Karya Media
 # Type: Blockbench Plugin (MCP server)
-# Target Platform: Minecraft Bedrock Entity + Blockbench 5.0+
+# Target: Minecraft Bedrock Entity + Blockbench 5.x
 
-## Summary
-BlockIT is a local Blockbench MCP workflow for AI-assisted Minecraft Bedrock Entity modelling. The plugin runs inside desktop Blockbench and exposes a loopback-only, stateless Streamable HTTP/JSON MCP endpoint at `http://127.0.0.1:3000/bb-mcp` with **64 enabled tools** by default (profile `bedrock_entity`). The primary output is an editable `.bbmodel`; Bedrock geometry JSON is the runtime export.
+## Runtime Truth
+BlockIT is a local MCP server/plugin for AI-assisted Minecraft Bedrock Entity authoring in desktop Blockbench.
 
-## Current Capability Surface
-- Project lifecycle: create/inspect project, rendered model bounds.
-- Geometry: `place_cube`, `modify_cube`, `modify_cubes_batch`, `add_group`, outline discovery, focused element inspection.
-- Observation: canonical model-view capture with explicit front direction; no visual PASS/FAIL from tools.
-- Textures: create/list/get/activate, Painter pixel tools, PBR channels, Bedrock material instances.
-- Animation: create animation, keyframe management (authored Molang strings preserved without evaluation), graph editor, rigging, timeline incl. animation-level `anim_time_update`/`blend_weight`, batch keyframe operations, copy/paste with mirror paste, new- and existing-animation particle/sound/timeline effects (`manage_animation_effects`), read-only controller inspection, batched AnimationController state-machine plus state-effect mutation (`manage_animation_controller`).
-- Locators/Null Objects: compact discovery, focused inspection, direct mutation.
-- History: undo/redo, undo-stack summary, named checkpoints.
-- Export: Bedrock geometry JSON and editable `.bbmodel` to verified absolute paths.
+Default endpoint:
+`http://127.0.0.1:3000/bb-mcp`
+
+Transport is loopback-only, stateless Streamable HTTP with JSON responses.
+
+The normal `bedrock_entity` profile retains **64 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
+
+```text
+MCP CORE + exactly one ACTIVE PHASE
+
+GEOMETRY  = Cube/Group/rig/Locator/Null + structural mutation + UV Layout
+TEXTURING = Texture Atlas + Painter + PBR + material instances + Texture Verify
+ANIMATION = animation/keyframes/timeline/effects/controllers/inspection
+```
+
+Default phase is **Geometry**, currently **27 exposed tools**. A phase change is deliberate: set `MCP Authoring Phase`, reload BlockIT/MCP, then continue from compact handoff state.
+
+Foreign-phase mutation is not a tool-search miss. Use `HANDOFF_REQUIRED` instead of searching for, emulating, renaming, or substituting a tool from another phase.
+
+## Bedrock Authoring Invariants
+- 1 Minecraft block = 16 Blockbench units.
+- `x=width`, `y=height`, `z=length`, `+Y=up`.
+- Prefer exact UUID targeting; ambiguous exact names fail closed.
+- Reuse fresh mutation-returned state instead of immediate confirmation reads.
+- Tool success proves execution, not visual/reference fidelity.
+- Reference-driven PASS requires actual approved visual evidence plus fresh current model evidence.
+- Same causal correction failing twice without new evidence stops as `BLOCKED`.
+
+## Capability Summary
+- Project lifecycle and rendered model bounds.
+- Bedrock Cube placement/correction and Group/bone authoring.
+- Deterministic canonical model-view capture.
+- UV Layout mutation/audit.
+- Texture Atlas, Painter, PBR, and material-instance authoring.
+- Bedrock animations, Molang-authored values, effects, and AnimationController mutation/inspection.
+- Locator/Null Object lifecycle.
+- Undo/redo/history.
+- Editable `.bbmodel` persistence and Bedrock geometry JSON export.
+
+Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated-texture authoring, and bone-binding expressions.
 
 ## Security Boundary
-- Loopback-only binding with present-Origin validation; remote origins are rejected before MCP dispatch.
-- `risky_eval` and `from_geo_json` are disabled and excluded from the default registration.
-- Generic fallback families are opt-in via the Extended MCP Families setting.
+- `risky_eval` is disabled.
+- `from_geo_json` is disabled.
+- Generic fallback families require explicit `Extended MCP Families`; that setting does not re-enable the two disabled tools above.
+- Do not broaden network exposure beyond loopback without a separately reviewed authentication design.
 
-## Development Setup
-1. Install Bun (see `.bun-version`) and run `bun install --frozen-lockfile`.
-2. Verification gates: `bun run typecheck`, `bun run test`, `bun run measure:surface`, `bun run build`, `bun run docs:build`, `bun run docs:check`.
-3. Production artifact is `dist/mcp.js`; load it in Blockbench via `Plugins > Load Plugin from File`.
-4. Tool modules stay import-safe outside Blockbench so tests and generated API docs run in Bun.
+## Prompt / Agent Contract
+The bundled `bedrock_entity_workflow` is phase-filtered at runtime. Persisted prompt overrides are compatibility-checked against the current canonical workflow; stale pre-phase overrides must not silently replace current routing.
 
-## Notes for LLM Tools
-- Tool success is structural evidence only; it never proves visual correctness of a model.
-- Prefer exact UUID targeting; ambiguous names fail closed instead of picking the first match.
-- Mutation results return authored continuation state; avoid immediate re-inspection readbacks.
+Codex should route from:
+`ACTIVE PHASE + intent + known state/UUID → exact exposed tool → execute → reuse returned state`.
+
+Use `tool_search` only as bounded deferred spec loading after the exact active-phase tool has already been selected.
+
+## Development / Verification
+From `mcp/`:
+
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun run test
+bun run measure:surface
+bun run build
+bun run docs:check
+```
+
+`measure:surface` is a **catalog/static payload guard**, not the actual default Geometry exposure and not an Authoring Efficiency metric.
+
+Production artifact: `mcp/dist/mcp.js`.
+
+For live installed-runtime verification use `bun run verify:stateless-local`; it compares the installed profile + active phase + `tools/list` against the current source-owned surface.
+
+Static source/CI proof cannot establish live Blockbench rendering, installed-plugin freshness, visual quality, or Authoring Efficiency.
 
 ## License
-GPL-3.0-only. See LICENSE in the repository root.
-
-## Related Projects
-- JannisX11/Blockbench
-- Model Context Protocol specification
+GPL-3.0-only. See repository root `LICENSE`.
