@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-27 — Hunyuan Route 1 Gate 1 visual review completed
+Updated: 2026-08-27 — Hunyuan Route 1 multiview evidence recorded
 
 ## Current State
 
@@ -24,6 +24,7 @@ TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASE_REQUIRED
 LIVE_RETEST_DEFERRED_BY_USER
 ROUTE1_HUNYUAN_EXPERIMENT_SOURCE_APPLIED
 ROUTE1_HUNYUAN_GATE1_PASS
+ROUTE1_HUNYUAN_MULTIVIEW_PREFERRED
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE DEVELOPMENT
 ```
@@ -129,8 +130,9 @@ Source foundation lives under `Experimental/route1-hunyuan-poc/`. Production MCP
 Current next step:
 
 ```text
-Gate 1 PASS: elephant approved 3/4 crop + fresh four-view contact sheet
-→ handoff to existing Geometry MCP
+Preferred evidence: separated FRONT/SIDE/BACK MultiView GLB; render with `front_direction=+z`
+→ use the approved Minecraft reference as visual authority
+→ handoff to existing Geometry MCP when MCP runtime is available
 → primary Groups/Cubes only
 → one capture_model_views verification
 → one causal local correction OR one primary rebuild
@@ -151,4 +153,4 @@ Do not implement automatically: aggregate UV working map, Painter batching, Canv
 
 ## STOP
 
-Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. Route 1 remains experimental; Gate 1 passed for the supplied elephant reference based on the actual local contact sheet. Geometry MCP handoff is now permitted, but this does not establish final visual quality or production promotion. The Texture Atlas runtime candidate remains separate.
+Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. Route 1 remains experimental; the separated-reference MultiView GLB is the preferred local depth evidence, while SingleView and the earlier board-crop MultiView runs are rejected. This does not establish final visual quality or production promotion. Geometry MCP handoff remains conditional on MCP runtime availability. The Texture Atlas runtime candidate remains separate.

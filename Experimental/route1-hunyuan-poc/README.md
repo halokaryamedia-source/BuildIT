@@ -28,6 +28,8 @@ approved 3/4 reference crop
 
 No production MCP tool, authoring phase, geometry compiler, semantic mesh segmentation, IoU gate, provider router, texture generation, or autonomous correction is added by this POC.
 
+The preferred multiview evidence path is a bounded experiment only. It produces one normal triangle-mesh GLB; it does not voxelize or convert the mesh to Blockbench Cubes.
+
 ## Pinned upstream
 
 The first local proof uses:
@@ -105,6 +107,22 @@ $env:HY3DGEN_MODELS="D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.c
 
 `generate_shape.py` fails closed when this pinned local model is absent rather than silently downloading an unpinned revision.
 
+For the bounded multiview comparison, download only the pinned shape subfolder:
+
+```python
+snapshot_download(
+    repo_id="tencent/Hunyuan3D-2mv",
+    revision="3a761b539b29fe4ff64714813aa9560fd66f5de0",
+    allow_patterns=[
+        "hunyuan3d-dit-v2-mv/config.yaml",
+        "hunyuan3d-dit-v2-mv/model.fp16.safetensors",
+    ],
+    local_dir=models_root / "tencent" / "Hunyuan3D-2mv",
+)
+```
+
+The local experiment environment is kept under `Experimental/route1-hunyuan-poc/.cache/venv`. Use a CUDA-enabled PyTorch build, then install the pinned Hunyuan source checkout at commit `f8db63096c8282cb27354314d896feba5ba6ff8a` with its normal requirements and editable package install.
+
 ## Run
 
 Provide a clean approved single 3/4 crop, not the whole five-panel board.
@@ -122,6 +140,16 @@ Transient outputs stay under `.cache/`:
 source.glb
 contact-sheet.png
 ```
+
+For the preferred multiview evidence run, use separate transparent-background crops with no labels or panel lines:
+
+```text
+input/separated-reference/front.png → front
+input/separated-reference/side.png  → left
+input/separated-reference/back.png   → back
+```
+
+The multiview model is `tencent/Hunyuan3D-2mv`, subfolder `hunyuan3d-dit-v2-mv`, variant `fp16`, with the same `50 / 256 / 20000 / 12345` settings. The result is one triangle mesh. Render its comparison sheet with `--front-direction=+z`; the `-z` view convention shows the wrong face for this asset. The current preferred local evidence files are `.cache/source-multiview-separated.glb` and `.cache/contact-sheet-multiview-separated.png`.
 
 ## Gate 1 — Mesh usefulness
 
