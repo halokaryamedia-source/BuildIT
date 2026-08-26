@@ -36,9 +36,5 @@
     "tinycolor2": "^1.6.0",
     "typescript": "^5.9.3",
     "zod-to-json-schema": "^3.25.1"
-  },
-  "contributors": [
-    "Jason J. Gardner",
-    "brokestar233"
-  ]
+  }
 }

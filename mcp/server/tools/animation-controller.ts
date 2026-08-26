@@ -302,17 +302,17 @@ export const manageAnimationControllerParameters = z
       .string()
       .min(1)
       .optional()
-      .describe("Existing AnimationController UUID or unique exact name."),
+      .describe("Existing controller UUID or unique name."),
     create_name: z
       .string()
       .min(1)
       .optional()
-      .describe("New AnimationController name; use instead of controller_id."),
+      .describe("New controller name."),
     operations: z
       .array(controllerOperationSchema)
       .min(1)
       .max(32)
-      .describe("One to 32 ordered controller/state-machine mutations."),
+      .describe("Ordered controller/state mutations (1-32)."),
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -328,7 +328,7 @@ export const animationControllerToolDocs: ToolSpec[] = [
   {
     name: "manage_animation_controller",
     description:
-      "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
+      "Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.",
     annotations: {
       title: "Manage Animation Controller",
       destructiveHint: true,

@@ -4,6 +4,14 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
+import {
+  clearActiveGeometryPlan,
+  createGeometryPlan,
+  getBoundGeometryRole,
+  requirePlanForOpenProject,
+  prepareGeometryPlanParameters,
+} from "@/lib/geometryPlan";
+import { compileGeometrySpec, compileGeometrySpecParameters, correctGeometryFromReportParameters, worldPosition } from "@/lib/geometryCompiler";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
 
@@ -59,6 +67,22 @@ export const projectToolDocs: ToolSpec[] = [
       readOnlyHint: true,
     },
     parameters: inspectModelBoundsParameters,
+    status: STATUS_STABLE,
+  },
+  {
+    name: "prepare_geometry_plan",
+    description:
+      "Legacy Geometry planning tool. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer the basic Group/Cube authoring tools for direct, explicit construction.",
+    annotations: { title: "Prepare Geometry Plan", destructiveHint: false },
+    parameters: prepareGeometryPlanParameters,
+    status: STATUS_STABLE,
+  },
+  {
+    name: "compile_geometry_spec",
+    description:
+      "Legacy Geometry compiler. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer explicit Group/Cube authoring and capture the result for visual review.",
+    annotations: { title: "Compile Geometry Spec", destructiveHint: true },
+    parameters: compileGeometrySpecParameters,
     status: STATUS_STABLE,
   },
 ];
@@ -118,6 +142,8 @@ export function registerProjectTools() {
       if (!created) {
         throw new Error("Failed to create project.");
       }
+
+      clearActiveGeometryPlan();
 
       Project!.name = name;
       Project!.texture_width = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION;
@@ -235,4 +261,103 @@ export function registerProjectTools() {
       };
     },
   }, projectToolDocs[2].status);
+
+  createTool(projectToolDocs[3].name, {
+    ...projectToolDocs[3],
+    async execute(args) {
+      if (!Project) {
+        throw new Error("No project is open. Create or open the intended Bedrock project before preparing Geometry.");
+      }
+      const formatId = (Format as { id?: string } | undefined)?.id;
+      if (formatId !== "bedrock") {
+        throw new Error(`Geometry planning requires the Bedrock format; current format is ${formatId ?? "unknown"}.`);
+      }
+      if (Cube.all.length > 0 || Group.all.length > 0) {
+        throw new Error(
+          "prepare_geometry_plan requires an empty Bedrock project. Create a new project before starting Geometry from zero."
+        );
+      }
+      const plan = createGeometryPlan(Project.uuid, args);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Geometry plan prepared (${plan.plan_id}) for ${plan.reference_identity}; ${plan.group_roles.length + plan.geometry_roles.length} roles and ${plan.rotation_parts.length} rotation parts declared.`,
+          },
+        ],
+        structuredContent: {
+          plan_id: plan.plan_id,
+          project_uuid: plan.project_uuid,
+          revision: plan.revision,
+          status: plan.status,
+          reference_identity: plan.reference_identity,
+          scale: {
+            basis: plan.scale.basis,
+            player_height_blocks: plan.scale.player_height_blocks,
+            target_height_blocks: plan.scale.target_height_blocks,
+            player_height_units: plan.scale_units.player_height_units,
+            target_height_units: plan.scale_units.target_height_units,
+            ground_contact: plan.scale.ground_contact,
+          },
+          envelope: plan.envelope,
+          proportion_target_count: plan.proportion_targets.length,
+          group_role_count: plan.group_roles.length,
+          geometry_role_count: plan.geometry_roles.length,
+          landmark_count: plan.landmarks.length,
+          attachment_count: plan.attachments.length,
+          rotation_part_count: plan.rotation_parts.length,
+        },
+      };
+    },
+  }, projectToolDocs[3].status);
+
+  createTool(projectToolDocs[4].name, {
+    ...projectToolDocs[4],
+    async execute(args) {
+      const result = compileGeometrySpec(args);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Compiled Geometry Spec: ${result.groups_created} Group(s), ${result.cubes_created} Cube(s). Visual fidelity was not evaluated.`,
+          },
+        ],
+        structuredContent: result,
+      };
+    },
+  }, projectToolDocs[4].status);
+
+  createTool("correct_geometry_from_report", {
+    description: "Applies up to eight explicit role corrections from a bounded visual report in one Undo unit; it never invents corrections or changes hierarchy.",
+    annotations: { title: "Correct Geometry from Report", destructiveHint: true },
+    parameters: correctGeometryFromReportParameters,
+    async execute(args) {
+      if (!Project) throw new Error("No project is open.");
+      const plan = requirePlanForOpenProject(args.plan_id);
+      const updates = args.corrections.map((correction) => {
+        const binding = getBoundGeometryRole(plan, correction.role);
+        if (binding.type !== "cube") throw new Error(`Correction role "${correction.role}" is not a Cube role.`);
+        const cube = Cube.all.find((item) => item.uuid === binding.uuid);
+        if (!cube) throw new Error(`Bound Cube for role "${correction.role}" is missing.`);
+        const from = worldPosition(plan, correction.min_normalized);
+        const to = worldPosition(plan, correction.max_normalized);
+        if (to.some((value, index) => value <= from[index])) throw new Error(`Correction target for "${correction.role}" is empty.`);
+        return { cube, from, to };
+      });
+      Undo.initEdit({ elements: updates.map((item) => item.cube), outliner: false, collections: [] });
+      try {
+        updates.forEach(({ cube, from, to }) => cube.extend({ from, to }));
+        Undo.finishEdit("Correct Geometry from Report", { elements: updates.map((item) => item.cube) });
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+      Canvas.updateAll();
+      return {
+        content: [{ type: "text" as const, text: `Applied ${updates.length} bounded geometry correction(s). Visual fidelity was not evaluated.` }],
+        structuredContent: { execution: "applied", visual_verdict: "not_evaluated", corrected_roles: updates.map((item) => item.cube.name) },
+      };
+    },
+  }, "stable");
 }

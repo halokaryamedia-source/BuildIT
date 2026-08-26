@@ -8,6 +8,7 @@
 import { VERSION } from "@/lib/constants";
 import {
   PRODUCT_BUG_TRACKER,
+  PRODUCT_ABOUT,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
   PRODUCT_REPOSITORY,
@@ -43,10 +44,9 @@ BBPlugin.register("mcp", {
   version: VERSION,
   title: PRODUCT_NAME,
   author: "Halo Karya Media",
-  contributors: ["jasonjgardner", "brokestar233"],
   description: PRODUCT_DESCRIPTION,
+  about: PRODUCT_ABOUT,
   tags: ["MCP", "AI"],
-  website: PRODUCT_REPOSITORY,
   repository: PRODUCT_REPOSITORY,
   bug_tracker: PRODUCT_BUG_TRACKER,
   icon: getIcon(),
@@ -123,6 +123,7 @@ BBPlugin.register("mcp", {
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
       host: "127.0.0.1",
       profile: registrationProfile,
+      phase: authoringPhase,
     });
 
     uiSetup({

@@ -3,7 +3,8 @@ import type { Server as NodeNetServer, Socket } from 'node:net'
 import {
   registerToolsOnServer,
   registerResourcesOnServer,
-  registerPromptsOnServer
+  registerPromptsOnServer,
+  invalidateToolRegistrationRuntimeCaches
 } from '@/lib/factories'
 import { createServer as createMcpServer } from '@/server/server'
 import {
@@ -11,6 +12,11 @@ import {
   type McpRegistrationProfile
 } from '@/lib/registrationProfile'
 import { createProductIdentity } from '@/lib/productIdentity'
+import {
+  DEFAULT_MCP_AUTHORING_PHASE,
+  getActiveMcpAuthoringPhase,
+  type McpAuthoringPhase
+} from '@/lib/authoringPhase'
 
 export interface NetServer extends NodeNetServer {
   closeActiveSockets(): void
@@ -89,9 +95,15 @@ interface SerializedWebResponse {
  * route before this helper is called.
  */
 async function handleStatelessMcpRequest (
-  webRequest: Request
+  webRequest: Request,
+  phase: McpAuthoringPhase = getActiveMcpAuthoringPhase(),
+  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): Promise<SerializedWebResponse> {
-  const requestServer = createMcpServer()
+  // The active phase changes tool.enabled at runtime. Rebuild the request
+  // snapshot after that mutation so every tool named in the phase contract is
+  // also callable by the request-owned MCP server.
+  invalidateToolRegistrationRuntimeCaches()
+  const requestServer = createMcpServer(getActiveMcpAuthoringPhase(), profile)
   registerToolsOnServer(requestServer)
   registerResourcesOnServer(requestServer)
   registerPromptsOnServer(requestServer)
@@ -139,12 +151,14 @@ export default function createNetServer (
     port,
     endpoint,
     host = '127.0.0.1',
-    profile = DEFAULT_MCP_REGISTRATION_PROFILE
+    profile = DEFAULT_MCP_REGISTRATION_PROFILE,
+    phase = DEFAULT_MCP_AUTHORING_PHASE
   }: {
     endpoint: string
     port: number
     host?: string
     profile?: McpRegistrationProfile
+    phase?: McpAuthoringPhase
   }
 ): NetServer {
   const activeSockets = new Set<Socket>()
@@ -380,7 +394,7 @@ export default function createNetServer (
               JSON.stringify({
                 status: 'ok',
                 timestamp: new Date().toISOString(),
-                product: createProductIdentity(profile),
+                product: createProductIdentity(profile, getActiveMcpAuthoringPhase()),
                 transport: {
                   mode: 'stateless',
                   response_mode: 'json'
@@ -461,7 +475,11 @@ export default function createNetServer (
           const webRequest = new Request(url, requestInit)
 
           try {
-            const response = await handleStatelessMcpRequest(webRequest)
+            const response = await handleStatelessMcpRequest(
+              webRequest,
+              getActiveMcpAuthoringPhase(),
+              profile
+            )
             const sent = sendResponse(
               socket,
               response.status,

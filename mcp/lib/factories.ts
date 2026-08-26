@@ -88,6 +88,134 @@ interface ToolDefinition {
  * Store tool definitions for request-owned server reconstruction
  */
 const toolDefinitions: Record<string, ToolDefinition> = {};
+const toolCatalogOrdered: string[] = [];
+const toolInvocationCache = new Map<
+  string,
+  (args: unknown, extra: unknown) => Promise<unknown>
+>();
+let enabledToolDefinitionsCache: Record<string, ToolDefinition> | null = null;
+let enabledToolRegistrationCache:
+  | Array<{ name: string; definition: ToolDefinition }>
+  | null = null;
+let resourceRegistrationCache: Array<[string, ResourceDefinition]> | null = null;
+let promptRegistrationCache: Array<[string, PromptDefinition]> | null = null;
+
+function getToolCallbackCacheKey(toolName: string): string {
+  return `${toolName}`;
+}
+
+/**
+ * Invalidation is intentionally explicit so profile and phase mutations can
+ * reset the request-owned runtime surface without leaking stale callback state.
+ */
+export function invalidateToolRegistrationRuntimeCaches(): void {
+  enabledToolDefinitionsCache = null;
+  enabledToolRegistrationCache = null;
+  resourceRegistrationCache = null;
+  promptRegistrationCache = null;
+  toolInvocationCache.clear();
+}
+
+function compactUnknownResult(name: string, result: unknown) {
+  if (typeof result === "string") {
+    return compactStringResult(name, result);
+  }
+
+  if (!result || typeof result !== "object" || !("content" in (result as ToolResult))) {
+    return {
+      content: [{ type: "text" as const, text: `${name} returned structured data.` }],
+      structuredContent: result,
+    };
+  }
+
+  return result;
+}
+
+function compactStringResult(
+  name: string,
+  result: string
+): { content: ToolContentItem[]; structuredContent?: unknown } {
+  const text = result.trim();
+  if (
+    (text.startsWith("{") && text.endsWith("}")) ||
+    (text.startsWith("[") && text.endsWith("]"))
+  ) {
+    try {
+      return {
+        content: [{ type: "text", text: `${name} returned structured data.` }],
+        structuredContent: JSON.parse(text),
+      };
+    } catch {
+      // Preserve ordinary text when a string only resembles JSON.
+    }
+  }
+
+  return { content: [{ type: "text", text: result }] };
+}
+
+function normalizeToolResultForRuntime(
+  name: string,
+  result: Exclude<ToolResult, string>
+): { content: ToolContentItem[]; structuredContent?: unknown } {
+  if (result.structuredContent !== undefined && result.content.length === 1) {
+    return compactMirroredStructuredContent(name, result);
+  }
+
+  if (result.content.length !== 1) {
+    return compactMirroredStructuredContent(name, result);
+  }
+
+  const [item] = result.content;
+  if (item.type !== "text") {
+    return compactMirroredStructuredContent(name, result);
+  }
+
+  const text = item.text.trim();
+  if (
+    (text.startsWith("{") && text.endsWith("}")) ||
+    (text.startsWith("[") && text.endsWith("]"))
+  ) {
+    try {
+      return {
+        content: [{ type: "text", text: `${name} returned structured data.` }],
+        structuredContent: JSON.parse(text),
+      };
+    } catch {
+      return compactMirroredStructuredContent(name, result);
+    }
+  }
+
+  return compactMirroredStructuredContent(name, result);
+}
+
+function getToolInvocation(name: string, toolDef: ToolDefinition) {
+  const cacheKey = getToolCallbackCacheKey(name);
+  const existing = toolInvocationCache.get(cacheKey);
+  if (existing) return existing;
+
+  const callback = async (args: unknown, _extra: unknown) => {
+    const reportProgress: ToolContext["reportProgress"] = () => {};
+    const context: ToolContext = { reportProgress };
+    const validatedArgs = await toolDef.parameterSchema.parseAsync(args);
+    const result = await toolDef.execute(
+      validatedArgs as Record<string, unknown>,
+      context
+    );
+
+    if (typeof result === "string") {
+      return compactStringResult(name, result);
+    }
+
+    if (result && typeof result === "object" && "content" in result) {
+      return normalizeToolResultForRuntime(name, result);
+    }
+
+    return compactUnknownResult(name, result);
+  };
+
+  toolInvocationCache.set(cacheKey, callback);
+  return callback;
+}
 
 /**
  * Extracts the SDK-compatible object shape used for MCP registration/listing.
@@ -223,6 +351,8 @@ export function createTool<T extends z.ZodType>(
 
   // Store tool definition
   toolDefinitions[name] = toolDef;
+  toolCatalogOrdered.push(name);
+  invalidateToolRegistrationRuntimeCaches();
 
   tools[name] = {
     name,
@@ -245,9 +375,32 @@ export function getAllToolDefinitions() {
  * Gets enabled tool definitions for server reconstruction
  */
 export function getEnabledToolDefinitions() {
-  return Object.fromEntries(
-    Object.entries(toolDefinitions).filter(([name]) => tools[name]?.enabled)
+  if (enabledToolDefinitionsCache) {
+    return enabledToolDefinitionsCache;
+  }
+
+  const enabled = Object.fromEntries(
+    toolCatalogOrdered
+      .map((name) => [name, toolDefinitions[name]] as const)
+      .filter(([name]) => tools[name]?.enabled)
   );
+
+  enabledToolDefinitionsCache = enabled;
+  return enabled;
+}
+
+export function getEnabledToolRegistrationEntries() {
+  if (enabledToolRegistrationCache) {
+    return enabledToolRegistrationCache;
+  }
+
+  const enabled = getEnabledToolDefinitions();
+  const entries = Object.entries(enabled)
+    .map(([name, definition]) => ({ name, definition }))
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  enabledToolRegistrationCache = entries;
+  return entries;
 }
 
 /**
@@ -255,8 +408,6 @@ export function getEnabledToolDefinitions() {
  * Used to set up fresh request-owned servers with the same tools
  */
 export function registerToolsOnServer(server: unknown) {
-  const enabledDefs = getEnabledToolDefinitions();
-
   const typedServer = server as {
     registerTool: (
       toolName: string,
@@ -270,7 +421,7 @@ export function registerToolsOnServer(server: unknown) {
     ) => void;
   };
 
-  for (const [name, toolDef] of Object.entries(enabledDefs)) {
+  for (const { name, definition: toolDef } of getEnabledToolRegistrationEntries()) {
     typedServer.registerTool(
       name,
       {
@@ -279,29 +430,7 @@ export function registerToolsOnServer(server: unknown) {
         inputSchema: toolDef.inputSchema,
         annotations: toolDef.annotations,
       },
-      async (args: unknown, _extra: unknown) => {
-        const reportProgress: ToolContext["reportProgress"] = () => {};
-        const context: ToolContext = { reportProgress };
-        const validatedArgs = await toolDef.parameterSchema.parseAsync(args);
-        const result = await toolDef.execute(
-          validatedArgs as Record<string, unknown>,
-          context
-        );
-
-        if (typeof result === "string") {
-          return {
-            content: [{ type: "text", text: result }],
-          };
-        }
-
-        if (result && typeof result === "object" && "content" in result) {
-          return compactMirroredStructuredContent(name, result);
-        }
-
-        return {
-          content: [{ type: "text", text: JSON.stringify(result) }],
-        };
-      }
+      getToolInvocation(name, toolDef)
     );
   }
 }
@@ -390,6 +519,7 @@ export function createResource(
 
   // Store resource definition for request-owned server reconstruction
   resourceDefinitions[name] = resourceDef;
+  invalidateToolRegistrationRuntimeCaches();
 
   resources[name] = {
     name,
@@ -432,7 +562,11 @@ export function registerResourcesOnServer(server: unknown) {
     ) => void;
   };
 
-  for (const [name, resourceDef] of Object.entries(resourceDefinitions)) {
+  if (!resourceRegistrationCache) {
+    resourceRegistrationCache = Object.entries(resourceDefinitions);
+  }
+
+  for (const [name, resourceDef] of resourceRegistrationCache) {
     typedServer.registerResource(
       name,
       new ResourceTemplate(resourceDef.uriTemplate, {
@@ -525,6 +659,8 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     promptDefinitions[name] = promptDef;
   }
 
+  invalidateToolRegistrationRuntimeCaches();
+
   prompts[name] = {
     name,
     arguments: promptArgumentsFromShape(argsShape),
@@ -563,7 +699,11 @@ export function registerPromptsOnServer(server: unknown) {
     ) => void;
   };
 
-  for (const [name, promptDef] of Object.entries(promptDefinitions)) {
+  if (!promptRegistrationCache) {
+    promptRegistrationCache = Object.entries(promptDefinitions);
+  }
+
+  for (const [name, promptDef] of promptRegistrationCache) {
     typedServer.registerPrompt(
       name,
       {

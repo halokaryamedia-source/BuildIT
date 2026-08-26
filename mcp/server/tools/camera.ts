@@ -377,26 +377,6 @@ function captureOffscreenPng(preview: Preview): string {
   return dataUrl;
 }
 
-function poseContext(): {
-  animation: { uuid: string; name: string } | null;
-  timeline_time: number | null;
-} {
-  const animation =
-    typeof AnimationItem !== "undefined" ? AnimationItem.selected : null;
-  const timelineTime =
-    animation &&
-    typeof Timeline !== "undefined" &&
-    typeof Timeline.time === "number" &&
-    Number.isFinite(Timeline.time)
-      ? Timeline.time
-      : null;
-
-  return {
-    animation: animation ? { uuid: animation.uuid, name: animation.name } : null,
-    timeline_time: timelineTime,
-  };
-}
-
 export function registerCameraTools() {
   createTool(cameraToolDocs[0].name, {
     ...cameraToolDocs[0],
@@ -469,13 +449,6 @@ export function registerCameraTools() {
         projection: "orthographic" | "perspective";
         width: number;
         height: number;
-        camera: {
-          position: Vec3;
-          target: Vec3;
-          up: Vec3;
-          zoom?: number;
-          fov?: number;
-        };
       }> = [];
 
       for (const view of views as ModelView[]) {
@@ -496,13 +469,6 @@ export function registerCameraTools() {
           projection: spec.projection,
           width: CAPTURE_SIZE,
           height: CAPTURE_SIZE,
-          camera: {
-            position: spec.position,
-            target: spec.target,
-            up: spec.up,
-            ...(spec.zoom !== undefined ? { zoom: spec.zoom } : {}),
-            ...(spec.fov !== undefined ? { fov: spec.fov } : {}),
-          },
         });
       }
 
@@ -515,16 +481,11 @@ export function registerCameraTools() {
         },
         count: captures.length,
         front_direction,
-        framing: {
-          mode: framingInput.mode,
-          min: framingBounds.min,
-          max: framingBounds.max,
-        },
+        framing_mode: framingInput.mode,
         captures,
-        pose_context: poseContext(),
         offscreen_capture: true,
         active_editor_camera_untouched: true,
-        warnings: observed.warnings,
+        warnings: observed.warnings.length,
       };
 
       content.unshift({

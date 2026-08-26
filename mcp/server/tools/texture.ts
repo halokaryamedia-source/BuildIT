@@ -335,7 +335,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_texture",
     description:
-      "Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.",
+      "Creates a texture and returns compact metadata. Use get_texture only when image data is needed.",
     annotations: {
       title: "Create Texture",
       destructiveHint: true,
@@ -347,7 +347,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "apply_texture",
     description:
-      "Legacy generic per-face Texture.apply wrapper. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and Blockbench hides per-face apply actions there; use activate_texture for the active/default texture.",
+      "Legacy per-face texture wrapper. Disabled on the normal Bedrock Entity surface; use activate_texture.",
     annotations: {
       title: "Apply Texture",
       destructiveHint: true,
@@ -358,7 +358,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "add_texture_group",
     description:
-      "Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.",
+      "Adds a uniquely named TextureGroup.",
     annotations: {
       title: "Add Texture Group",
       destructiveHint: true,
@@ -369,7 +369,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "list_textures",
     description:
-      "Returns a read-only list of all textures in the Blockbench editor, including identity/group metadata and the current render_mode/render_sides settings.",
+      "Lists texture identity, group metadata, and render settings.",
     annotations: {
       title: "List Textures",
       readOnlyHint: true,
@@ -380,7 +380,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "get_texture",
     description:
-      "Returns image data for the default texture when no texture is specified. Explicit texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before image data is returned.",
+      "Returns image data for the selected or explicitly identified texture.",
     annotations: {
       title: "Get Texture",
       readOnlyHint: true,
@@ -391,7 +391,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "create_pbr_material",
     description:
-      "Creates a uniquely named PBR material TextureGroup. Color and MER each accept one effective source (texture or uniform), and depth accepts normal or height; contradictory sources fail before Undo.",
+      "Creates a uniquely named PBR material TextureGroup.",
     annotations: {
       title: "Create PBR Material",
       destructiveHint: true,
@@ -402,7 +402,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "configure_material",
     description:
-      "Configures one explicit PBR material with at least one authored change. Explicit texture + uniform conflicts and simultaneous normal+height sources fail at the MCP boundary; `none` remains the explicit switch to uniform/remove behavior.",
+      "Applies authored changes to one PBR material.",
     annotations: {
       title: "Configure Material",
       destructiveHint: true,
@@ -424,7 +424,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "get_material_info",
     description:
-      "Gets detailed information about one explicit material/texture group, including the compiled texture_set.json preview for Bedrock export. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before material data is read.",
+      "Returns detailed metadata for one PBR material, including its Bedrock texture-set preview.",
     annotations: {
       title: "Get Material Info",
       readOnlyHint: true,
@@ -435,7 +435,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "import_texture_set",
     description:
-      "Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.",
+      "Imports one Bedrock texture_set.json and returns the created material identity.",
     annotations: {
       title: "Import Texture Set",
       destructiveHint: true,
@@ -447,7 +447,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "assign_texture_channel",
     description:
-      "Assigns one explicit Texture to one PBR channel. Material/Texture references resolve before Undo; exact no-op assignments are rejected, while existing competing textures on that channel remain part of the native edit behavior.",
+      "Assigns one texture to one PBR channel.",
     annotations: {
       title: "Assign Texture Channel",
       destructiveHint: true,
@@ -458,7 +458,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "save_material_config",
     description:
-      "Saves one explicit material/texture group's Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.",
+      "Saves one material as a Bedrock texture_set.json file.",
     annotations: {
       title: "Save Material Config",
       destructiveHint: true,
@@ -470,7 +470,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "activate_texture",
     description:
-      "Activates one explicit texture in the Blockbench texture panel. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous references fail before the active texture selection changes. Subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) then target the activated texture by default.",
+      "Activates one texture for subsequent paint operations.",
     annotations: {
       title: "Activate Texture",
       destructiveHint: false,

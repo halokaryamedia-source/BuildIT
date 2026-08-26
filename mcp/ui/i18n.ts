@@ -17,8 +17,10 @@ const en: Record<string, string> = {
   "mcp.panel.prompts": "Prompts",
 
   // Server section
-  "mcp.server.name": "Server Name",
-  "mcp.server.version": "Server Version",
+  "mcp.server.name": "Name",
+  "mcp.server.version": "Version",
+  "mcp.server.type": "Type",
+  "mcp.server.phase": "Phase",
 
   // Filter UI
   "mcp.filter.tools_placeholder": "Filter tools...",

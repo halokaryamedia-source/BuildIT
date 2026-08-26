@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createConnection, createServer as createTcpServer, type AddressInfo } from "node:net";
+import { performance } from "node:perf_hooks";
 import { z } from "zod";
 import { createTool } from "@/lib/factories";
 import createNetServer, { type NetServer } from "@/server/net";
@@ -63,6 +64,66 @@ async function postMcp(
 
 async function bodyJson(response: Response): Promise<Record<string, unknown>> {
   return JSON.parse(await response.text()) as Record<string, unknown>;
+}
+
+function percentile(values: number[], fraction: number): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.max(0, Math.ceil(fraction * sorted.length) - 1);
+  return sorted[index] ?? 0;
+}
+
+async function measureRequestSequence(
+  startId: number,
+  count: number
+): Promise<number[]> {
+  const samples: number[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const baseId = startId + i * 3;
+    const started = performance.now();
+
+    const initializeResponse = await postMcp({
+      jsonrpc: "2.0",
+      id: baseId,
+      method: "initialize",
+      params: {
+        protocolVersion: PROTOCOL_VERSION,
+        capabilities: {},
+        clientInfo: { name: `p1-benchmark-${i}`, version: "1.0.0" },
+      },
+    });
+    expect(initializeResponse.status).toBe(200);
+
+    const listResponse = await postMcp(
+      {
+        jsonrpc: "2.0",
+        id: baseId + 1,
+        method: "tools/list",
+        params: {},
+      },
+      { protocolVersion: true }
+    );
+    expect(listResponse.status).toBe(200);
+
+    const callResponse = await postMcp(
+      {
+        jsonrpc: "2.0",
+        id: baseId + 2,
+        method: "tools/call",
+        params: {
+          name: FIXTURE_TOOL,
+          arguments: { value: `raw-benchmark-${i}` },
+        },
+      },
+      { protocolVersion: true }
+    );
+    expect(callResponse.status).toBe(200);
+
+    samples.push(performance.now() - started);
+  }
+
+  return samples;
 }
 
 beforeAll(async () => {
@@ -289,5 +350,20 @@ describe("P1.4 raw-net stateless integration", () => {
     server.closeActiveSockets();
     await closed;
     expect(socket.destroyed).toBe(true);
+  });
+
+  test("p95 request-sequence latency remains bounded with warm request-owned registration cache", async () => {
+    const coldSamples = await measureRequestSequence(1000, 6);
+    const warmSamples = await measureRequestSequence(2000, 24);
+
+    const coldP95 = percentile(coldSamples, 0.95);
+    const warmP95 = percentile(warmSamples, 0.95);
+
+    console.log(
+      `[mcp-bench] request-sequence p95 cold=${coldP95.toFixed(2)}ms warm=${warmP95.toFixed(2)}ms`
+    );
+
+    expect(warmP95).toBeLessThanOrEqual(300);
+    expect(warmP95).toBeLessThanOrEqual(coldP95 * 1.2);
   });
 });

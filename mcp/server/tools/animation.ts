@@ -30,7 +30,7 @@ const bedrockParticleEffectSchema = z.object({
     .boolean()
     .optional()
     .describe(
-      "Optional actor-binding flag; omit for native default."
+      "Optional actor-binding flag."
     ),
   pre_effect_script: z
     .string()
@@ -90,7 +90,7 @@ const bedrockParticleEffectsSchema = z
     });
   })
   .describe(
-    "Particle effects keyed by unique non-negative finite timestamps; one effect or array each."
+    "Particle effects keyed by non-negative timestamps."
   );
 
 const bedrockSoundEffectSchema = z.object({
@@ -132,7 +132,7 @@ const bedrockSoundEffectsSchema = z
       effectiveTimes.set(numericTime, timestamp);
     });
   })
-  .describe("Sound effects by unique non-negative timestamp; one effect or non-empty array.");
+  .describe("Sound effects keyed by non-negative timestamps.");
 
 const finiteCreateAnimationVector3Schema = z
   .array(z.number().finite())
@@ -143,7 +143,7 @@ const molangTransformStringSchema = z
   .refine((value) => value.trim().length > 0, {
     message: "Molang transform strings must contain a non-whitespace authored value.",
   })
-  .describe("Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.");
+  .describe("Authored non-empty Molang transform text.");
 
 const manageTransformValueSchema = z.union([
   z.number().finite(),
@@ -163,18 +163,18 @@ const bedrockBoneKeyframeSchema = z.object({
   position: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space."
+      "Authored Blockbench position [x,y,z]."
     ),
   rotation: finiteCreateAnimationVector3Schema
     .optional()
     .describe(
-      "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space."
+      "Authored Blockbench rotation [x,y,z]."
     ),
   scale: z
     .union([finiteCreateAnimationVector3Schema, z.number().finite()])
     .optional()
     .describe(
-      "Finite scale [x,y,z] or uniform scalar."
+      "Scale [x,y,z] or uniform scalar."
     ),
 });
 
@@ -207,15 +207,15 @@ const bedrockBoneKeyframesSchema = z
     });
   })
   .describe(
-    "Transform keyframes at finite non-negative times; one value per channel per time."
+    "Transform keyframes at non-negative times."
   );
 
 export const createAnimationParameters = z.object({
-  name: z.string().min(1).describe("Non-empty animation name."),
+  name: z.string().min(1).describe("Animation name."),
   loop: z
     .boolean()
     .default(false)
-    .describe("Whether the animation should loop"),
+    .describe("Loop the animation."),
   animation_length: z
     .number()
     .finite()
@@ -223,7 +223,7 @@ export const createAnimationParameters = z.object({
     .max(10000)
     .optional()
     .describe(
-      "Optional finite animation length in seconds (0..10000)."
+      "Optional animation length in seconds (0..10000)."
     ),
   bones: z
     .record(bedrockBoneKeyframesSchema)
@@ -266,12 +266,12 @@ export const manageKeyframesParameters = z
     action: z
       .enum(["create", "delete", "edit", "select"])
       .describe("Action to perform on keyframes."),
-    bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to manage keyframes for."),
+    bone_name: boneNameSchema.describe("Group UUID or unique Group name."),
     channel: animationChannelEnum.describe("Animation channel to modify."),
     keyframes: z
       .array(manageKeyframeDataSchema)
       .min(1)
-      .describe("One or more keyframes for the action; empty mutation/selection requests are rejected."),
+      .describe("One or more keyframes."),
   })
   .superRefine((params, ctx) => {
     params.keyframes.forEach((keyframe, index) => {
@@ -306,7 +306,7 @@ export const manageKeyframesParameters = z
 
 export const animationGraphEditorParameters = z.object({
   animation_id: animationIdOptionalSchema,
-  bone_name: boneNameSchema.describe("Exact Group UUID or exact unique Group name to modify curves for."),
+  bone_name: boneNameSchema.describe("Group UUID or unique Group name."),
   channel: animationChannelEnum.describe("Animation channel to modify."),
   axis: axisWithAllEnum
     .default("all")
@@ -364,25 +364,19 @@ export const boneRiggingParameters = z.object({
       name: z
         .string()
         .min(1)
-        .describe(
-          "Create: new unique name. Other actions: Group UUID or unique exact name."
-        ),
+        .describe("Create: new name. Other actions: Group UUID or unique name."),
       new_name: z
         .string()
         .min(1)
         .optional()
-        .describe("New unique bone name required by the rename action."),
+        .describe("New name for rename."),
       parent: z
         .string()
         .optional()
-        .describe(
-          "Parent Group UUID or unique exact name; required by parent, optional on create."
-        ),
+        .describe("Parent Group UUID or unique name."),
       origin: vector3Schema
         .optional()
-        .describe(
-          "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it."
-        ),
+        .describe("Pivot/origin for set_pivot."),
       rotation: vector3Schema
         .optional()
         .describe(
@@ -718,7 +712,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
     description:
-      "Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.",
+      "Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_keyframes for later Molang or keyframe edits.",
     annotations: {
       title: "Create Animation",
       destructiveHint: true,
@@ -729,7 +723,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "manage_keyframes",
     description:
-      "Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.",
+      "Creates, edits, deletes, or selects keyframes for one animation bone and channel. Numeric and authored Molang values are preserved.",
     annotations: {
       title: "Manage Keyframes",
       destructiveHint: true,
@@ -740,7 +734,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_graph_editor",
     description:
-      "Controls animation curves in the graph editor for fine-tuning animations.",
+      "Applies a curve/interpolation edit to one animation bone channel.",
     annotations: {
       title: "Animation Graph Editor",
       destructiveHint: true,
@@ -751,7 +745,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "bone_rigging",
     description:
-      "Creates/edits Bedrock Group bones with explicit preflighted targets. Create/parent reject hierarchy cycles; create/rename/mirror enforce case-insensitive unique bone names; delete snapshots the subtree and affected animations. `set_pivot` needs origin, `mirror` needs an axis, and `set_ik` must author an IK change while target-only edits preserve enabled state. Missing/ambiguous targets fail before mutation.",
+      "Creates or edits Bedrock Group hierarchy, pivots, IK, and mirroring. Use for rig structure; use add_group for normal bone creation.",
     annotations: {
       title: "Bone Rigging",
       destructiveHint: true,
@@ -762,7 +756,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_timeline",
     description:
-      "Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.",
+      "Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.",
     annotations: {
       title: "Animation Timeline",
       destructiveHint: true,
@@ -772,7 +766,7 @@ export const animationToolDocs: ToolSpec[] = [
   },
   {
     name: "batch_keyframe_operations",
-    description: "Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.",
+    description: "Applies one bounded batch operation to selected, ranged, patterned, or all keyframes.",
     annotations: {
       title: "Batch Keyframe Operations",
       destructiveHint: true,
@@ -783,7 +777,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_copy_paste",
     description:
-      "Copies/pastes animation data with action-specific source/target preflight. Copy requires matching keyframes; paste rejects an empty clipboard and invalid or internally colliding snapped times; `mirror_paste` requires an explicit axis. Existing-target overwrite keeps native paste behavior.",
+      "Copies, pastes, or mirrors keyframes between animation bones. Copy/paste targets must be explicit; mirror_paste requires an axis.",
     annotations: {
       title: "Animation Copy/Paste",
       destructiveHint: true,

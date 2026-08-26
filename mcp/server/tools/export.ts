@@ -339,7 +339,7 @@ export function registerExportTools() {
         // A successful filesystem write already delivers the artifact. Avoid
         // echoing large compiled content into model context unless requested.
         const effectiveMaxContentLength =
-          max_content_length ?? (path ? 0 : 100_000);
+          max_content_length === undefined ? 0 : max_content_length;
         const truncated =
           effectiveMaxContentLength > 0 &&
           fullContent.length > effectiveMaxContentLength;
@@ -375,7 +375,14 @@ export function registerExportTools() {
         };
 
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(result) }],
+          content: [
+            {
+              type: "text" as const,
+              text: wrote_to_path
+                ? `Exported ${codec_id} artifact ${result.file_name} (${byteLength} bytes); file write verified.`
+                : `Compiled ${codec_id} artifact ${result.file_name} (${byteLength} bytes); no file path was provided.`,
+            },
+          ],
           structuredContent: result,
         };
       },

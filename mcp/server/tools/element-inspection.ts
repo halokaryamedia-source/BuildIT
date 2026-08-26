@@ -11,13 +11,18 @@ export const inspectElementParameters = z.object({
     .describe(
       "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
     ),
+  detail: z
+    .enum(["geometry", "uv"])
+    .optional()
+    .default("geometry")
+    .describe("Geometry transform by default; request `uv` only when UV mapping needs inspection."),
 });
 
 export const elementInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_element",
     description:
-      "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object. UUID is preferred and exact names must be unique. Includes the type-specific transform, parent, and visibility state needed for precise correction; it does not modify selection/model state or return visual PASS/FAIL.",
+      "Returns focused authored state for one explicit element. Defaults to compact geometry/hierarchy data; request UV detail only when mapping needs inspection.",
     annotations: {
       title: "Inspect Authored Element",
       readOnlyHint: true,
@@ -350,7 +355,7 @@ function cubeSize(cube: Cube): [number, number, number] {
   return size;
 }
 
-function inspectCube(cube: Cube) {
+function inspectCube(cube: Cube, detail: "geometry" | "uv") {
   const size = cubeSize(cube);
   return {
     uuid: cube.uuid,
@@ -368,7 +373,7 @@ function inspectCube(cube: Cube) {
     ] as [number, number, number],
     origin: requireFiniteInspectableVector3(cube.origin, `Cube ${cube.name} (${cube.uuid}) origin`),
     rotation: requireFiniteInspectableVector3(cube.rotation, `Cube ${cube.name} (${cube.uuid}) rotation`),
-    uv: inspectCubeUv(cube),
+    ...(detail === "uv" ? { uv: inspectCubeUv(cube) } : {}),
     visibility: cube.visibility !== false,
   };
 }
@@ -421,11 +426,11 @@ export function registerElementInspectionTools() {
     elementInspectionToolDocs[0].name,
     {
       ...elementInspectionToolDocs[0],
-      async execute({ id }) {
+      async execute({ id, detail }) {
         const element = resolveInspectableElement(id);
         const result =
           element instanceof Cube
-            ? inspectCube(element)
+            ? inspectCube(element, detail)
             : element instanceof Group
               ? inspectGroup(element)
               : element instanceof Locator

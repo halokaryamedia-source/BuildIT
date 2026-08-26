@@ -11,6 +11,8 @@ import {
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
+import { describeMcpSurfaceToolNames } from "@/server/tools";
+import { DEFAULT_MCP_REGISTRATION_PROFILE } from "@/lib/registrationProfile";
 
 const ANIMATION_RUNTIME_WORKFLOW = `## Animation Workflow
 
@@ -67,6 +69,10 @@ createPrompt("bedrock_entity_workflow", {
   async generate() {
     const phase = getActiveMcpAuthoringPhase();
     const workflow = getPromptContent("bedrock_entity_workflow");
+    const allowedTools = describeMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      phase
+    );
     return {
       messages: [
         {
@@ -74,7 +80,7 @@ createPrompt("bedrock_entity_workflow", {
           content: {
             type: "text",
             text: [
-              buildMcpPhasePromptHeader(phase),
+              buildMcpPhasePromptHeader(phase, allowedTools),
               selectMcpPhaseWorkflowBody(workflow, phase),
               buildMcpPhaseHandoffContract(phase),
             ].join("\n\n"),

@@ -311,17 +311,30 @@ function nullObjectState(element: NullObject) {
   };
 }
 
-function structuredResult(
-  state: ReturnType<typeof locatorState> | ReturnType<typeof nullObjectState>
+function mutationResult(
+  state:
+    | ReturnType<typeof locatorState>
+    | ReturnType<typeof nullObjectState>,
+  action: "create" | "update",
+  changedFields: readonly string[]
 ) {
+  const summary = {
+    execution: "applied" as const,
+    action,
+    id: state.uuid,
+    name: state.name,
+    type: state.type,
+    parent: state.parent,
+    changed_fields: [...changedFields],
+  };
   return {
     content: [
       {
         type: "text" as const,
-        text: JSON.stringify(state),
+        text: `${action === "create" ? "Created" : "Updated"} ${state.type} ${state.name} (${state.uuid}); changed: ${changedFields.join(", ") || "none"}.`,
       },
     ],
-    structuredContent: state,
+    structuredContent: summary,
   };
 }
 
@@ -415,7 +428,13 @@ export function registerLocatorTools() {
             edited.push(locator);
             Undo.finishEdit("Add Bedrock locator");
             updatePreview(locator);
-            return structuredResult(locatorState(locator));
+            return mutationResult(locatorState(locator), "create", [
+              "name",
+              "parent",
+              "position",
+              "rotation",
+              "ignore_inherited_scale",
+            ]);
           } catch (error) {
             locator?.remove();
             Undo.cancelEdit(true);
@@ -468,7 +487,12 @@ export function registerLocatorTools() {
           }
           updatePreview(locator);
           Undo.finishEdit("Update Bedrock locator");
-          return structuredResult(locatorState(locator));
+          return mutationResult(locatorState(locator), "update", [
+            ...(parentChanges ? ["parent"] : []),
+            ...(positionChanges ? ["position"] : []),
+            ...(rotationChanges ? ["rotation"] : []),
+            ...(scaleFlagChanges ? ["ignore_inherited_scale"] : []),
+          ]);
         } catch (error) {
           Undo.cancelEdit(true);
           Canvas.updateAll();
@@ -501,7 +525,11 @@ export function registerLocatorTools() {
             edited.push(element);
             Undo.finishEdit("Add Bedrock null object");
             updatePreview(element);
-            return structuredResult(nullObjectState(element));
+            return mutationResult(nullObjectState(element), "create", [
+              "name",
+              "parent",
+              "position",
+            ]);
           } catch (error) {
             element?.remove();
             Undo.cancelEdit(true);
@@ -537,7 +565,10 @@ export function registerLocatorTools() {
           }
           updatePreview(element);
           Undo.finishEdit("Update Bedrock null object");
-          return structuredResult(nullObjectState(element));
+          return mutationResult(nullObjectState(element), "update", [
+            ...(parentChanges ? ["parent"] : []),
+            ...(positionChanges ? ["position"] : []),
+          ]);
         } catch (error) {
           Undo.cancelEdit(true);
           Canvas.updateAll();

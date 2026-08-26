@@ -8,7 +8,9 @@ import {
 export const PRODUCT_ID = "blockit-bedrock-entity-mcp";
 export const PRODUCT_NAME = "BlockIT — Bedrock Entity MCP";
 export const PRODUCT_DESCRIPTION =
-  "Minecraft Bedrock Entity-focused MCP server for Blockbench.";
+  "AI-assisted Minecraft Bedrock Entity modelling tools for Blockbench.";
+export const PRODUCT_ABOUT =
+  "BlockIT provides focused MCP tools for Minecraft Bedrock Entity geometry, texturing, and animation inside desktop Blockbench. Only the active authoring phase is exposed at a time.\n\nUse canonical model views and human review for reference-based modelling; tool success alone does not prove visual fidelity.";
 export const PRODUCT_REPOSITORY =
   "https://github.com/halokaryamedia-source/BuildIT";
 export const PRODUCT_BUG_TRACKER = `${PRODUCT_REPOSITORY}/issues`;

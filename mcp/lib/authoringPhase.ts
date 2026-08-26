@@ -26,6 +26,7 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "export",
   "history",
   "project",
+  "phase_control",
   // Generic fallback families are Core only when the explicit extended
   // registration profile makes them available. Their individually disabled
   // tools remain disabled at createTool().
@@ -36,18 +37,19 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
 const CORE_ELEMENT_TOOLS = new Set([
   "list_outline",
   "find_elements_by_criteria",
-  "select_all_of_type",
-  "get_selection",
-  "list_locator_elements",
 ]);
 
 const GEOMETRY_ELEMENT_TOOLS = new Set([
-  "add_group",
-  "duplicate_element",
+  "modify_group",
   "remove_element",
   "rename_element",
-  "manage_locator",
-  "manage_null_object",
+]);
+
+const GEOMETRY_MAINTENANCE_TOOLS = new Set([
+  "add_group",
+  "place_cube",
+  "duplicate_element",
+  "reparent_element",
 ]);
 
 const CORE_TEXTURE_TOOLS = new Set([
@@ -92,6 +94,18 @@ const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
     "Animation completion readiness: requested motion scope is verified; any structural rig/pivot/IK defect returns to Geometry instead of being repaired here.",
 };
 
+const PHASE_SUPPORT_ROUTING: Record<McpAuthoringPhase, string> = {
+  geometry:
+    "Support-only routes: selection tools only when editor selection is required; locator tools only for explicit attachment/marker needs; camera only for visual checkpoints; history only for recovery; export only at the final artifact checkpoint.",
+  texturing:
+    "Support-only routes: camera only for visual texture checkpoints; history only for recovery; export only at the final artifact checkpoint.",
+  animation:
+    "Support-only routes: camera only for motion checkpoints; history only for recovery; export only at the final artifact checkpoint.",
+};
+
+const GEOMETRY_SUBGROUP_ROUTING =
+  "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/place_cube/duplicate_element/reparent_element; correction_and_inspection=modify_cube/modify_cubes_batch/modify_group/remove_element/rename_element/list_outline/find_elements_by_criteria/inspect_element/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. prepare_geometry_plan, compile_geometry_spec, and correct_geometry_from_report are disabled from the default Geometry flow until the reference-grounded pipeline is proven stable. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
+
 export function isMcpAuthoringPhase(value: unknown): value is McpAuthoringPhase {
   return MCP_AUTHORING_PHASES.includes(value as McpAuthoringPhase);
 }
@@ -128,25 +142,33 @@ export function getMcpPhaseReadinessSummary(phase: McpAuthoringPhase): string {
 }
 
 export function buildMcpPhaseRuntimeContract(
-  phase: McpAuthoringPhase
+  phase: McpAuthoringPhase,
+  allowedTools: readonly string[] = []
 ): string {
   const label = phase.toUpperCase();
+  const allowedToolsText =
+    allowedTools.length > 0
+      ? ` Allowed tools (${allowedTools.length}): ${allowedTools.join(", ")}.`
+      : "";
   return [
     `ACTIVE PHASE: ${label}. Surface=MCP CORE+${label}.`,
     BEDROCK_AUTHORING_COORDINATE_CONTRACT,
     PHASE_RUNTIME_OWNER_SUMMARY[phase],
+    PHASE_SUPPORT_ROUTING[phase],
+    ...(phase === "geometry" ? [GEOMETRY_SUBGROUP_ROUTING] : []),
     `${PHASE_FOREIGN_SUMMARY[phase]} Their tools are intentionally unavailable.`,
     "Do not tool_search for, emulate, rename, or substitute a foreign-phase tool.",
-    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="set MCP Authoring Phase=<phase>; reload BlockIT MCP", then STOP.`,
+    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="switch_authoring_phase to <phase>", then STOP.${allowedToolsText}`,
   ].join(" ");
 }
 
 export function buildMcpPhasePromptHeader(
-  phase: McpAuthoringPhase
+  phase: McpAuthoringPhase,
+  allowedTools: readonly string[] = []
 ): string {
   return [
     "## Active Phase Contract",
-    buildMcpPhaseRuntimeContract(phase),
+    buildMcpPhaseRuntimeContract(phase, allowedTools),
     "Only the current phase workflow is rendered below. Later phases are handoff targets, not callable routes in this session.",
   ].join("\n\n");
 }
@@ -171,6 +193,23 @@ export function classifyMcpToolPhase(
   toolName: string,
   family: McpRegistrationFamily
 ): McpToolPhaseCategory | null {
+  if (
+    toolName === "capture_screenshot" ||
+    toolName === "capture_app_screenshot" ||
+    toolName === "set_camera_angle" ||
+    toolName === "list_export_formats" ||
+    toolName === "select_all_of_type" ||
+    toolName === "get_selection" ||
+    toolName === "list_locator_elements" ||
+    toolName === "save_checkpoint" ||
+    toolName === "undo" ||
+    toolName === "redo" ||
+    toolName === "get_undo_stack" ||
+    toolName === "manage_null_object"
+  ) {
+    return null;
+  }
+  if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return null;
   if (CORE_FAMILIES.has(family)) return "core";
 
   if (family === "cubes") return "geometry";
@@ -184,9 +223,10 @@ export function classifyMcpToolPhase(
   if (family === "animation_inspection") return "animation";
 
   if (family === "animation") {
-    // Rig/pivot hierarchy is Geometry ownership. Animation must hand back to
-    // Geometry instead of silently rewriting the rig mid-animation pass.
-    return toolName === "bone_rigging" ? "geometry" : "animation";
+    // Rig/pivot mutation is an explicit opt-in support route. The normal
+    // Geometry surface uses the plan-bound Group tools instead, so this legacy
+    // tool must not be surfaced merely because the phase is Geometry.
+    return toolName === "bone_rigging" ? null : "animation";
   }
 
   if (family === "elements") {

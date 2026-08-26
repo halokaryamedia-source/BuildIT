@@ -67,10 +67,8 @@ export function uiSetup({
           name: PRODUCT_NAME,
           version: VERSION,
           repositoryUrl: PRODUCT_REPOSITORY,
-          profile,
+          type: "Minecraft Bedrock Entity",
           authoringPhase: phase,
-          endpoint: `127.0.0.1:${Settings.get("mcp_port") || 3000}${Settings.get("mcp_endpoint") || "/bb-mcp"}`,
-          transport: "Streamable HTTP (stateless JSON)",
         },
         surface,
         tools: Object.values(tools).map((tool) => ({

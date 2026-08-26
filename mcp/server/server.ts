@@ -8,17 +8,25 @@ import {
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
+import { describeMcpSurfaceToolNames } from "@/server/tools";
+import {
+  DEFAULT_MCP_REGISTRATION_PROFILE,
+  type McpRegistrationProfile,
+} from "@/lib/registrationProfile";
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must
  * know why foreign-phase tools are absent before it attempts discovery.
  */
 export function buildMcpServerInstructions(
-  phase: McpAuthoringPhase
+  phase: McpAuthoringPhase,
+  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): string {
+  const allowedTools = describeMcpSurfaceToolNames(profile, phase);
   return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
-    phase
-  )} CORE: lifecycle/read/selection/history/capture/export.`;
+    phase,
+    allowedTools
+  )} Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
 }
 
 export const MCP_SERVER_INSTRUCTIONS = buildMcpServerInstructions(
@@ -27,7 +35,8 @@ export const MCP_SERVER_INSTRUCTIONS = buildMcpServerInstructions(
 
 /** Create one request-owned MCP server instance. */
 export function createServer(
-  phase: McpAuthoringPhase = getActiveMcpAuthoringPhase()
+  phase: McpAuthoringPhase = getActiveMcpAuthoringPhase(),
+  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): McpServer {
   return new McpServer(
     {
@@ -35,7 +44,7 @@ export function createServer(
       version: PRODUCT_VERSION,
     },
     {
-      instructions: buildMcpServerInstructions(phase),
+      instructions: buildMcpServerInstructions(phase, profile),
     }
   );
 }

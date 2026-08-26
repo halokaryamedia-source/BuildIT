@@ -10,7 +10,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
 
     expect(source).toContain("sessionIdGenerator: undefined");
     expect(source).toContain("enableJsonResponse: true");
-    expect(source).toContain("const requestServer = createMcpServer()");
+    expect(source).toContain("const requestServer = createMcpServer(");
     expect(source).toContain("registerToolsOnServer(requestServer)");
     expect(source).toContain("registerResourcesOnServer(requestServer)");
     expect(source).toContain("registerPromptsOnServer(requestServer)");

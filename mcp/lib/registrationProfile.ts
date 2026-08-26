@@ -13,6 +13,7 @@ export type McpRegistrationFamily =
   | "material_instances"
   | "paint"
   | "project"
+  | "phase_control"
   | "textures"
   | "ui"
   | "validator_resources";
@@ -40,6 +41,7 @@ export const BEDROCK_ENTITY_REGISTRATION_FAMILIES = [
   "material_instances",
   "paint",
   "project",
+  "phase_control",
   "textures",
   "validator_resources",
 ] as const satisfies readonly McpRegistrationFamily[];

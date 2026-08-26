@@ -22,6 +22,8 @@ Reuse fresh tool state. Do not inspect every Cube, capture after every mutation,
 
 Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
+For new Geometry, use the stable direct method: create the project, add only the required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
+
 ## Simple Rigid Fast Path
 
 For a clear predominantly rigid object with simple topology and no material cross-view conflict:
@@ -41,9 +43,11 @@ Use structured evidence maps only when ambiguity/conflict can materially change 
 
 ## Geometry / Visual Gate
 
-Before exact coordinates, know primary masses, required counts, topology/contact, important negative spaces, representation, and transform ownership. A semantic label never authorizes coordinates.
+The reference-grounded planning/compiler experiment is retired from the default workflow. Do not require `evidence_map`, `reference_grounded_v1`, generic role namespaces, or construction strategies for ordinary Geometry authoring. Use direct Group/Cube tools and judge the resulting form visually.
 
-Build coherent primary form with `place_cube(elements=[...])` and only required Groups. Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
+For ordinary Geometry, use direct explicit authoring. Decide the primary masses, required counts, parent/contact relationships, important negative spaces, and transforms before mutation. Then create only the necessary Groups and Cubes in a coherent batch. Do not require a planning schema, evidence map, role namespace, compiler strategy, or automatic coordinate inference.
+
+Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
 
 Judge reference fidelity **difference-first** with fresh model views. Check identity, masses/counts, silhouette/proportion, depth, orientation, contact, and negative spaces.
 
@@ -111,8 +115,8 @@ Texture mutation makes evidence stale. `FAIL` → smallest causal correction →
 
 ```text
 project absent              → create_project
-clear rigid build           → modelling fast path → place_cube/add_group → capture_model_views
-observed geometry mismatch  → inspect only missing state → modify_cube / modify_cubes_batch
+new reference geometry      → create_project → add_group/place_cube/modify_group/modify_cube → capture_model_views
+observed geometry mismatch  → inspect affected element → modify_cube/modify_cubes_batch/modify_group → affected capture_model_views
 UV Layout                   → returned box_uv_region → final UV lock → list_textures audit
 Texture Atlas               → create_texture / activate_texture
 Texture Styling             → Painter tools / material configuration

@@ -4,6 +4,7 @@ import {
   MCP_AUTHORING_PHASES,
   MCP_HANDOFF_REQUIRED,
   buildMcpPhaseHandoffContract,
+  buildMcpPhasePromptHeader,
   classifyMcpToolPhase,
   getMcpPhaseReadinessSummary,
   resolveMcpAuthoringPhase,
@@ -96,6 +97,42 @@ describe("authoring phase MCP surface", () => {
           .filter((toolName) => getToolRegistrationFamily(toolName) !== undefined)
           .sort();
         expect(enabledProductionTools).toEqual([...phaseSurface(phase)].sort());
+      }
+    } finally {
+      applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);
+    }
+  });
+
+  test("runtime phase contract header includes exact allowed-tools list", () => {
+    for (const phase of MCP_AUTHORING_PHASES) {
+      const expected = getMcpSurfaceToolNames("bedrock_entity", phase);
+      const header = buildMcpPhasePromptHeader(phase, expected);
+      expect(header).toContain(`Allowed tools (${expected.length}):`);
+      for (const toolName of expected.slice(0, 3)) {
+        expect(header).toContain(toolName);
+      }
+    }
+  });
+
+  test("legacy-risk tools stay maintenance-only and never enter active surface", () => {
+    const legacyRiskTools = [
+      "from_geo_json",
+      "risky_eval",
+      "filter_by_material",
+      "capture_app_screenshot",
+      "set_camera_angle",
+      "apply_texture",
+    ];
+
+    try {
+      for (const profile of ["bedrock_entity", "extended"] as const) {
+        for (const phase of MCP_AUTHORING_PHASES) {
+          applyMcpToolSurface(profile, phase);
+          const exposed = getMcpSurfaceToolNames(profile, phase);
+          for (const legacyTool of legacyRiskTools) {
+            expect(exposed).not.toContain(legacyTool);
+          }
+        }
       }
     } finally {
       applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);

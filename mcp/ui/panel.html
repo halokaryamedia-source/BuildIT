@@ -8,14 +8,10 @@
             <dd><a :href="server.repositoryUrl" target="_blank"
                     rel="noopener noreferrer">{{server.version}}</a>
             </dd>
-            <dt>Profile</dt>
-            <dd>{{server.profile}}</dd>
-            <dt>Authoring Phase</dt>
+            <dt>{{tl('mcp.server.type')}}</dt>
+            <dd>{{server.type}}</dd>
+            <dt>{{tl('mcp.server.phase')}}</dt>
             <dd>{{server.authoringPhase}}</dd>
-            <dt>Endpoint</dt>
-            <dd>{{server.endpoint}}</dd>
-            <dt>Transport</dt>
-            <dd>{{server.transport}}</dd>
         </dl>
     </details>
     <details name="mcp_panel" @toggle="onToolsToggle">

@@ -9,6 +9,13 @@ import {
   vector3Schema,
 } from "@/lib/zodObjects";
 import { requireOpenProject } from "@/lib/util";
+import {
+  bindGeometryRole,
+  requireBoundGeometryTarget,
+  requireGeometryRoleAvailable,
+  requirePlanForOpenProject,
+  requireRotationIntent,
+} from "@/lib/geometryPlan";
 
 export const removeElementParameters = z.object({
   id: elementIdSchema.describe(
@@ -130,6 +137,7 @@ export const getSelectionParameters = z.object({});
 
 export const addGroupParameters = z
   .object({
+    plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
     name: z
       .string()
       .min(1)
@@ -218,6 +226,7 @@ export const listOutlineParameters = z.object({
 });
 
 export const duplicateElementParameters = z.object({
+  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
   id: elementIdSchema.describe(
     "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
   ),
@@ -241,11 +250,37 @@ export const renameElementParameters = z.object({
     .describe("Non-empty new name to assign."),
 });
 
+export const modifyGroupParameters = z
+  .object({
+    plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
+    id: z.string().min(1).describe("Exact Group UUID or unique exact name."),
+    origin: finiteElementVector3Schema.optional().describe("New Group pivot/origin."),
+    rotation: finiteElementVector3Schema.optional().describe("New Group rotation [x,y,z]."),
+    visibility: z.boolean().optional().describe("New Group visibility."),
+  })
+  .strict()
+  .refine(
+    (update) =>
+      update.origin !== undefined ||
+      update.rotation !== undefined ||
+      update.visibility !== undefined,
+    { message: "modify_group requires an origin, rotation, or visibility change." }
+  );
+
+export const reparentElementParameters = z.object({
+  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
+  id: elementIdSchema.describe("Exact Cube or Group UUID or unique exact name."),
+  parent: z
+    .string()
+    .min(1)
+    .describe("New parent Group UUID or unique exact name; use `root` for root placement."),
+});
+
 export const elementToolDocs: ToolSpec[] = [
   {
     name: "remove_element",
     description:
-      "Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.",
+      "Removes one explicit Cube, Group, or outliner target with Undo support.",
     annotations: {
       title: "Remove Element",
       destructiveHint: true,
@@ -256,7 +291,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "add_group",
     description:
-      "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent; batch coherent bones with `groups` in one Undo unit. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
+      "Adds one or more Bedrock Groups/bones with optional parent, pivot, and rotation.",
     annotations: {
       title: "Add Group",
       destructiveHint: true,
@@ -267,7 +302,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "list_outline",
     description:
-      "Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.",
+      "Lists a bounded Cube/Group hierarchy and reports truncation.",
     annotations: {
       title: "List Outline",
       readOnlyHint: true,
@@ -278,7 +313,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "duplicate_element",
     description:
-      "Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.",
+      "Duplicates one explicit Cube/Group with optional offset and root name.",
     annotations: { title: "Duplicate Element", destructiveHint: true },
     parameters: duplicateElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -286,7 +321,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "rename_element",
     description:
-      "Renames one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
+      "Renames one explicit Cube, Group, or outliner target.",
     annotations: { title: "Rename Element", destructiveHint: true },
     parameters: renameElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -294,7 +329,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "find_elements_by_criteria",
     description:
-      "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.",
+      "Searches Cubes/Groups by identity, type, parent, size, or selection with bounded results.",
     annotations: {
       title: "Find Elements by Criteria",
       readOnlyHint: true,
@@ -305,7 +340,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "select_all_of_type",
     description:
-      "Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.",
+      "Selects all Cubes or Groups of one type for workflows that require editor selection.",
     annotations: {
       title: "Select All of Type",
       destructiveHint: false,
@@ -316,7 +351,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "filter_by_material",
     description:
-      "Legacy generic raw face.texture discovery. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and effective face texture comes from Texture.getDefault(), not per-face texture identity.",
+      "Legacy raw face-material lookup. Disabled on the Bedrock Entity surface.",
     annotations: {
       title: "Filter Elements by Material",
       readOnlyHint: true,
@@ -327,13 +362,29 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "get_selection",
     description:
-      "Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.",
+      "Returns current Cube/Group selection and active Texture when editor selection matters.",
     annotations: {
       title: "Get Selection",
       readOnlyHint: true,
     },
     parameters: getSelectionParameters,
     status: STATUS_STABLE,
+  },
+  {
+    name: "modify_group",
+    description:
+      "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+    annotations: { title: "Modify Group", destructiveHint: true },
+    parameters: modifyGroupParameters,
+    status: STATUS_STABLE,
+  },
+  {
+    name: "reparent_element",
+    description:
+      "Moves one explicit Cube or Group to a new parent. Rejects self/circular hierarchy; local transform is preserved.",
+    annotations: { title: "Reparent Element", destructiveHint: true },
+    parameters: reparentElementParameters,
+    status: STATUS_EXPERIMENTAL,
   },
 ];
 
@@ -626,8 +677,9 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
-    async execute({ name, origin, rotation, parent, groups }) {
+    async execute({ plan_id, name, origin, rotation, parent, groups }) {
       requireOpenProject("adding a Group");
+      const plan = requirePlanForOpenProject(plan_id);
       const batch =
         groups ??
         [
@@ -638,6 +690,14 @@ export function registerElementTools() {
             parent,
           },
         ];
+      batch.forEach((entry) =>
+        requireGeometryRoleAvailable(plan, entry.name, "Group", "group")
+      );
+      batch.forEach((entry) => {
+        if (entry.rotation?.some((value) => value !== 0)) {
+          requireRotationIntent(plan, entry.name, "group");
+        }
+      });
 
       Undo.initEdit({
         elements: [],
@@ -673,8 +733,6 @@ export function registerElementTools() {
         groups: created.map((group) => ({
           uuid: group.uuid,
           name: group.name,
-          origin: [...group.origin],
-          rotation: [...group.rotation],
           parent: group.parent instanceof Group ? group.parent.uuid : "root",
         })),
         ...(groups
@@ -692,6 +750,7 @@ export function registerElementTools() {
               },
             }),
       };
+      created.forEach((group) => bindGeometryRole(plan, group.name, group.uuid, "group"));
       return {
         content: [
           {
@@ -787,8 +846,14 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[3].name, {
     ...elementToolDocs[3],
-    async execute({ id, offset, newName }) {
+    async execute({ plan_id, id, offset, newName }) {
       requireOpenProject("duplicating an element");
+      const plan = requirePlanForOpenProject(plan_id);
+      requireBoundGeometryTarget(plan, id, "Element duplication");
+      if (!newName) {
+        throw new Error("duplicate_element requires newName when a Geometry plan is active.");
+      }
+      requireGeometryRoleAvailable(plan, newName, "Duplicate");
       const element = resolveUniqueDestructiveElement(id);
       if (!(element instanceof Cube) && !(element instanceof Group)) {
         throw new Error(
@@ -840,6 +905,19 @@ export function registerElementTools() {
 
       preflightDuplicateTranslation(element, offset);
 
+      const plannedDuplicateRoles: string[] = [];
+      function collectDuplicateRoles(el: any, isRoot: boolean): void {
+        const name = isRoot && newName ? newName : `${el.name}_copy`;
+        plannedDuplicateRoles.push(name);
+        if (el instanceof Group) {
+          el.children.forEach((child: any) => collectDuplicateRoles(child, false));
+        }
+      }
+      collectDuplicateRoles(element, true);
+      plannedDuplicateRoles.forEach((role) =>
+        requireGeometryRoleAvailable(plan, role, "Duplicate subtree")
+      );
+
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
       let dup: Cube | Group;
       try {
@@ -853,6 +931,17 @@ export function registerElementTools() {
 
       Canvas.updateAll();
       const result = { element: elementContinuationState(dup) };
+      const duplicatedElements: Array<Cube | Group> = [];
+      function collectDuplicatedElements(el: any): void {
+        if (el instanceof Cube || el instanceof Group) {
+          duplicatedElements.push(el);
+        }
+        if (el instanceof Group) {
+          el.children.forEach((child: any) => collectDuplicatedElements(child));
+        }
+      }
+      collectDuplicatedElements(dup);
+      duplicatedElements.forEach((item) => bindGeometryRole(plan, item.name, item.uuid, item instanceof Group ? "group" : "cube"));
       return {
         content: [
           {
@@ -1088,4 +1177,153 @@ export function registerElementTools() {
       );
     },
   }, elementToolDocs[8].status);
+
+  createTool("modify_group", {
+    name: "modify_group",
+    description:
+      "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+    annotations: { title: "Modify Group", destructiveHint: true },
+    parameters: modifyGroupParameters,
+    async execute({ plan_id, id, origin, rotation, visibility }) {
+      requireOpenProject("modifying a Group");
+      const plan = requirePlanForOpenProject(plan_id);
+      requireBoundGeometryTarget(plan, id, "Group correction");
+      if (rotation?.some((value) => value !== 0)) {
+        requireRotationIntent(plan, id, "group");
+      }
+      const group = resolveCoreGroup(
+        id,
+        "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended Group UUID."
+      );
+      const sameOrigin =
+        origin === undefined ||
+        (origin[0] === group.origin[0] &&
+          origin[1] === group.origin[1] &&
+          origin[2] === group.origin[2]);
+      const sameRotation =
+        rotation === undefined ||
+        (rotation[0] === group.rotation[0] &&
+          rotation[1] === group.rotation[1] &&
+          rotation[2] === group.rotation[2]);
+      const sameVisibility =
+        visibility === undefined || visibility === group.visibility;
+      if (sameOrigin && sameRotation && sameVisibility) {
+        throw new Error(
+          `modify_group request for Group ${group.name} (${group.uuid}) has no authored effect.`
+        );
+      }
+
+      const changedFields = [
+        origin !== undefined && !sameOrigin ? "origin" : null,
+        rotation !== undefined && !sameRotation ? "rotation" : null,
+        visibility !== undefined && !sameVisibility ? "visibility" : null,
+      ].filter((field): field is string => field !== null);
+
+      Undo.initEdit({
+        elements: [],
+        groups: [group],
+        outliner: true,
+        collections: [],
+      });
+      try {
+        if (origin !== undefined && !sameOrigin) {
+          group.transferOrigin(origin as [number, number, number]);
+        }
+        group.extend({
+          ...(rotation !== undefined && !sameRotation
+            ? { rotation: rotation as [number, number, number] }
+            : {}),
+          ...(visibility !== undefined && !sameVisibility ? { visibility } : {}),
+        });
+        Undo.finishEdit("Agent modified group");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
+      Canvas.updateAll();
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Modified Group ${group.name} (${group.uuid}); changed: ${changedFields.join(", ")}.`,
+          },
+        ],
+        structuredContent: {
+          execution: "applied" as const,
+          id: group.uuid,
+          name: group.name,
+          changed_fields: changedFields,
+        },
+      };
+    },
+  }, STATUS_STABLE);
+
+  createTool("reparent_element", {
+    name: "reparent_element",
+    description:
+      "Moves one explicit Cube or Group to a new parent. Rejects self/circular hierarchy; local transform is preserved.",
+    annotations: { title: "Reparent Element", destructiveHint: true },
+    parameters: reparentElementParameters,
+    async execute({ plan_id, id, parent }) {
+      requireOpenProject("reparenting an element");
+      const plan = requirePlanForOpenProject(plan_id);
+      requireBoundGeometryTarget(plan, id, "Hierarchy correction");
+      const element = resolveUniqueDestructiveElement(id);
+      const nextParent = resolveParentGroup(parent);
+      const previousParent =
+        element.parent instanceof Group ? element.parent : "root";
+
+      if (nextParent !== "root") {
+        if (nextParent === element) {
+          throw new Error("An element cannot be parented to itself.");
+        }
+        if (element instanceof Group && isDescendantOf(nextParent, element)) {
+          throw new Error("A Group cannot be reparented into its own descendant.");
+        }
+      }
+      if (previousParent === nextParent) {
+        throw new Error(
+          `reparent_element request for ${element.name} (${element.uuid}) has no authored effect.`
+        );
+      }
+
+      Undo.initEdit({
+        elements: element instanceof Group ? [] : [element],
+        groups: element instanceof Group ? [element] : [],
+        outliner: true,
+        collections: [],
+      });
+      try {
+        element.addTo(nextParent);
+        Undo.finishEdit("Agent reparented element");
+      } catch (error) {
+        Undo.cancelEdit(true);
+        Canvas.updateAll();
+        throw error;
+      }
+
+      Canvas.updateAll();
+      const currentParent =
+        element.parent instanceof Group ? element.parent.uuid : "root";
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Reparented ${element.name} (${element.uuid}): ${previousParent === "root" ? "root" : previousParent.uuid} -> ${currentParent}. Local transform preserved.`,
+          },
+        ],
+        structuredContent: {
+          execution: "applied" as const,
+          id: element.uuid,
+          name: element.name,
+          previous_parent:
+            previousParent === "root" ? "root" : previousParent.uuid,
+          parent: currentParent,
+          transform_policy: "preserve_local",
+        },
+      };
+    },
+  }, STATUS_EXPERIMENTAL);
 }

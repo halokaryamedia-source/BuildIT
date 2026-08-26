@@ -1,7 +1,8 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 
-import { tools, prompts } from "@/lib/factories";
+import { createTool, tools, prompts } from "@/lib/factories";
+import { z } from "zod";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   getRegistrationFamilies,
@@ -14,6 +15,7 @@ import {
   setActiveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
+import { invalidateToolRegistrationRuntimeCaches } from "@/lib/factories";
 
 // Import tool registration functions
 import { registerCameraTools } from "./tools/camera";
@@ -71,10 +73,47 @@ const registrationFunctions: Record<
   material_instances: registerMaterialInstanceTools,
   paint: registerPaintTools,
   project: registerProjectTools,
+  phase_control: registerPhaseControlTool,
   textures: registerTextureTools,
   ui: registerUITools,
   validator_resources: registerValidatorResources,
 };
+
+let activeRegistrationProfile: McpRegistrationProfile =
+  DEFAULT_MCP_REGISTRATION_PROFILE;
+
+function registerPhaseControlTool(): void {
+  createTool(
+    "switch_authoring_phase",
+    {
+      description:
+        "Switches the active MCP authoring phase in-process for the next request. Use only for an explicit phase handoff.",
+      parameters: z.object({
+        target_phase: z.enum(["geometry", "texturing", "animation"]),
+        reason: z.string().min(1),
+        resume_from: z.string().min(1),
+      }),
+      async execute({ target_phase, reason, resume_from }) {
+        applyMcpToolSurface(activeRegistrationProfile, target_phase);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Authoring phase switched to ${target_phase}; future requests use the new surface.`,
+            },
+          ],
+          structuredContent: {
+            phase: target_phase,
+            reason,
+            resume_from,
+            reload_required: false,
+          },
+        };
+      },
+    },
+    "stable"
+  );
+}
 
 /**
  * Tracks family registration within this plugin load so an explicit extended
@@ -84,6 +123,7 @@ const registrationFunctions: Record<
 const registeredFamilies = new Set<McpRegistrationFamily>();
 const toolRegistrationFamily = new Map<string, McpRegistrationFamily>();
 const catalogToolEnabled = new Map<string, boolean>();
+const phaseSurfaceCache = new Map<string, readonly string[]>();
 
 function registerFamily(family: McpRegistrationFamily): void {
   if (registeredFamilies.has(family)) return;
@@ -97,14 +137,30 @@ function registerFamily(family: McpRegistrationFamily): void {
     toolRegistrationFamily.set(name, family);
     catalogToolEnabled.set(name, tool.enabled);
   }
+
+  phaseSurfaceCache.clear();
+}
+
+function surfaceCacheKey(profile: McpRegistrationProfile, phase: McpAuthoringPhase): string {
+  return `${profile}|${phase}`;
+}
+
+export function describeMcpSurfaceToolNames(
+  profile: McpRegistrationProfile,
+  phase: McpAuthoringPhase
+): readonly string[] {
+  return getMcpSurfaceToolNames(profile, phase);
 }
 
 export function registerMcpProfile(
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): void {
+  activeRegistrationProfile = profile;
   for (const family of getRegistrationFamilies(profile)) {
     registerFamily(family);
   }
+
+  phaseSurfaceCache.clear();
 }
 
 export function getToolRegistrationFamily(
@@ -126,11 +182,17 @@ export function getMcpSurfaceToolNames(
   profile: McpRegistrationProfile,
   phase: McpAuthoringPhase
 ): string[] {
-  const allowedFamilies = new Set(getRegistrationFamilies(profile));
+  const cacheKey = surfaceCacheKey(profile, phase);
+  const cached = phaseSurfaceCache.get(cacheKey);
+  if (cached) return [...cached];
 
-  return [...catalogToolEnabled.entries()]
-    .filter(([toolName, authoredEnabled]) => {
+  const allowedFamilies = new Set(getRegistrationFamilies(profile));
+  const names = Array.from(catalogToolEnabled.entries())
+    .map(([toolName]) => toolName)
+    .filter((toolName) => {
+      const authoredEnabled = catalogToolEnabled.get(toolName);
       if (!authoredEnabled) return false;
+
       const family = toolRegistrationFamily.get(toolName);
       return Boolean(
         family &&
@@ -138,8 +200,10 @@ export function getMcpSurfaceToolNames(
           isMcpToolExposedForPhase(toolName, family, phase)
       );
     })
-    .map(([toolName]) => toolName)
     .sort((a, b) => a.localeCompare(b));
+
+  phaseSurfaceCache.set(cacheKey, names);
+  return [...names];
 }
 
 /**
@@ -159,6 +223,9 @@ export function applyMcpToolSurface(
     if (!tool) continue;
     tool.enabled = authoredEnabled && exposed.has(toolName);
   }
+
+  phaseSurfaceCache.clear();
+  invalidateToolRegistrationRuntimeCaches();
 }
 
 // Register the full normal Bedrock catalog at module load. Actual plugin startup
