@@ -158,7 +158,7 @@ export function buildMcpPhaseRuntimeContract(
     ...(phase === "geometry" ? [GEOMETRY_SUBGROUP_ROUTING] : []),
     `${PHASE_FOREIGN_SUMMARY[phase]} Their tools are intentionally unavailable.`,
     "Do not tool_search for, emulate, rename, or substitute a foreign-phase tool.",
-    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="switch_authoring_phase to <phase>", then STOP.${allowedToolsText}`,
+    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="set phase=<phase>; reload/reconnect", then STOP.${allowedToolsText}`,
   ].join(" ");
 }
 
@@ -223,10 +223,8 @@ export function classifyMcpToolPhase(
   if (family === "animation_inspection") return "animation";
 
   if (family === "animation") {
-    // Rig/pivot mutation is an explicit opt-in support route. The normal
-    // Geometry surface uses the plan-bound Group tools instead, so this legacy
-    // tool must not be surfaced merely because the phase is Geometry.
-    return toolName === "bone_rigging" ? null : "animation";
+    // Rig/pivot mutation belongs to Geometry; authored motion remains Animation.
+    return toolName === "bone_rigging" ? "geometry" : "animation";
   }
 
   if (family === "elements") {

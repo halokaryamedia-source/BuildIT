@@ -18,6 +18,25 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(factories).toContain("registerToolsOnServer");
   });
 
+  test("plugin uses unique install identity and does not report ready before TCP bind", async () => {
+    const index = await source("index.ts");
+    const tools = await source("server/tools.ts");
+
+    expect(index).toContain('BBPlugin.register("blockit_mcp"');
+    expect(index).toContain('startingServer.once("listening"');
+    expect(index).toContain('startingServer.once("error"');
+    expect(index).toContain("BlockIT will not enter ready state");
+    expect(index.indexOf('startingServer.once("listening"')).toBeLessThan(
+      index.indexOf("uiSetup({")
+    );
+
+    expect(tools).not.toContain(
+      "applyMcpToolSurface(activeRegistrationProfile, target_phase)"
+    );
+    expect(tools).toContain("surface_changed: false");
+    expect(tools).toContain("reload_required: true");
+  });
+
   test("plugin unload owns sockets, CSS, dialogs and settings references", async () => {
     const index = await source("index.ts");
     const net = await source("server/net.ts");

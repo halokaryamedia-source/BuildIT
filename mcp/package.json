@@ -8,6 +8,9 @@
   ],
   "license": "GPL-3.0-only",
   "author": "Halo Karya Media",
+  "contributors": [
+    "Jason J. Gardner"
+  ],
   "type": "module",
   "main": "dist/mcp.js",
   "scripts": {

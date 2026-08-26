@@ -87,26 +87,27 @@ function registerPhaseControlTool(): void {
     "switch_authoring_phase",
     {
       description:
-        "Switches the active MCP authoring phase in-process for the next request. Use only for an explicit phase handoff.",
+        "Prepares an explicit authoring-phase handoff. It does not mutate the live tool surface; set the Blockbench MCP Authoring Phase setting, reload BlockIT, and reconnect the MCP client.",
       parameters: z.object({
         target_phase: z.enum(["geometry", "texturing", "animation"]),
         reason: z.string().min(1),
         resume_from: z.string().min(1),
       }),
       async execute({ target_phase, reason, resume_from }) {
-        applyMcpToolSurface(activeRegistrationProfile, target_phase);
         return {
           content: [
             {
               type: "text" as const,
-              text: `Authoring phase switched to ${target_phase}; future requests use the new surface.`,
+              text: `Phase handoff prepared for ${target_phase}. The current MCP surface is unchanged. Set Blockbench MCP Authoring Phase=${target_phase}, reload BlockIT, then reconnect the MCP client.`,
             },
           ],
           structuredContent: {
             phase: target_phase,
             reason,
             resume_from,
-            reload_required: false,
+            surface_changed: false,
+            reload_required: true,
+            action: `set MCP Authoring Phase=${target_phase}; reload BlockIT MCP; reconnect client`,
           },
         };
       },

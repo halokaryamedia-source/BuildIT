@@ -40,7 +40,7 @@ import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
 
-BBPlugin.register("mcp", {
+BBPlugin.register("blockit_mcp", {
   version: VERSION,
   title: PRODUCT_NAME,
   author: "Halo Karya Media",
@@ -125,6 +125,46 @@ BBPlugin.register("mcp", {
       profile: registrationProfile,
       phase: authoringPhase,
     });
+
+    // A plugin instance is not ready merely because createNetServer returned.
+    // Wait for the actual TCP bind. If an older BlockIT/MCP instance still owns
+    // the port, fail closed instead of showing a fresh UI backed by a stale server.
+    const startingServer = httpServer;
+    try {
+      if (!startingServer.listening) {
+        await new Promise<void>((resolve, reject) => {
+          const cleanup = () => {
+            startingServer.off("listening", onListening);
+            startingServer.off("error", onError);
+          };
+          const onListening = () => {
+            cleanup();
+            resolve();
+          };
+          const onError = (error: Error) => {
+            cleanup();
+            reject(error);
+          };
+          startingServer.once("listening", onListening);
+          startingServer.once("error", onError);
+        });
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      console.error(
+        `[MCP] Server failed to bind; BlockIT will not enter ready state: ${reason}`
+      );
+      startingServer.closeActiveSockets();
+      if (startingServer.listening) {
+        startingServer.close();
+      }
+      httpServer = null;
+      Blockbench.showQuickMessage(
+        `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${rawPort}.`,
+        6000
+      );
+      return;
+    }
 
     uiSetup({
       tools,
