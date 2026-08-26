@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-25 — Codex Bedrock first-call legibility verified
+Updated: 2026-08-26 — Hunyuan Route 1 experimental source foundation applied
 
 ## Current State
 
@@ -22,8 +22,9 @@ LEGACY_CONTRACT_TEST_RECONCILIATION_COMPLETE
 CURRENT_FULL_MCP_VERIFY_GREEN
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASE_REQUIRED
 LIVE_RETEST_DEFERRED_BY_USER
+ROUTE1_HUNYUAN_EXPERIMENT_SOURCE_APPLIED
+ROUTE1_HUNYUAN_LOCAL_GPU_PROOF_REQUIRED
 NO ACTIVE LOCAL ACCEPTANCE RUN
-NO ACTIVE EXPERIMENT
 NO ACTIVE DEVELOPMENT
 ```
 
@@ -111,6 +112,32 @@ mcp/tests/codex-agent-legibility-contract.test.ts
 
 Source/CI cannot prove live Blockbench visual quality or future Authoring Efficiency.
 
+## Route 1 Hunyuan Mesh Evidence — Experimental
+
+Source foundation lives under `Experimental/route1-hunyuan-poc/`. Production MCP behavior and authoring-phase ownership are unchanged.
+
+**Goal:** test whether one shape-only Hunyuan3D 2.0 reconstruction gives useful depth/volume evidence that improves the primary Blockbench form authored through the existing Geometry MCP.
+
+**Success Metric:** the accepted primary form is materially closer to the actual approved reference in silhouette, depth, proportions, part placement, and attachment relationships, with a lower Cost to Accepted Result.
+
+**Forbidden Proxy / Non-Goal:** GLB export success, polygon count, attractive mesh rendering, raw MCP-call count, static source checks, or Hunyuan execution alone do not prove improvement.
+
+**First Evidence Required:** one actual pinned local Hunyuan run on the target RTX machine, producing a fresh FRONT / SIDE / TOP / ISOMETRIC contact sheet that is visually inspected together with the actual approved reference.
+
+**Failure Classification / first wrong owner:** `UNKNOWN` until that local mesh evidence exists. If the mesh is materially wrong, classify input preparation vs Hunyuan reconstruction before any Blockbench authoring.
+
+Current next step:
+
+```text
+approved single 3/4 crop
+→ pinned Hunyuan3D-DiT-v2-0 local run
+→ fresh four-view contact sheet
+→ Gate 1 visual usefulness decision
+→ STOP before Blockbench unless Gate 1 passes
+```
+
+Do not add a solver, IoU gate, semantic mesh segmentation, multiview Hunyuan, Fast/Turbo tuning, provider routing, new MCP tools, or autonomous correction before matching runtime evidence proves that specific need.
+
 ## Texture Atlas Public Contract — Separate
 
 Candidate `2aa0a29a2f3d081a3f2765db41f2460524ff3fee` still requires rebase + canonical docs generation. Intended behavior: omitted blank base Atlas size follows project UV (fallback 128), PBR/variant support inherits base bitmap size, imports preserve authored dimensions, explicit sizes remain intentional, and public Texture/Painter semantics stay aligned.
@@ -119,8 +146,8 @@ Until that candidate lands, the agent contract requires explicit project-sized b
 
 ## Deferred Until Evidence
 
-Do not implement automatically: aggregate UV working map, Painter batching, Canvas refresh redesign, telemetry/session logger, mega-tools/dynamic phase switching, `get_phase`/`switch_phase` ritual tools, or live authoring/model tests.
+Do not implement automatically: aggregate UV working map, Painter batching, Canvas refresh redesign, telemetry/session logger, mega-tools/dynamic phase switching, `get_phase`/`switch_phase` ritual tools, live authoring/model tests, Route 1 coordinate solver, Route 1 IoU/silhouette scorer, Hunyuan multiview/Fast/Turbo variants, provider routing, new Route 1 MCP tools, or autonomous Route 1 correction.
 
 ## STOP
 
-Codex Bedrock first-call legibility hardening and CI routing are complete with full static verification. A live exact-current Codex/Blockbench run is still required to prove reduced looping or improved accepted model quality. The Texture Atlas runtime candidate remains separate.
+Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. The Hunyuan Route 1 source foundation is experimental and not runtime-verified; its only active proof boundary is the local Gate 1 Hunyuan/contact-sheet run. Do not promote Route 1 or continue into Blockbench authoring until that actual contact sheet is visually inspected against the approved reference. The Texture Atlas runtime candidate remains separate.

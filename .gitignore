@@ -30,5 +30,8 @@ docs/knowledge/.obsidian/
 # Asset Workspace transient visual/debug output. Intentional project files stay tracked.
 workspace/**/.cache/
 
+# Experimental transient runtime/proof output. Intentional harness source stays tracked.
+Experimental/**/.cache/
+
 # Legacy local workspace cache path remains ignored if an older package is opened.
 workspace/**/mcp-data/cache/
