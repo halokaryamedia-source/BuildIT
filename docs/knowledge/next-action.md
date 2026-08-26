@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-27 — Hunyuan Route 1 multiview evidence recorded
+Updated: 2026-08-27 — MCP Geometry live-connection recovery recorded
 
 ## Current State
 
@@ -25,6 +25,9 @@ LIVE_RETEST_DEFERRED_BY_USER
 ROUTE1_HUNYUAN_EXPERIMENT_SOURCE_APPLIED
 ROUTE1_HUNYUAN_GATE1_PASS
 ROUTE1_HUNYUAN_MULTIVIEW_PREFERRED
+MCP_GEOMETRY_ROUTING_FIX_COMMITTED
+MCP_PLUGIN_VERSION_BUMPED_TO_1_6_2
+MCP_LIVE_SURFACE_STILL_STALE
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE DEVELOPMENT
 ```
@@ -152,5 +155,57 @@ Until that candidate lands, the agent contract requires explicit project-sized b
 Do not implement automatically: aggregate UV working map, Painter batching, Canvas refresh redesign, telemetry/session logger, mega-tools/dynamic phase switching, `get_phase`/`switch_phase` ritual tools, live authoring/model tests, Route 1 coordinate solver, Route 1 IoU/silhouette scorer, Hunyuan multiview/Fast/Turbo variants, provider routing, new Route 1 MCP tools, or autonomous Route 1 correction.
 
 ## STOP
+
+## MCP Geometry Live-Connection Incident
+
+Source and local build are verified, but the current Codex live MCP surface has
+repeatedly exposed only `reparent_element` instead of the required Geometry
+authoring tools. This is a live connection/plugin loading problem, not a GLB
+or Hunyuan problem.
+
+Completed repository changes on `Local`:
+
+```text
+aeaa0b4  fix(mcp): expose geometry authoring tools
+920de9d  chore(mcp): invalidate cached plugin bundle (version 1.6.2)
+2b0dbd8  chore(mcp): add local rebuild helper
+```
+
+The verified bundle is:
+
+```text
+D:\Work\AI Stuff\BuildIT\mcp\dist\mcp.js
+version: 1.6.2
+required names present: add_group, place_cube, modify_cube, capture_model_views
+```
+
+The helper is `rebuild-mcp.ps1` at the workspace root. It rebuilds and checks
+the bundle, but it cannot disconnect/reconnect Codex because no local MCP
+disconnect API is exposed to this task.
+
+Live evidence at the last check:
+
+```text
+visible: reparent_element
+missing: add_group, place_cube, duplicate_element, modify_cube, capture_model_views
+```
+
+Next action for a fresh session:
+
+```text
+1. Run rebuild-mcp.ps1 from the workspace root.
+2. Remove/disable every old BlockIT MCP connection/plugin entry.
+3. Close Blockbench and Codex completely.
+4. Install only mcp\dist as plugin version 1.6.2.
+5. Create a new Codex MCP connection.
+6. Verify tools/list contains add_group, place_cube, modify_cube, and capture_model_views.
+7. STOP if any required tool is missing; do not author Geometry or continue Route 1.
+```
+
+Do not add more source patches, new MCP tools, or model changes until the live
+surface proves the required Geometry tools. If a fresh connection still shows
+only `reparent_element`, classify as `ENVIRONMENT / INSTALL` or Codex connector
+state and report the exact loaded plugin identity; source/build changes alone
+are no longer justified.
 
 Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. Route 1 remains experimental; the separated-reference MultiView GLB is the preferred local depth evidence, while SingleView and the earlier board-crop MultiView runs are rejected. This does not establish final visual quality or production promotion. Geometry MCP handoff remains conditional on MCP runtime availability. The Texture Atlas runtime candidate remains separate.
