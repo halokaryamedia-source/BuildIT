@@ -209,7 +209,7 @@ export function classifyMcpToolPhase(
   ) {
     return null;
   }
-  if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return null;
+  if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return "geometry";
   if (CORE_FAMILIES.has(family)) return "core";
 
   if (family === "cubes") return "geometry";
