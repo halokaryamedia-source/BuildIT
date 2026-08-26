@@ -11,14 +11,14 @@
     <nav class="sidebar">
       <div class="sidebar-brand">
         <h1>BlockIT — Bedrock Entity MCP</h1>
-        <p>v1.6.1 — API Reference</p>
+        <p>v1.6.2 — API Reference</p>
       </div>
 
       <input id="search" type="text" placeholder="Search tools..." class="search-input" />
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(74)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(78)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -28,13 +28,13 @@
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(3)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
         <a href="#cat-animation" class="nav-link">Animation <span class="count">(10)</span></a>
-        <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
+        <a href="#cat-elements" class="nav-link">Elements <span class="count">(15)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
-        <a href="#cat-project" class="nav-link">Project <span class="count">(3)</span></a>
+        <a href="#cat-project" class="nav-link">Project <span class="count">(5)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(13)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
       </div>
@@ -43,9 +43,9 @@
     <main class="main">
       <header class="page-header">
         <h1>BlockIT — Bedrock Entity MCP</h1>
-        <p class="subtitle">API Reference — v1.6.1</p>
+        <p class="subtitle">API Reference — v1.6.2</p>
         <nav class="stats">
-          <a href="#tools"><strong>74</strong> tools (29 stable, 45 experimental)</a>
+          <a href="#tools"><strong>78</strong> tools (32 stable, 46 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -97,6 +97,11 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
       <td class="col-name">elements</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
@@ -136,6 +141,11 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -215,6 +225,11 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
       <td class="col-name">updates</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
@@ -354,7 +369,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Animation</p>
-      <p class="card-desc">Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.</p>
+      <p class="card-desc">Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_keyframes for later Molang or keyframe edits.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -369,17 +384,17 @@ bun run docs:check
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Non-empty animation name. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Animation name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">loop</td>
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Whether the animation should loop <span class="param-meta">(default: <code>false</code>)</span></td>
+      <td class="col-desc">Loop the animation. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr><tr>
       <td class="col-name">animation_length</td>
       <td class="col-type">number</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional finite animation length in seconds (0..10000). <span class="param-meta">[min: 0, max: 10000]</span></td>
+      <td class="col-desc">Optional animation length in seconds (0..10000). <span class="param-meta">[min: 0, max: 10000]</span></td>
     </tr><tr>
       <td class="col-name">bones</td>
       <td class="col-type">Record&lt;string, object[]&gt;</td>
@@ -389,12 +404,12 @@ bun run docs:check
       <td class="col-name">particle_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Particle effects keyed by unique non-negative finite timestamps; one effect or array each.</td>
+      <td class="col-desc">Particle effects keyed by non-negative timestamps.</td>
     </tr><tr>
       <td class="col-name">sound_effects</td>
       <td class="col-type">Record&lt;string, object | object[]&gt;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Sound effects by unique non-negative timestamp; one effect or non-empty array.</td>
+      <td class="col-desc">Sound effects keyed by non-negative timestamps.</td>
     </tr></tbody>
     </table>
       </div>
@@ -408,7 +423,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Keyframes</p>
-      <p class="card-desc">Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.</p>
+      <p class="card-desc">Creates, edits, deletes, or selects keyframes for one animation bone and channel. Numeric and authored Molang values are preserved.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -433,7 +448,7 @@ bun run docs:check
       <td class="col-name">bone_name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact Group UUID or exact unique Group name to manage keyframes for. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Group UUID or unique Group name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">channel</td>
       <td class="col-type">&quot;rotation&quot; | &quot;position&quot; | &quot;scale&quot;</td>
@@ -443,7 +458,7 @@ bun run docs:check
       <td class="col-name">keyframes</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">One or more keyframes for the action; empty mutation/selection requests are rejected. <span class="param-meta">[minItems: 1]</span></td>
+      <td class="col-desc">One or more keyframes. <span class="param-meta">[minItems: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -457,7 +472,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Animation Graph Editor</p>
-      <p class="card-desc">Controls animation curves in the graph editor for fine-tuning animations.</p>
+      <p class="card-desc">Applies a curve/interpolation edit to one animation bone channel.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -477,7 +492,7 @@ bun run docs:check
       <td class="col-name">bone_name</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact Group UUID or exact unique Group name to modify curves for. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Group UUID or unique Group name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">channel</td>
       <td class="col-type">&quot;rotation&quot; | &quot;position&quot; | &quot;scale&quot;</td>
@@ -516,7 +531,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Bone Rigging</p>
-      <p class="card-desc">Creates/edits Bedrock Group bones with explicit preflighted targets. Create/parent reject hierarchy cycles; create/rename/mirror enforce case-insensitive unique bone names; delete snapshots the subtree and affected animations. `set_pivot` needs origin, `mirror` needs an axis, and `set_ik` must author an IK change while target-only edits preserve enabled state. Missing/ambiguous targets fail before mutation.</p>
+      <p class="card-desc">Creates or edits Bedrock Group hierarchy, pivots, IK, and mirroring. Use for rig structure; use add_group for normal bone creation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -550,7 +565,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Animation Timeline</p>
-      <p class="card-desc">Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.</p>
+      <p class="card-desc">Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -609,7 +624,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Batch Keyframe Operations</p>
-      <p class="card-desc">Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.</p>
+      <p class="card-desc">Applies one bounded batch operation to selected, ranged, patterned, or all keyframes.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -658,7 +673,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Animation Copy/Paste</p>
-      <p class="card-desc">Copies/pastes animation data with action-specific source/target preflight. Copy requires matching keyframes; paste rejects an empty clipboard and invalid or internally colliding snapped times; `mirror_paste` requires an explicit axis. Existing-target overwrite keeps native paste behavior.</p>
+      <p class="card-desc">Copies, pastes, or mirrors keyframes between animation bones. Copy/paste targets must be explicit; mirror_paste requires an axis.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -731,7 +746,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Animation Controller</p>
-      <p class="card-desc">Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.</p>
+      <p class="card-desc">Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -746,17 +761,17 @@ bun run docs:check
       <td class="col-name">controller_id</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Existing AnimationController UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Existing controller UUID or unique name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">create_name</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">New AnimationController name; use instead of controller_id. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">New controller name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">operations</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
-      <td class="col-desc">One to 32 ordered controller/state-machine mutations. <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
+      <td class="col-desc">Ordered controller/state mutations (1-32). <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -817,7 +832,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Remove Element</p>
-      <p class="card-desc">Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.</p>
+      <p class="card-desc">Removes one explicit Cube, Group, or outliner target with Undo support.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -846,7 +861,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Add Group</p>
-      <p class="card-desc">Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent; batch coherent bones with `groups` in one Undo unit. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.</p>
+      <p class="card-desc">Adds one or more Bedrock Groups/bones with optional parent, pivot, and rotation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -858,6 +873,11 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
@@ -895,7 +915,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Outline</p>
-      <p class="card-desc">Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.</p>
+      <p class="card-desc">Lists a bounded Cube/Group hierarchy and reports truncation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -934,7 +954,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Duplicate Element</p>
-      <p class="card-desc">Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.</p>
+      <p class="card-desc">Duplicates one explicit Cube/Group with optional offset and root name.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -946,6 +966,11 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -973,7 +998,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Rename Element</p>
-      <p class="card-desc">Renames one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.</p>
+      <p class="card-desc">Renames one explicit Cube, Group, or outliner target.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1007,7 +1032,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Find Elements by Criteria</p>
-      <p class="card-desc">Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.</p>
+      <p class="card-desc">Searches Cubes/Groups by identity, type, parent, size, or selection with bounded results.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1071,7 +1096,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Select All of Type</p>
-      <p class="card-desc">Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.</p>
+      <p class="card-desc">Selects all Cubes or Groups of one type for workflows that require editor selection.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1110,7 +1135,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Filter Elements by Material</p>
-      <p class="card-desc">Legacy generic raw face.texture discovery. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and effective face texture comes from Texture.getDefault(), not per-face texture identity.</p>
+      <p class="card-desc">Legacy raw face-material lookup. Disabled on the Bedrock Entity surface.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1149,9 +1174,97 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Selection</p>
-      <p class="card-desc">Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.</p>
+      <p class="card-desc">Returns current Cube/Group selection and active Texture when editor selection matters.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-modify_group" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">modify_group</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Modify Group</p>
+      <p class="card-desc">Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Exact Group UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">origin</td>
+      <td class="col-type">unknown[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">New Group pivot/origin. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+    </tr><tr>
+      <td class="col-name">rotation</td>
+      <td class="col-type">unknown[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">New Group rotation [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+    </tr><tr>
+      <td class="col-name">visibility</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">New Group visibility.</td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-reparent_element" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">reparent_element</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Reparent Element</p>
+      <p class="card-desc">Moves one explicit Cube or Group to a new parent. Rejects self/circular hierarchy; local transform is preserved.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Exact Cube or Group UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">parent</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">New parent Group UUID or unique exact name; use `root` for root placement. <span class="param-meta">[minLength: 1]</span></td>
+    </tr></tbody>
+    </table>
       </div>
     </div>
 <div id="tool-inspect_element" class="card tool-card">
@@ -1163,7 +1276,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Authored Element</p>
-      <p class="card-desc">Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object. UUID is preferred and exact names must be unique. Includes the type-specific transform, parent, and visibility state needed for precise correction; it does not modify selection/model state or return visual PASS/FAIL.</p>
+      <p class="card-desc">Returns focused authored state for one explicit element. Defaults to compact geometry/hierarchy data; request UV detail only when mapping needs inspection.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1179,6 +1292,11 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">detail</td>
+      <td class="col-type">&quot;geometry&quot; | &quot;uv&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Geometry transform by default; request `uv` only when UV mapping needs inspection. <span class="param-meta">(default: <code>&quot;geometry&quot;</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2351,6 +2469,154 @@ bun run docs:check
         <p class="empty-params">No parameters</p>
       </div>
     </div>
+<div id="tool-prepare_geometry_plan" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">prepare_geometry_plan</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+
+        </div>
+      </div>
+      <p class="card-title">Prepare Geometry Plan</p>
+      <p class="card-desc">Legacy Geometry planning tool. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer the basic Group/Cube authoring tools for direct, explicit construction.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">plan_version</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">role_namespace</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">evidence_map</td>
+      <td class="col-type">object</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">reference_identity</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"> <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">reference_views</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"> <span class="param-meta">[minItems: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">front_direction</td>
+      <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">up_direction</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;+y&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">scale</td>
+      <td class="col-type">object</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">World-scale anchor using the 1.8-block Minecraft player baseline.</td>
+    </tr><tr>
+      <td class="col-name">envelope</td>
+      <td class="col-type">object</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">proportion_targets</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Reference-derived normalized bounds for every role entering the first build. <span class="param-meta">[minItems: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">group_roles</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">geometry_roles</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">landmarks</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">attachments</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">rotation_parts</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">construction_strategy</td>
+      <td class="col-type">object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">symmetry</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>{&quot;enabled&quot;:false,&quot;axis&quot;:&quot;x&quot;,&quot;tolerance&quot;:0.01}</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">first_build_scope</td>
+      <td class="col-type">string[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"> <span class="param-meta">[minItems: 1]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-compile_geometry_spec" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">compile_geometry_spec</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Compile Geometry Spec</p>
+      <p class="card-desc">Legacy Geometry compiler. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer explicit Group/Cube authoring and capture the result for visual review.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">plan_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">detail_level</td>
+      <td class="col-type">&quot;blockout&quot; | &quot;primary&quot; | &quot;refined&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;primary&quot;</code>)</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
         </section>
 <section id="cat-textures" class="category-section">
           <h3 class="category-title">Textures</h3>
@@ -2363,7 +2629,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Texture</p>
-      <p class="card-desc">Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.</p>
+      <p class="card-desc">Creates a texture and returns compact metadata. Use get_texture only when image data is needed.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2437,7 +2703,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Apply Texture</p>
-      <p class="card-desc">Legacy generic per-face Texture.apply wrapper. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and Blockbench hides per-face apply actions there; use activate_texture for the active/default texture.</p>
+      <p class="card-desc">Legacy per-face texture wrapper. Disabled on the normal Bedrock Entity surface; use activate_texture.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2476,7 +2742,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Add Texture Group</p>
-      <p class="card-desc">Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.</p>
+      <p class="card-desc">Adds a uniquely named TextureGroup.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2515,7 +2781,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Textures</p>
-      <p class="card-desc">Returns a read-only list of all textures in the Blockbench editor, including identity/group metadata and the current render_mode/render_sides settings.</p>
+      <p class="card-desc">Lists texture identity, group metadata, and render settings.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2529,7 +2795,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Texture</p>
-      <p class="card-desc">Returns image data for the default texture when no texture is specified. Explicit texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before image data is returned.</p>
+      <p class="card-desc">Returns image data for the selected or explicitly identified texture.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2558,7 +2824,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create PBR Material</p>
-      <p class="card-desc">Creates a uniquely named PBR material TextureGroup. Color and MER each accept one effective source (texture or uniform), and depth accepts normal or height; contradictory sources fail before Undo.</p>
+      <p class="card-desc">Creates a uniquely named PBR material TextureGroup.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2622,7 +2888,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Configure Material</p>
-      <p class="card-desc">Configures one explicit PBR material with at least one authored change. Explicit texture + uniform conflicts and simultaneous normal+height sources fail at the MCP boundary; `none` remains the explicit switch to uniform/remove behavior.</p>
+      <p class="card-desc">Applies authored changes to one PBR material.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2700,7 +2966,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Get Material Info</p>
-      <p class="card-desc">Gets detailed information about one explicit material/texture group, including the compiled texture_set.json preview for Bedrock export. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before material data is read.</p>
+      <p class="card-desc">Returns detailed metadata for one PBR material, including its Bedrock texture-set preview.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2729,7 +2995,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Import Texture Set</p>
-      <p class="card-desc">Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.</p>
+      <p class="card-desc">Imports one Bedrock texture_set.json and returns the created material identity.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2758,7 +3024,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Assign Texture Channel</p>
-      <p class="card-desc">Assigns one explicit Texture to one PBR channel. Material/Texture references resolve before Undo; exact no-op assignments are rejected, while existing competing textures on that channel remain part of the native edit behavior.</p>
+      <p class="card-desc">Assigns one texture to one PBR channel.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2797,7 +3063,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Save Material Config</p>
-      <p class="card-desc">Saves one explicit material/texture group's Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.</p>
+      <p class="card-desc">Saves one material as a Bedrock texture_set.json file.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2826,7 +3092,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Activate Texture</p>
-      <p class="card-desc">Activates one explicit texture in the Blockbench texture panel. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous references fail before the active texture selection changes. Subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) then target the activated texture by default.</p>
+      <p class="card-desc">Activates one texture for subsequent paint operations.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -3070,7 +3336,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-24T08:52:36.780Z from Zod schemas
+        Generated 2026-08-26T20:09:26.667Z from Zod schemas
       </footer>
     </main>
   </div>

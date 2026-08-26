@@ -1,6 +1,6 @@
 {
-  "version": "1.6.1",
-  "generatedAt": "2026-08-24T08:52:36.780Z",
+  "version": "1.6.2",
+  "generatedAt": "2026-08-26T20:09:26.667Z",
   "tools": [
     {
       "name": "place_cube",
@@ -17,6 +17,12 @@
           "place_cube": {
             "type": "object",
             "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
               "elements": {
                 "type": "array",
                 "items": {
@@ -189,6 +195,7 @@
               }
             },
             "required": [
+              "plan_id",
               "elements"
             ],
             "additionalProperties": false
@@ -212,6 +219,12 @@
           "modify_cube": {
             "type": "object",
             "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -338,6 +351,7 @@
               }
             },
             "required": [
+              "plan_id",
               "id"
             ],
             "additionalProperties": false
@@ -361,6 +375,12 @@
           "modify_cubes_batch": {
             "type": "object",
             "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
               "updates": {
                 "type": "array",
                 "items": {
@@ -492,6 +512,7 @@
               }
             },
             "required": [
+              "plan_id",
               "updates"
             ],
             "additionalProperties": false
@@ -739,7 +760,7 @@
     {
       "name": "create_animation",
       "title": "Create Animation",
-      "description": "Creates Bedrock animation numeric transforms plus optional particle/sound effects. Names accept `walk` or `animation.walk`; use manage_keyframes for Molang.",
+      "description": "Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_keyframes for later Molang or keyframe edits.",
       "status": "stable",
       "category": "Animation",
       "annotations": {
@@ -754,21 +775,21 @@
               "name": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Non-empty animation name.",
-                "markdownDescription": "Non-empty animation name."
+                "description": "Animation name.",
+                "markdownDescription": "Animation name."
               },
               "loop": {
                 "type": "boolean",
                 "default": false,
-                "description": "Whether the animation should loop",
-                "markdownDescription": "Whether the animation should loop"
+                "description": "Loop the animation.",
+                "markdownDescription": "Loop the animation."
               },
               "animation_length": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10000,
-                "description": "Optional finite animation length in seconds (0..10000).",
-                "markdownDescription": "Optional finite animation length in seconds (0..10000)."
+                "description": "Optional animation length in seconds (0..10000).",
+                "markdownDescription": "Optional animation length in seconds (0..10000)."
               },
               "bones": {
                 "type": "object",
@@ -790,8 +811,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space.",
-                        "markdownDescription": "Authored Blockbench position [x,y,z]; converted internally to Bedrock file space."
+                        "description": "Authored Blockbench position [x,y,z].",
+                        "markdownDescription": "Authored Blockbench position [x,y,z]."
                       },
                       "rotation": {
                         "type": "array",
@@ -800,8 +821,8 @@
                         },
                         "minItems": 3,
                         "maxItems": 3,
-                        "description": "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space.",
-                        "markdownDescription": "Authored Blockbench rotation [x,y,z]; converted internally to Bedrock file space."
+                        "description": "Authored Blockbench rotation [x,y,z].",
+                        "markdownDescription": "Authored Blockbench rotation [x,y,z]."
                       },
                       "scale": {
                         "anyOf": [
@@ -817,8 +838,8 @@
                             "type": "number"
                           }
                         ],
-                        "description": "Finite scale [x,y,z] or uniform scalar.",
-                        "markdownDescription": "Finite scale [x,y,z] or uniform scalar."
+                        "description": "Scale [x,y,z] or uniform scalar.",
+                        "markdownDescription": "Scale [x,y,z] or uniform scalar."
                       }
                     },
                     "required": [
@@ -826,8 +847,8 @@
                     ],
                     "additionalProperties": false
                   },
-                  "description": "Transform keyframes at finite non-negative times; one value per channel per time.",
-                  "markdownDescription": "Transform keyframes at finite non-negative times; one value per channel per time."
+                  "description": "Transform keyframes at non-negative times.",
+                  "markdownDescription": "Transform keyframes at non-negative times."
                 },
                 "description": "Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space.",
                 "markdownDescription": "Bone keyframes keyed by Group UUID or case-insensitively unique name; values use authored space."
@@ -853,8 +874,8 @@
                         },
                         "bind_to_actor": {
                           "type": "boolean",
-                          "description": "Optional actor-binding flag; omit for native default.",
-                          "markdownDescription": "Optional actor-binding flag; omit for native default."
+                          "description": "Optional actor-binding flag.",
+                          "markdownDescription": "Optional actor-binding flag."
                         },
                         "pre_effect_script": {
                           "type": "string",
@@ -886,8 +907,8 @@
                           },
                           "bind_to_actor": {
                             "type": "boolean",
-                            "description": "Optional actor-binding flag; omit for native default.",
-                            "markdownDescription": "Optional actor-binding flag; omit for native default."
+                            "description": "Optional actor-binding flag.",
+                            "markdownDescription": "Optional actor-binding flag."
                           },
                           "pre_effect_script": {
                             "type": "string",
@@ -904,8 +925,8 @@
                     }
                   ]
                 },
-                "description": "Particle effects keyed by unique non-negative finite timestamps; one effect or array each.",
-                "markdownDescription": "Particle effects keyed by unique non-negative finite timestamps; one effect or array each."
+                "description": "Particle effects keyed by non-negative timestamps.",
+                "markdownDescription": "Particle effects keyed by non-negative timestamps."
               },
               "sound_effects": {
                 "type": "object",
@@ -959,8 +980,8 @@
                     }
                   ]
                 },
-                "description": "Sound effects by unique non-negative timestamp; one effect or non-empty array.",
-                "markdownDescription": "Sound effects by unique non-negative timestamp; one effect or non-empty array."
+                "description": "Sound effects keyed by non-negative timestamps.",
+                "markdownDescription": "Sound effects keyed by non-negative timestamps."
               }
             },
             "required": [
@@ -976,7 +997,7 @@
     {
       "name": "manage_keyframes",
       "title": "Manage Keyframes",
-      "description": "Creates, deletes, edits, or selects explicit keyframes for one bone/channel. Transform values may be finite numbers or authored Molang strings; BlockIT preserves strings without evaluating them. Non-create times resolve uniquely before mutation/selection.",
+      "description": "Creates, edits, deletes, or selects keyframes for one animation bone and channel. Numeric and authored Molang values are preserved.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1008,8 +1029,8 @@
               "bone_name": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Group UUID or exact unique Group name to manage keyframes for.",
-                "markdownDescription": "Exact Group UUID or exact unique Group name to manage keyframes for."
+                "description": "Group UUID or unique Group name.",
+                "markdownDescription": "Group UUID or unique Group name."
               },
               "channel": {
                 "type": "string",
@@ -1043,8 +1064,8 @@
                               },
                               {
                                 "type": "string",
-                                "description": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.",
-                                "markdownDescription": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it."
+                                "description": "Authored non-empty Molang transform text.",
+                                "markdownDescription": "Authored non-empty Molang transform text."
                               }
                             ]
                           },
@@ -1058,8 +1079,8 @@
                             },
                             {
                               "type": "string",
-                              "description": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it.",
-                              "markdownDescription": "Explicit non-empty Molang transform value preserved as authored text; BlockIT does not evaluate it."
+                              "description": "Authored non-empty Molang transform text.",
+                              "markdownDescription": "Authored non-empty Molang transform text."
                             }
                           ]
                         }
@@ -1125,8 +1146,8 @@
                   "additionalProperties": false
                 },
                 "minItems": 1,
-                "description": "One or more keyframes for the action; empty mutation/selection requests are rejected.",
-                "markdownDescription": "One or more keyframes for the action; empty mutation/selection requests are rejected."
+                "description": "One or more keyframes.",
+                "markdownDescription": "One or more keyframes."
               }
             },
             "required": [
@@ -1144,7 +1165,7 @@
     {
       "name": "animation_graph_editor",
       "title": "Animation Graph Editor",
-      "description": "Controls animation curves in the graph editor for fine-tuning animations.",
+      "description": "Applies a curve/interpolation edit to one animation bone channel.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1165,8 +1186,8 @@
               "bone_name": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Exact Group UUID or exact unique Group name to modify curves for.",
-                "markdownDescription": "Exact Group UUID or exact unique Group name to modify curves for."
+                "description": "Group UUID or unique Group name.",
+                "markdownDescription": "Group UUID or unique Group name."
               },
               "channel": {
                 "type": "string",
@@ -1280,7 +1301,7 @@
     {
       "name": "bone_rigging",
       "title": "Bone Rigging",
-      "description": "Creates/edits Bedrock Group bones with explicit preflighted targets. Create/parent reject hierarchy cycles; create/rename/mirror enforce case-insensitive unique bone names; delete snapshots the subtree and affected animations. `set_pivot` needs origin, `mirror` needs an axis, and `set_ik` must author an IK change while target-only edits preserve enabled state. Missing/ambiguous targets fail before mutation.",
+      "description": "Creates or edits Bedrock Group hierarchy, pivots, IK, and mirroring. Use for rig structure; use add_group for normal bone creation.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1313,19 +1334,19 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Create: new unique name. Other actions: Group UUID or unique exact name.",
-                    "markdownDescription": "Create: new unique name. Other actions: Group UUID or unique exact name."
+                    "description": "Create: new name. Other actions: Group UUID or unique name.",
+                    "markdownDescription": "Create: new name. Other actions: Group UUID or unique name."
                   },
                   "new_name": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "New unique bone name required by the rename action.",
-                    "markdownDescription": "New unique bone name required by the rename action."
+                    "description": "New name for rename.",
+                    "markdownDescription": "New name for rename."
                   },
                   "parent": {
                     "type": "string",
-                    "description": "Parent Group UUID or unique exact name; required by parent, optional on create.",
-                    "markdownDescription": "Parent Group UUID or unique exact name; required by parent, optional on create."
+                    "description": "Parent Group UUID or unique name.",
+                    "markdownDescription": "Parent Group UUID or unique name."
                   },
                   "origin": {
                     "type": "array",
@@ -1334,8 +1355,8 @@
                     },
                     "minItems": 3,
                     "maxItems": 3,
-                    "description": "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it.",
-                    "markdownDescription": "Pivot/origin; required by set_pivot. Omit on create unless a real joint/attachment needs it."
+                    "description": "Pivot/origin for set_pivot.",
+                    "markdownDescription": "Pivot/origin for set_pivot."
                   },
                   "rotation": {
                     "type": "array",
@@ -1397,7 +1418,7 @@
     {
       "name": "animation_timeline",
       "title": "Animation Timeline",
-      "description": "Controls animation playback/time plus persistent length, snapping, loop, anim_time_update, and blend_weight properties on the selected authored Animation.",
+      "description": "Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1506,7 +1527,7 @@
     {
       "name": "batch_keyframe_operations",
       "title": "Batch Keyframe Operations",
-      "description": "Performs bounded batch keyframe operations and rejects incomplete/no-op requests plus offset/scale plans that would leave the native 0..10000 keyframe-time range; scale also rejects selected-keyframe time collapse before Undo.",
+      "description": "Applies one bounded batch operation to selected, ranged, patterned, or all keyframes.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1650,7 +1671,7 @@
     {
       "name": "animation_copy_paste",
       "title": "Animation Copy/Paste",
-      "description": "Copies/pastes animation data with action-specific source/target preflight. Copy requires matching keyframes; paste rejects an empty clipboard and invalid or internally colliding snapped times; `mirror_paste` requires an explicit axis. Existing-target overwrite keeps native paste behavior.",
+      "description": "Copies, pastes, or mirrors keyframes between animation bones. Copy/paste targets must be explicit; mirror_paste requires an axis.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1893,7 +1914,7 @@
     {
       "name": "manage_animation_controller",
       "title": "Manage Animation Controller",
-      "description": "Creates or coherently mutates one Bedrock AnimationController in one Undo unit. Supports states, initial state, transitions, animation links, state sound/particle effects, scripts, and scalar blend settings; returns affected authored state so immediate readback is unnecessary.",
+      "description": "Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -1908,14 +1929,14 @@
               "controller_id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Existing AnimationController UUID or unique exact name.",
-                "markdownDescription": "Existing AnimationController UUID or unique exact name."
+                "description": "Existing controller UUID or unique name.",
+                "markdownDescription": "Existing controller UUID or unique name."
               },
               "create_name": {
                 "type": "string",
                 "minLength": 1,
-                "description": "New AnimationController name; use instead of controller_id.",
-                "markdownDescription": "New AnimationController name; use instead of controller_id."
+                "description": "New controller name.",
+                "markdownDescription": "New controller name."
               },
               "operations": {
                 "type": "array",
@@ -2060,8 +2081,8 @@
                 },
                 "minItems": 1,
                 "maxItems": 32,
-                "description": "One to 32 ordered controller/state-machine mutations.",
-                "markdownDescription": "One to 32 ordered controller/state-machine mutations."
+                "description": "Ordered controller/state mutations (1-32).",
+                "markdownDescription": "Ordered controller/state mutations (1-32)."
               }
             },
             "required": [
@@ -2122,7 +2143,7 @@
     {
       "name": "remove_element",
       "title": "Remove Element",
-      "description": "Removes one explicit outliner element or Group target. UUID is resolved first; exact names must be unique. Group removal follows native recursive subtree deletion and captures the deleted subtree plus affected animation state in one Undo edit.",
+      "description": "Removes one explicit Cube, Group, or outliner target with Undo support.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2153,7 +2174,7 @@
     {
       "name": "add_group",
       "title": "Add Group",
-      "description": "Adds a native Bedrock Group/bone with finite pivot/rotation and an explicit or root parent; batch coherent bones with `groups` in one Undo unit. Editor-only selection/shading/visibility and Group Auto-UV propagation are not create parameters.",
+      "description": "Adds one or more Bedrock Groups/bones with optional parent, pivot, and rotation.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2165,6 +2186,12 @@
           "add_group": {
             "type": "object",
             "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
               "name": {
                 "type": "string",
                 "minLength": 1,
@@ -2285,6 +2312,9 @@
                 "markdownDescription": "Coherent Group/bone batch; ordered, one Undo unit."
               }
             },
+            "required": [
+              "plan_id"
+            ],
             "additionalProperties": false
           }
         },
@@ -2294,7 +2324,7 @@
     {
       "name": "list_outline",
       "title": "List Outline",
-      "description": "Returns a bounded Cube/Group hierarchy. Defaults are intentionally compact; truncation is reported so targeted search or an explicitly larger bound can continue when needed.",
+      "description": "Lists a bounded Cube/Group hierarchy and reports truncation.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2338,7 +2368,7 @@
     {
       "name": "duplicate_element",
       "title": "Duplicate Element",
-      "description": "Duplicates one explicit Cube/Group by UUID or unique exact name, with optional offset/name. Use only for established repetition/symmetry; duplication is not a shortcut for deciding primary geometry.",
+      "description": "Duplicates one explicit Cube/Group with optional offset and root name.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2350,6 +2380,12 @@
           "duplicate_element": {
             "type": "object",
             "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -2387,6 +2423,7 @@
               }
             },
             "required": [
+              "plan_id",
               "id"
             ],
             "additionalProperties": false
@@ -2398,7 +2435,7 @@
     {
       "name": "rename_element",
       "title": "Rename Element",
-      "description": "Renames one explicit outliner element or Group target. UUID is resolved first; an exact name is accepted only when unique. Ambiguous names fail before mutation.",
+      "description": "Renames one explicit Cube, Group, or outliner target.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -2436,7 +2473,7 @@
     {
       "name": "find_elements_by_criteria",
       "title": "Find Elements by Criteria",
-      "description": "Read-only Cube/Group search by name, type, parent scope, size range, or selection. Returns bounded identity metadata; raise `limit` only when truncation blocks the decision.",
+      "description": "Searches Cubes/Groups by identity, type, parent, size, or selection with bounded results.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2537,7 +2574,7 @@
     {
       "name": "select_all_of_type",
       "title": "Select All of Type",
-      "description": "Selection helper for workflows that require editor selection, mainly texture/Paint. It is not a normal geometry-targeting path; use explicit identities for geometry. Optional parent scope must resolve uniquely.",
+      "description": "Selects all Cubes or Groups of one type for workflows that require editor selection.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2583,7 +2620,7 @@
     {
       "name": "filter_by_material",
       "title": "Filter Elements by Material",
-      "description": "Legacy generic raw face.texture discovery. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and effective face texture comes from Texture.getDefault(), not per-face texture identity.",
+      "description": "Legacy raw face-material lookup. Disabled on the Bedrock Entity surface.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2627,7 +2664,7 @@
     {
       "name": "get_selection",
       "title": "Get Selection",
-      "description": "Returns current Cube/Group selection plus active Texture. Normal geometry inspection and mutation should prefer explicit UUIDs and focused inspection; use this only when editor selection state matters.",
+      "description": "Returns current Cube/Group selection and active Texture when editor selection matters.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2646,9 +2683,133 @@
       }
     },
     {
+      "name": "modify_group",
+      "title": "Modify Group",
+      "description": "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+      "status": "stable",
+      "category": "Elements",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/modify_group",
+        "definitions": {
+          "modify_group": {
+            "type": "object",
+            "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Exact Group UUID or unique exact name.",
+                "markdownDescription": "Exact Group UUID or unique exact name."
+              },
+              "origin": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "New Group pivot/origin.",
+                "markdownDescription": "New Group pivot/origin."
+              },
+              "rotation": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "New Group rotation [x,y,z].",
+                "markdownDescription": "New Group rotation [x,y,z]."
+              },
+              "visibility": {
+                "type": "boolean",
+                "description": "New Group visibility.",
+                "markdownDescription": "New Group visibility."
+              }
+            },
+            "required": [
+              "plan_id",
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "reparent_element",
+      "title": "Reparent Element",
+      "description": "Moves one explicit Cube or Group to a new parent. Rejects self/circular hierarchy; local transform is preserved.",
+      "status": "experimental",
+      "category": "Elements",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/reparent_element",
+        "definitions": {
+          "reparent_element": {
+            "type": "object",
+            "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Exact Cube or Group UUID or unique exact name.",
+                "markdownDescription": "Exact Cube or Group UUID or unique exact name."
+              },
+              "parent": {
+                "type": "string",
+                "minLength": 1,
+                "description": "New parent Group UUID or unique exact name; use `root` for root placement.",
+                "markdownDescription": "New parent Group UUID or unique exact name; use `root` for root placement."
+              }
+            },
+            "required": [
+              "plan_id",
+              "id",
+              "parent"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "inspect_element",
       "title": "Inspect Authored Element",
-      "description": "Returns focused read-only authored state for one explicit Bedrock Cube, Group, Locator, or Null Object. UUID is preferred and exact names must be unique. Includes the type-specific transform, parent, and visibility state needed for precise correction; it does not modify selection/model state or return visual PASS/FAIL.",
+      "description": "Returns focused authored state for one explicit element. Defaults to compact geometry/hierarchy data; request UV detail only when mapping needs inspection.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -2665,6 +2826,16 @@
                 "minLength": 1,
                 "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
                 "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
+              },
+              "detail": {
+                "type": "string",
+                "enum": [
+                  "geometry",
+                  "uv"
+                ],
+                "default": "geometry",
+                "description": "Geometry transform by default; request `uv` only when UV mapping needs inspection.",
+                "markdownDescription": "Geometry transform by default; request `uv` only when UV mapping needs inspection."
               }
             },
             "required": [
@@ -4691,9 +4862,747 @@
       }
     },
     {
+      "name": "prepare_geometry_plan",
+      "title": "Prepare Geometry Plan",
+      "description": "Legacy Geometry planning tool. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer the basic Group/Cube authoring tools for direct, explicit construction.",
+      "status": "stable",
+      "category": "Project",
+      "annotations": {
+        "destructiveHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/prepare_geometry_plan",
+        "definitions": {
+          "prepare_geometry_plan": {
+            "type": "object",
+            "properties": {
+              "plan_version": {
+                "type": "string",
+                "const": "reference_grounded_v1"
+              },
+              "role_namespace": {
+                "type": "string",
+                "const": "generic"
+              },
+              "evidence_map": {
+                "type": "object",
+                "properties": {
+                  "approved_views": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1
+                  },
+                  "silhouette_anchors": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                        },
+                        "view": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "top",
+                            "bottom",
+                            "front",
+                            "back",
+                            "left",
+                            "right",
+                            "attachment"
+                          ]
+                        },
+                        "point_normalized": {
+                          "type": "array",
+                          "minItems": 3,
+                          "maxItems": 3,
+                          "items": [
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            }
+                          ],
+                          "description": "Normalized model-space position [x,y,z].",
+                          "markdownDescription": "Normalized model-space position [x,y,z]."
+                        },
+                        "confidence": {
+                          "type": "string",
+                          "enum": [
+                            "supported",
+                            "provisional"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "role",
+                        "view",
+                        "kind",
+                        "point_normalized",
+                        "confidence"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 3
+                  },
+                  "primary_mass_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    },
+                    "minItems": 1
+                  },
+                  "chain_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    }
+                  },
+                  "bilateral_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    }
+                  },
+                  "rotated_attachment_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    }
+                  },
+                  "repeated_detail_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    }
+                  },
+                  "locator_roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
+                    }
+                  },
+                  "unsupported_dimensions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "first_build_ready": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "approved_views",
+                  "silhouette_anchors",
+                  "primary_mass_roles",
+                  "chain_roles",
+                  "bilateral_roles",
+                  "rotated_attachment_roles",
+                  "repeated_detail_roles",
+                  "locator_roles",
+                  "unsupported_dimensions",
+                  "first_build_ready"
+                ],
+                "additionalProperties": false
+              },
+              "reference_identity": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reference_views": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "front_direction": {
+                "type": "string",
+                "enum": [
+                  "+z",
+                  "-z"
+                ]
+              },
+              "up_direction": {
+                "type": "string",
+                "const": "+y",
+                "default": "+y"
+              },
+              "scale": {
+                "type": "object",
+                "properties": {
+                  "basis": {
+                    "type": "string",
+                    "const": "minecraft_player",
+                    "default": "minecraft_player"
+                  },
+                  "player_height_blocks": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": 1.8
+                  },
+                  "target_height_blocks": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "ground_contact": {
+                    "type": "string",
+                    "const": "bottom",
+                    "default": "bottom"
+                  }
+                },
+                "required": [
+                  "target_height_blocks"
+                ],
+                "additionalProperties": false,
+                "description": "World-scale anchor using the 1.8-block Minecraft player baseline.",
+                "markdownDescription": "World-scale anchor using the 1.8-block Minecraft player baseline."
+              },
+              "envelope": {
+                "type": "object",
+                "properties": {
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Width in Blockbench units (16 units = 1 block).",
+                    "markdownDescription": "Width in Blockbench units (16 units = 1 block)."
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Height in Blockbench units; must match target_height_blocks x 16.",
+                    "markdownDescription": "Height in Blockbench units; must match target_height_blocks x 16."
+                  },
+                  "length": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Length in Blockbench units (16 units = 1 block).",
+                    "markdownDescription": "Length in Blockbench units (16 units = 1 block)."
+                  }
+                },
+                "required": [
+                  "width",
+                  "height",
+                  "length"
+                ],
+                "additionalProperties": false
+              },
+              "proportion_targets": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "min_normalized": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      ],
+                      "description": "Normalized model-space position [x,y,z].",
+                      "markdownDescription": "Normalized model-space position [x,y,z]."
+                    },
+                    "max_normalized": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      ],
+                      "description": "Normalized model-space position [x,y,z].",
+                      "markdownDescription": "Normalized model-space position [x,y,z]."
+                    },
+                    "source_views": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "confidence": {
+                      "type": "string",
+                      "enum": [
+                        "supported",
+                        "provisional"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "min_normalized",
+                    "max_normalized",
+                    "source_views",
+                    "confidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Reference-derived normalized bounds for every role entering the first build.",
+                "markdownDescription": "Reference-derived normalized bounds for every role entering the first build."
+              },
+              "group_roles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$",
+                      "errorMessage": {
+                        "pattern": "Use a generic geometry role namespace; keep anatomy in semantic metadata."
+                      }
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "axis_aligned",
+                        "rotated",
+                        "unresolved"
+                      ]
+                    },
+                    "parent_role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "required": {
+                      "type": "boolean",
+                      "default": true
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "type",
+                    "parent_role"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "geometry_roles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$",
+                      "errorMessage": {
+                        "pattern": "Use a generic geometry role namespace; keep anatomy in semantic metadata."
+                      }
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "axis_aligned",
+                        "rotated",
+                        "unresolved"
+                      ]
+                    },
+                    "parent_role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "required": {
+                      "type": "boolean",
+                      "default": true
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "type",
+                    "parent_role"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "landmarks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "position_normalized": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      ],
+                      "description": "Normalized model-space position [x,y,z].",
+                      "markdownDescription": "Normalized model-space position [x,y,z]."
+                    },
+                    "source_views": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "confidence": {
+                      "type": "string",
+                      "enum": [
+                        "supported",
+                        "provisional"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "position_normalized",
+                    "source_views",
+                    "confidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "child_role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parent_role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "landmark": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "invariant": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "child_role",
+                    "parent_role",
+                    "landmark",
+                    "invariant"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "rotation_parts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "attachment_landmark": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "endpoint_landmark": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "source_views": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "rotation_owner": {
+                      "type": "string",
+                      "enum": [
+                        "group",
+                        "cube"
+                      ]
+                    },
+                    "pivot_landmark": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "rotation_axis": {
+                      "type": "string",
+                      "enum": [
+                        "x",
+                        "y",
+                        "z"
+                      ]
+                    },
+                    "rotation_sign": {
+                      "type": "string",
+                      "enum": [
+                        "positive",
+                        "negative",
+                        "toward_front",
+                        "away_from_front"
+                      ]
+                    },
+                    "confidence": {
+                      "type": "string",
+                      "enum": [
+                        "supported",
+                        "provisional"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "attachment_landmark",
+                    "endpoint_landmark",
+                    "source_views",
+                    "rotation_owner",
+                    "pivot_landmark",
+                    "rotation_axis",
+                    "rotation_sign",
+                    "confidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "construction_strategy": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "strategy": {
+                      "type": "string",
+                      "enum": [
+                        "solid_mass",
+                        "bilateral_pair",
+                        "segmented_chain",
+                        "tapered_chain",
+                        "rotated_attachment",
+                        "repeated_detail",
+                        "locator_only"
+                      ]
+                    },
+                    "counterpart_role": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "segment_index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Required for segmented_chain and tapered_chain; omit for non-chain strategies.",
+                      "markdownDescription": "Required for segmented_chain and tapered_chain; omit for non-chain strategies."
+                    },
+                    "repeat_count": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 64,
+                      "description": "Required for repeated_detail; generated element count, maximum 64.",
+                      "markdownDescription": "Required for repeated_detail; generated element count, maximum 64."
+                    },
+                    "repeat_axis": {
+                      "type": "string",
+                      "enum": [
+                        "x",
+                        "y",
+                        "z"
+                      ],
+                      "description": "Required for repeated_detail; axis for generated copies.",
+                      "markdownDescription": "Required for repeated_detail; axis for generated copies."
+                    },
+                    "repeat_step": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "description": "Required for repeated_detail; spacing on the 0.5-unit grid.",
+                      "markdownDescription": "Required for repeated_detail; spacing on the 0.5-unit grid."
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "strategy"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "symmetry": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "axis": {
+                    "type": "string",
+                    "const": "x",
+                    "default": "x"
+                  },
+                  "tolerance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 0.01
+                  }
+                },
+                "additionalProperties": false,
+                "default": {
+                  "enabled": false,
+                  "axis": "x",
+                  "tolerance": 0.01
+                }
+              },
+              "first_build_scope": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "plan_version",
+              "role_namespace",
+              "evidence_map",
+              "reference_identity",
+              "reference_views",
+              "front_direction",
+              "scale",
+              "envelope",
+              "proportion_targets",
+              "first_build_scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "compile_geometry_spec",
+      "title": "Compile Geometry Spec",
+      "description": "Legacy Geometry compiler. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer explicit Group/Cube authoring and capture the result for visual review.",
+      "status": "stable",
+      "category": "Project",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/compile_geometry_spec",
+        "definitions": {
+          "compile_geometry_spec": {
+            "type": "object",
+            "properties": {
+              "plan_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Active prepare_geometry_plan ID.",
+                "markdownDescription": "Active prepare_geometry_plan ID."
+              },
+              "detail_level": {
+                "type": "string",
+                "enum": [
+                  "blockout",
+                  "primary",
+                  "refined"
+                ],
+                "default": "primary"
+              }
+            },
+            "required": [
+              "plan_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_texture",
       "title": "Create Texture",
-      "description": "Creates a texture with explicit size/content options and returns resulting texture metadata. An optional TextureGroup target must resolve before mutation. Use `get_texture` only when image evidence is actually needed.",
+      "description": "Creates a texture and returns compact metadata. Use get_texture only when image data is needed.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4820,7 +5729,7 @@
     {
       "name": "apply_texture",
       "title": "Apply Texture",
-      "description": "Legacy generic per-face Texture.apply wrapper. Disabled from the Bedrock Entity MCP surface because native Bedrock Entity is single_texture and Blockbench hides per-face apply actions there; use activate_texture for the active/default texture.",
+      "description": "Legacy per-face texture wrapper. Disabled on the normal Bedrock Entity surface; use activate_texture.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4869,7 +5778,7 @@
     {
       "name": "add_texture_group",
       "title": "Add Texture Group",
-      "description": "Adds a uniquely named TextureGroup. Exact group-name collisions and any missing/ambiguous explicit Texture target fail before Undo or group creation.",
+      "description": "Adds a uniquely named TextureGroup.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -4916,7 +5825,7 @@
     {
       "name": "list_textures",
       "title": "List Textures",
-      "description": "Returns a read-only list of all textures in the Blockbench editor, including identity/group metadata and the current render_mode/render_sides settings.",
+      "description": "Lists texture identity, group metadata, and render settings.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4937,7 +5846,7 @@
     {
       "name": "get_texture",
       "title": "Get Texture",
-      "description": "Returns image data for the default texture when no texture is specified. Explicit texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique; missing or ambiguous references fail before image data is returned.",
+      "description": "Returns image data for the selected or explicitly identified texture.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -4965,7 +5874,7 @@
     {
       "name": "create_pbr_material",
       "title": "Create PBR Material",
-      "description": "Creates a uniquely named PBR material TextureGroup. Color and MER each accept one effective source (texture or uniform), and depth accepts normal or height; contradictory sources fail before Undo.",
+      "description": "Creates a uniquely named PBR material TextureGroup.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5051,7 +5960,7 @@
     {
       "name": "configure_material",
       "title": "Configure Material",
-      "description": "Configures one explicit PBR material with at least one authored change. Explicit texture + uniform conflicts and simultaneous normal+height sources fail at the MCP boundary; `none` remains the explicit switch to uniform/remove behavior.",
+      "description": "Applies authored changes to one PBR material.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5158,7 +6067,7 @@
     {
       "name": "get_material_info",
       "title": "Get Material Info",
-      "description": "Gets detailed information about one explicit material/texture group, including the compiled texture_set.json preview for Bedrock export. Material identity resolves exact UUID first, otherwise an exact name must be unique; missing or ambiguous targets fail before material data is read.",
+      "description": "Returns detailed metadata for one PBR material, including its Bedrock texture-set preview.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
@@ -5189,7 +6098,7 @@
     {
       "name": "import_texture_set",
       "title": "Import Texture Set",
-      "description": "Imports one absolute Minecraft Bedrock texture_set.json after native-compatible JSON/comment parsing and root preflight. Invalid documents and exact resulting TextureGroup-name collisions fail before native import; success reports the created material identity.",
+      "description": "Imports one Bedrock texture_set.json and returns the created material identity.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5220,7 +6129,7 @@
     {
       "name": "assign_texture_channel",
       "title": "Assign Texture Channel",
-      "description": "Assigns one explicit Texture to one PBR channel. Material/Texture references resolve before Undo; exact no-op assignments are rejected, while existing competing textures on that channel remain part of the native edit behavior.",
+      "description": "Assigns one texture to one PBR channel.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5270,7 +6179,7 @@
     {
       "name": "save_material_config",
       "title": "Save Material Config",
-      "description": "Saves one explicit material/texture group's Bedrock texture_set.json through Blockbench native save behavior. Missing/ambiguous material targets fail first, and success is returned only when the native saved flag is true and the target file exists.",
+      "description": "Saves one material as a Bedrock texture_set.json file.",
       "status": "experimental",
       "category": "Textures",
       "annotations": {
@@ -5302,7 +6211,7 @@
     {
       "name": "activate_texture",
       "title": "Activate Texture",
-      "description": "Activates one explicit texture in the Blockbench texture panel. Texture identity resolves exact UUID first, then exact texture ID, then exact name only when unique. Missing or ambiguous references fail before the active texture selection changes. Subsequent paint operations (draw_shape_tool, paint_with_brush, gradient_tool, etc.) then target the activated texture by default.",
+      "description": "Activates one texture for subsequent paint operations.",
       "status": "stable",
       "category": "Textures",
       "annotations": {
