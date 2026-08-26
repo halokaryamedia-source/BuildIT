@@ -85,7 +85,7 @@ Download only the pinned shape subfolder into a local model root:
 from pathlib import Path
 from huggingface_hub import snapshot_download
 
-models_root = Path(r"C:\BuildITModels")
+models_root = Path(r"D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.cache\models")
 snapshot_download(
     repo_id="tencent/Hunyuan3D-2",
     revision="9cd649ba6913f7a852e3286bad86bfa9a2d83dcf",
@@ -97,10 +97,10 @@ snapshot_download(
 )
 ```
 
-On PowerShell:
+On PowerShell, keep the model root inside the BuildIT repository:
 
 ```powershell
-$env:HY3DGEN_MODELS="C:\BuildITModels"
+$env:HY3DGEN_MODELS="D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.cache\models"
 ```
 
 `generate_shape.py` fails closed when this pinned local model is absent rather than silently downloading an unpinned revision.
