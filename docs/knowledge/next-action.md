@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-26 — Hunyuan Route 1 experimental source foundation applied
+Updated: 2026-08-27 — Hunyuan Route 1 Gate 1 visual review completed
 
 ## Current State
 
@@ -23,7 +23,7 @@ CURRENT_FULL_MCP_VERIFY_GREEN
 TEXTURE_ATLAS_PUBLIC_CONTRACT_CANDIDATE_REBASE_REQUIRED
 LIVE_RETEST_DEFERRED_BY_USER
 ROUTE1_HUNYUAN_EXPERIMENT_SOURCE_APPLIED
-ROUTE1_HUNYUAN_LOCAL_GPU_PROOF_REQUIRED
+ROUTE1_HUNYUAN_GATE1_PASS
 NO ACTIVE LOCAL ACCEPTANCE RUN
 NO ACTIVE DEVELOPMENT
 ```
@@ -129,11 +129,12 @@ Source foundation lives under `Experimental/route1-hunyuan-poc/`. Production MCP
 Current next step:
 
 ```text
-approved single 3/4 crop
-→ pinned Hunyuan3D-DiT-v2-0 local run
-→ fresh four-view contact sheet
-→ Gate 1 visual usefulness decision
-→ STOP before Blockbench unless Gate 1 passes
+Gate 1 PASS: elephant approved 3/4 crop + fresh four-view contact sheet
+→ handoff to existing Geometry MCP
+→ primary Groups/Cubes only
+→ one capture_model_views verification
+→ one causal local correction OR one primary rebuild
+→ verify
 ```
 
 Do not add a solver, IoU gate, semantic mesh segmentation, multiview Hunyuan, Fast/Turbo tuning, provider routing, new MCP tools, or autonomous correction before matching runtime evidence proves that specific need.
@@ -150,4 +151,4 @@ Do not implement automatically: aggregate UV working map, Painter batching, Canv
 
 ## STOP
 
-Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. The Hunyuan Route 1 source foundation is experimental and not runtime-verified; its only active proof boundary is the local Gate 1 Hunyuan/contact-sheet run. Do not promote Route 1 or continue into Blockbench authoring until that actual contact sheet is visually inspected against the approved reference. The Texture Atlas runtime candidate remains separate.
+Codex Bedrock first-call legibility hardening and CI routing remain complete with full static verification. Route 1 remains experimental; Gate 1 passed for the supplied elephant reference based on the actual local contact sheet. Geometry MCP handoff is now permitted, but this does not establish final visual quality or production promotion. The Texture Atlas runtime candidate remains separate.
