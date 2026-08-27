@@ -350,19 +350,19 @@ Static Footprint — prompt/Skill characters, schema size, serialized tool surfa
 Record only observable session cost:
 
 ```text
-meaningful MCP calls to Geometry PASS
-meaningful MCP calls to Final PASS
-phase handoffs/reloads
-discovery calls
-redundant readbacks
+Meaningful MCP calls to Geometry PASS
+Meaningful MCP calls to Final PASS
+Phase handoffs / reloads
+Discovery calls
+Redundant readbacks
 tool_search calls / misses
 place_cube calls / Cubes authored
 add_group calls / Groups authored
 capture_model_views calls
-correction attempts
+Correction attempts
 Undo / recovery calls
-same-cause retries
-broad repository/state reads
+Same-cause retries
+Broad repository/state reads
 ```
 
 Classify material work as:
@@ -374,6 +374,16 @@ CONTRACT_CAUSED
 REASONING_CAUSED
 RECOVERY
 ```
+
+For each material correction, record its observed effect:
+
+```text
+IMPROVED
+UNCHANGED
+REGRESSED
+```
+
+A healthy convergence loop favors `IMPROVED`, avoids blind Same-cause retries, and verifies affected views rather than capturing after every mutation.
 
 Unknown token/latency stays `UNVERIFIED`.
 
