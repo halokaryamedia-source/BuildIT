@@ -22,13 +22,21 @@ describe("pre-local plugin runtime cleanup", () => {
     const index = await source("index.ts");
     const tools = await source("server/tools.ts");
 
+    const listeningHook = index.indexOf('startingServer.once("listening"');
+    const errorHook = index.indexOf('startingServer.once("error"');
+    const bindCleanup = index.indexOf("startingServer.closeActiveSockets()", errorHook);
+    const resetServer = index.indexOf("httpServer = null", bindCleanup);
+    const failClosedReturn = index.indexOf("return;", resetServer);
+    const readyUi = index.indexOf("uiSetup({");
+
     expect(index).toContain('BBPlugin.register("blockit_mcp"');
-    expect(index).toContain('startingServer.once("listening"');
-    expect(index).toContain('startingServer.once("error"');
-    expect(index).toContain("BlockIT will not enter ready state");
-    expect(index.indexOf('startingServer.once("listening"')).toBeLessThan(
-      index.indexOf("uiSetup({")
-    );
+    expect(listeningHook).toBeGreaterThan(-1);
+    expect(errorHook).toBeGreaterThan(-1);
+    expect(bindCleanup).toBeGreaterThan(errorHook);
+    expect(resetServer).toBeGreaterThan(bindCleanup);
+    expect(failClosedReturn).toBeGreaterThan(resetServer);
+    expect(failClosedReturn).toBeLessThan(readyUi);
+    expect(listeningHook).toBeLessThan(readyUi);
 
     expect(tools).not.toContain(
       "applyMcpToolSurface(activeRegistrationProfile, target_phase)"
