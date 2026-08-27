@@ -112,7 +112,8 @@ function registerPhaseControlTool(): void {
         };
       },
     },
-    "stable"
+    "stable",
+    false
   );
 }
 

@@ -22,10 +22,9 @@ export function buildMcpServerInstructions(
   phase: McpAuthoringPhase,
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): string {
-  const allowedTools = describeMcpSurfaceToolNames(profile, phase);
+  describeMcpSurfaceToolNames(profile, phase);
   return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
-    phase,
-    allowedTools
+    phase
   )} Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
 }
 

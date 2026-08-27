@@ -26,7 +26,6 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "export",
   "history",
   "project",
-  "phase_control",
   // Generic fallback families are Core only when the explicit extended
   // registration profile makes them available. Their individually disabled
   // tools remain disabled at createTool().
@@ -50,6 +49,8 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "place_cube",
   "duplicate_element",
   "reparent_element",
+  "manage_locator",
+  "manage_null_object",
 ]);
 
 const CORE_TEXTURE_TOOLS = new Set([
@@ -151,14 +152,12 @@ export function buildMcpPhaseRuntimeContract(
       ? ` Allowed tools (${allowedTools.length}): ${allowedTools.join(", ")}.`
       : "";
   return [
-    `ACTIVE PHASE: ${label}. Surface=MCP CORE+${label}.`,
+    `ACTIVE PHASE: ${label}. MCP CORE + ${label} only.`,
     BEDROCK_AUTHORING_COORDINATE_CONTRACT,
     PHASE_RUNTIME_OWNER_SUMMARY[phase],
-    PHASE_SUPPORT_ROUTING[phase],
-    ...(phase === "geometry" ? [GEOMETRY_SUBGROUP_ROUTING] : []),
-    `${PHASE_FOREIGN_SUMMARY[phase]} Their tools are intentionally unavailable.`,
-    "Do not tool_search for, emulate, rename, or substitute a foreign-phase tool.",
-    `Need another phase => ${MCP_HANDOFF_REQUIRED} with target_phase, reason, readiness, resume_from, action="set phase=<phase>; reload/reconnect", then STOP.${allowedToolsText}`,
+    `${PHASE_FOREIGN_SUMMARY[phase]} unavailable.`,
+    "Do not tool_search, emulate, rename, or substitute foreign tools.",
+    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from, action=set phase; reload/reconnect, then STOP.${allowedToolsText}`,
   ].join(" ");
 }
 
@@ -198,16 +197,19 @@ export function classifyMcpToolPhase(
     toolName === "capture_app_screenshot" ||
     toolName === "set_camera_angle" ||
     toolName === "list_export_formats" ||
+    toolName === "save_checkpoint"
+  ) {
+    return null;
+  }
+  if (
     toolName === "select_all_of_type" ||
     toolName === "get_selection" ||
     toolName === "list_locator_elements" ||
-    toolName === "save_checkpoint" ||
     toolName === "undo" ||
     toolName === "redo" ||
-    toolName === "get_undo_stack" ||
-    toolName === "manage_null_object"
+    toolName === "get_undo_stack"
   ) {
-    return null;
+    return "core";
   }
   if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return "geometry";
   if (CORE_FAMILIES.has(family)) return "core";

@@ -383,7 +383,7 @@ export function registerCameraTools() {
     async execute() {
       return captureScreenshot();
     },
-  }, cameraToolDocs[0].status);
+  }, cameraToolDocs[0].status, false);
 
   createTool(cameraToolDocs[1].name, {
     ...cameraToolDocs[1],

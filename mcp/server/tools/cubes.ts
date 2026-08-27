@@ -764,6 +764,9 @@ export function registerCubesTools() {
         execution: "applied" as const,
         visual_verdict: "not_evaluated" as const,
         modified: cubes.length,
+        before,
+        after,
+        geometry_effect: geometryEffect,
         id: cubes[0].uuid,
         name: cubes[0].name,
         changed_fields: geometryEffect.changed_fields,
@@ -868,6 +871,8 @@ export function registerCubesTools() {
       const effects = targets.map(({ cube, before }) => {
         const after = finalCubeState(cube);
         return {
+          before,
+          after,
           geometry_effect: cubeGeometryEffect(before, after),
         };
       });

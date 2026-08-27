@@ -278,5 +278,5 @@ export function registerHistoryTools() {
         }
       );
     },
-  }, historyToolDocs[3].status);
+  }, historyToolDocs[3].status, false);
 }
