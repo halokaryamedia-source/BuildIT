@@ -1,6 +1,6 @@
 # Validation Report
 
-Updated: 2026-08-27 — current MCP static gate verified
+Updated: 2026-08-27 — static safety hardening verified; local runtime proof deferred
 
 This file owns the **proof boundary**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts belong in `CONTEXT.md`.
 
@@ -11,18 +11,18 @@ BEDROCK CALLABLE CATALOG:                 64 tools across phases
 DEFAULT CLIENT EXPOSURE:                  MCP Core + Geometry (27 tools)
 ACTIVE PHASE CONTRACT:                    SOURCE + FULL MCP STATIC PROOF
 CODEX FIRST-CALL LEGIBILITY:              SOURCE + FULL MCP STATIC PROOF
-LATEST FULL MCP VERIFY:                   GREEN @ 39c8f1dad5aab73140901d70cb052e22fca08bfd
-LAST OBSERVED FULL CANONICAL GREEN:       39c8f1dad5aab73140901d70cb052e22fca08bfd
-LATEST REPOSITORY VERIFY:                 GREEN @ 766ae3083afc5739dd4c0646d57bdf395a85225f
+BUILD BUNDLE IDENTITY:                    SOURCE + FULL MCP STATIC PROOF
+LATEST FULL MCP VERIFY:                   GREEN @ f2db288764382d4e4a2c6daca80e65359ad670a4
+LAST OBSERVED FULL CANONICAL GREEN:       f2db288764382d4e4a2c6daca80e65359ad670a4
+REPOSITORY CONTRACT BASELINE:             GREEN @ 471799dd12dcc84928f612b66b17b1319f966fc8
 ACCEPTED LIVE BASELINE:                   2026-08-12 Blockbench 5.1.6
-LATEST USER AUTHORING BASELINE:           QUALITY FAIL reported 2026-08-25
-CURRENT HARDENING LIVE RETEST:            LOCAL PROOF REQUIRED
+CURRENT HARDENING LIVE RETEST:            DEFERRED BY USER; LOCAL PROOF REQUIRED
 CURRENT MODEL-QUALITY CLAIM:              LOCAL PROOF REQUIRED
 ```
 
-Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, agent-routing contracts, schemas, buildability, generated-doc freshness, and the source-owned phase surface; they cannot prove visual fidelity, installed-plugin freshness, live Codex tool exposure, playback, future Codex call efficiency, or Authoring Efficiency.
+Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, schemas, buildability, generated-doc freshness, source-owned phase surface, and bundle-fingerprint generation; they cannot prove visual fidelity, installed-plugin freshness, live Codex tool exposure, playback, future Codex call efficiency, or Authoring Efficiency.
 
-## Current Agent-Contract Proof
+## Current Agent / Runtime Contract Proof
 
 Current source implements:
 
@@ -33,9 +33,7 @@ GEOMETRY | TEXTURING | ANIMATION
 
 Runtime initialize instructions name `ACTIVE PHASE`, carry the Bedrock coordinate invariant (`16 Blockbench units = 1 Minecraft block`, `x=width`, `y=height`, `z=length`, `+Y=up`), explain that foreign-phase tools are intentionally unavailable, and require `HANDOFF_REQUIRED` rather than foreign-tool search. Runtime workflow generation remains phase-filtered: shared minimum-evidence guidance + only the current phase workflow + compact readiness/handoff state.
 
-Exact tool-route names intentionally remain in the active specialist Skill instead of shared initialize text. The discovery evaluator copies namespace instructions into every tool corpus entry, so enumerating exact route names there can pollute exact-name retrieval rather than helping it.
-
-The current full MCP gate passed at `39c8f1dad5aab73140901d70cb052e22fca08bfd`:
+The current full MCP gate passed at `f2db288764382d4e4a2c6daca80e65359ad670a4`:
 
 ```text
 bun install --frozen-lockfile  PASS
@@ -46,28 +44,52 @@ bun run build                  PASS
 bun run docs:check             PASS
 ```
 
-The repository contract gate passed at `766ae3083afc5739dd4c0646d57bdf395a85225f`. The subsequent `39c8f1da` commit changes only the routed-discovery regression assertion and does not change repository policy or MCP runtime source.
+The current full test suite has no failing contract tests. Surface measurement remains within the existing ceilings and preserves the 64-tool retained catalog.
 
 Current regression coverage additionally proves:
 
 - missing phase defaults to Geometry while explicit invalid phase fails closed;
-- default Geometry exposure is Core + Geometry only;
+- default Geometry exposure is Core + Geometry only (27 tools);
 - retained callable tools have one ownership category;
+- Direct Geometry remains free of the retired plan/compiler requirement;
 - initialize instructions name phase, Bedrock units/axes, foreign-tool absence, readiness, handoff, and STOP;
-- shared initialize does not duplicate exact route-name assignments that pollute tool search;
 - active Geometry routing distinguishes `add_group` from rig-specific `bone_rigging` and dedicated structural delete/rename routes;
-- first-call conditional invariants are explicit for rotated Cubes, `add_group`, `modify_cube`, Locator, and Null Object mutation;
-- `list_textures.uv_audit.production_gate` is the Texturing UV readiness gate;
-- production blank Texture Atlas authoring is guarded against the current provisional 16×16 default by requiring explicit project UV dimensions;
-- workspace continuity may preserve scale and canonical `front_direction` rather than re-guessing them across sessions;
+- first-call conditional invariants remain explicit for rotated Cubes, `add_group`, `modify_cube`, Locator, and Null Object mutation;
 - Geometry/Texturing/Animation runtime prompt bodies exclude foreign-phase authoring routes;
 - specialists do not direct-call foreign-phase mutation;
-- compact handoff state preserves resume-critical context without a UUID registry;
-- verifier tests use owned behavior/contract rather than ordinary comments, prose, or formatting where those strings are not machine contracts;
 - intentionally disabled generic helpers are not treated as expected discovery targets;
-- the routed discovery gate follows the inspected default search limit rather than a historical top-3 threshold.
+- routed exact-name discovery has full recall at the inspected default limit 8;
+- loopback/stateless transport, Origin/Host guards, request limits, and active socket cleanup retain regression coverage;
+- plugin startup does not enter ready UI before TCP bind and fails closed on bind error;
+- bind-failure verification checks structural cleanup/reset/return ordering rather than a mutable log sentence;
+- build output receives a deterministic SHA-256 bundle identity without changing release version;
+- `/health.build_identity` is distinct from `product.version`, `instance_id`, and `startup_time`;
+- unbundled source health fails closed to the explicit `source` build identity rather than pretending to be a packaged bundle.
 
-The current routed exact-name discovery regression observed:
+## Bundle Freshness Identity
+
+The build owner computes SHA-256 over the emitted MCP bundle content before adding the diagnostic banner, then injects:
+
+```text
+globalThis.__BLOCKIT_BUILD_ID__ = "sha256:<64 lowercase hex>"
+```
+
+The production build fails if the expected bundle is absent or the identity banner is not written. The build log prints the resulting fingerprint so a future local `/health` response can be compared against the exact locally built artifact.
+
+Identity responsibilities remain separate:
+
+```text
+product.version    = release/development version; currently 0.1.0
+build_identity     = exact built-bundle SHA-256 identity
+instance_id        = running server-process identity
+startup_time       = running server-process start time
+```
+
+The fingerprint is diagnosis only. It is not a cache-buster, release version, session key, UI state, telemetry stream, or reconnect mechanism. The Blockbench panel intentionally remains free of build-fingerprint state.
+
+## Discovery / Static Footprint Proof
+
+Current routed exact-name discovery remains:
 
 ```text
 raw semantic stress:
@@ -84,40 +106,34 @@ MRR             0.8844
 top_8_misses    0
 ```
 
-Raw semantic search remains a stress metric; the intended normal path is active-phase routing first, then exact routed spec loading when needed. Default tool-search limit 8 is the bounded retrieval contract measured here; top-1/top-3/MRR remain diagnostic quality metrics rather than standalone product-success claims.
-
-## 2026-08-25 User Baseline Failure
-
-The latest authoring baseline supplied by the user was a **QUALITY FAIL**: texturing remained visually flat/poor and the simple rigid model took too much apparent guessing/repetition. The exact current agent-legibility artifact has not been live-retested, so no before/after speed or quality improvement is claimed.
+Raw semantic search remains a stress metric. The normal path is active-phase routing first, then exact routed spec loading when needed. Top-1/top-3/MRR are diagnostics, not standalone product-success claims.
 
 ## Current Static / Source State
 
 Current retained source includes:
 
 - 64-tool normal Bedrock callable catalog across phases;
-- client exposure narrowed to MCP Core + exactly one active phase;
+- default client exposure narrowed to MCP Core + Geometry (27 tools);
 - phase-specific runtime workflow and active-specialist-only routing;
 - deterministic `HANDOFF_REQUIRED` with readiness + compact resume state;
 - Bedrock unit/axis contract in MCP initialize;
-- exact common Geometry route disambiguation in the active asset router;
-- first-call conditional input invariants to reduce validation-as-discovery;
-- persistent scale/front-direction continuity when material;
 - coherent Cube and Group batching;
 - deterministic non-overlapping Box-UV packing and returned `box_uv_region`;
 - logical UV resolution 128 default / 256 opt-in;
-- explicit production guard against omitted blank Texture Atlas size while `create_texture` still retains its provisional 16×16 schema/runtime default;
 - Texture Atlas/Painter/PBR/material-instance authoring;
 - Bedrock animation, effects, controller mutation/inspection;
 - Locator/Null Object lifecycle;
 - Undo/history, `.bbmodel`, and Bedrock geometry export;
 - loopback-only request-owned/stateless transport;
+- fail-closed TCP-bind lifecycle;
+- SHA-256 packaged-bundle freshness identity in `/health`;
 - `risky_eval` and `from_geo_json` disabled.
 
-The 2026-08-27 verification hardening did **not** change MCP runtime implementation, Geometry schemas, phase ownership, transport behavior, or Route 1 model logic. It repaired stale verifier ownership and continuation state so the static gate measures current contracts instead of obsolete prose/fixtures.
+The safety hardening did not add a router, registration profile, reconnect daemon, telemetry layer, alternate transport, compatibility framework, Geometry compiler, or Route 1 model workaround.
 
 ## Box-UV / Phase Boundary
 
-Geometry owns UV Layout mutation. After Geometry `PASS`, final Box-UV state is locked with `autouv=0` where applicable, then `list_textures` performs the global UV audit. Texturing may read/audit UV state but must return a required UV/geometry correction to Geometry via `HANDOFF_REQUIRED`.
+Geometry owns UV Layout mutation. After Geometry `PASS`, final Box-UV state is locked with `autouv=0` where applicable, then `list_textures` performs the global UV audit. Texturing may read/audit UV state but must return required UV/geometry correction to Geometry via `HANDOFF_REQUIRED`.
 
 ```text
 Geometry PASS
@@ -127,28 +143,6 @@ Geometry PASS
 → UV Layout PASS
 → HANDOFF_REQUIRED(texturing)
 ```
-
-## Texture Atlas Public-Contract Boundary
-
-The current agent contract does **not** change the underlying `create_texture` omitted-size default. Production Codex is instructed to pass explicit current project logical UV dimensions for a blank Atlas. The separate candidate for context-aware runtime/schema sizing remains a separate task and must not be mixed into connection/surface verification without direct blocking evidence.
-
-## Canonical Static Proof History
-
-Commit `39c8f1dad5aab73140901d70cb052e22fca08bfd` is the current observed **full canonical MCP green**. Commit `766ae3083afc5739dd4c0646d57bdf395a85225f` is the repository-contract green for the verification-hardening delivery. Earlier full MCP green `fc11428839ee21c1fe34251f6dafa2d1d7336877` remains historical proof for the pre-cleanup agent-legibility source, and `d7d93a4816f83289c5e5078c8e138b43d77fe74d` remains historical proof for the phase-scoped source before that hardening.
-
-Do not infer live model quality, installed-plugin freshness, or runtime Authoring Efficiency from this static green. Never restore retired ceremony solely to satisfy wording-based tests.
-
-## Local Runtime History
-
-### Accepted baseline — 2026-08-12
-
-Historical live coverage included loopback/stateless transport, then-current tool surface, geometry/correction/Undo, texture/Painter/PBR/material instances, animation basics, Locator/Null Object lifecycle, persistence, and export.
-
-### TEST 1 — 2026-08-24
-
-Historical mechanics coverage included representative project/group/cube creation, correction, Undo/redo rejection behavior, Painter bounds, PBR/material instances, Molang/controller paths, Locator/Null Object behavior, persistence/export, and selected lifecycle checks on the artifacts used in that run.
-
-Neither historical run automatically proves the exact-current installed BlockIT/Codex surface.
 
 ## Surface Guard
 
@@ -175,7 +169,7 @@ actual approved reference image
 + difference-first comparison
 ```
 
-Paths, filenames, manifests, prose, memory, coordinates, bounds, tool success, and scalar similarity cannot independently justify visual `PASS`.
+Static CI cannot prove visual fidelity. Paths, filenames, manifests, prose, memory, coordinates, bounds, tool success, and scalar similarity cannot independently justify visual `PASS`.
 
 ## Authoring Efficiency Rule
 
@@ -187,6 +181,20 @@ QUALITY PASS → compare justified vs unnecessary work → Cost to Accepted Resu
 ```
 
 Useful runtime observations include discovery calls, redundant readbacks, tool-search misses, placement batching, capture calls, correction outcomes, recovery, and same-cause retries. Unknown token/latency remains `UNVERIFIED` rather than estimated.
+
+## Canonical Static Proof History
+
+Commit `f2db288764382d4e4a2c6daca80e65359ad670a4` is the current observed **full canonical MCP green** after bundle-fingerprint and verifier hardening. Earlier green commits remain historical evidence only; current proof supersedes them for the static MCP boundary.
+
+`REPOSITORY CONTRACT BASELINE` above records the last proof-doc/repository baseline before this reconciliation. This reconciliation itself must pass current Repository Verify before being treated as delivered.
+
+## Local Runtime History
+
+### ACCEPTED LIVE BASELINE — 2026-08-12
+
+Historical live coverage included loopback/stateless transport, then-current tool surface, geometry/correction/Undo, texture/Painter/PBR/material instances, animation basics, Locator/Null Object lifecycle, persistence, and export.
+
+Historical live runs do not automatically prove the exact-current installed BlockIT/Codex surface.
 
 ## Protected Gaps
 
@@ -200,4 +208,6 @@ bone-binding expressions
 
 ## Current Boundary
 
-The exact-current source now has full static MCP verification. **The next unresolved gate is live installed-runtime proof:** a clean Blockbench/Codex restart must show current `/health`, active Geometry, and a live `tools/list` matching the source-owned Geometry surface. No claim is made that the current source produces a better/faster accepted model or eliminates live Codex looping until that exact-current live run and subsequent reference-driven authoring evidence are inspected.
+The exact-current source has full static MCP verification and stronger packaged-bundle freshness diagnostics. The local installed-runtime retest is **DEFERRED BY USER** and remains `LOCAL PROOF REQUIRED`; no live Geometry-surface PASS is claimed.
+
+Do not continue static development without a new concrete failing invariant. When the user later reactivates local verification, compare the locally printed bundle SHA-256 identity with `/health.build_identity`, then inspect the fresh live Geometry `tools/list` before Route 1 authoring.
