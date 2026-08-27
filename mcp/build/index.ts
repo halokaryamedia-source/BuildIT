@@ -1,4 +1,5 @@
 import { watch } from "node:fs";
+import { createHash } from "node:crypto";
 import { mkdir, copyFile, rename, rm, stat, unlink } from "node:fs/promises";
 import { resolve, join, normalize, sep } from "node:path";
 import { log, c, isCleanMode, isProduction, isWatchMode } from "./utils";
@@ -110,15 +111,25 @@ async function buildPlugin(): Promise<boolean> {
   }
 
   const mcpBunFile = Bun.file(mcpFile);
-  if (await mcpBunFile.exists()) {
-    const mcpContent = await mcpBunFile.text();
-    const banner = /* js */ `/* v${version} */
+  if (!(await mcpBunFile.exists())) {
+    log.error(`Expected build output was not created: ${mcpFile}`);
+    return false;
+  }
+
+  const mcpContent = await mcpBunFile.text();
+  const buildDigest = createHash("sha256").update(mcpContent).digest("hex");
+  const buildIdentity = `sha256:${buildDigest}`;
+  const banner = /* js */ `/* v${version} build ${buildDigest.slice(0, 12)} */
+globalThis.__BLOCKIT_BUILD_ID__ = ${JSON.stringify(buildIdentity)};
 let process = requireNativeModule('process');`;
 
-    if (!mcpContent.startsWith(banner)) {
-      await Bun.write(mcpFile, banner + mcpContent);
-    }
+  await Bun.write(mcpFile, banner + mcpContent);
+  const emittedContent = await Bun.file(mcpFile).text();
+  if (!emittedContent.startsWith(banner)) {
+    log.error("Built MCP bundle is missing its build identity banner.");
+    return false;
   }
+  log.step(`Embedded build identity ${c.gray}${buildIdentity}${c.reset}`);
 
   // Rename the sourcemap file
   const indexMapFile = join(OUTPUT_DIR, "index.js.map");
