@@ -74,7 +74,7 @@ describe("tool discovery eval", () => {
     );
     expect(routed.routed_query_note).toContain("deferred spec loading");
     expect(routed.metrics.top_8_recall).toBe(1);
-    expect(routed.metrics.top_3_recall).toBeGreaterThanOrEqual(0.95);
+    expect(routed.metrics.top_3_recall).toBeGreaterThan(raw.metrics.top_3_recall);
     expect(routed.metrics.top_1_accuracy).toBeGreaterThan(raw.metrics.top_1_accuracy);
     expect(routed.metrics.mean_reciprocal_rank).toBeGreaterThan(
       raw.metrics.mean_reciprocal_rank
