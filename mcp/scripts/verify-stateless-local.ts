@@ -9,6 +9,7 @@ import {
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
+import { PRODUCT_ID } from "@/lib/productIdentity";
 
 const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 const DEFAULT_BUNDLE_PATH = "dist/blockit_mcp.js";
@@ -42,6 +43,65 @@ type JsonObject = Record<string, unknown>;
 type ListedTool = { name?: unknown; inputSchema?: unknown };
 type Check = { name: string; ok: boolean; detail: string };
 
+export type LocalSmokeDiagnosticCode =
+  | "BLOCKBENCH_SERVER_UNREACHABLE"
+  | "MCP_HEALTH_UNREADABLE"
+  | "WRONG_MCP_PRODUCT"
+  | "STALE_BUILD"
+  | "SERVER_PROCESS_UNSTABLE"
+  | "WRONG_AUTHORING_PHASE"
+  | "MCP_HEALTH_CONTRACT_MISMATCH"
+  | "MCP_INITIALIZE_CONTRACT_MISMATCH"
+  | "SURFACE_MISMATCH"
+  | "GEOMETRY_CAPABILITY_MISSING"
+  | "RETIRED_PLAN_ID_EXPOSED";
+
+const DIAGNOSTICS = {
+  BLOCKBENCH_SERVER_UNREACHABLE: ["BLOCKBENCH_RUNTIME", "Start/reload BlockIT in desktop Blockbench and confirm the loopback endpoint."],
+  MCP_HEALTH_UNREADABLE: ["ENVIRONMENT / INSTALL", "Confirm the loopback port belongs to BlockIT and /health returns HTTP 200 JSON."],
+  WRONG_MCP_PRODUCT: ["ENVIRONMENT / INSTALL", "Close stale MCP owners and load only mcp/dist/blockit_mcp.js."],
+  STALE_BUILD: ["ENVIRONMENT / INSTALL", "Reload the exact freshly built plugin; do not inspect tools/list until build_identity matches."],
+  SERVER_PROCESS_UNSTABLE: ["BLOCKBENCH_RUNTIME", "Stabilize BlockIT/Blockbench so instance_id and startup_time remain unchanged."],
+  WRONG_AUTHORING_PHASE: ["ENVIRONMENT / INSTALL", "Set the intended MCP Authoring Phase, reload BlockIT MCP, then reconnect."],
+  MCP_HEALTH_CONTRACT_MISMATCH: ["MCP_PUBLIC_CONTRACT", "The fresh bundle is running but its health transport contract differs from source."],
+  MCP_INITIALIZE_CONTRACT_MISMATCH: ["MCP_PUBLIC_CONTRACT", "The fresh bundle failed initialize semantics; inspect that contract owner first."],
+  SURFACE_MISMATCH: ["MCP_PUBLIC_CONTRACT", "Capture missing/unexpected live tool names and fix only the first surface owner."],
+  GEOMETRY_CAPABILITY_MISSING: ["MCP_PUBLIC_CONTRACT", "Fix the missing Geometry registration/surface owner before Route 1."],
+  RETIRED_PLAN_ID_EXPOSED: ["MCP_PUBLIC_CONTRACT", "Fix the Direct Geometry schema owner before authoring."],
+} as const satisfies Record<LocalSmokeDiagnosticCode, readonly [string, string]>;
+
+export function getLocalSmokeDiagnostic(code: LocalSmokeDiagnosticCode) {
+  const [classification, next] = DIAGNOSTICS[code];
+  return {
+    classification,
+    next,
+    stopBeforeSurface: ![
+      "SURFACE_MISMATCH",
+      "GEOMETRY_CAPABILITY_MISSING",
+      "RETIRED_PLAN_ID_EXPOSED",
+    ].includes(code),
+  };
+}
+
+export function classifyPreflightFailure(state: {
+  reachable: boolean;
+  healthReadable?: boolean;
+  productMatches?: boolean;
+  buildMatches?: boolean;
+  processStable?: boolean;
+  phaseMatches?: boolean;
+  transportMatches?: boolean;
+}): LocalSmokeDiagnosticCode | null {
+  if (!state.reachable) return "BLOCKBENCH_SERVER_UNREACHABLE";
+  if (state.healthReadable === false) return "MCP_HEALTH_UNREADABLE";
+  if (state.productMatches === false) return "WRONG_MCP_PRODUCT";
+  if (state.buildMatches === false) return "STALE_BUILD";
+  if (state.processStable === false) return "SERVER_PROCESS_UNSTABLE";
+  if (state.phaseMatches === false) return "WRONG_AUTHORING_PHASE";
+  if (state.transportMatches === false) return "MCP_HEALTH_CONTRACT_MISMATCH";
+  return null;
+}
+
 const args = process.argv.slice(2);
 const firstIsUrl = typeof args[0] === "string" && /^https?:\/\//i.test(args[0]);
 const targetUrl = (
@@ -59,6 +119,20 @@ const checks: Check[] = [];
 function record(name: string, ok: boolean, detail: string): void {
   checks.push({ name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name} — ${detail}`);
+}
+
+function stop(code: LocalSmokeDiagnosticCode, name: string, detail: string): void {
+  record(name, false, detail);
+  const diagnostic = getLocalSmokeDiagnostic(code);
+  console.log(`\nCODE: ${code}`);
+  console.log(`CLASSIFICATION: ${diagnostic.classification}`);
+  console.log(`NEXT: ${diagnostic.next}`);
+  console.log(
+    diagnostic.stopBeforeSurface
+      ? "STOP. Do not inspect tools/list or modify MCP source from downstream symptoms."
+      : "STOP. Preserve this exact live contract failure before changing source."
+  );
+  process.exitCode = 1;
 }
 
 function expectedPhase(): McpAuthoringPhase {
@@ -135,52 +209,136 @@ async function post(body: unknown, protocol = false): Promise<Response> {
   });
 }
 
+async function fetchHealth(): Promise<{ response: Response; body: JsonObject }> {
+  const response = await fetch(`${targetUrl}/health`, {
+    headers: { connection: "close" },
+  });
+  return { response, body: await json(response) };
+}
+
 async function verify(): Promise<void> {
   const phase = expectedPhase();
   const buildIdentity = await localBuildIdentity();
+  const preflight = { reachable: false } as Parameters<typeof classifyPreflightFailure>[0];
 
   registerMcpProfile(EXPECTED_PROFILE);
   const expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
 
-  console.log(`BlockIT live smoke gate: ${targetUrl}`);
+  console.log(`BlockIT local diagnostic gate: ${targetUrl}`);
   console.log(
-    `Expected profile=${EXPECTED_PROFILE}; phase=${phase}; tools=${expectedNames.length}`
+    `Expected product=${PRODUCT_ID}; profile=${EXPECTED_PROFILE}; phase=${phase}; tools=${expectedNames.length}`
   );
   console.log(`Expected bundle=${bundlePath}; build_identity=${buildIdentity}\n`);
 
-  const healthResponse = await fetch(`${targetUrl}/health`, {
-    headers: { connection: "close" },
-  });
-  const health = await json(healthResponse);
-  const product = health.product as
-    | { profile?: unknown; authoring_phase?: unknown }
-    | undefined;
+  let healthResponse: Response;
+  let health: JsonObject;
+  try {
+    ({ response: healthResponse, body: health } = await fetchHealth());
+    preflight.reachable = true;
+    record("server reachable", true, `HTTP ${healthResponse.status}`);
+  } catch (error) {
+    stop("BLOCKBENCH_SERVER_UNREACHABLE", "server reachable", String(error));
+    return;
+  }
+
+  preflight.healthReadable = healthResponse.status === 200;
+  let code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(code, "health readable", `HTTP ${healthResponse.status}`);
+    return;
+  }
+  record("health readable", true, "HTTP 200 JSON");
+
+  const product = (health.product ?? {}) as {
+    id?: unknown;
+    profile?: unknown;
+    authoring_phase?: unknown;
+  };
+  preflight.productMatches = product.id === PRODUCT_ID;
+  code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(code, "product identity", `live=${String(product.id)}; expected=${PRODUCT_ID}`);
+    return;
+  }
+  record("product identity", true, String(product.id));
+
+  preflight.buildMatches = health.build_identity === buildIdentity;
+  code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(
+      code,
+      "installed artifact freshness",
+      `local=${buildIdentity}; live=${String(health.build_identity)}`
+    );
+    return;
+  }
+  record("installed artifact freshness", true, `build_identity=${buildIdentity}`);
+
+  let secondHealth: JsonObject | null = null;
+  try {
+    const second = await fetchHealth();
+    if (second.response.status === 200) secondHealth = second.body;
+  } catch {
+    secondHealth = null;
+  }
+  preflight.processStable =
+    secondHealth !== null &&
+    typeof health.instance_id === "string" &&
+    typeof health.startup_time === "string" &&
+    health.instance_id === secondHealth.instance_id &&
+    health.startup_time === secondHealth.startup_time &&
+    health.build_identity === secondHealth.build_identity;
+  code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(
+      code,
+      "server process stability",
+      `first=${String(health.instance_id)}/${String(health.startup_time)}; second=${String(
+        secondHealth?.instance_id
+      )}/${String(secondHealth?.startup_time)}`
+    );
+    return;
+  }
+  record(
+    "server process stability",
+    true,
+    `instance_id=${String(health.instance_id)}; startup_time=${String(health.startup_time)}`
+  );
+
+  preflight.phaseMatches =
+    product.profile === EXPECTED_PROFILE && product.authoring_phase === phase;
+  code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(
+      code,
+      "installed profile / phase",
+      `live=${String(product.profile)}/${String(product.authoring_phase)}; expected=${EXPECTED_PROFILE}/${phase}`
+    );
+    return;
+  }
+  record("installed profile / phase", true, `${String(product.profile)}/${String(product.authoring_phase)}`);
+
   const transport = health.transport as
     | { mode?: unknown; response_mode?: unknown }
     | undefined;
+  preflight.transportMatches =
+    transport?.mode === "stateless" && transport?.response_mode === "json";
+  code = classifyPreflightFailure(preflight);
+  if (code) {
+    stop(code, "health transport", JSON.stringify(transport ?? {}));
+    return;
+  }
+  record("health transport", true, JSON.stringify(transport ?? {}));
 
-  record(
-    "health transport",
-    healthResponse.status === 200 &&
-      transport?.mode === "stateless" &&
-      transport?.response_mode === "json",
-    `HTTP ${healthResponse.status}; ${JSON.stringify(transport ?? {})}`
-  );
-  record(
-    "installed profile / phase",
-    product?.profile === EXPECTED_PROFILE && product?.authoring_phase === phase,
-    `live=${String(product?.profile)}/${String(product?.authoring_phase)}`
-  );
-  record(
-    "installed artifact freshness",
-    health.build_identity === buildIdentity,
-    `local=${buildIdentity}; live=${String(health.build_identity)}`
-  );
-  record(
-    "health surface count",
-    health.exposed_tool_count === expectedNames.length,
-    `live=${String(health.exposed_tool_count)}; expected=${expectedNames.length}`
-  );
+  if (health.exposed_tool_count !== expectedNames.length) {
+    stop(
+      "SURFACE_MISMATCH",
+      "health surface count",
+      `live=${String(health.exposed_tool_count)}; expected=${expectedNames.length}`
+    );
+    return;
+  }
+  record("health surface count", true, `tools=${expectedNames.length}`);
 
   const initializeResponse = await post({
     jsonrpc: "2.0",
@@ -200,16 +358,25 @@ async function verify(): Promise<void> {
     typeof initializeResult?.instructions === "string"
       ? initializeResult.instructions
       : "";
-
+  const initializeOk =
+    initializeResponse.status === 200 &&
+    initializeResponse.headers.get("mcp-session-id") === null &&
+    initializeResult?.protocolVersion === PROTOCOL_VERSION &&
+    instructions.includes(`ACTIVE PHASE: ${phase.toUpperCase()}`);
+  if (!initializeOk) {
+    stop(
+      "MCP_INITIALIZE_CONTRACT_MISMATCH",
+      "initialize / phase contract",
+      `HTTP ${initializeResponse.status}; protocol=${String(
+        initializeResult?.protocolVersion
+      )}; session=${String(initializeResponse.headers.get("mcp-session-id"))}`
+    );
+    return;
+  }
   record(
     "initialize / phase contract",
-    initializeResponse.status === 200 &&
-      initializeResponse.headers.get("mcp-session-id") === null &&
-      initializeResult?.protocolVersion === PROTOCOL_VERSION &&
-      instructions.includes(`ACTIVE PHASE: ${phase.toUpperCase()}`),
-    `HTTP ${initializeResponse.status}; protocol=${String(
-      initializeResult?.protocolVersion
-    )}; session=${String(initializeResponse.headers.get("mcp-session-id"))}`
+    true,
+    `HTTP ${initializeResponse.status}; protocol=${String(initializeResult?.protocolVersion)}; session=none`
   );
 
   const listResponse = await post(
@@ -231,48 +398,67 @@ async function verify(): Promise<void> {
   const missing = expectedNames.filter((name) => !names.includes(name));
   const unexpected = names.filter((name) => !expectedNames.includes(name));
   const forbidden = FORBIDDEN_TOOLS.filter((name) => names.includes(name));
-
+  const surfaceOk =
+    listResponse.status === 200 &&
+    listResponse.headers.get("mcp-session-id") === null &&
+    missing.length === 0 &&
+    unexpected.length === 0 &&
+    forbidden.length === 0;
+  if (!surfaceOk) {
+    stop(
+      "SURFACE_MISMATCH",
+      "tools/list exact source surface",
+      `tools=${names.length}; missing=${missing.join(",") || "none"}; unexpected=${
+        unexpected.join(",") || "none"
+      }; forbidden=${forbidden.join(",") || "none"}`
+    );
+    return;
+  }
   record(
     "tools/list exact source surface",
-    listResponse.status === 200 &&
-      listResponse.headers.get("mcp-session-id") === null &&
-      missing.length === 0 &&
-      unexpected.length === 0 &&
-      forbidden.length === 0,
-    `tools=${names.length}; missing=${missing.join(",") || "none"}; unexpected=${
-      unexpected.join(",") || "none"
-    }; forbidden=${forbidden.join(",") || "none"}`
+    true,
+    `tools=${names.length}; missing=none; unexpected=none; forbidden=none`
   );
 
   if (phase === "geometry") {
     const requiredMissing = REQUIRED_GEOMETRY_TOOLS.filter(
       (name) => !names.includes(name)
     );
-    record(
-      "required Geometry capability",
-      requiredMissing.length === 0,
-      `missing=${requiredMissing.join(",") || "none"}`
-    );
+    if (requiredMissing.length > 0) {
+      stop(
+        "GEOMETRY_CAPABILITY_MISSING",
+        "required Geometry capability",
+        `missing=${requiredMissing.join(",")}`
+      );
+      return;
+    }
+    record("required Geometry capability", true, "missing=none");
 
     const planIssues = schemaPlanIssues(tools);
-    record(
-      "Direct Geometry plan-free schemas",
-      planIssues.length === 0,
-      `issues=${planIssues.join(",") || "none"}`
-    );
+    if (planIssues.length > 0) {
+      stop(
+        "RETIRED_PLAN_ID_EXPOSED",
+        "Direct Geometry plan-free schemas",
+        `issues=${planIssues.join(",")}`
+      );
+      return;
+    }
+    record("Direct Geometry plan-free schemas", true, "issues=none");
   }
 
-  const failed = checks.filter((check) => !check.ok);
-  console.log(`\nResult: ${checks.length - failed.length}/${checks.length} passed.`);
+  console.log(`\nResult: ${checks.length}/${checks.length} passed.`);
+  console.log("SERVER / BLOCKBENCH MCP: PASS");
+  console.log("NEXT: Reconnect Codex using a fresh connection and compare its registry.");
   console.log(
-    "Still requires local proof: a fresh Codex registry, representative Blockbench mutation + Undo, required phase handoffs/reloads, and visual/model quality."
+    "Do not modify MCP source unless fresh Codex/server evidence identifies a real contract mismatch."
   );
-  if (failed.length > 0) process.exitCode = 1;
 }
 
-try {
-  await verify();
-} catch (error) {
-  console.error("FAIL  smoke gate could not complete:", error);
-  process.exitCode = 1;
+if (import.meta.main) {
+  try {
+    await verify();
+  } catch (error) {
+    console.error("FAIL  diagnostic gate could not complete:", error);
+    process.exitCode = 1;
+  }
 }
