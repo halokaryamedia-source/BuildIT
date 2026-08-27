@@ -1,6 +1,6 @@
 {
-  "version": "1.6.2",
-  "generatedAt": "2026-08-26T20:09:26.667Z",
+  "version": "1.6.3",
+  "generatedAt": "2026-08-27T05:29:13.165Z",
   "tools": [
     {
       "name": "place_cube",
@@ -17,12 +17,6 @@
           "place_cube": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "elements": {
                 "type": "array",
                 "items": {
@@ -195,7 +189,6 @@
               }
             },
             "required": [
-              "plan_id",
               "elements"
             ],
             "additionalProperties": false
@@ -219,12 +212,6 @@
           "modify_cube": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -351,7 +338,6 @@
               }
             },
             "required": [
-              "plan_id",
               "id"
             ],
             "additionalProperties": false
@@ -375,12 +361,6 @@
           "modify_cubes_batch": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "updates": {
                 "type": "array",
                 "items": {
@@ -512,7 +492,6 @@
               }
             },
             "required": [
-              "plan_id",
               "updates"
             ],
             "additionalProperties": false
@@ -2186,12 +2165,6 @@
           "add_group": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "name": {
                 "type": "string",
                 "minLength": 1,
@@ -2312,9 +2285,6 @@
                 "markdownDescription": "Coherent Group/bone batch; ordered, one Undo unit."
               }
             },
-            "required": [
-              "plan_id"
-            ],
             "additionalProperties": false
           }
         },
@@ -2380,12 +2350,6 @@
           "duplicate_element": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -2423,7 +2387,6 @@
               }
             },
             "required": [
-              "plan_id",
               "id"
             ],
             "additionalProperties": false
@@ -2697,12 +2660,6 @@
           "modify_group": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -2752,7 +2709,6 @@
               }
             },
             "required": [
-              "plan_id",
               "id"
             ],
             "additionalProperties": false
@@ -2776,12 +2732,6 @@
           "reparent_element": {
             "type": "object",
             "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
               "id": {
                 "type": "string",
                 "minLength": 1,
@@ -2796,7 +2746,6 @@
               }
             },
             "required": [
-              "plan_id",
               "id",
               "parent"
             ],
@@ -4855,744 +4804,6 @@
           "inspect_model_bounds": {
             "type": "object",
             "properties": {},
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "prepare_geometry_plan",
-      "title": "Prepare Geometry Plan",
-      "description": "Legacy Geometry planning tool. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer the basic Group/Cube authoring tools for direct, explicit construction.",
-      "status": "stable",
-      "category": "Project",
-      "annotations": {
-        "destructiveHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/prepare_geometry_plan",
-        "definitions": {
-          "prepare_geometry_plan": {
-            "type": "object",
-            "properties": {
-              "plan_version": {
-                "type": "string",
-                "const": "reference_grounded_v1"
-              },
-              "role_namespace": {
-                "type": "string",
-                "const": "generic"
-              },
-              "evidence_map": {
-                "type": "object",
-                "properties": {
-                  "approved_views": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "minItems": 1
-                  },
-                  "silhouette_anchors": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "role": {
-                          "type": "string",
-                          "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                        },
-                        "view": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "top",
-                            "bottom",
-                            "front",
-                            "back",
-                            "left",
-                            "right",
-                            "attachment"
-                          ]
-                        },
-                        "point_normalized": {
-                          "type": "array",
-                          "minItems": 3,
-                          "maxItems": 3,
-                          "items": [
-                            {
-                              "type": "number",
-                              "minimum": 0,
-                              "maximum": 1
-                            },
-                            {
-                              "type": "number",
-                              "minimum": 0,
-                              "maximum": 1
-                            },
-                            {
-                              "type": "number",
-                              "minimum": 0,
-                              "maximum": 1
-                            }
-                          ],
-                          "description": "Normalized model-space position [x,y,z].",
-                          "markdownDescription": "Normalized model-space position [x,y,z]."
-                        },
-                        "confidence": {
-                          "type": "string",
-                          "enum": [
-                            "supported",
-                            "provisional"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "role",
-                        "view",
-                        "kind",
-                        "point_normalized",
-                        "confidence"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "minItems": 3
-                  },
-                  "primary_mass_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    },
-                    "minItems": 1
-                  },
-                  "chain_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    }
-                  },
-                  "bilateral_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    }
-                  },
-                  "rotated_attachment_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    }
-                  },
-                  "repeated_detail_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    }
-                  },
-                  "locator_roles": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$"
-                    }
-                  },
-                  "unsupported_dimensions": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  },
-                  "first_build_ready": {
-                    "type": "boolean",
-                    "const": true
-                  }
-                },
-                "required": [
-                  "approved_views",
-                  "silhouette_anchors",
-                  "primary_mass_roles",
-                  "chain_roles",
-                  "bilateral_roles",
-                  "rotated_attachment_roles",
-                  "repeated_detail_roles",
-                  "locator_roles",
-                  "unsupported_dimensions",
-                  "first_build_ready"
-                ],
-                "additionalProperties": false
-              },
-              "reference_identity": {
-                "type": "string",
-                "minLength": 1
-              },
-              "reference_views": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "minItems": 1
-              },
-              "front_direction": {
-                "type": "string",
-                "enum": [
-                  "+z",
-                  "-z"
-                ]
-              },
-              "up_direction": {
-                "type": "string",
-                "const": "+y",
-                "default": "+y"
-              },
-              "scale": {
-                "type": "object",
-                "properties": {
-                  "basis": {
-                    "type": "string",
-                    "const": "minecraft_player",
-                    "default": "minecraft_player"
-                  },
-                  "player_height_blocks": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "default": 1.8
-                  },
-                  "target_height_blocks": {
-                    "type": "number",
-                    "exclusiveMinimum": 0
-                  },
-                  "ground_contact": {
-                    "type": "string",
-                    "const": "bottom",
-                    "default": "bottom"
-                  }
-                },
-                "required": [
-                  "target_height_blocks"
-                ],
-                "additionalProperties": false,
-                "description": "World-scale anchor using the 1.8-block Minecraft player baseline.",
-                "markdownDescription": "World-scale anchor using the 1.8-block Minecraft player baseline."
-              },
-              "envelope": {
-                "type": "object",
-                "properties": {
-                  "width": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "description": "Width in Blockbench units (16 units = 1 block).",
-                    "markdownDescription": "Width in Blockbench units (16 units = 1 block)."
-                  },
-                  "height": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "description": "Height in Blockbench units; must match target_height_blocks x 16.",
-                    "markdownDescription": "Height in Blockbench units; must match target_height_blocks x 16."
-                  },
-                  "length": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "description": "Length in Blockbench units (16 units = 1 block).",
-                    "markdownDescription": "Length in Blockbench units (16 units = 1 block)."
-                  }
-                },
-                "required": [
-                  "width",
-                  "height",
-                  "length"
-                ],
-                "additionalProperties": false
-              },
-              "proportion_targets": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "min_normalized": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        }
-                      ],
-                      "description": "Normalized model-space position [x,y,z].",
-                      "markdownDescription": "Normalized model-space position [x,y,z]."
-                    },
-                    "max_normalized": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        }
-                      ],
-                      "description": "Normalized model-space position [x,y,z].",
-                      "markdownDescription": "Normalized model-space position [x,y,z]."
-                    },
-                    "source_views": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "minItems": 1
-                    },
-                    "confidence": {
-                      "type": "string",
-                      "enum": [
-                        "supported",
-                        "provisional"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "min_normalized",
-                    "max_normalized",
-                    "source_views",
-                    "confidence"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "Reference-derived normalized bounds for every role entering the first build.",
-                "markdownDescription": "Reference-derived normalized bounds for every role entering the first build."
-              },
-              "group_roles": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$",
-                      "errorMessage": {
-                        "pattern": "Use a generic geometry role namespace; keep anatomy in semantic metadata."
-                      }
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "axis_aligned",
-                        "rotated",
-                        "unresolved"
-                      ]
-                    },
-                    "parent_role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "required": {
-                      "type": "boolean",
-                      "default": true
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "type",
-                    "parent_role"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "geometry_roles": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "pattern": "^(mass|chain|bilateral|attachment|repeated|locator)_[a-z0-9_]+$",
-                      "errorMessage": {
-                        "pattern": "Use a generic geometry role namespace; keep anatomy in semantic metadata."
-                      }
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "axis_aligned",
-                        "rotated",
-                        "unresolved"
-                      ]
-                    },
-                    "parent_role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "required": {
-                      "type": "boolean",
-                      "default": true
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "type",
-                    "parent_role"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "landmarks": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "position_normalized": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        }
-                      ],
-                      "description": "Normalized model-space position [x,y,z].",
-                      "markdownDescription": "Normalized model-space position [x,y,z]."
-                    },
-                    "source_views": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "minItems": 1
-                    },
-                    "confidence": {
-                      "type": "string",
-                      "enum": [
-                        "supported",
-                        "provisional"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "position_normalized",
-                    "source_views",
-                    "confidence"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "attachments": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "child_role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "parent_role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "landmark": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "invariant": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  },
-                  "required": [
-                    "child_role",
-                    "parent_role",
-                    "landmark",
-                    "invariant"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "rotation_parts": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "attachment_landmark": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "endpoint_landmark": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "source_views": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "minItems": 1
-                    },
-                    "rotation_owner": {
-                      "type": "string",
-                      "enum": [
-                        "group",
-                        "cube"
-                      ]
-                    },
-                    "pivot_landmark": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "rotation_axis": {
-                      "type": "string",
-                      "enum": [
-                        "x",
-                        "y",
-                        "z"
-                      ]
-                    },
-                    "rotation_sign": {
-                      "type": "string",
-                      "enum": [
-                        "positive",
-                        "negative",
-                        "toward_front",
-                        "away_from_front"
-                      ]
-                    },
-                    "confidence": {
-                      "type": "string",
-                      "enum": [
-                        "supported",
-                        "provisional"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "attachment_landmark",
-                    "endpoint_landmark",
-                    "source_views",
-                    "rotation_owner",
-                    "pivot_landmark",
-                    "rotation_axis",
-                    "rotation_sign",
-                    "confidence"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "construction_strategy": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "strategy": {
-                      "type": "string",
-                      "enum": [
-                        "solid_mass",
-                        "bilateral_pair",
-                        "segmented_chain",
-                        "tapered_chain",
-                        "rotated_attachment",
-                        "repeated_detail",
-                        "locator_only"
-                      ]
-                    },
-                    "counterpart_role": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "segment_index": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "description": "Required for segmented_chain and tapered_chain; omit for non-chain strategies.",
-                      "markdownDescription": "Required for segmented_chain and tapered_chain; omit for non-chain strategies."
-                    },
-                    "repeat_count": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 64,
-                      "description": "Required for repeated_detail; generated element count, maximum 64.",
-                      "markdownDescription": "Required for repeated_detail; generated element count, maximum 64."
-                    },
-                    "repeat_axis": {
-                      "type": "string",
-                      "enum": [
-                        "x",
-                        "y",
-                        "z"
-                      ],
-                      "description": "Required for repeated_detail; axis for generated copies.",
-                      "markdownDescription": "Required for repeated_detail; axis for generated copies."
-                    },
-                    "repeat_step": {
-                      "type": "number",
-                      "exclusiveMinimum": 0,
-                      "description": "Required for repeated_detail; spacing on the 0.5-unit grid.",
-                      "markdownDescription": "Required for repeated_detail; spacing on the 0.5-unit grid."
-                    }
-                  },
-                  "required": [
-                    "role",
-                    "strategy"
-                  ],
-                  "additionalProperties": false
-                },
-                "default": []
-              },
-              "symmetry": {
-                "type": "object",
-                "properties": {
-                  "enabled": {
-                    "type": "boolean",
-                    "default": false
-                  },
-                  "axis": {
-                    "type": "string",
-                    "const": "x",
-                    "default": "x"
-                  },
-                  "tolerance": {
-                    "type": "number",
-                    "minimum": 0,
-                    "default": 0.01
-                  }
-                },
-                "additionalProperties": false,
-                "default": {
-                  "enabled": false,
-                  "axis": "x",
-                  "tolerance": 0.01
-                }
-              },
-              "first_build_scope": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "minItems": 1
-              }
-            },
-            "required": [
-              "plan_version",
-              "role_namespace",
-              "evidence_map",
-              "reference_identity",
-              "reference_views",
-              "front_direction",
-              "scale",
-              "envelope",
-              "proportion_targets",
-              "first_build_scope"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "compile_geometry_spec",
-      "title": "Compile Geometry Spec",
-      "description": "Legacy Geometry compiler. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer explicit Group/Cube authoring and capture the result for visual review.",
-      "status": "stable",
-      "category": "Project",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/compile_geometry_spec",
-        "definitions": {
-          "compile_geometry_spec": {
-            "type": "object",
-            "properties": {
-              "plan_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Active prepare_geometry_plan ID.",
-                "markdownDescription": "Active prepare_geometry_plan ID."
-              },
-              "detail_level": {
-                "type": "string",
-                "enum": [
-                  "blockout",
-                  "primary",
-                  "refined"
-                ],
-                "default": "primary"
-              }
-            },
-            "required": [
-              "plan_id"
-            ],
             "additionalProperties": false
           }
         },

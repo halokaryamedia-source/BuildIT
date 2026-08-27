@@ -11,14 +11,14 @@
     <nav class="sidebar">
       <div class="sidebar-brand">
         <h1>BlockIT — Bedrock Entity MCP</h1>
-        <p>v1.6.2 — API Reference</p>
+        <p>v1.6.3 — API Reference</p>
       </div>
 
       <input id="search" type="text" placeholder="Search tools..." class="search-input" />
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(78)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(76)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -34,7 +34,7 @@
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
-        <a href="#cat-project" class="nav-link">Project <span class="count">(5)</span></a>
+        <a href="#cat-project" class="nav-link">Project <span class="count">(3)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(13)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
       </div>
@@ -43,9 +43,9 @@
     <main class="main">
       <header class="page-header">
         <h1>BlockIT — Bedrock Entity MCP</h1>
-        <p class="subtitle">API Reference — v1.6.2</p>
+        <p class="subtitle">API Reference — v1.6.3</p>
         <nav class="stats">
-          <a href="#tools"><strong>78</strong> tools (32 stable, 46 experimental)</a>
+          <a href="#tools"><strong>76</strong> tools (30 stable, 46 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -97,11 +97,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">elements</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
@@ -141,11 +136,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -225,11 +215,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">updates</td>
       <td class="col-type">object[]</td>
       <td><span class="param-required">required</span></td>
@@ -873,11 +858,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">name</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
@@ -966,11 +946,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -1200,11 +1175,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -1249,11 +1219,6 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
       <td class="col-name">id</td>
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
@@ -2469,154 +2434,6 @@ bun run docs:check
         <p class="empty-params">No parameters</p>
       </div>
     </div>
-<div id="tool-prepare_geometry_plan" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">prepare_geometry_plan</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-
-        </div>
-      </div>
-      <p class="card-title">Prepare Geometry Plan</p>
-      <p class="card-desc">Legacy Geometry planning tool. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer the basic Group/Cube authoring tools for direct, explicit construction.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">plan_version</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"></td>
-    </tr><tr>
-      <td class="col-name">role_namespace</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"></td>
-    </tr><tr>
-      <td class="col-name">evidence_map</td>
-      <td class="col-type">object</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"></td>
-    </tr><tr>
-      <td class="col-name">reference_identity</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"> <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">reference_views</td>
-      <td class="col-type">string[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"> <span class="param-meta">[minItems: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">front_direction</td>
-      <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"></td>
-    </tr><tr>
-      <td class="col-name">up_direction</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;+y&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">scale</td>
-      <td class="col-type">object</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">World-scale anchor using the 1.8-block Minecraft player baseline.</td>
-    </tr><tr>
-      <td class="col-name">envelope</td>
-      <td class="col-type">object</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"></td>
-    </tr><tr>
-      <td class="col-name">proportion_targets</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Reference-derived normalized bounds for every role entering the first build. <span class="param-meta">[minItems: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">group_roles</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">geometry_roles</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">landmarks</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">attachments</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">rotation_parts</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">construction_strategy</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>[]</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">symmetry</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>{&quot;enabled&quot;:false,&quot;axis&quot;:&quot;x&quot;,&quot;tolerance&quot;:0.01}</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">first_build_scope</td>
-      <td class="col-type">string[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc"> <span class="param-meta">[minItems: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-compile_geometry_spec" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">compile_geometry_spec</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Compile Geometry Spec</p>
-      <p class="card-desc">Legacy Geometry compiler. Not part of the default Geometry flow while the reference-grounded pipeline is being retired. Prefer explicit Group/Cube authoring and capture the result for visual review.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">plan_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Active prepare_geometry_plan ID. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">detail_level</td>
-      <td class="col-type">&quot;blockout&quot; | &quot;primary&quot; | &quot;refined&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;primary&quot;</code>)</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
         </section>
 <section id="cat-textures" class="category-section">
           <h3 class="category-title">Textures</h3>
@@ -3336,7 +3153,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-26T20:09:26.667Z from Zod schemas
+        Generated 2026-08-27T05:29:13.165Z from Zod schemas
       </footer>
     </main>
   </div>
