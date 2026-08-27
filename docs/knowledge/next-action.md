@@ -108,10 +108,8 @@ After the MCP gate is green:
 [x] Remove the temporary `Upload MCP cleanup snapshot` step if no active recovery need remains.
 [ ] Do not replace it with another archive/snapshot framework.
 
-[x] Audit `rebuild-mcp.ps1`.
-    Keep it only as a small useful rebuild/check helper.
-    It must not bump plugin version to solve stale connections.
-    Do not turn it into a large doctor/daemon framework.
+[x] Retire `rebuild-mcp.ps1`; use the repository-owned `mcp` build scripts directly.
+    Do not add a replacement rebuild wrapper or use version bumps to solve stale connections.
 ```
 
 ## H. Route 1 Experimental cleanup
@@ -266,6 +264,76 @@ EXPERIMENTAL_FOLDER_CLEANUP_COMPLETE
 TEMPORARY_REPO_HOUSEKEEPING_COMPLETE
 TEXTURE_ATLAS_CANDIDATE_SEPARATE_AND_DEFERRED
 NO_ACTIVE_LOCAL_ACCEPTANCE_RUN
+```
+
+---
+
+# OPEN ISSUES / NEXT DIAGNOSTIC ACTIONS
+
+## P0 — Live MCP Geometry surface is still incomplete
+
+Observed after plugin reinstall/reload and MCP reconnect:
+
+```text
+LIVE CONNECTION: responds successfully
+LIVE PROJECT READ: succeeds
+LIVE ACTIVE PHASE: Geometry
+MISSING FROM CODEX TOOL REGISTRY:
+- add_group
+- place_cube
+- modify_cube
+- modify_cubes_batch
+```
+
+Current evidence:
+
+```text
+source registration: present
+generated bundle: present
+source-owned tools/list measurement: passes
+live Codex tool registry: still partial
+```
+
+Classification: `ENVIRONMENT / INSTALL` or `MCP_PUBLIC_CONTRACT` pending direct live `tools/list` capture.
+
+Required next action:
+
+```text
+close Codex completely
+close Blockbench completely
+load only mcp/dist/blockit_mcp.js
+open Codex again
+create a fresh MCP connection/task
+capture live /health and tools/list
+compare exact live names with getMcpSurfaceToolNames("bedrock_entity", "geometry")
+```
+
+Do not modify Route 1, model logic, or Geometry schemas until this comparison identifies the first wrong owner.
+
+## P1 — Rebuild helper retired
+
+`rebuild-mcp.ps1` was intentionally removed. Use only the repository-owned commands from `mcp/package.json`:
+
+```text
+bun run build
+bun run measure:surface
+bun run typecheck
+```
+
+Do not recreate a wrapper, add cache-buster version changes, or rebuild repeatedly without new evidence.
+
+## P1 — One stale static test remains
+
+`tests/default-registration-import-safe.test.ts` still expects the old unspecialized 64-tool surface while the active Geometry surface is intentionally 27 tools. Reconcile this test against the current phase-owned contract before claiming the full static test gate green.
+
+## CLOSED / DO NOT REPEAT
+
+```text
+plugin filename mismatch: fixed; bundle is blockit_mcp.js
+legacy mcp.js generated artifact: build removes it
+plugin ID blockit_mcp: stable and preserved
+Direct Geometry plan/compiler coupling: removed
+source-owned tools/list Geometry surface: passes
 ```
 
 ---

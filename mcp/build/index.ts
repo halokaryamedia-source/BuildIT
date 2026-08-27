@@ -1,5 +1,5 @@
 import { watch } from "node:fs";
-import { mkdir, copyFile, rename, rm, stat } from "node:fs/promises";
+import { mkdir, copyFile, rename, rm, stat, unlink } from "node:fs/promises";
 import { resolve, join, normalize, sep } from "node:path";
 import { log, c, isCleanMode, isProduction, isWatchMode } from "./utils";
 import { blockbenchCompatPlugin, textFileLoaderPlugin } from "./plugins";
@@ -96,11 +96,17 @@ async function buildPlugin(): Promise<boolean> {
   }
 
   const indexFile = join(OUTPUT_DIR, "index.js");
-  const mcpFile = join(OUTPUT_DIR, "mcp.js");
+  const mcpFile = join(OUTPUT_DIR, "blockit_mcp.js");
+  const legacyMcpFile = join(OUTPUT_DIR, "mcp.js");
+
+  if (await Bun.file(legacyMcpFile).exists()) {
+    await unlink(legacyMcpFile);
+    log.step(`Removed legacy ${c.gray}mcp.js${c.reset}`);
+  }
 
   if (await Bun.file(indexFile).exists()) {
     await rename(indexFile, mcpFile);
-    log.step(`Renamed ${c.gray}index.js${c.reset} → ${c.cyan}mcp.js${c.reset}`);
+    log.step(`Renamed ${c.gray}index.js${c.reset} → ${c.cyan}blockit_mcp.js${c.reset}`);
   }
 
   const mcpBunFile = Bun.file(mcpFile);
@@ -116,11 +122,11 @@ let process = requireNativeModule('process');`;
 
   // Rename the sourcemap file
   const indexMapFile = join(OUTPUT_DIR, "index.js.map");
-  const mcpMapFile = join(OUTPUT_DIR, "mcp.js.map");
+  const mcpMapFile = join(OUTPUT_DIR, "blockit_mcp.js.map");
 
   if (await Bun.file(indexMapFile).exists()) {
     await rename(indexMapFile, mcpMapFile);
-    log.step(`Renamed ${c.gray}index.js.map${c.reset} → ${c.cyan}mcp.js.map${c.reset}`);
+    log.step(`Renamed ${c.gray}index.js.map${c.reset} → ${c.cyan}blockit_mcp.js.map${c.reset}`);
   }
 
   // Copy the README file

@@ -12,7 +12,7 @@
     "Jason J. Gardner"
   ],
   "type": "module",
-  "main": "dist/mcp.js",
+  "main": "dist/blockit_mcp.js",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",

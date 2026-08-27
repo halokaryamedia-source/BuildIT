@@ -91,6 +91,6 @@ describe("Bedrock prompt and skill surface", () => {
     const [docs, readme] = await Promise.all([source("build/docs.ts"), source("README.md")]);
     expect(docs).toContain("BlockIT — Bedrock Entity MCP");
     expect(readme).toContain("Do **not** use the upstream hosted plugin");
-    expect(readme).toContain("dist/mcp.js");
+    expect(readme).toContain("dist/blockit_mcp.js");
   });
 });

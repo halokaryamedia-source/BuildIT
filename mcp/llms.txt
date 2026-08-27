@@ -76,7 +76,7 @@ bun run docs:check
 
 `measure:surface` is a **catalog/static payload guard**, not the actual default Geometry exposure and not an Authoring Efficiency metric.
 
-Production artifact: `mcp/dist/mcp.js`.
+Production artifact: `mcp/dist/blockit_mcp.js`.
 
 For live installed-runtime verification use `bun run verify:stateless-local`; it compares the installed profile + active phase + `tools/list` against the current source-owned surface.
 
