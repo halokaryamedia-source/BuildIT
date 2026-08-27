@@ -68,20 +68,25 @@ describe("repository GitHub discipline", () => {
     expect(mcp).toContain("bun run docs:check");
   });
 
-  test("current continuation records current phase-contract work without stale runtime state", async () => {
+  test("current continuation records current MCP verification work without stale runtime state", async () => {
     const [next, experimental] = await Promise.all([
       source("../docs/knowledge/next-action.md"), source("../Experimental/README.md"),
     ]);
     expect(next.length).toBeLessThan(7_500);
     for (const marker of [
-      "CROSS_AGENT_EXECUTION_CONTRACT_COMPLETE",
-      "PHASE_CONTRACT_V2_AGENT_LEGIBILITY_SOURCE_APPLIED",
-      "PHASE_SPECIFIC_RUNTIME_PROMPT_SOURCE_APPLIED",
-      "COMPACT_PHASE_HANDOFF_STATE_SOURCE_APPLIED",
-      "ACTIVE_SPECIALIST_ONLY_ROUTING_SOURCE_APPLIED",
-      "INVALID_EXPLICIT_PHASE_FAILS_CLOSED",
-      "NO ACTIVE LOCAL ACCEPTANCE RUN", "NO ACTIVE EXPERIMENT", "NO ACTIVE DEVELOPMENT",
-      "Success Metric", "Forbidden Proxy / Non-Goal", "Authoring Efficiency", "Static Footprint", "## STOP",
+      "Working branch: **`Local` only**",
+      "## Current State",
+      "## Development Contract",
+      "Success Metric",
+      "Forbidden Proxy / Non-Goal",
+      "First Evidence Required",
+      "Failure Classification / first wrong owner",
+      "Proof Required",
+      "## Local Runtime Gate",
+      "## STOP",
+      "MCP_DIRECT_GEOMETRY_REPAIRED",
+      "LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED",
+      "ROUTE1_BLOCKBENCH_TEST_BLOCKED",
     ]) expect(next).toContain(marker);
     for (const stale of ["AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4", "LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23", "PRELOCAL_CONTROLLER_MUTATION_READY"]) {
       expect(next).not.toContain(stale);

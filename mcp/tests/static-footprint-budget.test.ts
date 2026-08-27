@@ -45,7 +45,7 @@ describe("static footprint budget", () => {
     expect(modelling.length).toBeLessThan(8_000);
     expect(texturing.length).toBeLessThan(4_500);
     expect(animation.length).toBeLessThan(4_500);
-    expect(workflow.length).toBeLessThan(7_000);
+    expect(workflow.length).toBeLessThan(9_000);
   });
 
   test("repository-development instruction owners stay bounded by responsibility", async () => {

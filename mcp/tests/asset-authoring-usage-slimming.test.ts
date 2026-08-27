@@ -89,7 +89,8 @@ describe("pre-local asset-authoring usage slimming", () => {
     ]);
     for (const text of files) expect(text).not.toContain("JSON.stringify(result, null, 2)");
     const locatorSource = files[4];
-    expect(locatorSource).toContain("JSON.stringify(state)");
+    expect(locatorSource).toContain("function mutationResult(");
+    expect(locatorSource).toContain("structuredContent: summary");
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
   });

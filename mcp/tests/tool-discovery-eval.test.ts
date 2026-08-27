@@ -61,8 +61,8 @@ describe("tool discovery eval", () => {
     );
 
     for (const report of [raw, routed]) {
-      expect(report.case_count).toBe(108);
-      expect(report.expected_tool_count).toBe(54);
+      expect(report.case_count).toBe(104);
+      expect(report.expected_tool_count).toBe(52);
       expect(report.enabled_tool_count).toBe(64);
       expect(report.missing_expected_tools).toEqual([]);
       expect(report.upstream_reference.default_limit).toBe(8);

@@ -58,7 +58,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
       source("ui/index.ts"),
       source("lib/productIdentity.ts"),
     ]);
-    expect(panel).toContain("<dt>Authoring Phase</dt>");
+    expect(panel).toContain("{{tl('mcp.server.phase')}}");
     expect(panel).toContain("server.authoringPhase");
     expect(panel).toContain("surface.tools.exposed_count");
     expect(panel).toContain("surface.prompts.exposed_count");

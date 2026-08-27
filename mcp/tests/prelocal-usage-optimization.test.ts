@@ -55,19 +55,19 @@ describe("pre-local usage optimization contract", () => {
   });
 
   test("prompt and tool surface stay evidence-gated rather than becoming an optimization profile", async () => {
-    const [profile, prompts, next] = await Promise.all([
+    const [profile, prompts, brief] = await Promise.all([
       source("lib/registrationProfile.ts"),
       source("server/prompts.ts"),
-      source("../docs/knowledge/next-action.md"),
+      source("../.agents/skills/development-brief/SKILL.md"),
     ]);
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("lean_mode");
     expect(profile).not.toContain("usage_profile");
     expect(prompts).toContain('createPrompt("bedrock_entity_workflow"');
-    expect(next).toContain("Authoring Efficiency");
-    expect(next).toContain("Static Footprint");
-    expect(next).toContain("Success Metric");
-    expect(next).toContain("NO ACTIVE DEVELOPMENT");
+    expect(brief).toContain("Authoring Efficiency");
+    expect(brief).toContain("Static Footprint");
+    expect(brief).toContain("Success Metric");
+    expect(brief).toContain("Evidence before optimization");
   });
 
   test("durable foundation policy preserves minimum-evidence authoring", async () => {

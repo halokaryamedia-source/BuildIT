@@ -68,8 +68,11 @@ describe("cross-agent repository handoff", () => {
 
     expect(context).toContain("stable project facts only");
     expect(context).not.toContain("AWAITING_PLUGIN_ENABLE");
-    expect(next).toContain("NO ACTIVE DEVELOPMENT");
-    expect(next).toContain("## Verification Boundary");
+    expect(next).toContain("Working branch: **`Local` only**");
+    expect(next).toContain("## Current State");
+    expect(next).toContain("## Development Contract");
+    expect(next).toContain("## Local Runtime Gate");
+    expect(next).not.toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
     expect(validation).toContain("This file owns the **proof boundary**");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
     expect(implementation).toContain("This map contains no active task status");

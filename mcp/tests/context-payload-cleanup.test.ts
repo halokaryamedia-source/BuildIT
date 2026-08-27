@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { inspectAnimationParameters } from "@/server/tools/animation-inspection";
 import { captureScreenshotParameters } from "@/server/tools/camera";
-import { elementInspectionToolDocs } from "@/server/tools/element-inspection";
+import { elementInspectionToolDocs, inspectElementParameters } from "@/server/tools/element-inspection";
 import {
   filterByMaterialParameters,
   findElementsByCriteriaParameters,
@@ -121,10 +121,10 @@ describe("context and payload cleanup", () => {
   test("high-frequency inspect_element routing prose stays compact", () => {
     const description = elementInspectionToolDocs[0].description;
     expect(description.length).toBeLessThan(350);
-    expect(description).toContain("UUID is preferred");
-    expect(description).toContain("exact names must be unique");
-    expect(description).toContain("read-only");
-    expect(description).toContain("PASS/FAIL");
+    expect(description).toContain("focused authored state");
+    expect(description).toContain("compact geometry/hierarchy");
+    expect(inspectElementParameters.shape.id.description).toContain("prefer UUID after discovery");
+    expect(elementInspectionToolDocs[0].annotations?.readOnlyHint).toBe(true);
   });
 
   test("capture_screenshot is current-view only and does not select projects", async () => {

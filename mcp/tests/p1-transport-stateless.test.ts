@@ -34,7 +34,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     const methodGate = source.indexOf("if (method !== 'POST')");
     const methodNotAllowed = source.indexOf("405", methodGate);
     const statelessDispatch = source.indexOf(
-      "handleStatelessMcpRequest(webRequest)",
+      "handleStatelessMcpRequest(",
       methodGate
     );
 
@@ -81,7 +81,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
 
     expect(uiSource).not.toContain("sessionManager");
     expect(uiSource).not.toContain("sessions:");
-    expect(uiSource).toContain('transport: "Streamable HTTP (stateless JSON)"');
+    expect(uiSource).toContain("createSurfaceManifest");
 
     expect(statusSource).not.toContain("sessionManager");
     expect(statusSource).not.toContain("server_one_client");
@@ -89,7 +89,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
 
     expect(templateSource).not.toContain("sessions.length");
     expect(templateSource).not.toContain("connected_clients");
-    expect(templateSource).toContain("{{server.transport}}");
+    expect(templateSource).toContain("surface.tools.exposed_count");
   });
 
   test("Origin rejection still precedes stateless MCP server construction", async () => {
@@ -107,7 +107,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
       originGuard
     );
     const statelessDispatch = source.indexOf(
-      "handleStatelessMcpRequest(webRequest)",
+      "handleStatelessMcpRequest(",
       originGuard
     );
 

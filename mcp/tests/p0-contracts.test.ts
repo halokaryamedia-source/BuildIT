@@ -267,7 +267,7 @@ describe("P0 MCP contract regressions", () => {
       originGuard
     );
     const transportDispatch = netSource.indexOf(
-      "handleStatelessMcpRequest(webRequest)",
+      "handleStatelessMcpRequest(",
       originGuard
     );
 

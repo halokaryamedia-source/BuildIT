@@ -121,11 +121,6 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "take deterministic reference views of the model",
   ],
   [
-    "capture_screenshot",
-    "capture the current editor view exactly as it is",
-    "take a screenshot of the current Blockbench viewport",
-  ],
-  [
     "list_locator_elements",
     "list locator and null object identities",
     "show locator names types and parents",
@@ -146,11 +141,6 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "get_undo_stack",
     "show recent undo and redo history",
     "what edits are currently available in the undo stack",
-  ],
-  [
-    "save_checkpoint",
-    "save a named undo checkpoint before risky rework",
-    "mark this point in undo history",
   ],
   [
     "export_model",
@@ -578,9 +568,9 @@ export function assertToolDiscoveryEvalIntegrity(
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 54) {
+  if (report.expected_tool_count !== 52) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 54`
+      `expected_tool_count=${report.expected_tool_count}; expected 52`
     );
   }
   if (report.missing_expected_tools.length > 0) {

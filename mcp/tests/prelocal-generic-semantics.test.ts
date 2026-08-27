@@ -63,7 +63,7 @@ describe("pre-local generic semantics narrowing", () => {
     const texture = await source("server/tools/texture.ts");
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(texture).toContain("textureToolDocs[1].status, false");
-    expect(texture).toContain("native Bedrock Entity is single_texture");
+    expect(texture).toContain("Legacy per-face texture wrapper. Disabled on the normal Bedrock Entity surface; use activate_texture.");
     expect(skill).not.toContain("- `apply_texture`");
     expect(skill).toContain("list_textures / activate_texture");
   });
@@ -74,7 +74,7 @@ describe("pre-local generic semantics narrowing", () => {
     const registration = elements.indexOf("elementToolDocs[7].status, false");
     expect(start).toBeGreaterThan(-1);
     expect(registration).toBeGreaterThan(start);
-    expect(elements).toContain("effective face texture comes from Texture.getDefault()");
+    expect(elements).toContain("Legacy raw face-material lookup. Disabled on the Bedrock Entity surface.");
   });
 
   test("validator inferred element references declare their non-authoritative source", async () => {

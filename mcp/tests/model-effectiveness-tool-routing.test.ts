@@ -42,15 +42,25 @@ describe("model creation effectiveness — tool routing", () => {
   });
 
   test("convenience tools retain branch-only roles", async () => {
-    const [camera, elements, history] = await Promise.all([
+    const [camera, elements, history, orchestrator] = await Promise.all([
       source("server/tools/camera.ts"),
       source("server/tools/element.ts"),
       source("server/tools/history.ts"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
     ]);
-    expect(camera).toContain("branch-only observation helper");
-    expect(elements).toContain("duplication is not a shortcut for deciding primary geometry");
-    expect(elements).toContain("not a normal geometry-targeting path");
-    expect(history).toContain("should not be polled between successful bounded edits");
+
+    expect(camera).toContain("cameraToolDocs[1].status, false");
+    expect(camera).toContain("cameraToolDocs[2].status, false");
+
+    const duplicateStart = elements.indexOf('name: "duplicate_element"');
+    const duplicateEnd = elements.indexOf('name: "rename_element"', duplicateStart);
+    const duplicateDoc = elements.slice(duplicateStart, duplicateEnd);
+    expect(duplicateStart).toBeGreaterThan(-1);
+    expect(duplicateDoc).toContain("status: STATUS_EXPERIMENTAL");
+    expect(orchestrator).not.toContain("duplicate_element");
+
+    expect(history).toContain('name: "get_undo_stack"');
+    expect(orchestrator).not.toContain("get_undo_stack");
   });
 
   test("routing hardening preserves the existing Bedrock registration profile", async () => {

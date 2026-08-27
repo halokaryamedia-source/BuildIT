@@ -78,13 +78,19 @@ describe("asset tool routing", () => {
       "handoff once or BLOCKED",
     ]) expect(skill).toContain(term);
 
+    const invocationStart = factories.indexOf("function getToolInvocation");
+    const invocationEnd = factories.indexOf("function extractShape", invocationStart);
+    const invocation = factories.slice(invocationStart, invocationEnd);
+    const validation = invocation.indexOf("parameterSchema.parseAsync(args)");
+    const execution = invocation.indexOf("toolDef.execute(");
+    expect(invocationStart).toBeGreaterThan(-1);
+    expect(validation).toBeGreaterThan(-1);
+    expect(execution).toBeGreaterThan(validation);
+
     const registration = factories.slice(
       factories.indexOf("export function registerToolsOnServer")
     );
-    expect(registration.indexOf("parameterSchema.parseAsync(args)")).toBeGreaterThan(-1);
-    expect(registration.indexOf("parameterSchema.parseAsync(args)")).toBeLessThan(
-      registration.indexOf("toolDef.execute(")
-    );
+    expect(registration).toContain("getToolInvocation(name, toolDef)");
 
     expect(identity).toContain('is ambiguous. Use an exact UUID.');
     expect(identity).toContain('not found.');
