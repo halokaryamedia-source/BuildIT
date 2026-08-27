@@ -41,6 +41,14 @@ afterAll(async () => {
   });
 });
 
+async function readHealth(): Promise<Record<string, unknown>> {
+  const response = await fetch(healthUrl, {
+    headers: { connection: "close" },
+  });
+  expect(response.status).toBe(200);
+  return (await response.json()) as Record<string, unknown>;
+}
+
 describe("MCP health build identity", () => {
   test("build identity accepts only the injected SHA-256 form", () => {
     const valid = `sha256:${"a".repeat(64)}`;
@@ -60,8 +68,8 @@ describe("MCP health build identity", () => {
   });
 
   test("source health separates build, version, and process identity", async () => {
-    const first = (await (await fetch(healthUrl)).json()) as Record<string, unknown>;
-    const second = (await (await fetch(healthUrl)).json()) as Record<string, unknown>;
+    const first = await readHealth();
+    const second = await readHealth();
     const product = first.product as { version?: unknown };
 
     expect(first.build_identity).toBe("source");
