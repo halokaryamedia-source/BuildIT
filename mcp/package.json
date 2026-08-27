@@ -1,6 +1,6 @@
 {
   "name": "blockit-bedrock-entity-mcp",
-  "version": "1.6.3",
+  "version": "0.1.0",
   "description": "Minecraft Bedrock Entity-focused MCP server plugin for Blockbench",
   "keywords": [
     "Blockbench",
