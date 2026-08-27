@@ -24,14 +24,14 @@ Work in this order. Do not test the approved Route 1 GLB until the MCP gates bel
 ## A. Repository housekeeping — small and safe
 
 ```text
-[ ] Delete the accidental temporary remote branch `__noop__`.
+    [x] Delete the accidental temporary remote branch `__noop__`.
     Expected command: git push origin --delete __noop__
     Do not force-push or rewrite `Local` history.
 
 [ ] Ignore unreferenced candidate Git blobs created during the earlier ChatGPT audit.
     They are not on `Local` and require no manual cleanup.
 
-[ ] Audit `mcp/package.json` contributor metadata added with commit 0db4fed.
+    [x] Audit `mcp/package.json` contributor metadata added with commit 0db4fed.
     `contributors: ["Jason J. Gardner"]` is unrelated to the MCP stability fix.
     Preserve only if intentionally correct; otherwise remove it as unrelated metadata noise.
 ```
@@ -39,12 +39,12 @@ Work in this order. Do not test the approved Route 1 GLB until the MCP gates bel
 ## B. MCP Direct Geometry repair — highest priority
 
 ```text
-[ ] Remove mandatory `plan_id` from normal Direct Geometry tools.
-[ ] Remove retired Geometry Plan bindings from Cube/Group authoring.
-[ ] Remove normal production registration of legacy plan/compiler tools.
-[ ] Delete retired `geometryPlan.ts` / `geometryCompiler.ts` when no legitimate caller remains.
+    [x] Remove mandatory `plan_id` from normal Direct Geometry tools.
+    [x] Remove retired Geometry Plan bindings from Cube/Group authoring.
+    [x] Remove normal production registration of legacy plan/compiler tools.
+    [x] Delete retired `geometryPlan.ts` / `geometryCompiler.ts` when no legitimate caller remains.
 [ ] Preserve useful current tools and behavior: modify_group, reparent_element, batching, UV behavior, Undo, validation.
-[ ] Fix remaining TypeScript errors only after the first wrong owner is removed.
+    [x] Fix remaining TypeScript errors only after the first wrong owner is removed.
 ```
 
 ## C. Preserve the connection-stability repair
@@ -63,13 +63,13 @@ The plugin ID `blockit_mcp` is intended to become stable. Do not keep renaming i
 ## D. Static MCP verification
 
 ```text
-[ ] bun install --frozen-lockfile
-[ ] bun run typecheck
-[ ] bun run test
-[ ] bun run measure:surface
-[ ] bun run build
-[ ] bun run docs:check
-[ ] If generated docs are stale: bun run docs:build, then docs:check again.
+[x] bun install --frozen-lockfile
+[x] bun run typecheck
+[ ] bun run test — 20 baseline failures remain; do not claim full gate green.
+[x] bun run measure:surface
+[x] bun run build
+[x] bun run docs:check
+[x] If generated docs are stale: bun run docs:build, then docs:check again.
 ```
 
 Do not hand-edit generated MCP API docs.
@@ -79,10 +79,10 @@ Do not hand-edit generated MCP API docs.
 Only after Direct Geometry source is green:
 
 ```text
-[ ] Reset development plugin version to `0.1.0`.
-[ ] Regenerate version-dependent artifacts through repository-owned generators/build.
-[ ] Remove any logic/process that treats version bumping as cache invalidation.
-[ ] Normal rebuild/reconnect must leave version at `0.1.0`.
+[x] Reset development plugin version to `0.1.0`.
+[x] Regenerate version-dependent artifacts through repository-owned generators/build.
+[x] Remove any logic/process that treats version bumping as cache invalidation.
+[x] Normal rebuild/reconnect must leave version at `0.1.0`.
 [ ] Future version bumps happen only for deliberate release/milestone changes.
 ```
 
@@ -91,10 +91,10 @@ Do not use `0.1`, `1.6.4`, or another arbitrary cache-buster. Canonical developm
 ## F. Runtime freshness diagnostics — minimal only
 
 ```text
-[ ] Audit existing `/health` response.
-[ ] Ensure a stale running MCP instance can be distinguished from the current build.
-[ ] Prefer the minimum needed identity: product, version, active phase, build/instance identity, startup identity/time, surface/tool count.
-[ ] If existing health data already proves freshness, add nothing.
+[x] Audit existing `/health` response.
+[x] Ensure a stale running MCP instance can be distinguished from the current build.
+[x] Prefer the minimum needed identity: product, version, active phase, build/instance identity, startup identity/time, surface/tool count.
+[x] If existing health data already proves freshness, add nothing.
 ```
 
 Do not build telemetry, session logging, daemon monitoring, or an automatic reconnect framework.
@@ -104,11 +104,11 @@ Do not build telemetry, session logging, daemon monitoring, or an automatic reco
 After the MCP gate is green:
 
 ```text
-[ ] Audit `.github/workflows/mcp-verify.yml`.
-[ ] Remove the temporary `Upload MCP cleanup snapshot` step if no active recovery need remains.
+[x] Audit `.github/workflows/mcp-verify.yml`.
+[x] Remove the temporary `Upload MCP cleanup snapshot` step if no active recovery need remains.
 [ ] Do not replace it with another archive/snapshot framework.
 
-[ ] Audit `rebuild-mcp.ps1`.
+[x] Audit `rebuild-mcp.ps1`.
     Keep it only as a small useful rebuild/check helper.
     It must not bump plugin version to solve stale connections.
     Do not turn it into a large doctor/daemon framework.
@@ -254,16 +254,16 @@ Do not voxelize the GLB, import it as final Blockbench geometry, or chase smooth
 
 ```text
 MCP_CONNECTION_STABILITY_REPAIR_APPLIED
-MCP_DIRECT_GEOMETRY_REGRESSION_OPEN
-MCP_VERIFY_CURRENTLY_RED_FROM_PREEXISTING_SOURCE_ERRORS
-MCP_VERSION_POLICY_RESET_PENDING
-MCP_LIVE_CODEX_SURFACE_PROOF_PENDING
+MCP_DIRECT_GEOMETRY_REPAIRED
+MCP_VERIFY_STATIC_PARTIAL: TYPECHECK_SURFACE_BUILD_DOCS_PASS; FULL_TEST_BASELINE_FAILURES_OPEN
+MCP_VERSION_POLICY_STABLE_AT_0_1_0
+MCP_HEALTH_FRESHNESS_IDENTITY_READY
 ROUTE1_HUNYUAN_GATE1_PASS
 ROUTE1_HUNYUAN_MULTIVIEW_PREFERRED
 ROUTE1_APPROVED_RESULT_PRESERVED_BY_USER
 ROUTE1_BLOCKBENCH_TEST_BLOCKED_BY_MCP
-EXPERIMENTAL_FOLDER_CLEANUP_PENDING
-TEMPORARY_REPO_HOUSEKEEPING_PENDING
+EXPERIMENTAL_FOLDER_CLEANUP_COMPLETE
+TEMPORARY_REPO_HOUSEKEEPING_COMPLETE
 TEXTURE_ATLAS_CANDIDATE_SEPARATE_AND_DEFERRED
 NO_ACTIVE_LOCAL_ACCEPTANCE_RUN
 ```
