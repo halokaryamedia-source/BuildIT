@@ -11,12 +11,16 @@ import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile
 } from '@/lib/registrationProfile'
-import { createProductIdentity } from '@/lib/productIdentity'
+import { createProductIdentity, PRODUCT_VERSION } from '@/lib/productIdentity'
 import {
   DEFAULT_MCP_AUTHORING_PHASE,
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase
 } from '@/lib/authoringPhase'
+import { getMcpSurfaceToolNames } from '@/server/tools'
+
+const INSTANCE_ID = crypto.randomUUID()
+const STARTUP_TIME = new Date().toISOString()
 
 export interface NetServer extends NodeNetServer {
   closeActiveSockets(): void
@@ -395,6 +399,13 @@ export default function createNetServer (
                 status: 'ok',
                 timestamp: new Date().toISOString(),
                 product: createProductIdentity(profile, getActiveMcpAuthoringPhase()),
+                build_identity: PRODUCT_VERSION,
+                instance_id: INSTANCE_ID,
+                startup_time: STARTUP_TIME,
+                exposed_tool_count: getMcpSurfaceToolNames(
+                  profile,
+                  getActiveMcpAuthoringPhase()
+                ).length,
                 transport: {
                   mode: 'stateless',
                   response_mode: 'json'
