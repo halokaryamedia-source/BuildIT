@@ -20,7 +20,7 @@ CURRENT HARDENING LIVE RETEST:            LOCAL PROOF REQUIRED
 CURRENT MODEL-QUALITY CLAIM:              LOCAL PROOF REQUIRED
 ```
 
-Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, agent-routing contracts, schemas, buildability, generated-doc freshness, and the source-owned phase surface; they cannot prove installed-plugin freshness, live Codex tool exposure, visual fidelity, playback, future Codex call efficiency, or Authoring Efficiency.
+Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, agent-routing contracts, schemas, buildability, generated-doc freshness, and the source-owned phase surface; they cannot prove visual fidelity, installed-plugin freshness, live Codex tool exposure, playback, future Codex call efficiency, or Authoring Efficiency.
 
 ## Current Agent-Contract Proof
 
