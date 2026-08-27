@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_MCP_AUTHORING_PHASE } from "@/lib/authoringPhase";
 import { getEnabledToolDefinitions } from "@/lib/factories";
-import {
-  applyMcpToolSurface,
-  getMcpSurfaceToolNames,
-} from "@/server/tools";
+import { getMcpSurfaceToolNames } from "@/server/tools";
 
 const REQUIRED_GEOMETRY_TOOLS = [
   "create_project",
@@ -34,29 +30,24 @@ async function source(path: string): Promise<string> {
 
 describe("local runtime gate source contract", () => {
   test("default Geometry acceptance surface is complete and plan-free", () => {
-    try {
-      applyMcpToolSurface("bedrock_entity", "geometry");
-      const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
-      const definitions = getEnabledToolDefinitions();
+    const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
+    const definitions = getEnabledToolDefinitions();
 
-      expect(names.length).toBe(27);
-      for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
-        expect(names, toolName).toContain(toolName);
-        expect(definitions[toolName], toolName).toBeDefined();
-      }
+    expect(names.length).toBe(27);
+    for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
+      expect(names, toolName).toContain(toolName);
+      expect(definitions[toolName], toolName).toBeDefined();
+    }
 
-      for (const toolName of PLAN_FREE_GEOMETRY_TOOLS) {
-        const definition = definitions[toolName];
-        if (!definition) {
-          throw new Error(`Missing Geometry definition: ${toolName}`);
-        }
-        expect(
-          Object.keys(definition.inputSchema),
-          `${toolName} inputSchema`
-        ).not.toContain("plan_id");
+    for (const toolName of PLAN_FREE_GEOMETRY_TOOLS) {
+      const definition = definitions[toolName];
+      if (!definition) {
+        throw new Error(`Missing Geometry definition: ${toolName}`);
       }
-    } finally {
-      applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);
+      expect(
+        Object.keys(definition.inputSchema),
+        `${toolName} inputSchema`
+      ).not.toContain("plan_id");
     }
   });
 
