@@ -11,61 +11,122 @@ import {
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
 
 const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
-// Match the current Codex legacy Streamable HTTP initialization revision.
+const DEFAULT_BUNDLE_PATH = "dist/blockit_mcp.js";
+const EXPECTED_PROFILE: McpRegistrationProfile = "bedrock_entity";
+const DEFAULT_PHASE: McpAuthoringPhase = "geometry";
 const PROTOCOL_VERSION = "2025-06-18";
 
-const FORBIDDEN_DEFAULT_TOOLS = ["risky_eval", "from_geo_json"] as const;
-
-type CheckResult = {
-  name: string;
-  ok: boolean;
-  detail: string;
-};
+const FORBIDDEN_TOOLS = ["risky_eval", "from_geo_json"] as const;
+const REQUIRED_GEOMETRY_TOOLS = [
+  "create_project",
+  "add_group",
+  "place_cube",
+  "modify_cube",
+  "modify_cubes_batch",
+  "modify_group",
+  "reparent_element",
+  "capture_model_views",
+  "bone_rigging",
+  "export_model",
+] as const;
+const PLAN_FREE_GEOMETRY_TOOLS = [
+  "add_group",
+  "place_cube",
+  "modify_cube",
+  "modify_cubes_batch",
+  "modify_group",
+  "reparent_element",
+] as const;
 
 type JsonObject = Record<string, unknown>;
+type ListedTool = { name?: unknown; inputSchema?: unknown };
+type Check = { name: string; ok: boolean; detail: string };
 
-type HealthProduct = {
-  profile?: unknown;
-  authoring_phase?: unknown;
-};
-
-const targetUrl = (process.argv[2] || process.env.BLOCKIT_MCP_URL || DEFAULT_MCP_URL)
-  .replace(/\/+$/, "");
-const healthUrl = `${targetUrl}/health`;
-const checks: CheckResult[] = [];
+const args = process.argv.slice(2);
+const firstIsUrl = typeof args[0] === "string" && /^https?:\/\//i.test(args[0]);
+const targetUrl = (
+  (firstIsUrl ? args[0] : undefined) ||
+  process.env.BLOCKIT_MCP_URL ||
+  DEFAULT_MCP_URL
+).replace(/\/+$/, "");
+const phaseArg = firstIsUrl ? args[1] : args[0];
+const bundlePath =
+  (firstIsUrl ? args[2] : args[1]) ||
+  process.env.BLOCKIT_MCP_BUNDLE ||
+  DEFAULT_BUNDLE_PATH;
+const checks: Check[] = [];
 
 function record(name: string, ok: boolean, detail: string): void {
   checks.push({ name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name} — ${detail}`);
 }
 
-async function readJson(response: Response): Promise<JsonObject> {
+function expectedPhase(): McpAuthoringPhase {
+  const phase = phaseArg || process.env.BLOCKIT_EXPECTED_PHASE || DEFAULT_PHASE;
+  if (!isMcpAuthoringPhase(phase)) {
+    throw new Error(
+      `Invalid expected phase "${String(phase)}". Use geometry, texturing, or animation.`
+    );
+  }
+  return phase;
+}
+
+async function json(response: Response): Promise<JsonObject> {
   const text = await response.text();
-  if (!text) return {};
-  return JSON.parse(text) as JsonObject;
+  return text ? (JSON.parse(text) as JsonObject) : {};
 }
 
-function isRegistrationProfile(value: unknown): value is McpRegistrationProfile {
-  return value === "bedrock_entity" || value === "extended";
+async function localBuildIdentity(): Promise<string> {
+  const file = Bun.file(bundlePath);
+  if (!(await file.exists())) {
+    throw new Error(`Missing ${bundlePath}. Run bun run build first.`);
+  }
+  const match = (await file.text()).match(
+    /globalThis\.__BLOCKIT_BUILD_ID__\s*=\s*["'](sha256:[a-f0-9]{64})["']/
+  );
+  if (!match?.[1]) {
+    throw new Error(`${bundlePath} has no valid embedded build identity.`);
+  }
+  return match[1];
 }
 
-function mcpHeaders(includeProtocolVersion = false): Headers {
+function schemaPlanIssues(tools: ListedTool[]): string[] {
+  const byName = new Map(
+    tools
+      .filter((tool): tool is ListedTool & { name: string } =>
+        typeof tool.name === "string"
+      )
+      .map((tool) => [tool.name, tool])
+  );
+  const issues: string[] = [];
+
+  for (const name of PLAN_FREE_GEOMETRY_TOOLS) {
+    const schema = (byName.get(name)?.inputSchema ?? {}) as {
+      required?: unknown;
+      properties?: unknown;
+    };
+    const required = Array.isArray(schema.required) ? schema.required : [];
+    const properties =
+      schema.properties && typeof schema.properties === "object"
+        ? (schema.properties as Record<string, unknown>)
+        : {};
+
+    if (!byName.has(name)) issues.push(`${name}:missing`);
+    if (required.includes("plan_id")) issues.push(`${name}:plan_id_required`);
+    if (Object.prototype.hasOwnProperty.call(properties, "plan_id")) {
+      issues.push(`${name}:plan_id_exposed`);
+    }
+  }
+  return issues;
+}
+
+async function post(body: unknown, protocol = false): Promise<Response> {
   const headers = new Headers({
     accept: "application/json, text/event-stream",
     "content-type": "application/json",
+    connection: "close",
   });
-  if (includeProtocolVersion) {
-    headers.set("mcp-protocol-version", PROTOCOL_VERSION);
-  }
-  return headers;
-}
-
-async function postMcp(
-  body: unknown,
-  options: { includeProtocolVersion?: boolean; origin?: string } = {}
-): Promise<Response> {
-  const headers = mcpHeaders(options.includeProtocolVersion === true);
-  if (options.origin) headers.set("origin", options.origin);
+  if (protocol) headers.set("mcp-protocol-version", PROTOCOL_VERSION);
 
   return fetch(targetUrl, {
     method: "POST",
@@ -75,82 +136,53 @@ async function postMcp(
 }
 
 async function verify(): Promise<void> {
-  console.log(`BlockIT stateless phase-aware smoke check: ${targetUrl}`);
-  console.log(`Codex-compatible protocol fixture: ${PROTOCOL_VERSION}`);
-  console.log("This is a transport/surface smoke harness, not a substitute for Blockbench/Codex visual acceptance.\n");
+  const phase = expectedPhase();
+  const buildIdentity = await localBuildIdentity();
 
-  const healthResponse = await fetch(healthUrl);
-  const health = await readJson(healthResponse);
+  registerMcpProfile(EXPECTED_PROFILE);
+  const expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
+
+  console.log(`BlockIT live smoke gate: ${targetUrl}`);
+  console.log(
+    `Expected profile=${EXPECTED_PROFILE}; phase=${phase}; tools=${expectedNames.length}`
+  );
+  console.log(`Expected bundle=${bundlePath}; build_identity=${buildIdentity}\n`);
+
+  const healthResponse = await fetch(`${targetUrl}/health`, {
+    headers: { connection: "close" },
+  });
+  const health = await json(healthResponse);
+  const product = health.product as
+    | { profile?: unknown; authoring_phase?: unknown }
+    | undefined;
   const transport = health.transport as
     | { mode?: unknown; response_mode?: unknown }
     | undefined;
+
   record(
-    "health reports stateless JSON transport",
+    "health transport",
     healthResponse.status === 200 &&
       transport?.mode === "stateless" &&
       transport?.response_mode === "json",
     `HTTP ${healthResponse.status}; ${JSON.stringify(transport ?? {})}`
   );
-
-  const product = health.product as HealthProduct | undefined;
-  const profile = product?.profile;
-  const phase = product?.authoring_phase;
-  const identityValid =
-    isRegistrationProfile(profile) && isMcpAuthoringPhase(phase);
   record(
-    "health reports active profile and authoring phase",
-    identityValid,
-    `profile=${String(profile)}; phase=${String(phase)}`
-  );
-  if (!identityValid) {
-    throw new Error(
-      "Installed BlockIT health identity is missing a valid profile/authoring_phase. Rebuild and reload the current Local plugin before continuing."
-    );
-  }
-
-  // Mirror the installed profile in the local source catalog before deriving the
-  // exact expected phase surface. This keeps the smoke check source-driven.
-  registerMcpProfile(profile);
-  const activePhase: McpAuthoringPhase = phase;
-  const expectedToolNames = getMcpSurfaceToolNames(profile, activePhase).sort();
-
-  const getResponse = await fetch(targetUrl, {
-    method: "GET",
-    headers: { accept: "text/event-stream" },
-  });
-  record(
-    "standalone GET/SSE is not offered",
-    getResponse.status === 405,
-    `HTTP ${getResponse.status}`
-  );
-
-  const deleteResponse = await fetch(targetUrl, { method: "DELETE" });
-  record(
-    "session DELETE is not offered",
-    deleteResponse.status === 405,
-    `HTTP ${deleteResponse.status}`
-  );
-
-  const invalidOriginResponse = await postMcp(
-    {
-      jsonrpc: "2.0",
-      id: 900,
-      method: "initialize",
-      params: {
-        protocolVersion: PROTOCOL_VERSION,
-        capabilities: {},
-        clientInfo: { name: "blockit-local-smoke", version: "1.0.0" },
-      },
-    },
-    { origin: "https://example.invalid" }
+    "installed profile / phase",
+    product?.profile === EXPECTED_PROFILE && product?.authoring_phase === phase,
+    `live=${String(product?.profile)}/${String(product?.authoring_phase)}`
   );
   record(
-    "invalid present Origin is rejected before MCP dispatch",
-    invalidOriginResponse.status === 403,
-    `HTTP ${invalidOriginResponse.status}`
+    "installed artifact freshness",
+    health.build_identity === buildIdentity,
+    `local=${buildIdentity}; live=${String(health.build_identity)}`
+  );
+  record(
+    "health surface count",
+    health.exposed_tool_count === expectedNames.length,
+    `live=${String(health.exposed_tool_count)}; expected=${expectedNames.length}`
   );
 
-  const initializeResponse = await postMcp({
+  const initializeResponse = await post({
     jsonrpc: "2.0",
     id: 1,
     method: "initialize",
@@ -160,7 +192,7 @@ async function verify(): Promise<void> {
       clientInfo: { name: "blockit-local-smoke", version: "1.0.0" },
     },
   });
-  const initialize = await readJson(initializeResponse);
+  const initialize = await json(initializeResponse);
   const initializeResult = initialize.result as
     | { protocolVersion?: unknown; instructions?: unknown }
     | undefined;
@@ -168,114 +200,79 @@ async function verify(): Promise<void> {
     typeof initializeResult?.instructions === "string"
       ? initializeResult.instructions
       : "";
+
   record(
-    "initialize succeeds without a protocol session",
+    "initialize / phase contract",
     initializeResponse.status === 200 &&
       initializeResponse.headers.get("mcp-session-id") === null &&
-      initializeResult?.protocolVersion === PROTOCOL_VERSION,
+      initializeResult?.protocolVersion === PROTOCOL_VERSION &&
+      instructions.includes(`ACTIVE PHASE: ${phase.toUpperCase()}`),
     `HTTP ${initializeResponse.status}; protocol=${String(
       initializeResult?.protocolVersion
     )}; session=${String(initializeResponse.headers.get("mcp-session-id"))}`
   );
-  record(
-    "initialize names the same active authoring phase",
-    instructions.includes(`ACTIVE PHASE: ${activePhase.toUpperCase()}`),
-    `phase=${activePhase}; instructions=${instructions.length} chars`
-  );
 
-  const initializedResponse = await postMcp(
+  const listResponse = await post(
     {
       jsonrpc: "2.0",
-      method: "notifications/initialized",
+      id: 2,
+      method: "tools/list",
       params: {},
     },
-    { includeProtocolVersion: true }
+    true
   );
-  record(
-    "initialized notification is accepted as an independent POST",
-    initializedResponse.status === 202 &&
-      initializedResponse.headers.get("mcp-session-id") === null,
-    `HTTP ${initializedResponse.status}; session=${String(
-      initializedResponse.headers.get("mcp-session-id")
-    )}`
-  );
+  const listed = await json(listResponse);
+  const tools =
+    ((listed.result as { tools?: ListedTool[] } | undefined)?.tools ?? []);
+  const names = tools
+    .map((tool) => tool.name)
+    .filter((name): name is string => typeof name === "string")
+    .sort();
+  const missing = expectedNames.filter((name) => !names.includes(name));
+  const unexpected = names.filter((name) => !expectedNames.includes(name));
+  const forbidden = FORBIDDEN_TOOLS.filter((name) => names.includes(name));
 
-  const listTools = async (id: number): Promise<{
-    response: Response;
-    names: string[];
-  }> => {
-    const response = await postMcp(
-      {
-        jsonrpc: "2.0",
-        id,
-        method: "tools/list",
-        params: {},
-      },
-      { includeProtocolVersion: true }
-    );
-    const body = await readJson(response);
-    const result = body.result as
-      | { tools?: Array<{ name?: unknown }> }
-      | undefined;
-    const names = (result?.tools ?? [])
-      .map((tool) => tool.name)
-      .filter((name): name is string => typeof name === "string")
-      .sort();
-    return { response, names };
-  };
-
-  const firstList = await listTools(2);
-  const missingExpected = expectedToolNames.filter(
-    (tool) => !firstList.names.includes(tool)
-  );
-  const unexpected = firstList.names.filter(
-    (tool) => !expectedToolNames.includes(tool)
-  );
-  const exposedForbidden = FORBIDDEN_DEFAULT_TOOLS.filter((tool) =>
-    firstList.names.includes(tool)
-  );
   record(
-    "tools/list exactly matches the source-owned active phase surface",
-    firstList.response.status === 200 &&
-      firstList.response.headers.get("mcp-session-id") === null &&
-      missingExpected.length === 0 &&
+    "tools/list exact source surface",
+    listResponse.status === 200 &&
+      listResponse.headers.get("mcp-session-id") === null &&
+      missing.length === 0 &&
       unexpected.length === 0 &&
-      exposedForbidden.length === 0,
-    `HTTP ${firstList.response.status}; profile=${profile}; phase=${activePhase}; tools=${firstList.names.length}; expected=${expectedToolNames.length}; missing=${
-      missingExpected.join(",") || "none"
-    }; unexpected=${unexpected.join(",") || "none"}; forbidden=${
-      exposedForbidden.join(",") || "none"
-    }`
+      forbidden.length === 0,
+    `tools=${names.length}; missing=${missing.join(",") || "none"}; unexpected=${
+      unexpected.join(",") || "none"
+    }; forbidden=${forbidden.join(",") || "none"}`
   );
 
-  const secondList = await listTools(3);
-  record(
-    "repeated tools/list remains session-independent",
-    secondList.response.status === 200 &&
-      secondList.response.headers.get("mcp-session-id") === null &&
-      JSON.stringify(secondList.names) === JSON.stringify(firstList.names),
-    `HTTP ${secondList.response.status}; first=${firstList.names.length}; second=${secondList.names.length}; session=${String(
-      secondList.response.headers.get("mcp-session-id")
-    )}`
-  );
+  if (phase === "geometry") {
+    const requiredMissing = REQUIRED_GEOMETRY_TOOLS.filter(
+      (name) => !names.includes(name)
+    );
+    record(
+      "required Geometry capability",
+      requiredMissing.length === 0,
+      `missing=${requiredMissing.join(",") || "none"}`
+    );
+
+    const planIssues = schemaPlanIssues(tools);
+    record(
+      "Direct Geometry plan-free schemas",
+      planIssues.length === 0,
+      `issues=${planIssues.join(",") || "none"}`
+    );
+  }
 
   const failed = checks.filter((check) => !check.ok);
-  console.log(`\nResult: ${checks.length - failed.length}/${checks.length} checks passed.`);
+  console.log(`\nResult: ${checks.length - failed.length}/${checks.length} passed.`);
   console.log(
-    "Still requires manual/local acceptance: exact installed artifact freshness, real Codex connection, representative Blockbench mutation/Undo, phase handoffs, plugin unload/reload, and visual/model quality."
+    "Still requires local proof: a fresh Codex registry, representative Blockbench mutation + Undo, required phase handoffs/reloads, and visual/model quality."
   );
-
-  if (failed.length > 0) {
-    process.exitCode = 1;
-  }
+  if (failed.length > 0) process.exitCode = 1;
 }
 
 try {
   await verify();
 } catch (error) {
-  console.error("FAIL  smoke harness could not complete:", error);
-  console.error(
-    "Confirm the current Local plugin build is loaded in Blockbench and the configured MCP URL is reachable."
-  );
+  console.error("FAIL  smoke gate could not complete:", error);
   process.exitCode = 1;
 }

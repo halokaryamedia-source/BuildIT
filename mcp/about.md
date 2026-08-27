@@ -15,7 +15,7 @@ BlockIT runs locally inside Blockbench and exposes:
 
 `http://127.0.0.1:3000/bb-mcp`
 
-Only the active authoring phase is exposed at a time. Phase changes can be made through the MCP handoff workflow without restarting Blockbench.
+Only the active authoring phase is exposed at a time. A phase handoff requires selecting the target MCP Authoring Phase, reloading/restarting BlockIT MCP, and reconnecting the MCP client before continuing.
 
 ### Important
 

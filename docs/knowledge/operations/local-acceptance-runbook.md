@@ -1,27 +1,26 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-25  
+Updated: 2026-08-27  
 Owner: local Codex/Opencode + desktop Blockbench acceptance procedure  
-Active only when `docs/knowledge/next-action.md` explicitly points here.
+Active only when `docs/knowledge/next-action.md` explicitly reactivates the local gate.
 
-This is the single procedure for BlockIT live acceptance.
+This is the single live-acceptance procedure for BlockIT. The current repository state may defer this run; do not start it unless the user explicitly reactivates local testing.
 
 ## 1. Goal
 
-Prove what source/CI cannot: exact installed plugin freshness, representative MCP/runtime behavior, real reference-driven model quality, and **Authoring Efficiency** on the exact artifact under test.
-
-There are two acceptance lanes:
+Prove what source/CI cannot:
 
 ```text
-TEST 1 — MCP / CORE MECHANICS
-→ prove representative runtime behavior across deliberate authoring phases
-
-TEST 2 — REFERENCE MODEL / AUTHORING EFFECTIVENESS
-→ prove accepted model quality
-→ then measure Cost to Accepted Result
+exact installed artifact freshness
++ exact live MCP phase/tool surface
++ fresh Codex registry
++ representative Blockbench mutation/Undo
++ required phase handoffs/reloads
++ reference-driven model quality
++ Authoring Efficiency only after quality PASS
 ```
 
-Do not edit source before a reproducible failure or bounded benchmark identifies a concrete first wrong owner.
+Do not edit source before a reproducible failure identifies the first wrong owner.
 
 ## 2. Required Reading
 
@@ -32,9 +31,7 @@ AGENTS.md
 → mcp/README.md + mcp/AGENTS.md only when MCP implementation matters
 ```
 
-Read `CONTEXT.md` only when a stable project fact materially affects the decision. Do not load Git history or the full foundation set by default.
-
-Before a quality/efficiency benchmark, preserve the Developing Execution Contract:
+Keep the Developing Execution Contract bounded:
 
 ```text
 Goal
@@ -47,8 +44,6 @@ STOP Condition
 
 ## 3. Exact Local Build / Freshness Gate
 
-Do not use package version as freshness proof. Record the exact `Local` HEAD and hash of the artifact prepared for Blockbench.
-
 From repository root:
 
 ```bash
@@ -58,7 +53,9 @@ git status --short
 git rev-parse HEAD
 ```
 
-Working tree must be clean. Then from `mcp/`:
+Working tree must be clean.
+
+From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
@@ -69,17 +66,25 @@ bun run build
 bun run docs:check
 ```
 
-Production plugin:
+Canonical production plugin:
 
 ```text
-mcp/dist/mcp.js
+mcp/dist/blockit_mcp.js
 ```
 
-Record:
+`bun run build` prints and embeds:
+
+```text
+build_identity = sha256:<64 lowercase hex>
+```
+
+This identity is deliberately separate from package version `0.1.0`. Do not use version bumps as freshness proof.
+
+Record only the useful environment state:
 
 ```text
 Local HEAD
-mcp/dist/mcp.js SHA-256
+printed build_identity
 Blockbench version
 Bun version
 client/provider + version when visible
@@ -89,11 +94,9 @@ MCP Authoring Phase
 Extended MCP Families setting
 ```
 
-If exact artifact freshness cannot be established, classify `ENVIRONMENT / INSTALL` and stop before model-quality claims.
+If the exact artifact cannot be established, classify `ENVIRONMENT / INSTALL` and STOP.
 
-## 4. Load Current BlockIT / Reconnect MCP
-
-Load the fresh repository build in desktop Blockbench. Fully restart/reload Blockbench, then reconnect/restart the MCP client so an old process or cached surface cannot count as proof.
+## 4. Load Current BlockIT / Server Smoke Gate
 
 Normal starting baseline:
 
@@ -106,142 +109,190 @@ retained catalog        = 64 callable tools across phases
 Extended MCP Families   = OFF
 risky_eval              = disabled
 from_geo_json           = disabled
-artifact                = local BlockIT build only
+artifact                = mcp/dist/blockit_mcp.js
 ```
 
-Do **not** expect Geometry, Texturing, and Animation mutation tools to appear simultaneously. Runtime exposure is `MCP CORE + exactly one ACTIVE PHASE`.
+Fully unload/close any stale BlockIT/Codex connection as required by the current client, load only the freshly built `blockit_mcp.js`, and reconnect.
 
-With the plugin running:
+With Geometry active, from `mcp/` run:
 
 ```bash
 bun run verify:stateless-local
 ```
 
-The smoke script reads installed health identity, confirms the active profile/phase, and requires installed `tools/list` to exactly match the current source-owned phase surface. A mismatch means `ENVIRONMENT / INSTALL` or MCP surface regression; do not continue to visual claims.
-
-Codex and Opencode are equivalent local execution surfaces for this procedure; provider identity is recorded, not treated as a different product contract.
-
-## 5. Phase / Tool Exposure Sanity Check
-
-For every phase used in the test, record:
+The smoke gate now checks in one pass:
 
 ```text
-profile
-active phase
-exposed tool count
-handoff source gate
-handoff target
+/health is stateless JSON
+live profile = bedrock_entity
+live phase = geometry
+/health.build_identity = embedded identity in local dist/blockit_mcp.js
+/health.exposed_tool_count = expected source surface count
+initialize reports the expected active phase
+tools/list exactly matches getMcpSurfaceToolNames("bedrock_entity", "geometry")
+required Geometry acceptance tools are present
+Direct Geometry schemas do not expose or require plan_id
+risky_eval / from_geo_json are absent
 ```
 
-Foreign-phase tool absence is expected and is **not** a discovery failure. If the next required mutation belongs to another phase:
+Required Geometry acceptance capability:
+
+```text
+create_project
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+capture_model_views
+bone_rigging
+export_model
+```
+
+These Direct Geometry schemas must remain free of retired `plan_id`:
+
+```text
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+```
+
+For another deliberate phase, pass the phase name:
+
+```bash
+bun run verify:stateless-local -- texturing
+bun run verify:stateless-local -- animation
+```
+
+If the MCP URL differs from the default:
+
+```bash
+bun run verify:stateless-local -- http://127.0.0.1:3000/bb-mcp geometry
+```
+
+A smoke failure means `ENVIRONMENT / INSTALL` or `MCP_PUBLIC_CONTRACT`; do not continue to visual claims.
+
+## 5. Fresh Codex Registry Gate
+
+The direct server smoke does **not** prove Codex itself refreshed its tool registry.
+
+Create a fresh Codex connection/task and capture the live tool names. For Geometry, compare them with the same source-owned 27-tool surface. Do not search for a known foreign-phase tool.
+
+If Codex names differ while the direct server smoke passes:
+
+```text
+direct MCP server surface = PASS
+Codex registry = mismatch
+→ ENVIRONMENT / INSTALL first
+```
+
+Only classify `MCP_PUBLIC_CONTRACT` after proving the installed server is fresh and Codex is reading that exact instance.
+
+## 6. Phase / Handoff Rule
+
+Runtime exposure is:
+
+```text
+MCP CORE + exactly one ACTIVE PHASE
+```
+
+A phase transition is deliberate:
 
 ```text
 HANDOFF_REQUIRED
 → record target_phase + reason + readiness + resume_from
 → set MCP Authoring Phase=<target>
-→ reload BlockIT / reconnect MCP
-→ continue only after tools/list reflects the target phase
+→ reload/restart BlockIT MCP as required
+→ reconnect MCP client
+→ rerun the smoke gate for the target phase
+→ continue
 ```
 
-Do not `tool_search` for a known foreign-phase mutation.
+Foreign-phase absence is expected and is **not** a discovery failure.
 
-Observe retry/context/latency only when the client exposes it. Unknown telemetry stays `UNVERIFIED`. Do not convert tool-discovery scores, schema characters, prompt length, or catalog size into an Authoring Efficiency claim.
+## 7. Test 1 — MCP / Core Mechanics
 
-## 6. Test 1 — MCP / Core Mechanics
+Do not exercise every tool. Use one bounded representative path.
 
-Purpose: prove representative plugin/MCP behavior independent of reference quality without defeating the phase boundary.
-
-### Geometry pass
-
-Start with `ACTIVE PHASE: GEOMETRY`.
-
-Create a small Bedrock project with one or more Groups, a few Cubes, and one intentionally rotated Cube with an explicit justified origin.
-
-Representative Geometry/Core path:
+### Geometry
 
 ```text
-create / focused inspect
-→ coherent Cube/Group batching where appropriate
-→ finite bounds + canonical model views
+create small Bedrock project
+→ Groups + Cubes
+→ one intentionally rotated Cube with justified origin
+→ focused inspect only when needed
+→ capture_model_views
 → one causal correction
 → Undo / Redo
-→ Locator / Null Object
-→ .bbmodel / Bedrock geometry export when required
+→ Locator / Null Object when required
+→ .bbmodel / Bedrock export when required
 ```
 
-Confirm foreign Texturing/Animation mutations are absent rather than searched for.
+Confirm Texturing/Animation mutations are absent rather than searched for.
 
-### Geometry → Texturing handoff
+### Geometry → Texturing
 
-When Geometry and UV Layout readiness are satisfied:
+Only after:
 
 ```text
 geometry=PASS
 uv_layout=PASS
 final Box-UV lock complete where applicable
-list_textures UV audit has no unresolved invalid/out-of-bounds/partial-overlap blocker
-→ HANDOFF_REQUIRED(texturing)
+list_textures UV audit has no unresolved blocker
 ```
 
-Set `MCP Authoring Phase=texturing`, reload/reconnect, and rerun `bun run verify:stateless-local` if installed surface freshness is in doubt.
+Then:
+
+```text
+HANDOFF_REQUIRED(texturing)
+→ switch phase
+→ reload/reconnect
+→ bun run verify:stateless-local -- texturing
+```
 
 Representative Texturing path:
 
 ```text
 Texture Atlas
 → Painter base/value/form/identity work
-→ PBR / material instance when required
+→ PBR/material instance only when required
 → fresh get_texture + capture_model_views
 → Texture Verify
 ```
 
-A Geometry/UV defect found here returns to Geometry through a handoff; Texturing must not borrow Cube/rig mutation.
+A Geometry/UV defect returns to Geometry through a handoff.
 
-### Texturing → Animation handoff
+### Texturing → Animation
 
-Only when the test requires animation and `texture_verify=PASS` with no unresolved structural blocker:
+Only when animation is actually required and texture verification passed:
 
 ```text
 HANDOFF_REQUIRED(animation)
-→ set MCP Authoring Phase=animation
+→ switch phase
 → reload/reconnect
+→ bun run verify:stateless-local -- animation
 ```
 
 Representative Animation path:
 
 ```text
-small animation with numeric or authored Molang value
-→ representative animation effect mutation
-→ one coherent AnimationController batch when required
-→ inspect_animation only when mutation-returned state is insufficient
+small animation
+→ representative keyframe/effect mutation
+→ controller mutation only when required
+→ focused inspect_animation only when returned state is insufficient
 ```
 
-A structural bone/pivot/IK/parenting defect returns to Geometry. Animation must not borrow `bone_rigging`.
-
-Do not try to exercise every tool. A bounded representative pass is sufficient unless the current task names a specific capability.
-
-## 7. Persistence / Export
-
-Verify only what the active claim requires:
-
-```text
-editable .bbmodel
-Bedrock geometry export
-```
-
-Use explicit absolute paths. Reopen the `.bbmodel` only when persistence of the authored state under test matters.
+Structural bone/pivot/IK/parenting defects return to Geometry.
 
 ## 8. Test 2 — Reference Model / Authoring Quality
 
-Purpose: prove MCP can use **one currently approved reference** to make a recognizable, Minecraft-appropriate Geometry + Texture model.
+The actual approved reference must be visible to the local modelling context. A filename/path/README/memory is not image evidence.
 
-The actual approved image must be visible to the local modelling context. A filename/path/README/memory is not image evidence. Keep nonvisual constraints such as target height or use separately in task context.
-
-The validation reference is selected by the current user/task. Do **not** hard-code a fixture into product policy.
-
-### Quality Gate
-
-Geometry quality must be judged before efficiency:
+Geometry quality gate:
 
 ```text
 IDENTITY
@@ -264,42 +315,22 @@ CONTROLLED DETAIL DENSITY
 
 A materially wrong major view, topology, attachment, or identity-critical form means **QUALITY FAIL**. Tool success, valid coordinates, export success, or low call count cannot override it.
 
-When the approved reference uses the standard reference board, expected coverage is:
+Use:
 
 ```text
-SIDE | FRONT | BACK
-TOP / FOOTPRINT | FRONT-SIDE 3/4
-```
-
-Reference discrepancy handling:
-
-```text
-MINOR
-→ choose one canonical Minecraft interpretation
-→ use best-supported visible evidence
-→ continue with simplest recognizable buildable form
-
-MATERIAL
-→ CONFLICTING / BLOCKED
-```
-
-Test sequence:
-
-```text
-actual approved reference + handoff constraints
-→ ACTIVE PHASE: GEOMETRY
-→ Semantic Form / Primary Form
-→ minimum coherent primary geometry
-→ fresh judgeable model views
+actual approved reference
+→ Geometry
+→ minimum coherent primary form
+→ fresh model views
 → difference-first FAIL | UNVERIFIED | PASS
 → causal correction only after diagnosis
 → UV readiness
-→ HANDOFF_REQUIRED(TEXTURING)
-→ production texture only after geometry PASS
+→ HANDOFF_REQUIRED(texturing)
+→ texture only after Geometry PASS
 → fresh Texture Verify evidence
 ```
 
-Reject a correction that improves one view while materially regressing another. Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
+Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
 
 ## 9. Authoring Efficiency — Cost to Accepted Result
 
@@ -314,33 +345,27 @@ QUALITY PASS
 → Cost to Accepted Result
 ```
 
-Static Footprint — Skill/prompt characters, schema size, serialized catalog surface, or similar compactness ceilings — is a separate guardrail and cannot prove this runtime claim.
+Static Footprint — prompt/Skill characters, schema size, serialized tool surface — is a separate regression guard and cannot prove runtime efficiency.
 
-Record observable cost:
+Record only observable session cost:
 
 ```text
-Total meaningful MCP calls to Geometry PASS
-Total meaningful MCP calls to Final PASS
-Phase handoffs / reloads required by real workflow
-Discovery calls
-Redundant readbacks
+meaningful MCP calls to Geometry PASS
+meaningful MCP calls to Final PASS
+phase handoffs/reloads
+discovery calls
+redundant readbacks
 tool_search calls / misses
 place_cube calls / Cubes authored
 add_group calls / Groups authored
-capture_model_views calls / views requested
-Correction attempts
+capture_model_views calls
+correction attempts
 Undo / recovery calls
-Same-cause retries
-Broad repository/state reads
+same-cause retries
+broad repository/state reads
 ```
 
-A required phase handoff is not automatically waste. Classify it as avoidable only if an incorrect phase decision or stale installation caused the extra transition.
-
-These are session observations, not a telemetry subsystem. Do not invent token or latency numbers when the client does not expose them.
-
-### Call Classification
-
-Classify meaningful calls when diagnosing waste:
+Classify material work as:
 
 ```text
 NECESSARY
@@ -350,25 +375,7 @@ REASONING_CAUSED
 RECOVERY
 ```
 
-Examples:
-
-- immediate reinspection after a mutation that already returned sufficient state → `AVOIDABLE`;
-- extra read required because the MCP result omitted decision-critical state → `CONTRACT_CAUSED`;
-- wrong mutation from an incorrect visual hypothesis → `REASONING_CAUSED`.
-
-### Correction Effectiveness
-
-For every material correction:
-
-```text
-IMPROVED
-UNCHANGED
-REGRESSED
-```
-
-A useful convergence loop has high `IMPROVED` rate, zero blind same-cause retries, and affected-view verification rather than screenshot-per-mutation behavior.
-
-Batch only when state is **known + coherent**. Uncertain geometry should use the minimum hypothesis needed to obtain new evidence.
+Unknown token/latency stays `UNVERIFIED`.
 
 ## 10. Failure Classification / First Wrong Owner
 
@@ -391,29 +398,25 @@ PERSISTENCE / EXPORT
 UNKNOWN
 ```
 
-For a reproducible failure: identify the exact owner, capture minimum evidence, make the smallest complete fix, rerun the failing scenario first, then run relevant repository gates.
-
-Do not respond to a poor model by automatically adding modelling recipes, shortening Skills, changing schema budgets, or adding tools unless the classified owner and evidence require that exact change.
-
-## 11. Comparison Rule
-
-A change is an authoring improvement only when:
+For a reproducible failure:
 
 ```text
-accepted quality is preserved or improved
-+
-unnecessary work is reduced
+identify exact owner
+→ capture minimum evidence
+→ make smallest complete fix
+→ rerun failing scenario first
+→ run relevant repository gates
+→ STOP
 ```
 
-Better accepted quality with the same justified work may also be an improvement. Fewer calls with worse quality is a regression, not efficiency.
+Do not respond to a poor model by automatically adding tools, profiles, reconnect frameworks, modelling recipes, or schema-budget changes unless the classified owner requires that exact change.
 
-## 12. Completion
+## 11. Completion
 
 Update only current owners:
 
-- `docs/foundation/validation-report.md` when new proof materially changes the boundary;
-- `docs/knowledge/next-action.md` when continuation materially changes;
-- `docs/knowledge/implementation-map.md` only when ownership changes;
-- foundation policy only when a durable product rule changes.
+- `docs/foundation/validation-report.md` when proof materially changes;
+- `docs/knowledge/next-action.md` when continuation changes;
+- `docs/knowledge/implementation-map.md` only when ownership changes.
 
-Historical rationale, discarded fixtures, and prior model iterations belong in Git history. When requested proof and criteria are satisfied, **STOP**.
+Historical rationale belongs in Git history. When the requested proof and criteria are satisfied, **STOP**.
