@@ -1,17 +1,256 @@
 # Next Action
 
-Updated: 2026-08-27 — MCP stability handoff consolidated for Codex
+Updated: 2026-08-27 — Codex cleanup and MCP stability handoff
 
 Working branch: **`Local` only**.
 
-Current `Local` HEAD before this documentation-only update:
+The current branch contains the MCP connection-stability source repair from:
 
 ```text
 0db4fed5ece8cd6cc69e9dd2ba7a2d9a67f8d404
 fix(mcp): make plugin connection state fail closed
 ```
 
-## Current State
+Documentation-only commits may appear after that source commit. Do not mistake those documentation commits for additional MCP source repairs.
+
+Current source + relevant proof remain authority. Do not infer completion from stale status text elsewhere.
+
+---
+
+# MASTER CLEANUP CHECKLIST FOR CODEX
+
+Work in this order. Do not test the approved Route 1 GLB until the MCP gates below pass.
+
+## A. Repository housekeeping — small and safe
+
+```text
+[ ] Delete the accidental temporary remote branch `__noop__`.
+    Expected command: git push origin --delete __noop__
+    Do not force-push or rewrite `Local` history.
+
+[ ] Ignore unreferenced candidate Git blobs created during the earlier ChatGPT audit.
+    They are not on `Local` and require no manual cleanup.
+
+[ ] Audit `mcp/package.json` contributor metadata added with commit 0db4fed.
+    `contributors: ["Jason J. Gardner"]` is unrelated to the MCP stability fix.
+    Preserve only if intentionally correct; otherwise remove it as unrelated metadata noise.
+```
+
+## B. MCP Direct Geometry repair — highest priority
+
+```text
+[ ] Remove mandatory `plan_id` from normal Direct Geometry tools.
+[ ] Remove retired Geometry Plan bindings from Cube/Group authoring.
+[ ] Remove normal production registration of legacy plan/compiler tools.
+[ ] Delete retired `geometryPlan.ts` / `geometryCompiler.ts` when no legitimate caller remains.
+[ ] Preserve useful current tools and behavior: modify_group, reparent_element, batching, UV behavior, Undo, validation.
+[ ] Fix remaining TypeScript errors only after the first wrong owner is removed.
+```
+
+## C. Preserve the connection-stability repair
+
+```text
+[ ] Keep Blockbench plugin install ID stable as `blockit_mcp`.
+[ ] Keep fail-closed TCP bind/startup behavior.
+[ ] Keep one immutable MCP tool surface per connection.
+[ ] Keep phase handoff = set phase → reload BlockIT → reconnect MCP client.
+[ ] Keep `bone_rigging` owned by Geometry.
+[ ] Do NOT restore in-process dynamic phase-surface switching.
+```
+
+The plugin ID `blockit_mcp` is intended to become stable. Do not keep renaming it to invalidate caches.
+
+## D. Static MCP verification
+
+```text
+[ ] bun install --frozen-lockfile
+[ ] bun run typecheck
+[ ] bun run test
+[ ] bun run measure:surface
+[ ] bun run build
+[ ] bun run docs:check
+[ ] If generated docs are stale: bun run docs:build, then docs:check again.
+```
+
+Do not hand-edit generated MCP API docs.
+
+## E. Version policy cleanup
+
+Only after Direct Geometry source is green:
+
+```text
+[ ] Reset development plugin version to `0.1.0`.
+[ ] Regenerate version-dependent artifacts through repository-owned generators/build.
+[ ] Remove any logic/process that treats version bumping as cache invalidation.
+[ ] Normal rebuild/reconnect must leave version at `0.1.0`.
+[ ] Future version bumps happen only for deliberate release/milestone changes.
+```
+
+Do not use `0.1`, `1.6.4`, or another arbitrary cache-buster. Canonical development baseline is `0.1.0`.
+
+## F. Runtime freshness diagnostics — minimal only
+
+```text
+[ ] Audit existing `/health` response.
+[ ] Ensure a stale running MCP instance can be distinguished from the current build.
+[ ] Prefer the minimum needed identity: product, version, active phase, build/instance identity, startup identity/time, surface/tool count.
+[ ] If existing health data already proves freshness, add nothing.
+```
+
+Do not build telemetry, session logging, daemon monitoring, or an automatic reconnect framework.
+
+## G. Temporary MCP maintenance cleanup
+
+After the MCP gate is green:
+
+```text
+[ ] Audit `.github/workflows/mcp-verify.yml`.
+[ ] Remove the temporary `Upload MCP cleanup snapshot` step if no active recovery need remains.
+[ ] Do not replace it with another archive/snapshot framework.
+
+[ ] Audit `rebuild-mcp.ps1`.
+    Keep it only as a small useful rebuild/check helper.
+    It must not bump plugin version to solve stale connections.
+    Do not turn it into a large doctor/daemon framework.
+```
+
+## H. Route 1 Experimental cleanup
+
+Current accepted research decision:
+
+```text
+Route 1 Gate 1 = PASS
+Preferred reconstruction = Hunyuan MultiView
+Preferred source evidence = separated FRONT + SIDE + BACK
+contact-sheet orientation = front_direction=+z
+approved Minecraft reference = visual/style authority
+approved MultiView GLB = depth/volume/hidden-side evidence only
+```
+
+Cleanup requirements:
+
+```text
+[ ] Preserve the user's existing `APPROVED` result; do not regenerate it just for cleanup.
+[ ] Make MultiView the one documented current path.
+[ ] Remove stale README wording that still says Gate 1/local Hunyuan proof is pending.
+[ ] Remove stale wording that says MultiView is disabled.
+[ ] Separate approved reference assets from approved result assets.
+[ ] Keep transient attempts only in `.cache/` where appropriate.
+[ ] Remove duplicated/current-tree experiment inputs that no longer serve the canonical path.
+[ ] Do not create archive/rejected/history folders; Git history already owns history.
+[ ] Rename/restructure the experiment folder only when it materially improves navigation; avoid cosmetic churn.
+[ ] Keep actual existing script filenames unless a rename is genuinely needed for clarity.
+```
+
+Preferred simple structure, adapted to the actual existing files:
+
+```text
+Experimental/
+└─ route1-hunyuan/
+   ├─ README.md
+   ├─ scripts/
+   │  └─ current Hunyuan/contact-sheet scripts
+   ├─ reference/
+   │  └─ approved/
+   │     ├─ front.png
+   │     ├─ side.png
+   │     └─ back.png
+   ├─ results/
+   │  └─ approved/
+   │     ├─ *-APPROVED.glb
+   │     └─ *-APPROVED.png
+   └─ .cache/
+      └─ transient runs only
+```
+
+Use actual current filenames. Do not invent duplicate approved assets.
+
+## I. Documentation reconciliation after implementation
+
+When the source work is actually complete:
+
+```text
+[ ] Update this `next-action.md` to the new verified state.
+[ ] Reconcile stale version/tool-count/status references only in canonical owners that are now materially wrong.
+[ ] Do not sweep every README/document merely for wording consistency.
+[ ] `CONTEXT.md` should change only if a stable project fact changed.
+[ ] `docs/foundation/validation-report.md` changes only when its proof state actually changes.
+```
+
+## J. Local Runtime Gate — first step that requires the Local PC
+
+Do this only after repository/static cleanup above is complete.
+
+```text
+[ ] Sync/pull current `Local`.
+[ ] Build final MCP bundle.
+[ ] Close Codex completely.
+[ ] Close Blockbench completely.
+[ ] Ensure no old BlockIT/MCP instance owns the configured loopback port.
+[ ] Remove/disable duplicate old MCP/plugin entries.
+[ ] Load only plugin ID `blockit_mcp`.
+[ ] Set active phase = Geometry.
+[ ] Confirm `/health` identifies the expected current build/instance.
+[ ] Create a fresh Codex MCP connection.
+[ ] Verify live `tools/list` / exposed Geometry surface.
+```
+
+Required live Geometry capability includes at minimum:
+
+```text
+create_project
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+capture_model_views
+bone_rigging
+export_model
+```
+
+Live schemas must NOT require `plan_id` for:
+
+```text
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+```
+
+If source/build is correct but live Codex differs, STOP and diagnose install/connection freshness. Do not patch Route 1 or the model to compensate.
+
+## K. Route 1 Blockbench test — only after J passes
+
+```text
+actual approved Minecraft reference
++ approved MultiView GLB/contact-sheet evidence
++ approved dimensions/constraints
+→ existing Geometry MCP
+→ primary Groups/Cubes only
+→ one capture_model_views
+→ compare approved reference + fresh model views together
+→ one causal local correction OR one primary rebuild
+→ verify
+```
+
+Authority order:
+
+```text
+1. explicit user requirement
+2. actual approved Minecraft reference
+3. approved MultiView GLB/contact sheet for depth/volume/hidden-side evidence
+4. simplest Minecraft-buildable interpretation
+```
+
+Do not voxelize the GLB, import it as final Blockbench geometry, or chase smooth mesh curvature with many small Cubes.
+
+---
+
+# CURRENT STATE
 
 ```text
 MCP_CONNECTION_STABILITY_REPAIR_APPLIED
@@ -24,19 +263,16 @@ ROUTE1_HUNYUAN_MULTIVIEW_PREFERRED
 ROUTE1_APPROVED_RESULT_PRESERVED_BY_USER
 ROUTE1_BLOCKBENCH_TEST_BLOCKED_BY_MCP
 EXPERIMENTAL_FOLDER_CLEANUP_PENDING
+TEMPORARY_REPO_HOUSEKEEPING_PENDING
 TEXTURE_ATLAS_CANDIDATE_SEPARATE_AND_DEFERRED
 NO_ACTIVE_LOCAL_ACCEPTANCE_RUN
 ```
 
-Current source + relevant proof remain authority. Do not infer completion from stale status text elsewhere.
-
 ---
 
-## 1. What Is Already Applied on `Local`
+# WHAT IS ALREADY APPLIED ON `Local`
 
-Commit `0db4fed5ece8cd6cc69e9dd2ba7a2d9a67f8d404` intentionally applies the first MCP connection-stability repair.
-
-Preserve these changes:
+Preserve the source behavior introduced by `0db4fed5ece8cd6cc69e9dd2ba7a2d9a67f8d404`:
 
 ```text
 mcp/index.ts
@@ -62,11 +298,9 @@ mcp/tests/plugin-runtime-cleanup.test.ts
 
 Do **not** revert these changes while repairing Geometry.
 
-`mcp/package.json` also received `contributors: ["Jason J. Gardner"]` in the same commit. Audit whether this metadata is intentional before preserving it permanently; it is unrelated to the MCP stability repair.
-
 ---
 
-## 2. Confirmed Incident and First Wrong Owner
+# CONFIRMED INCIDENT / FIRST WRONG OWNER
 
 Observed live Codex incident before the current repair:
 
@@ -82,25 +316,25 @@ missing examples:
 - capture_model_views
 ```
 
-This incident exposed two independent problems:
+Two independent problems were identified:
 
-1. **connection/plugin freshness problem** — an older MCP instance can remain attached while source/plugin version changes;
-2. **Direct Geometry regression** — current source still binds normal Geometry tools to the retired Geometry Plan/Compiler path.
+1. **connection/plugin freshness** — an older MCP instance can remain attached while source/plugin changes;
+2. **Direct Geometry regression** — current source binds normal Geometry tools to the retired Geometry Plan/Compiler path.
 
-The current `MCP Verify` failure is **not caused by commit `0db4fed`**. The previous `Local` commit already failed typecheck with the same source errors.
+The current `MCP Verify` failure is **not caused by commit `0db4fed`**. The preceding `Local` state already failed typecheck with the same source errors.
 
-The regression that introduced `geometryPlan.ts`, `geometryCompiler.ts`, mandatory `plan_id`, and related bindings entered in:
+The Geometry Plan/Compiler regression entered in:
 
 ```text
 27870dac67c88be5b6a826cd7c18bd7845755715
 chore(sync): synchronize local workspace with Local
 ```
 
-Useful references:
+Useful historical references:
 
 ```text
 226d9a638bb0d8cc50963411005a2fbb7ae00d96
-- pre-regression source point for the affected Direct Geometry owners
+- pre-regression source point for affected Direct Geometry owners
 
 fc11428839ee21c1fe34251f6dafa2d1d7336877
 - known full-MCP-verify-green reference
@@ -111,7 +345,104 @@ Use history only to recover intended semantics. Do not wholesale rollback unrela
 
 ---
 
-# Codex Execution Contract
+# P0 — DIRECT GEOMETRY REPAIR DETAILS
+
+## `mcp/server/tools/cubes.ts`
+
+Remove retired Geometry Plan dependency from normal Direct Geometry authoring:
+
+```text
+remove mandatory `plan_id` from:
+- place_cube
+- modify_cube
+- modify_cubes_batch
+
+remove Geometry Plan calls/imports such as:
+- requirePlanForOpenProject
+- requireGeometryRoleAvailable
+- requireBoundGeometryTarget
+- requireRotationIntent
+- bindGeometryRole
+```
+
+Preserve:
+
+```text
+coherent place_cube batching
+finite geometry validation
+rotated-Cube origin requirement
+current correction/no-op validation
+current Box UV handling/auto-pack behavior
+structured mutation results
+Undo behavior
+```
+
+## `mcp/server/tools/element.ts`
+
+Remove mandatory `plan_id` and Geometry Plan bindings from current Geometry tools, including where present:
+
+```text
+add_group
+duplicate_element
+modify_group
+reparent_element
+```
+
+Preserve:
+
+```text
+add_group batching
+modify_group
+reparent_element
+duplicate_element
+explicit hierarchy validation
+self/circular-parent rejection
+UUID/exact-name targeting
+Undo behavior
+```
+
+Do not regress `modify_group` or `reparent_element` merely because they were introduced near the bad plan coupling.
+
+## `mcp/server/tools/project.ts`
+
+Retire old production registrations:
+
+```text
+prepare_geometry_plan
+compile_geometry_spec
+correct_geometry_from_report
+```
+
+Preserve:
+
+```text
+create_project
+get_project_info
+inspect_model_bounds
+```
+
+`create_project` must no longer clear/initialize a retired Geometry Plan.
+
+## Retired implementation
+
+Delete when no remaining legitimate caller exists:
+
+```text
+mcp/lib/geometryPlan.ts
+mcp/lib/geometryCompiler.ts
+```
+
+Do not keep them through a compatibility/fallback layer without a current production requirement.
+
+## `mcp/lib/factories.ts`
+
+Fix the existing TypeScript error minimally. Do not roll back current request-owned runtime cache invalidation or result compaction.
+
+Re-run typecheck after removing the plan coupling before patching secondary implicit-any/schema errors; some are downstream symptoms of the wrong schemas.
+
+---
+
+# CODEX EXECUTION CONTRACT
 
 ## Goal
 
@@ -119,22 +450,20 @@ Restore a stable Direct Geometry MCP and make repository/static verification ful
 
 ## Success Metric
 
-Before Route 1 authoring:
-
 ```text
-source contract consistent
-+ typecheck green
-+ contract tests green
-+ MCP surface measurement green
-+ production build green
-+ generated docs fresh
-+ development plugin version policy stabilized at 0.1.0
-+ fresh local Blockbench/Codex connection proves the expected live Geometry tools
+Direct Geometry source consistent
++ full MCP static verification green
++ plugin ID stable as blockit_mcp
++ development version baseline 0.1.0
++ minimal stale-instance identity available
++ temporary maintenance noise removed where no longer needed
++ Route 1 current experiment tree/documentation clean
++ fresh local Blockbench/Codex connection proves expected Geometry tools
 ```
 
 ## Forbidden Proxy / Non-Goal
 
-Do not treat any of the following as success by itself:
+The following do not prove success by themselves:
 
 ```text
 bundle contains tool-name strings
@@ -160,366 +489,15 @@ telemetry/session framework
 IoU/solver/auto-correction Route 1 system
 ```
 
-## First Evidence Required
-
-Static work first: Direct Geometry source must become internally consistent and pass the canonical MCP verification.
-
-Live work later: a fresh Blockbench + Codex connection must prove the actual `tools/list` surface.
-
 ## STOP Condition
 
-If the static gate is not green, do not test the Route 1 GLB.
+If static MCP verification is not green, do not test Route 1.
 
-If the fresh live Geometry surface is missing required tools or still exposes stale schemas, stop and classify the exact install/connection owner before authoring any model.
-
----
-
-# P0 — Repair Direct Geometry
-
-This is the first Codex task.
-
-## `mcp/server/tools/cubes.ts`
-
-Remove the retired Geometry Plan dependency from normal Direct Geometry authoring:
-
-```text
-remove mandatory `plan_id` from:
-- place_cube
-- modify_cube
-- modify_cubes_batch
-
-remove Geometry Plan calls/imports such as:
-- requirePlanForOpenProject
-- requireGeometryRoleAvailable
-- requireBoundGeometryTarget
-- requireRotationIntent
-- bindGeometryRole
-```
-
-Preserve current useful behavior:
-
-```text
-coherent place_cube batching
-finite geometry validation
-rotated-Cube origin requirement
-current correction/no-op validation
-current Box UV handling and auto-pack behavior
-structured mutation results
-Undo behavior
-```
-
-Do not replace these with a new planning abstraction.
-
-## `mcp/server/tools/element.ts`
-
-Remove mandatory `plan_id` and Geometry Plan bindings from current Geometry element tools, including where present:
-
-```text
-add_group
-duplicate_element
-modify_group
-reparent_element
-```
-
-Preserve current useful capability:
-
-```text
-add_group batching
-modify_group
-reparent_element
-duplicate_element
-explicit hierarchy validation
-self/circular-parent rejection
-normal UUID/exact-name targeting
-Undo behavior
-```
-
-Do not regress `modify_group` or `reparent_element` merely because they were introduced near the bad plan coupling.
-
-## `mcp/server/tools/project.ts`
-
-Retire the old production Geometry Plan/Compiler registrations:
-
-```text
-remove normal registration of:
-- prepare_geometry_plan
-- compile_geometry_spec
-- correct_geometry_from_report
-```
-
-Preserve:
-
-```text
-create_project
-get_project_info
-inspect_model_bounds
-```
-
-`create_project` must no longer need to clear or initialize a retired Geometry Plan.
-
-## Retired implementation
-
-Delete from production source when no remaining legitimate caller exists:
-
-```text
-mcp/lib/geometryPlan.ts
-mcp/lib/geometryCompiler.ts
-```
-
-Do not preserve them through a compatibility/fallback layer unless a current production caller proves a real requirement.
-
-## `mcp/lib/factories.ts`
-
-Fix the existing TypeScript error minimally. Do not roll back current request-owned runtime cache invalidation or result compaction.
-
-Current known typecheck evidence includes the unnecessary ToolResult object cast around the structured-result/content handling. Fix the actual type narrowing rather than weakening types globally.
-
-## Type errors caused by the bad plan coupling
-
-After removing the coupling, re-run typecheck before manually patching secondary errors. Several current implicit-any/schema mismatch errors in `cubes.ts` and `element.ts` are downstream symptoms of the plan-bound schemas and may disappear once the correct concrete schemas are restored.
-
-Fix only errors that remain reproducible after the first wrong owner is removed.
+If fresh live Geometry surface is missing required tools or still exposes stale schemas, STOP and classify install/connection freshness before authoring any model.
 
 ---
 
-# P1 — Canonical MCP Verification
-
-From `mcp/` run the repository-owned gate:
-
-```bash
-bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
-```
-
-If source/tests/build pass and generated docs are stale:
-
-```bash
-bun run docs:build
-bun run docs:check
-```
-
-Generated MCP API docs are generator-owned. Never hand-edit generated tool entries.
-
-Do not declare this phase complete until the full relevant MCP verification is green.
-
----
-
-# P2 — Stabilize Plugin Versioning
-
-Only after the Direct Geometry source contract is green, reset the development plugin version to:
-
-```text
-0.1.0
-```
-
-Then regenerate all version-dependent artifacts normally.
-
-Version policy going forward:
-
-```text
-normal rebuild / reconnect / cache troubleshooting
-→ version stays 0.1.0
-
-real patch/release milestone
-→ deliberate semantic version bump
-```
-
-Never bump the plugin version merely to force Blockbench or Codex to notice a new build.
-
-Version is release metadata, not freshness proof.
-
----
-
-# P3 — Minimal Runtime Freshness Identity
-
-Audit the existing `/health` response after the source gate is green.
-
-It already reports basic product/version/phase information. Add only the **minimum missing identity** needed to distinguish a stale running instance from the current build.
-
-Preferred minimal evidence, only where not already available:
-
-```text
-product
-version
-build_id or equivalent build identity
-started_at or instance_id
-active phase
-tool/surface count
-```
-
-Purpose:
-
-```text
-expected current build
-!= /health running build
-→ stale MCP instance is immediately proven
-```
-
-Do not turn this into telemetry, persistent session logging, or a monitoring framework.
-
-If existing `/health` already proves instance/build freshness adequately, make no change.
-
----
-
-# P4 — Remove Temporary MCP Maintenance Noise
-
-After MCP verification is green, audit `.github/workflows/mcp-verify.yml`.
-
-The step named approximately:
-
-```text
-Upload MCP cleanup snapshot
-```
-
-was explicitly temporary maintenance infrastructure. Remove it if it no longer serves an active recovery requirement.
-
-Do not add a replacement artifact/archive system.
-
----
-
-# P5 — Clean Route 1 Experimental Structure
-
-Do this only after the MCP source gate is green. It is repository cleanup, not a new Route 1 experiment.
-
-Current decision:
-
-```text
-Route 1 Gate 1: PASS
-Preferred reconstruction: MultiView
-Preferred source views: separated FRONT + SIDE + BACK
-contact-sheet orientation: front_direction=+z
-approved Minecraft reference remains visual authority
-```
-
-SingleView and earlier board-crop attempts are no longer the canonical current path.
-
-The user reports the approved experiment result was already moved out of `.cache`. Preserve that approved result if present; do not regenerate it merely for cleanup.
-
-Target a simple current structure such as:
-
-```text
-Experimental/
-└─ route1-hunyuan/
-   ├─ README.md
-   ├─ scripts/
-   │  ├─ generate_multiview.py
-   │  └─ render_contact_sheet.py
-   ├─ reference/
-   │  └─ approved/
-   │     ├─ front.png
-   │     ├─ side.png
-   │     └─ back.png
-   ├─ results/
-   │  └─ approved/
-   │     ├─ *-APPROVED.glb
-   │     └─ *-APPROVED.png
-   └─ .cache/
-      └─ transient runs only
-```
-
-Use the actual current filenames; do not invent duplicate approved assets.
-
-The current README must become one current truth:
-
-```text
-Gate 1 already passed
-MultiView is preferred
-GLB is temporary 3D evidence, not final Minecraft geometry
-approved Minecraft reference remains style/visual authority
-production MCP unchanged by the experiment itself
-next step is blocked until MCP live Geometry proof passes
-```
-
-Do not create archive/rejected/history folders just to retain old attempts; Git history already owns history.
-
----
-
-# P6 — Local Runtime Gate
-
-This is the first step that genuinely requires the Local PC / Blockbench / Codex runtime.
-
-Do not perform it until P0–P5 repository work is complete where applicable.
-
-Required procedure:
-
-```text
-1. Sync/pull current `Local`.
-2. Build the final MCP bundle.
-3. Close Codex completely.
-4. Close Blockbench completely.
-5. Ensure no old BlockIT/MCP instance still owns the configured loopback port.
-6. Remove/disable old duplicate MCP/plugin entries.
-7. Install/load only the current BlockIT plugin with install ID `blockit_mcp`.
-8. Set active authoring phase = Geometry.
-9. Start Blockbench and confirm `/health` identifies the expected current build/instance.
-10. Create a fresh Codex MCP connection.
-11. Read the live `tools/list` / actual exposed Geometry tool surface.
-```
-
-Required live Geometry capability includes at minimum:
-
-```text
-create_project
-add_group
-place_cube
-modify_cube
-modify_cubes_batch
-modify_group
-reparent_element
-capture_model_views
-bone_rigging
-export_model
-```
-
-Also prove the live schemas do **not** require `plan_id` for:
-
-```text
-add_group
-place_cube
-modify_cube
-modify_cubes_batch
-modify_group
-reparent_element
-```
-
-If these do not match current source, **STOP**. Do not patch Route 1 or the model to compensate for a stale MCP connection.
-
----
-
-# P7 — Route 1 Blockbench Test
-
-Only after the live MCP gate passes:
-
-```text
-actual approved Minecraft reference
-+ approved MultiView GLB/contact-sheet evidence
-+ approved dimensions/constraints
-→ existing Geometry MCP
-→ primary Groups/Cubes only
-→ one capture_model_views
-→ compare actual approved reference + fresh model views together
-→ one causal local correction OR one primary rebuild
-→ verify
-```
-
-Authority order when evidence conflicts:
-
-```text
-1. explicit user requirement
-2. actual approved Minecraft reference
-3. approved MultiView GLB/contact-sheet for depth/volume/hidden-side evidence
-4. simplest Minecraft-buildable interpretation
-```
-
-Do not voxelize the GLB, import it as final geometry, or follow its smooth curvature with many tiny Cubes.
-
----
-
-# Route 1 Deferred Until Matching Evidence
+# ROUTE 1 — DEFERRED UNTIL MATCHING EVIDENCE
 
 Do not implement automatically:
 
@@ -542,26 +520,28 @@ A new layer requires a demonstrated failure that identifies that layer as the fi
 
 ---
 
-# Separate / Not Part of This Repair
+# SEPARATE / NOT PART OF THIS REPAIR
 
-The Texture Atlas public-contract candidate remains a separate task. Do not mix it into MCP stability or Route 1 cleanup unless it directly blocks the required Geometry gate.
+The Texture Atlas public-contract candidate remains a separate task. Do not mix it into MCP stability or Route 1 cleanup unless it directly blocks the Geometry gate.
 
 ---
 
-# Final STOP / Handoff State
+# FINAL HANDOFF
 
-Codex should continue from **P0**.
+Codex should start at **A**, then complete **B–I** without requiring Blockbench where possible.
 
-The next meaningful checkpoint is:
+The repository-only checkpoint is:
 
 ```text
-DIRECT GEOMETRY REPAIRED
+REPOSITORY HOUSEKEEPING CLEAN
++ DIRECT GEOMETRY REPAIRED
 + MCP STATIC VERIFY GREEN
 + VERSION POLICY STABLE AT 0.1.0
 + MINIMAL FRESHNESS IDENTITY READY
-+ EXPERIMENTAL ROUTE1 CURRENT TREE CLEAN
++ TEMPORARY MCP MAINTENANCE NOISE CLEAN
++ ROUTE1 CURRENT EXPERIMENT TREE/DOCS CLEAN
 ```
 
-Then stop repository development and request/perform the **Local Runtime Gate**.
+Then stop repository development and perform/request **J — Local Runtime Gate**.
 
-The approved Route 1 GLB must not be authored through MCP before that live gate passes.
+Only after J passes may **K — Route 1 Blockbench Test** begin.
