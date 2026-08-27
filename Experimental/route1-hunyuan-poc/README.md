@@ -4,7 +4,7 @@ Status:
 
 ```text
 EXPERIMENTAL SOURCE FOUNDATION APPLIED
-LOCAL HUNYUAN GPU PROOF REQUIRED
+ROUTE 1 GATE 1 PASS
 BUILDIT MCP UNCHANGED
 NOT PRODUCTION
 ```
@@ -18,12 +18,12 @@ It is not a mesh-to-Blockbench converter. The Hunyuan mesh is temporary evidence
 ## Boundary
 
 ```text
-approved 3/4 reference crop
-→ Hunyuan3D-DiT-v2-0, shape only
-→ temporary source.glb
+separated FRONT + SIDE + BACK reference crops
+→ Hunyuan3D-2mv, shape only
+→ temporary source-multiview-separated.glb
 → one FRONT / SIDE / TOP / ISOMETRIC contact sheet
-→ mesh usefulness gate
-→ existing BuildIT Geometry MCP only if the gate passes
+→ mesh usefulness gate (PASS)
+→ existing BuildIT Geometry MCP only after fresh matching evidence
 ```
 
 No production MCP tool, authoring phase, geometry compiler, semantic mesh segmentation, IoU gate, provider router, texture generation, or autonomous correction is added by this POC.
@@ -60,7 +60,7 @@ octree resolution  256
 num chunks         20000
 seed               12345
 texture            disabled
-multiview          disabled
+multiview          preferred bounded path
 ```
 
 Do not tune Fast/Turbo, octree 380+, multiple seeds, or multiview until runtime evidence identifies a specific bottleneck.
@@ -125,7 +125,7 @@ The local experiment environment is kept under `Experimental/route1-hunyuan-poc/
 
 ## Run
 
-Provide a clean approved single 3/4 crop, not the whole five-panel board.
+The preferred current path uses separate transparent-background FRONT, SIDE, and BACK crops; do not use the whole five-panel board.
 
 ```bash
 python Experimental/route1-hunyuan-poc/generate_shape.py path/to/approved-3q.png
@@ -151,11 +151,11 @@ input/separated-reference/back.png   → back
 
 The multiview model is `tencent/Hunyuan3D-2mv`, subfolder `hunyuan3d-dit-v2-mv`, variant `fp16`, with the same `50 / 256 / 20000 / 12345` settings. The result is one triangle mesh. Render its comparison sheet with `--front-direction=+z`; the `-z` view convention shows the wrong face for this asset. The current preferred local evidence files are `.cache/source-multiview-separated.glb` and `.cache/contact-sheet-multiview-separated.png`.
 
-## Gate 1 — Mesh usefulness
+## Gate 1 — Mesh usefulness (PASS)
 
 Inspect the actual approved reference and the fresh contact sheet together.
 
-Continue only when the mesh preserves the material evidence needed for modelling:
+The accepted research decision is that the separated MultiView reconstruction preserves the material evidence needed for modelling:
 
 1. identity and primary part count;
 2. major volume and depth;
@@ -163,9 +163,7 @@ Continue only when the mesh preserves the material evidence needed for modelling
 4. attachment relationships;
 5. a plausible hidden-side interpretation without identity-changing hallucination.
 
-A clean file export, high polygon count, or attractive mesh render is not a pass.
-
-If the mesh fails materially, stop before Blockbench and classify the first wrong owner as input preparation or Hunyuan reconstruction.
+A clean file export, high polygon count, or attractive mesh render is not sufficient for a pass. Any future materially failing run must still stop before Blockbench and classify input preparation versus Hunyuan reconstruction.
 
 ## Handoff to existing BuildIT
 
@@ -186,7 +184,7 @@ The Hunyuan contact sheet is geometry/depth evidence. It never outranks the appr
 
 ## Promotion boundary
 
-Do not promote this experiment after source/static proof. Required next evidence is a real local Hunyuan run and visual inspection of the resulting contact sheet. Production integration is considered only after representative asset authoring shows a lower Cost to Accepted Result.
+Do not promote this experiment after source/static proof. The approved MultiView GLB/contact sheet is depth/volume/hidden-side evidence only; production integration is considered only after representative asset authoring shows a lower Cost to Accepted Result.
 
 ## License boundary
 
